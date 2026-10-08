@@ -1,0 +1,646 @@
+{
+  "all_checks_pass": true,
+  "checks": {
+    "exact_graph_counts": true,
+    "exact_terminal_oracle": true,
+    "index_semantics_pass": true,
+    "parent_source_lock_stable": true,
+    "positive_phase_timings": true,
+    "sampled_attrs_and_parents": true,
+    "three_fresh_workers": true,
+    "worker_source_locks_match_parent": true
+  },
+  "claim_boundary": "Three-worker exact 10M high-fanout star construction and two-rule closure on one host; no general closure scaling claim.",
+  "locked_inputs": {
+    "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+    "files": {
+      "docs/research/engine_substrate/SUBSTRATE_INTERACTING_TREE_CLOSURE_SCALE_V1_PILOT_AMENDMENT_20260928.md": "dade16ef5ec98b227168304838f1a75f81c35a5816cb8582071871db84464a1d",
+      "docs/research/engine_substrate/SUBSTRATE_INTERACTING_TREE_CLOSURE_SCALE_V1_PREREG_20260928.md": "286a5dec578c55ebb9f34ada3ed93cbad8219ae84e82cb679a3bc347b5270f15",
+      "docs/research/engine_substrate/SUBSTRATE_INTERACTING_TREE_EDGE_INDEX_V1_1_AMENDMENT_20260928.md": "d1e43037fd9473930753e885dbae34140288b1ba9ae8c9c4900ae19e8f0531a5",
+      "docs/research/engine_substrate/SUBSTRATE_INTERACTING_TREE_EDGE_INDEX_V1_2_AMENDMENT_20260928.md": "ef6fcf418b97e364713998f1982d7bade81d27a54f3e8ef8efefee88b909b26b",
+      "docs/research/engine_substrate/SUBSTRATE_INTERACTING_TREE_EDGE_INDEX_V1_3_SCALE_PREREG_20260928.md": "7a87e7f776ba9faffdc73dddc7af6bd4078245693af54f47f46c425f615b4f0a",
+      "docs/research/engine_substrate/SUBSTRATE_INTERACTING_TREE_EDGE_INDEX_V1_PREREG_20260928.md": "09b6d548a5b67dc59566765033327e122fda4c5710fae2f70a03e39a70e49144",
+      "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+      "evaluation/reports/substrate_interacting_tree_closure_scale_v1_20260928.json": "5c6e607c95eb7adcdc1502ee826c896d23781796db3ae6bb0412c451b0d18148",
+      "evaluation/reports/substrate_interacting_tree_closure_scale_v1_analysis_20260928.json": "14f5526e4e184d4310b797c1a056b039707578bd0e5223eae5861dc47bd2c12d",
+      "evaluation/reports/substrate_interacting_tree_edge_index_v1_2_20260928.json": "939cbaa684c1fbe5e04e521a0b5a677e1e1d2565fe738a9957f5feab8e989a35",
+      "evaluation/reports/substrate_interacting_tree_edge_index_v1_2_analysis_20260928.json": "96866ca81a5952e42df3146b39d71e756913576b8f0ba809d5cee38d62c936f0",
+      "evaluation/substrate_capability/interacting_tree_closure_scale_v1_lock_20260928.json": "f351fb7ca1af688c048e9e5e7ec005343a69f3be7f0264577a76c771b5779a11",
+      "evaluation/substrate_capability/interacting_tree_edge_index_v1_2_lock_20260928.json": "252edb4b469bf62f566f95fa6bb590ed564c2c31abdbe333912877017406e592",
+      "runners/dsl/Cargo.lock": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+      "runners/dsl/Cargo.toml": "c4d8ffff2241352a5150b5a9937dbb8010e958b6f115235b7daeae716c1a9332",
+      "runners/dsl/python/substrate_rs/__init__.py": "6ec0316afae414329e36d3f121fc56b556e7315f17b93aab911ca09a29726694",
+      "runners/dsl/python/substrate_rs/_native.build.json": "3873c9c08f51cd08e3cbe6fef38396fceb124239fa70dbff7bf314801bb103aa",
+      "runners/dsl/src/graph.rs": "2e161fb2e9ef01163cfb213e1fbab16934dc0b25acaf80ce8e3297dcad806abf",
+      "runners/dsl/src/py.rs": "68347817627387a7730c86ff3ff0f69d45788fe0754227914437dd7d8207a576",
+      "runners/dsl/src/rewrite.rs": "58cea7eaa595c804f4f0265c4003231105011dc2493bea8ca30dea6bb6246c34",
+      "runners/dsl/src/scale_audit.rs": "bbbbdba33b80925a7443cf1f547707eb8c36ff49d9d2124e8ccc68df89d05a03",
+      "runners/dsl/src/substrate.rs": "7548e63870c676a46232469717739db03c3e8e19e0557aeabf17a42b29068f86",
+      "scripts/analyze_substrate_interacting_tree_closure_scale_v1.py": "3576327185219a17dba7ffc4509bd4d55e068901051505a6f5b742f9f7de93f0",
+      "scripts/analyze_substrate_interacting_tree_edge_index_v1.py": "4380d509d9dc2d35bfca04e92b869638b20f113155f8567ac4391245728cfa45",
+      "scripts/analyze_substrate_interacting_tree_edge_index_v1_3.py": "387eb3f6b4beab19da35a66841948e2d0eef4bd434736f674d4c066fb19305db",
+      "scripts/substrate_interacting_tree_closure_scale_v1.py": "dfc50f6ece490e4969693a2f0d7d0c0330c7971d0e2cc0f60576006b49939bc6",
+      "scripts/substrate_interacting_tree_edge_index_scale_v1_3.py": "befbba214d149241393a63b899393ba467ae4918d999112d2f49bf1c4aca0afd",
+      "scripts/substrate_interacting_tree_edge_index_v1.py": "b254874a263330acd5f2212cdae33c0f8be1b87e6eaa2f311b59394d365c5611",
+      "scripts/substrate_run_manifest.py": "924ce1d320c8373f0e27edbc8ba43b6e17fcf6aeb4b6b2a3e8f36f76ea8cb33b"
+    },
+    "native_build_stale": [],
+    "native_path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+    "native_sha256": "e9c7d7b4f16ac644247c769d55c24086255e34d787cac801877517e4d5f26fd6"
+  },
+  "post_run_inputs": {
+    "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+    "files": {
+      "docs/research/engine_substrate/SUBSTRATE_INTERACTING_TREE_CLOSURE_SCALE_V1_PILOT_AMENDMENT_20260928.md": "dade16ef5ec98b227168304838f1a75f81c35a5816cb8582071871db84464a1d",
+      "docs/research/engine_substrate/SUBSTRATE_INTERACTING_TREE_CLOSURE_SCALE_V1_PREREG_20260928.md": "286a5dec578c55ebb9f34ada3ed93cbad8219ae84e82cb679a3bc347b5270f15",
+      "docs/research/engine_substrate/SUBSTRATE_INTERACTING_TREE_EDGE_INDEX_V1_1_AMENDMENT_20260928.md": "d1e43037fd9473930753e885dbae34140288b1ba9ae8c9c4900ae19e8f0531a5",
+      "docs/research/engine_substrate/SUBSTRATE_INTERACTING_TREE_EDGE_INDEX_V1_2_AMENDMENT_20260928.md": "ef6fcf418b97e364713998f1982d7bade81d27a54f3e8ef8efefee88b909b26b",
+      "docs/research/engine_substrate/SUBSTRATE_INTERACTING_TREE_EDGE_INDEX_V1_3_SCALE_PREREG_20260928.md": "7a87e7f776ba9faffdc73dddc7af6bd4078245693af54f47f46c425f615b4f0a",
+      "docs/research/engine_substrate/SUBSTRATE_INTERACTING_TREE_EDGE_INDEX_V1_PREREG_20260928.md": "09b6d548a5b67dc59566765033327e122fda4c5710fae2f70a03e39a70e49144",
+      "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+      "evaluation/reports/substrate_interacting_tree_closure_scale_v1_20260928.json": "5c6e607c95eb7adcdc1502ee826c896d23781796db3ae6bb0412c451b0d18148",
+      "evaluation/reports/substrate_interacting_tree_closure_scale_v1_analysis_20260928.json": "14f5526e4e184d4310b797c1a056b039707578bd0e5223eae5861dc47bd2c12d",
+      "evaluation/reports/substrate_interacting_tree_edge_index_v1_2_20260928.json": "939cbaa684c1fbe5e04e521a0b5a677e1e1d2565fe738a9957f5feab8e989a35",
+      "evaluation/reports/substrate_interacting_tree_edge_index_v1_2_analysis_20260928.json": "96866ca81a5952e42df3146b39d71e756913576b8f0ba809d5cee38d62c936f0",
+      "evaluation/substrate_capability/interacting_tree_closure_scale_v1_lock_20260928.json": "f351fb7ca1af688c048e9e5e7ec005343a69f3be7f0264577a76c771b5779a11",
+      "evaluation/substrate_capability/interacting_tree_edge_index_v1_2_lock_20260928.json": "252edb4b469bf62f566f95fa6bb590ed564c2c31abdbe333912877017406e592",
+      "runners/dsl/Cargo.lock": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+      "runners/dsl/Cargo.toml": "c4d8ffff2241352a5150b5a9937dbb8010e958b6f115235b7daeae716c1a9332",
+      "runners/dsl/python/substrate_rs/__init__.py": "6ec0316afae414329e36d3f121fc56b556e7315f17b93aab911ca09a29726694",
+      "runners/dsl/python/substrate_rs/_native.build.json": "3873c9c08f51cd08e3cbe6fef38396fceb124239fa70dbff7bf314801bb103aa",
+      "runners/dsl/src/graph.rs": "2e161fb2e9ef01163cfb213e1fbab16934dc0b25acaf80ce8e3297dcad806abf",
+      "runners/dsl/src/py.rs": "68347817627387a7730c86ff3ff0f69d45788fe0754227914437dd7d8207a576",
+      "runners/dsl/src/rewrite.rs": "58cea7eaa595c804f4f0265c4003231105011dc2493bea8ca30dea6bb6246c34",
+      "runners/dsl/src/scale_audit.rs": "bbbbdba33b80925a7443cf1f547707eb8c36ff49d9d2124e8ccc68df89d05a03",
+      "runners/dsl/src/substrate.rs": "7548e63870c676a46232469717739db03c3e8e19e0557aeabf17a42b29068f86",
+      "scripts/analyze_substrate_interacting_tree_closure_scale_v1.py": "3576327185219a17dba7ffc4509bd4d55e068901051505a6f5b742f9f7de93f0",
+      "scripts/analyze_substrate_interacting_tree_edge_index_v1.py": "4380d509d9dc2d35bfca04e92b869638b20f113155f8567ac4391245728cfa45",
+      "scripts/analyze_substrate_interacting_tree_edge_index_v1_3.py": "387eb3f6b4beab19da35a66841948e2d0eef4bd434736f674d4c066fb19305db",
+      "scripts/substrate_interacting_tree_closure_scale_v1.py": "dfc50f6ece490e4969693a2f0d7d0c0330c7971d0e2cc0f60576006b49939bc6",
+      "scripts/substrate_interacting_tree_edge_index_scale_v1_3.py": "befbba214d149241393a63b899393ba467ae4918d999112d2f49bf1c4aca0afd",
+      "scripts/substrate_interacting_tree_edge_index_v1.py": "b254874a263330acd5f2212cdae33c0f8be1b87e6eaa2f311b59394d365c5611",
+      "scripts/substrate_run_manifest.py": "924ce1d320c8373f0e27edbc8ba43b6e17fcf6aeb4b6b2a3e8f36f76ea8cb33b"
+    },
+    "native_build_stale": [],
+    "native_path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+    "native_sha256": "e9c7d7b4f16ac644247c769d55c24086255e34d787cac801877517e4d5f26fd6"
+  },
+  "run_id": "substrate-interacting-tree-edge-index-v1-3-scale-20260928",
+  "run_manifest": {
+    "captured_utc": "2026-09-27T22:15:51.815498+00:00",
+    "engine": {
+      "build_is_stale": false,
+      "native_build_manifest_sha256": "3873c9c08f51cd08e3cbe6fef38396fceb124239fa70dbff7bf314801bb103aa",
+      "native_extension_path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+      "native_extension_sha256": "e9c7d7b4f16ac644247c769d55c24086255e34d787cac801877517e4d5f26fd6",
+      "rust_source_fingerprint": "a1d4f1f9edd865a36bc15a35487b1759505aa68aa9b2b6ab2e982fe1e0a140e4"
+    },
+    "execution": {
+      "argv": [
+        "/home/linuxbrew/.linuxbrew/opt/python@3.13/bin/python3.13",
+        "scripts/substrate_interacting_tree_edge_index_scale_v1_3.py"
+      ],
+      "child_processes": [],
+      "command_display": "/home/linuxbrew/.linuxbrew/opt/python@3.13/bin/python3.13 scripts/substrate_interacting_tree_edge_index_scale_v1_3.py",
+      "python_executable": "/home/linuxbrew/.linuxbrew/opt/python@3.13/bin/python3.13",
+      "python_version": "3.13.5 (main, Jun 11 2025, 15:36:57) [GCC 11.4.0]",
+      "relevant_environment": {}
+    },
+    "exit_status": 0,
+    "explicit_inputs": {
+      "docs/research/engine_substrate/SUBSTRATE_INTERACTING_TREE_EDGE_INDEX_V1_3_SCALE_PREREG_20260928.md": {
+        "exists": true,
+        "group": "protocol",
+        "sha256": "7a87e7f776ba9faffdc73dddc7af6bd4078245693af54f47f46c425f615b4f0a"
+      },
+      "evaluation/substrate_capability/interacting_tree_edge_index_v1_3_lock_20260928.json": {
+        "exists": true,
+        "group": "protocol",
+        "sha256": "2501ce255f4036fc9178041528e685b47db8d08a0934c5c26230de5d6d719bed"
+      },
+      "runners/dsl/Cargo.lock": {
+        "exists": true,
+        "group": "build_inputs",
+        "sha256": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9"
+      },
+      "runners/dsl/Cargo.toml": {
+        "exists": true,
+        "group": "build_inputs",
+        "sha256": "c4d8ffff2241352a5150b5a9937dbb8010e958b6f115235b7daeae716c1a9332"
+      },
+      "runners/dsl/python/substrate_rs/__init__.py": {
+        "exists": true,
+        "group": "source",
+        "sha256": "6ec0316afae414329e36d3f121fc56b556e7315f17b93aab911ca09a29726694"
+      },
+      "runners/dsl/python/substrate_rs/_native.build.json": {
+        "exists": true,
+        "group": "source",
+        "sha256": "3873c9c08f51cd08e3cbe6fef38396fceb124239fa70dbff7bf314801bb103aa"
+      },
+      "runners/dsl/src/graph.rs": {
+        "exists": true,
+        "group": "source",
+        "sha256": "2e161fb2e9ef01163cfb213e1fbab16934dc0b25acaf80ce8e3297dcad806abf"
+      },
+      "runners/dsl/src/py.rs": {
+        "exists": true,
+        "group": "source",
+        "sha256": "68347817627387a7730c86ff3ff0f69d45788fe0754227914437dd7d8207a576"
+      },
+      "runners/dsl/src/rewrite.rs": {
+        "exists": true,
+        "group": "source",
+        "sha256": "58cea7eaa595c804f4f0265c4003231105011dc2493bea8ca30dea6bb6246c34"
+      },
+      "runners/dsl/src/scale_audit.rs": {
+        "exists": true,
+        "group": "source",
+        "sha256": "bbbbdba33b80925a7443cf1f547707eb8c36ff49d9d2124e8ccc68df89d05a03"
+      },
+      "runners/dsl/src/substrate.rs": {
+        "exists": true,
+        "group": "source",
+        "sha256": "7548e63870c676a46232469717739db03c3e8e19e0557aeabf17a42b29068f86"
+      },
+      "scripts/analyze_substrate_interacting_tree_edge_index_v1_3.py": {
+        "exists": true,
+        "group": "analysis",
+        "sha256": "387eb3f6b4beab19da35a66841948e2d0eef4bd434736f674d4c066fb19305db"
+      },
+      "scripts/substrate_interacting_tree_closure_scale_v1.py": {
+        "exists": true,
+        "group": "source",
+        "sha256": "dfc50f6ece490e4969693a2f0d7d0c0330c7971d0e2cc0f60576006b49939bc6"
+      },
+      "scripts/substrate_interacting_tree_edge_index_scale_v1_3.py": {
+        "exists": true,
+        "group": "runner",
+        "sha256": "befbba214d149241393a63b899393ba467ae4918d999112d2f49bf1c4aca0afd"
+      },
+      "scripts/substrate_run_manifest.py": {
+        "exists": true,
+        "group": "manifest_capture",
+        "sha256": "924ce1d320c8373f0e27edbc8ba43b6e17fcf6aeb4b6b2a3e8f36f76ea8cb33b"
+      }
+    },
+    "hardware": {
+      "cpu_model": "AMD Ryzen 9 5900X 12-Core Processor",
+      "logical_cpu_count": 24,
+      "machine": "x86_64",
+      "memory_total_bytes": 67342565376,
+      "platform": "Linux-6.8.0-142-generic-x86_64-with-glibc2.39",
+      "system": "Linux",
+      "workspace_filesystem_free_bytes": 8619012096,
+      "workspace_filesystem_total_bytes": 982627737600
+    },
+    "manifest_schema": "substrate-run-manifest-v1",
+    "repository": {
+      "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+      "dirty_workspace": {
+        "scope_note": "Unrelated untracked artifact contents are not recursively hashed; benchmark-relevant files are content-hashed in explicit_inputs.",
+        "status_porcelain_sha256": "e95c6bbb906552b41590ec062d400ccdd357c16a0c4f74d12fd3dddc4e00a1e3",
+        "status_record_count": 5205,
+        "tracked_dirty_content_index_sha256": "ff9c55206ddb3d0da45007ea67e5b02f5a872200a9363351fd7b0840deb08c4a",
+        "tracked_dirty_file_count": 146,
+        "untracked_path_count": 5059,
+        "untracked_path_inventory_sha256": "6ea5a861ec793463e7e6d31718e7a479d191e8535b2d07def1bcc2e0f3723961"
+      },
+      "root": "/home/matt/ozmadev/ocelot"
+    },
+    "run_end_utc": "2026-09-27T22:15:51.815507+00:00",
+    "run_id": "substrate-interacting-tree-edge-index-v1-3-scale-20260928",
+    "run_started_utc": "2026-09-27T22:12:44.117818+00:00",
+    "stdout_stderr_capture": {
+      "bytes": 0,
+      "path": "evaluation/run_logs/substrate-interacting-tree-edge-index-v1-3-scale-20260928.stdout_stderr.log",
+      "scope": "parent-process stdout/stderr before the final structured summary print",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "stdout_stderr_note": null,
+    "toolchain": {
+      "cargo": "cargo 1.87.0 (Homebrew)",
+      "rustc": "rustc 1.87.0 (17067e9ac 2025-05-09) (Homebrew)"
+    }
+  },
+  "runs": [
+    {
+      "active_count": 10000000,
+      "after": {
+        "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+        "files": {
+          "docs/research/engine_substrate/SUBSTRATE_INTERACTING_TREE_CLOSURE_SCALE_V1_PILOT_AMENDMENT_20260928.md": "dade16ef5ec98b227168304838f1a75f81c35a5816cb8582071871db84464a1d",
+          "docs/research/engine_substrate/SUBSTRATE_INTERACTING_TREE_CLOSURE_SCALE_V1_PREREG_20260928.md": "286a5dec578c55ebb9f34ada3ed93cbad8219ae84e82cb679a3bc347b5270f15",
+          "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+          "runners/dsl/python/substrate_rs/__init__.py": "6ec0316afae414329e36d3f121fc56b556e7315f17b93aab911ca09a29726694",
+          "runners/dsl/python/substrate_rs/_native.build.json": "3873c9c08f51cd08e3cbe6fef38396fceb124239fa70dbff7bf314801bb103aa",
+          "runners/dsl/src/graph.rs": "2e161fb2e9ef01163cfb213e1fbab16934dc0b25acaf80ce8e3297dcad806abf",
+          "runners/dsl/src/py.rs": "68347817627387a7730c86ff3ff0f69d45788fe0754227914437dd7d8207a576",
+          "runners/dsl/src/rewrite.rs": "58cea7eaa595c804f4f0265c4003231105011dc2493bea8ca30dea6bb6246c34",
+          "runners/dsl/src/scale_audit.rs": "bbbbdba33b80925a7443cf1f547707eb8c36ff49d9d2124e8ccc68df89d05a03",
+          "runners/dsl/src/substrate.rs": "7548e63870c676a46232469717739db03c3e8e19e0557aeabf17a42b29068f86",
+          "scripts/analyze_substrate_interacting_tree_closure_scale_v1.py": "3576327185219a17dba7ffc4509bd4d55e068901051505a6f5b742f9f7de93f0",
+          "scripts/substrate_interacting_tree_closure_scale_v1.py": "dfc50f6ece490e4969693a2f0d7d0c0330c7971d0e2cc0f60576006b49939bc6"
+        },
+        "native_build_stale": [],
+        "native_path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+        "native_sha256": "e9c7d7b4f16ac644247c769d55c24086255e34d787cac801877517e4d5f26fd6"
+      },
+      "audit": false,
+      "before": {
+        "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+        "files": {
+          "docs/research/engine_substrate/SUBSTRATE_INTERACTING_TREE_CLOSURE_SCALE_V1_PILOT_AMENDMENT_20260928.md": "dade16ef5ec98b227168304838f1a75f81c35a5816cb8582071871db84464a1d",
+          "docs/research/engine_substrate/SUBSTRATE_INTERACTING_TREE_CLOSURE_SCALE_V1_PREREG_20260928.md": "286a5dec578c55ebb9f34ada3ed93cbad8219ae84e82cb679a3bc347b5270f15",
+          "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+          "runners/dsl/python/substrate_rs/__init__.py": "6ec0316afae414329e36d3f121fc56b556e7315f17b93aab911ca09a29726694",
+          "runners/dsl/python/substrate_rs/_native.build.json": "3873c9c08f51cd08e3cbe6fef38396fceb124239fa70dbff7bf314801bb103aa",
+          "runners/dsl/src/graph.rs": "2e161fb2e9ef01163cfb213e1fbab16934dc0b25acaf80ce8e3297dcad806abf",
+          "runners/dsl/src/py.rs": "68347817627387a7730c86ff3ff0f69d45788fe0754227914437dd7d8207a576",
+          "runners/dsl/src/rewrite.rs": "58cea7eaa595c804f4f0265c4003231105011dc2493bea8ca30dea6bb6246c34",
+          "runners/dsl/src/scale_audit.rs": "bbbbdba33b80925a7443cf1f547707eb8c36ff49d9d2124e8ccc68df89d05a03",
+          "runners/dsl/src/substrate.rs": "7548e63870c676a46232469717739db03c3e8e19e0557aeabf17a42b29068f86",
+          "scripts/analyze_substrate_interacting_tree_closure_scale_v1.py": "3576327185219a17dba7ffc4509bd4d55e068901051505a6f5b742f9f7de93f0",
+          "scripts/substrate_interacting_tree_closure_scale_v1.py": "dfc50f6ece490e4969693a2f0d7d0c0330c7971d0e2cc0f60576006b49939bc6"
+        },
+        "native_build_stale": [],
+        "native_path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+        "native_sha256": "e9c7d7b4f16ac644247c769d55c24086255e34d787cac801877517e4d5f26fd6"
+      },
+      "clause_counters": [],
+      "closure_cpu_ns": 19179547389,
+      "closure_wall_ns": 19227787891,
+      "counters": {},
+      "edge_build_cpu_ns": 20280063206,
+      "edge_build_wall_ns": 20299280592,
+      "edges": 19999998,
+      "environment": {
+        "platform": "Linux-6.8.0-142-generic-x86_64-with-glibc2.39",
+        "python": "3.13.5 (main, Jun 11 2025, 15:36:57) [GCC 11.4.0]"
+      },
+      "index_declaration_cpu_ns": 245126686,
+      "index_declaration_wall_ns": 247487892,
+      "n": 10000000,
+      "node_build_cpu_ns": 23736464085,
+      "node_build_wall_ns": 23772157142,
+      "nodes": 10000000,
+      "peak_rss_bytes": 7017742336,
+      "pending_count": 0,
+      "per_rule": [],
+      "pid": 6,
+      "ready_count": 0,
+      "replicate": 0,
+      "report": {
+        "budget_overshoot": 0,
+        "passes_completed": 2,
+        "progress_steps": 2,
+        "requested_progress_budget": 100000000,
+        "status": "fixed_point"
+      },
+      "rss_after_closure_bytes": 4143366144,
+      "rss_after_graph_bytes": 4157161472,
+      "rss_after_index_bytes": 4157292544,
+      "rss_after_nodes_bytes": 2304962560,
+      "rss_after_rule_install_bytes": 4158160896,
+      "rss_after_validation_bytes": 4145283072,
+      "rss_before_bytes": 24526848,
+      "rule_indices": [
+        0,
+        1
+      ],
+      "rule_install_cpu_ns": 449090,
+      "rule_install_wall_ns": 437622,
+      "samples": [
+        {
+          "bucket": 0,
+          "depth": 0,
+          "expected_bucket": 0,
+          "expected_depth": 0,
+          "expected_parents": [],
+          "id": 0,
+          "ordinal": 0,
+          "parents": [],
+          "status": "active"
+        },
+        {
+          "bucket": 0,
+          "depth": 1,
+          "expected_bucket": 0,
+          "expected_depth": 1,
+          "expected_parents": [
+            0
+          ],
+          "id": 5000000,
+          "ordinal": 5000000,
+          "parents": [
+            0
+          ],
+          "status": "active"
+        },
+        {
+          "bucket": 63,
+          "depth": 1,
+          "expected_bucket": 63,
+          "expected_depth": 1,
+          "expected_parents": [
+            0
+          ],
+          "id": 9999999,
+          "ordinal": 9999999,
+          "parents": [
+            0
+          ],
+          "status": "active"
+        }
+      ],
+      "topology": "star",
+      "validation_wall_ns": 703309334,
+      "worker_returncode": 0,
+      "worker_stderr": ""
+    },
+    {
+      "active_count": 10000000,
+      "after": {
+        "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+        "files": {
+          "docs/research/engine_substrate/SUBSTRATE_INTERACTING_TREE_CLOSURE_SCALE_V1_PILOT_AMENDMENT_20260928.md": "dade16ef5ec98b227168304838f1a75f81c35a5816cb8582071871db84464a1d",
+          "docs/research/engine_substrate/SUBSTRATE_INTERACTING_TREE_CLOSURE_SCALE_V1_PREREG_20260928.md": "286a5dec578c55ebb9f34ada3ed93cbad8219ae84e82cb679a3bc347b5270f15",
+          "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+          "runners/dsl/python/substrate_rs/__init__.py": "6ec0316afae414329e36d3f121fc56b556e7315f17b93aab911ca09a29726694",
+          "runners/dsl/python/substrate_rs/_native.build.json": "3873c9c08f51cd08e3cbe6fef38396fceb124239fa70dbff7bf314801bb103aa",
+          "runners/dsl/src/graph.rs": "2e161fb2e9ef01163cfb213e1fbab16934dc0b25acaf80ce8e3297dcad806abf",
+          "runners/dsl/src/py.rs": "68347817627387a7730c86ff3ff0f69d45788fe0754227914437dd7d8207a576",
+          "runners/dsl/src/rewrite.rs": "58cea7eaa595c804f4f0265c4003231105011dc2493bea8ca30dea6bb6246c34",
+          "runners/dsl/src/scale_audit.rs": "bbbbdba33b80925a7443cf1f547707eb8c36ff49d9d2124e8ccc68df89d05a03",
+          "runners/dsl/src/substrate.rs": "7548e63870c676a46232469717739db03c3e8e19e0557aeabf17a42b29068f86",
+          "scripts/analyze_substrate_interacting_tree_closure_scale_v1.py": "3576327185219a17dba7ffc4509bd4d55e068901051505a6f5b742f9f7de93f0",
+          "scripts/substrate_interacting_tree_closure_scale_v1.py": "dfc50f6ece490e4969693a2f0d7d0c0330c7971d0e2cc0f60576006b49939bc6"
+        },
+        "native_build_stale": [],
+        "native_path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+        "native_sha256": "e9c7d7b4f16ac644247c769d55c24086255e34d787cac801877517e4d5f26fd6"
+      },
+      "audit": false,
+      "before": {
+        "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+        "files": {
+          "docs/research/engine_substrate/SUBSTRATE_INTERACTING_TREE_CLOSURE_SCALE_V1_PILOT_AMENDMENT_20260928.md": "dade16ef5ec98b227168304838f1a75f81c35a5816cb8582071871db84464a1d",
+          "docs/research/engine_substrate/SUBSTRATE_INTERACTING_TREE_CLOSURE_SCALE_V1_PREREG_20260928.md": "286a5dec578c55ebb9f34ada3ed93cbad8219ae84e82cb679a3bc347b5270f15",
+          "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+          "runners/dsl/python/substrate_rs/__init__.py": "6ec0316afae414329e36d3f121fc56b556e7315f17b93aab911ca09a29726694",
+          "runners/dsl/python/substrate_rs/_native.build.json": "3873c9c08f51cd08e3cbe6fef38396fceb124239fa70dbff7bf314801bb103aa",
+          "runners/dsl/src/graph.rs": "2e161fb2e9ef01163cfb213e1fbab16934dc0b25acaf80ce8e3297dcad806abf",
+          "runners/dsl/src/py.rs": "68347817627387a7730c86ff3ff0f69d45788fe0754227914437dd7d8207a576",
+          "runners/dsl/src/rewrite.rs": "58cea7eaa595c804f4f0265c4003231105011dc2493bea8ca30dea6bb6246c34",
+          "runners/dsl/src/scale_audit.rs": "bbbbdba33b80925a7443cf1f547707eb8c36ff49d9d2124e8ccc68df89d05a03",
+          "runners/dsl/src/substrate.rs": "7548e63870c676a46232469717739db03c3e8e19e0557aeabf17a42b29068f86",
+          "scripts/analyze_substrate_interacting_tree_closure_scale_v1.py": "3576327185219a17dba7ffc4509bd4d55e068901051505a6f5b742f9f7de93f0",
+          "scripts/substrate_interacting_tree_closure_scale_v1.py": "dfc50f6ece490e4969693a2f0d7d0c0330c7971d0e2cc0f60576006b49939bc6"
+        },
+        "native_build_stale": [],
+        "native_path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+        "native_sha256": "e9c7d7b4f16ac644247c769d55c24086255e34d787cac801877517e4d5f26fd6"
+      },
+      "clause_counters": [],
+      "closure_cpu_ns": 17765648479,
+      "closure_wall_ns": 17779508297,
+      "counters": {},
+      "edge_build_cpu_ns": 19897593176,
+      "edge_build_wall_ns": 19927305300,
+      "edges": 19999998,
+      "environment": {
+        "platform": "Linux-6.8.0-142-generic-x86_64-with-glibc2.39",
+        "python": "3.13.5 (main, Jun 11 2025, 15:36:57) [GCC 11.4.0]"
+      },
+      "index_declaration_cpu_ns": 269534882,
+      "index_declaration_wall_ns": 269587367,
+      "n": 10000000,
+      "node_build_cpu_ns": 23052703947,
+      "node_build_wall_ns": 23071192199,
+      "nodes": 10000000,
+      "peak_rss_bytes": 7018545152,
+      "pending_count": 0,
+      "per_rule": [],
+      "pid": 12,
+      "ready_count": 0,
+      "replicate": 1,
+      "report": {
+        "budget_overshoot": 0,
+        "passes_completed": 2,
+        "progress_steps": 2,
+        "requested_progress_budget": 100000000,
+        "status": "fixed_point"
+      },
+      "rss_after_closure_bytes": 4143501312,
+      "rss_after_graph_bytes": 4157296640,
+      "rss_after_index_bytes": 4157427712,
+      "rss_after_nodes_bytes": 2305097728,
+      "rss_after_rule_install_bytes": 4158296064,
+      "rss_after_validation_bytes": 4145397760,
+      "rss_before_bytes": 24662016,
+      "rule_indices": [
+        0,
+        1
+      ],
+      "rule_install_cpu_ns": 465990,
+      "rule_install_wall_ns": 454382,
+      "samples": [
+        {
+          "bucket": 0,
+          "depth": 0,
+          "expected_bucket": 0,
+          "expected_depth": 0,
+          "expected_parents": [],
+          "id": 0,
+          "ordinal": 0,
+          "parents": [],
+          "status": "active"
+        },
+        {
+          "bucket": 0,
+          "depth": 1,
+          "expected_bucket": 0,
+          "expected_depth": 1,
+          "expected_parents": [
+            0
+          ],
+          "id": 5000000,
+          "ordinal": 5000000,
+          "parents": [
+            0
+          ],
+          "status": "active"
+        },
+        {
+          "bucket": 63,
+          "depth": 1,
+          "expected_bucket": 63,
+          "expected_depth": 1,
+          "expected_parents": [
+            0
+          ],
+          "id": 9999999,
+          "ordinal": 9999999,
+          "parents": [
+            0
+          ],
+          "status": "active"
+        }
+      ],
+      "topology": "star",
+      "validation_wall_ns": 686982730,
+      "worker_returncode": 0,
+      "worker_stderr": ""
+    },
+    {
+      "active_count": 10000000,
+      "after": {
+        "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+        "files": {
+          "docs/research/engine_substrate/SUBSTRATE_INTERACTING_TREE_CLOSURE_SCALE_V1_PILOT_AMENDMENT_20260928.md": "dade16ef5ec98b227168304838f1a75f81c35a5816cb8582071871db84464a1d",
+          "docs/research/engine_substrate/SUBSTRATE_INTERACTING_TREE_CLOSURE_SCALE_V1_PREREG_20260928.md": "286a5dec578c55ebb9f34ada3ed93cbad8219ae84e82cb679a3bc347b5270f15",
+          "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+          "runners/dsl/python/substrate_rs/__init__.py": "6ec0316afae414329e36d3f121fc56b556e7315f17b93aab911ca09a29726694",
+          "runners/dsl/python/substrate_rs/_native.build.json": "3873c9c08f51cd08e3cbe6fef38396fceb124239fa70dbff7bf314801bb103aa",
+          "runners/dsl/src/graph.rs": "2e161fb2e9ef01163cfb213e1fbab16934dc0b25acaf80ce8e3297dcad806abf",
+          "runners/dsl/src/py.rs": "68347817627387a7730c86ff3ff0f69d45788fe0754227914437dd7d8207a576",
+          "runners/dsl/src/rewrite.rs": "58cea7eaa595c804f4f0265c4003231105011dc2493bea8ca30dea6bb6246c34",
+          "runners/dsl/src/scale_audit.rs": "bbbbdba33b80925a7443cf1f547707eb8c36ff49d9d2124e8ccc68df89d05a03",
+          "runners/dsl/src/substrate.rs": "7548e63870c676a46232469717739db03c3e8e19e0557aeabf17a42b29068f86",
+          "scripts/analyze_substrate_interacting_tree_closure_scale_v1.py": "3576327185219a17dba7ffc4509bd4d55e068901051505a6f5b742f9f7de93f0",
+          "scripts/substrate_interacting_tree_closure_scale_v1.py": "dfc50f6ece490e4969693a2f0d7d0c0330c7971d0e2cc0f60576006b49939bc6"
+        },
+        "native_build_stale": [],
+        "native_path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+        "native_sha256": "e9c7d7b4f16ac644247c769d55c24086255e34d787cac801877517e4d5f26fd6"
+      },
+      "audit": false,
+      "before": {
+        "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+        "files": {
+          "docs/research/engine_substrate/SUBSTRATE_INTERACTING_TREE_CLOSURE_SCALE_V1_PILOT_AMENDMENT_20260928.md": "dade16ef5ec98b227168304838f1a75f81c35a5816cb8582071871db84464a1d",
+          "docs/research/engine_substrate/SUBSTRATE_INTERACTING_TREE_CLOSURE_SCALE_V1_PREREG_20260928.md": "286a5dec578c55ebb9f34ada3ed93cbad8219ae84e82cb679a3bc347b5270f15",
+          "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+          "runners/dsl/python/substrate_rs/__init__.py": "6ec0316afae414329e36d3f121fc56b556e7315f17b93aab911ca09a29726694",
+          "runners/dsl/python/substrate_rs/_native.build.json": "3873c9c08f51cd08e3cbe6fef38396fceb124239fa70dbff7bf314801bb103aa",
+          "runners/dsl/src/graph.rs": "2e161fb2e9ef01163cfb213e1fbab16934dc0b25acaf80ce8e3297dcad806abf",
+          "runners/dsl/src/py.rs": "68347817627387a7730c86ff3ff0f69d45788fe0754227914437dd7d8207a576",
+          "runners/dsl/src/rewrite.rs": "58cea7eaa595c804f4f0265c4003231105011dc2493bea8ca30dea6bb6246c34",
+          "runners/dsl/src/scale_audit.rs": "bbbbdba33b80925a7443cf1f547707eb8c36ff49d9d2124e8ccc68df89d05a03",
+          "runners/dsl/src/substrate.rs": "7548e63870c676a46232469717739db03c3e8e19e0557aeabf17a42b29068f86",
+          "scripts/analyze_substrate_interacting_tree_closure_scale_v1.py": "3576327185219a17dba7ffc4509bd4d55e068901051505a6f5b742f9f7de93f0",
+          "scripts/substrate_interacting_tree_closure_scale_v1.py": "dfc50f6ece490e4969693a2f0d7d0c0330c7971d0e2cc0f60576006b49939bc6"
+        },
+        "native_build_stale": [],
+        "native_path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+        "native_sha256": "e9c7d7b4f16ac644247c769d55c24086255e34d787cac801877517e4d5f26fd6"
+      },
+      "clause_counters": [],
+      "closure_cpu_ns": 17503463867,
+      "closure_wall_ns": 17507952933,
+      "counters": {},
+      "edge_build_cpu_ns": 18644687593,
+      "edge_build_wall_ns": 18656201354,
+      "edges": 19999998,
+      "environment": {
+        "platform": "Linux-6.8.0-142-generic-x86_64-with-glibc2.39",
+        "python": "3.13.5 (main, Jun 11 2025, 15:36:57) [GCC 11.4.0]"
+      },
+      "index_declaration_cpu_ns": 261932331,
+      "index_declaration_wall_ns": 261960913,
+      "n": 10000000,
+      "node_build_cpu_ns": 22376332963,
+      "node_build_wall_ns": 22383420748,
+      "nodes": 10000000,
+      "peak_rss_bytes": 7017406464,
+      "pending_count": 0,
+      "per_rule": [],
+      "pid": 18,
+      "ready_count": 0,
+      "replicate": 2,
+      "report": {
+        "budget_overshoot": 0,
+        "passes_completed": 2,
+        "progress_steps": 2,
+        "requested_progress_budget": 100000000,
+        "status": "fixed_point"
+      },
+      "rss_after_closure_bytes": 4143353856,
+      "rss_after_graph_bytes": 4157149184,
+      "rss_after_index_bytes": 4157280256,
+      "rss_after_nodes_bytes": 2304950272,
+      "rss_after_rule_install_bytes": 4158148608,
+      "rss_after_validation_bytes": 4145250304,
+      "rss_before_bytes": 24510464,
+      "rule_indices": [
+        0,
+        1
+      ],
+      "rule_install_cpu_ns": 446590,
+      "rule_install_wall_ns": 434012,
+      "samples": [
+        {
+          "bucket": 0,
+          "depth": 0,
+          "expected_bucket": 0,
+          "expected_depth": 0,
+          "expected_parents": [],
+          "id": 0,
+          "ordinal": 0,
+          "parents": [],
+          "status": "active"
+        },
+        {
+          "bucket": 0,
+          "depth": 1,
+          "expected_bucket": 0,
+          "expected_depth": 1,
+          "expected_parents": [
+            0
+          ],
+          "id": 5000000,
+          "ordinal": 5000000,
+          "parents": [
+            0
+          ],
+          "status": "active"
+        },
+        {
+          "bucket": 63,
+          "depth": 1,
+          "expected_bucket": 63,
+          "expected_depth": 1,
+          "expected_parents": [
+            0
+          ],
+          "id": 9999999,
+          "ordinal": 9999999,
+          "parents": [
+            0
+          ],
+          "status": "active"
+        }
+      ],
+      "topology": "star",
+      "validation_wall_ns": 685380795,
+      "worker_returncode": 0,
+      "worker_stderr": ""
+    }
+  ],
+  "schema_version": 1,
+  "semantic_probe": {
+    "count_at_17": 17,
+    "deletion_succeeded": true,
+    "demotion_count_correct": true,
+    "duplicate_found_before": true,
+    "duplicate_keeps_count": true,
+    "final_edge_count": 17,
+    "lookups_after_demotion": true,
+    "recreated_index_lookup": true,
+    "reinsertion_count_correct": true,
+    "removed_lookup_false": true,
+    "replacement_attrs_correct": true,
+    "sparse_lookup": true
+  },
+  "started_utc": "2026-09-27T22:12:44.117818+00:00"
+}

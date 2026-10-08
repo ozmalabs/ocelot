@@ -1,0 +1,114 @@
+{
+  "all_preregistered_checks_pass": true,
+  "arm_summaries": {
+    "default": {
+      "accepted": 0,
+      "candidate_tests": {
+        "max": 200000,
+        "median": 200000,
+        "min": 200000
+      },
+      "exact_transfer_workers": 0,
+      "false_accept_workers": 0,
+      "gapped": 5,
+      "holdout_exact_predictions": 0,
+      "holdout_total_predictions": 0,
+      "max_peak_rss_bytes": 79310848,
+      "n": 5,
+      "operator_inventories": [
+        "[]"
+      ],
+      "programs": [],
+      "pump_cpu_ms": {
+        "max": 1834.192465,
+        "median": 1798.620028,
+        "min": 1784.991893
+      },
+      "pump_wall_ms": {
+        "max": 1832.442663,
+        "median": 1804.11992,
+        "min": 1783.009528
+      },
+      "reached_rung3": 5,
+      "terminal": 5
+    },
+    "oracle_grammar": {
+      "accepted": 5,
+      "candidate_tests": {
+        "max": 61384,
+        "median": 61384,
+        "min": 61384
+      },
+      "exact_transfer_workers": 5,
+      "false_accept_workers": 0,
+      "gapped": 0,
+      "holdout_exact_predictions": 30,
+      "holdout_total_predictions": 30,
+      "max_peak_rss_bytes": 63156224,
+      "n": 5,
+      "operator_inventories": [
+        "['Plus', 'Minus', 'Max', 'TupleOf']"
+      ],
+      "programs": [
+        "{\"type\": \"ProgSeq\", \"stmts\": [{\"type\": \"ProgDefFnParam\", \"name\": \"c\", \"default\": null}, {\"type\": \"ProgDefFnParam\", \"name\": \"r\", \"default\": null}, {\"type\": \"ProgReturn\", \"value\": {\"items\": [{\"items\": [{\"name\": \"r\", \"type\": \"Var\"}, {\"items\": [{\"type\": \"Lit\", \"value\": -1}, {\"items\": [{\"name\": \"c\", \"type\": \"Var\"}, {\"type\": \"Lit\", \"value\": 1}], \"type\": \"Max\"}], \"type\": \"Plus\"}], \"type\": \"Plus\"}, {\"name\": \"c\", \"type\": \"Var\"}], \"type\": \"Vec\"}}]}"
+      ],
+      "pump_cpu_ms": {
+        "max": 655.526477,
+        "median": 650.279155,
+        "min": 644.120086
+      },
+      "pump_wall_ms": {
+        "max": 653.190404,
+        "median": 650.032235,
+        "min": 641.58862
+      },
+      "reached_rung3": 5,
+      "terminal": 5
+    }
+  },
+  "capture_integrity_pass": true,
+  "contrast_pass": true,
+  "contrast_thresholds": {
+    "default_grammar_hits_candidate_cap_at_least_4_of_5": true,
+    "median_candidate_work_reduction_at_least_3x": true,
+    "oracle_grammar_exact_transfer_at_least_4_of_5": true
+  },
+  "default_to_oracle_median_candidate_ratio": 3.258178026847387,
+  "failed_workers": [],
+  "integrity_checks": {
+    "all_workers_reach_rung3_and_terminal": true,
+    "all_workers_source_native_stable": true,
+    "complete_unique_10_worker_arm_matrix": true,
+    "current_source_and_native_match_lock": true,
+    "every_accepted_program_has_complete_independent_holdout_readback": true,
+    "footer_lock_unchanged": true,
+    "header_footer_lock_and_schedule_match": true,
+    "no_worker_failures": true
+  },
+  "interpretation": "The oracle grammar arm is a manually supplied search restriction, not learned operator selection. A passing contrast shows sufficiency/cost impact for this fixed balanced hinge task only.",
+  "lock_sha256": "fc8afdf40c48f6653fd6ba75600204adec65936285bc524d832d5f18270ee42f",
+  "native_matches_lock": true,
+  "passed_integrity_checks": 8,
+  "raw_sha256": "a7825249a489da89db0e4f6adc047d707a8edb7702dddf73f81f5bfd0fd21712",
+  "run_id": "synthesis_rung3_hinge_grammar_contrast_v1_20260929",
+  "source_file_match": {
+    "domains/code_writing.py": true,
+    "domains/engine_provenance.py": true,
+    "domains/prog_retrieval.py": true,
+    "domains/prog_synthesis.py": true,
+    "runners/dsl/python/substrate_rs/__init__.py": true,
+    "runners/dsl/python/substrate_rs/_native.build.json": true,
+    "runners/dsl/src/graph_rules.rs": true,
+    "runners/dsl/src/prog_eval.rs": true,
+    "runners/dsl/src/py.rs": true,
+    "runners/dsl/src/substrate.rs": true,
+    "runners/dsl/src/synth_enumerate.rs": true,
+    "runners/dsl/src/term.rs": true,
+    "seeds/code_write_request_cues.json": true,
+    "seeds/exact_families.json": true,
+    "seeds/program_synthesis.json": true,
+    "seeds/program_synthesis_grounding.json": true,
+    "seeds/program_synthesis_opgrammar.json": true
+  },
+  "total_integrity_checks": 8
+}

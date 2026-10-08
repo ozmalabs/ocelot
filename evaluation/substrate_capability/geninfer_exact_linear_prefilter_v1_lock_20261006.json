@@ -1,0 +1,3567 @@
+{
+  "cells": [
+    {
+      "condition": "linear_positive",
+      "corruption": null,
+      "family": "linear",
+      "geometry": "full",
+      "identity_case": "unique"
+    },
+    {
+      "condition": "coupled_quadratic",
+      "corruption": null,
+      "family": "coupled",
+      "geometry": "full",
+      "identity_case": "unique"
+    },
+    {
+      "condition": "quadratic_cross_term",
+      "corruption": null,
+      "family": "cross",
+      "geometry": "full",
+      "identity_case": "unique"
+    },
+    {
+      "condition": "rank_deficient",
+      "corruption": null,
+      "family": "coupled",
+      "geometry": "collinear",
+      "identity_case": "unique"
+    },
+    {
+      "condition": "corrupted_training",
+      "corruption": "last_target_u_plus_1",
+      "family": "coupled",
+      "geometry": "full",
+      "identity_case": "unique"
+    },
+    {
+      "condition": "duplicate_identity",
+      "corruption": null,
+      "family": "coupled",
+      "geometry": "full",
+      "identity_case": "duplicate_last_as_first"
+    },
+    {
+      "condition": "missing_identity",
+      "corruption": null,
+      "family": "coupled",
+      "geometry": "full",
+      "identity_case": "replace_last_target_id"
+    },
+    {
+      "condition": "cubic_out_of_family",
+      "corruption": null,
+      "family": "centered_cubic",
+      "geometry": "full",
+      "identity_case": "unique"
+    }
+  ],
+  "dim_types": [
+    "pred",
+    "id",
+    "coord:r",
+    "coord:c",
+    "val"
+  ],
+  "native_binaries": {
+    "off": {
+      "cargo_features": [],
+      "path": "/tmp/ocelot-prefilter-main-off.so",
+      "sha256": "17247baa63005f3f3fb4b001912b536f36dcf982df896fdb5179c9da36f16529"
+    },
+    "prefilter": {
+      "cargo_features": [
+        "geninfer_quadratic_map_solver",
+        "geninfer_linear_exact_prefilter"
+      ],
+      "path": "/tmp/ocelot-prefilter-main-prefilter.so",
+      "sha256": "2647270d11aee4dde81e02295120bd6da1215964512055036d6b6ae49b492dd2"
+    },
+    "quadratic": {
+      "cargo_features": [
+        "geninfer_quadratic_map_solver"
+      ],
+      "path": "/tmp/ocelot-prefilter-main-quadratic.so",
+      "sha256": "49dcd9a05be9d9e7c03a9b66e00d18daa946f51ae71ab838c08dc22f66bd836b"
+    }
+  },
+  "oracle": {
+    "case_count": 2500,
+    "fnv1a64": "a8529e7d68e1c625"
+  },
+  "oracle_sha256": "6912a03015273e70b1a7d4dd17fd267c54e2a0711ec2546a4e3ea22df08f6b9c",
+  "protocol": "SUBSTRATE_GENINFER_EXACT_LINEAR_PREFILTER_V1_PREREG_20261006 + V1_1_AMENDMENT_20261006 + V1_2_AMENDMENT_20261006 + V1_3_AMENDMENT_20261006",
+  "schedule": [
+    {
+      "audit": false,
+      "condition": "missing_identity",
+      "feature": "off",
+      "repeat": 4,
+      "worker_id": "qvpf1_000_missing_identity_off_a0_r4"
+    },
+    {
+      "audit": true,
+      "condition": "corrupted_training",
+      "feature": "quadratic",
+      "repeat": 5,
+      "worker_id": "qvpf1_001_corrupted_training_quadratic_a1_r5"
+    },
+    {
+      "audit": true,
+      "condition": "missing_identity",
+      "feature": "prefilter",
+      "repeat": 3,
+      "worker_id": "qvpf1_002_missing_identity_prefilter_a1_r3"
+    },
+    {
+      "audit": false,
+      "condition": "missing_identity",
+      "feature": "off",
+      "repeat": 6,
+      "worker_id": "qvpf1_003_missing_identity_off_a0_r6"
+    },
+    {
+      "audit": false,
+      "condition": "coupled_quadratic",
+      "feature": "prefilter",
+      "repeat": 4,
+      "worker_id": "qvpf1_004_coupled_quadratic_prefilter_a0_r4"
+    },
+    {
+      "audit": true,
+      "condition": "duplicate_identity",
+      "feature": "quadratic",
+      "repeat": 7,
+      "worker_id": "qvpf1_005_duplicate_identity_quadratic_a1_r7"
+    },
+    {
+      "audit": true,
+      "condition": "quadratic_cross_term",
+      "feature": "prefilter",
+      "repeat": 6,
+      "worker_id": "qvpf1_006_quadratic_cross_term_prefilter_a1_r6"
+    },
+    {
+      "audit": false,
+      "condition": "cubic_out_of_family",
+      "feature": "quadratic",
+      "repeat": 1,
+      "worker_id": "qvpf1_007_cubic_out_of_family_quadratic_a0_r1"
+    },
+    {
+      "audit": false,
+      "condition": "linear_positive",
+      "feature": "off",
+      "repeat": 4,
+      "worker_id": "qvpf1_008_linear_positive_off_a0_r4"
+    },
+    {
+      "audit": false,
+      "condition": "missing_identity",
+      "feature": "prefilter",
+      "repeat": 10,
+      "worker_id": "qvpf1_009_missing_identity_prefilter_a0_r10"
+    },
+    {
+      "audit": false,
+      "condition": "cubic_out_of_family",
+      "feature": "quadratic",
+      "repeat": 7,
+      "worker_id": "qvpf1_010_cubic_out_of_family_quadratic_a0_r7"
+    },
+    {
+      "audit": false,
+      "condition": "rank_deficient",
+      "feature": "prefilter",
+      "repeat": 5,
+      "worker_id": "qvpf1_011_rank_deficient_prefilter_a0_r5"
+    },
+    {
+      "audit": false,
+      "condition": "rank_deficient",
+      "feature": "prefilter",
+      "repeat": 1,
+      "worker_id": "qvpf1_012_rank_deficient_prefilter_a0_r1"
+    },
+    {
+      "audit": false,
+      "condition": "missing_identity",
+      "feature": "quadratic",
+      "repeat": 4,
+      "worker_id": "qvpf1_013_missing_identity_quadratic_a0_r4"
+    },
+    {
+      "audit": false,
+      "condition": "linear_positive",
+      "feature": "off",
+      "repeat": 9,
+      "worker_id": "qvpf1_014_linear_positive_off_a0_r9"
+    },
+    {
+      "audit": true,
+      "condition": "duplicate_identity",
+      "feature": "prefilter",
+      "repeat": 10,
+      "worker_id": "qvpf1_015_duplicate_identity_prefilter_a1_r10"
+    },
+    {
+      "audit": true,
+      "condition": "quadratic_cross_term",
+      "feature": "off",
+      "repeat": 6,
+      "worker_id": "qvpf1_016_quadratic_cross_term_off_a1_r6"
+    },
+    {
+      "audit": false,
+      "condition": "linear_positive",
+      "feature": "prefilter",
+      "repeat": 7,
+      "worker_id": "qvpf1_017_linear_positive_prefilter_a0_r7"
+    },
+    {
+      "audit": true,
+      "condition": "rank_deficient",
+      "feature": "prefilter",
+      "repeat": 2,
+      "worker_id": "qvpf1_018_rank_deficient_prefilter_a1_r2"
+    },
+    {
+      "audit": false,
+      "condition": "missing_identity",
+      "feature": "prefilter",
+      "repeat": 6,
+      "worker_id": "qvpf1_019_missing_identity_prefilter_a0_r6"
+    },
+    {
+      "audit": true,
+      "condition": "quadratic_cross_term",
+      "feature": "prefilter",
+      "repeat": 5,
+      "worker_id": "qvpf1_020_quadratic_cross_term_prefilter_a1_r5"
+    },
+    {
+      "audit": true,
+      "condition": "coupled_quadratic",
+      "feature": "prefilter",
+      "repeat": 2,
+      "worker_id": "qvpf1_021_coupled_quadratic_prefilter_a1_r2"
+    },
+    {
+      "audit": true,
+      "condition": "coupled_quadratic",
+      "feature": "quadratic",
+      "repeat": 7,
+      "worker_id": "qvpf1_022_coupled_quadratic_quadratic_a1_r7"
+    },
+    {
+      "audit": false,
+      "condition": "quadratic_cross_term",
+      "feature": "quadratic",
+      "repeat": 9,
+      "worker_id": "qvpf1_023_quadratic_cross_term_quadratic_a0_r9"
+    },
+    {
+      "audit": true,
+      "condition": "duplicate_identity",
+      "feature": "off",
+      "repeat": 10,
+      "worker_id": "qvpf1_024_duplicate_identity_off_a1_r10"
+    },
+    {
+      "audit": false,
+      "condition": "quadratic_cross_term",
+      "feature": "quadratic",
+      "repeat": 1,
+      "worker_id": "qvpf1_025_quadratic_cross_term_quadratic_a0_r1"
+    },
+    {
+      "audit": false,
+      "condition": "missing_identity",
+      "feature": "prefilter",
+      "repeat": 4,
+      "worker_id": "qvpf1_026_missing_identity_prefilter_a0_r4"
+    },
+    {
+      "audit": true,
+      "condition": "missing_identity",
+      "feature": "off",
+      "repeat": 1,
+      "worker_id": "qvpf1_027_missing_identity_off_a1_r1"
+    },
+    {
+      "audit": true,
+      "condition": "quadratic_cross_term",
+      "feature": "quadratic",
+      "repeat": 6,
+      "worker_id": "qvpf1_028_quadratic_cross_term_quadratic_a1_r6"
+    },
+    {
+      "audit": true,
+      "condition": "corrupted_training",
+      "feature": "quadratic",
+      "repeat": 8,
+      "worker_id": "qvpf1_029_corrupted_training_quadratic_a1_r8"
+    },
+    {
+      "audit": true,
+      "condition": "coupled_quadratic",
+      "feature": "prefilter",
+      "repeat": 5,
+      "worker_id": "qvpf1_030_coupled_quadratic_prefilter_a1_r5"
+    },
+    {
+      "audit": true,
+      "condition": "duplicate_identity",
+      "feature": "prefilter",
+      "repeat": 4,
+      "worker_id": "qvpf1_031_duplicate_identity_prefilter_a1_r4"
+    },
+    {
+      "audit": true,
+      "condition": "cubic_out_of_family",
+      "feature": "quadratic",
+      "repeat": 3,
+      "worker_id": "qvpf1_032_cubic_out_of_family_quadratic_a1_r3"
+    },
+    {
+      "audit": true,
+      "condition": "duplicate_identity",
+      "feature": "quadratic",
+      "repeat": 4,
+      "worker_id": "qvpf1_033_duplicate_identity_quadratic_a1_r4"
+    },
+    {
+      "audit": false,
+      "condition": "quadratic_cross_term",
+      "feature": "off",
+      "repeat": 10,
+      "worker_id": "qvpf1_034_quadratic_cross_term_off_a0_r10"
+    },
+    {
+      "audit": false,
+      "condition": "linear_positive",
+      "feature": "quadratic",
+      "repeat": 5,
+      "worker_id": "qvpf1_035_linear_positive_quadratic_a0_r5"
+    },
+    {
+      "audit": true,
+      "condition": "cubic_out_of_family",
+      "feature": "prefilter",
+      "repeat": 7,
+      "worker_id": "qvpf1_036_cubic_out_of_family_prefilter_a1_r7"
+    },
+    {
+      "audit": false,
+      "condition": "duplicate_identity",
+      "feature": "quadratic",
+      "repeat": 3,
+      "worker_id": "qvpf1_037_duplicate_identity_quadratic_a0_r3"
+    },
+    {
+      "audit": true,
+      "condition": "cubic_out_of_family",
+      "feature": "off",
+      "repeat": 2,
+      "worker_id": "qvpf1_038_cubic_out_of_family_off_a1_r2"
+    },
+    {
+      "audit": true,
+      "condition": "corrupted_training",
+      "feature": "off",
+      "repeat": 7,
+      "worker_id": "qvpf1_039_corrupted_training_off_a1_r7"
+    },
+    {
+      "audit": true,
+      "condition": "quadratic_cross_term",
+      "feature": "off",
+      "repeat": 1,
+      "worker_id": "qvpf1_040_quadratic_cross_term_off_a1_r1"
+    },
+    {
+      "audit": false,
+      "condition": "coupled_quadratic",
+      "feature": "quadratic",
+      "repeat": 6,
+      "worker_id": "qvpf1_041_coupled_quadratic_quadratic_a0_r6"
+    },
+    {
+      "audit": false,
+      "condition": "duplicate_identity",
+      "feature": "off",
+      "repeat": 6,
+      "worker_id": "qvpf1_042_duplicate_identity_off_a0_r6"
+    },
+    {
+      "audit": false,
+      "condition": "cubic_out_of_family",
+      "feature": "off",
+      "repeat": 8,
+      "worker_id": "qvpf1_043_cubic_out_of_family_off_a0_r8"
+    },
+    {
+      "audit": true,
+      "condition": "linear_positive",
+      "feature": "prefilter",
+      "repeat": 8,
+      "worker_id": "qvpf1_044_linear_positive_prefilter_a1_r8"
+    },
+    {
+      "audit": false,
+      "condition": "rank_deficient",
+      "feature": "prefilter",
+      "repeat": 6,
+      "worker_id": "qvpf1_045_rank_deficient_prefilter_a0_r6"
+    },
+    {
+      "audit": false,
+      "condition": "cubic_out_of_family",
+      "feature": "quadratic",
+      "repeat": 10,
+      "worker_id": "qvpf1_046_cubic_out_of_family_quadratic_a0_r10"
+    },
+    {
+      "audit": true,
+      "condition": "missing_identity",
+      "feature": "prefilter",
+      "repeat": 9,
+      "worker_id": "qvpf1_047_missing_identity_prefilter_a1_r9"
+    },
+    {
+      "audit": true,
+      "condition": "corrupted_training",
+      "feature": "off",
+      "repeat": 5,
+      "worker_id": "qvpf1_048_corrupted_training_off_a1_r5"
+    },
+    {
+      "audit": true,
+      "condition": "coupled_quadratic",
+      "feature": "off",
+      "repeat": 8,
+      "worker_id": "qvpf1_049_coupled_quadratic_off_a1_r8"
+    },
+    {
+      "audit": false,
+      "condition": "corrupted_training",
+      "feature": "off",
+      "repeat": 2,
+      "worker_id": "qvpf1_050_corrupted_training_off_a0_r2"
+    },
+    {
+      "audit": true,
+      "condition": "cubic_out_of_family",
+      "feature": "quadratic",
+      "repeat": 6,
+      "worker_id": "qvpf1_051_cubic_out_of_family_quadratic_a1_r6"
+    },
+    {
+      "audit": true,
+      "condition": "duplicate_identity",
+      "feature": "quadratic",
+      "repeat": 6,
+      "worker_id": "qvpf1_052_duplicate_identity_quadratic_a1_r6"
+    },
+    {
+      "audit": false,
+      "condition": "rank_deficient",
+      "feature": "off",
+      "repeat": 2,
+      "worker_id": "qvpf1_053_rank_deficient_off_a0_r2"
+    },
+    {
+      "audit": true,
+      "condition": "linear_positive",
+      "feature": "off",
+      "repeat": 5,
+      "worker_id": "qvpf1_054_linear_positive_off_a1_r5"
+    },
+    {
+      "audit": true,
+      "condition": "quadratic_cross_term",
+      "feature": "prefilter",
+      "repeat": 4,
+      "worker_id": "qvpf1_055_quadratic_cross_term_prefilter_a1_r4"
+    },
+    {
+      "audit": false,
+      "condition": "coupled_quadratic",
+      "feature": "off",
+      "repeat": 1,
+      "worker_id": "qvpf1_056_coupled_quadratic_off_a0_r1"
+    },
+    {
+      "audit": false,
+      "condition": "missing_identity",
+      "feature": "prefilter",
+      "repeat": 9,
+      "worker_id": "qvpf1_057_missing_identity_prefilter_a0_r9"
+    },
+    {
+      "audit": true,
+      "condition": "duplicate_identity",
+      "feature": "quadratic",
+      "repeat": 3,
+      "worker_id": "qvpf1_058_duplicate_identity_quadratic_a1_r3"
+    },
+    {
+      "audit": false,
+      "condition": "linear_positive",
+      "feature": "prefilter",
+      "repeat": 4,
+      "worker_id": "qvpf1_059_linear_positive_prefilter_a0_r4"
+    },
+    {
+      "audit": false,
+      "condition": "cubic_out_of_family",
+      "feature": "prefilter",
+      "repeat": 8,
+      "worker_id": "qvpf1_060_cubic_out_of_family_prefilter_a0_r8"
+    },
+    {
+      "audit": true,
+      "condition": "duplicate_identity",
+      "feature": "off",
+      "repeat": 9,
+      "worker_id": "qvpf1_061_duplicate_identity_off_a1_r9"
+    },
+    {
+      "audit": false,
+      "condition": "coupled_quadratic",
+      "feature": "prefilter",
+      "repeat": 3,
+      "worker_id": "qvpf1_062_coupled_quadratic_prefilter_a0_r3"
+    },
+    {
+      "audit": true,
+      "condition": "rank_deficient",
+      "feature": "prefilter",
+      "repeat": 6,
+      "worker_id": "qvpf1_063_rank_deficient_prefilter_a1_r6"
+    },
+    {
+      "audit": false,
+      "condition": "missing_identity",
+      "feature": "prefilter",
+      "repeat": 3,
+      "worker_id": "qvpf1_064_missing_identity_prefilter_a0_r3"
+    },
+    {
+      "audit": true,
+      "condition": "coupled_quadratic",
+      "feature": "quadratic",
+      "repeat": 3,
+      "worker_id": "qvpf1_065_coupled_quadratic_quadratic_a1_r3"
+    },
+    {
+      "audit": false,
+      "condition": "duplicate_identity",
+      "feature": "off",
+      "repeat": 9,
+      "worker_id": "qvpf1_066_duplicate_identity_off_a0_r9"
+    },
+    {
+      "audit": true,
+      "condition": "duplicate_identity",
+      "feature": "off",
+      "repeat": 3,
+      "worker_id": "qvpf1_067_duplicate_identity_off_a1_r3"
+    },
+    {
+      "audit": true,
+      "condition": "cubic_out_of_family",
+      "feature": "prefilter",
+      "repeat": 4,
+      "worker_id": "qvpf1_068_cubic_out_of_family_prefilter_a1_r4"
+    },
+    {
+      "audit": false,
+      "condition": "coupled_quadratic",
+      "feature": "off",
+      "repeat": 10,
+      "worker_id": "qvpf1_069_coupled_quadratic_off_a0_r10"
+    },
+    {
+      "audit": false,
+      "condition": "duplicate_identity",
+      "feature": "off",
+      "repeat": 10,
+      "worker_id": "qvpf1_070_duplicate_identity_off_a0_r10"
+    },
+    {
+      "audit": false,
+      "condition": "duplicate_identity",
+      "feature": "prefilter",
+      "repeat": 3,
+      "worker_id": "qvpf1_071_duplicate_identity_prefilter_a0_r3"
+    },
+    {
+      "audit": true,
+      "condition": "coupled_quadratic",
+      "feature": "prefilter",
+      "repeat": 9,
+      "worker_id": "qvpf1_072_coupled_quadratic_prefilter_a1_r9"
+    },
+    {
+      "audit": false,
+      "condition": "linear_positive",
+      "feature": "off",
+      "repeat": 5,
+      "worker_id": "qvpf1_073_linear_positive_off_a0_r5"
+    },
+    {
+      "audit": true,
+      "condition": "linear_positive",
+      "feature": "off",
+      "repeat": 1,
+      "worker_id": "qvpf1_074_linear_positive_off_a1_r1"
+    },
+    {
+      "audit": false,
+      "condition": "corrupted_training",
+      "feature": "off",
+      "repeat": 1,
+      "worker_id": "qvpf1_075_corrupted_training_off_a0_r1"
+    },
+    {
+      "audit": false,
+      "condition": "rank_deficient",
+      "feature": "off",
+      "repeat": 1,
+      "worker_id": "qvpf1_076_rank_deficient_off_a0_r1"
+    },
+    {
+      "audit": true,
+      "condition": "coupled_quadratic",
+      "feature": "prefilter",
+      "repeat": 3,
+      "worker_id": "qvpf1_077_coupled_quadratic_prefilter_a1_r3"
+    },
+    {
+      "audit": true,
+      "condition": "rank_deficient",
+      "feature": "prefilter",
+      "repeat": 10,
+      "worker_id": "qvpf1_078_rank_deficient_prefilter_a1_r10"
+    },
+    {
+      "audit": false,
+      "condition": "duplicate_identity",
+      "feature": "quadratic",
+      "repeat": 1,
+      "worker_id": "qvpf1_079_duplicate_identity_quadratic_a0_r1"
+    },
+    {
+      "audit": false,
+      "condition": "duplicate_identity",
+      "feature": "prefilter",
+      "repeat": 1,
+      "worker_id": "qvpf1_080_duplicate_identity_prefilter_a0_r1"
+    },
+    {
+      "audit": false,
+      "condition": "quadratic_cross_term",
+      "feature": "prefilter",
+      "repeat": 4,
+      "worker_id": "qvpf1_081_quadratic_cross_term_prefilter_a0_r4"
+    },
+    {
+      "audit": false,
+      "condition": "coupled_quadratic",
+      "feature": "off",
+      "repeat": 5,
+      "worker_id": "qvpf1_082_coupled_quadratic_off_a0_r5"
+    },
+    {
+      "audit": true,
+      "condition": "cubic_out_of_family",
+      "feature": "quadratic",
+      "repeat": 8,
+      "worker_id": "qvpf1_083_cubic_out_of_family_quadratic_a1_r8"
+    },
+    {
+      "audit": true,
+      "condition": "quadratic_cross_term",
+      "feature": "prefilter",
+      "repeat": 7,
+      "worker_id": "qvpf1_084_quadratic_cross_term_prefilter_a1_r7"
+    },
+    {
+      "audit": false,
+      "condition": "cubic_out_of_family",
+      "feature": "off",
+      "repeat": 4,
+      "worker_id": "qvpf1_085_cubic_out_of_family_off_a0_r4"
+    },
+    {
+      "audit": true,
+      "condition": "quadratic_cross_term",
+      "feature": "prefilter",
+      "repeat": 9,
+      "worker_id": "qvpf1_086_quadratic_cross_term_prefilter_a1_r9"
+    },
+    {
+      "audit": true,
+      "condition": "cubic_out_of_family",
+      "feature": "prefilter",
+      "repeat": 8,
+      "worker_id": "qvpf1_087_cubic_out_of_family_prefilter_a1_r8"
+    },
+    {
+      "audit": true,
+      "condition": "missing_identity",
+      "feature": "off",
+      "repeat": 8,
+      "worker_id": "qvpf1_088_missing_identity_off_a1_r8"
+    },
+    {
+      "audit": true,
+      "condition": "cubic_out_of_family",
+      "feature": "prefilter",
+      "repeat": 3,
+      "worker_id": "qvpf1_089_cubic_out_of_family_prefilter_a1_r3"
+    },
+    {
+      "audit": true,
+      "condition": "rank_deficient",
+      "feature": "prefilter",
+      "repeat": 5,
+      "worker_id": "qvpf1_090_rank_deficient_prefilter_a1_r5"
+    },
+    {
+      "audit": false,
+      "condition": "coupled_quadratic",
+      "feature": "prefilter",
+      "repeat": 2,
+      "worker_id": "qvpf1_091_coupled_quadratic_prefilter_a0_r2"
+    },
+    {
+      "audit": false,
+      "condition": "linear_positive",
+      "feature": "quadratic",
+      "repeat": 8,
+      "worker_id": "qvpf1_092_linear_positive_quadratic_a0_r8"
+    },
+    {
+      "audit": false,
+      "condition": "coupled_quadratic",
+      "feature": "quadratic",
+      "repeat": 8,
+      "worker_id": "qvpf1_093_coupled_quadratic_quadratic_a0_r8"
+    },
+    {
+      "audit": false,
+      "condition": "quadratic_cross_term",
+      "feature": "quadratic",
+      "repeat": 8,
+      "worker_id": "qvpf1_094_quadratic_cross_term_quadratic_a0_r8"
+    },
+    {
+      "audit": true,
+      "condition": "missing_identity",
+      "feature": "quadratic",
+      "repeat": 3,
+      "worker_id": "qvpf1_095_missing_identity_quadratic_a1_r3"
+    },
+    {
+      "audit": true,
+      "condition": "quadratic_cross_term",
+      "feature": "off",
+      "repeat": 8,
+      "worker_id": "qvpf1_096_quadratic_cross_term_off_a1_r8"
+    },
+    {
+      "audit": true,
+      "condition": "quadratic_cross_term",
+      "feature": "quadratic",
+      "repeat": 4,
+      "worker_id": "qvpf1_097_quadratic_cross_term_quadratic_a1_r4"
+    },
+    {
+      "audit": false,
+      "condition": "quadratic_cross_term",
+      "feature": "quadratic",
+      "repeat": 7,
+      "worker_id": "qvpf1_098_quadratic_cross_term_quadratic_a0_r7"
+    },
+    {
+      "audit": false,
+      "condition": "quadratic_cross_term",
+      "feature": "prefilter",
+      "repeat": 9,
+      "worker_id": "qvpf1_099_quadratic_cross_term_prefilter_a0_r9"
+    },
+    {
+      "audit": false,
+      "condition": "linear_positive",
+      "feature": "prefilter",
+      "repeat": 2,
+      "worker_id": "qvpf1_100_linear_positive_prefilter_a0_r2"
+    },
+    {
+      "audit": true,
+      "condition": "missing_identity",
+      "feature": "quadratic",
+      "repeat": 5,
+      "worker_id": "qvpf1_101_missing_identity_quadratic_a1_r5"
+    },
+    {
+      "audit": false,
+      "condition": "coupled_quadratic",
+      "feature": "prefilter",
+      "repeat": 5,
+      "worker_id": "qvpf1_102_coupled_quadratic_prefilter_a0_r5"
+    },
+    {
+      "audit": true,
+      "condition": "quadratic_cross_term",
+      "feature": "quadratic",
+      "repeat": 7,
+      "worker_id": "qvpf1_103_quadratic_cross_term_quadratic_a1_r7"
+    },
+    {
+      "audit": false,
+      "condition": "duplicate_identity",
+      "feature": "quadratic",
+      "repeat": 5,
+      "worker_id": "qvpf1_104_duplicate_identity_quadratic_a0_r5"
+    },
+    {
+      "audit": false,
+      "condition": "coupled_quadratic",
+      "feature": "prefilter",
+      "repeat": 1,
+      "worker_id": "qvpf1_105_coupled_quadratic_prefilter_a0_r1"
+    },
+    {
+      "audit": true,
+      "condition": "rank_deficient",
+      "feature": "off",
+      "repeat": 4,
+      "worker_id": "qvpf1_106_rank_deficient_off_a1_r4"
+    },
+    {
+      "audit": true,
+      "condition": "cubic_out_of_family",
+      "feature": "off",
+      "repeat": 6,
+      "worker_id": "qvpf1_107_cubic_out_of_family_off_a1_r6"
+    },
+    {
+      "audit": false,
+      "condition": "corrupted_training",
+      "feature": "prefilter",
+      "repeat": 9,
+      "worker_id": "qvpf1_108_corrupted_training_prefilter_a0_r9"
+    },
+    {
+      "audit": true,
+      "condition": "linear_positive",
+      "feature": "off",
+      "repeat": 3,
+      "worker_id": "qvpf1_109_linear_positive_off_a1_r3"
+    },
+    {
+      "audit": false,
+      "condition": "quadratic_cross_term",
+      "feature": "quadratic",
+      "repeat": 6,
+      "worker_id": "qvpf1_110_quadratic_cross_term_quadratic_a0_r6"
+    },
+    {
+      "audit": true,
+      "condition": "quadratic_cross_term",
+      "feature": "quadratic",
+      "repeat": 1,
+      "worker_id": "qvpf1_111_quadratic_cross_term_quadratic_a1_r1"
+    },
+    {
+      "audit": true,
+      "condition": "cubic_out_of_family",
+      "feature": "prefilter",
+      "repeat": 1,
+      "worker_id": "qvpf1_112_cubic_out_of_family_prefilter_a1_r1"
+    },
+    {
+      "audit": false,
+      "condition": "corrupted_training",
+      "feature": "quadratic",
+      "repeat": 6,
+      "worker_id": "qvpf1_113_corrupted_training_quadratic_a0_r6"
+    },
+    {
+      "audit": false,
+      "condition": "corrupted_training",
+      "feature": "prefilter",
+      "repeat": 1,
+      "worker_id": "qvpf1_114_corrupted_training_prefilter_a0_r1"
+    },
+    {
+      "audit": false,
+      "condition": "corrupted_training",
+      "feature": "off",
+      "repeat": 5,
+      "worker_id": "qvpf1_115_corrupted_training_off_a0_r5"
+    },
+    {
+      "audit": false,
+      "condition": "quadratic_cross_term",
+      "feature": "off",
+      "repeat": 8,
+      "worker_id": "qvpf1_116_quadratic_cross_term_off_a0_r8"
+    },
+    {
+      "audit": false,
+      "condition": "rank_deficient",
+      "feature": "prefilter",
+      "repeat": 4,
+      "worker_id": "qvpf1_117_rank_deficient_prefilter_a0_r4"
+    },
+    {
+      "audit": false,
+      "condition": "rank_deficient",
+      "feature": "off",
+      "repeat": 3,
+      "worker_id": "qvpf1_118_rank_deficient_off_a0_r3"
+    },
+    {
+      "audit": false,
+      "condition": "corrupted_training",
+      "feature": "quadratic",
+      "repeat": 1,
+      "worker_id": "qvpf1_119_corrupted_training_quadratic_a0_r1"
+    },
+    {
+      "audit": false,
+      "condition": "linear_positive",
+      "feature": "quadratic",
+      "repeat": 2,
+      "worker_id": "qvpf1_120_linear_positive_quadratic_a0_r2"
+    },
+    {
+      "audit": true,
+      "condition": "coupled_quadratic",
+      "feature": "off",
+      "repeat": 3,
+      "worker_id": "qvpf1_121_coupled_quadratic_off_a1_r3"
+    },
+    {
+      "audit": true,
+      "condition": "cubic_out_of_family",
+      "feature": "quadratic",
+      "repeat": 10,
+      "worker_id": "qvpf1_122_cubic_out_of_family_quadratic_a1_r10"
+    },
+    {
+      "audit": false,
+      "condition": "quadratic_cross_term",
+      "feature": "quadratic",
+      "repeat": 3,
+      "worker_id": "qvpf1_123_quadratic_cross_term_quadratic_a0_r3"
+    },
+    {
+      "audit": false,
+      "condition": "cubic_out_of_family",
+      "feature": "quadratic",
+      "repeat": 3,
+      "worker_id": "qvpf1_124_cubic_out_of_family_quadratic_a0_r3"
+    },
+    {
+      "audit": false,
+      "condition": "quadratic_cross_term",
+      "feature": "off",
+      "repeat": 9,
+      "worker_id": "qvpf1_125_quadratic_cross_term_off_a0_r9"
+    },
+    {
+      "audit": true,
+      "condition": "cubic_out_of_family",
+      "feature": "off",
+      "repeat": 8,
+      "worker_id": "qvpf1_126_cubic_out_of_family_off_a1_r8"
+    },
+    {
+      "audit": true,
+      "condition": "duplicate_identity",
+      "feature": "off",
+      "repeat": 4,
+      "worker_id": "qvpf1_127_duplicate_identity_off_a1_r4"
+    },
+    {
+      "audit": false,
+      "condition": "cubic_out_of_family",
+      "feature": "quadratic",
+      "repeat": 8,
+      "worker_id": "qvpf1_128_cubic_out_of_family_quadratic_a0_r8"
+    },
+    {
+      "audit": false,
+      "condition": "quadratic_cross_term",
+      "feature": "off",
+      "repeat": 2,
+      "worker_id": "qvpf1_129_quadratic_cross_term_off_a0_r2"
+    },
+    {
+      "audit": true,
+      "condition": "missing_identity",
+      "feature": "prefilter",
+      "repeat": 4,
+      "worker_id": "qvpf1_130_missing_identity_prefilter_a1_r4"
+    },
+    {
+      "audit": true,
+      "condition": "quadratic_cross_term",
+      "feature": "off",
+      "repeat": 2,
+      "worker_id": "qvpf1_131_quadratic_cross_term_off_a1_r2"
+    },
+    {
+      "audit": false,
+      "condition": "cubic_out_of_family",
+      "feature": "prefilter",
+      "repeat": 7,
+      "worker_id": "qvpf1_132_cubic_out_of_family_prefilter_a0_r7"
+    },
+    {
+      "audit": true,
+      "condition": "duplicate_identity",
+      "feature": "off",
+      "repeat": 7,
+      "worker_id": "qvpf1_133_duplicate_identity_off_a1_r7"
+    },
+    {
+      "audit": false,
+      "condition": "coupled_quadratic",
+      "feature": "quadratic",
+      "repeat": 7,
+      "worker_id": "qvpf1_134_coupled_quadratic_quadratic_a0_r7"
+    },
+    {
+      "audit": true,
+      "condition": "rank_deficient",
+      "feature": "quadratic",
+      "repeat": 8,
+      "worker_id": "qvpf1_135_rank_deficient_quadratic_a1_r8"
+    },
+    {
+      "audit": true,
+      "condition": "duplicate_identity",
+      "feature": "off",
+      "repeat": 5,
+      "worker_id": "qvpf1_136_duplicate_identity_off_a1_r5"
+    },
+    {
+      "audit": false,
+      "condition": "duplicate_identity",
+      "feature": "quadratic",
+      "repeat": 7,
+      "worker_id": "qvpf1_137_duplicate_identity_quadratic_a0_r7"
+    },
+    {
+      "audit": true,
+      "condition": "cubic_out_of_family",
+      "feature": "off",
+      "repeat": 4,
+      "worker_id": "qvpf1_138_cubic_out_of_family_off_a1_r4"
+    },
+    {
+      "audit": false,
+      "condition": "missing_identity",
+      "feature": "off",
+      "repeat": 3,
+      "worker_id": "qvpf1_139_missing_identity_off_a0_r3"
+    },
+    {
+      "audit": false,
+      "condition": "missing_identity",
+      "feature": "prefilter",
+      "repeat": 2,
+      "worker_id": "qvpf1_140_missing_identity_prefilter_a0_r2"
+    },
+    {
+      "audit": true,
+      "condition": "rank_deficient",
+      "feature": "quadratic",
+      "repeat": 7,
+      "worker_id": "qvpf1_141_rank_deficient_quadratic_a1_r7"
+    },
+    {
+      "audit": false,
+      "condition": "cubic_out_of_family",
+      "feature": "prefilter",
+      "repeat": 6,
+      "worker_id": "qvpf1_142_cubic_out_of_family_prefilter_a0_r6"
+    },
+    {
+      "audit": false,
+      "condition": "rank_deficient",
+      "feature": "quadratic",
+      "repeat": 4,
+      "worker_id": "qvpf1_143_rank_deficient_quadratic_a0_r4"
+    },
+    {
+      "audit": true,
+      "condition": "rank_deficient",
+      "feature": "quadratic",
+      "repeat": 3,
+      "worker_id": "qvpf1_144_rank_deficient_quadratic_a1_r3"
+    },
+    {
+      "audit": false,
+      "condition": "linear_positive",
+      "feature": "quadratic",
+      "repeat": 10,
+      "worker_id": "qvpf1_145_linear_positive_quadratic_a0_r10"
+    },
+    {
+      "audit": true,
+      "condition": "coupled_quadratic",
+      "feature": "quadratic",
+      "repeat": 8,
+      "worker_id": "qvpf1_146_coupled_quadratic_quadratic_a1_r8"
+    },
+    {
+      "audit": true,
+      "condition": "rank_deficient",
+      "feature": "prefilter",
+      "repeat": 4,
+      "worker_id": "qvpf1_147_rank_deficient_prefilter_a1_r4"
+    },
+    {
+      "audit": true,
+      "condition": "duplicate_identity",
+      "feature": "quadratic",
+      "repeat": 2,
+      "worker_id": "qvpf1_148_duplicate_identity_quadratic_a1_r2"
+    },
+    {
+      "audit": true,
+      "condition": "corrupted_training",
+      "feature": "quadratic",
+      "repeat": 6,
+      "worker_id": "qvpf1_149_corrupted_training_quadratic_a1_r6"
+    },
+    {
+      "audit": true,
+      "condition": "missing_identity",
+      "feature": "prefilter",
+      "repeat": 6,
+      "worker_id": "qvpf1_150_missing_identity_prefilter_a1_r6"
+    },
+    {
+      "audit": true,
+      "condition": "corrupted_training",
+      "feature": "prefilter",
+      "repeat": 9,
+      "worker_id": "qvpf1_151_corrupted_training_prefilter_a1_r9"
+    },
+    {
+      "audit": true,
+      "condition": "duplicate_identity",
+      "feature": "off",
+      "repeat": 1,
+      "worker_id": "qvpf1_152_duplicate_identity_off_a1_r1"
+    },
+    {
+      "audit": true,
+      "condition": "corrupted_training",
+      "feature": "quadratic",
+      "repeat": 7,
+      "worker_id": "qvpf1_153_corrupted_training_quadratic_a1_r7"
+    },
+    {
+      "audit": true,
+      "condition": "duplicate_identity",
+      "feature": "prefilter",
+      "repeat": 2,
+      "worker_id": "qvpf1_154_duplicate_identity_prefilter_a1_r2"
+    },
+    {
+      "audit": false,
+      "condition": "duplicate_identity",
+      "feature": "prefilter",
+      "repeat": 8,
+      "worker_id": "qvpf1_155_duplicate_identity_prefilter_a0_r8"
+    },
+    {
+      "audit": true,
+      "condition": "rank_deficient",
+      "feature": "quadratic",
+      "repeat": 4,
+      "worker_id": "qvpf1_156_rank_deficient_quadratic_a1_r4"
+    },
+    {
+      "audit": true,
+      "condition": "corrupted_training",
+      "feature": "prefilter",
+      "repeat": 4,
+      "worker_id": "qvpf1_157_corrupted_training_prefilter_a1_r4"
+    },
+    {
+      "audit": true,
+      "condition": "coupled_quadratic",
+      "feature": "quadratic",
+      "repeat": 5,
+      "worker_id": "qvpf1_158_coupled_quadratic_quadratic_a1_r5"
+    },
+    {
+      "audit": true,
+      "condition": "quadratic_cross_term",
+      "feature": "quadratic",
+      "repeat": 10,
+      "worker_id": "qvpf1_159_quadratic_cross_term_quadratic_a1_r10"
+    },
+    {
+      "audit": true,
+      "condition": "quadratic_cross_term",
+      "feature": "off",
+      "repeat": 10,
+      "worker_id": "qvpf1_160_quadratic_cross_term_off_a1_r10"
+    },
+    {
+      "audit": false,
+      "condition": "cubic_out_of_family",
+      "feature": "quadratic",
+      "repeat": 6,
+      "worker_id": "qvpf1_161_cubic_out_of_family_quadratic_a0_r6"
+    },
+    {
+      "audit": false,
+      "condition": "missing_identity",
+      "feature": "off",
+      "repeat": 1,
+      "worker_id": "qvpf1_162_missing_identity_off_a0_r1"
+    },
+    {
+      "audit": false,
+      "condition": "corrupted_training",
+      "feature": "prefilter",
+      "repeat": 3,
+      "worker_id": "qvpf1_163_corrupted_training_prefilter_a0_r3"
+    },
+    {
+      "audit": true,
+      "condition": "coupled_quadratic",
+      "feature": "prefilter",
+      "repeat": 6,
+      "worker_id": "qvpf1_164_coupled_quadratic_prefilter_a1_r6"
+    },
+    {
+      "audit": false,
+      "condition": "quadratic_cross_term",
+      "feature": "prefilter",
+      "repeat": 7,
+      "worker_id": "qvpf1_165_quadratic_cross_term_prefilter_a0_r7"
+    },
+    {
+      "audit": false,
+      "condition": "rank_deficient",
+      "feature": "quadratic",
+      "repeat": 3,
+      "worker_id": "qvpf1_166_rank_deficient_quadratic_a0_r3"
+    },
+    {
+      "audit": true,
+      "condition": "rank_deficient",
+      "feature": "quadratic",
+      "repeat": 2,
+      "worker_id": "qvpf1_167_rank_deficient_quadratic_a1_r2"
+    },
+    {
+      "audit": false,
+      "condition": "quadratic_cross_term",
+      "feature": "quadratic",
+      "repeat": 4,
+      "worker_id": "qvpf1_168_quadratic_cross_term_quadratic_a0_r4"
+    },
+    {
+      "audit": true,
+      "condition": "quadratic_cross_term",
+      "feature": "prefilter",
+      "repeat": 8,
+      "worker_id": "qvpf1_169_quadratic_cross_term_prefilter_a1_r8"
+    },
+    {
+      "audit": false,
+      "condition": "duplicate_identity",
+      "feature": "prefilter",
+      "repeat": 10,
+      "worker_id": "qvpf1_170_duplicate_identity_prefilter_a0_r10"
+    },
+    {
+      "audit": false,
+      "condition": "coupled_quadratic",
+      "feature": "quadratic",
+      "repeat": 3,
+      "worker_id": "qvpf1_171_coupled_quadratic_quadratic_a0_r3"
+    },
+    {
+      "audit": true,
+      "condition": "cubic_out_of_family",
+      "feature": "off",
+      "repeat": 3,
+      "worker_id": "qvpf1_172_cubic_out_of_family_off_a1_r3"
+    },
+    {
+      "audit": true,
+      "condition": "rank_deficient",
+      "feature": "off",
+      "repeat": 3,
+      "worker_id": "qvpf1_173_rank_deficient_off_a1_r3"
+    },
+    {
+      "audit": false,
+      "condition": "corrupted_training",
+      "feature": "quadratic",
+      "repeat": 8,
+      "worker_id": "qvpf1_174_corrupted_training_quadratic_a0_r8"
+    },
+    {
+      "audit": true,
+      "condition": "rank_deficient",
+      "feature": "prefilter",
+      "repeat": 3,
+      "worker_id": "qvpf1_175_rank_deficient_prefilter_a1_r3"
+    },
+    {
+      "audit": false,
+      "condition": "rank_deficient",
+      "feature": "off",
+      "repeat": 8,
+      "worker_id": "qvpf1_176_rank_deficient_off_a0_r8"
+    },
+    {
+      "audit": true,
+      "condition": "missing_identity",
+      "feature": "off",
+      "repeat": 9,
+      "worker_id": "qvpf1_177_missing_identity_off_a1_r9"
+    },
+    {
+      "audit": false,
+      "condition": "corrupted_training",
+      "feature": "prefilter",
+      "repeat": 2,
+      "worker_id": "qvpf1_178_corrupted_training_prefilter_a0_r2"
+    },
+    {
+      "audit": false,
+      "condition": "quadratic_cross_term",
+      "feature": "off",
+      "repeat": 7,
+      "worker_id": "qvpf1_179_quadratic_cross_term_off_a0_r7"
+    },
+    {
+      "audit": false,
+      "condition": "corrupted_training",
+      "feature": "off",
+      "repeat": 9,
+      "worker_id": "qvpf1_180_corrupted_training_off_a0_r9"
+    },
+    {
+      "audit": false,
+      "condition": "coupled_quadratic",
+      "feature": "off",
+      "repeat": 7,
+      "worker_id": "qvpf1_181_coupled_quadratic_off_a0_r7"
+    },
+    {
+      "audit": true,
+      "condition": "linear_positive",
+      "feature": "prefilter",
+      "repeat": 5,
+      "worker_id": "qvpf1_182_linear_positive_prefilter_a1_r5"
+    },
+    {
+      "audit": true,
+      "condition": "linear_positive",
+      "feature": "quadratic",
+      "repeat": 2,
+      "worker_id": "qvpf1_183_linear_positive_quadratic_a1_r2"
+    },
+    {
+      "audit": true,
+      "condition": "corrupted_training",
+      "feature": "prefilter",
+      "repeat": 10,
+      "worker_id": "qvpf1_184_corrupted_training_prefilter_a1_r10"
+    },
+    {
+      "audit": true,
+      "condition": "linear_positive",
+      "feature": "quadratic",
+      "repeat": 9,
+      "worker_id": "qvpf1_185_linear_positive_quadratic_a1_r9"
+    },
+    {
+      "audit": true,
+      "condition": "rank_deficient",
+      "feature": "quadratic",
+      "repeat": 9,
+      "worker_id": "qvpf1_186_rank_deficient_quadratic_a1_r9"
+    },
+    {
+      "audit": false,
+      "condition": "cubic_out_of_family",
+      "feature": "quadratic",
+      "repeat": 5,
+      "worker_id": "qvpf1_187_cubic_out_of_family_quadratic_a0_r5"
+    },
+    {
+      "audit": true,
+      "condition": "rank_deficient",
+      "feature": "off",
+      "repeat": 5,
+      "worker_id": "qvpf1_188_rank_deficient_off_a1_r5"
+    },
+    {
+      "audit": false,
+      "condition": "coupled_quadratic",
+      "feature": "off",
+      "repeat": 8,
+      "worker_id": "qvpf1_189_coupled_quadratic_off_a0_r8"
+    },
+    {
+      "audit": false,
+      "condition": "linear_positive",
+      "feature": "prefilter",
+      "repeat": 8,
+      "worker_id": "qvpf1_190_linear_positive_prefilter_a0_r8"
+    },
+    {
+      "audit": true,
+      "condition": "linear_positive",
+      "feature": "prefilter",
+      "repeat": 6,
+      "worker_id": "qvpf1_191_linear_positive_prefilter_a1_r6"
+    },
+    {
+      "audit": true,
+      "condition": "cubic_out_of_family",
+      "feature": "prefilter",
+      "repeat": 5,
+      "worker_id": "qvpf1_192_cubic_out_of_family_prefilter_a1_r5"
+    },
+    {
+      "audit": false,
+      "condition": "coupled_quadratic",
+      "feature": "prefilter",
+      "repeat": 9,
+      "worker_id": "qvpf1_193_coupled_quadratic_prefilter_a0_r9"
+    },
+    {
+      "audit": false,
+      "condition": "missing_identity",
+      "feature": "off",
+      "repeat": 10,
+      "worker_id": "qvpf1_194_missing_identity_off_a0_r10"
+    },
+    {
+      "audit": true,
+      "condition": "quadratic_cross_term",
+      "feature": "quadratic",
+      "repeat": 9,
+      "worker_id": "qvpf1_195_quadratic_cross_term_quadratic_a1_r9"
+    },
+    {
+      "audit": false,
+      "condition": "duplicate_identity",
+      "feature": "prefilter",
+      "repeat": 6,
+      "worker_id": "qvpf1_196_duplicate_identity_prefilter_a0_r6"
+    },
+    {
+      "audit": true,
+      "condition": "quadratic_cross_term",
+      "feature": "quadratic",
+      "repeat": 3,
+      "worker_id": "qvpf1_197_quadratic_cross_term_quadratic_a1_r3"
+    },
+    {
+      "audit": true,
+      "condition": "missing_identity",
+      "feature": "quadratic",
+      "repeat": 6,
+      "worker_id": "qvpf1_198_missing_identity_quadratic_a1_r6"
+    },
+    {
+      "audit": false,
+      "condition": "duplicate_identity",
+      "feature": "off",
+      "repeat": 2,
+      "worker_id": "qvpf1_199_duplicate_identity_off_a0_r2"
+    },
+    {
+      "audit": false,
+      "condition": "cubic_out_of_family",
+      "feature": "prefilter",
+      "repeat": 2,
+      "worker_id": "qvpf1_200_cubic_out_of_family_prefilter_a0_r2"
+    },
+    {
+      "audit": false,
+      "condition": "duplicate_identity",
+      "feature": "prefilter",
+      "repeat": 5,
+      "worker_id": "qvpf1_201_duplicate_identity_prefilter_a0_r5"
+    },
+    {
+      "audit": false,
+      "condition": "corrupted_training",
+      "feature": "quadratic",
+      "repeat": 5,
+      "worker_id": "qvpf1_202_corrupted_training_quadratic_a0_r5"
+    },
+    {
+      "audit": false,
+      "condition": "linear_positive",
+      "feature": "prefilter",
+      "repeat": 9,
+      "worker_id": "qvpf1_203_linear_positive_prefilter_a0_r9"
+    },
+    {
+      "audit": false,
+      "condition": "duplicate_identity",
+      "feature": "quadratic",
+      "repeat": 9,
+      "worker_id": "qvpf1_204_duplicate_identity_quadratic_a0_r9"
+    },
+    {
+      "audit": false,
+      "condition": "corrupted_training",
+      "feature": "prefilter",
+      "repeat": 4,
+      "worker_id": "qvpf1_205_corrupted_training_prefilter_a0_r4"
+    },
+    {
+      "audit": false,
+      "condition": "duplicate_identity",
+      "feature": "quadratic",
+      "repeat": 10,
+      "worker_id": "qvpf1_206_duplicate_identity_quadratic_a0_r10"
+    },
+    {
+      "audit": true,
+      "condition": "coupled_quadratic",
+      "feature": "prefilter",
+      "repeat": 7,
+      "worker_id": "qvpf1_207_coupled_quadratic_prefilter_a1_r7"
+    },
+    {
+      "audit": true,
+      "condition": "rank_deficient",
+      "feature": "prefilter",
+      "repeat": 1,
+      "worker_id": "qvpf1_208_rank_deficient_prefilter_a1_r1"
+    },
+    {
+      "audit": true,
+      "condition": "corrupted_training",
+      "feature": "off",
+      "repeat": 10,
+      "worker_id": "qvpf1_209_corrupted_training_off_a1_r10"
+    },
+    {
+      "audit": true,
+      "condition": "linear_positive",
+      "feature": "quadratic",
+      "repeat": 4,
+      "worker_id": "qvpf1_210_linear_positive_quadratic_a1_r4"
+    },
+    {
+      "audit": false,
+      "condition": "rank_deficient",
+      "feature": "prefilter",
+      "repeat": 3,
+      "worker_id": "qvpf1_211_rank_deficient_prefilter_a0_r3"
+    },
+    {
+      "audit": true,
+      "condition": "rank_deficient",
+      "feature": "off",
+      "repeat": 1,
+      "worker_id": "qvpf1_212_rank_deficient_off_a1_r1"
+    },
+    {
+      "audit": true,
+      "condition": "linear_positive",
+      "feature": "quadratic",
+      "repeat": 7,
+      "worker_id": "qvpf1_213_linear_positive_quadratic_a1_r7"
+    },
+    {
+      "audit": true,
+      "condition": "coupled_quadratic",
+      "feature": "off",
+      "repeat": 10,
+      "worker_id": "qvpf1_214_coupled_quadratic_off_a1_r10"
+    },
+    {
+      "audit": false,
+      "condition": "quadratic_cross_term",
+      "feature": "prefilter",
+      "repeat": 8,
+      "worker_id": "qvpf1_215_quadratic_cross_term_prefilter_a0_r8"
+    },
+    {
+      "audit": false,
+      "condition": "linear_positive",
+      "feature": "prefilter",
+      "repeat": 5,
+      "worker_id": "qvpf1_216_linear_positive_prefilter_a0_r5"
+    },
+    {
+      "audit": false,
+      "condition": "coupled_quadratic",
+      "feature": "prefilter",
+      "repeat": 10,
+      "worker_id": "qvpf1_217_coupled_quadratic_prefilter_a0_r10"
+    },
+    {
+      "audit": false,
+      "condition": "missing_identity",
+      "feature": "quadratic",
+      "repeat": 10,
+      "worker_id": "qvpf1_218_missing_identity_quadratic_a0_r10"
+    },
+    {
+      "audit": true,
+      "condition": "linear_positive",
+      "feature": "off",
+      "repeat": 6,
+      "worker_id": "qvpf1_219_linear_positive_off_a1_r6"
+    },
+    {
+      "audit": true,
+      "condition": "coupled_quadratic",
+      "feature": "off",
+      "repeat": 7,
+      "worker_id": "qvpf1_220_coupled_quadratic_off_a1_r7"
+    },
+    {
+      "audit": true,
+      "condition": "coupled_quadratic",
+      "feature": "off",
+      "repeat": 9,
+      "worker_id": "qvpf1_221_coupled_quadratic_off_a1_r9"
+    },
+    {
+      "audit": false,
+      "condition": "corrupted_training",
+      "feature": "prefilter",
+      "repeat": 7,
+      "worker_id": "qvpf1_222_corrupted_training_prefilter_a0_r7"
+    },
+    {
+      "audit": false,
+      "condition": "duplicate_identity",
+      "feature": "off",
+      "repeat": 5,
+      "worker_id": "qvpf1_223_duplicate_identity_off_a0_r5"
+    },
+    {
+      "audit": false,
+      "condition": "coupled_quadratic",
+      "feature": "quadratic",
+      "repeat": 1,
+      "worker_id": "qvpf1_224_coupled_quadratic_quadratic_a0_r1"
+    },
+    {
+      "audit": true,
+      "condition": "cubic_out_of_family",
+      "feature": "off",
+      "repeat": 7,
+      "worker_id": "qvpf1_225_cubic_out_of_family_off_a1_r7"
+    },
+    {
+      "audit": true,
+      "condition": "coupled_quadratic",
+      "feature": "off",
+      "repeat": 1,
+      "worker_id": "qvpf1_226_coupled_quadratic_off_a1_r1"
+    },
+    {
+      "audit": true,
+      "condition": "corrupted_training",
+      "feature": "prefilter",
+      "repeat": 1,
+      "worker_id": "qvpf1_227_corrupted_training_prefilter_a1_r1"
+    },
+    {
+      "audit": true,
+      "condition": "cubic_out_of_family",
+      "feature": "off",
+      "repeat": 10,
+      "worker_id": "qvpf1_228_cubic_out_of_family_off_a1_r10"
+    },
+    {
+      "audit": true,
+      "condition": "cubic_out_of_family",
+      "feature": "off",
+      "repeat": 5,
+      "worker_id": "qvpf1_229_cubic_out_of_family_off_a1_r5"
+    },
+    {
+      "audit": false,
+      "condition": "rank_deficient",
+      "feature": "off",
+      "repeat": 7,
+      "worker_id": "qvpf1_230_rank_deficient_off_a0_r7"
+    },
+    {
+      "audit": false,
+      "condition": "cubic_out_of_family",
+      "feature": "off",
+      "repeat": 10,
+      "worker_id": "qvpf1_231_cubic_out_of_family_off_a0_r10"
+    },
+    {
+      "audit": true,
+      "condition": "missing_identity",
+      "feature": "off",
+      "repeat": 7,
+      "worker_id": "qvpf1_232_missing_identity_off_a1_r7"
+    },
+    {
+      "audit": true,
+      "condition": "missing_identity",
+      "feature": "quadratic",
+      "repeat": 2,
+      "worker_id": "qvpf1_233_missing_identity_quadratic_a1_r2"
+    },
+    {
+      "audit": false,
+      "condition": "rank_deficient",
+      "feature": "quadratic",
+      "repeat": 9,
+      "worker_id": "qvpf1_234_rank_deficient_quadratic_a0_r9"
+    },
+    {
+      "audit": true,
+      "condition": "quadratic_cross_term",
+      "feature": "quadratic",
+      "repeat": 2,
+      "worker_id": "qvpf1_235_quadratic_cross_term_quadratic_a1_r2"
+    },
+    {
+      "audit": false,
+      "condition": "missing_identity",
+      "feature": "quadratic",
+      "repeat": 2,
+      "worker_id": "qvpf1_236_missing_identity_quadratic_a0_r2"
+    },
+    {
+      "audit": false,
+      "condition": "quadratic_cross_term",
+      "feature": "quadratic",
+      "repeat": 2,
+      "worker_id": "qvpf1_237_quadratic_cross_term_quadratic_a0_r2"
+    },
+    {
+      "audit": true,
+      "condition": "rank_deficient",
+      "feature": "off",
+      "repeat": 9,
+      "worker_id": "qvpf1_238_rank_deficient_off_a1_r9"
+    },
+    {
+      "audit": true,
+      "condition": "duplicate_identity",
+      "feature": "off",
+      "repeat": 2,
+      "worker_id": "qvpf1_239_duplicate_identity_off_a1_r2"
+    },
+    {
+      "audit": true,
+      "condition": "cubic_out_of_family",
+      "feature": "prefilter",
+      "repeat": 6,
+      "worker_id": "qvpf1_240_cubic_out_of_family_prefilter_a1_r6"
+    },
+    {
+      "audit": false,
+      "condition": "quadratic_cross_term",
+      "feature": "prefilter",
+      "repeat": 10,
+      "worker_id": "qvpf1_241_quadratic_cross_term_prefilter_a0_r10"
+    },
+    {
+      "audit": false,
+      "condition": "quadratic_cross_term",
+      "feature": "off",
+      "repeat": 3,
+      "worker_id": "qvpf1_242_quadratic_cross_term_off_a0_r3"
+    },
+    {
+      "audit": true,
+      "condition": "duplicate_identity",
+      "feature": "prefilter",
+      "repeat": 1,
+      "worker_id": "qvpf1_243_duplicate_identity_prefilter_a1_r1"
+    },
+    {
+      "audit": false,
+      "condition": "cubic_out_of_family",
+      "feature": "prefilter",
+      "repeat": 9,
+      "worker_id": "qvpf1_244_cubic_out_of_family_prefilter_a0_r9"
+    },
+    {
+      "audit": true,
+      "condition": "coupled_quadratic",
+      "feature": "off",
+      "repeat": 2,
+      "worker_id": "qvpf1_245_coupled_quadratic_off_a1_r2"
+    },
+    {
+      "audit": false,
+      "condition": "coupled_quadratic",
+      "feature": "prefilter",
+      "repeat": 8,
+      "worker_id": "qvpf1_246_coupled_quadratic_prefilter_a0_r8"
+    },
+    {
+      "audit": true,
+      "condition": "corrupted_training",
+      "feature": "quadratic",
+      "repeat": 9,
+      "worker_id": "qvpf1_247_corrupted_training_quadratic_a1_r9"
+    },
+    {
+      "audit": true,
+      "condition": "cubic_out_of_family",
+      "feature": "quadratic",
+      "repeat": 9,
+      "worker_id": "qvpf1_248_cubic_out_of_family_quadratic_a1_r9"
+    },
+    {
+      "audit": true,
+      "condition": "coupled_quadratic",
+      "feature": "off",
+      "repeat": 4,
+      "worker_id": "qvpf1_249_coupled_quadratic_off_a1_r4"
+    },
+    {
+      "audit": false,
+      "condition": "duplicate_identity",
+      "feature": "off",
+      "repeat": 8,
+      "worker_id": "qvpf1_250_duplicate_identity_off_a0_r8"
+    },
+    {
+      "audit": false,
+      "condition": "rank_deficient",
+      "feature": "off",
+      "repeat": 9,
+      "worker_id": "qvpf1_251_rank_deficient_off_a0_r9"
+    },
+    {
+      "audit": true,
+      "condition": "rank_deficient",
+      "feature": "off",
+      "repeat": 10,
+      "worker_id": "qvpf1_252_rank_deficient_off_a1_r10"
+    },
+    {
+      "audit": true,
+      "condition": "quadratic_cross_term",
+      "feature": "prefilter",
+      "repeat": 3,
+      "worker_id": "qvpf1_253_quadratic_cross_term_prefilter_a1_r3"
+    },
+    {
+      "audit": true,
+      "condition": "missing_identity",
+      "feature": "quadratic",
+      "repeat": 8,
+      "worker_id": "qvpf1_254_missing_identity_quadratic_a1_r8"
+    },
+    {
+      "audit": true,
+      "condition": "quadratic_cross_term",
+      "feature": "off",
+      "repeat": 3,
+      "worker_id": "qvpf1_255_quadratic_cross_term_off_a1_r3"
+    },
+    {
+      "audit": false,
+      "condition": "cubic_out_of_family",
+      "feature": "off",
+      "repeat": 3,
+      "worker_id": "qvpf1_256_cubic_out_of_family_off_a0_r3"
+    },
+    {
+      "audit": false,
+      "condition": "duplicate_identity",
+      "feature": "quadratic",
+      "repeat": 6,
+      "worker_id": "qvpf1_257_duplicate_identity_quadratic_a0_r6"
+    },
+    {
+      "audit": false,
+      "condition": "cubic_out_of_family",
+      "feature": "quadratic",
+      "repeat": 9,
+      "worker_id": "qvpf1_258_cubic_out_of_family_quadratic_a0_r9"
+    },
+    {
+      "audit": false,
+      "condition": "duplicate_identity",
+      "feature": "off",
+      "repeat": 7,
+      "worker_id": "qvpf1_259_duplicate_identity_off_a0_r7"
+    },
+    {
+      "audit": false,
+      "condition": "cubic_out_of_family",
+      "feature": "prefilter",
+      "repeat": 4,
+      "worker_id": "qvpf1_260_cubic_out_of_family_prefilter_a0_r4"
+    },
+    {
+      "audit": true,
+      "condition": "duplicate_identity",
+      "feature": "off",
+      "repeat": 8,
+      "worker_id": "qvpf1_261_duplicate_identity_off_a1_r8"
+    },
+    {
+      "audit": false,
+      "condition": "corrupted_training",
+      "feature": "prefilter",
+      "repeat": 10,
+      "worker_id": "qvpf1_262_corrupted_training_prefilter_a0_r10"
+    },
+    {
+      "audit": false,
+      "condition": "coupled_quadratic",
+      "feature": "quadratic",
+      "repeat": 9,
+      "worker_id": "qvpf1_263_coupled_quadratic_quadratic_a0_r9"
+    },
+    {
+      "audit": true,
+      "condition": "rank_deficient",
+      "feature": "off",
+      "repeat": 7,
+      "worker_id": "qvpf1_264_rank_deficient_off_a1_r7"
+    },
+    {
+      "audit": false,
+      "condition": "cubic_out_of_family",
+      "feature": "off",
+      "repeat": 5,
+      "worker_id": "qvpf1_265_cubic_out_of_family_off_a0_r5"
+    },
+    {
+      "audit": false,
+      "condition": "quadratic_cross_term",
+      "feature": "quadratic",
+      "repeat": 10,
+      "worker_id": "qvpf1_266_quadratic_cross_term_quadratic_a0_r10"
+    },
+    {
+      "audit": true,
+      "condition": "duplicate_identity",
+      "feature": "quadratic",
+      "repeat": 5,
+      "worker_id": "qvpf1_267_duplicate_identity_quadratic_a1_r5"
+    },
+    {
+      "audit": true,
+      "condition": "missing_identity",
+      "feature": "prefilter",
+      "repeat": 8,
+      "worker_id": "qvpf1_268_missing_identity_prefilter_a1_r8"
+    },
+    {
+      "audit": true,
+      "condition": "cubic_out_of_family",
+      "feature": "quadratic",
+      "repeat": 4,
+      "worker_id": "qvpf1_269_cubic_out_of_family_quadratic_a1_r4"
+    },
+    {
+      "audit": false,
+      "condition": "cubic_out_of_family",
+      "feature": "prefilter",
+      "repeat": 1,
+      "worker_id": "qvpf1_270_cubic_out_of_family_prefilter_a0_r1"
+    },
+    {
+      "audit": false,
+      "condition": "quadratic_cross_term",
+      "feature": "off",
+      "repeat": 4,
+      "worker_id": "qvpf1_271_quadratic_cross_term_off_a0_r4"
+    },
+    {
+      "audit": false,
+      "condition": "linear_positive",
+      "feature": "off",
+      "repeat": 3,
+      "worker_id": "qvpf1_272_linear_positive_off_a0_r3"
+    },
+    {
+      "audit": true,
+      "condition": "rank_deficient",
+      "feature": "off",
+      "repeat": 2,
+      "worker_id": "qvpf1_273_rank_deficient_off_a1_r2"
+    },
+    {
+      "audit": true,
+      "condition": "corrupted_training",
+      "feature": "off",
+      "repeat": 9,
+      "worker_id": "qvpf1_274_corrupted_training_off_a1_r9"
+    },
+    {
+      "audit": true,
+      "condition": "coupled_quadratic",
+      "feature": "off",
+      "repeat": 6,
+      "worker_id": "qvpf1_275_coupled_quadratic_off_a1_r6"
+    },
+    {
+      "audit": false,
+      "condition": "linear_positive",
+      "feature": "prefilter",
+      "repeat": 6,
+      "worker_id": "qvpf1_276_linear_positive_prefilter_a0_r6"
+    },
+    {
+      "audit": false,
+      "condition": "rank_deficient",
+      "feature": "off",
+      "repeat": 5,
+      "worker_id": "qvpf1_277_rank_deficient_off_a0_r5"
+    },
+    {
+      "audit": true,
+      "condition": "missing_identity",
+      "feature": "prefilter",
+      "repeat": 2,
+      "worker_id": "qvpf1_278_missing_identity_prefilter_a1_r2"
+    },
+    {
+      "audit": false,
+      "condition": "missing_identity",
+      "feature": "off",
+      "repeat": 7,
+      "worker_id": "qvpf1_279_missing_identity_off_a0_r7"
+    },
+    {
+      "audit": true,
+      "condition": "missing_identity",
+      "feature": "quadratic",
+      "repeat": 4,
+      "worker_id": "qvpf1_280_missing_identity_quadratic_a1_r4"
+    },
+    {
+      "audit": false,
+      "condition": "quadratic_cross_term",
+      "feature": "prefilter",
+      "repeat": 1,
+      "worker_id": "qvpf1_281_quadratic_cross_term_prefilter_a0_r1"
+    },
+    {
+      "audit": true,
+      "condition": "corrupted_training",
+      "feature": "prefilter",
+      "repeat": 5,
+      "worker_id": "qvpf1_282_corrupted_training_prefilter_a1_r5"
+    },
+    {
+      "audit": false,
+      "condition": "corrupted_training",
+      "feature": "off",
+      "repeat": 4,
+      "worker_id": "qvpf1_283_corrupted_training_off_a0_r4"
+    },
+    {
+      "audit": false,
+      "condition": "missing_identity",
+      "feature": "quadratic",
+      "repeat": 7,
+      "worker_id": "qvpf1_284_missing_identity_quadratic_a0_r7"
+    },
+    {
+      "audit": false,
+      "condition": "corrupted_training",
+      "feature": "prefilter",
+      "repeat": 6,
+      "worker_id": "qvpf1_285_corrupted_training_prefilter_a0_r6"
+    },
+    {
+      "audit": false,
+      "condition": "quadratic_cross_term",
+      "feature": "off",
+      "repeat": 5,
+      "worker_id": "qvpf1_286_quadratic_cross_term_off_a0_r5"
+    },
+    {
+      "audit": false,
+      "condition": "quadratic_cross_term",
+      "feature": "prefilter",
+      "repeat": 3,
+      "worker_id": "qvpf1_287_quadratic_cross_term_prefilter_a0_r3"
+    },
+    {
+      "audit": true,
+      "condition": "linear_positive",
+      "feature": "quadratic",
+      "repeat": 3,
+      "worker_id": "qvpf1_288_linear_positive_quadratic_a1_r3"
+    },
+    {
+      "audit": false,
+      "condition": "rank_deficient",
+      "feature": "prefilter",
+      "repeat": 7,
+      "worker_id": "qvpf1_289_rank_deficient_prefilter_a0_r7"
+    },
+    {
+      "audit": false,
+      "condition": "missing_identity",
+      "feature": "off",
+      "repeat": 5,
+      "worker_id": "qvpf1_290_missing_identity_off_a0_r5"
+    },
+    {
+      "audit": false,
+      "condition": "missing_identity",
+      "feature": "quadratic",
+      "repeat": 6,
+      "worker_id": "qvpf1_291_missing_identity_quadratic_a0_r6"
+    },
+    {
+      "audit": true,
+      "condition": "rank_deficient",
+      "feature": "quadratic",
+      "repeat": 6,
+      "worker_id": "qvpf1_292_rank_deficient_quadratic_a1_r6"
+    },
+    {
+      "audit": false,
+      "condition": "linear_positive",
+      "feature": "off",
+      "repeat": 2,
+      "worker_id": "qvpf1_293_linear_positive_off_a0_r2"
+    },
+    {
+      "audit": true,
+      "condition": "missing_identity",
+      "feature": "off",
+      "repeat": 6,
+      "worker_id": "qvpf1_294_missing_identity_off_a1_r6"
+    },
+    {
+      "audit": false,
+      "condition": "coupled_quadratic",
+      "feature": "quadratic",
+      "repeat": 4,
+      "worker_id": "qvpf1_295_coupled_quadratic_quadratic_a0_r4"
+    },
+    {
+      "audit": false,
+      "condition": "missing_identity",
+      "feature": "quadratic",
+      "repeat": 9,
+      "worker_id": "qvpf1_296_missing_identity_quadratic_a0_r9"
+    },
+    {
+      "audit": true,
+      "condition": "cubic_out_of_family",
+      "feature": "off",
+      "repeat": 1,
+      "worker_id": "qvpf1_297_cubic_out_of_family_off_a1_r1"
+    },
+    {
+      "audit": false,
+      "condition": "missing_identity",
+      "feature": "off",
+      "repeat": 8,
+      "worker_id": "qvpf1_298_missing_identity_off_a0_r8"
+    },
+    {
+      "audit": false,
+      "condition": "rank_deficient",
+      "feature": "quadratic",
+      "repeat": 8,
+      "worker_id": "qvpf1_299_rank_deficient_quadratic_a0_r8"
+    },
+    {
+      "audit": true,
+      "condition": "corrupted_training",
+      "feature": "prefilter",
+      "repeat": 8,
+      "worker_id": "qvpf1_300_corrupted_training_prefilter_a1_r8"
+    },
+    {
+      "audit": true,
+      "condition": "missing_identity",
+      "feature": "off",
+      "repeat": 5,
+      "worker_id": "qvpf1_301_missing_identity_off_a1_r5"
+    },
+    {
+      "audit": true,
+      "condition": "rank_deficient",
+      "feature": "prefilter",
+      "repeat": 9,
+      "worker_id": "qvpf1_302_rank_deficient_prefilter_a1_r9"
+    },
+    {
+      "audit": true,
+      "condition": "linear_positive",
+      "feature": "quadratic",
+      "repeat": 1,
+      "worker_id": "qvpf1_303_linear_positive_quadratic_a1_r1"
+    },
+    {
+      "audit": true,
+      "condition": "missing_identity",
+      "feature": "quadratic",
+      "repeat": 10,
+      "worker_id": "qvpf1_304_missing_identity_quadratic_a1_r10"
+    },
+    {
+      "audit": true,
+      "condition": "linear_positive",
+      "feature": "off",
+      "repeat": 2,
+      "worker_id": "qvpf1_305_linear_positive_off_a1_r2"
+    },
+    {
+      "audit": true,
+      "condition": "missing_identity",
+      "feature": "off",
+      "repeat": 3,
+      "worker_id": "qvpf1_306_missing_identity_off_a1_r3"
+    },
+    {
+      "audit": true,
+      "condition": "coupled_quadratic",
+      "feature": "quadratic",
+      "repeat": 2,
+      "worker_id": "qvpf1_307_coupled_quadratic_quadratic_a1_r2"
+    },
+    {
+      "audit": false,
+      "condition": "rank_deficient",
+      "feature": "prefilter",
+      "repeat": 8,
+      "worker_id": "qvpf1_308_rank_deficient_prefilter_a0_r8"
+    },
+    {
+      "audit": false,
+      "condition": "duplicate_identity",
+      "feature": "quadratic",
+      "repeat": 8,
+      "worker_id": "qvpf1_309_duplicate_identity_quadratic_a0_r8"
+    },
+    {
+      "audit": false,
+      "condition": "duplicate_identity",
+      "feature": "prefilter",
+      "repeat": 7,
+      "worker_id": "qvpf1_310_duplicate_identity_prefilter_a0_r7"
+    },
+    {
+      "audit": true,
+      "condition": "corrupted_training",
+      "feature": "quadratic",
+      "repeat": 1,
+      "worker_id": "qvpf1_311_corrupted_training_quadratic_a1_r1"
+    },
+    {
+      "audit": false,
+      "condition": "duplicate_identity",
+      "feature": "quadratic",
+      "repeat": 2,
+      "worker_id": "qvpf1_312_duplicate_identity_quadratic_a0_r2"
+    },
+    {
+      "audit": true,
+      "condition": "quadratic_cross_term",
+      "feature": "off",
+      "repeat": 5,
+      "worker_id": "qvpf1_313_quadratic_cross_term_off_a1_r5"
+    },
+    {
+      "audit": true,
+      "condition": "rank_deficient",
+      "feature": "quadratic",
+      "repeat": 5,
+      "worker_id": "qvpf1_314_rank_deficient_quadratic_a1_r5"
+    },
+    {
+      "audit": false,
+      "condition": "linear_positive",
+      "feature": "off",
+      "repeat": 8,
+      "worker_id": "qvpf1_315_linear_positive_off_a0_r8"
+    },
+    {
+      "audit": true,
+      "condition": "corrupted_training",
+      "feature": "off",
+      "repeat": 4,
+      "worker_id": "qvpf1_316_corrupted_training_off_a1_r4"
+    },
+    {
+      "audit": false,
+      "condition": "corrupted_training",
+      "feature": "off",
+      "repeat": 8,
+      "worker_id": "qvpf1_317_corrupted_training_off_a0_r8"
+    },
+    {
+      "audit": true,
+      "condition": "missing_identity",
+      "feature": "prefilter",
+      "repeat": 7,
+      "worker_id": "qvpf1_318_missing_identity_prefilter_a1_r7"
+    },
+    {
+      "audit": true,
+      "condition": "linear_positive",
+      "feature": "quadratic",
+      "repeat": 8,
+      "worker_id": "qvpf1_319_linear_positive_quadratic_a1_r8"
+    },
+    {
+      "audit": false,
+      "condition": "missing_identity",
+      "feature": "off",
+      "repeat": 2,
+      "worker_id": "qvpf1_320_missing_identity_off_a0_r2"
+    },
+    {
+      "audit": true,
+      "condition": "missing_identity",
+      "feature": "quadratic",
+      "repeat": 9,
+      "worker_id": "qvpf1_321_missing_identity_quadratic_a1_r9"
+    },
+    {
+      "audit": true,
+      "condition": "cubic_out_of_family",
+      "feature": "quadratic",
+      "repeat": 2,
+      "worker_id": "qvpf1_322_cubic_out_of_family_quadratic_a1_r2"
+    },
+    {
+      "audit": false,
+      "condition": "duplicate_identity",
+      "feature": "prefilter",
+      "repeat": 9,
+      "worker_id": "qvpf1_323_duplicate_identity_prefilter_a0_r9"
+    },
+    {
+      "audit": false,
+      "condition": "quadratic_cross_term",
+      "feature": "prefilter",
+      "repeat": 5,
+      "worker_id": "qvpf1_324_quadratic_cross_term_prefilter_a0_r5"
+    },
+    {
+      "audit": true,
+      "condition": "linear_positive",
+      "feature": "quadratic",
+      "repeat": 5,
+      "worker_id": "qvpf1_325_linear_positive_quadratic_a1_r5"
+    },
+    {
+      "audit": true,
+      "condition": "rank_deficient",
+      "feature": "quadratic",
+      "repeat": 1,
+      "worker_id": "qvpf1_326_rank_deficient_quadratic_a1_r1"
+    },
+    {
+      "audit": true,
+      "condition": "missing_identity",
+      "feature": "off",
+      "repeat": 10,
+      "worker_id": "qvpf1_327_missing_identity_off_a1_r10"
+    },
+    {
+      "audit": false,
+      "condition": "rank_deficient",
+      "feature": "prefilter",
+      "repeat": 9,
+      "worker_id": "qvpf1_328_rank_deficient_prefilter_a0_r9"
+    },
+    {
+      "audit": true,
+      "condition": "corrupted_training",
+      "feature": "prefilter",
+      "repeat": 6,
+      "worker_id": "qvpf1_329_corrupted_training_prefilter_a1_r6"
+    },
+    {
+      "audit": true,
+      "condition": "corrupted_training",
+      "feature": "prefilter",
+      "repeat": 3,
+      "worker_id": "qvpf1_330_corrupted_training_prefilter_a1_r3"
+    },
+    {
+      "audit": true,
+      "condition": "cubic_out_of_family",
+      "feature": "prefilter",
+      "repeat": 2,
+      "worker_id": "qvpf1_331_cubic_out_of_family_prefilter_a1_r2"
+    },
+    {
+      "audit": true,
+      "condition": "corrupted_training",
+      "feature": "quadratic",
+      "repeat": 2,
+      "worker_id": "qvpf1_332_corrupted_training_quadratic_a1_r2"
+    },
+    {
+      "audit": true,
+      "condition": "rank_deficient",
+      "feature": "off",
+      "repeat": 6,
+      "worker_id": "qvpf1_333_rank_deficient_off_a1_r6"
+    },
+    {
+      "audit": true,
+      "condition": "duplicate_identity",
+      "feature": "prefilter",
+      "repeat": 9,
+      "worker_id": "qvpf1_334_duplicate_identity_prefilter_a1_r9"
+    },
+    {
+      "audit": true,
+      "condition": "corrupted_training",
+      "feature": "prefilter",
+      "repeat": 7,
+      "worker_id": "qvpf1_335_corrupted_training_prefilter_a1_r7"
+    },
+    {
+      "audit": false,
+      "condition": "cubic_out_of_family",
+      "feature": "off",
+      "repeat": 1,
+      "worker_id": "qvpf1_336_cubic_out_of_family_off_a0_r1"
+    },
+    {
+      "audit": true,
+      "condition": "corrupted_training",
+      "feature": "prefilter",
+      "repeat": 2,
+      "worker_id": "qvpf1_337_corrupted_training_prefilter_a1_r2"
+    },
+    {
+      "audit": true,
+      "condition": "quadratic_cross_term",
+      "feature": "quadratic",
+      "repeat": 8,
+      "worker_id": "qvpf1_338_quadratic_cross_term_quadratic_a1_r8"
+    },
+    {
+      "audit": false,
+      "condition": "missing_identity",
+      "feature": "quadratic",
+      "repeat": 8,
+      "worker_id": "qvpf1_339_missing_identity_quadratic_a0_r8"
+    },
+    {
+      "audit": true,
+      "condition": "rank_deficient",
+      "feature": "prefilter",
+      "repeat": 7,
+      "worker_id": "qvpf1_340_rank_deficient_prefilter_a1_r7"
+    },
+    {
+      "audit": true,
+      "condition": "missing_identity",
+      "feature": "off",
+      "repeat": 2,
+      "worker_id": "qvpf1_341_missing_identity_off_a1_r2"
+    },
+    {
+      "audit": true,
+      "condition": "duplicate_identity",
+      "feature": "prefilter",
+      "repeat": 3,
+      "worker_id": "qvpf1_342_duplicate_identity_prefilter_a1_r3"
+    },
+    {
+      "audit": true,
+      "condition": "corrupted_training",
+      "feature": "off",
+      "repeat": 1,
+      "worker_id": "qvpf1_343_corrupted_training_off_a1_r1"
+    },
+    {
+      "audit": true,
+      "condition": "missing_identity",
+      "feature": "quadratic",
+      "repeat": 1,
+      "worker_id": "qvpf1_344_missing_identity_quadratic_a1_r1"
+    },
+    {
+      "audit": false,
+      "condition": "rank_deficient",
+      "feature": "prefilter",
+      "repeat": 2,
+      "worker_id": "qvpf1_345_rank_deficient_prefilter_a0_r2"
+    },
+    {
+      "audit": true,
+      "condition": "cubic_out_of_family",
+      "feature": "quadratic",
+      "repeat": 7,
+      "worker_id": "qvpf1_346_cubic_out_of_family_quadratic_a1_r7"
+    },
+    {
+      "audit": false,
+      "condition": "cubic_out_of_family",
+      "feature": "prefilter",
+      "repeat": 3,
+      "worker_id": "qvpf1_347_cubic_out_of_family_prefilter_a0_r3"
+    },
+    {
+      "audit": false,
+      "condition": "linear_positive",
+      "feature": "prefilter",
+      "repeat": 1,
+      "worker_id": "qvpf1_348_linear_positive_prefilter_a0_r1"
+    },
+    {
+      "audit": false,
+      "condition": "rank_deficient",
+      "feature": "quadratic",
+      "repeat": 5,
+      "worker_id": "qvpf1_349_rank_deficient_quadratic_a0_r5"
+    },
+    {
+      "audit": true,
+      "condition": "linear_positive",
+      "feature": "prefilter",
+      "repeat": 2,
+      "worker_id": "qvpf1_350_linear_positive_prefilter_a1_r2"
+    },
+    {
+      "audit": false,
+      "condition": "cubic_out_of_family",
+      "feature": "quadratic",
+      "repeat": 2,
+      "worker_id": "qvpf1_351_cubic_out_of_family_quadratic_a0_r2"
+    },
+    {
+      "audit": false,
+      "condition": "rank_deficient",
+      "feature": "quadratic",
+      "repeat": 6,
+      "worker_id": "qvpf1_352_rank_deficient_quadratic_a0_r6"
+    },
+    {
+      "audit": false,
+      "condition": "linear_positive",
+      "feature": "quadratic",
+      "repeat": 7,
+      "worker_id": "qvpf1_353_linear_positive_quadratic_a0_r7"
+    },
+    {
+      "audit": true,
+      "condition": "corrupted_training",
+      "feature": "quadratic",
+      "repeat": 10,
+      "worker_id": "qvpf1_354_corrupted_training_quadratic_a1_r10"
+    },
+    {
+      "audit": false,
+      "condition": "corrupted_training",
+      "feature": "quadratic",
+      "repeat": 4,
+      "worker_id": "qvpf1_355_corrupted_training_quadratic_a0_r4"
+    },
+    {
+      "audit": false,
+      "condition": "duplicate_identity",
+      "feature": "off",
+      "repeat": 4,
+      "worker_id": "qvpf1_356_duplicate_identity_off_a0_r4"
+    },
+    {
+      "audit": true,
+      "condition": "linear_positive",
+      "feature": "prefilter",
+      "repeat": 9,
+      "worker_id": "qvpf1_357_linear_positive_prefilter_a1_r9"
+    },
+    {
+      "audit": false,
+      "condition": "quadratic_cross_term",
+      "feature": "prefilter",
+      "repeat": 2,
+      "worker_id": "qvpf1_358_quadratic_cross_term_prefilter_a0_r2"
+    },
+    {
+      "audit": false,
+      "condition": "duplicate_identity",
+      "feature": "off",
+      "repeat": 3,
+      "worker_id": "qvpf1_359_duplicate_identity_off_a0_r3"
+    },
+    {
+      "audit": true,
+      "condition": "cubic_out_of_family",
+      "feature": "quadratic",
+      "repeat": 5,
+      "worker_id": "qvpf1_360_cubic_out_of_family_quadratic_a1_r5"
+    },
+    {
+      "audit": false,
+      "condition": "coupled_quadratic",
+      "feature": "off",
+      "repeat": 6,
+      "worker_id": "qvpf1_361_coupled_quadratic_off_a0_r6"
+    },
+    {
+      "audit": false,
+      "condition": "rank_deficient",
+      "feature": "prefilter",
+      "repeat": 10,
+      "worker_id": "qvpf1_362_rank_deficient_prefilter_a0_r10"
+    },
+    {
+      "audit": false,
+      "condition": "linear_positive",
+      "feature": "prefilter",
+      "repeat": 10,
+      "worker_id": "qvpf1_363_linear_positive_prefilter_a0_r10"
+    },
+    {
+      "audit": true,
+      "condition": "duplicate_identity",
+      "feature": "quadratic",
+      "repeat": 1,
+      "worker_id": "qvpf1_364_duplicate_identity_quadratic_a1_r1"
+    },
+    {
+      "audit": false,
+      "condition": "duplicate_identity",
+      "feature": "off",
+      "repeat": 1,
+      "worker_id": "qvpf1_365_duplicate_identity_off_a0_r1"
+    },
+    {
+      "audit": true,
+      "condition": "rank_deficient",
+      "feature": "prefilter",
+      "repeat": 8,
+      "worker_id": "qvpf1_366_rank_deficient_prefilter_a1_r8"
+    },
+    {
+      "audit": true,
+      "condition": "linear_positive",
+      "feature": "quadratic",
+      "repeat": 6,
+      "worker_id": "qvpf1_367_linear_positive_quadratic_a1_r6"
+    },
+    {
+      "audit": true,
+      "condition": "linear_positive",
+      "feature": "off",
+      "repeat": 7,
+      "worker_id": "qvpf1_368_linear_positive_off_a1_r7"
+    },
+    {
+      "audit": false,
+      "condition": "linear_positive",
+      "feature": "off",
+      "repeat": 7,
+      "worker_id": "qvpf1_369_linear_positive_off_a0_r7"
+    },
+    {
+      "audit": false,
+      "condition": "corrupted_training",
+      "feature": "off",
+      "repeat": 7,
+      "worker_id": "qvpf1_370_corrupted_training_off_a0_r7"
+    },
+    {
+      "audit": false,
+      "condition": "coupled_quadratic",
+      "feature": "off",
+      "repeat": 3,
+      "worker_id": "qvpf1_371_coupled_quadratic_off_a0_r3"
+    },
+    {
+      "audit": false,
+      "condition": "quadratic_cross_term",
+      "feature": "prefilter",
+      "repeat": 6,
+      "worker_id": "qvpf1_372_quadratic_cross_term_prefilter_a0_r6"
+    },
+    {
+      "audit": true,
+      "condition": "missing_identity",
+      "feature": "prefilter",
+      "repeat": 5,
+      "worker_id": "qvpf1_373_missing_identity_prefilter_a1_r5"
+    },
+    {
+      "audit": true,
+      "condition": "coupled_quadratic",
+      "feature": "quadratic",
+      "repeat": 10,
+      "worker_id": "qvpf1_374_coupled_quadratic_quadratic_a1_r10"
+    },
+    {
+      "audit": true,
+      "condition": "duplicate_identity",
+      "feature": "prefilter",
+      "repeat": 5,
+      "worker_id": "qvpf1_375_duplicate_identity_prefilter_a1_r5"
+    },
+    {
+      "audit": false,
+      "condition": "corrupted_training",
+      "feature": "off",
+      "repeat": 3,
+      "worker_id": "qvpf1_376_corrupted_training_off_a0_r3"
+    },
+    {
+      "audit": false,
+      "condition": "linear_positive",
+      "feature": "off",
+      "repeat": 10,
+      "worker_id": "qvpf1_377_linear_positive_off_a0_r10"
+    },
+    {
+      "audit": false,
+      "condition": "corrupted_training",
+      "feature": "off",
+      "repeat": 6,
+      "worker_id": "qvpf1_378_corrupted_training_off_a0_r6"
+    },
+    {
+      "audit": true,
+      "condition": "linear_positive",
+      "feature": "prefilter",
+      "repeat": 3,
+      "worker_id": "qvpf1_379_linear_positive_prefilter_a1_r3"
+    },
+    {
+      "audit": true,
+      "condition": "rank_deficient",
+      "feature": "quadratic",
+      "repeat": 10,
+      "worker_id": "qvpf1_380_rank_deficient_quadratic_a1_r10"
+    },
+    {
+      "audit": true,
+      "condition": "linear_positive",
+      "feature": "quadratic",
+      "repeat": 10,
+      "worker_id": "qvpf1_381_linear_positive_quadratic_a1_r10"
+    },
+    {
+      "audit": false,
+      "condition": "coupled_quadratic",
+      "feature": "off",
+      "repeat": 2,
+      "worker_id": "qvpf1_382_coupled_quadratic_off_a0_r2"
+    },
+    {
+      "audit": true,
+      "condition": "linear_positive",
+      "feature": "prefilter",
+      "repeat": 4,
+      "worker_id": "qvpf1_383_linear_positive_prefilter_a1_r4"
+    },
+    {
+      "audit": true,
+      "condition": "corrupted_training",
+      "feature": "off",
+      "repeat": 8,
+      "worker_id": "qvpf1_384_corrupted_training_off_a1_r8"
+    },
+    {
+      "audit": false,
+      "condition": "coupled_quadratic",
+      "feature": "off",
+      "repeat": 4,
+      "worker_id": "qvpf1_385_coupled_quadratic_off_a0_r4"
+    },
+    {
+      "audit": false,
+      "condition": "missing_identity",
+      "feature": "prefilter",
+      "repeat": 8,
+      "worker_id": "qvpf1_386_missing_identity_prefilter_a0_r8"
+    },
+    {
+      "audit": false,
+      "condition": "corrupted_training",
+      "feature": "quadratic",
+      "repeat": 9,
+      "worker_id": "qvpf1_387_corrupted_training_quadratic_a0_r9"
+    },
+    {
+      "audit": false,
+      "condition": "coupled_quadratic",
+      "feature": "prefilter",
+      "repeat": 6,
+      "worker_id": "qvpf1_388_coupled_quadratic_prefilter_a0_r6"
+    },
+    {
+      "audit": true,
+      "condition": "corrupted_training",
+      "feature": "off",
+      "repeat": 2,
+      "worker_id": "qvpf1_389_corrupted_training_off_a1_r2"
+    },
+    {
+      "audit": false,
+      "condition": "quadratic_cross_term",
+      "feature": "off",
+      "repeat": 6,
+      "worker_id": "qvpf1_390_quadratic_cross_term_off_a0_r6"
+    },
+    {
+      "audit": true,
+      "condition": "quadratic_cross_term",
+      "feature": "off",
+      "repeat": 7,
+      "worker_id": "qvpf1_391_quadratic_cross_term_off_a1_r7"
+    },
+    {
+      "audit": true,
+      "condition": "missing_identity",
+      "feature": "prefilter",
+      "repeat": 10,
+      "worker_id": "qvpf1_392_missing_identity_prefilter_a1_r10"
+    },
+    {
+      "audit": false,
+      "condition": "corrupted_training",
+      "feature": "quadratic",
+      "repeat": 10,
+      "worker_id": "qvpf1_393_corrupted_training_quadratic_a0_r10"
+    },
+    {
+      "audit": true,
+      "condition": "quadratic_cross_term",
+      "feature": "off",
+      "repeat": 9,
+      "worker_id": "qvpf1_394_quadratic_cross_term_off_a1_r9"
+    },
+    {
+      "audit": true,
+      "condition": "duplicate_identity",
+      "feature": "quadratic",
+      "repeat": 10,
+      "worker_id": "qvpf1_395_duplicate_identity_quadratic_a1_r10"
+    },
+    {
+      "audit": true,
+      "condition": "corrupted_training",
+      "feature": "off",
+      "repeat": 6,
+      "worker_id": "qvpf1_396_corrupted_training_off_a1_r6"
+    },
+    {
+      "audit": false,
+      "condition": "cubic_out_of_family",
+      "feature": "off",
+      "repeat": 7,
+      "worker_id": "qvpf1_397_cubic_out_of_family_off_a0_r7"
+    },
+    {
+      "audit": true,
+      "condition": "duplicate_identity",
+      "feature": "prefilter",
+      "repeat": 8,
+      "worker_id": "qvpf1_398_duplicate_identity_prefilter_a1_r8"
+    },
+    {
+      "audit": true,
+      "condition": "quadratic_cross_term",
+      "feature": "prefilter",
+      "repeat": 10,
+      "worker_id": "qvpf1_399_quadratic_cross_term_prefilter_a1_r10"
+    },
+    {
+      "audit": false,
+      "condition": "duplicate_identity",
+      "feature": "prefilter",
+      "repeat": 2,
+      "worker_id": "qvpf1_400_duplicate_identity_prefilter_a0_r2"
+    },
+    {
+      "audit": true,
+      "condition": "missing_identity",
+      "feature": "prefilter",
+      "repeat": 1,
+      "worker_id": "qvpf1_401_missing_identity_prefilter_a1_r1"
+    },
+    {
+      "audit": false,
+      "condition": "cubic_out_of_family",
+      "feature": "off",
+      "repeat": 6,
+      "worker_id": "qvpf1_402_cubic_out_of_family_off_a0_r6"
+    },
+    {
+      "audit": false,
+      "condition": "missing_identity",
+      "feature": "off",
+      "repeat": 9,
+      "worker_id": "qvpf1_403_missing_identity_off_a0_r9"
+    },
+    {
+      "audit": false,
+      "condition": "coupled_quadratic",
+      "feature": "quadratic",
+      "repeat": 5,
+      "worker_id": "qvpf1_404_coupled_quadratic_quadratic_a0_r5"
+    },
+    {
+      "audit": true,
+      "condition": "missing_identity",
+      "feature": "quadratic",
+      "repeat": 7,
+      "worker_id": "qvpf1_405_missing_identity_quadratic_a1_r7"
+    },
+    {
+      "audit": false,
+      "condition": "corrupted_training",
+      "feature": "quadratic",
+      "repeat": 3,
+      "worker_id": "qvpf1_406_corrupted_training_quadratic_a0_r3"
+    },
+    {
+      "audit": false,
+      "condition": "rank_deficient",
+      "feature": "off",
+      "repeat": 6,
+      "worker_id": "qvpf1_407_rank_deficient_off_a0_r6"
+    },
+    {
+      "audit": false,
+      "condition": "linear_positive",
+      "feature": "quadratic",
+      "repeat": 4,
+      "worker_id": "qvpf1_408_linear_positive_quadratic_a0_r4"
+    },
+    {
+      "audit": false,
+      "condition": "cubic_out_of_family",
+      "feature": "off",
+      "repeat": 2,
+      "worker_id": "qvpf1_409_cubic_out_of_family_off_a0_r2"
+    },
+    {
+      "audit": false,
+      "condition": "linear_positive",
+      "feature": "quadratic",
+      "repeat": 9,
+      "worker_id": "qvpf1_410_linear_positive_quadratic_a0_r9"
+    },
+    {
+      "audit": true,
+      "condition": "coupled_quadratic",
+      "feature": "prefilter",
+      "repeat": 8,
+      "worker_id": "qvpf1_411_coupled_quadratic_prefilter_a1_r8"
+    },
+    {
+      "audit": true,
+      "condition": "duplicate_identity",
+      "feature": "prefilter",
+      "repeat": 6,
+      "worker_id": "qvpf1_412_duplicate_identity_prefilter_a1_r6"
+    },
+    {
+      "audit": true,
+      "condition": "quadratic_cross_term",
+      "feature": "prefilter",
+      "repeat": 1,
+      "worker_id": "qvpf1_413_quadratic_cross_term_prefilter_a1_r1"
+    },
+    {
+      "audit": true,
+      "condition": "duplicate_identity",
+      "feature": "quadratic",
+      "repeat": 9,
+      "worker_id": "qvpf1_414_duplicate_identity_quadratic_a1_r9"
+    },
+    {
+      "audit": false,
+      "condition": "duplicate_identity",
+      "feature": "prefilter",
+      "repeat": 4,
+      "worker_id": "qvpf1_415_duplicate_identity_prefilter_a0_r4"
+    },
+    {
+      "audit": false,
+      "condition": "linear_positive",
+      "feature": "off",
+      "repeat": 1,
+      "worker_id": "qvpf1_416_linear_positive_off_a0_r1"
+    },
+    {
+      "audit": true,
+      "condition": "cubic_out_of_family",
+      "feature": "prefilter",
+      "repeat": 10,
+      "worker_id": "qvpf1_417_cubic_out_of_family_prefilter_a1_r10"
+    },
+    {
+      "audit": true,
+      "condition": "cubic_out_of_family",
+      "feature": "prefilter",
+      "repeat": 9,
+      "worker_id": "qvpf1_418_cubic_out_of_family_prefilter_a1_r9"
+    },
+    {
+      "audit": true,
+      "condition": "linear_positive",
+      "feature": "off",
+      "repeat": 4,
+      "worker_id": "qvpf1_419_linear_positive_off_a1_r4"
+    },
+    {
+      "audit": true,
+      "condition": "cubic_out_of_family",
+      "feature": "quadratic",
+      "repeat": 1,
+      "worker_id": "qvpf1_420_cubic_out_of_family_quadratic_a1_r1"
+    },
+    {
+      "audit": false,
+      "condition": "rank_deficient",
+      "feature": "quadratic",
+      "repeat": 1,
+      "worker_id": "qvpf1_421_rank_deficient_quadratic_a0_r1"
+    },
+    {
+      "audit": true,
+      "condition": "coupled_quadratic",
+      "feature": "quadratic",
+      "repeat": 4,
+      "worker_id": "qvpf1_422_coupled_quadratic_quadratic_a1_r4"
+    },
+    {
+      "audit": false,
+      "condition": "coupled_quadratic",
+      "feature": "quadratic",
+      "repeat": 10,
+      "worker_id": "qvpf1_423_coupled_quadratic_quadratic_a0_r10"
+    },
+    {
+      "audit": false,
+      "condition": "corrupted_training",
+      "feature": "quadratic",
+      "repeat": 2,
+      "worker_id": "qvpf1_424_corrupted_training_quadratic_a0_r2"
+    },
+    {
+      "audit": false,
+      "condition": "rank_deficient",
+      "feature": "off",
+      "repeat": 4,
+      "worker_id": "qvpf1_425_rank_deficient_off_a0_r4"
+    },
+    {
+      "audit": true,
+      "condition": "coupled_quadratic",
+      "feature": "quadratic",
+      "repeat": 1,
+      "worker_id": "qvpf1_426_coupled_quadratic_quadratic_a1_r1"
+    },
+    {
+      "audit": true,
+      "condition": "quadratic_cross_term",
+      "feature": "off",
+      "repeat": 4,
+      "worker_id": "qvpf1_427_quadratic_cross_term_off_a1_r4"
+    },
+    {
+      "audit": true,
+      "condition": "coupled_quadratic",
+      "feature": "quadratic",
+      "repeat": 6,
+      "worker_id": "qvpf1_428_coupled_quadratic_quadratic_a1_r6"
+    },
+    {
+      "audit": false,
+      "condition": "linear_positive",
+      "feature": "quadratic",
+      "repeat": 6,
+      "worker_id": "qvpf1_429_linear_positive_quadratic_a0_r6"
+    },
+    {
+      "audit": true,
+      "condition": "rank_deficient",
+      "feature": "off",
+      "repeat": 8,
+      "worker_id": "qvpf1_430_rank_deficient_off_a1_r8"
+    },
+    {
+      "audit": false,
+      "condition": "missing_identity",
+      "feature": "prefilter",
+      "repeat": 1,
+      "worker_id": "qvpf1_431_missing_identity_prefilter_a0_r1"
+    },
+    {
+      "audit": true,
+      "condition": "linear_positive",
+      "feature": "off",
+      "repeat": 9,
+      "worker_id": "qvpf1_432_linear_positive_off_a1_r9"
+    },
+    {
+      "audit": true,
+      "condition": "duplicate_identity",
+      "feature": "prefilter",
+      "repeat": 7,
+      "worker_id": "qvpf1_433_duplicate_identity_prefilter_a1_r7"
+    },
+    {
+      "audit": false,
+      "condition": "linear_positive",
+      "feature": "quadratic",
+      "repeat": 3,
+      "worker_id": "qvpf1_434_linear_positive_quadratic_a0_r3"
+    },
+    {
+      "audit": false,
+      "condition": "linear_positive",
+      "feature": "off",
+      "repeat": 6,
+      "worker_id": "qvpf1_435_linear_positive_off_a0_r6"
+    },
+    {
+      "audit": false,
+      "condition": "rank_deficient",
+      "feature": "off",
+      "repeat": 10,
+      "worker_id": "qvpf1_436_rank_deficient_off_a0_r10"
+    },
+    {
+      "audit": true,
+      "condition": "duplicate_identity",
+      "feature": "off",
+      "repeat": 6,
+      "worker_id": "qvpf1_437_duplicate_identity_off_a1_r6"
+    },
+    {
+      "audit": false,
+      "condition": "missing_identity",
+      "feature": "quadratic",
+      "repeat": 3,
+      "worker_id": "qvpf1_438_missing_identity_quadratic_a0_r3"
+    },
+    {
+      "audit": true,
+      "condition": "coupled_quadratic",
+      "feature": "off",
+      "repeat": 5,
+      "worker_id": "qvpf1_439_coupled_quadratic_off_a1_r5"
+    },
+    {
+      "audit": true,
+      "condition": "coupled_quadratic",
+      "feature": "prefilter",
+      "repeat": 1,
+      "worker_id": "qvpf1_440_coupled_quadratic_prefilter_a1_r1"
+    },
+    {
+      "audit": false,
+      "condition": "coupled_quadratic",
+      "feature": "off",
+      "repeat": 9,
+      "worker_id": "qvpf1_441_coupled_quadratic_off_a0_r9"
+    },
+    {
+      "audit": false,
+      "condition": "coupled_quadratic",
+      "feature": "quadratic",
+      "repeat": 2,
+      "worker_id": "qvpf1_442_coupled_quadratic_quadratic_a0_r2"
+    },
+    {
+      "audit": true,
+      "condition": "corrupted_training",
+      "feature": "quadratic",
+      "repeat": 3,
+      "worker_id": "qvpf1_443_corrupted_training_quadratic_a1_r3"
+    },
+    {
+      "audit": true,
+      "condition": "coupled_quadratic",
+      "feature": "prefilter",
+      "repeat": 4,
+      "worker_id": "qvpf1_444_coupled_quadratic_prefilter_a1_r4"
+    },
+    {
+      "audit": true,
+      "condition": "linear_positive",
+      "feature": "off",
+      "repeat": 8,
+      "worker_id": "qvpf1_445_linear_positive_off_a1_r8"
+    },
+    {
+      "audit": false,
+      "condition": "linear_positive",
+      "feature": "quadratic",
+      "repeat": 1,
+      "worker_id": "qvpf1_446_linear_positive_quadratic_a0_r1"
+    },
+    {
+      "audit": true,
+      "condition": "coupled_quadratic",
+      "feature": "quadratic",
+      "repeat": 9,
+      "worker_id": "qvpf1_447_coupled_quadratic_quadratic_a1_r9"
+    },
+    {
+      "audit": false,
+      "condition": "cubic_out_of_family",
+      "feature": "prefilter",
+      "repeat": 5,
+      "worker_id": "qvpf1_448_cubic_out_of_family_prefilter_a0_r5"
+    },
+    {
+      "audit": false,
+      "condition": "rank_deficient",
+      "feature": "quadratic",
+      "repeat": 2,
+      "worker_id": "qvpf1_449_rank_deficient_quadratic_a0_r2"
+    },
+    {
+      "audit": false,
+      "condition": "rank_deficient",
+      "feature": "quadratic",
+      "repeat": 7,
+      "worker_id": "qvpf1_450_rank_deficient_quadratic_a0_r7"
+    },
+    {
+      "audit": false,
+      "condition": "corrupted_training",
+      "feature": "off",
+      "repeat": 10,
+      "worker_id": "qvpf1_451_corrupted_training_off_a0_r10"
+    },
+    {
+      "audit": false,
+      "condition": "rank_deficient",
+      "feature": "quadratic",
+      "repeat": 10,
+      "worker_id": "qvpf1_452_rank_deficient_quadratic_a0_r10"
+    },
+    {
+      "audit": true,
+      "condition": "quadratic_cross_term",
+      "feature": "prefilter",
+      "repeat": 2,
+      "worker_id": "qvpf1_453_quadratic_cross_term_prefilter_a1_r2"
+    },
+    {
+      "audit": true,
+      "condition": "missing_identity",
+      "feature": "off",
+      "repeat": 4,
+      "worker_id": "qvpf1_454_missing_identity_off_a1_r4"
+    },
+    {
+      "audit": false,
+      "condition": "cubic_out_of_family",
+      "feature": "prefilter",
+      "repeat": 10,
+      "worker_id": "qvpf1_455_cubic_out_of_family_prefilter_a0_r10"
+    },
+    {
+      "audit": true,
+      "condition": "linear_positive",
+      "feature": "prefilter",
+      "repeat": 10,
+      "worker_id": "qvpf1_456_linear_positive_prefilter_a1_r10"
+    },
+    {
+      "audit": false,
+      "condition": "quadratic_cross_term",
+      "feature": "off",
+      "repeat": 1,
+      "worker_id": "qvpf1_457_quadratic_cross_term_off_a0_r1"
+    },
+    {
+      "audit": true,
+      "condition": "linear_positive",
+      "feature": "prefilter",
+      "repeat": 1,
+      "worker_id": "qvpf1_458_linear_positive_prefilter_a1_r1"
+    },
+    {
+      "audit": true,
+      "condition": "linear_positive",
+      "feature": "off",
+      "repeat": 10,
+      "worker_id": "qvpf1_459_linear_positive_off_a1_r10"
+    },
+    {
+      "audit": false,
+      "condition": "linear_positive",
+      "feature": "prefilter",
+      "repeat": 3,
+      "worker_id": "qvpf1_460_linear_positive_prefilter_a0_r3"
+    },
+    {
+      "audit": false,
+      "condition": "missing_identity",
+      "feature": "prefilter",
+      "repeat": 5,
+      "worker_id": "qvpf1_461_missing_identity_prefilter_a0_r5"
+    },
+    {
+      "audit": false,
+      "condition": "missing_identity",
+      "feature": "quadratic",
+      "repeat": 5,
+      "worker_id": "qvpf1_462_missing_identity_quadratic_a0_r5"
+    },
+    {
+      "audit": false,
+      "condition": "cubic_out_of_family",
+      "feature": "quadratic",
+      "repeat": 4,
+      "worker_id": "qvpf1_463_cubic_out_of_family_quadratic_a0_r4"
+    },
+    {
+      "audit": false,
+      "condition": "corrupted_training",
+      "feature": "quadratic",
+      "repeat": 7,
+      "worker_id": "qvpf1_464_corrupted_training_quadratic_a0_r7"
+    },
+    {
+      "audit": false,
+      "condition": "missing_identity",
+      "feature": "quadratic",
+      "repeat": 1,
+      "worker_id": "qvpf1_465_missing_identity_quadratic_a0_r1"
+    },
+    {
+      "audit": false,
+      "condition": "cubic_out_of_family",
+      "feature": "off",
+      "repeat": 9,
+      "worker_id": "qvpf1_466_cubic_out_of_family_off_a0_r9"
+    },
+    {
+      "audit": false,
+      "condition": "duplicate_identity",
+      "feature": "quadratic",
+      "repeat": 4,
+      "worker_id": "qvpf1_467_duplicate_identity_quadratic_a0_r4"
+    },
+    {
+      "audit": false,
+      "condition": "corrupted_training",
+      "feature": "prefilter",
+      "repeat": 5,
+      "worker_id": "qvpf1_468_corrupted_training_prefilter_a0_r5"
+    },
+    {
+      "audit": true,
+      "condition": "coupled_quadratic",
+      "feature": "prefilter",
+      "repeat": 10,
+      "worker_id": "qvpf1_469_coupled_quadratic_prefilter_a1_r10"
+    },
+    {
+      "audit": false,
+      "condition": "corrupted_training",
+      "feature": "prefilter",
+      "repeat": 8,
+      "worker_id": "qvpf1_470_corrupted_training_prefilter_a0_r8"
+    },
+    {
+      "audit": false,
+      "condition": "missing_identity",
+      "feature": "prefilter",
+      "repeat": 7,
+      "worker_id": "qvpf1_471_missing_identity_prefilter_a0_r7"
+    },
+    {
+      "audit": false,
+      "condition": "coupled_quadratic",
+      "feature": "prefilter",
+      "repeat": 7,
+      "worker_id": "qvpf1_472_coupled_quadratic_prefilter_a0_r7"
+    },
+    {
+      "audit": true,
+      "condition": "corrupted_training",
+      "feature": "quadratic",
+      "repeat": 4,
+      "worker_id": "qvpf1_473_corrupted_training_quadratic_a1_r4"
+    },
+    {
+      "audit": true,
+      "condition": "quadratic_cross_term",
+      "feature": "quadratic",
+      "repeat": 5,
+      "worker_id": "qvpf1_474_quadratic_cross_term_quadratic_a1_r5"
+    },
+    {
+      "audit": true,
+      "condition": "cubic_out_of_family",
+      "feature": "off",
+      "repeat": 9,
+      "worker_id": "qvpf1_475_cubic_out_of_family_off_a1_r9"
+    },
+    {
+      "audit": false,
+      "condition": "quadratic_cross_term",
+      "feature": "quadratic",
+      "repeat": 5,
+      "worker_id": "qvpf1_476_quadratic_cross_term_quadratic_a0_r5"
+    },
+    {
+      "audit": true,
+      "condition": "duplicate_identity",
+      "feature": "quadratic",
+      "repeat": 8,
+      "worker_id": "qvpf1_477_duplicate_identity_quadratic_a1_r8"
+    },
+    {
+      "audit": true,
+      "condition": "linear_positive",
+      "feature": "prefilter",
+      "repeat": 7,
+      "worker_id": "qvpf1_478_linear_positive_prefilter_a1_r7"
+    },
+    {
+      "audit": true,
+      "condition": "corrupted_training",
+      "feature": "off",
+      "repeat": 3,
+      "worker_id": "qvpf1_479_corrupted_training_off_a1_r3"
+    }
+  ],
+  "schema": "GenInferExactLinearPrefilterV1Lock",
+  "seed": 20261006,
+  "sources_sha256": {
+    "docs/research/engine_substrate/SUBSTRATE_CAPABILITY_AND_TRACTABILITY_MEASUREMENT_PLAN.md": "4cc0e0a8010d143613a2da47b3483a943033b8cf55218193d5963547f3c3a6e0",
+    "docs/research/engine_substrate/SUBSTRATE_GENINFER_EXACT_LINEAR_PREFILTER_ORACLE_V1_RESULTS_20261006.md": "a78b9c110f60e2a10f9a564ef67d3ddd442212cfd78ac2a393ed498720611d2f",
+    "docs/research/engine_substrate/SUBSTRATE_GENINFER_EXACT_LINEAR_PREFILTER_PILOT_V1_RESULTS_20261006.md": "ead18895ebf4786701daf3aa1a90ffc40a44075615deed351139a42407482386",
+    "docs/research/engine_substrate/SUBSTRATE_GENINFER_EXACT_LINEAR_PREFILTER_V1_1_AMENDMENT_20261006.md": "50bcc77a085bfbf7b9c14c8c77d2cfd3334ae98ba5564b3d0ceb4d2560464fb0",
+    "docs/research/engine_substrate/SUBSTRATE_GENINFER_EXACT_LINEAR_PREFILTER_V1_1_HIGHBOUND_RESULTS_20261006.md": "60bd80fcbe397b2eb147a551d3316f59cee3c1f616227e92dee405144284bbbe",
+    "docs/research/engine_substrate/SUBSTRATE_GENINFER_EXACT_LINEAR_PREFILTER_V1_2_AMENDMENT_20261006.md": "bf9e3e43a6c5162e67a5551ffebf3ff23291795ebfab7607e99ce0fdac74e81f",
+    "docs/research/engine_substrate/SUBSTRATE_GENINFER_EXACT_LINEAR_PREFILTER_V1_3_AMENDMENT_20261006.md": "ab2917d3df774c65f59b95f4060ced3f30453b796d5820ba12ef6eb8f1a96524",
+    "docs/research/engine_substrate/SUBSTRATE_GENINFER_EXACT_LINEAR_PREFILTER_V1_PREREG_20261006.md": "18d02e82d656a4b2c812e754fca58481bcd650c7487a22914994ee1eb60b393b",
+    "docs/research/engine_substrate/SUBSTRATE_NONLINEAR_DIMENSION_INDUCTION_V2_IMPLEMENTATION_STATUS_20261006.md": "19b37a8fb869808f8eb151d69263690a3be97f33179df9054df46cec7dd371b0",
+    "domains/reflective_faculty.py": "57f05995c454443665e75eacbfec60bc0096ac34cd203fb0b10848af4691903e",
+    "evaluation/reports/geninfer_exact_linear_prefilter_oracle_v1_2_20261006.json": "6912a03015273e70b1a7d4dd17fd267c54e2a0711ec2546a4e3ea22df08f6b9c",
+    "evaluation/substrate_capability/analyze_geninfer_exact_linear_prefilter_v1.py": "440c2ddafe374ef29b2c81d51dde90e307222af95dcf1a906b8a15541f25863a",
+    "evaluation/substrate_capability/geninfer_exact_linear_prefilter_v1.py": "fd84cb8408a8b92b638e05b64465e554bda786917e65c99f581d97f01541af4f",
+    "evaluation/substrate_capability/run_geninfer_exact_linear_prefilter_oracle_v1.py": "4fbdc39c5577281faa6b311beee59577744cd377eca3665e0bb19991f05fb6ff",
+    "runners/dsl/Cargo.lock": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+    "runners/dsl/Cargo.toml": "1d6e89964e8c5caf39956d63ff10921e4aa8ed2f4fba4cc580199f11aeddf8f7",
+    "runners/dsl/python/substrate_rs/__init__.py": "b5b0ffab338329a3c9c7f24fbafe8821d89810f6c162c51b564976328e2bf843",
+    "runners/dsl/src/graph_rules.rs": "b3c63c1b9cd5713b69918792950701141ced7f01ddd061dc2b1e14673da34542",
+    "runners/dsl/src/jsonio.rs": "e8620cdd2cf9731a3bd88f44a42ea369b9562ff773737ea2d7e0cd45cfcf55a4",
+    "runners/dsl/src/persist.rs": "dfe9247a700f1d5fafd239447018c9bd25297a50f9c86ba63a9e1ce41f149986",
+    "runners/dsl/src/reflect.rs": "e19cd26cee45f537d17a8eb546a8329558d27378823cf20f1217072306719bdd",
+    "runners/dsl/src/rewrite.rs": "2456d43401520d7b91fd22fd389f83d91e98349313bd66b6ec3545cd308ba52f",
+    "runners/dsl/src/scale_audit.rs": "62fc6cc21100942436626e0fa5105624324d255cbc1d0a40018ef9b8cad3c672",
+    "runners/dsl/src/shape_decode.rs": "887fe8716f629311db97aa620fa8a6415b3120fc7d41d0997297271b1c382176",
+    "runners/dsl/src/term.rs": "e995dbe38594e983b5fe0fef212def329f7c498c69ef8377147cf9de1390c92d",
+    "seeds/adaptive_control_core.json": "fc57fe2f6e3f0ab45f4fac84221bdabf5b3a99b64de3bccf62cf7c016b2c9504",
+    "seeds/affective_state_core.json": "9cfd82ff99c780a0ddfb5ec65942fef77ea2275341e6a09f5b78d1910c354990",
+    "seeds/decision_core.json": "a2226728536b18760ffbeac4d699aad4db9d965f4a0f37470f73350c8b202198",
+    "seeds/default_mode_core.json": "10afab5ee8914577580225d192bad8138361e662c17509f34ecfc7f3175d748d",
+    "seeds/dual_process_core.json": "4cace3623596a588eb49b28cff51ee8bf144b0f9005dd8262f5d3910c23bc777",
+    "seeds/episodic_working_memory_core.json": "023050b48704fa75ed8da0c2db64c2e468f355112b5578897a04caa643fd9b57",
+    "seeds/epistemics_core.json": "485d3517bd988d332312fc08b83c2d757bd13a613e0a7d8ad4e1972ddae81e3e",
+    "seeds/experimentation_core.json": "dfbba83b66305e06328a3cc737765da56e0ab3fc66580b45dad7d75b0fb1ff7a",
+    "seeds/generative_world_model.json": "f147432955e1970bae03f1ec8cb1b3238fe8abba1520129e506c3600a07ed0a6",
+    "seeds/goal_construction.json": "598a573afb85beaaaafc90a6259e01f1cde211ffc4ea96acd1f2b9074d2e0e83",
+    "seeds/learning_core.json": "8269692b08f399096fef7d15bc58a207d79477e6954288aa09d3ed5e98bd3141",
+    "seeds/math_capability_shapes.json": "ddb216430ce303f45695998d992159d1c91d149b9bc18f5ab7d48d0ae4350057",
+    "seeds/memory_core.json": "5ec7f07b90f192bc3cea660d87335e34c5074d466a7d484b7381abf651231e6b",
+    "seeds/motor_core.json": "12cbe423bd6f1149fe28801e9172f86eaf34744948975a4bae27e349f7cbd6c3",
+    "seeds/perception_core.json": "7a274b9410bce9503392f0210bb22873273ea91c1558b9007e57885d852ae9bc",
+    "seeds/reflex_core.json": "f760e7821058306a48b6550fb041c871f044b18d0ef1359238fe90d292726c43",
+    "seeds/self_design_axis.json": "1003fb83a9f972747338f4cff35c6a471080ae25f265e1eae512255996731505",
+    "seeds/self_monitoring.json": "17cc07e1460c1505b6d223bdca203b4c3fbe17669971d904a5ffff322032eb58",
+    "seeds/shape_decode_loop.json": "de539ce227b34e3ae1d4eada722f9a8ff926ce34a0214d1cbe3991afc595137c",
+    "seeds/theorem_core.json": "5630cfd5bd90a3c23f3346cbbc90af32a8f64848a287913b7688879095a7d332",
+    "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+    "substrate/seed_loader.py": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27"
+  },
+  "train_coordinates": [
+    [
+      1,
+      0
+    ],
+    [
+      2,
+      0
+    ],
+    [
+      0,
+      1
+    ],
+    [
+      0,
+      2
+    ],
+    [
+      1,
+      1
+    ],
+    [
+      3,
+      1
+    ],
+    [
+      4,
+      1
+    ]
+  ],
+  "transfer_coordinates": [
+    [
+      2,
+      1
+    ],
+    [
+      1,
+      3
+    ],
+    [
+      3,
+      2
+    ],
+    [
+      2,
+      3
+    ],
+    [
+      5,
+      1
+    ],
+    [
+      3,
+      3
+    ]
+  ],
+  "transfer_disjoint_from_train": true,
+  "worker_count": 480,
+  "worker_timeout_seconds": 300
+}

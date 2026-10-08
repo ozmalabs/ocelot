@@ -1,0 +1,31 @@
+{
+  "all_checks_pass": false,
+  "checks": {
+    "all_fixed_points_valid": false,
+    "all_winners_are_dedup_identity_fix": true,
+    "alternatives_below_train_max_and_fail_heldouts": true,
+    "candidate_descriptors_identical_across_workers": true,
+    "each_episode_has_two_due_keys": true,
+    "episode_oracle_recomputed_from_offer_counts": true,
+    "four_complete_workers_and_all_candidates": true,
+    "four_training_episodes_per_candidate_worker": true,
+    "order_lock_and_score_chain_valid": true,
+    "orders_contain_training_only": true,
+    "primary_isolation_and_residual_return": true,
+    "selected_proposals_pass_four_heldout_episodes": true,
+    "source_hashes_stable_across_stages": true,
+    "train_heldout_keys_disjoint": true,
+    "unique_graph_term_winner_matches_training_max": true
+  },
+  "cost_summary": {
+    "heldout_candidate_episodes": 128,
+    "mean_candidate_enumeration_ms": 108.94202375,
+    "mean_graph_term_selection_ms": 0.80098025,
+    "mean_heldout_episode_runtime_ms": 116.7932729296875,
+    "mean_training_episode_runtime_ms": 114.75341244921874,
+    "train_candidate_episodes": 128
+  },
+  "sample_unit": "One fresh recurrence episode contains two separately keyed due candidates.",
+  "schema": "RecurrenceGraphSelectionV1_1Analysis",
+  "scope": "Prospective source-locked four-worker recurrence candidate selection: four train and four held-out episodes per candidate and worker; host generates candidates and task oracle."
+}

@@ -1,0 +1,286 @@
+{
+  "analyzer_sha256": "63d52968c021e5a4f2d941a3a0900fe1e853b54da44d26da46d8713664e21c50",
+  "capture_sha256": "3640183202d9253dd3cd414c99bba3f6af576f75b785714043a7d8f6ebfb5675",
+  "checks": {
+    "all_four_conditions_have_three_replicates": true,
+    "exact_outputs_and_scope_membership": true,
+    "fresh_worker_processes": true,
+    "helper_work_rule_attributed": true,
+    "indexed_scope_avoids_population_scan": true,
+    "indexed_scope_preserves_scoped_candidates": true,
+    "scan_scope_enumerates_full_population": true,
+    "scoped_codebook_work_is_lower_than_global": true,
+    "source_stable_and_no_trace_drops": true,
+    "work_counts_reproduce_within_condition": true
+  },
+  "claim_limit": "Authored two-frame GenInfer fixtures only. The attribute-index arm avoids enumerating unrelated ShapeSignature nodes after the index is declared; scope discovery, automatic index admission, mutation/clone cost at scale, and natural-task prevalence are not established.",
+  "correction": "Sparse work rows omit zero-count kinds; the original analyzer used -1 as the missing-key sentinel and incorrectly failed the zero-scan gate. This corrected analyzer treats an absent scan kind as zero and preserves the original preregistered requirement.",
+  "errors": [],
+  "lock_sha256": "dbec0aa06ae24f14f742f5c372534abbd29067dd03a0079312e8c41c101c65ab",
+  "passed": true,
+  "schema": "GenInferScopeIndexTraceV2_1CorrectedAnalysis",
+  "scoped_vs_global": {
+    "helper_codebook_part_parsed": {
+      "explicit_global": 8,
+      "frame_scoped": 4,
+      "frame_scoped_indexed": 4,
+      "unscoped_global": 76
+    },
+    "helper_codebook_population_node": {
+      "explicit_global": 76,
+      "frame_scoped": 76,
+      "frame_scoped_indexed": 0,
+      "unscoped_global": 76
+    },
+    "helper_node_attribute_examined": {
+      "explicit_global": 56,
+      "frame_scoped": 28,
+      "frame_scoped_indexed": 28,
+      "unscoped_global": 320
+    },
+    "helper_search_candidate": {
+      "explicit_global": 19200,
+      "frame_scoped": 9600,
+      "frame_scoped_indexed": 9600,
+      "unscoped_global": 19200
+    }
+  },
+  "summary": {
+    "explicit_global": {
+      "distinct_worker_pids": 3,
+      "median_cpu_ns": 39343661,
+      "median_scope_index_build_ns": 0,
+      "median_wall_ns": 39346396,
+      "median_work_by_kind": {
+        "dynamic_helper_invocation": 4,
+        "helper_codebook_part_parsed": 8,
+        "helper_codebook_population_node": 76,
+        "helper_node_attribute_examined": 56,
+        "helper_search_candidate": 19200
+      },
+      "per_replicate": [
+        {
+          "geninfer_rule_uids": [
+            142,
+            147
+          ],
+          "geninfer_work": {
+            "dynamic_helper_invocation": 4,
+            "helper_codebook_part_parsed": 8,
+            "helper_codebook_population_node": 76,
+            "helper_node_attribute_examined": 56,
+            "helper_search_candidate": 19200
+          },
+          "replicate": 0
+        },
+        {
+          "geninfer_rule_uids": [
+            142,
+            147
+          ],
+          "geninfer_work": {
+            "dynamic_helper_invocation": 4,
+            "helper_codebook_part_parsed": 8,
+            "helper_codebook_population_node": 76,
+            "helper_node_attribute_examined": 56,
+            "helper_search_candidate": 19200
+          },
+          "replicate": 1
+        },
+        {
+          "geninfer_rule_uids": [
+            142,
+            147
+          ],
+          "geninfer_work": {
+            "dynamic_helper_invocation": 4,
+            "helper_codebook_part_parsed": 8,
+            "helper_codebook_population_node": 76,
+            "helper_node_attribute_examined": 56,
+            "helper_search_candidate": 19200
+          },
+          "replicate": 2
+        }
+      ],
+      "replicates": 3
+    },
+    "frame_scoped": {
+      "distinct_worker_pids": 3,
+      "median_cpu_ns": 28496337,
+      "median_scope_index_build_ns": 0,
+      "median_wall_ns": 28488807,
+      "median_work_by_kind": {
+        "dynamic_helper_invocation": 4,
+        "helper_codebook_part_parsed": 4,
+        "helper_codebook_population_node": 76,
+        "helper_node_attribute_examined": 28,
+        "helper_search_candidate": 9600
+      },
+      "per_replicate": [
+        {
+          "geninfer_rule_uids": [
+            142,
+            147
+          ],
+          "geninfer_work": {
+            "dynamic_helper_invocation": 4,
+            "helper_codebook_part_parsed": 4,
+            "helper_codebook_population_node": 76,
+            "helper_node_attribute_examined": 28,
+            "helper_search_candidate": 9600
+          },
+          "replicate": 0
+        },
+        {
+          "geninfer_rule_uids": [
+            142,
+            147
+          ],
+          "geninfer_work": {
+            "dynamic_helper_invocation": 4,
+            "helper_codebook_part_parsed": 4,
+            "helper_codebook_population_node": 76,
+            "helper_node_attribute_examined": 28,
+            "helper_search_candidate": 9600
+          },
+          "replicate": 1
+        },
+        {
+          "geninfer_rule_uids": [
+            142,
+            147
+          ],
+          "geninfer_work": {
+            "dynamic_helper_invocation": 4,
+            "helper_codebook_part_parsed": 4,
+            "helper_codebook_population_node": 76,
+            "helper_node_attribute_examined": 28,
+            "helper_search_candidate": 9600
+          },
+          "replicate": 2
+        }
+      ],
+      "replicates": 3
+    },
+    "frame_scoped_indexed": {
+      "distinct_worker_pids": 3,
+      "median_cpu_ns": 38002451,
+      "median_scope_index_build_ns": 6360,
+      "median_wall_ns": 38025379,
+      "median_work_by_kind": {
+        "dynamic_helper_invocation": 4,
+        "helper_codebook_part_parsed": 4,
+        "helper_node_attribute_examined": 28,
+        "helper_scope_population_index_member": 4,
+        "helper_scope_population_index_query": 4,
+        "helper_search_candidate": 9600
+      },
+      "per_replicate": [
+        {
+          "geninfer_rule_uids": [
+            142,
+            147
+          ],
+          "geninfer_work": {
+            "dynamic_helper_invocation": 4,
+            "helper_codebook_part_parsed": 4,
+            "helper_node_attribute_examined": 28,
+            "helper_scope_population_index_member": 4,
+            "helper_scope_population_index_query": 4,
+            "helper_search_candidate": 9600
+          },
+          "replicate": 0
+        },
+        {
+          "geninfer_rule_uids": [
+            142,
+            147
+          ],
+          "geninfer_work": {
+            "dynamic_helper_invocation": 4,
+            "helper_codebook_part_parsed": 4,
+            "helper_node_attribute_examined": 28,
+            "helper_scope_population_index_member": 4,
+            "helper_scope_population_index_query": 4,
+            "helper_search_candidate": 9600
+          },
+          "replicate": 1
+        },
+        {
+          "geninfer_rule_uids": [
+            142,
+            147
+          ],
+          "geninfer_work": {
+            "dynamic_helper_invocation": 4,
+            "helper_codebook_part_parsed": 4,
+            "helper_node_attribute_examined": 28,
+            "helper_scope_population_index_member": 4,
+            "helper_scope_population_index_query": 4,
+            "helper_search_candidate": 9600
+          },
+          "replicate": 2
+        }
+      ],
+      "replicates": 3
+    },
+    "unscoped_global": {
+      "distinct_worker_pids": 3,
+      "median_cpu_ns": 42610652,
+      "median_scope_index_build_ns": 0,
+      "median_wall_ns": 42942867,
+      "median_work_by_kind": {
+        "dynamic_helper_invocation": 4,
+        "helper_codebook_part_parsed": 76,
+        "helper_codebook_population_node": 76,
+        "helper_node_attribute_examined": 320,
+        "helper_search_candidate": 19200
+      },
+      "per_replicate": [
+        {
+          "geninfer_rule_uids": [
+            142,
+            147
+          ],
+          "geninfer_work": {
+            "dynamic_helper_invocation": 4,
+            "helper_codebook_part_parsed": 76,
+            "helper_codebook_population_node": 76,
+            "helper_node_attribute_examined": 320,
+            "helper_search_candidate": 19200
+          },
+          "replicate": 0
+        },
+        {
+          "geninfer_rule_uids": [
+            142,
+            147
+          ],
+          "geninfer_work": {
+            "dynamic_helper_invocation": 4,
+            "helper_codebook_part_parsed": 76,
+            "helper_codebook_population_node": 76,
+            "helper_node_attribute_examined": 320,
+            "helper_search_candidate": 19200
+          },
+          "replicate": 1
+        },
+        {
+          "geninfer_rule_uids": [
+            142,
+            147
+          ],
+          "geninfer_work": {
+            "dynamic_helper_invocation": 4,
+            "helper_codebook_part_parsed": 76,
+            "helper_codebook_population_node": 76,
+            "helper_node_attribute_examined": 320,
+            "helper_search_candidate": 19200
+          },
+          "replicate": 2
+        }
+      ],
+      "replicates": 3
+    }
+  }
+}

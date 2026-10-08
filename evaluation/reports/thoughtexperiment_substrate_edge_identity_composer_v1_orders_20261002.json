@@ -1,0 +1,2424 @@
+{
+  "captured_utc": "2026-10-02T05:23:01Z",
+  "host": "Linux-6.8.0-142-generic-x86_64-with-glibc2.39",
+  "lock_sha256": "41587c4d8cf830c55534dafad91144e3a6f3f083b1fc49e45a1ea798253bd9c4",
+  "schema": "SubstrateEdgeIdentityComposerV1Orders",
+  "workers": [
+    {
+      "controls": {
+        "ambiguous_site": {
+          "built": false,
+          "kind": "add_edge_identity_guard",
+          "wall": "no unique positive-scoring EditSite for 'add_edge_identity_guard' among 3 applicable edge sites (tied or no cue overlap); abstained"
+        },
+        "ambiguous_site_ns": 29639102,
+        "no_overlap": {
+          "built": false,
+          "kind": null,
+          "wall": "no RuleSummary genuinely overlaps this axis's residual predicates (abstained, like the acting-variant pick abstains on no overlap)"
+        },
+        "no_overlap_ns": 43734973
+      },
+      "families": {
+        "conversation": {
+          "primary_rule_unchanged": true,
+          "proposal": {
+            "built": true,
+            "candidate": {
+              "label": "substrate_composer",
+              "rules": {
+                "reply_to_adjacency_pair": {
+                  "batch": false,
+                  "content_hash": 6590774322814344041,
+                  "effects": [
+                    [
+                      "add_node",
+                      "reply",
+                      "Message",
+                      {
+                        "from": "agent"
+                      }
+                    ],
+                    [
+                      "add_edge",
+                      "reply",
+                      "has_speech_act",
+                      "r",
+                      {}
+                    ],
+                    [
+                      "add_edge",
+                      "reply",
+                      "responds_to",
+                      "m",
+                      {}
+                    ],
+                    [
+                      "add_edge",
+                      "agent",
+                      "sent",
+                      "reply",
+                      {}
+                    ],
+                    [
+                      "set_attr",
+                      "m",
+                      "adjacency_replied_act",
+                      {
+                        "__term__": {
+                          "key": "name",
+                          "node": {
+                            "name": "r",
+                            "type": "Var"
+                          },
+                          "type": "Attr"
+                        }
+                      }
+                    ]
+                  ],
+                  "match": [
+                    [
+                      "m",
+                      "has_intent",
+                      "i"
+                    ],
+                    [
+                      "i",
+                      "expects_response",
+                      "r"
+                    ],
+                    [
+                      "agent",
+                      "is_a",
+                      "Agent"
+                    ]
+                  ],
+                  "match_type": null,
+                  "name": "reply_to_adjacency_pair_structvariant_order0",
+                  "revision": 0,
+                  "rule_uid": 12,
+                  "where": {
+                    "items": [
+                      {
+                        "items": [
+                          {
+                            "a": {
+                              "key": "from",
+                              "node": {
+                                "name": "m",
+                                "type": "Var"
+                              },
+                              "type": "Attr"
+                            },
+                            "b": {
+                              "type": "Lit",
+                              "value": "interlocutor"
+                            },
+                            "type": "Eq"
+                          }
+                        ],
+                        "type": "And"
+                      },
+                      {
+                        "arg": {
+                          "predicate": {
+                            "type": "Lit",
+                            "value": true
+                          },
+                          "source": {
+                            "edge_type": "responds_to",
+                            "node": {
+                              "name": "m",
+                              "type": "Var"
+                            },
+                            "type": "InNeighbours"
+                          },
+                          "type": "Exists",
+                          "var_name": "existing_edge_identity"
+                        },
+                        "type": "Not"
+                      }
+                    ],
+                    "type": "And"
+                  }
+                }
+              }
+            },
+            "compose_ns": 29666132,
+            "digest": "sha256:2142f383a9a699868b40da8a7afe5d0c2f526ec9d7fb63aaf784031ba3b55555",
+            "operator": "add_edge_identity_guard",
+            "site": "in m responds_to any endpoint",
+            "source_rule_digest": "sha256:b0ce645cf9092f626aa86ca2417cf5f6c4a6bcd4645c03a28b2b0c5c116ca758",
+            "target": "reply_to_adjacency_pair",
+            "wall": null
+          },
+          "source_control_ns": 31841105,
+          "source_training": [
+            {
+              "correct": true,
+              "expected_counts": [
+                1,
+                1
+              ],
+              "input_ids": [
+                "#482",
+                "#491"
+              ],
+              "output_counts": [
+                1,
+                1
+              ],
+              "rule_store_stable": true,
+              "sequence_runtime_ns": 362713
+            },
+            {
+              "correct": true,
+              "expected_counts": [
+                1,
+                1
+              ],
+              "input_ids": [
+                "#482",
+                "#491"
+              ],
+              "output_counts": [
+                1,
+                1
+              ],
+              "rule_store_stable": true,
+              "sequence_runtime_ns": 576614
+            }
+          ],
+          "training": [
+            {
+              "correct": true,
+              "expected_counts": [
+                1,
+                1
+              ],
+              "input_ids": [
+                "#482",
+                "#491"
+              ],
+              "output_counts": [
+                1,
+                1
+              ],
+              "rule_store_stable": true,
+              "sequence_runtime_ns": 18617850
+            },
+            {
+              "correct": true,
+              "expected_counts": [
+                1,
+                1
+              ],
+              "input_ids": [
+                "#482",
+                "#491"
+              ],
+              "output_counts": [
+                1,
+                1
+              ],
+              "rule_store_stable": true,
+              "sequence_runtime_ns": 396833
+            }
+          ],
+          "training_scoring_ns": 37667543
+        },
+        "recurrence": {
+          "primary_rule_unchanged": true,
+          "proposal": {
+            "built": true,
+            "candidate": {
+              "label": "substrate_composer",
+              "rules": {
+                "mrl_offer_due_once": {
+                  "batch": false,
+                  "content_hash": 463715677639902482,
+                  "effects": [
+                    [
+                      "add_node",
+                      "offer",
+                      "Observation",
+                      {
+                        "key": {
+                          "__term__": {
+                            "source": {
+                              "items": [
+                                {
+                                  "key": "capability_key",
+                                  "node": {
+                                    "name": "candidate",
+                                    "type": "Var"
+                                  },
+                                  "type": "Attr"
+                                }
+                              ],
+                              "type": "SetT"
+                            },
+                            "type": "MapList",
+                            "value": {
+                              "name": "k",
+                              "type": "Var"
+                            },
+                            "var_name": "k"
+                          }
+                        },
+                        "offered_at_persistence": {
+                          "__term__": {
+                            "key": "persistence",
+                            "node": {
+                              "name": "candidate",
+                              "type": "Var"
+                            },
+                            "type": "Attr"
+                          }
+                        },
+                        "offered_at_segment": {
+                          "__term__": {
+                            "key": "latest_segment_ordinal",
+                            "node": {
+                              "name": "candidate",
+                              "type": "Var"
+                            },
+                            "type": "Attr"
+                          }
+                        },
+                        "signature": {
+                          "__term__": {
+                            "key": "structural_signature",
+                            "node": {
+                              "name": "candidate",
+                              "type": "Var"
+                            },
+                            "type": "Attr"
+                          }
+                        },
+                        "status": "pending"
+                      }
+                    ],
+                    [
+                      "add_edge",
+                      "agent",
+                      "observed",
+                      "offer",
+                      {}
+                    ],
+                    [
+                      "add_edge",
+                      "candidate",
+                      "has_mint_offer",
+                      "offer",
+                      {}
+                    ],
+                    [
+                      "add_edge",
+                      "episode",
+                      "has_mint_offer",
+                      "offer",
+                      {}
+                    ]
+                  ],
+                  "match": [
+                    [
+                      "agent",
+                      "has_minting_recurrence_episode",
+                      "episode"
+                    ],
+                    [
+                      "episode",
+                      "has_predicate_recurrence_candidate",
+                      "candidate"
+                    ]
+                  ],
+                  "match_type": null,
+                  "name": "mrl_offer_due_once_structvariant_order0",
+                  "revision": 0,
+                  "rule_uid": 13,
+                  "where": {
+                    "items": [
+                      {
+                        "items": [
+                          {
+                            "a": {
+                              "key": "persistence",
+                              "node": {
+                                "name": "candidate",
+                                "type": "Var"
+                              },
+                              "type": "Attr"
+                            },
+                            "b": {
+                              "key": "mint_after_quanta",
+                              "node": {
+                                "name": "episode",
+                                "type": "Var"
+                              },
+                              "type": "Attr"
+                            },
+                            "type": "Gte"
+                          }
+                        ],
+                        "type": "And"
+                      },
+                      {
+                        "arg": {
+                          "predicate": {
+                            "type": "Lit",
+                            "value": true
+                          },
+                          "source": {
+                            "edge_type": "has_mint_offer",
+                            "node": {
+                              "name": "candidate",
+                              "type": "Var"
+                            },
+                            "type": "Neighbours"
+                          },
+                          "type": "Exists",
+                          "var_name": "existing_edge_identity"
+                        },
+                        "type": "Not"
+                      }
+                    ],
+                    "type": "And"
+                  }
+                }
+              }
+            },
+            "compose_ns": 36380085,
+            "digest": "sha256:b63b0f29aa232a0c5d92da634ef729dd6a28091b2967ec2644d9426997405a9c",
+            "operator": "add_edge_identity_guard",
+            "site": "out candidate has_mint_offer any endpoint",
+            "source_rule_digest": "sha256:04479af4f59ef2139cb2d69c4af6c7eb363fc081b494f6d788c1a58bf5a16af1",
+            "target": "mrl_offer_due_once",
+            "wall": null
+          },
+          "source_control_ns": 10212546,
+          "source_training": [
+            {
+              "correct": true,
+              "fixedpoint_progress": 0,
+              "keys": [
+                "bidir-0-train_source_0-0-0",
+                "bidir-0-train_source_0-0-1"
+              ],
+              "output_counts": [
+                1,
+                1
+              ],
+              "rule_store_stable": true,
+              "stage0_sweeps": [
+                2,
+                0,
+                0,
+                0,
+                0
+              ],
+              "stage1_sweeps": [
+                2,
+                0,
+                0,
+                0,
+                0
+              ]
+            },
+            {
+              "correct": true,
+              "fixedpoint_progress": 0,
+              "keys": [
+                "bidir-0-train_source_0-1-0",
+                "bidir-0-train_source_0-1-1"
+              ],
+              "output_counts": [
+                1,
+                1
+              ],
+              "rule_store_stable": true,
+              "stage0_sweeps": [
+                2,
+                0,
+                0,
+                0,
+                0
+              ],
+              "stage1_sweeps": [
+                2,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          ],
+          "training": [
+            {
+              "correct": true,
+              "fixedpoint_progress": 0,
+              "keys": [
+                "bidir-0-train_0-0-0",
+                "bidir-0-train_0-0-1"
+              ],
+              "output_counts": [
+                1,
+                1
+              ],
+              "rule_store_stable": true,
+              "stage0_sweeps": [
+                2,
+                0,
+                0,
+                0,
+                0
+              ],
+              "stage1_sweeps": [
+                2,
+                0,
+                0,
+                0,
+                0
+              ]
+            },
+            {
+              "correct": true,
+              "fixedpoint_progress": 0,
+              "keys": [
+                "bidir-0-train_0-1-0",
+                "bidir-0-train_0-1-1"
+              ],
+              "output_counts": [
+                1,
+                1
+              ],
+              "rule_store_stable": true,
+              "stage0_sweeps": [
+                2,
+                0,
+                0,
+                0,
+                0
+              ],
+              "stage1_sweeps": [
+                2,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          ],
+          "training_scoring_ns": 11647875
+        }
+      },
+      "source_after": {
+        "docs/research/engine_substrate/THOUGHTEXPERIMENT_BIDIRECTIONAL_EDGE_IDENTITY_GUARDS_V1_PREREG_20261002.md": "2475c402246935fd9f60ba4a5994592b52a40653065f4055636da8756e1b743a",
+        "docs/research/engine_substrate/THOUGHTEXPERIMENT_SUBSTRATE_EDGE_IDENTITY_COMPOSER_V1_PREREG_20261002.md": "8713e955ad6dad79fed0db9aef2bcbd67659b7dafe98b18553f6958369b39edb",
+        "domains/edit_ops.py": "6f7c7355e07751f8a75563ad67d89e0c50d888d7d2759d2b5343e8926b4d5328",
+        "domains/reflective_faculty.py": "4ed2be41a840b989cdaead83201b8337c7a08b4532e7e7a1a2c9a25e880ddd5a",
+        "episode_helper::docs/research/engine_substrate/THOUGHTEXPERIMENT_BIDIRECTIONAL_EDGE_IDENTITY_GUARDS_V1_1_AMENDMENT_20261002.md": "e46f2e311f31f93eda56772d71ad3fdc7ad9b84dafec10a39beb6020b23846dc",
+        "episode_helper::docs/research/engine_substrate/THOUGHTEXPERIMENT_BIDIRECTIONAL_EDGE_IDENTITY_GUARDS_V1_PREREG_20261002.md": "2475c402246935fd9f60ba4a5994592b52a40653065f4055636da8756e1b743a",
+        "episode_helper::domains/contract_query.py": "5861f25467e2fed9905fa325816a3dc60822d4a79004b8b7b095511c3806b9a6",
+        "episode_helper::domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+        "episode_helper::domains/language_world.py": "06d24bdba1ccbd720f749f0c02d5a96729c40601237ec21a8f938077b2a262bb",
+        "episode_helper::domains/reference_resolution.py": "1f9c6ce8eaf98c33deb025110a0dea5e7960251eace4f7dc6872d3d4b85c2701",
+        "episode_helper::domains/reflective_faculty.py": "4ed2be41a840b989cdaead83201b8337c7a08b4532e7e7a1a2c9a25e880ddd5a",
+        "episode_helper::evaluation/substrate_capability/analyze_thoughtexperiment_bidirectional_edge_identity_guards_v1_1.py": "35f7efdf13d181853a4c915a9fa6bc2a03658a948db6159aaba9d4ebd6493260",
+        "episode_helper::evaluation/substrate_capability/thoughtexperiment_bidirectional_edge_identity_guards_v1_1.py": "94e0c33434d055b886f9f4be389737e2d508a9a3dcb5d720db8b739929b55696",
+        "episode_helper::loaded_native_binary": "09d0ac3d2b3362f5cdf7d6b1cb5ef21524cf25672916b6928c29da7997fd32c6",
+        "episode_helper::runners/dsl/Cargo.lock": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+        "episode_helper::runners/dsl/Cargo.toml": "c4d8ffff2241352a5150b5a9937dbb8010e958b6f115235b7daeae716c1a9332",
+        "episode_helper::runners/dsl/python/substrate_rs/__init__.py": "4e338797786071822b2e3d919ca1da3a266bda60c3ce0e29e13213a9d37454b4",
+        "episode_helper::runners/dsl/src/grammar.rs": "aaf6f571bf8e8761584c7473d3fe3130c5a6e395bff7f2b63f1cdcf6046b73f6",
+        "episode_helper::runners/dsl/src/graph.rs": "9744fec2e0c5091f2036081ffc615b1c7dd00ba2a5995af1294efb0b5aa5a28c",
+        "episode_helper::runners/dsl/src/graph_rules.rs": "b0e9c5bf0bbb4bf278fdab03610fa3f6f82d01ad8ee898ec789982ff41812a50",
+        "episode_helper::runners/dsl/src/lib.rs": "f8c5ae707046db8347438227913a737faf78a184b294c8e339a9008e71fab36c",
+        "episode_helper::runners/dsl/src/persist.rs": "066d026451c97e1032c30054a3a4c556d386f23db2304630a4625c5bf81306cf",
+        "episode_helper::runners/dsl/src/py.rs": "6a6da90d425e4f8da7b7626fc8dda39b46b63529a312d482d80e6e2ec4d03fd6",
+        "episode_helper::runners/dsl/src/substrate.rs": "bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+        "episode_helper::runners/dsl/src/sym.rs": "b54f6af6e456a7095a02eb5b3cab42a73072318bd7e54ed150c787468b170d5f",
+        "episode_helper::runners/dsl/src/term.rs": "5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+        "episode_helper::seeds/autonomy.json": "5eb18e0b06de6243ac1abae5a51bdc146e78d4d5a13ec863a9baa20f9ede9dfe",
+        "episode_helper::seeds/composer_dispatch.json": "a167c0ef5fba47ef9c46a3c87db972e5a85f444f9a930e761a7ef40d25b9a09a",
+        "episode_helper::seeds/conversation.json": "dbcf2ec16f706ee4057f9a0fc6266c764b83c4631f067a32b4e9c6d2bf9f748a",
+        "episode_helper::seeds/conversation_reply.json": "32be4138d22d9cca4c1872f79e86729a830f4e2952375a847ea00f2767aa15ff",
+        "episode_helper::seeds/faculty_lessons.json": "a1a0ab3e67957666dfdf7cc6a20f0e3f15203d6553e16c08f2bbeb16774f9c2a",
+        "episode_helper::seeds/intent.json": "1833b673e04f98521361bc1d93e57f4feb5add49e93ce9fd813ed2bb5eebae5f",
+        "episode_helper::seeds/minting_recurrence_ledger.json": "10c5df924cb98eacea2a2159e60247c1d783db37f4be147378c6115e1b545a92",
+        "episode_helper::seeds/psychology.json": "1c8753c431f829f4a144d8c3d777df86af3f68c6139e7a247fa1db7e171d45b1",
+        "episode_helper::seeds/relation_vocabulary.json": "781e89f27c5d31c214d57eb521deb6dab04c34ef51413b7a14739dd98861d90a",
+        "episode_helper::seeds/relations.json": "94c553808d35c873f328691bccf4d0a3e37d6b30137e1038a4b3ff69898e4f5c",
+        "episode_helper::substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+        "episode_helper::substrate/seed_loader.py": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27",
+        "episode_helper::substrate/world_adapter.py": "e5850e4df2ff28d8c941cc3c0d12a840ab230ce627833421a88c3b354f65027c",
+        "evaluation/substrate_capability/analyze_thoughtexperiment_bidirectional_edge_identity_guards_v1_1.py": "35f7efdf13d181853a4c915a9fa6bc2a03658a948db6159aaba9d4ebd6493260",
+        "evaluation/substrate_capability/analyze_thoughtexperiment_substrate_edge_identity_composer_v1.py": "951cd551736ac49b7b346cca331bd7a0db7ec2c33c217feda718320f733d59d1",
+        "evaluation/substrate_capability/thoughtexperiment_bidirectional_edge_identity_guards_v1_1.py": "94e0c33434d055b886f9f4be389737e2d508a9a3dcb5d720db8b739929b55696",
+        "evaluation/substrate_capability/thoughtexperiment_substrate_edge_identity_composer_v1.py": "67ca2021d18b8906120de2f8f6c49ea2b8f6f8af9b035cc595fea0ea102352aa",
+        "loaded_native_binary": "09d0ac3d2b3362f5cdf7d6b1cb5ef21524cf25672916b6928c29da7997fd32c6"
+      },
+      "source_before": {
+        "docs/research/engine_substrate/THOUGHTEXPERIMENT_BIDIRECTIONAL_EDGE_IDENTITY_GUARDS_V1_PREREG_20261002.md": "2475c402246935fd9f60ba4a5994592b52a40653065f4055636da8756e1b743a",
+        "docs/research/engine_substrate/THOUGHTEXPERIMENT_SUBSTRATE_EDGE_IDENTITY_COMPOSER_V1_PREREG_20261002.md": "8713e955ad6dad79fed0db9aef2bcbd67659b7dafe98b18553f6958369b39edb",
+        "domains/edit_ops.py": "6f7c7355e07751f8a75563ad67d89e0c50d888d7d2759d2b5343e8926b4d5328",
+        "domains/reflective_faculty.py": "4ed2be41a840b989cdaead83201b8337c7a08b4532e7e7a1a2c9a25e880ddd5a",
+        "episode_helper::docs/research/engine_substrate/THOUGHTEXPERIMENT_BIDIRECTIONAL_EDGE_IDENTITY_GUARDS_V1_1_AMENDMENT_20261002.md": "e46f2e311f31f93eda56772d71ad3fdc7ad9b84dafec10a39beb6020b23846dc",
+        "episode_helper::docs/research/engine_substrate/THOUGHTEXPERIMENT_BIDIRECTIONAL_EDGE_IDENTITY_GUARDS_V1_PREREG_20261002.md": "2475c402246935fd9f60ba4a5994592b52a40653065f4055636da8756e1b743a",
+        "episode_helper::domains/contract_query.py": "5861f25467e2fed9905fa325816a3dc60822d4a79004b8b7b095511c3806b9a6",
+        "episode_helper::domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+        "episode_helper::domains/language_world.py": "06d24bdba1ccbd720f749f0c02d5a96729c40601237ec21a8f938077b2a262bb",
+        "episode_helper::domains/reference_resolution.py": "1f9c6ce8eaf98c33deb025110a0dea5e7960251eace4f7dc6872d3d4b85c2701",
+        "episode_helper::domains/reflective_faculty.py": "4ed2be41a840b989cdaead83201b8337c7a08b4532e7e7a1a2c9a25e880ddd5a",
+        "episode_helper::evaluation/substrate_capability/analyze_thoughtexperiment_bidirectional_edge_identity_guards_v1_1.py": "35f7efdf13d181853a4c915a9fa6bc2a03658a948db6159aaba9d4ebd6493260",
+        "episode_helper::evaluation/substrate_capability/thoughtexperiment_bidirectional_edge_identity_guards_v1_1.py": "94e0c33434d055b886f9f4be389737e2d508a9a3dcb5d720db8b739929b55696",
+        "episode_helper::loaded_native_binary": "09d0ac3d2b3362f5cdf7d6b1cb5ef21524cf25672916b6928c29da7997fd32c6",
+        "episode_helper::runners/dsl/Cargo.lock": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+        "episode_helper::runners/dsl/Cargo.toml": "c4d8ffff2241352a5150b5a9937dbb8010e958b6f115235b7daeae716c1a9332",
+        "episode_helper::runners/dsl/python/substrate_rs/__init__.py": "4e338797786071822b2e3d919ca1da3a266bda60c3ce0e29e13213a9d37454b4",
+        "episode_helper::runners/dsl/src/grammar.rs": "aaf6f571bf8e8761584c7473d3fe3130c5a6e395bff7f2b63f1cdcf6046b73f6",
+        "episode_helper::runners/dsl/src/graph.rs": "9744fec2e0c5091f2036081ffc615b1c7dd00ba2a5995af1294efb0b5aa5a28c",
+        "episode_helper::runners/dsl/src/graph_rules.rs": "b0e9c5bf0bbb4bf278fdab03610fa3f6f82d01ad8ee898ec789982ff41812a50",
+        "episode_helper::runners/dsl/src/lib.rs": "f8c5ae707046db8347438227913a737faf78a184b294c8e339a9008e71fab36c",
+        "episode_helper::runners/dsl/src/persist.rs": "066d026451c97e1032c30054a3a4c556d386f23db2304630a4625c5bf81306cf",
+        "episode_helper::runners/dsl/src/py.rs": "6a6da90d425e4f8da7b7626fc8dda39b46b63529a312d482d80e6e2ec4d03fd6",
+        "episode_helper::runners/dsl/src/substrate.rs": "bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+        "episode_helper::runners/dsl/src/sym.rs": "b54f6af6e456a7095a02eb5b3cab42a73072318bd7e54ed150c787468b170d5f",
+        "episode_helper::runners/dsl/src/term.rs": "5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+        "episode_helper::seeds/autonomy.json": "5eb18e0b06de6243ac1abae5a51bdc146e78d4d5a13ec863a9baa20f9ede9dfe",
+        "episode_helper::seeds/composer_dispatch.json": "a167c0ef5fba47ef9c46a3c87db972e5a85f444f9a930e761a7ef40d25b9a09a",
+        "episode_helper::seeds/conversation.json": "dbcf2ec16f706ee4057f9a0fc6266c764b83c4631f067a32b4e9c6d2bf9f748a",
+        "episode_helper::seeds/conversation_reply.json": "32be4138d22d9cca4c1872f79e86729a830f4e2952375a847ea00f2767aa15ff",
+        "episode_helper::seeds/faculty_lessons.json": "a1a0ab3e67957666dfdf7cc6a20f0e3f15203d6553e16c08f2bbeb16774f9c2a",
+        "episode_helper::seeds/intent.json": "1833b673e04f98521361bc1d93e57f4feb5add49e93ce9fd813ed2bb5eebae5f",
+        "episode_helper::seeds/minting_recurrence_ledger.json": "10c5df924cb98eacea2a2159e60247c1d783db37f4be147378c6115e1b545a92",
+        "episode_helper::seeds/psychology.json": "1c8753c431f829f4a144d8c3d777df86af3f68c6139e7a247fa1db7e171d45b1",
+        "episode_helper::seeds/relation_vocabulary.json": "781e89f27c5d31c214d57eb521deb6dab04c34ef51413b7a14739dd98861d90a",
+        "episode_helper::seeds/relations.json": "94c553808d35c873f328691bccf4d0a3e37d6b30137e1038a4b3ff69898e4f5c",
+        "episode_helper::substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+        "episode_helper::substrate/seed_loader.py": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27",
+        "episode_helper::substrate/world_adapter.py": "e5850e4df2ff28d8c941cc3c0d12a840ab230ce627833421a88c3b354f65027c",
+        "evaluation/substrate_capability/analyze_thoughtexperiment_bidirectional_edge_identity_guards_v1_1.py": "35f7efdf13d181853a4c915a9fa6bc2a03658a948db6159aaba9d4ebd6493260",
+        "evaluation/substrate_capability/analyze_thoughtexperiment_substrate_edge_identity_composer_v1.py": "951cd551736ac49b7b346cca331bd7a0db7ec2c33c217feda718320f733d59d1",
+        "evaluation/substrate_capability/thoughtexperiment_bidirectional_edge_identity_guards_v1_1.py": "94e0c33434d055b886f9f4be389737e2d508a9a3dcb5d720db8b739929b55696",
+        "evaluation/substrate_capability/thoughtexperiment_substrate_edge_identity_composer_v1.py": "67ca2021d18b8906120de2f8f6c49ea2b8f6f8af9b035cc595fea0ea102352aa",
+        "loaded_native_binary": "09d0ac3d2b3362f5cdf7d6b1cb5ef21524cf25672916b6928c29da7997fd32c6"
+      },
+      "source_stable": true,
+      "worker": 0,
+      "worker_stage_wall_ns": 355789077
+    },
+    {
+      "controls": {
+        "ambiguous_site": {
+          "built": false,
+          "kind": "add_edge_identity_guard",
+          "wall": "no unique positive-scoring EditSite for 'add_edge_identity_guard' among 3 applicable edge sites (tied or no cue overlap); abstained"
+        },
+        "ambiguous_site_ns": 30736768,
+        "no_overlap": {
+          "built": false,
+          "kind": null,
+          "wall": "no RuleSummary genuinely overlaps this axis's residual predicates (abstained, like the acting-variant pick abstains on no overlap)"
+        },
+        "no_overlap_ns": 32158707
+      },
+      "families": {
+        "conversation": {
+          "primary_rule_unchanged": true,
+          "proposal": {
+            "built": true,
+            "candidate": {
+              "label": "substrate_composer",
+              "rules": {
+                "reply_to_adjacency_pair": {
+                  "batch": false,
+                  "content_hash": 6590774322814344041,
+                  "effects": [
+                    [
+                      "add_node",
+                      "reply",
+                      "Message",
+                      {
+                        "from": "agent"
+                      }
+                    ],
+                    [
+                      "add_edge",
+                      "reply",
+                      "has_speech_act",
+                      "r",
+                      {}
+                    ],
+                    [
+                      "add_edge",
+                      "reply",
+                      "responds_to",
+                      "m",
+                      {}
+                    ],
+                    [
+                      "add_edge",
+                      "agent",
+                      "sent",
+                      "reply",
+                      {}
+                    ],
+                    [
+                      "set_attr",
+                      "m",
+                      "adjacency_replied_act",
+                      {
+                        "__term__": {
+                          "key": "name",
+                          "node": {
+                            "name": "r",
+                            "type": "Var"
+                          },
+                          "type": "Attr"
+                        }
+                      }
+                    ]
+                  ],
+                  "match": [
+                    [
+                      "m",
+                      "has_intent",
+                      "i"
+                    ],
+                    [
+                      "i",
+                      "expects_response",
+                      "r"
+                    ],
+                    [
+                      "agent",
+                      "is_a",
+                      "Agent"
+                    ]
+                  ],
+                  "match_type": null,
+                  "name": "reply_to_adjacency_pair_structvariant_order1",
+                  "revision": 0,
+                  "rule_uid": 12,
+                  "where": {
+                    "items": [
+                      {
+                        "items": [
+                          {
+                            "a": {
+                              "key": "from",
+                              "node": {
+                                "name": "m",
+                                "type": "Var"
+                              },
+                              "type": "Attr"
+                            },
+                            "b": {
+                              "type": "Lit",
+                              "value": "interlocutor"
+                            },
+                            "type": "Eq"
+                          }
+                        ],
+                        "type": "And"
+                      },
+                      {
+                        "arg": {
+                          "predicate": {
+                            "type": "Lit",
+                            "value": true
+                          },
+                          "source": {
+                            "edge_type": "responds_to",
+                            "node": {
+                              "name": "m",
+                              "type": "Var"
+                            },
+                            "type": "InNeighbours"
+                          },
+                          "type": "Exists",
+                          "var_name": "existing_edge_identity"
+                        },
+                        "type": "Not"
+                      }
+                    ],
+                    "type": "And"
+                  }
+                }
+              }
+            },
+            "compose_ns": 31271392,
+            "digest": "sha256:2142f383a9a699868b40da8a7afe5d0c2f526ec9d7fb63aaf784031ba3b55555",
+            "operator": "add_edge_identity_guard",
+            "site": "in m responds_to any endpoint",
+            "source_rule_digest": "sha256:b0ce645cf9092f626aa86ca2417cf5f6c4a6bcd4645c03a28b2b0c5c116ca758",
+            "target": "reply_to_adjacency_pair",
+            "wall": null
+          },
+          "source_control_ns": 17791245,
+          "source_training": [
+            {
+              "correct": true,
+              "expected_counts": [
+                1,
+                1
+              ],
+              "input_ids": [
+                "#482",
+                "#491"
+              ],
+              "output_counts": [
+                1,
+                1
+              ],
+              "rule_store_stable": true,
+              "sequence_runtime_ns": 353123
+            },
+            {
+              "correct": true,
+              "expected_counts": [
+                1,
+                1
+              ],
+              "input_ids": [
+                "#482",
+                "#491"
+              ],
+              "output_counts": [
+                1,
+                1
+              ],
+              "rule_store_stable": true,
+              "sequence_runtime_ns": 351732
+            }
+          ],
+          "training": [
+            {
+              "correct": true,
+              "expected_counts": [
+                1,
+                1
+              ],
+              "input_ids": [
+                "#482",
+                "#491"
+              ],
+              "output_counts": [
+                1,
+                1
+              ],
+              "rule_store_stable": true,
+              "sequence_runtime_ns": 19400394
+            },
+            {
+              "correct": true,
+              "expected_counts": [
+                1,
+                1
+              ],
+              "input_ids": [
+                "#482",
+                "#491"
+              ],
+              "output_counts": [
+                1,
+                1
+              ],
+              "rule_store_stable": true,
+              "sequence_runtime_ns": 380063
+            }
+          ],
+          "training_scoring_ns": 38879921
+        },
+        "recurrence": {
+          "primary_rule_unchanged": true,
+          "proposal": {
+            "built": true,
+            "candidate": {
+              "label": "substrate_composer",
+              "rules": {
+                "mrl_offer_due_once": {
+                  "batch": false,
+                  "content_hash": 463715677639902482,
+                  "effects": [
+                    [
+                      "add_node",
+                      "offer",
+                      "Observation",
+                      {
+                        "key": {
+                          "__term__": {
+                            "source": {
+                              "items": [
+                                {
+                                  "key": "capability_key",
+                                  "node": {
+                                    "name": "candidate",
+                                    "type": "Var"
+                                  },
+                                  "type": "Attr"
+                                }
+                              ],
+                              "type": "SetT"
+                            },
+                            "type": "MapList",
+                            "value": {
+                              "name": "k",
+                              "type": "Var"
+                            },
+                            "var_name": "k"
+                          }
+                        },
+                        "offered_at_persistence": {
+                          "__term__": {
+                            "key": "persistence",
+                            "node": {
+                              "name": "candidate",
+                              "type": "Var"
+                            },
+                            "type": "Attr"
+                          }
+                        },
+                        "offered_at_segment": {
+                          "__term__": {
+                            "key": "latest_segment_ordinal",
+                            "node": {
+                              "name": "candidate",
+                              "type": "Var"
+                            },
+                            "type": "Attr"
+                          }
+                        },
+                        "signature": {
+                          "__term__": {
+                            "key": "structural_signature",
+                            "node": {
+                              "name": "candidate",
+                              "type": "Var"
+                            },
+                            "type": "Attr"
+                          }
+                        },
+                        "status": "pending"
+                      }
+                    ],
+                    [
+                      "add_edge",
+                      "agent",
+                      "observed",
+                      "offer",
+                      {}
+                    ],
+                    [
+                      "add_edge",
+                      "candidate",
+                      "has_mint_offer",
+                      "offer",
+                      {}
+                    ],
+                    [
+                      "add_edge",
+                      "episode",
+                      "has_mint_offer",
+                      "offer",
+                      {}
+                    ]
+                  ],
+                  "match": [
+                    [
+                      "agent",
+                      "has_minting_recurrence_episode",
+                      "episode"
+                    ],
+                    [
+                      "episode",
+                      "has_predicate_recurrence_candidate",
+                      "candidate"
+                    ]
+                  ],
+                  "match_type": null,
+                  "name": "mrl_offer_due_once_structvariant_order1",
+                  "revision": 0,
+                  "rule_uid": 13,
+                  "where": {
+                    "items": [
+                      {
+                        "items": [
+                          {
+                            "a": {
+                              "key": "persistence",
+                              "node": {
+                                "name": "candidate",
+                                "type": "Var"
+                              },
+                              "type": "Attr"
+                            },
+                            "b": {
+                              "key": "mint_after_quanta",
+                              "node": {
+                                "name": "episode",
+                                "type": "Var"
+                              },
+                              "type": "Attr"
+                            },
+                            "type": "Gte"
+                          }
+                        ],
+                        "type": "And"
+                      },
+                      {
+                        "arg": {
+                          "predicate": {
+                            "type": "Lit",
+                            "value": true
+                          },
+                          "source": {
+                            "edge_type": "has_mint_offer",
+                            "node": {
+                              "name": "candidate",
+                              "type": "Var"
+                            },
+                            "type": "Neighbours"
+                          },
+                          "type": "Exists",
+                          "var_name": "existing_edge_identity"
+                        },
+                        "type": "Not"
+                      }
+                    ],
+                    "type": "And"
+                  }
+                }
+              }
+            },
+            "compose_ns": 35795731,
+            "digest": "sha256:b63b0f29aa232a0c5d92da634ef729dd6a28091b2967ec2644d9426997405a9c",
+            "operator": "add_edge_identity_guard",
+            "site": "out candidate has_mint_offer any endpoint",
+            "source_rule_digest": "sha256:04479af4f59ef2139cb2d69c4af6c7eb363fc081b494f6d788c1a58bf5a16af1",
+            "target": "mrl_offer_due_once",
+            "wall": null
+          },
+          "source_control_ns": 10647868,
+          "source_training": [
+            {
+              "correct": true,
+              "fixedpoint_progress": 0,
+              "keys": [
+                "bidir-1-train_source_1-0-0",
+                "bidir-1-train_source_1-0-1"
+              ],
+              "output_counts": [
+                1,
+                1
+              ],
+              "rule_store_stable": true,
+              "stage0_sweeps": [
+                2,
+                0,
+                0,
+                0,
+                0
+              ],
+              "stage1_sweeps": [
+                2,
+                0,
+                0,
+                0,
+                0
+              ]
+            },
+            {
+              "correct": true,
+              "fixedpoint_progress": 0,
+              "keys": [
+                "bidir-1-train_source_1-1-0",
+                "bidir-1-train_source_1-1-1"
+              ],
+              "output_counts": [
+                1,
+                1
+              ],
+              "rule_store_stable": true,
+              "stage0_sweeps": [
+                2,
+                0,
+                0,
+                0,
+                0
+              ],
+              "stage1_sweeps": [
+                2,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          ],
+          "training": [
+            {
+              "correct": true,
+              "fixedpoint_progress": 0,
+              "keys": [
+                "bidir-1-train_1-0-0",
+                "bidir-1-train_1-0-1"
+              ],
+              "output_counts": [
+                1,
+                1
+              ],
+              "rule_store_stable": true,
+              "stage0_sweeps": [
+                2,
+                0,
+                0,
+                0,
+                0
+              ],
+              "stage1_sweeps": [
+                2,
+                0,
+                0,
+                0,
+                0
+              ]
+            },
+            {
+              "correct": true,
+              "fixedpoint_progress": 0,
+              "keys": [
+                "bidir-1-train_1-1-0",
+                "bidir-1-train_1-1-1"
+              ],
+              "output_counts": [
+                1,
+                1
+              ],
+              "rule_store_stable": true,
+              "stage0_sweeps": [
+                2,
+                0,
+                0,
+                0,
+                0
+              ],
+              "stage1_sweeps": [
+                2,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          ],
+          "training_scoring_ns": 12478091
+        }
+      },
+      "source_after": {
+        "docs/research/engine_substrate/THOUGHTEXPERIMENT_BIDIRECTIONAL_EDGE_IDENTITY_GUARDS_V1_PREREG_20261002.md": "2475c402246935fd9f60ba4a5994592b52a40653065f4055636da8756e1b743a",
+        "docs/research/engine_substrate/THOUGHTEXPERIMENT_SUBSTRATE_EDGE_IDENTITY_COMPOSER_V1_PREREG_20261002.md": "8713e955ad6dad79fed0db9aef2bcbd67659b7dafe98b18553f6958369b39edb",
+        "domains/edit_ops.py": "6f7c7355e07751f8a75563ad67d89e0c50d888d7d2759d2b5343e8926b4d5328",
+        "domains/reflective_faculty.py": "4ed2be41a840b989cdaead83201b8337c7a08b4532e7e7a1a2c9a25e880ddd5a",
+        "episode_helper::docs/research/engine_substrate/THOUGHTEXPERIMENT_BIDIRECTIONAL_EDGE_IDENTITY_GUARDS_V1_1_AMENDMENT_20261002.md": "e46f2e311f31f93eda56772d71ad3fdc7ad9b84dafec10a39beb6020b23846dc",
+        "episode_helper::docs/research/engine_substrate/THOUGHTEXPERIMENT_BIDIRECTIONAL_EDGE_IDENTITY_GUARDS_V1_PREREG_20261002.md": "2475c402246935fd9f60ba4a5994592b52a40653065f4055636da8756e1b743a",
+        "episode_helper::domains/contract_query.py": "5861f25467e2fed9905fa325816a3dc60822d4a79004b8b7b095511c3806b9a6",
+        "episode_helper::domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+        "episode_helper::domains/language_world.py": "06d24bdba1ccbd720f749f0c02d5a96729c40601237ec21a8f938077b2a262bb",
+        "episode_helper::domains/reference_resolution.py": "1f9c6ce8eaf98c33deb025110a0dea5e7960251eace4f7dc6872d3d4b85c2701",
+        "episode_helper::domains/reflective_faculty.py": "4ed2be41a840b989cdaead83201b8337c7a08b4532e7e7a1a2c9a25e880ddd5a",
+        "episode_helper::evaluation/substrate_capability/analyze_thoughtexperiment_bidirectional_edge_identity_guards_v1_1.py": "35f7efdf13d181853a4c915a9fa6bc2a03658a948db6159aaba9d4ebd6493260",
+        "episode_helper::evaluation/substrate_capability/thoughtexperiment_bidirectional_edge_identity_guards_v1_1.py": "94e0c33434d055b886f9f4be389737e2d508a9a3dcb5d720db8b739929b55696",
+        "episode_helper::loaded_native_binary": "09d0ac3d2b3362f5cdf7d6b1cb5ef21524cf25672916b6928c29da7997fd32c6",
+        "episode_helper::runners/dsl/Cargo.lock": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+        "episode_helper::runners/dsl/Cargo.toml": "c4d8ffff2241352a5150b5a9937dbb8010e958b6f115235b7daeae716c1a9332",
+        "episode_helper::runners/dsl/python/substrate_rs/__init__.py": "4e338797786071822b2e3d919ca1da3a266bda60c3ce0e29e13213a9d37454b4",
+        "episode_helper::runners/dsl/src/grammar.rs": "aaf6f571bf8e8761584c7473d3fe3130c5a6e395bff7f2b63f1cdcf6046b73f6",
+        "episode_helper::runners/dsl/src/graph.rs": "9744fec2e0c5091f2036081ffc615b1c7dd00ba2a5995af1294efb0b5aa5a28c",
+        "episode_helper::runners/dsl/src/graph_rules.rs": "b0e9c5bf0bbb4bf278fdab03610fa3f6f82d01ad8ee898ec789982ff41812a50",
+        "episode_helper::runners/dsl/src/lib.rs": "f8c5ae707046db8347438227913a737faf78a184b294c8e339a9008e71fab36c",
+        "episode_helper::runners/dsl/src/persist.rs": "066d026451c97e1032c30054a3a4c556d386f23db2304630a4625c5bf81306cf",
+        "episode_helper::runners/dsl/src/py.rs": "6a6da90d425e4f8da7b7626fc8dda39b46b63529a312d482d80e6e2ec4d03fd6",
+        "episode_helper::runners/dsl/src/substrate.rs": "bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+        "episode_helper::runners/dsl/src/sym.rs": "b54f6af6e456a7095a02eb5b3cab42a73072318bd7e54ed150c787468b170d5f",
+        "episode_helper::runners/dsl/src/term.rs": "5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+        "episode_helper::seeds/autonomy.json": "5eb18e0b06de6243ac1abae5a51bdc146e78d4d5a13ec863a9baa20f9ede9dfe",
+        "episode_helper::seeds/composer_dispatch.json": "a167c0ef5fba47ef9c46a3c87db972e5a85f444f9a930e761a7ef40d25b9a09a",
+        "episode_helper::seeds/conversation.json": "dbcf2ec16f706ee4057f9a0fc6266c764b83c4631f067a32b4e9c6d2bf9f748a",
+        "episode_helper::seeds/conversation_reply.json": "32be4138d22d9cca4c1872f79e86729a830f4e2952375a847ea00f2767aa15ff",
+        "episode_helper::seeds/faculty_lessons.json": "a1a0ab3e67957666dfdf7cc6a20f0e3f15203d6553e16c08f2bbeb16774f9c2a",
+        "episode_helper::seeds/intent.json": "1833b673e04f98521361bc1d93e57f4feb5add49e93ce9fd813ed2bb5eebae5f",
+        "episode_helper::seeds/minting_recurrence_ledger.json": "10c5df924cb98eacea2a2159e60247c1d783db37f4be147378c6115e1b545a92",
+        "episode_helper::seeds/psychology.json": "1c8753c431f829f4a144d8c3d777df86af3f68c6139e7a247fa1db7e171d45b1",
+        "episode_helper::seeds/relation_vocabulary.json": "781e89f27c5d31c214d57eb521deb6dab04c34ef51413b7a14739dd98861d90a",
+        "episode_helper::seeds/relations.json": "94c553808d35c873f328691bccf4d0a3e37d6b30137e1038a4b3ff69898e4f5c",
+        "episode_helper::substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+        "episode_helper::substrate/seed_loader.py": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27",
+        "episode_helper::substrate/world_adapter.py": "e5850e4df2ff28d8c941cc3c0d12a840ab230ce627833421a88c3b354f65027c",
+        "evaluation/substrate_capability/analyze_thoughtexperiment_bidirectional_edge_identity_guards_v1_1.py": "35f7efdf13d181853a4c915a9fa6bc2a03658a948db6159aaba9d4ebd6493260",
+        "evaluation/substrate_capability/analyze_thoughtexperiment_substrate_edge_identity_composer_v1.py": "951cd551736ac49b7b346cca331bd7a0db7ec2c33c217feda718320f733d59d1",
+        "evaluation/substrate_capability/thoughtexperiment_bidirectional_edge_identity_guards_v1_1.py": "94e0c33434d055b886f9f4be389737e2d508a9a3dcb5d720db8b739929b55696",
+        "evaluation/substrate_capability/thoughtexperiment_substrate_edge_identity_composer_v1.py": "67ca2021d18b8906120de2f8f6c49ea2b8f6f8af9b035cc595fea0ea102352aa",
+        "loaded_native_binary": "09d0ac3d2b3362f5cdf7d6b1cb5ef21524cf25672916b6928c29da7997fd32c6"
+      },
+      "source_before": {
+        "docs/research/engine_substrate/THOUGHTEXPERIMENT_BIDIRECTIONAL_EDGE_IDENTITY_GUARDS_V1_PREREG_20261002.md": "2475c402246935fd9f60ba4a5994592b52a40653065f4055636da8756e1b743a",
+        "docs/research/engine_substrate/THOUGHTEXPERIMENT_SUBSTRATE_EDGE_IDENTITY_COMPOSER_V1_PREREG_20261002.md": "8713e955ad6dad79fed0db9aef2bcbd67659b7dafe98b18553f6958369b39edb",
+        "domains/edit_ops.py": "6f7c7355e07751f8a75563ad67d89e0c50d888d7d2759d2b5343e8926b4d5328",
+        "domains/reflective_faculty.py": "4ed2be41a840b989cdaead83201b8337c7a08b4532e7e7a1a2c9a25e880ddd5a",
+        "episode_helper::docs/research/engine_substrate/THOUGHTEXPERIMENT_BIDIRECTIONAL_EDGE_IDENTITY_GUARDS_V1_1_AMENDMENT_20261002.md": "e46f2e311f31f93eda56772d71ad3fdc7ad9b84dafec10a39beb6020b23846dc",
+        "episode_helper::docs/research/engine_substrate/THOUGHTEXPERIMENT_BIDIRECTIONAL_EDGE_IDENTITY_GUARDS_V1_PREREG_20261002.md": "2475c402246935fd9f60ba4a5994592b52a40653065f4055636da8756e1b743a",
+        "episode_helper::domains/contract_query.py": "5861f25467e2fed9905fa325816a3dc60822d4a79004b8b7b095511c3806b9a6",
+        "episode_helper::domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+        "episode_helper::domains/language_world.py": "06d24bdba1ccbd720f749f0c02d5a96729c40601237ec21a8f938077b2a262bb",
+        "episode_helper::domains/reference_resolution.py": "1f9c6ce8eaf98c33deb025110a0dea5e7960251eace4f7dc6872d3d4b85c2701",
+        "episode_helper::domains/reflective_faculty.py": "4ed2be41a840b989cdaead83201b8337c7a08b4532e7e7a1a2c9a25e880ddd5a",
+        "episode_helper::evaluation/substrate_capability/analyze_thoughtexperiment_bidirectional_edge_identity_guards_v1_1.py": "35f7efdf13d181853a4c915a9fa6bc2a03658a948db6159aaba9d4ebd6493260",
+        "episode_helper::evaluation/substrate_capability/thoughtexperiment_bidirectional_edge_identity_guards_v1_1.py": "94e0c33434d055b886f9f4be389737e2d508a9a3dcb5d720db8b739929b55696",
+        "episode_helper::loaded_native_binary": "09d0ac3d2b3362f5cdf7d6b1cb5ef21524cf25672916b6928c29da7997fd32c6",
+        "episode_helper::runners/dsl/Cargo.lock": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+        "episode_helper::runners/dsl/Cargo.toml": "c4d8ffff2241352a5150b5a9937dbb8010e958b6f115235b7daeae716c1a9332",
+        "episode_helper::runners/dsl/python/substrate_rs/__init__.py": "4e338797786071822b2e3d919ca1da3a266bda60c3ce0e29e13213a9d37454b4",
+        "episode_helper::runners/dsl/src/grammar.rs": "aaf6f571bf8e8761584c7473d3fe3130c5a6e395bff7f2b63f1cdcf6046b73f6",
+        "episode_helper::runners/dsl/src/graph.rs": "9744fec2e0c5091f2036081ffc615b1c7dd00ba2a5995af1294efb0b5aa5a28c",
+        "episode_helper::runners/dsl/src/graph_rules.rs": "b0e9c5bf0bbb4bf278fdab03610fa3f6f82d01ad8ee898ec789982ff41812a50",
+        "episode_helper::runners/dsl/src/lib.rs": "f8c5ae707046db8347438227913a737faf78a184b294c8e339a9008e71fab36c",
+        "episode_helper::runners/dsl/src/persist.rs": "066d026451c97e1032c30054a3a4c556d386f23db2304630a4625c5bf81306cf",
+        "episode_helper::runners/dsl/src/py.rs": "6a6da90d425e4f8da7b7626fc8dda39b46b63529a312d482d80e6e2ec4d03fd6",
+        "episode_helper::runners/dsl/src/substrate.rs": "bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+        "episode_helper::runners/dsl/src/sym.rs": "b54f6af6e456a7095a02eb5b3cab42a73072318bd7e54ed150c787468b170d5f",
+        "episode_helper::runners/dsl/src/term.rs": "5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+        "episode_helper::seeds/autonomy.json": "5eb18e0b06de6243ac1abae5a51bdc146e78d4d5a13ec863a9baa20f9ede9dfe",
+        "episode_helper::seeds/composer_dispatch.json": "a167c0ef5fba47ef9c46a3c87db972e5a85f444f9a930e761a7ef40d25b9a09a",
+        "episode_helper::seeds/conversation.json": "dbcf2ec16f706ee4057f9a0fc6266c764b83c4631f067a32b4e9c6d2bf9f748a",
+        "episode_helper::seeds/conversation_reply.json": "32be4138d22d9cca4c1872f79e86729a830f4e2952375a847ea00f2767aa15ff",
+        "episode_helper::seeds/faculty_lessons.json": "a1a0ab3e67957666dfdf7cc6a20f0e3f15203d6553e16c08f2bbeb16774f9c2a",
+        "episode_helper::seeds/intent.json": "1833b673e04f98521361bc1d93e57f4feb5add49e93ce9fd813ed2bb5eebae5f",
+        "episode_helper::seeds/minting_recurrence_ledger.json": "10c5df924cb98eacea2a2159e60247c1d783db37f4be147378c6115e1b545a92",
+        "episode_helper::seeds/psychology.json": "1c8753c431f829f4a144d8c3d777df86af3f68c6139e7a247fa1db7e171d45b1",
+        "episode_helper::seeds/relation_vocabulary.json": "781e89f27c5d31c214d57eb521deb6dab04c34ef51413b7a14739dd98861d90a",
+        "episode_helper::seeds/relations.json": "94c553808d35c873f328691bccf4d0a3e37d6b30137e1038a4b3ff69898e4f5c",
+        "episode_helper::substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+        "episode_helper::substrate/seed_loader.py": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27",
+        "episode_helper::substrate/world_adapter.py": "e5850e4df2ff28d8c941cc3c0d12a840ab230ce627833421a88c3b354f65027c",
+        "evaluation/substrate_capability/analyze_thoughtexperiment_bidirectional_edge_identity_guards_v1_1.py": "35f7efdf13d181853a4c915a9fa6bc2a03658a948db6159aaba9d4ebd6493260",
+        "evaluation/substrate_capability/analyze_thoughtexperiment_substrate_edge_identity_composer_v1.py": "951cd551736ac49b7b346cca331bd7a0db7ec2c33c217feda718320f733d59d1",
+        "evaluation/substrate_capability/thoughtexperiment_bidirectional_edge_identity_guards_v1_1.py": "94e0c33434d055b886f9f4be389737e2d508a9a3dcb5d720db8b739929b55696",
+        "evaluation/substrate_capability/thoughtexperiment_substrate_edge_identity_composer_v1.py": "67ca2021d18b8906120de2f8f6c49ea2b8f6f8af9b035cc595fea0ea102352aa",
+        "loaded_native_binary": "09d0ac3d2b3362f5cdf7d6b1cb5ef21524cf25672916b6928c29da7997fd32c6"
+      },
+      "source_stable": true,
+      "worker": 1,
+      "worker_stage_wall_ns": 327660555
+    },
+    {
+      "controls": {
+        "ambiguous_site": {
+          "built": false,
+          "kind": "add_edge_identity_guard",
+          "wall": "no unique positive-scoring EditSite for 'add_edge_identity_guard' among 3 applicable edge sites (tied or no cue overlap); abstained"
+        },
+        "ambiguous_site_ns": 32599511,
+        "no_overlap": {
+          "built": false,
+          "kind": null,
+          "wall": "no RuleSummary genuinely overlaps this axis's residual predicates (abstained, like the acting-variant pick abstains on no overlap)"
+        },
+        "no_overlap_ns": 33081024
+      },
+      "families": {
+        "conversation": {
+          "primary_rule_unchanged": true,
+          "proposal": {
+            "built": true,
+            "candidate": {
+              "label": "substrate_composer",
+              "rules": {
+                "reply_to_adjacency_pair": {
+                  "batch": false,
+                  "content_hash": 6590774322814344041,
+                  "effects": [
+                    [
+                      "add_node",
+                      "reply",
+                      "Message",
+                      {
+                        "from": "agent"
+                      }
+                    ],
+                    [
+                      "add_edge",
+                      "reply",
+                      "has_speech_act",
+                      "r",
+                      {}
+                    ],
+                    [
+                      "add_edge",
+                      "reply",
+                      "responds_to",
+                      "m",
+                      {}
+                    ],
+                    [
+                      "add_edge",
+                      "agent",
+                      "sent",
+                      "reply",
+                      {}
+                    ],
+                    [
+                      "set_attr",
+                      "m",
+                      "adjacency_replied_act",
+                      {
+                        "__term__": {
+                          "key": "name",
+                          "node": {
+                            "name": "r",
+                            "type": "Var"
+                          },
+                          "type": "Attr"
+                        }
+                      }
+                    ]
+                  ],
+                  "match": [
+                    [
+                      "m",
+                      "has_intent",
+                      "i"
+                    ],
+                    [
+                      "i",
+                      "expects_response",
+                      "r"
+                    ],
+                    [
+                      "agent",
+                      "is_a",
+                      "Agent"
+                    ]
+                  ],
+                  "match_type": null,
+                  "name": "reply_to_adjacency_pair_structvariant_order2",
+                  "revision": 0,
+                  "rule_uid": 12,
+                  "where": {
+                    "items": [
+                      {
+                        "items": [
+                          {
+                            "a": {
+                              "key": "from",
+                              "node": {
+                                "name": "m",
+                                "type": "Var"
+                              },
+                              "type": "Attr"
+                            },
+                            "b": {
+                              "type": "Lit",
+                              "value": "interlocutor"
+                            },
+                            "type": "Eq"
+                          }
+                        ],
+                        "type": "And"
+                      },
+                      {
+                        "arg": {
+                          "predicate": {
+                            "type": "Lit",
+                            "value": true
+                          },
+                          "source": {
+                            "edge_type": "responds_to",
+                            "node": {
+                              "name": "m",
+                              "type": "Var"
+                            },
+                            "type": "InNeighbours"
+                          },
+                          "type": "Exists",
+                          "var_name": "existing_edge_identity"
+                        },
+                        "type": "Not"
+                      }
+                    ],
+                    "type": "And"
+                  }
+                }
+              }
+            },
+            "compose_ns": 29834863,
+            "digest": "sha256:2142f383a9a699868b40da8a7afe5d0c2f526ec9d7fb63aaf784031ba3b55555",
+            "operator": "add_edge_identity_guard",
+            "site": "in m responds_to any endpoint",
+            "source_rule_digest": "sha256:b0ce645cf9092f626aa86ca2417cf5f6c4a6bcd4645c03a28b2b0c5c116ca758",
+            "target": "reply_to_adjacency_pair",
+            "wall": null
+          },
+          "source_control_ns": 18436390,
+          "source_training": [
+            {
+              "correct": true,
+              "expected_counts": [
+                1,
+                1
+              ],
+              "input_ids": [
+                "#482",
+                "#491"
+              ],
+              "output_counts": [
+                1,
+                1
+              ],
+              "rule_store_stable": true,
+              "sequence_runtime_ns": 360503
+            },
+            {
+              "correct": true,
+              "expected_counts": [
+                1,
+                1
+              ],
+              "input_ids": [
+                "#482",
+                "#491"
+              ],
+              "output_counts": [
+                1,
+                1
+              ],
+              "rule_store_stable": true,
+              "sequence_runtime_ns": 366303
+            }
+          ],
+          "training": [
+            {
+              "correct": true,
+              "expected_counts": [
+                1,
+                1
+              ],
+              "input_ids": [
+                "#482",
+                "#491"
+              ],
+              "output_counts": [
+                1,
+                1
+              ],
+              "rule_store_stable": true,
+              "sequence_runtime_ns": 19281495
+            },
+            {
+              "correct": true,
+              "expected_counts": [
+                1,
+                1
+              ],
+              "input_ids": [
+                "#482",
+                "#491"
+              ],
+              "output_counts": [
+                1,
+                1
+              ],
+              "rule_store_stable": true,
+              "sequence_runtime_ns": 371863
+            }
+          ],
+          "training_scoring_ns": 38505758
+        },
+        "recurrence": {
+          "primary_rule_unchanged": true,
+          "proposal": {
+            "built": true,
+            "candidate": {
+              "label": "substrate_composer",
+              "rules": {
+                "mrl_offer_due_once": {
+                  "batch": false,
+                  "content_hash": 463715677639902482,
+                  "effects": [
+                    [
+                      "add_node",
+                      "offer",
+                      "Observation",
+                      {
+                        "key": {
+                          "__term__": {
+                            "source": {
+                              "items": [
+                                {
+                                  "key": "capability_key",
+                                  "node": {
+                                    "name": "candidate",
+                                    "type": "Var"
+                                  },
+                                  "type": "Attr"
+                                }
+                              ],
+                              "type": "SetT"
+                            },
+                            "type": "MapList",
+                            "value": {
+                              "name": "k",
+                              "type": "Var"
+                            },
+                            "var_name": "k"
+                          }
+                        },
+                        "offered_at_persistence": {
+                          "__term__": {
+                            "key": "persistence",
+                            "node": {
+                              "name": "candidate",
+                              "type": "Var"
+                            },
+                            "type": "Attr"
+                          }
+                        },
+                        "offered_at_segment": {
+                          "__term__": {
+                            "key": "latest_segment_ordinal",
+                            "node": {
+                              "name": "candidate",
+                              "type": "Var"
+                            },
+                            "type": "Attr"
+                          }
+                        },
+                        "signature": {
+                          "__term__": {
+                            "key": "structural_signature",
+                            "node": {
+                              "name": "candidate",
+                              "type": "Var"
+                            },
+                            "type": "Attr"
+                          }
+                        },
+                        "status": "pending"
+                      }
+                    ],
+                    [
+                      "add_edge",
+                      "agent",
+                      "observed",
+                      "offer",
+                      {}
+                    ],
+                    [
+                      "add_edge",
+                      "candidate",
+                      "has_mint_offer",
+                      "offer",
+                      {}
+                    ],
+                    [
+                      "add_edge",
+                      "episode",
+                      "has_mint_offer",
+                      "offer",
+                      {}
+                    ]
+                  ],
+                  "match": [
+                    [
+                      "agent",
+                      "has_minting_recurrence_episode",
+                      "episode"
+                    ],
+                    [
+                      "episode",
+                      "has_predicate_recurrence_candidate",
+                      "candidate"
+                    ]
+                  ],
+                  "match_type": null,
+                  "name": "mrl_offer_due_once_structvariant_order2",
+                  "revision": 0,
+                  "rule_uid": 13,
+                  "where": {
+                    "items": [
+                      {
+                        "items": [
+                          {
+                            "a": {
+                              "key": "persistence",
+                              "node": {
+                                "name": "candidate",
+                                "type": "Var"
+                              },
+                              "type": "Attr"
+                            },
+                            "b": {
+                              "key": "mint_after_quanta",
+                              "node": {
+                                "name": "episode",
+                                "type": "Var"
+                              },
+                              "type": "Attr"
+                            },
+                            "type": "Gte"
+                          }
+                        ],
+                        "type": "And"
+                      },
+                      {
+                        "arg": {
+                          "predicate": {
+                            "type": "Lit",
+                            "value": true
+                          },
+                          "source": {
+                            "edge_type": "has_mint_offer",
+                            "node": {
+                              "name": "candidate",
+                              "type": "Var"
+                            },
+                            "type": "Neighbours"
+                          },
+                          "type": "Exists",
+                          "var_name": "existing_edge_identity"
+                        },
+                        "type": "Not"
+                      }
+                    ],
+                    "type": "And"
+                  }
+                }
+              }
+            },
+            "compose_ns": 38967812,
+            "digest": "sha256:b63b0f29aa232a0c5d92da634ef729dd6a28091b2967ec2644d9426997405a9c",
+            "operator": "add_edge_identity_guard",
+            "site": "out candidate has_mint_offer any endpoint",
+            "source_rule_digest": "sha256:04479af4f59ef2139cb2d69c4af6c7eb363fc081b494f6d788c1a58bf5a16af1",
+            "target": "mrl_offer_due_once",
+            "wall": null
+          },
+          "source_control_ns": 10239406,
+          "source_training": [
+            {
+              "correct": true,
+              "fixedpoint_progress": 0,
+              "keys": [
+                "bidir-2-train_source_2-0-0",
+                "bidir-2-train_source_2-0-1"
+              ],
+              "output_counts": [
+                1,
+                1
+              ],
+              "rule_store_stable": true,
+              "stage0_sweeps": [
+                2,
+                0,
+                0,
+                0,
+                0
+              ],
+              "stage1_sweeps": [
+                2,
+                0,
+                0,
+                0,
+                0
+              ]
+            },
+            {
+              "correct": true,
+              "fixedpoint_progress": 0,
+              "keys": [
+                "bidir-2-train_source_2-1-0",
+                "bidir-2-train_source_2-1-1"
+              ],
+              "output_counts": [
+                1,
+                1
+              ],
+              "rule_store_stable": true,
+              "stage0_sweeps": [
+                2,
+                0,
+                0,
+                0,
+                0
+              ],
+              "stage1_sweeps": [
+                2,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          ],
+          "training": [
+            {
+              "correct": true,
+              "fixedpoint_progress": 0,
+              "keys": [
+                "bidir-2-train_2-0-0",
+                "bidir-2-train_2-0-1"
+              ],
+              "output_counts": [
+                1,
+                1
+              ],
+              "rule_store_stable": true,
+              "stage0_sweeps": [
+                2,
+                0,
+                0,
+                0,
+                0
+              ],
+              "stage1_sweeps": [
+                2,
+                0,
+                0,
+                0,
+                0
+              ]
+            },
+            {
+              "correct": true,
+              "fixedpoint_progress": 0,
+              "keys": [
+                "bidir-2-train_2-1-0",
+                "bidir-2-train_2-1-1"
+              ],
+              "output_counts": [
+                1,
+                1
+              ],
+              "rule_store_stable": true,
+              "stage0_sweeps": [
+                2,
+                0,
+                0,
+                0,
+                0
+              ],
+              "stage1_sweeps": [
+                2,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          ],
+          "training_scoring_ns": 11630346
+        }
+      },
+      "source_after": {
+        "docs/research/engine_substrate/THOUGHTEXPERIMENT_BIDIRECTIONAL_EDGE_IDENTITY_GUARDS_V1_PREREG_20261002.md": "2475c402246935fd9f60ba4a5994592b52a40653065f4055636da8756e1b743a",
+        "docs/research/engine_substrate/THOUGHTEXPERIMENT_SUBSTRATE_EDGE_IDENTITY_COMPOSER_V1_PREREG_20261002.md": "8713e955ad6dad79fed0db9aef2bcbd67659b7dafe98b18553f6958369b39edb",
+        "domains/edit_ops.py": "6f7c7355e07751f8a75563ad67d89e0c50d888d7d2759d2b5343e8926b4d5328",
+        "domains/reflective_faculty.py": "4ed2be41a840b989cdaead83201b8337c7a08b4532e7e7a1a2c9a25e880ddd5a",
+        "episode_helper::docs/research/engine_substrate/THOUGHTEXPERIMENT_BIDIRECTIONAL_EDGE_IDENTITY_GUARDS_V1_1_AMENDMENT_20261002.md": "e46f2e311f31f93eda56772d71ad3fdc7ad9b84dafec10a39beb6020b23846dc",
+        "episode_helper::docs/research/engine_substrate/THOUGHTEXPERIMENT_BIDIRECTIONAL_EDGE_IDENTITY_GUARDS_V1_PREREG_20261002.md": "2475c402246935fd9f60ba4a5994592b52a40653065f4055636da8756e1b743a",
+        "episode_helper::domains/contract_query.py": "5861f25467e2fed9905fa325816a3dc60822d4a79004b8b7b095511c3806b9a6",
+        "episode_helper::domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+        "episode_helper::domains/language_world.py": "06d24bdba1ccbd720f749f0c02d5a96729c40601237ec21a8f938077b2a262bb",
+        "episode_helper::domains/reference_resolution.py": "1f9c6ce8eaf98c33deb025110a0dea5e7960251eace4f7dc6872d3d4b85c2701",
+        "episode_helper::domains/reflective_faculty.py": "4ed2be41a840b989cdaead83201b8337c7a08b4532e7e7a1a2c9a25e880ddd5a",
+        "episode_helper::evaluation/substrate_capability/analyze_thoughtexperiment_bidirectional_edge_identity_guards_v1_1.py": "35f7efdf13d181853a4c915a9fa6bc2a03658a948db6159aaba9d4ebd6493260",
+        "episode_helper::evaluation/substrate_capability/thoughtexperiment_bidirectional_edge_identity_guards_v1_1.py": "94e0c33434d055b886f9f4be389737e2d508a9a3dcb5d720db8b739929b55696",
+        "episode_helper::loaded_native_binary": "09d0ac3d2b3362f5cdf7d6b1cb5ef21524cf25672916b6928c29da7997fd32c6",
+        "episode_helper::runners/dsl/Cargo.lock": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+        "episode_helper::runners/dsl/Cargo.toml": "c4d8ffff2241352a5150b5a9937dbb8010e958b6f115235b7daeae716c1a9332",
+        "episode_helper::runners/dsl/python/substrate_rs/__init__.py": "4e338797786071822b2e3d919ca1da3a266bda60c3ce0e29e13213a9d37454b4",
+        "episode_helper::runners/dsl/src/grammar.rs": "aaf6f571bf8e8761584c7473d3fe3130c5a6e395bff7f2b63f1cdcf6046b73f6",
+        "episode_helper::runners/dsl/src/graph.rs": "9744fec2e0c5091f2036081ffc615b1c7dd00ba2a5995af1294efb0b5aa5a28c",
+        "episode_helper::runners/dsl/src/graph_rules.rs": "b0e9c5bf0bbb4bf278fdab03610fa3f6f82d01ad8ee898ec789982ff41812a50",
+        "episode_helper::runners/dsl/src/lib.rs": "f8c5ae707046db8347438227913a737faf78a184b294c8e339a9008e71fab36c",
+        "episode_helper::runners/dsl/src/persist.rs": "066d026451c97e1032c30054a3a4c556d386f23db2304630a4625c5bf81306cf",
+        "episode_helper::runners/dsl/src/py.rs": "6a6da90d425e4f8da7b7626fc8dda39b46b63529a312d482d80e6e2ec4d03fd6",
+        "episode_helper::runners/dsl/src/substrate.rs": "bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+        "episode_helper::runners/dsl/src/sym.rs": "b54f6af6e456a7095a02eb5b3cab42a73072318bd7e54ed150c787468b170d5f",
+        "episode_helper::runners/dsl/src/term.rs": "5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+        "episode_helper::seeds/autonomy.json": "5eb18e0b06de6243ac1abae5a51bdc146e78d4d5a13ec863a9baa20f9ede9dfe",
+        "episode_helper::seeds/composer_dispatch.json": "a167c0ef5fba47ef9c46a3c87db972e5a85f444f9a930e761a7ef40d25b9a09a",
+        "episode_helper::seeds/conversation.json": "dbcf2ec16f706ee4057f9a0fc6266c764b83c4631f067a32b4e9c6d2bf9f748a",
+        "episode_helper::seeds/conversation_reply.json": "32be4138d22d9cca4c1872f79e86729a830f4e2952375a847ea00f2767aa15ff",
+        "episode_helper::seeds/faculty_lessons.json": "a1a0ab3e67957666dfdf7cc6a20f0e3f15203d6553e16c08f2bbeb16774f9c2a",
+        "episode_helper::seeds/intent.json": "1833b673e04f98521361bc1d93e57f4feb5add49e93ce9fd813ed2bb5eebae5f",
+        "episode_helper::seeds/minting_recurrence_ledger.json": "10c5df924cb98eacea2a2159e60247c1d783db37f4be147378c6115e1b545a92",
+        "episode_helper::seeds/psychology.json": "1c8753c431f829f4a144d8c3d777df86af3f68c6139e7a247fa1db7e171d45b1",
+        "episode_helper::seeds/relation_vocabulary.json": "781e89f27c5d31c214d57eb521deb6dab04c34ef51413b7a14739dd98861d90a",
+        "episode_helper::seeds/relations.json": "94c553808d35c873f328691bccf4d0a3e37d6b30137e1038a4b3ff69898e4f5c",
+        "episode_helper::substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+        "episode_helper::substrate/seed_loader.py": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27",
+        "episode_helper::substrate/world_adapter.py": "e5850e4df2ff28d8c941cc3c0d12a840ab230ce627833421a88c3b354f65027c",
+        "evaluation/substrate_capability/analyze_thoughtexperiment_bidirectional_edge_identity_guards_v1_1.py": "35f7efdf13d181853a4c915a9fa6bc2a03658a948db6159aaba9d4ebd6493260",
+        "evaluation/substrate_capability/analyze_thoughtexperiment_substrate_edge_identity_composer_v1.py": "951cd551736ac49b7b346cca331bd7a0db7ec2c33c217feda718320f733d59d1",
+        "evaluation/substrate_capability/thoughtexperiment_bidirectional_edge_identity_guards_v1_1.py": "94e0c33434d055b886f9f4be389737e2d508a9a3dcb5d720db8b739929b55696",
+        "evaluation/substrate_capability/thoughtexperiment_substrate_edge_identity_composer_v1.py": "67ca2021d18b8906120de2f8f6c49ea2b8f6f8af9b035cc595fea0ea102352aa",
+        "loaded_native_binary": "09d0ac3d2b3362f5cdf7d6b1cb5ef21524cf25672916b6928c29da7997fd32c6"
+      },
+      "source_before": {
+        "docs/research/engine_substrate/THOUGHTEXPERIMENT_BIDIRECTIONAL_EDGE_IDENTITY_GUARDS_V1_PREREG_20261002.md": "2475c402246935fd9f60ba4a5994592b52a40653065f4055636da8756e1b743a",
+        "docs/research/engine_substrate/THOUGHTEXPERIMENT_SUBSTRATE_EDGE_IDENTITY_COMPOSER_V1_PREREG_20261002.md": "8713e955ad6dad79fed0db9aef2bcbd67659b7dafe98b18553f6958369b39edb",
+        "domains/edit_ops.py": "6f7c7355e07751f8a75563ad67d89e0c50d888d7d2759d2b5343e8926b4d5328",
+        "domains/reflective_faculty.py": "4ed2be41a840b989cdaead83201b8337c7a08b4532e7e7a1a2c9a25e880ddd5a",
+        "episode_helper::docs/research/engine_substrate/THOUGHTEXPERIMENT_BIDIRECTIONAL_EDGE_IDENTITY_GUARDS_V1_1_AMENDMENT_20261002.md": "e46f2e311f31f93eda56772d71ad3fdc7ad9b84dafec10a39beb6020b23846dc",
+        "episode_helper::docs/research/engine_substrate/THOUGHTEXPERIMENT_BIDIRECTIONAL_EDGE_IDENTITY_GUARDS_V1_PREREG_20261002.md": "2475c402246935fd9f60ba4a5994592b52a40653065f4055636da8756e1b743a",
+        "episode_helper::domains/contract_query.py": "5861f25467e2fed9905fa325816a3dc60822d4a79004b8b7b095511c3806b9a6",
+        "episode_helper::domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+        "episode_helper::domains/language_world.py": "06d24bdba1ccbd720f749f0c02d5a96729c40601237ec21a8f938077b2a262bb",
+        "episode_helper::domains/reference_resolution.py": "1f9c6ce8eaf98c33deb025110a0dea5e7960251eace4f7dc6872d3d4b85c2701",
+        "episode_helper::domains/reflective_faculty.py": "4ed2be41a840b989cdaead83201b8337c7a08b4532e7e7a1a2c9a25e880ddd5a",
+        "episode_helper::evaluation/substrate_capability/analyze_thoughtexperiment_bidirectional_edge_identity_guards_v1_1.py": "35f7efdf13d181853a4c915a9fa6bc2a03658a948db6159aaba9d4ebd6493260",
+        "episode_helper::evaluation/substrate_capability/thoughtexperiment_bidirectional_edge_identity_guards_v1_1.py": "94e0c33434d055b886f9f4be389737e2d508a9a3dcb5d720db8b739929b55696",
+        "episode_helper::loaded_native_binary": "09d0ac3d2b3362f5cdf7d6b1cb5ef21524cf25672916b6928c29da7997fd32c6",
+        "episode_helper::runners/dsl/Cargo.lock": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+        "episode_helper::runners/dsl/Cargo.toml": "c4d8ffff2241352a5150b5a9937dbb8010e958b6f115235b7daeae716c1a9332",
+        "episode_helper::runners/dsl/python/substrate_rs/__init__.py": "4e338797786071822b2e3d919ca1da3a266bda60c3ce0e29e13213a9d37454b4",
+        "episode_helper::runners/dsl/src/grammar.rs": "aaf6f571bf8e8761584c7473d3fe3130c5a6e395bff7f2b63f1cdcf6046b73f6",
+        "episode_helper::runners/dsl/src/graph.rs": "9744fec2e0c5091f2036081ffc615b1c7dd00ba2a5995af1294efb0b5aa5a28c",
+        "episode_helper::runners/dsl/src/graph_rules.rs": "b0e9c5bf0bbb4bf278fdab03610fa3f6f82d01ad8ee898ec789982ff41812a50",
+        "episode_helper::runners/dsl/src/lib.rs": "f8c5ae707046db8347438227913a737faf78a184b294c8e339a9008e71fab36c",
+        "episode_helper::runners/dsl/src/persist.rs": "066d026451c97e1032c30054a3a4c556d386f23db2304630a4625c5bf81306cf",
+        "episode_helper::runners/dsl/src/py.rs": "6a6da90d425e4f8da7b7626fc8dda39b46b63529a312d482d80e6e2ec4d03fd6",
+        "episode_helper::runners/dsl/src/substrate.rs": "bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+        "episode_helper::runners/dsl/src/sym.rs": "b54f6af6e456a7095a02eb5b3cab42a73072318bd7e54ed150c787468b170d5f",
+        "episode_helper::runners/dsl/src/term.rs": "5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+        "episode_helper::seeds/autonomy.json": "5eb18e0b06de6243ac1abae5a51bdc146e78d4d5a13ec863a9baa20f9ede9dfe",
+        "episode_helper::seeds/composer_dispatch.json": "a167c0ef5fba47ef9c46a3c87db972e5a85f444f9a930e761a7ef40d25b9a09a",
+        "episode_helper::seeds/conversation.json": "dbcf2ec16f706ee4057f9a0fc6266c764b83c4631f067a32b4e9c6d2bf9f748a",
+        "episode_helper::seeds/conversation_reply.json": "32be4138d22d9cca4c1872f79e86729a830f4e2952375a847ea00f2767aa15ff",
+        "episode_helper::seeds/faculty_lessons.json": "a1a0ab3e67957666dfdf7cc6a20f0e3f15203d6553e16c08f2bbeb16774f9c2a",
+        "episode_helper::seeds/intent.json": "1833b673e04f98521361bc1d93e57f4feb5add49e93ce9fd813ed2bb5eebae5f",
+        "episode_helper::seeds/minting_recurrence_ledger.json": "10c5df924cb98eacea2a2159e60247c1d783db37f4be147378c6115e1b545a92",
+        "episode_helper::seeds/psychology.json": "1c8753c431f829f4a144d8c3d777df86af3f68c6139e7a247fa1db7e171d45b1",
+        "episode_helper::seeds/relation_vocabulary.json": "781e89f27c5d31c214d57eb521deb6dab04c34ef51413b7a14739dd98861d90a",
+        "episode_helper::seeds/relations.json": "94c553808d35c873f328691bccf4d0a3e37d6b30137e1038a4b3ff69898e4f5c",
+        "episode_helper::substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+        "episode_helper::substrate/seed_loader.py": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27",
+        "episode_helper::substrate/world_adapter.py": "e5850e4df2ff28d8c941cc3c0d12a840ab230ce627833421a88c3b354f65027c",
+        "evaluation/substrate_capability/analyze_thoughtexperiment_bidirectional_edge_identity_guards_v1_1.py": "35f7efdf13d181853a4c915a9fa6bc2a03658a948db6159aaba9d4ebd6493260",
+        "evaluation/substrate_capability/analyze_thoughtexperiment_substrate_edge_identity_composer_v1.py": "951cd551736ac49b7b346cca331bd7a0db7ec2c33c217feda718320f733d59d1",
+        "evaluation/substrate_capability/thoughtexperiment_bidirectional_edge_identity_guards_v1_1.py": "94e0c33434d055b886f9f4be389737e2d508a9a3dcb5d720db8b739929b55696",
+        "evaluation/substrate_capability/thoughtexperiment_substrate_edge_identity_composer_v1.py": "67ca2021d18b8906120de2f8f6c49ea2b8f6f8af9b035cc595fea0ea102352aa",
+        "loaded_native_binary": "09d0ac3d2b3362f5cdf7d6b1cb5ef21524cf25672916b6928c29da7997fd32c6"
+      },
+      "source_stable": true,
+      "worker": 2,
+      "worker_stage_wall_ns": 325591133
+    },
+    {
+      "controls": {
+        "ambiguous_site": {
+          "built": false,
+          "kind": "add_edge_identity_guard",
+          "wall": "no unique positive-scoring EditSite for 'add_edge_identity_guard' among 3 applicable edge sites (tied or no cue overlap); abstained"
+        },
+        "ambiguous_site_ns": 30370386,
+        "no_overlap": {
+          "built": false,
+          "kind": null,
+          "wall": "no RuleSummary genuinely overlaps this axis's residual predicates (abstained, like the acting-variant pick abstains on no overlap)"
+        },
+        "no_overlap_ns": 38406378
+      },
+      "families": {
+        "conversation": {
+          "primary_rule_unchanged": true,
+          "proposal": {
+            "built": true,
+            "candidate": {
+              "label": "substrate_composer",
+              "rules": {
+                "reply_to_adjacency_pair": {
+                  "batch": false,
+                  "content_hash": 6590774322814344041,
+                  "effects": [
+                    [
+                      "add_node",
+                      "reply",
+                      "Message",
+                      {
+                        "from": "agent"
+                      }
+                    ],
+                    [
+                      "add_edge",
+                      "reply",
+                      "has_speech_act",
+                      "r",
+                      {}
+                    ],
+                    [
+                      "add_edge",
+                      "reply",
+                      "responds_to",
+                      "m",
+                      {}
+                    ],
+                    [
+                      "add_edge",
+                      "agent",
+                      "sent",
+                      "reply",
+                      {}
+                    ],
+                    [
+                      "set_attr",
+                      "m",
+                      "adjacency_replied_act",
+                      {
+                        "__term__": {
+                          "key": "name",
+                          "node": {
+                            "name": "r",
+                            "type": "Var"
+                          },
+                          "type": "Attr"
+                        }
+                      }
+                    ]
+                  ],
+                  "match": [
+                    [
+                      "m",
+                      "has_intent",
+                      "i"
+                    ],
+                    [
+                      "i",
+                      "expects_response",
+                      "r"
+                    ],
+                    [
+                      "agent",
+                      "is_a",
+                      "Agent"
+                    ]
+                  ],
+                  "match_type": null,
+                  "name": "reply_to_adjacency_pair_structvariant_order3",
+                  "revision": 0,
+                  "rule_uid": 12,
+                  "where": {
+                    "items": [
+                      {
+                        "items": [
+                          {
+                            "a": {
+                              "key": "from",
+                              "node": {
+                                "name": "m",
+                                "type": "Var"
+                              },
+                              "type": "Attr"
+                            },
+                            "b": {
+                              "type": "Lit",
+                              "value": "interlocutor"
+                            },
+                            "type": "Eq"
+                          }
+                        ],
+                        "type": "And"
+                      },
+                      {
+                        "arg": {
+                          "predicate": {
+                            "type": "Lit",
+                            "value": true
+                          },
+                          "source": {
+                            "edge_type": "responds_to",
+                            "node": {
+                              "name": "m",
+                              "type": "Var"
+                            },
+                            "type": "InNeighbours"
+                          },
+                          "type": "Exists",
+                          "var_name": "existing_edge_identity"
+                        },
+                        "type": "Not"
+                      }
+                    ],
+                    "type": "And"
+                  }
+                }
+              }
+            },
+            "compose_ns": 31096480,
+            "digest": "sha256:2142f383a9a699868b40da8a7afe5d0c2f526ec9d7fb63aaf784031ba3b55555",
+            "operator": "add_edge_identity_guard",
+            "site": "in m responds_to any endpoint",
+            "source_rule_digest": "sha256:b0ce645cf9092f626aa86ca2417cf5f6c4a6bcd4645c03a28b2b0c5c116ca758",
+            "target": "reply_to_adjacency_pair",
+            "wall": null
+          },
+          "source_control_ns": 18358038,
+          "source_training": [
+            {
+              "correct": true,
+              "expected_counts": [
+                1,
+                1
+              ],
+              "input_ids": [
+                "#482",
+                "#491"
+              ],
+              "output_counts": [
+                1,
+                1
+              ],
+              "rule_store_stable": true,
+              "sequence_runtime_ns": 380263
+            },
+            {
+              "correct": true,
+              "expected_counts": [
+                1,
+                1
+              ],
+              "input_ids": [
+                "#482",
+                "#491"
+              ],
+              "output_counts": [
+                1,
+                1
+              ],
+              "rule_store_stable": true,
+              "sequence_runtime_ns": 379483
+            }
+          ],
+          "training": [
+            {
+              "correct": true,
+              "expected_counts": [
+                1,
+                1
+              ],
+              "input_ids": [
+                "#482",
+                "#491"
+              ],
+              "output_counts": [
+                1,
+                1
+              ],
+              "rule_store_stable": true,
+              "sequence_runtime_ns": 36042293
+            },
+            {
+              "correct": true,
+              "expected_counts": [
+                1,
+                1
+              ],
+              "input_ids": [
+                "#482",
+                "#491"
+              ],
+              "output_counts": [
+                1,
+                1
+              ],
+              "rule_store_stable": true,
+              "sequence_runtime_ns": 409203
+            }
+          ],
+          "training_scoring_ns": 83911552
+        },
+        "recurrence": {
+          "primary_rule_unchanged": true,
+          "proposal": {
+            "built": true,
+            "candidate": {
+              "label": "substrate_composer",
+              "rules": {
+                "mrl_offer_due_once": {
+                  "batch": false,
+                  "content_hash": 463715677639902482,
+                  "effects": [
+                    [
+                      "add_node",
+                      "offer",
+                      "Observation",
+                      {
+                        "key": {
+                          "__term__": {
+                            "source": {
+                              "items": [
+                                {
+                                  "key": "capability_key",
+                                  "node": {
+                                    "name": "candidate",
+                                    "type": "Var"
+                                  },
+                                  "type": "Attr"
+                                }
+                              ],
+                              "type": "SetT"
+                            },
+                            "type": "MapList",
+                            "value": {
+                              "name": "k",
+                              "type": "Var"
+                            },
+                            "var_name": "k"
+                          }
+                        },
+                        "offered_at_persistence": {
+                          "__term__": {
+                            "key": "persistence",
+                            "node": {
+                              "name": "candidate",
+                              "type": "Var"
+                            },
+                            "type": "Attr"
+                          }
+                        },
+                        "offered_at_segment": {
+                          "__term__": {
+                            "key": "latest_segment_ordinal",
+                            "node": {
+                              "name": "candidate",
+                              "type": "Var"
+                            },
+                            "type": "Attr"
+                          }
+                        },
+                        "signature": {
+                          "__term__": {
+                            "key": "structural_signature",
+                            "node": {
+                              "name": "candidate",
+                              "type": "Var"
+                            },
+                            "type": "Attr"
+                          }
+                        },
+                        "status": "pending"
+                      }
+                    ],
+                    [
+                      "add_edge",
+                      "agent",
+                      "observed",
+                      "offer",
+                      {}
+                    ],
+                    [
+                      "add_edge",
+                      "candidate",
+                      "has_mint_offer",
+                      "offer",
+                      {}
+                    ],
+                    [
+                      "add_edge",
+                      "episode",
+                      "has_mint_offer",
+                      "offer",
+                      {}
+                    ]
+                  ],
+                  "match": [
+                    [
+                      "agent",
+                      "has_minting_recurrence_episode",
+                      "episode"
+                    ],
+                    [
+                      "episode",
+                      "has_predicate_recurrence_candidate",
+                      "candidate"
+                    ]
+                  ],
+                  "match_type": null,
+                  "name": "mrl_offer_due_once_structvariant_order3",
+                  "revision": 0,
+                  "rule_uid": 13,
+                  "where": {
+                    "items": [
+                      {
+                        "items": [
+                          {
+                            "a": {
+                              "key": "persistence",
+                              "node": {
+                                "name": "candidate",
+                                "type": "Var"
+                              },
+                              "type": "Attr"
+                            },
+                            "b": {
+                              "key": "mint_after_quanta",
+                              "node": {
+                                "name": "episode",
+                                "type": "Var"
+                              },
+                              "type": "Attr"
+                            },
+                            "type": "Gte"
+                          }
+                        ],
+                        "type": "And"
+                      },
+                      {
+                        "arg": {
+                          "predicate": {
+                            "type": "Lit",
+                            "value": true
+                          },
+                          "source": {
+                            "edge_type": "has_mint_offer",
+                            "node": {
+                              "name": "candidate",
+                              "type": "Var"
+                            },
+                            "type": "Neighbours"
+                          },
+                          "type": "Exists",
+                          "var_name": "existing_edge_identity"
+                        },
+                        "type": "Not"
+                      }
+                    ],
+                    "type": "And"
+                  }
+                }
+              }
+            },
+            "compose_ns": 37285431,
+            "digest": "sha256:b63b0f29aa232a0c5d92da634ef729dd6a28091b2967ec2644d9426997405a9c",
+            "operator": "add_edge_identity_guard",
+            "site": "out candidate has_mint_offer any endpoint",
+            "source_rule_digest": "sha256:04479af4f59ef2139cb2d69c4af6c7eb363fc081b494f6d788c1a58bf5a16af1",
+            "target": "mrl_offer_due_once",
+            "wall": null
+          },
+          "source_control_ns": 9997075,
+          "source_training": [
+            {
+              "correct": true,
+              "fixedpoint_progress": 0,
+              "keys": [
+                "bidir-3-train_source_3-0-0",
+                "bidir-3-train_source_3-0-1"
+              ],
+              "output_counts": [
+                1,
+                1
+              ],
+              "rule_store_stable": true,
+              "stage0_sweeps": [
+                2,
+                0,
+                0,
+                0,
+                0
+              ],
+              "stage1_sweeps": [
+                2,
+                0,
+                0,
+                0,
+                0
+              ]
+            },
+            {
+              "correct": true,
+              "fixedpoint_progress": 0,
+              "keys": [
+                "bidir-3-train_source_3-1-0",
+                "bidir-3-train_source_3-1-1"
+              ],
+              "output_counts": [
+                1,
+                1
+              ],
+              "rule_store_stable": true,
+              "stage0_sweeps": [
+                2,
+                0,
+                0,
+                0,
+                0
+              ],
+              "stage1_sweeps": [
+                2,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          ],
+          "training": [
+            {
+              "correct": true,
+              "fixedpoint_progress": 0,
+              "keys": [
+                "bidir-3-train_3-0-0",
+                "bidir-3-train_3-0-1"
+              ],
+              "output_counts": [
+                1,
+                1
+              ],
+              "rule_store_stable": true,
+              "stage0_sweeps": [
+                2,
+                0,
+                0,
+                0,
+                0
+              ],
+              "stage1_sweeps": [
+                2,
+                0,
+                0,
+                0,
+                0
+              ]
+            },
+            {
+              "correct": true,
+              "fixedpoint_progress": 0,
+              "keys": [
+                "bidir-3-train_3-1-0",
+                "bidir-3-train_3-1-1"
+              ],
+              "output_counts": [
+                1,
+                1
+              ],
+              "rule_store_stable": true,
+              "stage0_sweeps": [
+                2,
+                0,
+                0,
+                0,
+                0
+              ],
+              "stage1_sweeps": [
+                2,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          ],
+          "training_scoring_ns": 11831336
+        }
+      },
+      "source_after": {
+        "docs/research/engine_substrate/THOUGHTEXPERIMENT_BIDIRECTIONAL_EDGE_IDENTITY_GUARDS_V1_PREREG_20261002.md": "2475c402246935fd9f60ba4a5994592b52a40653065f4055636da8756e1b743a",
+        "docs/research/engine_substrate/THOUGHTEXPERIMENT_SUBSTRATE_EDGE_IDENTITY_COMPOSER_V1_PREREG_20261002.md": "8713e955ad6dad79fed0db9aef2bcbd67659b7dafe98b18553f6958369b39edb",
+        "domains/edit_ops.py": "6f7c7355e07751f8a75563ad67d89e0c50d888d7d2759d2b5343e8926b4d5328",
+        "domains/reflective_faculty.py": "4ed2be41a840b989cdaead83201b8337c7a08b4532e7e7a1a2c9a25e880ddd5a",
+        "episode_helper::docs/research/engine_substrate/THOUGHTEXPERIMENT_BIDIRECTIONAL_EDGE_IDENTITY_GUARDS_V1_1_AMENDMENT_20261002.md": "e46f2e311f31f93eda56772d71ad3fdc7ad9b84dafec10a39beb6020b23846dc",
+        "episode_helper::docs/research/engine_substrate/THOUGHTEXPERIMENT_BIDIRECTIONAL_EDGE_IDENTITY_GUARDS_V1_PREREG_20261002.md": "2475c402246935fd9f60ba4a5994592b52a40653065f4055636da8756e1b743a",
+        "episode_helper::domains/contract_query.py": "5861f25467e2fed9905fa325816a3dc60822d4a79004b8b7b095511c3806b9a6",
+        "episode_helper::domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+        "episode_helper::domains/language_world.py": "06d24bdba1ccbd720f749f0c02d5a96729c40601237ec21a8f938077b2a262bb",
+        "episode_helper::domains/reference_resolution.py": "1f9c6ce8eaf98c33deb025110a0dea5e7960251eace4f7dc6872d3d4b85c2701",
+        "episode_helper::domains/reflective_faculty.py": "4ed2be41a840b989cdaead83201b8337c7a08b4532e7e7a1a2c9a25e880ddd5a",
+        "episode_helper::evaluation/substrate_capability/analyze_thoughtexperiment_bidirectional_edge_identity_guards_v1_1.py": "35f7efdf13d181853a4c915a9fa6bc2a03658a948db6159aaba9d4ebd6493260",
+        "episode_helper::evaluation/substrate_capability/thoughtexperiment_bidirectional_edge_identity_guards_v1_1.py": "94e0c33434d055b886f9f4be389737e2d508a9a3dcb5d720db8b739929b55696",
+        "episode_helper::loaded_native_binary": "09d0ac3d2b3362f5cdf7d6b1cb5ef21524cf25672916b6928c29da7997fd32c6",
+        "episode_helper::runners/dsl/Cargo.lock": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+        "episode_helper::runners/dsl/Cargo.toml": "c4d8ffff2241352a5150b5a9937dbb8010e958b6f115235b7daeae716c1a9332",
+        "episode_helper::runners/dsl/python/substrate_rs/__init__.py": "4e338797786071822b2e3d919ca1da3a266bda60c3ce0e29e13213a9d37454b4",
+        "episode_helper::runners/dsl/src/grammar.rs": "aaf6f571bf8e8761584c7473d3fe3130c5a6e395bff7f2b63f1cdcf6046b73f6",
+        "episode_helper::runners/dsl/src/graph.rs": "9744fec2e0c5091f2036081ffc615b1c7dd00ba2a5995af1294efb0b5aa5a28c",
+        "episode_helper::runners/dsl/src/graph_rules.rs": "b0e9c5bf0bbb4bf278fdab03610fa3f6f82d01ad8ee898ec789982ff41812a50",
+        "episode_helper::runners/dsl/src/lib.rs": "f8c5ae707046db8347438227913a737faf78a184b294c8e339a9008e71fab36c",
+        "episode_helper::runners/dsl/src/persist.rs": "066d026451c97e1032c30054a3a4c556d386f23db2304630a4625c5bf81306cf",
+        "episode_helper::runners/dsl/src/py.rs": "6a6da90d425e4f8da7b7626fc8dda39b46b63529a312d482d80e6e2ec4d03fd6",
+        "episode_helper::runners/dsl/src/substrate.rs": "bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+        "episode_helper::runners/dsl/src/sym.rs": "b54f6af6e456a7095a02eb5b3cab42a73072318bd7e54ed150c787468b170d5f",
+        "episode_helper::runners/dsl/src/term.rs": "5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+        "episode_helper::seeds/autonomy.json": "5eb18e0b06de6243ac1abae5a51bdc146e78d4d5a13ec863a9baa20f9ede9dfe",
+        "episode_helper::seeds/composer_dispatch.json": "a167c0ef5fba47ef9c46a3c87db972e5a85f444f9a930e761a7ef40d25b9a09a",
+        "episode_helper::seeds/conversation.json": "dbcf2ec16f706ee4057f9a0fc6266c764b83c4631f067a32b4e9c6d2bf9f748a",
+        "episode_helper::seeds/conversation_reply.json": "32be4138d22d9cca4c1872f79e86729a830f4e2952375a847ea00f2767aa15ff",
+        "episode_helper::seeds/faculty_lessons.json": "a1a0ab3e67957666dfdf7cc6a20f0e3f15203d6553e16c08f2bbeb16774f9c2a",
+        "episode_helper::seeds/intent.json": "1833b673e04f98521361bc1d93e57f4feb5add49e93ce9fd813ed2bb5eebae5f",
+        "episode_helper::seeds/minting_recurrence_ledger.json": "10c5df924cb98eacea2a2159e60247c1d783db37f4be147378c6115e1b545a92",
+        "episode_helper::seeds/psychology.json": "1c8753c431f829f4a144d8c3d777df86af3f68c6139e7a247fa1db7e171d45b1",
+        "episode_helper::seeds/relation_vocabulary.json": "781e89f27c5d31c214d57eb521deb6dab04c34ef51413b7a14739dd98861d90a",
+        "episode_helper::seeds/relations.json": "94c553808d35c873f328691bccf4d0a3e37d6b30137e1038a4b3ff69898e4f5c",
+        "episode_helper::substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+        "episode_helper::substrate/seed_loader.py": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27",
+        "episode_helper::substrate/world_adapter.py": "e5850e4df2ff28d8c941cc3c0d12a840ab230ce627833421a88c3b354f65027c",
+        "evaluation/substrate_capability/analyze_thoughtexperiment_bidirectional_edge_identity_guards_v1_1.py": "35f7efdf13d181853a4c915a9fa6bc2a03658a948db6159aaba9d4ebd6493260",
+        "evaluation/substrate_capability/analyze_thoughtexperiment_substrate_edge_identity_composer_v1.py": "951cd551736ac49b7b346cca331bd7a0db7ec2c33c217feda718320f733d59d1",
+        "evaluation/substrate_capability/thoughtexperiment_bidirectional_edge_identity_guards_v1_1.py": "94e0c33434d055b886f9f4be389737e2d508a9a3dcb5d720db8b739929b55696",
+        "evaluation/substrate_capability/thoughtexperiment_substrate_edge_identity_composer_v1.py": "67ca2021d18b8906120de2f8f6c49ea2b8f6f8af9b035cc595fea0ea102352aa",
+        "loaded_native_binary": "09d0ac3d2b3362f5cdf7d6b1cb5ef21524cf25672916b6928c29da7997fd32c6"
+      },
+      "source_before": {
+        "docs/research/engine_substrate/THOUGHTEXPERIMENT_BIDIRECTIONAL_EDGE_IDENTITY_GUARDS_V1_PREREG_20261002.md": "2475c402246935fd9f60ba4a5994592b52a40653065f4055636da8756e1b743a",
+        "docs/research/engine_substrate/THOUGHTEXPERIMENT_SUBSTRATE_EDGE_IDENTITY_COMPOSER_V1_PREREG_20261002.md": "8713e955ad6dad79fed0db9aef2bcbd67659b7dafe98b18553f6958369b39edb",
+        "domains/edit_ops.py": "6f7c7355e07751f8a75563ad67d89e0c50d888d7d2759d2b5343e8926b4d5328",
+        "domains/reflective_faculty.py": "4ed2be41a840b989cdaead83201b8337c7a08b4532e7e7a1a2c9a25e880ddd5a",
+        "episode_helper::docs/research/engine_substrate/THOUGHTEXPERIMENT_BIDIRECTIONAL_EDGE_IDENTITY_GUARDS_V1_1_AMENDMENT_20261002.md": "e46f2e311f31f93eda56772d71ad3fdc7ad9b84dafec10a39beb6020b23846dc",
+        "episode_helper::docs/research/engine_substrate/THOUGHTEXPERIMENT_BIDIRECTIONAL_EDGE_IDENTITY_GUARDS_V1_PREREG_20261002.md": "2475c402246935fd9f60ba4a5994592b52a40653065f4055636da8756e1b743a",
+        "episode_helper::domains/contract_query.py": "5861f25467e2fed9905fa325816a3dc60822d4a79004b8b7b095511c3806b9a6",
+        "episode_helper::domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+        "episode_helper::domains/language_world.py": "06d24bdba1ccbd720f749f0c02d5a96729c40601237ec21a8f938077b2a262bb",
+        "episode_helper::domains/reference_resolution.py": "1f9c6ce8eaf98c33deb025110a0dea5e7960251eace4f7dc6872d3d4b85c2701",
+        "episode_helper::domains/reflective_faculty.py": "4ed2be41a840b989cdaead83201b8337c7a08b4532e7e7a1a2c9a25e880ddd5a",
+        "episode_helper::evaluation/substrate_capability/analyze_thoughtexperiment_bidirectional_edge_identity_guards_v1_1.py": "35f7efdf13d181853a4c915a9fa6bc2a03658a948db6159aaba9d4ebd6493260",
+        "episode_helper::evaluation/substrate_capability/thoughtexperiment_bidirectional_edge_identity_guards_v1_1.py": "94e0c33434d055b886f9f4be389737e2d508a9a3dcb5d720db8b739929b55696",
+        "episode_helper::loaded_native_binary": "09d0ac3d2b3362f5cdf7d6b1cb5ef21524cf25672916b6928c29da7997fd32c6",
+        "episode_helper::runners/dsl/Cargo.lock": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+        "episode_helper::runners/dsl/Cargo.toml": "c4d8ffff2241352a5150b5a9937dbb8010e958b6f115235b7daeae716c1a9332",
+        "episode_helper::runners/dsl/python/substrate_rs/__init__.py": "4e338797786071822b2e3d919ca1da3a266bda60c3ce0e29e13213a9d37454b4",
+        "episode_helper::runners/dsl/src/grammar.rs": "aaf6f571bf8e8761584c7473d3fe3130c5a6e395bff7f2b63f1cdcf6046b73f6",
+        "episode_helper::runners/dsl/src/graph.rs": "9744fec2e0c5091f2036081ffc615b1c7dd00ba2a5995af1294efb0b5aa5a28c",
+        "episode_helper::runners/dsl/src/graph_rules.rs": "b0e9c5bf0bbb4bf278fdab03610fa3f6f82d01ad8ee898ec789982ff41812a50",
+        "episode_helper::runners/dsl/src/lib.rs": "f8c5ae707046db8347438227913a737faf78a184b294c8e339a9008e71fab36c",
+        "episode_helper::runners/dsl/src/persist.rs": "066d026451c97e1032c30054a3a4c556d386f23db2304630a4625c5bf81306cf",
+        "episode_helper::runners/dsl/src/py.rs": "6a6da90d425e4f8da7b7626fc8dda39b46b63529a312d482d80e6e2ec4d03fd6",
+        "episode_helper::runners/dsl/src/substrate.rs": "bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+        "episode_helper::runners/dsl/src/sym.rs": "b54f6af6e456a7095a02eb5b3cab42a73072318bd7e54ed150c787468b170d5f",
+        "episode_helper::runners/dsl/src/term.rs": "5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+        "episode_helper::seeds/autonomy.json": "5eb18e0b06de6243ac1abae5a51bdc146e78d4d5a13ec863a9baa20f9ede9dfe",
+        "episode_helper::seeds/composer_dispatch.json": "a167c0ef5fba47ef9c46a3c87db972e5a85f444f9a930e761a7ef40d25b9a09a",
+        "episode_helper::seeds/conversation.json": "dbcf2ec16f706ee4057f9a0fc6266c764b83c4631f067a32b4e9c6d2bf9f748a",
+        "episode_helper::seeds/conversation_reply.json": "32be4138d22d9cca4c1872f79e86729a830f4e2952375a847ea00f2767aa15ff",
+        "episode_helper::seeds/faculty_lessons.json": "a1a0ab3e67957666dfdf7cc6a20f0e3f15203d6553e16c08f2bbeb16774f9c2a",
+        "episode_helper::seeds/intent.json": "1833b673e04f98521361bc1d93e57f4feb5add49e93ce9fd813ed2bb5eebae5f",
+        "episode_helper::seeds/minting_recurrence_ledger.json": "10c5df924cb98eacea2a2159e60247c1d783db37f4be147378c6115e1b545a92",
+        "episode_helper::seeds/psychology.json": "1c8753c431f829f4a144d8c3d777df86af3f68c6139e7a247fa1db7e171d45b1",
+        "episode_helper::seeds/relation_vocabulary.json": "781e89f27c5d31c214d57eb521deb6dab04c34ef51413b7a14739dd98861d90a",
+        "episode_helper::seeds/relations.json": "94c553808d35c873f328691bccf4d0a3e37d6b30137e1038a4b3ff69898e4f5c",
+        "episode_helper::substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+        "episode_helper::substrate/seed_loader.py": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27",
+        "episode_helper::substrate/world_adapter.py": "e5850e4df2ff28d8c941cc3c0d12a840ab230ce627833421a88c3b354f65027c",
+        "evaluation/substrate_capability/analyze_thoughtexperiment_bidirectional_edge_identity_guards_v1_1.py": "35f7efdf13d181853a4c915a9fa6bc2a03658a948db6159aaba9d4ebd6493260",
+        "evaluation/substrate_capability/analyze_thoughtexperiment_substrate_edge_identity_composer_v1.py": "951cd551736ac49b7b346cca331bd7a0db7ec2c33c217feda718320f733d59d1",
+        "evaluation/substrate_capability/thoughtexperiment_bidirectional_edge_identity_guards_v1_1.py": "94e0c33434d055b886f9f4be389737e2d508a9a3dcb5d720db8b739929b55696",
+        "evaluation/substrate_capability/thoughtexperiment_substrate_edge_identity_composer_v1.py": "67ca2021d18b8906120de2f8f6c49ea2b8f6f8af9b035cc595fea0ea102352aa",
+        "loaded_native_binary": "09d0ac3d2b3362f5cdf7d6b1cb5ef21524cf25672916b6928c29da7997fd32c6"
+      },
+      "source_stable": true,
+      "worker": 3,
+      "worker_stage_wall_ns": 376462141
+    }
+  ]
+}

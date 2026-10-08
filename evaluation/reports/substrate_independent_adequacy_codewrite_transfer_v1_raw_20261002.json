@@ -1,0 +1,4365 @@
+{
+  "elapsed_ns": 54924455496,
+  "environment": {
+    "platform": "Linux-6.8.0-142-generic-x86_64-with-glibc2.39",
+    "python": "3.13.5 (main, Jun 11 2025, 15:36:57) [GCC 11.4.0]"
+  },
+  "lock": {
+    "active": {
+      "domains/ast_to_term.py": "7ef48f9ecb67975428713ae1d2d54100fcdd39fc434dd586803059224f7cdcdb",
+      "domains/code_reading.py": "dd67d2942cf956c6e35f848aed4012c3ac072e9ac91d9e6b166e8ca44be57908",
+      "domains/code_write_growth.py": "691fd96072687baf2b99c6b3c9816cc6bb44805e35bec13f070a30061151761c",
+      "domains/code_writing.py": "4ad3148ca1796ad13f6128b9fd655e8568c7c843cd68bccee54f35cbf4ddabc9",
+      "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+      "domains/independent_adequacy.py": "33191341fdd63d16d0b9cb5203f27666da90b60fccd567ac4633306a9dcab418",
+      "domains/information_commitment.py": "da7ba4e2b289f24380289cde6170cbff82f4aee13b5d0158c103b4f9a660ee96",
+      "domains/reflective_faculty.py": "8f530a8c8754949216b71b473c4769fa5d351d01d6055127943c009d06763d05",
+      "domains/teach.py": "308a5f31d74dabb3ed8b24bd0c967abd5f94596a3ff76d17657330877fae2cfa",
+      "domains_tree": "200a51e70b6a1b587d82ed05fdea106aca865f89479972f5eefd3e1225c151f8",
+      "native_binary": "3816b4fb5d5746950b4cc3bf9e904a58e675ce53530727edf44095646dd58a54",
+      "oracle": "b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+      "python_native_tree": "4d4cb4aaaed3c395638b0485fc0d871749150149aded5e81491b42c7fdeb5402",
+      "runners/dsl/python/substrate_rs/__init__.py": "1fed837a6b7e8b35e463d3b8fdca498400c9cc420a016b81279365d6406a4049",
+      "runners/dsl/python/substrate_rs/_native.build.json": "b491d348c59cbf5cd5eee1b3f900a042f31e21665b6e63212edb9ed7f3d60f47",
+      "runners/dsl/src/graph_rules.rs": "b0e9c5bf0bbb4bf278fdab03610fa3f6f82d01ad8ee898ec789982ff41812a50",
+      "runners/dsl/src/py.rs": "d6f922bd406d3f500c10cea11978f47f9612b4ce6b9a348e848a30a305881cba",
+      "runners/dsl/src/substrate.rs": "bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+      "runners/dsl/src/term.rs": "5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+      "rust_dsl_tree": "06307beca12566832d3ba7ac157ec6177abb41a87dcf3755d824729d1a55ea0f",
+      "seed_manifest_inventory": "f1098a8168c0663746dffb253eb7230435957b3f8f8aa6d5c8197d224cf946b1",
+      "substrate/boot_all.py": "2bdf46f19228e1d85dbdcf12383116ceeb72aab0efe7ddd0cc6a51d23b45d220",
+      "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+      "substrate/seed_loader.py": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27",
+      "substrate/world_adapter.py": "7aeeb3d418fade3c90dc2d28a64a2685880d0a45d9fd47e4b6c2f6b6dd649023",
+      "substrate_tree": "206c8d6c975998dae706c64fe23be1ae7af659fd749577d978aafa1c30d7fdba"
+    },
+    "design": {
+      "fixtures": {
+        "clamp": {
+          "domain": [
+            {
+              "lower": -4,
+              "upper": 8,
+              "value": -6
+            },
+            {
+              "lower": -4,
+              "upper": 8,
+              "value": -4
+            },
+            {
+              "lower": -4,
+              "upper": 8,
+              "value": -3
+            },
+            {
+              "lower": -4,
+              "upper": 8,
+              "value": 2
+            },
+            {
+              "lower": -4,
+              "upper": 8,
+              "value": 8
+            },
+            {
+              "lower": -4,
+              "upper": 8,
+              "value": 10
+            },
+            {
+              "lower": 1,
+              "upper": 5,
+              "value": -1
+            },
+            {
+              "lower": 1,
+              "upper": 5,
+              "value": 1
+            },
+            {
+              "lower": 1,
+              "upper": 5,
+              "value": 2
+            },
+            {
+              "lower": 1,
+              "upper": 5,
+              "value": 3
+            },
+            {
+              "lower": 1,
+              "upper": 5,
+              "value": 5
+            },
+            {
+              "lower": 1,
+              "upper": 5,
+              "value": 7
+            },
+            {
+              "lower": -9,
+              "upper": -2,
+              "value": -11
+            },
+            {
+              "lower": -9,
+              "upper": -2,
+              "value": -9
+            },
+            {
+              "lower": -9,
+              "upper": -2,
+              "value": -8
+            },
+            {
+              "lower": -9,
+              "upper": -2,
+              "value": -6
+            },
+            {
+              "lower": -9,
+              "upper": -2,
+              "value": -2
+            },
+            {
+              "lower": -9,
+              "upper": -2,
+              "value": 0
+            }
+          ],
+          "heldout": [
+            {
+              "lower": -4,
+              "upper": 8,
+              "value": -20
+            },
+            {
+              "lower": -4,
+              "upper": 8,
+              "value": -4
+            },
+            {
+              "lower": -4,
+              "upper": 8,
+              "value": -3
+            },
+            {
+              "lower": -4,
+              "upper": 8,
+              "value": 0
+            },
+            {
+              "lower": -4,
+              "upper": 8,
+              "value": 7
+            },
+            {
+              "lower": -4,
+              "upper": 8,
+              "value": 8
+            },
+            {
+              "lower": -4,
+              "upper": 8,
+              "value": 9
+            },
+            {
+              "lower": -4,
+              "upper": 8,
+              "value": 20
+            },
+            {
+              "lower": -9,
+              "upper": -2,
+              "value": -9
+            },
+            {
+              "lower": -9,
+              "upper": -2,
+              "value": -10
+            },
+            {
+              "lower": -9,
+              "upper": -2,
+              "value": -5
+            },
+            {
+              "lower": -9,
+              "upper": -2,
+              "value": -2
+            },
+            {
+              "lower": -9,
+              "upper": -2,
+              "value": 0
+            },
+            {
+              "lower": -9,
+              "upper": -2,
+              "value": 12
+            },
+            {
+              "lower": 1,
+              "upper": 5,
+              "value": 2
+            },
+            {
+              "lower": 1,
+              "upper": 5,
+              "value": 1
+            },
+            {
+              "lower": 1,
+              "upper": 5,
+              "value": 3
+            },
+            {
+              "lower": 1,
+              "upper": 5,
+              "value": 5
+            },
+            {
+              "lower": 1,
+              "upper": 5,
+              "value": 7
+            },
+            {
+              "lower": 1,
+              "upper": 5,
+              "value": -1
+            }
+          ],
+          "known": [
+            {
+              "expected": -4,
+              "inputs": {
+                "lower": -4,
+                "upper": 8,
+                "value": -10
+              }
+            },
+            {
+              "expected": 0,
+              "inputs": {
+                "lower": -4,
+                "upper": 8,
+                "value": 0
+              }
+            },
+            {
+              "expected": 8,
+              "inputs": {
+                "lower": -4,
+                "upper": 8,
+                "value": 12
+              }
+            }
+          ],
+          "name": "clamp_value",
+          "source": "def clamp_value(value, lower, upper):\n    return lower if value < lower else (upper if value > upper else value)\n"
+        },
+        "negative": {
+          "domain": [
+            {
+              "x": 0
+            },
+            {
+              "x": 1
+            },
+            {
+              "x": 2
+            },
+            {
+              "x": 3
+            },
+            {
+              "x": 4
+            },
+            {
+              "x": 5
+            }
+          ],
+          "known": [
+            {
+              "expected": 1,
+              "inputs": {
+                "x": 1
+              }
+            }
+          ],
+          "name": "identity",
+          "source": "def identity(x):\n    return x\n",
+          "task": "square"
+        },
+        "parity": {
+          "domain": [
+            {
+              "value": -5
+            },
+            {
+              "value": -4
+            },
+            {
+              "value": -3
+            },
+            {
+              "value": -2
+            },
+            {
+              "value": -1
+            },
+            {
+              "value": 0
+            },
+            {
+              "value": 1
+            },
+            {
+              "value": 2
+            },
+            {
+              "value": 3
+            },
+            {
+              "value": 4
+            },
+            {
+              "value": 5
+            }
+          ],
+          "heldout": [
+            {
+              "value": -20
+            },
+            {
+              "value": -19
+            },
+            {
+              "value": -18
+            },
+            {
+              "value": -17
+            },
+            {
+              "value": -16
+            },
+            {
+              "value": -15
+            },
+            {
+              "value": -14
+            },
+            {
+              "value": -13
+            },
+            {
+              "value": -12
+            },
+            {
+              "value": -11
+            },
+            {
+              "value": -10
+            },
+            {
+              "value": -9
+            },
+            {
+              "value": -8
+            },
+            {
+              "value": -7
+            },
+            {
+              "value": -6
+            },
+            {
+              "value": -5
+            },
+            {
+              "value": -4
+            },
+            {
+              "value": -3
+            },
+            {
+              "value": -2
+            },
+            {
+              "value": -1
+            },
+            {
+              "value": 0
+            },
+            {
+              "value": 1
+            },
+            {
+              "value": 2
+            },
+            {
+              "value": 3
+            },
+            {
+              "value": 4
+            },
+            {
+              "value": 5
+            },
+            {
+              "value": 6
+            },
+            {
+              "value": 7
+            },
+            {
+              "value": 8
+            },
+            {
+              "value": 9
+            },
+            {
+              "value": 10
+            },
+            {
+              "value": 11
+            },
+            {
+              "value": 12
+            },
+            {
+              "value": 13
+            },
+            {
+              "value": 14
+            },
+            {
+              "value": 15
+            },
+            {
+              "value": 16
+            },
+            {
+              "value": 17
+            },
+            {
+              "value": 18
+            },
+            {
+              "value": 19
+            },
+            {
+              "value": 20
+            }
+          ],
+          "known": [
+            {
+              "expected": true,
+              "inputs": {
+                "value": 0
+              }
+            },
+            {
+              "expected": false,
+              "inputs": {
+                "value": 1
+              }
+            }
+          ],
+          "name": "parity",
+          "source": "def parity(value):\n    return value % 2 == 0\n"
+        }
+      },
+      "labels": "source-hash-bound deterministic oracle outputs on fresh selected probes",
+      "oracle_source": "independent_codewrite_oracles.py",
+      "repetitions": 3,
+      "requests": {
+        "clamp": "Write a function that clamps a value between lower and upper bounds.",
+        "parity": "Write a function that returns the parity of an integer.",
+        "square": "Write a function that squares an integer."
+      },
+      "seed": 20261002
+    },
+    "files": {
+      "docs/research/engine_substrate/SUBSTRATE_INDEPENDENT_ADEQUACY_CODEWRITE_TRANSFER_V1_PREREG_20261002.md": "c7137c206ce7e035faafc1bb5e9c8fc619794ce6baaa993f8d54e35a563c22d9",
+      "evaluation/substrate_capability/analyze_substrate_independent_adequacy_codewrite_transfer_v1.py": "f7563e9a138ba78983eb38ea6d21f68fa293ed9e97c77b0a75f42237429fdddb",
+      "evaluation/substrate_capability/independent_codewrite_oracles.py": "b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+      "evaluation/substrate_capability/substrate_independent_adequacy_codewrite_transfer_v1.py": "4df60f2b25381a778d4e1b6aa20889a8645d7993d0e8f57054d38179e6db57a5"
+    },
+    "git_head": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+    "schema": "SubstrateIndependentAdequacyCodewriteTransferV1Lock"
+  },
+  "post_lock": {
+    "active": {
+      "domains/ast_to_term.py": "7ef48f9ecb67975428713ae1d2d54100fcdd39fc434dd586803059224f7cdcdb",
+      "domains/code_reading.py": "dd67d2942cf956c6e35f848aed4012c3ac072e9ac91d9e6b166e8ca44be57908",
+      "domains/code_write_growth.py": "691fd96072687baf2b99c6b3c9816cc6bb44805e35bec13f070a30061151761c",
+      "domains/code_writing.py": "4ad3148ca1796ad13f6128b9fd655e8568c7c843cd68bccee54f35cbf4ddabc9",
+      "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+      "domains/independent_adequacy.py": "33191341fdd63d16d0b9cb5203f27666da90b60fccd567ac4633306a9dcab418",
+      "domains/information_commitment.py": "da7ba4e2b289f24380289cde6170cbff82f4aee13b5d0158c103b4f9a660ee96",
+      "domains/reflective_faculty.py": "8f530a8c8754949216b71b473c4769fa5d351d01d6055127943c009d06763d05",
+      "domains/teach.py": "308a5f31d74dabb3ed8b24bd0c967abd5f94596a3ff76d17657330877fae2cfa",
+      "domains_tree": "200a51e70b6a1b587d82ed05fdea106aca865f89479972f5eefd3e1225c151f8",
+      "native_binary": "3816b4fb5d5746950b4cc3bf9e904a58e675ce53530727edf44095646dd58a54",
+      "oracle": "b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+      "python_native_tree": "4d4cb4aaaed3c395638b0485fc0d871749150149aded5e81491b42c7fdeb5402",
+      "runners/dsl/python/substrate_rs/__init__.py": "1fed837a6b7e8b35e463d3b8fdca498400c9cc420a016b81279365d6406a4049",
+      "runners/dsl/python/substrate_rs/_native.build.json": "b491d348c59cbf5cd5eee1b3f900a042f31e21665b6e63212edb9ed7f3d60f47",
+      "runners/dsl/src/graph_rules.rs": "b0e9c5bf0bbb4bf278fdab03610fa3f6f82d01ad8ee898ec789982ff41812a50",
+      "runners/dsl/src/py.rs": "d6f922bd406d3f500c10cea11978f47f9612b4ce6b9a348e848a30a305881cba",
+      "runners/dsl/src/substrate.rs": "bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+      "runners/dsl/src/term.rs": "5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+      "rust_dsl_tree": "06307beca12566832d3ba7ac157ec6177abb41a87dcf3755d824729d1a55ea0f",
+      "seed_manifest_inventory": "f1098a8168c0663746dffb253eb7230435957b3f8f8aa6d5c8197d224cf946b1",
+      "substrate/boot_all.py": "2bdf46f19228e1d85dbdcf12383116ceeb72aab0efe7ddd0cc6a51d23b45d220",
+      "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+      "substrate/seed_loader.py": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27",
+      "substrate/world_adapter.py": "7aeeb3d418fade3c90dc2d28a64a2685880d0a45d9fd47e4b6c2f6b6dd649023",
+      "substrate_tree": "206c8d6c975998dae706c64fe23be1ae7af659fd749577d978aafa1c30d7fdba"
+    },
+    "design": {
+      "fixtures": {
+        "clamp": {
+          "domain": [
+            {
+              "lower": -4,
+              "upper": 8,
+              "value": -6
+            },
+            {
+              "lower": -4,
+              "upper": 8,
+              "value": -4
+            },
+            {
+              "lower": -4,
+              "upper": 8,
+              "value": -3
+            },
+            {
+              "lower": -4,
+              "upper": 8,
+              "value": 2
+            },
+            {
+              "lower": -4,
+              "upper": 8,
+              "value": 8
+            },
+            {
+              "lower": -4,
+              "upper": 8,
+              "value": 10
+            },
+            {
+              "lower": 1,
+              "upper": 5,
+              "value": -1
+            },
+            {
+              "lower": 1,
+              "upper": 5,
+              "value": 1
+            },
+            {
+              "lower": 1,
+              "upper": 5,
+              "value": 2
+            },
+            {
+              "lower": 1,
+              "upper": 5,
+              "value": 3
+            },
+            {
+              "lower": 1,
+              "upper": 5,
+              "value": 5
+            },
+            {
+              "lower": 1,
+              "upper": 5,
+              "value": 7
+            },
+            {
+              "lower": -9,
+              "upper": -2,
+              "value": -11
+            },
+            {
+              "lower": -9,
+              "upper": -2,
+              "value": -9
+            },
+            {
+              "lower": -9,
+              "upper": -2,
+              "value": -8
+            },
+            {
+              "lower": -9,
+              "upper": -2,
+              "value": -6
+            },
+            {
+              "lower": -9,
+              "upper": -2,
+              "value": -2
+            },
+            {
+              "lower": -9,
+              "upper": -2,
+              "value": 0
+            }
+          ],
+          "heldout": [
+            {
+              "lower": -4,
+              "upper": 8,
+              "value": -20
+            },
+            {
+              "lower": -4,
+              "upper": 8,
+              "value": -4
+            },
+            {
+              "lower": -4,
+              "upper": 8,
+              "value": -3
+            },
+            {
+              "lower": -4,
+              "upper": 8,
+              "value": 0
+            },
+            {
+              "lower": -4,
+              "upper": 8,
+              "value": 7
+            },
+            {
+              "lower": -4,
+              "upper": 8,
+              "value": 8
+            },
+            {
+              "lower": -4,
+              "upper": 8,
+              "value": 9
+            },
+            {
+              "lower": -4,
+              "upper": 8,
+              "value": 20
+            },
+            {
+              "lower": -9,
+              "upper": -2,
+              "value": -9
+            },
+            {
+              "lower": -9,
+              "upper": -2,
+              "value": -10
+            },
+            {
+              "lower": -9,
+              "upper": -2,
+              "value": -5
+            },
+            {
+              "lower": -9,
+              "upper": -2,
+              "value": -2
+            },
+            {
+              "lower": -9,
+              "upper": -2,
+              "value": 0
+            },
+            {
+              "lower": -9,
+              "upper": -2,
+              "value": 12
+            },
+            {
+              "lower": 1,
+              "upper": 5,
+              "value": 2
+            },
+            {
+              "lower": 1,
+              "upper": 5,
+              "value": 1
+            },
+            {
+              "lower": 1,
+              "upper": 5,
+              "value": 3
+            },
+            {
+              "lower": 1,
+              "upper": 5,
+              "value": 5
+            },
+            {
+              "lower": 1,
+              "upper": 5,
+              "value": 7
+            },
+            {
+              "lower": 1,
+              "upper": 5,
+              "value": -1
+            }
+          ],
+          "known": [
+            {
+              "expected": -4,
+              "inputs": {
+                "lower": -4,
+                "upper": 8,
+                "value": -10
+              }
+            },
+            {
+              "expected": 0,
+              "inputs": {
+                "lower": -4,
+                "upper": 8,
+                "value": 0
+              }
+            },
+            {
+              "expected": 8,
+              "inputs": {
+                "lower": -4,
+                "upper": 8,
+                "value": 12
+              }
+            }
+          ],
+          "name": "clamp_value",
+          "source": "def clamp_value(value, lower, upper):\n    return lower if value < lower else (upper if value > upper else value)\n"
+        },
+        "negative": {
+          "domain": [
+            {
+              "x": 0
+            },
+            {
+              "x": 1
+            },
+            {
+              "x": 2
+            },
+            {
+              "x": 3
+            },
+            {
+              "x": 4
+            },
+            {
+              "x": 5
+            }
+          ],
+          "known": [
+            {
+              "expected": 1,
+              "inputs": {
+                "x": 1
+              }
+            }
+          ],
+          "name": "identity",
+          "source": "def identity(x):\n    return x\n",
+          "task": "square"
+        },
+        "parity": {
+          "domain": [
+            {
+              "value": -5
+            },
+            {
+              "value": -4
+            },
+            {
+              "value": -3
+            },
+            {
+              "value": -2
+            },
+            {
+              "value": -1
+            },
+            {
+              "value": 0
+            },
+            {
+              "value": 1
+            },
+            {
+              "value": 2
+            },
+            {
+              "value": 3
+            },
+            {
+              "value": 4
+            },
+            {
+              "value": 5
+            }
+          ],
+          "heldout": [
+            {
+              "value": -20
+            },
+            {
+              "value": -19
+            },
+            {
+              "value": -18
+            },
+            {
+              "value": -17
+            },
+            {
+              "value": -16
+            },
+            {
+              "value": -15
+            },
+            {
+              "value": -14
+            },
+            {
+              "value": -13
+            },
+            {
+              "value": -12
+            },
+            {
+              "value": -11
+            },
+            {
+              "value": -10
+            },
+            {
+              "value": -9
+            },
+            {
+              "value": -8
+            },
+            {
+              "value": -7
+            },
+            {
+              "value": -6
+            },
+            {
+              "value": -5
+            },
+            {
+              "value": -4
+            },
+            {
+              "value": -3
+            },
+            {
+              "value": -2
+            },
+            {
+              "value": -1
+            },
+            {
+              "value": 0
+            },
+            {
+              "value": 1
+            },
+            {
+              "value": 2
+            },
+            {
+              "value": 3
+            },
+            {
+              "value": 4
+            },
+            {
+              "value": 5
+            },
+            {
+              "value": 6
+            },
+            {
+              "value": 7
+            },
+            {
+              "value": 8
+            },
+            {
+              "value": 9
+            },
+            {
+              "value": 10
+            },
+            {
+              "value": 11
+            },
+            {
+              "value": 12
+            },
+            {
+              "value": 13
+            },
+            {
+              "value": 14
+            },
+            {
+              "value": 15
+            },
+            {
+              "value": 16
+            },
+            {
+              "value": 17
+            },
+            {
+              "value": 18
+            },
+            {
+              "value": 19
+            },
+            {
+              "value": 20
+            }
+          ],
+          "known": [
+            {
+              "expected": true,
+              "inputs": {
+                "value": 0
+              }
+            },
+            {
+              "expected": false,
+              "inputs": {
+                "value": 1
+              }
+            }
+          ],
+          "name": "parity",
+          "source": "def parity(value):\n    return value % 2 == 0\n"
+        }
+      },
+      "labels": "source-hash-bound deterministic oracle outputs on fresh selected probes",
+      "oracle_source": "independent_codewrite_oracles.py",
+      "repetitions": 3,
+      "requests": {
+        "clamp": "Write a function that clamps a value between lower and upper bounds.",
+        "parity": "Write a function that returns the parity of an integer.",
+        "square": "Write a function that squares an integer."
+      },
+      "seed": 20261002
+    },
+    "files": {
+      "docs/research/engine_substrate/SUBSTRATE_INDEPENDENT_ADEQUACY_CODEWRITE_TRANSFER_V1_PREREG_20261002.md": "c7137c206ce7e035faafc1bb5e9c8fc619794ce6baaa993f8d54e35a563c22d9",
+      "evaluation/substrate_capability/analyze_substrate_independent_adequacy_codewrite_transfer_v1.py": "f7563e9a138ba78983eb38ea6d21f68fa293ed9e97c77b0a75f42237429fdddb",
+      "evaluation/substrate_capability/independent_codewrite_oracles.py": "b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+      "evaluation/substrate_capability/substrate_independent_adequacy_codewrite_transfer_v1.py": "4df60f2b25381a778d4e1b6aa20889a8645d7993d0e8f57054d38179e6db57a5"
+    },
+    "git_head": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+    "schema": "SubstrateIndependentAdequacyCodewriteTransferV1Lock"
+  },
+  "schedule": [
+    2,
+    3,
+    1
+  ],
+  "schema": "SubstrateIndependentAdequacyCodewriteTransferV1Capture",
+  "workers": [
+    {
+      "active_after": {
+        "domains/ast_to_term.py": "7ef48f9ecb67975428713ae1d2d54100fcdd39fc434dd586803059224f7cdcdb",
+        "domains/code_reading.py": "dd67d2942cf956c6e35f848aed4012c3ac072e9ac91d9e6b166e8ca44be57908",
+        "domains/code_write_growth.py": "691fd96072687baf2b99c6b3c9816cc6bb44805e35bec13f070a30061151761c",
+        "domains/code_writing.py": "4ad3148ca1796ad13f6128b9fd655e8568c7c843cd68bccee54f35cbf4ddabc9",
+        "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+        "domains/independent_adequacy.py": "33191341fdd63d16d0b9cb5203f27666da90b60fccd567ac4633306a9dcab418",
+        "domains/information_commitment.py": "da7ba4e2b289f24380289cde6170cbff82f4aee13b5d0158c103b4f9a660ee96",
+        "domains/reflective_faculty.py": "8f530a8c8754949216b71b473c4769fa5d351d01d6055127943c009d06763d05",
+        "domains/teach.py": "308a5f31d74dabb3ed8b24bd0c967abd5f94596a3ff76d17657330877fae2cfa",
+        "domains_tree": "200a51e70b6a1b587d82ed05fdea106aca865f89479972f5eefd3e1225c151f8",
+        "native_binary": "3816b4fb5d5746950b4cc3bf9e904a58e675ce53530727edf44095646dd58a54",
+        "oracle": "b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+        "python_native_tree": "4d4cb4aaaed3c395638b0485fc0d871749150149aded5e81491b42c7fdeb5402",
+        "runners/dsl/python/substrate_rs/__init__.py": "1fed837a6b7e8b35e463d3b8fdca498400c9cc420a016b81279365d6406a4049",
+        "runners/dsl/python/substrate_rs/_native.build.json": "b491d348c59cbf5cd5eee1b3f900a042f31e21665b6e63212edb9ed7f3d60f47",
+        "runners/dsl/src/graph_rules.rs": "b0e9c5bf0bbb4bf278fdab03610fa3f6f82d01ad8ee898ec789982ff41812a50",
+        "runners/dsl/src/py.rs": "d6f922bd406d3f500c10cea11978f47f9612b4ce6b9a348e848a30a305881cba",
+        "runners/dsl/src/substrate.rs": "bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+        "runners/dsl/src/term.rs": "5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+        "rust_dsl_tree": "06307beca12566832d3ba7ac157ec6177abb41a87dcf3755d824729d1a55ea0f",
+        "seed_manifest_inventory": "f1098a8168c0663746dffb253eb7230435957b3f8f8aa6d5c8197d224cf946b1",
+        "substrate/boot_all.py": "2bdf46f19228e1d85dbdcf12383116ceeb72aab0efe7ddd0cc6a51d23b45d220",
+        "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+        "substrate/seed_loader.py": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27",
+        "substrate/world_adapter.py": "7aeeb3d418fade3c90dc2d28a64a2685880d0a45d9fd47e4b6c2f6b6dd649023",
+        "substrate_tree": "206c8d6c975998dae706c64fe23be1ae7af659fd749577d978aafa1c30d7fdba"
+      },
+      "baselines": {
+        "clamp": {
+          "ok": false,
+          "reason": "no held shape for this request"
+        },
+        "parity": {
+          "ok": false,
+          "reason": "no held shape for this request"
+        },
+        "square": {
+          "ok": false,
+          "reason": "no held shape for this request"
+        }
+      },
+      "boot_cpu_ns": 17725731669,
+      "boot_ns": 16641129247,
+      "loaded_seed_count": 731,
+      "negative": {
+        "audit_probes": [
+          {
+            "expected": 25,
+            "inputs": {
+              "x": 5
+            },
+            "probe_id": "probe-1"
+          },
+          {
+            "expected": 0,
+            "inputs": {
+              "x": 0
+            },
+            "probe_id": "probe-2"
+          }
+        ],
+        "audit_rows": [
+          {
+            "inputs": {
+              "x": 5
+            },
+            "labels": [
+              {
+                "expected": 25,
+                "label_id": "b037f81d47cb422cfda8640ae13d5c91613ddbf3333944109fd7bb8897ab35d9",
+                "oracle_sha256": "b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+                "source_id": "independent-codewrite-oracle-v1:b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac"
+              }
+            ],
+            "probe_id": "probe-1"
+          },
+          {
+            "inputs": {
+              "x": 0
+            },
+            "labels": [
+              {
+                "expected": 0,
+                "label_id": "fd806b217a6cea72930cbe871520320c0e8638b395119f6e05e22e886ae7132d",
+                "oracle_sha256": "b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+                "source_id": "independent-codewrite-oracle-v1:b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac"
+              }
+            ],
+            "probe_id": "probe-2"
+          }
+        ],
+        "candidate_id_matches": true,
+        "contract_passed": true,
+        "oracle_source_id": "independent-codewrite-oracle-v1:b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+        "reason": "independent adequacy receipt missing, invalid, or bound to another candidate",
+        "receipt_sha256": "01006e69aa7868fe2af149840c623b6d5671f449aa7864be0d81e14cc378b629",
+        "receipt_status": "rejected",
+        "request_id": "7ccaed3f78c4bd25f2b417f86427c78e1d175f08577685b0d71a719556b9331c",
+        "state_after": {
+          "epoch": 0,
+          "node_ids": []
+        },
+        "state_before": {
+          "epoch": 0,
+          "node_ids": []
+        },
+        "state_unchanged": true,
+        "teach_ok": false,
+        "wall_ns": 5841548
+      },
+      "oracle_sha256": "b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+      "passed": true,
+      "pid": 4,
+      "positive": {
+        "clamp": {
+          "audit_probes": [
+            {
+              "expected": 2,
+              "inputs": {
+                "lower": 1,
+                "upper": 5,
+                "value": 2
+              },
+              "probe_id": "probe-1"
+            },
+            {
+              "expected": 1,
+              "inputs": {
+                "lower": 1,
+                "upper": 5,
+                "value": -1
+              },
+              "probe_id": "probe-2"
+            },
+            {
+              "expected": 2,
+              "inputs": {
+                "lower": -4,
+                "upper": 8,
+                "value": 2
+              },
+              "probe_id": "probe-3"
+            },
+            {
+              "expected": -2,
+              "inputs": {
+                "lower": -9,
+                "upper": -2,
+                "value": 0
+              },
+              "probe_id": "probe-4"
+            }
+          ],
+          "audit_rows": [
+            {
+              "inputs": {
+                "lower": 1,
+                "upper": 5,
+                "value": 2
+              },
+              "labels": [
+                {
+                  "expected": 2,
+                  "label_id": "87974d5377a8a33bb3415e45d7cd751f232dcbbd06b89bf595e02afc05235d53",
+                  "oracle_sha256": "b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+                  "source_id": "independent-codewrite-oracle-v1:b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac"
+                }
+              ],
+              "probe_id": "probe-1"
+            },
+            {
+              "inputs": {
+                "lower": 1,
+                "upper": 5,
+                "value": -1
+              },
+              "labels": [
+                {
+                  "expected": 1,
+                  "label_id": "3dcd3f20b60342d21b5aa6780d5185eb88c3c3e1766fef71ffd8ff367f82943a",
+                  "oracle_sha256": "b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+                  "source_id": "independent-codewrite-oracle-v1:b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac"
+                }
+              ],
+              "probe_id": "probe-2"
+            },
+            {
+              "inputs": {
+                "lower": -4,
+                "upper": 8,
+                "value": 2
+              },
+              "labels": [
+                {
+                  "expected": 2,
+                  "label_id": "b7c5b34087826facd6cc4795a23d5289ef9b881dcdfe565bc43bffaf9ab3fcc6",
+                  "oracle_sha256": "b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+                  "source_id": "independent-codewrite-oracle-v1:b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac"
+                }
+              ],
+              "probe_id": "probe-3"
+            },
+            {
+              "inputs": {
+                "lower": -9,
+                "upper": -2,
+                "value": 0
+              },
+              "labels": [
+                {
+                  "expected": -2,
+                  "label_id": "57535e8bbbb88d29f0b8e2e84b20298ef345aba3d0fe7d2f11539902a524c5da",
+                  "oracle_sha256": "b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+                  "source_id": "independent-codewrite-oracle-v1:b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac"
+                }
+              ],
+              "probe_id": "probe-4"
+            }
+          ],
+          "candidate_id_matches": true,
+          "contract_passed": true,
+          "epoch_increment": 1,
+          "heldout_count": 20,
+          "native_heldout_correct": 20,
+          "oracle_source_id": "independent-codewrite-oracle-v1:b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+          "python_heldout_correct": 20,
+          "receipt_sha256": "55143cf7f0b3008c17065811180c3ce05440a4c6868ad126aa77982f3d6b88b6",
+          "receipt_status": "accepted",
+          "request_id": "083714aaf407d8fbe018b76d8ef0849355756ea400ba9b4da2667eea5d214661",
+          "state_after": {
+            "epoch": 2,
+            "node_ids": [
+              "#25316"
+            ]
+          },
+          "state_before": {
+            "epoch": 1,
+            "node_ids": []
+          },
+          "teach_cpu_ns": 28966388,
+          "teach_ns": 29763590,
+          "teach_ok": true,
+          "transfer": {
+            "composed_ok": true,
+            "composed_term": {
+              "cond": {
+                "a": {
+                  "name": "value",
+                  "type": "Var"
+                },
+                "b": {
+                  "name": "lower",
+                  "type": "Var"
+                },
+                "type": "Lt"
+              },
+              "other": {
+                "cond": {
+                  "a": {
+                    "name": "value",
+                    "type": "Var"
+                  },
+                  "b": {
+                    "name": "upper",
+                    "type": "Var"
+                  },
+                  "type": "Gt"
+                },
+                "other": {
+                  "name": "value",
+                  "type": "Var"
+                },
+                "then": {
+                  "name": "upper",
+                  "type": "Var"
+                },
+                "type": "IfThenElse"
+              },
+              "then": {
+                "name": "lower",
+                "type": "Var"
+              },
+              "type": "IfThenElse"
+            },
+            "rows": [
+              {
+                "expected": -4,
+                "inputs": {
+                  "lower": -4,
+                  "upper": 8,
+                  "value": -20
+                },
+                "native_match": true,
+                "native_output": -4,
+                "python_match": true,
+                "python_output": -4
+              },
+              {
+                "expected": -4,
+                "inputs": {
+                  "lower": -4,
+                  "upper": 8,
+                  "value": -4
+                },
+                "native_match": true,
+                "native_output": -4,
+                "python_match": true,
+                "python_output": -4
+              },
+              {
+                "expected": -3,
+                "inputs": {
+                  "lower": -4,
+                  "upper": 8,
+                  "value": -3
+                },
+                "native_match": true,
+                "native_output": -3,
+                "python_match": true,
+                "python_output": -3
+              },
+              {
+                "expected": 0,
+                "inputs": {
+                  "lower": -4,
+                  "upper": 8,
+                  "value": 0
+                },
+                "native_match": true,
+                "native_output": 0,
+                "python_match": true,
+                "python_output": 0
+              },
+              {
+                "expected": 7,
+                "inputs": {
+                  "lower": -4,
+                  "upper": 8,
+                  "value": 7
+                },
+                "native_match": true,
+                "native_output": 7,
+                "python_match": true,
+                "python_output": 7
+              },
+              {
+                "expected": 8,
+                "inputs": {
+                  "lower": -4,
+                  "upper": 8,
+                  "value": 8
+                },
+                "native_match": true,
+                "native_output": 8,
+                "python_match": true,
+                "python_output": 8
+              },
+              {
+                "expected": 8,
+                "inputs": {
+                  "lower": -4,
+                  "upper": 8,
+                  "value": 9
+                },
+                "native_match": true,
+                "native_output": 8,
+                "python_match": true,
+                "python_output": 8
+              },
+              {
+                "expected": 8,
+                "inputs": {
+                  "lower": -4,
+                  "upper": 8,
+                  "value": 20
+                },
+                "native_match": true,
+                "native_output": 8,
+                "python_match": true,
+                "python_output": 8
+              },
+              {
+                "expected": -9,
+                "inputs": {
+                  "lower": -9,
+                  "upper": -2,
+                  "value": -9
+                },
+                "native_match": true,
+                "native_output": -9,
+                "python_match": true,
+                "python_output": -9
+              },
+              {
+                "expected": -9,
+                "inputs": {
+                  "lower": -9,
+                  "upper": -2,
+                  "value": -10
+                },
+                "native_match": true,
+                "native_output": -9,
+                "python_match": true,
+                "python_output": -9
+              },
+              {
+                "expected": -5,
+                "inputs": {
+                  "lower": -9,
+                  "upper": -2,
+                  "value": -5
+                },
+                "native_match": true,
+                "native_output": -5,
+                "python_match": true,
+                "python_output": -5
+              },
+              {
+                "expected": -2,
+                "inputs": {
+                  "lower": -9,
+                  "upper": -2,
+                  "value": -2
+                },
+                "native_match": true,
+                "native_output": -2,
+                "python_match": true,
+                "python_output": -2
+              },
+              {
+                "expected": -2,
+                "inputs": {
+                  "lower": -9,
+                  "upper": -2,
+                  "value": 0
+                },
+                "native_match": true,
+                "native_output": -2,
+                "python_match": true,
+                "python_output": -2
+              },
+              {
+                "expected": -2,
+                "inputs": {
+                  "lower": -9,
+                  "upper": -2,
+                  "value": 12
+                },
+                "native_match": true,
+                "native_output": -2,
+                "python_match": true,
+                "python_output": -2
+              },
+              {
+                "expected": 2,
+                "inputs": {
+                  "lower": 1,
+                  "upper": 5,
+                  "value": 2
+                },
+                "native_match": true,
+                "native_output": 2,
+                "python_match": true,
+                "python_output": 2
+              },
+              {
+                "expected": 1,
+                "inputs": {
+                  "lower": 1,
+                  "upper": 5,
+                  "value": 1
+                },
+                "native_match": true,
+                "native_output": 1,
+                "python_match": true,
+                "python_output": 1
+              },
+              {
+                "expected": 3,
+                "inputs": {
+                  "lower": 1,
+                  "upper": 5,
+                  "value": 3
+                },
+                "native_match": true,
+                "native_output": 3,
+                "python_match": true,
+                "python_output": 3
+              },
+              {
+                "expected": 5,
+                "inputs": {
+                  "lower": 1,
+                  "upper": 5,
+                  "value": 5
+                },
+                "native_match": true,
+                "native_output": 5,
+                "python_match": true,
+                "python_output": 5
+              },
+              {
+                "expected": 5,
+                "inputs": {
+                  "lower": 1,
+                  "upper": 5,
+                  "value": 7
+                },
+                "native_match": true,
+                "native_output": 5,
+                "python_match": true,
+                "python_output": 5
+              },
+              {
+                "expected": 1,
+                "inputs": {
+                  "lower": 1,
+                  "upper": 5,
+                  "value": -1
+                },
+                "native_match": true,
+                "native_output": 1,
+                "python_match": true,
+                "python_output": 1
+              }
+            ],
+            "written": {
+              "ok": true,
+              "sample_ok": true,
+              "source": "def heldout_candidate(value, lower, upper):\n    \"\"\"Selects between two values by a condition, over value, lower, upper.\"\"\"\n    # returns lower when (value < lower), else (upper if (value > upper) else value)\n    return (lower if (value < lower) else (upper if (value > upper) else value))\n",
+              "term": {
+                "cond": {
+                  "a": {
+                    "name": "value",
+                    "type": "Var"
+                  },
+                  "b": {
+                    "name": "lower",
+                    "type": "Var"
+                  },
+                  "type": "Lt"
+                },
+                "other": {
+                  "cond": {
+                    "a": {
+                      "name": "value",
+                      "type": "Var"
+                    },
+                    "b": {
+                      "name": "upper",
+                      "type": "Var"
+                    },
+                    "type": "Gt"
+                  },
+                  "other": {
+                    "name": "value",
+                    "type": "Var"
+                  },
+                  "then": {
+                    "name": "upper",
+                    "type": "Var"
+                  },
+                  "type": "IfThenElse"
+                },
+                "then": {
+                  "name": "lower",
+                  "type": "Var"
+                },
+                "type": "IfThenElse"
+              }
+            }
+          }
+        },
+        "parity": {
+          "audit_probes": [
+            {
+              "expected": false,
+              "inputs": {
+                "value": -3
+              },
+              "probe_id": "probe-1"
+            },
+            {
+              "expected": false,
+              "inputs": {
+                "value": 3
+              },
+              "probe_id": "probe-2"
+            },
+            {
+              "expected": true,
+              "inputs": {
+                "value": -2
+              },
+              "probe_id": "probe-3"
+            }
+          ],
+          "audit_rows": [
+            {
+              "inputs": {
+                "value": -3
+              },
+              "labels": [
+                {
+                  "expected": false,
+                  "label_id": "ee2b9973bf6d315c569db74648132149739bbcccc6f4d88e344879c0e3e02643",
+                  "oracle_sha256": "b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+                  "source_id": "independent-codewrite-oracle-v1:b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac"
+                }
+              ],
+              "probe_id": "probe-1"
+            },
+            {
+              "inputs": {
+                "value": 3
+              },
+              "labels": [
+                {
+                  "expected": false,
+                  "label_id": "32c9078da47d35cd02ae06968387556ac68b8e4094209ac08991e97db0e00d14",
+                  "oracle_sha256": "b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+                  "source_id": "independent-codewrite-oracle-v1:b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac"
+                }
+              ],
+              "probe_id": "probe-2"
+            },
+            {
+              "inputs": {
+                "value": -2
+              },
+              "labels": [
+                {
+                  "expected": true,
+                  "label_id": "4cd3cf309cc8806a2291bea78f8ca87d633ebc5415d3f5b6d83439684eb11fc2",
+                  "oracle_sha256": "b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+                  "source_id": "independent-codewrite-oracle-v1:b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac"
+                }
+              ],
+              "probe_id": "probe-3"
+            }
+          ],
+          "candidate_id_matches": true,
+          "contract_passed": true,
+          "epoch_increment": 1,
+          "heldout_count": 41,
+          "native_heldout_correct": 41,
+          "oracle_source_id": "independent-codewrite-oracle-v1:b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+          "python_heldout_correct": 41,
+          "receipt_sha256": "52ba013cfd012e6aa630be8d321f0ca1f9d5d24e49e6a950192d23fa818a104a",
+          "receipt_status": "accepted",
+          "request_id": "8264e46f5319fe234c7160b5e1ee8c3503441d71e3e9fa75e6e6d8c5f597d924",
+          "state_after": {
+            "epoch": 1,
+            "node_ids": [
+              "#25209"
+            ]
+          },
+          "state_before": {
+            "epoch": 0,
+            "node_ids": []
+          },
+          "teach_cpu_ns": 23718626,
+          "teach_ns": 23712211,
+          "teach_ok": true,
+          "transfer": {
+            "composed_ok": true,
+            "composed_term": {
+              "a": {
+                "a": {
+                  "name": "value",
+                  "type": "Var"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": 2
+                },
+                "type": "Mod"
+              },
+              "b": {
+                "type": "Lit",
+                "value": 0
+              },
+              "type": "Eq"
+            },
+            "rows": [
+              {
+                "expected": true,
+                "inputs": {
+                  "value": -20
+                },
+                "native_match": true,
+                "native_output": true,
+                "python_match": true,
+                "python_output": true
+              },
+              {
+                "expected": false,
+                "inputs": {
+                  "value": -19
+                },
+                "native_match": true,
+                "native_output": false,
+                "python_match": true,
+                "python_output": false
+              },
+              {
+                "expected": true,
+                "inputs": {
+                  "value": -18
+                },
+                "native_match": true,
+                "native_output": true,
+                "python_match": true,
+                "python_output": true
+              },
+              {
+                "expected": false,
+                "inputs": {
+                  "value": -17
+                },
+                "native_match": true,
+                "native_output": false,
+                "python_match": true,
+                "python_output": false
+              },
+              {
+                "expected": true,
+                "inputs": {
+                  "value": -16
+                },
+                "native_match": true,
+                "native_output": true,
+                "python_match": true,
+                "python_output": true
+              },
+              {
+                "expected": false,
+                "inputs": {
+                  "value": -15
+                },
+                "native_match": true,
+                "native_output": false,
+                "python_match": true,
+                "python_output": false
+              },
+              {
+                "expected": true,
+                "inputs": {
+                  "value": -14
+                },
+                "native_match": true,
+                "native_output": true,
+                "python_match": true,
+                "python_output": true
+              },
+              {
+                "expected": false,
+                "inputs": {
+                  "value": -13
+                },
+                "native_match": true,
+                "native_output": false,
+                "python_match": true,
+                "python_output": false
+              },
+              {
+                "expected": true,
+                "inputs": {
+                  "value": -12
+                },
+                "native_match": true,
+                "native_output": true,
+                "python_match": true,
+                "python_output": true
+              },
+              {
+                "expected": false,
+                "inputs": {
+                  "value": -11
+                },
+                "native_match": true,
+                "native_output": false,
+                "python_match": true,
+                "python_output": false
+              },
+              {
+                "expected": true,
+                "inputs": {
+                  "value": -10
+                },
+                "native_match": true,
+                "native_output": true,
+                "python_match": true,
+                "python_output": true
+              },
+              {
+                "expected": false,
+                "inputs": {
+                  "value": -9
+                },
+                "native_match": true,
+                "native_output": false,
+                "python_match": true,
+                "python_output": false
+              },
+              {
+                "expected": true,
+                "inputs": {
+                  "value": -8
+                },
+                "native_match": true,
+                "native_output": true,
+                "python_match": true,
+                "python_output": true
+              },
+              {
+                "expected": false,
+                "inputs": {
+                  "value": -7
+                },
+                "native_match": true,
+                "native_output": false,
+                "python_match": true,
+                "python_output": false
+              },
+              {
+                "expected": true,
+                "inputs": {
+                  "value": -6
+                },
+                "native_match": true,
+                "native_output": true,
+                "python_match": true,
+                "python_output": true
+              },
+              {
+                "expected": false,
+                "inputs": {
+                  "value": -5
+                },
+                "native_match": true,
+                "native_output": false,
+                "python_match": true,
+                "python_output": false
+              },
+              {
+                "expected": true,
+                "inputs": {
+                  "value": -4
+                },
+                "native_match": true,
+                "native_output": true,
+                "python_match": true,
+                "python_output": true
+              },
+              {
+                "expected": false,
+                "inputs": {
+                  "value": -3
+                },
+                "native_match": true,
+                "native_output": false,
+                "python_match": true,
+                "python_output": false
+              },
+              {
+                "expected": true,
+                "inputs": {
+                  "value": -2
+                },
+                "native_match": true,
+                "native_output": true,
+                "python_match": true,
+                "python_output": true
+              },
+              {
+                "expected": false,
+                "inputs": {
+                  "value": -1
+                },
+                "native_match": true,
+                "native_output": false,
+                "python_match": true,
+                "python_output": false
+              },
+              {
+                "expected": true,
+                "inputs": {
+                  "value": 0
+                },
+                "native_match": true,
+                "native_output": true,
+                "python_match": true,
+                "python_output": true
+              },
+              {
+                "expected": false,
+                "inputs": {
+                  "value": 1
+                },
+                "native_match": true,
+                "native_output": false,
+                "python_match": true,
+                "python_output": false
+              },
+              {
+                "expected": true,
+                "inputs": {
+                  "value": 2
+                },
+                "native_match": true,
+                "native_output": true,
+                "python_match": true,
+                "python_output": true
+              },
+              {
+                "expected": false,
+                "inputs": {
+                  "value": 3
+                },
+                "native_match": true,
+                "native_output": false,
+                "python_match": true,
+                "python_output": false
+              },
+              {
+                "expected": true,
+                "inputs": {
+                  "value": 4
+                },
+                "native_match": true,
+                "native_output": true,
+                "python_match": true,
+                "python_output": true
+              },
+              {
+                "expected": false,
+                "inputs": {
+                  "value": 5
+                },
+                "native_match": true,
+                "native_output": false,
+                "python_match": true,
+                "python_output": false
+              },
+              {
+                "expected": true,
+                "inputs": {
+                  "value": 6
+                },
+                "native_match": true,
+                "native_output": true,
+                "python_match": true,
+                "python_output": true
+              },
+              {
+                "expected": false,
+                "inputs": {
+                  "value": 7
+                },
+                "native_match": true,
+                "native_output": false,
+                "python_match": true,
+                "python_output": false
+              },
+              {
+                "expected": true,
+                "inputs": {
+                  "value": 8
+                },
+                "native_match": true,
+                "native_output": true,
+                "python_match": true,
+                "python_output": true
+              },
+              {
+                "expected": false,
+                "inputs": {
+                  "value": 9
+                },
+                "native_match": true,
+                "native_output": false,
+                "python_match": true,
+                "python_output": false
+              },
+              {
+                "expected": true,
+                "inputs": {
+                  "value": 10
+                },
+                "native_match": true,
+                "native_output": true,
+                "python_match": true,
+                "python_output": true
+              },
+              {
+                "expected": false,
+                "inputs": {
+                  "value": 11
+                },
+                "native_match": true,
+                "native_output": false,
+                "python_match": true,
+                "python_output": false
+              },
+              {
+                "expected": true,
+                "inputs": {
+                  "value": 12
+                },
+                "native_match": true,
+                "native_output": true,
+                "python_match": true,
+                "python_output": true
+              },
+              {
+                "expected": false,
+                "inputs": {
+                  "value": 13
+                },
+                "native_match": true,
+                "native_output": false,
+                "python_match": true,
+                "python_output": false
+              },
+              {
+                "expected": true,
+                "inputs": {
+                  "value": 14
+                },
+                "native_match": true,
+                "native_output": true,
+                "python_match": true,
+                "python_output": true
+              },
+              {
+                "expected": false,
+                "inputs": {
+                  "value": 15
+                },
+                "native_match": true,
+                "native_output": false,
+                "python_match": true,
+                "python_output": false
+              },
+              {
+                "expected": true,
+                "inputs": {
+                  "value": 16
+                },
+                "native_match": true,
+                "native_output": true,
+                "python_match": true,
+                "python_output": true
+              },
+              {
+                "expected": false,
+                "inputs": {
+                  "value": 17
+                },
+                "native_match": true,
+                "native_output": false,
+                "python_match": true,
+                "python_output": false
+              },
+              {
+                "expected": true,
+                "inputs": {
+                  "value": 18
+                },
+                "native_match": true,
+                "native_output": true,
+                "python_match": true,
+                "python_output": true
+              },
+              {
+                "expected": false,
+                "inputs": {
+                  "value": 19
+                },
+                "native_match": true,
+                "native_output": false,
+                "python_match": true,
+                "python_output": false
+              },
+              {
+                "expected": true,
+                "inputs": {
+                  "value": 20
+                },
+                "native_match": true,
+                "native_output": true,
+                "python_match": true,
+                "python_output": true
+              }
+            ],
+            "written": {
+              "ok": true,
+              "sample_ok": true,
+              "source": "def heldout_candidate(value):\n    \"\"\"Evaluates a comparison / predicate, over value.\"\"\"\n    return ((value % 2) == 0)\n",
+              "term": {
+                "a": {
+                  "a": {
+                    "name": "value",
+                    "type": "Var"
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": 2
+                  },
+                  "type": "Mod"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": 0
+                },
+                "type": "Eq"
+              }
+            }
+          }
+        }
+      },
+      "repetition": 2
+    },
+    {
+      "active_after": {
+        "domains/ast_to_term.py": "7ef48f9ecb67975428713ae1d2d54100fcdd39fc434dd586803059224f7cdcdb",
+        "domains/code_reading.py": "dd67d2942cf956c6e35f848aed4012c3ac072e9ac91d9e6b166e8ca44be57908",
+        "domains/code_write_growth.py": "691fd96072687baf2b99c6b3c9816cc6bb44805e35bec13f070a30061151761c",
+        "domains/code_writing.py": "4ad3148ca1796ad13f6128b9fd655e8568c7c843cd68bccee54f35cbf4ddabc9",
+        "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+        "domains/independent_adequacy.py": "33191341fdd63d16d0b9cb5203f27666da90b60fccd567ac4633306a9dcab418",
+        "domains/information_commitment.py": "da7ba4e2b289f24380289cde6170cbff82f4aee13b5d0158c103b4f9a660ee96",
+        "domains/reflective_faculty.py": "8f530a8c8754949216b71b473c4769fa5d351d01d6055127943c009d06763d05",
+        "domains/teach.py": "308a5f31d74dabb3ed8b24bd0c967abd5f94596a3ff76d17657330877fae2cfa",
+        "domains_tree": "200a51e70b6a1b587d82ed05fdea106aca865f89479972f5eefd3e1225c151f8",
+        "native_binary": "3816b4fb5d5746950b4cc3bf9e904a58e675ce53530727edf44095646dd58a54",
+        "oracle": "b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+        "python_native_tree": "4d4cb4aaaed3c395638b0485fc0d871749150149aded5e81491b42c7fdeb5402",
+        "runners/dsl/python/substrate_rs/__init__.py": "1fed837a6b7e8b35e463d3b8fdca498400c9cc420a016b81279365d6406a4049",
+        "runners/dsl/python/substrate_rs/_native.build.json": "b491d348c59cbf5cd5eee1b3f900a042f31e21665b6e63212edb9ed7f3d60f47",
+        "runners/dsl/src/graph_rules.rs": "b0e9c5bf0bbb4bf278fdab03610fa3f6f82d01ad8ee898ec789982ff41812a50",
+        "runners/dsl/src/py.rs": "d6f922bd406d3f500c10cea11978f47f9612b4ce6b9a348e848a30a305881cba",
+        "runners/dsl/src/substrate.rs": "bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+        "runners/dsl/src/term.rs": "5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+        "rust_dsl_tree": "06307beca12566832d3ba7ac157ec6177abb41a87dcf3755d824729d1a55ea0f",
+        "seed_manifest_inventory": "f1098a8168c0663746dffb253eb7230435957b3f8f8aa6d5c8197d224cf946b1",
+        "substrate/boot_all.py": "2bdf46f19228e1d85dbdcf12383116ceeb72aab0efe7ddd0cc6a51d23b45d220",
+        "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+        "substrate/seed_loader.py": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27",
+        "substrate/world_adapter.py": "7aeeb3d418fade3c90dc2d28a64a2685880d0a45d9fd47e4b6c2f6b6dd649023",
+        "substrate_tree": "206c8d6c975998dae706c64fe23be1ae7af659fd749577d978aafa1c30d7fdba"
+      },
+      "baselines": {
+        "clamp": {
+          "ok": false,
+          "reason": "no held shape for this request"
+        },
+        "parity": {
+          "ok": false,
+          "reason": "no held shape for this request"
+        },
+        "square": {
+          "ok": false,
+          "reason": "no held shape for this request"
+        }
+      },
+      "boot_cpu_ns": 17692295693,
+      "boot_ns": 16677724868,
+      "loaded_seed_count": 731,
+      "negative": {
+        "audit_probes": [
+          {
+            "expected": 25,
+            "inputs": {
+              "x": 5
+            },
+            "probe_id": "probe-1"
+          },
+          {
+            "expected": 0,
+            "inputs": {
+              "x": 0
+            },
+            "probe_id": "probe-2"
+          }
+        ],
+        "audit_rows": [
+          {
+            "inputs": {
+              "x": 5
+            },
+            "labels": [
+              {
+                "expected": 25,
+                "label_id": "8bc43147eb86f5d4d0f9e4f8c1b50404f35e827d26d509115b445bff3c0f41a8",
+                "oracle_sha256": "b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+                "source_id": "independent-codewrite-oracle-v1:b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac"
+              }
+            ],
+            "probe_id": "probe-1"
+          },
+          {
+            "inputs": {
+              "x": 0
+            },
+            "labels": [
+              {
+                "expected": 0,
+                "label_id": "7cbb412c4fd06a4b8f1fb9e068812008f1e8141edea968c427f5f7d50a0beb87",
+                "oracle_sha256": "b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+                "source_id": "independent-codewrite-oracle-v1:b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac"
+              }
+            ],
+            "probe_id": "probe-2"
+          }
+        ],
+        "candidate_id_matches": true,
+        "contract_passed": true,
+        "oracle_source_id": "independent-codewrite-oracle-v1:b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+        "reason": "independent adequacy receipt missing, invalid, or bound to another candidate",
+        "receipt_sha256": "6b71bbc9faca923eaac84e9122aea99968f92157ad4254050ae9bab88c511de2",
+        "receipt_status": "rejected",
+        "request_id": "6e048025b439573f0387eb20e6b1f7fce101e02bac20c6c3d6220ca57cf78fe5",
+        "state_after": {
+          "epoch": 0,
+          "node_ids": []
+        },
+        "state_before": {
+          "epoch": 0,
+          "node_ids": []
+        },
+        "state_unchanged": true,
+        "teach_ok": false,
+        "wall_ns": 7967141
+      },
+      "oracle_sha256": "b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+      "passed": true,
+      "pid": 2350,
+      "positive": {
+        "clamp": {
+          "audit_probes": [
+            {
+              "expected": -9,
+              "inputs": {
+                "lower": -9,
+                "upper": -2,
+                "value": -11
+              },
+              "probe_id": "probe-1"
+            },
+            {
+              "expected": 5,
+              "inputs": {
+                "lower": 1,
+                "upper": 5,
+                "value": 7
+              },
+              "probe_id": "probe-2"
+            },
+            {
+              "expected": 8,
+              "inputs": {
+                "lower": -4,
+                "upper": 8,
+                "value": 10
+              },
+              "probe_id": "probe-3"
+            },
+            {
+              "expected": -9,
+              "inputs": {
+                "lower": -9,
+                "upper": -2,
+                "value": -9
+              },
+              "probe_id": "probe-4"
+            }
+          ],
+          "audit_rows": [
+            {
+              "inputs": {
+                "lower": -9,
+                "upper": -2,
+                "value": -11
+              },
+              "labels": [
+                {
+                  "expected": -9,
+                  "label_id": "6f0b66d39d73d150222c2a8b2297a39bfd98b0a34e7b422c4094ba35c024764e",
+                  "oracle_sha256": "b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+                  "source_id": "independent-codewrite-oracle-v1:b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac"
+                }
+              ],
+              "probe_id": "probe-1"
+            },
+            {
+              "inputs": {
+                "lower": 1,
+                "upper": 5,
+                "value": 7
+              },
+              "labels": [
+                {
+                  "expected": 5,
+                  "label_id": "92e668f797896f207d1a55dd627214c1b9b8c515cf7684b14eb8b9098bfbd8c7",
+                  "oracle_sha256": "b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+                  "source_id": "independent-codewrite-oracle-v1:b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac"
+                }
+              ],
+              "probe_id": "probe-2"
+            },
+            {
+              "inputs": {
+                "lower": -4,
+                "upper": 8,
+                "value": 10
+              },
+              "labels": [
+                {
+                  "expected": 8,
+                  "label_id": "f8dfae02d014c2cc98ecc9c63675181a05684dbf2f2a61758856434a75eba795",
+                  "oracle_sha256": "b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+                  "source_id": "independent-codewrite-oracle-v1:b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac"
+                }
+              ],
+              "probe_id": "probe-3"
+            },
+            {
+              "inputs": {
+                "lower": -9,
+                "upper": -2,
+                "value": -9
+              },
+              "labels": [
+                {
+                  "expected": -9,
+                  "label_id": "eec732aa9700212590b1d67425f4b75388cd57ed3e404fc506f1801183c3229f",
+                  "oracle_sha256": "b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+                  "source_id": "independent-codewrite-oracle-v1:b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac"
+                }
+              ],
+              "probe_id": "probe-4"
+            }
+          ],
+          "candidate_id_matches": true,
+          "contract_passed": true,
+          "epoch_increment": 1,
+          "heldout_count": 20,
+          "native_heldout_correct": 20,
+          "oracle_source_id": "independent-codewrite-oracle-v1:b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+          "python_heldout_correct": 20,
+          "receipt_sha256": "e62d80d8ed7925c904a74466bf1ab71115a352375678cd24e64200e18d7f0d8c",
+          "receipt_status": "accepted",
+          "request_id": "a4b8b6b4ab52a5918d021788156bd159c19dbc7a32f9f836238014fdee2fbadb",
+          "state_after": {
+            "epoch": 2,
+            "node_ids": [
+              "#25316"
+            ]
+          },
+          "state_before": {
+            "epoch": 1,
+            "node_ids": []
+          },
+          "teach_cpu_ns": 22240956,
+          "teach_ns": 22237502,
+          "teach_ok": true,
+          "transfer": {
+            "composed_ok": true,
+            "composed_term": {
+              "cond": {
+                "a": {
+                  "name": "value",
+                  "type": "Var"
+                },
+                "b": {
+                  "name": "lower",
+                  "type": "Var"
+                },
+                "type": "Lt"
+              },
+              "other": {
+                "cond": {
+                  "a": {
+                    "name": "value",
+                    "type": "Var"
+                  },
+                  "b": {
+                    "name": "upper",
+                    "type": "Var"
+                  },
+                  "type": "Gt"
+                },
+                "other": {
+                  "name": "value",
+                  "type": "Var"
+                },
+                "then": {
+                  "name": "upper",
+                  "type": "Var"
+                },
+                "type": "IfThenElse"
+              },
+              "then": {
+                "name": "lower",
+                "type": "Var"
+              },
+              "type": "IfThenElse"
+            },
+            "rows": [
+              {
+                "expected": -4,
+                "inputs": {
+                  "lower": -4,
+                  "upper": 8,
+                  "value": -20
+                },
+                "native_match": true,
+                "native_output": -4,
+                "python_match": true,
+                "python_output": -4
+              },
+              {
+                "expected": -4,
+                "inputs": {
+                  "lower": -4,
+                  "upper": 8,
+                  "value": -4
+                },
+                "native_match": true,
+                "native_output": -4,
+                "python_match": true,
+                "python_output": -4
+              },
+              {
+                "expected": -3,
+                "inputs": {
+                  "lower": -4,
+                  "upper": 8,
+                  "value": -3
+                },
+                "native_match": true,
+                "native_output": -3,
+                "python_match": true,
+                "python_output": -3
+              },
+              {
+                "expected": 0,
+                "inputs": {
+                  "lower": -4,
+                  "upper": 8,
+                  "value": 0
+                },
+                "native_match": true,
+                "native_output": 0,
+                "python_match": true,
+                "python_output": 0
+              },
+              {
+                "expected": 7,
+                "inputs": {
+                  "lower": -4,
+                  "upper": 8,
+                  "value": 7
+                },
+                "native_match": true,
+                "native_output": 7,
+                "python_match": true,
+                "python_output": 7
+              },
+              {
+                "expected": 8,
+                "inputs": {
+                  "lower": -4,
+                  "upper": 8,
+                  "value": 8
+                },
+                "native_match": true,
+                "native_output": 8,
+                "python_match": true,
+                "python_output": 8
+              },
+              {
+                "expected": 8,
+                "inputs": {
+                  "lower": -4,
+                  "upper": 8,
+                  "value": 9
+                },
+                "native_match": true,
+                "native_output": 8,
+                "python_match": true,
+                "python_output": 8
+              },
+              {
+                "expected": 8,
+                "inputs": {
+                  "lower": -4,
+                  "upper": 8,
+                  "value": 20
+                },
+                "native_match": true,
+                "native_output": 8,
+                "python_match": true,
+                "python_output": 8
+              },
+              {
+                "expected": -9,
+                "inputs": {
+                  "lower": -9,
+                  "upper": -2,
+                  "value": -9
+                },
+                "native_match": true,
+                "native_output": -9,
+                "python_match": true,
+                "python_output": -9
+              },
+              {
+                "expected": -9,
+                "inputs": {
+                  "lower": -9,
+                  "upper": -2,
+                  "value": -10
+                },
+                "native_match": true,
+                "native_output": -9,
+                "python_match": true,
+                "python_output": -9
+              },
+              {
+                "expected": -5,
+                "inputs": {
+                  "lower": -9,
+                  "upper": -2,
+                  "value": -5
+                },
+                "native_match": true,
+                "native_output": -5,
+                "python_match": true,
+                "python_output": -5
+              },
+              {
+                "expected": -2,
+                "inputs": {
+                  "lower": -9,
+                  "upper": -2,
+                  "value": -2
+                },
+                "native_match": true,
+                "native_output": -2,
+                "python_match": true,
+                "python_output": -2
+              },
+              {
+                "expected": -2,
+                "inputs": {
+                  "lower": -9,
+                  "upper": -2,
+                  "value": 0
+                },
+                "native_match": true,
+                "native_output": -2,
+                "python_match": true,
+                "python_output": -2
+              },
+              {
+                "expected": -2,
+                "inputs": {
+                  "lower": -9,
+                  "upper": -2,
+                  "value": 12
+                },
+                "native_match": true,
+                "native_output": -2,
+                "python_match": true,
+                "python_output": -2
+              },
+              {
+                "expected": 2,
+                "inputs": {
+                  "lower": 1,
+                  "upper": 5,
+                  "value": 2
+                },
+                "native_match": true,
+                "native_output": 2,
+                "python_match": true,
+                "python_output": 2
+              },
+              {
+                "expected": 1,
+                "inputs": {
+                  "lower": 1,
+                  "upper": 5,
+                  "value": 1
+                },
+                "native_match": true,
+                "native_output": 1,
+                "python_match": true,
+                "python_output": 1
+              },
+              {
+                "expected": 3,
+                "inputs": {
+                  "lower": 1,
+                  "upper": 5,
+                  "value": 3
+                },
+                "native_match": true,
+                "native_output": 3,
+                "python_match": true,
+                "python_output": 3
+              },
+              {
+                "expected": 5,
+                "inputs": {
+                  "lower": 1,
+                  "upper": 5,
+                  "value": 5
+                },
+                "native_match": true,
+                "native_output": 5,
+                "python_match": true,
+                "python_output": 5
+              },
+              {
+                "expected": 5,
+                "inputs": {
+                  "lower": 1,
+                  "upper": 5,
+                  "value": 7
+                },
+                "native_match": true,
+                "native_output": 5,
+                "python_match": true,
+                "python_output": 5
+              },
+              {
+                "expected": 1,
+                "inputs": {
+                  "lower": 1,
+                  "upper": 5,
+                  "value": -1
+                },
+                "native_match": true,
+                "native_output": 1,
+                "python_match": true,
+                "python_output": 1
+              }
+            ],
+            "written": {
+              "ok": true,
+              "sample_ok": true,
+              "source": "def heldout_candidate(value, lower, upper):\n    \"\"\"Selects between two values by a condition, over value, lower, upper.\"\"\"\n    # returns lower when (value < lower), else (upper if (value > upper) else value)\n    return (lower if (value < lower) else (upper if (value > upper) else value))\n",
+              "term": {
+                "cond": {
+                  "a": {
+                    "name": "value",
+                    "type": "Var"
+                  },
+                  "b": {
+                    "name": "lower",
+                    "type": "Var"
+                  },
+                  "type": "Lt"
+                },
+                "other": {
+                  "cond": {
+                    "a": {
+                      "name": "value",
+                      "type": "Var"
+                    },
+                    "b": {
+                      "name": "upper",
+                      "type": "Var"
+                    },
+                    "type": "Gt"
+                  },
+                  "other": {
+                    "name": "value",
+                    "type": "Var"
+                  },
+                  "then": {
+                    "name": "upper",
+                    "type": "Var"
+                  },
+                  "type": "IfThenElse"
+                },
+                "then": {
+                  "name": "lower",
+                  "type": "Var"
+                },
+                "type": "IfThenElse"
+              }
+            }
+          }
+        },
+        "parity": {
+          "audit_probes": [
+            {
+              "expected": false,
+              "inputs": {
+                "value": 3
+              },
+              "probe_id": "probe-1"
+            },
+            {
+              "expected": false,
+              "inputs": {
+                "value": -3
+              },
+              "probe_id": "probe-2"
+            },
+            {
+              "expected": true,
+              "inputs": {
+                "value": 2
+              },
+              "probe_id": "probe-3"
+            }
+          ],
+          "audit_rows": [
+            {
+              "inputs": {
+                "value": 3
+              },
+              "labels": [
+                {
+                  "expected": false,
+                  "label_id": "dd7d6d08ac2f2e01242c16ba10574e9569009b32f21f1b6b57b4067a072243fd",
+                  "oracle_sha256": "b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+                  "source_id": "independent-codewrite-oracle-v1:b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac"
+                }
+              ],
+              "probe_id": "probe-1"
+            },
+            {
+              "inputs": {
+                "value": -3
+              },
+              "labels": [
+                {
+                  "expected": false,
+                  "label_id": "e84535d8b3536351f6a1ce9cf666e264d56fe28927aa52f31c563406cb5f86f3",
+                  "oracle_sha256": "b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+                  "source_id": "independent-codewrite-oracle-v1:b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac"
+                }
+              ],
+              "probe_id": "probe-2"
+            },
+            {
+              "inputs": {
+                "value": 2
+              },
+              "labels": [
+                {
+                  "expected": true,
+                  "label_id": "c9bccd1b468d2f23fbce8d4b6a283f1ee378e26d768b87e7b0d10d0ae0fc1290",
+                  "oracle_sha256": "b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+                  "source_id": "independent-codewrite-oracle-v1:b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac"
+                }
+              ],
+              "probe_id": "probe-3"
+            }
+          ],
+          "candidate_id_matches": true,
+          "contract_passed": true,
+          "epoch_increment": 1,
+          "heldout_count": 41,
+          "native_heldout_correct": 41,
+          "oracle_source_id": "independent-codewrite-oracle-v1:b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+          "python_heldout_correct": 41,
+          "receipt_sha256": "2874f8f66c62e16059aabc5650a64ff3d10b65d4dd7e24856340d5f28366d17d",
+          "receipt_status": "accepted",
+          "request_id": "220fb57516d5c85ac608b05f402ef01712991be3900b0e71389a7d3bc0ec3599",
+          "state_after": {
+            "epoch": 1,
+            "node_ids": [
+              "#25209"
+            ]
+          },
+          "state_before": {
+            "epoch": 0,
+            "node_ids": []
+          },
+          "teach_cpu_ns": 21564446,
+          "teach_ns": 21567968,
+          "teach_ok": true,
+          "transfer": {
+            "composed_ok": true,
+            "composed_term": {
+              "a": {
+                "a": {
+                  "name": "value",
+                  "type": "Var"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": 2
+                },
+                "type": "Mod"
+              },
+              "b": {
+                "type": "Lit",
+                "value": 0
+              },
+              "type": "Eq"
+            },
+            "rows": [
+              {
+                "expected": true,
+                "inputs": {
+                  "value": -20
+                },
+                "native_match": true,
+                "native_output": true,
+                "python_match": true,
+                "python_output": true
+              },
+              {
+                "expected": false,
+                "inputs": {
+                  "value": -19
+                },
+                "native_match": true,
+                "native_output": false,
+                "python_match": true,
+                "python_output": false
+              },
+              {
+                "expected": true,
+                "inputs": {
+                  "value": -18
+                },
+                "native_match": true,
+                "native_output": true,
+                "python_match": true,
+                "python_output": true
+              },
+              {
+                "expected": false,
+                "inputs": {
+                  "value": -17
+                },
+                "native_match": true,
+                "native_output": false,
+                "python_match": true,
+                "python_output": false
+              },
+              {
+                "expected": true,
+                "inputs": {
+                  "value": -16
+                },
+                "native_match": true,
+                "native_output": true,
+                "python_match": true,
+                "python_output": true
+              },
+              {
+                "expected": false,
+                "inputs": {
+                  "value": -15
+                },
+                "native_match": true,
+                "native_output": false,
+                "python_match": true,
+                "python_output": false
+              },
+              {
+                "expected": true,
+                "inputs": {
+                  "value": -14
+                },
+                "native_match": true,
+                "native_output": true,
+                "python_match": true,
+                "python_output": true
+              },
+              {
+                "expected": false,
+                "inputs": {
+                  "value": -13
+                },
+                "native_match": true,
+                "native_output": false,
+                "python_match": true,
+                "python_output": false
+              },
+              {
+                "expected": true,
+                "inputs": {
+                  "value": -12
+                },
+                "native_match": true,
+                "native_output": true,
+                "python_match": true,
+                "python_output": true
+              },
+              {
+                "expected": false,
+                "inputs": {
+                  "value": -11
+                },
+                "native_match": true,
+                "native_output": false,
+                "python_match": true,
+                "python_output": false
+              },
+              {
+                "expected": true,
+                "inputs": {
+                  "value": -10
+                },
+                "native_match": true,
+                "native_output": true,
+                "python_match": true,
+                "python_output": true
+              },
+              {
+                "expected": false,
+                "inputs": {
+                  "value": -9
+                },
+                "native_match": true,
+                "native_output": false,
+                "python_match": true,
+                "python_output": false
+              },
+              {
+                "expected": true,
+                "inputs": {
+                  "value": -8
+                },
+                "native_match": true,
+                "native_output": true,
+                "python_match": true,
+                "python_output": true
+              },
+              {
+                "expected": false,
+                "inputs": {
+                  "value": -7
+                },
+                "native_match": true,
+                "native_output": false,
+                "python_match": true,
+                "python_output": false
+              },
+              {
+                "expected": true,
+                "inputs": {
+                  "value": -6
+                },
+                "native_match": true,
+                "native_output": true,
+                "python_match": true,
+                "python_output": true
+              },
+              {
+                "expected": false,
+                "inputs": {
+                  "value": -5
+                },
+                "native_match": true,
+                "native_output": false,
+                "python_match": true,
+                "python_output": false
+              },
+              {
+                "expected": true,
+                "inputs": {
+                  "value": -4
+                },
+                "native_match": true,
+                "native_output": true,
+                "python_match": true,
+                "python_output": true
+              },
+              {
+                "expected": false,
+                "inputs": {
+                  "value": -3
+                },
+                "native_match": true,
+                "native_output": false,
+                "python_match": true,
+                "python_output": false
+              },
+              {
+                "expected": true,
+                "inputs": {
+                  "value": -2
+                },
+                "native_match": true,
+                "native_output": true,
+                "python_match": true,
+                "python_output": true
+              },
+              {
+                "expected": false,
+                "inputs": {
+                  "value": -1
+                },
+                "native_match": true,
+                "native_output": false,
+                "python_match": true,
+                "python_output": false
+              },
+              {
+                "expected": true,
+                "inputs": {
+                  "value": 0
+                },
+                "native_match": true,
+                "native_output": true,
+                "python_match": true,
+                "python_output": true
+              },
+              {
+                "expected": false,
+                "inputs": {
+                  "value": 1
+                },
+                "native_match": true,
+                "native_output": false,
+                "python_match": true,
+                "python_output": false
+              },
+              {
+                "expected": true,
+                "inputs": {
+                  "value": 2
+                },
+                "native_match": true,
+                "native_output": true,
+                "python_match": true,
+                "python_output": true
+              },
+              {
+                "expected": false,
+                "inputs": {
+                  "value": 3
+                },
+                "native_match": true,
+                "native_output": false,
+                "python_match": true,
+                "python_output": false
+              },
+              {
+                "expected": true,
+                "inputs": {
+                  "value": 4
+                },
+                "native_match": true,
+                "native_output": true,
+                "python_match": true,
+                "python_output": true
+              },
+              {
+                "expected": false,
+                "inputs": {
+                  "value": 5
+                },
+                "native_match": true,
+                "native_output": false,
+                "python_match": true,
+                "python_output": false
+              },
+              {
+                "expected": true,
+                "inputs": {
+                  "value": 6
+                },
+                "native_match": true,
+                "native_output": true,
+                "python_match": true,
+                "python_output": true
+              },
+              {
+                "expected": false,
+                "inputs": {
+                  "value": 7
+                },
+                "native_match": true,
+                "native_output": false,
+                "python_match": true,
+                "python_output": false
+              },
+              {
+                "expected": true,
+                "inputs": {
+                  "value": 8
+                },
+                "native_match": true,
+                "native_output": true,
+                "python_match": true,
+                "python_output": true
+              },
+              {
+                "expected": false,
+                "inputs": {
+                  "value": 9
+                },
+                "native_match": true,
+                "native_output": false,
+                "python_match": true,
+                "python_output": false
+              },
+              {
+                "expected": true,
+                "inputs": {
+                  "value": 10
+                },
+                "native_match": true,
+                "native_output": true,
+                "python_match": true,
+                "python_output": true
+              },
+              {
+                "expected": false,
+                "inputs": {
+                  "value": 11
+                },
+                "native_match": true,
+                "native_output": false,
+                "python_match": true,
+                "python_output": false
+              },
+              {
+                "expected": true,
+                "inputs": {
+                  "value": 12
+                },
+                "native_match": true,
+                "native_output": true,
+                "python_match": true,
+                "python_output": true
+              },
+              {
+                "expected": false,
+                "inputs": {
+                  "value": 13
+                },
+                "native_match": true,
+                "native_output": false,
+                "python_match": true,
+                "python_output": false
+              },
+              {
+                "expected": true,
+                "inputs": {
+                  "value": 14
+                },
+                "native_match": true,
+                "native_output": true,
+                "python_match": true,
+                "python_output": true
+              },
+              {
+                "expected": false,
+                "inputs": {
+                  "value": 15
+                },
+                "native_match": true,
+                "native_output": false,
+                "python_match": true,
+                "python_output": false
+              },
+              {
+                "expected": true,
+                "inputs": {
+                  "value": 16
+                },
+                "native_match": true,
+                "native_output": true,
+                "python_match": true,
+                "python_output": true
+              },
+              {
+                "expected": false,
+                "inputs": {
+                  "value": 17
+                },
+                "native_match": true,
+                "native_output": false,
+                "python_match": true,
+                "python_output": false
+              },
+              {
+                "expected": true,
+                "inputs": {
+                  "value": 18
+                },
+                "native_match": true,
+                "native_output": true,
+                "python_match": true,
+                "python_output": true
+              },
+              {
+                "expected": false,
+                "inputs": {
+                  "value": 19
+                },
+                "native_match": true,
+                "native_output": false,
+                "python_match": true,
+                "python_output": false
+              },
+              {
+                "expected": true,
+                "inputs": {
+                  "value": 20
+                },
+                "native_match": true,
+                "native_output": true,
+                "python_match": true,
+                "python_output": true
+              }
+            ],
+            "written": {
+              "ok": true,
+              "sample_ok": true,
+              "source": "def heldout_candidate(value):\n    \"\"\"Evaluates a comparison / predicate, over value.\"\"\"\n    return ((value % 2) == 0)\n",
+              "term": {
+                "a": {
+                  "a": {
+                    "name": "value",
+                    "type": "Var"
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": 2
+                  },
+                  "type": "Mod"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": 0
+                },
+                "type": "Eq"
+              }
+            }
+          }
+        }
+      },
+      "repetition": 3
+    },
+    {
+      "active_after": {
+        "domains/ast_to_term.py": "7ef48f9ecb67975428713ae1d2d54100fcdd39fc434dd586803059224f7cdcdb",
+        "domains/code_reading.py": "dd67d2942cf956c6e35f848aed4012c3ac072e9ac91d9e6b166e8ca44be57908",
+        "domains/code_write_growth.py": "691fd96072687baf2b99c6b3c9816cc6bb44805e35bec13f070a30061151761c",
+        "domains/code_writing.py": "4ad3148ca1796ad13f6128b9fd655e8568c7c843cd68bccee54f35cbf4ddabc9",
+        "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+        "domains/independent_adequacy.py": "33191341fdd63d16d0b9cb5203f27666da90b60fccd567ac4633306a9dcab418",
+        "domains/information_commitment.py": "da7ba4e2b289f24380289cde6170cbff82f4aee13b5d0158c103b4f9a660ee96",
+        "domains/reflective_faculty.py": "8f530a8c8754949216b71b473c4769fa5d351d01d6055127943c009d06763d05",
+        "domains/teach.py": "308a5f31d74dabb3ed8b24bd0c967abd5f94596a3ff76d17657330877fae2cfa",
+        "domains_tree": "200a51e70b6a1b587d82ed05fdea106aca865f89479972f5eefd3e1225c151f8",
+        "native_binary": "3816b4fb5d5746950b4cc3bf9e904a58e675ce53530727edf44095646dd58a54",
+        "oracle": "b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+        "python_native_tree": "4d4cb4aaaed3c395638b0485fc0d871749150149aded5e81491b42c7fdeb5402",
+        "runners/dsl/python/substrate_rs/__init__.py": "1fed837a6b7e8b35e463d3b8fdca498400c9cc420a016b81279365d6406a4049",
+        "runners/dsl/python/substrate_rs/_native.build.json": "b491d348c59cbf5cd5eee1b3f900a042f31e21665b6e63212edb9ed7f3d60f47",
+        "runners/dsl/src/graph_rules.rs": "b0e9c5bf0bbb4bf278fdab03610fa3f6f82d01ad8ee898ec789982ff41812a50",
+        "runners/dsl/src/py.rs": "d6f922bd406d3f500c10cea11978f47f9612b4ce6b9a348e848a30a305881cba",
+        "runners/dsl/src/substrate.rs": "bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+        "runners/dsl/src/term.rs": "5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+        "rust_dsl_tree": "06307beca12566832d3ba7ac157ec6177abb41a87dcf3755d824729d1a55ea0f",
+        "seed_manifest_inventory": "f1098a8168c0663746dffb253eb7230435957b3f8f8aa6d5c8197d224cf946b1",
+        "substrate/boot_all.py": "2bdf46f19228e1d85dbdcf12383116ceeb72aab0efe7ddd0cc6a51d23b45d220",
+        "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+        "substrate/seed_loader.py": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27",
+        "substrate/world_adapter.py": "7aeeb3d418fade3c90dc2d28a64a2685880d0a45d9fd47e4b6c2f6b6dd649023",
+        "substrate_tree": "206c8d6c975998dae706c64fe23be1ae7af659fd749577d978aafa1c30d7fdba"
+      },
+      "baselines": {
+        "clamp": {
+          "ok": false,
+          "reason": "no held shape for this request"
+        },
+        "parity": {
+          "ok": false,
+          "reason": "no held shape for this request"
+        },
+        "square": {
+          "ok": false,
+          "reason": "no held shape for this request"
+        }
+      },
+      "boot_cpu_ns": 17450585205,
+      "boot_ns": 16700684461,
+      "loaded_seed_count": 731,
+      "negative": {
+        "audit_probes": [
+          {
+            "expected": 16,
+            "inputs": {
+              "x": 4
+            },
+            "probe_id": "probe-1"
+          },
+          {
+            "expected": 4,
+            "inputs": {
+              "x": 2
+            },
+            "probe_id": "probe-2"
+          }
+        ],
+        "audit_rows": [
+          {
+            "inputs": {
+              "x": 4
+            },
+            "labels": [
+              {
+                "expected": 16,
+                "label_id": "bff3faea0d1b5e4b6a04308a6e8a00f7af34ada6e34b5f43dd3683a620789b36",
+                "oracle_sha256": "b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+                "source_id": "independent-codewrite-oracle-v1:b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac"
+              }
+            ],
+            "probe_id": "probe-1"
+          },
+          {
+            "inputs": {
+              "x": 2
+            },
+            "labels": [
+              {
+                "expected": 4,
+                "label_id": "52f39ff119bfdd58a040bbc8240ad9abb1407f96ab22b111e9e9260ebddb9dea",
+                "oracle_sha256": "b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+                "source_id": "independent-codewrite-oracle-v1:b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac"
+              }
+            ],
+            "probe_id": "probe-2"
+          }
+        ],
+        "candidate_id_matches": true,
+        "contract_passed": true,
+        "oracle_source_id": "independent-codewrite-oracle-v1:b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+        "reason": "independent adequacy receipt missing, invalid, or bound to another candidate",
+        "receipt_sha256": "b01b50056fcc4b534dd90ca75835145882a201bb6012c9f6286f911a02709ae3",
+        "receipt_status": "rejected",
+        "request_id": "1dff817dd1201da8d466ae9b910b385a0279aff0d6157421e2912604e5bc97ec",
+        "state_after": {
+          "epoch": 0,
+          "node_ids": []
+        },
+        "state_before": {
+          "epoch": 0,
+          "node_ids": []
+        },
+        "state_unchanged": true,
+        "teach_ok": false,
+        "wall_ns": 4977732
+      },
+      "oracle_sha256": "b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+      "passed": true,
+      "pid": 4696,
+      "positive": {
+        "clamp": {
+          "audit_probes": [
+            {
+              "expected": -9,
+              "inputs": {
+                "lower": -9,
+                "upper": -2,
+                "value": -11
+              },
+              "probe_id": "probe-1"
+            },
+            {
+              "expected": -8,
+              "inputs": {
+                "lower": -9,
+                "upper": -2,
+                "value": -8
+              },
+              "probe_id": "probe-2"
+            },
+            {
+              "expected": 1,
+              "inputs": {
+                "lower": 1,
+                "upper": 5,
+                "value": 1
+              },
+              "probe_id": "probe-3"
+            },
+            {
+              "expected": 2,
+              "inputs": {
+                "lower": 1,
+                "upper": 5,
+                "value": 2
+              },
+              "probe_id": "probe-4"
+            }
+          ],
+          "audit_rows": [
+            {
+              "inputs": {
+                "lower": -9,
+                "upper": -2,
+                "value": -11
+              },
+              "labels": [
+                {
+                  "expected": -9,
+                  "label_id": "55ce4db7ef8930ca88ae58f4c13c09fb2056dd60cb1966529a50fc8b98b714cc",
+                  "oracle_sha256": "b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+                  "source_id": "independent-codewrite-oracle-v1:b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac"
+                }
+              ],
+              "probe_id": "probe-1"
+            },
+            {
+              "inputs": {
+                "lower": -9,
+                "upper": -2,
+                "value": -8
+              },
+              "labels": [
+                {
+                  "expected": -8,
+                  "label_id": "f09cc50ca3ffff71ff1f8a4712e60edd21b09ef9739fc9e6d59c0651530ae4cf",
+                  "oracle_sha256": "b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+                  "source_id": "independent-codewrite-oracle-v1:b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac"
+                }
+              ],
+              "probe_id": "probe-2"
+            },
+            {
+              "inputs": {
+                "lower": 1,
+                "upper": 5,
+                "value": 1
+              },
+              "labels": [
+                {
+                  "expected": 1,
+                  "label_id": "d95711ae1cc9043ff48cca08bff0a6b69ea8acc74f45d4f4b08e2a960cc42438",
+                  "oracle_sha256": "b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+                  "source_id": "independent-codewrite-oracle-v1:b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac"
+                }
+              ],
+              "probe_id": "probe-3"
+            },
+            {
+              "inputs": {
+                "lower": 1,
+                "upper": 5,
+                "value": 2
+              },
+              "labels": [
+                {
+                  "expected": 2,
+                  "label_id": "e236b035ea30ed8791b83f3736437a86eb1a97f7cc27f196e0819add513084f7",
+                  "oracle_sha256": "b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+                  "source_id": "independent-codewrite-oracle-v1:b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac"
+                }
+              ],
+              "probe_id": "probe-4"
+            }
+          ],
+          "candidate_id_matches": true,
+          "contract_passed": true,
+          "epoch_increment": 1,
+          "heldout_count": 20,
+          "native_heldout_correct": 20,
+          "oracle_source_id": "independent-codewrite-oracle-v1:b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+          "python_heldout_correct": 20,
+          "receipt_sha256": "94b07c5ada827378d89c246824999f4dd47301753bd0236054113d34876ff94f",
+          "receipt_status": "accepted",
+          "request_id": "4b761da227e41b9ff09ebf43acdd53f6cb6f9ce79e3578b2a73aa631b813b6da",
+          "state_after": {
+            "epoch": 2,
+            "node_ids": [
+              "#25316"
+            ]
+          },
+          "state_before": {
+            "epoch": 1,
+            "node_ids": []
+          },
+          "teach_cpu_ns": 18131285,
+          "teach_ns": 18147046,
+          "teach_ok": true,
+          "transfer": {
+            "composed_ok": true,
+            "composed_term": {
+              "cond": {
+                "a": {
+                  "name": "value",
+                  "type": "Var"
+                },
+                "b": {
+                  "name": "lower",
+                  "type": "Var"
+                },
+                "type": "Lt"
+              },
+              "other": {
+                "cond": {
+                  "a": {
+                    "name": "value",
+                    "type": "Var"
+                  },
+                  "b": {
+                    "name": "upper",
+                    "type": "Var"
+                  },
+                  "type": "Gt"
+                },
+                "other": {
+                  "name": "value",
+                  "type": "Var"
+                },
+                "then": {
+                  "name": "upper",
+                  "type": "Var"
+                },
+                "type": "IfThenElse"
+              },
+              "then": {
+                "name": "lower",
+                "type": "Var"
+              },
+              "type": "IfThenElse"
+            },
+            "rows": [
+              {
+                "expected": -4,
+                "inputs": {
+                  "lower": -4,
+                  "upper": 8,
+                  "value": -20
+                },
+                "native_match": true,
+                "native_output": -4,
+                "python_match": true,
+                "python_output": -4
+              },
+              {
+                "expected": -4,
+                "inputs": {
+                  "lower": -4,
+                  "upper": 8,
+                  "value": -4
+                },
+                "native_match": true,
+                "native_output": -4,
+                "python_match": true,
+                "python_output": -4
+              },
+              {
+                "expected": -3,
+                "inputs": {
+                  "lower": -4,
+                  "upper": 8,
+                  "value": -3
+                },
+                "native_match": true,
+                "native_output": -3,
+                "python_match": true,
+                "python_output": -3
+              },
+              {
+                "expected": 0,
+                "inputs": {
+                  "lower": -4,
+                  "upper": 8,
+                  "value": 0
+                },
+                "native_match": true,
+                "native_output": 0,
+                "python_match": true,
+                "python_output": 0
+              },
+              {
+                "expected": 7,
+                "inputs": {
+                  "lower": -4,
+                  "upper": 8,
+                  "value": 7
+                },
+                "native_match": true,
+                "native_output": 7,
+                "python_match": true,
+                "python_output": 7
+              },
+              {
+                "expected": 8,
+                "inputs": {
+                  "lower": -4,
+                  "upper": 8,
+                  "value": 8
+                },
+                "native_match": true,
+                "native_output": 8,
+                "python_match": true,
+                "python_output": 8
+              },
+              {
+                "expected": 8,
+                "inputs": {
+                  "lower": -4,
+                  "upper": 8,
+                  "value": 9
+                },
+                "native_match": true,
+                "native_output": 8,
+                "python_match": true,
+                "python_output": 8
+              },
+              {
+                "expected": 8,
+                "inputs": {
+                  "lower": -4,
+                  "upper": 8,
+                  "value": 20
+                },
+                "native_match": true,
+                "native_output": 8,
+                "python_match": true,
+                "python_output": 8
+              },
+              {
+                "expected": -9,
+                "inputs": {
+                  "lower": -9,
+                  "upper": -2,
+                  "value": -9
+                },
+                "native_match": true,
+                "native_output": -9,
+                "python_match": true,
+                "python_output": -9
+              },
+              {
+                "expected": -9,
+                "inputs": {
+                  "lower": -9,
+                  "upper": -2,
+                  "value": -10
+                },
+                "native_match": true,
+                "native_output": -9,
+                "python_match": true,
+                "python_output": -9
+              },
+              {
+                "expected": -5,
+                "inputs": {
+                  "lower": -9,
+                  "upper": -2,
+                  "value": -5
+                },
+                "native_match": true,
+                "native_output": -5,
+                "python_match": true,
+                "python_output": -5
+              },
+              {
+                "expected": -2,
+                "inputs": {
+                  "lower": -9,
+                  "upper": -2,
+                  "value": -2
+                },
+                "native_match": true,
+                "native_output": -2,
+                "python_match": true,
+                "python_output": -2
+              },
+              {
+                "expected": -2,
+                "inputs": {
+                  "lower": -9,
+                  "upper": -2,
+                  "value": 0
+                },
+                "native_match": true,
+                "native_output": -2,
+                "python_match": true,
+                "python_output": -2
+              },
+              {
+                "expected": -2,
+                "inputs": {
+                  "lower": -9,
+                  "upper": -2,
+                  "value": 12
+                },
+                "native_match": true,
+                "native_output": -2,
+                "python_match": true,
+                "python_output": -2
+              },
+              {
+                "expected": 2,
+                "inputs": {
+                  "lower": 1,
+                  "upper": 5,
+                  "value": 2
+                },
+                "native_match": true,
+                "native_output": 2,
+                "python_match": true,
+                "python_output": 2
+              },
+              {
+                "expected": 1,
+                "inputs": {
+                  "lower": 1,
+                  "upper": 5,
+                  "value": 1
+                },
+                "native_match": true,
+                "native_output": 1,
+                "python_match": true,
+                "python_output": 1
+              },
+              {
+                "expected": 3,
+                "inputs": {
+                  "lower": 1,
+                  "upper": 5,
+                  "value": 3
+                },
+                "native_match": true,
+                "native_output": 3,
+                "python_match": true,
+                "python_output": 3
+              },
+              {
+                "expected": 5,
+                "inputs": {
+                  "lower": 1,
+                  "upper": 5,
+                  "value": 5
+                },
+                "native_match": true,
+                "native_output": 5,
+                "python_match": true,
+                "python_output": 5
+              },
+              {
+                "expected": 5,
+                "inputs": {
+                  "lower": 1,
+                  "upper": 5,
+                  "value": 7
+                },
+                "native_match": true,
+                "native_output": 5,
+                "python_match": true,
+                "python_output": 5
+              },
+              {
+                "expected": 1,
+                "inputs": {
+                  "lower": 1,
+                  "upper": 5,
+                  "value": -1
+                },
+                "native_match": true,
+                "native_output": 1,
+                "python_match": true,
+                "python_output": 1
+              }
+            ],
+            "written": {
+              "ok": true,
+              "sample_ok": true,
+              "source": "def heldout_candidate(value, lower, upper):\n    \"\"\"Selects between two values by a condition, over value, lower, upper.\"\"\"\n    # returns lower when (value < lower), else (upper if (value > upper) else value)\n    return (lower if (value < lower) else (upper if (value > upper) else value))\n",
+              "term": {
+                "cond": {
+                  "a": {
+                    "name": "value",
+                    "type": "Var"
+                  },
+                  "b": {
+                    "name": "lower",
+                    "type": "Var"
+                  },
+                  "type": "Lt"
+                },
+                "other": {
+                  "cond": {
+                    "a": {
+                      "name": "value",
+                      "type": "Var"
+                    },
+                    "b": {
+                      "name": "upper",
+                      "type": "Var"
+                    },
+                    "type": "Gt"
+                  },
+                  "other": {
+                    "name": "value",
+                    "type": "Var"
+                  },
+                  "then": {
+                    "name": "upper",
+                    "type": "Var"
+                  },
+                  "type": "IfThenElse"
+                },
+                "then": {
+                  "name": "lower",
+                  "type": "Var"
+                },
+                "type": "IfThenElse"
+              }
+            }
+          }
+        },
+        "parity": {
+          "audit_probes": [
+            {
+              "expected": true,
+              "inputs": {
+                "value": 2
+              },
+              "probe_id": "probe-1"
+            },
+            {
+              "expected": false,
+              "inputs": {
+                "value": 3
+              },
+              "probe_id": "probe-2"
+            },
+            {
+              "expected": true,
+              "inputs": {
+                "value": 4
+              },
+              "probe_id": "probe-3"
+            }
+          ],
+          "audit_rows": [
+            {
+              "inputs": {
+                "value": 2
+              },
+              "labels": [
+                {
+                  "expected": true,
+                  "label_id": "83c11cec71e5b618cda5c6b979596038eea9ffe2a26b7f95ffa60a6c9bc55717",
+                  "oracle_sha256": "b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+                  "source_id": "independent-codewrite-oracle-v1:b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac"
+                }
+              ],
+              "probe_id": "probe-1"
+            },
+            {
+              "inputs": {
+                "value": 3
+              },
+              "labels": [
+                {
+                  "expected": false,
+                  "label_id": "af430722e4069e899bd3ce92b4a19b998f1d06489fcf39168bdcd30abed15633",
+                  "oracle_sha256": "b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+                  "source_id": "independent-codewrite-oracle-v1:b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac"
+                }
+              ],
+              "probe_id": "probe-2"
+            },
+            {
+              "inputs": {
+                "value": 4
+              },
+              "labels": [
+                {
+                  "expected": true,
+                  "label_id": "dc3ccd5bbf95ac4914209e1c36bf2626c1fff7faa78a63a53424d14f9086897b",
+                  "oracle_sha256": "b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+                  "source_id": "independent-codewrite-oracle-v1:b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac"
+                }
+              ],
+              "probe_id": "probe-3"
+            }
+          ],
+          "candidate_id_matches": true,
+          "contract_passed": true,
+          "epoch_increment": 1,
+          "heldout_count": 41,
+          "native_heldout_correct": 41,
+          "oracle_source_id": "independent-codewrite-oracle-v1:b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+          "python_heldout_correct": 41,
+          "receipt_sha256": "e4c108d1df6fb464af2e32d3e2e749db05042c4a6c9c475ca695bfc3702fa92d",
+          "receipt_status": "accepted",
+          "request_id": "0d0eb13a966b2008fdf12a31845069d316b5c94d5f930ff628c28ba0fcfc7b05",
+          "state_after": {
+            "epoch": 1,
+            "node_ids": [
+              "#25209"
+            ]
+          },
+          "state_before": {
+            "epoch": 0,
+            "node_ids": []
+          },
+          "teach_cpu_ns": 20972525,
+          "teach_ns": 20966565,
+          "teach_ok": true,
+          "transfer": {
+            "composed_ok": true,
+            "composed_term": {
+              "a": {
+                "a": {
+                  "name": "value",
+                  "type": "Var"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": 2
+                },
+                "type": "Mod"
+              },
+              "b": {
+                "type": "Lit",
+                "value": 0
+              },
+              "type": "Eq"
+            },
+            "rows": [
+              {
+                "expected": true,
+                "inputs": {
+                  "value": -20
+                },
+                "native_match": true,
+                "native_output": true,
+                "python_match": true,
+                "python_output": true
+              },
+              {
+                "expected": false,
+                "inputs": {
+                  "value": -19
+                },
+                "native_match": true,
+                "native_output": false,
+                "python_match": true,
+                "python_output": false
+              },
+              {
+                "expected": true,
+                "inputs": {
+                  "value": -18
+                },
+                "native_match": true,
+                "native_output": true,
+                "python_match": true,
+                "python_output": true
+              },
+              {
+                "expected": false,
+                "inputs": {
+                  "value": -17
+                },
+                "native_match": true,
+                "native_output": false,
+                "python_match": true,
+                "python_output": false
+              },
+              {
+                "expected": true,
+                "inputs": {
+                  "value": -16
+                },
+                "native_match": true,
+                "native_output": true,
+                "python_match": true,
+                "python_output": true
+              },
+              {
+                "expected": false,
+                "inputs": {
+                  "value": -15
+                },
+                "native_match": true,
+                "native_output": false,
+                "python_match": true,
+                "python_output": false
+              },
+              {
+                "expected": true,
+                "inputs": {
+                  "value": -14
+                },
+                "native_match": true,
+                "native_output": true,
+                "python_match": true,
+                "python_output": true
+              },
+              {
+                "expected": false,
+                "inputs": {
+                  "value": -13
+                },
+                "native_match": true,
+                "native_output": false,
+                "python_match": true,
+                "python_output": false
+              },
+              {
+                "expected": true,
+                "inputs": {
+                  "value": -12
+                },
+                "native_match": true,
+                "native_output": true,
+                "python_match": true,
+                "python_output": true
+              },
+              {
+                "expected": false,
+                "inputs": {
+                  "value": -11
+                },
+                "native_match": true,
+                "native_output": false,
+                "python_match": true,
+                "python_output": false
+              },
+              {
+                "expected": true,
+                "inputs": {
+                  "value": -10
+                },
+                "native_match": true,
+                "native_output": true,
+                "python_match": true,
+                "python_output": true
+              },
+              {
+                "expected": false,
+                "inputs": {
+                  "value": -9
+                },
+                "native_match": true,
+                "native_output": false,
+                "python_match": true,
+                "python_output": false
+              },
+              {
+                "expected": true,
+                "inputs": {
+                  "value": -8
+                },
+                "native_match": true,
+                "native_output": true,
+                "python_match": true,
+                "python_output": true
+              },
+              {
+                "expected": false,
+                "inputs": {
+                  "value": -7
+                },
+                "native_match": true,
+                "native_output": false,
+                "python_match": true,
+                "python_output": false
+              },
+              {
+                "expected": true,
+                "inputs": {
+                  "value": -6
+                },
+                "native_match": true,
+                "native_output": true,
+                "python_match": true,
+                "python_output": true
+              },
+              {
+                "expected": false,
+                "inputs": {
+                  "value": -5
+                },
+                "native_match": true,
+                "native_output": false,
+                "python_match": true,
+                "python_output": false
+              },
+              {
+                "expected": true,
+                "inputs": {
+                  "value": -4
+                },
+                "native_match": true,
+                "native_output": true,
+                "python_match": true,
+                "python_output": true
+              },
+              {
+                "expected": false,
+                "inputs": {
+                  "value": -3
+                },
+                "native_match": true,
+                "native_output": false,
+                "python_match": true,
+                "python_output": false
+              },
+              {
+                "expected": true,
+                "inputs": {
+                  "value": -2
+                },
+                "native_match": true,
+                "native_output": true,
+                "python_match": true,
+                "python_output": true
+              },
+              {
+                "expected": false,
+                "inputs": {
+                  "value": -1
+                },
+                "native_match": true,
+                "native_output": false,
+                "python_match": true,
+                "python_output": false
+              },
+              {
+                "expected": true,
+                "inputs": {
+                  "value": 0
+                },
+                "native_match": true,
+                "native_output": true,
+                "python_match": true,
+                "python_output": true
+              },
+              {
+                "expected": false,
+                "inputs": {
+                  "value": 1
+                },
+                "native_match": true,
+                "native_output": false,
+                "python_match": true,
+                "python_output": false
+              },
+              {
+                "expected": true,
+                "inputs": {
+                  "value": 2
+                },
+                "native_match": true,
+                "native_output": true,
+                "python_match": true,
+                "python_output": true
+              },
+              {
+                "expected": false,
+                "inputs": {
+                  "value": 3
+                },
+                "native_match": true,
+                "native_output": false,
+                "python_match": true,
+                "python_output": false
+              },
+              {
+                "expected": true,
+                "inputs": {
+                  "value": 4
+                },
+                "native_match": true,
+                "native_output": true,
+                "python_match": true,
+                "python_output": true
+              },
+              {
+                "expected": false,
+                "inputs": {
+                  "value": 5
+                },
+                "native_match": true,
+                "native_output": false,
+                "python_match": true,
+                "python_output": false
+              },
+              {
+                "expected": true,
+                "inputs": {
+                  "value": 6
+                },
+                "native_match": true,
+                "native_output": true,
+                "python_match": true,
+                "python_output": true
+              },
+              {
+                "expected": false,
+                "inputs": {
+                  "value": 7
+                },
+                "native_match": true,
+                "native_output": false,
+                "python_match": true,
+                "python_output": false
+              },
+              {
+                "expected": true,
+                "inputs": {
+                  "value": 8
+                },
+                "native_match": true,
+                "native_output": true,
+                "python_match": true,
+                "python_output": true
+              },
+              {
+                "expected": false,
+                "inputs": {
+                  "value": 9
+                },
+                "native_match": true,
+                "native_output": false,
+                "python_match": true,
+                "python_output": false
+              },
+              {
+                "expected": true,
+                "inputs": {
+                  "value": 10
+                },
+                "native_match": true,
+                "native_output": true,
+                "python_match": true,
+                "python_output": true
+              },
+              {
+                "expected": false,
+                "inputs": {
+                  "value": 11
+                },
+                "native_match": true,
+                "native_output": false,
+                "python_match": true,
+                "python_output": false
+              },
+              {
+                "expected": true,
+                "inputs": {
+                  "value": 12
+                },
+                "native_match": true,
+                "native_output": true,
+                "python_match": true,
+                "python_output": true
+              },
+              {
+                "expected": false,
+                "inputs": {
+                  "value": 13
+                },
+                "native_match": true,
+                "native_output": false,
+                "python_match": true,
+                "python_output": false
+              },
+              {
+                "expected": true,
+                "inputs": {
+                  "value": 14
+                },
+                "native_match": true,
+                "native_output": true,
+                "python_match": true,
+                "python_output": true
+              },
+              {
+                "expected": false,
+                "inputs": {
+                  "value": 15
+                },
+                "native_match": true,
+                "native_output": false,
+                "python_match": true,
+                "python_output": false
+              },
+              {
+                "expected": true,
+                "inputs": {
+                  "value": 16
+                },
+                "native_match": true,
+                "native_output": true,
+                "python_match": true,
+                "python_output": true
+              },
+              {
+                "expected": false,
+                "inputs": {
+                  "value": 17
+                },
+                "native_match": true,
+                "native_output": false,
+                "python_match": true,
+                "python_output": false
+              },
+              {
+                "expected": true,
+                "inputs": {
+                  "value": 18
+                },
+                "native_match": true,
+                "native_output": true,
+                "python_match": true,
+                "python_output": true
+              },
+              {
+                "expected": false,
+                "inputs": {
+                  "value": 19
+                },
+                "native_match": true,
+                "native_output": false,
+                "python_match": true,
+                "python_output": false
+              },
+              {
+                "expected": true,
+                "inputs": {
+                  "value": 20
+                },
+                "native_match": true,
+                "native_output": true,
+                "python_match": true,
+                "python_output": true
+              }
+            ],
+            "written": {
+              "ok": true,
+              "sample_ok": true,
+              "source": "def heldout_candidate(value):\n    \"\"\"Evaluates a comparison / predicate, over value.\"\"\"\n    return ((value % 2) == 0)\n",
+              "term": {
+                "a": {
+                  "a": {
+                    "name": "value",
+                    "type": "Var"
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": 2
+                  },
+                  "type": "Mod"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": 0
+                },
+                "type": "Eq"
+              }
+            }
+          }
+        }
+      },
+      "repetition": 1
+    }
+  ]
+}

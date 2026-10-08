@@ -1,0 +1,215 @@
+{
+  "checks": {
+    "all_edges_unique_and_present": true,
+    "all_mixed_effect_outputs_match_oracle": true,
+    "no_stage_a_divergence": true,
+    "no_stage_a_unsound_drain": true,
+    "settles_under_terminal_probe": true,
+    "stage_a_compared_at_least_one_drain": true
+  },
+  "claim_boundary": "Mechanism evidence that this independent one-variable form is admitted to Stage A compare. It does not establish admission or correctness for multi-variable, contended, writer/reader-interacting, or authored workload cases.",
+  "environment": {
+    "platform": "Linux-6.8.0-137-generic-x86_64-with-glibc2.39",
+    "python": "3.13.5 (main, Jun 11 2025, 15:36:57) [GCC 11.4.0]"
+  },
+  "graph": {
+    "edges": [
+      {
+        "attrs": {},
+        "src": 0,
+        "tgt": 0,
+        "type": "trigger"
+      },
+      {
+        "attrs": {},
+        "src": 1,
+        "tgt": 1,
+        "type": "trigger"
+      },
+      {
+        "attrs": {},
+        "src": 2,
+        "tgt": 2,
+        "type": "trigger"
+      },
+      {
+        "attrs": {},
+        "src": 3,
+        "tgt": 3,
+        "type": "trigger"
+      },
+      {
+        "attrs": {},
+        "src": 4,
+        "tgt": 4,
+        "type": "trigger"
+      },
+      {
+        "attrs": {},
+        "src": 5,
+        "tgt": 5,
+        "type": "trigger"
+      },
+      {
+        "attrs": {
+          "value": 10
+        },
+        "src": 0,
+        "tgt": 0,
+        "type": "derived"
+      },
+      {
+        "attrs": {
+          "value": 11
+        },
+        "src": 1,
+        "tgt": 1,
+        "type": "derived"
+      },
+      {
+        "attrs": {
+          "value": 12
+        },
+        "src": 2,
+        "tgt": 2,
+        "type": "derived"
+      },
+      {
+        "attrs": {
+          "value": 13
+        },
+        "src": 3,
+        "tgt": 3,
+        "type": "derived"
+      },
+      {
+        "attrs": {
+          "value": 14
+        },
+        "src": 4,
+        "tgt": 4,
+        "type": "derived"
+      },
+      {
+        "attrs": {
+          "value": 15
+        },
+        "src": 5,
+        "tgt": 5,
+        "type": "derived"
+      }
+    ],
+    "next_id": 6,
+    "nodes": [
+      {
+        "attrs": {
+          "observed": 10,
+          "watched": 10
+        },
+        "id": 0,
+        "type": "MixedEffectNode"
+      },
+      {
+        "attrs": {
+          "observed": 11,
+          "watched": 11
+        },
+        "id": 1,
+        "type": "MixedEffectNode"
+      },
+      {
+        "attrs": {
+          "observed": 12,
+          "watched": 12
+        },
+        "id": 2,
+        "type": "MixedEffectNode"
+      },
+      {
+        "attrs": {
+          "observed": 13,
+          "watched": 13
+        },
+        "id": 3,
+        "type": "MixedEffectNode"
+      },
+      {
+        "attrs": {
+          "observed": 14,
+          "watched": 14
+        },
+        "id": 4,
+        "type": "MixedEffectNode"
+      },
+      {
+        "attrs": {
+          "observed": 15,
+          "watched": 15
+        },
+        "id": 5,
+        "type": "MixedEffectNode"
+      }
+    ]
+  },
+  "inputs": {
+    "node_count": 6,
+    "rule_match": [
+      [
+        "x",
+        "trigger",
+        "x"
+      ]
+    ],
+    "watched_values": [
+      10,
+      11,
+      12,
+      13,
+      14,
+      15
+    ]
+  },
+  "outcome": {
+    "derived_edge_values": [
+      10,
+      11,
+      12,
+      13,
+      14,
+      15
+    ],
+    "observed_values": [
+      10,
+      11,
+      12,
+      13,
+      14,
+      15
+    ],
+    "progress": 1,
+    "stage_a_compare_stats": {
+      "compared_drains": 1,
+      "diverged_drains": 0,
+      "diverged_rules": [],
+      "unsound_drains": 0,
+      "unsound_rules": []
+    },
+    "terminal_progress": 0
+  },
+  "provenance": {
+    "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+    "dirty_worktree": true,
+    "native_extension_path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+    "native_extension_sha256": "ca49e588a9787dad9b957f3e18718d0f0cd72cde85091d2b9edca350965cd4d9",
+    "source_sha256": {
+      "harness": "53ef4965aee0370be7a9b0bde8641b763290479f6b73e1264a3adec4ed83dee6",
+      "native_build_manifest": "3f99e43751994817702c71abeef467ee4fc26d1761b701562c8870084ddb4954",
+      "rewrite": "120c2189606f89e317c7402067db65e430aee8a71e856f6e2115beb5be50d1a5",
+      "stage_a": "fa3da33c15f89a234bc50f697bdc183537f6f9f94e242ddb9b13cb86c821a1f0",
+      "substrate": "e99d8a85f74b18ecbcc878b6d8ec7376af42b4f8dede1e9f8d41c321a38d2f69"
+    }
+  },
+  "run_id": "substrate-stage-a-mixed-effect-probe-20260925",
+  "schema_version": 1,
+  "scope": "one mixed SetAttr+AddEdge rule over six independent one-variable self-loop bindings; Stage A compare mode enabled"
+}

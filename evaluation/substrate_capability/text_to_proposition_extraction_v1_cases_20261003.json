@@ -1,0 +1,18 @@
+{
+  "schema": "text_to_proposition_extraction_cases.v1",
+  "target": {
+    "predicate": "has_secret_code",
+    "subject": "speaker",
+    "argument_role": "value",
+    "polarity": "affirmed"
+  },
+  "cases": [
+    {"id": "value_14_period", "text": "My secret code is 14.", "kind": "statement", "expected_value": "14", "expected_subject": "speaker", "expected_polarity": "affirmed"},
+    {"id": "value_29_period", "text": "My secret code is 29.", "kind": "statement", "expected_value": "29", "expected_subject": "speaker", "expected_polarity": "affirmed"},
+    {"id": "value_14_no_period", "text": "My secret code is 14", "kind": "statement", "expected_value": "14", "expected_subject": "speaker", "expected_polarity": "affirmed"},
+    {"id": "value_14_definite_paraphrase", "text": "The secret code is 14.", "kind": "statement", "expected_value": "14", "expected_subject": null, "expected_polarity": "affirmed"},
+    {"id": "value_14_active_paraphrase", "text": "I use 14 as my secret code.", "kind": "statement", "expected_value": "14", "expected_subject": "speaker", "expected_polarity": "affirmed"},
+    {"id": "value_14_negated", "text": "My secret code is not 14.", "kind": "statement", "expected_value": "14", "expected_subject": "speaker", "expected_polarity": "negated"},
+    {"id": "secret_code_query", "text": "What is my secret code?", "kind": "question", "expected_query_topic": "my secret code"}
+  ]
+}

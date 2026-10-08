@@ -1,0 +1,109 @@
+{
+  "by_task_and_policy": {
+    "additive": {
+      "entropy": {
+        "ambiguous": 0,
+        "calls": [
+          1,
+          3,
+          1,
+          5,
+          2
+        ],
+        "empty": 0,
+        "exact_singleton": 5,
+        "false_singleton": 0,
+        "family_correct_singleton": 5,
+        "median_calls": 2,
+        "panels": 5,
+        "singleton": 5
+      },
+      "fixed_order": {
+        "ambiguous": 2,
+        "calls": [
+          3,
+          6,
+          1,
+          6,
+          5
+        ],
+        "empty": 0,
+        "exact_singleton": 3,
+        "false_singleton": 0,
+        "family_correct_singleton": 3,
+        "median_calls": 5,
+        "panels": 5,
+        "singleton": 3
+      }
+    },
+    "product": {
+      "entropy": {
+        "ambiguous": 0,
+        "calls": [
+          4,
+          2,
+          2,
+          1,
+          3
+        ],
+        "empty": 0,
+        "exact_singleton": 5,
+        "false_singleton": 0,
+        "family_correct_singleton": 5,
+        "median_calls": 2,
+        "panels": 5,
+        "singleton": 5
+      },
+      "fixed_order": {
+        "ambiguous": 2,
+        "calls": [
+          6,
+          6,
+          2,
+          1,
+          6
+        ],
+        "empty": 0,
+        "exact_singleton": 3,
+        "false_singleton": 0,
+        "family_correct_singleton": 3,
+        "median_calls": 6,
+        "panels": 5,
+        "singleton": 3
+      }
+    }
+  },
+  "checks": {
+    "all_candidate_and_final_holdouts_rescored": true,
+    "all_ten_locked_panels_replayed": true,
+    "entropy_and_fixed_query_transcripts_replay": true,
+    "family_grammar_and_search_settings": true,
+    "paired_policy_arms_present": true,
+    "source_lock_and_capture_binding": true
+  },
+  "interpretation": "The measured policies select only among two supplied operator families using oracle labels; this is not open-ended primitive discovery or autonomous help-seeking.",
+  "limits": [
+    "two related numeric tasks and five panels each",
+    "operator menu is supplied",
+    "local harness supplies oracle labels",
+    "finite candidate pools and 1,296-point holdout",
+    "single host; query cost excludes external-oracle economics"
+  ],
+  "passed": 6,
+  "schema": "PrimitiveFamilySelectionV1Analysis",
+  "synthesis_by_family": {
+    "Plus": {
+      "candidates": 38,
+      "exact_panel": 5,
+      "median_cpu_s": 2.097850278,
+      "median_wall_s": 2.1007560869999997
+    },
+    "Times": {
+      "candidates": 35,
+      "exact_panel": 5,
+      "median_cpu_s": 1.7533539795,
+      "median_wall_s": 1.7543014705000002
+    }
+  },
+  "total": 6
+}

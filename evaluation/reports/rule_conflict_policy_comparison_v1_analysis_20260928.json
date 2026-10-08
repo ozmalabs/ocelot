@@ -1,0 +1,81 @@
+{
+  "all_gates_pass": true,
+  "analysis": "Rule conflict policy comparison v1",
+  "gates": {
+    "all_policy_order_cells": true,
+    "exact_conflict_rejected_A_then_B_1": true,
+    "exact_conflict_rejected_A_then_B_2": true,
+    "exact_conflict_rejected_A_then_B_3": true,
+    "exact_conflict_rejected_B_then_A_1": true,
+    "exact_conflict_rejected_B_then_A_2": true,
+    "exact_conflict_rejected_B_then_A_3": true,
+    "four_cells_each": true,
+    "locked_inputs_match": true,
+    "metadata_A_then_B_still_cycles_1": true,
+    "metadata_A_then_B_still_cycles_2": true,
+    "metadata_A_then_B_still_cycles_3": true,
+    "metadata_B_then_A_still_cycles_1": true,
+    "metadata_B_then_A_still_cycles_2": true,
+    "metadata_B_then_A_still_cycles_3": true,
+    "proposal_A_then_B_fixedpoint_1": true,
+    "proposal_A_then_B_fixedpoint_2": true,
+    "proposal_A_then_B_fixedpoint_3": true,
+    "proposal_B_then_A_fixedpoint_1": true,
+    "proposal_B_then_A_fixedpoint_2": true,
+    "proposal_B_then_A_fixedpoint_3": true,
+    "replicated_across_workers": true,
+    "three_workers": true
+  },
+  "interpretation": "Global rule order metadata does not prevent oscillation or override insertion order. A narrow exact-match admission predicate can detect/reject the synthetic conflict before installation, but is only a harness prototype. Proposal nodes reach fixed point and preserve both values without resolving them.",
+  "limits": [
+    "No conflict policy is implemented in the substrate by this probe.",
+    "The rejection prototype covers only exact same match/where and conflicting direct attribute writes.",
+    "Conflict proposal nodes surface alternatives; downstream selection remains an explicit unresolved task."
+  ],
+  "results": {
+    "A_then_B": {
+      "metadata_order": {
+        "calls": 4,
+        "final": 2,
+        "status": "repeated_graph_state"
+      },
+      "proposal_nodes": {
+        "calls": 4,
+        "edges": 2,
+        "proposals": [
+          [
+            "A",
+            1
+          ],
+          [
+            "B",
+            2
+          ]
+        ],
+        "status": "fixed_point"
+      }
+    },
+    "B_then_A": {
+      "metadata_order": {
+        "calls": 4,
+        "final": 1,
+        "status": "repeated_graph_state"
+      },
+      "proposal_nodes": {
+        "calls": 4,
+        "edges": 2,
+        "proposals": [
+          [
+            "A",
+            1
+          ],
+          [
+            "B",
+            2
+          ]
+        ],
+        "status": "fixed_point"
+      }
+    }
+  }
+}

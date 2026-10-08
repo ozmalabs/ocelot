@@ -1,0 +1,109 @@
+{
+  "all_checks_pass": true,
+  "checks": {
+    "accepted_ir_and_gap_integrity": true,
+    "candidate_and_primary_isolation": true,
+    "counterexample_default_has_no_false_acceptance": true,
+    "eager_shared_semantic_and_state_parity": true,
+    "independent_label_and_output_reconstruction": true,
+    "lock_digest_matches": true,
+    "lock_matches_current_sources": true,
+    "no_worker_failures": true,
+    "oracle_grammar_has_no_false_acceptance": true,
+    "protocol_id": true,
+    "schedule_exact": true,
+    "sparse_ambiguity_false_acceptance_observed": true,
+    "unique_complete_cells": true,
+    "unique_worker_pids": true,
+    "worker_count": true
+  },
+  "passed_checks": 15,
+  "protocol": "synthesis_ambiguity_counterexample_v1_20260930",
+  "summary": {
+    "arm_summaries": {
+      "ambiguous_default": {
+        "accepted": 5,
+        "candidate_tests": [
+          121536,
+          121536,
+          121536,
+          121536,
+          121536
+        ],
+        "exact_heldout_points": 0,
+        "exact_training_points": 30,
+        "false_accept_heldout_points": 30,
+        "false_accept_workers": 5,
+        "gapped": 0,
+        "heldout_points_with_program": 30,
+        "median_candidate_tests": 121536,
+        "median_peak_rss_kib": 61420,
+        "median_pump_cpu_ms": 1629.9147930000001,
+        "median_pump_wall_ms": 1635.2281700237654,
+        "workers": 5
+      },
+      "counterexample_default": {
+        "accepted": 0,
+        "candidate_tests": [
+          200000,
+          200000,
+          200000,
+          200000,
+          200000
+        ],
+        "exact_heldout_points": 0,
+        "exact_training_points": 0,
+        "false_accept_heldout_points": 0,
+        "false_accept_workers": 0,
+        "gapped": 5,
+        "heldout_points_with_program": 0,
+        "median_candidate_tests": 200000,
+        "median_peak_rss_kib": 75704,
+        "median_pump_cpu_ms": 2070.04543,
+        "median_pump_wall_ms": 2073.8590069813654,
+        "workers": 5
+      },
+      "counterexample_oracle_grammar": {
+        "accepted": 5,
+        "candidate_tests": [
+          58824,
+          58824,
+          58824,
+          58824,
+          58824
+        ],
+        "exact_heldout_points": 30,
+        "exact_training_points": 35,
+        "false_accept_heldout_points": 0,
+        "false_accept_workers": 0,
+        "gapped": 0,
+        "heldout_points_with_program": 30,
+        "median_candidate_tests": 58824,
+        "median_peak_rss_kib": 61864,
+        "median_pump_cpu_ms": 763.562986,
+        "median_pump_wall_ms": 766.8519810540602,
+        "workers": 5
+      }
+    },
+    "claim_boundary": "fixed hinge ambiguity and one externally selected distinguishing example; the oracle grammar is supplied information, and no autonomous query policy is tested",
+    "interpretation": "A query can remove the sparse false-fit while leaving broad search unable to finish; the compact grammar arm supplies external task knowledge.",
+    "one_counterexample_changes_default_outcome": {
+      "corrected_default": {
+        "accepted": 0,
+        "false_accept_workers": 0,
+        "gapped": 5
+      },
+      "sparse_default": {
+        "accepted": 5,
+        "false_accept_workers": 5
+      }
+    },
+    "oracle_grammar_supplied": [
+      "Plus",
+      "Minus",
+      "Max",
+      "TupleOf"
+    ]
+  },
+  "total_checks": 15
+}

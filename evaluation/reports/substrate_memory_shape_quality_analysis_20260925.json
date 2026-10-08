@@ -1,0 +1,160 @@
+{
+  "analysis": "substrate-memory-shape-quality-independent-audit-v1",
+  "audit_limit": "The main raw report retains the exact-key correctness boolean but not the returned key string or shape candidate key list; this independent audit therefore verifies cluster identity and the expected cluster membership from the frozen record catalog, but cannot independently recheck those omitted per-record readbacks.",
+  "checks": {
+    "all_query_readbacks_match_fixture": true,
+    "low_high_fixture_balance": true,
+    "magnitude_collision_is_derived_from_fixture": true,
+    "six_rank_classes_with_six_records_each": true
+  },
+  "errors": [],
+  "query_checks": [
+    {
+      "audit_pass": true,
+      "expected_cluster_id": "cat:0,1,2",
+      "fixture_cluster_size": 6,
+      "fixture_magnitude_precision": 0.5,
+      "fixture_rank_precision": 1.0,
+      "observed_cluster_id": "cat:0,1,2",
+      "query_id": "new_signs<utts<round|low",
+      "reported_exact_key_correct": true,
+      "reported_shape_magnitude_precision": 0.5,
+      "reported_shape_rank_precision": 1.0
+    },
+    {
+      "audit_pass": true,
+      "expected_cluster_id": "cat:0,1,2",
+      "fixture_cluster_size": 6,
+      "fixture_magnitude_precision": 0.5,
+      "fixture_rank_precision": 1.0,
+      "observed_cluster_id": "cat:0,1,2",
+      "query_id": "new_signs<utts<round|high",
+      "reported_exact_key_correct": true,
+      "reported_shape_magnitude_precision": 0.5,
+      "reported_shape_rank_precision": 1.0
+    },
+    {
+      "audit_pass": true,
+      "expected_cluster_id": "cat:0,2,1",
+      "fixture_cluster_size": 6,
+      "fixture_magnitude_precision": 0.5,
+      "fixture_rank_precision": 1.0,
+      "observed_cluster_id": "cat:0,2,1",
+      "query_id": "new_signs<round<utts|low",
+      "reported_exact_key_correct": true,
+      "reported_shape_magnitude_precision": 0.5,
+      "reported_shape_rank_precision": 1.0
+    },
+    {
+      "audit_pass": true,
+      "expected_cluster_id": "cat:0,2,1",
+      "fixture_cluster_size": 6,
+      "fixture_magnitude_precision": 0.5,
+      "fixture_rank_precision": 1.0,
+      "observed_cluster_id": "cat:0,2,1",
+      "query_id": "new_signs<round<utts|high",
+      "reported_exact_key_correct": true,
+      "reported_shape_magnitude_precision": 0.5,
+      "reported_shape_rank_precision": 1.0
+    },
+    {
+      "audit_pass": true,
+      "expected_cluster_id": "cat:1,0,2",
+      "fixture_cluster_size": 6,
+      "fixture_magnitude_precision": 0.5,
+      "fixture_rank_precision": 1.0,
+      "observed_cluster_id": "cat:1,0,2",
+      "query_id": "utts<new_signs<round|low",
+      "reported_exact_key_correct": true,
+      "reported_shape_magnitude_precision": 0.5,
+      "reported_shape_rank_precision": 1.0
+    },
+    {
+      "audit_pass": true,
+      "expected_cluster_id": "cat:1,0,2",
+      "fixture_cluster_size": 6,
+      "fixture_magnitude_precision": 0.5,
+      "fixture_rank_precision": 1.0,
+      "observed_cluster_id": "cat:1,0,2",
+      "query_id": "utts<new_signs<round|high",
+      "reported_exact_key_correct": true,
+      "reported_shape_magnitude_precision": 0.5,
+      "reported_shape_rank_precision": 1.0
+    },
+    {
+      "audit_pass": true,
+      "expected_cluster_id": "cat:2,0,1",
+      "fixture_cluster_size": 6,
+      "fixture_magnitude_precision": 0.5,
+      "fixture_rank_precision": 1.0,
+      "observed_cluster_id": "cat:2,0,1",
+      "query_id": "utts<round<new_signs|low",
+      "reported_exact_key_correct": true,
+      "reported_shape_magnitude_precision": 0.5,
+      "reported_shape_rank_precision": 1.0
+    },
+    {
+      "audit_pass": true,
+      "expected_cluster_id": "cat:2,0,1",
+      "fixture_cluster_size": 6,
+      "fixture_magnitude_precision": 0.5,
+      "fixture_rank_precision": 1.0,
+      "observed_cluster_id": "cat:2,0,1",
+      "query_id": "utts<round<new_signs|high",
+      "reported_exact_key_correct": true,
+      "reported_shape_magnitude_precision": 0.5,
+      "reported_shape_rank_precision": 1.0
+    },
+    {
+      "audit_pass": true,
+      "expected_cluster_id": "cat:1,2,0",
+      "fixture_cluster_size": 6,
+      "fixture_magnitude_precision": 0.5,
+      "fixture_rank_precision": 1.0,
+      "observed_cluster_id": "cat:1,2,0",
+      "query_id": "round<new_signs<utts|low",
+      "reported_exact_key_correct": true,
+      "reported_shape_magnitude_precision": 0.5,
+      "reported_shape_rank_precision": 1.0
+    },
+    {
+      "audit_pass": true,
+      "expected_cluster_id": "cat:1,2,0",
+      "fixture_cluster_size": 6,
+      "fixture_magnitude_precision": 0.5,
+      "fixture_rank_precision": 1.0,
+      "observed_cluster_id": "cat:1,2,0",
+      "query_id": "round<new_signs<utts|high",
+      "reported_exact_key_correct": true,
+      "reported_shape_magnitude_precision": 0.5,
+      "reported_shape_rank_precision": 1.0
+    },
+    {
+      "audit_pass": true,
+      "expected_cluster_id": "cat:2,1,0",
+      "fixture_cluster_size": 6,
+      "fixture_magnitude_precision": 0.5,
+      "fixture_rank_precision": 1.0,
+      "observed_cluster_id": "cat:2,1,0",
+      "query_id": "round<utts<new_signs|low",
+      "reported_exact_key_correct": true,
+      "reported_shape_magnitude_precision": 0.5,
+      "reported_shape_rank_precision": 1.0
+    },
+    {
+      "audit_pass": true,
+      "expected_cluster_id": "cat:2,1,0",
+      "fixture_cluster_size": 6,
+      "fixture_magnitude_precision": 0.5,
+      "fixture_rank_precision": 1.0,
+      "observed_cluster_id": "cat:2,1,0",
+      "query_id": "round<utts<new_signs|high",
+      "reported_exact_key_correct": true,
+      "reported_shape_magnitude_precision": 0.5,
+      "reported_shape_rank_precision": 1.0
+    }
+  ],
+  "raw_sha256": "92933301007f4563de771c92c4b24a08390ec1995768dd557e47ccb50cbfb15c",
+  "record_count": 36,
+  "task_count": 12
+}

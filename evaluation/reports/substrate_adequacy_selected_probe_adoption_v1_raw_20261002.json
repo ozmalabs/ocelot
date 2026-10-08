@@ -1,0 +1,2383 @@
+{
+  "host": "Linux-6.8.0-142-generic-x86_64-with-glibc2.39",
+  "lock": {
+    "active": {
+      "domains/adequacy_probe_selection.py": "b8d75708d4e193f16bd071861af08658a907d020281d3c9106a9582c82e8acd9",
+      "domains/adequacy_provider_auth.py": "a5388de538b1af3303babcd0c382a46b3d2819796819be7741b603ca679e4768",
+      "domains/code_reading.py": "dd67d2942cf956c6e35f848aed4012c3ac072e9ac91d9e6b166e8ca44be57908",
+      "domains/code_write_growth.py": "d4a2460f9e41bb8370dc9f352cec2d46ff596d1872e329d7e05d0f33af219079",
+      "domains/code_writing.py": "4ad3148ca1796ad13f6128b9fd655e8568c7c843cd68bccee54f35cbf4ddabc9",
+      "domains/independent_adequacy.py": "33191341fdd63d16d0b9cb5203f27666da90b60fccd567ac4633306a9dcab418",
+      "domains/teach.py": "308a5f31d74dabb3ed8b24bd0c967abd5f94596a3ff76d17657330877fae2cfa",
+      "domains_tree": "dd5870b35b92c94818af18b0d8b3ef55aa3eed0bce927417bbde8a4a55bb5f4e",
+      "native_binary": "3816b4fb5d5746950b4cc3bf9e904a58e675ce53530727edf44095646dd58a54",
+      "runners/dsl/python/substrate_rs/__init__.py": "1fed837a6b7e8b35e463d3b8fdca498400c9cc420a016b81279365d6406a4049",
+      "runners/dsl/python/substrate_rs/_native.build.json": "b491d348c59cbf5cd5eee1b3f900a042f31e21665b6e63212edb9ed7f3d60f47",
+      "runners/dsl/src/py.rs": "d6f922bd406d3f500c10cea11978f47f9612b4ce6b9a348e848a30a305881cba",
+      "runners/dsl/src/substrate.rs": "bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+      "runners/dsl/src/term.rs": "5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+      "rust_tree": "06307beca12566832d3ba7ac157ec6177abb41a87dcf3755d824729d1a55ea0f",
+      "seed_manifest_inventory": "7a35d6b5c0ca4fa74708a34b40fba7304d95b8065cf4e931d36c50f44c0813e3",
+      "substrate/world_adapter.py": "e5850e4df2ff28d8c941cc3c0d12a840ab230ce627833421a88c3b354f65027c",
+      "substrate_tree": "0fd9dee0bc92c33d541854fce3122826fa1fb21769ab3422aad001b42486bf96"
+    },
+    "design": {
+      "cases": {
+        "alias_zero_entropy": {
+          "challenger": "def square(x):\n    return x * x\n",
+          "challenger_name": "square",
+          "domain": [
+            {
+              "x": 0
+            }
+          ],
+          "label": 0,
+          "name": "identity",
+          "source": "def identity(x):\n    return x\n"
+        },
+        "distinguishing_identity_truth": {
+          "challenger": "def square(x):\n    return x * x\n",
+          "challenger_name": "square",
+          "domain": [
+            {
+              "x": 0
+            },
+            {
+              "x": 2
+            }
+          ],
+          "label": 4,
+          "name": "identity",
+          "source": "def identity(x):\n    return x\n"
+        },
+        "honest_selected_square": {
+          "challenger": "def identity(x):\n    return x\n",
+          "challenger_name": "identity",
+          "domain": [
+            {
+              "x": 0
+            },
+            {
+              "x": 2
+            }
+          ],
+          "label": 4,
+          "name": "square",
+          "source": "def square(x):\n    return x * x\n"
+        },
+        "selected_wrong_signer": {
+          "challenger": "def square(x):\n    return x * x\n",
+          "challenger_name": "square",
+          "domain": [
+            {
+              "x": 0
+            },
+            {
+              "x": 2
+            }
+          ],
+          "label": 2,
+          "name": "identity",
+          "source": "def identity(x):\n    return x\n"
+        }
+      },
+      "heldout": [
+        3,
+        4,
+        5
+      ],
+      "oracle_sha256": "b5cf3292b45c1e49d0e544719aed863c620cf4a85bb420c2b58ae52e529d66f7",
+      "provider": "oracle-a",
+      "repeats": 3,
+      "selector": "maximum Shannon entropy over candidate plus supplied challenger Terms",
+      "test_key_sha256": "ca9f6d5d296162bfaae9f1cf6c8d32580b829d887af33b60f43fa80a01c9e71c"
+    },
+    "files": {
+      "docs/research/engine_substrate/SUBSTRATE_ADEQUACY_SELECTED_PROBE_ADOPTION_V1_PREREG_20261002.md": "1225f4eea35804630b6d0a49fe1e512d85415f608ea53bce567864a55d7fa367",
+      "evaluation/substrate_capability/substrate_adequacy_selected_probe_adoption_v1.py": "99f59071af84db2732a889d46cafe1c684eeb392066ef963e32a9c412adb21e3"
+    },
+    "git_head": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+    "schema": "SubstrateAdequacySelectedProbeAdoptionV1Lock"
+  },
+  "post_lock": {
+    "active": {
+      "domains/adequacy_probe_selection.py": "b8d75708d4e193f16bd071861af08658a907d020281d3c9106a9582c82e8acd9",
+      "domains/adequacy_provider_auth.py": "a5388de538b1af3303babcd0c382a46b3d2819796819be7741b603ca679e4768",
+      "domains/code_reading.py": "dd67d2942cf956c6e35f848aed4012c3ac072e9ac91d9e6b166e8ca44be57908",
+      "domains/code_write_growth.py": "d4a2460f9e41bb8370dc9f352cec2d46ff596d1872e329d7e05d0f33af219079",
+      "domains/code_writing.py": "4ad3148ca1796ad13f6128b9fd655e8568c7c843cd68bccee54f35cbf4ddabc9",
+      "domains/independent_adequacy.py": "33191341fdd63d16d0b9cb5203f27666da90b60fccd567ac4633306a9dcab418",
+      "domains/teach.py": "308a5f31d74dabb3ed8b24bd0c967abd5f94596a3ff76d17657330877fae2cfa",
+      "domains_tree": "dd5870b35b92c94818af18b0d8b3ef55aa3eed0bce927417bbde8a4a55bb5f4e",
+      "native_binary": "3816b4fb5d5746950b4cc3bf9e904a58e675ce53530727edf44095646dd58a54",
+      "runners/dsl/python/substrate_rs/__init__.py": "1fed837a6b7e8b35e463d3b8fdca498400c9cc420a016b81279365d6406a4049",
+      "runners/dsl/python/substrate_rs/_native.build.json": "b491d348c59cbf5cd5eee1b3f900a042f31e21665b6e63212edb9ed7f3d60f47",
+      "runners/dsl/src/py.rs": "d6f922bd406d3f500c10cea11978f47f9612b4ce6b9a348e848a30a305881cba",
+      "runners/dsl/src/substrate.rs": "bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+      "runners/dsl/src/term.rs": "5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+      "rust_tree": "06307beca12566832d3ba7ac157ec6177abb41a87dcf3755d824729d1a55ea0f",
+      "seed_manifest_inventory": "7a35d6b5c0ca4fa74708a34b40fba7304d95b8065cf4e931d36c50f44c0813e3",
+      "substrate/world_adapter.py": "e5850e4df2ff28d8c941cc3c0d12a840ab230ce627833421a88c3b354f65027c",
+      "substrate_tree": "0fd9dee0bc92c33d541854fce3122826fa1fb21769ab3422aad001b42486bf96"
+    },
+    "design": {
+      "cases": {
+        "alias_zero_entropy": {
+          "challenger": "def square(x):\n    return x * x\n",
+          "challenger_name": "square",
+          "domain": [
+            {
+              "x": 0
+            }
+          ],
+          "label": 0,
+          "name": "identity",
+          "source": "def identity(x):\n    return x\n"
+        },
+        "distinguishing_identity_truth": {
+          "challenger": "def square(x):\n    return x * x\n",
+          "challenger_name": "square",
+          "domain": [
+            {
+              "x": 0
+            },
+            {
+              "x": 2
+            }
+          ],
+          "label": 4,
+          "name": "identity",
+          "source": "def identity(x):\n    return x\n"
+        },
+        "honest_selected_square": {
+          "challenger": "def identity(x):\n    return x\n",
+          "challenger_name": "identity",
+          "domain": [
+            {
+              "x": 0
+            },
+            {
+              "x": 2
+            }
+          ],
+          "label": 4,
+          "name": "square",
+          "source": "def square(x):\n    return x * x\n"
+        },
+        "selected_wrong_signer": {
+          "challenger": "def square(x):\n    return x * x\n",
+          "challenger_name": "square",
+          "domain": [
+            {
+              "x": 0
+            },
+            {
+              "x": 2
+            }
+          ],
+          "label": 2,
+          "name": "identity",
+          "source": "def identity(x):\n    return x\n"
+        }
+      },
+      "heldout": [
+        3,
+        4,
+        5
+      ],
+      "oracle_sha256": "b5cf3292b45c1e49d0e544719aed863c620cf4a85bb420c2b58ae52e529d66f7",
+      "provider": "oracle-a",
+      "repeats": 3,
+      "selector": "maximum Shannon entropy over candidate plus supplied challenger Terms",
+      "test_key_sha256": "ca9f6d5d296162bfaae9f1cf6c8d32580b829d887af33b60f43fa80a01c9e71c"
+    },
+    "files": {
+      "docs/research/engine_substrate/SUBSTRATE_ADEQUACY_SELECTED_PROBE_ADOPTION_V1_PREREG_20261002.md": "1225f4eea35804630b6d0a49fe1e512d85415f608ea53bce567864a55d7fa367",
+      "evaluation/substrate_capability/substrate_adequacy_selected_probe_adoption_v1.py": "99f59071af84db2732a889d46cafe1c684eeb392066ef963e32a9c412adb21e3"
+    },
+    "git_head": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+    "schema": "SubstrateAdequacySelectedProbeAdoptionV1Lock"
+  },
+  "python": "3.13.5 (main, Jun 11 2025, 15:36:57) [GCC 11.4.0]",
+  "schedule": [
+    {
+      "case": "honest_selected_square",
+      "repetition": 1
+    },
+    {
+      "case": "honest_selected_square",
+      "repetition": 2
+    },
+    {
+      "case": "honest_selected_square",
+      "repetition": 3
+    },
+    {
+      "case": "alias_zero_entropy",
+      "repetition": 1
+    },
+    {
+      "case": "alias_zero_entropy",
+      "repetition": 2
+    },
+    {
+      "case": "alias_zero_entropy",
+      "repetition": 3
+    },
+    {
+      "case": "distinguishing_identity_truth",
+      "repetition": 1
+    },
+    {
+      "case": "distinguishing_identity_truth",
+      "repetition": 2
+    },
+    {
+      "case": "distinguishing_identity_truth",
+      "repetition": 3
+    },
+    {
+      "case": "selected_wrong_signer",
+      "repetition": 1
+    },
+    {
+      "case": "selected_wrong_signer",
+      "repetition": 2
+    },
+    {
+      "case": "selected_wrong_signer",
+      "repetition": 3
+    }
+  ],
+  "schema": "SubstrateAdequacySelectedProbeAdoptionV1Capture",
+  "source_stable": true,
+  "workers": [
+    {
+      "active_after": {
+        "domains/adequacy_probe_selection.py": "b8d75708d4e193f16bd071861af08658a907d020281d3c9106a9582c82e8acd9",
+        "domains/adequacy_provider_auth.py": "a5388de538b1af3303babcd0c382a46b3d2819796819be7741b603ca679e4768",
+        "domains/code_reading.py": "dd67d2942cf956c6e35f848aed4012c3ac072e9ac91d9e6b166e8ca44be57908",
+        "domains/code_write_growth.py": "d4a2460f9e41bb8370dc9f352cec2d46ff596d1872e329d7e05d0f33af219079",
+        "domains/code_writing.py": "4ad3148ca1796ad13f6128b9fd655e8568c7c843cd68bccee54f35cbf4ddabc9",
+        "domains/independent_adequacy.py": "33191341fdd63d16d0b9cb5203f27666da90b60fccd567ac4633306a9dcab418",
+        "domains/teach.py": "308a5f31d74dabb3ed8b24bd0c967abd5f94596a3ff76d17657330877fae2cfa",
+        "domains_tree": "dd5870b35b92c94818af18b0d8b3ef55aa3eed0bce927417bbde8a4a55bb5f4e",
+        "native_binary": "3816b4fb5d5746950b4cc3bf9e904a58e675ce53530727edf44095646dd58a54",
+        "runners/dsl/python/substrate_rs/__init__.py": "1fed837a6b7e8b35e463d3b8fdca498400c9cc420a016b81279365d6406a4049",
+        "runners/dsl/python/substrate_rs/_native.build.json": "b491d348c59cbf5cd5eee1b3f900a042f31e21665b6e63212edb9ed7f3d60f47",
+        "runners/dsl/src/py.rs": "d6f922bd406d3f500c10cea11978f47f9612b4ce6b9a348e848a30a305881cba",
+        "runners/dsl/src/substrate.rs": "bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+        "runners/dsl/src/term.rs": "5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+        "rust_tree": "06307beca12566832d3ba7ac157ec6177abb41a87dcf3755d824729d1a55ea0f",
+        "seed_manifest_inventory": "7a35d6b5c0ca4fa74708a34b40fba7304d95b8065cf4e931d36c50f44c0813e3",
+        "substrate/world_adapter.py": "e5850e4df2ff28d8c941cc3c0d12a840ab230ce627833421a88c3b354f65027c",
+        "substrate_tree": "0fd9dee0bc92c33d541854fce3122826fa1fb21769ab3422aad001b42486bf96"
+      },
+      "adopted_code_shape_ids": [
+        "#1656"
+      ],
+      "audit_rows": [
+        {
+          "inputs": {
+            "x": 2
+          },
+          "labels": [
+            {
+              "expected": 4,
+              "label_id": "honest_selected_square:label",
+              "oracle_sha256": "b5cf3292b45c1e49d0e544719aed863c620cf4a85bb420c2b58ae52e529d66f7",
+              "signature": "5377e3f9f6f37bfbd812549253a7717b9a26f8fe4c8d050923286a27dcb5be10",
+              "signature_schema": "AdequacyProviderSignedLabelV1",
+              "source_id": "oracle-a"
+            }
+          ],
+          "probe_id": "probe-1"
+        }
+      ],
+      "candidate_term": {
+        "items": [
+          {
+            "name": "x",
+            "type": "Var"
+          },
+          {
+            "name": "x",
+            "type": "Var"
+          }
+        ],
+        "type": "Times"
+      },
+      "case": "honest_selected_square",
+      "challenger_terms": [
+        {
+          "name": "x",
+          "type": "Var"
+        }
+      ],
+      "heldout": [
+        {
+          "match": true,
+          "oracle": 9,
+          "prediction": 9,
+          "x": 3
+        },
+        {
+          "match": true,
+          "oracle": 16,
+          "prediction": 16,
+          "x": 4
+        },
+        {
+          "match": true,
+          "oracle": 25,
+          "prediction": 25,
+          "x": 5
+        }
+      ],
+      "heldout_correct": 3,
+      "pid": 4,
+      "receipt": {
+        "candidate_id": "3516de6112b77de8a2528898d6c534474974f2ddf9a183818d6c6866b7e91baf",
+        "evidence_sha256": "e0deb6319485d507cd53205451b679542c9788a66401a6bd178a195e7215891e",
+        "invalid_reasons": [],
+        "receipt_sha256": "2573b947ed8d815c89c6f155d4f97c8ded42d2f8cc812a0aaed833cc474c8542",
+        "request_id": "638a73fea937729bad0e11cbb05e79658ebc9cb8b87734c267049d934e46d3b6",
+        "residuals": [],
+        "schema": "IndependentAdequacyReceiptV1",
+        "status": "accepted",
+        "term_sha256": "e4f0b7ba7eaf37e7414f3239344ef3959c98043a452a26542a736388ccd03c18"
+      },
+      "receipt_status": "accepted",
+      "repetition": 1,
+      "reply": "Thank you -- I read that function and learned the shape 'taught_square' (triggers: square).",
+      "request": {
+        "acquisition_sha256": "96e0f7a2360b55c2df2de5dffa0738383d370ef0b4a7cc70ed21bcd35b263ad0",
+        "candidate_id": "3516de6112b77de8a2528898d6c534474974f2ddf9a183818d6c6866b7e91baf",
+        "domain_sha256": "f0a4bd210ad5b1e10a7b6de9e8dab457cf34e2308b0b7dbed03d264c1731f2de",
+        "probes": [
+          {
+            "input_sha256": "5e2b030a4a0f1582d78c0fd9924511cd6b1f2df9879e574f5ea1406c94052418",
+            "inputs": {
+              "x": 2
+            },
+            "probe_id": "probe-1"
+          }
+        ],
+        "request_id": "638a73fea937729bad0e11cbb05e79658ebc9cb8b87734c267049d934e46d3b6",
+        "schema": "IndependentAdequacyProbeRequestV1",
+        "seed": "d8a7308a6e1ad4a92fb4f2221dcb44f664cda48633fc763bb4714b6c86b25d11",
+        "status": "requested",
+        "term_sha256": "e4f0b7ba7eaf37e7414f3239344ef3959c98043a452a26542a736388ccd03c18"
+      },
+      "selected_input": {
+        "x": 2
+      },
+      "selection_context": {
+        "acquisition_rows": [],
+        "acquisition_source_ids": [
+          "fixture:selected-probe-study"
+        ],
+        "admissible_inputs": [
+          {
+            "x": 0
+          },
+          {
+            "x": 2
+          }
+        ],
+        "challenger_terms": [
+          {
+            "name": "x",
+            "type": "Var"
+          }
+        ],
+        "seed": "selected-probe-v1:honest_selected_square",
+        "selection": {
+          "acquisition_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+          "candidate_challengers": 2,
+          "candidate_id": "3516de6112b77de8a2528898d6c534474974f2ddf9a183818d6c6866b7e91baf",
+          "candidate_term_sha256": "e4f0b7ba7eaf37e7414f3239344ef3959c98043a452a26542a736388ccd03c18",
+          "challenger_terms_sha256": [
+            "89ca8e44ca480b8cb514cfdf26fa4e04682bc7420e2481542d68a0c837d351dc"
+          ],
+          "domain_sha256": "635bfd5e3b033771be675de49993ccd9b7410200196484b5272b91cc4cf726a5",
+          "fresh_domain_size": 2,
+          "input": {
+            "x": 2
+          },
+          "prediction_entropy_bits": 1.0,
+          "predictions": [
+            4,
+            2
+          ],
+          "predictions_sha256": "e0cdd570c83130ab69bfbdce67ee9d375a6b100c05156ebbc74abe0630fb5929",
+          "schema": "AdequacyDisagreementProbeSelectionV1",
+          "seed": "selected-probe-v1:honest_selected_square",
+          "selected_input_sha256": "5e2b030a4a0f1582d78c0fd9924511cd6b1f2df9879e574f5ea1406c94052418",
+          "selection_id": "d8a7308a6e1ad4a92fb4f2221dcb44f664cda48633fc763bb4714b6c86b25d11"
+        }
+      },
+      "selection_entropy_bits": 1.0,
+      "shape_delta": 1
+    },
+    {
+      "active_after": {
+        "domains/adequacy_probe_selection.py": "b8d75708d4e193f16bd071861af08658a907d020281d3c9106a9582c82e8acd9",
+        "domains/adequacy_provider_auth.py": "a5388de538b1af3303babcd0c382a46b3d2819796819be7741b603ca679e4768",
+        "domains/code_reading.py": "dd67d2942cf956c6e35f848aed4012c3ac072e9ac91d9e6b166e8ca44be57908",
+        "domains/code_write_growth.py": "d4a2460f9e41bb8370dc9f352cec2d46ff596d1872e329d7e05d0f33af219079",
+        "domains/code_writing.py": "4ad3148ca1796ad13f6128b9fd655e8568c7c843cd68bccee54f35cbf4ddabc9",
+        "domains/independent_adequacy.py": "33191341fdd63d16d0b9cb5203f27666da90b60fccd567ac4633306a9dcab418",
+        "domains/teach.py": "308a5f31d74dabb3ed8b24bd0c967abd5f94596a3ff76d17657330877fae2cfa",
+        "domains_tree": "dd5870b35b92c94818af18b0d8b3ef55aa3eed0bce927417bbde8a4a55bb5f4e",
+        "native_binary": "3816b4fb5d5746950b4cc3bf9e904a58e675ce53530727edf44095646dd58a54",
+        "runners/dsl/python/substrate_rs/__init__.py": "1fed837a6b7e8b35e463d3b8fdca498400c9cc420a016b81279365d6406a4049",
+        "runners/dsl/python/substrate_rs/_native.build.json": "b491d348c59cbf5cd5eee1b3f900a042f31e21665b6e63212edb9ed7f3d60f47",
+        "runners/dsl/src/py.rs": "d6f922bd406d3f500c10cea11978f47f9612b4ce6b9a348e848a30a305881cba",
+        "runners/dsl/src/substrate.rs": "bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+        "runners/dsl/src/term.rs": "5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+        "rust_tree": "06307beca12566832d3ba7ac157ec6177abb41a87dcf3755d824729d1a55ea0f",
+        "seed_manifest_inventory": "7a35d6b5c0ca4fa74708a34b40fba7304d95b8065cf4e931d36c50f44c0813e3",
+        "substrate/world_adapter.py": "e5850e4df2ff28d8c941cc3c0d12a840ab230ce627833421a88c3b354f65027c",
+        "substrate_tree": "0fd9dee0bc92c33d541854fce3122826fa1fb21769ab3422aad001b42486bf96"
+      },
+      "adopted_code_shape_ids": [
+        "#1656"
+      ],
+      "audit_rows": [
+        {
+          "inputs": {
+            "x": 2
+          },
+          "labels": [
+            {
+              "expected": 4,
+              "label_id": "honest_selected_square:label",
+              "oracle_sha256": "b5cf3292b45c1e49d0e544719aed863c620cf4a85bb420c2b58ae52e529d66f7",
+              "signature": "5377e3f9f6f37bfbd812549253a7717b9a26f8fe4c8d050923286a27dcb5be10",
+              "signature_schema": "AdequacyProviderSignedLabelV1",
+              "source_id": "oracle-a"
+            }
+          ],
+          "probe_id": "probe-1"
+        }
+      ],
+      "candidate_term": {
+        "items": [
+          {
+            "name": "x",
+            "type": "Var"
+          },
+          {
+            "name": "x",
+            "type": "Var"
+          }
+        ],
+        "type": "Times"
+      },
+      "case": "honest_selected_square",
+      "challenger_terms": [
+        {
+          "name": "x",
+          "type": "Var"
+        }
+      ],
+      "heldout": [
+        {
+          "match": true,
+          "oracle": 9,
+          "prediction": 9,
+          "x": 3
+        },
+        {
+          "match": true,
+          "oracle": 16,
+          "prediction": 16,
+          "x": 4
+        },
+        {
+          "match": true,
+          "oracle": 25,
+          "prediction": 25,
+          "x": 5
+        }
+      ],
+      "heldout_correct": 3,
+      "pid": 253,
+      "receipt": {
+        "candidate_id": "3516de6112b77de8a2528898d6c534474974f2ddf9a183818d6c6866b7e91baf",
+        "evidence_sha256": "e0deb6319485d507cd53205451b679542c9788a66401a6bd178a195e7215891e",
+        "invalid_reasons": [],
+        "receipt_sha256": "2573b947ed8d815c89c6f155d4f97c8ded42d2f8cc812a0aaed833cc474c8542",
+        "request_id": "638a73fea937729bad0e11cbb05e79658ebc9cb8b87734c267049d934e46d3b6",
+        "residuals": [],
+        "schema": "IndependentAdequacyReceiptV1",
+        "status": "accepted",
+        "term_sha256": "e4f0b7ba7eaf37e7414f3239344ef3959c98043a452a26542a736388ccd03c18"
+      },
+      "receipt_status": "accepted",
+      "repetition": 2,
+      "reply": "Thank you -- I read that function and learned the shape 'taught_square' (triggers: square).",
+      "request": {
+        "acquisition_sha256": "96e0f7a2360b55c2df2de5dffa0738383d370ef0b4a7cc70ed21bcd35b263ad0",
+        "candidate_id": "3516de6112b77de8a2528898d6c534474974f2ddf9a183818d6c6866b7e91baf",
+        "domain_sha256": "f0a4bd210ad5b1e10a7b6de9e8dab457cf34e2308b0b7dbed03d264c1731f2de",
+        "probes": [
+          {
+            "input_sha256": "5e2b030a4a0f1582d78c0fd9924511cd6b1f2df9879e574f5ea1406c94052418",
+            "inputs": {
+              "x": 2
+            },
+            "probe_id": "probe-1"
+          }
+        ],
+        "request_id": "638a73fea937729bad0e11cbb05e79658ebc9cb8b87734c267049d934e46d3b6",
+        "schema": "IndependentAdequacyProbeRequestV1",
+        "seed": "d8a7308a6e1ad4a92fb4f2221dcb44f664cda48633fc763bb4714b6c86b25d11",
+        "status": "requested",
+        "term_sha256": "e4f0b7ba7eaf37e7414f3239344ef3959c98043a452a26542a736388ccd03c18"
+      },
+      "selected_input": {
+        "x": 2
+      },
+      "selection_context": {
+        "acquisition_rows": [],
+        "acquisition_source_ids": [
+          "fixture:selected-probe-study"
+        ],
+        "admissible_inputs": [
+          {
+            "x": 0
+          },
+          {
+            "x": 2
+          }
+        ],
+        "challenger_terms": [
+          {
+            "name": "x",
+            "type": "Var"
+          }
+        ],
+        "seed": "selected-probe-v1:honest_selected_square",
+        "selection": {
+          "acquisition_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+          "candidate_challengers": 2,
+          "candidate_id": "3516de6112b77de8a2528898d6c534474974f2ddf9a183818d6c6866b7e91baf",
+          "candidate_term_sha256": "e4f0b7ba7eaf37e7414f3239344ef3959c98043a452a26542a736388ccd03c18",
+          "challenger_terms_sha256": [
+            "89ca8e44ca480b8cb514cfdf26fa4e04682bc7420e2481542d68a0c837d351dc"
+          ],
+          "domain_sha256": "635bfd5e3b033771be675de49993ccd9b7410200196484b5272b91cc4cf726a5",
+          "fresh_domain_size": 2,
+          "input": {
+            "x": 2
+          },
+          "prediction_entropy_bits": 1.0,
+          "predictions": [
+            4,
+            2
+          ],
+          "predictions_sha256": "e0cdd570c83130ab69bfbdce67ee9d375a6b100c05156ebbc74abe0630fb5929",
+          "schema": "AdequacyDisagreementProbeSelectionV1",
+          "seed": "selected-probe-v1:honest_selected_square",
+          "selected_input_sha256": "5e2b030a4a0f1582d78c0fd9924511cd6b1f2df9879e574f5ea1406c94052418",
+          "selection_id": "d8a7308a6e1ad4a92fb4f2221dcb44f664cda48633fc763bb4714b6c86b25d11"
+        }
+      },
+      "selection_entropy_bits": 1.0,
+      "shape_delta": 1
+    },
+    {
+      "active_after": {
+        "domains/adequacy_probe_selection.py": "b8d75708d4e193f16bd071861af08658a907d020281d3c9106a9582c82e8acd9",
+        "domains/adequacy_provider_auth.py": "a5388de538b1af3303babcd0c382a46b3d2819796819be7741b603ca679e4768",
+        "domains/code_reading.py": "dd67d2942cf956c6e35f848aed4012c3ac072e9ac91d9e6b166e8ca44be57908",
+        "domains/code_write_growth.py": "d4a2460f9e41bb8370dc9f352cec2d46ff596d1872e329d7e05d0f33af219079",
+        "domains/code_writing.py": "4ad3148ca1796ad13f6128b9fd655e8568c7c843cd68bccee54f35cbf4ddabc9",
+        "domains/independent_adequacy.py": "33191341fdd63d16d0b9cb5203f27666da90b60fccd567ac4633306a9dcab418",
+        "domains/teach.py": "308a5f31d74dabb3ed8b24bd0c967abd5f94596a3ff76d17657330877fae2cfa",
+        "domains_tree": "dd5870b35b92c94818af18b0d8b3ef55aa3eed0bce927417bbde8a4a55bb5f4e",
+        "native_binary": "3816b4fb5d5746950b4cc3bf9e904a58e675ce53530727edf44095646dd58a54",
+        "runners/dsl/python/substrate_rs/__init__.py": "1fed837a6b7e8b35e463d3b8fdca498400c9cc420a016b81279365d6406a4049",
+        "runners/dsl/python/substrate_rs/_native.build.json": "b491d348c59cbf5cd5eee1b3f900a042f31e21665b6e63212edb9ed7f3d60f47",
+        "runners/dsl/src/py.rs": "d6f922bd406d3f500c10cea11978f47f9612b4ce6b9a348e848a30a305881cba",
+        "runners/dsl/src/substrate.rs": "bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+        "runners/dsl/src/term.rs": "5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+        "rust_tree": "06307beca12566832d3ba7ac157ec6177abb41a87dcf3755d824729d1a55ea0f",
+        "seed_manifest_inventory": "7a35d6b5c0ca4fa74708a34b40fba7304d95b8065cf4e931d36c50f44c0813e3",
+        "substrate/world_adapter.py": "e5850e4df2ff28d8c941cc3c0d12a840ab230ce627833421a88c3b354f65027c",
+        "substrate_tree": "0fd9dee0bc92c33d541854fce3122826fa1fb21769ab3422aad001b42486bf96"
+      },
+      "adopted_code_shape_ids": [
+        "#1656"
+      ],
+      "audit_rows": [
+        {
+          "inputs": {
+            "x": 2
+          },
+          "labels": [
+            {
+              "expected": 4,
+              "label_id": "honest_selected_square:label",
+              "oracle_sha256": "b5cf3292b45c1e49d0e544719aed863c620cf4a85bb420c2b58ae52e529d66f7",
+              "signature": "5377e3f9f6f37bfbd812549253a7717b9a26f8fe4c8d050923286a27dcb5be10",
+              "signature_schema": "AdequacyProviderSignedLabelV1",
+              "source_id": "oracle-a"
+            }
+          ],
+          "probe_id": "probe-1"
+        }
+      ],
+      "candidate_term": {
+        "items": [
+          {
+            "name": "x",
+            "type": "Var"
+          },
+          {
+            "name": "x",
+            "type": "Var"
+          }
+        ],
+        "type": "Times"
+      },
+      "case": "honest_selected_square",
+      "challenger_terms": [
+        {
+          "name": "x",
+          "type": "Var"
+        }
+      ],
+      "heldout": [
+        {
+          "match": true,
+          "oracle": 9,
+          "prediction": 9,
+          "x": 3
+        },
+        {
+          "match": true,
+          "oracle": 16,
+          "prediction": 16,
+          "x": 4
+        },
+        {
+          "match": true,
+          "oracle": 25,
+          "prediction": 25,
+          "x": 5
+        }
+      ],
+      "heldout_correct": 3,
+      "pid": 502,
+      "receipt": {
+        "candidate_id": "3516de6112b77de8a2528898d6c534474974f2ddf9a183818d6c6866b7e91baf",
+        "evidence_sha256": "e0deb6319485d507cd53205451b679542c9788a66401a6bd178a195e7215891e",
+        "invalid_reasons": [],
+        "receipt_sha256": "2573b947ed8d815c89c6f155d4f97c8ded42d2f8cc812a0aaed833cc474c8542",
+        "request_id": "638a73fea937729bad0e11cbb05e79658ebc9cb8b87734c267049d934e46d3b6",
+        "residuals": [],
+        "schema": "IndependentAdequacyReceiptV1",
+        "status": "accepted",
+        "term_sha256": "e4f0b7ba7eaf37e7414f3239344ef3959c98043a452a26542a736388ccd03c18"
+      },
+      "receipt_status": "accepted",
+      "repetition": 3,
+      "reply": "Thank you -- I read that function and learned the shape 'taught_square' (triggers: square).",
+      "request": {
+        "acquisition_sha256": "96e0f7a2360b55c2df2de5dffa0738383d370ef0b4a7cc70ed21bcd35b263ad0",
+        "candidate_id": "3516de6112b77de8a2528898d6c534474974f2ddf9a183818d6c6866b7e91baf",
+        "domain_sha256": "f0a4bd210ad5b1e10a7b6de9e8dab457cf34e2308b0b7dbed03d264c1731f2de",
+        "probes": [
+          {
+            "input_sha256": "5e2b030a4a0f1582d78c0fd9924511cd6b1f2df9879e574f5ea1406c94052418",
+            "inputs": {
+              "x": 2
+            },
+            "probe_id": "probe-1"
+          }
+        ],
+        "request_id": "638a73fea937729bad0e11cbb05e79658ebc9cb8b87734c267049d934e46d3b6",
+        "schema": "IndependentAdequacyProbeRequestV1",
+        "seed": "d8a7308a6e1ad4a92fb4f2221dcb44f664cda48633fc763bb4714b6c86b25d11",
+        "status": "requested",
+        "term_sha256": "e4f0b7ba7eaf37e7414f3239344ef3959c98043a452a26542a736388ccd03c18"
+      },
+      "selected_input": {
+        "x": 2
+      },
+      "selection_context": {
+        "acquisition_rows": [],
+        "acquisition_source_ids": [
+          "fixture:selected-probe-study"
+        ],
+        "admissible_inputs": [
+          {
+            "x": 0
+          },
+          {
+            "x": 2
+          }
+        ],
+        "challenger_terms": [
+          {
+            "name": "x",
+            "type": "Var"
+          }
+        ],
+        "seed": "selected-probe-v1:honest_selected_square",
+        "selection": {
+          "acquisition_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+          "candidate_challengers": 2,
+          "candidate_id": "3516de6112b77de8a2528898d6c534474974f2ddf9a183818d6c6866b7e91baf",
+          "candidate_term_sha256": "e4f0b7ba7eaf37e7414f3239344ef3959c98043a452a26542a736388ccd03c18",
+          "challenger_terms_sha256": [
+            "89ca8e44ca480b8cb514cfdf26fa4e04682bc7420e2481542d68a0c837d351dc"
+          ],
+          "domain_sha256": "635bfd5e3b033771be675de49993ccd9b7410200196484b5272b91cc4cf726a5",
+          "fresh_domain_size": 2,
+          "input": {
+            "x": 2
+          },
+          "prediction_entropy_bits": 1.0,
+          "predictions": [
+            4,
+            2
+          ],
+          "predictions_sha256": "e0cdd570c83130ab69bfbdce67ee9d375a6b100c05156ebbc74abe0630fb5929",
+          "schema": "AdequacyDisagreementProbeSelectionV1",
+          "seed": "selected-probe-v1:honest_selected_square",
+          "selected_input_sha256": "5e2b030a4a0f1582d78c0fd9924511cd6b1f2df9879e574f5ea1406c94052418",
+          "selection_id": "d8a7308a6e1ad4a92fb4f2221dcb44f664cda48633fc763bb4714b6c86b25d11"
+        }
+      },
+      "selection_entropy_bits": 1.0,
+      "shape_delta": 1
+    },
+    {
+      "active_after": {
+        "domains/adequacy_probe_selection.py": "b8d75708d4e193f16bd071861af08658a907d020281d3c9106a9582c82e8acd9",
+        "domains/adequacy_provider_auth.py": "a5388de538b1af3303babcd0c382a46b3d2819796819be7741b603ca679e4768",
+        "domains/code_reading.py": "dd67d2942cf956c6e35f848aed4012c3ac072e9ac91d9e6b166e8ca44be57908",
+        "domains/code_write_growth.py": "d4a2460f9e41bb8370dc9f352cec2d46ff596d1872e329d7e05d0f33af219079",
+        "domains/code_writing.py": "4ad3148ca1796ad13f6128b9fd655e8568c7c843cd68bccee54f35cbf4ddabc9",
+        "domains/independent_adequacy.py": "33191341fdd63d16d0b9cb5203f27666da90b60fccd567ac4633306a9dcab418",
+        "domains/teach.py": "308a5f31d74dabb3ed8b24bd0c967abd5f94596a3ff76d17657330877fae2cfa",
+        "domains_tree": "dd5870b35b92c94818af18b0d8b3ef55aa3eed0bce927417bbde8a4a55bb5f4e",
+        "native_binary": "3816b4fb5d5746950b4cc3bf9e904a58e675ce53530727edf44095646dd58a54",
+        "runners/dsl/python/substrate_rs/__init__.py": "1fed837a6b7e8b35e463d3b8fdca498400c9cc420a016b81279365d6406a4049",
+        "runners/dsl/python/substrate_rs/_native.build.json": "b491d348c59cbf5cd5eee1b3f900a042f31e21665b6e63212edb9ed7f3d60f47",
+        "runners/dsl/src/py.rs": "d6f922bd406d3f500c10cea11978f47f9612b4ce6b9a348e848a30a305881cba",
+        "runners/dsl/src/substrate.rs": "bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+        "runners/dsl/src/term.rs": "5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+        "rust_tree": "06307beca12566832d3ba7ac157ec6177abb41a87dcf3755d824729d1a55ea0f",
+        "seed_manifest_inventory": "7a35d6b5c0ca4fa74708a34b40fba7304d95b8065cf4e931d36c50f44c0813e3",
+        "substrate/world_adapter.py": "e5850e4df2ff28d8c941cc3c0d12a840ab230ce627833421a88c3b354f65027c",
+        "substrate_tree": "0fd9dee0bc92c33d541854fce3122826fa1fb21769ab3422aad001b42486bf96"
+      },
+      "adopted_code_shape_ids": [],
+      "audit_rows": [
+        {
+          "inputs": {
+            "x": 0
+          },
+          "labels": [
+            {
+              "expected": 0,
+              "label_id": "alias_zero_entropy:label",
+              "oracle_sha256": "b5cf3292b45c1e49d0e544719aed863c620cf4a85bb420c2b58ae52e529d66f7",
+              "signature": "005a2682b8395671de46e25aab531ab0a13ddaf7117df34e3564a761c331c5b0",
+              "signature_schema": "AdequacyProviderSignedLabelV1",
+              "source_id": "oracle-a"
+            }
+          ],
+          "probe_id": "probe-1"
+        }
+      ],
+      "candidate_term": {
+        "name": "x",
+        "type": "Var"
+      },
+      "case": "alias_zero_entropy",
+      "challenger_terms": [
+        {
+          "items": [
+            {
+              "name": "x",
+              "type": "Var"
+            },
+            {
+              "name": "x",
+              "type": "Var"
+            }
+          ],
+          "type": "Times"
+        }
+      ],
+      "heldout": [
+        {
+          "match": false,
+          "oracle": 9,
+          "prediction": 3,
+          "x": 3
+        },
+        {
+          "match": false,
+          "oracle": 16,
+          "prediction": 4,
+          "x": 4
+        },
+        {
+          "match": false,
+          "oracle": 25,
+          "prediction": 5,
+          "x": 5
+        }
+      ],
+      "heldout_correct": 0,
+      "pid": 751,
+      "receipt": {
+        "candidate_id": "91601ea4a51dadec29dc6f9c6b6983187074d63e587d777b22c20191ec159090",
+        "evidence_sha256": "21771939d9ae3a64ea73d2d4a28f3476df2ac33cf59653c59e47a0e16ed5921b",
+        "invalid_reasons": [],
+        "receipt_sha256": "94addbefe179528f3ee0b2fb212e025f8411af69c3b505b1a60325a1e66a3d89",
+        "request_id": "f5f6cc1e958a4c7069cd760f2def21f84db57b36b7a670398e6122c9060d300d",
+        "residuals": [],
+        "schema": "IndependentAdequacyReceiptV1",
+        "status": "accepted",
+        "term_sha256": "89ca8e44ca480b8cb514cfdf26fa4e04682bc7420e2481542d68a0c837d351dc"
+      },
+      "receipt_status": "accepted",
+      "repetition": 1,
+      "reply": "I read that function but could not take it as a lesson (no valid discriminating adequacy probe).",
+      "request": {
+        "acquisition_sha256": "96e0f7a2360b55c2df2de5dffa0738383d370ef0b4a7cc70ed21bcd35b263ad0",
+        "candidate_id": "91601ea4a51dadec29dc6f9c6b6983187074d63e587d777b22c20191ec159090",
+        "domain_sha256": "2ffb32abf69045e3bc002e21534737c8e8a316ef9c48aed704b881b25ac4cd0a",
+        "probes": [
+          {
+            "input_sha256": "5bff452c5ed93f2e87a23984db5a15050c6477335fdec955b70063bb2d692bf1",
+            "inputs": {
+              "x": 0
+            },
+            "probe_id": "probe-1"
+          }
+        ],
+        "request_id": "f5f6cc1e958a4c7069cd760f2def21f84db57b36b7a670398e6122c9060d300d",
+        "schema": "IndependentAdequacyProbeRequestV1",
+        "seed": "6b6cbcf533d1cfd45dcaaad6c5504609df2178dfab46fce028af4109b1be06db",
+        "status": "requested",
+        "term_sha256": "89ca8e44ca480b8cb514cfdf26fa4e04682bc7420e2481542d68a0c837d351dc"
+      },
+      "selected_input": {
+        "x": 0
+      },
+      "selection_context": {
+        "acquisition_rows": [],
+        "acquisition_source_ids": [
+          "fixture:selected-probe-study"
+        ],
+        "admissible_inputs": [
+          {
+            "x": 0
+          }
+        ],
+        "challenger_terms": [
+          {
+            "items": [
+              {
+                "name": "x",
+                "type": "Var"
+              },
+              {
+                "name": "x",
+                "type": "Var"
+              }
+            ],
+            "type": "Times"
+          }
+        ],
+        "seed": "selected-probe-v1:alias_zero_entropy",
+        "selection": {
+          "acquisition_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+          "candidate_challengers": 2,
+          "candidate_id": "91601ea4a51dadec29dc6f9c6b6983187074d63e587d777b22c20191ec159090",
+          "candidate_term_sha256": "89ca8e44ca480b8cb514cfdf26fa4e04682bc7420e2481542d68a0c837d351dc",
+          "challenger_terms_sha256": [
+            "e4f0b7ba7eaf37e7414f3239344ef3959c98043a452a26542a736388ccd03c18"
+          ],
+          "domain_sha256": "2ffb32abf69045e3bc002e21534737c8e8a316ef9c48aed704b881b25ac4cd0a",
+          "fresh_domain_size": 1,
+          "input": {
+            "x": 0
+          },
+          "prediction_entropy_bits": -0.0,
+          "predictions": [
+            0,
+            0
+          ],
+          "predictions_sha256": "8e147ba0f2afe0a8b672d20efb51c71770c7aa8db0c9598d918aba5b731384e4",
+          "schema": "AdequacyDisagreementProbeSelectionV1",
+          "seed": "selected-probe-v1:alias_zero_entropy",
+          "selected_input_sha256": "5bff452c5ed93f2e87a23984db5a15050c6477335fdec955b70063bb2d692bf1",
+          "selection_id": "6b6cbcf533d1cfd45dcaaad6c5504609df2178dfab46fce028af4109b1be06db"
+        }
+      },
+      "selection_entropy_bits": -0.0,
+      "shape_delta": 0
+    },
+    {
+      "active_after": {
+        "domains/adequacy_probe_selection.py": "b8d75708d4e193f16bd071861af08658a907d020281d3c9106a9582c82e8acd9",
+        "domains/adequacy_provider_auth.py": "a5388de538b1af3303babcd0c382a46b3d2819796819be7741b603ca679e4768",
+        "domains/code_reading.py": "dd67d2942cf956c6e35f848aed4012c3ac072e9ac91d9e6b166e8ca44be57908",
+        "domains/code_write_growth.py": "d4a2460f9e41bb8370dc9f352cec2d46ff596d1872e329d7e05d0f33af219079",
+        "domains/code_writing.py": "4ad3148ca1796ad13f6128b9fd655e8568c7c843cd68bccee54f35cbf4ddabc9",
+        "domains/independent_adequacy.py": "33191341fdd63d16d0b9cb5203f27666da90b60fccd567ac4633306a9dcab418",
+        "domains/teach.py": "308a5f31d74dabb3ed8b24bd0c967abd5f94596a3ff76d17657330877fae2cfa",
+        "domains_tree": "dd5870b35b92c94818af18b0d8b3ef55aa3eed0bce927417bbde8a4a55bb5f4e",
+        "native_binary": "3816b4fb5d5746950b4cc3bf9e904a58e675ce53530727edf44095646dd58a54",
+        "runners/dsl/python/substrate_rs/__init__.py": "1fed837a6b7e8b35e463d3b8fdca498400c9cc420a016b81279365d6406a4049",
+        "runners/dsl/python/substrate_rs/_native.build.json": "b491d348c59cbf5cd5eee1b3f900a042f31e21665b6e63212edb9ed7f3d60f47",
+        "runners/dsl/src/py.rs": "d6f922bd406d3f500c10cea11978f47f9612b4ce6b9a348e848a30a305881cba",
+        "runners/dsl/src/substrate.rs": "bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+        "runners/dsl/src/term.rs": "5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+        "rust_tree": "06307beca12566832d3ba7ac157ec6177abb41a87dcf3755d824729d1a55ea0f",
+        "seed_manifest_inventory": "7a35d6b5c0ca4fa74708a34b40fba7304d95b8065cf4e931d36c50f44c0813e3",
+        "substrate/world_adapter.py": "e5850e4df2ff28d8c941cc3c0d12a840ab230ce627833421a88c3b354f65027c",
+        "substrate_tree": "0fd9dee0bc92c33d541854fce3122826fa1fb21769ab3422aad001b42486bf96"
+      },
+      "adopted_code_shape_ids": [],
+      "audit_rows": [
+        {
+          "inputs": {
+            "x": 0
+          },
+          "labels": [
+            {
+              "expected": 0,
+              "label_id": "alias_zero_entropy:label",
+              "oracle_sha256": "b5cf3292b45c1e49d0e544719aed863c620cf4a85bb420c2b58ae52e529d66f7",
+              "signature": "005a2682b8395671de46e25aab531ab0a13ddaf7117df34e3564a761c331c5b0",
+              "signature_schema": "AdequacyProviderSignedLabelV1",
+              "source_id": "oracle-a"
+            }
+          ],
+          "probe_id": "probe-1"
+        }
+      ],
+      "candidate_term": {
+        "name": "x",
+        "type": "Var"
+      },
+      "case": "alias_zero_entropy",
+      "challenger_terms": [
+        {
+          "items": [
+            {
+              "name": "x",
+              "type": "Var"
+            },
+            {
+              "name": "x",
+              "type": "Var"
+            }
+          ],
+          "type": "Times"
+        }
+      ],
+      "heldout": [
+        {
+          "match": false,
+          "oracle": 9,
+          "prediction": 3,
+          "x": 3
+        },
+        {
+          "match": false,
+          "oracle": 16,
+          "prediction": 4,
+          "x": 4
+        },
+        {
+          "match": false,
+          "oracle": 25,
+          "prediction": 5,
+          "x": 5
+        }
+      ],
+      "heldout_correct": 0,
+      "pid": 1000,
+      "receipt": {
+        "candidate_id": "91601ea4a51dadec29dc6f9c6b6983187074d63e587d777b22c20191ec159090",
+        "evidence_sha256": "21771939d9ae3a64ea73d2d4a28f3476df2ac33cf59653c59e47a0e16ed5921b",
+        "invalid_reasons": [],
+        "receipt_sha256": "94addbefe179528f3ee0b2fb212e025f8411af69c3b505b1a60325a1e66a3d89",
+        "request_id": "f5f6cc1e958a4c7069cd760f2def21f84db57b36b7a670398e6122c9060d300d",
+        "residuals": [],
+        "schema": "IndependentAdequacyReceiptV1",
+        "status": "accepted",
+        "term_sha256": "89ca8e44ca480b8cb514cfdf26fa4e04682bc7420e2481542d68a0c837d351dc"
+      },
+      "receipt_status": "accepted",
+      "repetition": 2,
+      "reply": "I read that function but could not take it as a lesson (no valid discriminating adequacy probe).",
+      "request": {
+        "acquisition_sha256": "96e0f7a2360b55c2df2de5dffa0738383d370ef0b4a7cc70ed21bcd35b263ad0",
+        "candidate_id": "91601ea4a51dadec29dc6f9c6b6983187074d63e587d777b22c20191ec159090",
+        "domain_sha256": "2ffb32abf69045e3bc002e21534737c8e8a316ef9c48aed704b881b25ac4cd0a",
+        "probes": [
+          {
+            "input_sha256": "5bff452c5ed93f2e87a23984db5a15050c6477335fdec955b70063bb2d692bf1",
+            "inputs": {
+              "x": 0
+            },
+            "probe_id": "probe-1"
+          }
+        ],
+        "request_id": "f5f6cc1e958a4c7069cd760f2def21f84db57b36b7a670398e6122c9060d300d",
+        "schema": "IndependentAdequacyProbeRequestV1",
+        "seed": "6b6cbcf533d1cfd45dcaaad6c5504609df2178dfab46fce028af4109b1be06db",
+        "status": "requested",
+        "term_sha256": "89ca8e44ca480b8cb514cfdf26fa4e04682bc7420e2481542d68a0c837d351dc"
+      },
+      "selected_input": {
+        "x": 0
+      },
+      "selection_context": {
+        "acquisition_rows": [],
+        "acquisition_source_ids": [
+          "fixture:selected-probe-study"
+        ],
+        "admissible_inputs": [
+          {
+            "x": 0
+          }
+        ],
+        "challenger_terms": [
+          {
+            "items": [
+              {
+                "name": "x",
+                "type": "Var"
+              },
+              {
+                "name": "x",
+                "type": "Var"
+              }
+            ],
+            "type": "Times"
+          }
+        ],
+        "seed": "selected-probe-v1:alias_zero_entropy",
+        "selection": {
+          "acquisition_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+          "candidate_challengers": 2,
+          "candidate_id": "91601ea4a51dadec29dc6f9c6b6983187074d63e587d777b22c20191ec159090",
+          "candidate_term_sha256": "89ca8e44ca480b8cb514cfdf26fa4e04682bc7420e2481542d68a0c837d351dc",
+          "challenger_terms_sha256": [
+            "e4f0b7ba7eaf37e7414f3239344ef3959c98043a452a26542a736388ccd03c18"
+          ],
+          "domain_sha256": "2ffb32abf69045e3bc002e21534737c8e8a316ef9c48aed704b881b25ac4cd0a",
+          "fresh_domain_size": 1,
+          "input": {
+            "x": 0
+          },
+          "prediction_entropy_bits": -0.0,
+          "predictions": [
+            0,
+            0
+          ],
+          "predictions_sha256": "8e147ba0f2afe0a8b672d20efb51c71770c7aa8db0c9598d918aba5b731384e4",
+          "schema": "AdequacyDisagreementProbeSelectionV1",
+          "seed": "selected-probe-v1:alias_zero_entropy",
+          "selected_input_sha256": "5bff452c5ed93f2e87a23984db5a15050c6477335fdec955b70063bb2d692bf1",
+          "selection_id": "6b6cbcf533d1cfd45dcaaad6c5504609df2178dfab46fce028af4109b1be06db"
+        }
+      },
+      "selection_entropy_bits": -0.0,
+      "shape_delta": 0
+    },
+    {
+      "active_after": {
+        "domains/adequacy_probe_selection.py": "b8d75708d4e193f16bd071861af08658a907d020281d3c9106a9582c82e8acd9",
+        "domains/adequacy_provider_auth.py": "a5388de538b1af3303babcd0c382a46b3d2819796819be7741b603ca679e4768",
+        "domains/code_reading.py": "dd67d2942cf956c6e35f848aed4012c3ac072e9ac91d9e6b166e8ca44be57908",
+        "domains/code_write_growth.py": "d4a2460f9e41bb8370dc9f352cec2d46ff596d1872e329d7e05d0f33af219079",
+        "domains/code_writing.py": "4ad3148ca1796ad13f6128b9fd655e8568c7c843cd68bccee54f35cbf4ddabc9",
+        "domains/independent_adequacy.py": "33191341fdd63d16d0b9cb5203f27666da90b60fccd567ac4633306a9dcab418",
+        "domains/teach.py": "308a5f31d74dabb3ed8b24bd0c967abd5f94596a3ff76d17657330877fae2cfa",
+        "domains_tree": "dd5870b35b92c94818af18b0d8b3ef55aa3eed0bce927417bbde8a4a55bb5f4e",
+        "native_binary": "3816b4fb5d5746950b4cc3bf9e904a58e675ce53530727edf44095646dd58a54",
+        "runners/dsl/python/substrate_rs/__init__.py": "1fed837a6b7e8b35e463d3b8fdca498400c9cc420a016b81279365d6406a4049",
+        "runners/dsl/python/substrate_rs/_native.build.json": "b491d348c59cbf5cd5eee1b3f900a042f31e21665b6e63212edb9ed7f3d60f47",
+        "runners/dsl/src/py.rs": "d6f922bd406d3f500c10cea11978f47f9612b4ce6b9a348e848a30a305881cba",
+        "runners/dsl/src/substrate.rs": "bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+        "runners/dsl/src/term.rs": "5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+        "rust_tree": "06307beca12566832d3ba7ac157ec6177abb41a87dcf3755d824729d1a55ea0f",
+        "seed_manifest_inventory": "7a35d6b5c0ca4fa74708a34b40fba7304d95b8065cf4e931d36c50f44c0813e3",
+        "substrate/world_adapter.py": "e5850e4df2ff28d8c941cc3c0d12a840ab230ce627833421a88c3b354f65027c",
+        "substrate_tree": "0fd9dee0bc92c33d541854fce3122826fa1fb21769ab3422aad001b42486bf96"
+      },
+      "adopted_code_shape_ids": [],
+      "audit_rows": [
+        {
+          "inputs": {
+            "x": 0
+          },
+          "labels": [
+            {
+              "expected": 0,
+              "label_id": "alias_zero_entropy:label",
+              "oracle_sha256": "b5cf3292b45c1e49d0e544719aed863c620cf4a85bb420c2b58ae52e529d66f7",
+              "signature": "005a2682b8395671de46e25aab531ab0a13ddaf7117df34e3564a761c331c5b0",
+              "signature_schema": "AdequacyProviderSignedLabelV1",
+              "source_id": "oracle-a"
+            }
+          ],
+          "probe_id": "probe-1"
+        }
+      ],
+      "candidate_term": {
+        "name": "x",
+        "type": "Var"
+      },
+      "case": "alias_zero_entropy",
+      "challenger_terms": [
+        {
+          "items": [
+            {
+              "name": "x",
+              "type": "Var"
+            },
+            {
+              "name": "x",
+              "type": "Var"
+            }
+          ],
+          "type": "Times"
+        }
+      ],
+      "heldout": [
+        {
+          "match": false,
+          "oracle": 9,
+          "prediction": 3,
+          "x": 3
+        },
+        {
+          "match": false,
+          "oracle": 16,
+          "prediction": 4,
+          "x": 4
+        },
+        {
+          "match": false,
+          "oracle": 25,
+          "prediction": 5,
+          "x": 5
+        }
+      ],
+      "heldout_correct": 0,
+      "pid": 1249,
+      "receipt": {
+        "candidate_id": "91601ea4a51dadec29dc6f9c6b6983187074d63e587d777b22c20191ec159090",
+        "evidence_sha256": "21771939d9ae3a64ea73d2d4a28f3476df2ac33cf59653c59e47a0e16ed5921b",
+        "invalid_reasons": [],
+        "receipt_sha256": "94addbefe179528f3ee0b2fb212e025f8411af69c3b505b1a60325a1e66a3d89",
+        "request_id": "f5f6cc1e958a4c7069cd760f2def21f84db57b36b7a670398e6122c9060d300d",
+        "residuals": [],
+        "schema": "IndependentAdequacyReceiptV1",
+        "status": "accepted",
+        "term_sha256": "89ca8e44ca480b8cb514cfdf26fa4e04682bc7420e2481542d68a0c837d351dc"
+      },
+      "receipt_status": "accepted",
+      "repetition": 3,
+      "reply": "I read that function but could not take it as a lesson (no valid discriminating adequacy probe).",
+      "request": {
+        "acquisition_sha256": "96e0f7a2360b55c2df2de5dffa0738383d370ef0b4a7cc70ed21bcd35b263ad0",
+        "candidate_id": "91601ea4a51dadec29dc6f9c6b6983187074d63e587d777b22c20191ec159090",
+        "domain_sha256": "2ffb32abf69045e3bc002e21534737c8e8a316ef9c48aed704b881b25ac4cd0a",
+        "probes": [
+          {
+            "input_sha256": "5bff452c5ed93f2e87a23984db5a15050c6477335fdec955b70063bb2d692bf1",
+            "inputs": {
+              "x": 0
+            },
+            "probe_id": "probe-1"
+          }
+        ],
+        "request_id": "f5f6cc1e958a4c7069cd760f2def21f84db57b36b7a670398e6122c9060d300d",
+        "schema": "IndependentAdequacyProbeRequestV1",
+        "seed": "6b6cbcf533d1cfd45dcaaad6c5504609df2178dfab46fce028af4109b1be06db",
+        "status": "requested",
+        "term_sha256": "89ca8e44ca480b8cb514cfdf26fa4e04682bc7420e2481542d68a0c837d351dc"
+      },
+      "selected_input": {
+        "x": 0
+      },
+      "selection_context": {
+        "acquisition_rows": [],
+        "acquisition_source_ids": [
+          "fixture:selected-probe-study"
+        ],
+        "admissible_inputs": [
+          {
+            "x": 0
+          }
+        ],
+        "challenger_terms": [
+          {
+            "items": [
+              {
+                "name": "x",
+                "type": "Var"
+              },
+              {
+                "name": "x",
+                "type": "Var"
+              }
+            ],
+            "type": "Times"
+          }
+        ],
+        "seed": "selected-probe-v1:alias_zero_entropy",
+        "selection": {
+          "acquisition_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+          "candidate_challengers": 2,
+          "candidate_id": "91601ea4a51dadec29dc6f9c6b6983187074d63e587d777b22c20191ec159090",
+          "candidate_term_sha256": "89ca8e44ca480b8cb514cfdf26fa4e04682bc7420e2481542d68a0c837d351dc",
+          "challenger_terms_sha256": [
+            "e4f0b7ba7eaf37e7414f3239344ef3959c98043a452a26542a736388ccd03c18"
+          ],
+          "domain_sha256": "2ffb32abf69045e3bc002e21534737c8e8a316ef9c48aed704b881b25ac4cd0a",
+          "fresh_domain_size": 1,
+          "input": {
+            "x": 0
+          },
+          "prediction_entropy_bits": -0.0,
+          "predictions": [
+            0,
+            0
+          ],
+          "predictions_sha256": "8e147ba0f2afe0a8b672d20efb51c71770c7aa8db0c9598d918aba5b731384e4",
+          "schema": "AdequacyDisagreementProbeSelectionV1",
+          "seed": "selected-probe-v1:alias_zero_entropy",
+          "selected_input_sha256": "5bff452c5ed93f2e87a23984db5a15050c6477335fdec955b70063bb2d692bf1",
+          "selection_id": "6b6cbcf533d1cfd45dcaaad6c5504609df2178dfab46fce028af4109b1be06db"
+        }
+      },
+      "selection_entropy_bits": -0.0,
+      "shape_delta": 0
+    },
+    {
+      "active_after": {
+        "domains/adequacy_probe_selection.py": "b8d75708d4e193f16bd071861af08658a907d020281d3c9106a9582c82e8acd9",
+        "domains/adequacy_provider_auth.py": "a5388de538b1af3303babcd0c382a46b3d2819796819be7741b603ca679e4768",
+        "domains/code_reading.py": "dd67d2942cf956c6e35f848aed4012c3ac072e9ac91d9e6b166e8ca44be57908",
+        "domains/code_write_growth.py": "d4a2460f9e41bb8370dc9f352cec2d46ff596d1872e329d7e05d0f33af219079",
+        "domains/code_writing.py": "4ad3148ca1796ad13f6128b9fd655e8568c7c843cd68bccee54f35cbf4ddabc9",
+        "domains/independent_adequacy.py": "33191341fdd63d16d0b9cb5203f27666da90b60fccd567ac4633306a9dcab418",
+        "domains/teach.py": "308a5f31d74dabb3ed8b24bd0c967abd5f94596a3ff76d17657330877fae2cfa",
+        "domains_tree": "dd5870b35b92c94818af18b0d8b3ef55aa3eed0bce927417bbde8a4a55bb5f4e",
+        "native_binary": "3816b4fb5d5746950b4cc3bf9e904a58e675ce53530727edf44095646dd58a54",
+        "runners/dsl/python/substrate_rs/__init__.py": "1fed837a6b7e8b35e463d3b8fdca498400c9cc420a016b81279365d6406a4049",
+        "runners/dsl/python/substrate_rs/_native.build.json": "b491d348c59cbf5cd5eee1b3f900a042f31e21665b6e63212edb9ed7f3d60f47",
+        "runners/dsl/src/py.rs": "d6f922bd406d3f500c10cea11978f47f9612b4ce6b9a348e848a30a305881cba",
+        "runners/dsl/src/substrate.rs": "bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+        "runners/dsl/src/term.rs": "5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+        "rust_tree": "06307beca12566832d3ba7ac157ec6177abb41a87dcf3755d824729d1a55ea0f",
+        "seed_manifest_inventory": "7a35d6b5c0ca4fa74708a34b40fba7304d95b8065cf4e931d36c50f44c0813e3",
+        "substrate/world_adapter.py": "e5850e4df2ff28d8c941cc3c0d12a840ab230ce627833421a88c3b354f65027c",
+        "substrate_tree": "0fd9dee0bc92c33d541854fce3122826fa1fb21769ab3422aad001b42486bf96"
+      },
+      "adopted_code_shape_ids": [],
+      "audit_rows": [
+        {
+          "inputs": {
+            "x": 2
+          },
+          "labels": [
+            {
+              "expected": 4,
+              "label_id": "distinguishing_identity_truth:label",
+              "oracle_sha256": "b5cf3292b45c1e49d0e544719aed863c620cf4a85bb420c2b58ae52e529d66f7",
+              "signature": "2f7d088af90a4ca8aa31222aa07d5a4a2238c80f662960fa9f7860470928e7a3",
+              "signature_schema": "AdequacyProviderSignedLabelV1",
+              "source_id": "oracle-a"
+            }
+          ],
+          "probe_id": "probe-1"
+        }
+      ],
+      "candidate_term": {
+        "name": "x",
+        "type": "Var"
+      },
+      "case": "distinguishing_identity_truth",
+      "challenger_terms": [
+        {
+          "items": [
+            {
+              "name": "x",
+              "type": "Var"
+            },
+            {
+              "name": "x",
+              "type": "Var"
+            }
+          ],
+          "type": "Times"
+        }
+      ],
+      "heldout": [
+        {
+          "match": false,
+          "oracle": 9,
+          "prediction": 3,
+          "x": 3
+        },
+        {
+          "match": false,
+          "oracle": 16,
+          "prediction": 4,
+          "x": 4
+        },
+        {
+          "match": false,
+          "oracle": 25,
+          "prediction": 5,
+          "x": 5
+        }
+      ],
+      "heldout_correct": 0,
+      "pid": 1498,
+      "receipt": {
+        "candidate_id": "91601ea4a51dadec29dc6f9c6b6983187074d63e587d777b22c20191ec159090",
+        "evidence_sha256": "1ae142e0875564c565adb1ae701b668a80945c655dd7edc71eaca8c854fe4431",
+        "invalid_reasons": [],
+        "receipt_sha256": "eef3c72fa2d5850c3bda4ef788b81dff6df9ade7e35f1a0af83ae105631a3f2f",
+        "request_id": "d7a6655167a5d55e2a9f48c55a0057ffa914d6933ab896a562c7fbdc0aa8ce65",
+        "residuals": [
+          {
+            "input_sha256": "5e2b030a4a0f1582d78c0fd9924511cd6b1f2df9879e574f5ea1406c94052418",
+            "kind": "prediction_residual",
+            "labels": [
+              {
+                "expected": 4,
+                "label_id": "distinguishing_identity_truth:label",
+                "oracle_sha256": "b5cf3292b45c1e49d0e544719aed863c620cf4a85bb420c2b58ae52e529d66f7",
+                "signature": "2f7d088af90a4ca8aa31222aa07d5a4a2238c80f662960fa9f7860470928e7a3",
+                "signature_schema": "AdequacyProviderSignedLabelV1",
+                "source_id": "oracle-a"
+              }
+            ],
+            "prediction": 2,
+            "probe_id": "probe-1"
+          }
+        ],
+        "schema": "IndependentAdequacyReceiptV1",
+        "status": "rejected",
+        "term_sha256": "89ca8e44ca480b8cb514cfdf26fa4e04682bc7420e2481542d68a0c837d351dc"
+      },
+      "receipt_status": "rejected",
+      "repetition": 1,
+      "reply": "I read that function but could not take it as a lesson (independent adequacy receipt missing, invalid, or bound to another candidate).",
+      "request": {
+        "acquisition_sha256": "96e0f7a2360b55c2df2de5dffa0738383d370ef0b4a7cc70ed21bcd35b263ad0",
+        "candidate_id": "91601ea4a51dadec29dc6f9c6b6983187074d63e587d777b22c20191ec159090",
+        "domain_sha256": "f0a4bd210ad5b1e10a7b6de9e8dab457cf34e2308b0b7dbed03d264c1731f2de",
+        "probes": [
+          {
+            "input_sha256": "5e2b030a4a0f1582d78c0fd9924511cd6b1f2df9879e574f5ea1406c94052418",
+            "inputs": {
+              "x": 2
+            },
+            "probe_id": "probe-1"
+          }
+        ],
+        "request_id": "d7a6655167a5d55e2a9f48c55a0057ffa914d6933ab896a562c7fbdc0aa8ce65",
+        "schema": "IndependentAdequacyProbeRequestV1",
+        "seed": "173ad1d6cdd46a6dfb99d265b4aae62e9af36013ac115b053459455bef0c0039",
+        "status": "requested",
+        "term_sha256": "89ca8e44ca480b8cb514cfdf26fa4e04682bc7420e2481542d68a0c837d351dc"
+      },
+      "selected_input": {
+        "x": 2
+      },
+      "selection_context": {
+        "acquisition_rows": [],
+        "acquisition_source_ids": [
+          "fixture:selected-probe-study"
+        ],
+        "admissible_inputs": [
+          {
+            "x": 0
+          },
+          {
+            "x": 2
+          }
+        ],
+        "challenger_terms": [
+          {
+            "items": [
+              {
+                "name": "x",
+                "type": "Var"
+              },
+              {
+                "name": "x",
+                "type": "Var"
+              }
+            ],
+            "type": "Times"
+          }
+        ],
+        "seed": "selected-probe-v1:distinguishing_identity_truth",
+        "selection": {
+          "acquisition_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+          "candidate_challengers": 2,
+          "candidate_id": "91601ea4a51dadec29dc6f9c6b6983187074d63e587d777b22c20191ec159090",
+          "candidate_term_sha256": "89ca8e44ca480b8cb514cfdf26fa4e04682bc7420e2481542d68a0c837d351dc",
+          "challenger_terms_sha256": [
+            "e4f0b7ba7eaf37e7414f3239344ef3959c98043a452a26542a736388ccd03c18"
+          ],
+          "domain_sha256": "635bfd5e3b033771be675de49993ccd9b7410200196484b5272b91cc4cf726a5",
+          "fresh_domain_size": 2,
+          "input": {
+            "x": 2
+          },
+          "prediction_entropy_bits": 1.0,
+          "predictions": [
+            2,
+            4
+          ],
+          "predictions_sha256": "049f239b3f0dbed46d2f197f45aaf9d719e314c5a562f563577b4a4823f797a0",
+          "schema": "AdequacyDisagreementProbeSelectionV1",
+          "seed": "selected-probe-v1:distinguishing_identity_truth",
+          "selected_input_sha256": "5e2b030a4a0f1582d78c0fd9924511cd6b1f2df9879e574f5ea1406c94052418",
+          "selection_id": "173ad1d6cdd46a6dfb99d265b4aae62e9af36013ac115b053459455bef0c0039"
+        }
+      },
+      "selection_entropy_bits": 1.0,
+      "shape_delta": 0
+    },
+    {
+      "active_after": {
+        "domains/adequacy_probe_selection.py": "b8d75708d4e193f16bd071861af08658a907d020281d3c9106a9582c82e8acd9",
+        "domains/adequacy_provider_auth.py": "a5388de538b1af3303babcd0c382a46b3d2819796819be7741b603ca679e4768",
+        "domains/code_reading.py": "dd67d2942cf956c6e35f848aed4012c3ac072e9ac91d9e6b166e8ca44be57908",
+        "domains/code_write_growth.py": "d4a2460f9e41bb8370dc9f352cec2d46ff596d1872e329d7e05d0f33af219079",
+        "domains/code_writing.py": "4ad3148ca1796ad13f6128b9fd655e8568c7c843cd68bccee54f35cbf4ddabc9",
+        "domains/independent_adequacy.py": "33191341fdd63d16d0b9cb5203f27666da90b60fccd567ac4633306a9dcab418",
+        "domains/teach.py": "308a5f31d74dabb3ed8b24bd0c967abd5f94596a3ff76d17657330877fae2cfa",
+        "domains_tree": "dd5870b35b92c94818af18b0d8b3ef55aa3eed0bce927417bbde8a4a55bb5f4e",
+        "native_binary": "3816b4fb5d5746950b4cc3bf9e904a58e675ce53530727edf44095646dd58a54",
+        "runners/dsl/python/substrate_rs/__init__.py": "1fed837a6b7e8b35e463d3b8fdca498400c9cc420a016b81279365d6406a4049",
+        "runners/dsl/python/substrate_rs/_native.build.json": "b491d348c59cbf5cd5eee1b3f900a042f31e21665b6e63212edb9ed7f3d60f47",
+        "runners/dsl/src/py.rs": "d6f922bd406d3f500c10cea11978f47f9612b4ce6b9a348e848a30a305881cba",
+        "runners/dsl/src/substrate.rs": "bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+        "runners/dsl/src/term.rs": "5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+        "rust_tree": "06307beca12566832d3ba7ac157ec6177abb41a87dcf3755d824729d1a55ea0f",
+        "seed_manifest_inventory": "7a35d6b5c0ca4fa74708a34b40fba7304d95b8065cf4e931d36c50f44c0813e3",
+        "substrate/world_adapter.py": "e5850e4df2ff28d8c941cc3c0d12a840ab230ce627833421a88c3b354f65027c",
+        "substrate_tree": "0fd9dee0bc92c33d541854fce3122826fa1fb21769ab3422aad001b42486bf96"
+      },
+      "adopted_code_shape_ids": [],
+      "audit_rows": [
+        {
+          "inputs": {
+            "x": 2
+          },
+          "labels": [
+            {
+              "expected": 4,
+              "label_id": "distinguishing_identity_truth:label",
+              "oracle_sha256": "b5cf3292b45c1e49d0e544719aed863c620cf4a85bb420c2b58ae52e529d66f7",
+              "signature": "2f7d088af90a4ca8aa31222aa07d5a4a2238c80f662960fa9f7860470928e7a3",
+              "signature_schema": "AdequacyProviderSignedLabelV1",
+              "source_id": "oracle-a"
+            }
+          ],
+          "probe_id": "probe-1"
+        }
+      ],
+      "candidate_term": {
+        "name": "x",
+        "type": "Var"
+      },
+      "case": "distinguishing_identity_truth",
+      "challenger_terms": [
+        {
+          "items": [
+            {
+              "name": "x",
+              "type": "Var"
+            },
+            {
+              "name": "x",
+              "type": "Var"
+            }
+          ],
+          "type": "Times"
+        }
+      ],
+      "heldout": [
+        {
+          "match": false,
+          "oracle": 9,
+          "prediction": 3,
+          "x": 3
+        },
+        {
+          "match": false,
+          "oracle": 16,
+          "prediction": 4,
+          "x": 4
+        },
+        {
+          "match": false,
+          "oracle": 25,
+          "prediction": 5,
+          "x": 5
+        }
+      ],
+      "heldout_correct": 0,
+      "pid": 1747,
+      "receipt": {
+        "candidate_id": "91601ea4a51dadec29dc6f9c6b6983187074d63e587d777b22c20191ec159090",
+        "evidence_sha256": "1ae142e0875564c565adb1ae701b668a80945c655dd7edc71eaca8c854fe4431",
+        "invalid_reasons": [],
+        "receipt_sha256": "eef3c72fa2d5850c3bda4ef788b81dff6df9ade7e35f1a0af83ae105631a3f2f",
+        "request_id": "d7a6655167a5d55e2a9f48c55a0057ffa914d6933ab896a562c7fbdc0aa8ce65",
+        "residuals": [
+          {
+            "input_sha256": "5e2b030a4a0f1582d78c0fd9924511cd6b1f2df9879e574f5ea1406c94052418",
+            "kind": "prediction_residual",
+            "labels": [
+              {
+                "expected": 4,
+                "label_id": "distinguishing_identity_truth:label",
+                "oracle_sha256": "b5cf3292b45c1e49d0e544719aed863c620cf4a85bb420c2b58ae52e529d66f7",
+                "signature": "2f7d088af90a4ca8aa31222aa07d5a4a2238c80f662960fa9f7860470928e7a3",
+                "signature_schema": "AdequacyProviderSignedLabelV1",
+                "source_id": "oracle-a"
+              }
+            ],
+            "prediction": 2,
+            "probe_id": "probe-1"
+          }
+        ],
+        "schema": "IndependentAdequacyReceiptV1",
+        "status": "rejected",
+        "term_sha256": "89ca8e44ca480b8cb514cfdf26fa4e04682bc7420e2481542d68a0c837d351dc"
+      },
+      "receipt_status": "rejected",
+      "repetition": 2,
+      "reply": "I read that function but could not take it as a lesson (independent adequacy receipt missing, invalid, or bound to another candidate).",
+      "request": {
+        "acquisition_sha256": "96e0f7a2360b55c2df2de5dffa0738383d370ef0b4a7cc70ed21bcd35b263ad0",
+        "candidate_id": "91601ea4a51dadec29dc6f9c6b6983187074d63e587d777b22c20191ec159090",
+        "domain_sha256": "f0a4bd210ad5b1e10a7b6de9e8dab457cf34e2308b0b7dbed03d264c1731f2de",
+        "probes": [
+          {
+            "input_sha256": "5e2b030a4a0f1582d78c0fd9924511cd6b1f2df9879e574f5ea1406c94052418",
+            "inputs": {
+              "x": 2
+            },
+            "probe_id": "probe-1"
+          }
+        ],
+        "request_id": "d7a6655167a5d55e2a9f48c55a0057ffa914d6933ab896a562c7fbdc0aa8ce65",
+        "schema": "IndependentAdequacyProbeRequestV1",
+        "seed": "173ad1d6cdd46a6dfb99d265b4aae62e9af36013ac115b053459455bef0c0039",
+        "status": "requested",
+        "term_sha256": "89ca8e44ca480b8cb514cfdf26fa4e04682bc7420e2481542d68a0c837d351dc"
+      },
+      "selected_input": {
+        "x": 2
+      },
+      "selection_context": {
+        "acquisition_rows": [],
+        "acquisition_source_ids": [
+          "fixture:selected-probe-study"
+        ],
+        "admissible_inputs": [
+          {
+            "x": 0
+          },
+          {
+            "x": 2
+          }
+        ],
+        "challenger_terms": [
+          {
+            "items": [
+              {
+                "name": "x",
+                "type": "Var"
+              },
+              {
+                "name": "x",
+                "type": "Var"
+              }
+            ],
+            "type": "Times"
+          }
+        ],
+        "seed": "selected-probe-v1:distinguishing_identity_truth",
+        "selection": {
+          "acquisition_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+          "candidate_challengers": 2,
+          "candidate_id": "91601ea4a51dadec29dc6f9c6b6983187074d63e587d777b22c20191ec159090",
+          "candidate_term_sha256": "89ca8e44ca480b8cb514cfdf26fa4e04682bc7420e2481542d68a0c837d351dc",
+          "challenger_terms_sha256": [
+            "e4f0b7ba7eaf37e7414f3239344ef3959c98043a452a26542a736388ccd03c18"
+          ],
+          "domain_sha256": "635bfd5e3b033771be675de49993ccd9b7410200196484b5272b91cc4cf726a5",
+          "fresh_domain_size": 2,
+          "input": {
+            "x": 2
+          },
+          "prediction_entropy_bits": 1.0,
+          "predictions": [
+            2,
+            4
+          ],
+          "predictions_sha256": "049f239b3f0dbed46d2f197f45aaf9d719e314c5a562f563577b4a4823f797a0",
+          "schema": "AdequacyDisagreementProbeSelectionV1",
+          "seed": "selected-probe-v1:distinguishing_identity_truth",
+          "selected_input_sha256": "5e2b030a4a0f1582d78c0fd9924511cd6b1f2df9879e574f5ea1406c94052418",
+          "selection_id": "173ad1d6cdd46a6dfb99d265b4aae62e9af36013ac115b053459455bef0c0039"
+        }
+      },
+      "selection_entropy_bits": 1.0,
+      "shape_delta": 0
+    },
+    {
+      "active_after": {
+        "domains/adequacy_probe_selection.py": "b8d75708d4e193f16bd071861af08658a907d020281d3c9106a9582c82e8acd9",
+        "domains/adequacy_provider_auth.py": "a5388de538b1af3303babcd0c382a46b3d2819796819be7741b603ca679e4768",
+        "domains/code_reading.py": "dd67d2942cf956c6e35f848aed4012c3ac072e9ac91d9e6b166e8ca44be57908",
+        "domains/code_write_growth.py": "d4a2460f9e41bb8370dc9f352cec2d46ff596d1872e329d7e05d0f33af219079",
+        "domains/code_writing.py": "4ad3148ca1796ad13f6128b9fd655e8568c7c843cd68bccee54f35cbf4ddabc9",
+        "domains/independent_adequacy.py": "33191341fdd63d16d0b9cb5203f27666da90b60fccd567ac4633306a9dcab418",
+        "domains/teach.py": "308a5f31d74dabb3ed8b24bd0c967abd5f94596a3ff76d17657330877fae2cfa",
+        "domains_tree": "dd5870b35b92c94818af18b0d8b3ef55aa3eed0bce927417bbde8a4a55bb5f4e",
+        "native_binary": "3816b4fb5d5746950b4cc3bf9e904a58e675ce53530727edf44095646dd58a54",
+        "runners/dsl/python/substrate_rs/__init__.py": "1fed837a6b7e8b35e463d3b8fdca498400c9cc420a016b81279365d6406a4049",
+        "runners/dsl/python/substrate_rs/_native.build.json": "b491d348c59cbf5cd5eee1b3f900a042f31e21665b6e63212edb9ed7f3d60f47",
+        "runners/dsl/src/py.rs": "d6f922bd406d3f500c10cea11978f47f9612b4ce6b9a348e848a30a305881cba",
+        "runners/dsl/src/substrate.rs": "bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+        "runners/dsl/src/term.rs": "5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+        "rust_tree": "06307beca12566832d3ba7ac157ec6177abb41a87dcf3755d824729d1a55ea0f",
+        "seed_manifest_inventory": "7a35d6b5c0ca4fa74708a34b40fba7304d95b8065cf4e931d36c50f44c0813e3",
+        "substrate/world_adapter.py": "e5850e4df2ff28d8c941cc3c0d12a840ab230ce627833421a88c3b354f65027c",
+        "substrate_tree": "0fd9dee0bc92c33d541854fce3122826fa1fb21769ab3422aad001b42486bf96"
+      },
+      "adopted_code_shape_ids": [],
+      "audit_rows": [
+        {
+          "inputs": {
+            "x": 2
+          },
+          "labels": [
+            {
+              "expected": 4,
+              "label_id": "distinguishing_identity_truth:label",
+              "oracle_sha256": "b5cf3292b45c1e49d0e544719aed863c620cf4a85bb420c2b58ae52e529d66f7",
+              "signature": "2f7d088af90a4ca8aa31222aa07d5a4a2238c80f662960fa9f7860470928e7a3",
+              "signature_schema": "AdequacyProviderSignedLabelV1",
+              "source_id": "oracle-a"
+            }
+          ],
+          "probe_id": "probe-1"
+        }
+      ],
+      "candidate_term": {
+        "name": "x",
+        "type": "Var"
+      },
+      "case": "distinguishing_identity_truth",
+      "challenger_terms": [
+        {
+          "items": [
+            {
+              "name": "x",
+              "type": "Var"
+            },
+            {
+              "name": "x",
+              "type": "Var"
+            }
+          ],
+          "type": "Times"
+        }
+      ],
+      "heldout": [
+        {
+          "match": false,
+          "oracle": 9,
+          "prediction": 3,
+          "x": 3
+        },
+        {
+          "match": false,
+          "oracle": 16,
+          "prediction": 4,
+          "x": 4
+        },
+        {
+          "match": false,
+          "oracle": 25,
+          "prediction": 5,
+          "x": 5
+        }
+      ],
+      "heldout_correct": 0,
+      "pid": 1996,
+      "receipt": {
+        "candidate_id": "91601ea4a51dadec29dc6f9c6b6983187074d63e587d777b22c20191ec159090",
+        "evidence_sha256": "1ae142e0875564c565adb1ae701b668a80945c655dd7edc71eaca8c854fe4431",
+        "invalid_reasons": [],
+        "receipt_sha256": "eef3c72fa2d5850c3bda4ef788b81dff6df9ade7e35f1a0af83ae105631a3f2f",
+        "request_id": "d7a6655167a5d55e2a9f48c55a0057ffa914d6933ab896a562c7fbdc0aa8ce65",
+        "residuals": [
+          {
+            "input_sha256": "5e2b030a4a0f1582d78c0fd9924511cd6b1f2df9879e574f5ea1406c94052418",
+            "kind": "prediction_residual",
+            "labels": [
+              {
+                "expected": 4,
+                "label_id": "distinguishing_identity_truth:label",
+                "oracle_sha256": "b5cf3292b45c1e49d0e544719aed863c620cf4a85bb420c2b58ae52e529d66f7",
+                "signature": "2f7d088af90a4ca8aa31222aa07d5a4a2238c80f662960fa9f7860470928e7a3",
+                "signature_schema": "AdequacyProviderSignedLabelV1",
+                "source_id": "oracle-a"
+              }
+            ],
+            "prediction": 2,
+            "probe_id": "probe-1"
+          }
+        ],
+        "schema": "IndependentAdequacyReceiptV1",
+        "status": "rejected",
+        "term_sha256": "89ca8e44ca480b8cb514cfdf26fa4e04682bc7420e2481542d68a0c837d351dc"
+      },
+      "receipt_status": "rejected",
+      "repetition": 3,
+      "reply": "I read that function but could not take it as a lesson (independent adequacy receipt missing, invalid, or bound to another candidate).",
+      "request": {
+        "acquisition_sha256": "96e0f7a2360b55c2df2de5dffa0738383d370ef0b4a7cc70ed21bcd35b263ad0",
+        "candidate_id": "91601ea4a51dadec29dc6f9c6b6983187074d63e587d777b22c20191ec159090",
+        "domain_sha256": "f0a4bd210ad5b1e10a7b6de9e8dab457cf34e2308b0b7dbed03d264c1731f2de",
+        "probes": [
+          {
+            "input_sha256": "5e2b030a4a0f1582d78c0fd9924511cd6b1f2df9879e574f5ea1406c94052418",
+            "inputs": {
+              "x": 2
+            },
+            "probe_id": "probe-1"
+          }
+        ],
+        "request_id": "d7a6655167a5d55e2a9f48c55a0057ffa914d6933ab896a562c7fbdc0aa8ce65",
+        "schema": "IndependentAdequacyProbeRequestV1",
+        "seed": "173ad1d6cdd46a6dfb99d265b4aae62e9af36013ac115b053459455bef0c0039",
+        "status": "requested",
+        "term_sha256": "89ca8e44ca480b8cb514cfdf26fa4e04682bc7420e2481542d68a0c837d351dc"
+      },
+      "selected_input": {
+        "x": 2
+      },
+      "selection_context": {
+        "acquisition_rows": [],
+        "acquisition_source_ids": [
+          "fixture:selected-probe-study"
+        ],
+        "admissible_inputs": [
+          {
+            "x": 0
+          },
+          {
+            "x": 2
+          }
+        ],
+        "challenger_terms": [
+          {
+            "items": [
+              {
+                "name": "x",
+                "type": "Var"
+              },
+              {
+                "name": "x",
+                "type": "Var"
+              }
+            ],
+            "type": "Times"
+          }
+        ],
+        "seed": "selected-probe-v1:distinguishing_identity_truth",
+        "selection": {
+          "acquisition_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+          "candidate_challengers": 2,
+          "candidate_id": "91601ea4a51dadec29dc6f9c6b6983187074d63e587d777b22c20191ec159090",
+          "candidate_term_sha256": "89ca8e44ca480b8cb514cfdf26fa4e04682bc7420e2481542d68a0c837d351dc",
+          "challenger_terms_sha256": [
+            "e4f0b7ba7eaf37e7414f3239344ef3959c98043a452a26542a736388ccd03c18"
+          ],
+          "domain_sha256": "635bfd5e3b033771be675de49993ccd9b7410200196484b5272b91cc4cf726a5",
+          "fresh_domain_size": 2,
+          "input": {
+            "x": 2
+          },
+          "prediction_entropy_bits": 1.0,
+          "predictions": [
+            2,
+            4
+          ],
+          "predictions_sha256": "049f239b3f0dbed46d2f197f45aaf9d719e314c5a562f563577b4a4823f797a0",
+          "schema": "AdequacyDisagreementProbeSelectionV1",
+          "seed": "selected-probe-v1:distinguishing_identity_truth",
+          "selected_input_sha256": "5e2b030a4a0f1582d78c0fd9924511cd6b1f2df9879e574f5ea1406c94052418",
+          "selection_id": "173ad1d6cdd46a6dfb99d265b4aae62e9af36013ac115b053459455bef0c0039"
+        }
+      },
+      "selection_entropy_bits": 1.0,
+      "shape_delta": 0
+    },
+    {
+      "active_after": {
+        "domains/adequacy_probe_selection.py": "b8d75708d4e193f16bd071861af08658a907d020281d3c9106a9582c82e8acd9",
+        "domains/adequacy_provider_auth.py": "a5388de538b1af3303babcd0c382a46b3d2819796819be7741b603ca679e4768",
+        "domains/code_reading.py": "dd67d2942cf956c6e35f848aed4012c3ac072e9ac91d9e6b166e8ca44be57908",
+        "domains/code_write_growth.py": "d4a2460f9e41bb8370dc9f352cec2d46ff596d1872e329d7e05d0f33af219079",
+        "domains/code_writing.py": "4ad3148ca1796ad13f6128b9fd655e8568c7c843cd68bccee54f35cbf4ddabc9",
+        "domains/independent_adequacy.py": "33191341fdd63d16d0b9cb5203f27666da90b60fccd567ac4633306a9dcab418",
+        "domains/teach.py": "308a5f31d74dabb3ed8b24bd0c967abd5f94596a3ff76d17657330877fae2cfa",
+        "domains_tree": "dd5870b35b92c94818af18b0d8b3ef55aa3eed0bce927417bbde8a4a55bb5f4e",
+        "native_binary": "3816b4fb5d5746950b4cc3bf9e904a58e675ce53530727edf44095646dd58a54",
+        "runners/dsl/python/substrate_rs/__init__.py": "1fed837a6b7e8b35e463d3b8fdca498400c9cc420a016b81279365d6406a4049",
+        "runners/dsl/python/substrate_rs/_native.build.json": "b491d348c59cbf5cd5eee1b3f900a042f31e21665b6e63212edb9ed7f3d60f47",
+        "runners/dsl/src/py.rs": "d6f922bd406d3f500c10cea11978f47f9612b4ce6b9a348e848a30a305881cba",
+        "runners/dsl/src/substrate.rs": "bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+        "runners/dsl/src/term.rs": "5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+        "rust_tree": "06307beca12566832d3ba7ac157ec6177abb41a87dcf3755d824729d1a55ea0f",
+        "seed_manifest_inventory": "7a35d6b5c0ca4fa74708a34b40fba7304d95b8065cf4e931d36c50f44c0813e3",
+        "substrate/world_adapter.py": "e5850e4df2ff28d8c941cc3c0d12a840ab230ce627833421a88c3b354f65027c",
+        "substrate_tree": "0fd9dee0bc92c33d541854fce3122826fa1fb21769ab3422aad001b42486bf96"
+      },
+      "adopted_code_shape_ids": [
+        "#1646"
+      ],
+      "audit_rows": [
+        {
+          "inputs": {
+            "x": 2
+          },
+          "labels": [
+            {
+              "expected": 2,
+              "label_id": "selected_wrong_signer:label",
+              "oracle_sha256": "b5cf3292b45c1e49d0e544719aed863c620cf4a85bb420c2b58ae52e529d66f7",
+              "signature": "ded17390e90bbba2608865832a1858c392296d2562bf7861a076c751f0d8d76e",
+              "signature_schema": "AdequacyProviderSignedLabelV1",
+              "source_id": "oracle-a"
+            }
+          ],
+          "probe_id": "probe-1"
+        }
+      ],
+      "candidate_term": {
+        "name": "x",
+        "type": "Var"
+      },
+      "case": "selected_wrong_signer",
+      "challenger_terms": [
+        {
+          "items": [
+            {
+              "name": "x",
+              "type": "Var"
+            },
+            {
+              "name": "x",
+              "type": "Var"
+            }
+          ],
+          "type": "Times"
+        }
+      ],
+      "heldout": [
+        {
+          "match": false,
+          "oracle": 9,
+          "prediction": 3,
+          "x": 3
+        },
+        {
+          "match": false,
+          "oracle": 16,
+          "prediction": 4,
+          "x": 4
+        },
+        {
+          "match": false,
+          "oracle": 25,
+          "prediction": 5,
+          "x": 5
+        }
+      ],
+      "heldout_correct": 0,
+      "pid": 2245,
+      "receipt": {
+        "candidate_id": "91601ea4a51dadec29dc6f9c6b6983187074d63e587d777b22c20191ec159090",
+        "evidence_sha256": "6cb5524f0152946f230eb428af3283b6eb29911a32f17ad4891fecec5056f5a2",
+        "invalid_reasons": [],
+        "receipt_sha256": "80e1de33ca84dd706fb0efe6af21000a96ac43c57e04d2b02955c837dc848048",
+        "request_id": "cf2cd0433d5aff248f38cf5d08f8ce05878f10c6079a5f1d518c7ca4bb57251f",
+        "residuals": [],
+        "schema": "IndependentAdequacyReceiptV1",
+        "status": "accepted",
+        "term_sha256": "89ca8e44ca480b8cb514cfdf26fa4e04682bc7420e2481542d68a0c837d351dc"
+      },
+      "receipt_status": "accepted",
+      "repetition": 1,
+      "reply": "Thank you -- I read that function and learned the shape 'taught_identity' (triggers: identity).",
+      "request": {
+        "acquisition_sha256": "96e0f7a2360b55c2df2de5dffa0738383d370ef0b4a7cc70ed21bcd35b263ad0",
+        "candidate_id": "91601ea4a51dadec29dc6f9c6b6983187074d63e587d777b22c20191ec159090",
+        "domain_sha256": "f0a4bd210ad5b1e10a7b6de9e8dab457cf34e2308b0b7dbed03d264c1731f2de",
+        "probes": [
+          {
+            "input_sha256": "5e2b030a4a0f1582d78c0fd9924511cd6b1f2df9879e574f5ea1406c94052418",
+            "inputs": {
+              "x": 2
+            },
+            "probe_id": "probe-1"
+          }
+        ],
+        "request_id": "cf2cd0433d5aff248f38cf5d08f8ce05878f10c6079a5f1d518c7ca4bb57251f",
+        "schema": "IndependentAdequacyProbeRequestV1",
+        "seed": "9012db2f2b5ea77b6989fa049bf9bf9f60972fc7e8de1b6fb88171e4f3940034",
+        "status": "requested",
+        "term_sha256": "89ca8e44ca480b8cb514cfdf26fa4e04682bc7420e2481542d68a0c837d351dc"
+      },
+      "selected_input": {
+        "x": 2
+      },
+      "selection_context": {
+        "acquisition_rows": [],
+        "acquisition_source_ids": [
+          "fixture:selected-probe-study"
+        ],
+        "admissible_inputs": [
+          {
+            "x": 0
+          },
+          {
+            "x": 2
+          }
+        ],
+        "challenger_terms": [
+          {
+            "items": [
+              {
+                "name": "x",
+                "type": "Var"
+              },
+              {
+                "name": "x",
+                "type": "Var"
+              }
+            ],
+            "type": "Times"
+          }
+        ],
+        "seed": "selected-probe-v1:selected_wrong_signer",
+        "selection": {
+          "acquisition_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+          "candidate_challengers": 2,
+          "candidate_id": "91601ea4a51dadec29dc6f9c6b6983187074d63e587d777b22c20191ec159090",
+          "candidate_term_sha256": "89ca8e44ca480b8cb514cfdf26fa4e04682bc7420e2481542d68a0c837d351dc",
+          "challenger_terms_sha256": [
+            "e4f0b7ba7eaf37e7414f3239344ef3959c98043a452a26542a736388ccd03c18"
+          ],
+          "domain_sha256": "635bfd5e3b033771be675de49993ccd9b7410200196484b5272b91cc4cf726a5",
+          "fresh_domain_size": 2,
+          "input": {
+            "x": 2
+          },
+          "prediction_entropy_bits": 1.0,
+          "predictions": [
+            2,
+            4
+          ],
+          "predictions_sha256": "049f239b3f0dbed46d2f197f45aaf9d719e314c5a562f563577b4a4823f797a0",
+          "schema": "AdequacyDisagreementProbeSelectionV1",
+          "seed": "selected-probe-v1:selected_wrong_signer",
+          "selected_input_sha256": "5e2b030a4a0f1582d78c0fd9924511cd6b1f2df9879e574f5ea1406c94052418",
+          "selection_id": "9012db2f2b5ea77b6989fa049bf9bf9f60972fc7e8de1b6fb88171e4f3940034"
+        }
+      },
+      "selection_entropy_bits": 1.0,
+      "shape_delta": 1
+    },
+    {
+      "active_after": {
+        "domains/adequacy_probe_selection.py": "b8d75708d4e193f16bd071861af08658a907d020281d3c9106a9582c82e8acd9",
+        "domains/adequacy_provider_auth.py": "a5388de538b1af3303babcd0c382a46b3d2819796819be7741b603ca679e4768",
+        "domains/code_reading.py": "dd67d2942cf956c6e35f848aed4012c3ac072e9ac91d9e6b166e8ca44be57908",
+        "domains/code_write_growth.py": "d4a2460f9e41bb8370dc9f352cec2d46ff596d1872e329d7e05d0f33af219079",
+        "domains/code_writing.py": "4ad3148ca1796ad13f6128b9fd655e8568c7c843cd68bccee54f35cbf4ddabc9",
+        "domains/independent_adequacy.py": "33191341fdd63d16d0b9cb5203f27666da90b60fccd567ac4633306a9dcab418",
+        "domains/teach.py": "308a5f31d74dabb3ed8b24bd0c967abd5f94596a3ff76d17657330877fae2cfa",
+        "domains_tree": "dd5870b35b92c94818af18b0d8b3ef55aa3eed0bce927417bbde8a4a55bb5f4e",
+        "native_binary": "3816b4fb5d5746950b4cc3bf9e904a58e675ce53530727edf44095646dd58a54",
+        "runners/dsl/python/substrate_rs/__init__.py": "1fed837a6b7e8b35e463d3b8fdca498400c9cc420a016b81279365d6406a4049",
+        "runners/dsl/python/substrate_rs/_native.build.json": "b491d348c59cbf5cd5eee1b3f900a042f31e21665b6e63212edb9ed7f3d60f47",
+        "runners/dsl/src/py.rs": "d6f922bd406d3f500c10cea11978f47f9612b4ce6b9a348e848a30a305881cba",
+        "runners/dsl/src/substrate.rs": "bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+        "runners/dsl/src/term.rs": "5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+        "rust_tree": "06307beca12566832d3ba7ac157ec6177abb41a87dcf3755d824729d1a55ea0f",
+        "seed_manifest_inventory": "7a35d6b5c0ca4fa74708a34b40fba7304d95b8065cf4e931d36c50f44c0813e3",
+        "substrate/world_adapter.py": "e5850e4df2ff28d8c941cc3c0d12a840ab230ce627833421a88c3b354f65027c",
+        "substrate_tree": "0fd9dee0bc92c33d541854fce3122826fa1fb21769ab3422aad001b42486bf96"
+      },
+      "adopted_code_shape_ids": [
+        "#1646"
+      ],
+      "audit_rows": [
+        {
+          "inputs": {
+            "x": 2
+          },
+          "labels": [
+            {
+              "expected": 2,
+              "label_id": "selected_wrong_signer:label",
+              "oracle_sha256": "b5cf3292b45c1e49d0e544719aed863c620cf4a85bb420c2b58ae52e529d66f7",
+              "signature": "ded17390e90bbba2608865832a1858c392296d2562bf7861a076c751f0d8d76e",
+              "signature_schema": "AdequacyProviderSignedLabelV1",
+              "source_id": "oracle-a"
+            }
+          ],
+          "probe_id": "probe-1"
+        }
+      ],
+      "candidate_term": {
+        "name": "x",
+        "type": "Var"
+      },
+      "case": "selected_wrong_signer",
+      "challenger_terms": [
+        {
+          "items": [
+            {
+              "name": "x",
+              "type": "Var"
+            },
+            {
+              "name": "x",
+              "type": "Var"
+            }
+          ],
+          "type": "Times"
+        }
+      ],
+      "heldout": [
+        {
+          "match": false,
+          "oracle": 9,
+          "prediction": 3,
+          "x": 3
+        },
+        {
+          "match": false,
+          "oracle": 16,
+          "prediction": 4,
+          "x": 4
+        },
+        {
+          "match": false,
+          "oracle": 25,
+          "prediction": 5,
+          "x": 5
+        }
+      ],
+      "heldout_correct": 0,
+      "pid": 2494,
+      "receipt": {
+        "candidate_id": "91601ea4a51dadec29dc6f9c6b6983187074d63e587d777b22c20191ec159090",
+        "evidence_sha256": "6cb5524f0152946f230eb428af3283b6eb29911a32f17ad4891fecec5056f5a2",
+        "invalid_reasons": [],
+        "receipt_sha256": "80e1de33ca84dd706fb0efe6af21000a96ac43c57e04d2b02955c837dc848048",
+        "request_id": "cf2cd0433d5aff248f38cf5d08f8ce05878f10c6079a5f1d518c7ca4bb57251f",
+        "residuals": [],
+        "schema": "IndependentAdequacyReceiptV1",
+        "status": "accepted",
+        "term_sha256": "89ca8e44ca480b8cb514cfdf26fa4e04682bc7420e2481542d68a0c837d351dc"
+      },
+      "receipt_status": "accepted",
+      "repetition": 2,
+      "reply": "Thank you -- I read that function and learned the shape 'taught_identity' (triggers: identity).",
+      "request": {
+        "acquisition_sha256": "96e0f7a2360b55c2df2de5dffa0738383d370ef0b4a7cc70ed21bcd35b263ad0",
+        "candidate_id": "91601ea4a51dadec29dc6f9c6b6983187074d63e587d777b22c20191ec159090",
+        "domain_sha256": "f0a4bd210ad5b1e10a7b6de9e8dab457cf34e2308b0b7dbed03d264c1731f2de",
+        "probes": [
+          {
+            "input_sha256": "5e2b030a4a0f1582d78c0fd9924511cd6b1f2df9879e574f5ea1406c94052418",
+            "inputs": {
+              "x": 2
+            },
+            "probe_id": "probe-1"
+          }
+        ],
+        "request_id": "cf2cd0433d5aff248f38cf5d08f8ce05878f10c6079a5f1d518c7ca4bb57251f",
+        "schema": "IndependentAdequacyProbeRequestV1",
+        "seed": "9012db2f2b5ea77b6989fa049bf9bf9f60972fc7e8de1b6fb88171e4f3940034",
+        "status": "requested",
+        "term_sha256": "89ca8e44ca480b8cb514cfdf26fa4e04682bc7420e2481542d68a0c837d351dc"
+      },
+      "selected_input": {
+        "x": 2
+      },
+      "selection_context": {
+        "acquisition_rows": [],
+        "acquisition_source_ids": [
+          "fixture:selected-probe-study"
+        ],
+        "admissible_inputs": [
+          {
+            "x": 0
+          },
+          {
+            "x": 2
+          }
+        ],
+        "challenger_terms": [
+          {
+            "items": [
+              {
+                "name": "x",
+                "type": "Var"
+              },
+              {
+                "name": "x",
+                "type": "Var"
+              }
+            ],
+            "type": "Times"
+          }
+        ],
+        "seed": "selected-probe-v1:selected_wrong_signer",
+        "selection": {
+          "acquisition_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+          "candidate_challengers": 2,
+          "candidate_id": "91601ea4a51dadec29dc6f9c6b6983187074d63e587d777b22c20191ec159090",
+          "candidate_term_sha256": "89ca8e44ca480b8cb514cfdf26fa4e04682bc7420e2481542d68a0c837d351dc",
+          "challenger_terms_sha256": [
+            "e4f0b7ba7eaf37e7414f3239344ef3959c98043a452a26542a736388ccd03c18"
+          ],
+          "domain_sha256": "635bfd5e3b033771be675de49993ccd9b7410200196484b5272b91cc4cf726a5",
+          "fresh_domain_size": 2,
+          "input": {
+            "x": 2
+          },
+          "prediction_entropy_bits": 1.0,
+          "predictions": [
+            2,
+            4
+          ],
+          "predictions_sha256": "049f239b3f0dbed46d2f197f45aaf9d719e314c5a562f563577b4a4823f797a0",
+          "schema": "AdequacyDisagreementProbeSelectionV1",
+          "seed": "selected-probe-v1:selected_wrong_signer",
+          "selected_input_sha256": "5e2b030a4a0f1582d78c0fd9924511cd6b1f2df9879e574f5ea1406c94052418",
+          "selection_id": "9012db2f2b5ea77b6989fa049bf9bf9f60972fc7e8de1b6fb88171e4f3940034"
+        }
+      },
+      "selection_entropy_bits": 1.0,
+      "shape_delta": 1
+    },
+    {
+      "active_after": {
+        "domains/adequacy_probe_selection.py": "b8d75708d4e193f16bd071861af08658a907d020281d3c9106a9582c82e8acd9",
+        "domains/adequacy_provider_auth.py": "a5388de538b1af3303babcd0c382a46b3d2819796819be7741b603ca679e4768",
+        "domains/code_reading.py": "dd67d2942cf956c6e35f848aed4012c3ac072e9ac91d9e6b166e8ca44be57908",
+        "domains/code_write_growth.py": "d4a2460f9e41bb8370dc9f352cec2d46ff596d1872e329d7e05d0f33af219079",
+        "domains/code_writing.py": "4ad3148ca1796ad13f6128b9fd655e8568c7c843cd68bccee54f35cbf4ddabc9",
+        "domains/independent_adequacy.py": "33191341fdd63d16d0b9cb5203f27666da90b60fccd567ac4633306a9dcab418",
+        "domains/teach.py": "308a5f31d74dabb3ed8b24bd0c967abd5f94596a3ff76d17657330877fae2cfa",
+        "domains_tree": "dd5870b35b92c94818af18b0d8b3ef55aa3eed0bce927417bbde8a4a55bb5f4e",
+        "native_binary": "3816b4fb5d5746950b4cc3bf9e904a58e675ce53530727edf44095646dd58a54",
+        "runners/dsl/python/substrate_rs/__init__.py": "1fed837a6b7e8b35e463d3b8fdca498400c9cc420a016b81279365d6406a4049",
+        "runners/dsl/python/substrate_rs/_native.build.json": "b491d348c59cbf5cd5eee1b3f900a042f31e21665b6e63212edb9ed7f3d60f47",
+        "runners/dsl/src/py.rs": "d6f922bd406d3f500c10cea11978f47f9612b4ce6b9a348e848a30a305881cba",
+        "runners/dsl/src/substrate.rs": "bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+        "runners/dsl/src/term.rs": "5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+        "rust_tree": "06307beca12566832d3ba7ac157ec6177abb41a87dcf3755d824729d1a55ea0f",
+        "seed_manifest_inventory": "7a35d6b5c0ca4fa74708a34b40fba7304d95b8065cf4e931d36c50f44c0813e3",
+        "substrate/world_adapter.py": "e5850e4df2ff28d8c941cc3c0d12a840ab230ce627833421a88c3b354f65027c",
+        "substrate_tree": "0fd9dee0bc92c33d541854fce3122826fa1fb21769ab3422aad001b42486bf96"
+      },
+      "adopted_code_shape_ids": [
+        "#1646"
+      ],
+      "audit_rows": [
+        {
+          "inputs": {
+            "x": 2
+          },
+          "labels": [
+            {
+              "expected": 2,
+              "label_id": "selected_wrong_signer:label",
+              "oracle_sha256": "b5cf3292b45c1e49d0e544719aed863c620cf4a85bb420c2b58ae52e529d66f7",
+              "signature": "ded17390e90bbba2608865832a1858c392296d2562bf7861a076c751f0d8d76e",
+              "signature_schema": "AdequacyProviderSignedLabelV1",
+              "source_id": "oracle-a"
+            }
+          ],
+          "probe_id": "probe-1"
+        }
+      ],
+      "candidate_term": {
+        "name": "x",
+        "type": "Var"
+      },
+      "case": "selected_wrong_signer",
+      "challenger_terms": [
+        {
+          "items": [
+            {
+              "name": "x",
+              "type": "Var"
+            },
+            {
+              "name": "x",
+              "type": "Var"
+            }
+          ],
+          "type": "Times"
+        }
+      ],
+      "heldout": [
+        {
+          "match": false,
+          "oracle": 9,
+          "prediction": 3,
+          "x": 3
+        },
+        {
+          "match": false,
+          "oracle": 16,
+          "prediction": 4,
+          "x": 4
+        },
+        {
+          "match": false,
+          "oracle": 25,
+          "prediction": 5,
+          "x": 5
+        }
+      ],
+      "heldout_correct": 0,
+      "pid": 2743,
+      "receipt": {
+        "candidate_id": "91601ea4a51dadec29dc6f9c6b6983187074d63e587d777b22c20191ec159090",
+        "evidence_sha256": "6cb5524f0152946f230eb428af3283b6eb29911a32f17ad4891fecec5056f5a2",
+        "invalid_reasons": [],
+        "receipt_sha256": "80e1de33ca84dd706fb0efe6af21000a96ac43c57e04d2b02955c837dc848048",
+        "request_id": "cf2cd0433d5aff248f38cf5d08f8ce05878f10c6079a5f1d518c7ca4bb57251f",
+        "residuals": [],
+        "schema": "IndependentAdequacyReceiptV1",
+        "status": "accepted",
+        "term_sha256": "89ca8e44ca480b8cb514cfdf26fa4e04682bc7420e2481542d68a0c837d351dc"
+      },
+      "receipt_status": "accepted",
+      "repetition": 3,
+      "reply": "Thank you -- I read that function and learned the shape 'taught_identity' (triggers: identity).",
+      "request": {
+        "acquisition_sha256": "96e0f7a2360b55c2df2de5dffa0738383d370ef0b4a7cc70ed21bcd35b263ad0",
+        "candidate_id": "91601ea4a51dadec29dc6f9c6b6983187074d63e587d777b22c20191ec159090",
+        "domain_sha256": "f0a4bd210ad5b1e10a7b6de9e8dab457cf34e2308b0b7dbed03d264c1731f2de",
+        "probes": [
+          {
+            "input_sha256": "5e2b030a4a0f1582d78c0fd9924511cd6b1f2df9879e574f5ea1406c94052418",
+            "inputs": {
+              "x": 2
+            },
+            "probe_id": "probe-1"
+          }
+        ],
+        "request_id": "cf2cd0433d5aff248f38cf5d08f8ce05878f10c6079a5f1d518c7ca4bb57251f",
+        "schema": "IndependentAdequacyProbeRequestV1",
+        "seed": "9012db2f2b5ea77b6989fa049bf9bf9f60972fc7e8de1b6fb88171e4f3940034",
+        "status": "requested",
+        "term_sha256": "89ca8e44ca480b8cb514cfdf26fa4e04682bc7420e2481542d68a0c837d351dc"
+      },
+      "selected_input": {
+        "x": 2
+      },
+      "selection_context": {
+        "acquisition_rows": [],
+        "acquisition_source_ids": [
+          "fixture:selected-probe-study"
+        ],
+        "admissible_inputs": [
+          {
+            "x": 0
+          },
+          {
+            "x": 2
+          }
+        ],
+        "challenger_terms": [
+          {
+            "items": [
+              {
+                "name": "x",
+                "type": "Var"
+              },
+              {
+                "name": "x",
+                "type": "Var"
+              }
+            ],
+            "type": "Times"
+          }
+        ],
+        "seed": "selected-probe-v1:selected_wrong_signer",
+        "selection": {
+          "acquisition_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+          "candidate_challengers": 2,
+          "candidate_id": "91601ea4a51dadec29dc6f9c6b6983187074d63e587d777b22c20191ec159090",
+          "candidate_term_sha256": "89ca8e44ca480b8cb514cfdf26fa4e04682bc7420e2481542d68a0c837d351dc",
+          "challenger_terms_sha256": [
+            "e4f0b7ba7eaf37e7414f3239344ef3959c98043a452a26542a736388ccd03c18"
+          ],
+          "domain_sha256": "635bfd5e3b033771be675de49993ccd9b7410200196484b5272b91cc4cf726a5",
+          "fresh_domain_size": 2,
+          "input": {
+            "x": 2
+          },
+          "prediction_entropy_bits": 1.0,
+          "predictions": [
+            2,
+            4
+          ],
+          "predictions_sha256": "049f239b3f0dbed46d2f197f45aaf9d719e314c5a562f563577b4a4823f797a0",
+          "schema": "AdequacyDisagreementProbeSelectionV1",
+          "seed": "selected-probe-v1:selected_wrong_signer",
+          "selected_input_sha256": "5e2b030a4a0f1582d78c0fd9924511cd6b1f2df9879e574f5ea1406c94052418",
+          "selection_id": "9012db2f2b5ea77b6989fa049bf9bf9f60972fc7e8de1b6fb88171e4f3940034"
+        }
+      },
+      "selection_entropy_bits": 1.0,
+      "shape_delta": 1
+    }
+  ]
+}

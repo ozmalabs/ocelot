@@ -1,0 +1,283 @@
+{
+  "benchmark": {
+    "bytes": 10402,
+    "path": "scripts/arc_ls20_mapnav_measure.py",
+    "sha256": "68b3944419c96e155611fcd8d4ce62f044afc759c77efd3cdf852a3c4e9339a3"
+  },
+  "git_head": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+  "native_build_manifest": {
+    "bytes": 11019,
+    "path": "runners/dsl/python/substrate_rs/_native.build.json",
+    "sha256": "b09f684e4cbd47c5940b980799710ad4ce9e9eb41c2a9801a580cf589df23f16"
+  },
+  "native_build_stale_reasons": [],
+  "native_extension": {
+    "bytes": 10321904,
+    "path": "runners/dsl/python/substrate_rs/_native.abi3.so",
+    "sha256": "f6ced90ef2a4bbc39ed13c27392156b0379956e31194ab04505e44b293375576"
+  },
+  "parameters": {
+    "budget_steps": 200,
+    "cells": [
+      {
+        "density": 0.2,
+        "h": 16,
+        "name": "walled_16_1",
+        "seed": 221200,
+        "stations": 1,
+        "w": 16,
+        "walls": true
+      },
+      {
+        "density": 0.2,
+        "h": 16,
+        "name": "walled_16_3",
+        "seed": 221201,
+        "stations": 3,
+        "w": 16,
+        "walls": true
+      },
+      {
+        "density": 0.2,
+        "h": 32,
+        "name": "walled_32_1",
+        "seed": 221202,
+        "stations": 1,
+        "w": 32,
+        "walls": true
+      },
+      {
+        "density": 0.2,
+        "h": 32,
+        "name": "walled_32_3",
+        "seed": 221203,
+        "stations": 3,
+        "w": 32,
+        "walls": true
+      },
+      {
+        "density": 0.2,
+        "h": 16,
+        "name": "open_16_1",
+        "seed": 221204,
+        "stations": 1,
+        "w": 16,
+        "walls": false
+      }
+    ],
+    "n_per_cell": 30,
+    "router_order": "quanta first on even index, greedy first on odd index"
+  },
+  "protocol": {
+    "bytes": 4004,
+    "path": "docs/research/engine_substrate/SUBSTRATE_LS20_MAPNAV_CURRENT_SOURCE_SCALE_V1_1_PREREG_20260928.md",
+    "sha256": "ebcd509b9d6cb591edb1aa0428bd9a5698e65cc6955cf96bd66a5a0c33fbcb92"
+  },
+  "runner": {
+    "bytes": 9371,
+    "path": "evaluation/substrate_capability/ls20_mapnav_current_source_scale_v1_1.py",
+    "sha256": "101af53587493f604a79fdfc0cd85dc3d94bf7c36df4e2394c7384708fa5e525"
+  },
+  "runtime": {
+    "cpu_model": "AMD Ryzen 9 5900X 12-Core Processor",
+    "machine": "x86_64",
+    "numpy": "1.26.4",
+    "platform": "Linux-6.8.0-142-generic-x86_64-with-glibc2.39",
+    "python": "3.12.3 (main, Aug 31 2026, 10:18:26) [GCC 13.3.0]",
+    "scipy": "1.17.1"
+  },
+  "runtime_scripts": [
+    {
+      "bytes": 43690,
+      "path": "scripts/arc_run.py",
+      "sha256": "f4df2e12c9ff3b78992a6857c04221c3af595c11297639413f7252228a6ce1ee"
+    },
+    {
+      "bytes": 13197,
+      "path": "scripts/move_space_planner.py",
+      "sha256": "3522a71f8defc0a47572c5f73f63f6aeb731007f1ae34ed754a22e1c0dca0478"
+    },
+    {
+      "bytes": 1589,
+      "path": "scripts/_arc3_load_key.py",
+      "sha256": "44a3e6dbf7a6702f921cf645596152d75358e254e86c54e2882dadb25ba8170f"
+    }
+  ],
+  "scenario": {
+    "bytes": 24438,
+    "path": "worlds/arc_ls20_scenario.py",
+    "sha256": "568cc9ad66a0d873546cab63428ce4d0264eb1fc5e0a45c2e1c0bd4b1cd6d478"
+  },
+  "seed_dependency_closure": {
+    "adaptive_control_core": {
+      "bytes": 60184,
+      "path": "seeds/adaptive_control_core.json",
+      "sha256": "fc57fe2f6e3f0ab45f4fac84221bdabf5b3a99b64de3bccf62cf7c016b2c9504"
+    },
+    "affective_state_core": {
+      "bytes": 8066,
+      "path": "seeds/affective_state_core.json",
+      "sha256": "9cfd82ff99c780a0ddfb5ec65942fef77ea2275341e6a09f5b78d1910c354990"
+    },
+    "affordance_basis": {
+      "bytes": 6512,
+      "path": "seeds/affordance_basis.json",
+      "sha256": "688acac320afb5b3562ce1b6409edcf646497702a3464cf15d58b24beb605e87"
+    },
+    "decision_core": {
+      "bytes": 13667,
+      "path": "seeds/decision_core.json",
+      "sha256": "a2226728536b18760ffbeac4d699aad4db9d965f4a0f37470f73350c8b202198"
+    },
+    "default_mode_core": {
+      "bytes": 59352,
+      "path": "seeds/default_mode_core.json",
+      "sha256": "10afab5ee8914577580225d192bad8138361e662c17509f34ecfc7f3175d748d"
+    },
+    "dual_process_core": {
+      "bytes": 50789,
+      "path": "seeds/dual_process_core.json",
+      "sha256": "4cace3623596a588eb49b28cff51ee8bf144b0f9005dd8262f5d3910c23bc777"
+    },
+    "episodic_working_memory_core": {
+      "bytes": 48993,
+      "path": "seeds/episodic_working_memory_core.json",
+      "sha256": "95a725e57402983c1010a595282ae08d4ac1da4c596b813b271c13ad329eaf2d"
+    },
+    "epistemics_core": {
+      "bytes": 13189,
+      "path": "seeds/epistemics_core.json",
+      "sha256": "485d3517bd988d332312fc08b83c2d757bd13a613e0a7d8ad4e1972ddae81e3e"
+    },
+    "experimentation_core": {
+      "bytes": 39802,
+      "path": "seeds/experimentation_core.json",
+      "sha256": "dfbba83b66305e06328a3cc737765da56e0ab3fc66580b45dad7d75b0fb1ff7a"
+    },
+    "generative_world_model": {
+      "bytes": 52388,
+      "path": "seeds/generative_world_model.json",
+      "sha256": "f147432955e1970bae03f1ec8cb1b3238fe8abba1520129e506c3600a07ed0a6"
+    },
+    "goal_construction": {
+      "bytes": 12221,
+      "path": "seeds/goal_construction.json",
+      "sha256": "598a573afb85beaaaafc90a6259e01f1cde211ffc4ea96acd1f2b9074d2e0e83"
+    },
+    "learning_core": {
+      "bytes": 46672,
+      "path": "seeds/learning_core.json",
+      "sha256": "8269692b08f399096fef7d15bc58a207d79477e6954288aa09d3ed5e98bd3141"
+    },
+    "math_capability_shapes": {
+      "bytes": 5790,
+      "path": "seeds/math_capability_shapes.json",
+      "sha256": "ddb216430ce303f45695998d992159d1c91d149b9bc18f5ab7d48d0ae4350057"
+    },
+    "memory_core": {
+      "bytes": 7607,
+      "path": "seeds/memory_core.json",
+      "sha256": "5ec7f07b90f192bc3cea660d87335e34c5074d466a7d484b7381abf651231e6b"
+    },
+    "minting_recurrence_ledger": {
+      "bytes": 8156,
+      "path": "seeds/minting_recurrence_ledger.json",
+      "sha256": "10c5df924cb98eacea2a2159e60247c1d783db37f4be147378c6115e1b545a92"
+    },
+    "motor_core": {
+      "bytes": 84474,
+      "path": "seeds/motor_core.json",
+      "sha256": "12cbe423bd6f1149fe28801e9172f86eaf34744948975a4bae27e349f7cbd6c3"
+    },
+    "navigation_modes": {
+      "bytes": 3564,
+      "path": "seeds/navigation_modes.json",
+      "sha256": "9aadc7445cbdba0c0ed7cc45a2c0b214f64cbd960ba71e4fa8d4bbd01899ea58"
+    },
+    "perception_core": {
+      "bytes": 13302,
+      "path": "seeds/perception_core.json",
+      "sha256": "7a274b9410bce9503392f0210bb22873273ea91c1558b9007e57885d852ae9bc"
+    },
+    "quanta_navigation": {
+      "bytes": 150540,
+      "path": "seeds/quanta_navigation.json",
+      "sha256": "e458f3bb7c78b9f9ccacfbfcf839fd8b682af2e844a26c29569c79a69b711502"
+    },
+    "reflex_core": {
+      "bytes": 6606,
+      "path": "seeds/reflex_core.json",
+      "sha256": "f760e7821058306a48b6550fb041c871f044b18d0ef1359238fe90d292726c43"
+    },
+    "self_design_axis": {
+      "bytes": 3010,
+      "path": "seeds/self_design_axis.json",
+      "sha256": "1003fb83a9f972747338f4cff35c6a471080ae25f265e1eae512255996731505"
+    },
+    "self_monitoring": {
+      "bytes": 49902,
+      "path": "seeds/self_monitoring.json",
+      "sha256": "17cc07e1460c1505b6d223bdca203b4c3fbe17669971d904a5ffff322032eb58"
+    },
+    "shape_decode_loop": {
+      "bytes": 96537,
+      "path": "seeds/shape_decode_loop.json",
+      "sha256": "3e1783cf566179061250572bbf7bc7bb54cacfafb83f8852008c4618d984a9c6"
+    },
+    "theorem_core": {
+      "bytes": 7519,
+      "path": "seeds/theorem_core.json",
+      "sha256": "5630cfd5bd90a3c23f3346cbbc90af32a8f64848a287913b7688879095a7d332"
+    }
+  },
+  "source_trees": {
+    "domains_python": {
+      "bytes": 15501465,
+      "files": 805,
+      "path": "domains",
+      "sha256": "19d1c2191f5d573408452a3b0fcc63cf2a16337421e8a8c14c39fe1ae9077b25",
+      "suffixes": [
+        ".py"
+      ]
+    },
+    "python_facade": {
+      "bytes": 365761,
+      "files": 11,
+      "path": "runners/dsl/python/substrate_rs",
+      "sha256": "560f63b7ab2cc9f0034d7ea86f505a3c8802448d799133e7acb1948fac95e883",
+      "suffixes": [
+        ".py",
+        ".json"
+      ]
+    },
+    "rust_source_and_manifests": {
+      "bytes": 5895633,
+      "files": 100,
+      "path": "runners/dsl/src",
+      "sha256": "921859978d1ee999c0a178a9816f4d94e951fb21171f91cdd8868653974a58a8",
+      "suffixes": [
+        ".rs",
+        ".toml",
+        ".lock"
+      ]
+    },
+    "substrate_python": {
+      "bytes": 1307843,
+      "files": 18,
+      "path": "substrate",
+      "sha256": "535d877c71071804e9fa0ca808fe9921bf3cb8e0237933a43ecc97506fb02bb4",
+      "suffixes": [
+        ".py"
+      ]
+    },
+    "worlds_python": {
+      "bytes": 759671,
+      "files": 42,
+      "path": "worlds",
+      "sha256": "acc3329ab5bb73d1c68c8af2175bacc0ed56ba59779f93ba72effdb8a49f3cc5",
+      "suffixes": [
+        ".py"
+      ]
+    }
+  }
+}

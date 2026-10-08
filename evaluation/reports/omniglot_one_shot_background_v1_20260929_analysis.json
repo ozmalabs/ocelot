@@ -1,0 +1,2605 @@
+{
+  "alphabet_count": 26,
+  "checks": {
+    "capture_matches_preregistered_lock": true,
+    "complete_system_episode_matrix": true,
+    "current_source_and_dataset_inputs_match_lock": true,
+    "disjoint_alphabet_split": true,
+    "episode_design_and_shared_inputs_valid": true,
+    "independent_prediction_and_accuracy_reconstruction": true,
+    "runner_observed_source_stability": true
+  },
+  "claim_boundary": "100 deterministic 20-way one-shot episodes from the disjoint Omniglot background alphabet split; alphabet-clustered uncertainty; host-side trajectory loading/caching plus graph-Term substrate recognition. This is task-distribution transfer without model training.",
+  "episode_count": 100,
+  "feature_prep": {
+    "process_cpu_ns": 1413706271,
+    "unique_trajectories": 3533,
+    "wall_ns": 1425567631
+  },
+  "integrity_pass": true,
+  "paired_system_differences": {
+    "ordered_dtw-minus-deformable": {
+      "accuracy_difference": 0.05349999999999999,
+      "alphabet_cluster_bootstrap_95ci": [
+        -0.01935483870967742,
+        0.12823993808049527
+      ]
+    },
+    "ordered_dtw-minus-pointset": {
+      "accuracy_difference": -0.09700000000000009,
+      "alphabet_cluster_bootstrap_95ci": [
+        -0.1519422234913383,
+        -0.040625
+      ]
+    },
+    "pointset-minus-deformable": {
+      "accuracy_difference": 0.15050000000000008,
+      "alphabet_cluster_bootstrap_95ci": [
+        0.11173258866653457,
+        0.1961981682769726
+      ]
+    }
+  },
+  "passed_checks": 7,
+  "run_id": "omniglot_one_shot_background_v1_20260929",
+  "system_count": 3,
+  "systems": {
+    "deformable": {
+      "accuracy": 0.5195,
+      "alphabet_cluster_bootstrap_95ci": [
+        0.4221622953305033,
+        0.6081524511978704
+      ],
+      "by_alphabet": {
+        "Alphabet_of_the_Magi": {
+          "accuracy": 0.6,
+          "correct": 36,
+          "total": 60
+        },
+        "Anglo-Saxon_Futhorc": {
+          "accuracy": 0.8666666666666667,
+          "correct": 52,
+          "total": 60
+        },
+        "Arcadian": {
+          "accuracy": 0.575,
+          "correct": 23,
+          "total": 40
+        },
+        "Armenian": {
+          "accuracy": 0.6,
+          "correct": 24,
+          "total": 40
+        },
+        "Asomtavruli_(Georgian)": {
+          "accuracy": 0.8125,
+          "correct": 65,
+          "total": 80
+        },
+        "Balinese": {
+          "accuracy": 0.30833333333333335,
+          "correct": 37,
+          "total": 120
+        },
+        "Bengali": {
+          "accuracy": 0.3,
+          "correct": 18,
+          "total": 60
+        },
+        "Braille": {
+          "accuracy": 0.05,
+          "correct": 6,
+          "total": 120
+        },
+        "Burmese_(Myanmar)": {
+          "accuracy": 0.475,
+          "correct": 19,
+          "total": 40
+        },
+        "Cyrillic": {
+          "accuracy": 0.75,
+          "correct": 45,
+          "total": 60
+        },
+        "Early_Aramaic": {
+          "accuracy": 0.6583333333333333,
+          "correct": 79,
+          "total": 120
+        },
+        "Futurama": {
+          "accuracy": 0.4,
+          "correct": 8,
+          "total": 20
+        },
+        "Grantha": {
+          "accuracy": 0.475,
+          "correct": 19,
+          "total": 40
+        },
+        "Greek": {
+          "accuracy": 0.5375,
+          "correct": 43,
+          "total": 80
+        },
+        "Gujarati": {
+          "accuracy": 0.41,
+          "correct": 41,
+          "total": 100
+        },
+        "Hebrew": {
+          "accuracy": 0.48333333333333334,
+          "correct": 29,
+          "total": 60
+        },
+        "Japanese_(hiragana)": {
+          "accuracy": 0.75,
+          "correct": 90,
+          "total": 120
+        },
+        "Japanese_(katakana)": {
+          "accuracy": 0.6875,
+          "correct": 55,
+          "total": 80
+        },
+        "Korean": {
+          "accuracy": 0.7125,
+          "correct": 57,
+          "total": 80
+        },
+        "Latin": {
+          "accuracy": 0.725,
+          "correct": 87,
+          "total": 120
+        },
+        "Malay_(Jawi_-_Arabic)": {
+          "accuracy": 0.38333333333333336,
+          "correct": 23,
+          "total": 60
+        },
+        "Mkhedruli_(Georgian)": {
+          "accuracy": 0.275,
+          "correct": 11,
+          "total": 40
+        },
+        "N_Ko": {
+          "accuracy": 0.7375,
+          "correct": 59,
+          "total": 80
+        },
+        "Sanskrit": {
+          "accuracy": 0.1875,
+          "correct": 15,
+          "total": 80
+        },
+        "Syriac_(Estrangelo)": {
+          "accuracy": 0.4785714285714286,
+          "correct": 67,
+          "total": 140
+        },
+        "Tifinagh": {
+          "accuracy": 0.31,
+          "correct": 31,
+          "total": 100
+        }
+      },
+      "chance_accuracy": 0.05,
+      "correct": 1039,
+      "episode_scores": [
+        {
+          "accuracy": 0.4,
+          "alphabet": "Syriac_(Estrangelo)",
+          "correct": 8,
+          "episode": 0,
+          "total": 20
+        },
+        {
+          "accuracy": 0.85,
+          "alphabet": "Japanese_(hiragana)",
+          "correct": 17,
+          "episode": 1,
+          "total": 20
+        },
+        {
+          "accuracy": 0.45,
+          "alphabet": "Hebrew",
+          "correct": 9,
+          "episode": 2,
+          "total": 20
+        },
+        {
+          "accuracy": 0.4,
+          "alphabet": "Syriac_(Estrangelo)",
+          "correct": 8,
+          "episode": 3,
+          "total": 20
+        },
+        {
+          "accuracy": 0.6,
+          "alphabet": "Gujarati",
+          "correct": 12,
+          "episode": 4,
+          "total": 20
+        },
+        {
+          "accuracy": 0.75,
+          "alphabet": "Early_Aramaic",
+          "correct": 15,
+          "episode": 5,
+          "total": 20
+        },
+        {
+          "accuracy": 0.35,
+          "alphabet": "Balinese",
+          "correct": 7,
+          "episode": 6,
+          "total": 20
+        },
+        {
+          "accuracy": 0.75,
+          "alphabet": "Armenian",
+          "correct": 15,
+          "episode": 7,
+          "total": 20
+        },
+        {
+          "accuracy": 0.25,
+          "alphabet": "Sanskrit",
+          "correct": 5,
+          "episode": 8,
+          "total": 20
+        },
+        {
+          "accuracy": 0.95,
+          "alphabet": "N_Ko",
+          "correct": 19,
+          "episode": 9,
+          "total": 20
+        },
+        {
+          "accuracy": 0.4,
+          "alphabet": "Gujarati",
+          "correct": 8,
+          "episode": 10,
+          "total": 20
+        },
+        {
+          "accuracy": 0.7,
+          "alphabet": "Japanese_(katakana)",
+          "correct": 14,
+          "episode": 11,
+          "total": 20
+        },
+        {
+          "accuracy": 0.45,
+          "alphabet": "Gujarati",
+          "correct": 9,
+          "episode": 12,
+          "total": 20
+        },
+        {
+          "accuracy": 0.7,
+          "alphabet": "Early_Aramaic",
+          "correct": 14,
+          "episode": 13,
+          "total": 20
+        },
+        {
+          "accuracy": 0.75,
+          "alphabet": "Greek",
+          "correct": 15,
+          "episode": 14,
+          "total": 20
+        },
+        {
+          "accuracy": 0.1,
+          "alphabet": "Sanskrit",
+          "correct": 2,
+          "episode": 15,
+          "total": 20
+        },
+        {
+          "accuracy": 0.8,
+          "alphabet": "Korean",
+          "correct": 16,
+          "episode": 16,
+          "total": 20
+        },
+        {
+          "accuracy": 0.3,
+          "alphabet": "Balinese",
+          "correct": 6,
+          "episode": 17,
+          "total": 20
+        },
+        {
+          "accuracy": 0.8,
+          "alphabet": "Cyrillic",
+          "correct": 16,
+          "episode": 18,
+          "total": 20
+        },
+        {
+          "accuracy": 0.5,
+          "alphabet": "Greek",
+          "correct": 10,
+          "episode": 19,
+          "total": 20
+        },
+        {
+          "accuracy": 0.05,
+          "alphabet": "Braille",
+          "correct": 1,
+          "episode": 20,
+          "total": 20
+        },
+        {
+          "accuracy": 0.8,
+          "alphabet": "Japanese_(hiragana)",
+          "correct": 16,
+          "episode": 21,
+          "total": 20
+        },
+        {
+          "accuracy": 0.6,
+          "alphabet": "Syriac_(Estrangelo)",
+          "correct": 12,
+          "episode": 22,
+          "total": 20
+        },
+        {
+          "accuracy": 0.75,
+          "alphabet": "Japanese_(katakana)",
+          "correct": 15,
+          "episode": 23,
+          "total": 20
+        },
+        {
+          "accuracy": 0.25,
+          "alphabet": "Gujarati",
+          "correct": 5,
+          "episode": 24,
+          "total": 20
+        },
+        {
+          "accuracy": 0.55,
+          "alphabet": "Grantha",
+          "correct": 11,
+          "episode": 25,
+          "total": 20
+        },
+        {
+          "accuracy": 0.75,
+          "alphabet": "N_Ko",
+          "correct": 15,
+          "episode": 26,
+          "total": 20
+        },
+        {
+          "accuracy": 0.7,
+          "alphabet": "Anglo-Saxon_Futhorc",
+          "correct": 14,
+          "episode": 27,
+          "total": 20
+        },
+        {
+          "accuracy": 0.35,
+          "alphabet": "Syriac_(Estrangelo)",
+          "correct": 7,
+          "episode": 28,
+          "total": 20
+        },
+        {
+          "accuracy": 0.9,
+          "alphabet": "Latin",
+          "correct": 18,
+          "episode": 29,
+          "total": 20
+        },
+        {
+          "accuracy": 0.4,
+          "alphabet": "Syriac_(Estrangelo)",
+          "correct": 8,
+          "episode": 30,
+          "total": 20
+        },
+        {
+          "accuracy": 0.35,
+          "alphabet": "Early_Aramaic",
+          "correct": 7,
+          "episode": 31,
+          "total": 20
+        },
+        {
+          "accuracy": 0.25,
+          "alphabet": "Mkhedruli_(Georgian)",
+          "correct": 5,
+          "episode": 32,
+          "total": 20
+        },
+        {
+          "accuracy": 0.95,
+          "alphabet": "Anglo-Saxon_Futhorc",
+          "correct": 19,
+          "episode": 33,
+          "total": 20
+        },
+        {
+          "accuracy": 0.4,
+          "alphabet": "Grantha",
+          "correct": 8,
+          "episode": 34,
+          "total": 20
+        },
+        {
+          "accuracy": 0.6,
+          "alphabet": "Latin",
+          "correct": 12,
+          "episode": 35,
+          "total": 20
+        },
+        {
+          "accuracy": 0.75,
+          "alphabet": "Alphabet_of_the_Magi",
+          "correct": 15,
+          "episode": 36,
+          "total": 20
+        },
+        {
+          "accuracy": 0.45,
+          "alphabet": "Bengali",
+          "correct": 9,
+          "episode": 37,
+          "total": 20
+        },
+        {
+          "accuracy": 0.55,
+          "alphabet": "Arcadian",
+          "correct": 11,
+          "episode": 38,
+          "total": 20
+        },
+        {
+          "accuracy": 0.55,
+          "alphabet": "Balinese",
+          "correct": 11,
+          "episode": 39,
+          "total": 20
+        },
+        {
+          "accuracy": 0.05,
+          "alphabet": "Braille",
+          "correct": 1,
+          "episode": 40,
+          "total": 20
+        },
+        {
+          "accuracy": 0.6,
+          "alphabet": "Syriac_(Estrangelo)",
+          "correct": 12,
+          "episode": 41,
+          "total": 20
+        },
+        {
+          "accuracy": 0.55,
+          "alphabet": "Hebrew",
+          "correct": 11,
+          "episode": 42,
+          "total": 20
+        },
+        {
+          "accuracy": 0.05,
+          "alphabet": "Tifinagh",
+          "correct": 1,
+          "episode": 43,
+          "total": 20
+        },
+        {
+          "accuracy": 0.05,
+          "alphabet": "Tifinagh",
+          "correct": 1,
+          "episode": 44,
+          "total": 20
+        },
+        {
+          "accuracy": 0.65,
+          "alphabet": "Latin",
+          "correct": 13,
+          "episode": 45,
+          "total": 20
+        },
+        {
+          "accuracy": 0.25,
+          "alphabet": "Bengali",
+          "correct": 5,
+          "episode": 46,
+          "total": 20
+        },
+        {
+          "accuracy": 0.95,
+          "alphabet": "Anglo-Saxon_Futhorc",
+          "correct": 19,
+          "episode": 47,
+          "total": 20
+        },
+        {
+          "accuracy": 0.6,
+          "alphabet": "N_Ko",
+          "correct": 12,
+          "episode": 48,
+          "total": 20
+        },
+        {
+          "accuracy": 0.05,
+          "alphabet": "Tifinagh",
+          "correct": 1,
+          "episode": 49,
+          "total": 20
+        },
+        {
+          "accuracy": 0.25,
+          "alphabet": "Sanskrit",
+          "correct": 5,
+          "episode": 50,
+          "total": 20
+        },
+        {
+          "accuracy": 0.4,
+          "alphabet": "Futurama",
+          "correct": 8,
+          "episode": 51,
+          "total": 20
+        },
+        {
+          "accuracy": 0.05,
+          "alphabet": "Braille",
+          "correct": 1,
+          "episode": 52,
+          "total": 20
+        },
+        {
+          "accuracy": 0.05,
+          "alphabet": "Balinese",
+          "correct": 1,
+          "episode": 53,
+          "total": 20
+        },
+        {
+          "accuracy": 0.85,
+          "alphabet": "Latin",
+          "correct": 17,
+          "episode": 54,
+          "total": 20
+        },
+        {
+          "accuracy": 0.6,
+          "alphabet": "Arcadian",
+          "correct": 12,
+          "episode": 55,
+          "total": 20
+        },
+        {
+          "accuracy": 0.2,
+          "alphabet": "Bengali",
+          "correct": 4,
+          "episode": 56,
+          "total": 20
+        },
+        {
+          "accuracy": 0.05,
+          "alphabet": "Braille",
+          "correct": 1,
+          "episode": 57,
+          "total": 20
+        },
+        {
+          "accuracy": 0.3,
+          "alphabet": "Mkhedruli_(Georgian)",
+          "correct": 6,
+          "episode": 58,
+          "total": 20
+        },
+        {
+          "accuracy": 0.35,
+          "alphabet": "Balinese",
+          "correct": 7,
+          "episode": 59,
+          "total": 20
+        },
+        {
+          "accuracy": 0.75,
+          "alphabet": "Japanese_(hiragana)",
+          "correct": 15,
+          "episode": 60,
+          "total": 20
+        },
+        {
+          "accuracy": 0.65,
+          "alphabet": "Early_Aramaic",
+          "correct": 13,
+          "episode": 61,
+          "total": 20
+        },
+        {
+          "accuracy": 0.75,
+          "alphabet": "Asomtavruli_(Georgian)",
+          "correct": 15,
+          "episode": 62,
+          "total": 20
+        },
+        {
+          "accuracy": 0.6,
+          "alphabet": "Korean",
+          "correct": 12,
+          "episode": 63,
+          "total": 20
+        },
+        {
+          "accuracy": 0.7,
+          "alphabet": "Latin",
+          "correct": 14,
+          "episode": 64,
+          "total": 20
+        },
+        {
+          "accuracy": 0.25,
+          "alphabet": "Balinese",
+          "correct": 5,
+          "episode": 65,
+          "total": 20
+        },
+        {
+          "accuracy": 0.5,
+          "alphabet": "Japanese_(hiragana)",
+          "correct": 10,
+          "episode": 66,
+          "total": 20
+        },
+        {
+          "accuracy": 0.05,
+          "alphabet": "Braille",
+          "correct": 1,
+          "episode": 67,
+          "total": 20
+        },
+        {
+          "accuracy": 0.35,
+          "alphabet": "Gujarati",
+          "correct": 7,
+          "episode": 68,
+          "total": 20
+        },
+        {
+          "accuracy": 0.45,
+          "alphabet": "Malay_(Jawi_-_Arabic)",
+          "correct": 9,
+          "episode": 69,
+          "total": 20
+        },
+        {
+          "accuracy": 0.55,
+          "alphabet": "Burmese_(Myanmar)",
+          "correct": 11,
+          "episode": 70,
+          "total": 20
+        },
+        {
+          "accuracy": 0.7,
+          "alphabet": "Early_Aramaic",
+          "correct": 14,
+          "episode": 71,
+          "total": 20
+        },
+        {
+          "accuracy": 0.9,
+          "alphabet": "Asomtavruli_(Georgian)",
+          "correct": 18,
+          "episode": 72,
+          "total": 20
+        },
+        {
+          "accuracy": 0.6,
+          "alphabet": "Syriac_(Estrangelo)",
+          "correct": 12,
+          "episode": 73,
+          "total": 20
+        },
+        {
+          "accuracy": 0.05,
+          "alphabet": "Braille",
+          "correct": 1,
+          "episode": 74,
+          "total": 20
+        },
+        {
+          "accuracy": 0.8,
+          "alphabet": "Cyrillic",
+          "correct": 16,
+          "episode": 75,
+          "total": 20
+        },
+        {
+          "accuracy": 0.5,
+          "alphabet": "Malay_(Jawi_-_Arabic)",
+          "correct": 10,
+          "episode": 76,
+          "total": 20
+        },
+        {
+          "accuracy": 0.45,
+          "alphabet": "Hebrew",
+          "correct": 9,
+          "episode": 77,
+          "total": 20
+        },
+        {
+          "accuracy": 0.7,
+          "alphabet": "Tifinagh",
+          "correct": 14,
+          "episode": 78,
+          "total": 20
+        },
+        {
+          "accuracy": 0.15,
+          "alphabet": "Sanskrit",
+          "correct": 3,
+          "episode": 79,
+          "total": 20
+        },
+        {
+          "accuracy": 0.8,
+          "alphabet": "Early_Aramaic",
+          "correct": 16,
+          "episode": 80,
+          "total": 20
+        },
+        {
+          "accuracy": 0.8,
+          "alphabet": "Japanese_(hiragana)",
+          "correct": 16,
+          "episode": 81,
+          "total": 20
+        },
+        {
+          "accuracy": 0.35,
+          "alphabet": "Alphabet_of_the_Magi",
+          "correct": 7,
+          "episode": 82,
+          "total": 20
+        },
+        {
+          "accuracy": 0.65,
+          "alphabet": "N_Ko",
+          "correct": 13,
+          "episode": 83,
+          "total": 20
+        },
+        {
+          "accuracy": 0.45,
+          "alphabet": "Armenian",
+          "correct": 9,
+          "episode": 84,
+          "total": 20
+        },
+        {
+          "accuracy": 0.4,
+          "alphabet": "Greek",
+          "correct": 8,
+          "episode": 85,
+          "total": 20
+        },
+        {
+          "accuracy": 0.65,
+          "alphabet": "Korean",
+          "correct": 13,
+          "episode": 86,
+          "total": 20
+        },
+        {
+          "accuracy": 0.5,
+          "alphabet": "Greek",
+          "correct": 10,
+          "episode": 87,
+          "total": 20
+        },
+        {
+          "accuracy": 0.65,
+          "alphabet": "Cyrillic",
+          "correct": 13,
+          "episode": 88,
+          "total": 20
+        },
+        {
+          "accuracy": 0.2,
+          "alphabet": "Malay_(Jawi_-_Arabic)",
+          "correct": 4,
+          "episode": 89,
+          "total": 20
+        },
+        {
+          "accuracy": 0.65,
+          "alphabet": "Japanese_(katakana)",
+          "correct": 13,
+          "episode": 90,
+          "total": 20
+        },
+        {
+          "accuracy": 0.8,
+          "alphabet": "Asomtavruli_(Georgian)",
+          "correct": 16,
+          "episode": 91,
+          "total": 20
+        },
+        {
+          "accuracy": 0.4,
+          "alphabet": "Burmese_(Myanmar)",
+          "correct": 8,
+          "episode": 92,
+          "total": 20
+        },
+        {
+          "accuracy": 0.65,
+          "alphabet": "Latin",
+          "correct": 13,
+          "episode": 93,
+          "total": 20
+        },
+        {
+          "accuracy": 0.8,
+          "alphabet": "Asomtavruli_(Georgian)",
+          "correct": 16,
+          "episode": 94,
+          "total": 20
+        },
+        {
+          "accuracy": 0.7,
+          "alphabet": "Alphabet_of_the_Magi",
+          "correct": 14,
+          "episode": 95,
+          "total": 20
+        },
+        {
+          "accuracy": 0.8,
+          "alphabet": "Korean",
+          "correct": 16,
+          "episode": 96,
+          "total": 20
+        },
+        {
+          "accuracy": 0.7,
+          "alphabet": "Tifinagh",
+          "correct": 14,
+          "episode": 97,
+          "total": 20
+        },
+        {
+          "accuracy": 0.8,
+          "alphabet": "Japanese_(hiragana)",
+          "correct": 16,
+          "episode": 98,
+          "total": 20
+        },
+        {
+          "accuracy": 0.65,
+          "alphabet": "Japanese_(katakana)",
+          "correct": 13,
+          "episode": 99,
+          "total": 20
+        }
+      ],
+      "median_episode_accuracy": 0.55,
+      "median_episode_cpu_ms": 16.2328695,
+      "median_episode_wall_ms": 16.23107,
+      "peak_rss_bytes": 63782912,
+      "random_accuracy": 0.0555,
+      "random_correct": 111,
+      "random_total": 2000,
+      "total": 2000
+    },
+    "ordered_dtw": {
+      "accuracy": 0.573,
+      "alphabet_cluster_bootstrap_95ci": [
+        0.49645656730321375,
+        0.6360860246160319
+      ],
+      "by_alphabet": {
+        "Alphabet_of_the_Magi": {
+          "accuracy": 0.7333333333333333,
+          "correct": 44,
+          "total": 60
+        },
+        "Anglo-Saxon_Futhorc": {
+          "accuracy": 0.5,
+          "correct": 30,
+          "total": 60
+        },
+        "Arcadian": {
+          "accuracy": 0.525,
+          "correct": 21,
+          "total": 40
+        },
+        "Armenian": {
+          "accuracy": 0.45,
+          "correct": 18,
+          "total": 40
+        },
+        "Asomtavruli_(Georgian)": {
+          "accuracy": 0.7125,
+          "correct": 57,
+          "total": 80
+        },
+        "Balinese": {
+          "accuracy": 0.6166666666666667,
+          "correct": 74,
+          "total": 120
+        },
+        "Bengali": {
+          "accuracy": 0.4666666666666667,
+          "correct": 28,
+          "total": 60
+        },
+        "Braille": {
+          "accuracy": 0.075,
+          "correct": 9,
+          "total": 120
+        },
+        "Burmese_(Myanmar)": {
+          "accuracy": 0.85,
+          "correct": 34,
+          "total": 40
+        },
+        "Cyrillic": {
+          "accuracy": 0.7,
+          "correct": 42,
+          "total": 60
+        },
+        "Early_Aramaic": {
+          "accuracy": 0.5666666666666667,
+          "correct": 68,
+          "total": 120
+        },
+        "Futurama": {
+          "accuracy": 0.55,
+          "correct": 11,
+          "total": 20
+        },
+        "Grantha": {
+          "accuracy": 0.825,
+          "correct": 33,
+          "total": 40
+        },
+        "Greek": {
+          "accuracy": 0.75,
+          "correct": 60,
+          "total": 80
+        },
+        "Gujarati": {
+          "accuracy": 0.67,
+          "correct": 67,
+          "total": 100
+        },
+        "Hebrew": {
+          "accuracy": 0.6166666666666667,
+          "correct": 37,
+          "total": 60
+        },
+        "Japanese_(hiragana)": {
+          "accuracy": 0.7,
+          "correct": 84,
+          "total": 120
+        },
+        "Japanese_(katakana)": {
+          "accuracy": 0.45,
+          "correct": 36,
+          "total": 80
+        },
+        "Korean": {
+          "accuracy": 0.55,
+          "correct": 44,
+          "total": 80
+        },
+        "Latin": {
+          "accuracy": 0.6833333333333333,
+          "correct": 82,
+          "total": 120
+        },
+        "Malay_(Jawi_-_Arabic)": {
+          "accuracy": 0.4166666666666667,
+          "correct": 25,
+          "total": 60
+        },
+        "Mkhedruli_(Georgian)": {
+          "accuracy": 0.725,
+          "correct": 29,
+          "total": 40
+        },
+        "N_Ko": {
+          "accuracy": 0.6125,
+          "correct": 49,
+          "total": 80
+        },
+        "Sanskrit": {
+          "accuracy": 0.375,
+          "correct": 30,
+          "total": 80
+        },
+        "Syriac_(Estrangelo)": {
+          "accuracy": 0.5285714285714286,
+          "correct": 74,
+          "total": 140
+        },
+        "Tifinagh": {
+          "accuracy": 0.6,
+          "correct": 60,
+          "total": 100
+        }
+      },
+      "chance_accuracy": 0.05,
+      "correct": 1146,
+      "episode_scores": [
+        {
+          "accuracy": 0.55,
+          "alphabet": "Syriac_(Estrangelo)",
+          "correct": 11,
+          "episode": 0,
+          "total": 20
+        },
+        {
+          "accuracy": 0.55,
+          "alphabet": "Japanese_(hiragana)",
+          "correct": 11,
+          "episode": 1,
+          "total": 20
+        },
+        {
+          "accuracy": 0.65,
+          "alphabet": "Hebrew",
+          "correct": 13,
+          "episode": 2,
+          "total": 20
+        },
+        {
+          "accuracy": 0.55,
+          "alphabet": "Syriac_(Estrangelo)",
+          "correct": 11,
+          "episode": 3,
+          "total": 20
+        },
+        {
+          "accuracy": 0.75,
+          "alphabet": "Gujarati",
+          "correct": 15,
+          "episode": 4,
+          "total": 20
+        },
+        {
+          "accuracy": 0.5,
+          "alphabet": "Early_Aramaic",
+          "correct": 10,
+          "episode": 5,
+          "total": 20
+        },
+        {
+          "accuracy": 0.65,
+          "alphabet": "Balinese",
+          "correct": 13,
+          "episode": 6,
+          "total": 20
+        },
+        {
+          "accuracy": 0.5,
+          "alphabet": "Armenian",
+          "correct": 10,
+          "episode": 7,
+          "total": 20
+        },
+        {
+          "accuracy": 0.5,
+          "alphabet": "Sanskrit",
+          "correct": 10,
+          "episode": 8,
+          "total": 20
+        },
+        {
+          "accuracy": 0.6,
+          "alphabet": "N_Ko",
+          "correct": 12,
+          "episode": 9,
+          "total": 20
+        },
+        {
+          "accuracy": 0.55,
+          "alphabet": "Gujarati",
+          "correct": 11,
+          "episode": 10,
+          "total": 20
+        },
+        {
+          "accuracy": 0.5,
+          "alphabet": "Japanese_(katakana)",
+          "correct": 10,
+          "episode": 11,
+          "total": 20
+        },
+        {
+          "accuracy": 0.8,
+          "alphabet": "Gujarati",
+          "correct": 16,
+          "episode": 12,
+          "total": 20
+        },
+        {
+          "accuracy": 0.6,
+          "alphabet": "Early_Aramaic",
+          "correct": 12,
+          "episode": 13,
+          "total": 20
+        },
+        {
+          "accuracy": 0.75,
+          "alphabet": "Greek",
+          "correct": 15,
+          "episode": 14,
+          "total": 20
+        },
+        {
+          "accuracy": 0.1,
+          "alphabet": "Sanskrit",
+          "correct": 2,
+          "episode": 15,
+          "total": 20
+        },
+        {
+          "accuracy": 0.65,
+          "alphabet": "Korean",
+          "correct": 13,
+          "episode": 16,
+          "total": 20
+        },
+        {
+          "accuracy": 0.7,
+          "alphabet": "Balinese",
+          "correct": 14,
+          "episode": 17,
+          "total": 20
+        },
+        {
+          "accuracy": 0.7,
+          "alphabet": "Cyrillic",
+          "correct": 14,
+          "episode": 18,
+          "total": 20
+        },
+        {
+          "accuracy": 0.85,
+          "alphabet": "Greek",
+          "correct": 17,
+          "episode": 19,
+          "total": 20
+        },
+        {
+          "accuracy": 0.05,
+          "alphabet": "Braille",
+          "correct": 1,
+          "episode": 20,
+          "total": 20
+        },
+        {
+          "accuracy": 0.7,
+          "alphabet": "Japanese_(hiragana)",
+          "correct": 14,
+          "episode": 21,
+          "total": 20
+        },
+        {
+          "accuracy": 0.5,
+          "alphabet": "Syriac_(Estrangelo)",
+          "correct": 10,
+          "episode": 22,
+          "total": 20
+        },
+        {
+          "accuracy": 0.3,
+          "alphabet": "Japanese_(katakana)",
+          "correct": 6,
+          "episode": 23,
+          "total": 20
+        },
+        {
+          "accuracy": 0.65,
+          "alphabet": "Gujarati",
+          "correct": 13,
+          "episode": 24,
+          "total": 20
+        },
+        {
+          "accuracy": 0.85,
+          "alphabet": "Grantha",
+          "correct": 17,
+          "episode": 25,
+          "total": 20
+        },
+        {
+          "accuracy": 0.7,
+          "alphabet": "N_Ko",
+          "correct": 14,
+          "episode": 26,
+          "total": 20
+        },
+        {
+          "accuracy": 0.35,
+          "alphabet": "Anglo-Saxon_Futhorc",
+          "correct": 7,
+          "episode": 27,
+          "total": 20
+        },
+        {
+          "accuracy": 0.65,
+          "alphabet": "Syriac_(Estrangelo)",
+          "correct": 13,
+          "episode": 28,
+          "total": 20
+        },
+        {
+          "accuracy": 0.9,
+          "alphabet": "Latin",
+          "correct": 18,
+          "episode": 29,
+          "total": 20
+        },
+        {
+          "accuracy": 0.45,
+          "alphabet": "Syriac_(Estrangelo)",
+          "correct": 9,
+          "episode": 30,
+          "total": 20
+        },
+        {
+          "accuracy": 0.4,
+          "alphabet": "Early_Aramaic",
+          "correct": 8,
+          "episode": 31,
+          "total": 20
+        },
+        {
+          "accuracy": 0.7,
+          "alphabet": "Mkhedruli_(Georgian)",
+          "correct": 14,
+          "episode": 32,
+          "total": 20
+        },
+        {
+          "accuracy": 0.55,
+          "alphabet": "Anglo-Saxon_Futhorc",
+          "correct": 11,
+          "episode": 33,
+          "total": 20
+        },
+        {
+          "accuracy": 0.8,
+          "alphabet": "Grantha",
+          "correct": 16,
+          "episode": 34,
+          "total": 20
+        },
+        {
+          "accuracy": 0.85,
+          "alphabet": "Latin",
+          "correct": 17,
+          "episode": 35,
+          "total": 20
+        },
+        {
+          "accuracy": 0.85,
+          "alphabet": "Alphabet_of_the_Magi",
+          "correct": 17,
+          "episode": 36,
+          "total": 20
+        },
+        {
+          "accuracy": 0.4,
+          "alphabet": "Bengali",
+          "correct": 8,
+          "episode": 37,
+          "total": 20
+        },
+        {
+          "accuracy": 0.55,
+          "alphabet": "Arcadian",
+          "correct": 11,
+          "episode": 38,
+          "total": 20
+        },
+        {
+          "accuracy": 0.8,
+          "alphabet": "Balinese",
+          "correct": 16,
+          "episode": 39,
+          "total": 20
+        },
+        {
+          "accuracy": 0.05,
+          "alphabet": "Braille",
+          "correct": 1,
+          "episode": 40,
+          "total": 20
+        },
+        {
+          "accuracy": 0.55,
+          "alphabet": "Syriac_(Estrangelo)",
+          "correct": 11,
+          "episode": 41,
+          "total": 20
+        },
+        {
+          "accuracy": 0.7,
+          "alphabet": "Hebrew",
+          "correct": 14,
+          "episode": 42,
+          "total": 20
+        },
+        {
+          "accuracy": 0.55,
+          "alphabet": "Tifinagh",
+          "correct": 11,
+          "episode": 43,
+          "total": 20
+        },
+        {
+          "accuracy": 0.5,
+          "alphabet": "Tifinagh",
+          "correct": 10,
+          "episode": 44,
+          "total": 20
+        },
+        {
+          "accuracy": 0.6,
+          "alphabet": "Latin",
+          "correct": 12,
+          "episode": 45,
+          "total": 20
+        },
+        {
+          "accuracy": 0.55,
+          "alphabet": "Bengali",
+          "correct": 11,
+          "episode": 46,
+          "total": 20
+        },
+        {
+          "accuracy": 0.6,
+          "alphabet": "Anglo-Saxon_Futhorc",
+          "correct": 12,
+          "episode": 47,
+          "total": 20
+        },
+        {
+          "accuracy": 0.55,
+          "alphabet": "N_Ko",
+          "correct": 11,
+          "episode": 48,
+          "total": 20
+        },
+        {
+          "accuracy": 0.8,
+          "alphabet": "Tifinagh",
+          "correct": 16,
+          "episode": 49,
+          "total": 20
+        },
+        {
+          "accuracy": 0.25,
+          "alphabet": "Sanskrit",
+          "correct": 5,
+          "episode": 50,
+          "total": 20
+        },
+        {
+          "accuracy": 0.55,
+          "alphabet": "Futurama",
+          "correct": 11,
+          "episode": 51,
+          "total": 20
+        },
+        {
+          "accuracy": 0.15,
+          "alphabet": "Braille",
+          "correct": 3,
+          "episode": 52,
+          "total": 20
+        },
+        {
+          "accuracy": 0.25,
+          "alphabet": "Balinese",
+          "correct": 5,
+          "episode": 53,
+          "total": 20
+        },
+        {
+          "accuracy": 0.55,
+          "alphabet": "Latin",
+          "correct": 11,
+          "episode": 54,
+          "total": 20
+        },
+        {
+          "accuracy": 0.5,
+          "alphabet": "Arcadian",
+          "correct": 10,
+          "episode": 55,
+          "total": 20
+        },
+        {
+          "accuracy": 0.45,
+          "alphabet": "Bengali",
+          "correct": 9,
+          "episode": 56,
+          "total": 20
+        },
+        {
+          "accuracy": 0.1,
+          "alphabet": "Braille",
+          "correct": 2,
+          "episode": 57,
+          "total": 20
+        },
+        {
+          "accuracy": 0.75,
+          "alphabet": "Mkhedruli_(Georgian)",
+          "correct": 15,
+          "episode": 58,
+          "total": 20
+        },
+        {
+          "accuracy": 0.85,
+          "alphabet": "Balinese",
+          "correct": 17,
+          "episode": 59,
+          "total": 20
+        },
+        {
+          "accuracy": 0.7,
+          "alphabet": "Japanese_(hiragana)",
+          "correct": 14,
+          "episode": 60,
+          "total": 20
+        },
+        {
+          "accuracy": 0.6,
+          "alphabet": "Early_Aramaic",
+          "correct": 12,
+          "episode": 61,
+          "total": 20
+        },
+        {
+          "accuracy": 0.8,
+          "alphabet": "Asomtavruli_(Georgian)",
+          "correct": 16,
+          "episode": 62,
+          "total": 20
+        },
+        {
+          "accuracy": 0.7,
+          "alphabet": "Korean",
+          "correct": 14,
+          "episode": 63,
+          "total": 20
+        },
+        {
+          "accuracy": 0.45,
+          "alphabet": "Latin",
+          "correct": 9,
+          "episode": 64,
+          "total": 20
+        },
+        {
+          "accuracy": 0.45,
+          "alphabet": "Balinese",
+          "correct": 9,
+          "episode": 65,
+          "total": 20
+        },
+        {
+          "accuracy": 0.65,
+          "alphabet": "Japanese_(hiragana)",
+          "correct": 13,
+          "episode": 66,
+          "total": 20
+        },
+        {
+          "accuracy": 0.05,
+          "alphabet": "Braille",
+          "correct": 1,
+          "episode": 67,
+          "total": 20
+        },
+        {
+          "accuracy": 0.6,
+          "alphabet": "Gujarati",
+          "correct": 12,
+          "episode": 68,
+          "total": 20
+        },
+        {
+          "accuracy": 0.3,
+          "alphabet": "Malay_(Jawi_-_Arabic)",
+          "correct": 6,
+          "episode": 69,
+          "total": 20
+        },
+        {
+          "accuracy": 0.9,
+          "alphabet": "Burmese_(Myanmar)",
+          "correct": 18,
+          "episode": 70,
+          "total": 20
+        },
+        {
+          "accuracy": 0.65,
+          "alphabet": "Early_Aramaic",
+          "correct": 13,
+          "episode": 71,
+          "total": 20
+        },
+        {
+          "accuracy": 0.75,
+          "alphabet": "Asomtavruli_(Georgian)",
+          "correct": 15,
+          "episode": 72,
+          "total": 20
+        },
+        {
+          "accuracy": 0.45,
+          "alphabet": "Syriac_(Estrangelo)",
+          "correct": 9,
+          "episode": 73,
+          "total": 20
+        },
+        {
+          "accuracy": 0.05,
+          "alphabet": "Braille",
+          "correct": 1,
+          "episode": 74,
+          "total": 20
+        },
+        {
+          "accuracy": 0.6,
+          "alphabet": "Cyrillic",
+          "correct": 12,
+          "episode": 75,
+          "total": 20
+        },
+        {
+          "accuracy": 0.5,
+          "alphabet": "Malay_(Jawi_-_Arabic)",
+          "correct": 10,
+          "episode": 76,
+          "total": 20
+        },
+        {
+          "accuracy": 0.5,
+          "alphabet": "Hebrew",
+          "correct": 10,
+          "episode": 77,
+          "total": 20
+        },
+        {
+          "accuracy": 0.6,
+          "alphabet": "Tifinagh",
+          "correct": 12,
+          "episode": 78,
+          "total": 20
+        },
+        {
+          "accuracy": 0.65,
+          "alphabet": "Sanskrit",
+          "correct": 13,
+          "episode": 79,
+          "total": 20
+        },
+        {
+          "accuracy": 0.65,
+          "alphabet": "Early_Aramaic",
+          "correct": 13,
+          "episode": 80,
+          "total": 20
+        },
+        {
+          "accuracy": 0.7,
+          "alphabet": "Japanese_(hiragana)",
+          "correct": 14,
+          "episode": 81,
+          "total": 20
+        },
+        {
+          "accuracy": 0.8,
+          "alphabet": "Alphabet_of_the_Magi",
+          "correct": 16,
+          "episode": 82,
+          "total": 20
+        },
+        {
+          "accuracy": 0.6,
+          "alphabet": "N_Ko",
+          "correct": 12,
+          "episode": 83,
+          "total": 20
+        },
+        {
+          "accuracy": 0.4,
+          "alphabet": "Armenian",
+          "correct": 8,
+          "episode": 84,
+          "total": 20
+        },
+        {
+          "accuracy": 0.7,
+          "alphabet": "Greek",
+          "correct": 14,
+          "episode": 85,
+          "total": 20
+        },
+        {
+          "accuracy": 0.4,
+          "alphabet": "Korean",
+          "correct": 8,
+          "episode": 86,
+          "total": 20
+        },
+        {
+          "accuracy": 0.7,
+          "alphabet": "Greek",
+          "correct": 14,
+          "episode": 87,
+          "total": 20
+        },
+        {
+          "accuracy": 0.8,
+          "alphabet": "Cyrillic",
+          "correct": 16,
+          "episode": 88,
+          "total": 20
+        },
+        {
+          "accuracy": 0.45,
+          "alphabet": "Malay_(Jawi_-_Arabic)",
+          "correct": 9,
+          "episode": 89,
+          "total": 20
+        },
+        {
+          "accuracy": 0.55,
+          "alphabet": "Japanese_(katakana)",
+          "correct": 11,
+          "episode": 90,
+          "total": 20
+        },
+        {
+          "accuracy": 0.65,
+          "alphabet": "Asomtavruli_(Georgian)",
+          "correct": 13,
+          "episode": 91,
+          "total": 20
+        },
+        {
+          "accuracy": 0.8,
+          "alphabet": "Burmese_(Myanmar)",
+          "correct": 16,
+          "episode": 92,
+          "total": 20
+        },
+        {
+          "accuracy": 0.75,
+          "alphabet": "Latin",
+          "correct": 15,
+          "episode": 93,
+          "total": 20
+        },
+        {
+          "accuracy": 0.65,
+          "alphabet": "Asomtavruli_(Georgian)",
+          "correct": 13,
+          "episode": 94,
+          "total": 20
+        },
+        {
+          "accuracy": 0.55,
+          "alphabet": "Alphabet_of_the_Magi",
+          "correct": 11,
+          "episode": 95,
+          "total": 20
+        },
+        {
+          "accuracy": 0.45,
+          "alphabet": "Korean",
+          "correct": 9,
+          "episode": 96,
+          "total": 20
+        },
+        {
+          "accuracy": 0.55,
+          "alphabet": "Tifinagh",
+          "correct": 11,
+          "episode": 97,
+          "total": 20
+        },
+        {
+          "accuracy": 0.9,
+          "alphabet": "Japanese_(hiragana)",
+          "correct": 18,
+          "episode": 98,
+          "total": 20
+        },
+        {
+          "accuracy": 0.45,
+          "alphabet": "Japanese_(katakana)",
+          "correct": 9,
+          "episode": 99,
+          "total": 20
+        }
+      ],
+      "median_episode_accuracy": 0.6,
+      "median_episode_cpu_ms": 12.031843,
+      "median_episode_wall_ms": 12.0392925,
+      "peak_rss_bytes": 63782912,
+      "random_accuracy": 0.044,
+      "random_correct": 88,
+      "random_total": 2000,
+      "total": 2000
+    },
+    "pointset": {
+      "accuracy": 0.67,
+      "alphabet_cluster_bootstrap_95ci": [
+        0.5699927884615384,
+        0.7540234238941136
+      ],
+      "by_alphabet": {
+        "Alphabet_of_the_Magi": {
+          "accuracy": 0.7166666666666667,
+          "correct": 43,
+          "total": 60
+        },
+        "Anglo-Saxon_Futhorc": {
+          "accuracy": 0.9,
+          "correct": 54,
+          "total": 60
+        },
+        "Arcadian": {
+          "accuracy": 0.625,
+          "correct": 25,
+          "total": 40
+        },
+        "Armenian": {
+          "accuracy": 0.775,
+          "correct": 31,
+          "total": 40
+        },
+        "Asomtavruli_(Georgian)": {
+          "accuracy": 0.8625,
+          "correct": 69,
+          "total": 80
+        },
+        "Balinese": {
+          "accuracy": 0.48333333333333334,
+          "correct": 58,
+          "total": 120
+        },
+        "Bengali": {
+          "accuracy": 0.4,
+          "correct": 24,
+          "total": 60
+        },
+        "Braille": {
+          "accuracy": 0.05,
+          "correct": 6,
+          "total": 120
+        },
+        "Burmese_(Myanmar)": {
+          "accuracy": 0.65,
+          "correct": 26,
+          "total": 40
+        },
+        "Cyrillic": {
+          "accuracy": 0.85,
+          "correct": 51,
+          "total": 60
+        },
+        "Early_Aramaic": {
+          "accuracy": 0.7166666666666667,
+          "correct": 86,
+          "total": 120
+        },
+        "Futurama": {
+          "accuracy": 0.6,
+          "correct": 12,
+          "total": 20
+        },
+        "Grantha": {
+          "accuracy": 0.775,
+          "correct": 31,
+          "total": 40
+        },
+        "Greek": {
+          "accuracy": 0.6625,
+          "correct": 53,
+          "total": 80
+        },
+        "Gujarati": {
+          "accuracy": 0.65,
+          "correct": 65,
+          "total": 100
+        },
+        "Hebrew": {
+          "accuracy": 0.6166666666666667,
+          "correct": 37,
+          "total": 60
+        },
+        "Japanese_(hiragana)": {
+          "accuracy": 0.8666666666666667,
+          "correct": 104,
+          "total": 120
+        },
+        "Japanese_(katakana)": {
+          "accuracy": 0.7875,
+          "correct": 63,
+          "total": 80
+        },
+        "Korean": {
+          "accuracy": 0.8125,
+          "correct": 65,
+          "total": 80
+        },
+        "Latin": {
+          "accuracy": 0.8416666666666667,
+          "correct": 101,
+          "total": 120
+        },
+        "Malay_(Jawi_-_Arabic)": {
+          "accuracy": 0.6333333333333333,
+          "correct": 38,
+          "total": 60
+        },
+        "Mkhedruli_(Georgian)": {
+          "accuracy": 0.625,
+          "correct": 25,
+          "total": 40
+        },
+        "N_Ko": {
+          "accuracy": 0.8875,
+          "correct": 71,
+          "total": 80
+        },
+        "Sanskrit": {
+          "accuracy": 0.4125,
+          "correct": 33,
+          "total": 80
+        },
+        "Syriac_(Estrangelo)": {
+          "accuracy": 0.6642857142857143,
+          "correct": 93,
+          "total": 140
+        },
+        "Tifinagh": {
+          "accuracy": 0.76,
+          "correct": 76,
+          "total": 100
+        }
+      },
+      "chance_accuracy": 0.05,
+      "correct": 1340,
+      "episode_scores": [
+        {
+          "accuracy": 0.5,
+          "alphabet": "Syriac_(Estrangelo)",
+          "correct": 10,
+          "episode": 0,
+          "total": 20
+        },
+        {
+          "accuracy": 0.85,
+          "alphabet": "Japanese_(hiragana)",
+          "correct": 17,
+          "episode": 1,
+          "total": 20
+        },
+        {
+          "accuracy": 0.65,
+          "alphabet": "Hebrew",
+          "correct": 13,
+          "episode": 2,
+          "total": 20
+        },
+        {
+          "accuracy": 0.65,
+          "alphabet": "Syriac_(Estrangelo)",
+          "correct": 13,
+          "episode": 3,
+          "total": 20
+        },
+        {
+          "accuracy": 0.75,
+          "alphabet": "Gujarati",
+          "correct": 15,
+          "episode": 4,
+          "total": 20
+        },
+        {
+          "accuracy": 0.7,
+          "alphabet": "Early_Aramaic",
+          "correct": 14,
+          "episode": 5,
+          "total": 20
+        },
+        {
+          "accuracy": 0.4,
+          "alphabet": "Balinese",
+          "correct": 8,
+          "episode": 6,
+          "total": 20
+        },
+        {
+          "accuracy": 0.8,
+          "alphabet": "Armenian",
+          "correct": 16,
+          "episode": 7,
+          "total": 20
+        },
+        {
+          "accuracy": 0.55,
+          "alphabet": "Sanskrit",
+          "correct": 11,
+          "episode": 8,
+          "total": 20
+        },
+        {
+          "accuracy": 1.0,
+          "alphabet": "N_Ko",
+          "correct": 20,
+          "episode": 9,
+          "total": 20
+        },
+        {
+          "accuracy": 0.5,
+          "alphabet": "Gujarati",
+          "correct": 10,
+          "episode": 10,
+          "total": 20
+        },
+        {
+          "accuracy": 0.7,
+          "alphabet": "Japanese_(katakana)",
+          "correct": 14,
+          "episode": 11,
+          "total": 20
+        },
+        {
+          "accuracy": 0.85,
+          "alphabet": "Gujarati",
+          "correct": 17,
+          "episode": 12,
+          "total": 20
+        },
+        {
+          "accuracy": 0.75,
+          "alphabet": "Early_Aramaic",
+          "correct": 15,
+          "episode": 13,
+          "total": 20
+        },
+        {
+          "accuracy": 0.8,
+          "alphabet": "Greek",
+          "correct": 16,
+          "episode": 14,
+          "total": 20
+        },
+        {
+          "accuracy": 0.25,
+          "alphabet": "Sanskrit",
+          "correct": 5,
+          "episode": 15,
+          "total": 20
+        },
+        {
+          "accuracy": 0.85,
+          "alphabet": "Korean",
+          "correct": 17,
+          "episode": 16,
+          "total": 20
+        },
+        {
+          "accuracy": 0.45,
+          "alphabet": "Balinese",
+          "correct": 9,
+          "episode": 17,
+          "total": 20
+        },
+        {
+          "accuracy": 0.95,
+          "alphabet": "Cyrillic",
+          "correct": 19,
+          "episode": 18,
+          "total": 20
+        },
+        {
+          "accuracy": 0.55,
+          "alphabet": "Greek",
+          "correct": 11,
+          "episode": 19,
+          "total": 20
+        },
+        {
+          "accuracy": 0.05,
+          "alphabet": "Braille",
+          "correct": 1,
+          "episode": 20,
+          "total": 20
+        },
+        {
+          "accuracy": 0.85,
+          "alphabet": "Japanese_(hiragana)",
+          "correct": 17,
+          "episode": 21,
+          "total": 20
+        },
+        {
+          "accuracy": 0.6,
+          "alphabet": "Syriac_(Estrangelo)",
+          "correct": 12,
+          "episode": 22,
+          "total": 20
+        },
+        {
+          "accuracy": 0.9,
+          "alphabet": "Japanese_(katakana)",
+          "correct": 18,
+          "episode": 23,
+          "total": 20
+        },
+        {
+          "accuracy": 0.55,
+          "alphabet": "Gujarati",
+          "correct": 11,
+          "episode": 24,
+          "total": 20
+        },
+        {
+          "accuracy": 0.85,
+          "alphabet": "Grantha",
+          "correct": 17,
+          "episode": 25,
+          "total": 20
+        },
+        {
+          "accuracy": 0.9,
+          "alphabet": "N_Ko",
+          "correct": 18,
+          "episode": 26,
+          "total": 20
+        },
+        {
+          "accuracy": 0.75,
+          "alphabet": "Anglo-Saxon_Futhorc",
+          "correct": 15,
+          "episode": 27,
+          "total": 20
+        },
+        {
+          "accuracy": 0.6,
+          "alphabet": "Syriac_(Estrangelo)",
+          "correct": 12,
+          "episode": 28,
+          "total": 20
+        },
+        {
+          "accuracy": 0.85,
+          "alphabet": "Latin",
+          "correct": 17,
+          "episode": 29,
+          "total": 20
+        },
+        {
+          "accuracy": 0.65,
+          "alphabet": "Syriac_(Estrangelo)",
+          "correct": 13,
+          "episode": 30,
+          "total": 20
+        },
+        {
+          "accuracy": 0.55,
+          "alphabet": "Early_Aramaic",
+          "correct": 11,
+          "episode": 31,
+          "total": 20
+        },
+        {
+          "accuracy": 0.55,
+          "alphabet": "Mkhedruli_(Georgian)",
+          "correct": 11,
+          "episode": 32,
+          "total": 20
+        },
+        {
+          "accuracy": 1.0,
+          "alphabet": "Anglo-Saxon_Futhorc",
+          "correct": 20,
+          "episode": 33,
+          "total": 20
+        },
+        {
+          "accuracy": 0.7,
+          "alphabet": "Grantha",
+          "correct": 14,
+          "episode": 34,
+          "total": 20
+        },
+        {
+          "accuracy": 0.85,
+          "alphabet": "Latin",
+          "correct": 17,
+          "episode": 35,
+          "total": 20
+        },
+        {
+          "accuracy": 0.85,
+          "alphabet": "Alphabet_of_the_Magi",
+          "correct": 17,
+          "episode": 36,
+          "total": 20
+        },
+        {
+          "accuracy": 0.4,
+          "alphabet": "Bengali",
+          "correct": 8,
+          "episode": 37,
+          "total": 20
+        },
+        {
+          "accuracy": 0.7,
+          "alphabet": "Arcadian",
+          "correct": 14,
+          "episode": 38,
+          "total": 20
+        },
+        {
+          "accuracy": 0.75,
+          "alphabet": "Balinese",
+          "correct": 15,
+          "episode": 39,
+          "total": 20
+        },
+        {
+          "accuracy": 0.05,
+          "alphabet": "Braille",
+          "correct": 1,
+          "episode": 40,
+          "total": 20
+        },
+        {
+          "accuracy": 0.85,
+          "alphabet": "Syriac_(Estrangelo)",
+          "correct": 17,
+          "episode": 41,
+          "total": 20
+        },
+        {
+          "accuracy": 0.7,
+          "alphabet": "Hebrew",
+          "correct": 14,
+          "episode": 42,
+          "total": 20
+        },
+        {
+          "accuracy": 0.7,
+          "alphabet": "Tifinagh",
+          "correct": 14,
+          "episode": 43,
+          "total": 20
+        },
+        {
+          "accuracy": 0.8,
+          "alphabet": "Tifinagh",
+          "correct": 16,
+          "episode": 44,
+          "total": 20
+        },
+        {
+          "accuracy": 0.9,
+          "alphabet": "Latin",
+          "correct": 18,
+          "episode": 45,
+          "total": 20
+        },
+        {
+          "accuracy": 0.4,
+          "alphabet": "Bengali",
+          "correct": 8,
+          "episode": 46,
+          "total": 20
+        },
+        {
+          "accuracy": 0.95,
+          "alphabet": "Anglo-Saxon_Futhorc",
+          "correct": 19,
+          "episode": 47,
+          "total": 20
+        },
+        {
+          "accuracy": 0.7,
+          "alphabet": "N_Ko",
+          "correct": 14,
+          "episode": 48,
+          "total": 20
+        },
+        {
+          "accuracy": 0.7,
+          "alphabet": "Tifinagh",
+          "correct": 14,
+          "episode": 49,
+          "total": 20
+        },
+        {
+          "accuracy": 0.4,
+          "alphabet": "Sanskrit",
+          "correct": 8,
+          "episode": 50,
+          "total": 20
+        },
+        {
+          "accuracy": 0.6,
+          "alphabet": "Futurama",
+          "correct": 12,
+          "episode": 51,
+          "total": 20
+        },
+        {
+          "accuracy": 0.05,
+          "alphabet": "Braille",
+          "correct": 1,
+          "episode": 52,
+          "total": 20
+        },
+        {
+          "accuracy": 0.25,
+          "alphabet": "Balinese",
+          "correct": 5,
+          "episode": 53,
+          "total": 20
+        },
+        {
+          "accuracy": 0.8,
+          "alphabet": "Latin",
+          "correct": 16,
+          "episode": 54,
+          "total": 20
+        },
+        {
+          "accuracy": 0.55,
+          "alphabet": "Arcadian",
+          "correct": 11,
+          "episode": 55,
+          "total": 20
+        },
+        {
+          "accuracy": 0.4,
+          "alphabet": "Bengali",
+          "correct": 8,
+          "episode": 56,
+          "total": 20
+        },
+        {
+          "accuracy": 0.05,
+          "alphabet": "Braille",
+          "correct": 1,
+          "episode": 57,
+          "total": 20
+        },
+        {
+          "accuracy": 0.7,
+          "alphabet": "Mkhedruli_(Georgian)",
+          "correct": 14,
+          "episode": 58,
+          "total": 20
+        },
+        {
+          "accuracy": 0.65,
+          "alphabet": "Balinese",
+          "correct": 13,
+          "episode": 59,
+          "total": 20
+        },
+        {
+          "accuracy": 0.85,
+          "alphabet": "Japanese_(hiragana)",
+          "correct": 17,
+          "episode": 60,
+          "total": 20
+        },
+        {
+          "accuracy": 0.75,
+          "alphabet": "Early_Aramaic",
+          "correct": 15,
+          "episode": 61,
+          "total": 20
+        },
+        {
+          "accuracy": 0.8,
+          "alphabet": "Asomtavruli_(Georgian)",
+          "correct": 16,
+          "episode": 62,
+          "total": 20
+        },
+        {
+          "accuracy": 0.9,
+          "alphabet": "Korean",
+          "correct": 18,
+          "episode": 63,
+          "total": 20
+        },
+        {
+          "accuracy": 0.75,
+          "alphabet": "Latin",
+          "correct": 15,
+          "episode": 64,
+          "total": 20
+        },
+        {
+          "accuracy": 0.4,
+          "alphabet": "Balinese",
+          "correct": 8,
+          "episode": 65,
+          "total": 20
+        },
+        {
+          "accuracy": 0.75,
+          "alphabet": "Japanese_(hiragana)",
+          "correct": 15,
+          "episode": 66,
+          "total": 20
+        },
+        {
+          "accuracy": 0.05,
+          "alphabet": "Braille",
+          "correct": 1,
+          "episode": 67,
+          "total": 20
+        },
+        {
+          "accuracy": 0.6,
+          "alphabet": "Gujarati",
+          "correct": 12,
+          "episode": 68,
+          "total": 20
+        },
+        {
+          "accuracy": 0.7,
+          "alphabet": "Malay_(Jawi_-_Arabic)",
+          "correct": 14,
+          "episode": 69,
+          "total": 20
+        },
+        {
+          "accuracy": 0.75,
+          "alphabet": "Burmese_(Myanmar)",
+          "correct": 15,
+          "episode": 70,
+          "total": 20
+        },
+        {
+          "accuracy": 0.8,
+          "alphabet": "Early_Aramaic",
+          "correct": 16,
+          "episode": 71,
+          "total": 20
+        },
+        {
+          "accuracy": 0.95,
+          "alphabet": "Asomtavruli_(Georgian)",
+          "correct": 19,
+          "episode": 72,
+          "total": 20
+        },
+        {
+          "accuracy": 0.8,
+          "alphabet": "Syriac_(Estrangelo)",
+          "correct": 16,
+          "episode": 73,
+          "total": 20
+        },
+        {
+          "accuracy": 0.05,
+          "alphabet": "Braille",
+          "correct": 1,
+          "episode": 74,
+          "total": 20
+        },
+        {
+          "accuracy": 0.9,
+          "alphabet": "Cyrillic",
+          "correct": 18,
+          "episode": 75,
+          "total": 20
+        },
+        {
+          "accuracy": 0.7,
+          "alphabet": "Malay_(Jawi_-_Arabic)",
+          "correct": 14,
+          "episode": 76,
+          "total": 20
+        },
+        {
+          "accuracy": 0.5,
+          "alphabet": "Hebrew",
+          "correct": 10,
+          "episode": 77,
+          "total": 20
+        },
+        {
+          "accuracy": 0.8,
+          "alphabet": "Tifinagh",
+          "correct": 16,
+          "episode": 78,
+          "total": 20
+        },
+        {
+          "accuracy": 0.45,
+          "alphabet": "Sanskrit",
+          "correct": 9,
+          "episode": 79,
+          "total": 20
+        },
+        {
+          "accuracy": 0.75,
+          "alphabet": "Early_Aramaic",
+          "correct": 15,
+          "episode": 80,
+          "total": 20
+        },
+        {
+          "accuracy": 0.9,
+          "alphabet": "Japanese_(hiragana)",
+          "correct": 18,
+          "episode": 81,
+          "total": 20
+        },
+        {
+          "accuracy": 0.6,
+          "alphabet": "Alphabet_of_the_Magi",
+          "correct": 12,
+          "episode": 82,
+          "total": 20
+        },
+        {
+          "accuracy": 0.95,
+          "alphabet": "N_Ko",
+          "correct": 19,
+          "episode": 83,
+          "total": 20
+        },
+        {
+          "accuracy": 0.75,
+          "alphabet": "Armenian",
+          "correct": 15,
+          "episode": 84,
+          "total": 20
+        },
+        {
+          "accuracy": 0.8,
+          "alphabet": "Greek",
+          "correct": 16,
+          "episode": 85,
+          "total": 20
+        },
+        {
+          "accuracy": 0.7,
+          "alphabet": "Korean",
+          "correct": 14,
+          "episode": 86,
+          "total": 20
+        },
+        {
+          "accuracy": 0.5,
+          "alphabet": "Greek",
+          "correct": 10,
+          "episode": 87,
+          "total": 20
+        },
+        {
+          "accuracy": 0.7,
+          "alphabet": "Cyrillic",
+          "correct": 14,
+          "episode": 88,
+          "total": 20
+        },
+        {
+          "accuracy": 0.5,
+          "alphabet": "Malay_(Jawi_-_Arabic)",
+          "correct": 10,
+          "episode": 89,
+          "total": 20
+        },
+        {
+          "accuracy": 0.85,
+          "alphabet": "Japanese_(katakana)",
+          "correct": 17,
+          "episode": 90,
+          "total": 20
+        },
+        {
+          "accuracy": 0.8,
+          "alphabet": "Asomtavruli_(Georgian)",
+          "correct": 16,
+          "episode": 91,
+          "total": 20
+        },
+        {
+          "accuracy": 0.55,
+          "alphabet": "Burmese_(Myanmar)",
+          "correct": 11,
+          "episode": 92,
+          "total": 20
+        },
+        {
+          "accuracy": 0.9,
+          "alphabet": "Latin",
+          "correct": 18,
+          "episode": 93,
+          "total": 20
+        },
+        {
+          "accuracy": 0.9,
+          "alphabet": "Asomtavruli_(Georgian)",
+          "correct": 18,
+          "episode": 94,
+          "total": 20
+        },
+        {
+          "accuracy": 0.7,
+          "alphabet": "Alphabet_of_the_Magi",
+          "correct": 14,
+          "episode": 95,
+          "total": 20
+        },
+        {
+          "accuracy": 0.8,
+          "alphabet": "Korean",
+          "correct": 16,
+          "episode": 96,
+          "total": 20
+        },
+        {
+          "accuracy": 0.8,
+          "alphabet": "Tifinagh",
+          "correct": 16,
+          "episode": 97,
+          "total": 20
+        },
+        {
+          "accuracy": 1.0,
+          "alphabet": "Japanese_(hiragana)",
+          "correct": 20,
+          "episode": 98,
+          "total": 20
+        },
+        {
+          "accuracy": 0.7,
+          "alphabet": "Japanese_(katakana)",
+          "correct": 14,
+          "episode": 99,
+          "total": 20
+        }
+      ],
+      "median_episode_accuracy": 0.7,
+      "median_episode_cpu_ms": 16.3937695,
+      "median_episode_wall_ms": 16.433421,
+      "peak_rss_bytes": 63782912,
+      "random_accuracy": 0.0545,
+      "random_correct": 109,
+      "random_total": 2000,
+      "total": 2000
+    }
+  },
+  "total_checks": 7,
+  "total_run_process_cpu_ns": 5809542455,
+  "total_run_wall_ns": 5821676017,
+  "worker_count": 300
+}

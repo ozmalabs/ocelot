@@ -1,0 +1,615 @@
+{
+  "captured_utc": "2026-10-01T08:07:04Z",
+  "engine_fingerprint": "4036d3738ccc0e1f0fa3a6ef00ab3e271c1205921ca074a3f02334919a46d6ee",
+  "gates": {
+    "both_arms_find_task_repair": true,
+    "both_preserve_primaries": true,
+    "cold_has_no_cross_family_prior": true,
+    "graph_policy_present_both_arms": true,
+    "independent_oracles_pass": true,
+    "stable_sources": true,
+    "three_fresh_workers": true,
+    "training_success_class": true,
+    "transfer_consumes_cross_target_success": true
+  },
+  "native_binary": {
+    "path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+    "sha256": "b9f398c75ceb12a5d519235efb6b3ec403d1b153a576aad6def528c2d48a7617"
+  },
+  "protocol": {
+    "branch_backend": "native full-copy experiment",
+    "families": [
+      "shape-axis deduplication training",
+      "recurrence-ledger offer idempotence evaluation"
+    ],
+    "transfer": "typed CorrectionOutcome rows keyed by shared idempotent_mint_guard class",
+    "workers": 3
+  },
+  "schema": "ThoughtexperimentCrossFamilyIdempotenceTransferV1",
+  "source_hashes": {
+    "domains/reflective_faculty.py": "8f530a8c8754949216b71b473c4769fa5d351d01d6055127943c009d06763d05",
+    "domains/self_correct_dispatch.py": "6aa0759fb39c7b6ff754b669f1699d6badeb90beb48e90e5f7e5b3d1f8a5464f",
+    "domains/self_correction.py": "682c4fda4d18bf2e7655988c6ef8e52dc6ab7bae143851d804c122a0dbeb8a2d",
+    "evaluation/substrate_capability/thoughtexperiment_cross_family_idempotence_transfer_v1.py": "b9c14739041c5eddbb174e7fc8d7d69d75878503e527ad2e04ced319f2baef2a",
+    "evaluation/substrate_capability/thoughtexperiment_graph_authored_correction_rank_v1.py": "9a46f1b90dd12a577d86e28b57a256dc5e091bb93f8563aa6fc4178e40ab9fed",
+    "seeds/composer_self_correct_graph.json": "84c3f6ca601b4e62f6c2de46e1da98289821444ee9118dbdbd2a85d655c19e20",
+    "seeds/minting_recurrence_ledger.json": "10c5df924cb98eacea2a2159e60247c1d783db37f4be147378c6115e1b545a92",
+    "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb"
+  },
+  "summary": [
+    {
+      "arm": "cold",
+      "cross_target_prior_successes": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "heldout_oracle_passes": 3,
+      "orders": [
+        [
+          "episode_scoped_offer_guard",
+          "dedup_identity_fix",
+          "drop_match_edge",
+          "add_match_guard(control)",
+          "swap_term_leaf:capability_key->latest_segment_ordinal",
+          "swap_term_leaf:capability_key->persistence",
+          "swap_term_leaf:capability_key->structural_signature",
+          "swap_term_leaf:latest_segment_ordinal->capability_key"
+        ],
+        [
+          "episode_scoped_offer_guard",
+          "dedup_identity_fix",
+          "drop_match_edge",
+          "add_match_guard(control)",
+          "swap_term_leaf:capability_key->latest_segment_ordinal",
+          "swap_term_leaf:capability_key->persistence",
+          "swap_term_leaf:capability_key->structural_signature",
+          "swap_term_leaf:latest_segment_ordinal->capability_key"
+        ],
+        [
+          "episode_scoped_offer_guard",
+          "dedup_identity_fix",
+          "drop_match_edge",
+          "add_match_guard(control)",
+          "swap_term_leaf:capability_key->latest_segment_ordinal",
+          "swap_term_leaf:capability_key->persistence",
+          "swap_term_leaf:capability_key->structural_signature",
+          "swap_term_leaf:latest_segment_ordinal->capability_key"
+        ]
+      ],
+      "trials_to_utility": [
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "arm": "experience",
+      "cross_target_prior_successes": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "heldout_oracle_passes": 3,
+      "orders": [
+        [
+          "dedup_identity_fix",
+          "episode_scoped_offer_guard",
+          "drop_match_edge",
+          "add_match_guard(control)",
+          "swap_term_leaf:capability_key->latest_segment_ordinal",
+          "swap_term_leaf:capability_key->persistence",
+          "swap_term_leaf:capability_key->structural_signature",
+          "swap_term_leaf:latest_segment_ordinal->capability_key"
+        ],
+        [
+          "dedup_identity_fix",
+          "episode_scoped_offer_guard",
+          "drop_match_edge",
+          "add_match_guard(control)",
+          "swap_term_leaf:capability_key->latest_segment_ordinal",
+          "swap_term_leaf:capability_key->persistence",
+          "swap_term_leaf:capability_key->structural_signature",
+          "swap_term_leaf:latest_segment_ordinal->capability_key"
+        ],
+        [
+          "dedup_identity_fix",
+          "episode_scoped_offer_guard",
+          "drop_match_edge",
+          "add_match_guard(control)",
+          "swap_term_leaf:capability_key->latest_segment_ordinal",
+          "swap_term_leaf:capability_key->persistence",
+          "swap_term_leaf:capability_key->structural_signature",
+          "swap_term_leaf:latest_segment_ordinal->capability_key"
+        ]
+      ],
+      "trials_to_utility": [
+        1,
+        1,
+        1
+      ]
+    }
+  ],
+  "workers": [
+    {
+      "cold": {
+        "arm": "cold_rank",
+        "candidate_order": [
+          "episode_scoped_offer_guard",
+          "dedup_identity_fix",
+          "drop_match_edge",
+          "add_match_guard(control)",
+          "swap_term_leaf:capability_key->latest_segment_ordinal",
+          "swap_term_leaf:capability_key->persistence",
+          "swap_term_leaf:capability_key->structural_signature",
+          "swap_term_leaf:latest_segment_ordinal->capability_key"
+        ],
+        "default_order": [
+          "dedup_identity_fix",
+          "episode_scoped_offer_guard",
+          "drop_match_edge",
+          "add_match_guard(control)",
+          "swap_term_leaf:capability_key->latest_segment_ordinal",
+          "swap_term_leaf:capability_key->persistence",
+          "swap_term_leaf:capability_key->structural_signature",
+          "swap_term_leaf:latest_segment_ordinal->capability_key"
+        ],
+        "outcome_count": 0,
+        "primary_preserved": true,
+        "program_present": true,
+        "success": true,
+        "trials": [
+          {
+            "final_fixedpoint_progress": 0,
+            "label": "episode_scoped_offer_guard",
+            "offer_count": 1,
+            "outcome_class": "episode_scoped_idempotence",
+            "rank_trace": {
+              "attempt_tag": "886c723453a8",
+              "candidate_digest": "sha256:ff0382d17271ab5688ff2d294a359c5493249a8958b11464b4c7a5d5866d0ab8",
+              "outcome_class": "episode_scoped_idempotence",
+              "prior_failures": 0.0,
+              "prior_successes": 0.0,
+              "structural_cost": 23.0,
+              "target_rule": "mrl_offer_due_once"
+            },
+            "sweep_progress": [
+              9,
+              0,
+              0,
+              0,
+              0
+            ],
+            "task_oracle": true
+          }
+        ],
+        "worker": 0
+      },
+      "experience": {
+        "arm": "experience_rank",
+        "candidate_order": [
+          "dedup_identity_fix",
+          "episode_scoped_offer_guard",
+          "drop_match_edge",
+          "add_match_guard(control)",
+          "swap_term_leaf:capability_key->latest_segment_ordinal",
+          "swap_term_leaf:capability_key->persistence",
+          "swap_term_leaf:capability_key->structural_signature",
+          "swap_term_leaf:latest_segment_ordinal->capability_key"
+        ],
+        "default_order": [
+          "dedup_identity_fix",
+          "episode_scoped_offer_guard",
+          "drop_match_edge",
+          "add_match_guard(control)",
+          "swap_term_leaf:capability_key->latest_segment_ordinal",
+          "swap_term_leaf:capability_key->persistence",
+          "swap_term_leaf:capability_key->structural_signature",
+          "swap_term_leaf:latest_segment_ordinal->capability_key"
+        ],
+        "outcome_count": 2,
+        "primary_preserved": true,
+        "program_present": true,
+        "success": true,
+        "trials": [
+          {
+            "final_fixedpoint_progress": 0,
+            "label": "dedup_identity_fix",
+            "offer_count": 1,
+            "outcome_class": "idempotent_mint_guard",
+            "rank_trace": {
+              "attempt_tag": "7e281639e102",
+              "candidate_digest": "sha256:e853b857898fde6c33efadc969dbdfd37e550995c688577b89118b2e41b0817c",
+              "outcome_class": "idempotent_mint_guard",
+              "prior_failures": 0.0,
+              "prior_successes": 1.0,
+              "structural_cost": 29.0,
+              "target_rule": "mrl_offer_due_once"
+            },
+            "sweep_progress": [
+              9,
+              0,
+              0,
+              0,
+              0
+            ],
+            "task_oracle": true
+          }
+        ],
+        "worker": 0
+      },
+      "pid": 3,
+      "source_after": {
+        "domains/reflective_faculty.py": "8f530a8c8754949216b71b473c4769fa5d351d01d6055127943c009d06763d05",
+        "domains/self_correct_dispatch.py": "6aa0759fb39c7b6ff754b669f1699d6badeb90beb48e90e5f7e5b3d1f8a5464f",
+        "domains/self_correction.py": "682c4fda4d18bf2e7655988c6ef8e52dc6ab7bae143851d804c122a0dbeb8a2d",
+        "evaluation/substrate_capability/thoughtexperiment_cross_family_idempotence_transfer_v1.py": "b9c14739041c5eddbb174e7fc8d7d69d75878503e527ad2e04ced319f2baef2a",
+        "evaluation/substrate_capability/thoughtexperiment_graph_authored_correction_rank_v1.py": "9a46f1b90dd12a577d86e28b57a256dc5e091bb93f8563aa6fc4178e40ab9fed",
+        "seeds/composer_self_correct_graph.json": "84c3f6ca601b4e62f6c2de46e1da98289821444ee9118dbdbd2a85d655c19e20",
+        "seeds/minting_recurrence_ledger.json": "10c5df924cb98eacea2a2159e60247c1d783db37f4be147378c6115e1b545a92",
+        "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb"
+      },
+      "source_before": {
+        "domains/reflective_faculty.py": "8f530a8c8754949216b71b473c4769fa5d351d01d6055127943c009d06763d05",
+        "domains/self_correct_dispatch.py": "6aa0759fb39c7b6ff754b669f1699d6badeb90beb48e90e5f7e5b3d1f8a5464f",
+        "domains/self_correction.py": "682c4fda4d18bf2e7655988c6ef8e52dc6ab7bae143851d804c122a0dbeb8a2d",
+        "evaluation/substrate_capability/thoughtexperiment_cross_family_idempotence_transfer_v1.py": "b9c14739041c5eddbb174e7fc8d7d69d75878503e527ad2e04ced319f2baef2a",
+        "evaluation/substrate_capability/thoughtexperiment_graph_authored_correction_rank_v1.py": "9a46f1b90dd12a577d86e28b57a256dc5e091bb93f8563aa6fc4178e40ab9fed",
+        "seeds/composer_self_correct_graph.json": "84c3f6ca601b4e62f6c2de46e1da98289821444ee9118dbdbd2a85d655c19e20",
+        "seeds/minting_recurrence_ledger.json": "10c5df924cb98eacea2a2159e60247c1d783db37f4be147378c6115e1b545a92",
+        "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb"
+      },
+      "source_stable": true,
+      "training": {
+        "adopted": true,
+        "model_final_converged": true,
+        "records": [
+          {
+            "adopted": false,
+            "candidate_digest": "",
+            "candidate_label": "swap_term_leaf:signature->residual",
+            "converges_in_rehearsal": false,
+            "outcome_class": "",
+            "rank_attempt_tag": "a04ed3af4327",
+            "selected": false,
+            "target_rule": "sd_mint_quantum",
+            "task_utility": 0.0
+          },
+          {
+            "adopted": true,
+            "candidate_digest": "",
+            "candidate_label": "dedup_identity_fix",
+            "converges_in_rehearsal": true,
+            "outcome_class": "idempotent_mint_guard",
+            "rank_attempt_tag": "a04ed3af4327",
+            "selected": true,
+            "target_rule": "sd_mint_quantum",
+            "task_utility": 1.0
+          }
+        ],
+        "selected": "dedup_identity_fix",
+        "target_rule": "sd_mint_quantum"
+      }
+    },
+    {
+      "cold": {
+        "arm": "cold_rank",
+        "candidate_order": [
+          "episode_scoped_offer_guard",
+          "dedup_identity_fix",
+          "drop_match_edge",
+          "add_match_guard(control)",
+          "swap_term_leaf:capability_key->latest_segment_ordinal",
+          "swap_term_leaf:capability_key->persistence",
+          "swap_term_leaf:capability_key->structural_signature",
+          "swap_term_leaf:latest_segment_ordinal->capability_key"
+        ],
+        "default_order": [
+          "dedup_identity_fix",
+          "episode_scoped_offer_guard",
+          "drop_match_edge",
+          "add_match_guard(control)",
+          "swap_term_leaf:capability_key->latest_segment_ordinal",
+          "swap_term_leaf:capability_key->persistence",
+          "swap_term_leaf:capability_key->structural_signature",
+          "swap_term_leaf:latest_segment_ordinal->capability_key"
+        ],
+        "outcome_count": 0,
+        "primary_preserved": true,
+        "program_present": true,
+        "success": true,
+        "trials": [
+          {
+            "final_fixedpoint_progress": 0,
+            "label": "episode_scoped_offer_guard",
+            "offer_count": 1,
+            "outcome_class": "episode_scoped_idempotence",
+            "rank_trace": {
+              "attempt_tag": "838e54e26800",
+              "candidate_digest": "sha256:e5c5fac6dc71144b49a29afc4520fe340219e210ce86d1f3a0593a9317717fa4",
+              "outcome_class": "episode_scoped_idempotence",
+              "prior_failures": 0.0,
+              "prior_successes": 0.0,
+              "structural_cost": 23.0,
+              "target_rule": "mrl_offer_due_once"
+            },
+            "sweep_progress": [
+              9,
+              0,
+              0,
+              0,
+              0
+            ],
+            "task_oracle": true
+          }
+        ],
+        "worker": 1
+      },
+      "experience": {
+        "arm": "experience_rank",
+        "candidate_order": [
+          "dedup_identity_fix",
+          "episode_scoped_offer_guard",
+          "drop_match_edge",
+          "add_match_guard(control)",
+          "swap_term_leaf:capability_key->latest_segment_ordinal",
+          "swap_term_leaf:capability_key->persistence",
+          "swap_term_leaf:capability_key->structural_signature",
+          "swap_term_leaf:latest_segment_ordinal->capability_key"
+        ],
+        "default_order": [
+          "dedup_identity_fix",
+          "episode_scoped_offer_guard",
+          "drop_match_edge",
+          "add_match_guard(control)",
+          "swap_term_leaf:capability_key->latest_segment_ordinal",
+          "swap_term_leaf:capability_key->persistence",
+          "swap_term_leaf:capability_key->structural_signature",
+          "swap_term_leaf:latest_segment_ordinal->capability_key"
+        ],
+        "outcome_count": 2,
+        "primary_preserved": true,
+        "program_present": true,
+        "success": true,
+        "trials": [
+          {
+            "final_fixedpoint_progress": 0,
+            "label": "dedup_identity_fix",
+            "offer_count": 1,
+            "outcome_class": "idempotent_mint_guard",
+            "rank_trace": {
+              "attempt_tag": "70eac7637528",
+              "candidate_digest": "sha256:49bb2e445210640a44be6a4f148e9069b4b5906345dd752888208eb35cd31070",
+              "outcome_class": "idempotent_mint_guard",
+              "prior_failures": 0.0,
+              "prior_successes": 1.0,
+              "structural_cost": 29.0,
+              "target_rule": "mrl_offer_due_once"
+            },
+            "sweep_progress": [
+              9,
+              0,
+              0,
+              0,
+              0
+            ],
+            "task_oracle": true
+          }
+        ],
+        "worker": 1
+      },
+      "pid": 3172,
+      "source_after": {
+        "domains/reflective_faculty.py": "8f530a8c8754949216b71b473c4769fa5d351d01d6055127943c009d06763d05",
+        "domains/self_correct_dispatch.py": "6aa0759fb39c7b6ff754b669f1699d6badeb90beb48e90e5f7e5b3d1f8a5464f",
+        "domains/self_correction.py": "682c4fda4d18bf2e7655988c6ef8e52dc6ab7bae143851d804c122a0dbeb8a2d",
+        "evaluation/substrate_capability/thoughtexperiment_cross_family_idempotence_transfer_v1.py": "b9c14739041c5eddbb174e7fc8d7d69d75878503e527ad2e04ced319f2baef2a",
+        "evaluation/substrate_capability/thoughtexperiment_graph_authored_correction_rank_v1.py": "9a46f1b90dd12a577d86e28b57a256dc5e091bb93f8563aa6fc4178e40ab9fed",
+        "seeds/composer_self_correct_graph.json": "84c3f6ca601b4e62f6c2de46e1da98289821444ee9118dbdbd2a85d655c19e20",
+        "seeds/minting_recurrence_ledger.json": "10c5df924cb98eacea2a2159e60247c1d783db37f4be147378c6115e1b545a92",
+        "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb"
+      },
+      "source_before": {
+        "domains/reflective_faculty.py": "8f530a8c8754949216b71b473c4769fa5d351d01d6055127943c009d06763d05",
+        "domains/self_correct_dispatch.py": "6aa0759fb39c7b6ff754b669f1699d6badeb90beb48e90e5f7e5b3d1f8a5464f",
+        "domains/self_correction.py": "682c4fda4d18bf2e7655988c6ef8e52dc6ab7bae143851d804c122a0dbeb8a2d",
+        "evaluation/substrate_capability/thoughtexperiment_cross_family_idempotence_transfer_v1.py": "b9c14739041c5eddbb174e7fc8d7d69d75878503e527ad2e04ced319f2baef2a",
+        "evaluation/substrate_capability/thoughtexperiment_graph_authored_correction_rank_v1.py": "9a46f1b90dd12a577d86e28b57a256dc5e091bb93f8563aa6fc4178e40ab9fed",
+        "seeds/composer_self_correct_graph.json": "84c3f6ca601b4e62f6c2de46e1da98289821444ee9118dbdbd2a85d655c19e20",
+        "seeds/minting_recurrence_ledger.json": "10c5df924cb98eacea2a2159e60247c1d783db37f4be147378c6115e1b545a92",
+        "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb"
+      },
+      "source_stable": true,
+      "training": {
+        "adopted": true,
+        "model_final_converged": true,
+        "records": [
+          {
+            "adopted": false,
+            "candidate_digest": "",
+            "candidate_label": "swap_term_leaf:signature->residual",
+            "converges_in_rehearsal": false,
+            "outcome_class": "",
+            "rank_attempt_tag": "c131d6439aa2",
+            "selected": false,
+            "target_rule": "sd_mint_quantum",
+            "task_utility": 0.0
+          },
+          {
+            "adopted": true,
+            "candidate_digest": "",
+            "candidate_label": "dedup_identity_fix",
+            "converges_in_rehearsal": true,
+            "outcome_class": "idempotent_mint_guard",
+            "rank_attempt_tag": "c131d6439aa2",
+            "selected": true,
+            "target_rule": "sd_mint_quantum",
+            "task_utility": 1.0
+          }
+        ],
+        "selected": "dedup_identity_fix",
+        "target_rule": "sd_mint_quantum"
+      }
+    },
+    {
+      "cold": {
+        "arm": "cold_rank",
+        "candidate_order": [
+          "episode_scoped_offer_guard",
+          "dedup_identity_fix",
+          "drop_match_edge",
+          "add_match_guard(control)",
+          "swap_term_leaf:capability_key->latest_segment_ordinal",
+          "swap_term_leaf:capability_key->persistence",
+          "swap_term_leaf:capability_key->structural_signature",
+          "swap_term_leaf:latest_segment_ordinal->capability_key"
+        ],
+        "default_order": [
+          "dedup_identity_fix",
+          "episode_scoped_offer_guard",
+          "drop_match_edge",
+          "add_match_guard(control)",
+          "swap_term_leaf:capability_key->latest_segment_ordinal",
+          "swap_term_leaf:capability_key->persistence",
+          "swap_term_leaf:capability_key->structural_signature",
+          "swap_term_leaf:latest_segment_ordinal->capability_key"
+        ],
+        "outcome_count": 0,
+        "primary_preserved": true,
+        "program_present": true,
+        "success": true,
+        "trials": [
+          {
+            "final_fixedpoint_progress": 0,
+            "label": "episode_scoped_offer_guard",
+            "offer_count": 1,
+            "outcome_class": "episode_scoped_idempotence",
+            "rank_trace": {
+              "attempt_tag": "9382c9db88d5",
+              "candidate_digest": "sha256:65b51707a2eecf04a46dfa188243be1ca9bf36641fadf70509eac7389566c90f",
+              "outcome_class": "episode_scoped_idempotence",
+              "prior_failures": 0.0,
+              "prior_successes": 0.0,
+              "structural_cost": 23.0,
+              "target_rule": "mrl_offer_due_once"
+            },
+            "sweep_progress": [
+              9,
+              0,
+              0,
+              0,
+              0
+            ],
+            "task_oracle": true
+          }
+        ],
+        "worker": 2
+      },
+      "experience": {
+        "arm": "experience_rank",
+        "candidate_order": [
+          "dedup_identity_fix",
+          "episode_scoped_offer_guard",
+          "drop_match_edge",
+          "add_match_guard(control)",
+          "swap_term_leaf:capability_key->latest_segment_ordinal",
+          "swap_term_leaf:capability_key->persistence",
+          "swap_term_leaf:capability_key->structural_signature",
+          "swap_term_leaf:latest_segment_ordinal->capability_key"
+        ],
+        "default_order": [
+          "dedup_identity_fix",
+          "episode_scoped_offer_guard",
+          "drop_match_edge",
+          "add_match_guard(control)",
+          "swap_term_leaf:capability_key->latest_segment_ordinal",
+          "swap_term_leaf:capability_key->persistence",
+          "swap_term_leaf:capability_key->structural_signature",
+          "swap_term_leaf:latest_segment_ordinal->capability_key"
+        ],
+        "outcome_count": 2,
+        "primary_preserved": true,
+        "program_present": true,
+        "success": true,
+        "trials": [
+          {
+            "final_fixedpoint_progress": 0,
+            "label": "dedup_identity_fix",
+            "offer_count": 1,
+            "outcome_class": "idempotent_mint_guard",
+            "rank_trace": {
+              "attempt_tag": "b22a7889c768",
+              "candidate_digest": "sha256:c6fbc4d498cb9ff8e0628007834d09b21b4e82a2ef6462b6e9b791bb7da4c7be",
+              "outcome_class": "idempotent_mint_guard",
+              "prior_failures": 0.0,
+              "prior_successes": 1.0,
+              "structural_cost": 29.0,
+              "target_rule": "mrl_offer_due_once"
+            },
+            "sweep_progress": [
+              9,
+              0,
+              0,
+              0,
+              0
+            ],
+            "task_oracle": true
+          }
+        ],
+        "worker": 2
+      },
+      "pid": 6341,
+      "source_after": {
+        "domains/reflective_faculty.py": "8f530a8c8754949216b71b473c4769fa5d351d01d6055127943c009d06763d05",
+        "domains/self_correct_dispatch.py": "6aa0759fb39c7b6ff754b669f1699d6badeb90beb48e90e5f7e5b3d1f8a5464f",
+        "domains/self_correction.py": "682c4fda4d18bf2e7655988c6ef8e52dc6ab7bae143851d804c122a0dbeb8a2d",
+        "evaluation/substrate_capability/thoughtexperiment_cross_family_idempotence_transfer_v1.py": "b9c14739041c5eddbb174e7fc8d7d69d75878503e527ad2e04ced319f2baef2a",
+        "evaluation/substrate_capability/thoughtexperiment_graph_authored_correction_rank_v1.py": "9a46f1b90dd12a577d86e28b57a256dc5e091bb93f8563aa6fc4178e40ab9fed",
+        "seeds/composer_self_correct_graph.json": "84c3f6ca601b4e62f6c2de46e1da98289821444ee9118dbdbd2a85d655c19e20",
+        "seeds/minting_recurrence_ledger.json": "10c5df924cb98eacea2a2159e60247c1d783db37f4be147378c6115e1b545a92",
+        "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb"
+      },
+      "source_before": {
+        "domains/reflective_faculty.py": "8f530a8c8754949216b71b473c4769fa5d351d01d6055127943c009d06763d05",
+        "domains/self_correct_dispatch.py": "6aa0759fb39c7b6ff754b669f1699d6badeb90beb48e90e5f7e5b3d1f8a5464f",
+        "domains/self_correction.py": "682c4fda4d18bf2e7655988c6ef8e52dc6ab7bae143851d804c122a0dbeb8a2d",
+        "evaluation/substrate_capability/thoughtexperiment_cross_family_idempotence_transfer_v1.py": "b9c14739041c5eddbb174e7fc8d7d69d75878503e527ad2e04ced319f2baef2a",
+        "evaluation/substrate_capability/thoughtexperiment_graph_authored_correction_rank_v1.py": "9a46f1b90dd12a577d86e28b57a256dc5e091bb93f8563aa6fc4178e40ab9fed",
+        "seeds/composer_self_correct_graph.json": "84c3f6ca601b4e62f6c2de46e1da98289821444ee9118dbdbd2a85d655c19e20",
+        "seeds/minting_recurrence_ledger.json": "10c5df924cb98eacea2a2159e60247c1d783db37f4be147378c6115e1b545a92",
+        "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb"
+      },
+      "source_stable": true,
+      "training": {
+        "adopted": true,
+        "model_final_converged": true,
+        "records": [
+          {
+            "adopted": false,
+            "candidate_digest": "",
+            "candidate_label": "swap_term_leaf:signature->residual",
+            "converges_in_rehearsal": false,
+            "outcome_class": "",
+            "rank_attempt_tag": "30c014d631cf",
+            "selected": false,
+            "target_rule": "sd_mint_quantum",
+            "task_utility": 0.0
+          },
+          {
+            "adopted": true,
+            "candidate_digest": "",
+            "candidate_label": "dedup_identity_fix",
+            "converges_in_rehearsal": true,
+            "outcome_class": "idempotent_mint_guard",
+            "rank_attempt_tag": "30c014d631cf",
+            "selected": true,
+            "target_rule": "sd_mint_quantum",
+            "task_utility": 1.0
+          }
+        ],
+        "selected": "dedup_identity_fix",
+        "target_rule": "sd_mint_quantum"
+      }
+    }
+  ]
+}

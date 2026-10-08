@@ -1,0 +1,192 @@
+{
+  "checks": {
+    "first_shape_query_releases_term": true,
+    "fresh_arena_starts_empty": true,
+    "malformed_partial_terms_rollback": true,
+    "shape_nodes_persist_without_term_arena_growth": true,
+    "shape_queries_release_all_terms": true
+  },
+  "evidence_class": "post-change engineering verification; not preregistered performance evidence",
+  "locked_inputs": {
+    "malformed_partial_term_json": {
+      "a": {
+        "type": "Lit",
+        "value": 1
+      },
+      "b": {
+        "type": "UnknownTemporaryTerm"
+      },
+      "type": "Eq"
+    },
+    "native_sha256": "3e33a958148bb8d706b4ae15af1f090d66947b7d36734bbdcc31d25a5422b67f",
+    "py_binding_source_sha256": "3ac908299e7090696065c7725241a1d5218c53ac84bc4d8589ff70dab5360add",
+    "replicates": 3,
+    "runner_sha256": "16b841c020e2315f540b0db433a0a12cfb5be39894f835742bb2914e8d5bdd3d",
+    "sizes": [
+      10,
+      100,
+      1000
+    ],
+    "term_json": {
+      "a": {
+        "type": "Lit",
+        "value": 1
+      },
+      "b": {
+        "type": "Lit",
+        "value": 1
+      },
+      "type": "Eq"
+    }
+  },
+  "run_id": "term-arena-shape-cleanup-postfix-20260925",
+  "runs": [
+    {
+      "arena_after_first_shape_query": 0,
+      "arena_start": 0,
+      "malformed_partial_inputs": {
+        "add_shape_node_for_term": {
+          "arena_delta": 0,
+          "attempts": 100,
+          "expected_parse_failures": 100
+        },
+        "shape_of_term": {
+          "arena_delta": 0,
+          "attempts": 100,
+          "expected_parse_failures": 100
+        }
+      },
+      "shape_node_creation": {
+        "arena_delta": 0,
+        "calls": 1000,
+        "graph_node_delta": 1000
+      },
+      "shape_queries": [
+        {
+          "all_shapes_equal": true,
+          "arena_delta": 0,
+          "calls": 10,
+          "elapsed_ns": 26781
+        },
+        {
+          "all_shapes_equal": true,
+          "arena_delta": 0,
+          "calls": 100,
+          "elapsed_ns": 213521
+        },
+        {
+          "all_shapes_equal": true,
+          "arena_delta": 0,
+          "calls": 1000,
+          "elapsed_ns": 2518559
+        }
+      ]
+    },
+    {
+      "arena_after_first_shape_query": 0,
+      "arena_start": 0,
+      "malformed_partial_inputs": {
+        "add_shape_node_for_term": {
+          "arena_delta": 0,
+          "attempts": 100,
+          "expected_parse_failures": 100
+        },
+        "shape_of_term": {
+          "arena_delta": 0,
+          "attempts": 100,
+          "expected_parse_failures": 100
+        }
+      },
+      "shape_node_creation": {
+        "arena_delta": 0,
+        "calls": 1000,
+        "graph_node_delta": 1000
+      },
+      "shape_queries": [
+        {
+          "all_shapes_equal": true,
+          "arena_delta": 0,
+          "calls": 10,
+          "elapsed_ns": 21010
+        },
+        {
+          "all_shapes_equal": true,
+          "arena_delta": 0,
+          "calls": 100,
+          "elapsed_ns": 240032
+        },
+        {
+          "all_shapes_equal": true,
+          "arena_delta": 0,
+          "calls": 1000,
+          "elapsed_ns": 3464346
+        }
+      ]
+    },
+    {
+      "arena_after_first_shape_query": 0,
+      "arena_start": 0,
+      "malformed_partial_inputs": {
+        "add_shape_node_for_term": {
+          "arena_delta": 0,
+          "attempts": 100,
+          "expected_parse_failures": 100
+        },
+        "shape_of_term": {
+          "arena_delta": 0,
+          "attempts": 100,
+          "expected_parse_failures": 100
+        }
+      },
+      "shape_node_creation": {
+        "arena_delta": 0,
+        "calls": 1000,
+        "graph_node_delta": 1000
+      },
+      "shape_queries": [
+        {
+          "all_shapes_equal": true,
+          "arena_delta": 0,
+          "calls": 10,
+          "elapsed_ns": 22300
+        },
+        {
+          "all_shapes_equal": true,
+          "arena_delta": 0,
+          "calls": 100,
+          "elapsed_ns": 199941
+        },
+        {
+          "all_shapes_equal": true,
+          "arena_delta": 0,
+          "calls": 1000,
+          "elapsed_ns": 2407668
+        }
+      ]
+    }
+  ],
+  "schema_version": 1,
+  "timing_summary": {
+    "10": {
+      "elapsed_ns_median": 22300,
+      "elapsed_ns_range": [
+        21010,
+        26781
+      ]
+    },
+    "100": {
+      "elapsed_ns_median": 213521,
+      "elapsed_ns_range": [
+        199941,
+        240032
+      ]
+    },
+    "1000": {
+      "elapsed_ns_median": 2518559,
+      "elapsed_ns_range": [
+        2407668,
+        3464346
+      ]
+    }
+  }
+}

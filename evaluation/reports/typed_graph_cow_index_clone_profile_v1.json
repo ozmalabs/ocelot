@@ -1,0 +1,500 @@
+{
+  "binary": {
+    "path": "/home/matt/ozmadev/ocelot/runners/dsl/target/release/typed_graph_cow_index_clone_profile_probe",
+    "sha256": "sha256:9f6e5dfcf3184ed75826c017c21ac5a3a56a5da3ad7b1fa7497d3d1f0404c3ea"
+  },
+  "host": {
+    "machine": "x86_64",
+    "platform": "Linux-6.8.0-142-generic-x86_64-with-glibc2.39"
+  },
+  "implementation_status": "all listed hash-backed query indexes are eagerly cloned by TypedGraph::clone_sharing_graph_pages",
+  "protocol": {
+    "components": [
+      "edge_attrs",
+      "by_type",
+      "out_by_type",
+      "out_by_type_target_index",
+      "in_by_type",
+      "edges_by_type",
+      "edge_delete_version_by_type",
+      "attr_indices"
+    ],
+    "fixture": "typed nodes with 128-value declared attribute index; four edge types; sparse edge attributes; star includes high-degree target index",
+    "known_limits": [
+      "microbenchmark of component clone/query work, not end-to-end Substrate fork",
+      "one host and fixed component measurement order",
+      "entry counts are reported but no exact allocator bytes or peak memory",
+      "SmallVec adjacency and CowPagedVec slabs are deliberately not included",
+      "flat query control is built once from the same immutable fixture; branch mutation/query mix is not represented"
+    ],
+    "repeats": 25,
+    "sizes": [
+      771,
+      10771,
+      50771
+    ],
+    "timed_scope": "clone or deep-copy one hash-backed field at a time; plus 100k-query 50/50 hit/miss streams against a deep flat FxHashMap control",
+    "topologies": [
+      "path",
+      "star"
+    ]
+  },
+  "rows": [
+    {
+      "components": [
+        {
+          "component": "edge_attrs",
+          "entries": 49,
+          "median_eager_clone_ns": 2550,
+          "median_shared_fork_ns": 2590
+        },
+        {
+          "component": "by_type",
+          "entries": 771,
+          "median_eager_clone_ns": 110,
+          "median_shared_fork_ns": 100
+        },
+        {
+          "component": "out_by_type",
+          "entries": 770,
+          "median_eager_clone_ns": 32240,
+          "median_shared_fork_ns": 30
+        },
+        {
+          "component": "out_by_type_target_index",
+          "entries": 0,
+          "median_eager_clone_ns": 30,
+          "median_shared_fork_ns": 30
+        },
+        {
+          "component": "in_by_type",
+          "entries": 770,
+          "median_eager_clone_ns": 34130,
+          "median_shared_fork_ns": 30
+        },
+        {
+          "component": "edges_by_type",
+          "entries": 770,
+          "median_eager_clone_ns": 120,
+          "median_shared_fork_ns": 130
+        },
+        {
+          "component": "edge_delete_version_by_type",
+          "entries": 0,
+          "median_eager_clone_ns": 20,
+          "median_shared_fork_ns": 30
+        },
+        {
+          "component": "attr_indices",
+          "entries": 771,
+          "median_eager_clone_ns": 9370,
+          "median_shared_fork_ns": 9310
+        }
+      ],
+      "edges": 770,
+      "exact_index_queries": true,
+      "nodes": 771,
+      "read_costs": [
+        {
+          "checksums_match": true,
+          "component": "out_by_type",
+          "cow_sharded_median_ns_per_lookup": 2.23721,
+          "fx_hash_median_ns_per_lookup": 2.21382,
+          "lookups": 100000
+        },
+        {
+          "checksums_match": true,
+          "component": "in_by_type",
+          "cow_sharded_median_ns_per_lookup": 5.06474,
+          "fx_hash_median_ns_per_lookup": 1.99902,
+          "lookups": 100000
+        }
+      ],
+      "repeats": 25,
+      "topology": "path"
+    },
+    {
+      "components": [
+        {
+          "component": "edge_attrs",
+          "entries": 48,
+          "median_eager_clone_ns": 1090,
+          "median_shared_fork_ns": 1100
+        },
+        {
+          "component": "by_type",
+          "entries": 771,
+          "median_eager_clone_ns": 80,
+          "median_shared_fork_ns": 80
+        },
+        {
+          "component": "out_by_type",
+          "entries": 770,
+          "median_eager_clone_ns": 670,
+          "median_shared_fork_ns": 30
+        },
+        {
+          "component": "out_by_type_target_index",
+          "entries": 770,
+          "median_eager_clone_ns": 200,
+          "median_shared_fork_ns": 200
+        },
+        {
+          "component": "in_by_type",
+          "entries": 770,
+          "median_eager_clone_ns": 28520,
+          "median_shared_fork_ns": 30
+        },
+        {
+          "component": "edges_by_type",
+          "entries": 770,
+          "median_eager_clone_ns": 130,
+          "median_shared_fork_ns": 130
+        },
+        {
+          "component": "edge_delete_version_by_type",
+          "entries": 0,
+          "median_eager_clone_ns": 30,
+          "median_shared_fork_ns": 30
+        },
+        {
+          "component": "attr_indices",
+          "entries": 771,
+          "median_eager_clone_ns": 8010,
+          "median_shared_fork_ns": 8140
+        }
+      ],
+      "edges": 770,
+      "exact_index_queries": true,
+      "nodes": 771,
+      "read_costs": [
+        {
+          "checksums_match": true,
+          "component": "out_by_type",
+          "cow_sharded_median_ns_per_lookup": 3.26632,
+          "fx_hash_median_ns_per_lookup": 3.55033,
+          "lookups": 100000
+        },
+        {
+          "checksums_match": true,
+          "component": "in_by_type",
+          "cow_sharded_median_ns_per_lookup": 2.20721,
+          "fx_hash_median_ns_per_lookup": 3.13003,
+          "lookups": 100000
+        }
+      ],
+      "repeats": 25,
+      "topology": "star"
+    },
+    {
+      "components": [
+        {
+          "component": "edge_attrs",
+          "entries": 674,
+          "median_eager_clone_ns": 24790,
+          "median_shared_fork_ns": 24921
+        },
+        {
+          "component": "by_type",
+          "entries": 10771,
+          "median_eager_clone_ns": 960,
+          "median_shared_fork_ns": 960
+        },
+        {
+          "component": "out_by_type",
+          "entries": 10770,
+          "median_eager_clone_ns": 489874,
+          "median_shared_fork_ns": 40
+        },
+        {
+          "component": "out_by_type_target_index",
+          "entries": 0,
+          "median_eager_clone_ns": 30,
+          "median_shared_fork_ns": 30
+        },
+        {
+          "component": "in_by_type",
+          "entries": 10770,
+          "median_eager_clone_ns": 486713,
+          "median_shared_fork_ns": 40
+        },
+        {
+          "component": "edges_by_type",
+          "entries": 10770,
+          "median_eager_clone_ns": 750,
+          "median_shared_fork_ns": 760
+        },
+        {
+          "component": "edge_delete_version_by_type",
+          "entries": 0,
+          "median_eager_clone_ns": 20,
+          "median_shared_fork_ns": 20
+        },
+        {
+          "component": "attr_indices",
+          "entries": 10771,
+          "median_eager_clone_ns": 4000,
+          "median_shared_fork_ns": 3950
+        }
+      ],
+      "edges": 10770,
+      "exact_index_queries": true,
+      "nodes": 10771,
+      "read_costs": [
+        {
+          "checksums_match": true,
+          "component": "out_by_type",
+          "cow_sharded_median_ns_per_lookup": 2.54702,
+          "fx_hash_median_ns_per_lookup": 3.51343,
+          "lookups": 100000
+        },
+        {
+          "checksums_match": true,
+          "component": "in_by_type",
+          "cow_sharded_median_ns_per_lookup": 5.89194,
+          "fx_hash_median_ns_per_lookup": 3.38802,
+          "lookups": 100000
+        }
+      ],
+      "repeats": 25,
+      "topology": "path"
+    },
+    {
+      "components": [
+        {
+          "component": "edge_attrs",
+          "entries": 673,
+          "median_eager_clone_ns": 22680,
+          "median_shared_fork_ns": 22660
+        },
+        {
+          "component": "by_type",
+          "entries": 10771,
+          "median_eager_clone_ns": 740,
+          "median_shared_fork_ns": 740
+        },
+        {
+          "component": "out_by_type",
+          "entries": 10770,
+          "median_eager_clone_ns": 1760,
+          "median_shared_fork_ns": 30
+        },
+        {
+          "component": "out_by_type_target_index",
+          "entries": 10770,
+          "median_eager_clone_ns": 2580,
+          "median_shared_fork_ns": 2580
+        },
+        {
+          "component": "in_by_type",
+          "entries": 10770,
+          "median_eager_clone_ns": 424783,
+          "median_shared_fork_ns": 40
+        },
+        {
+          "component": "edges_by_type",
+          "entries": 10770,
+          "median_eager_clone_ns": 920,
+          "median_shared_fork_ns": 920
+        },
+        {
+          "component": "edge_delete_version_by_type",
+          "entries": 0,
+          "median_eager_clone_ns": 30,
+          "median_shared_fork_ns": 30
+        },
+        {
+          "component": "attr_indices",
+          "entries": 10771,
+          "median_eager_clone_ns": 6780,
+          "median_shared_fork_ns": 6790
+        }
+      ],
+      "edges": 10770,
+      "exact_index_queries": true,
+      "nodes": 10771,
+      "read_costs": [
+        {
+          "checksums_match": true,
+          "component": "out_by_type",
+          "cow_sharded_median_ns_per_lookup": 3.35743,
+          "fx_hash_median_ns_per_lookup": 3.29652,
+          "lookups": 100000
+        },
+        {
+          "checksums_match": true,
+          "component": "in_by_type",
+          "cow_sharded_median_ns_per_lookup": 4.41273,
+          "fx_hash_median_ns_per_lookup": 3.33742,
+          "lookups": 100000
+        }
+      ],
+      "repeats": 25,
+      "topology": "star"
+    },
+    {
+      "components": [
+        {
+          "component": "edge_attrs",
+          "entries": 3174,
+          "median_eager_clone_ns": 130241,
+          "median_shared_fork_ns": 129841
+        },
+        {
+          "component": "by_type",
+          "entries": 50771,
+          "median_eager_clone_ns": 3600,
+          "median_shared_fork_ns": 3620
+        },
+        {
+          "component": "out_by_type",
+          "entries": 50770,
+          "median_eager_clone_ns": 2923071,
+          "median_shared_fork_ns": 50
+        },
+        {
+          "component": "out_by_type_target_index",
+          "entries": 0,
+          "median_eager_clone_ns": 30,
+          "median_shared_fork_ns": 30
+        },
+        {
+          "component": "in_by_type",
+          "entries": 50770,
+          "median_eager_clone_ns": 2319467,
+          "median_shared_fork_ns": 40
+        },
+        {
+          "component": "edges_by_type",
+          "entries": 50770,
+          "median_eager_clone_ns": 4770,
+          "median_shared_fork_ns": 4770
+        },
+        {
+          "component": "edge_delete_version_by_type",
+          "entries": 0,
+          "median_eager_clone_ns": 30,
+          "median_shared_fork_ns": 30
+        },
+        {
+          "component": "attr_indices",
+          "entries": 50771,
+          "median_eager_clone_ns": 11360,
+          "median_shared_fork_ns": 11380
+        }
+      ],
+      "edges": 50770,
+      "exact_index_queries": true,
+      "nodes": 50771,
+      "read_costs": [
+        {
+          "checksums_match": true,
+          "component": "out_by_type",
+          "cow_sharded_median_ns_per_lookup": 5.15883,
+          "fx_hash_median_ns_per_lookup": 3.43983,
+          "lookups": 100000
+        },
+        {
+          "checksums_match": true,
+          "component": "in_by_type",
+          "cow_sharded_median_ns_per_lookup": 4.44013,
+          "fx_hash_median_ns_per_lookup": 3.65423,
+          "lookups": 100000
+        }
+      ],
+      "repeats": 25,
+      "topology": "path"
+    },
+    {
+      "components": [
+        {
+          "component": "edge_attrs",
+          "entries": 3173,
+          "median_eager_clone_ns": 64711,
+          "median_shared_fork_ns": 68891
+        },
+        {
+          "component": "by_type",
+          "entries": 50771,
+          "median_eager_clone_ns": 3490,
+          "median_shared_fork_ns": 3490
+        },
+        {
+          "component": "out_by_type",
+          "entries": 50770,
+          "median_eager_clone_ns": 4150,
+          "median_shared_fork_ns": 30
+        },
+        {
+          "component": "out_by_type_target_index",
+          "entries": 50770,
+          "median_eager_clone_ns": 18801,
+          "median_shared_fork_ns": 18650
+        },
+        {
+          "component": "in_by_type",
+          "entries": 50770,
+          "median_eager_clone_ns": 1370080,
+          "median_shared_fork_ns": 30
+        },
+        {
+          "component": "edges_by_type",
+          "entries": 50770,
+          "median_eager_clone_ns": 3670,
+          "median_shared_fork_ns": 3680
+        },
+        {
+          "component": "edge_delete_version_by_type",
+          "entries": 0,
+          "median_eager_clone_ns": 20,
+          "median_shared_fork_ns": 20
+        },
+        {
+          "component": "attr_indices",
+          "entries": 50771,
+          "median_eager_clone_ns": 5270,
+          "median_shared_fork_ns": 5280
+        }
+      ],
+      "edges": 50770,
+      "exact_index_queries": true,
+      "nodes": 50771,
+      "read_costs": [
+        {
+          "checksums_match": true,
+          "component": "out_by_type",
+          "cow_sharded_median_ns_per_lookup": 2.00371,
+          "fx_hash_median_ns_per_lookup": 1.95211,
+          "lookups": 100000
+        },
+        {
+          "checksums_match": true,
+          "component": "in_by_type",
+          "cow_sharded_median_ns_per_lookup": 3.00463,
+          "fx_hash_median_ns_per_lookup": 1.85371,
+          "lookups": 100000
+        }
+      ],
+      "repeats": 25,
+      "topology": "star"
+    }
+  ],
+  "runner": {
+    "path": "evaluation/substrate_capability/typed_graph_cow_index_clone_profile_v1.py",
+    "sha256": "sha256:7d59be54ab35a368711d614b9c57e24f05b4d99addeb3d534782294ceec15dd3"
+  },
+  "schema": "TypedGraphCowIndexCloneProfileV1",
+  "sources": {
+    "evaluation/substrate_capability/typed_graph_cow_index_clone_profile_v1.py": "sha256:7d59be54ab35a368711d614b9c57e24f05b4d99addeb3d534782294ceec15dd3",
+    "runners/dsl/Cargo.lock": "sha256:409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+    "runners/dsl/Cargo.toml": "sha256:c4d8ffff2241352a5150b5a9937dbb8010e958b6f115235b7daeae716c1a9332",
+    "runners/dsl/src/bin/typed_graph_cow_index_clone_profile_probe.rs": "sha256:59112cf2404bb83391ff03769c915200d10a4370f7de35173587ed2df567ae81",
+    "runners/dsl/src/cow_paged_vec.rs": "sha256:4b180c6aeb3cf9ee4391e65ba3aa50110b255da5697a909b46e7f4ec852939e4",
+    "runners/dsl/src/graph.rs": "sha256:cf8ef01bbf49d35a217e3032a7cb7091e6d6a2ddd0712cde1197283fe57cadbd",
+    "runners/dsl/src/lib.rs": "sha256:f8c5ae707046db8347438227913a737faf78a184b294c8e339a9008e71fab36c"
+  },
+  "toolchain": {
+    "cargo": "cargo 1.87.0 (Homebrew)",
+    "rustc": "rustc 1.87.0 (17067e9ac 2025-05-09) (Homebrew)"
+  }
+}

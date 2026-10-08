@@ -1,0 +1,32 @@
+{
+  "all_checks_pass": true,
+  "analysis_id": "substrate-delete-active-rule-invalidation-v1-independent-analysis",
+  "checks": {
+    "default_mode_does_not_enumerate_reader": true,
+    "default_mode_stale_in_every_replica": true,
+    "initial_and_postdelete_reports_fixed_point": true,
+    "manifest_success": true,
+    "precise_mode_enumerates_reader_after_delete": true,
+    "precise_mode_refreshes_every_replica": true,
+    "runner_gates_pass": true,
+    "three_unique_processes": true
+  },
+  "checks_passed": 8,
+  "checks_total": 8,
+  "claim_boundary": "One active typed-Edges reader under default and precise dirty modes after public node deletion; the default stale derived value is a measured negative result.",
+  "per_condition_medians": {
+    "default": {
+      "candidate_pairs": 0,
+      "delete_settle_wall_ns": 7480,
+      "final_value": 1,
+      "rule_enumerations": 0
+    },
+    "precise": {
+      "candidate_pairs": 1,
+      "delete_settle_wall_ns": 10210,
+      "final_value": 0,
+      "rule_enumerations": 1
+    }
+  },
+  "raw_sha256": "93d405e9d2e96de23c34e0b33f066dbae7df50064e1389efd761d7b139083eac"
+}

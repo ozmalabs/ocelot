@@ -1,0 +1,366 @@
+{
+  "case_count": 7,
+  "commitment_status_accuracy": 1.0,
+  "consequence_projection_accuracy": 1.0,
+  "consequence_provenance_complete_count": 1,
+  "event_identity_count": 9,
+  "external_truth_claim": false,
+  "fail_closed_negative_count": 4,
+  "inputs": {
+    "overlay_fixture": {
+      "path": "tests/fixtures/conversational_manifold/proposition_event_commitment_cases.json",
+      "sha256": "e8603f31a96a81848e866e6f147f29bc84d49be18a1b501239c96613fcf2b0c7"
+    },
+    "phase0_corpus": {
+      "path": "tests/fixtures/conversational_manifold/phase0_events.json",
+      "replayed_or_modified": false,
+      "sha256": "72bf847cb2066ff1a0c679d3412d601100da30b6dd81e4a3b0e547c47f4406c3",
+      "used_as_event_id_registry_only": true
+    }
+  },
+  "proposition_materialization_accuracy": 1.0,
+  "proposition_provenance_complete_count": 5,
+  "reply_evidence_used": false,
+  "rows": [
+    {
+      "bridge_errors": [],
+      "category": "accepted",
+      "commitment_status": "accepted",
+      "consequence_error": null,
+      "consequence_provenance": true,
+      "consequence_supported": true,
+      "event_identity": true,
+      "expected_commitment_status": "accepted",
+      "expected_consequence_supported": true,
+      "expected_materialized": true,
+      "external_truth_claim": false,
+      "id": "accepted_supported",
+      "proposition": {
+        "commitment_status": "accepted",
+        "evidence_present": true,
+        "materialized": true,
+        "origin_event_present": true,
+        "uptake_applied": "accept",
+        "uptake_signal": "accept"
+      },
+      "proposition_count_delta": 1,
+      "proposition_materialized": true,
+      "reply_evidence_used": false,
+      "steps": [
+        {
+          "bridge_error": null,
+          "bridge_supported": true,
+          "event_id": "standalone_assertion",
+          "event_identity": true,
+          "proposition": {
+            "commitment_status": "accepted",
+            "evidence_present": true,
+            "materialized": true,
+            "origin_event_present": true,
+            "uptake_applied": "accept",
+            "uptake_signal": "accept"
+          },
+          "proposition_count_delta": 1,
+          "reply": null
+        }
+      ]
+    },
+    {
+      "bridge_errors": [],
+      "category": "challenged",
+      "commitment_status": "challenged",
+      "consequence_error": "unsupported_proposition_evidence",
+      "consequence_provenance": false,
+      "consequence_supported": false,
+      "event_identity": true,
+      "expected_commitment_status": "challenged",
+      "expected_consequence_supported": false,
+      "expected_materialized": true,
+      "external_truth_claim": false,
+      "id": "challenged_no_consequence",
+      "proposition": {
+        "commitment_status": "challenged",
+        "evidence_present": true,
+        "materialized": true,
+        "origin_event_present": true,
+        "uptake_applied": "challenge",
+        "uptake_signal": "challenge"
+      },
+      "proposition_count_delta": 1,
+      "proposition_materialized": true,
+      "reply_evidence_used": false,
+      "steps": [
+        {
+          "bridge_error": null,
+          "bridge_supported": true,
+          "event_id": "correction",
+          "event_identity": true,
+          "proposition": {
+            "commitment_status": "challenged",
+            "evidence_present": true,
+            "materialized": true,
+            "origin_event_present": true,
+            "uptake_applied": "challenge",
+            "uptake_signal": "challenge"
+          },
+          "proposition_count_delta": 1,
+          "reply": null
+        }
+      ]
+    },
+    {
+      "bridge_errors": [],
+      "category": "retracted",
+      "commitment_status": "retracted",
+      "consequence_error": "unsupported_proposition_evidence",
+      "consequence_provenance": false,
+      "consequence_supported": false,
+      "event_identity": true,
+      "expected_commitment_status": "retracted",
+      "expected_consequence_supported": false,
+      "expected_materialized": true,
+      "external_truth_claim": false,
+      "id": "accepted_then_retracted",
+      "proposition": {
+        "commitment_status": "retracted",
+        "evidence_present": true,
+        "materialized": true,
+        "origin_event_present": true,
+        "uptake_applied": "retract",
+        "uptake_signal": "retract"
+      },
+      "proposition_count_delta": 1,
+      "proposition_materialized": true,
+      "reply_evidence_used": false,
+      "steps": [
+        {
+          "bridge_error": null,
+          "bridge_supported": true,
+          "event_id": "assertion_weather",
+          "event_identity": true,
+          "proposition": {
+            "commitment_status": "accepted",
+            "evidence_present": true,
+            "materialized": true,
+            "origin_event_present": true,
+            "uptake_applied": "accept",
+            "uptake_signal": "accept"
+          },
+          "proposition_count_delta": 1,
+          "reply": null
+        },
+        {
+          "bridge_error": null,
+          "bridge_supported": false,
+          "event_id": "correction_route",
+          "event_identity": true,
+          "proposition": {
+            "commitment_status": "retracted",
+            "evidence_present": true,
+            "materialized": true,
+            "origin_event_present": true,
+            "uptake_applied": "retract",
+            "uptake_signal": "retract"
+          },
+          "proposition_count_delta": 0,
+          "reply": null
+        }
+      ]
+    },
+    {
+      "bridge_errors": [
+        "unsupported_proposition_evidence"
+      ],
+      "category": "unsupported",
+      "commitment_status": null,
+      "consequence_error": "no_proposition",
+      "consequence_provenance": false,
+      "consequence_supported": false,
+      "event_identity": true,
+      "expected_commitment_status": null,
+      "expected_consequence_supported": false,
+      "expected_materialized": false,
+      "external_truth_claim": false,
+      "id": "unsupported_surface_evidence",
+      "proposition": {
+        "commitment_status": null,
+        "evidence_present": false,
+        "materialized": false,
+        "origin_event_present": false,
+        "uptake_applied": null,
+        "uptake_signal": null
+      },
+      "proposition_count_delta": 0,
+      "proposition_materialized": false,
+      "reply_evidence_used": false,
+      "steps": [
+        {
+          "bridge_error": "unsupported_proposition_evidence",
+          "bridge_supported": false,
+          "event_id": "unknown_action",
+          "event_identity": true,
+          "proposition": {
+            "commitment_status": null,
+            "evidence_present": false,
+            "materialized": false,
+            "origin_event_present": false,
+            "uptake_applied": null,
+            "uptake_signal": null
+          },
+          "proposition_count_delta": 0,
+          "reply": null
+        }
+      ]
+    },
+    {
+      "bridge_errors": [
+        "unsupported_proposition_evidence"
+      ],
+      "category": "ambiguous",
+      "commitment_status": null,
+      "consequence_error": "no_proposition",
+      "consequence_provenance": false,
+      "consequence_supported": false,
+      "event_identity": true,
+      "expected_commitment_status": null,
+      "expected_consequence_supported": false,
+      "expected_materialized": false,
+      "external_truth_claim": false,
+      "id": "ambiguous_missing_predicate",
+      "proposition": {
+        "commitment_status": null,
+        "evidence_present": false,
+        "materialized": false,
+        "origin_event_present": false,
+        "uptake_applied": null,
+        "uptake_signal": null
+      },
+      "proposition_count_delta": 0,
+      "proposition_materialized": false,
+      "reply_evidence_used": false,
+      "steps": [
+        {
+          "bridge_error": "unsupported_proposition_evidence",
+          "bridge_supported": false,
+          "event_id": "unresolved_reference",
+          "event_identity": true,
+          "proposition": {
+            "commitment_status": null,
+            "evidence_present": false,
+            "materialized": false,
+            "origin_event_present": false,
+            "uptake_applied": null,
+            "uptake_signal": null
+          },
+          "proposition_count_delta": 0,
+          "reply": null
+        }
+      ]
+    },
+    {
+      "bridge_errors": [],
+      "category": "no_world",
+      "commitment_status": "proposed",
+      "consequence_error": "unsupported_proposition_evidence",
+      "consequence_provenance": false,
+      "consequence_supported": false,
+      "event_identity": true,
+      "expected_commitment_status": "proposed",
+      "expected_consequence_supported": false,
+      "expected_materialized": true,
+      "external_truth_claim": false,
+      "id": "no_world_uncommitted",
+      "proposition": {
+        "commitment_status": "proposed",
+        "evidence_present": true,
+        "materialized": true,
+        "origin_event_present": true,
+        "uptake_applied": null,
+        "uptake_signal": null
+      },
+      "proposition_count_delta": 1,
+      "proposition_materialized": true,
+      "reply_evidence_used": false,
+      "steps": [
+        {
+          "bridge_error": null,
+          "bridge_supported": true,
+          "event_id": "unavailable_world",
+          "event_identity": true,
+          "proposition": {
+            "commitment_status": "proposed",
+            "evidence_present": true,
+            "materialized": true,
+            "origin_event_present": true,
+            "uptake_applied": null,
+            "uptake_signal": null
+          },
+          "proposition_count_delta": 1,
+          "reply": null
+        }
+      ]
+    },
+    {
+      "bridge_errors": [
+        "unsupported_proposition_evidence"
+      ],
+      "category": "contradiction",
+      "commitment_status": "proposed",
+      "consequence_error": "unsupported_proposition_evidence",
+      "consequence_provenance": false,
+      "consequence_supported": false,
+      "event_identity": true,
+      "expected_commitment_status": "proposed",
+      "expected_consequence_supported": false,
+      "expected_materialized": true,
+      "external_truth_claim": false,
+      "id": "conflicting_evidence_id",
+      "proposition": {
+        "commitment_status": "proposed",
+        "evidence_present": true,
+        "materialized": true,
+        "origin_event_present": true,
+        "uptake_applied": null,
+        "uptake_signal": null
+      },
+      "proposition_count_delta": 1,
+      "proposition_materialized": true,
+      "reply_evidence_used": false,
+      "steps": [
+        {
+          "bridge_error": null,
+          "bridge_supported": true,
+          "event_id": "assertion_source",
+          "event_identity": true,
+          "proposition": {
+            "commitment_status": "proposed",
+            "evidence_present": true,
+            "materialized": true,
+            "origin_event_present": true,
+            "uptake_applied": null,
+            "uptake_signal": null
+          },
+          "proposition_count_delta": 1,
+          "reply": null
+        },
+        {
+          "bridge_error": "unsupported_proposition_evidence",
+          "bridge_supported": false,
+          "event_id": "correction_uncertain",
+          "event_identity": true,
+          "proposition": {
+            "commitment_status": "proposed",
+            "evidence_present": true,
+            "materialized": true,
+            "origin_event_present": true,
+            "uptake_applied": null,
+            "uptake_signal": null
+          },
+          "proposition_count_delta": 0,
+          "reply": null
+        }
+      ]
+    }
+  ],
+  "schema": "proposition_event_commitment_measurement.v1"
+}

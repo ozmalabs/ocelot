@@ -1,0 +1,184 @@
+{
+  "ablation_to_trigger_candidate_ratios": {
+    "threshold5": 1.9443526277925764,
+    "threshold7": 1.8972991945964919
+  },
+  "all_preregistered_gates_pass": false,
+  "behavioral_gates": {
+    "threshold5_ablation_hits_candidate_cap_at_least_4_of_5": true,
+    "threshold5_lexical_ablation_selects_no_shape": true,
+    "threshold5_median_candidate_reduction_at_least_1_5x": true,
+    "threshold5_trigger_exact_transfer_at_least_4_of_5": true,
+    "threshold5_trigger_selects_registered_shape_without_harness_ops": true,
+    "threshold7_ablation_hits_candidate_cap_at_least_4_of_5": true,
+    "threshold7_lexical_ablation_selects_no_shape": true,
+    "threshold7_median_candidate_reduction_at_least_1_5x": true,
+    "threshold7_trigger_exact_transfer_at_least_4_of_5": true,
+    "threshold7_trigger_selects_registered_shape_without_harness_ops": true
+  },
+  "behavioral_pass": true,
+  "capture_integrity_pass": false,
+  "case_results": {
+    "threshold5:lexical_ablation": {
+      "accepted": 0,
+      "candidate_tests": {
+        "max": 200000,
+        "median": 200000,
+        "min": 200000
+      },
+      "exact_transfer_workers": 0,
+      "false_accept_workers": 0,
+      "gapped": 5,
+      "holdout_exact_predictions": 0,
+      "holdout_prediction_count": 0,
+      "message_operator_selections": [
+        "None"
+      ],
+      "n": 5,
+      "pump_cpu_ms": {
+        "median": 262.097871
+      },
+      "pump_wall_ms": {
+        "max": 272.918689,
+        "median": 259.682424,
+        "min": 249.278896
+      },
+      "selected_operator_lists": [
+        "[]"
+      ],
+      "selected_shapes": [
+        "None"
+      ]
+    },
+    "threshold5:trigger": {
+      "accepted": 5,
+      "candidate_tests": {
+        "max": 102862,
+        "median": 102862,
+        "min": 102862
+      },
+      "exact_transfer_workers": 5,
+      "false_accept_workers": 0,
+      "gapped": 0,
+      "holdout_exact_predictions": 30,
+      "holdout_prediction_count": 30,
+      "message_operator_selections": [
+        "1"
+      ],
+      "n": 5,
+      "pump_cpu_ms": {
+        "median": 236.702833
+      },
+      "pump_wall_ms": {
+        "max": 247.835346,
+        "median": 235.780637,
+        "min": 224.575245
+      },
+      "selected_operator_lists": [
+        "['Times', 'Gt', 'IfThenElse']"
+      ],
+      "selected_shapes": [
+        "thresholded_greater_branch"
+      ]
+    },
+    "threshold7:lexical_ablation": {
+      "accepted": 0,
+      "candidate_tests": {
+        "max": 200000,
+        "median": 200000,
+        "min": 200000
+      },
+      "exact_transfer_workers": 0,
+      "false_accept_workers": 0,
+      "gapped": 5,
+      "holdout_exact_predictions": 0,
+      "holdout_prediction_count": 0,
+      "message_operator_selections": [
+        "None"
+      ],
+      "n": 5,
+      "pump_cpu_ms": {
+        "median": 214.648961
+      },
+      "pump_wall_ms": {
+        "max": 224.824786,
+        "median": 211.994872,
+        "min": 207.243281
+      },
+      "selected_operator_lists": [
+        "[]"
+      ],
+      "selected_shapes": [
+        "None"
+      ]
+    },
+    "threshold7:trigger": {
+      "accepted": 5,
+      "candidate_tests": {
+        "max": 105413,
+        "median": 105413,
+        "min": 105413
+      },
+      "exact_transfer_workers": 5,
+      "false_accept_workers": 0,
+      "gapped": 0,
+      "holdout_exact_predictions": 30,
+      "holdout_prediction_count": 30,
+      "message_operator_selections": [
+        "1"
+      ],
+      "n": 5,
+      "pump_cpu_ms": {
+        "median": 233.990594
+      },
+      "pump_wall_ms": {
+        "max": 238.379934,
+        "median": 232.782688,
+        "min": 224.619685
+      },
+      "selected_operator_lists": [
+        "['Times', 'Gt', 'IfThenElse']"
+      ],
+      "selected_shapes": [
+        "thresholded_greater_branch"
+      ]
+    }
+  },
+  "integrity_checks": {
+    "accepted_programs_have_six_independent_holdout_rows": true,
+    "all_workers_reach_rung3_terminal": true,
+    "all_workers_source_stable": true,
+    "complete_unique_20_cell_matrix": true,
+    "current_source_and_native_match_lock": true,
+    "footer_lock_unchanged": true,
+    "locked_schedule_header_footer": false,
+    "no_worker_failures": true
+  },
+  "interpretation": "Tests this registered thresholded-greater selector across two fixed scalar piecewise-scaling tasks and a lexical ablation. It does not establish operator selection beyond this shape family or general grammar induction.",
+  "lock_sha256": "9abdd1378e2e8e146d2f52b36c2cfe626572c189575a152771dd0ba9718dea51",
+  "native_matches_lock": true,
+  "passed_integrity_checks": 7,
+  "raw_sha256": "e1d5f8f20f8225be61d51e694db15fb5cf9448db3466c0374dc1307267a5cfbf",
+  "run_id": "synthesis_operator_shape_transfer_v1_20260929",
+  "source_file_matches": {
+    "domains/code_writing.py": true,
+    "domains/engine_provenance.py": true,
+    "domains/prog_retrieval.py": true,
+    "domains/prog_synthesis.py": true,
+    "runners/dsl/python/substrate_rs/__init__.py": true,
+    "runners/dsl/python/substrate_rs/_native.build.json": true,
+    "runners/dsl/src/graph_rules.rs": true,
+    "runners/dsl/src/prog_eval.rs": true,
+    "runners/dsl/src/py.rs": true,
+    "runners/dsl/src/substrate.rs": true,
+    "runners/dsl/src/synth_enumerate.rs": true,
+    "runners/dsl/src/term.rs": true,
+    "seeds/code_write_request_cues.json": true,
+    "seeds/exact_families.json": true,
+    "seeds/program_synthesis.json": true,
+    "seeds/program_synthesis_grounding.json": true,
+    "seeds/program_synthesis_opgrammar.json": true
+  },
+  "total_integrity_checks": 8,
+  "worker_failures": []
+}

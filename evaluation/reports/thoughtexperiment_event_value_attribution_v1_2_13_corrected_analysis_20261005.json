@@ -1,0 +1,346 @@
+{
+  "analyzer_sha256": "93b09210386ca43a9a15101c18de132000fcdb43bd4d7df15c0c145e5ab1af01",
+  "capture_sha256": "49aa59c6ab7d21757bee4e7a58b4d923aa949256f24c30ce41a109acd72eb2ab",
+  "checks": {
+    "all_mode_measurements_present": true,
+    "analyzer_hash_matches_lock": true,
+    "combined_effect_trace_matches_event_trace": true,
+    "combined_events_match_traced_events": true,
+    "combined_residual_matches_full_snapshot": true,
+    "complete_fixture_values_complete": true,
+    "correction_analyzer_hash_recorded": true,
+    "depth_cap_fails_closed": true,
+    "direct_deferred_final_writer_matches_graph": true,
+    "direct_deferred_identity_alternation": true,
+    "direct_deferred_overlap_status_is_budgeted": true,
+    "direct_deferred_transition_detail": [
+      [
+        1,
+        "identity_direct",
+        false,
+        "<ABSENT>",
+        99
+      ],
+      [
+        2,
+        "identity_deferred",
+        true,
+        99,
+        0
+      ],
+      [
+        4,
+        "identity_direct",
+        false,
+        0,
+        99
+      ],
+      [
+        5,
+        "identity_deferred",
+        true,
+        99,
+        0
+      ],
+      [
+        7,
+        "identity_direct",
+        false,
+        0,
+        99
+      ],
+      [
+        8,
+        "identity_deferred",
+        true,
+        99,
+        0
+      ],
+      [
+        10,
+        "identity_direct",
+        false,
+        0,
+        99
+      ],
+      [
+        11,
+        "identity_deferred",
+        true,
+        99,
+        0
+      ],
+      [
+        13,
+        "identity_direct",
+        false,
+        0,
+        99
+      ]
+    ],
+    "edge_attr_then_delete_replayed": true,
+    "effect_trace_report_budget_respected": true,
+    "event_assignments_independently_recomputed": true,
+    "event_before_values_match_ordered_replay": true,
+    "event_replay_details": {
+      "byte_cap": {
+        "complete": false,
+        "event_before_values_match_ordered_replay": true,
+        "replayed_final_edges_match": true,
+        "replayed_final_nodes_match": false
+      },
+      "deferred": {
+        "complete": true,
+        "event_before_values_match_ordered_replay": true,
+        "replayed_final_edges_match": true,
+        "replayed_final_nodes_match": true
+      },
+      "depth_cap": {
+        "complete": false,
+        "event_before_values_match_ordered_replay": true,
+        "replayed_final_edges_match": true,
+        "replayed_final_nodes_match": false
+      },
+      "direct": {
+        "complete": true,
+        "event_before_values_match_ordered_replay": true,
+        "replayed_final_edges_match": true,
+        "replayed_final_nodes_match": true
+      },
+      "direct_deferred_overlap": {
+        "complete": true,
+        "event_before_values_match_ordered_replay": true,
+        "replayed_final_edges_match": true,
+        "replayed_final_nodes_match": true
+      },
+      "edge_mutation": {
+        "complete": true,
+        "event_before_values_match_ordered_replay": true,
+        "replayed_final_edges_match": true,
+        "replayed_final_nodes_match": true
+      },
+      "object_cap": {
+        "complete": false,
+        "event_before_values_match_ordered_replay": true,
+        "replayed_final_edges_match": true,
+        "replayed_final_nodes_match": false
+      },
+      "overlap": {
+        "complete": true,
+        "event_before_values_match_ordered_replay": true,
+        "replayed_final_edges_match": true,
+        "replayed_final_nodes_match": true
+      },
+      "report_object_cap": {
+        "complete": false,
+        "event_before_values_match_ordered_replay": true,
+        "replayed_final_edges_match": true,
+        "replayed_final_nodes_match": false
+      },
+      "same_event_multiwrite": {
+        "complete": true,
+        "event_before_values_match_ordered_replay": true,
+        "replayed_final_edges_match": true,
+        "replayed_final_nodes_match": true
+      }
+    },
+    "event_replay_matches_final_graph": true,
+    "event_snapshot_json_measured": true,
+    "expected_direct_and_deferred_writers_observed": true,
+    "fixture_set_exact": true,
+    "isolated_arm_semantics_replicate": true,
+    "isolated_combined_cost_exceeds_or_matches_event_trace": true,
+    "isolated_current_memory_present": true,
+    "isolated_process_matrix_exact": true,
+    "isolated_replicates_complete": true,
+    "isolated_source_locks_stable": true,
+    "lock_matches_capture": true,
+    "locked_analyzer_stable": true,
+    "no_events_dropped": true,
+    "object_cap_truncates_explicitly": true,
+    "ordinary_traced_exact_modes_match": true,
+    "overlap_last_writer_identified": true,
+    "overlap_transition_detail": [
+      [
+        "writer_one",
+        0,
+        1
+      ],
+      [
+        "writer_two",
+        1,
+        2
+      ]
+    ],
+    "overlap_value_chain_exact": true,
+    "oversized_value_fails_closed": true,
+    "report_byte_cap_unreachable_before_object_cap": true,
+    "report_object_budget_reached_exactly": true,
+    "report_object_cap_truncates_next_group": true,
+    "reported_budget_metadata_consistent": true,
+    "runner_hash_matches_lock": true,
+    "same_event_effect_trace_captures_edge_deletion": true,
+    "same_event_effect_values_preserve_intermediate_chain": true,
+    "same_event_records_endpoints_only": true,
+    "schema_correct": true,
+    "snapshot_field_deltas_independently_recomputed": true,
+    "source_lock_stable": true,
+    "three_distinct_workers": true,
+    "workers_semantically_replicate": true
+  },
+  "claim_limit": "Independent graph-snapshot reconstruction and target-event matching are validated for these bounded fixtures. Ambiguous overlaps remain unresolved; this is not native event-local attribution, causal necessity, diagnosis, or general self-repair.",
+  "isolated_arm_summary": {
+    "direct": {
+      "combined": {
+        "median_cpu_ms": 0.29287999999999537,
+        "median_pss_delta_kib": 716,
+        "median_rss_delta_kib": 716,
+        "median_rss_kib": 34604,
+        "median_wall_ms": 0.2984319580718875
+      },
+      "exact": {
+        "median_cpu_ms": 0.17656000000000616,
+        "median_pss_delta_kib": 708,
+        "median_rss_delta_kib": 708,
+        "median_rss_kib": 34600,
+        "median_wall_ms": 0.1826209481805563
+      },
+      "plain": {
+        "median_cpu_ms": 0.12733000000000883,
+        "median_pss_delta_kib": 644,
+        "median_rss_delta_kib": 644,
+        "median_rss_kib": 34600,
+        "median_wall_ms": 0.13260100968182087
+      },
+      "traced": {
+        "median_cpu_ms": 0.2121099999999876,
+        "median_pss_delta_kib": 780,
+        "median_rss_delta_kib": 780,
+        "median_rss_kib": 34600,
+        "median_wall_ms": 0.2163719618692994
+      }
+    },
+    "report_object_cap": {
+      "combined": {
+        "median_cpu_ms": 1099.035718,
+        "median_pss_delta_kib": 480356,
+        "median_rss_delta_kib": 480356,
+        "median_rss_kib": 509964,
+        "median_wall_ms": 1101.3579049613327
+      },
+      "exact": {
+        "median_cpu_ms": 30.745318000000022,
+        "median_pss_delta_kib": 14016,
+        "median_rss_delta_kib": 14016,
+        "median_rss_kib": 44208,
+        "median_wall_ms": 30.754248960874975
+      },
+      "plain": {
+        "median_cpu_ms": 7.063120999999978,
+        "median_pss_delta_kib": 3052,
+        "median_rss_delta_kib": 3052,
+        "median_rss_kib": 34600,
+        "median_wall_ms": 7.067827042192221
+      },
+      "traced": {
+        "median_cpu_ms": 492.57997299999994,
+        "median_pss_delta_kib": 269428,
+        "median_rss_delta_kib": 269428,
+        "median_rss_kib": 298996,
+        "median_wall_ms": 493.43093391507864
+      }
+    },
+    "same_event_multiwrite": {
+      "combined": {
+        "median_cpu_ms": 0.3107499999999985,
+        "median_pss_delta_kib": 652,
+        "median_rss_delta_kib": 652,
+        "median_rss_kib": 34604,
+        "median_wall_ms": 0.31601195223629475
+      },
+      "exact": {
+        "median_cpu_ms": 0.1321400000000028,
+        "median_pss_delta_kib": 644,
+        "median_rss_delta_kib": 644,
+        "median_rss_kib": 34600,
+        "median_wall_ms": 0.13761105947196484
+      },
+      "plain": {
+        "median_cpu_ms": 0.13538999999999912,
+        "median_pss_delta_kib": 580,
+        "median_rss_delta_kib": 580,
+        "median_rss_kib": 34600,
+        "median_wall_ms": 0.14028104487806559
+      },
+      "traced": {
+        "median_cpu_ms": 0.21797999999999262,
+        "median_pss_delta_kib": 780,
+        "median_rss_delta_kib": 780,
+        "median_rss_kib": 34608,
+        "median_wall_ms": 0.22187107242643833
+      }
+    }
+  },
+  "lock_sha256": "8049d953cd138de5f98e58676cac1a60568c82ae1d2e57b32dbe15fa7efb3abe",
+  "passed": true,
+  "schema": "ThoughtexperimentEventValueAttributionV1_2_13Analysis",
+  "summary": {
+    "all_fields_uniquely_attributed": false,
+    "ambiguous_fields": 3,
+    "changed_fields": 17432,
+    "distinct_pids": 3,
+    "fixtures": 10,
+    "observed_writers": [
+      "bulk_writer_00",
+      "bulk_writer_01",
+      "bulk_writer_02",
+      "bulk_writer_03",
+      "bulk_writer_04",
+      "bulk_writer_05",
+      "bulk_writer_06",
+      "bulk_writer_07",
+      "bulk_writer_08",
+      "bulk_writer_09",
+      "bulk_writer_10",
+      "bulk_writer_11",
+      "bulk_writer_12",
+      "bulk_writer_13",
+      "bulk_writer_14",
+      "bulk_writer_15",
+      "bulk_writer_16",
+      "bulk_writer_17",
+      "bulk_writer_18",
+      "bulk_writer_19",
+      "bulk_writer_20",
+      "bulk_writer_21",
+      "bulk_writer_22",
+      "bulk_writer_23",
+      "bulk_writer_24",
+      "bulk_writer_25",
+      "bulk_writer_26",
+      "bulk_writer_27",
+      "bulk_writer_28",
+      "bulk_writer_29",
+      "bulk_writer_30",
+      "bulk_writer_31",
+      "bulk_writer_32",
+      "deep_writer",
+      "direct_writer",
+      "edge_relabel",
+      "edge_remove",
+      "identity_deferred",
+      "identity_direct",
+      "many_object_writer",
+      "multiwrite_then_remove",
+      "oversize_writer",
+      "trace_direct_control",
+      "trans_frame_identity_assignment",
+      "writer_one",
+      "writer_two"
+    ],
+    "progress_budget": 3,
+    "uncovered_fields": 0,
+    "uniquely_attributed_fields": 533,
+    "workers": 3
+  }
+}

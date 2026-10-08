@@ -1,0 +1,97 @@
+{
+  "capture_sha256": "df92e789311a9285631baab5738be0ce0d84896de462049438f075776b91662e",
+  "checks": {
+    "exact_schedule_and_matrix": true,
+    "instrumentation_arm_presence": true,
+    "lock_matches_and_recomputes": true,
+    "no_failures_and_unique_processes": true,
+    "semantic_parity_each_arm": true,
+    "six_complete_pairs": true,
+    "sources_stable": true
+  },
+  "claim_boundary": "One host and one authored 100k-node workload, with three pairs per backend.",
+  "interpretation": "Paired on/off differences estimate the combined effect of clock calls and Python wrapper dispatch for this workload. They do not separately estimate those two effects or generalize beyond the six pairs.",
+  "schema": "ThoughtexperimentFanoutInstrumentationOverheadV1Analysis",
+  "summaries": {
+    "full_copy": {
+      "median_digest_ms_on": 792.692463,
+      "median_export_ms_on": 2531.824193,
+      "median_off_ms": 3620.964891,
+      "median_on_ms": 3620.483447,
+      "median_paired_delta_ms": -0.481444,
+      "median_paired_ratio_on_off": 0.9998670398596803,
+      "pairs": [
+        {
+          "delta_ms": 221.627961,
+          "graph_digest_equal": true,
+          "off_ms": 3565.703956,
+          "on_digest_ms": 792.692463,
+          "on_export_ms": 2730.858626,
+          "on_ms": 3787.331917,
+          "ratio_on_off": 1.06215545758561,
+          "replicate": 0
+        },
+        {
+          "delta_ms": -182.287633,
+          "graph_digest_equal": true,
+          "off_ms": 3654.932364,
+          "on_digest_ms": 757.378497,
+          "on_export_ms": 2464.427722,
+          "on_ms": 3472.644731,
+          "ratio_on_off": 0.9501255796699608,
+          "replicate": 1
+        },
+        {
+          "delta_ms": -0.481444,
+          "graph_digest_equal": true,
+          "off_ms": 3620.964891,
+          "on_digest_ms": 829.776483,
+          "on_export_ms": 2531.824193,
+          "on_ms": 3620.483447,
+          "ratio_on_off": 0.9998670398596803,
+          "replicate": 2
+        }
+      ]
+    },
+    "shared_graph_pages": {
+      "median_digest_ms_on": 739.861497,
+      "median_export_ms_on": 2518.37097,
+      "median_off_ms": 3362.321274,
+      "median_on_ms": 3371.602267,
+      "median_paired_delta_ms": -45.820263,
+      "median_paired_ratio_on_off": 0.98637243164289,
+      "pairs": [
+        {
+          "delta_ms": 208.238521,
+          "graph_digest_equal": true,
+          "off_ms": 3296.602289,
+          "on_digest_ms": 744.944488,
+          "on_export_ms": 2599.746576,
+          "on_ms": 3504.84081,
+          "ratio_on_off": 1.063167620096256,
+          "replicate": 0
+        },
+        {
+          "delta_ms": -68.867086,
+          "graph_digest_equal": true,
+          "off_ms": 3440.469353,
+          "on_digest_ms": 714.025974,
+          "on_export_ms": 2518.37097,
+          "on_ms": 3371.602267,
+          "ratio_on_off": 0.9799832293405114,
+          "replicate": 1
+        },
+        {
+          "delta_ms": -45.820263,
+          "graph_digest_equal": true,
+          "off_ms": 3362.321274,
+          "on_digest_ms": 739.861497,
+          "on_export_ms": 2434.326128,
+          "on_ms": 3316.501011,
+          "ratio_on_off": 0.98637243164289,
+          "replicate": 2
+        }
+      ]
+    }
+  }
+}

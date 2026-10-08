@@ -1,0 +1,23 @@
+{
+  "checks": {
+    "a_stays_active_while_b_finishes": true,
+    "both_replies_match_baseline": true,
+    "event_order_gate_all_runs": true,
+    "normalized_semantic_shape_repeats": true,
+    "raw_inputs_match_lock": true,
+    "raw_lock_hash_matches": true,
+    "source_stable_workers_and_postrun": true,
+    "three_distinct_processes": true,
+    "unique_goal_and_origin_identity": true
+  },
+  "interpretation": "Same-thread reentrant live calls are correctly interleaved: B completes while A remains selected and active, then A resumes; both keep distinct Goal/event ownership and return baseline replies. This is not thread concurrency.",
+  "lock_sha256": "52158f56d27ce410636818d543acaff07a7491dd10a64617ccbecc349c62093c",
+  "raw_sha256": "021716919d6082bb2112c68243af8823c00ec5dc8bf6d00d6629571368b9e5bb",
+  "schema_version": 1,
+  "summary": {
+    "a_ns_median": 15076877015,
+    "b_reentrant_ns_median": 3520871791,
+    "boot_ns_median": 12333130495,
+    "replicates": 3
+  }
+}

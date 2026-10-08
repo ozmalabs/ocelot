@@ -1,0 +1,290 @@
+{
+  "boot": {
+    "failed_count": 11,
+    "loaded": 731
+  },
+  "captured_utc": "2026-10-01T06:05:09.031574+00:00",
+  "covered_keyword_count": 0,
+  "max_order": 1,
+  "mode": "exploratory_candidate_discovery_not_confirmatory",
+  "platform": "Linux-6.8.0-142-generic-x86_64-with-glibc2.39",
+  "postulate_count": 33,
+  "postulates": [
+    {
+      "postulate": "image_representation",
+      "postulate_text": "Pixel arrays, color spaces, image formats (JPEG, PNG). Substrate analogue: substrate's visual input encoding.",
+      "retained_open_gaps": []
+    },
+    {
+      "postulate": "pixel",
+      "postulate_text": "Picture element. Smallest addressable unit in raster image. RGB triple. Substrate analogue: substrate's atomic visual sample.",
+      "retained_open_gaps": []
+    },
+    {
+      "postulate": "image_processing",
+      "postulate_text": "Operations on images: filtering, transforming, enhancing. Substrate analogue: substrate's pre-processing.",
+      "retained_open_gaps": []
+    },
+    {
+      "postulate": "gaussian_blur",
+      "postulate_text": "Convolution with Gaussian kernel. Noise reduction. Substrate analogue: substrate's smoothing pre-filter.",
+      "retained_open_gaps": []
+    },
+    {
+      "postulate": "median_filter",
+      "postulate_text": "Replace each pixel with median of neighborhood. Removes salt-and-pepper noise + preserves edges. Substrate analogue: substrate's robust local filter.",
+      "retained_open_gaps": []
+    },
+    {
+      "postulate": "morphological_operations",
+      "postulate_text": "Erosion, dilation, opening, closing. Shape-based operations on binary images. Substrate analogue: substrate's binary-pattern operations.",
+      "retained_open_gaps": []
+    },
+    {
+      "postulate": "sift",
+      "postulate_text": "Scale-Invariant Feature Transform. Lowe 2004. Keypoints + descriptors invariant to scale + rotation. Substrate analogue: substrate's invariant-feature extractor.",
+      "retained_open_gaps": []
+    },
+    {
+      "postulate": "hog",
+      "postulate_text": "Histogram of Oriented Gradients. Dalal + Triggs. Used for pedestrian detection. Substrate analogue: substrate's edge-statistics feature.",
+      "retained_open_gaps": []
+    },
+    {
+      "postulate": "orb_features",
+      "postulate_text": "Oriented FAST + Rotated BRIEF. Fast keypoint detector + binary descriptor. Substrate analogue: substrate's efficient feature.",
+      "retained_open_gaps": []
+    },
+    {
+      "postulate": "harris_corner",
+      "postulate_text": "Corner detector via gradient covariance. Substrate analogue: substrate's structural-corner feature.",
+      "retained_open_gaps": []
+    },
+    {
+      "postulate": "convolutional_layer",
+      "postulate_text": "Learnable filters applied across image. Local connectivity + weight sharing. Substrate analogue: substrate's local feature detector.",
+      "retained_open_gaps": []
+    },
+    {
+      "postulate": "pooling_layer",
+      "postulate_text": "Downsamples \u2014 max or average pool. Adds invariance, reduces dimensionality. Substrate analogue: substrate's pooling-for-invariance.",
+      "retained_open_gaps": []
+    },
+    {
+      "postulate": "batch_normalization",
+      "postulate_text": "Ioffe + Szegedy 2015. Normalize activations within mini-batch. Stabilizes training. Substrate analogue: substrate's per-layer normalization.",
+      "retained_open_gaps": []
+    },
+    {
+      "postulate": "residual_connection_vision",
+      "postulate_text": "ResNet He 2015. Skip connection bypassing layers. Enables very deep networks. Substrate analogue: substrate's identity-shortcut in deep computation.",
+      "retained_open_gaps": []
+    },
+    {
+      "postulate": "resnet",
+      "postulate_text": "He 2015. Deep residual networks. Won ImageNet 2015. 152+ layers. Substrate analogue: substrate's very-deep architecture.",
+      "retained_open_gaps": []
+    },
+    {
+      "postulate": "efficient_net",
+      "postulate_text": "Tan + Le 2019. Compound scaling of depth + width + resolution. Substrate analogue: substrate's balanced-scale architecture.",
+      "retained_open_gaps": []
+    },
+    {
+      "postulate": "object_detection_systems",
+      "postulate_text": "Locate + classify objects. R-CNN family, YOLO, SSD, DETR. Substrate analogue: substrate's spatial-object recognition system.",
+      "retained_open_gaps": []
+    },
+    {
+      "postulate": "faster_rcnn",
+      "postulate_text": "Region Proposal Network + classifier. Ren 2015. Substrate analogue: substrate's two-stage detector.",
+      "retained_open_gaps": []
+    },
+    {
+      "postulate": "yolo",
+      "postulate_text": "You Only Look Once. Redmon. Single-pass detection. Real-time. Substrate analogue: substrate's single-pass spatial detector.",
+      "retained_open_gaps": []
+    },
+    {
+      "postulate": "mask_rcnn",
+      "postulate_text": "He 2017. Adds instance segmentation to Faster R-CNN. Substrate analogue: substrate's spatial-mask producer.",
+      "retained_open_gaps": []
+    },
+    {
+      "postulate": "image_classification_systems",
+      "postulate_text": "AlexNet, VGG, GoogLeNet, ResNet, EfficientNet, ViT. Substrate analogue: substrate's category-classifier architectures.",
+      "retained_open_gaps": []
+    },
+    {
+      "postulate": "semantic_segmentation_systems",
+      "postulate_text": "FCN, U-Net, DeepLab. Pixel-level classification. Substrate analogue: substrate's pixel-Concept system.",
+      "retained_open_gaps": []
+    },
+    {
+      "postulate": "instance_segmentation_systems",
+      "postulate_text": "Mask R-CNN, DETR, Mask2Former. Distinguishes instances of same class. Substrate analogue: substrate's per-instance Concept.",
+      "retained_open_gaps": []
+    },
+    {
+      "postulate": "data_augmentation",
+      "postulate_text": "Transform training images (rotate, flip, color jitter) to enlarge dataset. Mixup, CutMix. Substrate analogue: substrate's invariance-training via input transformation.",
+      "retained_open_gaps": []
+    },
+    {
+      "postulate": "transfer_learning_vision_models",
+      "postulate_text": "Pre-train on ImageNet, fine-tune on target task. Hugely successful. Substrate analogue: substrate's foundational pre-training pattern.",
+      "retained_open_gaps": []
+    },
+    {
+      "postulate": "self_supervised_vision",
+      "postulate_text": "Learn from images without labels. Contrastive (SimCLR, MoCo), masked image modeling (MAE). Substrate analogue: substrate's self-grounded learning.",
+      "retained_open_gaps": []
+    },
+    {
+      "postulate": "contrastive_learning",
+      "postulate_text": "Train to bring similar pairs close + push dissimilar apart in representation space. Substrate analogue: substrate's similarity-driven learning.",
+      "retained_open_gaps": []
+    },
+    {
+      "postulate": "diffusion_model_vision",
+      "postulate_text": "Generative model via noise \u2192 image denoising chain. DALL-E 2, Stable Diffusion. Substrate analogue: substrate's noise-to-pattern generative process.",
+      "retained_open_gaps": [
+        {
+          "capability_keys": [
+            "compositional generation",
+            "production-space search",
+            "compose-under-selection generator"
+          ],
+          "chain": [
+            "order-0: diffusion_model_vision \u2014 Generative model via noise \u2192 image denoising chain. DALL-E 2, Stable Diffusion. Substrate analogue: substrate's noise-to-pattern generative process.",
+            "order-1 (via ?:compositional_generativity__from__grammar (from concept 'grammar')): a COMPOSITIONAL / GENERATIVE system's WHOLE is determined by its PARTS plus a finite set of COMBINATION (production) rules (cf. grammar), so its members are not an enumerated list but an OPEN set REALIZABLE BY COMPOSING parts \u2014 a FOLD / SEARCH over the production space under a selection criterion, rather than a fixed table lookup"
+          ],
+          "from_postulate": "diffusion_model_vision",
+          "gap": "a COMPOSITIONAL / GENERATIVE system's WHOLE is determined by its PARTS plus a finite set of COMBINATION (production) rules (cf. grammar), so its members are not an enumerated list but an OPEN set REALIZABLE BY COMPOSING parts \u2014 a FOLD / SEARCH over the production space under a selection criterion, rather than a fixed table lookup",
+          "order": 1,
+          "source_concepts": [
+            "grammar"
+          ],
+          "source_domains": [
+            "?"
+          ],
+          "via_shapes": [
+            "compositional_generativity__from__grammar"
+          ]
+        }
+      ]
+    },
+    {
+      "postulate": "gan",
+      "postulate_text": "Generative Adversarial Network. Goodfellow 2014. Generator vs discriminator. Substrate analogue: substrate's adversarial-training pattern.",
+      "retained_open_gaps": []
+    },
+    {
+      "postulate": "variational_autoencoder",
+      "postulate_text": "VAE. Probabilistic generative model with continuous latent space. Substrate analogue: substrate's probabilistic-latent encoding.",
+      "retained_open_gaps": [
+        {
+          "capability_keys": [
+            "compositional generation",
+            "production-space search",
+            "compose-under-selection generator"
+          ],
+          "chain": [
+            "order-0: variational_autoencoder \u2014 VAE. Probabilistic generative model with continuous latent space. Substrate analogue: substrate's probabilistic-latent encoding.",
+            "order-1 (via ?:compositional_generativity__from__grammar (from concept 'grammar')): a COMPOSITIONAL / GENERATIVE system's WHOLE is determined by its PARTS plus a finite set of COMBINATION (production) rules (cf. grammar), so its members are not an enumerated list but an OPEN set REALIZABLE BY COMPOSING parts \u2014 a FOLD / SEARCH over the production space under a selection criterion, rather than a fixed table lookup"
+          ],
+          "from_postulate": "variational_autoencoder",
+          "gap": "a COMPOSITIONAL / GENERATIVE system's WHOLE is determined by its PARTS plus a finite set of COMBINATION (production) rules (cf. grammar), so its members are not an enumerated list but an OPEN set REALIZABLE BY COMPOSING parts \u2014 a FOLD / SEARCH over the production space under a selection criterion, rather than a fixed table lookup",
+          "order": 1,
+          "source_concepts": [
+            "grammar"
+          ],
+          "source_domains": [
+            "?"
+          ],
+          "via_shapes": [
+            "compositional_generativity__from__grammar"
+          ]
+        }
+      ]
+    },
+    {
+      "postulate": "neural_radiance_field",
+      "postulate_text": "NeRF. Mildenhall 2020. Render novel views of scene from sparse observations. Substrate analogue: substrate's view-synthesis from observations.",
+      "retained_open_gaps": []
+    },
+    {
+      "postulate": "vision_language_model",
+      "postulate_text": "CLIP, ALIGN, Flamingo. Joint vision + language representation. Zero-shot classification. Substrate analogue: substrate's multimodal Concept space.",
+      "retained_open_gaps": [
+        {
+          "capability_keys": [
+            "reliability-weighted cue fusion",
+            "multi-cue integration",
+            "audiovisual fusion estimate"
+          ],
+          "chain": [
+            "order-0: vision_language_model \u2014 CLIP, ALIGN, Flamingo. Joint vision + language representation. Zero-shot classification. Substrate analogue: substrate's multimodal Concept space.",
+            "order-1 (via ?:reliability_weighted_fusion__from__Kalman_filter (from concept 'Kalman_filter')): when SEVERAL independent estimates of ONE latent quantity are available (cf. Kalman_filter), the optimal fusion is a RELIABILITY (inverse-variance / precision) WEIGHTED blend \u2014 each cue / modality weighted by how reliable it is, the fused estimate beating any single source: audiovisual + multi-cue integration is reliability-weighted fusion of the cues into one category estimate"
+          ],
+          "from_postulate": "vision_language_model",
+          "gap": "when SEVERAL independent estimates of ONE latent quantity are available (cf. Kalman_filter), the optimal fusion is a RELIABILITY (inverse-variance / precision) WEIGHTED blend \u2014 each cue / modality weighted by how reliable it is, the fused estimate beating any single source: audiovisual + multi-cue integration is reliability-weighted fusion of the cues into one category estimate",
+          "order": 1,
+          "source_concepts": [
+            "Kalman_filter"
+          ],
+          "source_domains": [
+            "?"
+          ],
+          "via_shapes": [
+            "reliability_weighted_fusion__from__Kalman_filter"
+          ]
+        }
+      ]
+    },
+    {
+      "postulate": "clip",
+      "postulate_text": "Radford 2021. Contrastive language-image pretraining. Aligns text + image embeddings. Substrate analogue: substrate's cross-modal Concept binding.",
+      "retained_open_gaps": []
+    }
+  ],
+  "protocol": "THOUGHTEXPERIMENT_OPEN_GAP_DISCOVERY_CV_V1_20261001.md",
+  "record": false,
+  "scope": "computer_vision",
+  "selector_prune": true,
+  "shape_count": 24,
+  "shape_mode": "harvested",
+  "source_after": {
+    "files": {
+      "docs/research/engine_substrate/THOUGHTEXPERIMENT_OPEN_GAP_DISCOVERY_CV_V1_20261001.md": "495d46b78f457b08f3d7610296905c222b4f1d5c90622cb6c6bd148b37559136",
+      "domains/harvester_shape.py": "8ceab6248f6ef8d52eab490ed167a63cc4784ef824b3f718331758c804c9d32b",
+      "domains/implication_harvester.py": "506c83889355ae9acaac41acf33c2345e10a567bb22734306e8996451e30f89f",
+      "domains/order_n_postulates.py": "075f22c0a1bc21124d0c87abe73b44f1f9d52801a86336aa3bfbb72e722bf510",
+      "domains/speech_science.py": "a2238b64385c4cb51d9a1d6851e029a81dae46b4387d46df7d2b33f681211f74",
+      "evaluation/substrate_capability/thoughtexperiment_open_gap_discovery_cv_v1.py": "2b4965ac591f3bed33f330b92f150918f650d6797dccc6d693577de4c9424557",
+      "runners/dsl/python/substrate_rs/_native.abi3.so": "b9f398c75ceb12a5d519235efb6b3ec403d1b153a576aad6def528c2d48a7617",
+      "substrate/boot_all.py": "2bdf46f19228e1d85dbdcf12383116ceeb72aab0efe7ddd0cc6a51d23b45d220",
+      "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+      "substrate/world_adapter.py": "7aeeb3d418fade3c90dc2d28a64a2685880d0a45d9fd47e4b6c2f6b6dd649023"
+    },
+    "seed_digest": "4d8e1da157b96b5f20d63bd6335b5feed2868b5fdb6ca976ec1ba27216ad4b10",
+    "seed_file_count": 828
+  },
+  "source_before": {
+    "files": {
+      "docs/research/engine_substrate/THOUGHTEXPERIMENT_OPEN_GAP_DISCOVERY_CV_V1_20261001.md": "495d46b78f457b08f3d7610296905c222b4f1d5c90622cb6c6bd148b37559136",
+      "domains/harvester_shape.py": "8ceab6248f6ef8d52eab490ed167a63cc4784ef824b3f718331758c804c9d32b",
+      "domains/implication_harvester.py": "506c83889355ae9acaac41acf33c2345e10a567bb22734306e8996451e30f89f",
+      "domains/order_n_postulates.py": "075f22c0a1bc21124d0c87abe73b44f1f9d52801a86336aa3bfbb72e722bf510",
+      "domains/speech_science.py": "a2238b64385c4cb51d9a1d6851e029a81dae46b4387d46df7d2b33f681211f74",
+      "evaluation/substrate_capability/thoughtexperiment_open_gap_discovery_cv_v1.py": "2b4965ac591f3bed33f330b92f150918f650d6797dccc6d693577de4c9424557",
+      "runners/dsl/python/substrate_rs/_native.abi3.so": "b9f398c75ceb12a5d519235efb6b3ec403d1b153a576aad6def528c2d48a7617",
+      "substrate/boot_all.py": "2bdf46f19228e1d85dbdcf12383116ceeb72aab0efe7ddd0cc6a51d23b45d220",
+      "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+      "substrate/world_adapter.py": "7aeeb3d418fade3c90dc2d28a64a2685880d0a45d9fd47e4b6c2f6b6dd649023"
+    },
+    "seed_digest": "4d8e1da157b96b5f20d63bd6335b5feed2868b5fdb6ca976ec1ba27216ad4b10",
+    "seed_file_count": 828
+  },
+  "source_stable": true
+}

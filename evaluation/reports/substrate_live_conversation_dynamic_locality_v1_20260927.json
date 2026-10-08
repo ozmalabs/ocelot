@@ -1,0 +1,266 @@
+{
+  "checks": {
+    "all_traces_complete": true,
+    "capture_inputs_match_postrun": true,
+    "capture_lock_matches_lockfile": true,
+    "raw_inputs_match_capture": true,
+    "stable_task_ownership_and_trace": true,
+    "three_traced_replicates": true,
+    "trace_rows_reconcile": true
+  },
+  "claim_boundary": "Derived from three identical, complete selected-operation traces in a synthetic live describe-scene conversation capture. Its task projection contains request lifecycle entities but omits the attached Scene and Percept inputs, so outside-core event counts cannot distinguish scene-local from shared or unrelated work. The request interval is serialized; event rows are aggregated and selected, not a complete graph read/write trace. This is a projection diagnostic, not a complete task-frame locality, natural-task prevalence, or asymptotic result.",
+  "inputs": {
+    "capture_sha256": "0a3920d6dc4efd80b9de852508f3351c85c9332f32941b97f64fddc8252d1460",
+    "lock_sha256": "14c26defd28cae296ba8bc0a2bc5ef6a4f175f1aac7d480cfedb26286ad3a65d",
+    "raw_sha256": "c3dedd306d8e39a877495ebfee4173e1131776d613964519dbff63f6a1e46658"
+  },
+  "per_request": {
+    "request-A": {
+      "distinct_non_owned_nodes_touched": 7286,
+      "distinct_owned_core_nodes_touched": 6,
+      "request_owned_core": "a",
+      "top_term_attr_read_rules": [
+        {
+          "rule_name": "curiosity_targets_ambivalent_nodes",
+          "weighted_reads": 214880
+        },
+        {
+          "rule_name": "recognise_a_thing_that_moves_itself",
+          "weighted_reads": 177072
+        },
+        {
+          "rule_name": "recognise_a_thing_that_stays_put",
+          "weighted_reads": 177044
+        },
+        {
+          "rule_name": "recognise_a_counter",
+          "weighted_reads": 177044
+        },
+        {
+          "rule_name": "gr_condition_lapse",
+          "weighted_reads": 29826
+        },
+        {
+          "rule_name": "sd_decode",
+          "weighted_reads": 25993
+        },
+        {
+          "rule_name": "sd_infer_dimension",
+          "weighted_reads": 25086
+        },
+        {
+          "rule_name": "sd_transform_decode",
+          "weighted_reads": 24946
+        },
+        {
+          "rule_name": "mint_impasse_from_stall",
+          "weighted_reads": 12584
+        },
+        {
+          "rule_name": "escalate_open_on_stall",
+          "weighted_reads": 9724
+        },
+        {
+          "rule_name": "sd_mint_quantum",
+          "weighted_reads": 4402
+        },
+        {
+          "rule_name": "bind_boot_anomaly_evidence",
+          "weighted_reads": 2376
+        }
+      ],
+      "unique_event_rows": 53164,
+      "unique_rows_by_kind": {
+        "effect_attr_write": 108,
+        "effect_edge_delete": 1,
+        "effect_edge_upsert": 112,
+        "effect_node_delete": 50,
+        "effect_node_mint": 41,
+        "effect_type_candidate_read": 10,
+        "effect_type_query": 2,
+        "pattern_edge": 246,
+        "term_attr_read": 49981,
+        "term_edge_read": 309,
+        "term_index_query": 2,
+        "term_type_read": 2302
+      },
+      "unique_rows_by_owned_core_touch": {
+        "a": 227,
+        "neither_owned_core": 52937
+      },
+      "weighted_event_count": 951567,
+      "weighted_events_by_kind": {
+        "effect_attr_write": 417,
+        "effect_edge_delete": 1,
+        "effect_edge_upsert": 190,
+        "effect_node_delete": 52,
+        "effect_node_mint": 41,
+        "effect_type_candidate_read": 932,
+        "effect_type_query": 208,
+        "pattern_edge": 987,
+        "term_attr_read": 912362,
+        "term_edge_read": 8590,
+        "term_index_query": 468,
+        "term_type_read": 27319
+      },
+      "weighted_events_by_owned_core_touch": {
+        "a": 3481,
+        "neither_owned_core": 948086
+      }
+    },
+    "request-B": {
+      "distinct_non_owned_nodes_touched": 7235,
+      "distinct_owned_core_nodes_touched": 8,
+      "request_owned_core": "b",
+      "top_term_attr_read_rules": [
+        {
+          "rule_name": "recognise_a_thing_that_moves_itself",
+          "weighted_reads": 221340
+        },
+        {
+          "rule_name": "recognise_a_thing_that_stays_put",
+          "weighted_reads": 221305
+        },
+        {
+          "rule_name": "recognise_a_counter",
+          "weighted_reads": 221305
+        },
+        {
+          "rule_name": "curiosity_targets_ambivalent_nodes",
+          "weighted_reads": 151680
+        },
+        {
+          "rule_name": "gr_condition_lapse",
+          "weighted_reads": 21541
+        },
+        {
+          "rule_name": "mint_impasse_from_stall",
+          "weighted_reads": 6864
+        },
+        {
+          "rule_name": "escalate_open_on_stall",
+          "weighted_reads": 6864
+        },
+        {
+          "rule_name": "retire_duplicate_gap",
+          "weighted_reads": 2000
+        },
+        {
+          "rule_name": "bind_boot_anomaly_evidence",
+          "weighted_reads": 1716
+        },
+        {
+          "rule_name": "mine_selectional_agent",
+          "weighted_reads": 1584
+        },
+        {
+          "rule_name": "mine_selectional_patient",
+          "weighted_reads": 1344
+        },
+        {
+          "rule_name": "mint_self_improvement_concern_confident",
+          "weighted_reads": 920
+        }
+      ],
+      "unique_event_rows": 36007,
+      "unique_rows_by_kind": {
+        "effect_attr_write": 38,
+        "effect_edge_delete": 1,
+        "effect_edge_upsert": 104,
+        "effect_node_delete": 50,
+        "effect_node_mint": 29,
+        "effect_type_candidate_read": 10,
+        "effect_type_query": 2,
+        "pattern_edge": 221,
+        "term_attr_read": 34589,
+        "term_edge_read": 398,
+        "term_index_query": 2,
+        "term_type_read": 563
+      },
+      "unique_rows_by_owned_core_touch": {
+        "a": 107,
+        "a+b": 1,
+        "b": 215,
+        "neither_owned_core": 35684
+      },
+      "weighted_event_count": 919200,
+      "weighted_events_by_kind": {
+        "effect_attr_write": 282,
+        "effect_edge_delete": 1,
+        "effect_edge_upsert": 200,
+        "effect_node_delete": 52,
+        "effect_node_mint": 29,
+        "effect_type_candidate_read": 864,
+        "effect_type_query": 192,
+        "pattern_edge": 911,
+        "term_attr_read": 889530,
+        "term_edge_read": 11183,
+        "term_index_query": 432,
+        "term_type_read": 15524
+      },
+      "weighted_events_by_owned_core_touch": {
+        "a": 2069,
+        "a+b": 12,
+        "b": 2999,
+        "neither_owned_core": 914120
+      }
+    }
+  },
+  "replicates": 3,
+  "run_id": "substrate-live-conversation-dynamic-locality-v1-20260927",
+  "schema_version": 1,
+  "task_geometry": {
+    "a": {
+      "boundary_incidence_count": 35,
+      "boundary_unique_external_node_count": 20,
+      "internal_edge_count": 12,
+      "owned_induced_treewidth_upper_bound": {
+        "method": "deterministic_min_fill_upper_bound",
+        "order": [
+          25083,
+          24893,
+          25081,
+          25061,
+          25053,
+          25063,
+          25064
+        ],
+        "value": 2
+      },
+      "owned_node_count": 7
+    },
+    "b": {
+      "boundary_incidence_count": 32,
+      "boundary_unique_external_node_count": 18,
+      "internal_edge_count": 11,
+      "owned_induced_treewidth_upper_bound": {
+        "method": "deterministic_min_fill_upper_bound",
+        "order": [
+          25097,
+          25133,
+          25116,
+          25112,
+          25117,
+          25118
+        ],
+        "value": 2
+      },
+      "owned_node_count": 6
+    },
+    "pair": {
+      "direct_cross_task_edge_count": 1,
+      "shared_external_node_count": 6,
+      "shared_external_node_type_counts": {
+        "Agent": 1,
+        "Channel": 1,
+        "Concept": 1,
+        "DiscourseEvent": 1,
+        "DiscourseState": 1,
+        "Interlocutor": 1
+      }
+    },
+    "projection_scope": "request lifecycle nodes; excludes attached Scene and Percept input nodes"
+  },
+  "trace_distinct_aggregated_rows": 89171,
+  "trace_total_weighted_events": 1870767
+}

@@ -1,0 +1,1664 @@
+{
+  "design": {
+    "budgets": [
+      1,
+      2,
+      4
+    ],
+    "cases": {
+      "poly_alias_only": {
+        "alternatives": [
+          {
+            "items": [
+              {
+                "name": "x",
+                "type": "Var"
+              },
+              {
+                "items": [
+                  {
+                    "items": [
+                      {
+                        "items": [
+                          {
+                            "items": [
+                              {
+                                "items": [
+                                  {
+                                    "items": [
+                                      {
+                                        "items": [
+                                          {
+                                            "items": [
+                                              {
+                                                "items": [
+                                                  {
+                                                    "items": [
+                                                      {
+                                                        "items": [
+                                                          {
+                                                            "a": {
+                                                              "name": "x",
+                                                              "type": "Var"
+                                                            },
+                                                            "b": {
+                                                              "type": "Lit",
+                                                              "value": 1
+                                                            },
+                                                            "type": "Minus"
+                                                          },
+                                                          {
+                                                            "a": {
+                                                              "name": "x",
+                                                              "type": "Var"
+                                                            },
+                                                            "b": {
+                                                              "type": "Lit",
+                                                              "value": 2
+                                                            },
+                                                            "type": "Minus"
+                                                          }
+                                                        ],
+                                                        "type": "Times"
+                                                      },
+                                                      {
+                                                        "a": {
+                                                          "name": "x",
+                                                          "type": "Var"
+                                                        },
+                                                        "b": {
+                                                          "type": "Lit",
+                                                          "value": 3
+                                                        },
+                                                        "type": "Minus"
+                                                      }
+                                                    ],
+                                                    "type": "Times"
+                                                  },
+                                                  {
+                                                    "a": {
+                                                      "name": "x",
+                                                      "type": "Var"
+                                                    },
+                                                    "b": {
+                                                      "type": "Lit",
+                                                      "value": 4
+                                                    },
+                                                    "type": "Minus"
+                                                  }
+                                                ],
+                                                "type": "Times"
+                                              },
+                                              {
+                                                "a": {
+                                                  "name": "x",
+                                                  "type": "Var"
+                                                },
+                                                "b": {
+                                                  "type": "Lit",
+                                                  "value": 5
+                                                },
+                                                "type": "Minus"
+                                              }
+                                            ],
+                                            "type": "Times"
+                                          },
+                                          {
+                                            "a": {
+                                              "name": "x",
+                                              "type": "Var"
+                                            },
+                                            "b": {
+                                              "type": "Lit",
+                                              "value": 6
+                                            },
+                                            "type": "Minus"
+                                          }
+                                        ],
+                                        "type": "Times"
+                                      },
+                                      {
+                                        "a": {
+                                          "name": "x",
+                                          "type": "Var"
+                                        },
+                                        "b": {
+                                          "type": "Lit",
+                                          "value": 7
+                                        },
+                                        "type": "Minus"
+                                      }
+                                    ],
+                                    "type": "Times"
+                                  },
+                                  {
+                                    "a": {
+                                      "name": "x",
+                                      "type": "Var"
+                                    },
+                                    "b": {
+                                      "type": "Lit",
+                                      "value": 8
+                                    },
+                                    "type": "Minus"
+                                  }
+                                ],
+                                "type": "Times"
+                              },
+                              {
+                                "a": {
+                                  "name": "x",
+                                  "type": "Var"
+                                },
+                                "b": {
+                                  "type": "Lit",
+                                  "value": 9
+                                },
+                                "type": "Minus"
+                              }
+                            ],
+                            "type": "Times"
+                          },
+                          {
+                            "a": {
+                              "name": "x",
+                              "type": "Var"
+                            },
+                            "b": {
+                              "type": "Lit",
+                              "value": 10
+                            },
+                            "type": "Minus"
+                          }
+                        ],
+                        "type": "Times"
+                      },
+                      {
+                        "a": {
+                          "name": "x",
+                          "type": "Var"
+                        },
+                        "b": {
+                          "type": "Lit",
+                          "value": 11
+                        },
+                        "type": "Minus"
+                      }
+                    ],
+                    "type": "Times"
+                  },
+                  {
+                    "a": {
+                      "name": "x",
+                      "type": "Var"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": 12
+                    },
+                    "type": "Minus"
+                  }
+                ],
+                "type": "Times"
+              }
+            ],
+            "type": "Plus"
+          }
+        ],
+        "candidate": {
+          "name": "x",
+          "type": "Var"
+        },
+        "domain": [
+          {
+            "x": 1
+          },
+          {
+            "x": 2
+          },
+          {
+            "x": 3
+          },
+          {
+            "x": 4
+          },
+          {
+            "x": 5
+          },
+          {
+            "x": 6
+          },
+          {
+            "x": 7
+          },
+          {
+            "x": 8
+          },
+          {
+            "x": 9
+          },
+          {
+            "x": 10
+          },
+          {
+            "x": 11
+          },
+          {
+            "x": 12
+          }
+        ],
+        "family": "sparse_polynomial",
+        "target_kind": "poly2",
+        "wrong": true
+      },
+      "poly_correct": {
+        "alternatives": [
+          {
+            "name": "x",
+            "type": "Var"
+          }
+        ],
+        "candidate": {
+          "items": [
+            {
+              "name": "x",
+              "type": "Var"
+            },
+            {
+              "items": [
+                {
+                  "items": [
+                    {
+                      "items": [
+                        {
+                          "items": [
+                            {
+                              "items": [
+                                {
+                                  "items": [
+                                    {
+                                      "items": [
+                                        {
+                                          "items": [
+                                            {
+                                              "items": [
+                                                {
+                                                  "items": [
+                                                    {
+                                                      "items": [
+                                                        {
+                                                          "a": {
+                                                            "name": "x",
+                                                            "type": "Var"
+                                                          },
+                                                          "b": {
+                                                            "type": "Lit",
+                                                            "value": 1
+                                                          },
+                                                          "type": "Minus"
+                                                        },
+                                                        {
+                                                          "a": {
+                                                            "name": "x",
+                                                            "type": "Var"
+                                                          },
+                                                          "b": {
+                                                            "type": "Lit",
+                                                            "value": 2
+                                                          },
+                                                          "type": "Minus"
+                                                        }
+                                                      ],
+                                                      "type": "Times"
+                                                    },
+                                                    {
+                                                      "a": {
+                                                        "name": "x",
+                                                        "type": "Var"
+                                                      },
+                                                      "b": {
+                                                        "type": "Lit",
+                                                        "value": 3
+                                                      },
+                                                      "type": "Minus"
+                                                    }
+                                                  ],
+                                                  "type": "Times"
+                                                },
+                                                {
+                                                  "a": {
+                                                    "name": "x",
+                                                    "type": "Var"
+                                                  },
+                                                  "b": {
+                                                    "type": "Lit",
+                                                    "value": 4
+                                                  },
+                                                  "type": "Minus"
+                                                }
+                                              ],
+                                              "type": "Times"
+                                            },
+                                            {
+                                              "a": {
+                                                "name": "x",
+                                                "type": "Var"
+                                              },
+                                              "b": {
+                                                "type": "Lit",
+                                                "value": 5
+                                              },
+                                              "type": "Minus"
+                                            }
+                                          ],
+                                          "type": "Times"
+                                        },
+                                        {
+                                          "a": {
+                                            "name": "x",
+                                            "type": "Var"
+                                          },
+                                          "b": {
+                                            "type": "Lit",
+                                            "value": 6
+                                          },
+                                          "type": "Minus"
+                                        }
+                                      ],
+                                      "type": "Times"
+                                    },
+                                    {
+                                      "a": {
+                                        "name": "x",
+                                        "type": "Var"
+                                      },
+                                      "b": {
+                                        "type": "Lit",
+                                        "value": 7
+                                      },
+                                      "type": "Minus"
+                                    }
+                                  ],
+                                  "type": "Times"
+                                },
+                                {
+                                  "a": {
+                                    "name": "x",
+                                    "type": "Var"
+                                  },
+                                  "b": {
+                                    "type": "Lit",
+                                    "value": 8
+                                  },
+                                  "type": "Minus"
+                                }
+                              ],
+                              "type": "Times"
+                            },
+                            {
+                              "a": {
+                                "name": "x",
+                                "type": "Var"
+                              },
+                              "b": {
+                                "type": "Lit",
+                                "value": 9
+                              },
+                              "type": "Minus"
+                            }
+                          ],
+                          "type": "Times"
+                        },
+                        {
+                          "a": {
+                            "name": "x",
+                            "type": "Var"
+                          },
+                          "b": {
+                            "type": "Lit",
+                            "value": 10
+                          },
+                          "type": "Minus"
+                        }
+                      ],
+                      "type": "Times"
+                    },
+                    {
+                      "a": {
+                        "name": "x",
+                        "type": "Var"
+                      },
+                      "b": {
+                        "type": "Lit",
+                        "value": 11
+                      },
+                      "type": "Minus"
+                    }
+                  ],
+                  "type": "Times"
+                },
+                {
+                  "a": {
+                    "name": "x",
+                    "type": "Var"
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": 12
+                  },
+                  "type": "Minus"
+                }
+              ],
+              "type": "Times"
+            }
+          ],
+          "type": "Plus"
+        },
+        "domain": [
+          {
+            "x": 1
+          },
+          {
+            "x": 2
+          },
+          {
+            "x": 3
+          },
+          {
+            "x": 4
+          },
+          {
+            "x": 5
+          },
+          {
+            "x": 6
+          },
+          {
+            "x": 7
+          },
+          {
+            "x": 8
+          },
+          {
+            "x": 9
+          },
+          {
+            "x": 10
+          },
+          {
+            "x": 11
+          },
+          {
+            "x": 12
+          },
+          {
+            "x": 13
+          }
+        ],
+        "family": "sparse_polynomial",
+        "target_kind": "poly1",
+        "wrong": false
+      },
+      "poly_omitted_target": {
+        "alternatives": [
+          {
+            "items": [
+              {
+                "name": "x",
+                "type": "Var"
+              },
+              {
+                "items": [
+                  {
+                    "items": [
+                      {
+                        "items": [
+                          {
+                            "items": [
+                              {
+                                "items": [
+                                  {
+                                    "items": [
+                                      {
+                                        "items": [
+                                          {
+                                            "items": [
+                                              {
+                                                "items": [
+                                                  {
+                                                    "items": [
+                                                      {
+                                                        "items": [
+                                                          {
+                                                            "a": {
+                                                              "name": "x",
+                                                              "type": "Var"
+                                                            },
+                                                            "b": {
+                                                              "type": "Lit",
+                                                              "value": 1
+                                                            },
+                                                            "type": "Minus"
+                                                          },
+                                                          {
+                                                            "a": {
+                                                              "name": "x",
+                                                              "type": "Var"
+                                                            },
+                                                            "b": {
+                                                              "type": "Lit",
+                                                              "value": 2
+                                                            },
+                                                            "type": "Minus"
+                                                          }
+                                                        ],
+                                                        "type": "Times"
+                                                      },
+                                                      {
+                                                        "a": {
+                                                          "name": "x",
+                                                          "type": "Var"
+                                                        },
+                                                        "b": {
+                                                          "type": "Lit",
+                                                          "value": 3
+                                                        },
+                                                        "type": "Minus"
+                                                      }
+                                                    ],
+                                                    "type": "Times"
+                                                  },
+                                                  {
+                                                    "a": {
+                                                      "name": "x",
+                                                      "type": "Var"
+                                                    },
+                                                    "b": {
+                                                      "type": "Lit",
+                                                      "value": 4
+                                                    },
+                                                    "type": "Minus"
+                                                  }
+                                                ],
+                                                "type": "Times"
+                                              },
+                                              {
+                                                "a": {
+                                                  "name": "x",
+                                                  "type": "Var"
+                                                },
+                                                "b": {
+                                                  "type": "Lit",
+                                                  "value": 5
+                                                },
+                                                "type": "Minus"
+                                              }
+                                            ],
+                                            "type": "Times"
+                                          },
+                                          {
+                                            "a": {
+                                              "name": "x",
+                                              "type": "Var"
+                                            },
+                                            "b": {
+                                              "type": "Lit",
+                                              "value": 6
+                                            },
+                                            "type": "Minus"
+                                          }
+                                        ],
+                                        "type": "Times"
+                                      },
+                                      {
+                                        "a": {
+                                          "name": "x",
+                                          "type": "Var"
+                                        },
+                                        "b": {
+                                          "type": "Lit",
+                                          "value": 7
+                                        },
+                                        "type": "Minus"
+                                      }
+                                    ],
+                                    "type": "Times"
+                                  },
+                                  {
+                                    "a": {
+                                      "name": "x",
+                                      "type": "Var"
+                                    },
+                                    "b": {
+                                      "type": "Lit",
+                                      "value": 8
+                                    },
+                                    "type": "Minus"
+                                  }
+                                ],
+                                "type": "Times"
+                              },
+                              {
+                                "a": {
+                                  "name": "x",
+                                  "type": "Var"
+                                },
+                                "b": {
+                                  "type": "Lit",
+                                  "value": 9
+                                },
+                                "type": "Minus"
+                              }
+                            ],
+                            "type": "Times"
+                          },
+                          {
+                            "a": {
+                              "name": "x",
+                              "type": "Var"
+                            },
+                            "b": {
+                              "type": "Lit",
+                              "value": 10
+                            },
+                            "type": "Minus"
+                          }
+                        ],
+                        "type": "Times"
+                      },
+                      {
+                        "a": {
+                          "name": "x",
+                          "type": "Var"
+                        },
+                        "b": {
+                          "type": "Lit",
+                          "value": 11
+                        },
+                        "type": "Minus"
+                      }
+                    ],
+                    "type": "Times"
+                  },
+                  {
+                    "a": {
+                      "name": "x",
+                      "type": "Var"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": 12
+                    },
+                    "type": "Minus"
+                  }
+                ],
+                "type": "Times"
+              }
+            ],
+            "type": "Plus"
+          }
+        ],
+        "candidate": {
+          "name": "x",
+          "type": "Var"
+        },
+        "domain": [
+          {
+            "x": 1
+          },
+          {
+            "x": 2
+          },
+          {
+            "x": 3
+          },
+          {
+            "x": 4
+          },
+          {
+            "x": 5
+          },
+          {
+            "x": 6
+          },
+          {
+            "x": 7
+          },
+          {
+            "x": 8
+          },
+          {
+            "x": 9
+          },
+          {
+            "x": 10
+          },
+          {
+            "x": 11
+          },
+          {
+            "x": 12
+          },
+          {
+            "x": 13
+          }
+        ],
+        "family": "sparse_polynomial",
+        "target_kind": "poly2",
+        "wrong": true
+      },
+      "poly_represented_wrong": {
+        "alternatives": [
+          {
+            "items": [
+              {
+                "name": "x",
+                "type": "Var"
+              },
+              {
+                "items": [
+                  {
+                    "items": [
+                      {
+                        "items": [
+                          {
+                            "items": [
+                              {
+                                "items": [
+                                  {
+                                    "items": [
+                                      {
+                                        "items": [
+                                          {
+                                            "items": [
+                                              {
+                                                "items": [
+                                                  {
+                                                    "items": [
+                                                      {
+                                                        "items": [
+                                                          {
+                                                            "a": {
+                                                              "name": "x",
+                                                              "type": "Var"
+                                                            },
+                                                            "b": {
+                                                              "type": "Lit",
+                                                              "value": 1
+                                                            },
+                                                            "type": "Minus"
+                                                          },
+                                                          {
+                                                            "a": {
+                                                              "name": "x",
+                                                              "type": "Var"
+                                                            },
+                                                            "b": {
+                                                              "type": "Lit",
+                                                              "value": 2
+                                                            },
+                                                            "type": "Minus"
+                                                          }
+                                                        ],
+                                                        "type": "Times"
+                                                      },
+                                                      {
+                                                        "a": {
+                                                          "name": "x",
+                                                          "type": "Var"
+                                                        },
+                                                        "b": {
+                                                          "type": "Lit",
+                                                          "value": 3
+                                                        },
+                                                        "type": "Minus"
+                                                      }
+                                                    ],
+                                                    "type": "Times"
+                                                  },
+                                                  {
+                                                    "a": {
+                                                      "name": "x",
+                                                      "type": "Var"
+                                                    },
+                                                    "b": {
+                                                      "type": "Lit",
+                                                      "value": 4
+                                                    },
+                                                    "type": "Minus"
+                                                  }
+                                                ],
+                                                "type": "Times"
+                                              },
+                                              {
+                                                "a": {
+                                                  "name": "x",
+                                                  "type": "Var"
+                                                },
+                                                "b": {
+                                                  "type": "Lit",
+                                                  "value": 5
+                                                },
+                                                "type": "Minus"
+                                              }
+                                            ],
+                                            "type": "Times"
+                                          },
+                                          {
+                                            "a": {
+                                              "name": "x",
+                                              "type": "Var"
+                                            },
+                                            "b": {
+                                              "type": "Lit",
+                                              "value": 6
+                                            },
+                                            "type": "Minus"
+                                          }
+                                        ],
+                                        "type": "Times"
+                                      },
+                                      {
+                                        "a": {
+                                          "name": "x",
+                                          "type": "Var"
+                                        },
+                                        "b": {
+                                          "type": "Lit",
+                                          "value": 7
+                                        },
+                                        "type": "Minus"
+                                      }
+                                    ],
+                                    "type": "Times"
+                                  },
+                                  {
+                                    "a": {
+                                      "name": "x",
+                                      "type": "Var"
+                                    },
+                                    "b": {
+                                      "type": "Lit",
+                                      "value": 8
+                                    },
+                                    "type": "Minus"
+                                  }
+                                ],
+                                "type": "Times"
+                              },
+                              {
+                                "a": {
+                                  "name": "x",
+                                  "type": "Var"
+                                },
+                                "b": {
+                                  "type": "Lit",
+                                  "value": 9
+                                },
+                                "type": "Minus"
+                              }
+                            ],
+                            "type": "Times"
+                          },
+                          {
+                            "a": {
+                              "name": "x",
+                              "type": "Var"
+                            },
+                            "b": {
+                              "type": "Lit",
+                              "value": 10
+                            },
+                            "type": "Minus"
+                          }
+                        ],
+                        "type": "Times"
+                      },
+                      {
+                        "a": {
+                          "name": "x",
+                          "type": "Var"
+                        },
+                        "b": {
+                          "type": "Lit",
+                          "value": 11
+                        },
+                        "type": "Minus"
+                      }
+                    ],
+                    "type": "Times"
+                  },
+                  {
+                    "a": {
+                      "name": "x",
+                      "type": "Var"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": 12
+                    },
+                    "type": "Minus"
+                  }
+                ],
+                "type": "Times"
+              }
+            ],
+            "type": "Plus"
+          }
+        ],
+        "candidate": {
+          "name": "x",
+          "type": "Var"
+        },
+        "domain": [
+          {
+            "x": 1
+          },
+          {
+            "x": 2
+          },
+          {
+            "x": 3
+          },
+          {
+            "x": 4
+          },
+          {
+            "x": 5
+          },
+          {
+            "x": 6
+          },
+          {
+            "x": 7
+          },
+          {
+            "x": 8
+          },
+          {
+            "x": 9
+          },
+          {
+            "x": 10
+          },
+          {
+            "x": 11
+          },
+          {
+            "x": 12
+          },
+          {
+            "x": 13
+          }
+        ],
+        "family": "sparse_polynomial",
+        "target_kind": "poly1",
+        "wrong": true
+      },
+      "vector_alias_only": {
+        "alternatives": [
+          {
+            "name": "x",
+            "type": "Var"
+          }
+        ],
+        "candidate": {
+          "items": [
+            {
+              "name": "x",
+              "type": "Var"
+            },
+            {
+              "name": "y",
+              "type": "Var"
+            }
+          ],
+          "type": "Plus"
+        },
+        "domain": [
+          {
+            "x": 0,
+            "y": 0
+          },
+          {
+            "x": 1,
+            "y": 0
+          },
+          {
+            "x": 2,
+            "y": 0
+          },
+          {
+            "x": 3,
+            "y": 0
+          },
+          {
+            "x": 4,
+            "y": 0
+          },
+          {
+            "x": 5,
+            "y": 0
+          },
+          {
+            "x": 6,
+            "y": 0
+          },
+          {
+            "x": 7,
+            "y": 0
+          },
+          {
+            "x": 8,
+            "y": 0
+          },
+          {
+            "x": 9,
+            "y": 0
+          },
+          {
+            "x": 10,
+            "y": 0
+          },
+          {
+            "x": 11,
+            "y": 0
+          },
+          {
+            "x": 12,
+            "y": 0
+          },
+          {
+            "x": 13,
+            "y": 0
+          },
+          {
+            "x": 14,
+            "y": 0
+          },
+          {
+            "x": 15,
+            "y": 0
+          },
+          {
+            "x": 16,
+            "y": 0
+          },
+          {
+            "x": 17,
+            "y": 0
+          },
+          {
+            "x": 18,
+            "y": 0
+          },
+          {
+            "x": 19,
+            "y": 0
+          },
+          {
+            "x": 20,
+            "y": 0
+          },
+          {
+            "x": 21,
+            "y": 0
+          },
+          {
+            "x": 22,
+            "y": 0
+          },
+          {
+            "x": 23,
+            "y": 0
+          },
+          {
+            "x": 24,
+            "y": 0
+          },
+          {
+            "x": 25,
+            "y": 0
+          },
+          {
+            "x": 26,
+            "y": 0
+          },
+          {
+            "x": 27,
+            "y": 0
+          },
+          {
+            "x": 28,
+            "y": 0
+          },
+          {
+            "x": 29,
+            "y": 0
+          },
+          {
+            "x": 30,
+            "y": 0
+          }
+        ],
+        "family": "two_variable_arithmetic",
+        "target_kind": "subtract",
+        "wrong": true
+      },
+      "vector_correct": {
+        "alternatives": [
+          {
+            "a": {
+              "name": "x",
+              "type": "Var"
+            },
+            "b": {
+              "name": "y",
+              "type": "Var"
+            },
+            "type": "Minus"
+          }
+        ],
+        "candidate": {
+          "items": [
+            {
+              "name": "x",
+              "type": "Var"
+            },
+            {
+              "name": "y",
+              "type": "Var"
+            }
+          ],
+          "type": "Plus"
+        },
+        "domain": [
+          {
+            "x": 0,
+            "y": 0
+          },
+          {
+            "x": 1,
+            "y": 0
+          },
+          {
+            "x": 2,
+            "y": 0
+          },
+          {
+            "x": 3,
+            "y": 0
+          },
+          {
+            "x": 4,
+            "y": 0
+          },
+          {
+            "x": 5,
+            "y": 0
+          },
+          {
+            "x": 6,
+            "y": 0
+          },
+          {
+            "x": 7,
+            "y": 0
+          },
+          {
+            "x": 8,
+            "y": 0
+          },
+          {
+            "x": 9,
+            "y": 0
+          },
+          {
+            "x": 10,
+            "y": 0
+          },
+          {
+            "x": 11,
+            "y": 0
+          },
+          {
+            "x": 12,
+            "y": 0
+          },
+          {
+            "x": 13,
+            "y": 0
+          },
+          {
+            "x": 14,
+            "y": 0
+          },
+          {
+            "x": 15,
+            "y": 0
+          },
+          {
+            "x": 16,
+            "y": 0
+          },
+          {
+            "x": 17,
+            "y": 0
+          },
+          {
+            "x": 18,
+            "y": 0
+          },
+          {
+            "x": 19,
+            "y": 0
+          },
+          {
+            "x": 20,
+            "y": 0
+          },
+          {
+            "x": 21,
+            "y": 0
+          },
+          {
+            "x": 22,
+            "y": 0
+          },
+          {
+            "x": 23,
+            "y": 0
+          },
+          {
+            "x": 24,
+            "y": 0
+          },
+          {
+            "x": 25,
+            "y": 0
+          },
+          {
+            "x": 26,
+            "y": 0
+          },
+          {
+            "x": 27,
+            "y": 0
+          },
+          {
+            "x": 28,
+            "y": 0
+          },
+          {
+            "x": 29,
+            "y": 0
+          },
+          {
+            "x": 30,
+            "y": 0
+          },
+          {
+            "x": 0,
+            "y": 1
+          }
+        ],
+        "family": "two_variable_arithmetic",
+        "target_kind": "add",
+        "wrong": false
+      },
+      "vector_omitted_target": {
+        "alternatives": [
+          {
+            "a": {
+              "name": "x",
+              "type": "Var"
+            },
+            "b": {
+              "name": "y",
+              "type": "Var"
+            },
+            "type": "Minus"
+          }
+        ],
+        "candidate": {
+          "items": [
+            {
+              "name": "x",
+              "type": "Var"
+            },
+            {
+              "name": "y",
+              "type": "Var"
+            }
+          ],
+          "type": "Plus"
+        },
+        "domain": [
+          {
+            "x": 0,
+            "y": 0
+          },
+          {
+            "x": 1,
+            "y": 0
+          },
+          {
+            "x": 2,
+            "y": 0
+          },
+          {
+            "x": 3,
+            "y": 0
+          },
+          {
+            "x": 4,
+            "y": 0
+          },
+          {
+            "x": 5,
+            "y": 0
+          },
+          {
+            "x": 6,
+            "y": 0
+          },
+          {
+            "x": 7,
+            "y": 0
+          },
+          {
+            "x": 8,
+            "y": 0
+          },
+          {
+            "x": 9,
+            "y": 0
+          },
+          {
+            "x": 10,
+            "y": 0
+          },
+          {
+            "x": 11,
+            "y": 0
+          },
+          {
+            "x": 12,
+            "y": 0
+          },
+          {
+            "x": 13,
+            "y": 0
+          },
+          {
+            "x": 14,
+            "y": 0
+          },
+          {
+            "x": 15,
+            "y": 0
+          },
+          {
+            "x": 16,
+            "y": 0
+          },
+          {
+            "x": 17,
+            "y": 0
+          },
+          {
+            "x": 18,
+            "y": 0
+          },
+          {
+            "x": 19,
+            "y": 0
+          },
+          {
+            "x": 20,
+            "y": 0
+          },
+          {
+            "x": 21,
+            "y": 0
+          },
+          {
+            "x": 22,
+            "y": 0
+          },
+          {
+            "x": 23,
+            "y": 0
+          },
+          {
+            "x": 24,
+            "y": 0
+          },
+          {
+            "x": 25,
+            "y": 0
+          },
+          {
+            "x": 26,
+            "y": 0
+          },
+          {
+            "x": 27,
+            "y": 0
+          },
+          {
+            "x": 28,
+            "y": 0
+          },
+          {
+            "x": 29,
+            "y": 0
+          },
+          {
+            "x": 30,
+            "y": 0
+          },
+          {
+            "x": 0,
+            "y": 1
+          }
+        ],
+        "family": "two_variable_arithmetic",
+        "target_kind": "identity",
+        "wrong": true
+      },
+      "vector_represented_wrong": {
+        "alternatives": [
+          {
+            "a": {
+              "name": "x",
+              "type": "Var"
+            },
+            "b": {
+              "name": "y",
+              "type": "Var"
+            },
+            "type": "Minus"
+          }
+        ],
+        "candidate": {
+          "items": [
+            {
+              "name": "x",
+              "type": "Var"
+            },
+            {
+              "name": "y",
+              "type": "Var"
+            }
+          ],
+          "type": "Plus"
+        },
+        "domain": [
+          {
+            "x": 0,
+            "y": 0
+          },
+          {
+            "x": 1,
+            "y": 0
+          },
+          {
+            "x": 2,
+            "y": 0
+          },
+          {
+            "x": 3,
+            "y": 0
+          },
+          {
+            "x": 4,
+            "y": 0
+          },
+          {
+            "x": 5,
+            "y": 0
+          },
+          {
+            "x": 6,
+            "y": 0
+          },
+          {
+            "x": 7,
+            "y": 0
+          },
+          {
+            "x": 8,
+            "y": 0
+          },
+          {
+            "x": 9,
+            "y": 0
+          },
+          {
+            "x": 10,
+            "y": 0
+          },
+          {
+            "x": 11,
+            "y": 0
+          },
+          {
+            "x": 12,
+            "y": 0
+          },
+          {
+            "x": 13,
+            "y": 0
+          },
+          {
+            "x": 14,
+            "y": 0
+          },
+          {
+            "x": 15,
+            "y": 0
+          },
+          {
+            "x": 16,
+            "y": 0
+          },
+          {
+            "x": 17,
+            "y": 0
+          },
+          {
+            "x": 18,
+            "y": 0
+          },
+          {
+            "x": 19,
+            "y": 0
+          },
+          {
+            "x": 20,
+            "y": 0
+          },
+          {
+            "x": 21,
+            "y": 0
+          },
+          {
+            "x": 22,
+            "y": 0
+          },
+          {
+            "x": 23,
+            "y": 0
+          },
+          {
+            "x": 24,
+            "y": 0
+          },
+          {
+            "x": 25,
+            "y": 0
+          },
+          {
+            "x": 26,
+            "y": 0
+          },
+          {
+            "x": 27,
+            "y": 0
+          },
+          {
+            "x": 28,
+            "y": 0
+          },
+          {
+            "x": 29,
+            "y": 0
+          },
+          {
+            "x": 30,
+            "y": 0
+          },
+          {
+            "x": 0,
+            "y": 1
+          }
+        ],
+        "family": "two_variable_arithmetic",
+        "target_kind": "subtract",
+        "wrong": true
+      }
+    },
+    "early_stop": "stop after first label disagrees with candidate",
+    "known_rows": {
+      "polynomial": [
+        {
+          "x": 0
+        }
+      ],
+      "vector": [
+        {
+          "x": 0,
+          "y": 0
+        }
+      ]
+    },
+    "policies": [
+      "seeded_hash",
+      "maximum_prediction_entropy"
+    ],
+    "repetitions": 30
+  },
+  "files": {
+    "docs/research/engine_substrate/SUBSTRATE_ADEQUACY_EARLY_STOP_TRANSFER_V1_PREREG_20261002.md": "1433bfa1bb61e98b987a9ef7e367d7634f1a8953be8c3fbc5d140d0b25255903",
+    "domains/independent_adequacy.py": "33191341fdd63d16d0b9cb5203f27666da90b60fccd567ac4633306a9dcab418",
+    "evaluation/substrate_capability/substrate_adequacy_early_stop_transfer_v1.py": "30df1d0ede4708151f8301ca1cb82a06e96ae4996c0e8cee0cbe03a595dfa8ca",
+    "runners/dsl/python/substrate_rs/__init__.py": "1fed837a6b7e8b35e463d3b8fdca498400c9cc420a016b81279365d6406a4049",
+    "runners/dsl/python/substrate_rs/_native.build.json": "b491d348c59cbf5cd5eee1b3f900a042f31e21665b6e63212edb9ed7f3d60f47",
+    "runners/dsl/src/py.rs": "d6f922bd406d3f500c10cea11978f47f9612b4ce6b9a348e848a30a305881cba",
+    "runners/dsl/src/term.rs": "5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1"
+  },
+  "git_head": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+  "native_sha256": "3816b4fb5d5746950b4cc3bf9e904a58e675ce53530727edf44095646dd58a54",
+  "schema": "SubstrateAdequacyEarlyStopTransferV1Lock"
+}

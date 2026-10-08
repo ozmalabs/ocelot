@@ -1,0 +1,4956 @@
+{
+  "cases": [
+    {
+      "arm": "pipeline_main",
+      "attempts": 1.0,
+      "boot_wall_ns": 38488381,
+      "category": "recurring_reduction",
+      "construction": "retrieved_exemplar",
+      "descend_kind": null,
+      "enumerate_detail": {
+        "distinct": null,
+        "grounded_constants": [],
+        "operator_shape": null,
+        "ops": [],
+        "solution_size": null,
+        "tested": null
+      },
+      "enumerate_outcome": null,
+      "exact_detail": {
+        "candidates": null,
+        "const": null,
+        "exps": null,
+        "family": null,
+        "k_den": null,
+        "k_num": null,
+        "outcome": null
+      },
+      "excluded": [],
+      "failure_reason": null,
+      "gap_filed": false,
+      "gap_reason": null,
+      "holdout": {
+        "all_ok": true,
+        "n": 3,
+        "n_ok": 3,
+        "rows": [
+          {
+            "expected": 11,
+            "got": 11,
+            "inputs": {
+              "xs": [
+                9,
+                -4,
+                6
+              ]
+            },
+            "ok": true,
+            "trap": null
+          },
+          {
+            "expected": 2,
+            "got": 2,
+            "inputs": {
+              "xs": [
+                -5,
+                -1,
+                8,
+                0
+              ]
+            },
+            "ok": true,
+            "trap": null
+          },
+          {
+            "expected": 9,
+            "got": 9,
+            "inputs": {
+              "xs": [
+                2,
+                2,
+                2,
+                2,
+                1
+              ]
+            },
+            "ok": true,
+            "trap": null
+          }
+        ]
+      },
+      "ir": {
+        "stmts": [
+          {
+            "default": null,
+            "name": "xs",
+            "type": "ProgDefFnParam"
+          },
+          {
+            "name": "sum",
+            "type": "ProgAssignVar",
+            "value": {
+              "type": "Lit",
+              "value": 0
+            }
+          },
+          {
+            "body": {
+              "name": "sum",
+              "type": "ProgAssignVar",
+              "value": {
+                "items": [
+                  {
+                    "name": "sum",
+                    "type": "Var"
+                  },
+                  {
+                    "name": "i",
+                    "type": "Var"
+                  }
+                ],
+                "type": "Plus"
+              }
+            },
+            "iter": {
+              "name": "xs",
+              "type": "Var"
+            },
+            "orelse": null,
+            "type": "ProgForEach",
+            "var": "i"
+          },
+          {
+            "type": "ProgReturn",
+            "value": {
+              "name": "sum",
+              "type": "Var"
+            }
+          }
+        ],
+        "type": "ProgSeq"
+      },
+      "move_detail": null,
+      "n_counterexamples": 0,
+      "outcome": "accepted_holdout_ok",
+      "python_render": {
+        "exec_agree": true,
+        "render_ok": true,
+        "rows": [
+          {
+            "inputs": {
+              "xs": [
+                9,
+                -4,
+                6
+              ]
+            },
+            "ok": true,
+            "prog_eval": 11,
+            "python": 11
+          },
+          {
+            "inputs": {
+              "xs": [
+                -5,
+                -1,
+                8,
+                0
+              ]
+            },
+            "ok": true,
+            "prog_eval": 2,
+            "python": 2
+          },
+          {
+            "inputs": {
+              "xs": [
+                2,
+                2,
+                2,
+                2,
+                1
+              ]
+            },
+            "ok": true,
+            "prog_eval": 9,
+            "python": 9
+          }
+        ],
+        "source": "def list_001_sum(xs):\n    sum = 0\n    for i in xs:\n        sum = (sum + i)\n    return sum\n"
+      },
+      "recognized": true,
+      "repair_detail": {
+        "attempts": 0.0,
+        "budget": 2.0,
+        "gaveup": null,
+        "kind": null,
+        "localized": null,
+        "refused": null,
+        "seq": 0.0,
+        "trace_derivable": null,
+        "trace_diverge_hole": null,
+        "trace_seq": -1.0,
+        "trace_skel_agree": null
+      },
+      "request_text": "Write a function that returns the sum of the integers in a list.",
+      "residual_tokens": [],
+      "route_wall_ns": 10794898,
+      "row_wall_ns": 55948311,
+      "rungs": {
+        "codebook": null,
+        "descend": null,
+        "enumerate": null,
+        "exact": null,
+        "lattice": null
+      },
+      "status": "accepted",
+      "stratum": "recurring_reduction",
+      "task_id": "list_001_sum"
+    },
+    {
+      "arm": "pipeline_main",
+      "attempts": 1.0,
+      "boot_wall_ns": 30067109,
+      "category": "recurring_reduction",
+      "construction": "retrieved_exemplar",
+      "descend_kind": null,
+      "enumerate_detail": {
+        "distinct": null,
+        "grounded_constants": [],
+        "operator_shape": null,
+        "ops": [],
+        "solution_size": null,
+        "tested": null
+      },
+      "enumerate_outcome": null,
+      "exact_detail": {
+        "candidates": null,
+        "const": null,
+        "exps": null,
+        "family": null,
+        "k_den": null,
+        "k_num": null,
+        "outcome": null
+      },
+      "excluded": [],
+      "failure_reason": null,
+      "gap_filed": false,
+      "gap_reason": null,
+      "holdout": {
+        "all_ok": true,
+        "n": 3,
+        "n_ok": 3,
+        "rows": [
+          {
+            "expected": 3,
+            "got": 3,
+            "inputs": {
+              "xs": [
+                9,
+                -4,
+                6
+              ]
+            },
+            "ok": true,
+            "trap": null
+          },
+          {
+            "expected": 4,
+            "got": 4,
+            "inputs": {
+              "xs": [
+                -5,
+                -1,
+                8,
+                0
+              ]
+            },
+            "ok": true,
+            "trap": null
+          },
+          {
+            "expected": 5,
+            "got": 5,
+            "inputs": {
+              "xs": [
+                2,
+                2,
+                2,
+                2,
+                1
+              ]
+            },
+            "ok": true,
+            "trap": null
+          }
+        ]
+      },
+      "ir": {
+        "stmts": [
+          {
+            "default": null,
+            "name": "xs",
+            "type": "ProgDefFnParam"
+          },
+          {
+            "name": "n",
+            "type": "ProgAssignVar",
+            "value": {
+              "args": [
+                {
+                  "name": "xs",
+                  "type": "Var"
+                }
+              ],
+              "name": "len",
+              "recv": null,
+              "type": "ProgCallExtern"
+            }
+          },
+          {
+            "name": "dp",
+            "type": "ProgAssignVar",
+            "value": {
+              "cond": null,
+              "expr": {
+                "type": "Lit",
+                "value": 0
+              },
+              "source": {
+                "args": [
+                  {
+                    "name": "n",
+                    "type": "Var"
+                  }
+                ],
+                "name": "range",
+                "recv": null,
+                "type": "ProgCallExtern"
+              },
+              "type": "ProgComprehensionList",
+              "var": "i"
+            }
+          },
+          {
+            "index": {
+              "a": {
+                "name": "n",
+                "type": "Var"
+              },
+              "b": {
+                "type": "Lit",
+                "value": 1
+              },
+              "type": "Minus"
+            },
+            "obj": {
+              "name": "dp",
+              "type": "Var"
+            },
+            "type": "ProgSubscriptSet",
+            "value": {
+              "type": "Lit",
+              "value": 1
+            }
+          },
+          {
+            "body": {
+              "stmts": [
+                {
+                  "name": "mxm",
+                  "type": "ProgAssignVar",
+                  "value": {
+                    "type": "Lit",
+                    "value": 0
+                  }
+                },
+                {
+                  "body": {
+                    "cond": {
+                      "cond": {
+                        "a": {
+                          "a": {
+                            "index": {
+                              "name": "j",
+                              "type": "Var"
+                            },
+                            "obj": {
+                              "name": "xs",
+                              "type": "Var"
+                            },
+                            "type": "ProgSubscript"
+                          },
+                          "b": {
+                            "index": {
+                              "name": "i",
+                              "type": "Var"
+                            },
+                            "obj": {
+                              "name": "xs",
+                              "type": "Var"
+                            },
+                            "type": "ProgSubscript"
+                          },
+                          "type": "Mod"
+                        },
+                        "b": {
+                          "type": "Lit",
+                          "value": 0
+                        },
+                        "type": "Eq"
+                      },
+                      "other": {
+                        "a": {
+                          "a": {
+                            "index": {
+                              "name": "i",
+                              "type": "Var"
+                            },
+                            "obj": {
+                              "name": "xs",
+                              "type": "Var"
+                            },
+                            "type": "ProgSubscript"
+                          },
+                          "b": {
+                            "index": {
+                              "name": "j",
+                              "type": "Var"
+                            },
+                            "obj": {
+                              "name": "xs",
+                              "type": "Var"
+                            },
+                            "type": "ProgSubscript"
+                          },
+                          "type": "Mod"
+                        },
+                        "b": {
+                          "type": "Lit",
+                          "value": 0
+                        },
+                        "type": "Gte"
+                      },
+                      "then": {
+                        "a": {
+                          "a": {
+                            "index": {
+                              "name": "j",
+                              "type": "Var"
+                            },
+                            "obj": {
+                              "name": "xs",
+                              "type": "Var"
+                            },
+                            "type": "ProgSubscript"
+                          },
+                          "b": {
+                            "index": {
+                              "name": "i",
+                              "type": "Var"
+                            },
+                            "obj": {
+                              "name": "xs",
+                              "type": "Var"
+                            },
+                            "type": "ProgSubscript"
+                          },
+                          "type": "Mod"
+                        },
+                        "b": {
+                          "type": "Lit",
+                          "value": 0
+                        },
+                        "type": "Eq"
+                      },
+                      "type": "IfThenElse"
+                    },
+                    "orelse": null,
+                    "then": {
+                      "name": "mxm",
+                      "type": "ProgAssignVar",
+                      "value": {
+                        "args": [
+                          {
+                            "name": "mxm",
+                            "type": "Var"
+                          },
+                          {
+                            "index": {
+                              "name": "j",
+                              "type": "Var"
+                            },
+                            "obj": {
+                              "name": "dp",
+                              "type": "Var"
+                            },
+                            "type": "ProgSubscript"
+                          }
+                        ],
+                        "name": "max",
+                        "recv": null,
+                        "type": "ProgCallExtern"
+                      }
+                    },
+                    "type": "ProgIfStmt"
+                  },
+                  "iter": {
+                    "args": [
+                      {
+                        "items": [
+                          {
+                            "name": "i",
+                            "type": "Var"
+                          },
+                          {
+                            "type": "Lit",
+                            "value": 1
+                          }
+                        ],
+                        "type": "Plus"
+                      },
+                      {
+                        "name": "n",
+                        "type": "Var"
+                      }
+                    ],
+                    "name": "range",
+                    "recv": null,
+                    "type": "ProgCallExtern"
+                  },
+                  "orelse": null,
+                  "type": "ProgForEach",
+                  "var": "j"
+                },
+                {
+                  "index": {
+                    "name": "i",
+                    "type": "Var"
+                  },
+                  "obj": {
+                    "name": "dp",
+                    "type": "Var"
+                  },
+                  "type": "ProgSubscriptSet",
+                  "value": {
+                    "items": [
+                      {
+                        "type": "Lit",
+                        "value": 1
+                      },
+                      {
+                        "name": "mxm",
+                        "type": "Var"
+                      }
+                    ],
+                    "type": "Plus"
+                  }
+                }
+              ],
+              "type": "ProgSeq"
+            },
+            "iter": {
+              "args": [
+                {
+                  "a": {
+                    "name": "n",
+                    "type": "Var"
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": 2
+                  },
+                  "type": "Minus"
+                },
+                {
+                  "arg": {
+                    "type": "Lit",
+                    "value": 1
+                  },
+                  "type": "Neg"
+                },
+                {
+                  "arg": {
+                    "type": "Lit",
+                    "value": 1
+                  },
+                  "type": "Neg"
+                }
+              ],
+              "name": "range",
+              "recv": null,
+              "type": "ProgCallExtern"
+            },
+            "orelse": null,
+            "type": "ProgForEach",
+            "var": "i"
+          },
+          {
+            "type": "ProgReturn",
+            "value": {
+              "args": [
+                {
+                  "name": "dp",
+                  "type": "Var"
+                }
+              ],
+              "name": "max",
+              "recv": null,
+              "type": "ProgCallExtern"
+            }
+          }
+        ],
+        "type": "ProgSeq"
+      },
+      "move_detail": null,
+      "n_counterexamples": 0,
+      "outcome": "accepted_holdout_ok",
+      "python_render": {
+        "exec_agree": false,
+        "render_ok": true,
+        "rows": [
+          {
+            "inputs": {
+              "xs": [
+                9,
+                -4,
+                6
+              ]
+            },
+            "ok": false,
+            "prog_eval": 3,
+            "python": "raise:name 'len' is not defined"
+          },
+          {
+            "inputs": {
+              "xs": [
+                -5,
+                -1,
+                8,
+                0
+              ]
+            },
+            "ok": false,
+            "prog_eval": 4,
+            "python": "raise:name 'len' is not defined"
+          },
+          {
+            "inputs": {
+              "xs": [
+                2,
+                2,
+                2,
+                2,
+                1
+              ]
+            },
+            "ok": false,
+            "prog_eval": 5,
+            "python": "raise:name 'len' is not defined"
+          }
+        ],
+        "source": "def list_002_length(xs):\n    n = len(xs)\n    dp = [0 for i in range(n)]\n    dp[(n - 1)] = 1\n    for i in range((n - 2), (-1), (-1)):\n        mxm = 0\n        for j in range((i + 1), n):\n            if (((xs[j] % xs[i]) == 0) if ((xs[j] % xs[i]) == 0) else ((xs[i] % xs[j]) >= 0)):\n                mxm = max(mxm, dp[j])\n        dp[i] = (1 + mxm)\n    return max(dp)\n"
+      },
+      "recognized": true,
+      "repair_detail": {
+        "attempts": 0.0,
+        "budget": 2.0,
+        "gaveup": null,
+        "kind": null,
+        "localized": null,
+        "refused": null,
+        "seq": 0.0,
+        "trace_derivable": null,
+        "trace_diverge_hole": null,
+        "trace_seq": -1.0,
+        "trace_skel_agree": null
+      },
+      "request_text": "Write a function that returns the number of items in a list.",
+      "residual_tokens": [],
+      "route_wall_ns": 47497288,
+      "row_wall_ns": 86465263,
+      "rungs": {
+        "codebook": null,
+        "descend": null,
+        "enumerate": null,
+        "exact": null,
+        "lattice": null
+      },
+      "status": "accepted",
+      "stratum": "recurring_reduction",
+      "task_id": "list_002_length"
+    },
+    {
+      "arm": "pipeline_main",
+      "attempts": 1.0,
+      "boot_wall_ns": 26781098,
+      "category": "recurring_reduction",
+      "construction": "retrieved_exemplar",
+      "descend_kind": null,
+      "enumerate_detail": {
+        "distinct": null,
+        "grounded_constants": [],
+        "operator_shape": null,
+        "ops": [],
+        "solution_size": null,
+        "tested": null
+      },
+      "enumerate_outcome": null,
+      "exact_detail": {
+        "candidates": null,
+        "const": null,
+        "exps": null,
+        "family": null,
+        "k_den": null,
+        "k_num": null,
+        "outcome": null
+      },
+      "excluded": [],
+      "failure_reason": null,
+      "gap_filed": false,
+      "gap_reason": null,
+      "holdout": {
+        "all_ok": true,
+        "n": 3,
+        "n_ok": 3,
+        "rows": [
+          {
+            "expected": 9,
+            "got": 9,
+            "inputs": {
+              "xs": [
+                9,
+                -4,
+                6
+              ]
+            },
+            "ok": true,
+            "trap": null
+          },
+          {
+            "expected": 8,
+            "got": 8,
+            "inputs": {
+              "xs": [
+                -5,
+                -1,
+                8,
+                0
+              ]
+            },
+            "ok": true,
+            "trap": null
+          },
+          {
+            "expected": 2,
+            "got": 2,
+            "inputs": {
+              "xs": [
+                2,
+                2,
+                2,
+                2,
+                1
+              ]
+            },
+            "ok": true,
+            "trap": null
+          }
+        ]
+      },
+      "ir": {
+        "stmts": [
+          {
+            "default": null,
+            "name": "xs",
+            "type": "ProgDefFnParam"
+          },
+          {
+            "name": "n",
+            "type": "ProgAssignVar",
+            "value": {
+              "args": [
+                {
+                  "name": "xs",
+                  "type": "Var"
+                }
+              ],
+              "name": "len",
+              "recv": null,
+              "type": "ProgCallExtern"
+            }
+          },
+          {
+            "name": "dp",
+            "type": "ProgAssignVar",
+            "value": {
+              "cond": null,
+              "expr": {
+                "type": "Lit",
+                "value": 0
+              },
+              "source": {
+                "args": [
+                  {
+                    "name": "n",
+                    "type": "Var"
+                  }
+                ],
+                "name": "range",
+                "recv": null,
+                "type": "ProgCallExtern"
+              },
+              "type": "ProgComprehensionList",
+              "var": "i"
+            }
+          },
+          {
+            "index": {
+              "a": {
+                "name": "n",
+                "type": "Var"
+              },
+              "b": {
+                "type": "Lit",
+                "value": 1
+              },
+              "type": "Minus"
+            },
+            "obj": {
+              "name": "dp",
+              "type": "Var"
+            },
+            "type": "ProgSubscriptSet",
+            "value": {
+              "type": "Lit",
+              "value": 1
+            }
+          },
+          {
+            "body": {
+              "stmts": [
+                {
+                  "name": "mxm",
+                  "type": "ProgAssignVar",
+                  "value": {
+                    "type": "Lit",
+                    "value": 0
+                  }
+                },
+                {
+                  "body": {
+                    "cond": {
+                      "cond": {
+                        "a": {
+                          "a": {
+                            "index": {
+                              "name": "j",
+                              "type": "Var"
+                            },
+                            "obj": {
+                              "name": "xs",
+                              "type": "Var"
+                            },
+                            "type": "ProgSubscript"
+                          },
+                          "b": {
+                            "index": {
+                              "name": "i",
+                              "type": "Var"
+                            },
+                            "obj": {
+                              "name": "xs",
+                              "type": "Var"
+                            },
+                            "type": "ProgSubscript"
+                          },
+                          "type": "Mod"
+                        },
+                        "b": {
+                          "type": "Lit",
+                          "value": 0
+                        },
+                        "type": "Eq"
+                      },
+                      "other": {
+                        "a": {
+                          "a": {
+                            "index": {
+                              "name": "i",
+                              "type": "Var"
+                            },
+                            "obj": {
+                              "name": "xs",
+                              "type": "Var"
+                            },
+                            "type": "ProgSubscript"
+                          },
+                          "b": {
+                            "index": {
+                              "name": "j",
+                              "type": "Var"
+                            },
+                            "obj": {
+                              "name": "xs",
+                              "type": "Var"
+                            },
+                            "type": "ProgSubscript"
+                          },
+                          "type": "Mod"
+                        },
+                        "b": {
+                          "type": "Lit",
+                          "value": 0
+                        },
+                        "type": "Eq"
+                      },
+                      "then": {
+                        "a": {
+                          "a": {
+                            "index": {
+                              "name": "j",
+                              "type": "Var"
+                            },
+                            "obj": {
+                              "name": "xs",
+                              "type": "Var"
+                            },
+                            "type": "ProgSubscript"
+                          },
+                          "b": {
+                            "index": {
+                              "name": "i",
+                              "type": "Var"
+                            },
+                            "obj": {
+                              "name": "xs",
+                              "type": "Var"
+                            },
+                            "type": "ProgSubscript"
+                          },
+                          "type": "Mod"
+                        },
+                        "b": {
+                          "type": "Lit",
+                          "value": 0
+                        },
+                        "type": "Eq"
+                      },
+                      "type": "IfThenElse"
+                    },
+                    "orelse": null,
+                    "then": {
+                      "name": "mxm",
+                      "type": "ProgAssignVar",
+                      "value": {
+                        "args": [
+                          {
+                            "name": "mxm",
+                            "type": "Var"
+                          },
+                          {
+                            "index": {
+                              "name": "j",
+                              "type": "Var"
+                            },
+                            "obj": {
+                              "name": "dp",
+                              "type": "Var"
+                            },
+                            "type": "ProgSubscript"
+                          }
+                        ],
+                        "name": "max",
+                        "recv": null,
+                        "type": "ProgCallExtern"
+                      }
+                    },
+                    "type": "ProgIfStmt"
+                  },
+                  "iter": {
+                    "args": [
+                      {
+                        "items": [
+                          {
+                            "name": "i",
+                            "type": "Var"
+                          },
+                          {
+                            "type": "Lit",
+                            "value": 1
+                          }
+                        ],
+                        "type": "Plus"
+                      },
+                      {
+                        "name": "n",
+                        "type": "Var"
+                      }
+                    ],
+                    "name": "range",
+                    "recv": null,
+                    "type": "ProgCallExtern"
+                  },
+                  "orelse": null,
+                  "type": "ProgForEach",
+                  "var": "j"
+                },
+                {
+                  "index": {
+                    "name": "i",
+                    "type": "Var"
+                  },
+                  "obj": {
+                    "name": "dp",
+                    "type": "Var"
+                  },
+                  "type": "ProgSubscriptSet",
+                  "value": {
+                    "items": [
+                      {
+                        "type": "Lit",
+                        "value": 1
+                      },
+                      {
+                        "name": "mxm",
+                        "type": "Var"
+                      }
+                    ],
+                    "type": "Plus"
+                  }
+                }
+              ],
+              "type": "ProgSeq"
+            },
+            "iter": {
+              "args": [
+                {
+                  "a": {
+                    "name": "n",
+                    "type": "Var"
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": 2
+                  },
+                  "type": "Minus"
+                },
+                {
+                  "arg": {
+                    "type": "Lit",
+                    "value": 1
+                  },
+                  "type": "Neg"
+                },
+                {
+                  "arg": {
+                    "type": "Lit",
+                    "value": 1
+                  },
+                  "type": "Neg"
+                }
+              ],
+              "name": "range",
+              "recv": null,
+              "type": "ProgCallExtern"
+            },
+            "orelse": null,
+            "type": "ProgForEach",
+            "var": "i"
+          },
+          {
+            "type": "ProgReturn",
+            "value": {
+              "source": {
+                "name": "xs",
+                "type": "Var"
+              },
+              "type": "MaxOver",
+              "value": {
+                "name": "__item",
+                "type": "Var"
+              },
+              "var_name": "__item"
+            }
+          }
+        ],
+        "type": "ProgSeq"
+      },
+      "move_detail": null,
+      "n_counterexamples": 0,
+      "outcome": "accepted_holdout_ok",
+      "python_render": {
+        "exec_agree": null,
+        "gaps": [
+          "render_gap:MaxOver in python"
+        ],
+        "refusals": [],
+        "render_ok": false
+      },
+      "recognized": true,
+      "repair_detail": {
+        "attempts": 0.0,
+        "budget": 2.0,
+        "gaveup": null,
+        "kind": null,
+        "localized": null,
+        "refused": null,
+        "seq": 0.0,
+        "trace_derivable": null,
+        "trace_diverge_hole": null,
+        "trace_seq": -1.0,
+        "trace_skel_agree": null
+      },
+      "request_text": "Write a function that returns the largest integer in a list.",
+      "residual_tokens": [],
+      "route_wall_ns": 87463829,
+      "row_wall_ns": 121274031,
+      "rungs": {
+        "codebook": null,
+        "descend": null,
+        "enumerate": null,
+        "exact": null,
+        "lattice": null
+      },
+      "status": "accepted",
+      "stratum": "recurring_reduction",
+      "task_id": "list_003_max"
+    },
+    {
+      "arm": "pipeline_main",
+      "attempts": 1.0,
+      "boot_wall_ns": 27760454,
+      "category": "recurring_reduction",
+      "construction": "retrieved_exemplar",
+      "descend_kind": null,
+      "enumerate_detail": {
+        "distinct": null,
+        "grounded_constants": [],
+        "operator_shape": null,
+        "ops": [],
+        "solution_size": null,
+        "tested": null
+      },
+      "enumerate_outcome": null,
+      "exact_detail": {
+        "candidates": null,
+        "const": null,
+        "exps": null,
+        "family": null,
+        "k_den": null,
+        "k_num": null,
+        "outcome": null
+      },
+      "excluded": [],
+      "failure_reason": null,
+      "gap_filed": false,
+      "gap_reason": null,
+      "holdout": {
+        "all_ok": true,
+        "n": 3,
+        "n_ok": 3,
+        "rows": [
+          {
+            "expected": -4,
+            "got": -4,
+            "inputs": {
+              "xs": [
+                9,
+                -4,
+                6
+              ]
+            },
+            "ok": true,
+            "trap": null
+          },
+          {
+            "expected": -5,
+            "got": -5,
+            "inputs": {
+              "xs": [
+                -5,
+                -1,
+                8,
+                0
+              ]
+            },
+            "ok": true,
+            "trap": null
+          },
+          {
+            "expected": 1,
+            "got": 1,
+            "inputs": {
+              "xs": [
+                2,
+                2,
+                2,
+                2,
+                1
+              ]
+            },
+            "ok": true,
+            "trap": null
+          }
+        ]
+      },
+      "ir": {
+        "stmts": [
+          {
+            "default": null,
+            "name": "xs",
+            "type": "ProgDefFnParam"
+          },
+          {
+            "name": "x",
+            "type": "ProgAssignVar",
+            "value": {
+              "args": [
+                {
+                  "items": [
+                    {
+                      "type": "Lit",
+                      "value": 2
+                    },
+                    {
+                      "args": [
+                        {
+                          "type": "Lit",
+                          "value": 10
+                        },
+                        {
+                          "a": {
+                            "name": "xs",
+                            "type": "Var"
+                          },
+                          "b": {
+                            "type": "Lit",
+                            "value": 1
+                          },
+                          "type": "Minus"
+                        }
+                      ],
+                      "name": "math.pow",
+                      "recv": null,
+                      "type": "ProgCallExtern"
+                    }
+                  ],
+                  "type": "Times"
+                }
+              ],
+              "name": "math.sqrt",
+              "recv": null,
+              "type": "ProgCallExtern"
+            }
+          },
+          {
+            "type": "ProgReturn",
+            "value": {
+              "source": {
+                "name": "xs",
+                "type": "Var"
+              },
+              "type": "MinOver",
+              "value": {
+                "name": "__item",
+                "type": "Var"
+              },
+              "var_name": "__item"
+            }
+          }
+        ],
+        "type": "ProgSeq"
+      },
+      "move_detail": null,
+      "n_counterexamples": 0,
+      "outcome": "accepted_holdout_ok",
+      "python_render": {
+        "exec_agree": null,
+        "gaps": [
+          "render_gap:MinOver in python"
+        ],
+        "refusals": [],
+        "render_ok": false
+      },
+      "recognized": true,
+      "repair_detail": {
+        "attempts": 0.0,
+        "budget": 2.0,
+        "gaveup": null,
+        "kind": null,
+        "localized": null,
+        "refused": null,
+        "seq": 0.0,
+        "trace_derivable": null,
+        "trace_diverge_hole": null,
+        "trace_seq": -1.0,
+        "trace_skel_agree": null
+      },
+      "request_text": "Write a function that returns the smallest integer in a list.",
+      "residual_tokens": [],
+      "route_wall_ns": 19496202,
+      "row_wall_ns": 53423605,
+      "rungs": {
+        "codebook": null,
+        "descend": null,
+        "enumerate": null,
+        "exact": null,
+        "lattice": null
+      },
+      "status": "accepted",
+      "stratum": "recurring_reduction",
+      "task_id": "list_004_min"
+    },
+    {
+      "arm": "pipeline_main",
+      "attempts": 1.0,
+      "boot_wall_ns": 26795748,
+      "category": "recurring_projection",
+      "construction": "retrieved_exemplar",
+      "descend_kind": null,
+      "enumerate_detail": {
+        "distinct": null,
+        "grounded_constants": [],
+        "operator_shape": null,
+        "ops": [],
+        "solution_size": null,
+        "tested": null
+      },
+      "enumerate_outcome": null,
+      "exact_detail": {
+        "candidates": null,
+        "const": null,
+        "exps": null,
+        "family": null,
+        "k_den": null,
+        "k_num": null,
+        "outcome": null
+      },
+      "excluded": [],
+      "failure_reason": null,
+      "gap_filed": false,
+      "gap_reason": null,
+      "holdout": {
+        "all_ok": true,
+        "n": 3,
+        "n_ok": 3,
+        "rows": [
+          {
+            "expected": 9,
+            "got": 9,
+            "inputs": {
+              "xs": [
+                9,
+                -4,
+                6
+              ]
+            },
+            "ok": true,
+            "trap": null
+          },
+          {
+            "expected": -5,
+            "got": -5,
+            "inputs": {
+              "xs": [
+                -5,
+                -1,
+                8,
+                0
+              ]
+            },
+            "ok": true,
+            "trap": null
+          },
+          {
+            "expected": 2,
+            "got": 2,
+            "inputs": {
+              "xs": [
+                2,
+                2,
+                2,
+                2,
+                1
+              ]
+            },
+            "ok": true,
+            "trap": null
+          }
+        ]
+      },
+      "ir": {
+        "stmts": [
+          {
+            "default": null,
+            "name": "xs",
+            "type": "ProgDefFnParam"
+          },
+          {
+            "name": "j",
+            "type": "ProgAssignVar",
+            "value": {
+              "type": "Lit",
+              "value": 0
+            }
+          },
+          {
+            "name": "sm",
+            "type": "ProgAssignVar",
+            "value": {
+              "type": "Lit",
+              "value": 0
+            }
+          },
+          {
+            "body": {
+              "stmts": [
+                {
+                  "name": "j",
+                  "type": "ProgAssignVar",
+                  "value": {
+                    "a": {
+                      "items": [
+                        {
+                          "type": "Lit",
+                          "value": 2
+                        },
+                        {
+                          "name": "i",
+                          "type": "Var"
+                        }
+                      ],
+                      "type": "Times"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": 1
+                    },
+                    "type": "Minus"
+                  }
+                },
+                {
+                  "name": "sm",
+                  "type": "ProgAssignVar",
+                  "value": {
+                    "items": [
+                      {
+                        "name": "sm",
+                        "type": "Var"
+                      },
+                      {
+                        "items": [
+                          {
+                            "items": [
+                              {
+                                "items": [
+                                  {
+                                    "name": "j",
+                                    "type": "Var"
+                                  },
+                                  {
+                                    "name": "j",
+                                    "type": "Var"
+                                  }
+                                ],
+                                "type": "Times"
+                              },
+                              {
+                                "name": "j",
+                                "type": "Var"
+                              }
+                            ],
+                            "type": "Times"
+                          },
+                          {
+                            "name": "j",
+                            "type": "Var"
+                          }
+                        ],
+                        "type": "Times"
+                      }
+                    ],
+                    "type": "Plus"
+                  }
+                }
+              ],
+              "type": "ProgSeq"
+            },
+            "iter": {
+              "args": [
+                {
+                  "type": "Lit",
+                  "value": 1
+                },
+                {
+                  "items": [
+                    {
+                      "name": "xs",
+                      "type": "Var"
+                    },
+                    {
+                      "type": "Lit",
+                      "value": 1
+                    }
+                  ],
+                  "type": "Plus"
+                }
+              ],
+              "name": "range",
+              "recv": null,
+              "type": "ProgCallExtern"
+            },
+            "orelse": null,
+            "type": "ProgForEach",
+            "var": "i"
+          },
+          {
+            "type": "ProgReturn",
+            "value": {
+              "index": {
+                "type": "Lit",
+                "value": 0
+              },
+              "seq": {
+                "name": "xs",
+                "type": "Var"
+              },
+              "type": "IndexAt"
+            }
+          }
+        ],
+        "type": "ProgSeq"
+      },
+      "move_detail": null,
+      "n_counterexamples": 0,
+      "outcome": "accepted_holdout_ok",
+      "python_render": {
+        "exec_agree": null,
+        "gaps": [
+          "render_gap:IndexAt in python"
+        ],
+        "refusals": [],
+        "render_ok": false
+      },
+      "recognized": true,
+      "repair_detail": {
+        "attempts": 0.0,
+        "budget": 2.0,
+        "gaveup": null,
+        "kind": null,
+        "localized": null,
+        "refused": null,
+        "seq": 0.0,
+        "trace_derivable": null,
+        "trace_diverge_hole": null,
+        "trace_seq": -1.0,
+        "trace_skel_agree": null
+      },
+      "request_text": "Write a function that returns the first item in a list.",
+      "residual_tokens": [],
+      "route_wall_ns": 33143278,
+      "row_wall_ns": 65790403,
+      "rungs": {
+        "codebook": null,
+        "descend": null,
+        "enumerate": null,
+        "exact": null,
+        "lattice": null
+      },
+      "status": "accepted",
+      "stratum": "recurring_projection",
+      "task_id": "list_005_first"
+    },
+    {
+      "arm": "pipeline_main",
+      "attempts": 1.0,
+      "boot_wall_ns": 25994973,
+      "category": "recurring_projection",
+      "construction": "retrieved_exemplar",
+      "descend_kind": null,
+      "enumerate_detail": {
+        "distinct": null,
+        "grounded_constants": [],
+        "operator_shape": null,
+        "ops": [],
+        "solution_size": null,
+        "tested": null
+      },
+      "enumerate_outcome": null,
+      "exact_detail": {
+        "candidates": null,
+        "const": null,
+        "exps": null,
+        "family": null,
+        "k_den": null,
+        "k_num": null,
+        "outcome": null
+      },
+      "excluded": [],
+      "failure_reason": null,
+      "gap_filed": false,
+      "gap_reason": null,
+      "holdout": {
+        "all_ok": true,
+        "n": 3,
+        "n_ok": 3,
+        "rows": [
+          {
+            "expected": 6,
+            "got": 6,
+            "inputs": {
+              "xs": [
+                9,
+                -4,
+                6
+              ]
+            },
+            "ok": true,
+            "trap": null
+          },
+          {
+            "expected": 0,
+            "got": 0,
+            "inputs": {
+              "xs": [
+                -5,
+                -1,
+                8,
+                0
+              ]
+            },
+            "ok": true,
+            "trap": null
+          },
+          {
+            "expected": 1,
+            "got": 1,
+            "inputs": {
+              "xs": [
+                2,
+                2,
+                2,
+                2,
+                1
+              ]
+            },
+            "ok": true,
+            "trap": null
+          }
+        ]
+      },
+      "ir": {
+        "stmts": [
+          {
+            "default": null,
+            "name": "xs",
+            "type": "ProgDefFnParam"
+          },
+          {
+            "name": "n",
+            "type": "ProgAssignVar",
+            "value": {
+              "args": [
+                {
+                  "name": "xs",
+                  "type": "Var"
+                }
+              ],
+              "name": "len",
+              "recv": null,
+              "type": "ProgCallExtern"
+            }
+          },
+          {
+            "name": "dp",
+            "type": "ProgAssignVar",
+            "value": {
+              "cond": null,
+              "expr": {
+                "type": "Lit",
+                "value": 0
+              },
+              "source": {
+                "args": [
+                  {
+                    "name": "n",
+                    "type": "Var"
+                  }
+                ],
+                "name": "range",
+                "recv": null,
+                "type": "ProgCallExtern"
+              },
+              "type": "ProgComprehensionList",
+              "var": "i"
+            }
+          },
+          {
+            "index": {
+              "a": {
+                "name": "n",
+                "type": "Var"
+              },
+              "b": {
+                "type": "Lit",
+                "value": 1
+              },
+              "type": "Minus"
+            },
+            "obj": {
+              "name": "dp",
+              "type": "Var"
+            },
+            "type": "ProgSubscriptSet",
+            "value": {
+              "type": "Lit",
+              "value": 1
+            }
+          },
+          {
+            "body": {
+              "stmts": [
+                {
+                  "name": "mxm",
+                  "type": "ProgAssignVar",
+                  "value": {
+                    "type": "Lit",
+                    "value": 0
+                  }
+                },
+                {
+                  "body": {
+                    "cond": {
+                      "cond": {
+                        "a": {
+                          "a": {
+                            "index": {
+                              "name": "j",
+                              "type": "Var"
+                            },
+                            "obj": {
+                              "name": "xs",
+                              "type": "Var"
+                            },
+                            "type": "ProgSubscript"
+                          },
+                          "b": {
+                            "index": {
+                              "name": "i",
+                              "type": "Var"
+                            },
+                            "obj": {
+                              "name": "xs",
+                              "type": "Var"
+                            },
+                            "type": "ProgSubscript"
+                          },
+                          "type": "Mod"
+                        },
+                        "b": {
+                          "type": "Lit",
+                          "value": 0
+                        },
+                        "type": "Eq"
+                      },
+                      "other": {
+                        "a": {
+                          "a": {
+                            "index": {
+                              "name": "i",
+                              "type": "Var"
+                            },
+                            "obj": {
+                              "name": "xs",
+                              "type": "Var"
+                            },
+                            "type": "ProgSubscript"
+                          },
+                          "b": {
+                            "index": {
+                              "name": "j",
+                              "type": "Var"
+                            },
+                            "obj": {
+                              "name": "xs",
+                              "type": "Var"
+                            },
+                            "type": "ProgSubscript"
+                          },
+                          "type": "Mod"
+                        },
+                        "b": {
+                          "type": "Lit",
+                          "value": 0
+                        },
+                        "type": "Eq"
+                      },
+                      "then": {
+                        "a": {
+                          "a": {
+                            "index": {
+                              "name": "j",
+                              "type": "Var"
+                            },
+                            "obj": {
+                              "name": "xs",
+                              "type": "Var"
+                            },
+                            "type": "ProgSubscript"
+                          },
+                          "b": {
+                            "index": {
+                              "name": "i",
+                              "type": "Var"
+                            },
+                            "obj": {
+                              "name": "xs",
+                              "type": "Var"
+                            },
+                            "type": "ProgSubscript"
+                          },
+                          "type": "Mod"
+                        },
+                        "b": {
+                          "type": "Lit",
+                          "value": 0
+                        },
+                        "type": "Eq"
+                      },
+                      "type": "IfThenElse"
+                    },
+                    "orelse": null,
+                    "then": {
+                      "name": "mxm",
+                      "type": "ProgAssignVar",
+                      "value": {
+                        "args": [
+                          {
+                            "name": "mxm",
+                            "type": "Var"
+                          },
+                          {
+                            "index": {
+                              "name": "j",
+                              "type": "Var"
+                            },
+                            "obj": {
+                              "name": "dp",
+                              "type": "Var"
+                            },
+                            "type": "ProgSubscript"
+                          }
+                        ],
+                        "name": "max",
+                        "recv": null,
+                        "type": "ProgCallExtern"
+                      }
+                    },
+                    "type": "ProgIfStmt"
+                  },
+                  "iter": {
+                    "args": [
+                      {
+                        "items": [
+                          {
+                            "name": "i",
+                            "type": "Var"
+                          },
+                          {
+                            "type": "Lit",
+                            "value": 1
+                          }
+                        ],
+                        "type": "Plus"
+                      },
+                      {
+                        "name": "n",
+                        "type": "Var"
+                      }
+                    ],
+                    "name": "range",
+                    "recv": null,
+                    "type": "ProgCallExtern"
+                  },
+                  "orelse": null,
+                  "type": "ProgForEach",
+                  "var": "j"
+                },
+                {
+                  "index": {
+                    "name": "i",
+                    "type": "Var"
+                  },
+                  "obj": {
+                    "name": "dp",
+                    "type": "Var"
+                  },
+                  "type": "ProgSubscriptSet",
+                  "value": {
+                    "items": [
+                      {
+                        "type": "Lit",
+                        "value": 1
+                      },
+                      {
+                        "name": "mxm",
+                        "type": "Var"
+                      }
+                    ],
+                    "type": "Plus"
+                  }
+                }
+              ],
+              "type": "ProgSeq"
+            },
+            "iter": {
+              "args": [
+                {
+                  "a": {
+                    "name": "n",
+                    "type": "Var"
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": 2
+                  },
+                  "type": "Minus"
+                },
+                {
+                  "arg": {
+                    "type": "Lit",
+                    "value": 1
+                  },
+                  "type": "Neg"
+                },
+                {
+                  "arg": {
+                    "type": "Lit",
+                    "value": 1
+                  },
+                  "type": "Neg"
+                }
+              ],
+              "name": "range",
+              "recv": null,
+              "type": "ProgCallExtern"
+            },
+            "orelse": null,
+            "type": "ProgForEach",
+            "var": "i"
+          },
+          {
+            "type": "ProgReturn",
+            "value": {
+              "seq": {
+                "name": "xs",
+                "type": "Var"
+              },
+              "type": "Last"
+            }
+          }
+        ],
+        "type": "ProgSeq"
+      },
+      "move_detail": null,
+      "n_counterexamples": 0,
+      "outcome": "accepted_holdout_ok",
+      "python_render": {
+        "exec_agree": null,
+        "gaps": [
+          "render_gap:Last in python"
+        ],
+        "refusals": [],
+        "render_ok": false
+      },
+      "recognized": true,
+      "repair_detail": {
+        "attempts": 0.0,
+        "budget": 2.0,
+        "gaveup": null,
+        "kind": null,
+        "localized": null,
+        "refused": null,
+        "seq": 0.0,
+        "trace_derivable": null,
+        "trace_diverge_hole": null,
+        "trace_seq": -1.0,
+        "trace_skel_agree": null
+      },
+      "request_text": "Write a function that returns the last item in a list.",
+      "residual_tokens": [],
+      "route_wall_ns": 89535362,
+      "row_wall_ns": 123339384,
+      "rungs": {
+        "codebook": null,
+        "descend": null,
+        "enumerate": null,
+        "exact": null,
+        "lattice": null
+      },
+      "status": "accepted",
+      "stratum": "recurring_projection",
+      "task_id": "list_006_last"
+    },
+    {
+      "arm": "pipeline_main",
+      "attempts": 0.0,
+      "boot_wall_ns": 27609163,
+      "category": "recurring_projection",
+      "construction": null,
+      "descend_kind": null,
+      "enumerate_detail": {
+        "distinct": 24868,
+        "grounded_constants": [],
+        "operator_shape": null,
+        "ops": [],
+        "solution_size": null,
+        "tested": 200000
+      },
+      "enumerate_outcome": "failed",
+      "exact_detail": {
+        "candidates": null,
+        "const": null,
+        "exps": null,
+        "family": null,
+        "k_den": null,
+        "k_num": null,
+        "outcome": null
+      },
+      "excluded": [],
+      "failure_reason": "enumerate_failed",
+      "gap_filed": true,
+      "gap_reason": "enumerate_failed",
+      "move_detail": null,
+      "n_counterexamples": 0,
+      "outcome": "gapped",
+      "recognized": true,
+      "repair_detail": {
+        "attempts": 0.0,
+        "budget": 2.0,
+        "gaveup": null,
+        "kind": null,
+        "localized": null,
+        "refused": null,
+        "seq": 0.0,
+        "trace_derivable": null,
+        "trace_diverge_hole": null,
+        "trace_seq": -1.0,
+        "trace_skel_agree": null
+      },
+      "request_text": "Write a function that returns a list in reverse order.",
+      "residual_tokens": [],
+      "route_wall_ns": 547652878,
+      "row_wall_ns": 575278921,
+      "rungs": {
+        "codebook": null,
+        "descend": null,
+        "enumerate": 1.0,
+        "exact": null,
+        "lattice": null
+      },
+      "status": "gapped",
+      "stratum": "recurring_projection",
+      "task_id": "list_007_reverse"
+    },
+    {
+      "arm": "pipeline_main",
+      "attempts": 1.0,
+      "boot_wall_ns": 26201694,
+      "category": "recurring_map",
+      "construction": "retrieved_exemplar",
+      "descend_kind": null,
+      "enumerate_detail": {
+        "distinct": null,
+        "grounded_constants": [],
+        "operator_shape": null,
+        "ops": [],
+        "solution_size": null,
+        "tested": null
+      },
+      "enumerate_outcome": null,
+      "exact_detail": {
+        "candidates": null,
+        "const": null,
+        "exps": null,
+        "family": null,
+        "k_den": null,
+        "k_num": null,
+        "outcome": null
+      },
+      "excluded": [],
+      "failure_reason": null,
+      "gap_filed": false,
+      "gap_reason": null,
+      "holdout": {
+        "all_ok": true,
+        "n": 3,
+        "n_ok": 3,
+        "rows": [
+          {
+            "expected": [
+              10,
+              -3,
+              7
+            ],
+            "got": null,
+            "inputs": {
+              "xs": [
+                9,
+                -4,
+                6
+              ]
+            },
+            "ok": true,
+            "trap": null
+          },
+          {
+            "expected": [
+              -4,
+              0,
+              9,
+              1
+            ],
+            "got": null,
+            "inputs": {
+              "xs": [
+                -5,
+                -1,
+                8,
+                0
+              ]
+            },
+            "ok": true,
+            "trap": null
+          },
+          {
+            "expected": [
+              3,
+              3,
+              3,
+              3,
+              2
+            ],
+            "got": null,
+            "inputs": {
+              "xs": [
+                2,
+                2,
+                2,
+                2,
+                1
+              ]
+            },
+            "ok": true,
+            "trap": null
+          }
+        ]
+      },
+      "ir": {
+        "stmts": [
+          {
+            "default": null,
+            "name": "xs",
+            "type": "ProgDefFnParam"
+          },
+          {
+            "name": "s",
+            "type": "ProgAssignVar",
+            "value": {
+              "args": [
+                {
+                  "name": "xs",
+                  "type": "Var"
+                }
+              ],
+              "name": "set",
+              "recv": null,
+              "type": "ProgCallExtern"
+            }
+          },
+          {
+            "type": "ProgReturn",
+            "value": {
+              "source": {
+                "name": "xs",
+                "type": "Var"
+              },
+              "type": "MapList",
+              "value": {
+                "items": [
+                  {
+                    "name": "__item",
+                    "type": "Var"
+                  },
+                  {
+                    "type": "Lit",
+                    "value": 1
+                  }
+                ],
+                "type": "Plus"
+              },
+              "var_name": "__item"
+            }
+          }
+        ],
+        "type": "ProgSeq"
+      },
+      "move_detail": null,
+      "n_counterexamples": 0,
+      "outcome": "accepted_holdout_ok",
+      "python_render": {
+        "exec_agree": null,
+        "gaps": [
+          "render_gap:MapList in python"
+        ],
+        "refusals": [],
+        "render_ok": false
+      },
+      "recognized": true,
+      "repair_detail": {
+        "attempts": 0.0,
+        "budget": 2.0,
+        "gaveup": null,
+        "kind": null,
+        "localized": null,
+        "refused": null,
+        "seq": 0.0,
+        "trace_derivable": null,
+        "trace_diverge_hole": null,
+        "trace_seq": -1.0,
+        "trace_skel_agree": null
+      },
+      "request_text": "Write a function that adds one to every integer in a list.",
+      "residual_tokens": [],
+      "route_wall_ns": 19215071,
+      "row_wall_ns": 51030470,
+      "rungs": {
+        "codebook": null,
+        "descend": null,
+        "enumerate": null,
+        "exact": null,
+        "lattice": null
+      },
+      "status": "accepted",
+      "stratum": "recurring_map",
+      "task_id": "list_008_map_plus_one"
+    },
+    {
+      "arm": "pipeline_main",
+      "attempts": 1.0,
+      "boot_wall_ns": 26474816,
+      "category": "recurring_map",
+      "construction": "retrieved_exemplar",
+      "descend_kind": null,
+      "enumerate_detail": {
+        "distinct": null,
+        "grounded_constants": [],
+        "operator_shape": null,
+        "ops": [],
+        "solution_size": null,
+        "tested": null
+      },
+      "enumerate_outcome": null,
+      "exact_detail": {
+        "candidates": null,
+        "const": null,
+        "exps": null,
+        "family": null,
+        "k_den": null,
+        "k_num": null,
+        "outcome": null
+      },
+      "excluded": [],
+      "failure_reason": null,
+      "gap_filed": false,
+      "gap_reason": null,
+      "holdout": {
+        "all_ok": true,
+        "n": 3,
+        "n_ok": 3,
+        "rows": [
+          {
+            "expected": [
+              18,
+              -8,
+              12
+            ],
+            "got": null,
+            "inputs": {
+              "xs": [
+                9,
+                -4,
+                6
+              ]
+            },
+            "ok": true,
+            "trap": null
+          },
+          {
+            "expected": [
+              -10,
+              -2,
+              16,
+              0
+            ],
+            "got": null,
+            "inputs": {
+              "xs": [
+                -5,
+                -1,
+                8,
+                0
+              ]
+            },
+            "ok": true,
+            "trap": null
+          },
+          {
+            "expected": [
+              4,
+              4,
+              4,
+              4,
+              2
+            ],
+            "got": null,
+            "inputs": {
+              "xs": [
+                2,
+                2,
+                2,
+                2,
+                1
+              ]
+            },
+            "ok": true,
+            "trap": null
+          }
+        ]
+      },
+      "ir": {
+        "stmts": [
+          {
+            "default": null,
+            "name": "xs",
+            "type": "ProgDefFnParam"
+          },
+          {
+            "name": "n",
+            "type": "ProgAssignVar",
+            "value": {
+              "args": [
+                {
+                  "name": "xs",
+                  "type": "Var"
+                }
+              ],
+              "name": "len",
+              "recv": null,
+              "type": "ProgCallExtern"
+            }
+          },
+          {
+            "name": "dp",
+            "type": "ProgAssignVar",
+            "value": {
+              "cond": null,
+              "expr": {
+                "type": "Lit",
+                "value": 0
+              },
+              "source": {
+                "args": [
+                  {
+                    "name": "n",
+                    "type": "Var"
+                  }
+                ],
+                "name": "range",
+                "recv": null,
+                "type": "ProgCallExtern"
+              },
+              "type": "ProgComprehensionList",
+              "var": "i"
+            }
+          },
+          {
+            "index": {
+              "a": {
+                "name": "n",
+                "type": "Var"
+              },
+              "b": {
+                "type": "Lit",
+                "value": 1
+              },
+              "type": "Minus"
+            },
+            "obj": {
+              "name": "dp",
+              "type": "Var"
+            },
+            "type": "ProgSubscriptSet",
+            "value": {
+              "type": "Lit",
+              "value": 1
+            }
+          },
+          {
+            "body": {
+              "stmts": [
+                {
+                  "name": "mxm",
+                  "type": "ProgAssignVar",
+                  "value": {
+                    "type": "Lit",
+                    "value": 0
+                  }
+                },
+                {
+                  "body": {
+                    "cond": {
+                      "cond": {
+                        "a": {
+                          "a": {
+                            "index": {
+                              "name": "j",
+                              "type": "Var"
+                            },
+                            "obj": {
+                              "name": "xs",
+                              "type": "Var"
+                            },
+                            "type": "ProgSubscript"
+                          },
+                          "b": {
+                            "index": {
+                              "name": "i",
+                              "type": "Var"
+                            },
+                            "obj": {
+                              "name": "xs",
+                              "type": "Var"
+                            },
+                            "type": "ProgSubscript"
+                          },
+                          "type": "Mod"
+                        },
+                        "b": {
+                          "type": "Lit",
+                          "value": 0
+                        },
+                        "type": "Eq"
+                      },
+                      "other": {
+                        "a": {
+                          "a": {
+                            "index": {
+                              "name": "i",
+                              "type": "Var"
+                            },
+                            "obj": {
+                              "name": "xs",
+                              "type": "Var"
+                            },
+                            "type": "ProgSubscript"
+                          },
+                          "b": {
+                            "index": {
+                              "name": "j",
+                              "type": "Var"
+                            },
+                            "obj": {
+                              "name": "xs",
+                              "type": "Var"
+                            },
+                            "type": "ProgSubscript"
+                          },
+                          "type": "Mod"
+                        },
+                        "b": {
+                          "type": "Lit",
+                          "value": 0
+                        },
+                        "type": "Eq"
+                      },
+                      "then": {
+                        "a": {
+                          "a": {
+                            "index": {
+                              "name": "j",
+                              "type": "Var"
+                            },
+                            "obj": {
+                              "name": "xs",
+                              "type": "Var"
+                            },
+                            "type": "ProgSubscript"
+                          },
+                          "b": {
+                            "index": {
+                              "name": "i",
+                              "type": "Var"
+                            },
+                            "obj": {
+                              "name": "xs",
+                              "type": "Var"
+                            },
+                            "type": "ProgSubscript"
+                          },
+                          "type": "Mod"
+                        },
+                        "b": {
+                          "type": "Lit",
+                          "value": 0
+                        },
+                        "type": "Eq"
+                      },
+                      "type": "IfThenElse"
+                    },
+                    "orelse": null,
+                    "then": {
+                      "name": "mxm",
+                      "type": "ProgAssignVar",
+                      "value": {
+                        "args": [
+                          {
+                            "name": "mxm",
+                            "type": "Var"
+                          },
+                          {
+                            "index": {
+                              "name": "j",
+                              "type": "Var"
+                            },
+                            "obj": {
+                              "name": "dp",
+                              "type": "Var"
+                            },
+                            "type": "ProgSubscript"
+                          }
+                        ],
+                        "name": "max",
+                        "recv": null,
+                        "type": "ProgCallExtern"
+                      }
+                    },
+                    "type": "ProgIfStmt"
+                  },
+                  "iter": {
+                    "args": [
+                      {
+                        "items": [
+                          {
+                            "name": "i",
+                            "type": "Var"
+                          },
+                          {
+                            "type": "Lit",
+                            "value": 1
+                          }
+                        ],
+                        "type": "Plus"
+                      },
+                      {
+                        "name": "n",
+                        "type": "Var"
+                      }
+                    ],
+                    "name": "range",
+                    "recv": null,
+                    "type": "ProgCallExtern"
+                  },
+                  "orelse": null,
+                  "type": "ProgForEach",
+                  "var": "j"
+                },
+                {
+                  "index": {
+                    "name": "i",
+                    "type": "Var"
+                  },
+                  "obj": {
+                    "name": "dp",
+                    "type": "Var"
+                  },
+                  "type": "ProgSubscriptSet",
+                  "value": {
+                    "items": [
+                      {
+                        "type": "Lit",
+                        "value": 1
+                      },
+                      {
+                        "name": "mxm",
+                        "type": "Var"
+                      }
+                    ],
+                    "type": "Plus"
+                  }
+                }
+              ],
+              "type": "ProgSeq"
+            },
+            "iter": {
+              "args": [
+                {
+                  "a": {
+                    "name": "n",
+                    "type": "Var"
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": 2
+                  },
+                  "type": "Minus"
+                },
+                {
+                  "arg": {
+                    "type": "Lit",
+                    "value": 1
+                  },
+                  "type": "Neg"
+                },
+                {
+                  "arg": {
+                    "type": "Lit",
+                    "value": 1
+                  },
+                  "type": "Neg"
+                }
+              ],
+              "name": "range",
+              "recv": null,
+              "type": "ProgCallExtern"
+            },
+            "orelse": null,
+            "type": "ProgForEach",
+            "var": "i"
+          },
+          {
+            "type": "ProgReturn",
+            "value": {
+              "source": {
+                "name": "xs",
+                "type": "Var"
+              },
+              "type": "MapList",
+              "value": {
+                "items": [
+                  {
+                    "name": "__item",
+                    "type": "Var"
+                  },
+                  {
+                    "type": "Lit",
+                    "value": 2
+                  }
+                ],
+                "type": "Times"
+              },
+              "var_name": "__item"
+            }
+          }
+        ],
+        "type": "ProgSeq"
+      },
+      "move_detail": null,
+      "n_counterexamples": 0,
+      "outcome": "accepted_holdout_ok",
+      "python_render": {
+        "exec_agree": null,
+        "gaps": [
+          "render_gap:MapList in python"
+        ],
+        "refusals": [],
+        "render_ok": false
+      },
+      "recognized": true,
+      "repair_detail": {
+        "attempts": 0.0,
+        "budget": 2.0,
+        "gaveup": null,
+        "kind": null,
+        "localized": null,
+        "refused": null,
+        "seq": 0.0,
+        "trace_derivable": null,
+        "trace_diverge_hole": null,
+        "trace_seq": -1.0,
+        "trace_skel_agree": null
+      },
+      "request_text": "Write a function that doubles every integer in a list.",
+      "residual_tokens": [],
+      "route_wall_ns": 90663709,
+      "row_wall_ns": 124057448,
+      "rungs": {
+        "codebook": null,
+        "descend": null,
+        "enumerate": null,
+        "exact": null,
+        "lattice": null
+      },
+      "status": "accepted",
+      "stratum": "recurring_map",
+      "task_id": "list_009_map_double"
+    },
+    {
+      "arm": "pipeline_main",
+      "attempts": 2.0,
+      "boot_wall_ns": 28246277,
+      "category": "recurring_map",
+      "construction": "abs_value",
+      "descend_kind": null,
+      "enumerate_detail": {
+        "distinct": 24868,
+        "grounded_constants": [],
+        "operator_shape": null,
+        "ops": [],
+        "solution_size": null,
+        "tested": 200000
+      },
+      "enumerate_outcome": "failed",
+      "exact_detail": {
+        "candidates": null,
+        "const": null,
+        "exps": null,
+        "family": null,
+        "k_den": null,
+        "k_num": null,
+        "outcome": null
+      },
+      "excluded": [
+        "abs_value"
+      ],
+      "failure_reason": "enumerate_failed",
+      "gap_filed": true,
+      "gap_reason": "enumerate_failed",
+      "move_detail": null,
+      "n_counterexamples": 4,
+      "outcome": "gapped",
+      "recognized": true,
+      "repair_detail": {
+        "attempts": 0.0,
+        "budget": 2.0,
+        "gaveup": null,
+        "kind": null,
+        "localized": null,
+        "refused": null,
+        "seq": 0.0,
+        "trace_derivable": null,
+        "trace_diverge_hole": null,
+        "trace_seq": -1.0,
+        "trace_skel_agree": null
+      },
+      "request_text": "Write a function that replaces each list item with its absolute value.",
+      "residual_tokens": [
+        "REPLACES",
+        "EACH",
+        "ITS"
+      ],
+      "route_wall_ns": 820359530,
+      "row_wall_ns": 848620357,
+      "rungs": {
+        "codebook": 1.0,
+        "descend": 1.0,
+        "enumerate": 1.0,
+        "exact": null,
+        "lattice": null
+      },
+      "status": "gapped",
+      "stratum": "recurring_map",
+      "task_id": "list_010_map_abs"
+    },
+    {
+      "arm": "pipeline_main",
+      "attempts": 0.0,
+      "boot_wall_ns": 29592436,
+      "category": "recurring_filter",
+      "construction": null,
+      "descend_kind": null,
+      "enumerate_detail": {
+        "distinct": 292,
+        "grounded_constants": [],
+        "operator_shape": null,
+        "ops": [],
+        "solution_size": 5,
+        "tested": 2874
+      },
+      "enumerate_outcome": "ok",
+      "exact_detail": {
+        "candidates": null,
+        "const": null,
+        "exps": null,
+        "family": null,
+        "k_den": null,
+        "k_num": null,
+        "outcome": null
+      },
+      "excluded": [],
+      "failure_reason": null,
+      "gap_filed": false,
+      "gap_reason": null,
+      "holdout": {
+        "all_ok": true,
+        "n": 3,
+        "n_ok": 3,
+        "rows": [
+          {
+            "expected": [
+              9,
+              6
+            ],
+            "got": null,
+            "inputs": {
+              "xs": [
+                9,
+                -4,
+                6
+              ]
+            },
+            "ok": true,
+            "trap": null
+          },
+          {
+            "expected": [
+              8
+            ],
+            "got": null,
+            "inputs": {
+              "xs": [
+                -5,
+                -1,
+                8,
+                0
+              ]
+            },
+            "ok": true,
+            "trap": null
+          },
+          {
+            "expected": [
+              2,
+              2,
+              2,
+              2,
+              1
+            ],
+            "got": null,
+            "inputs": {
+              "xs": [
+                2,
+                2,
+                2,
+                2,
+                1
+              ]
+            },
+            "ok": true,
+            "trap": null
+          }
+        ]
+      },
+      "ir": {
+        "stmts": [
+          {
+            "default": null,
+            "name": "xs",
+            "type": "ProgDefFnParam"
+          },
+          {
+            "type": "ProgReturn",
+            "value": {
+              "predicate": {
+                "a": {
+                  "name": "__item",
+                  "type": "Var"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": 0
+                },
+                "type": "Gt"
+              },
+              "source": {
+                "name": "xs",
+                "type": "Var"
+              },
+              "type": "FilterList",
+              "var_name": "__item"
+            }
+          }
+        ],
+        "type": "ProgSeq"
+      },
+      "move_detail": null,
+      "n_counterexamples": 0,
+      "outcome": "accepted_holdout_ok",
+      "python_render": {
+        "exec_agree": null,
+        "gaps": [
+          "render_gap:FilterList in python"
+        ],
+        "refusals": [],
+        "render_ok": false
+      },
+      "recognized": true,
+      "repair_detail": {
+        "attempts": 0.0,
+        "budget": 2.0,
+        "gaveup": null,
+        "kind": null,
+        "localized": null,
+        "refused": null,
+        "seq": 0.0,
+        "trace_derivable": null,
+        "trace_diverge_hole": null,
+        "trace_seq": -1.0,
+        "trace_skel_agree": null
+      },
+      "request_text": "Write a function that keeps only positive integers from a list.",
+      "residual_tokens": [],
+      "route_wall_ns": 191518582,
+      "row_wall_ns": 227574418,
+      "rungs": {
+        "codebook": null,
+        "descend": null,
+        "enumerate": 1.0,
+        "exact": null,
+        "lattice": null
+      },
+      "status": "accepted",
+      "stratum": "recurring_filter",
+      "task_id": "list_011_filter_positive"
+    },
+    {
+      "arm": "pipeline_main",
+      "attempts": 0.0,
+      "boot_wall_ns": 32273793,
+      "category": "recurring_filter",
+      "construction": null,
+      "descend_kind": null,
+      "enumerate_detail": {
+        "distinct": 293,
+        "grounded_constants": [],
+        "operator_shape": null,
+        "ops": [],
+        "solution_size": 5,
+        "tested": 2875
+      },
+      "enumerate_outcome": "ok",
+      "exact_detail": {
+        "candidates": null,
+        "const": null,
+        "exps": null,
+        "family": null,
+        "k_den": null,
+        "k_num": null,
+        "outcome": null
+      },
+      "excluded": [],
+      "failure_reason": null,
+      "gap_filed": false,
+      "gap_reason": null,
+      "holdout": {
+        "all_ok": true,
+        "n": 3,
+        "n_ok": 3,
+        "rows": [
+          {
+            "expected": [
+              -4
+            ],
+            "got": null,
+            "inputs": {
+              "xs": [
+                9,
+                -4,
+                6
+              ]
+            },
+            "ok": true,
+            "trap": null
+          },
+          {
+            "expected": [
+              -5,
+              -1
+            ],
+            "got": null,
+            "inputs": {
+              "xs": [
+                -5,
+                -1,
+                8,
+                0
+              ]
+            },
+            "ok": true,
+            "trap": null
+          },
+          {
+            "expected": [],
+            "got": null,
+            "inputs": {
+              "xs": [
+                2,
+                2,
+                2,
+                2,
+                1
+              ]
+            },
+            "ok": true,
+            "trap": null
+          }
+        ]
+      },
+      "ir": {
+        "stmts": [
+          {
+            "default": null,
+            "name": "xs",
+            "type": "ProgDefFnParam"
+          },
+          {
+            "type": "ProgReturn",
+            "value": {
+              "predicate": {
+                "a": {
+                  "name": "__item",
+                  "type": "Var"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": 0
+                },
+                "type": "Lt"
+              },
+              "source": {
+                "name": "xs",
+                "type": "Var"
+              },
+              "type": "FilterList",
+              "var_name": "__item"
+            }
+          }
+        ],
+        "type": "ProgSeq"
+      },
+      "move_detail": null,
+      "n_counterexamples": 0,
+      "outcome": "accepted_holdout_ok",
+      "python_render": {
+        "exec_agree": null,
+        "gaps": [
+          "render_gap:FilterList in python"
+        ],
+        "refusals": [],
+        "render_ok": false
+      },
+      "recognized": true,
+      "repair_detail": {
+        "attempts": 0.0,
+        "budget": 2.0,
+        "gaveup": null,
+        "kind": null,
+        "localized": null,
+        "refused": null,
+        "seq": 0.0,
+        "trace_derivable": null,
+        "trace_diverge_hole": null,
+        "trace_seq": -1.0,
+        "trace_skel_agree": null
+      },
+      "request_text": "Write a function that keeps only negative integers from a list.",
+      "residual_tokens": [],
+      "route_wall_ns": 187777699,
+      "row_wall_ns": 226158970,
+      "rungs": {
+        "codebook": null,
+        "descend": null,
+        "enumerate": 1.0,
+        "exact": null,
+        "lattice": null
+      },
+      "status": "accepted",
+      "stratum": "recurring_filter",
+      "task_id": "list_012_filter_negative"
+    },
+    {
+      "arm": "pipeline_main",
+      "attempts": 1.0,
+      "boot_wall_ns": 29379794,
+      "category": "recurring_filter",
+      "construction": "retrieved_exemplar",
+      "descend_kind": null,
+      "enumerate_detail": {
+        "distinct": null,
+        "grounded_constants": [],
+        "operator_shape": null,
+        "ops": [],
+        "solution_size": null,
+        "tested": null
+      },
+      "enumerate_outcome": null,
+      "exact_detail": {
+        "candidates": null,
+        "const": null,
+        "exps": null,
+        "family": null,
+        "k_den": null,
+        "k_num": null,
+        "outcome": null
+      },
+      "excluded": [],
+      "failure_reason": "holdout_disagreement",
+      "gap_filed": false,
+      "gap_reason": null,
+      "holdout": {
+        "all_ok": false,
+        "n": 3,
+        "n_ok": 2,
+        "rows": [
+          {
+            "expected": [
+              9,
+              6
+            ],
+            "got": null,
+            "inputs": {
+              "xs": [
+                9,
+                -4,
+                6
+              ]
+            },
+            "ok": false,
+            "trap": null
+          },
+          {
+            "expected": [
+              8
+            ],
+            "got": null,
+            "inputs": {
+              "xs": [
+                -5,
+                -1,
+                8,
+                0
+              ]
+            },
+            "ok": true,
+            "trap": null
+          },
+          {
+            "expected": [],
+            "got": null,
+            "inputs": {
+              "xs": [
+                2,
+                2,
+                2,
+                2,
+                1
+              ]
+            },
+            "ok": true,
+            "trap": null
+          }
+        ]
+      },
+      "ir": {
+        "stmts": [
+          {
+            "default": null,
+            "name": "xs",
+            "type": "ProgDefFnParam"
+          },
+          {
+            "name": "size",
+            "type": "ProgAssignVar",
+            "value": {
+              "args": [
+                {
+                  "name": "xs",
+                  "type": "Var"
+                }
+              ],
+              "name": "len",
+              "recv": null,
+              "type": "ProgCallExtern"
+            }
+          },
+          {
+            "name": "temp",
+            "type": "ProgAssignVar",
+            "value": {
+              "index": {
+                "type": "Lit",
+                "value": 0
+              },
+              "obj": {
+                "name": "xs",
+                "type": "Var"
+              },
+              "type": "ProgSubscript"
+            }
+          },
+          {
+            "index": {
+              "type": "Lit",
+              "value": 0
+            },
+            "obj": {
+              "name": "xs",
+              "type": "Var"
+            },
+            "type": "ProgSubscriptSet",
+            "value": {
+              "index": {
+                "a": {
+                  "name": "size",
+                  "type": "Var"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": 1
+                },
+                "type": "Minus"
+              },
+              "obj": {
+                "name": "xs",
+                "type": "Var"
+              },
+              "type": "ProgSubscript"
+            }
+          },
+          {
+            "index": {
+              "a": {
+                "name": "size",
+                "type": "Var"
+              },
+              "b": {
+                "type": "Lit",
+                "value": 1
+              },
+              "type": "Minus"
+            },
+            "obj": {
+              "name": "xs",
+              "type": "Var"
+            },
+            "type": "ProgSubscriptSet",
+            "value": {
+              "name": "temp",
+              "type": "Var"
+            }
+          },
+          {
+            "type": "ProgReturn",
+            "value": {
+              "predicate": {
+                "a": {
+                  "name": "__item",
+                  "type": "Var"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": 2
+                },
+                "type": "Gt"
+              },
+              "source": {
+                "name": "xs",
+                "type": "Var"
+              },
+              "type": "FilterList",
+              "var_name": "__item"
+            }
+          }
+        ],
+        "type": "ProgSeq"
+      },
+      "move_detail": null,
+      "n_counterexamples": 0,
+      "outcome": "accepted_holdout_fail",
+      "python_render": {
+        "exec_agree": null,
+        "gaps": [
+          "render_gap:FilterList in python"
+        ],
+        "refusals": [],
+        "render_ok": false
+      },
+      "recognized": true,
+      "repair_detail": {
+        "attempts": 0.0,
+        "budget": 2.0,
+        "gaveup": null,
+        "kind": null,
+        "localized": null,
+        "refused": null,
+        "seq": 0.0,
+        "trace_derivable": null,
+        "trace_diverge_hole": null,
+        "trace_seq": -1.0,
+        "trace_skel_agree": null
+      },
+      "request_text": "Write a function that keeps list items greater than two.",
+      "residual_tokens": [],
+      "route_wall_ns": 25830983,
+      "row_wall_ns": 61314835,
+      "rungs": {
+        "codebook": null,
+        "descend": null,
+        "enumerate": null,
+        "exact": null,
+        "lattice": null
+      },
+      "status": "accepted",
+      "stratum": "recurring_filter",
+      "task_id": "list_013_filter_gt_two"
+    },
+    {
+      "arm": "pipeline_main",
+      "attempts": 0.0,
+      "boot_wall_ns": 26887049,
+      "category": "recurring_composition",
+      "construction": null,
+      "descend_kind": null,
+      "enumerate_detail": {
+        "distinct": 18734,
+        "grounded_constants": [],
+        "operator_shape": null,
+        "ops": [],
+        "solution_size": null,
+        "tested": 200000
+      },
+      "enumerate_outcome": "failed",
+      "exact_detail": {
+        "candidates": null,
+        "const": null,
+        "exps": null,
+        "family": null,
+        "k_den": null,
+        "k_num": null,
+        "outcome": null
+      },
+      "excluded": [],
+      "failure_reason": "enumerate_failed",
+      "gap_filed": true,
+      "gap_reason": "enumerate_failed",
+      "move_detail": null,
+      "n_counterexamples": 0,
+      "outcome": "gapped",
+      "recognized": true,
+      "repair_detail": {
+        "attempts": 0.0,
+        "budget": 2.0,
+        "gaveup": null,
+        "kind": null,
+        "localized": null,
+        "refused": null,
+        "seq": 0.0,
+        "trace_derivable": null,
+        "trace_diverge_hole": null,
+        "trace_seq": -1.0,
+        "trace_skel_agree": null
+      },
+      "request_text": "Write a function that sums only the positive integers in a list.",
+      "residual_tokens": [],
+      "route_wall_ns": 441901844,
+      "row_wall_ns": 468803393,
+      "rungs": {
+        "codebook": null,
+        "descend": null,
+        "enumerate": 1.0,
+        "exact": null,
+        "lattice": null
+      },
+      "status": "gapped",
+      "stratum": "recurring_composition",
+      "task_id": "list_014_sum_positive"
+    },
+    {
+      "arm": "pipeline_main",
+      "attempts": 2.0,
+      "boot_wall_ns": 29348474,
+      "category": "recurring_composition",
+      "construction": "sum_of_two",
+      "descend_kind": null,
+      "enumerate_detail": {
+        "distinct": 23985,
+        "grounded_constants": [],
+        "operator_shape": null,
+        "ops": [],
+        "solution_size": null,
+        "tested": 200000
+      },
+      "enumerate_outcome": "failed",
+      "exact_detail": {
+        "candidates": null,
+        "const": null,
+        "exps": null,
+        "family": null,
+        "k_den": null,
+        "k_num": null,
+        "outcome": null
+      },
+      "excluded": [
+        "sum_of_two"
+      ],
+      "failure_reason": "enumerate_failed",
+      "gap_filed": true,
+      "gap_reason": "enumerate_failed",
+      "move_detail": null,
+      "n_counterexamples": 4,
+      "outcome": "gapped",
+      "recognized": true,
+      "repair_detail": {
+        "attempts": 0.0,
+        "budget": 2.0,
+        "gaveup": null,
+        "kind": null,
+        "localized": null,
+        "refused": null,
+        "seq": 0.0,
+        "trace_derivable": null,
+        "trace_diverge_hole": null,
+        "trace_seq": -1.0,
+        "trace_skel_agree": null
+      },
+      "request_text": "Write a function that returns the sum of the squares of list items.",
+      "residual_tokens": [
+        "SQUARES"
+      ],
+      "route_wall_ns": 453774239,
+      "row_wall_ns": 483137123,
+      "rungs": {
+        "codebook": 1.0,
+        "descend": 1.0,
+        "enumerate": 1.0,
+        "exact": null,
+        "lattice": null
+      },
+      "status": "gapped",
+      "stratum": "recurring_composition",
+      "task_id": "list_015_sum_squares"
+    },
+    {
+      "arm": "pipeline_main",
+      "attempts": 1.0,
+      "boot_wall_ns": 31272936,
+      "category": "recurring_composition",
+      "construction": "retrieved_exemplar",
+      "descend_kind": null,
+      "enumerate_detail": {
+        "distinct": null,
+        "grounded_constants": [],
+        "operator_shape": null,
+        "ops": [],
+        "solution_size": null,
+        "tested": null
+      },
+      "enumerate_outcome": null,
+      "exact_detail": {
+        "candidates": null,
+        "const": null,
+        "exps": null,
+        "family": null,
+        "k_den": null,
+        "k_num": null,
+        "outcome": null
+      },
+      "excluded": [],
+      "failure_reason": null,
+      "gap_filed": false,
+      "gap_reason": null,
+      "holdout": {
+        "all_ok": true,
+        "n": 3,
+        "n_ok": 3,
+        "rows": [
+          {
+            "expected": 2,
+            "got": 2,
+            "inputs": {
+              "xs": [
+                9,
+                -4,
+                6
+              ]
+            },
+            "ok": true,
+            "trap": null
+          },
+          {
+            "expected": 1,
+            "got": 1,
+            "inputs": {
+              "xs": [
+                -5,
+                -1,
+                8,
+                0
+              ]
+            },
+            "ok": true,
+            "trap": null
+          },
+          {
+            "expected": 5,
+            "got": 5,
+            "inputs": {
+              "xs": [
+                2,
+                2,
+                2,
+                2,
+                1
+              ]
+            },
+            "ok": true,
+            "trap": null
+          }
+        ]
+      },
+      "ir": {
+        "stmts": [
+          {
+            "default": null,
+            "name": "xs",
+            "type": "ProgDefFnParam"
+          },
+          {
+            "name": "n",
+            "type": "ProgAssignVar",
+            "value": {
+              "args": [
+                {
+                  "name": "xs",
+                  "type": "Var"
+                }
+              ],
+              "name": "len",
+              "recv": null,
+              "type": "ProgCallExtern"
+            }
+          },
+          {
+            "name": "dp",
+            "type": "ProgAssignVar",
+            "value": {
+              "cond": null,
+              "expr": {
+                "type": "Lit",
+                "value": 0
+              },
+              "source": {
+                "args": [
+                  {
+                    "name": "n",
+                    "type": "Var"
+                  }
+                ],
+                "name": "range",
+                "recv": null,
+                "type": "ProgCallExtern"
+              },
+              "type": "ProgComprehensionList",
+              "var": "i"
+            }
+          },
+          {
+            "index": {
+              "a": {
+                "name": "n",
+                "type": "Var"
+              },
+              "b": {
+                "type": "Lit",
+                "value": 1
+              },
+              "type": "Minus"
+            },
+            "obj": {
+              "name": "dp",
+              "type": "Var"
+            },
+            "type": "ProgSubscriptSet",
+            "value": {
+              "type": "Lit",
+              "value": 1
+            }
+          },
+          {
+            "body": {
+              "stmts": [
+                {
+                  "name": "mxm",
+                  "type": "ProgAssignVar",
+                  "value": {
+                    "type": "Lit",
+                    "value": 0
+                  }
+                },
+                {
+                  "body": {
+                    "cond": {
+                      "cond": {
+                        "a": {
+                          "a": {
+                            "index": {
+                              "name": "j",
+                              "type": "Var"
+                            },
+                            "obj": {
+                              "name": "xs",
+                              "type": "Var"
+                            },
+                            "type": "ProgSubscript"
+                          },
+                          "b": {
+                            "index": {
+                              "name": "i",
+                              "type": "Var"
+                            },
+                            "obj": {
+                              "name": "xs",
+                              "type": "Var"
+                            },
+                            "type": "ProgSubscript"
+                          },
+                          "type": "Mod"
+                        },
+                        "b": {
+                          "type": "Lit",
+                          "value": 0
+                        },
+                        "type": "Eq"
+                      },
+                      "other": {
+                        "a": {
+                          "a": {
+                            "index": {
+                              "name": "i",
+                              "type": "Var"
+                            },
+                            "obj": {
+                              "name": "xs",
+                              "type": "Var"
+                            },
+                            "type": "ProgSubscript"
+                          },
+                          "b": {
+                            "index": {
+                              "name": "j",
+                              "type": "Var"
+                            },
+                            "obj": {
+                              "name": "xs",
+                              "type": "Var"
+                            },
+                            "type": "ProgSubscript"
+                          },
+                          "type": "Mod"
+                        },
+                        "b": {
+                          "type": "Lit",
+                          "value": 0
+                        },
+                        "type": "Eq"
+                      },
+                      "then": {
+                        "a": {
+                          "a": {
+                            "index": {
+                              "name": "j",
+                              "type": "Var"
+                            },
+                            "obj": {
+                              "name": "xs",
+                              "type": "Var"
+                            },
+                            "type": "ProgSubscript"
+                          },
+                          "b": {
+                            "index": {
+                              "name": "i",
+                              "type": "Var"
+                            },
+                            "obj": {
+                              "name": "xs",
+                              "type": "Var"
+                            },
+                            "type": "ProgSubscript"
+                          },
+                          "type": "Mod"
+                        },
+                        "b": {
+                          "type": "Lit",
+                          "value": 0
+                        },
+                        "type": "Eq"
+                      },
+                      "type": "IfThenElse"
+                    },
+                    "orelse": null,
+                    "then": {
+                      "name": "mxm",
+                      "type": "ProgAssignVar",
+                      "value": {
+                        "args": [
+                          {
+                            "name": "mxm",
+                            "type": "Var"
+                          },
+                          {
+                            "index": {
+                              "name": "j",
+                              "type": "Var"
+                            },
+                            "obj": {
+                              "name": "dp",
+                              "type": "Var"
+                            },
+                            "type": "ProgSubscript"
+                          }
+                        ],
+                        "name": "max",
+                        "recv": null,
+                        "type": "ProgCallExtern"
+                      }
+                    },
+                    "type": "ProgIfStmt"
+                  },
+                  "iter": {
+                    "args": [
+                      {
+                        "items": [
+                          {
+                            "name": "i",
+                            "type": "Var"
+                          },
+                          {
+                            "type": "Lit",
+                            "value": 1
+                          }
+                        ],
+                        "type": "Plus"
+                      },
+                      {
+                        "name": "n",
+                        "type": "Var"
+                      }
+                    ],
+                    "name": "range",
+                    "recv": null,
+                    "type": "ProgCallExtern"
+                  },
+                  "orelse": null,
+                  "type": "ProgForEach",
+                  "var": "j"
+                },
+                {
+                  "index": {
+                    "name": "i",
+                    "type": "Var"
+                  },
+                  "obj": {
+                    "name": "dp",
+                    "type": "Var"
+                  },
+                  "type": "ProgSubscriptSet",
+                  "value": {
+                    "items": [
+                      {
+                        "type": "Lit",
+                        "value": 1
+                      },
+                      {
+                        "name": "mxm",
+                        "type": "Var"
+                      }
+                    ],
+                    "type": "Plus"
+                  }
+                }
+              ],
+              "type": "ProgSeq"
+            },
+            "iter": {
+              "args": [
+                {
+                  "a": {
+                    "name": "n",
+                    "type": "Var"
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": 2
+                  },
+                  "type": "Minus"
+                },
+                {
+                  "arg": {
+                    "type": "Lit",
+                    "value": 1
+                  },
+                  "type": "Neg"
+                },
+                {
+                  "arg": {
+                    "type": "Lit",
+                    "value": 1
+                  },
+                  "type": "Neg"
+                }
+              ],
+              "name": "range",
+              "recv": null,
+              "type": "ProgCallExtern"
+            },
+            "orelse": null,
+            "type": "ProgForEach",
+            "var": "i"
+          },
+          {
+            "type": "ProgReturn",
+            "value": {
+              "source": {
+                "predicate": {
+                  "a": {
+                    "name": "__item",
+                    "type": "Var"
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": 0
+                  },
+                  "type": "Gt"
+                },
+                "source": {
+                  "name": "xs",
+                  "type": "Var"
+                },
+                "type": "FilterList",
+                "var_name": "__item"
+              },
+              "type": "Count"
+            }
+          }
+        ],
+        "type": "ProgSeq"
+      },
+      "move_detail": null,
+      "n_counterexamples": 0,
+      "outcome": "accepted_holdout_ok",
+      "python_render": {
+        "exec_agree": null,
+        "gaps": [
+          "render_gap:Count in python",
+          "render_gap:FilterList in python"
+        ],
+        "refusals": [],
+        "render_ok": false
+      },
+      "recognized": true,
+      "repair_detail": {
+        "attempts": 0.0,
+        "budget": 2.0,
+        "gaveup": null,
+        "kind": null,
+        "localized": null,
+        "refused": null,
+        "seq": 0.0,
+        "trace_derivable": null,
+        "trace_diverge_hole": null,
+        "trace_seq": -1.0,
+        "trace_skel_agree": null
+      },
+      "request_text": "Write a function that counts the positive integers in a list.",
+      "residual_tokens": [],
+      "route_wall_ns": 111808282,
+      "row_wall_ns": 150774816,
+      "rungs": {
+        "codebook": null,
+        "descend": null,
+        "enumerate": null,
+        "exact": null,
+        "lattice": null
+      },
+      "status": "accepted",
+      "stratum": "recurring_composition",
+      "task_id": "list_016_count_positive"
+    },
+    {
+      "arm": "pipeline_main",
+      "attempts": 1.0,
+      "boot_wall_ns": 28776521,
+      "category": "recurring_composition",
+      "construction": "retrieved_exemplar",
+      "descend_kind": null,
+      "enumerate_detail": {
+        "distinct": null,
+        "grounded_constants": [],
+        "operator_shape": null,
+        "ops": [],
+        "solution_size": null,
+        "tested": null
+      },
+      "enumerate_outcome": null,
+      "exact_detail": {
+        "candidates": null,
+        "const": null,
+        "exps": null,
+        "family": null,
+        "k_den": null,
+        "k_num": null,
+        "outcome": null
+      },
+      "excluded": [],
+      "failure_reason": "holdout_disagreement",
+      "gap_filed": false,
+      "gap_reason": null,
+      "holdout": {
+        "all_ok": false,
+        "n": 3,
+        "n_ok": 1,
+        "rows": [
+          {
+            "expected": 2,
+            "got": 2,
+            "inputs": {
+              "xs": [
+                9,
+                -4,
+                6
+              ]
+            },
+            "ok": true,
+            "trap": null
+          },
+          {
+            "expected": 8,
+            "got": 1,
+            "inputs": {
+              "xs": [
+                -5,
+                -1,
+                8,
+                0
+              ]
+            },
+            "ok": false,
+            "trap": null
+          },
+          {
+            "expected": 8,
+            "got": 2,
+            "inputs": {
+              "xs": [
+                2,
+                2,
+                2,
+                2,
+                1
+              ]
+            },
+            "ok": false,
+            "trap": null
+          }
+        ]
+      },
+      "ir": {
+        "stmts": [
+          {
+            "default": null,
+            "name": "xs",
+            "type": "ProgDefFnParam"
+          },
+          {
+            "type": "ProgReturn",
+            "value": {
+              "items": [
+                {
+                  "type": "Lit",
+                  "value": 1
+                },
+                {
+                  "items": [
+                    {
+                      "type": "Lit",
+                      "value": 1
+                    },
+                    {
+                      "seq": {
+                        "name": "xs",
+                        "type": "Var"
+                      },
+                      "type": "Last"
+                    }
+                  ],
+                  "type": "Min"
+                }
+              ],
+              "type": "Plus"
+            }
+          }
+        ],
+        "type": "ProgSeq"
+      },
+      "move_detail": null,
+      "n_counterexamples": 0,
+      "outcome": "accepted_holdout_fail",
+      "python_render": {
+        "exec_agree": null,
+        "gaps": [
+          "render_gap:Min in python",
+          "render_gap:Last in python"
+        ],
+        "refusals": [],
+        "render_ok": false
+      },
+      "recognized": true,
+      "repair_detail": {
+        "attempts": 0.0,
+        "budget": 2.0,
+        "gaveup": null,
+        "kind": null,
+        "localized": null,
+        "refused": null,
+        "seq": 0.0,
+        "trace_derivable": null,
+        "trace_diverge_hole": null,
+        "trace_seq": -1.0,
+        "trace_skel_agree": null
+      },
+      "request_text": "Write a function that sums the even integers in a list.",
+      "residual_tokens": [],
+      "route_wall_ns": 22979024,
+      "row_wall_ns": 57998224,
+      "rungs": {
+        "codebook": null,
+        "descend": null,
+        "enumerate": null,
+        "exact": null,
+        "lattice": null
+      },
+      "status": "accepted",
+      "stratum": "recurring_composition",
+      "task_id": "list_017_sum_even"
+    },
+    {
+      "arm": "pipeline_main",
+      "attempts": 2.0,
+      "boot_wall_ns": 30811044,
+      "category": "recurring_reduction",
+      "construction": "product_of_two",
+      "descend_kind": null,
+      "enumerate_detail": {
+        "distinct": 58,
+        "grounded_constants": [],
+        "operator_shape": null,
+        "ops": [],
+        "solution_size": 3,
+        "tested": 489
+      },
+      "enumerate_outcome": "ok",
+      "exact_detail": {
+        "candidates": null,
+        "const": null,
+        "exps": null,
+        "family": null,
+        "k_den": null,
+        "k_num": null,
+        "outcome": null
+      },
+      "excluded": [
+        "product_of_two"
+      ],
+      "failure_reason": null,
+      "gap_filed": false,
+      "gap_reason": null,
+      "holdout": {
+        "all_ok": true,
+        "n": 3,
+        "n_ok": 3,
+        "rows": [
+          {
+            "expected": -216,
+            "got": -216,
+            "inputs": {
+              "xs": [
+                9,
+                -4,
+                6
+              ]
+            },
+            "ok": true,
+            "trap": null
+          },
+          {
+            "expected": 0,
+            "got": 0,
+            "inputs": {
+              "xs": [
+                -5,
+                -1,
+                8,
+                0
+              ]
+            },
+            "ok": true,
+            "trap": null
+          },
+          {
+            "expected": 16,
+            "got": 16,
+            "inputs": {
+              "xs": [
+                2,
+                2,
+                2,
+                2,
+                1
+              ]
+            },
+            "ok": true,
+            "trap": null
+          }
+        ]
+      },
+      "ir": {
+        "stmts": [
+          {
+            "default": null,
+            "name": "xs",
+            "type": "ProgDefFnParam"
+          },
+          {
+            "type": "ProgReturn",
+            "value": {
+              "source": {
+                "name": "xs",
+                "type": "Var"
+              },
+              "type": "Prod",
+              "value": {
+                "name": "__item",
+                "type": "Var"
+              },
+              "var_name": "__item"
+            }
+          }
+        ],
+        "type": "ProgSeq"
+      },
+      "move_detail": null,
+      "n_counterexamples": 4,
+      "outcome": "accepted_holdout_ok",
+      "python_render": {
+        "exec_agree": null,
+        "gaps": [
+          "render_gap:Prod in python"
+        ],
+        "refusals": [],
+        "render_ok": false
+      },
+      "recognized": true,
+      "repair_detail": {
+        "attempts": 0.0,
+        "budget": 2.0,
+        "gaveup": null,
+        "kind": null,
+        "localized": null,
+        "refused": null,
+        "seq": 0.0,
+        "trace_derivable": null,
+        "trace_diverge_hole": null,
+        "trace_seq": -1.0,
+        "trace_skel_agree": null
+      },
+      "request_text": "Write a function that returns the product of the integers in a list.",
+      "residual_tokens": [
+        "INTEGERS"
+      ],
+      "route_wall_ns": 148232530,
+      "row_wall_ns": 184988382,
+      "rungs": {
+        "codebook": 1.0,
+        "descend": 1.0,
+        "enumerate": 1.0,
+        "exact": null,
+        "lattice": null
+      },
+      "status": "accepted",
+      "stratum": "recurring_reduction",
+      "task_id": "list_018_product"
+    },
+    {
+      "arm": "pipeline_main",
+      "attempts": 0.0,
+      "boot_wall_ns": 27150740,
+      "category": "one_off_composition",
+      "construction": null,
+      "descend_kind": null,
+      "enumerate_detail": {
+        "distinct": 24868,
+        "grounded_constants": [],
+        "operator_shape": null,
+        "ops": [],
+        "solution_size": null,
+        "tested": 200000
+      },
+      "enumerate_outcome": "failed",
+      "exact_detail": {
+        "candidates": null,
+        "const": null,
+        "exps": null,
+        "family": null,
+        "k_den": null,
+        "k_num": null,
+        "outcome": null
+      },
+      "excluded": [],
+      "failure_reason": "enumerate_failed",
+      "gap_filed": true,
+      "gap_reason": "enumerate_failed",
+      "move_detail": null,
+      "n_counterexamples": 0,
+      "outcome": "gapped",
+      "recognized": true,
+      "repair_detail": {
+        "attempts": 0.0,
+        "budget": 2.0,
+        "gaveup": null,
+        "kind": null,
+        "localized": null,
+        "refused": null,
+        "seq": 0.0,
+        "trace_derivable": null,
+        "trace_diverge_hole": null,
+        "trace_seq": -1.0,
+        "trace_skel_agree": null
+      },
+      "request_text": "Write a function that adds three to every integer in a list.",
+      "residual_tokens": [],
+      "route_wall_ns": 590011624,
+      "row_wall_ns": 617176464,
+      "rungs": {
+        "codebook": null,
+        "descend": null,
+        "enumerate": 1.0,
+        "exact": null,
+        "lattice": null
+      },
+      "status": "gapped",
+      "stratum": "one_off_composition",
+      "task_id": "list_019_map_plus_three"
+    },
+    {
+      "arm": "pipeline_main",
+      "attempts": 1.0,
+      "boot_wall_ns": 26659248,
+      "category": "adversarial_underdetermined",
+      "construction": "retrieved_exemplar",
+      "descend_kind": null,
+      "enumerate_detail": {
+        "distinct": null,
+        "grounded_constants": [],
+        "operator_shape": null,
+        "ops": [],
+        "solution_size": null,
+        "tested": null
+      },
+      "enumerate_outcome": null,
+      "exact_detail": {
+        "candidates": null,
+        "const": null,
+        "exps": null,
+        "family": null,
+        "k_den": null,
+        "k_num": null,
+        "outcome": null
+      },
+      "excluded": [],
+      "failure_reason": null,
+      "gap_filed": false,
+      "gap_reason": null,
+      "holdout": {
+        "all_ok": true,
+        "n": 3,
+        "n_ok": 3,
+        "rows": [
+          {
+            "expected": 8,
+            "got": 8,
+            "inputs": {
+              "xs": [
+                1,
+                4,
+                8
+              ]
+            },
+            "ok": true,
+            "trap": null
+          },
+          {
+            "expected": -2,
+            "got": -2,
+            "inputs": {
+              "xs": [
+                7,
+                0,
+                -2
+              ]
+            },
+            "ok": true,
+            "trap": null
+          },
+          {
+            "expected": 1,
+            "got": 1,
+            "inputs": {
+              "xs": [
+                5,
+                3,
+                1
+              ]
+            },
+            "ok": true,
+            "trap": null
+          }
+        ]
+      },
+      "ir": {
+        "stmts": [
+          {
+            "default": null,
+            "name": "xs",
+            "type": "ProgDefFnParam"
+          },
+          {
+            "name": "n",
+            "type": "ProgAssignVar",
+            "value": {
+              "args": [
+                {
+                  "name": "xs",
+                  "type": "Var"
+                }
+              ],
+              "name": "len",
+              "recv": null,
+              "type": "ProgCallExtern"
+            }
+          },
+          {
+            "name": "dp",
+            "type": "ProgAssignVar",
+            "value": {
+              "cond": null,
+              "expr": {
+                "type": "Lit",
+                "value": 0
+              },
+              "source": {
+                "args": [
+                  {
+                    "name": "n",
+                    "type": "Var"
+                  }
+                ],
+                "name": "range",
+                "recv": null,
+                "type": "ProgCallExtern"
+              },
+              "type": "ProgComprehensionList",
+              "var": "i"
+            }
+          },
+          {
+            "index": {
+              "a": {
+                "name": "n",
+                "type": "Var"
+              },
+              "b": {
+                "type": "Lit",
+                "value": 1
+              },
+              "type": "Minus"
+            },
+            "obj": {
+              "name": "dp",
+              "type": "Var"
+            },
+            "type": "ProgSubscriptSet",
+            "value": {
+              "type": "Lit",
+              "value": 1
+            }
+          },
+          {
+            "body": {
+              "stmts": [
+                {
+                  "name": "mxm",
+                  "type": "ProgAssignVar",
+                  "value": {
+                    "type": "Lit",
+                    "value": 0
+                  }
+                },
+                {
+                  "body": {
+                    "cond": {
+                      "cond": {
+                        "a": {
+                          "a": {
+                            "index": {
+                              "name": "j",
+                              "type": "Var"
+                            },
+                            "obj": {
+                              "name": "xs",
+                              "type": "Var"
+                            },
+                            "type": "ProgSubscript"
+                          },
+                          "b": {
+                            "index": {
+                              "name": "i",
+                              "type": "Var"
+                            },
+                            "obj": {
+                              "name": "xs",
+                              "type": "Var"
+                            },
+                            "type": "ProgSubscript"
+                          },
+                          "type": "Mod"
+                        },
+                        "b": {
+                          "type": "Lit",
+                          "value": 0
+                        },
+                        "type": "Eq"
+                      },
+                      "other": {
+                        "a": {
+                          "a": {
+                            "index": {
+                              "name": "i",
+                              "type": "Var"
+                            },
+                            "obj": {
+                              "name": "xs",
+                              "type": "Var"
+                            },
+                            "type": "ProgSubscript"
+                          },
+                          "b": {
+                            "index": {
+                              "name": "j",
+                              "type": "Var"
+                            },
+                            "obj": {
+                              "name": "xs",
+                              "type": "Var"
+                            },
+                            "type": "ProgSubscript"
+                          },
+                          "type": "Mod"
+                        },
+                        "b": {
+                          "type": "Lit",
+                          "value": 0
+                        },
+                        "type": "Eq"
+                      },
+                      "then": {
+                        "a": {
+                          "a": {
+                            "index": {
+                              "name": "j",
+                              "type": "Var"
+                            },
+                            "obj": {
+                              "name": "xs",
+                              "type": "Var"
+                            },
+                            "type": "ProgSubscript"
+                          },
+                          "b": {
+                            "index": {
+                              "name": "i",
+                              "type": "Var"
+                            },
+                            "obj": {
+                              "name": "xs",
+                              "type": "Var"
+                            },
+                            "type": "ProgSubscript"
+                          },
+                          "type": "Mod"
+                        },
+                        "b": {
+                          "type": "Lit",
+                          "value": 0
+                        },
+                        "type": "Eq"
+                      },
+                      "type": "IfThenElse"
+                    },
+                    "orelse": null,
+                    "then": {
+                      "name": "mxm",
+                      "type": "ProgAssignVar",
+                      "value": {
+                        "args": [
+                          {
+                            "name": "mxm",
+                            "type": "Var"
+                          },
+                          {
+                            "index": {
+                              "name": "j",
+                              "type": "Var"
+                            },
+                            "obj": {
+                              "name": "dp",
+                              "type": "Var"
+                            },
+                            "type": "ProgSubscript"
+                          }
+                        ],
+                        "name": "max",
+                        "recv": null,
+                        "type": "ProgCallExtern"
+                      }
+                    },
+                    "type": "ProgIfStmt"
+                  },
+                  "iter": {
+                    "args": [
+                      {
+                        "items": [
+                          {
+                            "name": "i",
+                            "type": "Var"
+                          },
+                          {
+                            "type": "Lit",
+                            "value": 1
+                          }
+                        ],
+                        "type": "Plus"
+                      },
+                      {
+                        "name": "n",
+                        "type": "Var"
+                      }
+                    ],
+                    "name": "range",
+                    "recv": null,
+                    "type": "ProgCallExtern"
+                  },
+                  "orelse": null,
+                  "type": "ProgForEach",
+                  "var": "j"
+                },
+                {
+                  "index": {
+                    "name": "i",
+                    "type": "Var"
+                  },
+                  "obj": {
+                    "name": "dp",
+                    "type": "Var"
+                  },
+                  "type": "ProgSubscriptSet",
+                  "value": {
+                    "items": [
+                      {
+                        "type": "Lit",
+                        "value": 1
+                      },
+                      {
+                        "name": "mxm",
+                        "type": "Var"
+                      }
+                    ],
+                    "type": "Plus"
+                  }
+                }
+              ],
+              "type": "ProgSeq"
+            },
+            "iter": {
+              "args": [
+                {
+                  "a": {
+                    "name": "n",
+                    "type": "Var"
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": 2
+                  },
+                  "type": "Minus"
+                },
+                {
+                  "arg": {
+                    "type": "Lit",
+                    "value": 1
+                  },
+                  "type": "Neg"
+                },
+                {
+                  "arg": {
+                    "type": "Lit",
+                    "value": 1
+                  },
+                  "type": "Neg"
+                }
+              ],
+              "name": "range",
+              "recv": null,
+              "type": "ProgCallExtern"
+            },
+            "orelse": null,
+            "type": "ProgForEach",
+            "var": "i"
+          },
+          {
+            "type": "ProgReturn",
+            "value": {
+              "seq": {
+                "name": "xs",
+                "type": "Var"
+              },
+              "type": "Last"
+            }
+          }
+        ],
+        "type": "ProgSeq"
+      },
+      "move_detail": null,
+      "n_counterexamples": 0,
+      "outcome": "accepted_holdout_ok",
+      "python_render": {
+        "exec_agree": null,
+        "gaps": [
+          "render_gap:Last in python"
+        ],
+        "refusals": [],
+        "render_ok": false
+      },
+      "recognized": true,
+      "repair_detail": {
+        "attempts": 0.0,
+        "budget": 2.0,
+        "gaveup": null,
+        "kind": null,
+        "localized": null,
+        "refused": null,
+        "seq": 0.0,
+        "trace_derivable": null,
+        "trace_diverge_hole": null,
+        "trace_seq": -1.0,
+        "trace_skel_agree": null
+      },
+      "request_text": "Write a function that returns the last item in a list.",
+      "residual_tokens": [],
+      "route_wall_ns": 86324541,
+      "row_wall_ns": 120384176,
+      "rungs": {
+        "codebook": null,
+        "descend": null,
+        "enumerate": null,
+        "exact": null,
+        "lattice": null
+      },
+      "status": "accepted",
+      "stratum": "adversarial_underdetermined",
+      "task_id": "list_020_last_degenerate"
+    },
+    {
+      "arm": "pipeline_main",
+      "attempts": 0.0,
+      "boot_wall_ns": 28855281,
+      "category": "adversarial_out_of_inventory",
+      "construction": null,
+      "descend_kind": null,
+      "enumerate_detail": {
+        "distinct": 15569,
+        "grounded_constants": [],
+        "operator_shape": null,
+        "ops": [],
+        "solution_size": null,
+        "tested": 200000
+      },
+      "enumerate_outcome": "failed",
+      "exact_detail": {
+        "candidates": null,
+        "const": null,
+        "exps": null,
+        "family": null,
+        "k_den": null,
+        "k_num": null,
+        "outcome": null
+      },
+      "excluded": [],
+      "failure_reason": "enumerate_failed",
+      "gap_filed": true,
+      "gap_reason": "enumerate_failed",
+      "move_detail": null,
+      "n_counterexamples": 0,
+      "outcome": "gapped",
+      "recognized": true,
+      "repair_detail": {
+        "attempts": 0.0,
+        "budget": 2.0,
+        "gaveup": null,
+        "kind": null,
+        "localized": null,
+        "refused": null,
+        "seq": 0.0,
+        "trace_derivable": null,
+        "trace_diverge_hole": null,
+        "trace_seq": -1.0,
+        "trace_skel_agree": null
+      },
+      "request_text": "Write a function that returns the median integer in a list.",
+      "residual_tokens": [],
+      "route_wall_ns": 695325076,
+      "row_wall_ns": 724197167,
+      "rungs": {
+        "codebook": null,
+        "descend": null,
+        "enumerate": 1.0,
+        "exact": null,
+        "lattice": null
+      },
+      "status": "gapped",
+      "stratum": "adversarial_out_of_inventory",
+      "task_id": "list_021_median"
+    },
+    {
+      "arm": "pipeline_main",
+      "attempts": 1.0,
+      "boot_wall_ns": 27341141,
+      "category": "adversarial_out_of_inventory",
+      "construction": "retrieved_exemplar",
+      "descend_kind": null,
+      "enumerate_detail": {
+        "distinct": null,
+        "grounded_constants": [],
+        "operator_shape": null,
+        "ops": [],
+        "solution_size": null,
+        "tested": null
+      },
+      "enumerate_outcome": null,
+      "exact_detail": {
+        "candidates": null,
+        "const": null,
+        "exps": null,
+        "family": null,
+        "k_den": null,
+        "k_num": null,
+        "outcome": null
+      },
+      "excluded": [],
+      "failure_reason": "holdout_disagreement",
+      "gap_filed": false,
+      "gap_reason": null,
+      "holdout": {
+        "all_ok": false,
+        "n": 3,
+        "n_ok": 0,
+        "rows": [
+          {
+            "expected": 4,
+            "got": 2,
+            "inputs": {
+              "xs": [
+                1,
+                2,
+                3,
+                4
+              ]
+            },
+            "ok": false,
+            "trap": null
+          },
+          {
+            "expected": 2,
+            "got": 1,
+            "inputs": {
+              "xs": [
+                7,
+                7,
+                -2
+              ]
+            },
+            "ok": false,
+            "trap": null
+          },
+          {
+            "expected": 2,
+            "got": 3,
+            "inputs": {
+              "xs": [
+                0,
+                0,
+                0,
+                1,
+                1
+              ]
+            },
+            "ok": false,
+            "trap": null
+          }
+        ]
+      },
+      "ir": {
+        "stmts": [
+          {
+            "default": null,
+            "name": "xs",
+            "type": "ProgDefFnParam"
+          },
+          {
+            "name": "s",
+            "type": "ProgAssignVar",
+            "value": {
+              "args": [
+                {
+                  "name": "xs",
+                  "type": "Var"
+                }
+              ],
+              "name": "set",
+              "recv": null,
+              "type": "ProgCallExtern"
+            }
+          },
+          {
+            "type": "ProgReturn",
+            "value": {
+              "a": {
+                "source": {
+                  "name": "xs",
+                  "type": "Var"
+                },
+                "type": "Count"
+              },
+              "b": {
+                "type": "Lit",
+                "value": 2
+              },
+              "type": "Minus"
+            }
+          }
+        ],
+        "type": "ProgSeq"
+      },
+      "move_detail": null,
+      "n_counterexamples": 0,
+      "outcome": "accepted_holdout_fail",
+      "python_render": {
+        "exec_agree": null,
+        "gaps": [
+          "render_gap:Count in python"
+        ],
+        "refusals": [],
+        "render_ok": false
+      },
+      "recognized": true,
+      "repair_detail": {
+        "attempts": 0.0,
+        "budget": 2.0,
+        "gaveup": null,
+        "kind": null,
+        "localized": null,
+        "refused": null,
+        "seq": 0.0,
+        "trace_derivable": null,
+        "trace_diverge_hole": null,
+        "trace_seq": -1.0,
+        "trace_skel_agree": null
+      },
+      "request_text": "Write a function that counts the distinct integers in a list.",
+      "residual_tokens": [],
+      "route_wall_ns": 17143108,
+      "row_wall_ns": 50536717,
+      "rungs": {
+        "codebook": null,
+        "descend": null,
+        "enumerate": null,
+        "exact": null,
+        "lattice": null
+      },
+      "status": "accepted",
+      "stratum": "adversarial_out_of_inventory",
+      "task_id": "list_022_unique_count"
+    }
+  ],
+  "claim_boundary": "Full P4 request-to-outcome path on 22 synthetic list tasks; task family and direct-search outcomes were already inspected. Not confirmatory; no task prevalence, broad learning, mint/adoption, or transfer claim.",
+  "environment": {
+    "controls": {
+      "OZMA_NO_LLM": "1",
+      "OZMA_SEED_PERSIST_DISABLED": "1",
+      "PYTHONHASHSEED": null
+    },
+    "platform": "Linux-6.8.0-137-generic-x86_64-with-glibc2.39",
+    "python": "3.13.5 (main, Jun 11 2025, 15:36:57) [GCC 11.4.0]"
+  },
+  "provenance": {
+    "command": "PYTHONPATH=runners/dsl/python:.:scripts OZMA_NO_LLM=1 OZMA_SEED_PERSIST_DISABLED=1 python3 scripts/substrate_list_pbe_pipeline_pilot.py",
+    "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+    "dirty_worktree": true,
+    "native_extension_path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+    "sha256": {
+      "benchmark_protocol": "6386e6a619d46527d1c0522ac0e370f4067d41c1341f415b01bd7f2afe5cb624",
+      "cargo_lock": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+      "harness": "cb0a3c09a509d8387b2a8a8164386a3f0acf4df7f747a7a8bec6619816ad6de3",
+      "native_build_manifest": "3f99e43751994817702c71abeef467ee4fc26d1761b701562c8870084ddb4954",
+      "native_extension": "ca49e588a9787dad9b957f3e18718d0f0cd72cde85091d2b9edca350965cd4d9",
+      "native_synthesizer": "f3ae5dd0b15f0fef1713fa92ccb563e4b573dd94b626f0bfed58413298ee6203",
+      "pipeline_adapter": "498e7297fbaac0fe2bd4738540b79c9019b89be4f13219cc098a3b39912d77f9",
+      "pipeline_runner": "0cdaf29c0db08c36ac50e18a1a99e5c2eaed77a26cd68e5e5952a451a94b3df5",
+      "pipeline_seed": "9d657f4409e470626f3bb9adc1236b7c6c59976a7a1b16b38e566813324916bd",
+      "preregistration": "8022650f8780bc3205634dd56adde3180944a88a578de72dd800371431bd9976",
+      "suite": "14aeef908729a8dd0071cc03bb8c60c2da777405b0a26c49301c06739d7bc95c"
+    }
+  },
+  "run_id": "substrate-list-pbe-pipeline-pilot-20260925",
+  "run_state": "discovery_diagnostic_previous_task_family_outcomes_known",
+  "schema_version": 1,
+  "summary": {
+    "active_rung_counts": {
+      "codebook": 3,
+      "descend": 3,
+      "enumerate": 9
+    },
+    "boot_wall_ms_total": 632.76817,
+    "outcome_counts": {
+      "accepted_holdout_fail": 3,
+      "accepted_holdout_ok": 13,
+      "gapped": 6
+    },
+    "parent_peak_rss_kib": 340748,
+    "parent_system_cpu_seconds": 0.408143,
+    "parent_user_cpu_seconds": 5.926837,
+    "route_wall_ms_total": 4738.449577,
+    "task_count": 22,
+    "wall_seconds": 5.478598049841821
+  }
+}

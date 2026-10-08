@@ -1,0 +1,19 @@
+{
+  "checks": {
+    "A_blocked_while_B_reached_result": true,
+    "B_borrow_error_repeats_at_converse_node_read": true,
+    "B_reply_missing_and_A_reply_preserved": true,
+    "identity_and_lifecycle_survive_before_reply_failure": true,
+    "native_source_has_mutable_gil_releasing_run_rules": true,
+    "raw_digest_matches_lock": true,
+    "raw_inputs_match_lock": true,
+    "source_stable_workers_and_postrun": true,
+    "three_distinct_workers": true
+  },
+  "finding": "The controlled overlap consistently completes B's identity-bound lifecycle while A is blocked, but B then fails in WorldAdapter.converse at the MessageInterpretation node read with RuntimeError: Already mutably borrowed. The exception originates at substrate_rs.Substrate.node. A returns its baseline reply; B has no reply. Thus graph lifecycle identity survives, but this live route is not safe for this concurrent call pattern.",
+  "limits": "One controlled route and barrier schedule, three fresh workers. Does not establish all concurrent schedules or other WorldAdapter methods.",
+  "lock_sha256": "13c88c5280f28e3df8436f23653f1c0f86c1343a1211789dbb7c56eaf7c31ccd",
+  "raw_sha256": "5039a54cfe15823c5cd9bb6812442deffc2a84b46f9098cf215b553801272fa7",
+  "root_cause_assessment": "The traceback plus runners/dsl/src/py.rs show run_rules is declared with &mut self while using py.allow_threads around an Arc<Mutex<SubstrateRs>> operation. This suggests PyO3's exclusive PyClass borrow outlives GIL release and conflicts with another thread's node read. Treat this as a source-supported diagnosis, not a verified fix; arbitrary concurrent access needs a broader borrow/API audit.",
+  "schema_version": 1
+}

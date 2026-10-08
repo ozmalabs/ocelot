@@ -1,0 +1,455 @@
+{
+  "claim_boundary": "Exact graph parity demonstrates state preservation under tracing for this fixed panel. Concrete access traces remain partial and this panel does not prove partition safety, natural-task prevalence, or speedup.",
+  "errors": [
+    "runner check failure",
+    "baseline parity row count mismatch",
+    "final graph parity mismatch (0, 'common_ground_stress', None)",
+    "checkpoint graph parity mismatch (0, 'common_ground_stress', None)",
+    "final graph parity mismatch (0, 'concurrent_goals', 2)",
+    "checkpoint graph parity mismatch (0, 'concurrent_goals', 2)",
+    "final graph parity mismatch (0, 'concurrent_goals', 4)",
+    "checkpoint graph parity mismatch (0, 'concurrent_goals', 4)",
+    "final graph parity mismatch (0, 'concurrent_goals', 8)",
+    "checkpoint graph parity mismatch (0, 'concurrent_goals', 8)",
+    "final graph parity mismatch (1, 'common_ground_stress', None)",
+    "checkpoint graph parity mismatch (1, 'common_ground_stress', None)",
+    "final graph parity mismatch (1, 'concurrent_goals', 2)",
+    "checkpoint graph parity mismatch (1, 'concurrent_goals', 2)",
+    "final graph parity mismatch (1, 'concurrent_goals', 4)",
+    "checkpoint graph parity mismatch (1, 'concurrent_goals', 4)",
+    "final graph parity mismatch (1, 'concurrent_goals', 8)",
+    "checkpoint graph parity mismatch (1, 'concurrent_goals', 8)",
+    "final graph parity mismatch (2, 'common_ground_stress', None)",
+    "checkpoint graph parity mismatch (2, 'common_ground_stress', None)",
+    "final graph parity mismatch (2, 'concurrent_goals', 2)",
+    "checkpoint graph parity mismatch (2, 'concurrent_goals', 2)",
+    "final graph parity mismatch (2, 'concurrent_goals', 4)",
+    "checkpoint graph parity mismatch (2, 'concurrent_goals', 4)",
+    "final graph parity mismatch (2, 'concurrent_goals', 8)",
+    "checkpoint graph parity mismatch (2, 'concurrent_goals', 8)",
+    "worker/case coverage mismatch"
+  ],
+  "gates_pass": false,
+  "rows": [
+    {
+      "access_counts_by_kind": {
+        "effect_attr_compare_read": 20,
+        "effect_attr_write": 20,
+        "effect_edge_compare_read": 10,
+        "effect_edge_delete": 2,
+        "effect_edge_upsert": 8,
+        "pattern_edge": 24,
+        "term_attr_read": 100,
+        "term_edge_read": 6
+      },
+      "access_counts_by_owner_relation": {
+        "one_endpoint_shared_or_unowned": 160,
+        "same_frame": 30
+      },
+      "access_counts_by_rule": {
+        "discourse_goal_execute": 54,
+        "discourse_goal_fail": 16,
+        "discourse_goal_resolve": 67,
+        "discourse_goal_select": 53
+      },
+      "closure_calls": 10,
+      "key": [
+        0,
+        "common_ground_stress",
+        null
+      ],
+      "static_rule_count": 4,
+      "trace_event_multiplicity": 190,
+      "trace_event_rows": 178,
+      "wildcard_rule_count": 0
+    },
+    {
+      "access_counts_by_kind": {
+        "effect_attr_compare_read": 20,
+        "effect_attr_write": 20,
+        "effect_edge_compare_read": 10,
+        "effect_edge_delete": 2,
+        "effect_edge_upsert": 8,
+        "pattern_edge": 24,
+        "term_attr_read": 92,
+        "term_edge_read": 6
+      },
+      "access_counts_by_owner_relation": {
+        "one_endpoint_shared_or_unowned": 152,
+        "same_frame": 30
+      },
+      "access_counts_by_rule": {
+        "discourse_goal_execute": 52,
+        "discourse_goal_fail": 14,
+        "discourse_goal_resolve": 65,
+        "discourse_goal_select": 51
+      },
+      "closure_calls": 8,
+      "key": [
+        0,
+        "concurrent_goals",
+        2
+      ],
+      "static_rule_count": 4,
+      "trace_event_multiplicity": 182,
+      "trace_event_rows": 170,
+      "wildcard_rule_count": 0
+    },
+    {
+      "access_counts_by_kind": {
+        "effect_attr_compare_read": 40,
+        "effect_attr_write": 40,
+        "effect_edge_compare_read": 20,
+        "effect_edge_delete": 4,
+        "effect_edge_upsert": 16,
+        "pattern_edge": 48,
+        "term_attr_read": 272,
+        "term_edge_read": 12
+      },
+      "access_counts_by_owner_relation": {
+        "one_endpoint_shared_or_unowned": 392,
+        "same_frame": 60
+      },
+      "access_counts_by_rule": {
+        "discourse_goal_execute": 128,
+        "discourse_goal_fail": 44,
+        "discourse_goal_resolve": 150,
+        "discourse_goal_select": 130
+      },
+      "closure_calls": 16,
+      "key": [
+        0,
+        "concurrent_goals",
+        4
+      ],
+      "static_rule_count": 4,
+      "trace_event_multiplicity": 452,
+      "trace_event_rows": 404,
+      "wildcard_rule_count": 0
+    },
+    {
+      "access_counts_by_kind": {
+        "effect_attr_compare_read": 80,
+        "effect_attr_write": 80,
+        "effect_edge_compare_read": 40,
+        "effect_edge_delete": 8,
+        "effect_edge_upsert": 32,
+        "pattern_edge": 96,
+        "term_attr_read": 896,
+        "term_edge_read": 24
+      },
+      "access_counts_by_owner_relation": {
+        "one_endpoint_shared_or_unowned": 1136,
+        "same_frame": 120
+      },
+      "access_counts_by_rule": {
+        "discourse_goal_execute": 352,
+        "discourse_goal_fail": 152,
+        "discourse_goal_resolve": 380,
+        "discourse_goal_select": 372
+      },
+      "closure_calls": 32,
+      "key": [
+        0,
+        "concurrent_goals",
+        8
+      ],
+      "static_rule_count": 4,
+      "trace_event_multiplicity": 1256,
+      "trace_event_rows": 1064,
+      "wildcard_rule_count": 0
+    },
+    {
+      "access_counts_by_kind": {
+        "effect_attr_compare_read": 20,
+        "effect_attr_write": 20,
+        "effect_edge_compare_read": 10,
+        "effect_edge_delete": 2,
+        "effect_edge_upsert": 8,
+        "pattern_edge": 24,
+        "term_attr_read": 100,
+        "term_edge_read": 6
+      },
+      "access_counts_by_owner_relation": {
+        "one_endpoint_shared_or_unowned": 160,
+        "same_frame": 30
+      },
+      "access_counts_by_rule": {
+        "discourse_goal_execute": 54,
+        "discourse_goal_fail": 16,
+        "discourse_goal_resolve": 67,
+        "discourse_goal_select": 53
+      },
+      "closure_calls": 10,
+      "key": [
+        1,
+        "common_ground_stress",
+        null
+      ],
+      "static_rule_count": 4,
+      "trace_event_multiplicity": 190,
+      "trace_event_rows": 178,
+      "wildcard_rule_count": 0
+    },
+    {
+      "access_counts_by_kind": {
+        "effect_attr_compare_read": 20,
+        "effect_attr_write": 20,
+        "effect_edge_compare_read": 10,
+        "effect_edge_delete": 2,
+        "effect_edge_upsert": 8,
+        "pattern_edge": 24,
+        "term_attr_read": 92,
+        "term_edge_read": 6
+      },
+      "access_counts_by_owner_relation": {
+        "one_endpoint_shared_or_unowned": 152,
+        "same_frame": 30
+      },
+      "access_counts_by_rule": {
+        "discourse_goal_execute": 52,
+        "discourse_goal_fail": 14,
+        "discourse_goal_resolve": 65,
+        "discourse_goal_select": 51
+      },
+      "closure_calls": 8,
+      "key": [
+        1,
+        "concurrent_goals",
+        2
+      ],
+      "static_rule_count": 4,
+      "trace_event_multiplicity": 182,
+      "trace_event_rows": 170,
+      "wildcard_rule_count": 0
+    },
+    {
+      "access_counts_by_kind": {
+        "effect_attr_compare_read": 40,
+        "effect_attr_write": 40,
+        "effect_edge_compare_read": 20,
+        "effect_edge_delete": 4,
+        "effect_edge_upsert": 16,
+        "pattern_edge": 48,
+        "term_attr_read": 272,
+        "term_edge_read": 12
+      },
+      "access_counts_by_owner_relation": {
+        "one_endpoint_shared_or_unowned": 392,
+        "same_frame": 60
+      },
+      "access_counts_by_rule": {
+        "discourse_goal_execute": 128,
+        "discourse_goal_fail": 44,
+        "discourse_goal_resolve": 150,
+        "discourse_goal_select": 130
+      },
+      "closure_calls": 16,
+      "key": [
+        1,
+        "concurrent_goals",
+        4
+      ],
+      "static_rule_count": 4,
+      "trace_event_multiplicity": 452,
+      "trace_event_rows": 404,
+      "wildcard_rule_count": 0
+    },
+    {
+      "access_counts_by_kind": {
+        "effect_attr_compare_read": 80,
+        "effect_attr_write": 80,
+        "effect_edge_compare_read": 40,
+        "effect_edge_delete": 8,
+        "effect_edge_upsert": 32,
+        "pattern_edge": 96,
+        "term_attr_read": 896,
+        "term_edge_read": 24
+      },
+      "access_counts_by_owner_relation": {
+        "one_endpoint_shared_or_unowned": 1136,
+        "same_frame": 120
+      },
+      "access_counts_by_rule": {
+        "discourse_goal_execute": 352,
+        "discourse_goal_fail": 152,
+        "discourse_goal_resolve": 380,
+        "discourse_goal_select": 372
+      },
+      "closure_calls": 32,
+      "key": [
+        1,
+        "concurrent_goals",
+        8
+      ],
+      "static_rule_count": 4,
+      "trace_event_multiplicity": 1256,
+      "trace_event_rows": 1064,
+      "wildcard_rule_count": 0
+    },
+    {
+      "access_counts_by_kind": {
+        "effect_attr_compare_read": 20,
+        "effect_attr_write": 20,
+        "effect_edge_compare_read": 10,
+        "effect_edge_delete": 2,
+        "effect_edge_upsert": 8,
+        "pattern_edge": 24,
+        "term_attr_read": 100,
+        "term_edge_read": 6
+      },
+      "access_counts_by_owner_relation": {
+        "one_endpoint_shared_or_unowned": 160,
+        "same_frame": 30
+      },
+      "access_counts_by_rule": {
+        "discourse_goal_execute": 54,
+        "discourse_goal_fail": 16,
+        "discourse_goal_resolve": 67,
+        "discourse_goal_select": 53
+      },
+      "closure_calls": 10,
+      "key": [
+        2,
+        "common_ground_stress",
+        null
+      ],
+      "static_rule_count": 4,
+      "trace_event_multiplicity": 190,
+      "trace_event_rows": 178,
+      "wildcard_rule_count": 0
+    },
+    {
+      "access_counts_by_kind": {
+        "effect_attr_compare_read": 20,
+        "effect_attr_write": 20,
+        "effect_edge_compare_read": 10,
+        "effect_edge_delete": 2,
+        "effect_edge_upsert": 8,
+        "pattern_edge": 24,
+        "term_attr_read": 92,
+        "term_edge_read": 6
+      },
+      "access_counts_by_owner_relation": {
+        "one_endpoint_shared_or_unowned": 152,
+        "same_frame": 30
+      },
+      "access_counts_by_rule": {
+        "discourse_goal_execute": 52,
+        "discourse_goal_fail": 14,
+        "discourse_goal_resolve": 65,
+        "discourse_goal_select": 51
+      },
+      "closure_calls": 8,
+      "key": [
+        2,
+        "concurrent_goals",
+        2
+      ],
+      "static_rule_count": 4,
+      "trace_event_multiplicity": 182,
+      "trace_event_rows": 170,
+      "wildcard_rule_count": 0
+    },
+    {
+      "access_counts_by_kind": {
+        "effect_attr_compare_read": 40,
+        "effect_attr_write": 40,
+        "effect_edge_compare_read": 20,
+        "effect_edge_delete": 4,
+        "effect_edge_upsert": 16,
+        "pattern_edge": 48,
+        "term_attr_read": 272,
+        "term_edge_read": 12
+      },
+      "access_counts_by_owner_relation": {
+        "one_endpoint_shared_or_unowned": 392,
+        "same_frame": 60
+      },
+      "access_counts_by_rule": {
+        "discourse_goal_execute": 128,
+        "discourse_goal_fail": 44,
+        "discourse_goal_resolve": 150,
+        "discourse_goal_select": 130
+      },
+      "closure_calls": 16,
+      "key": [
+        2,
+        "concurrent_goals",
+        4
+      ],
+      "static_rule_count": 4,
+      "trace_event_multiplicity": 452,
+      "trace_event_rows": 404,
+      "wildcard_rule_count": 0
+    },
+    {
+      "access_counts_by_kind": {
+        "effect_attr_compare_read": 80,
+        "effect_attr_write": 80,
+        "effect_edge_compare_read": 40,
+        "effect_edge_delete": 8,
+        "effect_edge_upsert": 32,
+        "pattern_edge": 96,
+        "term_attr_read": 896,
+        "term_edge_read": 24
+      },
+      "access_counts_by_owner_relation": {
+        "one_endpoint_shared_or_unowned": 1136,
+        "same_frame": 120
+      },
+      "access_counts_by_rule": {
+        "discourse_goal_execute": 352,
+        "discourse_goal_fail": 152,
+        "discourse_goal_resolve": 380,
+        "discourse_goal_select": 372
+      },
+      "closure_calls": 32,
+      "key": [
+        2,
+        "concurrent_goals",
+        8
+      ],
+      "static_rule_count": 4,
+      "trace_event_multiplicity": 1256,
+      "trace_event_rows": 1064,
+      "wildcard_rule_count": 0
+    }
+  ],
+  "schema": "ConnectedConversationAccessTracePanelV1Analysis",
+  "summary": {
+    "access_counts_by_kind": {
+      "effect_attr_compare_read": 480,
+      "effect_attr_write": 480,
+      "effect_edge_compare_read": 240,
+      "effect_edge_delete": 48,
+      "effect_edge_upsert": 192,
+      "pattern_edge": 576,
+      "term_attr_read": 4080,
+      "term_edge_read": 144
+    },
+    "access_counts_by_owner_relation": {
+      "one_endpoint_shared_or_unowned": 5520,
+      "same_frame": 720
+    },
+    "access_counts_by_rule": {
+      "discourse_goal_execute": 1758,
+      "discourse_goal_fail": 678,
+      "discourse_goal_resolve": 1986,
+      "discourse_goal_select": 1818
+    },
+    "all_current_graphs_match_historical_untraced_capture": false,
+    "closure_calls": 198,
+    "concrete_access_event_multiplicity": 6240,
+    "concrete_access_event_rows": 5448,
+    "replicated_case_rows": 12,
+    "static_rules_observed": [
+      "discourse_goal_execute",
+      "discourse_goal_fail",
+      "discourse_goal_resolve",
+      "discourse_goal_select"
+    ],
+    "trace_is_complete": false,
+    "wildcard_rule_counts_by_case": {}
+  }
+}

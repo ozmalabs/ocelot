@@ -1,0 +1,107 @@
+{
+  "current_preregistered_analyzer_hash": "152417990e4a2ca59c365173a70f8de263370e5087b68694e51ac559bab1f3e0",
+  "gates": {
+    "all_events_inside_target_markers": true,
+    "all_json_parent_callsites_resolved": true,
+    "all_native_json_spawns_symbolized_with_256m_stack": true,
+    "all_runtime_locks_match": true,
+    "complete_pre_capture_sources_match": true,
+    "json_parser_spawn_counts_invariant": true,
+    "openblas_workers_respond_to_env_cap": true,
+    "probe_source_and_compiled_binary_match_lock": true,
+    "rayon_settings_observed": true,
+    "schedule_matches_preregistration": true,
+    "semantic_oracle_and_refusal_controls": true,
+    "twelve_unique_fresh_pids": true
+  },
+  "interpretation": "The pthread call-site census attributes thread creation to OpenBLAS and the native serde_json conversion wrapper. The OpenBLAS cap is associated with a large process-CPU reduction in this instrumented panel with exact substrate outcomes. Backtrace interposition affects timings; estimate production impact with an uninstrumented intervention.",
+  "lock_sha256": "769d5b203c87c6dedc72754d4f92280a66e127c69d819712504d528ca614ad2f",
+  "original_preregistered_analyzer_hash": "152417990e4a2ca59c365173a70f8de263370e5087b68694e51ac559bab1f3e0",
+  "process_cpu_intervention": {
+    "rayon_default": {
+      "median_blas_cap_1_ms": 124.676592,
+      "median_default_blas_ms": 1238.940224,
+      "median_ratio_default_over_cap": 9.937232034703033
+    },
+    "rayon_one": {
+      "median_blas_cap_1_ms": 109.999261,
+      "median_default_blas_ms": 1334.77019,
+      "median_ratio_default_over_cap": 12.134355975355144
+    }
+  },
+  "raw_sha256": "d02e73ebae6ce799183ed17f636accf7efb68209957efbfdd5d5f89c36beeb90",
+  "review_analyzer_sha256": "6cc2b0434637761a36e0eee7476b50936311fe42cb63c88943cd50e46925819e",
+  "schema": "WarmConverseThreadOriginV1ReviewAnalysis",
+  "summary": {
+    "rayon_default__blas_default": {
+      "json_parent_methods_total": {
+        "add_production": 282,
+        "add_rule": 48,
+        "graph_from_dict": 18,
+        "import_rules": 3
+      },
+      "json_spawn_stack_sizes": [
+        268435456
+      ],
+      "median_instrumented_process_cpu_ms": 1238.940224,
+      "median_instrumented_wall_ms": 146.264795,
+      "n": 3,
+      "openblas_creates_median": 23,
+      "pthread_creates_median": 140,
+      "substrate_json_parse_creates_median": 117
+    },
+    "rayon_default__blas_one": {
+      "json_parent_methods_total": {
+        "add_production": 282,
+        "add_rule": 48,
+        "graph_from_dict": 18,
+        "import_rules": 3
+      },
+      "json_spawn_stack_sizes": [
+        268435456
+      ],
+      "median_instrumented_process_cpu_ms": 124.676592,
+      "median_instrumented_wall_ms": 126.531926,
+      "n": 3,
+      "openblas_creates_median": 0,
+      "pthread_creates_median": 117,
+      "substrate_json_parse_creates_median": 117
+    },
+    "rayon_one__blas_default": {
+      "json_parent_methods_total": {
+        "add_production": 282,
+        "add_rule": 48,
+        "graph_from_dict": 18,
+        "import_rules": 3
+      },
+      "json_spawn_stack_sizes": [
+        268435456
+      ],
+      "median_instrumented_process_cpu_ms": 1334.77019,
+      "median_instrumented_wall_ms": 153.136531,
+      "n": 3,
+      "openblas_creates_median": 23,
+      "pthread_creates_median": 140,
+      "substrate_json_parse_creates_median": 117
+    },
+    "rayon_one__blas_one": {
+      "json_parent_methods_total": {
+        "add_production": 282,
+        "add_rule": 48,
+        "graph_from_dict": 18,
+        "import_rules": 3
+      },
+      "json_spawn_stack_sizes": [
+        268435456
+      ],
+      "median_instrumented_process_cpu_ms": 109.999261,
+      "median_instrumented_wall_ms": 113.943942,
+      "n": 3,
+      "openblas_creates_median": 0,
+      "pthread_creates_median": 117,
+      "substrate_json_parse_creates_median": 117
+    }
+  },
+  "symbolizer": "addr2line -Cfipe on source-locked native modules; symbol resolution is stored per captured event.",
+  "symbolizer_cache_entries": 44
+}

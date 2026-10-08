@@ -1,0 +1,362 @@
+{
+  "build_stderr_sha256": "sha256:85c47009c44be9b8399421661f17587901d29aba98535c4a2e27095613ab21c6",
+  "build_stderr_tail": "c/cabac.rs:2527:9\n     |\n2525 |     struct PNeighbour {\n     |            ---------- field in this struct\n2526 |         skipped: bool,\n2527 |         is_p_l0: bool,\n     |         ^^^^^^^\n     |\n     = note: `PNeighbour` has a derived impl for the trait `Clone`, but this is intentionally ignored during dead code analysis\n\nwarning: function `cos_distance` is never used\n    --> /home/matt/ozmadev/ocelot/runners/dsl/src/pipeline_runtime.rs:1465:4\n     |\n1465 | fn cos_distance(a: &[f32], b: &[f32]) -> f32 {\n     |    ^^^^^^^^^^^^\n\nwarning: method `backend` is never used\n   --> /home/matt/ozmadev/ocelot/runners/dsl/src/substrate.rs:380:19\n    |\n370 | impl ExperimentSnapshot {\n    | ----------------------- method in this implementation\n...\n380 |     pub(crate) fn backend(&self) -> ExperimentSnapshotBackend {\n    |                   ^^^^^^^\n\nwarning: field `applier` is never read\n     --> /home/matt/ozmadev/ocelot/runners/dsl/src/py.rs:12477:5\n      |\n12473 | pub struct PyEffortDial {\n      |            ------------ field in this struct\n...\n12477 |     applier: RecommendationApplier,\n      |     ^^^^^^^\n\nwarning: `substrate-rs` (lib) generated 47 warnings (run `cargo fix --lib -p substrate-rs` to apply 28 suggestions)\n   Compiling cow-snapshot-threads-probe v0.1.0 (/home/matt/ozmadev/ocelot/evaluation/substrate_capability/fixtures/cow_snapshot_threads)\n    Finished `release` profile [optimized] target(s) in 0.97s\n     Running `runners/dsl/target/release/cow-snapshot-threads-probe`\n",
+  "cargo_command": [
+    "cargo",
+    "run",
+    "--offline",
+    "--release",
+    "--manifest-path",
+    "/home/matt/ozmadev/ocelot/evaluation/substrate_capability/fixtures/cow_snapshot_threads/Cargo.toml"
+  ],
+  "engine_fingerprint": "15e16486b6499714a953a08d4ef35c5f0b873e88dcd5823ce3685de7af6565f2",
+  "host": {
+    "logical_cpu_count": 24,
+    "machine": "x86_64",
+    "platform": "Linux-6.8.0-142-generic-x86_64-with-glibc2.39",
+    "rustc_verbose": "rustc 1.87.0 (17067e9ac 2025-05-09) (Homebrew)\nbinary: rustc\ncommit-hash: 17067e9ac6d7ecb70e50f92c1944e545188d2359\ncommit-date: 2025-05-09\nhost: x86_64-unknown-linux-gnu\nrelease: 1.87.0\nLLVM version: 20.1.4\n"
+  },
+  "measurements": {
+    "experiment_snapshot_send_sync": true,
+    "fanouts": [
+      1,
+      4,
+      16
+    ],
+    "repeats": 5,
+    "rows": [
+      {
+        "all_semantic_gates_pass": true,
+        "arm_order": [
+          "serial_then_concurrent",
+          "concurrent_then_serial",
+          "serial_then_concurrent",
+          "concurrent_then_serial",
+          "serial_then_concurrent"
+        ],
+        "concurrent_batch_us": [
+          168.011,
+          63.291000000000004,
+          55.269999999999996,
+          51.89,
+          44.981
+        ],
+        "fanout": 1,
+        "repeats": 5,
+        "serial_batch_us": [
+          29.781000000000002,
+          46.13,
+          13.370000000000001,
+          21.970000000000002,
+          10.010000000000002
+        ],
+        "size_nodes": 771,
+        "snapshot_capture_us": [
+          33.65,
+          6.08,
+          3.02,
+          5.51,
+          2.44
+        ]
+      },
+      {
+        "all_semantic_gates_pass": true,
+        "arm_order": [
+          "serial_then_concurrent",
+          "concurrent_then_serial",
+          "serial_then_concurrent",
+          "concurrent_then_serial",
+          "serial_then_concurrent"
+        ],
+        "concurrent_batch_us": [
+          176.491,
+          100.541,
+          90.511,
+          69.41,
+          71.961
+        ],
+        "fanout": 4,
+        "repeats": 5,
+        "serial_batch_us": [
+          86.73,
+          59.98,
+          56.181000000000004,
+          42.24,
+          58.991
+        ],
+        "size_nodes": 771,
+        "snapshot_capture_us": [
+          2.77,
+          3.04,
+          2.64,
+          4.13,
+          2.5100000000000002
+        ]
+      },
+      {
+        "all_semantic_gates_pass": true,
+        "arm_order": [
+          "serial_then_concurrent",
+          "concurrent_then_serial",
+          "serial_then_concurrent",
+          "concurrent_then_serial",
+          "serial_then_concurrent"
+        ],
+        "concurrent_batch_us": [
+          362.143,
+          229.482,
+          290.012,
+          247.52200000000002,
+          256.193
+        ],
+        "fanout": 16,
+        "repeats": 5,
+        "serial_batch_us": [
+          156.051,
+          143.671,
+          144.441,
+          170.321,
+          162.601
+        ],
+        "size_nodes": 771,
+        "snapshot_capture_us": [
+          2.6,
+          3.2600000000000002,
+          3.43,
+          5.0,
+          3.36
+        ]
+      },
+      {
+        "all_semantic_gates_pass": true,
+        "arm_order": [
+          "serial_then_concurrent",
+          "concurrent_then_serial",
+          "serial_then_concurrent",
+          "concurrent_then_serial",
+          "serial_then_concurrent"
+        ],
+        "concurrent_batch_us": [
+          144.441,
+          116.961,
+          109.14,
+          107.131,
+          140.321
+        ],
+        "fanout": 1,
+        "repeats": 5,
+        "serial_batch_us": [
+          117.961,
+          70.041,
+          74.9,
+          66.731,
+          68.94
+        ],
+        "size_nodes": 10771,
+        "snapshot_capture_us": [
+          34.51,
+          4.66,
+          5.3,
+          3.97,
+          4.01
+        ]
+      },
+      {
+        "all_semantic_gates_pass": true,
+        "arm_order": [
+          "serial_then_concurrent",
+          "concurrent_then_serial",
+          "serial_then_concurrent",
+          "concurrent_then_serial",
+          "serial_then_concurrent"
+        ],
+        "concurrent_batch_us": [
+          202.981,
+          179.98100000000002,
+          173.22099999999998,
+          162.72199999999998,
+          168.072
+        ],
+        "fanout": 4,
+        "repeats": 5,
+        "serial_batch_us": [
+          262.36199999999997,
+          333.613,
+          261.363,
+          271.69199999999995,
+          251.91200000000003
+        ],
+        "size_nodes": 10771,
+        "snapshot_capture_us": [
+          4.17,
+          7.140000000000001,
+          6.78,
+          6.19,
+          3.32
+        ]
+      },
+      {
+        "all_semantic_gates_pass": true,
+        "arm_order": [
+          "serial_then_concurrent",
+          "concurrent_then_serial",
+          "serial_then_concurrent",
+          "concurrent_then_serial",
+          "serial_then_concurrent"
+        ],
+        "concurrent_batch_us": [
+          395.543,
+          477.674,
+          432.604,
+          377.583,
+          504.634
+        ],
+        "fanout": 16,
+        "repeats": 5,
+        "serial_batch_us": [
+          1199.059,
+          1258.6,
+          1193.24,
+          1289.91,
+          1140.289
+        ],
+        "size_nodes": 10771,
+        "snapshot_capture_us": [
+          5.66,
+          7.37,
+          7.18,
+          7.890000000000001,
+          8.52
+        ]
+      },
+      {
+        "all_semantic_gates_pass": true,
+        "arm_order": [
+          "serial_then_concurrent",
+          "concurrent_then_serial",
+          "serial_then_concurrent",
+          "concurrent_then_serial",
+          "serial_then_concurrent"
+        ],
+        "concurrent_batch_us": [
+          544.764,
+          643.685,
+          607.5250000000001,
+          511.47400000000005,
+          509.985
+        ],
+        "fanout": 1,
+        "repeats": 5,
+        "serial_batch_us": [
+          601.955,
+          802.676,
+          649.505,
+          485.164,
+          362.573
+        ],
+        "size_nodes": 50771,
+        "snapshot_capture_us": [
+          124.54100000000001,
+          173.321,
+          38.66,
+          26.66,
+          20.75
+        ]
+      },
+      {
+        "all_semantic_gates_pass": true,
+        "arm_order": [
+          "serial_then_concurrent",
+          "concurrent_then_serial",
+          "serial_then_concurrent",
+          "concurrent_then_serial",
+          "serial_then_concurrent"
+        ],
+        "concurrent_batch_us": [
+          551.324,
+          576.155,
+          589.035,
+          580.615,
+          489.134
+        ],
+        "fanout": 4,
+        "repeats": 5,
+        "serial_batch_us": [
+          1947.526,
+          2063.096,
+          1938.345,
+          1515.1019999999999,
+          2007.7659999999998
+        ],
+        "size_nodes": 50771,
+        "snapshot_capture_us": [
+          43.699999999999996,
+          28.580000000000002,
+          32.99,
+          30.16,
+          39.621
+        ]
+      },
+      {
+        "all_semantic_gates_pass": true,
+        "arm_order": [
+          "serial_then_concurrent",
+          "concurrent_then_serial",
+          "serial_then_concurrent",
+          "concurrent_then_serial",
+          "serial_then_concurrent"
+        ],
+        "concurrent_batch_us": [
+          1279.9199999999998,
+          1549.253,
+          964.187,
+          1174.48,
+          1106.409
+        ],
+        "fanout": 16,
+        "repeats": 5,
+        "serial_batch_us": [
+          6379.941,
+          5025.950000000001,
+          4619.267,
+          4684.568,
+          5253.553
+        ],
+        "size_nodes": 50771,
+        "snapshot_capture_us": [
+          35.83,
+          34.381,
+          27.330000000000002,
+          22.12,
+          21.39
+        ]
+      }
+    ],
+    "schema": "CowSnapshotConcurrentForkProbeV1",
+    "sizes": [
+      771,
+      10771,
+      50771
+    ]
+  },
+  "probe_binary": {
+    "path": "/home/matt/ozmadev/ocelot/runners/dsl/target/release/cow-snapshot-threads-probe",
+    "sha256": "sha256:8f623a3ef09e498f4ef31e7c0360f7bbc8c5143e9ce969264598a22c786a0e94"
+  },
+  "runner": {
+    "path": "/home/matt/ozmadev/ocelot/evaluation/substrate_capability/cow_snapshot_concurrent_fork_v1.py",
+    "sha256": "sha256:63b67e5bc30a6b2208fde559ce61bca6584e4d534ceaff47e4de90f0bf26e7c9"
+  },
+  "schema": "CowSnapshotConcurrentForkCaptureV1",
+  "sources": {
+    "evaluation/substrate_capability/cow_snapshot_concurrent_fork_v1.py": "sha256:63b67e5bc30a6b2208fde559ce61bca6584e4d534ceaff47e4de90f0bf26e7c9",
+    "evaluation/substrate_capability/fixtures/cow_snapshot_threads/Cargo.lock": "sha256:93e4a441c04c849f6e2554947eb902f09a705a25698b84366aabf53670f478eb",
+    "evaluation/substrate_capability/fixtures/cow_snapshot_threads/Cargo.toml": "sha256:88f011941060cfa77b37d50064a2b1dc5717f0a2df07bf65d1493df299ee19b8",
+    "evaluation/substrate_capability/fixtures/cow_snapshot_threads/src/main.rs": "sha256:941b5be015529c0e0c38999c1b67a145870722b9bbd29a9270eb27354bc1cd71",
+    "runners/dsl/python/substrate_rs/_native.build.json": "sha256:12f3df04f78902c4819c2c0fefc3e4b85ae44c63728d1eea19fc43a2d614c6d5",
+    "runners/dsl/src/graph.rs": "sha256:cf8ef01bbf49d35a217e3032a7cb7091e6d6a2ddd0712cde1197283fe57cadbd",
+    "runners/dsl/src/py.rs": "sha256:220ba08727f7b6696382c421b922f6d2b348e66752025635d1dad94b815988af",
+    "runners/dsl/src/substrate.rs": "sha256:a40c20dd0ee29f1bf0adca0dab12bb502d5247db1e2de5cf19fc7442bb1acd84",
+    "scripts/analyze_cow_snapshot_concurrent_fork_v1.py": "sha256:a69af0735a65c24f61162822a36c56da468f793e4f423a94b6130e660636ce3d"
+  }
+}

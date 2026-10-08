@@ -1,0 +1,124 @@
+{
+  "checks": [
+    {
+      "name": "capture_matches_lock",
+      "pass": true
+    },
+    {
+      "name": "current_lock_matches",
+      "pass": true
+    },
+    {
+      "name": "source_stable",
+      "pass": true
+    },
+    {
+      "name": "18_fresh_workers",
+      "pass": true
+    },
+    {
+      "name": "complete_schedule",
+      "pass": true
+    },
+    {
+      "name": "selection_records_recompute",
+      "pass": true
+    },
+    {
+      "name": "provider_signatures_reverify",
+      "pass": true
+    },
+    {
+      "name": "receipts_recompute",
+      "pass": true
+    },
+    {
+      "name": "heldout_oracle_rows_recompute",
+      "pass": true
+    },
+    {
+      "name": "parity_correct_broad_transfer_outcome",
+      "pass": true
+    },
+    {
+      "name": "parity_alias_wrong_transfer_outcome",
+      "pass": true
+    },
+    {
+      "name": "parity_distinguish_wrong_transfer_outcome",
+      "pass": true
+    },
+    {
+      "name": "clamp_correct_broad_transfer_outcome",
+      "pass": true
+    },
+    {
+      "name": "clamp_alias_wrong_transfer_outcome",
+      "pass": true
+    },
+    {
+      "name": "clamp_distinguish_wrong_transfer_outcome",
+      "pass": true
+    }
+  ],
+  "limits": [
+    "two authored task families",
+    "one host",
+    "caller-supplied challenger/domain",
+    "independent oracle is a bundled fixed implementation",
+    "no natural prevalence estimate"
+  ],
+  "passed": 15,
+  "schema": "SubstrateAdequacySelectedProbeTransferV1Analysis",
+  "summary": {
+    "clamp_alias_wrong": {
+      "adopted_per_run": 0,
+      "heldout_correct_per_run": 15,
+      "heldout_count": 21,
+      "n": 3,
+      "receipt_status": "accepted",
+      "selection_entropy_bits": -0.0
+    },
+    "clamp_correct_broad": {
+      "adopted_per_run": 1,
+      "heldout_correct_per_run": 21,
+      "heldout_count": 21,
+      "n": 3,
+      "receipt_status": "accepted",
+      "selection_entropy_bits": 1.0
+    },
+    "clamp_distinguish_wrong": {
+      "adopted_per_run": 0,
+      "heldout_correct_per_run": 15,
+      "heldout_count": 21,
+      "n": 3,
+      "receipt_status": "rejected",
+      "selection_entropy_bits": 1.0
+    },
+    "parity_alias_wrong": {
+      "adopted_per_run": 0,
+      "heldout_correct_per_run": 20,
+      "heldout_count": 41,
+      "n": 3,
+      "receipt_status": "accepted",
+      "selection_entropy_bits": -0.0
+    },
+    "parity_correct_broad": {
+      "adopted_per_run": 1,
+      "heldout_correct_per_run": 41,
+      "heldout_count": 41,
+      "n": 3,
+      "receipt_status": "accepted",
+      "selection_entropy_bits": 1.0
+    },
+    "parity_distinguish_wrong": {
+      "adopted_per_run": 0,
+      "heldout_correct_per_run": 20,
+      "heldout_count": 41,
+      "n": 3,
+      "receipt_status": "rejected",
+      "selection_entropy_bits": 1.0
+    }
+  },
+  "total": 15
+}

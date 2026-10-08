@@ -1,0 +1,1034 @@
+{
+  "elapsed_s": 3.0063048800220713,
+  "environment": {
+    "platform": "Linux-6.8.0-142-generic-x86_64-with-glibc2.39",
+    "python": "3.13.5 (main, Jun 11 2025, 15:36:57) [GCC 11.4.0]"
+  },
+  "lock": {
+    "build_manifest_sha256": "b491d348c59cbf5cd5eee1b3f900a042f31e21665b6e63212edb9ed7f3d60f47",
+    "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+    "design": {
+      "constants": [
+        0,
+        1,
+        2,
+        -1
+      ],
+      "grammars": {
+        "arithmetic": [
+          "Plus",
+          "Times",
+          "Minus"
+        ],
+        "full": [
+          "Plus",
+          "Times",
+          "Minus",
+          "Div",
+          "Min",
+          "Max",
+          "Abs",
+          "Neg",
+          "Gt",
+          "Lt",
+          "Eq",
+          "IfThenElse"
+        ],
+        "numeric": [
+          "Plus",
+          "Times",
+          "Minus",
+          "Div",
+          "Min",
+          "Max",
+          "Abs",
+          "Neg"
+        ]
+      },
+      "include_output_constants": false,
+      "max_size": 5,
+      "parent_timeout_s": 10.0,
+      "repetitions": 5,
+      "saturation_disabled": true,
+      "schedule_seed": 20261001,
+      "tasks": {
+        "division": {
+          "heldout": [
+            -5,
+            -3,
+            -1,
+            1,
+            3,
+            5,
+            9
+          ],
+          "required_primitive": "Div",
+          "target": "x / 2",
+          "training": [
+            0,
+            2,
+            4,
+            6
+          ]
+        },
+        "modulo": {
+          "heldout": [
+            8,
+            9,
+            10,
+            11,
+            12,
+            14,
+            17
+          ],
+          "required_primitive": "Mod",
+          "target": "x % 3",
+          "training": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6
+          ]
+        }
+      },
+      "timeout_s": 3.0
+    },
+    "engine_provenance": {
+      "ambiguous": false,
+      "engine_source_fingerprint": "efb434f37559574e97cc9c027be4a429d0e4dd555da4e798ff422e40f4234b47",
+      "engine_tree": "/home/matt/ozmadev/ocelot",
+      "mtime": 1790851852.7283769,
+      "native_path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+      "other_resolvable": [],
+      "sha256": "3816b4fb5d5746950b4cc3bf9e904a58e675ce53530727edf44095646dd58a54",
+      "short": "3816b4fb5d57",
+      "source_fingerprint": "efb434f37559574e97cc9c027be4a429d0e4dd555da4e798ff422e40f4234b47",
+      "source_match": "own",
+      "stale_rust": [],
+      "this_tree": "/home/matt/ozmadev/ocelot"
+    },
+    "native": {
+      "path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+      "sha256": "3816b4fb5d5746950b4cc3bf9e904a58e675ce53530727edf44095646dd58a54"
+    },
+    "rust_source_fingerprint": "efb434f37559574e97cc9c027be4a429d0e4dd555da4e798ff422e40f4234b47",
+    "schema": "synthesis_grammar_escalation_v1_20261001",
+    "sources": {
+      "docs/research/engine_substrate/SUBSTRATE_SYNTHESIS_GRAMMAR_ESCALATION_V1_PREREG_20261001.md": "570d7c143e4ef7431db9e88f63185e1b74f0c1513e19f07a88ca517606ad39e6",
+      "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+      "domains/generator.py": "c80b06458695dcdf897d41eb9cfd3193b1d907e5fb548ff2dc843af2cdedee5f",
+      "runners/dsl/python/substrate_rs/__init__.py": "1fed837a6b7e8b35e463d3b8fdca498400c9cc420a016b81279365d6406a4049",
+      "runners/dsl/python/substrate_rs/_native.build.json": "b491d348c59cbf5cd5eee1b3f900a042f31e21665b6e63212edb9ed7f3d60f47",
+      "scripts/analyze_substrate_synthesis_grammar_escalation_v1.py": "5b05402dfb268b0c68df186820d695d005e0f99252139fb582db7be2b63a8e80",
+      "scripts/substrate_synthesis_grammar_escalation_v1.py": "53682693bced587393821a7f645e7d0694c7752dff489101090ffdf50686816d"
+    }
+  },
+  "protocol": "synthesis_grammar_escalation_v1_20261001",
+  "schedule": [
+    [
+      "division",
+      1
+    ],
+    [
+      "division",
+      2
+    ],
+    [
+      "division",
+      0
+    ],
+    [
+      "modulo",
+      4
+    ],
+    [
+      "modulo",
+      2
+    ],
+    [
+      "division",
+      4
+    ],
+    [
+      "modulo",
+      1
+    ],
+    [
+      "modulo",
+      3
+    ],
+    [
+      "modulo",
+      0
+    ],
+    [
+      "division",
+      3
+    ]
+  ],
+  "workers": [
+    {
+      "heldout": [
+        {
+          "exact": true,
+          "expected": -2.5,
+          "predicted": -2.5,
+          "x": -5
+        },
+        {
+          "exact": true,
+          "expected": -1.5,
+          "predicted": -1.5,
+          "x": -3
+        },
+        {
+          "exact": true,
+          "expected": -0.5,
+          "predicted": -0.5,
+          "x": -1
+        },
+        {
+          "exact": true,
+          "expected": 0.5,
+          "predicted": 0.5,
+          "x": 1
+        },
+        {
+          "exact": true,
+          "expected": 1.5,
+          "predicted": 1.5,
+          "x": 3
+        },
+        {
+          "exact": true,
+          "expected": 2.5,
+          "predicted": 2.5,
+          "x": 5
+        },
+        {
+          "exact": true,
+          "expected": 4.5,
+          "predicted": 4.5,
+          "x": 9
+        }
+      ],
+      "kind": "worker",
+      "pid": 7,
+      "repetition": 1,
+      "required_primitive": "Div",
+      "selected_stage": "numeric",
+      "selected_term": "(x / 2)",
+      "stages": [
+        {
+          "cpu_s": 0.013506824,
+          "distinct": 65,
+          "explored": 500,
+          "grammar": [
+            "Plus",
+            "Times",
+            "Minus"
+          ],
+          "halt_reason": "max_size",
+          "stage": "arithmetic",
+          "status": "no_fit",
+          "term": null,
+          "term_size": null,
+          "wall_s": 0.01360501698218286
+        },
+        {
+          "cpu_s": 0.0024223600000000123,
+          "distinct": 21,
+          "explored": 94,
+          "grammar": [
+            "Plus",
+            "Times",
+            "Minus",
+            "Div",
+            "Min",
+            "Max",
+            "Abs",
+            "Neg"
+          ],
+          "halt_reason": "solved",
+          "stage": "numeric",
+          "status": "accepted",
+          "term": "(x / 2)",
+          "term_size": 3,
+          "wall_s": 0.002421715995296836
+        }
+      ],
+      "target": "x / 2",
+      "task": "division",
+      "total_cpu_s": 0.016009264000000023,
+      "total_wall_s": 0.01611268299166113
+    },
+    {
+      "heldout": [
+        {
+          "exact": true,
+          "expected": -2.5,
+          "predicted": -2.5,
+          "x": -5
+        },
+        {
+          "exact": true,
+          "expected": -1.5,
+          "predicted": -1.5,
+          "x": -3
+        },
+        {
+          "exact": true,
+          "expected": -0.5,
+          "predicted": -0.5,
+          "x": -1
+        },
+        {
+          "exact": true,
+          "expected": 0.5,
+          "predicted": 0.5,
+          "x": 1
+        },
+        {
+          "exact": true,
+          "expected": 1.5,
+          "predicted": 1.5,
+          "x": 3
+        },
+        {
+          "exact": true,
+          "expected": 2.5,
+          "predicted": 2.5,
+          "x": 5
+        },
+        {
+          "exact": true,
+          "expected": 4.5,
+          "predicted": 4.5,
+          "x": 9
+        }
+      ],
+      "kind": "worker",
+      "pid": 9,
+      "repetition": 2,
+      "required_primitive": "Div",
+      "selected_stage": "numeric",
+      "selected_term": "(x / 2)",
+      "stages": [
+        {
+          "cpu_s": 0.013146963000000012,
+          "distinct": 65,
+          "explored": 500,
+          "grammar": [
+            "Plus",
+            "Times",
+            "Minus"
+          ],
+          "halt_reason": "max_size",
+          "stage": "arithmetic",
+          "status": "no_fit",
+          "term": null,
+          "term_size": null,
+          "wall_s": 0.01320114394184202
+        },
+        {
+          "cpu_s": 0.0020288109999999915,
+          "distinct": 21,
+          "explored": 94,
+          "grammar": [
+            "Plus",
+            "Times",
+            "Minus",
+            "Div",
+            "Min",
+            "Max",
+            "Abs",
+            "Neg"
+          ],
+          "halt_reason": "solved",
+          "stage": "numeric",
+          "status": "accepted",
+          "term": "(x / 2)",
+          "term_size": 3,
+          "wall_s": 0.002026543952524662
+        }
+      ],
+      "target": "x / 2",
+      "task": "division",
+      "total_cpu_s": 0.015261504000000009,
+      "total_wall_s": 0.015319288009777665
+    },
+    {
+      "heldout": [
+        {
+          "exact": true,
+          "expected": -2.5,
+          "predicted": -2.5,
+          "x": -5
+        },
+        {
+          "exact": true,
+          "expected": -1.5,
+          "predicted": -1.5,
+          "x": -3
+        },
+        {
+          "exact": true,
+          "expected": -0.5,
+          "predicted": -0.5,
+          "x": -1
+        },
+        {
+          "exact": true,
+          "expected": 0.5,
+          "predicted": 0.5,
+          "x": 1
+        },
+        {
+          "exact": true,
+          "expected": 1.5,
+          "predicted": 1.5,
+          "x": 3
+        },
+        {
+          "exact": true,
+          "expected": 2.5,
+          "predicted": 2.5,
+          "x": 5
+        },
+        {
+          "exact": true,
+          "expected": 4.5,
+          "predicted": 4.5,
+          "x": 9
+        }
+      ],
+      "kind": "worker",
+      "pid": 11,
+      "repetition": 0,
+      "required_primitive": "Div",
+      "selected_stage": "numeric",
+      "selected_term": "(x / 2)",
+      "stages": [
+        {
+          "cpu_s": 0.010178083000000004,
+          "distinct": 65,
+          "explored": 500,
+          "grammar": [
+            "Plus",
+            "Times",
+            "Minus"
+          ],
+          "halt_reason": "max_size",
+          "stage": "arithmetic",
+          "status": "no_fit",
+          "term": null,
+          "term_size": null,
+          "wall_s": 0.010195135953836143
+        },
+        {
+          "cpu_s": 0.0021186410000000044,
+          "distinct": 21,
+          "explored": 94,
+          "grammar": [
+            "Plus",
+            "Times",
+            "Minus",
+            "Div",
+            "Min",
+            "Max",
+            "Abs",
+            "Neg"
+          ],
+          "halt_reason": "solved",
+          "stage": "numeric",
+          "status": "accepted",
+          "term": "(x / 2)",
+          "term_size": 3,
+          "wall_s": 0.0021176940063014627
+        }
+      ],
+      "target": "x / 2",
+      "task": "division",
+      "total_cpu_s": 0.012366983999999998,
+      "total_wall_s": 0.012387480004690588
+    },
+    {
+      "heldout": [],
+      "kind": "worker",
+      "pid": 13,
+      "repetition": 4,
+      "required_primitive": "Mod",
+      "selected_stage": null,
+      "selected_term": null,
+      "stages": [
+        {
+          "cpu_s": 0.02500675700000002,
+          "distinct": 65,
+          "explored": 500,
+          "grammar": [
+            "Plus",
+            "Times",
+            "Minus"
+          ],
+          "halt_reason": "max_size",
+          "stage": "arithmetic",
+          "status": "no_fit",
+          "term": null,
+          "term_size": null,
+          "wall_s": 0.02508844097610563
+        },
+        {
+          "cpu_s": 0.07149831899999998,
+          "distinct": 249,
+          "explored": 1701,
+          "grammar": [
+            "Plus",
+            "Times",
+            "Minus",
+            "Div",
+            "Min",
+            "Max",
+            "Abs",
+            "Neg"
+          ],
+          "halt_reason": "max_size",
+          "stage": "numeric",
+          "status": "no_fit",
+          "term": null,
+          "term_size": null,
+          "wall_s": 0.07206481299363077
+        },
+        {
+          "cpu_s": 0.11744818199999996,
+          "distinct": 347,
+          "explored": 3655,
+          "grammar": [
+            "Plus",
+            "Times",
+            "Minus",
+            "Div",
+            "Min",
+            "Max",
+            "Abs",
+            "Neg",
+            "Gt",
+            "Lt",
+            "Eq",
+            "IfThenElse"
+          ],
+          "halt_reason": "max_size",
+          "stage": "full",
+          "status": "no_fit",
+          "term": null,
+          "term_size": null,
+          "wall_s": 0.11780237697530538
+        }
+      ],
+      "target": "x % 3",
+      "task": "modulo",
+      "total_cpu_s": 0.21399458799999999,
+      "total_wall_s": 0.21500504203140736
+    },
+    {
+      "heldout": [],
+      "kind": "worker",
+      "pid": 15,
+      "repetition": 2,
+      "required_primitive": "Mod",
+      "selected_stage": null,
+      "selected_term": null,
+      "stages": [
+        {
+          "cpu_s": 0.022812495999999988,
+          "distinct": 65,
+          "explored": 500,
+          "grammar": [
+            "Plus",
+            "Times",
+            "Minus"
+          ],
+          "halt_reason": "max_size",
+          "stage": "arithmetic",
+          "status": "no_fit",
+          "term": null,
+          "term_size": null,
+          "wall_s": 0.022809657035395503
+        },
+        {
+          "cpu_s": 0.054998135000000004,
+          "distinct": 249,
+          "explored": 1701,
+          "grammar": [
+            "Plus",
+            "Times",
+            "Minus",
+            "Div",
+            "Min",
+            "Max",
+            "Abs",
+            "Neg"
+          ],
+          "halt_reason": "max_size",
+          "stage": "numeric",
+          "status": "no_fit",
+          "term": null,
+          "term_size": null,
+          "wall_s": 0.0550435830373317
+        },
+        {
+          "cpu_s": 0.143218458,
+          "distinct": 347,
+          "explored": 3655,
+          "grammar": [
+            "Plus",
+            "Times",
+            "Minus",
+            "Div",
+            "Min",
+            "Max",
+            "Abs",
+            "Neg",
+            "Gt",
+            "Lt",
+            "Eq",
+            "IfThenElse"
+          ],
+          "halt_reason": "max_size",
+          "stage": "full",
+          "status": "no_fit",
+          "term": null,
+          "term_size": null,
+          "wall_s": 0.1443360080011189
+        }
+      ],
+      "target": "x % 3",
+      "task": "modulo",
+      "total_cpu_s": 0.221069469,
+      "total_wall_s": 0.22223747801035643
+    },
+    {
+      "heldout": [
+        {
+          "exact": true,
+          "expected": -2.5,
+          "predicted": -2.5,
+          "x": -5
+        },
+        {
+          "exact": true,
+          "expected": -1.5,
+          "predicted": -1.5,
+          "x": -3
+        },
+        {
+          "exact": true,
+          "expected": -0.5,
+          "predicted": -0.5,
+          "x": -1
+        },
+        {
+          "exact": true,
+          "expected": 0.5,
+          "predicted": 0.5,
+          "x": 1
+        },
+        {
+          "exact": true,
+          "expected": 1.5,
+          "predicted": 1.5,
+          "x": 3
+        },
+        {
+          "exact": true,
+          "expected": 2.5,
+          "predicted": 2.5,
+          "x": 5
+        },
+        {
+          "exact": true,
+          "expected": 4.5,
+          "predicted": 4.5,
+          "x": 9
+        }
+      ],
+      "kind": "worker",
+      "pid": 17,
+      "repetition": 4,
+      "required_primitive": "Div",
+      "selected_stage": "numeric",
+      "selected_term": "(x / 2)",
+      "stages": [
+        {
+          "cpu_s": 0.009459122000000014,
+          "distinct": 65,
+          "explored": 500,
+          "grammar": [
+            "Plus",
+            "Times",
+            "Minus"
+          ],
+          "halt_reason": "max_size",
+          "stage": "arithmetic",
+          "status": "no_fit",
+          "term": null,
+          "term_size": null,
+          "wall_s": 0.009457262000069022
+        },
+        {
+          "cpu_s": 0.0018590210000000162,
+          "distinct": 21,
+          "explored": 94,
+          "grammar": [
+            "Plus",
+            "Times",
+            "Minus",
+            "Div",
+            "Min",
+            "Max",
+            "Abs",
+            "Neg"
+          ],
+          "halt_reason": "solved",
+          "stage": "numeric",
+          "status": "accepted",
+          "term": "(x / 2)",
+          "term_size": 3,
+          "wall_s": 0.0018579720053821802
+        }
+      ],
+      "target": "x / 2",
+      "task": "division",
+      "total_cpu_s": 0.011390712999999997,
+      "total_wall_s": 0.011391813983209431
+    },
+    {
+      "heldout": [],
+      "kind": "worker",
+      "pid": 19,
+      "repetition": 1,
+      "required_primitive": "Mod",
+      "selected_stage": null,
+      "selected_term": null,
+      "stages": [
+        {
+          "cpu_s": 0.022770466000000017,
+          "distinct": 65,
+          "explored": 500,
+          "grammar": [
+            "Plus",
+            "Times",
+            "Minus"
+          ],
+          "halt_reason": "max_size",
+          "stage": "arithmetic",
+          "status": "no_fit",
+          "term": null,
+          "term_size": null,
+          "wall_s": 0.022767805960029364
+        },
+        {
+          "cpu_s": 0.06772276899999999,
+          "distinct": 249,
+          "explored": 1701,
+          "grammar": [
+            "Plus",
+            "Times",
+            "Minus",
+            "Div",
+            "Min",
+            "Max",
+            "Abs",
+            "Neg"
+          ],
+          "halt_reason": "max_size",
+          "stage": "numeric",
+          "status": "no_fit",
+          "term": null,
+          "term_size": null,
+          "wall_s": 0.06821428809780627
+        },
+        {
+          "cpu_s": 0.12003421199999997,
+          "distinct": 347,
+          "explored": 3655,
+          "grammar": [
+            "Plus",
+            "Times",
+            "Minus",
+            "Div",
+            "Min",
+            "Max",
+            "Abs",
+            "Neg",
+            "Gt",
+            "Lt",
+            "Eq",
+            "IfThenElse"
+          ],
+          "halt_reason": "max_size",
+          "stage": "full",
+          "status": "no_fit",
+          "term": null,
+          "term_size": null,
+          "wall_s": 0.120111821917817
+        }
+      ],
+      "target": "x % 3",
+      "task": "modulo",
+      "total_cpu_s": 0.21056647699999997,
+      "total_wall_s": 0.21114100597333163
+    },
+    {
+      "heldout": [],
+      "kind": "worker",
+      "pid": 21,
+      "repetition": 3,
+      "required_primitive": "Mod",
+      "selected_stage": null,
+      "selected_term": null,
+      "stages": [
+        {
+          "cpu_s": 0.024417016000000014,
+          "distinct": 65,
+          "explored": 500,
+          "grammar": [
+            "Plus",
+            "Times",
+            "Minus"
+          ],
+          "halt_reason": "max_size",
+          "stage": "arithmetic",
+          "status": "no_fit",
+          "term": null,
+          "term_size": null,
+          "wall_s": 0.024449446937069297
+        },
+        {
+          "cpu_s": 0.07179737,
+          "distinct": 249,
+          "explored": 1701,
+          "grammar": [
+            "Plus",
+            "Times",
+            "Minus",
+            "Div",
+            "Min",
+            "Max",
+            "Abs",
+            "Neg"
+          ],
+          "halt_reason": "max_size",
+          "stage": "numeric",
+          "status": "no_fit",
+          "term": null,
+          "term_size": null,
+          "wall_s": 0.07179608102887869
+        },
+        {
+          "cpu_s": 0.13812191699999998,
+          "distinct": 347,
+          "explored": 3655,
+          "grammar": [
+            "Plus",
+            "Times",
+            "Minus",
+            "Div",
+            "Min",
+            "Max",
+            "Abs",
+            "Neg",
+            "Gt",
+            "Lt",
+            "Eq",
+            "IfThenElse"
+          ],
+          "halt_reason": "max_size",
+          "stage": "full",
+          "status": "no_fit",
+          "term": null,
+          "term_size": null,
+          "wall_s": 0.13829436898231506
+        }
+      ],
+      "target": "x % 3",
+      "task": "modulo",
+      "total_cpu_s": 0.23437121299999997,
+      "total_wall_s": 0.23458148702047765
+    },
+    {
+      "heldout": [],
+      "kind": "worker",
+      "pid": 23,
+      "repetition": 0,
+      "required_primitive": "Mod",
+      "selected_stage": null,
+      "selected_term": null,
+      "stages": [
+        {
+          "cpu_s": 0.018440385000000004,
+          "distinct": 65,
+          "explored": 500,
+          "grammar": [
+            "Plus",
+            "Times",
+            "Minus"
+          ],
+          "halt_reason": "max_size",
+          "stage": "arithmetic",
+          "status": "no_fit",
+          "term": null,
+          "term_size": null,
+          "wall_s": 0.01843815902248025
+        },
+        {
+          "cpu_s": 0.066004388,
+          "distinct": 249,
+          "explored": 1701,
+          "grammar": [
+            "Plus",
+            "Times",
+            "Minus",
+            "Div",
+            "Min",
+            "Max",
+            "Abs",
+            "Neg"
+          ],
+          "halt_reason": "max_size",
+          "stage": "numeric",
+          "status": "no_fit",
+          "term": null,
+          "term_size": null,
+          "wall_s": 0.06616198504343629
+        },
+        {
+          "cpu_s": 0.113786061,
+          "distinct": 347,
+          "explored": 3655,
+          "grammar": [
+            "Plus",
+            "Times",
+            "Minus",
+            "Div",
+            "Min",
+            "Max",
+            "Abs",
+            "Neg",
+            "Gt",
+            "Lt",
+            "Eq",
+            "IfThenElse"
+          ],
+          "halt_reason": "max_size",
+          "stage": "full",
+          "status": "no_fit",
+          "term": null,
+          "term_size": null,
+          "wall_s": 0.11381828202866018
+        }
+      ],
+      "target": "x % 3",
+      "task": "modulo",
+      "total_cpu_s": 0.198268744,
+      "total_wall_s": 0.1984646760392934
+    },
+    {
+      "heldout": [
+        {
+          "exact": true,
+          "expected": -2.5,
+          "predicted": -2.5,
+          "x": -5
+        },
+        {
+          "exact": true,
+          "expected": -1.5,
+          "predicted": -1.5,
+          "x": -3
+        },
+        {
+          "exact": true,
+          "expected": -0.5,
+          "predicted": -0.5,
+          "x": -1
+        },
+        {
+          "exact": true,
+          "expected": 0.5,
+          "predicted": 0.5,
+          "x": 1
+        },
+        {
+          "exact": true,
+          "expected": 1.5,
+          "predicted": 1.5,
+          "x": 3
+        },
+        {
+          "exact": true,
+          "expected": 2.5,
+          "predicted": 2.5,
+          "x": 5
+        },
+        {
+          "exact": true,
+          "expected": 4.5,
+          "predicted": 4.5,
+          "x": 9
+        }
+      ],
+      "kind": "worker",
+      "pid": 25,
+      "repetition": 3,
+      "required_primitive": "Div",
+      "selected_stage": "numeric",
+      "selected_term": "(x / 2)",
+      "stages": [
+        {
+          "cpu_s": 0.014996054000000009,
+          "distinct": 65,
+          "explored": 500,
+          "grammar": [
+            "Plus",
+            "Times",
+            "Minus"
+          ],
+          "halt_reason": "max_size",
+          "stage": "arithmetic",
+          "status": "no_fit",
+          "term": null,
+          "term_size": null,
+          "wall_s": 0.015050356974825263
+        },
+        {
+          "cpu_s": 0.002342171000000004,
+          "distinct": 21,
+          "explored": 94,
+          "grammar": [
+            "Plus",
+            "Times",
+            "Minus",
+            "Div",
+            "Min",
+            "Max",
+            "Abs",
+            "Neg"
+          ],
+          "halt_reason": "solved",
+          "stage": "numeric",
+          "status": "accepted",
+          "term": "(x / 2)",
+          "term_size": 3,
+          "wall_s": 0.0023991860216483474
+        }
+      ],
+      "target": "x / 2",
+      "task": "division",
+      "total_cpu_s": 0.01742592500000001,
+      "total_wall_s": 0.01754509296733886
+    }
+  ]
+}

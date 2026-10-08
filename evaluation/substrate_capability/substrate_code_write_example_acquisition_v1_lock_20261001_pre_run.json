@@ -1,0 +1,263 @@
+{
+  "design": {
+    "boot": "WorldAdapter(seeds=()) then load_all_seeds",
+    "example_source_is_external": true,
+    "oracle_in_runner": false,
+    "repetitions": 5,
+    "seed": 20261017,
+    "tasks": {
+      "clamp": {
+        "func_name": "clamp_value",
+        "heldout": [
+          {
+            "lower": -4,
+            "upper": 8,
+            "value": -20
+          },
+          {
+            "lower": -4,
+            "upper": 8,
+            "value": -4
+          },
+          {
+            "lower": -4,
+            "upper": 8,
+            "value": -3
+          },
+          {
+            "lower": -4,
+            "upper": 8,
+            "value": 0
+          },
+          {
+            "lower": -4,
+            "upper": 8,
+            "value": 7
+          },
+          {
+            "lower": -4,
+            "upper": 8,
+            "value": 8
+          },
+          {
+            "lower": -4,
+            "upper": 8,
+            "value": 9
+          },
+          {
+            "lower": -4,
+            "upper": 8,
+            "value": 20
+          },
+          {
+            "lower": -9,
+            "upper": -2,
+            "value": -9
+          },
+          {
+            "lower": -9,
+            "upper": -2,
+            "value": -10
+          },
+          {
+            "lower": -9,
+            "upper": -2,
+            "value": -5
+          },
+          {
+            "lower": -9,
+            "upper": -2,
+            "value": -2
+          },
+          {
+            "lower": -9,
+            "upper": -2,
+            "value": 0
+          },
+          {
+            "lower": -9,
+            "upper": -2,
+            "value": 12
+          },
+          {
+            "lower": 1,
+            "upper": 5,
+            "value": 2
+          },
+          {
+            "lower": 1,
+            "upper": 5,
+            "value": 1
+          },
+          {
+            "lower": 1,
+            "upper": 5,
+            "value": 3
+          },
+          {
+            "lower": 1,
+            "upper": 5,
+            "value": 5
+          },
+          {
+            "lower": 1,
+            "upper": 5,
+            "value": 7
+          },
+          {
+            "lower": 1,
+            "upper": 5,
+            "value": -1
+          }
+        ],
+        "request": "Write a function that clamps a value between lower and upper bounds.",
+        "source": "def clamp_value(value, lower, upper):\n    return lower if value < lower else (upper if value > upper else value)\n"
+      },
+      "parity": {
+        "func_name": "parity",
+        "heldout": [
+          {
+            "value": -20
+          },
+          {
+            "value": -19
+          },
+          {
+            "value": -18
+          },
+          {
+            "value": -17
+          },
+          {
+            "value": -16
+          },
+          {
+            "value": -15
+          },
+          {
+            "value": -14
+          },
+          {
+            "value": -13
+          },
+          {
+            "value": -12
+          },
+          {
+            "value": -11
+          },
+          {
+            "value": -10
+          },
+          {
+            "value": -9
+          },
+          {
+            "value": -8
+          },
+          {
+            "value": -7
+          },
+          {
+            "value": -6
+          },
+          {
+            "value": -5
+          },
+          {
+            "value": -4
+          },
+          {
+            "value": -3
+          },
+          {
+            "value": -2
+          },
+          {
+            "value": -1
+          },
+          {
+            "value": 0
+          },
+          {
+            "value": 1
+          },
+          {
+            "value": 2
+          },
+          {
+            "value": 3
+          },
+          {
+            "value": 4
+          },
+          {
+            "value": 5
+          },
+          {
+            "value": 6
+          },
+          {
+            "value": 7
+          },
+          {
+            "value": 8
+          },
+          {
+            "value": 9
+          },
+          {
+            "value": 10
+          },
+          {
+            "value": 11
+          },
+          {
+            "value": 12
+          },
+          {
+            "value": 13
+          },
+          {
+            "value": 14
+          },
+          {
+            "value": 15
+          },
+          {
+            "value": 16
+          },
+          {
+            "value": 17
+          },
+          {
+            "value": 18
+          },
+          {
+            "value": 19
+          },
+          {
+            "value": 20
+          }
+        ],
+        "request": "Write a function that returns the parity of an integer.",
+        "source": "def parity(value):\n    return value % 2 == 0\n"
+      }
+    }
+  },
+  "git_head": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+  "harness_sha256": {
+    "docs/research/engine_substrate/SUBSTRATE_CODE_WRITE_EXAMPLE_ACQUISITION_V1_PREREG_20261001.md": "c0893332dc60f1946d33d66041384815744e3bccbb97a0c922de1279cdef5c0d",
+    "evaluation/substrate_capability/analyze_substrate_code_write_example_acquisition_v1.py": "a5eeb124a3e3fcaf164ce4ef85f8251bdd7dfbff0f937fbac91e98914c049a09",
+    "evaluation/substrate_capability/substrate_code_write_example_acquisition_v1.py": "882d0227d282a685ee9f880f307a3fda110404dbaaa1869639df8291333054f1"
+  },
+  "native_binary_sha256": "3816b4fb5d5746950b4cc3bf9e904a58e675ce53530727edf44095646dd58a54",
+  "schema": "SubstrateCodeWriteExampleAcquisitionV1Lock",
+  "tree_sha256": {
+    "domains_py": "033993a53a2f197609fa2289ccff69f2e2e25e00009fb3ebda7335697775d16c",
+    "python_native": "4d4cb4aaaed3c395638b0485fc0d871749150149aded5e81491b42c7fdeb5402",
+    "rust_dsl": "06307beca12566832d3ba7ac157ec6177abb41a87dcf3755d824729d1a55ea0f",
+    "seed_json": "f14715c51792e36cc453ecb71aae8536c949e5f21022a701858f8f54b2ab9ea7",
+    "substrate_py": "206c8d6c975998dae706c64fe23be1ae7af659fd749577d978aafa1c30d7fdba"
+  }
+}

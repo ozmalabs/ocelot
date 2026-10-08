@@ -1,0 +1,180 @@
+{
+  "cases": [
+    {
+      "case": "typed_edge_insert",
+      "counted_edge_type": "causal",
+      "final_edge_count_oracle": 1,
+      "progress_count": 3,
+      "reader_match_edge_types": [
+        "trigger"
+      ],
+      "reader_observed_count": 1,
+      "reader_rule": "tractability_insert_reader",
+      "reader_term_edge_reads": [
+        "edge:causal"
+      ],
+      "rule_access_sets": [
+        [
+          0,
+          "tractability_insert_reader",
+          true,
+          [
+            "edge:causal",
+            "edge:trigger"
+          ],
+          [
+            "edge:causal"
+          ],
+          [
+            "attr:observed_count"
+          ],
+          false,
+          false
+        ],
+        [
+          1,
+          "tractability_insert_writer",
+          true,
+          [
+            "edge:trigger"
+          ],
+          [],
+          [
+            "edge:causal"
+          ],
+          false,
+          false
+        ]
+      ],
+      "settled_correctly": true,
+      "writer_edge_writes": [
+        "edge:causal"
+      ],
+      "writer_rule": "tractability_insert_writer"
+    },
+    {
+      "case": "typed_edge_delete",
+      "counted_edge_type": "causal",
+      "final_edge_count_oracle": 0,
+      "progress_count": 3,
+      "reader_match_edge_types": [
+        "trigger"
+      ],
+      "reader_observed_count": 0,
+      "reader_rule": "tractability_delete_reader",
+      "reader_term_edge_reads": [
+        "edge:causal"
+      ],
+      "rule_access_sets": [
+        [
+          0,
+          "tractability_delete_reader",
+          true,
+          [
+            "edge:causal",
+            "edge:trigger"
+          ],
+          [
+            "edge:causal"
+          ],
+          [
+            "attr:observed_count"
+          ],
+          false,
+          false
+        ],
+        [
+          1,
+          "tractability_delete_writer",
+          true,
+          [
+            "edge:trigger"
+          ],
+          [],
+          [
+            "edge:causal"
+          ],
+          false,
+          false
+        ]
+      ],
+      "settled_correctly": true,
+      "writer_edge_writes": [
+        "edge:causal"
+      ],
+      "writer_rule": "tractability_delete_writer"
+    },
+    {
+      "case": "match_and_term_edge_overlap",
+      "counted_edge_type": "trigger",
+      "final_edge_count_oracle": 2,
+      "progress_count": 3,
+      "reader_match_edge_types": [
+        "trigger"
+      ],
+      "reader_observed_count": 2,
+      "reader_rule": "tractability_overlap_reader",
+      "reader_term_edge_reads": [
+        "edge:trigger"
+      ],
+      "rule_access_sets": [
+        [
+          0,
+          "tractability_overlap_reader",
+          true,
+          [
+            "edge:trigger"
+          ],
+          [
+            "edge:trigger"
+          ],
+          [
+            "attr:observed_count"
+          ],
+          false,
+          false
+        ],
+        [
+          1,
+          "tractability_overlap_writer",
+          true,
+          [
+            "edge:seed"
+          ],
+          [],
+          [
+            "edge:trigger"
+          ],
+          false,
+          false
+        ]
+      ],
+      "settled_correctly": true,
+      "writer_edge_writes": [
+        "edge:trigger"
+      ],
+      "writer_rule": "tractability_overlap_writer"
+    }
+  ],
+  "claim_boundary": [
+    "Three deterministic two-rule cases only; no broad closure or scale claim.",
+    "Each reference is a direct count of final typed neighbours.",
+    "These cover typed Edges insertion, deletion, and match/term edge-type overlap, not every term/effect or execution mode."
+  ],
+  "command": "PYTHONPATH=<fresh-native-package>:. python3 scripts/substrate_term_edge_wakeup_pilot.py",
+  "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+  "dirty": true,
+  "harness_sha256": "160a458a94472e8ea4d49988c92a3c26ebb6792de5e2957bb714a1a0751b2c7f",
+  "native_extension_path": "/tmp/ocelot-native-access.ErnBQ0/substrate_rs/_native.abi3.so",
+  "native_extension_sha256": "4a6fef0d74e11ac6e0e9dacd357739bd9f597ba0d7569afd1f84dcaf514c88ba",
+  "platform": "Linux-6.8.0-137-generic-x86_64-with-glibc2.39",
+  "protocol": "term-edge wakeup diagnostic v2",
+  "python": "3.13.5 (main, Jun 11 2025, 15:36:57) [GCC 11.4.0]",
+  "run_state": "exploratory_pilot",
+  "settled_all_correctly": true,
+  "source_sha256": {
+    "binding": "3d6a667274c425391c13431d8559bb272da52f224e5464ba44d60ec7c3bbb3fd",
+    "rewrite": "71fe23ba0c2a64d015055c9a74d92d8555bd35c0e19ac23b63b378ff5f73bf2d",
+    "substrate": "8c719053b9b1445d808451a711762e5f54f9ac5e56763beff90a8396cdd5ed01"
+  }
+}

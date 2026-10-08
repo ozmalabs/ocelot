@@ -1,0 +1,93 @@
+{
+  "all_gates_pass": true,
+  "analysis": "Compensation order and simultaneous transitions v1",
+  "callback_counts_by_mode_and_order": {
+    "compensating_attr": {
+      "compensator_first": {
+        "A_initial_all_negative": [
+          9,
+          9,
+          9
+        ],
+        "B_establish_frame0_positive": [
+          12,
+          12,
+          12
+        ],
+        "C_simultaneous_opposite_transitions": [
+          12,
+          12,
+          12
+        ]
+      },
+      "positive_first": {
+        "A_initial_all_negative": [
+          12,
+          12,
+          12
+        ],
+        "B_establish_frame0_positive": [
+          9,
+          9,
+          9
+        ],
+        "C_simultaneous_opposite_transitions": [
+          12,
+          12,
+          12
+        ]
+      }
+    },
+    "retractable_edge": {
+      "compensator_first": {
+        "A_initial_all_negative": [
+          6,
+          6,
+          6
+        ],
+        "B_establish_frame0_positive": [
+          12,
+          12,
+          12
+        ],
+        "C_simultaneous_opposite_transitions": [
+          12,
+          12,
+          12
+        ]
+      },
+      "positive_first": {
+        "A_initial_all_negative": [
+          6,
+          6,
+          6
+        ],
+        "B_establish_frame0_positive": [
+          9,
+          9,
+          9
+        ],
+        "C_simultaneous_opposite_transitions": [
+          12,
+          12,
+          12
+        ]
+      }
+    }
+  },
+  "gates": {
+    "all_modes_orders_phases_present": true,
+    "expected_phase_states": true,
+    "four_cells_each": true,
+    "locked_inputs_match": true,
+    "replicated_across_workers": true,
+    "rule_order_invariant_projection": true,
+    "three_workers": true
+  },
+  "interpretation": "Both explicit compensator representations converge to the same frame projection under reversed rule insertion order for the tested independent simultaneous transitions.",
+  "limitations": [
+    "Only independent frame matches with mutually exclusive positive/negative predicates are tested.",
+    "This does not establish order independence for overlapping rules that write conflicting values.",
+    "This remains explicit compensation logic; no automatic truth maintenance is tested."
+  ]
+}

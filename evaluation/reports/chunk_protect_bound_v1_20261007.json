@@ -1,0 +1,96 @@
+{
+ "schema": "ChunkProtectBoundV1",
+ "arms": {
+  "protect2_cap4": {
+   "recall_B": 4,
+   "of": 4,
+   "live": 21,
+   "total": 70,
+   "probe_checked_median": 2621.0,
+   "stream_s": 11.35116171836853
+  },
+  "protect2_cap4_pcap6": {
+   "recall_B": 4,
+   "of": 4,
+   "live": 8,
+   "total": 88,
+   "probe_checked_median": 1014.0,
+   "stream_s": 12.151899337768555
+  },
+  "protect2_cap4_pcap4": {
+   "recall_B": 3,
+   "of": 4,
+   "live": 8,
+   "total": 91,
+   "probe_checked_median": 1014.0,
+   "stream_s": 10.994494199752808
+  }
+ },
+ "gates": {
+  "pcap6_keeps_B": true,
+  "pcap6_bounds_live": true,
+  "pcap6_cheaper": true
+ },
+ "tasks": [
+  [
+   "reflection_r",
+   "scale2",
+   "rotation90"
+  ],
+  [
+   "shear_b",
+   "rotation90",
+   "scale2"
+  ],
+  [
+   "rotation90",
+   "scale2",
+   "reflection_r"
+  ],
+  [
+   "scale2",
+   "shear_b",
+   "shear_a"
+  ],
+  [
+   "reflection_r",
+   "rotation90",
+   "shear_b"
+  ],
+  [
+   "rotation90",
+   "reflection_r",
+   "shear_b"
+  ],
+  [
+   "shear_a",
+   "reflection_r",
+   "shear_b"
+  ],
+  [
+   "shear_a",
+   "shear_b",
+   "shear_a"
+  ],
+  [
+   "shear_b",
+   "shear_a",
+   "reflection_r"
+  ],
+  [
+   "scale2",
+   "rotation90",
+   "shear_a"
+  ],
+  [
+   "rotation90",
+   "shear_b",
+   "shear_a"
+  ],
+  [
+   "scale2",
+   "shear_b",
+   "rotation90"
+  ]
+ ]
+}

@@ -1,0 +1,17 @@
+{
+  "checks": {
+    "both_baseline_replies_and_joined_threads": true,
+    "lock_blocks_B_while_A_is_paused": true,
+    "normalized_shape_repeats": true,
+    "raw_digest_matches_lock": true,
+    "raw_inputs_match_lock": true,
+    "sequential_lifecycle_ownership": true,
+    "source_stable_workers_and_postrun": true,
+    "three_distinct_workers": true
+  },
+  "finding": "With the WorldAdapter per-instance RLock, B is observed attempting lock acquisition while A is paused after selection and emits no selection until A finishes. In all three fresh workers, A and B then emit separate ordered lifecycle blocks, each Goal resolves and closes with correct message/origin ownership, both baseline replies are returned, and both threads join without exceptions.",
+  "limits": "This verifies one controlled describe_scene schedule and the one adapter-level conversation entry point. It does not establish safety for concurrent calls to other WorldAdapter methods, direct native API calls, other routes or schedules, multiple adapters sharing lower-level state, or external-effect handlers. The probe does not compare complete-turn latency with an unlocked code revision, so lock overhead remains unquantified.",
+  "lock_sha256": "7eb719711985806c4ebfcbc8e9765fe729b5214ebfd18eb776263d4066cc4d56",
+  "raw_sha256": "2751f32bc56db623a7afb69c3b583487a686ab09cc4c0625fb0b37811bceeca7",
+  "schema_version": 1
+}

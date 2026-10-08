@@ -1,0 +1,80 @@
+{
+  "audit_id": "term_external_boundaries_v1_20260928",
+  "claim_boundary": "Static source review only. It does not execute these paths, prove caller-side path restrictions, inventory every registered Python handler, or establish OS containment. Source excerpt hashes identify the reviewed spans; full source hashes bind the report to current files.",
+  "findings": {
+    "ProgCallExtern": {
+      "classification": "declared, in-engine native oracle dispatch in Program IR",
+      "facts": [
+        "A standalone TermNode::ProgCallExtern evaluates to Value::None; executable behavior occurs when nested in ProgEval's Program IR interpreter.",
+        "The interpreter requires the call name to be present in the supplied oracles Dict, then dispatches to call_native_oracle.",
+        "The current oracle implementation is an in-engine match over named Rust operations; unsupported names trap rather than invoking Python, shell, or arbitrary host code.",
+        "The oracles Dict is caller-provided input, but it declares names and does not provide callable values in this implementation."
+      ],
+      "source": [
+        {
+          "end_line": 8624,
+          "path": "runners/dsl/src/term.rs",
+          "sha256": "1d4867f4aba6a7d4a5c0748e6e2e2c9ea95edf08095dc93d5c4b8ebc084b3626",
+          "start_line": 8623
+        },
+        {
+          "end_line": 980,
+          "path": "runners/dsl/src/prog_eval.rs",
+          "sha256": "13bba8ad4914a703e8e12539b7d2036eaae72057bc70eecfe3fddbfbc08795c5",
+          "start_line": 959
+        },
+        {
+          "end_line": 1928,
+          "path": "runners/dsl/src/prog_eval.rs",
+          "sha256": "887addb7d96256ddf5aceb16741c29de08150a30e328d4b8a3ff80384a7f569b",
+          "start_line": 1451
+        }
+      ]
+    },
+    "ReadFile": {
+      "classification": "unrestricted native filesystem read",
+      "facts": [
+        "Evaluates the path child and accepts only an interned string value.",
+        "Passes the resolved path directly to std::fs::read_to_string without a workspace/root allowlist in this arm.",
+        "Returns text on success and Value::None on any read error.",
+        "The path child is in TermNode::children; filesystem contents and path policy are outside RuleKey access tracking."
+      ],
+      "source": [
+        {
+          "end_line": 7022,
+          "path": "runners/dsl/src/term.rs",
+          "sha256": "1dd67ec2da084358ea9dc8091f2bbfb8c364fd78d662aa38c87ec3e8a19e6fe4",
+          "start_line": 7007
+        }
+      ]
+    },
+    "UseTool": {
+      "classification": "dynamic registered Python callback; effect and reentry boundary",
+      "facts": [
+        "Evaluates argument child Terms before dispatch and records trace event kind 18.",
+        "Dispatches by name through a process-global Mutex<HashMap<String, Py<PyAny>>> registry.",
+        "Drops the registry lock before invoking the handler; handlers may reenter or mutate external state.",
+        "Handler errors, absent handlers, and unsupported return values collapse to Value::Int(0); trace rows do not describe handler-internal reads/writes."
+      ],
+      "source": [
+        {
+          "end_line": 6917,
+          "path": "runners/dsl/src/term.rs",
+          "sha256": "ac26e86783d7cd85c75fd0f8d3b150508ccd7101c5ab07296bfffaac7d181585",
+          "start_line": 6904
+        },
+        {
+          "end_line": 171,
+          "path": "runners/dsl/src/tools.rs",
+          "sha256": "6871c08a71db0d7c039619bfdd8090cf0c983d9bb8d4de2a48fc158d01b845e9",
+          "start_line": 140
+        }
+      ]
+    }
+  },
+  "source_hashes": {
+    "runners/dsl/src/prog_eval.rs": "d419bda3288c534cbc8c35a3bccc29b67171b8297ecf8aeb43a474f77f0e1451",
+    "runners/dsl/src/term.rs": "0b91be836a6a7fe4587fb2ec3a944fdd6fb461838ca25151b1358c2158705fce",
+    "runners/dsl/src/tools.rs": "adde1024c48f3b16b5214e0322572202e2c3f1cbec130035f632afd022092731"
+  }
+}

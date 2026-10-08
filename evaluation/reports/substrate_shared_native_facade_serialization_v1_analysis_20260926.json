@@ -1,0 +1,16 @@
+{
+  "checks": {
+    "all_five_contenders_wait_then_enter": true,
+    "all_operations_and_threads_clean": true,
+    "conversation_semantics_preserved": true,
+    "facades_share_lock_identity": true,
+    "normalized_shape_repeats": true,
+    "raw_and_lock_match": true,
+    "three_source_stable_processes": true
+  },
+  "finding": "Five paths\u2014public tick(), adapter.inner.node(), adapter.s.node(), adapter.s._inner.node(), and a separately constructed native facade's node()\u2014share the same lock and wait for the active conversation in all three workers. Every operation then completes; Goal identity/lifecycle and the expected reply are preserved without thread errors.",
+  "limits": "One shared PyO3 object, two facades, and one controlled schedule. This does not test two complete WorldAdapter instances sharing one substrate, raw handle escape, external callers, autonomous workers, all operations, or throughput.",
+  "lock_sha256": "7268fcdbc3d4c8175b018d8a9e9859486d2e0cc2e0aceb9be1972dff2f187e7a",
+  "raw_sha256": "e27b35409a903a32d07250bd8e2a0626953888aaec3f7f1c8b53b410d38d78ac",
+  "schema_version": 1
+}

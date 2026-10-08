@@ -1,0 +1,48 @@
+{
+  "changed_shared_source_lock_keys_vs_prior": [
+    "boot_all",
+    "conversation_action",
+    "reflective_faculty",
+    "world_adapter"
+  ],
+  "checks": {
+    "all_workers_censored_before_selection": true,
+    "driver_failed_expected_behavior_gates": true,
+    "no_goal_producer_events": true,
+    "paired_semantic_graph_parity": true,
+    "prior_and_current_source_locks_differ": true,
+    "prior_same_prompt_capture_was_successful": true,
+    "same_unknown_command_reply_in_all_workers": true,
+    "shared_scene_input_shape_reconciles": true,
+    "six_workers_and_three_pairs": true,
+    "snapshot_lock_matches_driver_and_raw": true,
+    "snapshot_stable_through_all_workers": true,
+    "worker_threads_joined": true
+  },
+  "claim_boundary": "An isolated, source-stable snapshot completed all six processes and preserved paired final graph parity, but every worker timed out before request A emitted selection. The scene input projection is structurally present, but no successful conversation lifecycle was measured. This analysis does not treat event counts, timing, or the fixture as a valid locality result.",
+  "cross_version_interpretation": "same prompt succeeded in the earlier locked state; the later locked state fails it, but multiple source inputs differ, so this is an observed state-dependent capability discrepancy, not causal attribution to any one edit",
+  "goal_producer_events": 0,
+  "input_sha256": {
+    "lock": "65c3c933344dbe8acc166990d0e4099201a1759a4b1c989a933007df85684d8d",
+    "raw": "8855086f43a2d81853fe954d7dca7be02b4bdde46c403e24b76bc0dc97c8feb6",
+    "summary": "64362a306e7790dfc1577ae9c4394ff618993904d3fbb06fb2e8ac140d851ecf"
+  },
+  "prior_capture_run_id": "substrate-describe-scene-lifecycle-identity-v1_2-20260926",
+  "prior_successful_reply_surfaces": [
+    "I see the grey thing stays, the yellow counter, and the blue thing moves."
+  ],
+  "reply_surfaces": [
+    "I don't know 'describe' \u2014 what does it mean?"
+  ],
+  "run_id": "substrate-live-describe-scene-v2-2-censored-analysis-20260927",
+  "schema_version": 1,
+  "selection_timeouts": 6,
+  "semantic_parity_pairs": 3,
+  "shared_scene_input_types": {
+    "Percept": 3,
+    "Scene": 1
+  },
+  "status": "censored_behavioral_gate_failure",
+  "trace_event_counts_are_not_reported": true,
+  "workers": 6
+}

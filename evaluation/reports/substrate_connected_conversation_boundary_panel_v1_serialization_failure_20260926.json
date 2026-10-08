@@ -1,0 +1,6 @@
+{
+  "run_id": "connected-conversation-boundary-panel-v1-initial-worker-failure",
+  "failure": "All workload construction reached worker serialization, but default json.dumps rejected a NodeID value in graph/state attrs. No complete worker capture was emitted.",
+  "reproduction": "PYTHONPATH=runners/dsl/python:.:scripts OZMA_NO_LLM=1 OZMA_SEED_PERSIST_DISABLED=1 python3 scripts/substrate_connected_conversation_boundary_panel_v1.py --worker 0",
+  "correction": "Worker and raw payload JSON serialization now use default=str; graph digests already used canonical default=str."
+}

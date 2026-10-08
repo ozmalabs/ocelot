@@ -1,0 +1,134 @@
+{
+  "analysis_type": "retrospective_prompt_induced_rule_dependency_slices",
+  "claim_boundary": "Prompt membership is the union of access-emitting rules across the three captured workers. These induced rule graphs are syntactic projections of the already-built aggregate manifest, not execution-time factor scopes, complete dependency graphs, learned frames, or a prevalence sample.",
+  "inputs": {
+    "manifest_path": "evaluation/reports/live_operation_scope_manifest_v1_20261003.json",
+    "manifest_sha256": "05d984a333a31f12e1ecc8ad4217f412b8f93254dc0c2b616b4acd313bc0e284",
+    "runner_path": "scripts/analyze_live_task_rule_slices_v1.py",
+    "runner_sha256": "a14a5779bbf33644168cdaa47ea361f99b755c068853307d360cbdf4e304cd0e"
+  },
+  "prompts": [
+    {
+      "conservative_broad_scope_graph": {
+        "component_count": 1,
+        "component_sizes_desc": [
+          397
+        ],
+        "dependency_edge_records": 57026,
+        "largest_component_fraction": 1.0,
+        "resource_count": 487,
+        "rule_count": 397
+      },
+      "finite_resource_graph": {
+        "component_count": 7,
+        "component_sizes_desc": [
+          377,
+          11,
+          4,
+          2,
+          1,
+          1,
+          1
+        ],
+        "dependency_edge_records": 41880,
+        "largest_component_fraction": 0.9496221662468514,
+        "resource_count": 483,
+        "rule_count": 397
+      },
+      "observed_rule_count": 397,
+      "prompt": "describe who you are",
+      "rules_absent_from_prompt": [
+        610,
+        611,
+        612,
+        613
+      ],
+      "workers": 3
+    },
+    {
+      "conservative_broad_scope_graph": {
+        "component_count": 1,
+        "component_sizes_desc": [
+          401
+        ],
+        "dependency_edge_records": 57984,
+        "largest_component_fraction": 1.0,
+        "resource_count": 491,
+        "rule_count": 401
+      },
+      "finite_resource_graph": {
+        "component_count": 7,
+        "component_sizes_desc": [
+          381,
+          11,
+          4,
+          2,
+          1,
+          1,
+          1
+        ],
+        "dependency_edge_records": 42742,
+        "largest_component_fraction": 0.9501246882793017,
+        "resource_count": 487,
+        "rule_count": 401
+      },
+      "observed_rule_count": 401,
+      "prompt": "report your organisation",
+      "rules_absent_from_prompt": [],
+      "workers": 3
+    }
+  ],
+  "schema_version": 1,
+  "source_manifest_summary": {
+    "conservative_dependency_graph": {
+      "component_count": 1,
+      "component_size_distribution_desc": [
+        401
+      ],
+      "largest_undirected_component": 401,
+      "max_distinct_rule_consumer_count": 401,
+      "max_distinct_rule_producer_count": 401,
+      "mode": "conservative_with_broad_edges",
+      "resource_edge_count": 83205,
+      "resource_key_count": 1239,
+      "rule_count": 401,
+      "rule_pair_count": 57984
+    },
+    "distinct_runtime_term_variants": 67,
+    "effect_kind_rule_counts": {
+      "add_edge": 177,
+      "add_node": 152,
+      "add_node_if_absent": 4,
+      "del_edge": 8,
+      "del_node": 3,
+      "set_attr": 351,
+      "set_attr_if_different": 9
+    },
+    "finite_dependency_graph": {
+      "component_count": 7,
+      "component_size_distribution_desc": [
+        381,
+        11,
+        4,
+        2,
+        1,
+        1,
+        1
+      ],
+      "largest_undirected_component": 381,
+      "max_distinct_rule_consumer_count": 287,
+      "max_distinct_rule_producer_count": 272,
+      "mode": "finite_declared_resource_overlap",
+      "resource_edge_count": 59377,
+      "resource_key_count": 1236,
+      "rule_count": 401,
+      "rule_pair_count": 42742
+    },
+    "rules_with_broad_or_dynamic_reads": 56,
+    "rules_with_broad_or_unresolved_writes": 3,
+    "rules_with_population_query_terms": 93,
+    "runtime_touched_rule_count": 401,
+    "unrecognized_effect_counts": {},
+    "weighted_access_events": 1650456
+  }
+}

@@ -1,0 +1,230 @@
+{
+  "accepted": 0,
+  "accepted_with_exact_holdout_transfer": 0,
+  "case_results": {
+    "absolute_shear": {
+      "accepted": 0,
+      "enumerate_ok": 0,
+      "enumerate_reached": 5,
+      "enumerator_ops": [
+        "Plus,Times,Minus,Div,Min,Max,Abs,Neg,Gt,Lt,Eq,IfThenElse,Len,SumList,MaxList,MinList,MaxLenOver,MinLenOver,First,LastElem,JoinList,FilterList,MapList,TupleOf,ProdList,ConcatList,ArgMaxLenOver,IndexedMap,Sort"
+      ],
+      "exact_holdout_transfer": 0,
+      "gapped": 5,
+      "max_peak_rss_bytes": 79130624,
+      "max_wall_ms": 1619.671266,
+      "median_cpu_ms": 1603.536771,
+      "median_wall_ms": 1603.64972,
+      "min_wall_ms": 1576.077472,
+      "n": 5,
+      "programs": []
+    },
+    "hinge_shear": {
+      "accepted": 0,
+      "enumerate_ok": 0,
+      "enumerate_reached": 0,
+      "enumerator_ops": [
+        "None"
+      ],
+      "exact_holdout_transfer": 0,
+      "gapped": 0,
+      "max_peak_rss_bytes": null,
+      "max_wall_ms": null,
+      "median_cpu_ms": null,
+      "median_wall_ms": null,
+      "min_wall_ms": null,
+      "n": 5,
+      "programs": []
+    },
+    "linear": {
+      "accepted": 0,
+      "enumerate_ok": 0,
+      "enumerate_reached": 0,
+      "enumerator_ops": [
+        "None"
+      ],
+      "exact_holdout_transfer": 0,
+      "gapped": 0,
+      "max_peak_rss_bytes": null,
+      "max_wall_ms": null,
+      "median_cpu_ms": null,
+      "median_wall_ms": null,
+      "min_wall_ms": null,
+      "n": 5,
+      "programs": []
+    },
+    "quadratic_shear": {
+      "accepted": 0,
+      "enumerate_ok": 0,
+      "enumerate_reached": 0,
+      "enumerator_ops": [
+        "None"
+      ],
+      "exact_holdout_transfer": 0,
+      "gapped": 0,
+      "max_peak_rss_bytes": null,
+      "max_wall_ms": null,
+      "median_cpu_ms": null,
+      "median_wall_ms": null,
+      "min_wall_ms": null,
+      "n": 5,
+      "programs": []
+    }
+  },
+  "checks": {
+    "all_workers_source_native_stable": false,
+    "all_workers_terminal": false,
+    "complete_unique_20_worker_matrix": true,
+    "current_sources_and_native_match_lock": true,
+    "every_accepted_program_reflected_and_exact_on_holdout": true,
+    "every_case_reached_rung3": false,
+    "footer_source_native_stable": true,
+    "linear_positive_control_accepts_and_transfers": false,
+    "no_worker_failures": false,
+    "one_header_footer_and_locked_schedule": true
+  },
+  "integrity_pass": false,
+  "interpretation": "Measures the shipped program-synthesis adapter/rule route through Rung 3 and graph-reflected ProgEval on six locked holdout points. It does not establish general dimension induction, learned grammar choice, mint/adoption, natural-task prevalence, or scaling.",
+  "lock_sha256": "7450ee63edccfadf60c65c3e0c36e90959f6c86456046a8d7cdd4beaa13b850a",
+  "passed_checks": 5,
+  "raw_sha256": "668048568e88da668302c07a56f4b016431a203e731d65035872c34b4c278ef3",
+  "run_id": "synthesis_rung3_nonlinear_map_v1_1_20260929",
+  "total_checks": 10,
+  "worker_failures": [
+    {
+      "kind": "worker",
+      "repetition": 0,
+      "returncode": 1,
+      "stderr_tail": "Traceback (most recent call last):\n  File \"/home/matt/ozmadev/ocelot/scripts/substrate_synthesis_rung3_nonlinear_map_v1_1.py\", line 197, in <module>\n    if __name__ == \"__main__\": main()\n                               ~~~~^^\n  File \"/home/matt/ozmadev/ocelot/scripts/substrate_synthesis_rung3_nonlinear_map_v1_1.py\", line 161, in main\n    print(json.dumps(run_worker(sys.argv[2], int(sys.argv[3])), sort_keys=True))\n          ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/linuxbrew/.linuxbrew/opt/python@3.13/lib/python3.13/json/__init__.py\", line 238, in dumps\n    **kw).encode(obj)\n          ~~~~~~^^^^^\n  File \"/home/linuxbrew/.linuxbrew/opt/python@3.13/lib/python3.13/json/encoder.py\", line 200, in encode\n    chunks = self.iterencode(o, _one_shot=True)\n  File \"/home/linuxbrew/.linuxbrew/opt/python@3.13/lib/python3.13/json/encoder.py\", line 261, in iterencode\n    return _iterencode(o, 0)\n  File \"/home/linuxbrew/.linuxbrew/opt/python@3.13/lib/python3.13/json/encoder.py\", line 180, in default\n    raise TypeError(f'Object of type {o.__class__.__name__} '\n                    f'is not JSON serializable')\nTypeError: Object of type NodeID is not JSON serializable\n",
+      "stdout_tail": "",
+      "task": "linear",
+      "worker_failed": true
+    },
+    {
+      "kind": "worker",
+      "repetition": 1,
+      "returncode": 1,
+      "stderr_tail": "Traceback (most recent call last):\n  File \"/home/matt/ozmadev/ocelot/scripts/substrate_synthesis_rung3_nonlinear_map_v1_1.py\", line 197, in <module>\n    if __name__ == \"__main__\": main()\n                               ~~~~^^\n  File \"/home/matt/ozmadev/ocelot/scripts/substrate_synthesis_rung3_nonlinear_map_v1_1.py\", line 161, in main\n    print(json.dumps(run_worker(sys.argv[2], int(sys.argv[3])), sort_keys=True))\n          ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/linuxbrew/.linuxbrew/opt/python@3.13/lib/python3.13/json/__init__.py\", line 238, in dumps\n    **kw).encode(obj)\n          ~~~~~~^^^^^\n  File \"/home/linuxbrew/.linuxbrew/opt/python@3.13/lib/python3.13/json/encoder.py\", line 200, in encode\n    chunks = self.iterencode(o, _one_shot=True)\n  File \"/home/linuxbrew/.linuxbrew/opt/python@3.13/lib/python3.13/json/encoder.py\", line 261, in iterencode\n    return _iterencode(o, 0)\n  File \"/home/linuxbrew/.linuxbrew/opt/python@3.13/lib/python3.13/json/encoder.py\", line 180, in default\n    raise TypeError(f'Object of type {o.__class__.__name__} '\n                    f'is not JSON serializable')\nTypeError: Object of type NodeID is not JSON serializable\n",
+      "stdout_tail": "",
+      "task": "linear",
+      "worker_failed": true
+    },
+    {
+      "kind": "worker",
+      "repetition": 2,
+      "returncode": 1,
+      "stderr_tail": "Traceback (most recent call last):\n  File \"/home/matt/ozmadev/ocelot/scripts/substrate_synthesis_rung3_nonlinear_map_v1_1.py\", line 197, in <module>\n    if __name__ == \"__main__\": main()\n                               ~~~~^^\n  File \"/home/matt/ozmadev/ocelot/scripts/substrate_synthesis_rung3_nonlinear_map_v1_1.py\", line 161, in main\n    print(json.dumps(run_worker(sys.argv[2], int(sys.argv[3])), sort_keys=True))\n          ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/linuxbrew/.linuxbrew/opt/python@3.13/lib/python3.13/json/__init__.py\", line 238, in dumps\n    **kw).encode(obj)\n          ~~~~~~^^^^^\n  File \"/home/linuxbrew/.linuxbrew/opt/python@3.13/lib/python3.13/json/encoder.py\", line 200, in encode\n    chunks = self.iterencode(o, _one_shot=True)\n  File \"/home/linuxbrew/.linuxbrew/opt/python@3.13/lib/python3.13/json/encoder.py\", line 261, in iterencode\n    return _iterencode(o, 0)\n  File \"/home/linuxbrew/.linuxbrew/opt/python@3.13/lib/python3.13/json/encoder.py\", line 180, in default\n    raise TypeError(f'Object of type {o.__class__.__name__} '\n                    f'is not JSON serializable')\nTypeError: Object of type NodeID is not JSON serializable\n",
+      "stdout_tail": "",
+      "task": "linear",
+      "worker_failed": true
+    },
+    {
+      "kind": "worker",
+      "repetition": 3,
+      "returncode": 1,
+      "stderr_tail": "Traceback (most recent call last):\n  File \"/home/matt/ozmadev/ocelot/scripts/substrate_synthesis_rung3_nonlinear_map_v1_1.py\", line 197, in <module>\n    if __name__ == \"__main__\": main()\n                               ~~~~^^\n  File \"/home/matt/ozmadev/ocelot/scripts/substrate_synthesis_rung3_nonlinear_map_v1_1.py\", line 161, in main\n    print(json.dumps(run_worker(sys.argv[2], int(sys.argv[3])), sort_keys=True))\n          ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/linuxbrew/.linuxbrew/opt/python@3.13/lib/python3.13/json/__init__.py\", line 238, in dumps\n    **kw).encode(obj)\n          ~~~~~~^^^^^\n  File \"/home/linuxbrew/.linuxbrew/opt/python@3.13/lib/python3.13/json/encoder.py\", line 200, in encode\n    chunks = self.iterencode(o, _one_shot=True)\n  File \"/home/linuxbrew/.linuxbrew/opt/python@3.13/lib/python3.13/json/encoder.py\", line 261, in iterencode\n    return _iterencode(o, 0)\n  File \"/home/linuxbrew/.linuxbrew/opt/python@3.13/lib/python3.13/json/encoder.py\", line 180, in default\n    raise TypeError(f'Object of type {o.__class__.__name__} '\n                    f'is not JSON serializable')\nTypeError: Object of type NodeID is not JSON serializable\n",
+      "stdout_tail": "",
+      "task": "linear",
+      "worker_failed": true
+    },
+    {
+      "kind": "worker",
+      "repetition": 4,
+      "returncode": 1,
+      "stderr_tail": "Traceback (most recent call last):\n  File \"/home/matt/ozmadev/ocelot/scripts/substrate_synthesis_rung3_nonlinear_map_v1_1.py\", line 197, in <module>\n    if __name__ == \"__main__\": main()\n                               ~~~~^^\n  File \"/home/matt/ozmadev/ocelot/scripts/substrate_synthesis_rung3_nonlinear_map_v1_1.py\", line 161, in main\n    print(json.dumps(run_worker(sys.argv[2], int(sys.argv[3])), sort_keys=True))\n          ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/linuxbrew/.linuxbrew/opt/python@3.13/lib/python3.13/json/__init__.py\", line 238, in dumps\n    **kw).encode(obj)\n          ~~~~~~^^^^^\n  File \"/home/linuxbrew/.linuxbrew/opt/python@3.13/lib/python3.13/json/encoder.py\", line 200, in encode\n    chunks = self.iterencode(o, _one_shot=True)\n  File \"/home/linuxbrew/.linuxbrew/opt/python@3.13/lib/python3.13/json/encoder.py\", line 261, in iterencode\n    return _iterencode(o, 0)\n  File \"/home/linuxbrew/.linuxbrew/opt/python@3.13/lib/python3.13/json/encoder.py\", line 180, in default\n    raise TypeError(f'Object of type {o.__class__.__name__} '\n                    f'is not JSON serializable')\nTypeError: Object of type NodeID is not JSON serializable\n",
+      "stdout_tail": "",
+      "task": "linear",
+      "worker_failed": true
+    },
+    {
+      "kind": "worker",
+      "repetition": 0,
+      "returncode": 1,
+      "stderr_tail": "Traceback (most recent call last):\n  File \"/home/matt/ozmadev/ocelot/scripts/substrate_synthesis_rung3_nonlinear_map_v1_1.py\", line 197, in <module>\n    if __name__ == \"__main__\": main()\n                               ~~~~^^\n  File \"/home/matt/ozmadev/ocelot/scripts/substrate_synthesis_rung3_nonlinear_map_v1_1.py\", line 161, in main\n    print(json.dumps(run_worker(sys.argv[2], int(sys.argv[3])), sort_keys=True))\n          ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/linuxbrew/.linuxbrew/opt/python@3.13/lib/python3.13/json/__init__.py\", line 238, in dumps\n    **kw).encode(obj)\n          ~~~~~~^^^^^\n  File \"/home/linuxbrew/.linuxbrew/opt/python@3.13/lib/python3.13/json/encoder.py\", line 200, in encode\n    chunks = self.iterencode(o, _one_shot=True)\n  File \"/home/linuxbrew/.linuxbrew/opt/python@3.13/lib/python3.13/json/encoder.py\", line 261, in iterencode\n    return _iterencode(o, 0)\n  File \"/home/linuxbrew/.linuxbrew/opt/python@3.13/lib/python3.13/json/encoder.py\", line 180, in default\n    raise TypeError(f'Object of type {o.__class__.__name__} '\n                    f'is not JSON serializable')\nTypeError: Object of type NodeID is not JSON serializable\n",
+      "stdout_tail": "",
+      "task": "quadratic_shear",
+      "worker_failed": true
+    },
+    {
+      "kind": "worker",
+      "repetition": 1,
+      "returncode": 1,
+      "stderr_tail": "Traceback (most recent call last):\n  File \"/home/matt/ozmadev/ocelot/scripts/substrate_synthesis_rung3_nonlinear_map_v1_1.py\", line 197, in <module>\n    if __name__ == \"__main__\": main()\n                               ~~~~^^\n  File \"/home/matt/ozmadev/ocelot/scripts/substrate_synthesis_rung3_nonlinear_map_v1_1.py\", line 161, in main\n    print(json.dumps(run_worker(sys.argv[2], int(sys.argv[3])), sort_keys=True))\n          ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/linuxbrew/.linuxbrew/opt/python@3.13/lib/python3.13/json/__init__.py\", line 238, in dumps\n    **kw).encode(obj)\n          ~~~~~~^^^^^\n  File \"/home/linuxbrew/.linuxbrew/opt/python@3.13/lib/python3.13/json/encoder.py\", line 200, in encode\n    chunks = self.iterencode(o, _one_shot=True)\n  File \"/home/linuxbrew/.linuxbrew/opt/python@3.13/lib/python3.13/json/encoder.py\", line 261, in iterencode\n    return _iterencode(o, 0)\n  File \"/home/linuxbrew/.linuxbrew/opt/python@3.13/lib/python3.13/json/encoder.py\", line 180, in default\n    raise TypeError(f'Object of type {o.__class__.__name__} '\n                    f'is not JSON serializable')\nTypeError: Object of type NodeID is not JSON serializable\n",
+      "stdout_tail": "",
+      "task": "quadratic_shear",
+      "worker_failed": true
+    },
+    {
+      "kind": "worker",
+      "repetition": 2,
+      "returncode": 1,
+      "stderr_tail": "Traceback (most recent call last):\n  File \"/home/matt/ozmadev/ocelot/scripts/substrate_synthesis_rung3_nonlinear_map_v1_1.py\", line 197, in <module>\n    if __name__ == \"__main__\": main()\n                               ~~~~^^\n  File \"/home/matt/ozmadev/ocelot/scripts/substrate_synthesis_rung3_nonlinear_map_v1_1.py\", line 161, in main\n    print(json.dumps(run_worker(sys.argv[2], int(sys.argv[3])), sort_keys=True))\n          ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/linuxbrew/.linuxbrew/opt/python@3.13/lib/python3.13/json/__init__.py\", line 238, in dumps\n    **kw).encode(obj)\n          ~~~~~~^^^^^\n  File \"/home/linuxbrew/.linuxbrew/opt/python@3.13/lib/python3.13/json/encoder.py\", line 200, in encode\n    chunks = self.iterencode(o, _one_shot=True)\n  File \"/home/linuxbrew/.linuxbrew/opt/python@3.13/lib/python3.13/json/encoder.py\", line 261, in iterencode\n    return _iterencode(o, 0)\n  File \"/home/linuxbrew/.linuxbrew/opt/python@3.13/lib/python3.13/json/encoder.py\", line 180, in default\n    raise TypeError(f'Object of type {o.__class__.__name__} '\n                    f'is not JSON serializable')\nTypeError: Object of type NodeID is not JSON serializable\n",
+      "stdout_tail": "",
+      "task": "quadratic_shear",
+      "worker_failed": true
+    },
+    {
+      "kind": "worker",
+      "repetition": 3,
+      "returncode": 1,
+      "stderr_tail": "Traceback (most recent call last):\n  File \"/home/matt/ozmadev/ocelot/scripts/substrate_synthesis_rung3_nonlinear_map_v1_1.py\", line 197, in <module>\n    if __name__ == \"__main__\": main()\n                               ~~~~^^\n  File \"/home/matt/ozmadev/ocelot/scripts/substrate_synthesis_rung3_nonlinear_map_v1_1.py\", line 161, in main\n    print(json.dumps(run_worker(sys.argv[2], int(sys.argv[3])), sort_keys=True))\n          ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/linuxbrew/.linuxbrew/opt/python@3.13/lib/python3.13/json/__init__.py\", line 238, in dumps\n    **kw).encode(obj)\n          ~~~~~~^^^^^\n  File \"/home/linuxbrew/.linuxbrew/opt/python@3.13/lib/python3.13/json/encoder.py\", line 200, in encode\n    chunks = self.iterencode(o, _one_shot=True)\n  File \"/home/linuxbrew/.linuxbrew/opt/python@3.13/lib/python3.13/json/encoder.py\", line 261, in iterencode\n    return _iterencode(o, 0)\n  File \"/home/linuxbrew/.linuxbrew/opt/python@3.13/lib/python3.13/json/encoder.py\", line 180, in default\n    raise TypeError(f'Object of type {o.__class__.__name__} '\n                    f'is not JSON serializable')\nTypeError: Object of type NodeID is not JSON serializable\n",
+      "stdout_tail": "",
+      "task": "quadratic_shear",
+      "worker_failed": true
+    },
+    {
+      "kind": "worker",
+      "repetition": 4,
+      "returncode": 1,
+      "stderr_tail": "Traceback (most recent call last):\n  File \"/home/matt/ozmadev/ocelot/scripts/substrate_synthesis_rung3_nonlinear_map_v1_1.py\", line 197, in <module>\n    if __name__ == \"__main__\": main()\n                               ~~~~^^\n  File \"/home/matt/ozmadev/ocelot/scripts/substrate_synthesis_rung3_nonlinear_map_v1_1.py\", line 161, in main\n    print(json.dumps(run_worker(sys.argv[2], int(sys.argv[3])), sort_keys=True))\n          ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/linuxbrew/.linuxbrew/opt/python@3.13/lib/python3.13/json/__init__.py\", line 238, in dumps\n    **kw).encode(obj)\n          ~~~~~~^^^^^\n  File \"/home/linuxbrew/.linuxbrew/opt/python@3.13/lib/python3.13/json/encoder.py\", line 200, in encode\n    chunks = self.iterencode(o, _one_shot=True)\n  File \"/home/linuxbrew/.linuxbrew/opt/python@3.13/lib/python3.13/json/encoder.py\", line 261, in iterencode\n    return _iterencode(o, 0)\n  File \"/home/linuxbrew/.linuxbrew/opt/python@3.13/lib/python3.13/json/encoder.py\", line 180, in default\n    raise TypeError(f'Object of type {o.__class__.__name__} '\n                    f'is not JSON serializable')\nTypeError: Object of type NodeID is not JSON serializable\n",
+      "stdout_tail": "",
+      "task": "quadratic_shear",
+      "worker_failed": true
+    },
+    {
+      "kind": "worker",
+      "repetition": 0,
+      "returncode": 1,
+      "stderr_tail": "Traceback (most recent call last):\n  File \"/home/matt/ozmadev/ocelot/scripts/substrate_synthesis_rung3_nonlinear_map_v1_1.py\", line 197, in <module>\n    if __name__ == \"__main__\": main()\n                               ~~~~^^\n  File \"/home/matt/ozmadev/ocelot/scripts/substrate_synthesis_rung3_nonlinear_map_v1_1.py\", line 161, in main\n    print(json.dumps(run_worker(sys.argv[2], int(sys.argv[3])), sort_keys=True))\n          ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/linuxbrew/.linuxbrew/opt/python@3.13/lib/python3.13/json/__init__.py\", line 238, in dumps\n    **kw).encode(obj)\n          ~~~~~~^^^^^\n  File \"/home/linuxbrew/.linuxbrew/opt/python@3.13/lib/python3.13/json/encoder.py\", line 200, in encode\n    chunks = self.iterencode(o, _one_shot=True)\n  File \"/home/linuxbrew/.linuxbrew/opt/python@3.13/lib/python3.13/json/encoder.py\", line 261, in iterencode\n    return _iterencode(o, 0)\n  File \"/home/linuxbrew/.linuxbrew/opt/python@3.13/lib/python3.13/json/encoder.py\", line 180, in default\n    raise TypeError(f'Object of type {o.__class__.__name__} '\n                    f'is not JSON serializable')\nTypeError: Object of type NodeID is not JSON serializable\n",
+      "stdout_tail": "",
+      "task": "hinge_shear",
+      "worker_failed": true
+    },
+    {
+      "kind": "worker",
+      "repetition": 1,
+      "returncode": 1,
+      "stderr_tail": "Traceback (most recent call last):\n  File \"/home/matt/ozmadev/ocelot/scripts/substrate_synthesis_rung3_nonlinear_map_v1_1.py\", line 197, in <module>\n    if __name__ == \"__main__\": main()\n                               ~~~~^^\n  File \"/home/matt/ozmadev/ocelot/scripts/substrate_synthesis_rung3_nonlinear_map_v1_1.py\", line 161, in main\n    print(json.dumps(run_worker(sys.argv[2], int(sys.argv[3])), sort_keys=True))\n          ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/linuxbrew/.linuxbrew/opt/python@3.13/lib/python3.13/json/__init__.py\", line 238, in dumps\n    **kw).encode(obj)\n          ~~~~~~^^^^^\n  File \"/home/linuxbrew/.linuxbrew/opt/python@3.13/lib/python3.13/json/encoder.py\", line 200, in encode\n    chunks = self.iterencode(o, _one_shot=True)\n  File \"/home/linuxbrew/.linuxbrew/opt/python@3.13/lib/python3.13/json/encoder.py\", line 261, in iterencode\n    return _iterencode(o, 0)\n  File \"/home/linuxbrew/.linuxbrew/opt/python@3.13/lib/python3.13/json/encoder.py\", line 180, in default\n    raise TypeError(f'Object of type {o.__class__.__name__} '\n                    f'is not JSON serializable')\nTypeError: Object of type NodeID is not JSON serializable\n",
+      "stdout_tail": "",
+      "task": "hinge_shear",
+      "worker_failed": true
+    },
+    {
+      "kind": "worker",
+      "repetition": 2,
+      "returncode": 1,
+      "stderr_tail": "Traceback (most recent call last):\n  File \"/home/matt/ozmadev/ocelot/scripts/substrate_synthesis_rung3_nonlinear_map_v1_1.py\", line 197, in <module>\n    if __name__ == \"__main__\": main()\n                               ~~~~^^\n  File \"/home/matt/ozmadev/ocelot/scripts/substrate_synthesis_rung3_nonlinear_map_v1_1.py\", line 161, in main\n    print(json.dumps(run_worker(sys.argv[2], int(sys.argv[3])), sort_keys=True))\n          ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/linuxbrew/.linuxbrew/opt/python@3.13/lib/python3.13/json/__init__.py\", line 238, in dumps\n    **kw).encode(obj)\n          ~~~~~~^^^^^\n  File \"/home/linuxbrew/.linuxbrew/opt/python@3.13/lib/python3.13/json/encoder.py\", line 200, in encode\n    chunks = self.iterencode(o, _one_shot=True)\n  File \"/home/linuxbrew/.linuxbrew/opt/python@3.13/lib/python3.13/json/encoder.py\", line 261, in iterencode\n    return _iterencode(o, 0)\n  File \"/home/linuxbrew/.linuxbrew/opt/python@3.13/lib/python3.13/json/encoder.py\", line 180, in default\n    raise TypeError(f'Object of type {o.__class__.__name__} '\n                    f'is not JSON serializable')\nTypeError: Object of type NodeID is not JSON serializable\n",
+      "stdout_tail": "",
+      "task": "hinge_shear",
+      "worker_failed": true
+    },
+    {
+      "kind": "worker",
+      "repetition": 3,
+      "returncode": 1,
+      "stderr_tail": "Traceback (most recent call last):\n  File \"/home/matt/ozmadev/ocelot/scripts/substrate_synthesis_rung3_nonlinear_map_v1_1.py\", line 197, in <module>\n    if __name__ == \"__main__\": main()\n                               ~~~~^^\n  File \"/home/matt/ozmadev/ocelot/scripts/substrate_synthesis_rung3_nonlinear_map_v1_1.py\", line 161, in main\n    print(json.dumps(run_worker(sys.argv[2], int(sys.argv[3])), sort_keys=True))\n          ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/linuxbrew/.linuxbrew/opt/python@3.13/lib/python3.13/json/__init__.py\", line 238, in dumps\n    **kw).encode(obj)\n          ~~~~~~^^^^^\n  File \"/home/linuxbrew/.linuxbrew/opt/python@3.13/lib/python3.13/json/encoder.py\", line 200, in encode\n    chunks = self.iterencode(o, _one_shot=True)\n  File \"/home/linuxbrew/.linuxbrew/opt/python@3.13/lib/python3.13/json/encoder.py\", line 261, in iterencode\n    return _iterencode(o, 0)\n  File \"/home/linuxbrew/.linuxbrew/opt/python@3.13/lib/python3.13/json/encoder.py\", line 180, in default\n    raise TypeError(f'Object of type {o.__class__.__name__} '\n                    f'is not JSON serializable')\nTypeError: Object of type NodeID is not JSON serializable\n",
+      "stdout_tail": "",
+      "task": "hinge_shear",
+      "worker_failed": true
+    },
+    {
+      "kind": "worker",
+      "repetition": 4,
+      "returncode": 1,
+      "stderr_tail": "Traceback (most recent call last):\n  File \"/home/matt/ozmadev/ocelot/scripts/substrate_synthesis_rung3_nonlinear_map_v1_1.py\", line 197, in <module>\n    if __name__ == \"__main__\": main()\n                               ~~~~^^\n  File \"/home/matt/ozmadev/ocelot/scripts/substrate_synthesis_rung3_nonlinear_map_v1_1.py\", line 161, in main\n    print(json.dumps(run_worker(sys.argv[2], int(sys.argv[3])), sort_keys=True))\n          ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/linuxbrew/.linuxbrew/opt/python@3.13/lib/python3.13/json/__init__.py\", line 238, in dumps\n    **kw).encode(obj)\n          ~~~~~~^^^^^\n  File \"/home/linuxbrew/.linuxbrew/opt/python@3.13/lib/python3.13/json/encoder.py\", line 200, in encode\n    chunks = self.iterencode(o, _one_shot=True)\n  File \"/home/linuxbrew/.linuxbrew/opt/python@3.13/lib/python3.13/json/encoder.py\", line 261, in iterencode\n    return _iterencode(o, 0)\n  File \"/home/linuxbrew/.linuxbrew/opt/python@3.13/lib/python3.13/json/encoder.py\", line 180, in default\n    raise TypeError(f'Object of type {o.__class__.__name__} '\n                    f'is not JSON serializable')\nTypeError: Object of type NodeID is not JSON serializable\n",
+      "stdout_tail": "",
+      "task": "hinge_shear",
+      "worker_failed": true
+    }
+  ]
+}

@@ -1,0 +1,121 @@
+{
+  "locked_inputs": {
+    "analyzer_sha256": "3985556e03513359cf24174483cd6691ae3bb47c27435f6e11700dfdd323b45c",
+    "design": {
+      "direct_query_term": {
+        "edge_type": "link",
+        "node": {
+          "name": "start",
+          "type": "Var"
+        },
+        "type": "ReachableFrom"
+      },
+      "each_batch_queries_all_sources": true,
+      "max_steps_slack": 10,
+      "negative_control": [
+        {
+          "effects": [
+            [
+              "add_node",
+              "w",
+              "Fresh",
+              {
+                "tag": "unbounded"
+              }
+            ]
+          ],
+          "match": [
+            [
+              "x",
+              "link",
+              "y"
+            ]
+          ],
+          "name": "unrestricted_mint"
+        }
+      ],
+      "profile": [
+        {
+          "effects": [
+            [
+              "add_edge",
+              "x",
+              "reachable",
+              "y",
+              {}
+            ]
+          ],
+          "match": [
+            [
+              "x",
+              "link",
+              "y"
+            ]
+          ],
+          "name": "direct_link"
+        },
+        {
+          "effects": [
+            [
+              "add_edge",
+              "x",
+              "reachable",
+              "z",
+              {}
+            ]
+          ],
+          "match": [
+            [
+              "x",
+              "reachable",
+              "y"
+            ],
+            [
+              "y",
+              "link",
+              "z"
+            ]
+          ],
+          "name": "transitive_link"
+        }
+      ],
+      "query_batch_counts": [
+        1,
+        2,
+        4,
+        8
+      ],
+      "repetitions": 3,
+      "seed": 20261005,
+      "sizes": [
+        8,
+        16,
+        32,
+        64
+      ],
+      "timing_metric": "profile_total=setup+closure+repeated_neighbours; direct_total=setup+repeated_reachablefrom",
+      "topologies": [
+        "path",
+        "binary_tree",
+        "four_layer_dag"
+      ]
+    },
+    "engine_fingerprint": "ca6f9cd7459d618227208ae5c44602e9b4f655a456a4914c7883066d62154b1a",
+    "native_sha256": "48d156424f644e0c357db90fd9a2a5c7178c966b692b6a29c91de7b3c7cb061f",
+    "protocol_sha256": "665cdd1b13782b64256f8dffc79f3a6ffe4371972636db8b01a5db0fca1d5d11",
+    "runner_sha256": "b3787dadebbebb947d4dc590467020d4a00ed65a858f6294dd9dc6de06de821a",
+    "source_sha256": {
+      "runners/dsl/Cargo.lock": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+      "runners/dsl/python/substrate_rs/__init__.py": "b5b0ffab338329a3c9c7f24fbafe8821d89810f6c162c51b564976328e2bf843",
+      "runners/dsl/python/substrate_rs/_native.build.json": "9ab078818cdb2c687a3ffbc33b84e3b41ac883b20f08b6e7ff8e4068d9b83278",
+      "runners/dsl/src/graph.rs": "72e0fb8edfd7bd3d435cccc4511ea2481288d1997747d0e538a4ecd16934c58d",
+      "runners/dsl/src/jsonio.rs": "dd6a65282f85d9397f3b3b57d3405fd504612c899020674b0b74a83487de0f71",
+      "runners/dsl/src/py.rs": "ad5ced217ff7648a57fbd066a5d2a7dcffefb612e11c32c375c4482dd49b8a49",
+      "runners/dsl/src/rewrite.rs": "a617664517d2a7b654a1ecc3caee6aaafb3d6c41ce0a47667a08497a7978f2ed",
+      "runners/dsl/src/substrate.rs": "866e4dd75fa2c884d95c8d2ccb1b5415bfeb3ba1e928bebbc64e18d3a1b0d577",
+      "runners/dsl/src/term.rs": "469b3827ec653fd7894fe0b1131fbef022b581a95cb381af81944d9c622c30d4",
+      "scripts/analyze_mint_termination_fragment.py": "4ede1431dd0283b77a68e10255c4ed5d0cd0ae3d9a79a131d2bfa9ceeca1cf8a"
+    }
+  },
+  "schema": "FiniteKeyReachabilityProfileV1Lock"
+}

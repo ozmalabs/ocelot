@@ -1,0 +1,2064 @@
+{
+  "execution": {
+    "argv": [
+      "cargo",
+      "run",
+      "-j",
+      "2",
+      "--bin",
+      "thoughtexperiment_journal_mutation_matrix_v1_6",
+      "--manifest-path",
+      "runners/dsl/Cargo.toml"
+    ],
+    "cargo_stderr_sha256": "729f9afdd28c6553c4094facba3f404b756844a1ce8cddf2b2bb66747dc7dfe9",
+    "cargo_warning_count": 49,
+    "profile": "dev",
+    "returncode": 0,
+    "rustc": "rustc 1.87.0 (17067e9ac 2025-05-09) (Homebrew)"
+  },
+  "host": {
+    "machine": "x86_64",
+    "platform": "Linux-6.8.0-142-generic-x86_64-with-glibc2.39"
+  },
+  "lock_sha256": "3ea1216b851020deb1cefd899df7d4e2850c9eba5802b0da38c8484890361abb",
+  "locked_inputs": {
+    "docs/research/engine_substrate/THOUGHTEXPERIMENT_JOURNAL_MUTATION_MATRIX_V1_6_PREREG_20261004.md": "1cf40e6082a870332eb6568a4d9f4cbeedc0e4fc66667c4e770b000cded5b122",
+    "evaluation/substrate_capability/analyze_thoughtexperiment_journal_mutation_matrix_v1_6.py": "7a51e5188bea58e72d081899dbf0d758cbc278166f3bee4bb4f52844128d17eb",
+    "evaluation/substrate_capability/run_thoughtexperiment_journal_mutation_matrix_v1_6.py": "0e1cf9f4f520ac1076efdf8384126935d9d2a5e871cd5b67715f7dcab7c2a9ef",
+    "runners/dsl/Cargo.lock": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+    "runners/dsl/Cargo.toml": "c4d8ffff2241352a5150b5a9937dbb8010e958b6f115235b7daeae716c1a9332",
+    "runners/dsl/src/bin/thoughtexperiment_journal_mutation_matrix_v1_6.rs": "af28a1e50f030c535d10b6adb5590bdf826be800aad7282e1001b8a1d33ab708",
+    "runners/dsl/src/graph.rs": "ae30e2398bb03ccb7ad09c50dca4947add06623ff7c0d1f65955f31f1f76126d",
+    "runners/dsl/src/lib.rs": "10ae7645d9ed1f7c3c9d4f5fd119406928ce079e4336a5b007df307c685c0826",
+    "runners/dsl/src/persist.rs": "dfe9247a700f1d5fafd239447018c9bd25297a50f9c86ba63a9e1ce41f149986",
+    "runners/dsl/src/sym.rs": "b54f6af6e456a7095a02eb5b3cab42a73072318bd7e54ed150c787468b170d5f",
+    "runners/dsl/src/value.rs": "a345550c27549a36d5168449a04d8f0a7ff43beb31149e74463881108db9be26"
+  },
+  "result": {
+    "all_matrix_cases_match": true,
+    "all_revision_expectations_match": true,
+    "divergence_control_works": true,
+    "rows": [
+      {
+        "case": "node attribute set",
+        "journal_delta": {
+          "edges_added": [],
+          "edges_changed": [],
+          "edges_removed": [],
+          "edges_removed_details": [],
+          "nodes_added": [],
+          "nodes_changed": [
+            {
+              "attrs_after": {
+                "mark": true
+              },
+              "attrs_before": {},
+              "id": 0
+            }
+          ],
+          "nodes_removed": [],
+          "nodes_removed_details": []
+        },
+        "journal_edge_entries": 0,
+        "journal_equals_whole_graph_diff_at_capture": true,
+        "journal_node_entries": 1,
+        "mutation_revision_after_capture": null,
+        "mutation_revision_at_capture": 6,
+        "mutation_revision_before": 5,
+        "operation": "set_attr",
+        "phase_journal_delta": null,
+        "phase_journal_equals_phase_diff": true,
+        "phase_whole_graph_diff": null,
+        "post_capture_revision_advanced": false,
+        "post_capture_untracked_divergence_detected_by_global_diff": false,
+        "post_capture_whole_graph_diff": null,
+        "revision_advanced_at_capture": true,
+        "revision_expectation_matches": true,
+        "revision_expected_to_advance_at_capture": true,
+        "scoped_view_diff": null,
+        "semantic_state_restored_after_scope_widen": true,
+        "whole_graph_diff": {
+          "edges_added": [],
+          "edges_changed": [],
+          "edges_removed": [],
+          "edges_removed_details": [],
+          "nodes_added": [],
+          "nodes_changed": [
+            {
+              "attrs_after": {
+                "mark": true
+              },
+              "attrs_before": {},
+              "id": 0
+            }
+          ],
+          "nodes_removed": [],
+          "nodes_removed_details": []
+        }
+      },
+      {
+        "case": "direct mutable node access",
+        "journal_delta": {
+          "edges_added": [],
+          "edges_changed": [],
+          "edges_removed": [],
+          "edges_removed_details": [],
+          "nodes_added": [],
+          "nodes_changed": [
+            {
+              "attrs_after": {
+                "label": "rewritten",
+                "mark": true
+              },
+              "attrs_before": {
+                "label": "a"
+              },
+              "id": 0
+            }
+          ],
+          "nodes_removed": [],
+          "nodes_removed_details": []
+        },
+        "journal_edge_entries": 0,
+        "journal_equals_whole_graph_diff_at_capture": true,
+        "journal_node_entries": 1,
+        "mutation_revision_after_capture": null,
+        "mutation_revision_at_capture": 7,
+        "mutation_revision_before": 5,
+        "operation": "node_mut_direct",
+        "phase_journal_delta": null,
+        "phase_journal_equals_phase_diff": true,
+        "phase_whole_graph_diff": null,
+        "post_capture_revision_advanced": false,
+        "post_capture_untracked_divergence_detected_by_global_diff": false,
+        "post_capture_whole_graph_diff": null,
+        "revision_advanced_at_capture": true,
+        "revision_expectation_matches": true,
+        "revision_expected_to_advance_at_capture": true,
+        "scoped_view_diff": null,
+        "semantic_state_restored_after_scope_widen": true,
+        "whole_graph_diff": {
+          "edges_added": [],
+          "edges_changed": [],
+          "edges_removed": [],
+          "edges_removed_details": [],
+          "nodes_added": [],
+          "nodes_changed": [
+            {
+              "attrs_after": {
+                "label": "rewritten",
+                "mark": true
+              },
+              "attrs_before": {
+                "label": "a"
+              },
+              "id": 0
+            }
+          ],
+          "nodes_removed": [],
+          "nodes_removed_details": []
+        }
+      },
+      {
+        "case": "node attribute removal",
+        "journal_delta": {
+          "edges_added": [],
+          "edges_changed": [],
+          "edges_removed": [],
+          "edges_removed_details": [],
+          "nodes_added": [],
+          "nodes_changed": [
+            {
+              "attrs_after": {},
+              "attrs_before": {
+                "label": "a"
+              },
+              "id": 0
+            }
+          ],
+          "nodes_removed": [],
+          "nodes_removed_details": []
+        },
+        "journal_edge_entries": 0,
+        "journal_equals_whole_graph_diff_at_capture": true,
+        "journal_node_entries": 1,
+        "mutation_revision_after_capture": null,
+        "mutation_revision_at_capture": 6,
+        "mutation_revision_before": 5,
+        "operation": "remove_attr",
+        "phase_journal_delta": null,
+        "phase_journal_equals_phase_diff": true,
+        "phase_whole_graph_diff": null,
+        "post_capture_revision_advanced": false,
+        "post_capture_untracked_divergence_detected_by_global_diff": false,
+        "post_capture_whole_graph_diff": null,
+        "revision_advanced_at_capture": true,
+        "revision_expectation_matches": true,
+        "revision_expected_to_advance_at_capture": true,
+        "scoped_view_diff": null,
+        "semantic_state_restored_after_scope_widen": true,
+        "whole_graph_diff": {
+          "edges_added": [],
+          "edges_changed": [],
+          "edges_removed": [],
+          "edges_removed_details": [],
+          "nodes_added": [],
+          "nodes_changed": [
+            {
+              "attrs_after": {},
+              "attrs_before": {
+                "label": "a"
+              },
+              "id": 0
+            }
+          ],
+          "nodes_removed": [],
+          "nodes_removed_details": []
+        }
+      },
+      {
+        "case": "node type change",
+        "journal_delta": {
+          "edges_added": [],
+          "edges_changed": [],
+          "edges_removed": [],
+          "edges_removed_details": [],
+          "nodes_added": [],
+          "nodes_changed": [
+            {
+              "attrs_after": {},
+              "attrs_before": {},
+              "id": 0,
+              "type_after": "Restored",
+              "type_before": "A"
+            }
+          ],
+          "nodes_removed": [],
+          "nodes_removed_details": []
+        },
+        "journal_edge_entries": 0,
+        "journal_equals_whole_graph_diff_at_capture": true,
+        "journal_node_entries": 1,
+        "mutation_revision_after_capture": null,
+        "mutation_revision_at_capture": 6,
+        "mutation_revision_before": 5,
+        "operation": "set_type",
+        "phase_journal_delta": null,
+        "phase_journal_equals_phase_diff": true,
+        "phase_whole_graph_diff": null,
+        "post_capture_revision_advanced": false,
+        "post_capture_untracked_divergence_detected_by_global_diff": false,
+        "post_capture_whole_graph_diff": null,
+        "revision_advanced_at_capture": true,
+        "revision_expectation_matches": true,
+        "revision_expected_to_advance_at_capture": true,
+        "scoped_view_diff": null,
+        "semantic_state_restored_after_scope_widen": true,
+        "whole_graph_diff": {
+          "edges_added": [],
+          "edges_changed": [],
+          "edges_removed": [],
+          "edges_removed_details": [],
+          "nodes_added": [],
+          "nodes_changed": [
+            {
+              "attrs_after": {},
+              "attrs_before": {},
+              "id": 0,
+              "type_after": "Restored",
+              "type_before": "A"
+            }
+          ],
+          "nodes_removed": [],
+          "nodes_removed_details": []
+        }
+      },
+      {
+        "case": "live identity restoration",
+        "journal_delta": {
+          "edges_added": [],
+          "edges_changed": [],
+          "edges_removed": [],
+          "edges_removed_details": [],
+          "nodes_added": [],
+          "nodes_changed": [
+            {
+              "attrs_after": {
+                "mark": 7
+              },
+              "attrs_before": {
+                "label": "a"
+              },
+              "id": 0,
+              "type_after": "Restored",
+              "type_before": "A"
+            }
+          ],
+          "nodes_removed": [],
+          "nodes_removed_details": []
+        },
+        "journal_edge_entries": 0,
+        "journal_equals_whole_graph_diff_at_capture": true,
+        "journal_node_entries": 1,
+        "mutation_revision_after_capture": null,
+        "mutation_revision_at_capture": 6,
+        "mutation_revision_before": 5,
+        "operation": "restore_live",
+        "phase_journal_delta": null,
+        "phase_journal_equals_phase_diff": true,
+        "phase_whole_graph_diff": null,
+        "post_capture_revision_advanced": false,
+        "post_capture_untracked_divergence_detected_by_global_diff": false,
+        "post_capture_whole_graph_diff": null,
+        "revision_advanced_at_capture": true,
+        "revision_expectation_matches": true,
+        "revision_expected_to_advance_at_capture": true,
+        "scoped_view_diff": null,
+        "semantic_state_restored_after_scope_widen": true,
+        "whole_graph_diff": {
+          "edges_added": [],
+          "edges_changed": [],
+          "edges_removed": [],
+          "edges_removed_details": [],
+          "nodes_added": [],
+          "nodes_changed": [
+            {
+              "attrs_after": {
+                "mark": 7
+              },
+              "attrs_before": {
+                "label": "a"
+              },
+              "id": 0,
+              "type_after": "Restored",
+              "type_before": "A"
+            }
+          ],
+          "nodes_removed": [],
+          "nodes_removed_details": []
+        }
+      },
+      {
+        "case": "fresh identity restoration",
+        "journal_delta": {
+          "edges_added": [],
+          "edges_changed": [],
+          "edges_removed": [],
+          "edges_removed_details": [],
+          "nodes_added": [
+            {
+              "attrs": {},
+              "id": 12,
+              "type": "Restored"
+            }
+          ],
+          "nodes_changed": [],
+          "nodes_removed": [],
+          "nodes_removed_details": []
+        },
+        "journal_edge_entries": 0,
+        "journal_equals_whole_graph_diff_at_capture": true,
+        "journal_node_entries": 1,
+        "mutation_revision_after_capture": null,
+        "mutation_revision_at_capture": 6,
+        "mutation_revision_before": 5,
+        "operation": "restore_fresh",
+        "phase_journal_delta": null,
+        "phase_journal_equals_phase_diff": true,
+        "phase_whole_graph_diff": null,
+        "post_capture_revision_advanced": false,
+        "post_capture_untracked_divergence_detected_by_global_diff": false,
+        "post_capture_whole_graph_diff": null,
+        "revision_advanced_at_capture": true,
+        "revision_expectation_matches": true,
+        "revision_expected_to_advance_at_capture": true,
+        "scoped_view_diff": null,
+        "semantic_state_restored_after_scope_widen": true,
+        "whole_graph_diff": {
+          "edges_added": [],
+          "edges_changed": [],
+          "edges_removed": [],
+          "edges_removed_details": [],
+          "nodes_added": [
+            {
+              "attrs": {},
+              "id": 12,
+              "type": "Restored"
+            }
+          ],
+          "nodes_changed": [],
+          "nodes_removed": [],
+          "nodes_removed_details": []
+        }
+      },
+      {
+        "case": "node deletion with incident edges",
+        "journal_delta": {
+          "edges_added": [],
+          "edges_changed": [],
+          "edges_removed": [
+            {
+              "src": 0,
+              "tgt": 1,
+              "type": "rel"
+            },
+            {
+              "src": 1,
+              "tgt": 2,
+              "type": "rel"
+            }
+          ],
+          "edges_removed_details": [
+            {
+              "attrs": {
+                "weight": 1
+              },
+              "src": 0,
+              "tgt": 1,
+              "type": "rel"
+            },
+            {
+              "attrs": {},
+              "src": 1,
+              "tgt": 2,
+              "type": "rel"
+            }
+          ],
+          "nodes_added": [],
+          "nodes_changed": [],
+          "nodes_removed": [
+            1
+          ],
+          "nodes_removed_details": [
+            {
+              "attrs": {},
+              "id": 1,
+              "type": "B"
+            }
+          ]
+        },
+        "journal_edge_entries": 2,
+        "journal_equals_whole_graph_diff_at_capture": true,
+        "journal_node_entries": 1,
+        "mutation_revision_after_capture": null,
+        "mutation_revision_at_capture": 8,
+        "mutation_revision_before": 5,
+        "operation": "delete_node",
+        "phase_journal_delta": null,
+        "phase_journal_equals_phase_diff": true,
+        "phase_whole_graph_diff": null,
+        "post_capture_revision_advanced": false,
+        "post_capture_untracked_divergence_detected_by_global_diff": false,
+        "post_capture_whole_graph_diff": null,
+        "revision_advanced_at_capture": true,
+        "revision_expectation_matches": true,
+        "revision_expected_to_advance_at_capture": true,
+        "scoped_view_diff": null,
+        "semantic_state_restored_after_scope_widen": true,
+        "whole_graph_diff": {
+          "edges_added": [],
+          "edges_changed": [],
+          "edges_removed": [
+            {
+              "src": 0,
+              "tgt": 1,
+              "type": "rel"
+            },
+            {
+              "src": 1,
+              "tgt": 2,
+              "type": "rel"
+            }
+          ],
+          "edges_removed_details": [
+            {
+              "attrs": {
+                "weight": 1
+              },
+              "src": 0,
+              "tgt": 1,
+              "type": "rel"
+            },
+            {
+              "attrs": {},
+              "src": 1,
+              "tgt": 2,
+              "type": "rel"
+            }
+          ],
+          "nodes_added": [],
+          "nodes_changed": [],
+          "nodes_removed": [
+            1
+          ],
+          "nodes_removed_details": [
+            {
+              "attrs": {},
+              "id": 1,
+              "type": "B"
+            }
+          ]
+        }
+      },
+      {
+        "case": "tombstoned identity restoration",
+        "journal_delta": {
+          "edges_added": [],
+          "edges_changed": [],
+          "edges_removed": [
+            {
+              "src": 0,
+              "tgt": 1,
+              "type": "rel"
+            },
+            {
+              "src": 1,
+              "tgt": 2,
+              "type": "rel"
+            }
+          ],
+          "edges_removed_details": [
+            {
+              "attrs": {
+                "weight": 1
+              },
+              "src": 0,
+              "tgt": 1,
+              "type": "rel"
+            },
+            {
+              "attrs": {},
+              "src": 1,
+              "tgt": 2,
+              "type": "rel"
+            }
+          ],
+          "nodes_added": [],
+          "nodes_changed": [
+            {
+              "attrs_after": {
+                "mark": 3
+              },
+              "attrs_before": {},
+              "id": 1,
+              "type_after": "Restored",
+              "type_before": "B"
+            }
+          ],
+          "nodes_removed": [],
+          "nodes_removed_details": []
+        },
+        "journal_edge_entries": 2,
+        "journal_equals_whole_graph_diff_at_capture": true,
+        "journal_node_entries": 1,
+        "mutation_revision_after_capture": null,
+        "mutation_revision_at_capture": 9,
+        "mutation_revision_before": 5,
+        "operation": "restore_tombstone",
+        "phase_journal_delta": null,
+        "phase_journal_equals_phase_diff": true,
+        "phase_whole_graph_diff": null,
+        "post_capture_revision_advanced": false,
+        "post_capture_untracked_divergence_detected_by_global_diff": false,
+        "post_capture_whole_graph_diff": null,
+        "revision_advanced_at_capture": true,
+        "revision_expectation_matches": true,
+        "revision_expected_to_advance_at_capture": true,
+        "scoped_view_diff": null,
+        "semantic_state_restored_after_scope_widen": true,
+        "whole_graph_diff": {
+          "edges_added": [],
+          "edges_changed": [],
+          "edges_removed": [
+            {
+              "src": 0,
+              "tgt": 1,
+              "type": "rel"
+            },
+            {
+              "src": 1,
+              "tgt": 2,
+              "type": "rel"
+            }
+          ],
+          "edges_removed_details": [
+            {
+              "attrs": {
+                "weight": 1
+              },
+              "src": 0,
+              "tgt": 1,
+              "type": "rel"
+            },
+            {
+              "attrs": {},
+              "src": 1,
+              "tgt": 2,
+              "type": "rel"
+            }
+          ],
+          "nodes_added": [],
+          "nodes_changed": [
+            {
+              "attrs_after": {
+                "mark": 3
+              },
+              "attrs_before": {},
+              "id": 1,
+              "type_after": "Restored",
+              "type_before": "B"
+            }
+          ],
+          "nodes_removed": [],
+          "nodes_removed_details": []
+        }
+      },
+      {
+        "case": "node insertion",
+        "journal_delta": {
+          "edges_added": [],
+          "edges_changed": [],
+          "edges_removed": [],
+          "edges_removed_details": [],
+          "nodes_added": [
+            {
+              "attrs": {
+                "mark": 2
+              },
+              "id": 3,
+              "type": "Restored"
+            }
+          ],
+          "nodes_changed": [],
+          "nodes_removed": [],
+          "nodes_removed_details": []
+        },
+        "journal_edge_entries": 0,
+        "journal_equals_whole_graph_diff_at_capture": true,
+        "journal_node_entries": 1,
+        "mutation_revision_after_capture": null,
+        "mutation_revision_at_capture": 6,
+        "mutation_revision_before": 5,
+        "operation": "add_node",
+        "phase_journal_delta": null,
+        "phase_journal_equals_phase_diff": true,
+        "phase_whole_graph_diff": null,
+        "post_capture_revision_advanced": false,
+        "post_capture_untracked_divergence_detected_by_global_diff": false,
+        "post_capture_whole_graph_diff": null,
+        "revision_advanced_at_capture": true,
+        "revision_expectation_matches": true,
+        "revision_expected_to_advance_at_capture": true,
+        "scoped_view_diff": null,
+        "semantic_state_restored_after_scope_widen": true,
+        "whole_graph_diff": {
+          "edges_added": [],
+          "edges_changed": [],
+          "edges_removed": [],
+          "edges_removed_details": [],
+          "nodes_added": [
+            {
+              "attrs": {
+                "mark": 2
+              },
+              "id": 3,
+              "type": "Restored"
+            }
+          ],
+          "nodes_changed": [],
+          "nodes_removed": [],
+          "nodes_removed_details": []
+        }
+      },
+      {
+        "case": "edge insertion",
+        "journal_delta": {
+          "edges_added": [
+            {
+              "attrs": {},
+              "src": 0,
+              "tgt": 2,
+              "type": "extra"
+            }
+          ],
+          "edges_changed": [],
+          "edges_removed": [],
+          "edges_removed_details": [],
+          "nodes_added": [],
+          "nodes_changed": [],
+          "nodes_removed": [],
+          "nodes_removed_details": []
+        },
+        "journal_edge_entries": 1,
+        "journal_equals_whole_graph_diff_at_capture": true,
+        "journal_node_entries": 0,
+        "mutation_revision_after_capture": null,
+        "mutation_revision_at_capture": 6,
+        "mutation_revision_before": 5,
+        "operation": "insert_edge",
+        "phase_journal_delta": null,
+        "phase_journal_equals_phase_diff": true,
+        "phase_whole_graph_diff": null,
+        "post_capture_revision_advanced": false,
+        "post_capture_untracked_divergence_detected_by_global_diff": false,
+        "post_capture_whole_graph_diff": null,
+        "revision_advanced_at_capture": true,
+        "revision_expectation_matches": true,
+        "revision_expected_to_advance_at_capture": true,
+        "scoped_view_diff": null,
+        "semantic_state_restored_after_scope_widen": true,
+        "whole_graph_diff": {
+          "edges_added": [
+            {
+              "attrs": {},
+              "src": 0,
+              "tgt": 2,
+              "type": "extra"
+            }
+          ],
+          "edges_changed": [],
+          "edges_removed": [],
+          "edges_removed_details": [],
+          "nodes_added": [],
+          "nodes_changed": [],
+          "nodes_removed": [],
+          "nodes_removed_details": []
+        }
+      },
+      {
+        "case": "existing edge replacement",
+        "journal_delta": {
+          "edges_added": [],
+          "edges_changed": [
+            {
+              "attrs_after": {
+                "weight": 9
+              },
+              "attrs_before": {
+                "weight": 1
+              },
+              "src": 0,
+              "tgt": 1,
+              "type": "rel"
+            }
+          ],
+          "edges_removed": [],
+          "edges_removed_details": [],
+          "nodes_added": [],
+          "nodes_changed": [],
+          "nodes_removed": [],
+          "nodes_removed_details": []
+        },
+        "journal_edge_entries": 1,
+        "journal_equals_whole_graph_diff_at_capture": true,
+        "journal_node_entries": 0,
+        "mutation_revision_after_capture": null,
+        "mutation_revision_at_capture": 6,
+        "mutation_revision_before": 5,
+        "operation": "replace_edge",
+        "phase_journal_delta": null,
+        "phase_journal_equals_phase_diff": true,
+        "phase_whole_graph_diff": null,
+        "post_capture_revision_advanced": false,
+        "post_capture_untracked_divergence_detected_by_global_diff": false,
+        "post_capture_whole_graph_diff": null,
+        "revision_advanced_at_capture": true,
+        "revision_expectation_matches": true,
+        "revision_expected_to_advance_at_capture": true,
+        "scoped_view_diff": null,
+        "semantic_state_restored_after_scope_widen": true,
+        "whole_graph_diff": {
+          "edges_added": [],
+          "edges_changed": [
+            {
+              "attrs_after": {
+                "weight": 9
+              },
+              "attrs_before": {
+                "weight": 1
+              },
+              "src": 0,
+              "tgt": 1,
+              "type": "rel"
+            }
+          ],
+          "edges_removed": [],
+          "edges_removed_details": [],
+          "nodes_added": [],
+          "nodes_changed": [],
+          "nodes_removed": [],
+          "nodes_removed_details": []
+        }
+      },
+      {
+        "case": "mutable edge attributes",
+        "journal_delta": {
+          "edges_added": [],
+          "edges_changed": [
+            {
+              "attrs_after": {
+                "weight": 8
+              },
+              "attrs_before": {
+                "weight": 1
+              },
+              "src": 0,
+              "tgt": 1,
+              "type": "rel"
+            }
+          ],
+          "edges_removed": [],
+          "edges_removed_details": [],
+          "nodes_added": [],
+          "nodes_changed": [],
+          "nodes_removed": [],
+          "nodes_removed_details": []
+        },
+        "journal_edge_entries": 1,
+        "journal_equals_whole_graph_diff_at_capture": true,
+        "journal_node_entries": 0,
+        "mutation_revision_after_capture": null,
+        "mutation_revision_at_capture": 6,
+        "mutation_revision_before": 5,
+        "operation": "mutate_edge_attrs",
+        "phase_journal_delta": null,
+        "phase_journal_equals_phase_diff": true,
+        "phase_whole_graph_diff": null,
+        "post_capture_revision_advanced": false,
+        "post_capture_untracked_divergence_detected_by_global_diff": false,
+        "post_capture_whole_graph_diff": null,
+        "revision_advanced_at_capture": true,
+        "revision_expectation_matches": true,
+        "revision_expected_to_advance_at_capture": true,
+        "scoped_view_diff": null,
+        "semantic_state_restored_after_scope_widen": true,
+        "whole_graph_diff": {
+          "edges_added": [],
+          "edges_changed": [
+            {
+              "attrs_after": {
+                "weight": 8
+              },
+              "attrs_before": {
+                "weight": 1
+              },
+              "src": 0,
+              "tgt": 1,
+              "type": "rel"
+            }
+          ],
+          "edges_removed": [],
+          "edges_removed_details": [],
+          "nodes_added": [],
+          "nodes_changed": [],
+          "nodes_removed": [],
+          "nodes_removed_details": []
+        }
+      },
+      {
+        "case": "single edge deletion",
+        "journal_delta": {
+          "edges_added": [],
+          "edges_changed": [],
+          "edges_removed": [
+            {
+              "src": 0,
+              "tgt": 1,
+              "type": "rel"
+            }
+          ],
+          "edges_removed_details": [
+            {
+              "attrs": {
+                "weight": 1
+              },
+              "src": 0,
+              "tgt": 1,
+              "type": "rel"
+            }
+          ],
+          "nodes_added": [],
+          "nodes_changed": [],
+          "nodes_removed": [],
+          "nodes_removed_details": []
+        },
+        "journal_edge_entries": 1,
+        "journal_equals_whole_graph_diff_at_capture": true,
+        "journal_node_entries": 0,
+        "mutation_revision_after_capture": null,
+        "mutation_revision_at_capture": 6,
+        "mutation_revision_before": 5,
+        "operation": "delete_edge",
+        "phase_journal_delta": null,
+        "phase_journal_equals_phase_diff": true,
+        "phase_whole_graph_diff": null,
+        "post_capture_revision_advanced": false,
+        "post_capture_untracked_divergence_detected_by_global_diff": false,
+        "post_capture_whole_graph_diff": null,
+        "revision_advanced_at_capture": true,
+        "revision_expectation_matches": true,
+        "revision_expected_to_advance_at_capture": true,
+        "scoped_view_diff": null,
+        "semantic_state_restored_after_scope_widen": true,
+        "whole_graph_diff": {
+          "edges_added": [],
+          "edges_changed": [],
+          "edges_removed": [
+            {
+              "src": 0,
+              "tgt": 1,
+              "type": "rel"
+            }
+          ],
+          "edges_removed_details": [
+            {
+              "attrs": {
+                "weight": 1
+              },
+              "src": 0,
+              "tgt": 1,
+              "type": "rel"
+            }
+          ],
+          "nodes_added": [],
+          "nodes_changed": [],
+          "nodes_removed": [],
+          "nodes_removed_details": []
+        }
+      },
+      {
+        "case": "batch edge deletion with duplicate index",
+        "journal_delta": {
+          "edges_added": [],
+          "edges_changed": [],
+          "edges_removed": [
+            {
+              "src": 0,
+              "tgt": 1,
+              "type": "rel"
+            },
+            {
+              "src": 1,
+              "tgt": 2,
+              "type": "rel"
+            }
+          ],
+          "edges_removed_details": [
+            {
+              "attrs": {
+                "weight": 1
+              },
+              "src": 0,
+              "tgt": 1,
+              "type": "rel"
+            },
+            {
+              "attrs": {},
+              "src": 1,
+              "tgt": 2,
+              "type": "rel"
+            }
+          ],
+          "nodes_added": [],
+          "nodes_changed": [],
+          "nodes_removed": [],
+          "nodes_removed_details": []
+        },
+        "journal_edge_entries": 2,
+        "journal_equals_whole_graph_diff_at_capture": true,
+        "journal_node_entries": 0,
+        "mutation_revision_after_capture": null,
+        "mutation_revision_at_capture": 7,
+        "mutation_revision_before": 5,
+        "operation": "batch_delete_edges",
+        "phase_journal_delta": null,
+        "phase_journal_equals_phase_diff": true,
+        "phase_whole_graph_diff": null,
+        "post_capture_revision_advanced": false,
+        "post_capture_untracked_divergence_detected_by_global_diff": false,
+        "post_capture_whole_graph_diff": null,
+        "revision_advanced_at_capture": true,
+        "revision_expectation_matches": true,
+        "revision_expected_to_advance_at_capture": true,
+        "scoped_view_diff": null,
+        "semantic_state_restored_after_scope_widen": true,
+        "whole_graph_diff": {
+          "edges_added": [],
+          "edges_changed": [],
+          "edges_removed": [
+            {
+              "src": 0,
+              "tgt": 1,
+              "type": "rel"
+            },
+            {
+              "src": 1,
+              "tgt": 2,
+              "type": "rel"
+            }
+          ],
+          "edges_removed_details": [
+            {
+              "attrs": {
+                "weight": 1
+              },
+              "src": 0,
+              "tgt": 1,
+              "type": "rel"
+            },
+            {
+              "attrs": {},
+              "src": 1,
+              "tgt": 2,
+              "type": "rel"
+            }
+          ],
+          "nodes_added": [],
+          "nodes_changed": [],
+          "nodes_removed": [],
+          "nodes_removed_details": []
+        }
+      },
+      {
+        "case": "repeated writes to one identity",
+        "journal_delta": {
+          "edges_added": [],
+          "edges_changed": [],
+          "edges_removed": [],
+          "edges_removed_details": [],
+          "nodes_added": [],
+          "nodes_changed": [
+            {
+              "attrs_after": {
+                "mark": 2
+              },
+              "attrs_before": {},
+              "id": 0,
+              "type_after": "Restored",
+              "type_before": "A"
+            }
+          ],
+          "nodes_removed": [],
+          "nodes_removed_details": []
+        },
+        "journal_edge_entries": 0,
+        "journal_equals_whole_graph_diff_at_capture": true,
+        "journal_node_entries": 1,
+        "mutation_revision_after_capture": null,
+        "mutation_revision_at_capture": 8,
+        "mutation_revision_before": 5,
+        "operation": "repeated_writes",
+        "phase_journal_delta": null,
+        "phase_journal_equals_phase_diff": true,
+        "phase_whole_graph_diff": null,
+        "post_capture_revision_advanced": false,
+        "post_capture_untracked_divergence_detected_by_global_diff": false,
+        "post_capture_whole_graph_diff": null,
+        "revision_advanced_at_capture": true,
+        "revision_expectation_matches": true,
+        "revision_expected_to_advance_at_capture": true,
+        "scoped_view_diff": null,
+        "semantic_state_restored_after_scope_widen": true,
+        "whole_graph_diff": {
+          "edges_added": [],
+          "edges_changed": [],
+          "edges_removed": [],
+          "edges_removed_details": [],
+          "nodes_added": [],
+          "nodes_changed": [
+            {
+              "attrs_after": {
+                "mark": 2
+              },
+              "attrs_before": {},
+              "id": 0,
+              "type_after": "Restored",
+              "type_before": "A"
+            }
+          ],
+          "nodes_removed": [],
+          "nodes_removed_details": []
+        }
+      },
+      {
+        "case": "phase checkpoint and derived writes",
+        "journal_delta": {
+          "edges_added": [
+            {
+              "attrs": {},
+              "src": 0,
+              "tgt": 2,
+              "type": "phase_edge"
+            }
+          ],
+          "edges_changed": [],
+          "edges_removed": [],
+          "edges_removed_details": [],
+          "nodes_added": [],
+          "nodes_changed": [
+            {
+              "attrs_after": {
+                "mark": 2
+              },
+              "attrs_before": {},
+              "id": 0
+            }
+          ],
+          "nodes_removed": [],
+          "nodes_removed_details": []
+        },
+        "journal_edge_entries": 1,
+        "journal_equals_whole_graph_diff_at_capture": true,
+        "journal_node_entries": 1,
+        "mutation_revision_after_capture": null,
+        "mutation_revision_at_capture": 8,
+        "mutation_revision_before": 5,
+        "operation": "phase_checkpoint",
+        "phase_journal_delta": {
+          "edges_added": [
+            {
+              "attrs": {},
+              "src": 0,
+              "tgt": 2,
+              "type": "phase_edge"
+            }
+          ],
+          "edges_changed": [],
+          "edges_removed": [],
+          "edges_removed_details": [],
+          "nodes_added": [],
+          "nodes_changed": [
+            {
+              "attrs_after": {
+                "mark": 2
+              },
+              "attrs_before": {
+                "mark": 1
+              },
+              "id": 0
+            }
+          ],
+          "nodes_removed": [],
+          "nodes_removed_details": []
+        },
+        "phase_journal_equals_phase_diff": true,
+        "phase_whole_graph_diff": {
+          "edges_added": [
+            {
+              "attrs": {},
+              "src": 0,
+              "tgt": 2,
+              "type": "phase_edge"
+            }
+          ],
+          "edges_changed": [],
+          "edges_removed": [],
+          "edges_removed_details": [],
+          "nodes_added": [],
+          "nodes_changed": [
+            {
+              "attrs_after": {
+                "mark": 2
+              },
+              "attrs_before": {
+                "mark": 1
+              },
+              "id": 0
+            }
+          ],
+          "nodes_removed": [],
+          "nodes_removed_details": []
+        },
+        "post_capture_revision_advanced": false,
+        "post_capture_untracked_divergence_detected_by_global_diff": false,
+        "post_capture_whole_graph_diff": null,
+        "revision_advanced_at_capture": true,
+        "revision_expectation_matches": true,
+        "revision_expected_to_advance_at_capture": true,
+        "scoped_view_diff": null,
+        "semantic_state_restored_after_scope_widen": true,
+        "whole_graph_diff": {
+          "edges_added": [
+            {
+              "attrs": {},
+              "src": 0,
+              "tgt": 2,
+              "type": "phase_edge"
+            }
+          ],
+          "edges_changed": [],
+          "edges_removed": [],
+          "edges_removed_details": [],
+          "nodes_added": [],
+          "nodes_changed": [
+            {
+              "attrs_after": {
+                "mark": 2
+              },
+              "attrs_before": {},
+              "id": 0
+            }
+          ],
+          "nodes_removed": [],
+          "nodes_removed_details": []
+        }
+      },
+      {
+        "case": "post-capture untracked divergence control",
+        "journal_delta": {
+          "edges_added": [],
+          "edges_changed": [],
+          "edges_removed": [],
+          "edges_removed_details": [],
+          "nodes_added": [],
+          "nodes_changed": [
+            {
+              "attrs_after": {
+                "mark": true
+              },
+              "attrs_before": {},
+              "id": 0
+            }
+          ],
+          "nodes_removed": [],
+          "nodes_removed_details": []
+        },
+        "journal_edge_entries": 0,
+        "journal_equals_whole_graph_diff_at_capture": true,
+        "journal_node_entries": 1,
+        "mutation_revision_after_capture": 7,
+        "mutation_revision_at_capture": 6,
+        "mutation_revision_before": 5,
+        "operation": "untracked_divergence",
+        "phase_journal_delta": null,
+        "phase_journal_equals_phase_diff": true,
+        "phase_whole_graph_diff": null,
+        "post_capture_revision_advanced": true,
+        "post_capture_untracked_divergence_detected_by_global_diff": true,
+        "post_capture_whole_graph_diff": {
+          "edges_added": [],
+          "edges_changed": [],
+          "edges_removed": [],
+          "edges_removed_details": [],
+          "nodes_added": [],
+          "nodes_changed": [
+            {
+              "attrs_after": {
+                "mark": true
+              },
+              "attrs_before": {},
+              "id": 0
+            },
+            {
+              "attrs_after": {
+                "mark": false
+              },
+              "attrs_before": {},
+              "id": 2
+            }
+          ],
+          "nodes_removed": [],
+          "nodes_removed_details": []
+        },
+        "revision_advanced_at_capture": true,
+        "revision_expectation_matches": true,
+        "revision_expected_to_advance_at_capture": true,
+        "scoped_view_diff": null,
+        "semantic_state_restored_after_scope_widen": true,
+        "whole_graph_diff": {
+          "edges_added": [],
+          "edges_changed": [],
+          "edges_removed": [],
+          "edges_removed_details": [],
+          "nodes_added": [],
+          "nodes_changed": [
+            {
+              "attrs_after": {
+                "mark": true
+              },
+              "attrs_before": {},
+              "id": 0
+            }
+          ],
+          "nodes_removed": [],
+          "nodes_removed_details": []
+        }
+      },
+      {
+        "case": "identity-preserving edge restoration",
+        "journal_delta": {
+          "edges_added": [
+            {
+              "attrs": {},
+              "src": 0,
+              "tgt": 2,
+              "type": "restored"
+            }
+          ],
+          "edges_changed": [],
+          "edges_removed": [],
+          "edges_removed_details": [],
+          "nodes_added": [],
+          "nodes_changed": [],
+          "nodes_removed": [],
+          "nodes_removed_details": []
+        },
+        "journal_edge_entries": 1,
+        "journal_equals_whole_graph_diff_at_capture": true,
+        "journal_node_entries": 0,
+        "mutation_revision_after_capture": null,
+        "mutation_revision_at_capture": 6,
+        "mutation_revision_before": 5,
+        "operation": "restore_edge",
+        "phase_journal_delta": null,
+        "phase_journal_equals_phase_diff": true,
+        "phase_whole_graph_diff": null,
+        "post_capture_revision_advanced": false,
+        "post_capture_untracked_divergence_detected_by_global_diff": false,
+        "post_capture_whole_graph_diff": null,
+        "revision_advanced_at_capture": true,
+        "revision_expectation_matches": true,
+        "revision_expected_to_advance_at_capture": true,
+        "scoped_view_diff": null,
+        "semantic_state_restored_after_scope_widen": true,
+        "whole_graph_diff": {
+          "edges_added": [
+            {
+              "attrs": {},
+              "src": 0,
+              "tgt": 2,
+              "type": "restored"
+            }
+          ],
+          "edges_changed": [],
+          "edges_removed": [],
+          "edges_removed_details": [],
+          "nodes_added": [],
+          "nodes_changed": [],
+          "nodes_removed": [],
+          "nodes_removed_details": []
+        }
+      },
+      {
+        "case": "revision-tracked scope transition",
+        "journal_delta": {
+          "edges_added": [],
+          "edges_changed": [],
+          "edges_removed": [],
+          "edges_removed_details": [],
+          "nodes_added": [],
+          "nodes_changed": [],
+          "nodes_removed": [],
+          "nodes_removed_details": []
+        },
+        "journal_edge_entries": 0,
+        "journal_equals_whole_graph_diff_at_capture": true,
+        "journal_node_entries": 0,
+        "mutation_revision_after_capture": null,
+        "mutation_revision_at_capture": 6,
+        "mutation_revision_before": 5,
+        "operation": "scope_transition",
+        "phase_journal_delta": null,
+        "phase_journal_equals_phase_diff": true,
+        "phase_whole_graph_diff": null,
+        "post_capture_revision_advanced": false,
+        "post_capture_untracked_divergence_detected_by_global_diff": false,
+        "post_capture_whole_graph_diff": null,
+        "revision_advanced_at_capture": true,
+        "revision_expectation_matches": true,
+        "revision_expected_to_advance_at_capture": true,
+        "scoped_view_diff": null,
+        "semantic_state_restored_after_scope_widen": true,
+        "whole_graph_diff": {
+          "edges_added": [],
+          "edges_changed": [],
+          "edges_removed": [],
+          "edges_removed_details": [],
+          "nodes_added": [],
+          "nodes_changed": [],
+          "nodes_removed": [],
+          "nodes_removed_details": []
+        }
+      },
+      {
+        "case": "derived index control",
+        "journal_delta": {
+          "edges_added": [],
+          "edges_changed": [],
+          "edges_removed": [],
+          "edges_removed_details": [],
+          "nodes_added": [],
+          "nodes_changed": [],
+          "nodes_removed": [],
+          "nodes_removed_details": []
+        },
+        "journal_edge_entries": 0,
+        "journal_equals_whole_graph_diff_at_capture": true,
+        "journal_node_entries": 0,
+        "mutation_revision_after_capture": null,
+        "mutation_revision_at_capture": 5,
+        "mutation_revision_before": 5,
+        "operation": "derived_index_control",
+        "phase_journal_delta": null,
+        "phase_journal_equals_phase_diff": true,
+        "phase_whole_graph_diff": null,
+        "post_capture_revision_advanced": false,
+        "post_capture_untracked_divergence_detected_by_global_diff": false,
+        "post_capture_whole_graph_diff": null,
+        "revision_advanced_at_capture": false,
+        "revision_expectation_matches": true,
+        "revision_expected_to_advance_at_capture": false,
+        "scoped_view_diff": null,
+        "semantic_state_restored_after_scope_widen": true,
+        "whole_graph_diff": {
+          "edges_added": [],
+          "edges_changed": [],
+          "edges_removed": [],
+          "edges_removed_details": [],
+          "nodes_added": [],
+          "nodes_changed": [],
+          "nodes_removed": [],
+          "nodes_removed_details": []
+        }
+      },
+      {
+        "case": "narrowing scope and semantic write",
+        "journal_delta": {
+          "edges_added": [],
+          "edges_changed": [],
+          "edges_removed": [],
+          "edges_removed_details": [],
+          "nodes_added": [],
+          "nodes_changed": [
+            {
+              "attrs_after": {
+                "mark": true
+              },
+              "attrs_before": {},
+              "id": 0
+            }
+          ],
+          "nodes_removed": [],
+          "nodes_removed_details": []
+        },
+        "journal_edge_entries": 0,
+        "journal_equals_whole_graph_diff_at_capture": true,
+        "journal_node_entries": 1,
+        "mutation_revision_after_capture": null,
+        "mutation_revision_at_capture": 7,
+        "mutation_revision_before": 5,
+        "operation": "narrow_scope_mutate",
+        "phase_journal_delta": null,
+        "phase_journal_equals_phase_diff": true,
+        "phase_whole_graph_diff": null,
+        "post_capture_revision_advanced": false,
+        "post_capture_untracked_divergence_detected_by_global_diff": false,
+        "post_capture_whole_graph_diff": null,
+        "revision_advanced_at_capture": true,
+        "revision_expectation_matches": true,
+        "revision_expected_to_advance_at_capture": true,
+        "scoped_view_diff": {
+          "edges_added": [],
+          "edges_changed": [],
+          "edges_removed": [
+            {
+              "src": 0,
+              "tgt": 1,
+              "type": "rel"
+            },
+            {
+              "src": 1,
+              "tgt": 2,
+              "type": "rel"
+            }
+          ],
+          "edges_removed_details": [
+            {
+              "attrs": {
+                "weight": 1
+              },
+              "src": 0,
+              "tgt": 1,
+              "type": "rel"
+            },
+            {
+              "attrs": {},
+              "src": 1,
+              "tgt": 2,
+              "type": "rel"
+            }
+          ],
+          "nodes_added": [],
+          "nodes_changed": [
+            {
+              "attrs_after": {
+                "mark": true
+              },
+              "attrs_before": {},
+              "id": 0
+            }
+          ],
+          "nodes_removed": [],
+          "nodes_removed_details": []
+        },
+        "semantic_state_restored_after_scope_widen": true,
+        "whole_graph_diff": {
+          "edges_added": [],
+          "edges_changed": [],
+          "edges_removed": [],
+          "edges_removed_details": [],
+          "nodes_added": [],
+          "nodes_changed": [
+            {
+              "attrs_after": {
+                "mark": true
+              },
+              "attrs_before": {},
+              "id": 0
+            }
+          ],
+          "nodes_removed": [],
+          "nodes_removed_details": []
+        }
+      },
+      {
+        "case": "narrow scope hidden edge replacement",
+        "journal_delta": {
+          "edges_added": [],
+          "edges_changed": [
+            {
+              "attrs_after": {
+                "weight": 99
+              },
+              "attrs_before": {
+                "weight": 1
+              },
+              "src": 0,
+              "tgt": 1,
+              "type": "rel"
+            }
+          ],
+          "edges_removed": [],
+          "edges_removed_details": [],
+          "nodes_added": [],
+          "nodes_changed": [],
+          "nodes_removed": [],
+          "nodes_removed_details": []
+        },
+        "journal_edge_entries": 1,
+        "journal_equals_whole_graph_diff_at_capture": true,
+        "journal_node_entries": 0,
+        "mutation_revision_after_capture": null,
+        "mutation_revision_at_capture": 8,
+        "mutation_revision_before": 5,
+        "operation": "narrow_hidden_replace",
+        "phase_journal_delta": null,
+        "phase_journal_equals_phase_diff": true,
+        "phase_whole_graph_diff": null,
+        "post_capture_revision_advanced": false,
+        "post_capture_untracked_divergence_detected_by_global_diff": false,
+        "post_capture_whole_graph_diff": null,
+        "revision_advanced_at_capture": true,
+        "revision_expectation_matches": true,
+        "revision_expected_to_advance_at_capture": true,
+        "scoped_view_diff": {
+          "edges_added": [],
+          "edges_changed": [
+            {
+              "attrs_after": {
+                "weight": 99
+              },
+              "attrs_before": {
+                "weight": 1
+              },
+              "src": 0,
+              "tgt": 1,
+              "type": "rel"
+            }
+          ],
+          "edges_removed": [
+            {
+              "src": 1,
+              "tgt": 2,
+              "type": "rel"
+            }
+          ],
+          "edges_removed_details": [
+            {
+              "attrs": {},
+              "src": 1,
+              "tgt": 2,
+              "type": "rel"
+            }
+          ],
+          "nodes_added": [],
+          "nodes_changed": [],
+          "nodes_removed": [],
+          "nodes_removed_details": []
+        },
+        "semantic_state_restored_after_scope_widen": true,
+        "whole_graph_diff": {
+          "edges_added": [],
+          "edges_changed": [
+            {
+              "attrs_after": {
+                "weight": 99
+              },
+              "attrs_before": {
+                "weight": 1
+              },
+              "src": 0,
+              "tgt": 1,
+              "type": "rel"
+            }
+          ],
+          "edges_removed": [],
+          "edges_removed_details": [],
+          "nodes_added": [],
+          "nodes_changed": [],
+          "nodes_removed": [],
+          "nodes_removed_details": []
+        }
+      },
+      {
+        "case": "narrow scope hidden edge deletion",
+        "journal_delta": {
+          "edges_added": [],
+          "edges_changed": [],
+          "edges_removed": [
+            {
+              "src": 1,
+              "tgt": 2,
+              "type": "rel"
+            }
+          ],
+          "edges_removed_details": [
+            {
+              "attrs": {},
+              "src": 1,
+              "tgt": 2,
+              "type": "rel"
+            }
+          ],
+          "nodes_added": [],
+          "nodes_changed": [],
+          "nodes_removed": [],
+          "nodes_removed_details": []
+        },
+        "journal_edge_entries": 1,
+        "journal_equals_whole_graph_diff_at_capture": true,
+        "journal_node_entries": 0,
+        "mutation_revision_after_capture": null,
+        "mutation_revision_at_capture": 7,
+        "mutation_revision_before": 5,
+        "operation": "narrow_hidden_delete",
+        "phase_journal_delta": null,
+        "phase_journal_equals_phase_diff": true,
+        "phase_whole_graph_diff": null,
+        "post_capture_revision_advanced": false,
+        "post_capture_untracked_divergence_detected_by_global_diff": false,
+        "post_capture_whole_graph_diff": null,
+        "revision_advanced_at_capture": true,
+        "revision_expectation_matches": true,
+        "revision_expected_to_advance_at_capture": true,
+        "scoped_view_diff": {
+          "edges_added": [],
+          "edges_changed": [],
+          "edges_removed": [
+            {
+              "src": 0,
+              "tgt": 1,
+              "type": "rel"
+            },
+            {
+              "src": 1,
+              "tgt": 2,
+              "type": "rel"
+            }
+          ],
+          "edges_removed_details": [
+            {
+              "attrs": {
+                "weight": 1
+              },
+              "src": 0,
+              "tgt": 1,
+              "type": "rel"
+            },
+            {
+              "attrs": {},
+              "src": 1,
+              "tgt": 2,
+              "type": "rel"
+            }
+          ],
+          "nodes_added": [],
+          "nodes_changed": [],
+          "nodes_removed": [],
+          "nodes_removed_details": []
+        },
+        "semantic_state_restored_after_scope_widen": true,
+        "whole_graph_diff": {
+          "edges_added": [],
+          "edges_changed": [],
+          "edges_removed": [
+            {
+              "src": 1,
+              "tgt": 2,
+              "type": "rel"
+            }
+          ],
+          "edges_removed_details": [
+            {
+              "attrs": {},
+              "src": 1,
+              "tgt": 2,
+              "type": "rel"
+            }
+          ],
+          "nodes_added": [],
+          "nodes_changed": [],
+          "nodes_removed": [],
+          "nodes_removed_details": []
+        }
+      },
+      {
+        "case": "narrow scope hidden batch deletion",
+        "journal_delta": {
+          "edges_added": [],
+          "edges_changed": [],
+          "edges_removed": [
+            {
+              "src": 0,
+              "tgt": 1,
+              "type": "rel"
+            },
+            {
+              "src": 1,
+              "tgt": 2,
+              "type": "rel"
+            }
+          ],
+          "edges_removed_details": [
+            {
+              "attrs": {
+                "weight": 1
+              },
+              "src": 0,
+              "tgt": 1,
+              "type": "rel"
+            },
+            {
+              "attrs": {},
+              "src": 1,
+              "tgt": 2,
+              "type": "rel"
+            }
+          ],
+          "nodes_added": [],
+          "nodes_changed": [],
+          "nodes_removed": [],
+          "nodes_removed_details": []
+        },
+        "journal_edge_entries": 2,
+        "journal_equals_whole_graph_diff_at_capture": true,
+        "journal_node_entries": 0,
+        "mutation_revision_after_capture": null,
+        "mutation_revision_at_capture": 8,
+        "mutation_revision_before": 5,
+        "operation": "narrow_hidden_batch_delete",
+        "phase_journal_delta": null,
+        "phase_journal_equals_phase_diff": true,
+        "phase_whole_graph_diff": null,
+        "post_capture_revision_advanced": false,
+        "post_capture_untracked_divergence_detected_by_global_diff": false,
+        "post_capture_whole_graph_diff": null,
+        "revision_advanced_at_capture": true,
+        "revision_expectation_matches": true,
+        "revision_expected_to_advance_at_capture": true,
+        "scoped_view_diff": {
+          "edges_added": [],
+          "edges_changed": [],
+          "edges_removed": [
+            {
+              "src": 0,
+              "tgt": 1,
+              "type": "rel"
+            },
+            {
+              "src": 1,
+              "tgt": 2,
+              "type": "rel"
+            }
+          ],
+          "edges_removed_details": [
+            {
+              "attrs": {
+                "weight": 1
+              },
+              "src": 0,
+              "tgt": 1,
+              "type": "rel"
+            },
+            {
+              "attrs": {},
+              "src": 1,
+              "tgt": 2,
+              "type": "rel"
+            }
+          ],
+          "nodes_added": [],
+          "nodes_changed": [],
+          "nodes_removed": [],
+          "nodes_removed_details": []
+        },
+        "semantic_state_restored_after_scope_widen": true,
+        "whole_graph_diff": {
+          "edges_added": [],
+          "edges_changed": [],
+          "edges_removed": [
+            {
+              "src": 0,
+              "tgt": 1,
+              "type": "rel"
+            },
+            {
+              "src": 1,
+              "tgt": 2,
+              "type": "rel"
+            }
+          ],
+          "edges_removed_details": [
+            {
+              "attrs": {
+                "weight": 1
+              },
+              "src": 0,
+              "tgt": 1,
+              "type": "rel"
+            },
+            {
+              "attrs": {},
+              "src": 1,
+              "tgt": 2,
+              "type": "rel"
+            }
+          ],
+          "nodes_added": [],
+          "nodes_changed": [],
+          "nodes_removed": [],
+          "nodes_removed_details": []
+        }
+      },
+      {
+        "case": "narrow scope visible edge deletion",
+        "journal_delta": {
+          "edges_added": [],
+          "edges_changed": [],
+          "edges_removed": [
+            {
+              "src": 0,
+              "tgt": 1,
+              "type": "rel"
+            }
+          ],
+          "edges_removed_details": [
+            {
+              "attrs": {
+                "weight": 1
+              },
+              "src": 0,
+              "tgt": 1,
+              "type": "rel"
+            }
+          ],
+          "nodes_added": [],
+          "nodes_changed": [],
+          "nodes_removed": [],
+          "nodes_removed_details": []
+        },
+        "journal_edge_entries": 1,
+        "journal_equals_whole_graph_diff_at_capture": true,
+        "journal_node_entries": 0,
+        "mutation_revision_after_capture": null,
+        "mutation_revision_at_capture": 7,
+        "mutation_revision_before": 5,
+        "operation": "narrow_visible_delete",
+        "phase_journal_delta": null,
+        "phase_journal_equals_phase_diff": true,
+        "phase_whole_graph_diff": null,
+        "post_capture_revision_advanced": false,
+        "post_capture_untracked_divergence_detected_by_global_diff": false,
+        "post_capture_whole_graph_diff": null,
+        "revision_advanced_at_capture": true,
+        "revision_expectation_matches": true,
+        "revision_expected_to_advance_at_capture": true,
+        "scoped_view_diff": {
+          "edges_added": [],
+          "edges_changed": [],
+          "edges_removed": [
+            {
+              "src": 0,
+              "tgt": 1,
+              "type": "rel"
+            },
+            {
+              "src": 1,
+              "tgt": 2,
+              "type": "rel"
+            }
+          ],
+          "edges_removed_details": [
+            {
+              "attrs": {
+                "weight": 1
+              },
+              "src": 0,
+              "tgt": 1,
+              "type": "rel"
+            },
+            {
+              "attrs": {},
+              "src": 1,
+              "tgt": 2,
+              "type": "rel"
+            }
+          ],
+          "nodes_added": [],
+          "nodes_changed": [],
+          "nodes_removed": [],
+          "nodes_removed_details": []
+        },
+        "semantic_state_restored_after_scope_widen": true,
+        "whole_graph_diff": {
+          "edges_added": [],
+          "edges_changed": [],
+          "edges_removed": [
+            {
+              "src": 0,
+              "tgt": 1,
+              "type": "rel"
+            }
+          ],
+          "edges_removed_details": [
+            {
+              "attrs": {
+                "weight": 1
+              },
+              "src": 0,
+              "tgt": 1,
+              "type": "rel"
+            }
+          ],
+          "nodes_added": [],
+          "nodes_changed": [],
+          "nodes_removed": [],
+          "nodes_removed_details": []
+        }
+      },
+      {
+        "case": "narrow scope edge insertion",
+        "journal_delta": {
+          "edges_added": [
+            {
+              "attrs": {},
+              "src": 0,
+              "tgt": 2,
+              "type": "new_rel"
+            }
+          ],
+          "edges_changed": [],
+          "edges_removed": [],
+          "edges_removed_details": [],
+          "nodes_added": [],
+          "nodes_changed": [],
+          "nodes_removed": [],
+          "nodes_removed_details": []
+        },
+        "journal_edge_entries": 1,
+        "journal_equals_whole_graph_diff_at_capture": true,
+        "journal_node_entries": 0,
+        "mutation_revision_after_capture": null,
+        "mutation_revision_at_capture": 7,
+        "mutation_revision_before": 5,
+        "operation": "narrow_scope_insert",
+        "phase_journal_delta": null,
+        "phase_journal_equals_phase_diff": true,
+        "phase_whole_graph_diff": null,
+        "post_capture_revision_advanced": false,
+        "post_capture_untracked_divergence_detected_by_global_diff": false,
+        "post_capture_whole_graph_diff": null,
+        "revision_advanced_at_capture": true,
+        "revision_expectation_matches": true,
+        "revision_expected_to_advance_at_capture": true,
+        "scoped_view_diff": {
+          "edges_added": [
+            {
+              "attrs": {},
+              "src": 0,
+              "tgt": 2,
+              "type": "new_rel"
+            }
+          ],
+          "edges_changed": [],
+          "edges_removed": [
+            {
+              "src": 0,
+              "tgt": 1,
+              "type": "rel"
+            },
+            {
+              "src": 1,
+              "tgt": 2,
+              "type": "rel"
+            }
+          ],
+          "edges_removed_details": [
+            {
+              "attrs": {
+                "weight": 1
+              },
+              "src": 0,
+              "tgt": 1,
+              "type": "rel"
+            },
+            {
+              "attrs": {},
+              "src": 1,
+              "tgt": 2,
+              "type": "rel"
+            }
+          ],
+          "nodes_added": [],
+          "nodes_changed": [],
+          "nodes_removed": [],
+          "nodes_removed_details": []
+        },
+        "semantic_state_restored_after_scope_widen": true,
+        "whole_graph_diff": {
+          "edges_added": [
+            {
+              "attrs": {},
+              "src": 0,
+              "tgt": 2,
+              "type": "new_rel"
+            }
+          ],
+          "edges_changed": [],
+          "edges_removed": [],
+          "edges_removed_details": [],
+          "nodes_added": [],
+          "nodes_changed": [],
+          "nodes_removed": [],
+          "nodes_removed_details": []
+        }
+      }
+    ],
+    "schema": "ThoughtexperimentJournalMutationMatrixV1_6"
+  },
+  "runner_binary": {
+    "path": "runners/dsl/target/debug/thoughtexperiment_journal_mutation_matrix_v1_6",
+    "sha256": "cfd4787ba9c934ace805b8de3ae830a895b9d98b2d662f70b53ff409627bb6b5"
+  },
+  "schema": "ThoughtexperimentJournalMutationMatrixV1_6Capture"
+}

@@ -1,0 +1,275 @@
+{
+  "checks": {
+    "all_episode_panels_shared_across_systems": true,
+    "capture_and_current_inputs_match_lock": true,
+    "complete_100_episode_3_system_matrix": true,
+    "episode_and_worker_integrity": true,
+    "single_header_and_footer": true,
+    "source_and_data_stable_during_capture": true
+  },
+  "claim_boundary": "100 fixed-class 8-way QuickDraw one-shot episodes over locally retained single-stroke drawings; graph-Term scoring runs in the native substrate, while data parsing and trajectory conditioning run in Python. No contributor IDs are available; this does not measure writer-disjoint or novel-class transfer.",
+  "class_count": 8,
+  "episode_count": 100,
+  "errors": [],
+  "feature_prep": {
+    "included_trajectories": 10935,
+    "process_cpu_ns": 1388376376,
+    "source_counts": {
+      "circle": {
+        "excluded_multistroke": 189,
+        "included_single_stroke": 1562,
+        "malformed_lines": 1,
+        "valid_drawings": 1751
+      },
+      "hexagon": {
+        "excluded_multistroke": 529,
+        "included_single_stroke": 982,
+        "malformed_lines": 1,
+        "valid_drawings": 1511
+      },
+      "line": {
+        "excluded_multistroke": 408,
+        "included_single_stroke": 2969,
+        "malformed_lines": 1,
+        "valid_drawings": 3377
+      },
+      "octagon": {
+        "excluded_multistroke": 575,
+        "included_single_stroke": 780,
+        "malformed_lines": 1,
+        "valid_drawings": 1355
+      },
+      "square": {
+        "excluded_multistroke": 328,
+        "included_single_stroke": 1134,
+        "malformed_lines": 1,
+        "valid_drawings": 1462
+      },
+      "star": {
+        "excluded_multistroke": 289,
+        "included_single_stroke": 879,
+        "malformed_lines": 1,
+        "valid_drawings": 1168
+      },
+      "triangle": {
+        "excluded_multistroke": 482,
+        "included_single_stroke": 1289,
+        "malformed_lines": 1,
+        "valid_drawings": 1771
+      },
+      "zigzag": {
+        "excluded_multistroke": 184,
+        "included_single_stroke": 1340,
+        "malformed_lines": 1,
+        "valid_drawings": 1524
+      }
+    },
+    "wall_ns": 1390633183
+  },
+  "integrity_pass": true,
+  "paired_system_differences": {
+    "ordered_dtw-minus-deformable": {
+      "accuracy_difference": 0.011750000000000038,
+      "class_cluster_bootstrap_95ci": [
+        -0.11375,
+        0.1275
+      ]
+    },
+    "ordered_dtw-minus-pointset": {
+      "accuracy_difference": -0.08625,
+      "class_cluster_bootstrap_95ci": [
+        -0.2,
+        0.01175
+      ]
+    },
+    "pointset-minus-deformable": {
+      "accuracy_difference": 0.09800000000000003,
+      "class_cluster_bootstrap_95ci": [
+        0.035,
+        0.17275
+      ]
+    }
+  },
+  "passed_checks": 6,
+  "run_id": "quickdraw_one_shot_v1_20260929",
+  "run_process_cpu_seconds": 4.753862407,
+  "run_wall_seconds": 4.759462949,
+  "systems": {
+    "deformable": {
+      "accuracy": 0.359,
+      "by_class": {
+        "circle": {
+          "accuracy": 0.366,
+          "correct": 183,
+          "total": 500
+        },
+        "hexagon": {
+          "accuracy": 0.2,
+          "correct": 100,
+          "total": 500
+        },
+        "line": {
+          "accuracy": 0.234,
+          "correct": 117,
+          "total": 500
+        },
+        "octagon": {
+          "accuracy": 0.286,
+          "correct": 143,
+          "total": 500
+        },
+        "square": {
+          "accuracy": 0.502,
+          "correct": 251,
+          "total": 500
+        },
+        "star": {
+          "accuracy": 0.504,
+          "correct": 252,
+          "total": 500
+        },
+        "triangle": {
+          "accuracy": 0.63,
+          "correct": 315,
+          "total": 500
+        },
+        "zigzag": {
+          "accuracy": 0.15,
+          "correct": 75,
+          "total": 500
+        }
+      },
+      "chance_accuracy": 0.125,
+      "class_cluster_bootstrap_95ci": [
+        0.25124375,
+        0.473
+      ],
+      "correct": 1436,
+      "median_worker_cpu_ms": 15.8322095,
+      "median_worker_wall_ms": 15.831613,
+      "peak_process_rss_bytes": 166977536,
+      "random_accuracy": 0.127,
+      "random_correct": 508,
+      "random_total": 4000,
+      "total": 4000
+    },
+    "ordered_dtw": {
+      "accuracy": 0.37075,
+      "by_class": {
+        "circle": {
+          "accuracy": 0.458,
+          "correct": 229,
+          "total": 500
+        },
+        "hexagon": {
+          "accuracy": 0.256,
+          "correct": 128,
+          "total": 500
+        },
+        "line": {
+          "accuracy": 0.51,
+          "correct": 255,
+          "total": 500
+        },
+        "octagon": {
+          "accuracy": 0.252,
+          "correct": 126,
+          "total": 500
+        },
+        "square": {
+          "accuracy": 0.436,
+          "correct": 218,
+          "total": 500
+        },
+        "star": {
+          "accuracy": 0.396,
+          "correct": 198,
+          "total": 500
+        },
+        "triangle": {
+          "accuracy": 0.312,
+          "correct": 156,
+          "total": 500
+        },
+        "zigzag": {
+          "accuracy": 0.346,
+          "correct": 173,
+          "total": 500
+        }
+      },
+      "chance_accuracy": 0.125,
+      "class_cluster_bootstrap_95ci": [
+        0.3095,
+        0.43225
+      ],
+      "correct": 1483,
+      "median_worker_cpu_ms": 12.5236135,
+      "median_worker_wall_ms": 12.522936,
+      "peak_process_rss_bytes": 166977536,
+      "random_accuracy": 0.12875,
+      "random_correct": 515,
+      "random_total": 4000,
+      "total": 4000
+    },
+    "pointset": {
+      "accuracy": 0.457,
+      "by_class": {
+        "circle": {
+          "accuracy": 0.406,
+          "correct": 203,
+          "total": 500
+        },
+        "hexagon": {
+          "accuracy": 0.226,
+          "correct": 113,
+          "total": 500
+        },
+        "line": {
+          "accuracy": 0.53,
+          "correct": 265,
+          "total": 500
+        },
+        "octagon": {
+          "accuracy": 0.304,
+          "correct": 152,
+          "total": 500
+        },
+        "square": {
+          "accuracy": 0.548,
+          "correct": 274,
+          "total": 500
+        },
+        "star": {
+          "accuracy": 0.73,
+          "correct": 365,
+          "total": 500
+        },
+        "triangle": {
+          "accuracy": 0.642,
+          "correct": 321,
+          "total": 500
+        },
+        "zigzag": {
+          "accuracy": 0.27,
+          "correct": 135,
+          "total": 500
+        }
+      },
+      "chance_accuracy": 0.125,
+      "class_cluster_bootstrap_95ci": [
+        0.339,
+        0.57925
+      ],
+      "correct": 1828,
+      "median_worker_cpu_ms": 16.2851645,
+      "median_worker_wall_ms": 16.299145,
+      "peak_process_rss_bytes": 166977536,
+      "random_accuracy": 0.12925,
+      "random_correct": 517,
+      "random_total": 4000,
+      "total": 4000
+    }
+  },
+  "total_checks": 6,
+  "worker_count": 300
+}

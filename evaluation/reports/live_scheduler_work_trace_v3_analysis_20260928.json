@@ -1,0 +1,744 @@
+{
+  "all_checks_pass": false,
+  "checks": {
+    "all_process_global_work_assigned": false,
+    "expected_reply_each_worker": true,
+    "per_worker_integrity": true,
+    "per_worker_scope_reconciliation": true,
+    "replicates_0_1_2": true,
+    "three_fresh_processes": true,
+    "three_workers": true,
+    "top_level_source_lock_stable": true,
+    "worker_source_lock_stable": true,
+    "workers_match_normalized_operation_work": true,
+    "workers_match_operation_count": true,
+    "workers_match_process_global_minus_scope_deltas": true,
+    "workers_match_reply": true,
+    "workers_match_scope_count": true,
+    "workers_match_scoped_counter_deltas": false
+  },
+  "claim_boundary": "One authored live route. All-scope operation work is attributed per graph; global residuals indicate scheduler/queue work outside captured run_rules scopes or missing instrumentation.",
+  "schema_version": 1,
+  "worker_profiles": [
+    {
+      "checks": {
+        "all_process_global_totals_assigned_to_scopes": false,
+        "all_scope_rows_valid": true,
+        "all_scope_trace_no_drops": true,
+        "at_least_one_scope": true,
+        "every_scope_metric_reconciles": true
+      },
+      "normalized_operation_work": {
+        "10:scheduler_dirty_vector_slots:None": 2350,
+        "10:scheduler_external_poll_slots:None": 2350,
+        "10:scheduler_fixedpoint_probe_slots:None": 12,
+        "10:scheduler_pass:None": 1,
+        "10:scheduler_selected_rules:None": 827,
+        "11:scheduler_dirty_vector_slots:None": 7074,
+        "11:scheduler_external_poll_slots:None": 7074,
+        "11:scheduler_fixedpoint_probe_slots:None": 417,
+        "11:scheduler_pass:None": 3,
+        "11:scheduler_selected_rules:None": 3001,
+        "12:scheduler_dirty_vector_slots:None": 4716,
+        "12:scheduler_external_poll_slots:None": 4716,
+        "12:scheduler_fixedpoint_probe_slots:None": 12,
+        "12:scheduler_pass:None": 2,
+        "12:scheduler_selected_rules:None": 3165,
+        "13:scheduler_dirty_vector_slots:None": 4716,
+        "13:scheduler_external_poll_slots:None": 4716,
+        "13:scheduler_fixedpoint_probe_slots:None": 12,
+        "13:scheduler_pass:None": 2,
+        "13:scheduler_selected_rules:None": 3165,
+        "14:scheduler_dirty_vector_slots:None": 4716,
+        "14:scheduler_external_poll_slots:None": 4716,
+        "14:scheduler_fixedpoint_probe_slots:None": 12,
+        "14:scheduler_pass:None": 2,
+        "14:scheduler_selected_rules:None": 3172,
+        "15:scheduler_dirty_vector_slots:None": 4716,
+        "15:scheduler_external_poll_slots:None": 4716,
+        "15:scheduler_fixedpoint_probe_slots:None": 11,
+        "15:scheduler_pass:None": 2,
+        "15:scheduler_selected_rules:None": 3184,
+        "16:scheduler_dirty_vector_slots:None": 4726,
+        "16:scheduler_external_poll_slots:None": 4726,
+        "16:scheduler_fixedpoint_probe_slots:None": 12,
+        "16:scheduler_pass:None": 2,
+        "16:scheduler_selected_rules:None": 3173,
+        "17:scheduler_dirty_vector_slots:None": 4726,
+        "17:scheduler_external_poll_slots:None": 4726,
+        "17:scheduler_fixedpoint_probe_slots:None": 12,
+        "17:scheduler_pass:None": 2,
+        "17:scheduler_selected_rules:None": 3169,
+        "18:scheduler_dirty_vector_slots:None": 4728,
+        "18:scheduler_external_poll_slots:None": 4728,
+        "18:scheduler_fixedpoint_probe_slots:None": 283,
+        "18:scheduler_pass:None": 2,
+        "18:scheduler_selected_rules:None": 2508,
+        "19:scheduler_dirty_vector_slots:None": 2364,
+        "19:scheduler_external_poll_slots:None": 2364,
+        "19:scheduler_fixedpoint_probe_slots:None": 1,
+        "19:scheduler_pass:None": 1,
+        "19:scheduler_selected_rules:None": 2347,
+        "1:scheduler_dirty_vector_slots:None": 8,
+        "1:scheduler_external_poll_slots:None": 8,
+        "1:scheduler_fixedpoint_probe_slots:None": 2,
+        "1:scheduler_pass:None": 2,
+        "1:scheduler_selected_rules:None": 8,
+        "20:scheduler_dirty_vector_slots:None": 4728,
+        "20:scheduler_external_poll_slots:None": 4728,
+        "20:scheduler_fixedpoint_probe_slots:None": 12,
+        "20:scheduler_pass:None": 2,
+        "20:scheduler_selected_rules:None": 3174,
+        "21:scheduler_dirty_vector_slots:None": 4728,
+        "21:scheduler_external_poll_slots:None": 4728,
+        "21:scheduler_fixedpoint_probe_slots:None": 12,
+        "21:scheduler_pass:None": 2,
+        "21:scheduler_selected_rules:None": 3170,
+        "22:scheduler_dirty_vector_slots:None": 4728,
+        "22:scheduler_external_poll_slots:None": 4728,
+        "22:scheduler_fixedpoint_probe_slots:None": 283,
+        "22:scheduler_pass:None": 2,
+        "22:scheduler_selected_rules:None": 2508,
+        "2:scheduler_dirty_vector_slots:None": 2340,
+        "2:scheduler_external_poll_slots:None": 2340,
+        "2:scheduler_fixedpoint_probe_slots:None": 1,
+        "2:scheduler_pass:None": 1,
+        "2:scheduler_selected_rules:None": 2323,
+        "3:scheduler_dirty_vector_slots:None": 4692,
+        "3:scheduler_external_poll_slots:None": 4692,
+        "3:scheduler_fixedpoint_probe_slots:None": 11,
+        "3:scheduler_pass:None": 2,
+        "3:scheduler_selected_rules:None": 3195,
+        "4:scheduler_dirty_vector_slots:None": 2346,
+        "4:scheduler_external_poll_slots:None": 2346,
+        "4:scheduler_fixedpoint_probe_slots:None": 12,
+        "4:scheduler_pass:None": 1,
+        "4:scheduler_selected_rules:None": 827,
+        "5:scheduler_dirty_vector_slots:None": 4694,
+        "5:scheduler_external_poll_slots:None": 4694,
+        "5:scheduler_fixedpoint_probe_slots:None": 11,
+        "5:scheduler_pass:None": 2,
+        "5:scheduler_selected_rules:None": 3173,
+        "6:scheduler_dirty_vector_slots:None": 2347,
+        "6:scheduler_external_poll_slots:None": 2347,
+        "6:scheduler_fixedpoint_probe_slots:None": 12,
+        "6:scheduler_pass:None": 1,
+        "6:scheduler_selected_rules:None": 827,
+        "7:scheduler_dirty_vector_slots:None": 4696,
+        "7:scheduler_external_poll_slots:None": 4696,
+        "7:scheduler_fixedpoint_probe_slots:None": 11,
+        "7:scheduler_pass:None": 2,
+        "7:scheduler_selected_rules:None": 3174,
+        "8:scheduler_dirty_vector_slots:None": 2348,
+        "8:scheduler_external_poll_slots:None": 2348,
+        "8:scheduler_fixedpoint_probe_slots:None": 12,
+        "8:scheduler_pass:None": 1,
+        "8:scheduler_selected_rules:None": 827,
+        "9:scheduler_dirty_vector_slots:None": 4700,
+        "9:scheduler_external_poll_slots:None": 4700,
+        "9:scheduler_fixedpoint_probe_slots:None": 11,
+        "9:scheduler_pass:None": 2,
+        "9:scheduler_selected_rules:None": 3176
+      },
+      "operation_count": 22,
+      "pid": 11,
+      "process_global_minus_scope_deltas": {
+        "deferred_queue:fb_samples:drain_batches": {
+          "global_minus_scopes": 16,
+          "global_units": 16,
+          "sum_scope_units": 0
+        },
+        "deferred_queue:fb_samples:drained_items": {
+          "global_minus_scopes": 0,
+          "global_units": 0,
+          "sum_scope_units": 0
+        },
+        "deferred_queue:fb_samples:enqueued_items": {
+          "global_minus_scopes": 0,
+          "global_units": 0,
+          "sum_scope_units": 0
+        },
+        "deferred_queue:net_collapses:drain_batches": {
+          "global_minus_scopes": 0,
+          "global_units": 0,
+          "sum_scope_units": 0
+        },
+        "deferred_queue:net_collapses:drained_items": {
+          "global_minus_scopes": 0,
+          "global_units": 0,
+          "sum_scope_units": 0
+        },
+        "deferred_queue:net_collapses:enqueued_items": {
+          "global_minus_scopes": 0,
+          "global_units": 0,
+          "sum_scope_units": 0
+        },
+        "deferred_queue:rule_edits:drain_batches": {
+          "global_minus_scopes": 0,
+          "global_units": 0,
+          "sum_scope_units": 0
+        },
+        "deferred_queue:rule_edits:drained_items": {
+          "global_minus_scopes": 0,
+          "global_units": 0,
+          "sum_scope_units": 0
+        },
+        "deferred_queue:rule_edits:enqueued_items": {
+          "global_minus_scopes": 0,
+          "global_units": 0,
+          "sum_scope_units": 0
+        },
+        "deferred_queue:rule_patches:drain_batches": {
+          "global_minus_scopes": 0,
+          "global_units": 0,
+          "sum_scope_units": 0
+        },
+        "deferred_queue:rule_patches:drained_items": {
+          "global_minus_scopes": 0,
+          "global_units": 0,
+          "sum_scope_units": 0
+        },
+        "deferred_queue:rule_patches:enqueued_items": {
+          "global_minus_scopes": 0,
+          "global_units": 0,
+          "sum_scope_units": 0
+        },
+        "deferred_queue:track_identity:drain_batches": {
+          "global_minus_scopes": 0,
+          "global_units": 0,
+          "sum_scope_units": 0
+        },
+        "deferred_queue:track_identity:drained_items": {
+          "global_minus_scopes": 0,
+          "global_units": 0,
+          "sum_scope_units": 0
+        },
+        "deferred_queue:track_identity:enqueued_items": {
+          "global_minus_scopes": 0,
+          "global_units": 0,
+          "sum_scope_units": 0
+        },
+        "scheduler_dirty_vector_slots": {
+          "global_minus_scopes": 0,
+          "global_units": 87187,
+          "sum_scope_units": 87187
+        },
+        "scheduler_external_poll_slots": {
+          "global_minus_scopes": 0,
+          "global_units": 87187,
+          "sum_scope_units": 87187
+        },
+        "scheduler_fixedpoint_probe_slots": {
+          "global_minus_scopes": 0,
+          "global_units": 1174,
+          "sum_scope_units": 1174
+        },
+        "scheduler_passes": {
+          "global_minus_scopes": 0,
+          "global_units": 39,
+          "sum_scope_units": 39
+        },
+        "scheduler_selected_rules": {
+          "global_minus_scopes": 0,
+          "global_units": 54093,
+          "sum_scope_units": 54093
+        }
+      },
+      "replicate": 0,
+      "reply": "I see the grey thing stays, the yellow counter, and the blue thing moves.",
+      "scope_count": 2,
+      "scoped_counter_deltas": {
+        "110329139177000:scheduler_dirty_vector_slots": 0,
+        "110329139177000:scheduler_external_poll_slots": 0,
+        "110329139177000:scheduler_fixedpoint_probe_slots": 0,
+        "110329139177000:scheduler_passes": 0,
+        "110329139177000:scheduler_selected_rules": 0,
+        "110329269229576:scheduler_dirty_vector_slots": 0,
+        "110329269229576:scheduler_external_poll_slots": 0,
+        "110329269229576:scheduler_fixedpoint_probe_slots": 0,
+        "110329269229576:scheduler_passes": 0,
+        "110329269229576:scheduler_selected_rules": 0
+      }
+    },
+    {
+      "checks": {
+        "all_process_global_totals_assigned_to_scopes": false,
+        "all_scope_rows_valid": true,
+        "all_scope_trace_no_drops": true,
+        "at_least_one_scope": true,
+        "every_scope_metric_reconciles": true
+      },
+      "normalized_operation_work": {
+        "10:scheduler_dirty_vector_slots:None": 2350,
+        "10:scheduler_external_poll_slots:None": 2350,
+        "10:scheduler_fixedpoint_probe_slots:None": 12,
+        "10:scheduler_pass:None": 1,
+        "10:scheduler_selected_rules:None": 827,
+        "11:scheduler_dirty_vector_slots:None": 7074,
+        "11:scheduler_external_poll_slots:None": 7074,
+        "11:scheduler_fixedpoint_probe_slots:None": 417,
+        "11:scheduler_pass:None": 3,
+        "11:scheduler_selected_rules:None": 3001,
+        "12:scheduler_dirty_vector_slots:None": 4716,
+        "12:scheduler_external_poll_slots:None": 4716,
+        "12:scheduler_fixedpoint_probe_slots:None": 12,
+        "12:scheduler_pass:None": 2,
+        "12:scheduler_selected_rules:None": 3165,
+        "13:scheduler_dirty_vector_slots:None": 4716,
+        "13:scheduler_external_poll_slots:None": 4716,
+        "13:scheduler_fixedpoint_probe_slots:None": 12,
+        "13:scheduler_pass:None": 2,
+        "13:scheduler_selected_rules:None": 3165,
+        "14:scheduler_dirty_vector_slots:None": 4716,
+        "14:scheduler_external_poll_slots:None": 4716,
+        "14:scheduler_fixedpoint_probe_slots:None": 12,
+        "14:scheduler_pass:None": 2,
+        "14:scheduler_selected_rules:None": 3172,
+        "15:scheduler_dirty_vector_slots:None": 4716,
+        "15:scheduler_external_poll_slots:None": 4716,
+        "15:scheduler_fixedpoint_probe_slots:None": 11,
+        "15:scheduler_pass:None": 2,
+        "15:scheduler_selected_rules:None": 3184,
+        "16:scheduler_dirty_vector_slots:None": 4726,
+        "16:scheduler_external_poll_slots:None": 4726,
+        "16:scheduler_fixedpoint_probe_slots:None": 12,
+        "16:scheduler_pass:None": 2,
+        "16:scheduler_selected_rules:None": 3173,
+        "17:scheduler_dirty_vector_slots:None": 4726,
+        "17:scheduler_external_poll_slots:None": 4726,
+        "17:scheduler_fixedpoint_probe_slots:None": 12,
+        "17:scheduler_pass:None": 2,
+        "17:scheduler_selected_rules:None": 3169,
+        "18:scheduler_dirty_vector_slots:None": 4728,
+        "18:scheduler_external_poll_slots:None": 4728,
+        "18:scheduler_fixedpoint_probe_slots:None": 283,
+        "18:scheduler_pass:None": 2,
+        "18:scheduler_selected_rules:None": 2508,
+        "19:scheduler_dirty_vector_slots:None": 2364,
+        "19:scheduler_external_poll_slots:None": 2364,
+        "19:scheduler_fixedpoint_probe_slots:None": 1,
+        "19:scheduler_pass:None": 1,
+        "19:scheduler_selected_rules:None": 2347,
+        "1:scheduler_dirty_vector_slots:None": 8,
+        "1:scheduler_external_poll_slots:None": 8,
+        "1:scheduler_fixedpoint_probe_slots:None": 2,
+        "1:scheduler_pass:None": 2,
+        "1:scheduler_selected_rules:None": 8,
+        "20:scheduler_dirty_vector_slots:None": 4728,
+        "20:scheduler_external_poll_slots:None": 4728,
+        "20:scheduler_fixedpoint_probe_slots:None": 12,
+        "20:scheduler_pass:None": 2,
+        "20:scheduler_selected_rules:None": 3174,
+        "21:scheduler_dirty_vector_slots:None": 4728,
+        "21:scheduler_external_poll_slots:None": 4728,
+        "21:scheduler_fixedpoint_probe_slots:None": 12,
+        "21:scheduler_pass:None": 2,
+        "21:scheduler_selected_rules:None": 3170,
+        "22:scheduler_dirty_vector_slots:None": 4728,
+        "22:scheduler_external_poll_slots:None": 4728,
+        "22:scheduler_fixedpoint_probe_slots:None": 283,
+        "22:scheduler_pass:None": 2,
+        "22:scheduler_selected_rules:None": 2508,
+        "2:scheduler_dirty_vector_slots:None": 2340,
+        "2:scheduler_external_poll_slots:None": 2340,
+        "2:scheduler_fixedpoint_probe_slots:None": 1,
+        "2:scheduler_pass:None": 1,
+        "2:scheduler_selected_rules:None": 2323,
+        "3:scheduler_dirty_vector_slots:None": 4692,
+        "3:scheduler_external_poll_slots:None": 4692,
+        "3:scheduler_fixedpoint_probe_slots:None": 11,
+        "3:scheduler_pass:None": 2,
+        "3:scheduler_selected_rules:None": 3195,
+        "4:scheduler_dirty_vector_slots:None": 2346,
+        "4:scheduler_external_poll_slots:None": 2346,
+        "4:scheduler_fixedpoint_probe_slots:None": 12,
+        "4:scheduler_pass:None": 1,
+        "4:scheduler_selected_rules:None": 827,
+        "5:scheduler_dirty_vector_slots:None": 4694,
+        "5:scheduler_external_poll_slots:None": 4694,
+        "5:scheduler_fixedpoint_probe_slots:None": 11,
+        "5:scheduler_pass:None": 2,
+        "5:scheduler_selected_rules:None": 3173,
+        "6:scheduler_dirty_vector_slots:None": 2347,
+        "6:scheduler_external_poll_slots:None": 2347,
+        "6:scheduler_fixedpoint_probe_slots:None": 12,
+        "6:scheduler_pass:None": 1,
+        "6:scheduler_selected_rules:None": 827,
+        "7:scheduler_dirty_vector_slots:None": 4696,
+        "7:scheduler_external_poll_slots:None": 4696,
+        "7:scheduler_fixedpoint_probe_slots:None": 11,
+        "7:scheduler_pass:None": 2,
+        "7:scheduler_selected_rules:None": 3174,
+        "8:scheduler_dirty_vector_slots:None": 2348,
+        "8:scheduler_external_poll_slots:None": 2348,
+        "8:scheduler_fixedpoint_probe_slots:None": 12,
+        "8:scheduler_pass:None": 1,
+        "8:scheduler_selected_rules:None": 827,
+        "9:scheduler_dirty_vector_slots:None": 4700,
+        "9:scheduler_external_poll_slots:None": 4700,
+        "9:scheduler_fixedpoint_probe_slots:None": 11,
+        "9:scheduler_pass:None": 2,
+        "9:scheduler_selected_rules:None": 3176
+      },
+      "operation_count": 22,
+      "pid": 5504,
+      "process_global_minus_scope_deltas": {
+        "deferred_queue:fb_samples:drain_batches": {
+          "global_minus_scopes": 16,
+          "global_units": 16,
+          "sum_scope_units": 0
+        },
+        "deferred_queue:fb_samples:drained_items": {
+          "global_minus_scopes": 0,
+          "global_units": 0,
+          "sum_scope_units": 0
+        },
+        "deferred_queue:fb_samples:enqueued_items": {
+          "global_minus_scopes": 0,
+          "global_units": 0,
+          "sum_scope_units": 0
+        },
+        "deferred_queue:net_collapses:drain_batches": {
+          "global_minus_scopes": 0,
+          "global_units": 0,
+          "sum_scope_units": 0
+        },
+        "deferred_queue:net_collapses:drained_items": {
+          "global_minus_scopes": 0,
+          "global_units": 0,
+          "sum_scope_units": 0
+        },
+        "deferred_queue:net_collapses:enqueued_items": {
+          "global_minus_scopes": 0,
+          "global_units": 0,
+          "sum_scope_units": 0
+        },
+        "deferred_queue:rule_edits:drain_batches": {
+          "global_minus_scopes": 0,
+          "global_units": 0,
+          "sum_scope_units": 0
+        },
+        "deferred_queue:rule_edits:drained_items": {
+          "global_minus_scopes": 0,
+          "global_units": 0,
+          "sum_scope_units": 0
+        },
+        "deferred_queue:rule_edits:enqueued_items": {
+          "global_minus_scopes": 0,
+          "global_units": 0,
+          "sum_scope_units": 0
+        },
+        "deferred_queue:rule_patches:drain_batches": {
+          "global_minus_scopes": 0,
+          "global_units": 0,
+          "sum_scope_units": 0
+        },
+        "deferred_queue:rule_patches:drained_items": {
+          "global_minus_scopes": 0,
+          "global_units": 0,
+          "sum_scope_units": 0
+        },
+        "deferred_queue:rule_patches:enqueued_items": {
+          "global_minus_scopes": 0,
+          "global_units": 0,
+          "sum_scope_units": 0
+        },
+        "deferred_queue:track_identity:drain_batches": {
+          "global_minus_scopes": 0,
+          "global_units": 0,
+          "sum_scope_units": 0
+        },
+        "deferred_queue:track_identity:drained_items": {
+          "global_minus_scopes": 0,
+          "global_units": 0,
+          "sum_scope_units": 0
+        },
+        "deferred_queue:track_identity:enqueued_items": {
+          "global_minus_scopes": 0,
+          "global_units": 0,
+          "sum_scope_units": 0
+        },
+        "scheduler_dirty_vector_slots": {
+          "global_minus_scopes": 0,
+          "global_units": 87187,
+          "sum_scope_units": 87187
+        },
+        "scheduler_external_poll_slots": {
+          "global_minus_scopes": 0,
+          "global_units": 87187,
+          "sum_scope_units": 87187
+        },
+        "scheduler_fixedpoint_probe_slots": {
+          "global_minus_scopes": 0,
+          "global_units": 1174,
+          "sum_scope_units": 1174
+        },
+        "scheduler_passes": {
+          "global_minus_scopes": 0,
+          "global_units": 39,
+          "sum_scope_units": 39
+        },
+        "scheduler_selected_rules": {
+          "global_minus_scopes": 0,
+          "global_units": 54093,
+          "sum_scope_units": 54093
+        }
+      },
+      "replicate": 1,
+      "reply": "I see the grey thing stays, the yellow counter, and the blue thing moves.",
+      "scope_count": 2,
+      "scoped_counter_deltas": {
+        "96489507227176:scheduler_dirty_vector_slots": 0,
+        "96489507227176:scheduler_external_poll_slots": 0,
+        "96489507227176:scheduler_fixedpoint_probe_slots": 0,
+        "96489507227176:scheduler_passes": 0,
+        "96489507227176:scheduler_selected_rules": 0,
+        "96489637283576:scheduler_dirty_vector_slots": 0,
+        "96489637283576:scheduler_external_poll_slots": 0,
+        "96489637283576:scheduler_fixedpoint_probe_slots": 0,
+        "96489637283576:scheduler_passes": 0,
+        "96489637283576:scheduler_selected_rules": 0
+      }
+    },
+    {
+      "checks": {
+        "all_process_global_totals_assigned_to_scopes": false,
+        "all_scope_rows_valid": true,
+        "all_scope_trace_no_drops": true,
+        "at_least_one_scope": true,
+        "every_scope_metric_reconciles": true
+      },
+      "normalized_operation_work": {
+        "10:scheduler_dirty_vector_slots:None": 2350,
+        "10:scheduler_external_poll_slots:None": 2350,
+        "10:scheduler_fixedpoint_probe_slots:None": 12,
+        "10:scheduler_pass:None": 1,
+        "10:scheduler_selected_rules:None": 827,
+        "11:scheduler_dirty_vector_slots:None": 7074,
+        "11:scheduler_external_poll_slots:None": 7074,
+        "11:scheduler_fixedpoint_probe_slots:None": 417,
+        "11:scheduler_pass:None": 3,
+        "11:scheduler_selected_rules:None": 3001,
+        "12:scheduler_dirty_vector_slots:None": 4716,
+        "12:scheduler_external_poll_slots:None": 4716,
+        "12:scheduler_fixedpoint_probe_slots:None": 12,
+        "12:scheduler_pass:None": 2,
+        "12:scheduler_selected_rules:None": 3165,
+        "13:scheduler_dirty_vector_slots:None": 4716,
+        "13:scheduler_external_poll_slots:None": 4716,
+        "13:scheduler_fixedpoint_probe_slots:None": 12,
+        "13:scheduler_pass:None": 2,
+        "13:scheduler_selected_rules:None": 3165,
+        "14:scheduler_dirty_vector_slots:None": 4716,
+        "14:scheduler_external_poll_slots:None": 4716,
+        "14:scheduler_fixedpoint_probe_slots:None": 12,
+        "14:scheduler_pass:None": 2,
+        "14:scheduler_selected_rules:None": 3172,
+        "15:scheduler_dirty_vector_slots:None": 4716,
+        "15:scheduler_external_poll_slots:None": 4716,
+        "15:scheduler_fixedpoint_probe_slots:None": 11,
+        "15:scheduler_pass:None": 2,
+        "15:scheduler_selected_rules:None": 3184,
+        "16:scheduler_dirty_vector_slots:None": 4726,
+        "16:scheduler_external_poll_slots:None": 4726,
+        "16:scheduler_fixedpoint_probe_slots:None": 12,
+        "16:scheduler_pass:None": 2,
+        "16:scheduler_selected_rules:None": 3173,
+        "17:scheduler_dirty_vector_slots:None": 4726,
+        "17:scheduler_external_poll_slots:None": 4726,
+        "17:scheduler_fixedpoint_probe_slots:None": 12,
+        "17:scheduler_pass:None": 2,
+        "17:scheduler_selected_rules:None": 3169,
+        "18:scheduler_dirty_vector_slots:None": 4728,
+        "18:scheduler_external_poll_slots:None": 4728,
+        "18:scheduler_fixedpoint_probe_slots:None": 283,
+        "18:scheduler_pass:None": 2,
+        "18:scheduler_selected_rules:None": 2508,
+        "19:scheduler_dirty_vector_slots:None": 2364,
+        "19:scheduler_external_poll_slots:None": 2364,
+        "19:scheduler_fixedpoint_probe_slots:None": 1,
+        "19:scheduler_pass:None": 1,
+        "19:scheduler_selected_rules:None": 2347,
+        "1:scheduler_dirty_vector_slots:None": 8,
+        "1:scheduler_external_poll_slots:None": 8,
+        "1:scheduler_fixedpoint_probe_slots:None": 2,
+        "1:scheduler_pass:None": 2,
+        "1:scheduler_selected_rules:None": 8,
+        "20:scheduler_dirty_vector_slots:None": 4728,
+        "20:scheduler_external_poll_slots:None": 4728,
+        "20:scheduler_fixedpoint_probe_slots:None": 12,
+        "20:scheduler_pass:None": 2,
+        "20:scheduler_selected_rules:None": 3174,
+        "21:scheduler_dirty_vector_slots:None": 4728,
+        "21:scheduler_external_poll_slots:None": 4728,
+        "21:scheduler_fixedpoint_probe_slots:None": 12,
+        "21:scheduler_pass:None": 2,
+        "21:scheduler_selected_rules:None": 3170,
+        "22:scheduler_dirty_vector_slots:None": 4728,
+        "22:scheduler_external_poll_slots:None": 4728,
+        "22:scheduler_fixedpoint_probe_slots:None": 283,
+        "22:scheduler_pass:None": 2,
+        "22:scheduler_selected_rules:None": 2508,
+        "2:scheduler_dirty_vector_slots:None": 2340,
+        "2:scheduler_external_poll_slots:None": 2340,
+        "2:scheduler_fixedpoint_probe_slots:None": 1,
+        "2:scheduler_pass:None": 1,
+        "2:scheduler_selected_rules:None": 2323,
+        "3:scheduler_dirty_vector_slots:None": 4692,
+        "3:scheduler_external_poll_slots:None": 4692,
+        "3:scheduler_fixedpoint_probe_slots:None": 11,
+        "3:scheduler_pass:None": 2,
+        "3:scheduler_selected_rules:None": 3195,
+        "4:scheduler_dirty_vector_slots:None": 2346,
+        "4:scheduler_external_poll_slots:None": 2346,
+        "4:scheduler_fixedpoint_probe_slots:None": 12,
+        "4:scheduler_pass:None": 1,
+        "4:scheduler_selected_rules:None": 827,
+        "5:scheduler_dirty_vector_slots:None": 4694,
+        "5:scheduler_external_poll_slots:None": 4694,
+        "5:scheduler_fixedpoint_probe_slots:None": 11,
+        "5:scheduler_pass:None": 2,
+        "5:scheduler_selected_rules:None": 3173,
+        "6:scheduler_dirty_vector_slots:None": 2347,
+        "6:scheduler_external_poll_slots:None": 2347,
+        "6:scheduler_fixedpoint_probe_slots:None": 12,
+        "6:scheduler_pass:None": 1,
+        "6:scheduler_selected_rules:None": 827,
+        "7:scheduler_dirty_vector_slots:None": 4696,
+        "7:scheduler_external_poll_slots:None": 4696,
+        "7:scheduler_fixedpoint_probe_slots:None": 11,
+        "7:scheduler_pass:None": 2,
+        "7:scheduler_selected_rules:None": 3174,
+        "8:scheduler_dirty_vector_slots:None": 2348,
+        "8:scheduler_external_poll_slots:None": 2348,
+        "8:scheduler_fixedpoint_probe_slots:None": 12,
+        "8:scheduler_pass:None": 1,
+        "8:scheduler_selected_rules:None": 827,
+        "9:scheduler_dirty_vector_slots:None": 4700,
+        "9:scheduler_external_poll_slots:None": 4700,
+        "9:scheduler_fixedpoint_probe_slots:None": 11,
+        "9:scheduler_pass:None": 2,
+        "9:scheduler_selected_rules:None": 3176
+      },
+      "operation_count": 22,
+      "pid": 10997,
+      "process_global_minus_scope_deltas": {
+        "deferred_queue:fb_samples:drain_batches": {
+          "global_minus_scopes": 16,
+          "global_units": 16,
+          "sum_scope_units": 0
+        },
+        "deferred_queue:fb_samples:drained_items": {
+          "global_minus_scopes": 0,
+          "global_units": 0,
+          "sum_scope_units": 0
+        },
+        "deferred_queue:fb_samples:enqueued_items": {
+          "global_minus_scopes": 0,
+          "global_units": 0,
+          "sum_scope_units": 0
+        },
+        "deferred_queue:net_collapses:drain_batches": {
+          "global_minus_scopes": 0,
+          "global_units": 0,
+          "sum_scope_units": 0
+        },
+        "deferred_queue:net_collapses:drained_items": {
+          "global_minus_scopes": 0,
+          "global_units": 0,
+          "sum_scope_units": 0
+        },
+        "deferred_queue:net_collapses:enqueued_items": {
+          "global_minus_scopes": 0,
+          "global_units": 0,
+          "sum_scope_units": 0
+        },
+        "deferred_queue:rule_edits:drain_batches": {
+          "global_minus_scopes": 0,
+          "global_units": 0,
+          "sum_scope_units": 0
+        },
+        "deferred_queue:rule_edits:drained_items": {
+          "global_minus_scopes": 0,
+          "global_units": 0,
+          "sum_scope_units": 0
+        },
+        "deferred_queue:rule_edits:enqueued_items": {
+          "global_minus_scopes": 0,
+          "global_units": 0,
+          "sum_scope_units": 0
+        },
+        "deferred_queue:rule_patches:drain_batches": {
+          "global_minus_scopes": 0,
+          "global_units": 0,
+          "sum_scope_units": 0
+        },
+        "deferred_queue:rule_patches:drained_items": {
+          "global_minus_scopes": 0,
+          "global_units": 0,
+          "sum_scope_units": 0
+        },
+        "deferred_queue:rule_patches:enqueued_items": {
+          "global_minus_scopes": 0,
+          "global_units": 0,
+          "sum_scope_units": 0
+        },
+        "deferred_queue:track_identity:drain_batches": {
+          "global_minus_scopes": 0,
+          "global_units": 0,
+          "sum_scope_units": 0
+        },
+        "deferred_queue:track_identity:drained_items": {
+          "global_minus_scopes": 0,
+          "global_units": 0,
+          "sum_scope_units": 0
+        },
+        "deferred_queue:track_identity:enqueued_items": {
+          "global_minus_scopes": 0,
+          "global_units": 0,
+          "sum_scope_units": 0
+        },
+        "scheduler_dirty_vector_slots": {
+          "global_minus_scopes": 0,
+          "global_units": 87187,
+          "sum_scope_units": 87187
+        },
+        "scheduler_external_poll_slots": {
+          "global_minus_scopes": 0,
+          "global_units": 87187,
+          "sum_scope_units": 87187
+        },
+        "scheduler_fixedpoint_probe_slots": {
+          "global_minus_scopes": 0,
+          "global_units": 1174,
+          "sum_scope_units": 1174
+        },
+        "scheduler_passes": {
+          "global_minus_scopes": 0,
+          "global_units": 39,
+          "sum_scope_units": 39
+        },
+        "scheduler_selected_rules": {
+          "global_minus_scopes": 0,
+          "global_units": 54093,
+          "sum_scope_units": 54093
+        }
+      },
+      "replicate": 2,
+      "reply": "I see the grey thing stays, the yellow counter, and the blue thing moves.",
+      "scope_count": 2,
+      "scoped_counter_deltas": {
+        "97724162414120:scheduler_dirty_vector_slots": 0,
+        "97724162414120:scheduler_external_poll_slots": 0,
+        "97724162414120:scheduler_fixedpoint_probe_slots": 0,
+        "97724162414120:scheduler_passes": 0,
+        "97724162414120:scheduler_selected_rules": 0,
+        "97724292470520:scheduler_dirty_vector_slots": 0,
+        "97724292470520:scheduler_external_poll_slots": 0,
+        "97724292470520:scheduler_fixedpoint_probe_slots": 0,
+        "97724292470520:scheduler_passes": 0,
+        "97724292470520:scheduler_selected_rules": 0
+      }
+    }
+  ]
+}

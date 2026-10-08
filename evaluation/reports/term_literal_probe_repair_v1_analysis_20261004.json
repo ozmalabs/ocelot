@@ -1,0 +1,197 @@
+{
+  "cells": [
+    {
+      "arms": {
+        "edge_only": {
+          "cpu_ns": 1065700,
+          "decision": "accept_behavior_class",
+          "false_class_on_holdout": false,
+          "holdout_scores": [
+            {
+              "id": "term_941c9eb89d3d8ddf",
+              "invalid": 0,
+              "mismatches": 877,
+              "n": 4096
+            },
+            {
+              "id": "term_0d775a2495512e5f",
+              "invalid": 0,
+              "mismatches": 0,
+              "n": 4096
+            },
+            {
+              "id": "term_a89464b71c175c55",
+              "invalid": 0,
+              "mismatches": 0,
+              "n": 4096
+            }
+          ],
+          "labels": 1,
+          "native_evaluations": 223,
+          "survivors": [
+            "term_0d775a2495512e5f",
+            "term_a89464b71c175c55"
+          ],
+          "wall_ns": 1066476
+        },
+        "edge_plus_literal": {
+          "cpu_ns": 1052140,
+          "decision": "accept_behavior_class",
+          "false_class_on_holdout": false,
+          "holdout_scores": [
+            {
+              "id": "term_941c9eb89d3d8ddf",
+              "invalid": 0,
+              "mismatches": 877,
+              "n": 4096
+            },
+            {
+              "id": "term_0d775a2495512e5f",
+              "invalid": 0,
+              "mismatches": 0,
+              "n": 4096
+            },
+            {
+              "id": "term_a89464b71c175c55",
+              "invalid": 0,
+              "mismatches": 0,
+              "n": 4096
+            }
+          ],
+          "labels": 1,
+          "native_evaluations": 223,
+          "survivors": [
+            "term_0d775a2495512e5f",
+            "term_a89464b71c175c55"
+          ],
+          "wall_ns": 1052616
+        }
+      },
+      "panel": "absolute_square_underflow"
+    },
+    {
+      "arms": {
+        "edge_only": {
+          "cpu_ns": 385110,
+          "decision": "accept_behavior_class",
+          "false_class_on_holdout": false,
+          "holdout_scores": [
+            {
+              "id": "identity_eq",
+              "invalid": 0,
+              "mismatches": 0,
+              "n": 4096
+            },
+            {
+              "id": "quotient_eq",
+              "invalid": 0,
+              "mismatches": 6,
+              "n": 4096
+            }
+          ],
+          "labels": 1,
+          "native_evaluations": 63,
+          "survivors": [
+            "identity_eq"
+          ],
+          "wall_ns": 385602
+        },
+        "edge_plus_literal": {
+          "cpu_ns": 407210,
+          "decision": "accept_behavior_class",
+          "false_class_on_holdout": false,
+          "holdout_scores": [
+            {
+              "id": "identity_eq",
+              "invalid": 0,
+              "mismatches": 0,
+              "n": 4096
+            },
+            {
+              "id": "quotient_eq",
+              "invalid": 0,
+              "mismatches": 6,
+              "n": 4096
+            }
+          ],
+          "labels": 1,
+          "native_evaluations": 63,
+          "survivors": [
+            "identity_eq"
+          ],
+          "wall_ns": 407902
+        }
+      },
+      "panel": "division_signed_zero"
+    },
+    {
+      "arms": {
+        "edge_only": {
+          "cpu_ns": 752380,
+          "decision": "accept_behavior_class",
+          "false_class_on_holdout": true,
+          "holdout_scores": [
+            {
+              "id": "identity_eq",
+              "invalid": 0,
+              "mismatches": 0,
+              "n": 4094
+            },
+            {
+              "id": "literal_interval_alias",
+              "invalid": 0,
+              "mismatches": 1,
+              "n": 4094
+            }
+          ],
+          "labels": 0,
+          "native_evaluations": 88,
+          "survivors": [
+            "identity_eq",
+            "literal_interval_alias"
+          ],
+          "wall_ns": 752274
+        },
+        "edge_plus_literal": {
+          "cpu_ns": 835220,
+          "decision": "accept_behavior_class",
+          "false_class_on_holdout": false,
+          "holdout_scores": [
+            {
+              "id": "identity_eq",
+              "invalid": 0,
+              "mismatches": 0,
+              "n": 4094
+            },
+            {
+              "id": "literal_interval_alias",
+              "invalid": 0,
+              "mismatches": 1,
+              "n": 4094
+            }
+          ],
+          "labels": 1,
+          "native_evaluations": 96,
+          "survivors": [
+            "identity_eq"
+          ],
+          "wall_ns": 836175
+        }
+      },
+      "panel": "structured_literal_interval"
+    }
+  ],
+  "checks": {
+    "exact_cost_accounting": true,
+    "holdout_replay": true,
+    "proposal_replay_and_disjointness": true,
+    "selector_and_class_replay": true,
+    "source_and_upstream_binding": true,
+    "targeted_repair": true,
+    "three_paired_panels": true
+  },
+  "claim_boundary": "This paired experiment evaluates literal-boundary probes on three authored numeric panels and one interval-guard false class. It cannot establish unrestricted semantic equivalence or general candidate-boundary coverage.",
+  "errors": [],
+  "passed": true,
+  "schema": "TermLiteralProbeRepairV1Analysis"
+}

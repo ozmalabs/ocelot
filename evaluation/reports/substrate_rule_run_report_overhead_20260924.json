@@ -1,0 +1,299 @@
+{
+  "analysis": {
+    "cpu_ratio_range": [
+      2.1123719846338576,
+      2.95637576275887
+    ],
+    "inference_limit": "Descriptive only; isolates caller-visible API cost, not the shared Rust result construction, and uses one synthetic cycle.",
+    "median_typed_to_legacy_cpu_ratio": 2.7103126772531256,
+    "median_typed_to_legacy_wall_ratio": 2.715903732683686,
+    "scope": "typed Python dictionary result overhead versus legacy integer return on the same Rust rule-run loop",
+    "wall_ratio_range": [
+      2.1103641685046393,
+      2.954422543315745
+    ]
+  },
+  "command": "PYTHONPATH=runners/dsl/python:. python3 scripts/substrate_rule_run_report_overhead.py",
+  "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+  "dirty": true,
+  "environment": {
+    "PYTHONPATH": "runners/dsl/python:.",
+    "platform": "Linux-6.8.0-137-generic-x86_64-with-glibc2.39",
+    "python": "3.13.5 (main, Jun 11 2025, 15:36:57) [GCC 11.4.0]"
+  },
+  "executor_source_sha256": {
+    "runners/dsl/python/substrate_rs/ext.py": "290ed36964868fccdd7d9c2705b817e3334dec06fed6ad00a8c0901f37f18b27",
+    "runners/dsl/src/py.rs": "1dfaad8ed9032ff17932d47ea825918b3c84f193d6ab706616962b6ce45c2783",
+    "runners/dsl/src/substrate.rs": "fbcd56f6cdd21b568927f038328def50f5ef461cc0351627c547872596c2b64e"
+  },
+  "harness_sha256": "45aedbec6c243681173177a1f58edc1b79902f90fd7d8deeb75cd5d5b1c04a97",
+  "native_artifacts": {
+    "build_record_sha256": "0a230802e876fed450eda500922860005e2203324da0cc7deab2c726cd6ca3c3",
+    "extension_sha256": "2e31b4f92f4d58b537c51ad1205b7ba54c0111ed5c9104e0fd2448220e1b030e"
+  },
+  "protocol": "paired API overhead microbenchmark v1; benchmark protocol 1.1",
+  "protocol_sha256": "6386e6a619d46527d1c0522ac0e370f4067d41c1341f415b01bd7f2afe5cb624",
+  "records": [
+    {
+      "call_order": [
+        "legacy_integer",
+        "typed_report"
+      ],
+      "calls_per_api": 5000,
+      "legacy_integer": {
+        "cpu_time_ns": 11498883,
+        "last_result": 2,
+        "wall_time_ns": 11511634
+      },
+      "legacy_state": {
+        "toggle_a": true,
+        "toggle_b": false
+      },
+      "repeat": 0,
+      "semantic_parity": true,
+      "typed_budget_overshoot": 0,
+      "typed_report": {
+        "cpu_time_ns": 33995019,
+        "last_result": {
+          "budget_overshoot": 0,
+          "cycle_detection_enabled": false,
+          "passes_completed": 1,
+          "progress_steps": 2,
+          "requested_progress_budget": 2,
+          "status": "progress_budget_reached"
+        },
+        "wall_time_ns": 34010231
+      },
+      "typed_state": {
+        "toggle_a": true,
+        "toggle_b": false
+      },
+      "typed_status": "progress_budget_reached"
+    },
+    {
+      "call_order": [
+        "typed_report",
+        "legacy_integer"
+      ],
+      "calls_per_api": 5000,
+      "legacy_integer": {
+        "cpu_time_ns": 11408473,
+        "last_result": 2,
+        "wall_time_ns": 11405574
+      },
+      "legacy_state": {
+        "toggle_a": true,
+        "toggle_b": false
+      },
+      "repeat": 1,
+      "semantic_parity": true,
+      "typed_budget_overshoot": 0,
+      "typed_report": {
+        "cpu_time_ns": 30920529,
+        "last_result": {
+          "budget_overshoot": 0,
+          "cycle_detection_enabled": false,
+          "passes_completed": 1,
+          "progress_steps": 2,
+          "requested_progress_budget": 2,
+          "status": "progress_budget_reached"
+        },
+        "wall_time_ns": 30976441
+      },
+      "typed_state": {
+        "toggle_a": true,
+        "toggle_b": false
+      },
+      "typed_status": "progress_budget_reached"
+    },
+    {
+      "call_order": [
+        "legacy_integer",
+        "typed_report"
+      ],
+      "calls_per_api": 5000,
+      "legacy_integer": {
+        "cpu_time_ns": 10799553,
+        "last_result": 2,
+        "wall_time_ns": 10799579
+      },
+      "legacy_state": {
+        "toggle_a": true,
+        "toggle_b": false
+      },
+      "repeat": 2,
+      "semantic_parity": true,
+      "typed_budget_overshoot": 0,
+      "typed_report": {
+        "cpu_time_ns": 29770068,
+        "last_result": {
+          "budget_overshoot": 0,
+          "cycle_detection_enabled": false,
+          "passes_completed": 1,
+          "progress_steps": 2,
+          "requested_progress_budget": 2,
+          "status": "progress_budget_reached"
+        },
+        "wall_time_ns": 29767724
+      },
+      "typed_state": {
+        "toggle_a": true,
+        "toggle_b": false
+      },
+      "typed_status": "progress_budget_reached"
+    },
+    {
+      "call_order": [
+        "typed_report",
+        "legacy_integer"
+      ],
+      "calls_per_api": 5000,
+      "legacy_integer": {
+        "cpu_time_ns": 12155223,
+        "last_result": 2,
+        "wall_time_ns": 12161209
+      },
+      "legacy_state": {
+        "toggle_a": true,
+        "toggle_b": false
+      },
+      "repeat": 3,
+      "semantic_parity": true,
+      "typed_budget_overshoot": 0,
+      "typed_report": {
+        "cpu_time_ns": 27976088,
+        "last_result": {
+          "budget_overshoot": 0,
+          "cycle_detection_enabled": false,
+          "passes_completed": 1,
+          "progress_steps": 2,
+          "requested_progress_budget": 2,
+          "status": "progress_budget_reached"
+        },
+        "wall_time_ns": 27974812
+      },
+      "typed_state": {
+        "toggle_a": true,
+        "toggle_b": false
+      },
+      "typed_status": "progress_budget_reached"
+    },
+    {
+      "call_order": [
+        "legacy_integer",
+        "typed_report"
+      ],
+      "calls_per_api": 5000,
+      "legacy_integer": {
+        "cpu_time_ns": 11057263,
+        "last_result": 2,
+        "wall_time_ns": 11069032
+      },
+      "legacy_state": {
+        "toggle_a": true,
+        "toggle_b": false
+      },
+      "repeat": 4,
+      "semantic_parity": true,
+      "typed_budget_overshoot": 0,
+      "typed_report": {
+        "cpu_time_ns": 29202058,
+        "last_result": {
+          "budget_overshoot": 0,
+          "cycle_detection_enabled": false,
+          "passes_completed": 1,
+          "progress_steps": 2,
+          "requested_progress_budget": 2,
+          "status": "progress_budget_reached"
+        },
+        "wall_time_ns": 29198439
+      },
+      "typed_state": {
+        "toggle_a": true,
+        "toggle_b": false
+      },
+      "typed_status": "progress_budget_reached"
+    },
+    {
+      "call_order": [
+        "typed_report",
+        "legacy_integer"
+      ],
+      "calls_per_api": 5000,
+      "legacy_integer": {
+        "cpu_time_ns": 12911243,
+        "last_result": 2,
+        "wall_time_ns": 12922754
+      },
+      "legacy_state": {
+        "toggle_a": true,
+        "toggle_b": false
+      },
+      "repeat": 5,
+      "semantic_parity": true,
+      "typed_budget_overshoot": 0,
+      "typed_report": {
+        "cpu_time_ns": 27273348,
+        "last_result": {
+          "budget_overshoot": 0,
+          "cycle_detection_enabled": false,
+          "passes_completed": 1,
+          "progress_steps": 2,
+          "requested_progress_budget": 2,
+          "status": "progress_budget_reached"
+        },
+        "wall_time_ns": 27271717
+      },
+      "typed_state": {
+        "toggle_a": true,
+        "toggle_b": false
+      },
+      "typed_status": "progress_budget_reached"
+    },
+    {
+      "call_order": [
+        "legacy_integer",
+        "typed_report"
+      ],
+      "calls_per_api": 5000,
+      "legacy_integer": {
+        "cpu_time_ns": 10489943,
+        "last_result": 2,
+        "wall_time_ns": 10490128
+      },
+      "legacy_state": {
+        "toggle_a": true,
+        "toggle_b": false
+      },
+      "repeat": 6,
+      "semantic_parity": true,
+      "typed_budget_overshoot": 0,
+      "typed_report": {
+        "cpu_time_ns": 29656248,
+        "last_result": {
+          "budget_overshoot": 0,
+          "cycle_detection_enabled": false,
+          "passes_completed": 1,
+          "progress_steps": 2,
+          "requested_progress_budget": 2,
+          "status": "progress_budget_reached"
+        },
+        "wall_time_ns": 29653552
+      },
+      "typed_state": {
+        "toggle_a": true,
+        "toggle_b": false
+      },
+      "typed_status": "progress_budget_reached"
+    }
+  ],
+  "run_state": "pilot",
+  "tracked_patch_sha256": "dd2e3699e87ab1a46dc52bff412fb953214caf6e7e2eea57e24ab4d97f4c808d",
+  "workload": {
+    "audit_enabled": false,
+    "calls_per_api_per_repeat": 5000,
+    "description": "Two-node A->B->A edge-type oscillation; each call uses progress budget 2.",
+    "progress_budget": 2,
+    "repeats": 7
+  }
+}

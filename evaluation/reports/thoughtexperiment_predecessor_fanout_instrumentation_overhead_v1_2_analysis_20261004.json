@@ -1,0 +1,211 @@
+{
+  "analysis_script_sha256": "5baf37b29d799b1e6b3e6bcc5a6eeeda7117158b000b4efee7ed5c8641cbde05",
+  "capture_sha256": "1f828ae2d5249a0f40489d416a7507689cfe434b7f87eaf9b62411f6911f7fa3",
+  "checks": {
+    "16_complete_pairs": true,
+    "eight_pairs_per_backend": true,
+    "exact_pairwise_semantic_projection": true,
+    "five_exports_and_digests_per_on_worker": true,
+    "fixed_schedule_and_32_rows": true,
+    "lock_matches_and_recomputes": true,
+    "no_worker_failures_and_unique_pids": true,
+    "postrun_sources_stable": true,
+    "semantic_gates_each_arm": true
+  },
+  "claim_boundary": "One authored 100k-node workload with fixed frame/fanout shape; no scale law.",
+  "interpretation": "Eight pairs improve precision over v1 but remain one workload/host. The interval estimates combined clock-call and Python-wrapper dispatch impact; it does not isolate those sources or prove universal negligible overhead.",
+  "interval_method": "paired mean delta \u00b1 2.365 standard errors (two-sided 95% t critical, df=7)",
+  "schema": "ThoughtexperimentFanoutInstrumentationOverheadV1_2Analysis",
+  "summaries": {
+    "full_copy": {
+      "median_delta_ms": -61.13126850000003,
+      "median_digest_ms_on": 691.1042514999999,
+      "median_export_ms_on": 2339.7945425,
+      "median_off_ms": 3327.67967,
+      "median_on_ms": 3257.8224225,
+      "median_ratio_on_off": 0.9815428961142358,
+      "paired_delta_range_ms": [
+        -997.7997369999998,
+        272.83338200000026
+      ],
+      "paired_delta_summary": {
+        "ci95_t_df7_ms": [
+          -469.83861954081186,
+          162.77736979081186
+        ],
+        "mean_ms": -153.530624875,
+        "standard_error_ms": 133.74545228998386,
+        "stddev_ms": 378.2892650684378
+      },
+      "pairs": [
+        {
+          "delta_ms": -282.9749420000003,
+          "digest_ms_on": 701.204035,
+          "export_ms_on": 2341.245125,
+          "off_ms": 3529.773395,
+          "on_ms": 3246.798453,
+          "ratio_on_off": 0.9198319806022561,
+          "replicate": 0
+        },
+        {
+          "delta_ms": 68.04768999999987,
+          "digest_ms_on": 750.280853,
+          "export_ms_on": 2237.729481,
+          "off_ms": 3119.841679,
+          "on_ms": 3187.889369,
+          "ratio_on_off": 1.021811263840097,
+          "replicate": 1
+        },
+        {
+          "delta_ms": -162.24213400000008,
+          "digest_ms_on": 698.613695,
+          "export_ms_on": 2347.281854,
+          "off_ms": 3438.599647,
+          "on_ms": 3276.357513,
+          "ratio_on_off": 0.9528173818834804,
+          "replicate": 2
+        },
+        {
+          "delta_ms": -3.8467209999998886,
+          "digest_ms_on": 683.594808,
+          "export_ms_on": 2338.34396,
+          "off_ms": 3272.693113,
+          "on_ms": 3268.846392,
+          "ratio_on_off": 0.9988246007593197,
+          "replicate": 3
+        },
+        {
+          "delta_ms": -997.7997369999998,
+          "digest_ms_on": 500.172973,
+          "export_ms_on": 1751.651647,
+          "off_ms": 3440.353877,
+          "on_ms": 2442.55414,
+          "ratio_on_off": 0.7099717724764742,
+          "replicate": 4
+        },
+        {
+          "delta_ms": -90.5723280000002,
+          "digest_ms_on": 660.326279,
+          "export_ms_on": 2323.611467,
+          "off_ms": 3295.759344,
+          "on_ms": 3205.187016,
+          "ratio_on_off": 0.9725185250055077,
+          "replicate": 5
+        },
+        {
+          "delta_ms": 272.83338200000026,
+          "digest_ms_on": 722.539578,
+          "export_ms_on": 2527.031689,
+          "off_ms": 3231.812966,
+          "on_ms": 3504.646348,
+          "ratio_on_off": 1.0844211545873228,
+          "replicate": 6
+        },
+        {
+          "delta_ms": -31.690208999999868,
+          "digest_ms_on": 662.70991,
+          "export_ms_on": 2449.39463,
+          "off_ms": 3359.599996,
+          "on_ms": 3327.909787,
+          "ratio_on_off": 0.9905672672229638,
+          "replicate": 7
+        }
+      ]
+    },
+    "shared_graph_pages": {
+      "median_delta_ms": 112.7498794999999,
+      "median_digest_ms_on": 718.1386554999999,
+      "median_export_ms_on": 2426.506373,
+      "median_off_ms": 3177.7054545,
+      "median_on_ms": 3279.8622219999997,
+      "median_ratio_on_off": 1.0365009744296994,
+      "paired_delta_range_ms": [
+        -206.8321380000002,
+        468.8970180000001
+      ],
+      "paired_delta_summary": {
+        "ci95_t_df7_ms": [
+          -84.70935678284505,
+          339.5769882828449
+        ],
+        "mean_ms": 127.43381574999995,
+        "standard_error_ms": 89.70113003502959,
+        "stddev_ms": 253.7131093114629
+      },
+      "pairs": [
+        {
+          "delta_ms": -181.416201,
+          "digest_ms_on": 720.089525,
+          "export_ms_on": 2351.795332,
+          "off_ms": 3393.913394,
+          "on_ms": 3212.497193,
+          "ratio_on_off": 0.9465466027151075,
+          "replicate": 0
+        },
+        {
+          "delta_ms": 89.59793300000001,
+          "digest_ms_on": 748.655857,
+          "export_ms_on": 2503.632912,
+          "off_ms": 3305.789675,
+          "on_ms": 3395.387608,
+          "ratio_on_off": 1.027103337419674,
+          "replicate": 1
+        },
+        {
+          "delta_ms": 238.06356499999993,
+          "digest_ms_on": 756.934176,
+          "export_ms_on": 2528.614098,
+          "off_ms": 3199.82559,
+          "on_ms": 3437.889155,
+          "ratio_on_off": 1.074398919036084,
+          "replicate": 2
+        },
+        {
+          "delta_ms": 135.9018259999998,
+          "digest_ms_on": 648.970278,
+          "export_ms_on": 2292.172461,
+          "off_ms": 2960.913669,
+          "on_ms": 3096.815495,
+          "ratio_on_off": 1.0458986114397244,
+          "replicate": 3
+        },
+        {
+          "delta_ms": 26.862876000000142,
+          "digest_ms_on": 660.949373,
+          "export_ms_on": 2375.358712,
+          "off_ms": 3155.585319,
+          "on_ms": 3182.448195,
+          "ratio_on_off": 1.0085128029460197,
+          "replicate": 4
+        },
+        {
+          "delta_ms": 468.8970180000001,
+          "digest_ms_on": 758.912865,
+          "export_ms_on": 2477.654034,
+          "off_ms": 2913.478917,
+          "on_ms": 3382.375935,
+          "ratio_on_off": 1.1609405907363908,
+          "replicate": 5
+        },
+        {
+          "delta_ms": -206.8321380000002,
+          "digest_ms_on": 696.800377,
+          "export_ms_on": 2303.62344,
+          "off_ms": 3341.783386,
+          "on_ms": 3134.951248,
+          "ratio_on_off": 0.9381072576796873,
+          "replicate": 6
+        },
+        {
+          "delta_ms": 448.3956469999998,
+          "digest_ms_on": 716.187786,
+          "export_ms_on": 2501.57346,
+          "off_ms": 2898.831604,
+          "on_ms": 3347.227251,
+          "ratio_on_off": 1.154681509053949,
+          "replicate": 7
+        }
+      ]
+    }
+  }
+}

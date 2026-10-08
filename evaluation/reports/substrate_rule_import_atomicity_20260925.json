@@ -1,0 +1,105 @@
+{
+  "checks": {
+    "add_rule_failure_atomic": true,
+    "import_rules_late_failure_atomic": true,
+    "successful_import_preserves_order_and_tombstone": true
+  },
+  "evidence_class": "post-change engineering verification; no performance claim",
+  "failure_cases": [
+    {
+      "attempts": 25,
+      "case": "add_rule_parse_failure",
+      "expected_failures": 25,
+      "first_post_failure_sym_id": 2,
+      "fully_rolled_back": 25
+    },
+    {
+      "attempts": 25,
+      "case": "import_rules_late_parse_failure",
+      "expected_failures": 25,
+      "first_post_failure_sym_id": 2,
+      "fully_rolled_back": 25
+    }
+  ],
+  "locked_inputs": {
+    "attempts_per_case": 25,
+    "bad_rule": {
+      "area": "atomicity_probe_area",
+      "effects": [],
+      "match": [
+        [
+          "source_var",
+          "atomicity_probe_edge",
+          "target_var"
+        ]
+      ],
+      "name": "malformed_suffix_rule",
+      "where": {
+        "a": {
+          "type": "Lit",
+          "value": 1
+        },
+        "b": {
+          "type": "UnknownAtomicityProbeTerm"
+        },
+        "type": "Eq"
+      }
+    },
+    "good_rules": [
+      {
+        "active": true,
+        "effects": [],
+        "match": [
+          [
+            "x",
+            "staged_edge",
+            "y"
+          ]
+        ],
+        "name": "staged_good_rule",
+        "where": {
+          "a": {
+            "type": "Lit",
+            "value": 1
+          },
+          "b": {
+            "type": "Lit",
+            "value": 1
+          },
+          "type": "Eq"
+        }
+      },
+      {
+        "active": false,
+        "effects": [],
+        "match": [
+          [
+            "x",
+            "staged_edge2",
+            "y"
+          ]
+        ],
+        "name": "staged_inactive_rule"
+      }
+    ],
+    "interner_source_sha256": "4772ba9a79cc0002b818e4c6981fa58a5b02f12d078c3756874de72ab206da31",
+    "native_sha256": "3e33a958148bb8d706b4ae15af1f090d66947b7d36734bbdcc31d25a5422b67f",
+    "py_binding_source_sha256": "3ac908299e7090696065c7725241a1d5218c53ac84bc4d8589ff70dab5360add",
+    "replicates": 3,
+    "runner_sha256": "2ca22a22768c7cd4d3c2d005c86edb6225b0220ce569ac1a843f20e4be803c51"
+  },
+  "run_id": "rule-import-atomicity-postfix-20260925",
+  "schema_version": 1,
+  "successful_import_control": {
+    "active_in_order": [
+      true,
+      false
+    ],
+    "imported_count": 2,
+    "names_in_order": [
+      "staged_good_rule",
+      "staged_inactive_rule"
+    ],
+    "rule_count": 2
+  }
+}

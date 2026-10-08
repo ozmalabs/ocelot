@@ -1,0 +1,389 @@
+{
+  "analyzer_sha256": "sha256:29df702ba14ccb79710b1cd8811ef44cdb7d9e7224baf5cd76d0d122eaae9ebf",
+  "cells": [
+    {
+      "baseline_prediction_median_ms": 49.502136,
+      "batch_median_ms": 507.561306,
+      "batch_over_standalone_speedup": 1.5692046213625275,
+      "candidate_branch_setup_median_ms": 9.765451,
+      "candidate_prediction_median_ms": 52.3995685,
+      "candidate_rehearsal_total_median_ms": 458.03214,
+      "candidate_rule_patch_median_ms": 6.8380085,
+      "reusable_snapshot_capture_median_ms": 0.0,
+      "size": 10000,
+      "snapshot_backend": "native_full_copy_scoped",
+      "standalone_median_ms": 796.467547,
+      "useful_candidates_per_batch": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "baseline_prediction_median_ms": 37.757924,
+      "batch_median_ms": 422.031228,
+      "batch_over_standalone_speedup": 1.5173925233798102,
+      "candidate_branch_setup_median_ms": 6.5934065,
+      "candidate_prediction_median_ms": 44.4120555,
+      "candidate_rehearsal_total_median_ms": 385.350283,
+      "candidate_rule_patch_median_ms": 6.6379470000000005,
+      "reusable_snapshot_capture_median_ms": 0.0,
+      "size": 10000,
+      "snapshot_backend": "native_shared_graph_pages_scoped",
+      "standalone_median_ms": 640.38703,
+      "useful_candidates_per_batch": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "baseline_prediction_median_ms": 40.99007,
+      "batch_median_ms": 435.855707,
+      "batch_over_standalone_speedup": 1.4323781815251073,
+      "candidate_branch_setup_median_ms": 6.696732,
+      "candidate_prediction_median_ms": 43.848492,
+      "candidate_rehearsal_total_median_ms": 394.396334,
+      "candidate_rule_patch_median_ms": 6.752327,
+      "reusable_snapshot_capture_median_ms": 0.287612,
+      "size": 10000,
+      "snapshot_backend": "native_reusable_snapshot",
+      "standalone_median_ms": 624.310205,
+      "useful_candidates_per_batch": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "baseline_prediction_median_ms": 82.726474,
+      "batch_median_ms": 768.268857,
+      "batch_over_standalone_speedup": 1.9496183508581293,
+      "candidate_branch_setup_median_ms": 18.942653,
+      "candidate_prediction_median_ms": 82.7944005,
+      "candidate_rehearsal_total_median_ms": 687.679568,
+      "candidate_rule_patch_median_ms": 6.732692500000001,
+      "reusable_snapshot_capture_median_ms": 0.0,
+      "size": 50000,
+      "snapshot_backend": "native_full_copy_scoped",
+      "standalone_median_ms": 1497.831062,
+      "useful_candidates_per_batch": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "baseline_prediction_median_ms": 42.37414,
+      "batch_median_ms": 420.281975,
+      "batch_over_standalone_speedup": 1.4600423013620796,
+      "candidate_branch_setup_median_ms": 7.006970000000001,
+      "candidate_prediction_median_ms": 44.27501,
+      "candidate_rehearsal_total_median_ms": 377.877925,
+      "candidate_rule_patch_median_ms": 6.6473115,
+      "reusable_snapshot_capture_median_ms": 0.0,
+      "size": 50000,
+      "snapshot_backend": "native_shared_graph_pages_scoped",
+      "standalone_median_ms": 613.629462,
+      "useful_candidates_per_batch": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "baseline_prediction_median_ms": 41.319702,
+      "batch_median_ms": 423.186498,
+      "batch_over_standalone_speedup": 1.5118338345473394,
+      "candidate_branch_setup_median_ms": 6.7620024999999995,
+      "candidate_prediction_median_ms": 45.4469245,
+      "candidate_rehearsal_total_median_ms": 371.884838,
+      "candidate_rule_patch_median_ms": 6.6209015,
+      "reusable_snapshot_capture_median_ms": 0.278182,
+      "size": 50000,
+      "snapshot_backend": "native_reusable_snapshot",
+      "standalone_median_ms": 639.787666,
+      "useful_candidates_per_batch": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ]
+    }
+  ],
+  "gates": {
+    "comparisons": 6,
+    "cross_backend_exact_rows": 10,
+    "exact_nested_outcome_gates": 6,
+    "positive_negative_controls": 30,
+    "primary_guards": 6,
+    "trials": 30
+  },
+  "limits": [
+    "One authored correction family, one host, and five measured blocks per size/backend.",
+    "The candidate result graph conclusions and derived-only deltas contain zero changed nodes/edges in these rows; this workload does not stress graph-residual writes.",
+    "Changed-object residual counts are not a count of every mutation attempt, cloned page, or touched memory location.",
+    "The harness evaluates six branches sequentially; no concurrent serving, cancellation, reclamation bound, or vLLM-style KV-block adapter is measured."
+  ],
+  "raw_gzip_sha256": "sha256:cb3b5864de2c7e18138e74a0e2a3e9d003e56ce183d0b4aaa81940da429e1bf1",
+  "reusable_vs_direct_shared_page_paired": [
+    {
+      "batch_direct_over_reusable_wall_time_ratio_median": 0.9353724356157651,
+      "batch_reusable_wins": 2,
+      "blocks": 5,
+      "size": 10000,
+      "standalone_direct_over_reusable_wall_time_ratio_median": 0.963147513066974,
+      "standalone_reusable_wins": 2
+    },
+    {
+      "batch_direct_over_reusable_wall_time_ratio_median": 0.9401858823009992,
+      "batch_reusable_wins": 2,
+      "blocks": 5,
+      "size": 50000,
+      "standalone_direct_over_reusable_wall_time_ratio_median": 0.9591142415052435,
+      "standalone_reusable_wins": 1
+    }
+  ],
+  "schema": "ThoughtexperimentReusableSnapshotBatchV2Analysis",
+  "semantic_residual_changed_object_counts": [
+    {
+      "blocks": 5,
+      "candidate_label": "dedup_identity_fix",
+      "conclusions_changed_objects_per_block": {
+        "edges_added": 0,
+        "edges_removed": 0,
+        "nodes_added": 0,
+        "nodes_changed": 0,
+        "nodes_removed": 0
+      },
+      "derived_only_changed_objects_per_block": {
+        "edges_added": 0,
+        "edges_removed": 0,
+        "nodes_added": 0,
+        "nodes_changed": 0,
+        "nodes_removed": 0
+      },
+      "size": 10000
+    },
+    {
+      "blocks": 5,
+      "candidate_label": "add_match_guard(control)",
+      "conclusions_changed_objects_per_block": {
+        "edges_added": 0,
+        "edges_removed": 0,
+        "nodes_added": 0,
+        "nodes_changed": 0,
+        "nodes_removed": 0
+      },
+      "derived_only_changed_objects_per_block": {
+        "edges_added": 0,
+        "edges_removed": 0,
+        "nodes_added": 0,
+        "nodes_changed": 0,
+        "nodes_removed": 0
+      },
+      "size": 10000
+    },
+    {
+      "blocks": 5,
+      "candidate_label": "swap_term_leaf:signature->key",
+      "conclusions_changed_objects_per_block": {
+        "edges_added": 0,
+        "edges_removed": 0,
+        "nodes_added": 0,
+        "nodes_changed": 0,
+        "nodes_removed": 0
+      },
+      "derived_only_changed_objects_per_block": {
+        "edges_added": 0,
+        "edges_removed": 0,
+        "nodes_added": 0,
+        "nodes_changed": 0,
+        "nodes_removed": 0
+      },
+      "size": 10000
+    },
+    {
+      "blocks": 5,
+      "candidate_label": "swap_term_leaf:signature->name",
+      "conclusions_changed_objects_per_block": {
+        "edges_added": 0,
+        "edges_removed": 0,
+        "nodes_added": 0,
+        "nodes_changed": 0,
+        "nodes_removed": 0
+      },
+      "derived_only_changed_objects_per_block": {
+        "edges_added": 0,
+        "edges_removed": 0,
+        "nodes_added": 0,
+        "nodes_changed": 0,
+        "nodes_removed": 0
+      },
+      "size": 10000
+    },
+    {
+      "blocks": 5,
+      "candidate_label": "swap_term_leaf:signature->residual",
+      "conclusions_changed_objects_per_block": {
+        "edges_added": 0,
+        "edges_removed": 0,
+        "nodes_added": 0,
+        "nodes_changed": 0,
+        "nodes_removed": 0
+      },
+      "derived_only_changed_objects_per_block": {
+        "edges_added": 0,
+        "edges_removed": 0,
+        "nodes_added": 0,
+        "nodes_changed": 0,
+        "nodes_removed": 0
+      },
+      "size": 10000
+    },
+    {
+      "blocks": 5,
+      "candidate_label": "swap_term_leaf:key->signature",
+      "conclusions_changed_objects_per_block": {
+        "edges_added": 0,
+        "edges_removed": 0,
+        "nodes_added": 0,
+        "nodes_changed": 0,
+        "nodes_removed": 0
+      },
+      "derived_only_changed_objects_per_block": {
+        "edges_added": 0,
+        "edges_removed": 0,
+        "nodes_added": 0,
+        "nodes_changed": 0,
+        "nodes_removed": 0
+      },
+      "size": 10000
+    },
+    {
+      "blocks": 5,
+      "candidate_label": "dedup_identity_fix",
+      "conclusions_changed_objects_per_block": {
+        "edges_added": 0,
+        "edges_removed": 0,
+        "nodes_added": 0,
+        "nodes_changed": 0,
+        "nodes_removed": 0
+      },
+      "derived_only_changed_objects_per_block": {
+        "edges_added": 0,
+        "edges_removed": 0,
+        "nodes_added": 0,
+        "nodes_changed": 0,
+        "nodes_removed": 0
+      },
+      "size": 50000
+    },
+    {
+      "blocks": 5,
+      "candidate_label": "add_match_guard(control)",
+      "conclusions_changed_objects_per_block": {
+        "edges_added": 0,
+        "edges_removed": 0,
+        "nodes_added": 0,
+        "nodes_changed": 0,
+        "nodes_removed": 0
+      },
+      "derived_only_changed_objects_per_block": {
+        "edges_added": 0,
+        "edges_removed": 0,
+        "nodes_added": 0,
+        "nodes_changed": 0,
+        "nodes_removed": 0
+      },
+      "size": 50000
+    },
+    {
+      "blocks": 5,
+      "candidate_label": "swap_term_leaf:signature->key",
+      "conclusions_changed_objects_per_block": {
+        "edges_added": 0,
+        "edges_removed": 0,
+        "nodes_added": 0,
+        "nodes_changed": 0,
+        "nodes_removed": 0
+      },
+      "derived_only_changed_objects_per_block": {
+        "edges_added": 0,
+        "edges_removed": 0,
+        "nodes_added": 0,
+        "nodes_changed": 0,
+        "nodes_removed": 0
+      },
+      "size": 50000
+    },
+    {
+      "blocks": 5,
+      "candidate_label": "swap_term_leaf:signature->name",
+      "conclusions_changed_objects_per_block": {
+        "edges_added": 0,
+        "edges_removed": 0,
+        "nodes_added": 0,
+        "nodes_changed": 0,
+        "nodes_removed": 0
+      },
+      "derived_only_changed_objects_per_block": {
+        "edges_added": 0,
+        "edges_removed": 0,
+        "nodes_added": 0,
+        "nodes_changed": 0,
+        "nodes_removed": 0
+      },
+      "size": 50000
+    },
+    {
+      "blocks": 5,
+      "candidate_label": "swap_term_leaf:signature->residual",
+      "conclusions_changed_objects_per_block": {
+        "edges_added": 0,
+        "edges_removed": 0,
+        "nodes_added": 0,
+        "nodes_changed": 0,
+        "nodes_removed": 0
+      },
+      "derived_only_changed_objects_per_block": {
+        "edges_added": 0,
+        "edges_removed": 0,
+        "nodes_added": 0,
+        "nodes_changed": 0,
+        "nodes_removed": 0
+      },
+      "size": 50000
+    },
+    {
+      "blocks": 5,
+      "candidate_label": "swap_term_leaf:key->signature",
+      "conclusions_changed_objects_per_block": {
+        "edges_added": 0,
+        "edges_removed": 0,
+        "nodes_added": 0,
+        "nodes_changed": 0,
+        "nodes_removed": 0
+      },
+      "derived_only_changed_objects_per_block": {
+        "edges_added": 0,
+        "edges_removed": 0,
+        "nodes_added": 0,
+        "nodes_changed": 0,
+        "nodes_removed": 0
+      },
+      "size": 50000
+    }
+  ]
+}

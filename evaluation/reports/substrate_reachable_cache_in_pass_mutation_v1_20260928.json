@@ -1,0 +1,1766 @@
+{
+  "all_checks_pass": true,
+  "checks": {
+    "cache_off_detects_new_reachable_node": true,
+    "cache_on_counterexample_reproduced": true,
+    "cache_stats_match_execution_modes": true,
+    "final_graphs_diverge_only_at_detection": true,
+    "five_fresh_counterbalanced_workers": true,
+    "stable_source_lock_and_fresh_native": true,
+    "three_rule_read_write_dependencies": true
+  },
+  "claim_boundary": "Locked minimal counterexample: same-pass add-only path mutation can leave cache-on run_rules at an incomplete fixed point. No natural workload or timing claim.",
+  "locked_inputs": {
+    "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+    "files": {
+      "docs/research/engine_substrate/SUBSTRATE_REACHABLE_CACHE_IN_PASS_MUTATION_V1_PREREG_20260928.md": "22a32a6f620a1705ec63560258d62aa754fc41f4a8cf9a2e5bbc0a53f0b26a09",
+      "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+      "runners/dsl/Cargo.lock": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+      "runners/dsl/Cargo.toml": "c4d8ffff2241352a5150b5a9937dbb8010e958b6f115235b7daeae716c1a9332",
+      "runners/dsl/python/substrate_rs/_native.build.json": "5eb4e406212fc926cebda32ac0441a4182c77a7b82945840c5890dce0064a5bc",
+      "runners/dsl/src/graph.rs": "b3b6a3f851e6212a01d20e811f16971a322509706b8ea042a3988ff921c07bcf",
+      "runners/dsl/src/py.rs": "bf2d748d04cb13f41ec54adf8439b35f50df91fa1cb8ce8d7f2fff15e5254e58",
+      "runners/dsl/src/rewrite.rs": "58cea7eaa595c804f4f0265c4003231105011dc2493bea8ca30dea6bb6246c34",
+      "runners/dsl/src/substrate.rs": "17d0992ddf586cede7ca20b95f9d95245adbe49a312054d8dfa75c723605bf68",
+      "runners/dsl/src/term.rs": "3dc19255f1353c683cb963ce4485fb85b36bb87bd8db8d19ac851a5f4f5b02c8",
+      "scripts/analyze_substrate_reachable_cache_in_pass_mutation_v1.py": "cae33aa2fc79ac5137be0766b11062c8e1dfa752a39eea6d704496d3b0bc2e35",
+      "scripts/substrate_reachable_cache_in_pass_mutation_v1.py": "a523e95aaba9970c16ff29bc96906e1a07bd2f9ee06e5baacb490efc714ac871",
+      "scripts/substrate_run_manifest.py": "924ce1d320c8373f0e27edbc8ba43b6e17fcf6aeb4b6b2a3e8f36f76ea8cb33b"
+    },
+    "native_build_stale": [],
+    "native_path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+    "native_sha256": "accca93837e9605b703173ad0e58ea5d70add7e08d971c14b133b28bf02138a9"
+  },
+  "post_run_inputs": {
+    "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+    "files": {
+      "docs/research/engine_substrate/SUBSTRATE_REACHABLE_CACHE_IN_PASS_MUTATION_V1_PREREG_20260928.md": "22a32a6f620a1705ec63560258d62aa754fc41f4a8cf9a2e5bbc0a53f0b26a09",
+      "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+      "runners/dsl/Cargo.lock": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+      "runners/dsl/Cargo.toml": "c4d8ffff2241352a5150b5a9937dbb8010e958b6f115235b7daeae716c1a9332",
+      "runners/dsl/python/substrate_rs/_native.build.json": "5eb4e406212fc926cebda32ac0441a4182c77a7b82945840c5890dce0064a5bc",
+      "runners/dsl/src/graph.rs": "b3b6a3f851e6212a01d20e811f16971a322509706b8ea042a3988ff921c07bcf",
+      "runners/dsl/src/py.rs": "bf2d748d04cb13f41ec54adf8439b35f50df91fa1cb8ce8d7f2fff15e5254e58",
+      "runners/dsl/src/rewrite.rs": "58cea7eaa595c804f4f0265c4003231105011dc2493bea8ca30dea6bb6246c34",
+      "runners/dsl/src/substrate.rs": "17d0992ddf586cede7ca20b95f9d95245adbe49a312054d8dfa75c723605bf68",
+      "runners/dsl/src/term.rs": "3dc19255f1353c683cb963ce4485fb85b36bb87bd8db8d19ac851a5f4f5b02c8",
+      "scripts/analyze_substrate_reachable_cache_in_pass_mutation_v1.py": "cae33aa2fc79ac5137be0766b11062c8e1dfa752a39eea6d704496d3b0bc2e35",
+      "scripts/substrate_reachable_cache_in_pass_mutation_v1.py": "a523e95aaba9970c16ff29bc96906e1a07bd2f9ee06e5baacb490efc714ac871",
+      "scripts/substrate_run_manifest.py": "924ce1d320c8373f0e27edbc8ba43b6e17fcf6aeb4b6b2a3e8f36f76ea8cb33b"
+    },
+    "native_build_stale": [],
+    "native_path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+    "native_sha256": "accca93837e9605b703173ad0e58ea5d70add7e08d971c14b133b28bf02138a9"
+  },
+  "run_id": "substrate-reachable-cache-in-pass-mutation-v1-20260928",
+  "run_manifest": {
+    "captured_utc": "2026-09-28T00:54:14.807468+00:00",
+    "engine": {
+      "build_is_stale": false,
+      "native_build_manifest_sha256": "5eb4e406212fc926cebda32ac0441a4182c77a7b82945840c5890dce0064a5bc",
+      "native_extension_path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+      "native_extension_sha256": "accca93837e9605b703173ad0e58ea5d70add7e08d971c14b133b28bf02138a9",
+      "rust_source_fingerprint": "be445e7ac5cb042b3d79ec065c0a7cb6b2b9a7f17c1b54beaa83aa39d889ddac"
+    },
+    "execution": {
+      "argv": [
+        "/home/linuxbrew/.linuxbrew/opt/python@3.13/bin/python3.13",
+        "scripts/substrate_reachable_cache_in_pass_mutation_v1.py"
+      ],
+      "child_processes": [],
+      "command_display": "/home/linuxbrew/.linuxbrew/opt/python@3.13/bin/python3.13 scripts/substrate_reachable_cache_in_pass_mutation_v1.py",
+      "python_executable": "/home/linuxbrew/.linuxbrew/opt/python@3.13/bin/python3.13",
+      "python_version": "3.13.5 (main, Jun 11 2025, 15:36:57) [GCC 11.4.0]",
+      "relevant_environment": {}
+    },
+    "exit_status": 0,
+    "explicit_inputs": {
+      "docs/research/engine_substrate/SUBSTRATE_REACHABLE_CACHE_IN_PASS_MUTATION_V1_PREREG_20260928.md": {
+        "exists": true,
+        "group": "protocol",
+        "sha256": "22a32a6f620a1705ec63560258d62aa754fc41f4a8cf9a2e5bbc0a53f0b26a09"
+      },
+      "evaluation/substrate_capability/reachable_cache_in_pass_mutation_v1_lock_20260928.json": {
+        "exists": true,
+        "group": "protocol",
+        "sha256": "6c7c37790bae06bc1e46ed6f2370c578c7646b259ec8e4346ec4a0e6b4380d3b"
+      },
+      "runners/dsl/Cargo.lock": {
+        "exists": true,
+        "group": "build_inputs",
+        "sha256": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9"
+      },
+      "runners/dsl/Cargo.toml": {
+        "exists": true,
+        "group": "build_inputs",
+        "sha256": "c4d8ffff2241352a5150b5a9937dbb8010e958b6f115235b7daeae716c1a9332"
+      },
+      "runners/dsl/python/substrate_rs/_native.build.json": {
+        "exists": true,
+        "group": "source",
+        "sha256": "5eb4e406212fc926cebda32ac0441a4182c77a7b82945840c5890dce0064a5bc"
+      },
+      "runners/dsl/src/graph.rs": {
+        "exists": true,
+        "group": "source",
+        "sha256": "b3b6a3f851e6212a01d20e811f16971a322509706b8ea042a3988ff921c07bcf"
+      },
+      "runners/dsl/src/py.rs": {
+        "exists": true,
+        "group": "source",
+        "sha256": "bf2d748d04cb13f41ec54adf8439b35f50df91fa1cb8ce8d7f2fff15e5254e58"
+      },
+      "runners/dsl/src/rewrite.rs": {
+        "exists": true,
+        "group": "source",
+        "sha256": "58cea7eaa595c804f4f0265c4003231105011dc2493bea8ca30dea6bb6246c34"
+      },
+      "runners/dsl/src/substrate.rs": {
+        "exists": true,
+        "group": "source",
+        "sha256": "17d0992ddf586cede7ca20b95f9d95245adbe49a312054d8dfa75c723605bf68"
+      },
+      "runners/dsl/src/term.rs": {
+        "exists": true,
+        "group": "source",
+        "sha256": "3dc19255f1353c683cb963ce4485fb85b36bb87bd8db8d19ac851a5f4f5b02c8"
+      },
+      "scripts/analyze_substrate_reachable_cache_in_pass_mutation_v1.py": {
+        "exists": true,
+        "group": "analysis",
+        "sha256": "cae33aa2fc79ac5137be0766b11062c8e1dfa752a39eea6d704496d3b0bc2e35"
+      },
+      "scripts/substrate_reachable_cache_in_pass_mutation_v1.py": {
+        "exists": true,
+        "group": "runner",
+        "sha256": "a523e95aaba9970c16ff29bc96906e1a07bd2f9ee06e5baacb490efc714ac871"
+      },
+      "scripts/substrate_run_manifest.py": {
+        "exists": true,
+        "group": "manifest_capture",
+        "sha256": "924ce1d320c8373f0e27edbc8ba43b6e17fcf6aeb4b6b2a3e8f36f76ea8cb33b"
+      }
+    },
+    "hardware": {
+      "cpu_model": "AMD Ryzen 9 5900X 12-Core Processor",
+      "logical_cpu_count": 24,
+      "machine": "x86_64",
+      "memory_total_bytes": 67342565376,
+      "platform": "Linux-6.8.0-142-generic-x86_64-with-glibc2.39",
+      "system": "Linux",
+      "workspace_filesystem_free_bytes": 8092954624,
+      "workspace_filesystem_total_bytes": 982627737600
+    },
+    "manifest_schema": "substrate-run-manifest-v1",
+    "repository": {
+      "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+      "dirty_workspace": {
+        "scope_note": "Unrelated untracked artifact contents are not recursively hashed; benchmark-relevant files are content-hashed in explicit_inputs.",
+        "status_porcelain_sha256": "a4aeae958c10ba93483571476ccadf8fb1da7761711963527b121824439f6cf5",
+        "status_record_count": 5379,
+        "tracked_dirty_content_index_sha256": "5c1cd682098af7ff8d5ab9276fc6fc21366b904607e067c6a7b6b47f9915b315",
+        "tracked_dirty_file_count": 150,
+        "untracked_path_count": 5229,
+        "untracked_path_inventory_sha256": "9ed2e9ccf9edafdc107ab6522806fa56f104b76c0a7a4e19f16ad81bd2996c34"
+      },
+      "root": "/home/matt/ozmadev/ocelot"
+    },
+    "run_end_utc": "2026-09-28T00:54:14.807477+00:00",
+    "run_id": "substrate-reachable-cache-in-pass-mutation-v1-20260928",
+    "run_started_utc": "2026-09-28T00:54:14.268069+00:00",
+    "stdout_stderr_capture": {
+      "bytes": 0,
+      "path": "evaluation/run_logs/substrate-reachable-cache-in-pass-mutation-v1-20260928.stdout_stderr.log",
+      "scope": "parent-process stdout/stderr before the final structured summary print",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "stdout_stderr_note": null,
+    "toolchain": {
+      "cargo": "cargo 1.87.0 (Homebrew)",
+      "rustc": "rustc 1.87.0 (17067e9ac 2025-05-09) (Homebrew)"
+    }
+  },
+  "runs": [
+    {
+      "after": {
+        "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+        "files": {
+          "docs/research/engine_substrate/SUBSTRATE_REACHABLE_CACHE_IN_PASS_MUTATION_V1_PREREG_20260928.md": "22a32a6f620a1705ec63560258d62aa754fc41f4a8cf9a2e5bbc0a53f0b26a09",
+          "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+          "runners/dsl/Cargo.lock": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+          "runners/dsl/Cargo.toml": "c4d8ffff2241352a5150b5a9937dbb8010e958b6f115235b7daeae716c1a9332",
+          "runners/dsl/python/substrate_rs/_native.build.json": "5eb4e406212fc926cebda32ac0441a4182c77a7b82945840c5890dce0064a5bc",
+          "runners/dsl/src/graph.rs": "b3b6a3f851e6212a01d20e811f16971a322509706b8ea042a3988ff921c07bcf",
+          "runners/dsl/src/py.rs": "bf2d748d04cb13f41ec54adf8439b35f50df91fa1cb8ce8d7f2fff15e5254e58",
+          "runners/dsl/src/rewrite.rs": "58cea7eaa595c804f4f0265c4003231105011dc2493bea8ca30dea6bb6246c34",
+          "runners/dsl/src/substrate.rs": "17d0992ddf586cede7ca20b95f9d95245adbe49a312054d8dfa75c723605bf68",
+          "runners/dsl/src/term.rs": "3dc19255f1353c683cb963ce4485fb85b36bb87bd8db8d19ac851a5f4f5b02c8",
+          "scripts/analyze_substrate_reachable_cache_in_pass_mutation_v1.py": "cae33aa2fc79ac5137be0766b11062c8e1dfa752a39eea6d704496d3b0bc2e35",
+          "scripts/substrate_reachable_cache_in_pass_mutation_v1.py": "a523e95aaba9970c16ff29bc96906e1a07bd2f9ee06e5baacb490efc714ac871",
+          "scripts/substrate_run_manifest.py": "924ce1d320c8373f0e27edbc8ba43b6e17fcf6aeb4b6b2a3e8f36f76ea8cb33b"
+        },
+        "native_build_stale": [],
+        "native_path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+        "native_sha256": "accca93837e9605b703173ad0e58ea5d70add7e08d971c14b133b28bf02138a9"
+      },
+      "arm_order": [
+        "false",
+        "true"
+      ],
+      "arms": {
+        "false": {
+          "cache": false,
+          "cache_stats": {
+            "entries": 0,
+            "estimated_payload_bytes": 0,
+            "footprint_nodes": 0,
+            "hits": 0,
+            "map_capacity": 0,
+            "misses": 0,
+            "peak_entries": 0,
+            "peak_estimated_payload_bytes": 0,
+            "result_values": 0
+          },
+          "detected": true,
+          "graph": {
+            "edges": [
+              {
+                "attrs": {},
+                "src": 0,
+                "tgt": 1,
+                "type": "path"
+              },
+              {
+                "attrs": {},
+                "src": 0,
+                "tgt": 1,
+                "type": "probe"
+              },
+              {
+                "attrs": {},
+                "src": 0,
+                "tgt": 1,
+                "type": "marker"
+              },
+              {
+                "attrs": {},
+                "src": 0,
+                "tgt": 2,
+                "type": "add_path"
+              },
+              {
+                "attrs": {},
+                "src": 0,
+                "tgt": 2,
+                "type": "detect"
+              },
+              {
+                "attrs": {},
+                "src": 0,
+                "tgt": 2,
+                "type": "path"
+              },
+              {
+                "attrs": {},
+                "src": 0,
+                "tgt": 2,
+                "type": "detected"
+              }
+            ],
+            "next_id": 3,
+            "nodes": [
+              {
+                "attrs": {},
+                "id": 0,
+                "type": "N"
+              },
+              {
+                "attrs": {},
+                "id": 1,
+                "type": "N"
+              },
+              {
+                "attrs": {},
+                "id": 2,
+                "type": "N"
+              }
+            ]
+          },
+          "rule_access_sets": [
+            [
+              0,
+              "prime_reachable",
+              true,
+              [
+                "edge:path",
+                "edge:probe"
+              ],
+              [
+                "edge:path"
+              ],
+              [
+                "edge:marker"
+              ],
+              false,
+              false
+            ],
+            [
+              1,
+              "insert_path",
+              true,
+              [
+                "edge:add_path"
+              ],
+              [],
+              [
+                "edge:path"
+              ],
+              false,
+              false
+            ],
+            [
+              2,
+              "detect_new_reachable",
+              true,
+              [
+                "edge:detect",
+                "edge:path"
+              ],
+              [
+                "edge:path"
+              ],
+              [
+                "edge:detected"
+              ],
+              false,
+              false
+            ]
+          ],
+          "rule_ids": [
+            0,
+            1,
+            2
+          ],
+          "steps": 2
+        },
+        "true": {
+          "cache": true,
+          "cache_stats": {
+            "entries": 1,
+            "estimated_payload_bytes": 196,
+            "footprint_nodes": 3,
+            "hits": 1,
+            "map_capacity": 3,
+            "misses": 2,
+            "peak_entries": 1,
+            "peak_estimated_payload_bytes": 196,
+            "result_values": 2
+          },
+          "detected": false,
+          "graph": {
+            "edges": [
+              {
+                "attrs": {},
+                "src": 0,
+                "tgt": 1,
+                "type": "path"
+              },
+              {
+                "attrs": {},
+                "src": 0,
+                "tgt": 1,
+                "type": "probe"
+              },
+              {
+                "attrs": {},
+                "src": 0,
+                "tgt": 1,
+                "type": "marker"
+              },
+              {
+                "attrs": {},
+                "src": 0,
+                "tgt": 2,
+                "type": "add_path"
+              },
+              {
+                "attrs": {},
+                "src": 0,
+                "tgt": 2,
+                "type": "detect"
+              },
+              {
+                "attrs": {},
+                "src": 0,
+                "tgt": 2,
+                "type": "path"
+              }
+            ],
+            "next_id": 3,
+            "nodes": [
+              {
+                "attrs": {},
+                "id": 0,
+                "type": "N"
+              },
+              {
+                "attrs": {},
+                "id": 1,
+                "type": "N"
+              },
+              {
+                "attrs": {},
+                "id": 2,
+                "type": "N"
+              }
+            ]
+          },
+          "rule_access_sets": [
+            [
+              0,
+              "prime_reachable",
+              true,
+              [
+                "edge:path",
+                "edge:probe"
+              ],
+              [
+                "edge:path"
+              ],
+              [
+                "edge:marker"
+              ],
+              false,
+              false
+            ],
+            [
+              1,
+              "insert_path",
+              true,
+              [
+                "edge:add_path"
+              ],
+              [],
+              [
+                "edge:path"
+              ],
+              false,
+              false
+            ],
+            [
+              2,
+              "detect_new_reachable",
+              true,
+              [
+                "edge:detect",
+                "edge:path"
+              ],
+              [
+                "edge:path"
+              ],
+              [
+                "edge:detected"
+              ],
+              false,
+              false
+            ]
+          ],
+          "rule_ids": [
+            0,
+            1,
+            2
+          ],
+          "steps": 1
+        }
+      },
+      "before": {
+        "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+        "files": {
+          "docs/research/engine_substrate/SUBSTRATE_REACHABLE_CACHE_IN_PASS_MUTATION_V1_PREREG_20260928.md": "22a32a6f620a1705ec63560258d62aa754fc41f4a8cf9a2e5bbc0a53f0b26a09",
+          "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+          "runners/dsl/Cargo.lock": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+          "runners/dsl/Cargo.toml": "c4d8ffff2241352a5150b5a9937dbb8010e958b6f115235b7daeae716c1a9332",
+          "runners/dsl/python/substrate_rs/_native.build.json": "5eb4e406212fc926cebda32ac0441a4182c77a7b82945840c5890dce0064a5bc",
+          "runners/dsl/src/graph.rs": "b3b6a3f851e6212a01d20e811f16971a322509706b8ea042a3988ff921c07bcf",
+          "runners/dsl/src/py.rs": "bf2d748d04cb13f41ec54adf8439b35f50df91fa1cb8ce8d7f2fff15e5254e58",
+          "runners/dsl/src/rewrite.rs": "58cea7eaa595c804f4f0265c4003231105011dc2493bea8ca30dea6bb6246c34",
+          "runners/dsl/src/substrate.rs": "17d0992ddf586cede7ca20b95f9d95245adbe49a312054d8dfa75c723605bf68",
+          "runners/dsl/src/term.rs": "3dc19255f1353c683cb963ce4485fb85b36bb87bd8db8d19ac851a5f4f5b02c8",
+          "scripts/analyze_substrate_reachable_cache_in_pass_mutation_v1.py": "cae33aa2fc79ac5137be0766b11062c8e1dfa752a39eea6d704496d3b0bc2e35",
+          "scripts/substrate_reachable_cache_in_pass_mutation_v1.py": "a523e95aaba9970c16ff29bc96906e1a07bd2f9ee06e5baacb490efc714ac871",
+          "scripts/substrate_run_manifest.py": "924ce1d320c8373f0e27edbc8ba43b6e17fcf6aeb4b6b2a3e8f36f76ea8cb33b"
+        },
+        "native_build_stale": [],
+        "native_path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+        "native_sha256": "accca93837e9605b703173ad0e58ea5d70add7e08d971c14b133b28bf02138a9"
+      },
+      "pid": 6,
+      "replicate": 0
+    },
+    {
+      "after": {
+        "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+        "files": {
+          "docs/research/engine_substrate/SUBSTRATE_REACHABLE_CACHE_IN_PASS_MUTATION_V1_PREREG_20260928.md": "22a32a6f620a1705ec63560258d62aa754fc41f4a8cf9a2e5bbc0a53f0b26a09",
+          "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+          "runners/dsl/Cargo.lock": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+          "runners/dsl/Cargo.toml": "c4d8ffff2241352a5150b5a9937dbb8010e958b6f115235b7daeae716c1a9332",
+          "runners/dsl/python/substrate_rs/_native.build.json": "5eb4e406212fc926cebda32ac0441a4182c77a7b82945840c5890dce0064a5bc",
+          "runners/dsl/src/graph.rs": "b3b6a3f851e6212a01d20e811f16971a322509706b8ea042a3988ff921c07bcf",
+          "runners/dsl/src/py.rs": "bf2d748d04cb13f41ec54adf8439b35f50df91fa1cb8ce8d7f2fff15e5254e58",
+          "runners/dsl/src/rewrite.rs": "58cea7eaa595c804f4f0265c4003231105011dc2493bea8ca30dea6bb6246c34",
+          "runners/dsl/src/substrate.rs": "17d0992ddf586cede7ca20b95f9d95245adbe49a312054d8dfa75c723605bf68",
+          "runners/dsl/src/term.rs": "3dc19255f1353c683cb963ce4485fb85b36bb87bd8db8d19ac851a5f4f5b02c8",
+          "scripts/analyze_substrate_reachable_cache_in_pass_mutation_v1.py": "cae33aa2fc79ac5137be0766b11062c8e1dfa752a39eea6d704496d3b0bc2e35",
+          "scripts/substrate_reachable_cache_in_pass_mutation_v1.py": "a523e95aaba9970c16ff29bc96906e1a07bd2f9ee06e5baacb490efc714ac871",
+          "scripts/substrate_run_manifest.py": "924ce1d320c8373f0e27edbc8ba43b6e17fcf6aeb4b6b2a3e8f36f76ea8cb33b"
+        },
+        "native_build_stale": [],
+        "native_path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+        "native_sha256": "accca93837e9605b703173ad0e58ea5d70add7e08d971c14b133b28bf02138a9"
+      },
+      "arm_order": [
+        "true",
+        "false"
+      ],
+      "arms": {
+        "false": {
+          "cache": false,
+          "cache_stats": {
+            "entries": 0,
+            "estimated_payload_bytes": 0,
+            "footprint_nodes": 0,
+            "hits": 0,
+            "map_capacity": 0,
+            "misses": 0,
+            "peak_entries": 0,
+            "peak_estimated_payload_bytes": 0,
+            "result_values": 0
+          },
+          "detected": true,
+          "graph": {
+            "edges": [
+              {
+                "attrs": {},
+                "src": 0,
+                "tgt": 1,
+                "type": "path"
+              },
+              {
+                "attrs": {},
+                "src": 0,
+                "tgt": 1,
+                "type": "probe"
+              },
+              {
+                "attrs": {},
+                "src": 0,
+                "tgt": 1,
+                "type": "marker"
+              },
+              {
+                "attrs": {},
+                "src": 0,
+                "tgt": 2,
+                "type": "add_path"
+              },
+              {
+                "attrs": {},
+                "src": 0,
+                "tgt": 2,
+                "type": "detect"
+              },
+              {
+                "attrs": {},
+                "src": 0,
+                "tgt": 2,
+                "type": "path"
+              },
+              {
+                "attrs": {},
+                "src": 0,
+                "tgt": 2,
+                "type": "detected"
+              }
+            ],
+            "next_id": 3,
+            "nodes": [
+              {
+                "attrs": {},
+                "id": 0,
+                "type": "N"
+              },
+              {
+                "attrs": {},
+                "id": 1,
+                "type": "N"
+              },
+              {
+                "attrs": {},
+                "id": 2,
+                "type": "N"
+              }
+            ]
+          },
+          "rule_access_sets": [
+            [
+              0,
+              "prime_reachable",
+              true,
+              [
+                "edge:path",
+                "edge:probe"
+              ],
+              [
+                "edge:path"
+              ],
+              [
+                "edge:marker"
+              ],
+              false,
+              false
+            ],
+            [
+              1,
+              "insert_path",
+              true,
+              [
+                "edge:add_path"
+              ],
+              [],
+              [
+                "edge:path"
+              ],
+              false,
+              false
+            ],
+            [
+              2,
+              "detect_new_reachable",
+              true,
+              [
+                "edge:detect",
+                "edge:path"
+              ],
+              [
+                "edge:path"
+              ],
+              [
+                "edge:detected"
+              ],
+              false,
+              false
+            ]
+          ],
+          "rule_ids": [
+            0,
+            1,
+            2
+          ],
+          "steps": 2
+        },
+        "true": {
+          "cache": true,
+          "cache_stats": {
+            "entries": 1,
+            "estimated_payload_bytes": 196,
+            "footprint_nodes": 3,
+            "hits": 1,
+            "map_capacity": 3,
+            "misses": 2,
+            "peak_entries": 1,
+            "peak_estimated_payload_bytes": 196,
+            "result_values": 2
+          },
+          "detected": false,
+          "graph": {
+            "edges": [
+              {
+                "attrs": {},
+                "src": 0,
+                "tgt": 1,
+                "type": "path"
+              },
+              {
+                "attrs": {},
+                "src": 0,
+                "tgt": 1,
+                "type": "probe"
+              },
+              {
+                "attrs": {},
+                "src": 0,
+                "tgt": 1,
+                "type": "marker"
+              },
+              {
+                "attrs": {},
+                "src": 0,
+                "tgt": 2,
+                "type": "add_path"
+              },
+              {
+                "attrs": {},
+                "src": 0,
+                "tgt": 2,
+                "type": "detect"
+              },
+              {
+                "attrs": {},
+                "src": 0,
+                "tgt": 2,
+                "type": "path"
+              }
+            ],
+            "next_id": 3,
+            "nodes": [
+              {
+                "attrs": {},
+                "id": 0,
+                "type": "N"
+              },
+              {
+                "attrs": {},
+                "id": 1,
+                "type": "N"
+              },
+              {
+                "attrs": {},
+                "id": 2,
+                "type": "N"
+              }
+            ]
+          },
+          "rule_access_sets": [
+            [
+              0,
+              "prime_reachable",
+              true,
+              [
+                "edge:path",
+                "edge:probe"
+              ],
+              [
+                "edge:path"
+              ],
+              [
+                "edge:marker"
+              ],
+              false,
+              false
+            ],
+            [
+              1,
+              "insert_path",
+              true,
+              [
+                "edge:add_path"
+              ],
+              [],
+              [
+                "edge:path"
+              ],
+              false,
+              false
+            ],
+            [
+              2,
+              "detect_new_reachable",
+              true,
+              [
+                "edge:detect",
+                "edge:path"
+              ],
+              [
+                "edge:path"
+              ],
+              [
+                "edge:detected"
+              ],
+              false,
+              false
+            ]
+          ],
+          "rule_ids": [
+            0,
+            1,
+            2
+          ],
+          "steps": 1
+        }
+      },
+      "before": {
+        "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+        "files": {
+          "docs/research/engine_substrate/SUBSTRATE_REACHABLE_CACHE_IN_PASS_MUTATION_V1_PREREG_20260928.md": "22a32a6f620a1705ec63560258d62aa754fc41f4a8cf9a2e5bbc0a53f0b26a09",
+          "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+          "runners/dsl/Cargo.lock": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+          "runners/dsl/Cargo.toml": "c4d8ffff2241352a5150b5a9937dbb8010e958b6f115235b7daeae716c1a9332",
+          "runners/dsl/python/substrate_rs/_native.build.json": "5eb4e406212fc926cebda32ac0441a4182c77a7b82945840c5890dce0064a5bc",
+          "runners/dsl/src/graph.rs": "b3b6a3f851e6212a01d20e811f16971a322509706b8ea042a3988ff921c07bcf",
+          "runners/dsl/src/py.rs": "bf2d748d04cb13f41ec54adf8439b35f50df91fa1cb8ce8d7f2fff15e5254e58",
+          "runners/dsl/src/rewrite.rs": "58cea7eaa595c804f4f0265c4003231105011dc2493bea8ca30dea6bb6246c34",
+          "runners/dsl/src/substrate.rs": "17d0992ddf586cede7ca20b95f9d95245adbe49a312054d8dfa75c723605bf68",
+          "runners/dsl/src/term.rs": "3dc19255f1353c683cb963ce4485fb85b36bb87bd8db8d19ac851a5f4f5b02c8",
+          "scripts/analyze_substrate_reachable_cache_in_pass_mutation_v1.py": "cae33aa2fc79ac5137be0766b11062c8e1dfa752a39eea6d704496d3b0bc2e35",
+          "scripts/substrate_reachable_cache_in_pass_mutation_v1.py": "a523e95aaba9970c16ff29bc96906e1a07bd2f9ee06e5baacb490efc714ac871",
+          "scripts/substrate_run_manifest.py": "924ce1d320c8373f0e27edbc8ba43b6e17fcf6aeb4b6b2a3e8f36f76ea8cb33b"
+        },
+        "native_build_stale": [],
+        "native_path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+        "native_sha256": "accca93837e9605b703173ad0e58ea5d70add7e08d971c14b133b28bf02138a9"
+      },
+      "pid": 15,
+      "replicate": 1
+    },
+    {
+      "after": {
+        "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+        "files": {
+          "docs/research/engine_substrate/SUBSTRATE_REACHABLE_CACHE_IN_PASS_MUTATION_V1_PREREG_20260928.md": "22a32a6f620a1705ec63560258d62aa754fc41f4a8cf9a2e5bbc0a53f0b26a09",
+          "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+          "runners/dsl/Cargo.lock": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+          "runners/dsl/Cargo.toml": "c4d8ffff2241352a5150b5a9937dbb8010e958b6f115235b7daeae716c1a9332",
+          "runners/dsl/python/substrate_rs/_native.build.json": "5eb4e406212fc926cebda32ac0441a4182c77a7b82945840c5890dce0064a5bc",
+          "runners/dsl/src/graph.rs": "b3b6a3f851e6212a01d20e811f16971a322509706b8ea042a3988ff921c07bcf",
+          "runners/dsl/src/py.rs": "bf2d748d04cb13f41ec54adf8439b35f50df91fa1cb8ce8d7f2fff15e5254e58",
+          "runners/dsl/src/rewrite.rs": "58cea7eaa595c804f4f0265c4003231105011dc2493bea8ca30dea6bb6246c34",
+          "runners/dsl/src/substrate.rs": "17d0992ddf586cede7ca20b95f9d95245adbe49a312054d8dfa75c723605bf68",
+          "runners/dsl/src/term.rs": "3dc19255f1353c683cb963ce4485fb85b36bb87bd8db8d19ac851a5f4f5b02c8",
+          "scripts/analyze_substrate_reachable_cache_in_pass_mutation_v1.py": "cae33aa2fc79ac5137be0766b11062c8e1dfa752a39eea6d704496d3b0bc2e35",
+          "scripts/substrate_reachable_cache_in_pass_mutation_v1.py": "a523e95aaba9970c16ff29bc96906e1a07bd2f9ee06e5baacb490efc714ac871",
+          "scripts/substrate_run_manifest.py": "924ce1d320c8373f0e27edbc8ba43b6e17fcf6aeb4b6b2a3e8f36f76ea8cb33b"
+        },
+        "native_build_stale": [],
+        "native_path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+        "native_sha256": "accca93837e9605b703173ad0e58ea5d70add7e08d971c14b133b28bf02138a9"
+      },
+      "arm_order": [
+        "false",
+        "true"
+      ],
+      "arms": {
+        "false": {
+          "cache": false,
+          "cache_stats": {
+            "entries": 0,
+            "estimated_payload_bytes": 0,
+            "footprint_nodes": 0,
+            "hits": 0,
+            "map_capacity": 0,
+            "misses": 0,
+            "peak_entries": 0,
+            "peak_estimated_payload_bytes": 0,
+            "result_values": 0
+          },
+          "detected": true,
+          "graph": {
+            "edges": [
+              {
+                "attrs": {},
+                "src": 0,
+                "tgt": 1,
+                "type": "path"
+              },
+              {
+                "attrs": {},
+                "src": 0,
+                "tgt": 1,
+                "type": "probe"
+              },
+              {
+                "attrs": {},
+                "src": 0,
+                "tgt": 1,
+                "type": "marker"
+              },
+              {
+                "attrs": {},
+                "src": 0,
+                "tgt": 2,
+                "type": "add_path"
+              },
+              {
+                "attrs": {},
+                "src": 0,
+                "tgt": 2,
+                "type": "detect"
+              },
+              {
+                "attrs": {},
+                "src": 0,
+                "tgt": 2,
+                "type": "path"
+              },
+              {
+                "attrs": {},
+                "src": 0,
+                "tgt": 2,
+                "type": "detected"
+              }
+            ],
+            "next_id": 3,
+            "nodes": [
+              {
+                "attrs": {},
+                "id": 0,
+                "type": "N"
+              },
+              {
+                "attrs": {},
+                "id": 1,
+                "type": "N"
+              },
+              {
+                "attrs": {},
+                "id": 2,
+                "type": "N"
+              }
+            ]
+          },
+          "rule_access_sets": [
+            [
+              0,
+              "prime_reachable",
+              true,
+              [
+                "edge:path",
+                "edge:probe"
+              ],
+              [
+                "edge:path"
+              ],
+              [
+                "edge:marker"
+              ],
+              false,
+              false
+            ],
+            [
+              1,
+              "insert_path",
+              true,
+              [
+                "edge:add_path"
+              ],
+              [],
+              [
+                "edge:path"
+              ],
+              false,
+              false
+            ],
+            [
+              2,
+              "detect_new_reachable",
+              true,
+              [
+                "edge:detect",
+                "edge:path"
+              ],
+              [
+                "edge:path"
+              ],
+              [
+                "edge:detected"
+              ],
+              false,
+              false
+            ]
+          ],
+          "rule_ids": [
+            0,
+            1,
+            2
+          ],
+          "steps": 2
+        },
+        "true": {
+          "cache": true,
+          "cache_stats": {
+            "entries": 1,
+            "estimated_payload_bytes": 196,
+            "footprint_nodes": 3,
+            "hits": 1,
+            "map_capacity": 3,
+            "misses": 2,
+            "peak_entries": 1,
+            "peak_estimated_payload_bytes": 196,
+            "result_values": 2
+          },
+          "detected": false,
+          "graph": {
+            "edges": [
+              {
+                "attrs": {},
+                "src": 0,
+                "tgt": 1,
+                "type": "path"
+              },
+              {
+                "attrs": {},
+                "src": 0,
+                "tgt": 1,
+                "type": "probe"
+              },
+              {
+                "attrs": {},
+                "src": 0,
+                "tgt": 1,
+                "type": "marker"
+              },
+              {
+                "attrs": {},
+                "src": 0,
+                "tgt": 2,
+                "type": "add_path"
+              },
+              {
+                "attrs": {},
+                "src": 0,
+                "tgt": 2,
+                "type": "detect"
+              },
+              {
+                "attrs": {},
+                "src": 0,
+                "tgt": 2,
+                "type": "path"
+              }
+            ],
+            "next_id": 3,
+            "nodes": [
+              {
+                "attrs": {},
+                "id": 0,
+                "type": "N"
+              },
+              {
+                "attrs": {},
+                "id": 1,
+                "type": "N"
+              },
+              {
+                "attrs": {},
+                "id": 2,
+                "type": "N"
+              }
+            ]
+          },
+          "rule_access_sets": [
+            [
+              0,
+              "prime_reachable",
+              true,
+              [
+                "edge:path",
+                "edge:probe"
+              ],
+              [
+                "edge:path"
+              ],
+              [
+                "edge:marker"
+              ],
+              false,
+              false
+            ],
+            [
+              1,
+              "insert_path",
+              true,
+              [
+                "edge:add_path"
+              ],
+              [],
+              [
+                "edge:path"
+              ],
+              false,
+              false
+            ],
+            [
+              2,
+              "detect_new_reachable",
+              true,
+              [
+                "edge:detect",
+                "edge:path"
+              ],
+              [
+                "edge:path"
+              ],
+              [
+                "edge:detected"
+              ],
+              false,
+              false
+            ]
+          ],
+          "rule_ids": [
+            0,
+            1,
+            2
+          ],
+          "steps": 1
+        }
+      },
+      "before": {
+        "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+        "files": {
+          "docs/research/engine_substrate/SUBSTRATE_REACHABLE_CACHE_IN_PASS_MUTATION_V1_PREREG_20260928.md": "22a32a6f620a1705ec63560258d62aa754fc41f4a8cf9a2e5bbc0a53f0b26a09",
+          "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+          "runners/dsl/Cargo.lock": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+          "runners/dsl/Cargo.toml": "c4d8ffff2241352a5150b5a9937dbb8010e958b6f115235b7daeae716c1a9332",
+          "runners/dsl/python/substrate_rs/_native.build.json": "5eb4e406212fc926cebda32ac0441a4182c77a7b82945840c5890dce0064a5bc",
+          "runners/dsl/src/graph.rs": "b3b6a3f851e6212a01d20e811f16971a322509706b8ea042a3988ff921c07bcf",
+          "runners/dsl/src/py.rs": "bf2d748d04cb13f41ec54adf8439b35f50df91fa1cb8ce8d7f2fff15e5254e58",
+          "runners/dsl/src/rewrite.rs": "58cea7eaa595c804f4f0265c4003231105011dc2493bea8ca30dea6bb6246c34",
+          "runners/dsl/src/substrate.rs": "17d0992ddf586cede7ca20b95f9d95245adbe49a312054d8dfa75c723605bf68",
+          "runners/dsl/src/term.rs": "3dc19255f1353c683cb963ce4485fb85b36bb87bd8db8d19ac851a5f4f5b02c8",
+          "scripts/analyze_substrate_reachable_cache_in_pass_mutation_v1.py": "cae33aa2fc79ac5137be0766b11062c8e1dfa752a39eea6d704496d3b0bc2e35",
+          "scripts/substrate_reachable_cache_in_pass_mutation_v1.py": "a523e95aaba9970c16ff29bc96906e1a07bd2f9ee06e5baacb490efc714ac871",
+          "scripts/substrate_run_manifest.py": "924ce1d320c8373f0e27edbc8ba43b6e17fcf6aeb4b6b2a3e8f36f76ea8cb33b"
+        },
+        "native_build_stale": [],
+        "native_path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+        "native_sha256": "accca93837e9605b703173ad0e58ea5d70add7e08d971c14b133b28bf02138a9"
+      },
+      "pid": 24,
+      "replicate": 2
+    },
+    {
+      "after": {
+        "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+        "files": {
+          "docs/research/engine_substrate/SUBSTRATE_REACHABLE_CACHE_IN_PASS_MUTATION_V1_PREREG_20260928.md": "22a32a6f620a1705ec63560258d62aa754fc41f4a8cf9a2e5bbc0a53f0b26a09",
+          "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+          "runners/dsl/Cargo.lock": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+          "runners/dsl/Cargo.toml": "c4d8ffff2241352a5150b5a9937dbb8010e958b6f115235b7daeae716c1a9332",
+          "runners/dsl/python/substrate_rs/_native.build.json": "5eb4e406212fc926cebda32ac0441a4182c77a7b82945840c5890dce0064a5bc",
+          "runners/dsl/src/graph.rs": "b3b6a3f851e6212a01d20e811f16971a322509706b8ea042a3988ff921c07bcf",
+          "runners/dsl/src/py.rs": "bf2d748d04cb13f41ec54adf8439b35f50df91fa1cb8ce8d7f2fff15e5254e58",
+          "runners/dsl/src/rewrite.rs": "58cea7eaa595c804f4f0265c4003231105011dc2493bea8ca30dea6bb6246c34",
+          "runners/dsl/src/substrate.rs": "17d0992ddf586cede7ca20b95f9d95245adbe49a312054d8dfa75c723605bf68",
+          "runners/dsl/src/term.rs": "3dc19255f1353c683cb963ce4485fb85b36bb87bd8db8d19ac851a5f4f5b02c8",
+          "scripts/analyze_substrate_reachable_cache_in_pass_mutation_v1.py": "cae33aa2fc79ac5137be0766b11062c8e1dfa752a39eea6d704496d3b0bc2e35",
+          "scripts/substrate_reachable_cache_in_pass_mutation_v1.py": "a523e95aaba9970c16ff29bc96906e1a07bd2f9ee06e5baacb490efc714ac871",
+          "scripts/substrate_run_manifest.py": "924ce1d320c8373f0e27edbc8ba43b6e17fcf6aeb4b6b2a3e8f36f76ea8cb33b"
+        },
+        "native_build_stale": [],
+        "native_path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+        "native_sha256": "accca93837e9605b703173ad0e58ea5d70add7e08d971c14b133b28bf02138a9"
+      },
+      "arm_order": [
+        "true",
+        "false"
+      ],
+      "arms": {
+        "false": {
+          "cache": false,
+          "cache_stats": {
+            "entries": 0,
+            "estimated_payload_bytes": 0,
+            "footprint_nodes": 0,
+            "hits": 0,
+            "map_capacity": 0,
+            "misses": 0,
+            "peak_entries": 0,
+            "peak_estimated_payload_bytes": 0,
+            "result_values": 0
+          },
+          "detected": true,
+          "graph": {
+            "edges": [
+              {
+                "attrs": {},
+                "src": 0,
+                "tgt": 1,
+                "type": "path"
+              },
+              {
+                "attrs": {},
+                "src": 0,
+                "tgt": 1,
+                "type": "probe"
+              },
+              {
+                "attrs": {},
+                "src": 0,
+                "tgt": 1,
+                "type": "marker"
+              },
+              {
+                "attrs": {},
+                "src": 0,
+                "tgt": 2,
+                "type": "add_path"
+              },
+              {
+                "attrs": {},
+                "src": 0,
+                "tgt": 2,
+                "type": "detect"
+              },
+              {
+                "attrs": {},
+                "src": 0,
+                "tgt": 2,
+                "type": "path"
+              },
+              {
+                "attrs": {},
+                "src": 0,
+                "tgt": 2,
+                "type": "detected"
+              }
+            ],
+            "next_id": 3,
+            "nodes": [
+              {
+                "attrs": {},
+                "id": 0,
+                "type": "N"
+              },
+              {
+                "attrs": {},
+                "id": 1,
+                "type": "N"
+              },
+              {
+                "attrs": {},
+                "id": 2,
+                "type": "N"
+              }
+            ]
+          },
+          "rule_access_sets": [
+            [
+              0,
+              "prime_reachable",
+              true,
+              [
+                "edge:path",
+                "edge:probe"
+              ],
+              [
+                "edge:path"
+              ],
+              [
+                "edge:marker"
+              ],
+              false,
+              false
+            ],
+            [
+              1,
+              "insert_path",
+              true,
+              [
+                "edge:add_path"
+              ],
+              [],
+              [
+                "edge:path"
+              ],
+              false,
+              false
+            ],
+            [
+              2,
+              "detect_new_reachable",
+              true,
+              [
+                "edge:detect",
+                "edge:path"
+              ],
+              [
+                "edge:path"
+              ],
+              [
+                "edge:detected"
+              ],
+              false,
+              false
+            ]
+          ],
+          "rule_ids": [
+            0,
+            1,
+            2
+          ],
+          "steps": 2
+        },
+        "true": {
+          "cache": true,
+          "cache_stats": {
+            "entries": 1,
+            "estimated_payload_bytes": 196,
+            "footprint_nodes": 3,
+            "hits": 1,
+            "map_capacity": 3,
+            "misses": 2,
+            "peak_entries": 1,
+            "peak_estimated_payload_bytes": 196,
+            "result_values": 2
+          },
+          "detected": false,
+          "graph": {
+            "edges": [
+              {
+                "attrs": {},
+                "src": 0,
+                "tgt": 1,
+                "type": "path"
+              },
+              {
+                "attrs": {},
+                "src": 0,
+                "tgt": 1,
+                "type": "probe"
+              },
+              {
+                "attrs": {},
+                "src": 0,
+                "tgt": 1,
+                "type": "marker"
+              },
+              {
+                "attrs": {},
+                "src": 0,
+                "tgt": 2,
+                "type": "add_path"
+              },
+              {
+                "attrs": {},
+                "src": 0,
+                "tgt": 2,
+                "type": "detect"
+              },
+              {
+                "attrs": {},
+                "src": 0,
+                "tgt": 2,
+                "type": "path"
+              }
+            ],
+            "next_id": 3,
+            "nodes": [
+              {
+                "attrs": {},
+                "id": 0,
+                "type": "N"
+              },
+              {
+                "attrs": {},
+                "id": 1,
+                "type": "N"
+              },
+              {
+                "attrs": {},
+                "id": 2,
+                "type": "N"
+              }
+            ]
+          },
+          "rule_access_sets": [
+            [
+              0,
+              "prime_reachable",
+              true,
+              [
+                "edge:path",
+                "edge:probe"
+              ],
+              [
+                "edge:path"
+              ],
+              [
+                "edge:marker"
+              ],
+              false,
+              false
+            ],
+            [
+              1,
+              "insert_path",
+              true,
+              [
+                "edge:add_path"
+              ],
+              [],
+              [
+                "edge:path"
+              ],
+              false,
+              false
+            ],
+            [
+              2,
+              "detect_new_reachable",
+              true,
+              [
+                "edge:detect",
+                "edge:path"
+              ],
+              [
+                "edge:path"
+              ],
+              [
+                "edge:detected"
+              ],
+              false,
+              false
+            ]
+          ],
+          "rule_ids": [
+            0,
+            1,
+            2
+          ],
+          "steps": 1
+        }
+      },
+      "before": {
+        "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+        "files": {
+          "docs/research/engine_substrate/SUBSTRATE_REACHABLE_CACHE_IN_PASS_MUTATION_V1_PREREG_20260928.md": "22a32a6f620a1705ec63560258d62aa754fc41f4a8cf9a2e5bbc0a53f0b26a09",
+          "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+          "runners/dsl/Cargo.lock": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+          "runners/dsl/Cargo.toml": "c4d8ffff2241352a5150b5a9937dbb8010e958b6f115235b7daeae716c1a9332",
+          "runners/dsl/python/substrate_rs/_native.build.json": "5eb4e406212fc926cebda32ac0441a4182c77a7b82945840c5890dce0064a5bc",
+          "runners/dsl/src/graph.rs": "b3b6a3f851e6212a01d20e811f16971a322509706b8ea042a3988ff921c07bcf",
+          "runners/dsl/src/py.rs": "bf2d748d04cb13f41ec54adf8439b35f50df91fa1cb8ce8d7f2fff15e5254e58",
+          "runners/dsl/src/rewrite.rs": "58cea7eaa595c804f4f0265c4003231105011dc2493bea8ca30dea6bb6246c34",
+          "runners/dsl/src/substrate.rs": "17d0992ddf586cede7ca20b95f9d95245adbe49a312054d8dfa75c723605bf68",
+          "runners/dsl/src/term.rs": "3dc19255f1353c683cb963ce4485fb85b36bb87bd8db8d19ac851a5f4f5b02c8",
+          "scripts/analyze_substrate_reachable_cache_in_pass_mutation_v1.py": "cae33aa2fc79ac5137be0766b11062c8e1dfa752a39eea6d704496d3b0bc2e35",
+          "scripts/substrate_reachable_cache_in_pass_mutation_v1.py": "a523e95aaba9970c16ff29bc96906e1a07bd2f9ee06e5baacb490efc714ac871",
+          "scripts/substrate_run_manifest.py": "924ce1d320c8373f0e27edbc8ba43b6e17fcf6aeb4b6b2a3e8f36f76ea8cb33b"
+        },
+        "native_build_stale": [],
+        "native_path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+        "native_sha256": "accca93837e9605b703173ad0e58ea5d70add7e08d971c14b133b28bf02138a9"
+      },
+      "pid": 33,
+      "replicate": 3
+    },
+    {
+      "after": {
+        "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+        "files": {
+          "docs/research/engine_substrate/SUBSTRATE_REACHABLE_CACHE_IN_PASS_MUTATION_V1_PREREG_20260928.md": "22a32a6f620a1705ec63560258d62aa754fc41f4a8cf9a2e5bbc0a53f0b26a09",
+          "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+          "runners/dsl/Cargo.lock": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+          "runners/dsl/Cargo.toml": "c4d8ffff2241352a5150b5a9937dbb8010e958b6f115235b7daeae716c1a9332",
+          "runners/dsl/python/substrate_rs/_native.build.json": "5eb4e406212fc926cebda32ac0441a4182c77a7b82945840c5890dce0064a5bc",
+          "runners/dsl/src/graph.rs": "b3b6a3f851e6212a01d20e811f16971a322509706b8ea042a3988ff921c07bcf",
+          "runners/dsl/src/py.rs": "bf2d748d04cb13f41ec54adf8439b35f50df91fa1cb8ce8d7f2fff15e5254e58",
+          "runners/dsl/src/rewrite.rs": "58cea7eaa595c804f4f0265c4003231105011dc2493bea8ca30dea6bb6246c34",
+          "runners/dsl/src/substrate.rs": "17d0992ddf586cede7ca20b95f9d95245adbe49a312054d8dfa75c723605bf68",
+          "runners/dsl/src/term.rs": "3dc19255f1353c683cb963ce4485fb85b36bb87bd8db8d19ac851a5f4f5b02c8",
+          "scripts/analyze_substrate_reachable_cache_in_pass_mutation_v1.py": "cae33aa2fc79ac5137be0766b11062c8e1dfa752a39eea6d704496d3b0bc2e35",
+          "scripts/substrate_reachable_cache_in_pass_mutation_v1.py": "a523e95aaba9970c16ff29bc96906e1a07bd2f9ee06e5baacb490efc714ac871",
+          "scripts/substrate_run_manifest.py": "924ce1d320c8373f0e27edbc8ba43b6e17fcf6aeb4b6b2a3e8f36f76ea8cb33b"
+        },
+        "native_build_stale": [],
+        "native_path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+        "native_sha256": "accca93837e9605b703173ad0e58ea5d70add7e08d971c14b133b28bf02138a9"
+      },
+      "arm_order": [
+        "false",
+        "true"
+      ],
+      "arms": {
+        "false": {
+          "cache": false,
+          "cache_stats": {
+            "entries": 0,
+            "estimated_payload_bytes": 0,
+            "footprint_nodes": 0,
+            "hits": 0,
+            "map_capacity": 0,
+            "misses": 0,
+            "peak_entries": 0,
+            "peak_estimated_payload_bytes": 0,
+            "result_values": 0
+          },
+          "detected": true,
+          "graph": {
+            "edges": [
+              {
+                "attrs": {},
+                "src": 0,
+                "tgt": 1,
+                "type": "path"
+              },
+              {
+                "attrs": {},
+                "src": 0,
+                "tgt": 1,
+                "type": "probe"
+              },
+              {
+                "attrs": {},
+                "src": 0,
+                "tgt": 1,
+                "type": "marker"
+              },
+              {
+                "attrs": {},
+                "src": 0,
+                "tgt": 2,
+                "type": "add_path"
+              },
+              {
+                "attrs": {},
+                "src": 0,
+                "tgt": 2,
+                "type": "detect"
+              },
+              {
+                "attrs": {},
+                "src": 0,
+                "tgt": 2,
+                "type": "path"
+              },
+              {
+                "attrs": {},
+                "src": 0,
+                "tgt": 2,
+                "type": "detected"
+              }
+            ],
+            "next_id": 3,
+            "nodes": [
+              {
+                "attrs": {},
+                "id": 0,
+                "type": "N"
+              },
+              {
+                "attrs": {},
+                "id": 1,
+                "type": "N"
+              },
+              {
+                "attrs": {},
+                "id": 2,
+                "type": "N"
+              }
+            ]
+          },
+          "rule_access_sets": [
+            [
+              0,
+              "prime_reachable",
+              true,
+              [
+                "edge:path",
+                "edge:probe"
+              ],
+              [
+                "edge:path"
+              ],
+              [
+                "edge:marker"
+              ],
+              false,
+              false
+            ],
+            [
+              1,
+              "insert_path",
+              true,
+              [
+                "edge:add_path"
+              ],
+              [],
+              [
+                "edge:path"
+              ],
+              false,
+              false
+            ],
+            [
+              2,
+              "detect_new_reachable",
+              true,
+              [
+                "edge:detect",
+                "edge:path"
+              ],
+              [
+                "edge:path"
+              ],
+              [
+                "edge:detected"
+              ],
+              false,
+              false
+            ]
+          ],
+          "rule_ids": [
+            0,
+            1,
+            2
+          ],
+          "steps": 2
+        },
+        "true": {
+          "cache": true,
+          "cache_stats": {
+            "entries": 1,
+            "estimated_payload_bytes": 196,
+            "footprint_nodes": 3,
+            "hits": 1,
+            "map_capacity": 3,
+            "misses": 2,
+            "peak_entries": 1,
+            "peak_estimated_payload_bytes": 196,
+            "result_values": 2
+          },
+          "detected": false,
+          "graph": {
+            "edges": [
+              {
+                "attrs": {},
+                "src": 0,
+                "tgt": 1,
+                "type": "path"
+              },
+              {
+                "attrs": {},
+                "src": 0,
+                "tgt": 1,
+                "type": "probe"
+              },
+              {
+                "attrs": {},
+                "src": 0,
+                "tgt": 1,
+                "type": "marker"
+              },
+              {
+                "attrs": {},
+                "src": 0,
+                "tgt": 2,
+                "type": "add_path"
+              },
+              {
+                "attrs": {},
+                "src": 0,
+                "tgt": 2,
+                "type": "detect"
+              },
+              {
+                "attrs": {},
+                "src": 0,
+                "tgt": 2,
+                "type": "path"
+              }
+            ],
+            "next_id": 3,
+            "nodes": [
+              {
+                "attrs": {},
+                "id": 0,
+                "type": "N"
+              },
+              {
+                "attrs": {},
+                "id": 1,
+                "type": "N"
+              },
+              {
+                "attrs": {},
+                "id": 2,
+                "type": "N"
+              }
+            ]
+          },
+          "rule_access_sets": [
+            [
+              0,
+              "prime_reachable",
+              true,
+              [
+                "edge:path",
+                "edge:probe"
+              ],
+              [
+                "edge:path"
+              ],
+              [
+                "edge:marker"
+              ],
+              false,
+              false
+            ],
+            [
+              1,
+              "insert_path",
+              true,
+              [
+                "edge:add_path"
+              ],
+              [],
+              [
+                "edge:path"
+              ],
+              false,
+              false
+            ],
+            [
+              2,
+              "detect_new_reachable",
+              true,
+              [
+                "edge:detect",
+                "edge:path"
+              ],
+              [
+                "edge:path"
+              ],
+              [
+                "edge:detected"
+              ],
+              false,
+              false
+            ]
+          ],
+          "rule_ids": [
+            0,
+            1,
+            2
+          ],
+          "steps": 1
+        }
+      },
+      "before": {
+        "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+        "files": {
+          "docs/research/engine_substrate/SUBSTRATE_REACHABLE_CACHE_IN_PASS_MUTATION_V1_PREREG_20260928.md": "22a32a6f620a1705ec63560258d62aa754fc41f4a8cf9a2e5bbc0a53f0b26a09",
+          "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+          "runners/dsl/Cargo.lock": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+          "runners/dsl/Cargo.toml": "c4d8ffff2241352a5150b5a9937dbb8010e958b6f115235b7daeae716c1a9332",
+          "runners/dsl/python/substrate_rs/_native.build.json": "5eb4e406212fc926cebda32ac0441a4182c77a7b82945840c5890dce0064a5bc",
+          "runners/dsl/src/graph.rs": "b3b6a3f851e6212a01d20e811f16971a322509706b8ea042a3988ff921c07bcf",
+          "runners/dsl/src/py.rs": "bf2d748d04cb13f41ec54adf8439b35f50df91fa1cb8ce8d7f2fff15e5254e58",
+          "runners/dsl/src/rewrite.rs": "58cea7eaa595c804f4f0265c4003231105011dc2493bea8ca30dea6bb6246c34",
+          "runners/dsl/src/substrate.rs": "17d0992ddf586cede7ca20b95f9d95245adbe49a312054d8dfa75c723605bf68",
+          "runners/dsl/src/term.rs": "3dc19255f1353c683cb963ce4485fb85b36bb87bd8db8d19ac851a5f4f5b02c8",
+          "scripts/analyze_substrate_reachable_cache_in_pass_mutation_v1.py": "cae33aa2fc79ac5137be0766b11062c8e1dfa752a39eea6d704496d3b0bc2e35",
+          "scripts/substrate_reachable_cache_in_pass_mutation_v1.py": "a523e95aaba9970c16ff29bc96906e1a07bd2f9ee06e5baacb490efc714ac871",
+          "scripts/substrate_run_manifest.py": "924ce1d320c8373f0e27edbc8ba43b6e17fcf6aeb4b6b2a3e8f36f76ea8cb33b"
+        },
+        "native_build_stale": [],
+        "native_path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+        "native_sha256": "accca93837e9605b703173ad0e58ea5d70add7e08d971c14b133b28bf02138a9"
+      },
+      "pid": 42,
+      "replicate": 4
+    }
+  ],
+  "schema_version": 1
+}

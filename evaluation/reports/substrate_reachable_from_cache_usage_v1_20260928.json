@@ -1,0 +1,55 @@
+{
+  "browser_world_requires_seed": true,
+  "cache_owner": "Substrate.eval_cache is the persistent cache passed through rule rewriting; the opt-in setter is on the native PySubstrate API.",
+  "executable_seed_term_count": 1,
+  "executable_seed_terms": [
+    {
+      "edge_type": "contains",
+      "node": {
+        "name": "sess",
+        "type": "Var"
+      },
+      "path": "$.rules[0].where.items[0].container"
+    }
+  ],
+  "expected_source_shape": true,
+  "high_level_wrapper_has_reachable_cache_toggle": false,
+  "input_sha256": {
+    "domains/frozen_core.py": "271c74f9fe43edac0d8f1826c1f1c28827f25c6b92de9810bc5083646eeeeca4",
+    "domains/grounding_reach.py": "d4970bf37f16d8b314659f8a90149af4f2bce086a5524f7009777350fc188cf2",
+    "domains/self_extend_rust.py": "48dcfa37261872f05b2e6e91bcf37e50d26992a6ff30a2b82e50aa974cdc06b4",
+    "runners/dsl/python/substrate_rs/__init__.py": "6ec0316afae414329e36d3f121fc56b556e7315f17b93aab911ca09a29726694",
+    "runners/dsl/src/py.rs": "bf2d748d04cb13f41ec54adf8439b35f50df91fa1cb8ce8d7f2fff15e5254e58",
+    "runners/dsl/src/substrate.rs": "17d0992ddf586cede7ca20b95f9d95245adbe49a312054d8dfa75c723605bf68",
+    "runners/dsl/src/term.rs": "4891b214ac0d9b7f5f1e9e9524e010a8ef962384e2e0c0e49df8a077788064da",
+    "scripts/audit_reachable_from_cache_usage_v1.py": "7cd4fbbefb9b1e6dc02da495b35e686294614cbd73ae9146278752690fc280a6",
+    "seeds/browser_affordance_reach.json": "3b6707e3e815ebb9fb9b3b65c16eb4c94fda836417ea9c4195ec8d8ed343f32a",
+    "worlds/browser.py": "3b4b33c792d276e7420d3faa179492f897cd5e8f2bd754cfb339083eacb0d795"
+  },
+  "interpretation": "The browser seed supplies one source-authored rule family suitable for persistent same-graph reuse. Direct Python query helpers in grounding_reach and frozen_core call PySubstrate.evaluate, which constructs a fresh default-off EvalCache, so the current setter does not amortize across those separate direct calls. The high-level substrate_rs.Substrate wrapper does not expose the toggle.",
+  "native_direct_evaluate_uses_fresh_default_cache": true,
+  "python_literal_reference_count": 3,
+  "python_literal_references": {
+    "domains/frozen_core.py": [
+      {
+        "function": "seed_dependency_closure",
+        "line": 237
+      }
+    ],
+    "domains/grounding_reach.py": [
+      {
+        "function": "_reachable_from_native",
+        "line": 229
+      }
+    ],
+    "domains/self_extend_rust.py": [
+      {
+        "function": "agent_specify_reachable_from_primitive",
+        "line": 204
+      }
+    ]
+  },
+  "schema_version": 1,
+  "scope": "Source census only; no runtime activation, real-page prevalence, or dynamic call graph inferred.",
+  "seed_rule_count": 2
+}

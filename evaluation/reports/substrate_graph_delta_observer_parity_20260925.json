@@ -1,0 +1,583 @@
+{
+  "date": "2026-09-25",
+  "deferred_track_identity": {
+    "gates": {
+      "both_fixed_point": true,
+      "oracle_edges_covered": true,
+      "oracle_nodes_covered": true,
+      "same_identity_assignments": true,
+      "same_microtheories": true,
+      "same_progress_steps": true
+    },
+    "observer": {
+      "affected_edges": [],
+      "affected_microtheories": [
+        0,
+        1
+      ],
+      "affected_nodes": [
+        2,
+        3,
+        4
+      ],
+      "cur_identity": 2,
+      "expected_microtheories": [
+        0,
+        1
+      ],
+      "prev_identity": 2,
+      "progress_steps": 1,
+      "status": "fixed_point"
+    },
+    "oracle": {
+      "affected_edges": [],
+      "affected_microtheories": [
+        0,
+        1
+      ],
+      "affected_nodes": [
+        2,
+        3,
+        4
+      ],
+      "cur_identity": 2,
+      "expected_microtheories": [
+        0,
+        1
+      ],
+      "prev_identity": 2,
+      "progress_steps": 1,
+      "status": "fixed_point"
+    }
+  },
+  "limits": [
+    "covers eight direct graph-effect families plus deferred TrackIdentity on generated fixtures",
+    "does not exercise deferred framebuffer/net/rule-edit effects, component grouping, or imported rules",
+    "oracle coverage is a target superset check; it does not yet prove dependency-component frame scheduling completeness"
+  ],
+  "native_sha256": "664602673132ad5ef822c786897e20b5c336e9ada0d0d9009f8146d83442df40",
+  "ownership_results": {
+    "cross_owner_edge": {
+      "gates": {
+        "both_fixed_point": true,
+        "observer_matches_expected": true,
+        "observer_matches_oracle": true,
+        "oracle_matches_expected": true
+      },
+      "observer": {
+        "affected_microtheories": [
+          0,
+          1
+        ],
+        "expected_microtheories": [
+          0,
+          1
+        ],
+        "node_count_after": 4,
+        "progress_steps": 1,
+        "status": "fixed_point"
+      },
+      "oracle": {
+        "affected_microtheories": [
+          0,
+          1
+        ],
+        "expected_microtheories": [
+          0,
+          1
+        ],
+        "node_count_after": 4,
+        "progress_steps": 1,
+        "status": "fixed_point"
+      }
+    },
+    "delete_microtheory_root": {
+      "gates": {
+        "both_fixed_point": true,
+        "observer_matches_expected": true,
+        "observer_matches_oracle": true,
+        "oracle_matches_expected": true
+      },
+      "observer": {
+        "affected_microtheories": [
+          0
+        ],
+        "expected_microtheories": [
+          0
+        ],
+        "node_count_after": 1,
+        "progress_steps": 1,
+        "status": "fixed_point"
+      },
+      "oracle": {
+        "affected_microtheories": [
+          0
+        ],
+        "expected_microtheories": [
+          0
+        ],
+        "node_count_after": 1,
+        "progress_steps": 1,
+        "status": "fixed_point"
+      }
+    },
+    "delete_owned_concept": {
+      "gates": {
+        "both_fixed_point": true,
+        "observer_matches_expected": true,
+        "observer_matches_oracle": true,
+        "oracle_matches_expected": true
+      },
+      "observer": {
+        "affected_microtheories": [
+          0
+        ],
+        "expected_microtheories": [
+          0
+        ],
+        "node_count_after": 2,
+        "progress_steps": 1,
+        "status": "fixed_point"
+      },
+      "oracle": {
+        "affected_microtheories": [
+          0
+        ],
+        "expected_microtheories": [
+          0
+        ],
+        "node_count_after": 2,
+        "progress_steps": 1,
+        "status": "fixed_point"
+      }
+    },
+    "new_owned_concept": {
+      "gates": {
+        "both_fixed_point": true,
+        "observer_matches_expected": true,
+        "observer_matches_oracle": true,
+        "oracle_matches_expected": true
+      },
+      "observer": {
+        "affected_microtheories": [
+          0
+        ],
+        "expected_microtheories": [
+          0
+        ],
+        "node_count_after": 4,
+        "progress_steps": 1,
+        "status": "fixed_point"
+      },
+      "oracle": {
+        "affected_microtheories": [
+          0
+        ],
+        "expected_microtheories": [
+          0
+        ],
+        "node_count_after": 4,
+        "progress_steps": 1,
+        "status": "fixed_point"
+      }
+    }
+  },
+  "results": {
+    "add_edge": {
+      "gates": {
+        "both_fixed_point": true,
+        "observer_conservative_flag": true,
+        "oracle_edges_covered": true,
+        "oracle_exact_flag": true,
+        "oracle_nodes_covered": true,
+        "same_node_count": true,
+        "same_progress_steps": true
+      },
+      "observer": {
+        "edge_exists": true,
+        "exact_graph_state_diff": false,
+        "node_count_after": 2,
+        "observer_edges": [
+          [
+            0,
+            "derived",
+            1
+          ]
+        ],
+        "observer_targets": [
+          0,
+          1
+        ],
+        "progress_steps": 1,
+        "status": "fixed_point"
+      },
+      "oracle": {
+        "edge_exists": true,
+        "exact_graph_state_diff": true,
+        "node_count_after": 2,
+        "observer_edges": [
+          [
+            0,
+            "derived",
+            1
+          ]
+        ],
+        "observer_targets": [
+          0,
+          1
+        ],
+        "progress_steps": 1,
+        "status": "fixed_point"
+      }
+    },
+    "add_node": {
+      "gates": {
+        "both_fixed_point": true,
+        "observer_conservative_flag": true,
+        "oracle_edges_covered": true,
+        "oracle_exact_flag": true,
+        "oracle_nodes_covered": true,
+        "same_node_count": true,
+        "same_progress_steps": true
+      },
+      "observer": {
+        "edge_exists": true,
+        "exact_graph_state_diff": false,
+        "node_count_after": 3,
+        "observer_edges": [],
+        "observer_targets": [
+          2
+        ],
+        "progress_steps": 1,
+        "status": "fixed_point"
+      },
+      "oracle": {
+        "edge_exists": true,
+        "exact_graph_state_diff": true,
+        "node_count_after": 3,
+        "observer_edges": [],
+        "observer_targets": [
+          2
+        ],
+        "progress_steps": 1,
+        "status": "fixed_point"
+      }
+    },
+    "add_node_if_absent": {
+      "gates": {
+        "both_fixed_point": true,
+        "observer_conservative_flag": true,
+        "oracle_edges_covered": true,
+        "oracle_exact_flag": true,
+        "oracle_nodes_covered": true,
+        "same_node_count": true,
+        "same_progress_steps": true
+      },
+      "observer": {
+        "edge_exists": true,
+        "exact_graph_state_diff": false,
+        "node_count_after": 3,
+        "observer_edges": [],
+        "observer_targets": [
+          2
+        ],
+        "progress_steps": 1,
+        "status": "fixed_point"
+      },
+      "oracle": {
+        "edge_exists": true,
+        "exact_graph_state_diff": true,
+        "node_count_after": 3,
+        "observer_edges": [],
+        "observer_targets": [
+          2
+        ],
+        "progress_steps": 1,
+        "status": "fixed_point"
+      }
+    },
+    "del_edge": {
+      "gates": {
+        "both_fixed_point": true,
+        "observer_conservative_flag": true,
+        "oracle_edges_covered": true,
+        "oracle_exact_flag": true,
+        "oracle_nodes_covered": true,
+        "same_node_count": true,
+        "same_progress_steps": true
+      },
+      "observer": {
+        "edge_exists": false,
+        "exact_graph_state_diff": false,
+        "node_count_after": 2,
+        "observer_edges": [
+          [
+            0,
+            "input",
+            1
+          ]
+        ],
+        "observer_targets": [
+          0,
+          1
+        ],
+        "progress_steps": 1,
+        "status": "fixed_point"
+      },
+      "oracle": {
+        "edge_exists": false,
+        "exact_graph_state_diff": true,
+        "node_count_after": 2,
+        "observer_edges": [
+          [
+            0,
+            "input",
+            1
+          ]
+        ],
+        "observer_targets": [
+          0,
+          1
+        ],
+        "progress_steps": 1,
+        "status": "fixed_point"
+      }
+    },
+    "del_node_with_incident_edge": {
+      "gates": {
+        "both_fixed_point": true,
+        "observer_conservative_flag": true,
+        "oracle_edges_covered": true,
+        "oracle_exact_flag": true,
+        "oracle_nodes_covered": true,
+        "same_node_count": true,
+        "same_progress_steps": true
+      },
+      "observer": {
+        "edge_exists": false,
+        "exact_graph_state_diff": false,
+        "node_count_after": 1,
+        "observer_edges": [
+          [
+            0,
+            "input",
+            1
+          ]
+        ],
+        "observer_targets": [
+          0,
+          1
+        ],
+        "progress_steps": 1,
+        "status": "fixed_point"
+      },
+      "oracle": {
+        "edge_exists": false,
+        "exact_graph_state_diff": true,
+        "node_count_after": 1,
+        "observer_edges": [
+          [
+            0,
+            "input",
+            1
+          ]
+        ],
+        "observer_targets": [
+          0,
+          1
+        ],
+        "progress_steps": 1,
+        "status": "fixed_point"
+      }
+    },
+    "replace_value": {
+      "gates": {
+        "both_fixed_point": true,
+        "observer_conservative_flag": true,
+        "oracle_edges_covered": true,
+        "oracle_exact_flag": true,
+        "oracle_nodes_covered": true,
+        "same_node_count": true,
+        "same_progress_steps": true
+      },
+      "observer": {
+        "edge_exists": false,
+        "exact_graph_state_diff": false,
+        "node_count_after": 2,
+        "observer_edges": [
+          [
+            0,
+            "input",
+            0
+          ],
+          [
+            0,
+            "input",
+            1
+          ]
+        ],
+        "observer_targets": [
+          0,
+          1
+        ],
+        "progress_steps": 1,
+        "status": "fixed_point"
+      },
+      "oracle": {
+        "edge_exists": false,
+        "exact_graph_state_diff": true,
+        "node_count_after": 2,
+        "observer_edges": [
+          [
+            0,
+            "input",
+            0
+          ],
+          [
+            0,
+            "input",
+            1
+          ]
+        ],
+        "observer_targets": [
+          0,
+          1
+        ],
+        "progress_steps": 1,
+        "status": "fixed_point"
+      }
+    },
+    "set_attr": {
+      "gates": {
+        "both_fixed_point": true,
+        "observer_conservative_flag": true,
+        "oracle_edges_covered": true,
+        "oracle_exact_flag": true,
+        "oracle_nodes_covered": true,
+        "same_node_count": true,
+        "same_progress_steps": true
+      },
+      "observer": {
+        "edge_exists": true,
+        "exact_graph_state_diff": false,
+        "node_count_after": 2,
+        "observer_edges": [],
+        "observer_targets": [
+          1
+        ],
+        "progress_steps": 1,
+        "status": "fixed_point"
+      },
+      "oracle": {
+        "edge_exists": true,
+        "exact_graph_state_diff": true,
+        "node_count_after": 2,
+        "observer_edges": [],
+        "observer_targets": [
+          1
+        ],
+        "progress_steps": 1,
+        "status": "fixed_point"
+      }
+    },
+    "set_attr_if_different": {
+      "gates": {
+        "both_fixed_point": true,
+        "observer_conservative_flag": true,
+        "oracle_edges_covered": true,
+        "oracle_exact_flag": true,
+        "oracle_nodes_covered": true,
+        "same_node_count": true,
+        "same_progress_steps": true
+      },
+      "observer": {
+        "edge_exists": true,
+        "exact_graph_state_diff": false,
+        "node_count_after": 2,
+        "observer_edges": [],
+        "observer_targets": [
+          1
+        ],
+        "progress_steps": 1,
+        "status": "fixed_point"
+      },
+      "oracle": {
+        "edge_exists": true,
+        "exact_graph_state_diff": true,
+        "node_count_after": 2,
+        "observer_edges": [],
+        "observer_targets": [
+          1
+        ],
+        "progress_steps": 1,
+        "status": "fixed_point"
+      }
+    }
+  },
+  "runner_sha256": "ca56531db43ee3720e340f5d6a20bebee23383b3ceaa58978061998280c7f9ad",
+  "rust_source_fingerprint": "7a9759403ebeced72ca8525ff15de21f8d7e54924473f77ca302feea0ced61cc",
+  "scoped_cross_owner": {
+    "gates": {
+      "both_owners_notified": true,
+      "no_deferred_effects_pending": true,
+      "scope_made_progress": true,
+      "step_cap_not_hit": true,
+      "written_edge_exists": true,
+      "written_edge_reported": true
+    },
+    "result": {
+      "affected_edges": [
+        [
+          2,
+          "causal_influence",
+          3
+        ]
+      ],
+      "affected_microtheories": [
+        0,
+        1
+      ],
+      "deferred_effects_pending": false,
+      "edge_exists": true,
+      "expected_edge": [
+        2,
+        "causal_influence",
+        3
+      ],
+      "expected_microtheories": [
+        0,
+        1
+      ],
+      "hit_progress_budget": false,
+      "progress_steps": 1
+    }
+  },
+  "scoped_deferred_queue": {
+    "gates": {
+      "budget_exit_is_reported": true,
+      "no_unsupported_frame_claim": true,
+      "queue_is_reported": true
+    },
+    "result": {
+      "affected_edges": [],
+      "affected_microtheories": [],
+      "affected_nodes": [],
+      "deferred_effects_pending": true,
+      "frame_notifications_complete": false,
+      "hit_progress_budget": true,
+      "progress_steps": 1,
+      "requested_progress_budget": 1
+    }
+  },
+  "source_families": [
+    "add_edge",
+    "add_node",
+    "add_node_if_absent",
+    "del_edge",
+    "del_node_with_incident_edge",
+    "replace_value",
+    "set_attr",
+    "set_attr_if_different"
+  ],
+  "study": "substrate_graph_delta_observer_parity"
+}

@@ -1,0 +1,352 @@
+{
+  "checks": {
+    "cross_task_replacement_evicts_low_priority_foreign_slot": true,
+    "maintenance_extends_ttl_and_then_expires": true,
+    "same_task_capacity_refuses_third_input": true,
+    "unmaintained_ttl_expires_at_epoch_9": true
+  },
+  "claim_boundary": "Synthetic two-slot mechanism measurement; not long-term memory, natural task utility, or scale evidence.",
+  "run_id": "substrate-working-memory-capacity-ttl-20260925-v2",
+  "runs": [
+    {
+      "active_slot_count": 2,
+      "boot_ns": 11391982,
+      "gates": [
+        {
+          "gate_result": null,
+          "gate_status": "processed",
+          "reason": null,
+          "result_status": "accepted",
+          "reused_slot": null,
+          "reused_slot_count": 0
+        },
+        {
+          "gate_result": null,
+          "gate_status": "processed",
+          "reason": null,
+          "result_status": "accepted",
+          "reused_slot": null,
+          "reused_slot_count": 0
+        },
+        {
+          "gate_result": null,
+          "gate_status": "processed",
+          "reason": "capacity_limit",
+          "result_status": "refused",
+          "reused_slot": null,
+          "reused_slot_count": 0
+        }
+      ],
+      "rss_peak_kib": 36088,
+      "scenario": "capacity",
+      "slot_count": 2,
+      "slots": [
+        {
+          "expires_epoch": 9.0,
+          "held_content": [
+            "same-task-0"
+          ],
+          "interference_count": 0.0,
+          "last_replacement_reason": null,
+          "priority": 0.5,
+          "status": "active",
+          "task_context_key": "same"
+        },
+        {
+          "expires_epoch": 10.0,
+          "held_content": [
+            "same-task-1"
+          ],
+          "interference_count": 0.0,
+          "last_replacement_reason": null,
+          "priority": 0.6,
+          "status": "active",
+          "task_context_key": "same"
+        }
+      ],
+      "ticks": [
+        {
+          "label": "input-0",
+          "progress": 2,
+          "tick_ns": 411803
+        },
+        {
+          "label": "input-1",
+          "progress": 2,
+          "tick_ns": 155541
+        },
+        {
+          "label": "input-2",
+          "progress": 2,
+          "tick_ns": 153091
+        }
+      ]
+    },
+    {
+      "active_slot_count": 2,
+      "boot_ns": 11767675,
+      "gates": [
+        {
+          "gate_result": null,
+          "gate_status": "processed",
+          "reason": null,
+          "result_status": "accepted",
+          "reused_slot": null,
+          "reused_slot_count": 0
+        },
+        {
+          "gate_result": null,
+          "gate_status": "processed",
+          "reason": null,
+          "result_status": "accepted",
+          "reused_slot": null,
+          "reused_slot_count": 0
+        },
+        {
+          "gate_result": null,
+          "gate_status": "processed",
+          "reason": "cross_task_capacity_replacement",
+          "result_status": "accepted_with_interference",
+          "reused_slot": "#13",
+          "reused_slot_count": 1
+        }
+      ],
+      "rss_peak_kib": 35844,
+      "scenario": "replacement",
+      "slot_count": 2,
+      "slots": [
+        {
+          "expires_epoch": 11.0,
+          "held_content": [
+            "project"
+          ],
+          "interference_count": 1.0,
+          "last_replacement_reason": "cross_task_interference",
+          "priority": 0.8,
+          "status": "active",
+          "task_context_key": "project"
+        },
+        {
+          "expires_epoch": 10.0,
+          "held_content": [
+            "high-chat"
+          ],
+          "interference_count": 0.0,
+          "last_replacement_reason": null,
+          "priority": 0.9,
+          "status": "active",
+          "task_context_key": "chat"
+        }
+      ],
+      "ticks": [
+        {
+          "label": "input-low-chat",
+          "progress": 2,
+          "tick_ns": 420153
+        },
+        {
+          "label": "input-high-chat",
+          "progress": 2,
+          "tick_ns": 166871
+        },
+        {
+          "label": "input-project",
+          "progress": 2,
+          "tick_ns": 154981
+        }
+      ]
+    },
+    {
+      "active_slot_count": 0,
+      "boot_ns": 11599104,
+      "expiry": {
+        "at_epoch_8": {
+          "expires_epoch": 9.0,
+          "held_content_count": 1,
+          "status": "active"
+        },
+        "at_epoch_9": {
+          "expires_epoch": 9.0,
+          "held_content_count": 0,
+          "status": "expired"
+        },
+        "final": {
+          "expires_epoch": 9.0,
+          "held_content_count": 0,
+          "status": "expired",
+          "terminal_epoch": 9.0,
+          "terminal_reason": "maintenance_lapsed"
+        },
+        "initial_expiry": 9.0
+      },
+      "gates": [
+        {
+          "gate_result": null,
+          "gate_status": "processed",
+          "reason": null,
+          "result_status": "accepted",
+          "reused_slot": null,
+          "reused_slot_count": 0
+        }
+      ],
+      "rss_peak_kib": 35948,
+      "scenario": "ttl_unmaintained",
+      "slot_count": 1,
+      "slots": [
+        {
+          "expires_epoch": 9.0,
+          "held_content": [],
+          "interference_count": 0.0,
+          "last_replacement_reason": null,
+          "priority": 0.5,
+          "status": "expired",
+          "task_context_key": "same"
+        }
+      ],
+      "ticks": [
+        {
+          "label": "input",
+          "progress": 2,
+          "tick_ns": 399422
+        },
+        {
+          "label": "clock-8",
+          "progress": 1,
+          "tick_ns": 141791
+        },
+        {
+          "label": "clock-9",
+          "progress": 1,
+          "tick_ns": 128930
+        }
+      ]
+    },
+    {
+      "active_slot_count": 0,
+      "boot_ns": 11850245,
+      "expiry": {
+        "at_epoch_8": {
+          "expires_epoch": 16.0,
+          "held_content_count": 1,
+          "status": "active"
+        },
+        "at_epoch_9": {
+          "expires_epoch": 16.0,
+          "held_content_count": 1,
+          "status": "active"
+        },
+        "final": {
+          "expires_epoch": 16.0,
+          "held_content_count": 0,
+          "status": "expired",
+          "terminal_epoch": 16.0,
+          "terminal_reason": "maintenance_lapsed"
+        },
+        "initial_expiry": 9.0
+      },
+      "gates": [
+        {
+          "gate_result": null,
+          "gate_status": "processed",
+          "reason": null,
+          "result_status": "accepted",
+          "reused_slot": null,
+          "reused_slot_count": 0
+        },
+        {
+          "gate_result": "maintained",
+          "gate_status": "processed",
+          "reason": null,
+          "result_status": null,
+          "reused_slot": null,
+          "reused_slot_count": 0
+        }
+      ],
+      "rss_peak_kib": 35444,
+      "scenario": "ttl_maintained",
+      "slot_count": 1,
+      "slots": [
+        {
+          "expires_epoch": 16.0,
+          "held_content": [],
+          "interference_count": 0.0,
+          "last_replacement_reason": null,
+          "priority": 0.5,
+          "status": "expired",
+          "task_context_key": "same"
+        }
+      ],
+      "ticks": [
+        {
+          "label": "input",
+          "progress": 2,
+          "tick_ns": 415763
+        },
+        {
+          "label": "maintain-8",
+          "progress": 1,
+          "tick_ns": 150131
+        },
+        {
+          "label": "clock-8",
+          "progress": 1,
+          "tick_ns": 149421
+        },
+        {
+          "label": "clock-9",
+          "progress": 0,
+          "tick_ns": 122931
+        },
+        {
+          "label": "clock-16",
+          "progress": 1,
+          "tick_ns": 137101
+        }
+      ]
+    }
+  ],
+  "schema_version": 1,
+  "scope": "authored working-memory gate capacity, interference replacement, and epoch TTL",
+  "source_sha256": {
+    "docs/research/engine_substrate/SUBSTRATE_WORKING_MEMORY_CAPACITY_TTL_PREREG_20260925.md": "cfcad1a18bc00b241037ec66649e610768ae1ebb764ad1e95eddc5bded95d0ce",
+    "runners/dsl/python/substrate_rs/_native.abi3.so": "fd775294cfcc702d362042b43919272931568ef278c83e6b18f0ea3caab1ee40",
+    "runners/dsl/python/substrate_rs/_native.build.json": "4b92d4307bd88491920d0ccd991e47f5cd7deccecb3daf3b99c4127a67c1c690",
+    "scripts/substrate_working_memory_capacity_ttl.py": "c3cf756b5b397096e79488a973abba0643d6ef76448623c6a33a7e9ec0dd5040",
+    "seeds/episodic_working_memory_core.json": "95a725e57402983c1010a595282ae08d4ac1da4c596b813b271c13ad329eaf2d",
+    "seeds/memory_core.json": "1f062f6718d5b5670a3ff1bee9667ab5ebf994dab7b42aa14c99dbb39d2aed7c",
+    "substrate/world_adapter.py": "f6d9b7ddbdc2a65e9f3eef8b18a1c50dd3dadd3c12d9f76861164e7fc0dbcbcf"
+  },
+  "summary": {
+    "all_checks_pass": true,
+    "boot_ms": {
+      "capacity": 11.391982,
+      "replacement": 11.767675,
+      "ttl_maintained": 11.850245,
+      "ttl_unmaintained": 11.599104
+    },
+    "tick_ms": {
+      "capacity": {
+        "input-0": 0.411803,
+        "input-1": 0.155541,
+        "input-2": 0.153091
+      },
+      "replacement": {
+        "input-high-chat": 0.166871,
+        "input-low-chat": 0.420153,
+        "input-project": 0.154981
+      },
+      "ttl_maintained": {
+        "clock-16": 0.137101,
+        "clock-8": 0.149421,
+        "clock-9": 0.122931,
+        "input": 0.415763,
+        "maintain-8": 0.150131
+      },
+      "ttl_unmaintained": {
+        "clock-8": 0.141791,
+        "clock-9": 0.12893,
+        "input": 0.399422
+      }
+    }
+  }
+}

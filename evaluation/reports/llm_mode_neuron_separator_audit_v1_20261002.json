@@ -1,0 +1,115 @@
+{
+  "checks": {
+    "30_rows": true,
+    "all_4096_subsets_enumerated": true,
+    "min_separator_size_four": true,
+    "prior_capture_checks_pass": true,
+    "role_separator_found": true,
+    "same_graph_profile_all_rows": true,
+    "source_unchanged": true,
+    "topology_is_connected_K4_8": true
+  },
+  "distinct_topologies": 1,
+  "gates_pass": true,
+  "limits": [
+    "one real model export/layer and fixed authored incidence topology",
+    "no automatic separator proposal",
+    "no execution-time or memory comparison",
+    "no prevalence or task-utility claim"
+  ],
+  "minimum_separator_profiles": [
+    {
+      "components": [
+        [
+          4
+        ],
+        [
+          5
+        ],
+        [
+          6
+        ],
+        [
+          7
+        ],
+        [
+          8
+        ],
+        [
+          9
+        ],
+        [
+          10
+        ],
+        [
+          11
+        ]
+      ],
+      "removed_modes": 4,
+      "removed_neurons": 0
+    }
+  ],
+  "minimum_separator_size": 4,
+  "minimum_separators": [
+    [
+      0,
+      1,
+      2,
+      3
+    ]
+  ],
+  "operation_proxy": {
+    "cardinality": 3,
+    "condition_on_four_modes_table_assignments": 1944,
+    "interpretation": "proxy counts, excluding combination, search, storage, and scheduling costs",
+    "monolithic_over_conditioned_ratio": 1.0617283950617284,
+    "monolithic_table_assignments": 2064,
+    "monolithic_width": 4
+  },
+  "rows": 30,
+  "schema": "LlmModeNeuronSeparatorAuditV1",
+  "source_hashes": {
+    "artifacts": [
+      {
+        "bytes": 2769,
+        "path": "docs/research/engine_substrate/LLM_MODE_NEURON_SEPARATOR_AUDIT_V1_PREREG_20261002.md",
+        "sha256": "2eda63444532105a8344003d7383b2dba9c10855dc02634ad0f2eb5705fd23cb"
+      },
+      {
+        "bytes": 116637,
+        "path": "evaluation/reports/llm_mode_neuron_task_graph_inference_census_v1_20261002.json",
+        "sha256": "e9a407261aea64f92e59e7d95f7e131d24b447c86ce2fc371abf83f4420d256c"
+      },
+      {
+        "bytes": 12180,
+        "path": "evaluation/substrate_capability/llm_mode_neuron_task_graph_inference_census_v1.py",
+        "sha256": "ef152de90e39f62a3d42ef28587dbf77d672cece70b9a9af89e9226bef6f2053"
+      },
+      {
+        "bytes": 2901,
+        "path": "evaluation/substrate_capability/llm_mode_neuron_task_graph_inference_census_v1_lock_20261002.json",
+        "sha256": "c4eb5c8df160a1834384606f1f5105b6b2b9b89074da1865b4ce658c66a422a0"
+      },
+      {
+        "bytes": 4692,
+        "path": "evaluation/substrate_capability/llm_mode_neuron_separator_audit_v1.py",
+        "sha256": "63cb758ee4ecdb3173dbd63049c89deb71bb92f58df08944bc193e928a0a2357"
+      }
+    ],
+    "domain_cardinality": 3,
+    "mode_count": 4,
+    "neuron_count": 8
+  },
+  "source_lock_sha256": "2fdff7e7071a96d1dfa7b3fa8c2d969b5e2d06e979c3018496e89cbbbd61a9f8",
+  "subsets_examined": 4096,
+  "topology": "complete bipartite K4,8, repeated over 30 held-out weighted rows",
+  "valid_separator_counts_by_size": {
+    "10": 34,
+    "4": 1,
+    "5": 8,
+    "6": 28,
+    "7": 56,
+    "8": 71,
+    "9": 60
+  }
+}

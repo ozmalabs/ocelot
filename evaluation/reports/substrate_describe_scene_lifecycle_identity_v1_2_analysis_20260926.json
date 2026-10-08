@@ -1,0 +1,102 @@
+{
+  "checks": {
+    "distinct_request_goal_identity": true,
+    "normalized_graph_shape_repeats": true,
+    "parent_lifecycle_identity_and_terminal_closure": true,
+    "positive_lifecycle_gate_all_runs": true,
+    "raw_capture_lock_sha256_matches": true,
+    "raw_lock_equals_lock_file": true,
+    "source_stable_all_workers_and_postrun": true,
+    "three_distinct_fresh_processes": true,
+    "two_replies_nonempty_each_worker": true
+  },
+  "interpretation": "The request-scoped describe-scene path is confirmed across sequential repeated requests: each inbound Message maps to a distinct parent Goal with its own origin event, three owned utterance subgoals, and a correctly linked selection/execution/result lifecycle ending resolved and closed. This does not establish concurrent behavior.",
+  "lock_sha256": "13a1f614c20c38ad729ef99ed616bb7037034b073ba70a5cacb89f9a3c453d4d",
+  "normalized_shape": [
+    {
+      "lifecycle_event_count": 3,
+      "matching_goal_count": 1,
+      "matching_goal_shapes": [
+        {
+          "comprehended_message_count": 1,
+          "kind": "describe_scene",
+          "origin_event_count": 1,
+          "subgoal_count": 3
+        }
+      ],
+      "new_goal_count": 6,
+      "origin_event_kind": "instruction",
+      "reply_nonempty": true,
+      "route": "describe_scene",
+      "scene_parent_count": 0,
+      "state_event_kinds": [
+        "instruction",
+        "selection",
+        "execution",
+        "action_result"
+      ],
+      "turn": 0
+    },
+    {
+      "lifecycle_event_count": 6,
+      "matching_goal_count": 1,
+      "matching_goal_shapes": [
+        {
+          "comprehended_message_count": 1,
+          "kind": "describe_scene",
+          "origin_event_count": 1,
+          "subgoal_count": 3
+        }
+      ],
+      "new_goal_count": 6,
+      "origin_event_kind": "instruction",
+      "reply_nonempty": true,
+      "route": "describe_scene",
+      "scene_parent_count": 0,
+      "state_event_kinds": [
+        "instruction",
+        "selection",
+        "execution",
+        "action_result",
+        "instruction",
+        "selection",
+        "execution",
+        "action_result"
+      ],
+      "turn": 1
+    }
+  ],
+  "raw_sha256": "99320faa86291c98dc940580652f648f77413e241f5d0c6fd4311a105908d710",
+  "replicates": [
+    {
+      "distinct_parent_identity": true,
+      "lifecycle_exact_and_terminal": true,
+      "one_distinct_parent_per_request": true,
+      "owner_links_exact": true,
+      "pid": 7,
+      "two_replies_nonempty": true
+    },
+    {
+      "distinct_parent_identity": true,
+      "lifecycle_exact_and_terminal": true,
+      "one_distinct_parent_per_request": true,
+      "owner_links_exact": true,
+      "pid": 5832,
+      "two_replies_nonempty": true
+    },
+    {
+      "distinct_parent_identity": true,
+      "lifecycle_exact_and_terminal": true,
+      "one_distinct_parent_per_request": true,
+      "owner_links_exact": true,
+      "pid": 11657,
+      "two_replies_nonempty": true
+    }
+  ],
+  "schema_version": 1,
+  "summary": {
+    "boot_ns_median": 12072627999,
+    "replicates": 3,
+    "turn_ns_median": 7122613462.5
+  }
+}

@@ -1,0 +1,2980 @@
+{
+  "analyzer_sha256": "9a93ee8a18b14c02e0a6e3de42988428dc2fcf4392992b792a4475b05ce3e50f",
+  "capture_sha256": "2f6e539f5c09962c88bd2b1022c9fae45ecd37b9af18580c4071e6598ed5c44a",
+  "checks": {
+    "aggregate_decisions_agree": true,
+    "all_decisions_agree": true,
+    "checker_hash_current": true,
+    "independent_analyzer_stable": true,
+    "no_vacuous_profile_claimed_as_candidate": true,
+    "rule_identity_unique_per_profile": true,
+    "runner_capture_gates_pass": true,
+    "runner_hash_current": true,
+    "seventeen_roots_exact": true,
+    "source_lock_stable": true
+  },
+  "claim_limit": "read-only source-locked census of each CORE_SEEDS root and declared dependency closure against the current conservative finite-key fragment; not a general termination analysis or sufficiency claim.",
+  "lock_sha256": "839251a140207ee9129bf5c13ba33af52044c6262709b8de36f9bd6539dcf5b2",
+  "passed": true,
+  "per_root": [
+    {
+      "accepted_fraction": 0.0,
+      "accepted_rules": 0,
+      "active_rules": 1,
+      "checker_independent_agreement": true,
+      "independent_profile_fits_fragment": false,
+      "nonempty_profile_fits_fragment": false,
+      "rejected_rules": 1,
+      "resolved_seed_order": [
+        "decision_core"
+      ],
+      "root_seed": "decision_core",
+      "rules": [
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "create_goal_from_request",
+          "reasons": [
+            "rule[0].effects[0]: effect 'add_node' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[1]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[2]: effect 'del_edge' is outside the insertion-only finite-key fragment"
+          ]
+        }
+      ]
+    },
+    {
+      "accepted_fraction": 0.0,
+      "accepted_rules": 0,
+      "active_rules": 4,
+      "checker_independent_agreement": true,
+      "independent_profile_fits_fragment": false,
+      "nonempty_profile_fits_fragment": false,
+      "rejected_rules": 4,
+      "resolved_seed_order": [
+        "learning_core"
+      ],
+      "root_seed": "learning_core",
+      "rules": [
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "rule_cause_selection",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[1]: effect 'set_attr' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "rule_hypothesis_mint",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'add_node' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[1]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[2]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[3]: edge endpoints must be bound by the match or an earlier mint effect"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "rule_intervention_mint",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'add_node' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[1]: edge endpoints must be bound by the match or an earlier mint effect"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "rule_intervention_sync",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[1]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[2]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[3]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[4]: effect 'set_attr' is outside the insertion-only finite-key fragment"
+          ]
+        }
+      ]
+    },
+    {
+      "accepted_fraction": null,
+      "accepted_rules": 0,
+      "active_rules": 0,
+      "checker_independent_agreement": true,
+      "independent_profile_fits_fragment": null,
+      "nonempty_profile_fits_fragment": null,
+      "rejected_rules": 0,
+      "resolved_seed_order": [
+        "perception_core"
+      ],
+      "root_seed": "perception_core",
+      "rules": []
+    },
+    {
+      "accepted_fraction": null,
+      "accepted_rules": 0,
+      "active_rules": 0,
+      "checker_independent_agreement": true,
+      "independent_profile_fits_fragment": null,
+      "nonempty_profile_fits_fragment": null,
+      "rejected_rules": 0,
+      "resolved_seed_order": [
+        "epistemics_core"
+      ],
+      "root_seed": "epistemics_core",
+      "rules": []
+    },
+    {
+      "accepted_fraction": null,
+      "accepted_rules": 0,
+      "active_rules": 0,
+      "checker_independent_agreement": true,
+      "independent_profile_fits_fragment": null,
+      "nonempty_profile_fits_fragment": null,
+      "rejected_rules": 0,
+      "resolved_seed_order": [
+        "motor_core"
+      ],
+      "root_seed": "motor_core",
+      "rules": []
+    },
+    {
+      "accepted_fraction": 0.0,
+      "accepted_rules": 0,
+      "active_rules": 1,
+      "checker_independent_agreement": true,
+      "independent_profile_fits_fragment": false,
+      "nonempty_profile_fits_fragment": false,
+      "rejected_rules": 1,
+      "resolved_seed_order": [
+        "experimentation_core"
+      ],
+      "root_seed": "experimentation_core",
+      "rules": [
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "rule_surface_curiosity",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'add_node' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[1]: effect 'add_node' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[2]: only variable-endpoint, empty-attribute add_edge is allowed",
+            "rule[0].effects[3]: effect 'add_node' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[4]: only variable-endpoint, empty-attribute add_edge is allowed",
+            "rule[0].effects[5]: effect 'add_node' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[6]: only variable-endpoint, empty-attribute add_edge is allowed",
+            "rule[0].effects[7]: effect 'add_node' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[8]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[9]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[10]: edge endpoints must be bound by the match or an earlier mint effect"
+          ]
+        }
+      ]
+    },
+    {
+      "accepted_fraction": 0.0,
+      "accepted_rules": 0,
+      "active_rules": 4,
+      "checker_independent_agreement": true,
+      "independent_profile_fits_fragment": false,
+      "nonempty_profile_fits_fragment": false,
+      "rejected_rules": 4,
+      "resolved_seed_order": [
+        "goal_construction"
+      ],
+      "root_seed": "goal_construction",
+      "rules": [
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "create_achieve_attr_goal",
+          "reasons": [
+            "rule[0].effects[0]: effect 'add_node' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[1]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[2]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[3]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[4]: effect 'del_edge' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "create_visit_goal",
+          "reasons": [
+            "rule[0].effects[0]: effect 'add_node' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[1]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[2]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[3]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[4]: effect 'del_edge' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "rule_allocate_goal_frame",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'add_node' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[1]: edge endpoints must be bound by the match or an earlier mint effect"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "rule_chunk_resolved_goal",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'add_node' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[1]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[2]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[3]: effect 'del_node' is outside the insertion-only finite-key fragment"
+          ]
+        }
+      ]
+    },
+    {
+      "accepted_fraction": 0.0,
+      "accepted_rules": 0,
+      "active_rules": 6,
+      "checker_independent_agreement": true,
+      "independent_profile_fits_fragment": false,
+      "nonempty_profile_fits_fragment": false,
+      "rejected_rules": 6,
+      "resolved_seed_order": [
+        "experimentation_core",
+        "self_monitoring"
+      ],
+      "root_seed": "self_monitoring",
+      "rules": [
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "rule_surface_curiosity",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'add_node' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[1]: effect 'add_node' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[2]: only variable-endpoint, empty-attribute add_edge is allowed",
+            "rule[0].effects[3]: effect 'add_node' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[4]: only variable-endpoint, empty-attribute add_edge is allowed",
+            "rule[0].effects[5]: effect 'add_node' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[6]: only variable-endpoint, empty-attribute add_edge is allowed",
+            "rule[0].effects[7]: effect 'add_node' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[8]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[9]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[10]: edge endpoints must be bound by the match or an earlier mint effect"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "rule_surprise_investigation_construct",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'add_node' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[1]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[2]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[3]: effect 'set_attr' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "rule_surprise_investigation_execute",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[1]: effect 'set_attr' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "rule_surprise_top_cause",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[1]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[2]: effect 'set_attr' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "rule_monitor_self_and_partner",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[1]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[2]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[3]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[4]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[5]: effect 'set_attr' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "rule_author_asymmetry_assessment",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'add_node' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[1]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[2]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[3]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[4]: effect 'add_node' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[5]: edge endpoints must be bound by the match or an earlier mint effect"
+          ]
+        }
+      ]
+    },
+    {
+      "accepted_fraction": 0.0,
+      "accepted_rules": 0,
+      "active_rules": 3,
+      "checker_independent_agreement": true,
+      "independent_profile_fits_fragment": false,
+      "nonempty_profile_fits_fragment": false,
+      "rejected_rules": 3,
+      "resolved_seed_order": [
+        "memory_core"
+      ],
+      "root_seed": "memory_core",
+      "rules": [
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "rule_consolidate_episode",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[1]: effect 'set_attr' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "rule_episode_from_message",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'add_node' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[1]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[2]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[3]: effect 'set_attr' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "rule_forget_old_episode",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'del_node' is outside the insertion-only finite-key fragment"
+          ]
+        }
+      ]
+    },
+    {
+      "accepted_fraction": 0.0,
+      "accepted_rules": 0,
+      "active_rules": 2,
+      "checker_independent_agreement": true,
+      "independent_profile_fits_fragment": false,
+      "nonempty_profile_fits_fragment": false,
+      "rejected_rules": 2,
+      "resolved_seed_order": [
+        "reflex_core"
+      ],
+      "root_seed": "reflex_core",
+      "rules": [
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "rule_emotion_ema_update",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[1]: effect 'set_attr' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "rule_pointer_from_grounded_concept",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'add_node' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[1]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[2]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[3]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[4]: effect 'set_attr' is outside the insertion-only finite-key fragment"
+          ]
+        }
+      ]
+    },
+    {
+      "accepted_fraction": null,
+      "accepted_rules": 0,
+      "active_rules": 0,
+      "checker_independent_agreement": true,
+      "independent_profile_fits_fragment": null,
+      "nonempty_profile_fits_fragment": null,
+      "rejected_rules": 0,
+      "resolved_seed_order": [
+        "theorem_core"
+      ],
+      "root_seed": "theorem_core",
+      "rules": []
+    },
+    {
+      "accepted_fraction": 0.0,
+      "accepted_rules": 0,
+      "active_rules": 3,
+      "checker_independent_agreement": true,
+      "independent_profile_fits_fragment": false,
+      "nonempty_profile_fits_fragment": false,
+      "rejected_rules": 3,
+      "resolved_seed_order": [
+        "affective_state_core"
+      ],
+      "root_seed": "affective_state_core",
+      "rules": [
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "psi_select_initial_leading_drive",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "psi_switch_leading_drive",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'del_edge' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "psi_project_canonical_affect",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[1]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[2]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[3]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[4]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[5]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[6]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[7]: effect 'set_attr' is outside the insertion-only finite-key fragment"
+          ]
+        }
+      ]
+    },
+    {
+      "accepted_fraction": 0.0,
+      "accepted_rules": 0,
+      "active_rules": 23,
+      "checker_independent_agreement": true,
+      "independent_profile_fits_fragment": false,
+      "nonempty_profile_fits_fragment": false,
+      "rejected_rules": 23,
+      "resolved_seed_order": [
+        "affective_state_core",
+        "dual_process_core"
+      ],
+      "root_seed": "dual_process_core",
+      "rules": [
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "psi_select_initial_leading_drive",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "psi_switch_leading_drive",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'del_edge' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "psi_project_canonical_affect",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[1]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[2]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[3]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[4]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[5]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[6]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[7]: effect 'set_attr' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "dual_process_attach_default_policy",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "dual_process_attach_affective_state",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "dual_process_attach_default_task_set",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "dual_process_accumulate_candidate_evidence",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[1]: effect 'set_attr' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "dual_process_score_grounded_default",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[1]: effect 'set_attr' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "dual_process_escalate_prediction_error",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'add_node' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[1]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[2]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[3]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[4]: effect 'set_attr' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "dual_process_escalate_novelty",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'add_node' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[1]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[2]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[3]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[4]: effect 'set_attr' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "dual_process_escalate_uncertainty",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'add_node' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[1]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[2]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[3]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[4]: effect 'set_attr' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "dual_process_escalate_instinct_conflict",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'add_node' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[1]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[2]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[3]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[4]: effect 'set_attr' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "dual_process_escalate_no_grounded_default",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'add_node' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[1]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[2]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[3]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[4]: effect 'set_attr' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "dual_process_commit_unique_default",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'add_node' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[1]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[2]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[3]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[4]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[5]: effect 'set_attr' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "dual_process_train_verified_outcome",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'net_collapse' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[1]: effect 'set_attr' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "dual_process_derive_controller_arbitration",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[1]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[2]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[3]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[4]: effect 'set_attr' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "dual_process_escalate_near_conflict",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'add_node' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[1]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[2]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[3]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[4]: effect 'set_attr' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "dual_process_escalate_low_confidence",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'add_node' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[1]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[2]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[3]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[4]: effect 'set_attr' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "dual_process_escalate_relative_controller_value",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'add_node' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[1]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[2]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[3]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[4]: effect 'set_attr' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "dual_process_commit_arbitrated_default",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'add_node' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[1]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[2]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[3]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[4]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[5]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[6]: effect 'set_attr' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "dual_process_scope_requested_escalation",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "dual_process_incremental_positive_consolidation",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[1]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[2]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[3]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[4]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[5]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[6]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[7]: effect 'set_attr' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "dual_process_devalue_or_extinguish_default",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[1]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[2]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[3]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[4]: effect 'set_attr' is outside the insertion-only finite-key fragment"
+          ]
+        }
+      ]
+    },
+    {
+      "accepted_fraction": 0.0,
+      "accepted_rules": 0,
+      "active_rules": 22,
+      "checker_independent_agreement": true,
+      "independent_profile_fits_fragment": false,
+      "nonempty_profile_fits_fragment": false,
+      "rejected_rules": 22,
+      "resolved_seed_order": [
+        "memory_core",
+        "episodic_working_memory_core"
+      ],
+      "root_seed": "episodic_working_memory_core",
+      "rules": [
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "rule_consolidate_episode",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[1]: effect 'set_attr' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "rule_episode_from_message",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'add_node' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[1]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[2]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[3]: effect 'set_attr' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "rule_forget_old_episode",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'del_node' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "episodic_bind_observed_event_once",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'add_node' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[1]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[2]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[3]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[4]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[5]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[6]: effect 'set_attr' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "episodic_index_cued_trace_for_overlap",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[1]: effect 'set_attr' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "episodic_mark_overlapping_cues_for_conservative_completion",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[1]: effect 'set_attr' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "episodic_retrieve_best_partial_cue",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'add_node' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[1]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[2]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[3]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[4]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[5]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[6]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[7]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[8]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[9]: effect 'set_attr' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "episodic_retrieval_reports_insufficient_information",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'add_node' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[1]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[2]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[3]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[4]: effect 'set_attr' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "episodic_reconsolidate_after_retrieval",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'add_node' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[1]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[2]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[3]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[4]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[5]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[6]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[7]: effect 'set_attr' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "episodic_prioritize_one_replay_per_cycle",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'add_node' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[1]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[2]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[3]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[4]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[5]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[6]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[7]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[8]: effect 'set_attr' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "episodic_replay_creates_semantic_support",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'add_node' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[1]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[2]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[3]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[4]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[5]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[6]: effect 'set_attr' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "episodic_replay_updates_existing_semantic_support",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[1]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[2]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[4]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[5]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[6]: effect 'set_attr' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "working_memory_select_next_input_gate",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'set_attr' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "working_memory_input_gate",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'add_node' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[1]: effect 'add_node' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[2]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[3]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[4]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[5]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[6]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[7]: effect 'set_attr' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "working_memory_replace_cross_task_interference",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'del_edge' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[2]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[3]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[4]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[5]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[6]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[7]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[8]: effect 'add_node' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[10]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[11]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[12]: effect 'set_attr' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "working_memory_refuse_same_task_over_capacity",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'add_node' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[1]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[2]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[3]: effect 'set_attr' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "working_memory_update_gate",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'del_edge' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[2]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[3]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[4]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[5]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[6]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[7]: effect 'set_attr' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "working_memory_maintain_gate",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[1]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[2]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[3]: effect 'set_attr' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "working_memory_output_gate",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'add_node' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[1]: effect 'add_node' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[2]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[3]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[4]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[5]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[6]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[7]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[8]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[9]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[10]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[11]: effect 'set_attr' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "working_memory_clear_gate",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'del_edge' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[1]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[2]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[3]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[4]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[5]: effect 'set_attr' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "working_memory_expire_unmaintained_slot",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'del_edge' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[1]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[2]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[3]: effect 'set_attr' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "episodic_prune_expired_transient",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'del_node' is outside the insertion-only finite-key fragment"
+          ]
+        }
+      ]
+    },
+    {
+      "accepted_fraction": 0.0,
+      "accepted_rules": 0,
+      "active_rules": 48,
+      "checker_independent_agreement": true,
+      "independent_profile_fits_fragment": false,
+      "nonempty_profile_fits_fragment": false,
+      "rejected_rules": 48,
+      "resolved_seed_order": [
+        "affective_state_core",
+        "dual_process_core",
+        "motor_core",
+        "adaptive_control_core"
+      ],
+      "root_seed": "adaptive_control_core",
+      "rules": [
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "psi_select_initial_leading_drive",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "psi_switch_leading_drive",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'del_edge' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "psi_project_canonical_affect",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[1]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[2]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[3]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[4]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[5]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[6]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[7]: effect 'set_attr' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "dual_process_attach_default_policy",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "dual_process_attach_affective_state",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "dual_process_attach_default_task_set",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "dual_process_accumulate_candidate_evidence",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[1]: effect 'set_attr' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "dual_process_score_grounded_default",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[1]: effect 'set_attr' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "dual_process_escalate_prediction_error",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'add_node' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[1]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[2]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[3]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[4]: effect 'set_attr' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "dual_process_escalate_novelty",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'add_node' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[1]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[2]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[3]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[4]: effect 'set_attr' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "dual_process_escalate_uncertainty",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'add_node' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[1]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[2]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[3]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[4]: effect 'set_attr' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "dual_process_escalate_instinct_conflict",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'add_node' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[1]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[2]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[3]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[4]: effect 'set_attr' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "dual_process_escalate_no_grounded_default",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'add_node' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[1]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[2]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[3]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[4]: effect 'set_attr' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "dual_process_commit_unique_default",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'add_node' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[1]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[2]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[3]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[4]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[5]: effect 'set_attr' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "dual_process_train_verified_outcome",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'net_collapse' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[1]: effect 'set_attr' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "dual_process_derive_controller_arbitration",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[1]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[2]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[3]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[4]: effect 'set_attr' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "dual_process_escalate_near_conflict",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'add_node' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[1]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[2]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[3]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[4]: effect 'set_attr' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "dual_process_escalate_low_confidence",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'add_node' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[1]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[2]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[3]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[4]: effect 'set_attr' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "dual_process_escalate_relative_controller_value",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'add_node' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[1]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[2]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[3]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[4]: effect 'set_attr' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "dual_process_commit_arbitrated_default",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'add_node' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[1]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[2]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[3]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[4]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[5]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[6]: effect 'set_attr' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "dual_process_scope_requested_escalation",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "dual_process_incremental_positive_consolidation",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[1]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[2]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[3]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[4]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[5]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[6]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[7]: effect 'set_attr' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "dual_process_devalue_or_extinguish_default",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[1]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[2]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[3]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[4]: effect 'set_attr' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "adaptive_control_mint_controller_value",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'add_node' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[1]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[2]: edge endpoints must be bound by the match or an earlier mint effect"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "adaptive_control_attach_controller_value",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "adaptive_control_predict_outcome",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'add_node' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[1]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[2]: effect 'set_attr' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "adaptive_control_open_bounded_eligibility_trace",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'add_node' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[1]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[2]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[3]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[4]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[5]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[6]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[7]: effect 'set_attr' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "adaptive_control_author_sensorimotor_prediction",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'add_node' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[1]: effect 'add_node' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[2]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[3]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[4]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[5]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[6]: effect 'set_attr' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "adaptive_control_compute_signed_prediction_error",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[1]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[2]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[3]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[4]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[5]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[6]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[7]: effect 'set_attr' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "adaptive_control_assign_discounted_credit",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'add_node' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[1]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[2]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[3]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[4]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[5]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[6]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[7]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[8]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[9]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[10]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[11]: effect 'set_attr' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "adaptive_control_expire_eligibility_trace",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[1]: effect 'set_attr' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "adaptive_control_calibrate_forward_model",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'add_node' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[1]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[2]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[3]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[4]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[5]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[6]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[7]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[8]: effect 'set_attr' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "adaptive_control_mark_reliable_decision",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[1]: effect 'set_attr' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "adaptive_control_propose_repeated_skill_option",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'add_node' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[1]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[2]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[3]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[4]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[5]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[6]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[7]: effect 'set_attr' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "adaptive_control_forecast_allostatic_error",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'add_node' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[1]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[2]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[3]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[4]: effect 'set_attr' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "adaptive_control_offer_allostatic_broadcast",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'add_node' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[1]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[2]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[3]: effect 'set_attr' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "adaptive_control_score_broadcast_candidate",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[1]: effect 'set_attr' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "adaptive_control_refuse_exact_broadcast_tie",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'add_node' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[1]: edge endpoints must be bound by the match or an earlier mint effect"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "adaptive_control_mark_tied_broadcast_candidates",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'set_attr' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "adaptive_control_select_functional_broadcast",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'add_node' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[1]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[2]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[3]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[4]: effect 'set_attr' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "adaptive_control_deliver_functional_broadcast",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "adaptive_control_expire_broadcast_candidate",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[1]: effect 'set_attr' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "adaptive_control_expire_functional_broadcast",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[1]: effect 'set_attr' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "adaptive_control_prune_expired_broadcast",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'del_node' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "adaptive_control_prune_terminal_broadcast_candidate",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'del_node' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "adaptive_control_prune_broadcast_tie",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'del_node' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "adaptive_control_prune_expired_eligibility_trace",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'del_node' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "adaptive_control_prune_integrated_prediction_error",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'del_node' is outside the insertion-only finite-key fragment"
+          ]
+        }
+      ]
+    },
+    {
+      "accepted_fraction": 0.0,
+      "accepted_rules": 0,
+      "active_rules": 21,
+      "checker_independent_agreement": true,
+      "independent_profile_fits_fragment": false,
+      "nonempty_profile_fits_fragment": false,
+      "rejected_rules": 21,
+      "resolved_seed_order": [
+        "generative_world_model"
+      ],
+      "root_seed": "generative_world_model",
+      "rules": [
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "world_model_supersede_current_belief_on_fresh_perception",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[1]: effect 'set_attr' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "world_model_integrate_perceived_observation",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'add_node' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[1]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[2]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[3]: effect 'set_attr' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "world_model_reconstruct_remembered_belief",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'add_node' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[1]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[2]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[3]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[4]: effect 'set_attr' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "world_model_expand_root_action_branch",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'add_node' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[1]: effect 'add_node' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[2]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[3]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[4]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[5]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[6]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[7]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[8]: effect 'set_attr' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "world_model_expand_successor_branches",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'add_node' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[1]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[2]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[3]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[4]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[5]: effect 'set_attr' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "world_model_terminalize_bounded_leaf",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[1]: effect 'set_attr' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "world_model_terminalize_leaf_without_applicable_transition",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[1]: effect 'set_attr' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "world_model_materialize_predicted_observation",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'add_node' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[1]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[2]: edge endpoints must be bound by the match or an earlier mint effect"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "world_model_materialize_predicted_outcome",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'add_node' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[1]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[2]: edge endpoints must be bound by the match or an earlier mint effect"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "world_model_copy_transition_feature",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'add_node' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[1]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[2]: edge endpoints must be bound by the match or an earlier mint effect"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "world_model_complete_settled_request",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[1]: effect 'set_attr' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "world_model_expire_request_at_deadline",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[1]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[2]: effect 'set_attr' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "world_model_mark_expired_trajectory_stale",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'set_attr' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "world_model_compare_grounded_outcome",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'add_node' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[1]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[2]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[3]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[4]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[5]: effect 'set_attr' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "world_model_revise_transition_confidence",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[1]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[2]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[3]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[4]: effect 'set_attr' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "world_model_prune_terminal_predicted_feature",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'del_node' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "world_model_prune_terminal_predicted_observation",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'del_node' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "world_model_prune_terminal_predicted_outcome",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'del_node' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "world_model_prune_terminal_predicted_state",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'del_node' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "world_model_prune_terminal_trajectory",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'del_node' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "world_model_prune_terminal_request",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'del_node' is outside the insertion-only finite-key fragment"
+          ]
+        }
+      ]
+    },
+    {
+      "accepted_fraction": 0.0,
+      "accepted_rules": 0,
+      "active_rules": 71,
+      "checker_independent_agreement": true,
+      "independent_profile_fits_fragment": false,
+      "nonempty_profile_fits_fragment": false,
+      "rejected_rules": 71,
+      "resolved_seed_order": [
+        "affective_state_core",
+        "dual_process_core",
+        "generative_world_model",
+        "default_mode_core"
+      ],
+      "root_seed": "default_mode_core",
+      "rules": [
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "psi_select_initial_leading_drive",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "psi_switch_leading_drive",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'del_edge' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "psi_project_canonical_affect",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[1]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[2]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[3]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[4]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[5]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[6]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[7]: effect 'set_attr' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "dual_process_attach_default_policy",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "dual_process_attach_affective_state",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "dual_process_attach_default_task_set",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "dual_process_accumulate_candidate_evidence",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[1]: effect 'set_attr' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "dual_process_score_grounded_default",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[1]: effect 'set_attr' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "dual_process_escalate_prediction_error",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'add_node' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[1]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[2]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[3]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[4]: effect 'set_attr' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "dual_process_escalate_novelty",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'add_node' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[1]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[2]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[3]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[4]: effect 'set_attr' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "dual_process_escalate_uncertainty",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'add_node' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[1]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[2]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[3]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[4]: effect 'set_attr' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "dual_process_escalate_instinct_conflict",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'add_node' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[1]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[2]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[3]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[4]: effect 'set_attr' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "dual_process_escalate_no_grounded_default",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'add_node' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[1]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[2]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[3]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[4]: effect 'set_attr' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "dual_process_commit_unique_default",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'add_node' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[1]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[2]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[3]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[4]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[5]: effect 'set_attr' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "dual_process_train_verified_outcome",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'net_collapse' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[1]: effect 'set_attr' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "dual_process_derive_controller_arbitration",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[1]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[2]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[3]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[4]: effect 'set_attr' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "dual_process_escalate_near_conflict",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'add_node' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[1]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[2]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[3]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[4]: effect 'set_attr' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "dual_process_escalate_low_confidence",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'add_node' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[1]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[2]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[3]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[4]: effect 'set_attr' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "dual_process_escalate_relative_controller_value",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'add_node' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[1]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[2]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[3]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[4]: effect 'set_attr' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "dual_process_commit_arbitrated_default",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'add_node' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[1]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[2]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[3]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[4]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[5]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[6]: effect 'set_attr' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "dual_process_scope_requested_escalation",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "dual_process_incremental_positive_consolidation",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[1]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[2]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[3]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[4]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[5]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[6]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[7]: effect 'set_attr' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "dual_process_devalue_or_extinguish_default",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[1]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[2]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[3]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[4]: effect 'set_attr' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "world_model_supersede_current_belief_on_fresh_perception",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[1]: effect 'set_attr' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "world_model_integrate_perceived_observation",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'add_node' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[1]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[2]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[3]: effect 'set_attr' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "world_model_reconstruct_remembered_belief",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'add_node' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[1]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[2]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[3]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[4]: effect 'set_attr' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "world_model_expand_root_action_branch",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'add_node' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[1]: effect 'add_node' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[2]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[3]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[4]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[5]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[6]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[7]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[8]: effect 'set_attr' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "world_model_expand_successor_branches",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'add_node' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[1]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[2]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[3]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[4]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[5]: effect 'set_attr' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "world_model_terminalize_bounded_leaf",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[1]: effect 'set_attr' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "world_model_terminalize_leaf_without_applicable_transition",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[1]: effect 'set_attr' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "world_model_materialize_predicted_observation",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'add_node' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[1]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[2]: edge endpoints must be bound by the match or an earlier mint effect"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "world_model_materialize_predicted_outcome",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'add_node' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[1]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[2]: edge endpoints must be bound by the match or an earlier mint effect"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "world_model_copy_transition_feature",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'add_node' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[1]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[2]: edge endpoints must be bound by the match or an earlier mint effect"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "world_model_complete_settled_request",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[1]: effect 'set_attr' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "world_model_expire_request_at_deadline",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[1]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[2]: effect 'set_attr' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "world_model_mark_expired_trajectory_stale",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'set_attr' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "world_model_compare_grounded_outcome",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'add_node' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[1]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[2]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[3]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[4]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[5]: effect 'set_attr' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "world_model_revise_transition_confidence",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[1]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[2]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[3]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[4]: effect 'set_attr' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "world_model_prune_terminal_predicted_feature",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'del_node' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "world_model_prune_terminal_predicted_observation",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'del_node' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "world_model_prune_terminal_predicted_outcome",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'del_node' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "world_model_prune_terminal_predicted_state",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'del_node' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "world_model_prune_terminal_trajectory",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'del_node' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "world_model_prune_terminal_request",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'del_node' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "default_mode_integrate_latest_network_sample",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[1]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[2]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[3]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[4]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[5]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[6]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[7]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[8]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[9]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[10]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[11]: effect 'set_attr' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "default_mode_mint_goal_context",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'add_node' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[1]: effect 'add_node' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[2]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[3]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[4]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[5]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[6]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[7]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[8]: effect 'set_attr' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "default_mode_mint_episode_context",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'add_node' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[1]: effect 'add_node' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[2]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[3]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[4]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[5]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[6]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[7]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[8]: effect 'set_attr' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "default_mode_request_goal_projection_task",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'add_node' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[1]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[2]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[3]: edge endpoints must be bound by the match or an earlier mint effect"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "default_mode_request_episode_projection_task",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'add_node' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[1]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[2]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[3]: edge endpoints must be bound by the match or an earlier mint effect"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "default_mode_fold_goal_projection",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'add_node' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[1]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[2]: edge endpoints must be bound by the match or an earlier mint effect"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "default_mode_fold_episode_projection",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'add_node' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[1]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[2]: edge endpoints must be bound by the match or an earlier mint effect"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "default_mode_materialize_prediction",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'add_node' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[1]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[2]: edge endpoints must be bound by the match or an earlier mint effect"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "default_mode_bind_current_belief_to_goal_context",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "default_mode_reconstruct_episode_belief",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'add_node' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[1]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[2]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[3]: edge endpoints must be bound by the match or an earlier mint effect"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "default_mode_request_content_bearing_simulation",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'add_node' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[1]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[2]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[3]: edge endpoints must be bound by the match or an earlier mint effect",
+            "rule[0].effects[4]: edge endpoints must be bound by the match or an earlier mint effect"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "default_mode_offer_world_model_actions",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "default_mode_seal_world_model_action_snapshot",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'set_attr' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "default_mode_expose_content_trajectory",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "default_mode_cancel_content_simulation_on_interrupt",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[1]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[2]: effect 'set_attr' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "default_mode_spend_context_budget_once_per_epoch",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[1]: effect 'set_attr' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "default_mode_interrupt_for_salient_external_demand",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[1]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[2]: effect 'set_attr' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "default_mode_expire_context_at_deadline",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[1]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[2]: effect 'set_attr' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "default_mode_close_exhausted_context",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[1]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[2]: effect 'set_attr' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "default_mode_close_task_request_with_context",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'set_attr' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[1]: effect 'set_attr' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "default_mode_prune_old_network_samples",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'del_node' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "default_mode_prune_terminal_task_result",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'del_node' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "default_mode_prune_terminal_cognitive_task",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'del_node' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "default_mode_prune_terminal_scenario",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'del_node' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "default_mode_prune_terminal_prediction",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'del_node' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "default_mode_prune_terminal_request",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'del_node' is outside the insertion-only finite-key fragment"
+          ]
+        },
+        {
+          "agrees": true,
+          "checker_accept": false,
+          "independent_accept": false,
+          "name": "default_mode_prune_terminal_context",
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted",
+            "rule[0].effects[0]: effect 'del_node' is outside the insertion-only finite-key fragment"
+          ]
+        }
+      ]
+    }
+  ],
+  "schema": "SubstrateCoreSeedProfileAdmissionCensusV1Analysis",
+  "summary": {
+    "candidate_nonempty_profiles": [],
+    "checker_independent_agreements": 209,
+    "nonempty_profiles": 13,
+    "rejection_reason_counts": {
+      "rule[0].effects[0]: effect 'add_node' is outside the insertion-only finite-key fragment": 89,
+      "rule[0].effects[0]: effect 'del_edge' is outside the insertion-only finite-key fragment": 8,
+      "rule[0].effects[0]: effect 'del_node' is outside the insertion-only finite-key fragment": 27,
+      "rule[0].effects[0]: effect 'net_collapse' is outside the insertion-only finite-key fragment": 3,
+      "rule[0].effects[0]: effect 'set_attr' is outside the insertion-only finite-key fragment": 60,
+      "rule[0].effects[10]: edge endpoints must be bound by the match or an earlier mint effect": 3,
+      "rule[0].effects[10]: effect 'set_attr' is outside the insertion-only finite-key fragment": 3,
+      "rule[0].effects[11]: edge endpoints must be bound by the match or an earlier mint effect": 1,
+      "rule[0].effects[11]: effect 'set_attr' is outside the insertion-only finite-key fragment": 3,
+      "rule[0].effects[12]: effect 'set_attr' is outside the insertion-only finite-key fragment": 1,
+      "rule[0].effects[1]: edge endpoints must be bound by the match or an earlier mint effect": 80,
+      "rule[0].effects[1]: effect 'add_node' is outside the insertion-only finite-key fragment": 9,
+      "rule[0].effects[1]: effect 'set_attr' is outside the insertion-only finite-key fragment": 61,
+      "rule[0].effects[2]: edge endpoints must be bound by the match or an earlier mint effect": 82,
+      "rule[0].effects[2]: effect 'del_edge' is outside the insertion-only finite-key fragment": 1,
+      "rule[0].effects[2]: effect 'set_attr' is outside the insertion-only finite-key fragment": 33,
+      "rule[0].effects[2]: only variable-endpoint, empty-attribute add_edge is allowed": 2,
+      "rule[0].effects[3]: edge endpoints must be bound by the match or an earlier mint effect": 32,
+      "rule[0].effects[3]: effect 'add_node' is outside the insertion-only finite-key fragment": 2,
+      "rule[0].effects[3]: effect 'del_node' is outside the insertion-only finite-key fragment": 1,
+      "rule[0].effects[3]: effect 'set_attr' is outside the insertion-only finite-key fragment": 63,
+      "rule[0].effects[4]: edge endpoints must be bound by the match or an earlier mint effect": 17,
+      "rule[0].effects[4]: effect 'add_node' is outside the insertion-only finite-key fragment": 1,
+      "rule[0].effects[4]: effect 'del_edge' is outside the insertion-only finite-key fragment": 2,
+      "rule[0].effects[4]: effect 'set_attr' is outside the insertion-only finite-key fragment": 63,
+      "rule[0].effects[4]: only variable-endpoint, empty-attribute add_edge is allowed": 2,
+      "rule[0].effects[5]: edge endpoints must be bound by the match or an earlier mint effect": 12,
+      "rule[0].effects[5]: effect 'add_node' is outside the insertion-only finite-key fragment": 2,
+      "rule[0].effects[5]: effect 'set_attr' is outside the insertion-only finite-key fragment": 29,
+      "rule[0].effects[6]: edge endpoints must be bound by the match or an earlier mint effect": 8,
+      "rule[0].effects[6]: effect 'set_attr' is outside the insertion-only finite-key fragment": 23,
+      "rule[0].effects[6]: only variable-endpoint, empty-attribute add_edge is allowed": 2,
+      "rule[0].effects[7]: edge endpoints must be bound by the match or an earlier mint effect": 5,
+      "rule[0].effects[7]: effect 'add_node' is outside the insertion-only finite-key fragment": 2,
+      "rule[0].effects[7]: effect 'set_attr' is outside the insertion-only finite-key fragment": 19,
+      "rule[0].effects[8]: edge endpoints must be bound by the match or an earlier mint effect": 3,
+      "rule[0].effects[8]: effect 'add_node' is outside the insertion-only finite-key fragment": 1,
+      "rule[0].effects[8]: effect 'set_attr' is outside the insertion-only finite-key fragment": 9,
+      "rule[0].effects[9]: edge endpoints must be bound by the match or an earlier mint effect": 3,
+      "rule[0].effects[9]: effect 'set_attr' is outside the insertion-only finite-key fragment": 3,
+      "rule[0]: unsupported rule fields; only name, match, and effects are admitted": 206
+    },
+    "roots": 17,
+    "total_active_rule_rows": 209
+  }
+}

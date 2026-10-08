@@ -1,0 +1,264 @@
+{
+  "all_event_runs_match_full_rescan_and_reach_fixed_points": true,
+  "cases": [
+    {
+      "both_full_graph_fixed_points": true,
+      "case": "insert_boundary_edge",
+      "directly_notified_frames": [
+        0,
+        1
+      ],
+      "equal_terminal_state": true,
+      "event": {
+        "complete": true,
+        "residual_count": 0,
+        "states": [
+          0.0,
+          0.0,
+          0.0,
+          1.0,
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "steps": 1,
+        "turns": 3
+      },
+      "full_rescan": {
+        "complete": true,
+        "residual_count": 0,
+        "states": [
+          0.0,
+          0.0,
+          0.0,
+          1.0,
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "steps": 1
+      },
+      "initial_steps": {
+        "event_copy": 1,
+        "full_scan_copy": 1
+      },
+      "missed_notification_control": {
+        "detects_stale_frame": true,
+        "residual_count": 1,
+        "seeded_frames": [],
+        "states": [
+          0.0,
+          0.0,
+          0.0,
+          1.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "steps": 0
+      },
+      "mutation_changed_state": true,
+      "pre_mutation_states": [
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "both_full_graph_fixed_points": true,
+      "case": "delete_boundary_edge",
+      "directly_notified_frames": [
+        0,
+        1
+      ],
+      "equal_terminal_state": true,
+      "event": {
+        "complete": true,
+        "residual_count": 0,
+        "states": [
+          0.0,
+          0.0,
+          0.0,
+          1.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "steps": 1,
+        "turns": 2
+      },
+      "full_rescan": {
+        "complete": true,
+        "residual_count": 0,
+        "states": [
+          0.0,
+          0.0,
+          0.0,
+          1.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "steps": 1
+      },
+      "initial_steps": {
+        "event_copy": 2,
+        "full_scan_copy": 2
+      },
+      "missed_notification_control": null,
+      "mutation_changed_state": true,
+      "pre_mutation_states": [
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "both_full_graph_fixed_points": true,
+      "case": "replace_boundary_weight",
+      "directly_notified_frames": [
+        0,
+        1
+      ],
+      "equal_terminal_state": true,
+      "event": {
+        "complete": true,
+        "residual_count": 0,
+        "states": [
+          0.0,
+          0.0,
+          0.0,
+          1.0,
+          -1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "steps": 4,
+        "turns": 5
+      },
+      "full_rescan": {
+        "complete": true,
+        "residual_count": 0,
+        "states": [
+          0.0,
+          0.0,
+          0.0,
+          1.0,
+          -1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "steps": 4
+      },
+      "initial_steps": {
+        "event_copy": 2,
+        "full_scan_copy": 2
+      },
+      "missed_notification_control": null,
+      "mutation_changed_state": true,
+      "pre_mutation_states": [
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "both_full_graph_fixed_points": true,
+      "case": "external_field_change",
+      "directly_notified_frames": [
+        0
+      ],
+      "equal_terminal_state": true,
+      "event": {
+        "complete": true,
+        "residual_count": 0,
+        "states": [
+          1.0,
+          0.0,
+          0.0,
+          1.0,
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "steps": 1,
+        "turns": 2
+      },
+      "full_rescan": {
+        "complete": true,
+        "residual_count": 0,
+        "states": [
+          1.0,
+          0.0,
+          0.0,
+          1.0,
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "steps": 1
+      },
+      "initial_steps": {
+        "event_copy": 2,
+        "full_scan_copy": 2
+      },
+      "missed_notification_control": null,
+      "mutation_changed_state": true,
+      "pre_mutation_states": [
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    }
+  ],
+  "claim_boundary": [
+    "Four deterministic post-settlement perturbations on an eight-node path with two four-node frames.",
+    "The event path is explicitly notified of frames directly affected by external writes; this does not test native writer-to-scheduler notification.",
+    "The full-rescan copy is the schedule reference; independently computed CAN residuals check fixed-point validity.",
+    "This does not establish general rule-family wakeup completeness or scale behavior."
+  ],
+  "environment": {
+    "harness_sha256": "a568eac75cc21cb65a9bad8396e1f74408af09d7e35e42b2cc90ffe2364d909a",
+    "native_extension": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+    "native_extension_sha256": "2e31b4f92f4d58b537c51ad1205b7ba54c0111ed5c9104e0fd2448220e1b030e",
+    "platform": "Linux-6.8.0-137-generic-x86_64-with-glibc2.39",
+    "python": "3.13.5 (main, Jun 11 2025, 15:36:57) [GCC 11.4.0]",
+    "seed_manifest_sha256": "3b185987ae810d5e05ab2468b044ab73d8890c8e73ac86dfcaf35b734b9c61d8",
+    "source_sha256": {
+      "rewrite.rs": "a701bb5fc7f3c9a2e85f33f3c888e851ad4145d0d41ca11b2b28a4aed5b332a5",
+      "substrate.rs": "e99d8a85f74b18ecbcc878b6d8ec7376af42b4f8dede1e9f8d41c321a38d2f69",
+      "term.rs": "95d29b74d2bf8000a10c1f67acb7e0de69270ae32c5eceb0d1884cc914f935ad"
+    }
+  },
+  "missed_notification_control_detects_staleness": true,
+  "protocol": "CAN dynamic boundary wakeup recall pilot v1"
+}

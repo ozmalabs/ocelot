@@ -1,0 +1,788 @@
+{
+  "captured_utc": "2026-10-02T05:00:13Z",
+  "host": "Linux-6.8.0-142-generic-x86_64-with-glibc2.39",
+  "lock_sha256": "9bb96527a15db57d59e953c7c8004c939c68051f863c9942e6623d09fd72aa59",
+  "schema": "ThoughtexperimentRepeatableEdgeBoundaryV1Orders",
+  "workers": [
+    {
+      "baseline_train": {
+        "agent_outbound_count": 2,
+        "correct": true,
+        "expected_counts": [
+          1,
+          1
+        ],
+        "input_count": 2,
+        "input_ids": [
+          "#482",
+          "#491"
+        ],
+        "reply_counts_by_input": [
+          1,
+          1
+        ],
+        "rule_store_stable_during_sequence": true,
+        "rules_unchanged_during_sequence": true,
+        "sequence_runtime_ns": 627443
+      },
+      "branch_evidence_isolated": true,
+      "candidate_outcomes": [
+        {
+          "label": "edge_once:agent:sent:any_target",
+          "outcome": {
+            "agent_outbound_count": 1,
+            "correct": false,
+            "expected_counts": [
+              1,
+              1
+            ],
+            "input_count": 2,
+            "input_ids": [
+              "#482",
+              "#491"
+            ],
+            "reply_counts_by_input": [
+              1,
+              0
+            ],
+            "rule_store_stable_during_sequence": true,
+            "rules_unchanged_during_sequence": true,
+            "sequence_runtime_ns": 39808143
+          },
+          "proposal_id": "sha256:d386e0b34b5aaebe377744a2dc48f181bf43783d14ff20dd06a21177df63fa88"
+        },
+        {
+          "label": "composer:add_match_guard",
+          "outcome": {
+            "agent_outbound_count": 0,
+            "correct": false,
+            "expected_counts": [
+              1,
+              1
+            ],
+            "input_count": 2,
+            "input_ids": [
+              "#482",
+              "#488"
+            ],
+            "reply_counts_by_input": [
+              0,
+              0
+            ],
+            "rule_store_stable_during_sequence": true,
+            "rules_unchanged_during_sequence": true,
+            "sequence_runtime_ns": 650133
+          },
+          "proposal_id": "sha256:4978adf6467218503a365c5022985819a0c74d595d143cea04376a30bdeb313d"
+        }
+      ],
+      "composer": {
+        "kind": "add_match_guard",
+        "removed_rule": "reply_to_adjacency_pair",
+        "site": "where += Eq(Attr('m', 'adopted_variant_probe'), True) (a NEW conjunct)"
+      },
+      "decision": {
+        "ok": false,
+        "probe_count": 1,
+        "proposal_count": 2,
+        "reason": "no unique proposal has positive matching evidence"
+      },
+      "descriptors": [
+        {
+          "label": "edge_once:agent:sent:any_target",
+          "proposal_id": "sha256:d386e0b34b5aaebe377744a2dc48f181bf43783d14ff20dd06a21177df63fa88"
+        },
+        {
+          "label": "composer:add_match_guard",
+          "proposal_id": "sha256:4978adf6467218503a365c5022985819a0c74d595d143cea04376a30bdeb313d"
+        }
+      ],
+      "generic_site": [
+        [
+          "agent",
+          "sent",
+          null
+        ]
+      ],
+      "primary_rule_preserved": true,
+      "selected_label": null,
+      "selector_ns": 330992,
+      "selector_proposals": [
+        {
+          "proposal_id": "sha256:d386e0b34b5aaebe377744a2dc48f181bf43783d14ff20dd06a21177df63fa88",
+          "proposal_label": "hypothesis"
+        },
+        {
+          "proposal_id": "sha256:4978adf6467218503a365c5022985819a0c74d595d143cea04376a30bdeb313d",
+          "proposal_label": "hypothesis"
+        }
+      ],
+      "source_after": {
+        "docs/research/engine_substrate/THOUGHTEXPERIMENT_EDGE_IDEMPOTENCE_REPEATABLE_BOUNDARY_V1_PREREG_20261002.md": "3da1acb790bece6ac9bd2868d8bfbdea0d7995fb784034ea36582d2b6c01cbf3",
+        "domains/contract_query.py": "5861f25467e2fed9905fa325816a3dc60822d4a79004b8b7b095511c3806b9a6",
+        "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+        "domains/language_world.py": "06d24bdba1ccbd720f749f0c02d5a96729c40601237ec21a8f938077b2a262bb",
+        "domains/reference_resolution.py": "1f9c6ce8eaf98c33deb025110a0dea5e7960251eace4f7dc6872d3d4b85c2701",
+        "domains/reflective_faculty.py": "30951ff474cf00dba5cf9dfc01589a61104f2a05120f530c941d1fbd40c0d845",
+        "evaluation/substrate_capability/analyze_thoughtexperiment_edge_idempotence_repeatable_boundary_v1.py": "6f95c214c6281f70b24a026fa5c7744559344ea0228ad8ff7812cb0fd76cc7da",
+        "evaluation/substrate_capability/thoughtexperiment_edge_idempotence_repeatable_boundary_v1.py": "248aa520003e16577b59cc29078affbee4343a8d39ce45160287d4472fe82b29",
+        "loaded_native_binary": "09d0ac3d2b3362f5cdf7d6b1cb5ef21524cf25672916b6928c29da7997fd32c6",
+        "runners/dsl/Cargo.lock": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+        "runners/dsl/Cargo.toml": "c4d8ffff2241352a5150b5a9937dbb8010e958b6f115235b7daeae716c1a9332",
+        "runners/dsl/python/substrate_rs/__init__.py": "4e338797786071822b2e3d919ca1da3a266bda60c3ce0e29e13213a9d37454b4",
+        "runners/dsl/src/grammar.rs": "aaf6f571bf8e8761584c7473d3fe3130c5a6e395bff7f2b63f1cdcf6046b73f6",
+        "runners/dsl/src/graph.rs": "9744fec2e0c5091f2036081ffc615b1c7dd00ba2a5995af1294efb0b5aa5a28c",
+        "runners/dsl/src/graph_rules.rs": "b0e9c5bf0bbb4bf278fdab03610fa3f6f82d01ad8ee898ec789982ff41812a50",
+        "runners/dsl/src/lib.rs": "f8c5ae707046db8347438227913a737faf78a184b294c8e339a9008e71fab36c",
+        "runners/dsl/src/persist.rs": "066d026451c97e1032c30054a3a4c556d386f23db2304630a4625c5bf81306cf",
+        "runners/dsl/src/py.rs": "6a6da90d425e4f8da7b7626fc8dda39b46b63529a312d482d80e6e2ec4d03fd6",
+        "runners/dsl/src/substrate.rs": "bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+        "runners/dsl/src/sym.rs": "b54f6af6e456a7095a02eb5b3cab42a73072318bd7e54ed150c787468b170d5f",
+        "runners/dsl/src/term.rs": "5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+        "seeds/conversation.json": "dbcf2ec16f706ee4057f9a0fc6266c764b83c4631f067a32b4e9c6d2bf9f748a",
+        "seeds/conversation_reply.json": "32be4138d22d9cca4c1872f79e86729a830f4e2952375a847ea00f2767aa15ff",
+        "seeds/faculty_lessons.json": "a1a0ab3e67957666dfdf7cc6a20f0e3f15203d6553e16c08f2bbeb16774f9c2a",
+        "seeds/intent.json": "1833b673e04f98521361bc1d93e57f4feb5add49e93ce9fd813ed2bb5eebae5f",
+        "seeds/psychology.json": "1c8753c431f829f4a144d8c3d777df86af3f68c6139e7a247fa1db7e171d45b1",
+        "seeds/relations.json": "94c553808d35c873f328691bccf4d0a3e37d6b30137e1038a4b3ff69898e4f5c",
+        "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+        "substrate/seed_loader.py": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27",
+        "substrate/world_adapter.py": "e5850e4df2ff28d8c941cc3c0d12a840ab230ce627833421a88c3b354f65027c"
+      },
+      "source_before": {
+        "docs/research/engine_substrate/THOUGHTEXPERIMENT_EDGE_IDEMPOTENCE_REPEATABLE_BOUNDARY_V1_PREREG_20261002.md": "3da1acb790bece6ac9bd2868d8bfbdea0d7995fb784034ea36582d2b6c01cbf3",
+        "domains/contract_query.py": "5861f25467e2fed9905fa325816a3dc60822d4a79004b8b7b095511c3806b9a6",
+        "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+        "domains/language_world.py": "06d24bdba1ccbd720f749f0c02d5a96729c40601237ec21a8f938077b2a262bb",
+        "domains/reference_resolution.py": "1f9c6ce8eaf98c33deb025110a0dea5e7960251eace4f7dc6872d3d4b85c2701",
+        "domains/reflective_faculty.py": "30951ff474cf00dba5cf9dfc01589a61104f2a05120f530c941d1fbd40c0d845",
+        "evaluation/substrate_capability/analyze_thoughtexperiment_edge_idempotence_repeatable_boundary_v1.py": "6f95c214c6281f70b24a026fa5c7744559344ea0228ad8ff7812cb0fd76cc7da",
+        "evaluation/substrate_capability/thoughtexperiment_edge_idempotence_repeatable_boundary_v1.py": "248aa520003e16577b59cc29078affbee4343a8d39ce45160287d4472fe82b29",
+        "loaded_native_binary": "09d0ac3d2b3362f5cdf7d6b1cb5ef21524cf25672916b6928c29da7997fd32c6",
+        "runners/dsl/Cargo.lock": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+        "runners/dsl/Cargo.toml": "c4d8ffff2241352a5150b5a9937dbb8010e958b6f115235b7daeae716c1a9332",
+        "runners/dsl/python/substrate_rs/__init__.py": "4e338797786071822b2e3d919ca1da3a266bda60c3ce0e29e13213a9d37454b4",
+        "runners/dsl/src/grammar.rs": "aaf6f571bf8e8761584c7473d3fe3130c5a6e395bff7f2b63f1cdcf6046b73f6",
+        "runners/dsl/src/graph.rs": "9744fec2e0c5091f2036081ffc615b1c7dd00ba2a5995af1294efb0b5aa5a28c",
+        "runners/dsl/src/graph_rules.rs": "b0e9c5bf0bbb4bf278fdab03610fa3f6f82d01ad8ee898ec789982ff41812a50",
+        "runners/dsl/src/lib.rs": "f8c5ae707046db8347438227913a737faf78a184b294c8e339a9008e71fab36c",
+        "runners/dsl/src/persist.rs": "066d026451c97e1032c30054a3a4c556d386f23db2304630a4625c5bf81306cf",
+        "runners/dsl/src/py.rs": "6a6da90d425e4f8da7b7626fc8dda39b46b63529a312d482d80e6e2ec4d03fd6",
+        "runners/dsl/src/substrate.rs": "bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+        "runners/dsl/src/sym.rs": "b54f6af6e456a7095a02eb5b3cab42a73072318bd7e54ed150c787468b170d5f",
+        "runners/dsl/src/term.rs": "5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+        "seeds/conversation.json": "dbcf2ec16f706ee4057f9a0fc6266c764b83c4631f067a32b4e9c6d2bf9f748a",
+        "seeds/conversation_reply.json": "32be4138d22d9cca4c1872f79e86729a830f4e2952375a847ea00f2767aa15ff",
+        "seeds/faculty_lessons.json": "a1a0ab3e67957666dfdf7cc6a20f0e3f15203d6553e16c08f2bbeb16774f9c2a",
+        "seeds/intent.json": "1833b673e04f98521361bc1d93e57f4feb5add49e93ce9fd813ed2bb5eebae5f",
+        "seeds/psychology.json": "1c8753c431f829f4a144d8c3d777df86af3f68c6139e7a247fa1db7e171d45b1",
+        "seeds/relations.json": "94c553808d35c873f328691bccf4d0a3e37d6b30137e1038a4b3ff69898e4f5c",
+        "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+        "substrate/seed_loader.py": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27",
+        "substrate/world_adapter.py": "e5850e4df2ff28d8c941cc3c0d12a840ab230ce627833421a88c3b354f65027c"
+      },
+      "source_stable": true,
+      "training_evidence": [
+        {
+          "expected": "correct",
+          "predicted": "incorrect",
+          "probe_id": "train_reply_0",
+          "proposal_id": "sha256:d386e0b34b5aaebe377744a2dc48f181bf43783d14ff20dd06a21177df63fa88"
+        },
+        {
+          "expected": "correct",
+          "predicted": "incorrect",
+          "probe_id": "train_reply_0",
+          "proposal_id": "sha256:4978adf6467218503a365c5022985819a0c74d595d143cea04376a30bdeb313d"
+        }
+      ],
+      "training_scoring_ns": 40458276,
+      "worker": 0
+    },
+    {
+      "baseline_train": {
+        "agent_outbound_count": 2,
+        "correct": true,
+        "expected_counts": [
+          1,
+          1
+        ],
+        "input_count": 2,
+        "input_ids": [
+          "#482",
+          "#491"
+        ],
+        "reply_counts_by_input": [
+          1,
+          1
+        ],
+        "rule_store_stable_during_sequence": true,
+        "rules_unchanged_during_sequence": true,
+        "sequence_runtime_ns": 631153
+      },
+      "branch_evidence_isolated": true,
+      "candidate_outcomes": [
+        {
+          "label": "edge_once:agent:sent:any_target",
+          "outcome": {
+            "agent_outbound_count": 1,
+            "correct": false,
+            "expected_counts": [
+              1,
+              1
+            ],
+            "input_count": 2,
+            "input_ids": [
+              "#482",
+              "#491"
+            ],
+            "reply_counts_by_input": [
+              1,
+              0
+            ],
+            "rule_store_stable_during_sequence": true,
+            "rules_unchanged_during_sequence": true,
+            "sequence_runtime_ns": 25148963
+          },
+          "proposal_id": "sha256:d386e0b34b5aaebe377744a2dc48f181bf43783d14ff20dd06a21177df63fa88"
+        },
+        {
+          "label": "composer:add_match_guard",
+          "outcome": {
+            "agent_outbound_count": 0,
+            "correct": false,
+            "expected_counts": [
+              1,
+              1
+            ],
+            "input_count": 2,
+            "input_ids": [
+              "#482",
+              "#488"
+            ],
+            "reply_counts_by_input": [
+              0,
+              0
+            ],
+            "rule_store_stable_during_sequence": true,
+            "rules_unchanged_during_sequence": true,
+            "sequence_runtime_ns": 431392
+          },
+          "proposal_id": "sha256:4978adf6467218503a365c5022985819a0c74d595d143cea04376a30bdeb313d"
+        }
+      ],
+      "composer": {
+        "kind": "add_match_guard",
+        "removed_rule": "reply_to_adjacency_pair",
+        "site": "where += Eq(Attr('m', 'adopted_variant_probe'), True) (a NEW conjunct)"
+      },
+      "decision": {
+        "ok": false,
+        "probe_count": 1,
+        "proposal_count": 2,
+        "reason": "no unique proposal has positive matching evidence"
+      },
+      "descriptors": [
+        {
+          "label": "edge_once:agent:sent:any_target",
+          "proposal_id": "sha256:d386e0b34b5aaebe377744a2dc48f181bf43783d14ff20dd06a21177df63fa88"
+        },
+        {
+          "label": "composer:add_match_guard",
+          "proposal_id": "sha256:4978adf6467218503a365c5022985819a0c74d595d143cea04376a30bdeb313d"
+        }
+      ],
+      "generic_site": [
+        [
+          "agent",
+          "sent",
+          null
+        ]
+      ],
+      "primary_rule_preserved": true,
+      "selected_label": null,
+      "selector_ns": 186291,
+      "selector_proposals": [
+        {
+          "proposal_id": "sha256:d386e0b34b5aaebe377744a2dc48f181bf43783d14ff20dd06a21177df63fa88",
+          "proposal_label": "hypothesis"
+        },
+        {
+          "proposal_id": "sha256:4978adf6467218503a365c5022985819a0c74d595d143cea04376a30bdeb313d",
+          "proposal_label": "hypothesis"
+        }
+      ],
+      "source_after": {
+        "docs/research/engine_substrate/THOUGHTEXPERIMENT_EDGE_IDEMPOTENCE_REPEATABLE_BOUNDARY_V1_PREREG_20261002.md": "3da1acb790bece6ac9bd2868d8bfbdea0d7995fb784034ea36582d2b6c01cbf3",
+        "domains/contract_query.py": "5861f25467e2fed9905fa325816a3dc60822d4a79004b8b7b095511c3806b9a6",
+        "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+        "domains/language_world.py": "06d24bdba1ccbd720f749f0c02d5a96729c40601237ec21a8f938077b2a262bb",
+        "domains/reference_resolution.py": "1f9c6ce8eaf98c33deb025110a0dea5e7960251eace4f7dc6872d3d4b85c2701",
+        "domains/reflective_faculty.py": "30951ff474cf00dba5cf9dfc01589a61104f2a05120f530c941d1fbd40c0d845",
+        "evaluation/substrate_capability/analyze_thoughtexperiment_edge_idempotence_repeatable_boundary_v1.py": "6f95c214c6281f70b24a026fa5c7744559344ea0228ad8ff7812cb0fd76cc7da",
+        "evaluation/substrate_capability/thoughtexperiment_edge_idempotence_repeatable_boundary_v1.py": "248aa520003e16577b59cc29078affbee4343a8d39ce45160287d4472fe82b29",
+        "loaded_native_binary": "09d0ac3d2b3362f5cdf7d6b1cb5ef21524cf25672916b6928c29da7997fd32c6",
+        "runners/dsl/Cargo.lock": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+        "runners/dsl/Cargo.toml": "c4d8ffff2241352a5150b5a9937dbb8010e958b6f115235b7daeae716c1a9332",
+        "runners/dsl/python/substrate_rs/__init__.py": "4e338797786071822b2e3d919ca1da3a266bda60c3ce0e29e13213a9d37454b4",
+        "runners/dsl/src/grammar.rs": "aaf6f571bf8e8761584c7473d3fe3130c5a6e395bff7f2b63f1cdcf6046b73f6",
+        "runners/dsl/src/graph.rs": "9744fec2e0c5091f2036081ffc615b1c7dd00ba2a5995af1294efb0b5aa5a28c",
+        "runners/dsl/src/graph_rules.rs": "b0e9c5bf0bbb4bf278fdab03610fa3f6f82d01ad8ee898ec789982ff41812a50",
+        "runners/dsl/src/lib.rs": "f8c5ae707046db8347438227913a737faf78a184b294c8e339a9008e71fab36c",
+        "runners/dsl/src/persist.rs": "066d026451c97e1032c30054a3a4c556d386f23db2304630a4625c5bf81306cf",
+        "runners/dsl/src/py.rs": "6a6da90d425e4f8da7b7626fc8dda39b46b63529a312d482d80e6e2ec4d03fd6",
+        "runners/dsl/src/substrate.rs": "bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+        "runners/dsl/src/sym.rs": "b54f6af6e456a7095a02eb5b3cab42a73072318bd7e54ed150c787468b170d5f",
+        "runners/dsl/src/term.rs": "5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+        "seeds/conversation.json": "dbcf2ec16f706ee4057f9a0fc6266c764b83c4631f067a32b4e9c6d2bf9f748a",
+        "seeds/conversation_reply.json": "32be4138d22d9cca4c1872f79e86729a830f4e2952375a847ea00f2767aa15ff",
+        "seeds/faculty_lessons.json": "a1a0ab3e67957666dfdf7cc6a20f0e3f15203d6553e16c08f2bbeb16774f9c2a",
+        "seeds/intent.json": "1833b673e04f98521361bc1d93e57f4feb5add49e93ce9fd813ed2bb5eebae5f",
+        "seeds/psychology.json": "1c8753c431f829f4a144d8c3d777df86af3f68c6139e7a247fa1db7e171d45b1",
+        "seeds/relations.json": "94c553808d35c873f328691bccf4d0a3e37d6b30137e1038a4b3ff69898e4f5c",
+        "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+        "substrate/seed_loader.py": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27",
+        "substrate/world_adapter.py": "e5850e4df2ff28d8c941cc3c0d12a840ab230ce627833421a88c3b354f65027c"
+      },
+      "source_before": {
+        "docs/research/engine_substrate/THOUGHTEXPERIMENT_EDGE_IDEMPOTENCE_REPEATABLE_BOUNDARY_V1_PREREG_20261002.md": "3da1acb790bece6ac9bd2868d8bfbdea0d7995fb784034ea36582d2b6c01cbf3",
+        "domains/contract_query.py": "5861f25467e2fed9905fa325816a3dc60822d4a79004b8b7b095511c3806b9a6",
+        "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+        "domains/language_world.py": "06d24bdba1ccbd720f749f0c02d5a96729c40601237ec21a8f938077b2a262bb",
+        "domains/reference_resolution.py": "1f9c6ce8eaf98c33deb025110a0dea5e7960251eace4f7dc6872d3d4b85c2701",
+        "domains/reflective_faculty.py": "30951ff474cf00dba5cf9dfc01589a61104f2a05120f530c941d1fbd40c0d845",
+        "evaluation/substrate_capability/analyze_thoughtexperiment_edge_idempotence_repeatable_boundary_v1.py": "6f95c214c6281f70b24a026fa5c7744559344ea0228ad8ff7812cb0fd76cc7da",
+        "evaluation/substrate_capability/thoughtexperiment_edge_idempotence_repeatable_boundary_v1.py": "248aa520003e16577b59cc29078affbee4343a8d39ce45160287d4472fe82b29",
+        "loaded_native_binary": "09d0ac3d2b3362f5cdf7d6b1cb5ef21524cf25672916b6928c29da7997fd32c6",
+        "runners/dsl/Cargo.lock": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+        "runners/dsl/Cargo.toml": "c4d8ffff2241352a5150b5a9937dbb8010e958b6f115235b7daeae716c1a9332",
+        "runners/dsl/python/substrate_rs/__init__.py": "4e338797786071822b2e3d919ca1da3a266bda60c3ce0e29e13213a9d37454b4",
+        "runners/dsl/src/grammar.rs": "aaf6f571bf8e8761584c7473d3fe3130c5a6e395bff7f2b63f1cdcf6046b73f6",
+        "runners/dsl/src/graph.rs": "9744fec2e0c5091f2036081ffc615b1c7dd00ba2a5995af1294efb0b5aa5a28c",
+        "runners/dsl/src/graph_rules.rs": "b0e9c5bf0bbb4bf278fdab03610fa3f6f82d01ad8ee898ec789982ff41812a50",
+        "runners/dsl/src/lib.rs": "f8c5ae707046db8347438227913a737faf78a184b294c8e339a9008e71fab36c",
+        "runners/dsl/src/persist.rs": "066d026451c97e1032c30054a3a4c556d386f23db2304630a4625c5bf81306cf",
+        "runners/dsl/src/py.rs": "6a6da90d425e4f8da7b7626fc8dda39b46b63529a312d482d80e6e2ec4d03fd6",
+        "runners/dsl/src/substrate.rs": "bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+        "runners/dsl/src/sym.rs": "b54f6af6e456a7095a02eb5b3cab42a73072318bd7e54ed150c787468b170d5f",
+        "runners/dsl/src/term.rs": "5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+        "seeds/conversation.json": "dbcf2ec16f706ee4057f9a0fc6266c764b83c4631f067a32b4e9c6d2bf9f748a",
+        "seeds/conversation_reply.json": "32be4138d22d9cca4c1872f79e86729a830f4e2952375a847ea00f2767aa15ff",
+        "seeds/faculty_lessons.json": "a1a0ab3e67957666dfdf7cc6a20f0e3f15203d6553e16c08f2bbeb16774f9c2a",
+        "seeds/intent.json": "1833b673e04f98521361bc1d93e57f4feb5add49e93ce9fd813ed2bb5eebae5f",
+        "seeds/psychology.json": "1c8753c431f829f4a144d8c3d777df86af3f68c6139e7a247fa1db7e171d45b1",
+        "seeds/relations.json": "94c553808d35c873f328691bccf4d0a3e37d6b30137e1038a4b3ff69898e4f5c",
+        "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+        "substrate/seed_loader.py": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27",
+        "substrate/world_adapter.py": "e5850e4df2ff28d8c941cc3c0d12a840ab230ce627833421a88c3b354f65027c"
+      },
+      "source_stable": true,
+      "training_evidence": [
+        {
+          "expected": "correct",
+          "predicted": "incorrect",
+          "probe_id": "train_reply_1",
+          "proposal_id": "sha256:d386e0b34b5aaebe377744a2dc48f181bf43783d14ff20dd06a21177df63fa88"
+        },
+        {
+          "expected": "correct",
+          "predicted": "incorrect",
+          "probe_id": "train_reply_1",
+          "proposal_id": "sha256:4978adf6467218503a365c5022985819a0c74d595d143cea04376a30bdeb313d"
+        }
+      ],
+      "training_scoring_ns": 25580355,
+      "worker": 1
+    },
+    {
+      "baseline_train": {
+        "agent_outbound_count": 2,
+        "correct": true,
+        "expected_counts": [
+          1,
+          1
+        ],
+        "input_count": 2,
+        "input_ids": [
+          "#482",
+          "#491"
+        ],
+        "reply_counts_by_input": [
+          1,
+          1
+        ],
+        "rule_store_stable_during_sequence": true,
+        "rules_unchanged_during_sequence": true,
+        "sequence_runtime_ns": 461452
+      },
+      "branch_evidence_isolated": true,
+      "candidate_outcomes": [
+        {
+          "label": "edge_once:agent:sent:any_target",
+          "outcome": {
+            "agent_outbound_count": 1,
+            "correct": false,
+            "expected_counts": [
+              1,
+              1
+            ],
+            "input_count": 2,
+            "input_ids": [
+              "#482",
+              "#491"
+            ],
+            "reply_counts_by_input": [
+              1,
+              0
+            ],
+            "rule_store_stable_during_sequence": true,
+            "rules_unchanged_during_sequence": true,
+            "sequence_runtime_ns": 35901927
+          },
+          "proposal_id": "sha256:d386e0b34b5aaebe377744a2dc48f181bf43783d14ff20dd06a21177df63fa88"
+        },
+        {
+          "label": "composer:add_match_guard",
+          "outcome": {
+            "agent_outbound_count": 0,
+            "correct": false,
+            "expected_counts": [
+              1,
+              1
+            ],
+            "input_count": 2,
+            "input_ids": [
+              "#482",
+              "#488"
+            ],
+            "reply_counts_by_input": [
+              0,
+              0
+            ],
+            "rule_store_stable_during_sequence": true,
+            "rules_unchanged_during_sequence": true,
+            "sequence_runtime_ns": 444762
+          },
+          "proposal_id": "sha256:4978adf6467218503a365c5022985819a0c74d595d143cea04376a30bdeb313d"
+        }
+      ],
+      "composer": {
+        "kind": "add_match_guard",
+        "removed_rule": "reply_to_adjacency_pair",
+        "site": "where += Eq(Attr('m', 'adopted_variant_probe'), True) (a NEW conjunct)"
+      },
+      "decision": {
+        "ok": false,
+        "probe_count": 1,
+        "proposal_count": 2,
+        "reason": "no unique proposal has positive matching evidence"
+      },
+      "descriptors": [
+        {
+          "label": "edge_once:agent:sent:any_target",
+          "proposal_id": "sha256:d386e0b34b5aaebe377744a2dc48f181bf43783d14ff20dd06a21177df63fa88"
+        },
+        {
+          "label": "composer:add_match_guard",
+          "proposal_id": "sha256:4978adf6467218503a365c5022985819a0c74d595d143cea04376a30bdeb313d"
+        }
+      ],
+      "generic_site": [
+        [
+          "agent",
+          "sent",
+          null
+        ]
+      ],
+      "primary_rule_preserved": true,
+      "selected_label": null,
+      "selector_ns": 218701,
+      "selector_proposals": [
+        {
+          "proposal_id": "sha256:d386e0b34b5aaebe377744a2dc48f181bf43783d14ff20dd06a21177df63fa88",
+          "proposal_label": "hypothesis"
+        },
+        {
+          "proposal_id": "sha256:4978adf6467218503a365c5022985819a0c74d595d143cea04376a30bdeb313d",
+          "proposal_label": "hypothesis"
+        }
+      ],
+      "source_after": {
+        "docs/research/engine_substrate/THOUGHTEXPERIMENT_EDGE_IDEMPOTENCE_REPEATABLE_BOUNDARY_V1_PREREG_20261002.md": "3da1acb790bece6ac9bd2868d8bfbdea0d7995fb784034ea36582d2b6c01cbf3",
+        "domains/contract_query.py": "5861f25467e2fed9905fa325816a3dc60822d4a79004b8b7b095511c3806b9a6",
+        "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+        "domains/language_world.py": "06d24bdba1ccbd720f749f0c02d5a96729c40601237ec21a8f938077b2a262bb",
+        "domains/reference_resolution.py": "1f9c6ce8eaf98c33deb025110a0dea5e7960251eace4f7dc6872d3d4b85c2701",
+        "domains/reflective_faculty.py": "30951ff474cf00dba5cf9dfc01589a61104f2a05120f530c941d1fbd40c0d845",
+        "evaluation/substrate_capability/analyze_thoughtexperiment_edge_idempotence_repeatable_boundary_v1.py": "6f95c214c6281f70b24a026fa5c7744559344ea0228ad8ff7812cb0fd76cc7da",
+        "evaluation/substrate_capability/thoughtexperiment_edge_idempotence_repeatable_boundary_v1.py": "248aa520003e16577b59cc29078affbee4343a8d39ce45160287d4472fe82b29",
+        "loaded_native_binary": "09d0ac3d2b3362f5cdf7d6b1cb5ef21524cf25672916b6928c29da7997fd32c6",
+        "runners/dsl/Cargo.lock": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+        "runners/dsl/Cargo.toml": "c4d8ffff2241352a5150b5a9937dbb8010e958b6f115235b7daeae716c1a9332",
+        "runners/dsl/python/substrate_rs/__init__.py": "4e338797786071822b2e3d919ca1da3a266bda60c3ce0e29e13213a9d37454b4",
+        "runners/dsl/src/grammar.rs": "aaf6f571bf8e8761584c7473d3fe3130c5a6e395bff7f2b63f1cdcf6046b73f6",
+        "runners/dsl/src/graph.rs": "9744fec2e0c5091f2036081ffc615b1c7dd00ba2a5995af1294efb0b5aa5a28c",
+        "runners/dsl/src/graph_rules.rs": "b0e9c5bf0bbb4bf278fdab03610fa3f6f82d01ad8ee898ec789982ff41812a50",
+        "runners/dsl/src/lib.rs": "f8c5ae707046db8347438227913a737faf78a184b294c8e339a9008e71fab36c",
+        "runners/dsl/src/persist.rs": "066d026451c97e1032c30054a3a4c556d386f23db2304630a4625c5bf81306cf",
+        "runners/dsl/src/py.rs": "6a6da90d425e4f8da7b7626fc8dda39b46b63529a312d482d80e6e2ec4d03fd6",
+        "runners/dsl/src/substrate.rs": "bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+        "runners/dsl/src/sym.rs": "b54f6af6e456a7095a02eb5b3cab42a73072318bd7e54ed150c787468b170d5f",
+        "runners/dsl/src/term.rs": "5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+        "seeds/conversation.json": "dbcf2ec16f706ee4057f9a0fc6266c764b83c4631f067a32b4e9c6d2bf9f748a",
+        "seeds/conversation_reply.json": "32be4138d22d9cca4c1872f79e86729a830f4e2952375a847ea00f2767aa15ff",
+        "seeds/faculty_lessons.json": "a1a0ab3e67957666dfdf7cc6a20f0e3f15203d6553e16c08f2bbeb16774f9c2a",
+        "seeds/intent.json": "1833b673e04f98521361bc1d93e57f4feb5add49e93ce9fd813ed2bb5eebae5f",
+        "seeds/psychology.json": "1c8753c431f829f4a144d8c3d777df86af3f68c6139e7a247fa1db7e171d45b1",
+        "seeds/relations.json": "94c553808d35c873f328691bccf4d0a3e37d6b30137e1038a4b3ff69898e4f5c",
+        "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+        "substrate/seed_loader.py": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27",
+        "substrate/world_adapter.py": "e5850e4df2ff28d8c941cc3c0d12a840ab230ce627833421a88c3b354f65027c"
+      },
+      "source_before": {
+        "docs/research/engine_substrate/THOUGHTEXPERIMENT_EDGE_IDEMPOTENCE_REPEATABLE_BOUNDARY_V1_PREREG_20261002.md": "3da1acb790bece6ac9bd2868d8bfbdea0d7995fb784034ea36582d2b6c01cbf3",
+        "domains/contract_query.py": "5861f25467e2fed9905fa325816a3dc60822d4a79004b8b7b095511c3806b9a6",
+        "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+        "domains/language_world.py": "06d24bdba1ccbd720f749f0c02d5a96729c40601237ec21a8f938077b2a262bb",
+        "domains/reference_resolution.py": "1f9c6ce8eaf98c33deb025110a0dea5e7960251eace4f7dc6872d3d4b85c2701",
+        "domains/reflective_faculty.py": "30951ff474cf00dba5cf9dfc01589a61104f2a05120f530c941d1fbd40c0d845",
+        "evaluation/substrate_capability/analyze_thoughtexperiment_edge_idempotence_repeatable_boundary_v1.py": "6f95c214c6281f70b24a026fa5c7744559344ea0228ad8ff7812cb0fd76cc7da",
+        "evaluation/substrate_capability/thoughtexperiment_edge_idempotence_repeatable_boundary_v1.py": "248aa520003e16577b59cc29078affbee4343a8d39ce45160287d4472fe82b29",
+        "loaded_native_binary": "09d0ac3d2b3362f5cdf7d6b1cb5ef21524cf25672916b6928c29da7997fd32c6",
+        "runners/dsl/Cargo.lock": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+        "runners/dsl/Cargo.toml": "c4d8ffff2241352a5150b5a9937dbb8010e958b6f115235b7daeae716c1a9332",
+        "runners/dsl/python/substrate_rs/__init__.py": "4e338797786071822b2e3d919ca1da3a266bda60c3ce0e29e13213a9d37454b4",
+        "runners/dsl/src/grammar.rs": "aaf6f571bf8e8761584c7473d3fe3130c5a6e395bff7f2b63f1cdcf6046b73f6",
+        "runners/dsl/src/graph.rs": "9744fec2e0c5091f2036081ffc615b1c7dd00ba2a5995af1294efb0b5aa5a28c",
+        "runners/dsl/src/graph_rules.rs": "b0e9c5bf0bbb4bf278fdab03610fa3f6f82d01ad8ee898ec789982ff41812a50",
+        "runners/dsl/src/lib.rs": "f8c5ae707046db8347438227913a737faf78a184b294c8e339a9008e71fab36c",
+        "runners/dsl/src/persist.rs": "066d026451c97e1032c30054a3a4c556d386f23db2304630a4625c5bf81306cf",
+        "runners/dsl/src/py.rs": "6a6da90d425e4f8da7b7626fc8dda39b46b63529a312d482d80e6e2ec4d03fd6",
+        "runners/dsl/src/substrate.rs": "bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+        "runners/dsl/src/sym.rs": "b54f6af6e456a7095a02eb5b3cab42a73072318bd7e54ed150c787468b170d5f",
+        "runners/dsl/src/term.rs": "5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+        "seeds/conversation.json": "dbcf2ec16f706ee4057f9a0fc6266c764b83c4631f067a32b4e9c6d2bf9f748a",
+        "seeds/conversation_reply.json": "32be4138d22d9cca4c1872f79e86729a830f4e2952375a847ea00f2767aa15ff",
+        "seeds/faculty_lessons.json": "a1a0ab3e67957666dfdf7cc6a20f0e3f15203d6553e16c08f2bbeb16774f9c2a",
+        "seeds/intent.json": "1833b673e04f98521361bc1d93e57f4feb5add49e93ce9fd813ed2bb5eebae5f",
+        "seeds/psychology.json": "1c8753c431f829f4a144d8c3d777df86af3f68c6139e7a247fa1db7e171d45b1",
+        "seeds/relations.json": "94c553808d35c873f328691bccf4d0a3e37d6b30137e1038a4b3ff69898e4f5c",
+        "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+        "substrate/seed_loader.py": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27",
+        "substrate/world_adapter.py": "e5850e4df2ff28d8c941cc3c0d12a840ab230ce627833421a88c3b354f65027c"
+      },
+      "source_stable": true,
+      "training_evidence": [
+        {
+          "expected": "correct",
+          "predicted": "incorrect",
+          "probe_id": "train_reply_2",
+          "proposal_id": "sha256:d386e0b34b5aaebe377744a2dc48f181bf43783d14ff20dd06a21177df63fa88"
+        },
+        {
+          "expected": "correct",
+          "predicted": "incorrect",
+          "probe_id": "train_reply_2",
+          "proposal_id": "sha256:4978adf6467218503a365c5022985819a0c74d595d143cea04376a30bdeb313d"
+        }
+      ],
+      "training_scoring_ns": 36346689,
+      "worker": 2
+    },
+    {
+      "baseline_train": {
+        "agent_outbound_count": 2,
+        "correct": true,
+        "expected_counts": [
+          1,
+          1
+        ],
+        "input_count": 2,
+        "input_ids": [
+          "#482",
+          "#491"
+        ],
+        "reply_counts_by_input": [
+          1,
+          1
+        ],
+        "rule_store_stable_during_sequence": true,
+        "rules_unchanged_during_sequence": true,
+        "sequence_runtime_ns": 411812
+      },
+      "branch_evidence_isolated": true,
+      "candidate_outcomes": [
+        {
+          "label": "edge_once:agent:sent:any_target",
+          "outcome": {
+            "agent_outbound_count": 1,
+            "correct": false,
+            "expected_counts": [
+              1,
+              1
+            ],
+            "input_count": 2,
+            "input_ids": [
+              "#482",
+              "#491"
+            ],
+            "reply_counts_by_input": [
+              1,
+              0
+            ],
+            "rule_store_stable_during_sequence": true,
+            "rules_unchanged_during_sequence": true,
+            "sequence_runtime_ns": 30401795
+          },
+          "proposal_id": "sha256:d386e0b34b5aaebe377744a2dc48f181bf43783d14ff20dd06a21177df63fa88"
+        },
+        {
+          "label": "composer:add_match_guard",
+          "outcome": {
+            "agent_outbound_count": 0,
+            "correct": false,
+            "expected_counts": [
+              1,
+              1
+            ],
+            "input_count": 2,
+            "input_ids": [
+              "#482",
+              "#488"
+            ],
+            "reply_counts_by_input": [
+              0,
+              0
+            ],
+            "rule_store_stable_during_sequence": true,
+            "rules_unchanged_during_sequence": true,
+            "sequence_runtime_ns": 421392
+          },
+          "proposal_id": "sha256:4978adf6467218503a365c5022985819a0c74d595d143cea04376a30bdeb313d"
+        }
+      ],
+      "composer": {
+        "kind": "add_match_guard",
+        "removed_rule": "reply_to_adjacency_pair",
+        "site": "where += Eq(Attr('m', 'adopted_variant_probe'), True) (a NEW conjunct)"
+      },
+      "decision": {
+        "ok": false,
+        "probe_count": 1,
+        "proposal_count": 2,
+        "reason": "no unique proposal has positive matching evidence"
+      },
+      "descriptors": [
+        {
+          "label": "edge_once:agent:sent:any_target",
+          "proposal_id": "sha256:d386e0b34b5aaebe377744a2dc48f181bf43783d14ff20dd06a21177df63fa88"
+        },
+        {
+          "label": "composer:add_match_guard",
+          "proposal_id": "sha256:4978adf6467218503a365c5022985819a0c74d595d143cea04376a30bdeb313d"
+        }
+      ],
+      "generic_site": [
+        [
+          "agent",
+          "sent",
+          null
+        ]
+      ],
+      "primary_rule_preserved": true,
+      "selected_label": null,
+      "selector_ns": 198061,
+      "selector_proposals": [
+        {
+          "proposal_id": "sha256:d386e0b34b5aaebe377744a2dc48f181bf43783d14ff20dd06a21177df63fa88",
+          "proposal_label": "hypothesis"
+        },
+        {
+          "proposal_id": "sha256:4978adf6467218503a365c5022985819a0c74d595d143cea04376a30bdeb313d",
+          "proposal_label": "hypothesis"
+        }
+      ],
+      "source_after": {
+        "docs/research/engine_substrate/THOUGHTEXPERIMENT_EDGE_IDEMPOTENCE_REPEATABLE_BOUNDARY_V1_PREREG_20261002.md": "3da1acb790bece6ac9bd2868d8bfbdea0d7995fb784034ea36582d2b6c01cbf3",
+        "domains/contract_query.py": "5861f25467e2fed9905fa325816a3dc60822d4a79004b8b7b095511c3806b9a6",
+        "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+        "domains/language_world.py": "06d24bdba1ccbd720f749f0c02d5a96729c40601237ec21a8f938077b2a262bb",
+        "domains/reference_resolution.py": "1f9c6ce8eaf98c33deb025110a0dea5e7960251eace4f7dc6872d3d4b85c2701",
+        "domains/reflective_faculty.py": "30951ff474cf00dba5cf9dfc01589a61104f2a05120f530c941d1fbd40c0d845",
+        "evaluation/substrate_capability/analyze_thoughtexperiment_edge_idempotence_repeatable_boundary_v1.py": "6f95c214c6281f70b24a026fa5c7744559344ea0228ad8ff7812cb0fd76cc7da",
+        "evaluation/substrate_capability/thoughtexperiment_edge_idempotence_repeatable_boundary_v1.py": "248aa520003e16577b59cc29078affbee4343a8d39ce45160287d4472fe82b29",
+        "loaded_native_binary": "09d0ac3d2b3362f5cdf7d6b1cb5ef21524cf25672916b6928c29da7997fd32c6",
+        "runners/dsl/Cargo.lock": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+        "runners/dsl/Cargo.toml": "c4d8ffff2241352a5150b5a9937dbb8010e958b6f115235b7daeae716c1a9332",
+        "runners/dsl/python/substrate_rs/__init__.py": "4e338797786071822b2e3d919ca1da3a266bda60c3ce0e29e13213a9d37454b4",
+        "runners/dsl/src/grammar.rs": "aaf6f571bf8e8761584c7473d3fe3130c5a6e395bff7f2b63f1cdcf6046b73f6",
+        "runners/dsl/src/graph.rs": "9744fec2e0c5091f2036081ffc615b1c7dd00ba2a5995af1294efb0b5aa5a28c",
+        "runners/dsl/src/graph_rules.rs": "b0e9c5bf0bbb4bf278fdab03610fa3f6f82d01ad8ee898ec789982ff41812a50",
+        "runners/dsl/src/lib.rs": "f8c5ae707046db8347438227913a737faf78a184b294c8e339a9008e71fab36c",
+        "runners/dsl/src/persist.rs": "066d026451c97e1032c30054a3a4c556d386f23db2304630a4625c5bf81306cf",
+        "runners/dsl/src/py.rs": "6a6da90d425e4f8da7b7626fc8dda39b46b63529a312d482d80e6e2ec4d03fd6",
+        "runners/dsl/src/substrate.rs": "bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+        "runners/dsl/src/sym.rs": "b54f6af6e456a7095a02eb5b3cab42a73072318bd7e54ed150c787468b170d5f",
+        "runners/dsl/src/term.rs": "5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+        "seeds/conversation.json": "dbcf2ec16f706ee4057f9a0fc6266c764b83c4631f067a32b4e9c6d2bf9f748a",
+        "seeds/conversation_reply.json": "32be4138d22d9cca4c1872f79e86729a830f4e2952375a847ea00f2767aa15ff",
+        "seeds/faculty_lessons.json": "a1a0ab3e67957666dfdf7cc6a20f0e3f15203d6553e16c08f2bbeb16774f9c2a",
+        "seeds/intent.json": "1833b673e04f98521361bc1d93e57f4feb5add49e93ce9fd813ed2bb5eebae5f",
+        "seeds/psychology.json": "1c8753c431f829f4a144d8c3d777df86af3f68c6139e7a247fa1db7e171d45b1",
+        "seeds/relations.json": "94c553808d35c873f328691bccf4d0a3e37d6b30137e1038a4b3ff69898e4f5c",
+        "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+        "substrate/seed_loader.py": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27",
+        "substrate/world_adapter.py": "e5850e4df2ff28d8c941cc3c0d12a840ab230ce627833421a88c3b354f65027c"
+      },
+      "source_before": {
+        "docs/research/engine_substrate/THOUGHTEXPERIMENT_EDGE_IDEMPOTENCE_REPEATABLE_BOUNDARY_V1_PREREG_20261002.md": "3da1acb790bece6ac9bd2868d8bfbdea0d7995fb784034ea36582d2b6c01cbf3",
+        "domains/contract_query.py": "5861f25467e2fed9905fa325816a3dc60822d4a79004b8b7b095511c3806b9a6",
+        "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+        "domains/language_world.py": "06d24bdba1ccbd720f749f0c02d5a96729c40601237ec21a8f938077b2a262bb",
+        "domains/reference_resolution.py": "1f9c6ce8eaf98c33deb025110a0dea5e7960251eace4f7dc6872d3d4b85c2701",
+        "domains/reflective_faculty.py": "30951ff474cf00dba5cf9dfc01589a61104f2a05120f530c941d1fbd40c0d845",
+        "evaluation/substrate_capability/analyze_thoughtexperiment_edge_idempotence_repeatable_boundary_v1.py": "6f95c214c6281f70b24a026fa5c7744559344ea0228ad8ff7812cb0fd76cc7da",
+        "evaluation/substrate_capability/thoughtexperiment_edge_idempotence_repeatable_boundary_v1.py": "248aa520003e16577b59cc29078affbee4343a8d39ce45160287d4472fe82b29",
+        "loaded_native_binary": "09d0ac3d2b3362f5cdf7d6b1cb5ef21524cf25672916b6928c29da7997fd32c6",
+        "runners/dsl/Cargo.lock": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+        "runners/dsl/Cargo.toml": "c4d8ffff2241352a5150b5a9937dbb8010e958b6f115235b7daeae716c1a9332",
+        "runners/dsl/python/substrate_rs/__init__.py": "4e338797786071822b2e3d919ca1da3a266bda60c3ce0e29e13213a9d37454b4",
+        "runners/dsl/src/grammar.rs": "aaf6f571bf8e8761584c7473d3fe3130c5a6e395bff7f2b63f1cdcf6046b73f6",
+        "runners/dsl/src/graph.rs": "9744fec2e0c5091f2036081ffc615b1c7dd00ba2a5995af1294efb0b5aa5a28c",
+        "runners/dsl/src/graph_rules.rs": "b0e9c5bf0bbb4bf278fdab03610fa3f6f82d01ad8ee898ec789982ff41812a50",
+        "runners/dsl/src/lib.rs": "f8c5ae707046db8347438227913a737faf78a184b294c8e339a9008e71fab36c",
+        "runners/dsl/src/persist.rs": "066d026451c97e1032c30054a3a4c556d386f23db2304630a4625c5bf81306cf",
+        "runners/dsl/src/py.rs": "6a6da90d425e4f8da7b7626fc8dda39b46b63529a312d482d80e6e2ec4d03fd6",
+        "runners/dsl/src/substrate.rs": "bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+        "runners/dsl/src/sym.rs": "b54f6af6e456a7095a02eb5b3cab42a73072318bd7e54ed150c787468b170d5f",
+        "runners/dsl/src/term.rs": "5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+        "seeds/conversation.json": "dbcf2ec16f706ee4057f9a0fc6266c764b83c4631f067a32b4e9c6d2bf9f748a",
+        "seeds/conversation_reply.json": "32be4138d22d9cca4c1872f79e86729a830f4e2952375a847ea00f2767aa15ff",
+        "seeds/faculty_lessons.json": "a1a0ab3e67957666dfdf7cc6a20f0e3f15203d6553e16c08f2bbeb16774f9c2a",
+        "seeds/intent.json": "1833b673e04f98521361bc1d93e57f4feb5add49e93ce9fd813ed2bb5eebae5f",
+        "seeds/psychology.json": "1c8753c431f829f4a144d8c3d777df86af3f68c6139e7a247fa1db7e171d45b1",
+        "seeds/relations.json": "94c553808d35c873f328691bccf4d0a3e37d6b30137e1038a4b3ff69898e4f5c",
+        "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+        "substrate/seed_loader.py": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27",
+        "substrate/world_adapter.py": "e5850e4df2ff28d8c941cc3c0d12a840ab230ce627833421a88c3b354f65027c"
+      },
+      "source_stable": true,
+      "training_evidence": [
+        {
+          "expected": "correct",
+          "predicted": "incorrect",
+          "probe_id": "train_reply_3",
+          "proposal_id": "sha256:d386e0b34b5aaebe377744a2dc48f181bf43783d14ff20dd06a21177df63fa88"
+        },
+        {
+          "expected": "correct",
+          "predicted": "incorrect",
+          "probe_id": "train_reply_3",
+          "proposal_id": "sha256:4978adf6467218503a365c5022985819a0c74d595d143cea04376a30bdeb313d"
+        }
+      ],
+      "training_scoring_ns": 30823187,
+      "worker": 3
+    }
+  ]
+}

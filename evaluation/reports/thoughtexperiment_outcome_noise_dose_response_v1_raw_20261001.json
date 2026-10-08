@@ -1,0 +1,2062 @@
+{
+  "captured_utc": "2026-10-01T08:26:46Z",
+  "engine_fingerprint": "4036d3738ccc0e1f0fa3a6ef00ab3e271c1205921ca074a3f02334919a46d6ee",
+  "gates": {
+    "all_arms_eventually_pass": true,
+    "all_primary_branches_preserved": true,
+    "clean_transfer_baseline": true,
+    "false_negative_mutation_recorded": true,
+    "false_positive_doses_recorded": true,
+    "mixed_noise_recorded": true,
+    "production_training_authentic": true,
+    "source_hashes_stable": true,
+    "three_fresh_workers": true
+  },
+  "native_binary": {
+    "path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+    "sha256": "b9f398c75ceb12a5d519235efb6b3ec403d1b153a576aad6def528c2d48a7617"
+  },
+  "protocol": {
+    "arms": [
+      "clean",
+      "false_positive_1",
+      "false_positive_2",
+      "false_negative_1",
+      "mixed"
+    ],
+    "branch_backend": "native full-copy experiment",
+    "oracle": "one recurrence offer per candidate, zero-progress fixedpoint",
+    "training": "production scan_and_self_correct",
+    "workers": 3
+  },
+  "schema": "ThoughtexperimentOutcomeNoiseDoseResponseV1",
+  "source_hashes": {
+    "domains/collapse_model.py": "97aaa5c26e6cb3f2682f6d9ee7aa9f0fbbc622e27063b1947edab26fa0ef4ea7",
+    "domains/collapse_watch.py": "de8acb4e4fd6da6cba263c09f7f07f65055ea180343615eb8724c7ddf6b46799",
+    "domains/reflective_faculty.py": "8f530a8c8754949216b71b473c4769fa5d351d01d6055127943c009d06763d05",
+    "domains/self_correct_dispatch.py": "6aa0759fb39c7b6ff754b669f1699d6badeb90beb48e90e5f7e5b3d1f8a5464f",
+    "domains/self_correction.py": "682c4fda4d18bf2e7655988c6ef8e52dc6ab7bae143851d804c122a0dbeb8a2d",
+    "evaluation/substrate_capability/thoughtexperiment_automatic_outcome_persistence_transfer_v1.py": "a8b9d59db35df31f705ecda8d8b338a59778eddab3792ac208ac8612456c2318",
+    "evaluation/substrate_capability/thoughtexperiment_graph_authored_correction_rank_v1.py": "9a46f1b90dd12a577d86e28b57a256dc5e091bb93f8563aa6fc4178e40ab9fed",
+    "evaluation/substrate_capability/thoughtexperiment_outcome_noise_dose_response_v1.py": "fbfa5d8a6f3830bc5939fc866b56704626c306c428e7ab5a5d36a194d9dee9ee",
+    "seeds/autonomy.json": "5eb18e0b06de6243ac1abae5a51bdc146e78d4d5a13ec863a9baa20f9ede9dfe",
+    "seeds/composer_collapse_watch_graph.json": "7afd9f795f05933873e4b8595558b6a9a2587d6f9e4cfde9f8862eba3511f9c5",
+    "seeds/composer_dispatch.json": "a167c0ef5fba47ef9c46a3c87db972e5a85f444f9a930e761a7ef40d25b9a09a",
+    "seeds/composer_self_correct_graph.json": "84c3f6ca601b4e62f6c2de46e1da98289821444ee9118dbdbd2a85d655c19e20",
+    "seeds/minting_recurrence_ledger.json": "10c5df924cb98eacea2a2159e60247c1d783db37f4be147378c6115e1b545a92",
+    "seeds/relation_vocabulary.json": "781e89f27c5d31c214d57eb521deb6dab04c34ef51413b7a14739dd98861d90a",
+    "seeds/shape_decode_loop.json": "3e1783cf566179061250572bbf7bc7bb54cacfafb83f8852008c4618d984a9c6",
+    "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb"
+  },
+  "summary": [
+    {
+      "arm": "clean",
+      "first_candidate": [
+        "dedup_identity_fix",
+        "dedup_identity_fix",
+        "dedup_identity_fix"
+      ],
+      "first_oracle_output": [
+        [
+          1,
+          1
+        ],
+        [
+          1,
+          1
+        ],
+        [
+          1,
+          1
+        ]
+      ],
+      "first_prior_failures": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "first_prior_successes": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "history_count": [
+        2,
+        2,
+        2
+      ],
+      "trials_to_success": [
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "arm": "false_positive_1",
+      "first_candidate": [
+        "episode_scoped_offer_guard",
+        "episode_scoped_offer_guard",
+        "episode_scoped_offer_guard"
+      ],
+      "first_oracle_output": [
+        [
+          1,
+          0
+        ],
+        [
+          1,
+          0
+        ],
+        [
+          1,
+          0
+        ]
+      ],
+      "first_prior_failures": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "first_prior_successes": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "history_count": [
+        3,
+        3,
+        3
+      ],
+      "trials_to_success": [
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "arm": "false_positive_2",
+      "first_candidate": [
+        "episode_scoped_offer_guard",
+        "episode_scoped_offer_guard",
+        "episode_scoped_offer_guard"
+      ],
+      "first_oracle_output": [
+        [
+          1,
+          0
+        ],
+        [
+          1,
+          0
+        ],
+        [
+          1,
+          0
+        ]
+      ],
+      "first_prior_failures": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "first_prior_successes": [
+        2.0,
+        2.0,
+        2.0
+      ],
+      "history_count": [
+        4,
+        4,
+        4
+      ],
+      "trials_to_success": [
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "arm": "false_negative_1",
+      "first_candidate": [
+        "episode_scoped_offer_guard",
+        "episode_scoped_offer_guard",
+        "episode_scoped_offer_guard"
+      ],
+      "first_oracle_output": [
+        [
+          1,
+          0
+        ],
+        [
+          1,
+          0
+        ],
+        [
+          1,
+          0
+        ]
+      ],
+      "first_prior_failures": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "first_prior_successes": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "history_count": [
+        2,
+        2,
+        2
+      ],
+      "trials_to_success": [
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "arm": "mixed",
+      "first_candidate": [
+        "episode_scoped_offer_guard",
+        "episode_scoped_offer_guard",
+        "episode_scoped_offer_guard"
+      ],
+      "first_oracle_output": [
+        [
+          1,
+          0
+        ],
+        [
+          1,
+          0
+        ],
+        [
+          1,
+          0
+        ]
+      ],
+      "first_prior_failures": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "first_prior_successes": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "history_count": [
+        3,
+        3,
+        3
+      ],
+      "trials_to_success": [
+        2,
+        2,
+        2
+      ]
+    }
+  ],
+  "workers": [
+    {
+      "arms": {
+        "clean": {
+          "arm": "clean",
+          "candidate_order": [
+            "dedup_identity_fix",
+            "episode_scoped_offer_guard",
+            "drop_match_edge",
+            "add_match_guard(control)",
+            "swap_term_leaf:capability_key->latest_segment_ordinal",
+            "swap_term_leaf:capability_key->persistence",
+            "swap_term_leaf:capability_key->structural_signature",
+            "swap_term_leaf:latest_segment_ordinal->capability_key"
+          ],
+          "history_count": 2,
+          "history_records": [
+            {
+              "adopted": false,
+              "candidate_digest": "sha256:1829659fbd17f7cf5d844b48ef04692e4e1a06bd5a26313005cb7cadddbaf561",
+              "candidate_label": "swap_term_leaf:signature->residual",
+              "converges_in_rehearsal": false,
+              "outcome_class": "",
+              "rank_attempt_tag": "912554f2d4f3",
+              "selected": false,
+              "target_rule": "sd_mint_quantum",
+              "task_utility": 0.0
+            },
+            {
+              "adopted": true,
+              "candidate_digest": "sha256:9dfddc234087788cc1910385cff4e1fcd0cf681b8035b69a722028009a4f776c",
+              "candidate_label": "dedup_identity_fix",
+              "converges_in_rehearsal": true,
+              "outcome_class": "idempotent_mint_guard",
+              "rank_attempt_tag": "912554f2d4f3",
+              "selected": true,
+              "target_rule": "sd_mint_quantum",
+              "task_utility": 1.0
+            }
+          ],
+          "primary_preserved": true,
+          "program_present": true,
+          "success": true,
+          "trials": [
+            {
+              "fixedpoint_progress": 0,
+              "label": "dedup_identity_fix",
+              "offer_counts": [
+                1,
+                1
+              ],
+              "rank_trace": {
+                "attempt_tag": "6da476824f8a",
+                "candidate_digest": "sha256:c1e070310991d3f10d3e70c36dbabe211a5ff617b498ac24562256cb9f287a2d",
+                "outcome_class": "idempotent_mint_guard",
+                "prior_failures": 0.0,
+                "prior_successes": 1.0,
+                "structural_cost": 29.0,
+                "target_rule": "mrl_offer_due_once"
+              },
+              "sweep_progress": [
+                14,
+                0,
+                0,
+                0,
+                0,
+                9,
+                0,
+                0,
+                0,
+                0
+              ],
+              "task_oracle": true
+            }
+          ]
+        },
+        "false_negative_1": {
+          "arm": "false_negative_1",
+          "candidate_order": [
+            "episode_scoped_offer_guard",
+            "dedup_identity_fix",
+            "drop_match_edge",
+            "add_match_guard(control)",
+            "swap_term_leaf:capability_key->latest_segment_ordinal",
+            "swap_term_leaf:capability_key->persistence",
+            "swap_term_leaf:capability_key->structural_signature",
+            "swap_term_leaf:latest_segment_ordinal->capability_key"
+          ],
+          "history_count": 2,
+          "history_records": [
+            {
+              "adopted": false,
+              "candidate_digest": "sha256:1829659fbd17f7cf5d844b48ef04692e4e1a06bd5a26313005cb7cadddbaf561",
+              "candidate_label": "swap_term_leaf:signature->residual",
+              "converges_in_rehearsal": false,
+              "outcome_class": "",
+              "rank_attempt_tag": "912554f2d4f3",
+              "selected": false,
+              "target_rule": "sd_mint_quantum",
+              "task_utility": 0.0
+            },
+            {
+              "adopted": true,
+              "candidate_digest": "sha256:9dfddc234087788cc1910385cff4e1fcd0cf681b8035b69a722028009a4f776c",
+              "candidate_label": "dedup_identity_fix",
+              "converges_in_rehearsal": true,
+              "outcome_class": "idempotent_mint_guard",
+              "rank_attempt_tag": "912554f2d4f3",
+              "selected": true,
+              "target_rule": "sd_mint_quantum",
+              "task_utility": 0.0
+            }
+          ],
+          "primary_preserved": true,
+          "program_present": true,
+          "success": true,
+          "trials": [
+            {
+              "fixedpoint_progress": 0,
+              "label": "episode_scoped_offer_guard",
+              "offer_counts": [
+                1,
+                0
+              ],
+              "rank_trace": {
+                "attempt_tag": "4b72093d8a92",
+                "candidate_digest": "sha256:3add29b5229a092d316510961c56771cbd7909e9cdd336c4e81f30ba68c17a64",
+                "outcome_class": "episode_scoped_idempotence",
+                "prior_failures": 0.0,
+                "prior_successes": 0.0,
+                "structural_cost": 23.0,
+                "target_rule": "mrl_offer_due_once"
+              },
+              "sweep_progress": [
+                14,
+                0,
+                0,
+                0,
+                0,
+                1,
+                0,
+                0,
+                0,
+                0
+              ],
+              "task_oracle": false
+            },
+            {
+              "fixedpoint_progress": 0,
+              "label": "dedup_identity_fix",
+              "offer_counts": [
+                1,
+                1
+              ],
+              "rank_trace": {
+                "attempt_tag": "4b72093d8a92",
+                "candidate_digest": "sha256:2bd13599c3a7b792fdc3ff20b5e40b6639873bf8f69b7e27c2f580d90cf91bc1",
+                "outcome_class": "idempotent_mint_guard",
+                "prior_failures": 1.0,
+                "prior_successes": 0.0,
+                "structural_cost": 29.0,
+                "target_rule": "mrl_offer_due_once"
+              },
+              "sweep_progress": [
+                14,
+                0,
+                0,
+                0,
+                0,
+                9,
+                0,
+                0,
+                0,
+                0
+              ],
+              "task_oracle": true
+            }
+          ]
+        },
+        "false_positive_1": {
+          "arm": "false_positive_1",
+          "candidate_order": [
+            "episode_scoped_offer_guard",
+            "dedup_identity_fix",
+            "drop_match_edge",
+            "add_match_guard(control)",
+            "swap_term_leaf:capability_key->latest_segment_ordinal",
+            "swap_term_leaf:capability_key->persistence",
+            "swap_term_leaf:capability_key->structural_signature",
+            "swap_term_leaf:latest_segment_ordinal->capability_key"
+          ],
+          "history_count": 3,
+          "history_records": [
+            {
+              "adopted": false,
+              "candidate_digest": "sha256:1829659fbd17f7cf5d844b48ef04692e4e1a06bd5a26313005cb7cadddbaf561",
+              "candidate_label": "swap_term_leaf:signature->residual",
+              "converges_in_rehearsal": false,
+              "outcome_class": "",
+              "rank_attempt_tag": "912554f2d4f3",
+              "selected": false,
+              "target_rule": "sd_mint_quantum",
+              "task_utility": 0.0
+            },
+            {
+              "adopted": true,
+              "candidate_digest": "sha256:9dfddc234087788cc1910385cff4e1fcd0cf681b8035b69a722028009a4f776c",
+              "candidate_label": "dedup_identity_fix",
+              "converges_in_rehearsal": true,
+              "outcome_class": "idempotent_mint_guard",
+              "rank_attempt_tag": "912554f2d4f3",
+              "selected": true,
+              "target_rule": "sd_mint_quantum",
+              "task_utility": 1.0
+            },
+            {
+              "adopted": true,
+              "candidate_digest": "controlled_false_positive_0_false_positive_1_0",
+              "candidate_label": "episode_scoped_offer_guard",
+              "converges_in_rehearsal": true,
+              "outcome_class": "episode_scoped_idempotence",
+              "rank_attempt_tag": "false_positive_0_false_positive_1_0",
+              "selected": true,
+              "target_rule": "mrl_offer_due_once",
+              "task_utility": 1.0
+            }
+          ],
+          "primary_preserved": true,
+          "program_present": true,
+          "success": true,
+          "trials": [
+            {
+              "fixedpoint_progress": 0,
+              "label": "episode_scoped_offer_guard",
+              "offer_counts": [
+                1,
+                0
+              ],
+              "rank_trace": {
+                "attempt_tag": "6eb18d05022d",
+                "candidate_digest": "sha256:b2d1faad45b078031f8ef02c77b33a952374245fd6c4819bb785116d1468014a",
+                "outcome_class": "episode_scoped_idempotence",
+                "prior_failures": 0.0,
+                "prior_successes": 1.0,
+                "structural_cost": 23.0,
+                "target_rule": "mrl_offer_due_once"
+              },
+              "sweep_progress": [
+                14,
+                0,
+                0,
+                0,
+                0,
+                1,
+                0,
+                0,
+                0,
+                0
+              ],
+              "task_oracle": false
+            },
+            {
+              "fixedpoint_progress": 0,
+              "label": "dedup_identity_fix",
+              "offer_counts": [
+                1,
+                1
+              ],
+              "rank_trace": {
+                "attempt_tag": "6eb18d05022d",
+                "candidate_digest": "sha256:83bc7177730639876c7fd39efb0f76df1a360f2978c0a5b2ae6dd2419ecdf9bb",
+                "outcome_class": "idempotent_mint_guard",
+                "prior_failures": 0.0,
+                "prior_successes": 1.0,
+                "structural_cost": 29.0,
+                "target_rule": "mrl_offer_due_once"
+              },
+              "sweep_progress": [
+                14,
+                0,
+                0,
+                0,
+                0,
+                9,
+                0,
+                0,
+                0,
+                0
+              ],
+              "task_oracle": true
+            }
+          ]
+        },
+        "false_positive_2": {
+          "arm": "false_positive_2",
+          "candidate_order": [
+            "episode_scoped_offer_guard",
+            "dedup_identity_fix",
+            "drop_match_edge",
+            "add_match_guard(control)",
+            "swap_term_leaf:capability_key->latest_segment_ordinal",
+            "swap_term_leaf:capability_key->persistence",
+            "swap_term_leaf:capability_key->structural_signature",
+            "swap_term_leaf:latest_segment_ordinal->capability_key"
+          ],
+          "history_count": 4,
+          "history_records": [
+            {
+              "adopted": false,
+              "candidate_digest": "sha256:1829659fbd17f7cf5d844b48ef04692e4e1a06bd5a26313005cb7cadddbaf561",
+              "candidate_label": "swap_term_leaf:signature->residual",
+              "converges_in_rehearsal": false,
+              "outcome_class": "",
+              "rank_attempt_tag": "912554f2d4f3",
+              "selected": false,
+              "target_rule": "sd_mint_quantum",
+              "task_utility": 0.0
+            },
+            {
+              "adopted": true,
+              "candidate_digest": "sha256:9dfddc234087788cc1910385cff4e1fcd0cf681b8035b69a722028009a4f776c",
+              "candidate_label": "dedup_identity_fix",
+              "converges_in_rehearsal": true,
+              "outcome_class": "idempotent_mint_guard",
+              "rank_attempt_tag": "912554f2d4f3",
+              "selected": true,
+              "target_rule": "sd_mint_quantum",
+              "task_utility": 1.0
+            },
+            {
+              "adopted": true,
+              "candidate_digest": "controlled_false_positive_0_false_positive_2_0",
+              "candidate_label": "episode_scoped_offer_guard",
+              "converges_in_rehearsal": true,
+              "outcome_class": "episode_scoped_idempotence",
+              "rank_attempt_tag": "false_positive_0_false_positive_2_0",
+              "selected": true,
+              "target_rule": "mrl_offer_due_once",
+              "task_utility": 1.0
+            },
+            {
+              "adopted": true,
+              "candidate_digest": "controlled_false_positive_0_false_positive_2_1",
+              "candidate_label": "episode_scoped_offer_guard",
+              "converges_in_rehearsal": true,
+              "outcome_class": "episode_scoped_idempotence",
+              "rank_attempt_tag": "false_positive_0_false_positive_2_1",
+              "selected": true,
+              "target_rule": "mrl_offer_due_once",
+              "task_utility": 1.0
+            }
+          ],
+          "primary_preserved": true,
+          "program_present": true,
+          "success": true,
+          "trials": [
+            {
+              "fixedpoint_progress": 0,
+              "label": "episode_scoped_offer_guard",
+              "offer_counts": [
+                1,
+                0
+              ],
+              "rank_trace": {
+                "attempt_tag": "0f5b14b7dc67",
+                "candidate_digest": "sha256:e01c3053d477748f78416f649f1c77f1f2974502b15db3d7604eb64b1e52ad52",
+                "outcome_class": "episode_scoped_idempotence",
+                "prior_failures": 0.0,
+                "prior_successes": 2.0,
+                "structural_cost": 23.0,
+                "target_rule": "mrl_offer_due_once"
+              },
+              "sweep_progress": [
+                14,
+                0,
+                0,
+                0,
+                0,
+                1,
+                0,
+                0,
+                0,
+                0
+              ],
+              "task_oracle": false
+            },
+            {
+              "fixedpoint_progress": 0,
+              "label": "dedup_identity_fix",
+              "offer_counts": [
+                1,
+                1
+              ],
+              "rank_trace": {
+                "attempt_tag": "0f5b14b7dc67",
+                "candidate_digest": "sha256:cec2f67a82144d43bbe716790f50e04924e2d4a8a8c2c5ceecb9af47e79dc5df",
+                "outcome_class": "idempotent_mint_guard",
+                "prior_failures": 0.0,
+                "prior_successes": 1.0,
+                "structural_cost": 29.0,
+                "target_rule": "mrl_offer_due_once"
+              },
+              "sweep_progress": [
+                14,
+                0,
+                0,
+                0,
+                0,
+                9,
+                0,
+                0,
+                0,
+                0
+              ],
+              "task_oracle": true
+            }
+          ]
+        },
+        "mixed": {
+          "arm": "mixed",
+          "candidate_order": [
+            "episode_scoped_offer_guard",
+            "dedup_identity_fix",
+            "drop_match_edge",
+            "add_match_guard(control)",
+            "swap_term_leaf:capability_key->latest_segment_ordinal",
+            "swap_term_leaf:capability_key->persistence",
+            "swap_term_leaf:capability_key->structural_signature",
+            "swap_term_leaf:latest_segment_ordinal->capability_key"
+          ],
+          "history_count": 3,
+          "history_records": [
+            {
+              "adopted": false,
+              "candidate_digest": "sha256:1829659fbd17f7cf5d844b48ef04692e4e1a06bd5a26313005cb7cadddbaf561",
+              "candidate_label": "swap_term_leaf:signature->residual",
+              "converges_in_rehearsal": false,
+              "outcome_class": "",
+              "rank_attempt_tag": "912554f2d4f3",
+              "selected": false,
+              "target_rule": "sd_mint_quantum",
+              "task_utility": 0.0
+            },
+            {
+              "adopted": true,
+              "candidate_digest": "sha256:9dfddc234087788cc1910385cff4e1fcd0cf681b8035b69a722028009a4f776c",
+              "candidate_label": "dedup_identity_fix",
+              "converges_in_rehearsal": true,
+              "outcome_class": "idempotent_mint_guard",
+              "rank_attempt_tag": "912554f2d4f3",
+              "selected": true,
+              "target_rule": "sd_mint_quantum",
+              "task_utility": 0.0
+            },
+            {
+              "adopted": true,
+              "candidate_digest": "controlled_false_positive_0_mixed_0",
+              "candidate_label": "episode_scoped_offer_guard",
+              "converges_in_rehearsal": true,
+              "outcome_class": "episode_scoped_idempotence",
+              "rank_attempt_tag": "false_positive_0_mixed_0",
+              "selected": true,
+              "target_rule": "mrl_offer_due_once",
+              "task_utility": 1.0
+            }
+          ],
+          "primary_preserved": true,
+          "program_present": true,
+          "success": true,
+          "trials": [
+            {
+              "fixedpoint_progress": 0,
+              "label": "episode_scoped_offer_guard",
+              "offer_counts": [
+                1,
+                0
+              ],
+              "rank_trace": {
+                "attempt_tag": "2a09a75184f9",
+                "candidate_digest": "sha256:0f4a79ed520b7f073a0a75cc593488877557cd53d446895e5fca94690d862f51",
+                "outcome_class": "episode_scoped_idempotence",
+                "prior_failures": 0.0,
+                "prior_successes": 1.0,
+                "structural_cost": 23.0,
+                "target_rule": "mrl_offer_due_once"
+              },
+              "sweep_progress": [
+                14,
+                0,
+                0,
+                0,
+                0,
+                1,
+                0,
+                0,
+                0,
+                0
+              ],
+              "task_oracle": false
+            },
+            {
+              "fixedpoint_progress": 0,
+              "label": "dedup_identity_fix",
+              "offer_counts": [
+                1,
+                1
+              ],
+              "rank_trace": {
+                "attempt_tag": "2a09a75184f9",
+                "candidate_digest": "sha256:e23aafd0c35e20b7b65dc491d470a6df525bc6f75c53b07e9c8ef3e717a2d2a3",
+                "outcome_class": "idempotent_mint_guard",
+                "prior_failures": 1.0,
+                "prior_successes": 0.0,
+                "structural_cost": 29.0,
+                "target_rule": "mrl_offer_due_once"
+              },
+              "sweep_progress": [
+                14,
+                0,
+                0,
+                0,
+                0,
+                9,
+                0,
+                0,
+                0,
+                0
+              ],
+              "task_oracle": true
+            }
+          ]
+        }
+      },
+      "pid": 3,
+      "source_after": {
+        "domains/collapse_model.py": "97aaa5c26e6cb3f2682f6d9ee7aa9f0fbbc622e27063b1947edab26fa0ef4ea7",
+        "domains/collapse_watch.py": "de8acb4e4fd6da6cba263c09f7f07f65055ea180343615eb8724c7ddf6b46799",
+        "domains/reflective_faculty.py": "8f530a8c8754949216b71b473c4769fa5d351d01d6055127943c009d06763d05",
+        "domains/self_correct_dispatch.py": "6aa0759fb39c7b6ff754b669f1699d6badeb90beb48e90e5f7e5b3d1f8a5464f",
+        "domains/self_correction.py": "682c4fda4d18bf2e7655988c6ef8e52dc6ab7bae143851d804c122a0dbeb8a2d",
+        "evaluation/substrate_capability/thoughtexperiment_automatic_outcome_persistence_transfer_v1.py": "a8b9d59db35df31f705ecda8d8b338a59778eddab3792ac208ac8612456c2318",
+        "evaluation/substrate_capability/thoughtexperiment_graph_authored_correction_rank_v1.py": "9a46f1b90dd12a577d86e28b57a256dc5e091bb93f8563aa6fc4178e40ab9fed",
+        "evaluation/substrate_capability/thoughtexperiment_outcome_noise_dose_response_v1.py": "fbfa5d8a6f3830bc5939fc866b56704626c306c428e7ab5a5d36a194d9dee9ee",
+        "seeds/autonomy.json": "5eb18e0b06de6243ac1abae5a51bdc146e78d4d5a13ec863a9baa20f9ede9dfe",
+        "seeds/composer_collapse_watch_graph.json": "7afd9f795f05933873e4b8595558b6a9a2587d6f9e4cfde9f8862eba3511f9c5",
+        "seeds/composer_dispatch.json": "a167c0ef5fba47ef9c46a3c87db972e5a85f444f9a930e761a7ef40d25b9a09a",
+        "seeds/composer_self_correct_graph.json": "84c3f6ca601b4e62f6c2de46e1da98289821444ee9118dbdbd2a85d655c19e20",
+        "seeds/minting_recurrence_ledger.json": "10c5df924cb98eacea2a2159e60247c1d783db37f4be147378c6115e1b545a92",
+        "seeds/relation_vocabulary.json": "781e89f27c5d31c214d57eb521deb6dab04c34ef51413b7a14739dd98861d90a",
+        "seeds/shape_decode_loop.json": "3e1783cf566179061250572bbf7bc7bb54cacfafb83f8852008c4618d984a9c6",
+        "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb"
+      },
+      "source_before": {
+        "domains/collapse_model.py": "97aaa5c26e6cb3f2682f6d9ee7aa9f0fbbc622e27063b1947edab26fa0ef4ea7",
+        "domains/collapse_watch.py": "de8acb4e4fd6da6cba263c09f7f07f65055ea180343615eb8724c7ddf6b46799",
+        "domains/reflective_faculty.py": "8f530a8c8754949216b71b473c4769fa5d351d01d6055127943c009d06763d05",
+        "domains/self_correct_dispatch.py": "6aa0759fb39c7b6ff754b669f1699d6badeb90beb48e90e5f7e5b3d1f8a5464f",
+        "domains/self_correction.py": "682c4fda4d18bf2e7655988c6ef8e52dc6ab7bae143851d804c122a0dbeb8a2d",
+        "evaluation/substrate_capability/thoughtexperiment_automatic_outcome_persistence_transfer_v1.py": "a8b9d59db35df31f705ecda8d8b338a59778eddab3792ac208ac8612456c2318",
+        "evaluation/substrate_capability/thoughtexperiment_graph_authored_correction_rank_v1.py": "9a46f1b90dd12a577d86e28b57a256dc5e091bb93f8563aa6fc4178e40ab9fed",
+        "evaluation/substrate_capability/thoughtexperiment_outcome_noise_dose_response_v1.py": "fbfa5d8a6f3830bc5939fc866b56704626c306c428e7ab5a5d36a194d9dee9ee",
+        "seeds/autonomy.json": "5eb18e0b06de6243ac1abae5a51bdc146e78d4d5a13ec863a9baa20f9ede9dfe",
+        "seeds/composer_collapse_watch_graph.json": "7afd9f795f05933873e4b8595558b6a9a2587d6f9e4cfde9f8862eba3511f9c5",
+        "seeds/composer_dispatch.json": "a167c0ef5fba47ef9c46a3c87db972e5a85f444f9a930e761a7ef40d25b9a09a",
+        "seeds/composer_self_correct_graph.json": "84c3f6ca601b4e62f6c2de46e1da98289821444ee9118dbdbd2a85d655c19e20",
+        "seeds/minting_recurrence_ledger.json": "10c5df924cb98eacea2a2159e60247c1d783db37f4be147378c6115e1b545a92",
+        "seeds/relation_vocabulary.json": "781e89f27c5d31c214d57eb521deb6dab04c34ef51413b7a14739dd98861d90a",
+        "seeds/shape_decode_loop.json": "3e1783cf566179061250572bbf7bc7bb54cacfafb83f8852008c4618d984a9c6",
+        "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb"
+      },
+      "source_stable": true,
+      "training": {
+        "adopted": true,
+        "authentic_records": [
+          {
+            "adopted": false,
+            "candidate_digest": "sha256:1829659fbd17f7cf5d844b48ef04692e4e1a06bd5a26313005cb7cadddbaf561",
+            "candidate_label": "swap_term_leaf:signature->residual",
+            "converges_in_rehearsal": false,
+            "outcome_class": "",
+            "rank_attempt_tag": "912554f2d4f3",
+            "selected": false,
+            "target_rule": "sd_mint_quantum",
+            "task_utility": 0.0
+          },
+          {
+            "adopted": true,
+            "candidate_digest": "sha256:9dfddc234087788cc1910385cff4e1fcd0cf681b8035b69a722028009a4f776c",
+            "candidate_label": "dedup_identity_fix",
+            "converges_in_rehearsal": true,
+            "outcome_class": "idempotent_mint_guard",
+            "rank_attempt_tag": "912554f2d4f3",
+            "selected": true,
+            "target_rule": "sd_mint_quantum",
+            "task_utility": 1.0
+          }
+        ],
+        "chosen": "dedup_identity_fix"
+      }
+    },
+    {
+      "arms": {
+        "clean": {
+          "arm": "clean",
+          "candidate_order": [
+            "dedup_identity_fix",
+            "episode_scoped_offer_guard",
+            "drop_match_edge",
+            "add_match_guard(control)",
+            "swap_term_leaf:capability_key->latest_segment_ordinal",
+            "swap_term_leaf:capability_key->persistence",
+            "swap_term_leaf:capability_key->structural_signature",
+            "swap_term_leaf:latest_segment_ordinal->capability_key"
+          ],
+          "history_count": 2,
+          "history_records": [
+            {
+              "adopted": false,
+              "candidate_digest": "sha256:68600d4232ab59f6a79c0309a6b42504bf6596c929e64c9829fbb06df60ab796",
+              "candidate_label": "swap_term_leaf:signature->residual",
+              "converges_in_rehearsal": false,
+              "outcome_class": "",
+              "rank_attempt_tag": "53c33ac147bc",
+              "selected": false,
+              "target_rule": "sd_mint_quantum",
+              "task_utility": 0.0
+            },
+            {
+              "adopted": true,
+              "candidate_digest": "sha256:2ff8385c535f78f95e6fe71c149b26d6aa7b7dfb422f18fa7d97362115a45b98",
+              "candidate_label": "dedup_identity_fix",
+              "converges_in_rehearsal": true,
+              "outcome_class": "idempotent_mint_guard",
+              "rank_attempt_tag": "53c33ac147bc",
+              "selected": true,
+              "target_rule": "sd_mint_quantum",
+              "task_utility": 1.0
+            }
+          ],
+          "primary_preserved": true,
+          "program_present": true,
+          "success": true,
+          "trials": [
+            {
+              "fixedpoint_progress": 0,
+              "label": "dedup_identity_fix",
+              "offer_counts": [
+                1,
+                1
+              ],
+              "rank_trace": {
+                "attempt_tag": "9660ac5676bc",
+                "candidate_digest": "sha256:bef82988f3ec4a875bec1d43756dadc428db9a3853fa68712ea1839963538195",
+                "outcome_class": "idempotent_mint_guard",
+                "prior_failures": 0.0,
+                "prior_successes": 1.0,
+                "structural_cost": 29.0,
+                "target_rule": "mrl_offer_due_once"
+              },
+              "sweep_progress": [
+                14,
+                0,
+                0,
+                0,
+                0,
+                9,
+                0,
+                0,
+                0,
+                0
+              ],
+              "task_oracle": true
+            }
+          ]
+        },
+        "false_negative_1": {
+          "arm": "false_negative_1",
+          "candidate_order": [
+            "episode_scoped_offer_guard",
+            "dedup_identity_fix",
+            "drop_match_edge",
+            "add_match_guard(control)",
+            "swap_term_leaf:capability_key->latest_segment_ordinal",
+            "swap_term_leaf:capability_key->persistence",
+            "swap_term_leaf:capability_key->structural_signature",
+            "swap_term_leaf:latest_segment_ordinal->capability_key"
+          ],
+          "history_count": 2,
+          "history_records": [
+            {
+              "adopted": false,
+              "candidate_digest": "sha256:68600d4232ab59f6a79c0309a6b42504bf6596c929e64c9829fbb06df60ab796",
+              "candidate_label": "swap_term_leaf:signature->residual",
+              "converges_in_rehearsal": false,
+              "outcome_class": "",
+              "rank_attempt_tag": "53c33ac147bc",
+              "selected": false,
+              "target_rule": "sd_mint_quantum",
+              "task_utility": 0.0
+            },
+            {
+              "adopted": true,
+              "candidate_digest": "sha256:2ff8385c535f78f95e6fe71c149b26d6aa7b7dfb422f18fa7d97362115a45b98",
+              "candidate_label": "dedup_identity_fix",
+              "converges_in_rehearsal": true,
+              "outcome_class": "idempotent_mint_guard",
+              "rank_attempt_tag": "53c33ac147bc",
+              "selected": true,
+              "target_rule": "sd_mint_quantum",
+              "task_utility": 0.0
+            }
+          ],
+          "primary_preserved": true,
+          "program_present": true,
+          "success": true,
+          "trials": [
+            {
+              "fixedpoint_progress": 0,
+              "label": "episode_scoped_offer_guard",
+              "offer_counts": [
+                1,
+                0
+              ],
+              "rank_trace": {
+                "attempt_tag": "c6d0d1d113d1",
+                "candidate_digest": "sha256:23e414fba2bc994ce3bbb431e5e172b23550fabea65f14cb570e7098ba1dff5a",
+                "outcome_class": "episode_scoped_idempotence",
+                "prior_failures": 0.0,
+                "prior_successes": 0.0,
+                "structural_cost": 23.0,
+                "target_rule": "mrl_offer_due_once"
+              },
+              "sweep_progress": [
+                14,
+                0,
+                0,
+                0,
+                0,
+                1,
+                0,
+                0,
+                0,
+                0
+              ],
+              "task_oracle": false
+            },
+            {
+              "fixedpoint_progress": 0,
+              "label": "dedup_identity_fix",
+              "offer_counts": [
+                1,
+                1
+              ],
+              "rank_trace": {
+                "attempt_tag": "c6d0d1d113d1",
+                "candidate_digest": "sha256:771f9368b1fb10aa02a49bbcb1b567ca531475d4b8bda04590e3e139873dd5ee",
+                "outcome_class": "idempotent_mint_guard",
+                "prior_failures": 1.0,
+                "prior_successes": 0.0,
+                "structural_cost": 29.0,
+                "target_rule": "mrl_offer_due_once"
+              },
+              "sweep_progress": [
+                14,
+                0,
+                0,
+                0,
+                0,
+                9,
+                0,
+                0,
+                0,
+                0
+              ],
+              "task_oracle": true
+            }
+          ]
+        },
+        "false_positive_1": {
+          "arm": "false_positive_1",
+          "candidate_order": [
+            "episode_scoped_offer_guard",
+            "dedup_identity_fix",
+            "drop_match_edge",
+            "add_match_guard(control)",
+            "swap_term_leaf:capability_key->latest_segment_ordinal",
+            "swap_term_leaf:capability_key->persistence",
+            "swap_term_leaf:capability_key->structural_signature",
+            "swap_term_leaf:latest_segment_ordinal->capability_key"
+          ],
+          "history_count": 3,
+          "history_records": [
+            {
+              "adopted": false,
+              "candidate_digest": "sha256:68600d4232ab59f6a79c0309a6b42504bf6596c929e64c9829fbb06df60ab796",
+              "candidate_label": "swap_term_leaf:signature->residual",
+              "converges_in_rehearsal": false,
+              "outcome_class": "",
+              "rank_attempt_tag": "53c33ac147bc",
+              "selected": false,
+              "target_rule": "sd_mint_quantum",
+              "task_utility": 0.0
+            },
+            {
+              "adopted": true,
+              "candidate_digest": "sha256:2ff8385c535f78f95e6fe71c149b26d6aa7b7dfb422f18fa7d97362115a45b98",
+              "candidate_label": "dedup_identity_fix",
+              "converges_in_rehearsal": true,
+              "outcome_class": "idempotent_mint_guard",
+              "rank_attempt_tag": "53c33ac147bc",
+              "selected": true,
+              "target_rule": "sd_mint_quantum",
+              "task_utility": 1.0
+            },
+            {
+              "adopted": true,
+              "candidate_digest": "controlled_false_positive_1_false_positive_1_0",
+              "candidate_label": "episode_scoped_offer_guard",
+              "converges_in_rehearsal": true,
+              "outcome_class": "episode_scoped_idempotence",
+              "rank_attempt_tag": "false_positive_1_false_positive_1_0",
+              "selected": true,
+              "target_rule": "mrl_offer_due_once",
+              "task_utility": 1.0
+            }
+          ],
+          "primary_preserved": true,
+          "program_present": true,
+          "success": true,
+          "trials": [
+            {
+              "fixedpoint_progress": 0,
+              "label": "episode_scoped_offer_guard",
+              "offer_counts": [
+                1,
+                0
+              ],
+              "rank_trace": {
+                "attempt_tag": "8afe9c08cc45",
+                "candidate_digest": "sha256:0fd430a8b6a7060634d4413b99f9541b3b58d84b63af81c8468f03d5670844b4",
+                "outcome_class": "episode_scoped_idempotence",
+                "prior_failures": 0.0,
+                "prior_successes": 1.0,
+                "structural_cost": 23.0,
+                "target_rule": "mrl_offer_due_once"
+              },
+              "sweep_progress": [
+                14,
+                0,
+                0,
+                0,
+                0,
+                1,
+                0,
+                0,
+                0,
+                0
+              ],
+              "task_oracle": false
+            },
+            {
+              "fixedpoint_progress": 0,
+              "label": "dedup_identity_fix",
+              "offer_counts": [
+                1,
+                1
+              ],
+              "rank_trace": {
+                "attempt_tag": "8afe9c08cc45",
+                "candidate_digest": "sha256:d26f28581818363e66088906c9518c750b8010669edfde43c4b8a906f253e503",
+                "outcome_class": "idempotent_mint_guard",
+                "prior_failures": 0.0,
+                "prior_successes": 1.0,
+                "structural_cost": 29.0,
+                "target_rule": "mrl_offer_due_once"
+              },
+              "sweep_progress": [
+                14,
+                0,
+                0,
+                0,
+                0,
+                9,
+                0,
+                0,
+                0,
+                0
+              ],
+              "task_oracle": true
+            }
+          ]
+        },
+        "false_positive_2": {
+          "arm": "false_positive_2",
+          "candidate_order": [
+            "episode_scoped_offer_guard",
+            "dedup_identity_fix",
+            "drop_match_edge",
+            "add_match_guard(control)",
+            "swap_term_leaf:capability_key->latest_segment_ordinal",
+            "swap_term_leaf:capability_key->persistence",
+            "swap_term_leaf:capability_key->structural_signature",
+            "swap_term_leaf:latest_segment_ordinal->capability_key"
+          ],
+          "history_count": 4,
+          "history_records": [
+            {
+              "adopted": false,
+              "candidate_digest": "sha256:68600d4232ab59f6a79c0309a6b42504bf6596c929e64c9829fbb06df60ab796",
+              "candidate_label": "swap_term_leaf:signature->residual",
+              "converges_in_rehearsal": false,
+              "outcome_class": "",
+              "rank_attempt_tag": "53c33ac147bc",
+              "selected": false,
+              "target_rule": "sd_mint_quantum",
+              "task_utility": 0.0
+            },
+            {
+              "adopted": true,
+              "candidate_digest": "sha256:2ff8385c535f78f95e6fe71c149b26d6aa7b7dfb422f18fa7d97362115a45b98",
+              "candidate_label": "dedup_identity_fix",
+              "converges_in_rehearsal": true,
+              "outcome_class": "idempotent_mint_guard",
+              "rank_attempt_tag": "53c33ac147bc",
+              "selected": true,
+              "target_rule": "sd_mint_quantum",
+              "task_utility": 1.0
+            },
+            {
+              "adopted": true,
+              "candidate_digest": "controlled_false_positive_1_false_positive_2_0",
+              "candidate_label": "episode_scoped_offer_guard",
+              "converges_in_rehearsal": true,
+              "outcome_class": "episode_scoped_idempotence",
+              "rank_attempt_tag": "false_positive_1_false_positive_2_0",
+              "selected": true,
+              "target_rule": "mrl_offer_due_once",
+              "task_utility": 1.0
+            },
+            {
+              "adopted": true,
+              "candidate_digest": "controlled_false_positive_1_false_positive_2_1",
+              "candidate_label": "episode_scoped_offer_guard",
+              "converges_in_rehearsal": true,
+              "outcome_class": "episode_scoped_idempotence",
+              "rank_attempt_tag": "false_positive_1_false_positive_2_1",
+              "selected": true,
+              "target_rule": "mrl_offer_due_once",
+              "task_utility": 1.0
+            }
+          ],
+          "primary_preserved": true,
+          "program_present": true,
+          "success": true,
+          "trials": [
+            {
+              "fixedpoint_progress": 0,
+              "label": "episode_scoped_offer_guard",
+              "offer_counts": [
+                1,
+                0
+              ],
+              "rank_trace": {
+                "attempt_tag": "6f8e363a1624",
+                "candidate_digest": "sha256:22bc6e84bbb9c3d3ce2749d728761d5c0ab180ae915905c209b3e26db1dcf9b7",
+                "outcome_class": "episode_scoped_idempotence",
+                "prior_failures": 0.0,
+                "prior_successes": 2.0,
+                "structural_cost": 23.0,
+                "target_rule": "mrl_offer_due_once"
+              },
+              "sweep_progress": [
+                14,
+                0,
+                0,
+                0,
+                0,
+                1,
+                0,
+                0,
+                0,
+                0
+              ],
+              "task_oracle": false
+            },
+            {
+              "fixedpoint_progress": 0,
+              "label": "dedup_identity_fix",
+              "offer_counts": [
+                1,
+                1
+              ],
+              "rank_trace": {
+                "attempt_tag": "6f8e363a1624",
+                "candidate_digest": "sha256:06c47880ba0631632631a9a630e431df4d44f24cd305481efa205d21c60c4103",
+                "outcome_class": "idempotent_mint_guard",
+                "prior_failures": 0.0,
+                "prior_successes": 1.0,
+                "structural_cost": 29.0,
+                "target_rule": "mrl_offer_due_once"
+              },
+              "sweep_progress": [
+                14,
+                0,
+                0,
+                0,
+                0,
+                9,
+                0,
+                0,
+                0,
+                0
+              ],
+              "task_oracle": true
+            }
+          ]
+        },
+        "mixed": {
+          "arm": "mixed",
+          "candidate_order": [
+            "episode_scoped_offer_guard",
+            "dedup_identity_fix",
+            "drop_match_edge",
+            "add_match_guard(control)",
+            "swap_term_leaf:capability_key->latest_segment_ordinal",
+            "swap_term_leaf:capability_key->persistence",
+            "swap_term_leaf:capability_key->structural_signature",
+            "swap_term_leaf:latest_segment_ordinal->capability_key"
+          ],
+          "history_count": 3,
+          "history_records": [
+            {
+              "adopted": false,
+              "candidate_digest": "sha256:68600d4232ab59f6a79c0309a6b42504bf6596c929e64c9829fbb06df60ab796",
+              "candidate_label": "swap_term_leaf:signature->residual",
+              "converges_in_rehearsal": false,
+              "outcome_class": "",
+              "rank_attempt_tag": "53c33ac147bc",
+              "selected": false,
+              "target_rule": "sd_mint_quantum",
+              "task_utility": 0.0
+            },
+            {
+              "adopted": true,
+              "candidate_digest": "sha256:2ff8385c535f78f95e6fe71c149b26d6aa7b7dfb422f18fa7d97362115a45b98",
+              "candidate_label": "dedup_identity_fix",
+              "converges_in_rehearsal": true,
+              "outcome_class": "idempotent_mint_guard",
+              "rank_attempt_tag": "53c33ac147bc",
+              "selected": true,
+              "target_rule": "sd_mint_quantum",
+              "task_utility": 0.0
+            },
+            {
+              "adopted": true,
+              "candidate_digest": "controlled_false_positive_1_mixed_0",
+              "candidate_label": "episode_scoped_offer_guard",
+              "converges_in_rehearsal": true,
+              "outcome_class": "episode_scoped_idempotence",
+              "rank_attempt_tag": "false_positive_1_mixed_0",
+              "selected": true,
+              "target_rule": "mrl_offer_due_once",
+              "task_utility": 1.0
+            }
+          ],
+          "primary_preserved": true,
+          "program_present": true,
+          "success": true,
+          "trials": [
+            {
+              "fixedpoint_progress": 0,
+              "label": "episode_scoped_offer_guard",
+              "offer_counts": [
+                1,
+                0
+              ],
+              "rank_trace": {
+                "attempt_tag": "0264efb1e5eb",
+                "candidate_digest": "sha256:f9c984f9c6ca5998d41f1061666c58964b48b3d05d0b1c29c6b27645c5612977",
+                "outcome_class": "episode_scoped_idempotence",
+                "prior_failures": 0.0,
+                "prior_successes": 1.0,
+                "structural_cost": 23.0,
+                "target_rule": "mrl_offer_due_once"
+              },
+              "sweep_progress": [
+                14,
+                0,
+                0,
+                0,
+                0,
+                1,
+                0,
+                0,
+                0,
+                0
+              ],
+              "task_oracle": false
+            },
+            {
+              "fixedpoint_progress": 0,
+              "label": "dedup_identity_fix",
+              "offer_counts": [
+                1,
+                1
+              ],
+              "rank_trace": {
+                "attempt_tag": "0264efb1e5eb",
+                "candidate_digest": "sha256:4aafde70ddf056910c5bee3c10fe5082d3b2d01759e6c3040b95645c8faf7bdf",
+                "outcome_class": "idempotent_mint_guard",
+                "prior_failures": 1.0,
+                "prior_successes": 0.0,
+                "structural_cost": 29.0,
+                "target_rule": "mrl_offer_due_once"
+              },
+              "sweep_progress": [
+                14,
+                0,
+                0,
+                0,
+                0,
+                9,
+                0,
+                0,
+                0,
+                0
+              ],
+              "task_oracle": true
+            }
+          ]
+        }
+      },
+      "pid": 3119,
+      "source_after": {
+        "domains/collapse_model.py": "97aaa5c26e6cb3f2682f6d9ee7aa9f0fbbc622e27063b1947edab26fa0ef4ea7",
+        "domains/collapse_watch.py": "de8acb4e4fd6da6cba263c09f7f07f65055ea180343615eb8724c7ddf6b46799",
+        "domains/reflective_faculty.py": "8f530a8c8754949216b71b473c4769fa5d351d01d6055127943c009d06763d05",
+        "domains/self_correct_dispatch.py": "6aa0759fb39c7b6ff754b669f1699d6badeb90beb48e90e5f7e5b3d1f8a5464f",
+        "domains/self_correction.py": "682c4fda4d18bf2e7655988c6ef8e52dc6ab7bae143851d804c122a0dbeb8a2d",
+        "evaluation/substrate_capability/thoughtexperiment_automatic_outcome_persistence_transfer_v1.py": "a8b9d59db35df31f705ecda8d8b338a59778eddab3792ac208ac8612456c2318",
+        "evaluation/substrate_capability/thoughtexperiment_graph_authored_correction_rank_v1.py": "9a46f1b90dd12a577d86e28b57a256dc5e091bb93f8563aa6fc4178e40ab9fed",
+        "evaluation/substrate_capability/thoughtexperiment_outcome_noise_dose_response_v1.py": "fbfa5d8a6f3830bc5939fc866b56704626c306c428e7ab5a5d36a194d9dee9ee",
+        "seeds/autonomy.json": "5eb18e0b06de6243ac1abae5a51bdc146e78d4d5a13ec863a9baa20f9ede9dfe",
+        "seeds/composer_collapse_watch_graph.json": "7afd9f795f05933873e4b8595558b6a9a2587d6f9e4cfde9f8862eba3511f9c5",
+        "seeds/composer_dispatch.json": "a167c0ef5fba47ef9c46a3c87db972e5a85f444f9a930e761a7ef40d25b9a09a",
+        "seeds/composer_self_correct_graph.json": "84c3f6ca601b4e62f6c2de46e1da98289821444ee9118dbdbd2a85d655c19e20",
+        "seeds/minting_recurrence_ledger.json": "10c5df924cb98eacea2a2159e60247c1d783db37f4be147378c6115e1b545a92",
+        "seeds/relation_vocabulary.json": "781e89f27c5d31c214d57eb521deb6dab04c34ef51413b7a14739dd98861d90a",
+        "seeds/shape_decode_loop.json": "3e1783cf566179061250572bbf7bc7bb54cacfafb83f8852008c4618d984a9c6",
+        "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb"
+      },
+      "source_before": {
+        "domains/collapse_model.py": "97aaa5c26e6cb3f2682f6d9ee7aa9f0fbbc622e27063b1947edab26fa0ef4ea7",
+        "domains/collapse_watch.py": "de8acb4e4fd6da6cba263c09f7f07f65055ea180343615eb8724c7ddf6b46799",
+        "domains/reflective_faculty.py": "8f530a8c8754949216b71b473c4769fa5d351d01d6055127943c009d06763d05",
+        "domains/self_correct_dispatch.py": "6aa0759fb39c7b6ff754b669f1699d6badeb90beb48e90e5f7e5b3d1f8a5464f",
+        "domains/self_correction.py": "682c4fda4d18bf2e7655988c6ef8e52dc6ab7bae143851d804c122a0dbeb8a2d",
+        "evaluation/substrate_capability/thoughtexperiment_automatic_outcome_persistence_transfer_v1.py": "a8b9d59db35df31f705ecda8d8b338a59778eddab3792ac208ac8612456c2318",
+        "evaluation/substrate_capability/thoughtexperiment_graph_authored_correction_rank_v1.py": "9a46f1b90dd12a577d86e28b57a256dc5e091bb93f8563aa6fc4178e40ab9fed",
+        "evaluation/substrate_capability/thoughtexperiment_outcome_noise_dose_response_v1.py": "fbfa5d8a6f3830bc5939fc866b56704626c306c428e7ab5a5d36a194d9dee9ee",
+        "seeds/autonomy.json": "5eb18e0b06de6243ac1abae5a51bdc146e78d4d5a13ec863a9baa20f9ede9dfe",
+        "seeds/composer_collapse_watch_graph.json": "7afd9f795f05933873e4b8595558b6a9a2587d6f9e4cfde9f8862eba3511f9c5",
+        "seeds/composer_dispatch.json": "a167c0ef5fba47ef9c46a3c87db972e5a85f444f9a930e761a7ef40d25b9a09a",
+        "seeds/composer_self_correct_graph.json": "84c3f6ca601b4e62f6c2de46e1da98289821444ee9118dbdbd2a85d655c19e20",
+        "seeds/minting_recurrence_ledger.json": "10c5df924cb98eacea2a2159e60247c1d783db37f4be147378c6115e1b545a92",
+        "seeds/relation_vocabulary.json": "781e89f27c5d31c214d57eb521deb6dab04c34ef51413b7a14739dd98861d90a",
+        "seeds/shape_decode_loop.json": "3e1783cf566179061250572bbf7bc7bb54cacfafb83f8852008c4618d984a9c6",
+        "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb"
+      },
+      "source_stable": true,
+      "training": {
+        "adopted": true,
+        "authentic_records": [
+          {
+            "adopted": false,
+            "candidate_digest": "sha256:68600d4232ab59f6a79c0309a6b42504bf6596c929e64c9829fbb06df60ab796",
+            "candidate_label": "swap_term_leaf:signature->residual",
+            "converges_in_rehearsal": false,
+            "outcome_class": "",
+            "rank_attempt_tag": "53c33ac147bc",
+            "selected": false,
+            "target_rule": "sd_mint_quantum",
+            "task_utility": 0.0
+          },
+          {
+            "adopted": true,
+            "candidate_digest": "sha256:2ff8385c535f78f95e6fe71c149b26d6aa7b7dfb422f18fa7d97362115a45b98",
+            "candidate_label": "dedup_identity_fix",
+            "converges_in_rehearsal": true,
+            "outcome_class": "idempotent_mint_guard",
+            "rank_attempt_tag": "53c33ac147bc",
+            "selected": true,
+            "target_rule": "sd_mint_quantum",
+            "task_utility": 1.0
+          }
+        ],
+        "chosen": "dedup_identity_fix"
+      }
+    },
+    {
+      "arms": {
+        "clean": {
+          "arm": "clean",
+          "candidate_order": [
+            "dedup_identity_fix",
+            "episode_scoped_offer_guard",
+            "drop_match_edge",
+            "add_match_guard(control)",
+            "swap_term_leaf:capability_key->latest_segment_ordinal",
+            "swap_term_leaf:capability_key->persistence",
+            "swap_term_leaf:capability_key->structural_signature",
+            "swap_term_leaf:latest_segment_ordinal->capability_key"
+          ],
+          "history_count": 2,
+          "history_records": [
+            {
+              "adopted": false,
+              "candidate_digest": "sha256:a5bb76110681eac570853bfc8610b263318bba60287b9c5f9e152f6a053587a3",
+              "candidate_label": "swap_term_leaf:signature->residual",
+              "converges_in_rehearsal": false,
+              "outcome_class": "",
+              "rank_attempt_tag": "5346435dd2f8",
+              "selected": false,
+              "target_rule": "sd_mint_quantum",
+              "task_utility": 0.0
+            },
+            {
+              "adopted": true,
+              "candidate_digest": "sha256:72a2c67598b653bfff573cd6efd277ac48bf4357faa6a603ca9b4441f3090d3a",
+              "candidate_label": "dedup_identity_fix",
+              "converges_in_rehearsal": true,
+              "outcome_class": "idempotent_mint_guard",
+              "rank_attempt_tag": "5346435dd2f8",
+              "selected": true,
+              "target_rule": "sd_mint_quantum",
+              "task_utility": 1.0
+            }
+          ],
+          "primary_preserved": true,
+          "program_present": true,
+          "success": true,
+          "trials": [
+            {
+              "fixedpoint_progress": 0,
+              "label": "dedup_identity_fix",
+              "offer_counts": [
+                1,
+                1
+              ],
+              "rank_trace": {
+                "attempt_tag": "173573328ab0",
+                "candidate_digest": "sha256:215eccbe66c75f42f41bcea8048a010960280658fedad69df4cfe7cb4f20ec10",
+                "outcome_class": "idempotent_mint_guard",
+                "prior_failures": 0.0,
+                "prior_successes": 1.0,
+                "structural_cost": 29.0,
+                "target_rule": "mrl_offer_due_once"
+              },
+              "sweep_progress": [
+                14,
+                0,
+                0,
+                0,
+                0,
+                9,
+                0,
+                0,
+                0,
+                0
+              ],
+              "task_oracle": true
+            }
+          ]
+        },
+        "false_negative_1": {
+          "arm": "false_negative_1",
+          "candidate_order": [
+            "episode_scoped_offer_guard",
+            "dedup_identity_fix",
+            "drop_match_edge",
+            "add_match_guard(control)",
+            "swap_term_leaf:capability_key->latest_segment_ordinal",
+            "swap_term_leaf:capability_key->persistence",
+            "swap_term_leaf:capability_key->structural_signature",
+            "swap_term_leaf:latest_segment_ordinal->capability_key"
+          ],
+          "history_count": 2,
+          "history_records": [
+            {
+              "adopted": false,
+              "candidate_digest": "sha256:a5bb76110681eac570853bfc8610b263318bba60287b9c5f9e152f6a053587a3",
+              "candidate_label": "swap_term_leaf:signature->residual",
+              "converges_in_rehearsal": false,
+              "outcome_class": "",
+              "rank_attempt_tag": "5346435dd2f8",
+              "selected": false,
+              "target_rule": "sd_mint_quantum",
+              "task_utility": 0.0
+            },
+            {
+              "adopted": true,
+              "candidate_digest": "sha256:72a2c67598b653bfff573cd6efd277ac48bf4357faa6a603ca9b4441f3090d3a",
+              "candidate_label": "dedup_identity_fix",
+              "converges_in_rehearsal": true,
+              "outcome_class": "idempotent_mint_guard",
+              "rank_attempt_tag": "5346435dd2f8",
+              "selected": true,
+              "target_rule": "sd_mint_quantum",
+              "task_utility": 0.0
+            }
+          ],
+          "primary_preserved": true,
+          "program_present": true,
+          "success": true,
+          "trials": [
+            {
+              "fixedpoint_progress": 0,
+              "label": "episode_scoped_offer_guard",
+              "offer_counts": [
+                1,
+                0
+              ],
+              "rank_trace": {
+                "attempt_tag": "5f7c48a01c33",
+                "candidate_digest": "sha256:ddda176245e460aa83e18c29190d1ef17ed63074e6acf74b45c45dbe0f60e81c",
+                "outcome_class": "episode_scoped_idempotence",
+                "prior_failures": 0.0,
+                "prior_successes": 0.0,
+                "structural_cost": 23.0,
+                "target_rule": "mrl_offer_due_once"
+              },
+              "sweep_progress": [
+                14,
+                0,
+                0,
+                0,
+                0,
+                1,
+                0,
+                0,
+                0,
+                0
+              ],
+              "task_oracle": false
+            },
+            {
+              "fixedpoint_progress": 0,
+              "label": "dedup_identity_fix",
+              "offer_counts": [
+                1,
+                1
+              ],
+              "rank_trace": {
+                "attempt_tag": "5f7c48a01c33",
+                "candidate_digest": "sha256:727ac1387fcb20817f4ee4e37bca0bcbfac7fc42f43d0bb506ae794b5269138a",
+                "outcome_class": "idempotent_mint_guard",
+                "prior_failures": 1.0,
+                "prior_successes": 0.0,
+                "structural_cost": 29.0,
+                "target_rule": "mrl_offer_due_once"
+              },
+              "sweep_progress": [
+                14,
+                0,
+                0,
+                0,
+                0,
+                9,
+                0,
+                0,
+                0,
+                0
+              ],
+              "task_oracle": true
+            }
+          ]
+        },
+        "false_positive_1": {
+          "arm": "false_positive_1",
+          "candidate_order": [
+            "episode_scoped_offer_guard",
+            "dedup_identity_fix",
+            "drop_match_edge",
+            "add_match_guard(control)",
+            "swap_term_leaf:capability_key->latest_segment_ordinal",
+            "swap_term_leaf:capability_key->persistence",
+            "swap_term_leaf:capability_key->structural_signature",
+            "swap_term_leaf:latest_segment_ordinal->capability_key"
+          ],
+          "history_count": 3,
+          "history_records": [
+            {
+              "adopted": false,
+              "candidate_digest": "sha256:a5bb76110681eac570853bfc8610b263318bba60287b9c5f9e152f6a053587a3",
+              "candidate_label": "swap_term_leaf:signature->residual",
+              "converges_in_rehearsal": false,
+              "outcome_class": "",
+              "rank_attempt_tag": "5346435dd2f8",
+              "selected": false,
+              "target_rule": "sd_mint_quantum",
+              "task_utility": 0.0
+            },
+            {
+              "adopted": true,
+              "candidate_digest": "sha256:72a2c67598b653bfff573cd6efd277ac48bf4357faa6a603ca9b4441f3090d3a",
+              "candidate_label": "dedup_identity_fix",
+              "converges_in_rehearsal": true,
+              "outcome_class": "idempotent_mint_guard",
+              "rank_attempt_tag": "5346435dd2f8",
+              "selected": true,
+              "target_rule": "sd_mint_quantum",
+              "task_utility": 1.0
+            },
+            {
+              "adopted": true,
+              "candidate_digest": "controlled_false_positive_2_false_positive_1_0",
+              "candidate_label": "episode_scoped_offer_guard",
+              "converges_in_rehearsal": true,
+              "outcome_class": "episode_scoped_idempotence",
+              "rank_attempt_tag": "false_positive_2_false_positive_1_0",
+              "selected": true,
+              "target_rule": "mrl_offer_due_once",
+              "task_utility": 1.0
+            }
+          ],
+          "primary_preserved": true,
+          "program_present": true,
+          "success": true,
+          "trials": [
+            {
+              "fixedpoint_progress": 0,
+              "label": "episode_scoped_offer_guard",
+              "offer_counts": [
+                1,
+                0
+              ],
+              "rank_trace": {
+                "attempt_tag": "a40235326d6b",
+                "candidate_digest": "sha256:e84c50d4a4b4d6724f5fecec4e99ebc57c54ef820808714960c2d4e4ebf3a851",
+                "outcome_class": "episode_scoped_idempotence",
+                "prior_failures": 0.0,
+                "prior_successes": 1.0,
+                "structural_cost": 23.0,
+                "target_rule": "mrl_offer_due_once"
+              },
+              "sweep_progress": [
+                14,
+                0,
+                0,
+                0,
+                0,
+                1,
+                0,
+                0,
+                0,
+                0
+              ],
+              "task_oracle": false
+            },
+            {
+              "fixedpoint_progress": 0,
+              "label": "dedup_identity_fix",
+              "offer_counts": [
+                1,
+                1
+              ],
+              "rank_trace": {
+                "attempt_tag": "a40235326d6b",
+                "candidate_digest": "sha256:4a06962954ccc74b81e2c293d0fd2227feb6613168c4a7038ded8bd6d0855d0d",
+                "outcome_class": "idempotent_mint_guard",
+                "prior_failures": 0.0,
+                "prior_successes": 1.0,
+                "structural_cost": 29.0,
+                "target_rule": "mrl_offer_due_once"
+              },
+              "sweep_progress": [
+                14,
+                0,
+                0,
+                0,
+                0,
+                9,
+                0,
+                0,
+                0,
+                0
+              ],
+              "task_oracle": true
+            }
+          ]
+        },
+        "false_positive_2": {
+          "arm": "false_positive_2",
+          "candidate_order": [
+            "episode_scoped_offer_guard",
+            "dedup_identity_fix",
+            "drop_match_edge",
+            "add_match_guard(control)",
+            "swap_term_leaf:capability_key->latest_segment_ordinal",
+            "swap_term_leaf:capability_key->persistence",
+            "swap_term_leaf:capability_key->structural_signature",
+            "swap_term_leaf:latest_segment_ordinal->capability_key"
+          ],
+          "history_count": 4,
+          "history_records": [
+            {
+              "adopted": false,
+              "candidate_digest": "sha256:a5bb76110681eac570853bfc8610b263318bba60287b9c5f9e152f6a053587a3",
+              "candidate_label": "swap_term_leaf:signature->residual",
+              "converges_in_rehearsal": false,
+              "outcome_class": "",
+              "rank_attempt_tag": "5346435dd2f8",
+              "selected": false,
+              "target_rule": "sd_mint_quantum",
+              "task_utility": 0.0
+            },
+            {
+              "adopted": true,
+              "candidate_digest": "sha256:72a2c67598b653bfff573cd6efd277ac48bf4357faa6a603ca9b4441f3090d3a",
+              "candidate_label": "dedup_identity_fix",
+              "converges_in_rehearsal": true,
+              "outcome_class": "idempotent_mint_guard",
+              "rank_attempt_tag": "5346435dd2f8",
+              "selected": true,
+              "target_rule": "sd_mint_quantum",
+              "task_utility": 1.0
+            },
+            {
+              "adopted": true,
+              "candidate_digest": "controlled_false_positive_2_false_positive_2_0",
+              "candidate_label": "episode_scoped_offer_guard",
+              "converges_in_rehearsal": true,
+              "outcome_class": "episode_scoped_idempotence",
+              "rank_attempt_tag": "false_positive_2_false_positive_2_0",
+              "selected": true,
+              "target_rule": "mrl_offer_due_once",
+              "task_utility": 1.0
+            },
+            {
+              "adopted": true,
+              "candidate_digest": "controlled_false_positive_2_false_positive_2_1",
+              "candidate_label": "episode_scoped_offer_guard",
+              "converges_in_rehearsal": true,
+              "outcome_class": "episode_scoped_idempotence",
+              "rank_attempt_tag": "false_positive_2_false_positive_2_1",
+              "selected": true,
+              "target_rule": "mrl_offer_due_once",
+              "task_utility": 1.0
+            }
+          ],
+          "primary_preserved": true,
+          "program_present": true,
+          "success": true,
+          "trials": [
+            {
+              "fixedpoint_progress": 0,
+              "label": "episode_scoped_offer_guard",
+              "offer_counts": [
+                1,
+                0
+              ],
+              "rank_trace": {
+                "attempt_tag": "b06fd9b89e1e",
+                "candidate_digest": "sha256:c39830af7e337f61d8e63b815af0566f9d458139269b6fab5c51be4afaf1cf05",
+                "outcome_class": "episode_scoped_idempotence",
+                "prior_failures": 0.0,
+                "prior_successes": 2.0,
+                "structural_cost": 23.0,
+                "target_rule": "mrl_offer_due_once"
+              },
+              "sweep_progress": [
+                14,
+                0,
+                0,
+                0,
+                0,
+                1,
+                0,
+                0,
+                0,
+                0
+              ],
+              "task_oracle": false
+            },
+            {
+              "fixedpoint_progress": 0,
+              "label": "dedup_identity_fix",
+              "offer_counts": [
+                1,
+                1
+              ],
+              "rank_trace": {
+                "attempt_tag": "b06fd9b89e1e",
+                "candidate_digest": "sha256:5b1692a13902ec17a93f4cbe10b634cea85ca58f1e4175d4599866cd43ad150c",
+                "outcome_class": "idempotent_mint_guard",
+                "prior_failures": 0.0,
+                "prior_successes": 1.0,
+                "structural_cost": 29.0,
+                "target_rule": "mrl_offer_due_once"
+              },
+              "sweep_progress": [
+                14,
+                0,
+                0,
+                0,
+                0,
+                9,
+                0,
+                0,
+                0,
+                0
+              ],
+              "task_oracle": true
+            }
+          ]
+        },
+        "mixed": {
+          "arm": "mixed",
+          "candidate_order": [
+            "episode_scoped_offer_guard",
+            "dedup_identity_fix",
+            "drop_match_edge",
+            "add_match_guard(control)",
+            "swap_term_leaf:capability_key->latest_segment_ordinal",
+            "swap_term_leaf:capability_key->persistence",
+            "swap_term_leaf:capability_key->structural_signature",
+            "swap_term_leaf:latest_segment_ordinal->capability_key"
+          ],
+          "history_count": 3,
+          "history_records": [
+            {
+              "adopted": false,
+              "candidate_digest": "sha256:a5bb76110681eac570853bfc8610b263318bba60287b9c5f9e152f6a053587a3",
+              "candidate_label": "swap_term_leaf:signature->residual",
+              "converges_in_rehearsal": false,
+              "outcome_class": "",
+              "rank_attempt_tag": "5346435dd2f8",
+              "selected": false,
+              "target_rule": "sd_mint_quantum",
+              "task_utility": 0.0
+            },
+            {
+              "adopted": true,
+              "candidate_digest": "sha256:72a2c67598b653bfff573cd6efd277ac48bf4357faa6a603ca9b4441f3090d3a",
+              "candidate_label": "dedup_identity_fix",
+              "converges_in_rehearsal": true,
+              "outcome_class": "idempotent_mint_guard",
+              "rank_attempt_tag": "5346435dd2f8",
+              "selected": true,
+              "target_rule": "sd_mint_quantum",
+              "task_utility": 0.0
+            },
+            {
+              "adopted": true,
+              "candidate_digest": "controlled_false_positive_2_mixed_0",
+              "candidate_label": "episode_scoped_offer_guard",
+              "converges_in_rehearsal": true,
+              "outcome_class": "episode_scoped_idempotence",
+              "rank_attempt_tag": "false_positive_2_mixed_0",
+              "selected": true,
+              "target_rule": "mrl_offer_due_once",
+              "task_utility": 1.0
+            }
+          ],
+          "primary_preserved": true,
+          "program_present": true,
+          "success": true,
+          "trials": [
+            {
+              "fixedpoint_progress": 0,
+              "label": "episode_scoped_offer_guard",
+              "offer_counts": [
+                1,
+                0
+              ],
+              "rank_trace": {
+                "attempt_tag": "7b76341396b5",
+                "candidate_digest": "sha256:a21fcf2c67609a243f64460b9c6c98f91ca9f1992158771f35f34579e000778c",
+                "outcome_class": "episode_scoped_idempotence",
+                "prior_failures": 0.0,
+                "prior_successes": 1.0,
+                "structural_cost": 23.0,
+                "target_rule": "mrl_offer_due_once"
+              },
+              "sweep_progress": [
+                14,
+                0,
+                0,
+                0,
+                0,
+                1,
+                0,
+                0,
+                0,
+                0
+              ],
+              "task_oracle": false
+            },
+            {
+              "fixedpoint_progress": 0,
+              "label": "dedup_identity_fix",
+              "offer_counts": [
+                1,
+                1
+              ],
+              "rank_trace": {
+                "attempt_tag": "7b76341396b5",
+                "candidate_digest": "sha256:265d4e46c67d7df2299392bb0bde13d5136f49fe3a578857a4db35026d1415d0",
+                "outcome_class": "idempotent_mint_guard",
+                "prior_failures": 1.0,
+                "prior_successes": 0.0,
+                "structural_cost": 29.0,
+                "target_rule": "mrl_offer_due_once"
+              },
+              "sweep_progress": [
+                14,
+                0,
+                0,
+                0,
+                0,
+                9,
+                0,
+                0,
+                0,
+                0
+              ],
+              "task_oracle": true
+            }
+          ]
+        }
+      },
+      "pid": 6235,
+      "source_after": {
+        "domains/collapse_model.py": "97aaa5c26e6cb3f2682f6d9ee7aa9f0fbbc622e27063b1947edab26fa0ef4ea7",
+        "domains/collapse_watch.py": "de8acb4e4fd6da6cba263c09f7f07f65055ea180343615eb8724c7ddf6b46799",
+        "domains/reflective_faculty.py": "8f530a8c8754949216b71b473c4769fa5d351d01d6055127943c009d06763d05",
+        "domains/self_correct_dispatch.py": "6aa0759fb39c7b6ff754b669f1699d6badeb90beb48e90e5f7e5b3d1f8a5464f",
+        "domains/self_correction.py": "682c4fda4d18bf2e7655988c6ef8e52dc6ab7bae143851d804c122a0dbeb8a2d",
+        "evaluation/substrate_capability/thoughtexperiment_automatic_outcome_persistence_transfer_v1.py": "a8b9d59db35df31f705ecda8d8b338a59778eddab3792ac208ac8612456c2318",
+        "evaluation/substrate_capability/thoughtexperiment_graph_authored_correction_rank_v1.py": "9a46f1b90dd12a577d86e28b57a256dc5e091bb93f8563aa6fc4178e40ab9fed",
+        "evaluation/substrate_capability/thoughtexperiment_outcome_noise_dose_response_v1.py": "fbfa5d8a6f3830bc5939fc866b56704626c306c428e7ab5a5d36a194d9dee9ee",
+        "seeds/autonomy.json": "5eb18e0b06de6243ac1abae5a51bdc146e78d4d5a13ec863a9baa20f9ede9dfe",
+        "seeds/composer_collapse_watch_graph.json": "7afd9f795f05933873e4b8595558b6a9a2587d6f9e4cfde9f8862eba3511f9c5",
+        "seeds/composer_dispatch.json": "a167c0ef5fba47ef9c46a3c87db972e5a85f444f9a930e761a7ef40d25b9a09a",
+        "seeds/composer_self_correct_graph.json": "84c3f6ca601b4e62f6c2de46e1da98289821444ee9118dbdbd2a85d655c19e20",
+        "seeds/minting_recurrence_ledger.json": "10c5df924cb98eacea2a2159e60247c1d783db37f4be147378c6115e1b545a92",
+        "seeds/relation_vocabulary.json": "781e89f27c5d31c214d57eb521deb6dab04c34ef51413b7a14739dd98861d90a",
+        "seeds/shape_decode_loop.json": "3e1783cf566179061250572bbf7bc7bb54cacfafb83f8852008c4618d984a9c6",
+        "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb"
+      },
+      "source_before": {
+        "domains/collapse_model.py": "97aaa5c26e6cb3f2682f6d9ee7aa9f0fbbc622e27063b1947edab26fa0ef4ea7",
+        "domains/collapse_watch.py": "de8acb4e4fd6da6cba263c09f7f07f65055ea180343615eb8724c7ddf6b46799",
+        "domains/reflective_faculty.py": "8f530a8c8754949216b71b473c4769fa5d351d01d6055127943c009d06763d05",
+        "domains/self_correct_dispatch.py": "6aa0759fb39c7b6ff754b669f1699d6badeb90beb48e90e5f7e5b3d1f8a5464f",
+        "domains/self_correction.py": "682c4fda4d18bf2e7655988c6ef8e52dc6ab7bae143851d804c122a0dbeb8a2d",
+        "evaluation/substrate_capability/thoughtexperiment_automatic_outcome_persistence_transfer_v1.py": "a8b9d59db35df31f705ecda8d8b338a59778eddab3792ac208ac8612456c2318",
+        "evaluation/substrate_capability/thoughtexperiment_graph_authored_correction_rank_v1.py": "9a46f1b90dd12a577d86e28b57a256dc5e091bb93f8563aa6fc4178e40ab9fed",
+        "evaluation/substrate_capability/thoughtexperiment_outcome_noise_dose_response_v1.py": "fbfa5d8a6f3830bc5939fc866b56704626c306c428e7ab5a5d36a194d9dee9ee",
+        "seeds/autonomy.json": "5eb18e0b06de6243ac1abae5a51bdc146e78d4d5a13ec863a9baa20f9ede9dfe",
+        "seeds/composer_collapse_watch_graph.json": "7afd9f795f05933873e4b8595558b6a9a2587d6f9e4cfde9f8862eba3511f9c5",
+        "seeds/composer_dispatch.json": "a167c0ef5fba47ef9c46a3c87db972e5a85f444f9a930e761a7ef40d25b9a09a",
+        "seeds/composer_self_correct_graph.json": "84c3f6ca601b4e62f6c2de46e1da98289821444ee9118dbdbd2a85d655c19e20",
+        "seeds/minting_recurrence_ledger.json": "10c5df924cb98eacea2a2159e60247c1d783db37f4be147378c6115e1b545a92",
+        "seeds/relation_vocabulary.json": "781e89f27c5d31c214d57eb521deb6dab04c34ef51413b7a14739dd98861d90a",
+        "seeds/shape_decode_loop.json": "3e1783cf566179061250572bbf7bc7bb54cacfafb83f8852008c4618d984a9c6",
+        "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb"
+      },
+      "source_stable": true,
+      "training": {
+        "adopted": true,
+        "authentic_records": [
+          {
+            "adopted": false,
+            "candidate_digest": "sha256:a5bb76110681eac570853bfc8610b263318bba60287b9c5f9e152f6a053587a3",
+            "candidate_label": "swap_term_leaf:signature->residual",
+            "converges_in_rehearsal": false,
+            "outcome_class": "",
+            "rank_attempt_tag": "5346435dd2f8",
+            "selected": false,
+            "target_rule": "sd_mint_quantum",
+            "task_utility": 0.0
+          },
+          {
+            "adopted": true,
+            "candidate_digest": "sha256:72a2c67598b653bfff573cd6efd277ac48bf4357faa6a603ca9b4441f3090d3a",
+            "candidate_label": "dedup_identity_fix",
+            "converges_in_rehearsal": true,
+            "outcome_class": "idempotent_mint_guard",
+            "rank_attempt_tag": "5346435dd2f8",
+            "selected": true,
+            "target_rule": "sd_mint_quantum",
+            "task_utility": 1.0
+          }
+        ],
+        "chosen": "dedup_identity_fix"
+      }
+    }
+  ]
+}

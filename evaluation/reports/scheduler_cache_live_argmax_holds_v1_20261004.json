@@ -1,0 +1,632 @@
+{
+  "captured_cache_counts": [
+    0,
+    1,
+    0,
+    1,
+    1,
+    0
+  ],
+  "checks": {
+    "argmax_populated_by_evaluator": true,
+    "global_work_exact": true,
+    "graph_after_exact": true,
+    "holds_populated_by_evaluator": true,
+    "initial_run_progressed": true,
+    "live_and_replay_restore_exact": true,
+    "neighbours_populated_by_evaluator": true,
+    "per_rule_work_exact": true,
+    "scheduler_after_exact": true,
+    "source_stable": true
+  },
+  "claim_limit": "small synthetic graph and one authored rule; evaluator naturally populates neighbour/argmax/holds entries; exact restoration and replay work on this fixture do not establish natural-task prevalence or scaling",
+  "initial_steps": 1,
+  "live": {
+    "elapsed_ns": 19210,
+    "global": {
+      "apply_probe_rollbacks": 0,
+      "bindings_cloned": 0,
+      "cand_enum": 3,
+      "cand_enum_apply_once": 0,
+      "cand_enum_first": 3,
+      "cand_enum_hinted": 0,
+      "cand_enum_local": 0,
+      "cand_enum_repeat": 0,
+      "cand_enum_scan": 3,
+      "cand_reject_bound": 0,
+      "cand_tested": 3,
+      "cand_tested_unattributed": 0,
+      "dim_infer_arg_calls": 0,
+      "dim_infer_arg_distinct_ordered": 0,
+      "dim_infer_arg_distinct_unordered": 0,
+      "epochs": 1,
+      "epochs_apply_once": 0,
+      "ffi_calls": 1,
+      "ffi_items": 1,
+      "ffi_pyobjects": 0,
+      "graph_writes": 0,
+      "leaf_visits": 0,
+      "pushdown_evals": 0,
+      "pushdown_prunes": 0,
+      "rule_effect_attr_set_attempts": 0,
+      "rule_effect_edge_deletes": 0,
+      "rule_effect_edge_insert_attempts": 0,
+      "rule_effect_node_delete_attempts": 0,
+      "rule_effect_node_inserts": 0,
+      "rule_effect_replace_edge_deletes": 0,
+      "rule_effect_replace_edge_insert_attempts": 0,
+      "rule_enumerations": 1,
+      "rule_enumerations_repeat": 0,
+      "scheduler_dirty_vector_slots": 7,
+      "scheduler_external_poll_slots": 7,
+      "scheduler_fixedpoint_probe_slots": 7,
+      "scheduler_passes": 1,
+      "scheduler_selected_rules": 1,
+      "scoped_anchor_rejected_rule_matches": 0,
+      "scoped_declared_anchor_rule_matches": 0,
+      "scoped_full_fallback_rule_matches": 0,
+      "scoped_local_rule_matches": 0,
+      "scoped_mt_seeded_rule_matches": 0,
+      "term_eval:And": 3,
+      "term_eval:Argmax": 3,
+      "term_eval:Attr": 3,
+      "term_eval:Eq": 3,
+      "term_eval:Holds": 1,
+      "term_eval:Neighbours": 1,
+      "term_eval:Var": 7,
+      "term_evals_total": 21,
+      "term_evals_unattributed": 0,
+      "term_evals_unattributed_ambiguous": 0,
+      "term_evals_unattributed_host_api": 0,
+      "term_evals_unattributed_no_rule": 0,
+      "term_units_total": 0,
+      "term_units_unattributed": 0,
+      "var_collisions": 0,
+      "where_evals": 3,
+      "where_evals_first": 3,
+      "where_evals_repeat": 0,
+      "where_rejects": 3
+    },
+    "graph": {
+      "edges": [
+        {
+          "attrs": {},
+          "src": 0,
+          "tgt": 1,
+          "type": "has_concept"
+        },
+        {
+          "attrs": {},
+          "src": 0,
+          "tgt": 2,
+          "type": "has_concept"
+        },
+        {
+          "attrs": {},
+          "src": 0,
+          "tgt": 3,
+          "type": "has_concept"
+        }
+      ],
+      "next_id": 4,
+      "nodes": [
+        {
+          "attrs": {
+            "name": "cache-fixture"
+          },
+          "id": 0,
+          "type": "Microtheory"
+        },
+        {
+          "attrs": {
+            "name": "a",
+            "state": 1
+          },
+          "id": 1,
+          "type": "Concept"
+        },
+        {
+          "attrs": {
+            "name": "b",
+            "picked": 1,
+            "state": 3
+          },
+          "id": 2,
+          "type": "Concept"
+        },
+        {
+          "attrs": {
+            "name": "c",
+            "state": 2
+          },
+          "id": 3,
+          "type": "Concept"
+        }
+      ]
+    },
+    "per_rule": {
+      "6": {
+        "And": 3,
+        "Argmax": 3,
+        "Attr": 3,
+        "Eq": 3,
+        "Holds": 1,
+        "Neighbours": 1,
+        "Var": 7,
+        "candidate_pairs": 3,
+        "candidate_tests": 3,
+        "rule_enumerations": 1,
+        "term_evaluations": 21,
+        "where_evaluations": 3,
+        "where_rejections": 3
+      }
+    },
+    "scheduler": {
+      "any_mutation": false,
+      "attr_write_log": [],
+      "edge_delete_version": 5,
+      "edge_delete_versions_by_type": [],
+      "eval_cache": {
+        "argmax": [
+          [
+            349,
+            [
+              [
+                "m",
+                {
+                  "__nid__": 0
+                }
+              ]
+            ],
+            {
+              "__nid__": 2
+            }
+          ],
+          [
+            357,
+            [
+              [
+                "m",
+                {
+                  "__nid__": 0
+                }
+              ]
+            ],
+            {
+              "__nid__": 2
+            }
+          ]
+        ],
+        "entry_counts": [
+          0,
+          1,
+          0,
+          2,
+          1,
+          0
+        ],
+        "filter": [],
+        "holds": [
+          [
+            "cache_state3",
+            2,
+            null,
+            true
+          ]
+        ],
+        "neighbours": [
+          [
+            0,
+            "has_concept",
+            false,
+            {
+              "__fset__": [
+                {
+                  "__nid__": 1
+                },
+                {
+                  "__nid__": 2
+                },
+                {
+                  "__nid__": 3
+                }
+              ]
+            }
+          ]
+        ],
+        "reachable_enabled": false,
+        "reachable_hits": 0,
+        "reachable_misses": 0,
+        "reachable_payload_bytes": 0,
+        "reachable_peak_entries": 0,
+        "reachable_peak_payload_bytes": 0
+      },
+      "flags": {
+        "active_shape_target": null,
+        "binding_projection": false,
+        "dirty_marks": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "dirty_overaggressive": false,
+        "dirty_telemetry": false,
+        "empty_match_proof": false,
+        "empty_match_proof_unsound": false,
+        "empty_match_skips": [],
+        "gamma_residual_capture": false,
+        "gamma_residual_root": null,
+        "incremental_match": false,
+        "incremental_match_unsound": false,
+        "precise_dirty": false,
+        "predicate_retraction": false,
+        "predicate_retraction_unsound": false,
+        "projection_overaggressive": false
+      },
+      "rule_count": 7,
+      "rule_cursors": [
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [
+          [
+            "has_concept",
+            3,
+            5
+          ]
+        ]
+      ],
+      "rule_dirty": [
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        false
+      ],
+      "rule_dirty_nodes": [
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        []
+      ],
+      "schema": "RuleSchedulerCheckpointV6"
+    },
+    "steps": 0
+  },
+  "locked_inputs": {
+    "engine_fingerprint": "3a7d243da10ac52f6209c41097753873e7e1dc558bd2a920d56300849fe90fc6",
+    "native_sha256": "db424c5ff1136b27ad1678eaf6f0e36fd70a098fcb6ce2936980e67e8f269177",
+    "protocol_sha256": "3b1377db04a5b0c640e241d65dbbe8fea7bf8afe352c66afbcc5f521cfe60728",
+    "runner_sha256": "e0d8c59619839081c1529127fe20ca7328f27410793a8f9570fc3d65cd9a99c6",
+    "seed_sha256": "3b185987ae810d5e05ab2468b044ab73d8890c8e73ac86dfcaf35b734b9c61d8",
+    "sources": {
+      "runners/dsl/Cargo.lock": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+      "runners/dsl/python/substrate_rs/_native.build.json": "e9d7df21cc6f3b766175a4540c980663d5831a6479ca1b305973a29c36319a2c",
+      "runners/dsl/src/persist.rs": "dfe9247a700f1d5fafd239447018c9bd25297a50f9c86ba63a9e1ce41f149986",
+      "runners/dsl/src/py.rs": "ad5ced217ff7648a57fbd066a5d2a7dcffefb612e11c32c375c4482dd49b8a49",
+      "runners/dsl/src/rewrite.rs": "a617664517d2a7b654a1ecc3caee6aaafb3d6c41ce0a47667a08497a7978f2ed",
+      "runners/dsl/src/substrate.rs": "866e4dd75fa2c884d95c8d2ccb1b5415bfeb3ba1e928bebbc64e18d3a1b0d577",
+      "runners/dsl/src/term.rs": "0224c689a7c21d9338e268b7ee4fbc38d2482c94dd144b7264bdd07cf0e0287a",
+      "substrate/seed_loader.py": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27"
+    }
+  },
+  "passed": true,
+  "post_run_inputs": {
+    "engine_fingerprint": "3a7d243da10ac52f6209c41097753873e7e1dc558bd2a920d56300849fe90fc6",
+    "native_sha256": "db424c5ff1136b27ad1678eaf6f0e36fd70a098fcb6ce2936980e67e8f269177",
+    "protocol_sha256": "3b1377db04a5b0c640e241d65dbbe8fea7bf8afe352c66afbcc5f521cfe60728",
+    "runner_sha256": "e0d8c59619839081c1529127fe20ca7328f27410793a8f9570fc3d65cd9a99c6",
+    "seed_sha256": "3b185987ae810d5e05ab2468b044ab73d8890c8e73ac86dfcaf35b734b9c61d8",
+    "sources": {
+      "runners/dsl/Cargo.lock": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+      "runners/dsl/python/substrate_rs/_native.build.json": "e9d7df21cc6f3b766175a4540c980663d5831a6479ca1b305973a29c36319a2c",
+      "runners/dsl/src/persist.rs": "dfe9247a700f1d5fafd239447018c9bd25297a50f9c86ba63a9e1ce41f149986",
+      "runners/dsl/src/py.rs": "ad5ced217ff7648a57fbd066a5d2a7dcffefb612e11c32c375c4482dd49b8a49",
+      "runners/dsl/src/rewrite.rs": "a617664517d2a7b654a1ecc3caee6aaafb3d6c41ce0a47667a08497a7978f2ed",
+      "runners/dsl/src/substrate.rs": "866e4dd75fa2c884d95c8d2ccb1b5415bfeb3ba1e928bebbc64e18d3a1b0d577",
+      "runners/dsl/src/term.rs": "0224c689a7c21d9338e268b7ee4fbc38d2482c94dd144b7264bdd07cf0e0287a",
+      "substrate/seed_loader.py": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27"
+    }
+  },
+  "replay": {
+    "elapsed_ns": 9000,
+    "global": {
+      "apply_probe_rollbacks": 0,
+      "bindings_cloned": 0,
+      "cand_enum": 3,
+      "cand_enum_apply_once": 0,
+      "cand_enum_first": 3,
+      "cand_enum_hinted": 0,
+      "cand_enum_local": 0,
+      "cand_enum_repeat": 0,
+      "cand_enum_scan": 3,
+      "cand_reject_bound": 0,
+      "cand_tested": 3,
+      "cand_tested_unattributed": 0,
+      "dim_infer_arg_calls": 0,
+      "dim_infer_arg_distinct_ordered": 0,
+      "dim_infer_arg_distinct_unordered": 0,
+      "epochs": 1,
+      "epochs_apply_once": 0,
+      "ffi_calls": 1,
+      "ffi_items": 1,
+      "ffi_pyobjects": 0,
+      "graph_writes": 0,
+      "leaf_visits": 0,
+      "pushdown_evals": 0,
+      "pushdown_prunes": 0,
+      "rule_effect_attr_set_attempts": 0,
+      "rule_effect_edge_deletes": 0,
+      "rule_effect_edge_insert_attempts": 0,
+      "rule_effect_node_delete_attempts": 0,
+      "rule_effect_node_inserts": 0,
+      "rule_effect_replace_edge_deletes": 0,
+      "rule_effect_replace_edge_insert_attempts": 0,
+      "rule_enumerations": 1,
+      "rule_enumerations_repeat": 0,
+      "scheduler_dirty_vector_slots": 7,
+      "scheduler_external_poll_slots": 7,
+      "scheduler_fixedpoint_probe_slots": 7,
+      "scheduler_passes": 1,
+      "scheduler_selected_rules": 1,
+      "scoped_anchor_rejected_rule_matches": 0,
+      "scoped_declared_anchor_rule_matches": 0,
+      "scoped_full_fallback_rule_matches": 0,
+      "scoped_local_rule_matches": 0,
+      "scoped_mt_seeded_rule_matches": 0,
+      "term_eval:And": 3,
+      "term_eval:Argmax": 3,
+      "term_eval:Attr": 3,
+      "term_eval:Eq": 3,
+      "term_eval:Holds": 1,
+      "term_eval:Neighbours": 1,
+      "term_eval:Var": 7,
+      "term_evals_total": 21,
+      "term_evals_unattributed": 0,
+      "term_evals_unattributed_ambiguous": 0,
+      "term_evals_unattributed_host_api": 0,
+      "term_evals_unattributed_no_rule": 0,
+      "term_units_total": 0,
+      "term_units_unattributed": 0,
+      "var_collisions": 0,
+      "where_evals": 3,
+      "where_evals_first": 3,
+      "where_evals_repeat": 0,
+      "where_rejects": 3
+    },
+    "graph": {
+      "edges": [
+        {
+          "attrs": {},
+          "src": 0,
+          "tgt": 1,
+          "type": "has_concept"
+        },
+        {
+          "attrs": {},
+          "src": 0,
+          "tgt": 2,
+          "type": "has_concept"
+        },
+        {
+          "attrs": {},
+          "src": 0,
+          "tgt": 3,
+          "type": "has_concept"
+        }
+      ],
+      "next_id": 4,
+      "nodes": [
+        {
+          "attrs": {
+            "name": "cache-fixture"
+          },
+          "id": 0,
+          "type": "Microtheory"
+        },
+        {
+          "attrs": {
+            "name": "a",
+            "state": 1
+          },
+          "id": 1,
+          "type": "Concept"
+        },
+        {
+          "attrs": {
+            "name": "b",
+            "picked": 1,
+            "state": 3
+          },
+          "id": 2,
+          "type": "Concept"
+        },
+        {
+          "attrs": {
+            "name": "c",
+            "state": 2
+          },
+          "id": 3,
+          "type": "Concept"
+        }
+      ]
+    },
+    "per_rule": {
+      "6": {
+        "And": 3,
+        "Argmax": 3,
+        "Attr": 3,
+        "Eq": 3,
+        "Holds": 1,
+        "Neighbours": 1,
+        "Var": 7,
+        "candidate_pairs": 3,
+        "candidate_tests": 3,
+        "rule_enumerations": 1,
+        "term_evaluations": 21,
+        "where_evaluations": 3,
+        "where_rejections": 3
+      }
+    },
+    "scheduler": {
+      "any_mutation": false,
+      "attr_write_log": [],
+      "edge_delete_version": 5,
+      "edge_delete_versions_by_type": [],
+      "eval_cache": {
+        "argmax": [
+          [
+            349,
+            [
+              [
+                "m",
+                {
+                  "__nid__": 0
+                }
+              ]
+            ],
+            {
+              "__nid__": 2
+            }
+          ],
+          [
+            357,
+            [
+              [
+                "m",
+                {
+                  "__nid__": 0
+                }
+              ]
+            ],
+            {
+              "__nid__": 2
+            }
+          ]
+        ],
+        "entry_counts": [
+          0,
+          1,
+          0,
+          2,
+          1,
+          0
+        ],
+        "filter": [],
+        "holds": [
+          [
+            "cache_state3",
+            2,
+            null,
+            true
+          ]
+        ],
+        "neighbours": [
+          [
+            0,
+            "has_concept",
+            false,
+            {
+              "__fset__": [
+                {
+                  "__nid__": 1
+                },
+                {
+                  "__nid__": 2
+                },
+                {
+                  "__nid__": 3
+                }
+              ]
+            }
+          ]
+        ],
+        "reachable_enabled": false,
+        "reachable_hits": 0,
+        "reachable_misses": 0,
+        "reachable_payload_bytes": 0,
+        "reachable_peak_entries": 0,
+        "reachable_peak_payload_bytes": 0
+      },
+      "flags": {
+        "active_shape_target": null,
+        "binding_projection": false,
+        "dirty_marks": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "dirty_overaggressive": false,
+        "dirty_telemetry": false,
+        "empty_match_proof": false,
+        "empty_match_proof_unsound": false,
+        "empty_match_skips": [],
+        "gamma_residual_capture": false,
+        "gamma_residual_root": null,
+        "incremental_match": false,
+        "incremental_match_unsound": false,
+        "precise_dirty": false,
+        "predicate_retraction": false,
+        "predicate_retraction_unsound": false,
+        "projection_overaggressive": false
+      },
+      "rule_count": 7,
+      "rule_cursors": [
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [
+          [
+            "has_concept",
+            3,
+            5
+          ]
+        ]
+      ],
+      "rule_dirty": [
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        false
+      ],
+      "rule_dirty_nodes": [
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        []
+      ],
+      "schema": "RuleSchedulerCheckpointV6"
+    },
+    "steps": 0
+  },
+  "schema": "SchedulerCacheLiveArgmaxHoldsV1"
+}

@@ -1,0 +1,86 @@
+{
+  "episodes": 24,
+  "gates": {
+    "per_event_closure_and_canonical_state_parity": true,
+    "receipt_primary_matches_producing_branch": true,
+    "serialized_wire_order_reported_separately": true,
+    "source_native_fingerprints_stable": true,
+    "ten_event_two_goal_task_oracles_all_arms": true,
+    "terminal_no_progress_and_primary_unchanged": true,
+    "unique_fresh_worker_pids": true
+  },
+  "limits": [
+    "one existing authored task fixture",
+    "not a natural-task distribution",
+    "canonical graph facts match; serialized edge order may differ",
+    "does not measure concurrent adoption or serving-runtime compatibility"
+  ],
+  "per_event_canonical_comparisons": 160,
+  "raw_capture": "evaluation/reports/thoughtexperiment_task_generated_receipt_transfer_v1_raw_20261001.json",
+  "receipt_activity": {
+    "eager_receipt": {
+      "nonempty_event_receipts": 48,
+      "total_recorded_effects": 128
+    },
+    "shared_snapshot_receipt": {
+      "nonempty_event_receipts": 48,
+      "total_recorded_effects": 128
+    }
+  },
+  "schema": "ThoughtexperimentTaskReceiptTransferV1Analysis",
+  "timing": {
+    "direct": {
+      "measured_route_wall_ms_max": 76.919456,
+      "measured_route_wall_ms_median": 6.622142500000001,
+      "measured_route_wall_ms_min": 4.382344,
+      "stage_wall_ms_medians": {
+        "adapter_seed_setup_ns": 4.5496765,
+        "branch_setup_ns": 0.0,
+        "event_construction_ns": 1.326314,
+        "journal_readout_ns": 0.0,
+        "receipt_adoption_ns": 0.0,
+        "rule_closure_ns": 0.3445045,
+        "terminal_probe_ns": 0.01043
+      }
+    },
+    "eager_receipt": {
+      "measured_route_wall_ms_max": 92.891548,
+      "measured_route_wall_ms_median": 11.529681,
+      "measured_route_wall_ms_min": 8.796341,
+      "stage_wall_ms_medians": {
+        "adapter_seed_setup_ns": 5.287964,
+        "branch_setup_ns": 1.3548040000000001,
+        "event_construction_ns": 1.3452945,
+        "journal_readout_ns": 0.57064,
+        "receipt_adoption_ns": 1.91709,
+        "rule_closure_ns": 0.3523675,
+        "terminal_probe_ns": 0.17705700000000002
+      }
+    },
+    "shared_snapshot_receipt": {
+      "measured_route_wall_ms_max": 86.824392,
+      "measured_route_wall_ms_median": 41.8479515,
+      "measured_route_wall_ms_min": 7.573667,
+      "stage_wall_ms_medians": {
+        "adapter_seed_setup_ns": 6.5404215,
+        "branch_setup_ns": 0.547166,
+        "event_construction_ns": 1.4141035,
+        "journal_readout_ns": 0.5899105,
+        "receipt_adoption_ns": 2.0948535,
+        "rule_closure_ns": 0.44325950000000003,
+        "terminal_probe_ns": 0.083321
+      }
+    }
+  },
+  "wire_order": {
+    "eager_receipt": {
+      "comparisons": 80,
+      "mismatches_vs_direct": 32
+    },
+    "shared_snapshot_receipt": {
+      "comparisons": 80,
+      "mismatches_vs_direct": 32
+    }
+  },
+  "workers": 8
+}

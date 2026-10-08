@@ -1,0 +1,610 @@
+{
+  "interpretation": "The indexed insertion phase includes index maintenance; the post-insert lookup is timed separately. The no-index arm estimates insertion costs without attribute-index maintenance.",
+  "limits": "Diagnostic only; do not infer overall engine benefit or select production shard count.",
+  "raw": "evaluation/reports/typed_graph_insert_phase_profile_v8_raw_20261006.json",
+  "raw_sha256": "6bfc0e91e8568427acf0ee8b09dd82f2bf24eb7a06324caf7b21b026f1308360",
+  "summary": [
+    {
+      "fork_us": 0.08,
+      "indexed_insert_us": 11.14,
+      "indexed_over_noindex_ratio": 3.2103746397694524,
+      "nodes": 7164,
+      "noindex_insert_us": 3.47,
+      "post_insert_lookup_us": 0.11,
+      "replicate_indexed_insert_us": [
+        11.18,
+        11.14,
+        11.07
+      ],
+      "replicate_lookup_us": [
+        0.12,
+        0.1,
+        0.11
+      ],
+      "replicate_noindex_insert_us": [
+        3.6,
+        3.47,
+        3.46
+      ],
+      "shards": 64
+    },
+    {
+      "fork_us": 0.08,
+      "indexed_insert_us": 8.93,
+      "indexed_over_noindex_ratio": 2.5587392550143266,
+      "nodes": 7164,
+      "noindex_insert_us": 3.49,
+      "post_insert_lookup_us": 0.11,
+      "replicate_indexed_insert_us": [
+        8.83,
+        9.15,
+        8.93
+      ],
+      "replicate_lookup_us": [
+        0.1,
+        0.11,
+        0.11
+      ],
+      "replicate_noindex_insert_us": [
+        3.32,
+        3.57,
+        3.49
+      ],
+      "shards": 128
+    },
+    {
+      "fork_us": 0.08,
+      "indexed_insert_us": 8.63,
+      "indexed_over_noindex_ratio": 2.437853107344633,
+      "nodes": 7164,
+      "noindex_insert_us": 3.54,
+      "post_insert_lookup_us": 0.1,
+      "replicate_indexed_insert_us": [
+        8.71,
+        8.63,
+        8.43
+      ],
+      "replicate_lookup_us": [
+        0.12,
+        0.1,
+        0.1
+      ],
+      "replicate_noindex_insert_us": [
+        3.54,
+        3.56,
+        3.42
+      ],
+      "shards": 256
+    },
+    {
+      "fork_us": 0.09,
+      "indexed_insert_us": 9.33,
+      "indexed_over_noindex_ratio": 2.591666666666667,
+      "nodes": 7164,
+      "noindex_insert_us": 3.6,
+      "post_insert_lookup_us": 0.09,
+      "replicate_indexed_insert_us": [
+        9.33,
+        9.21,
+        9.54
+      ],
+      "replicate_lookup_us": [
+        0.09,
+        0.09,
+        0.09
+      ],
+      "replicate_noindex_insert_us": [
+        3.6,
+        3.58,
+        3.8
+      ],
+      "shards": 512
+    },
+    {
+      "fork_us": 0.08,
+      "indexed_insert_us": 41.84,
+      "indexed_over_noindex_ratio": 12.91358024691358,
+      "nodes": 50771,
+      "noindex_insert_us": 3.24,
+      "post_insert_lookup_us": 0.12,
+      "replicate_indexed_insert_us": [
+        41.84,
+        41.97,
+        40.99
+      ],
+      "replicate_lookup_us": [
+        0.14,
+        0.12,
+        0.12
+      ],
+      "replicate_noindex_insert_us": [
+        3.24,
+        3.25,
+        3.13
+      ],
+      "shards": 64
+    },
+    {
+      "fork_us": 0.09,
+      "indexed_insert_us": 24.71,
+      "indexed_over_noindex_ratio": 7.06,
+      "nodes": 50771,
+      "noindex_insert_us": 3.5,
+      "post_insert_lookup_us": 0.14,
+      "replicate_indexed_insert_us": [
+        24.371,
+        24.71,
+        24.73
+      ],
+      "replicate_lookup_us": [
+        0.14,
+        0.16,
+        0.14
+      ],
+      "replicate_noindex_insert_us": [
+        3.49,
+        3.5,
+        3.5
+      ],
+      "shards": 128
+    },
+    {
+      "fork_us": 0.09,
+      "indexed_insert_us": 15.861,
+      "indexed_over_noindex_ratio": 4.719131210949122,
+      "nodes": 50771,
+      "noindex_insert_us": 3.361,
+      "post_insert_lookup_us": 0.14,
+      "replicate_indexed_insert_us": [
+        16.82,
+        15.861,
+        15.77
+      ],
+      "replicate_lookup_us": [
+        0.19,
+        0.14,
+        0.14
+      ],
+      "replicate_noindex_insert_us": [
+        3.79,
+        3.361,
+        3.35
+      ],
+      "shards": 256
+    },
+    {
+      "fork_us": 0.1,
+      "indexed_insert_us": 13.06,
+      "indexed_over_noindex_ratio": 3.6997167138810196,
+      "nodes": 50771,
+      "noindex_insert_us": 3.53,
+      "post_insert_lookup_us": 0.12,
+      "replicate_indexed_insert_us": [
+        13.06,
+        12.94,
+        17.891
+      ],
+      "replicate_lookup_us": [
+        0.12,
+        0.12,
+        0.19
+      ],
+      "replicate_noindex_insert_us": [
+        3.51,
+        3.53,
+        5.32
+      ],
+      "shards": 512
+    }
+  ],
+  "worker_rows": [
+    {
+      "fork_ns_median": 80,
+      "indexed_insert_iqr_ns": [
+        10975.0,
+        11440.0
+      ],
+      "indexed_insert_ns_median": 11180,
+      "indexed_lookup_ns_median": 120,
+      "lookup_iqr_ns": [
+        105.0,
+        160.0
+      ],
+      "nodes": 7164,
+      "noindex_insert_ns_median": 3600,
+      "replicate": 0,
+      "shards": 64
+    },
+    {
+      "fork_ns_median": 70,
+      "indexed_insert_iqr_ns": [
+        8620.0,
+        8930.0
+      ],
+      "indexed_insert_ns_median": 8830,
+      "indexed_lookup_ns_median": 100,
+      "lookup_iqr_ns": [
+        100.0,
+        110.0
+      ],
+      "nodes": 7164,
+      "noindex_insert_ns_median": 3320,
+      "replicate": 0,
+      "shards": 128
+    },
+    {
+      "fork_ns_median": 90,
+      "indexed_insert_iqr_ns": [
+        8505.0,
+        9200.0
+      ],
+      "indexed_insert_ns_median": 8710,
+      "indexed_lookup_ns_median": 120,
+      "lookup_iqr_ns": [
+        100.0,
+        170.0
+      ],
+      "nodes": 7164,
+      "noindex_insert_ns_median": 3540,
+      "replicate": 0,
+      "shards": 256
+    },
+    {
+      "fork_ns_median": 90,
+      "indexed_insert_iqr_ns": [
+        9100.0,
+        9535.0
+      ],
+      "indexed_insert_ns_median": 9330,
+      "indexed_lookup_ns_median": 90,
+      "lookup_iqr_ns": [
+        90.0,
+        110.0
+      ],
+      "nodes": 7164,
+      "noindex_insert_ns_median": 3600,
+      "replicate": 0,
+      "shards": 512
+    },
+    {
+      "fork_ns_median": 100,
+      "indexed_insert_iqr_ns": [
+        23595.0,
+        25065.0
+      ],
+      "indexed_insert_ns_median": 24371,
+      "indexed_lookup_ns_median": 140,
+      "lookup_iqr_ns": [
+        120.0,
+        185.0
+      ],
+      "nodes": 50771,
+      "noindex_insert_ns_median": 3490,
+      "replicate": 0,
+      "shards": 128
+    },
+    {
+      "fork_ns_median": 100,
+      "indexed_insert_iqr_ns": [
+        15865.0,
+        23120.0
+      ],
+      "indexed_insert_ns_median": 16820,
+      "indexed_lookup_ns_median": 190,
+      "lookup_iqr_ns": [
+        140.0,
+        225.0
+      ],
+      "nodes": 50771,
+      "noindex_insert_ns_median": 3790,
+      "replicate": 0,
+      "shards": 256
+    },
+    {
+      "fork_ns_median": 90,
+      "indexed_insert_iqr_ns": [
+        12835.0,
+        13280.5
+      ],
+      "indexed_insert_ns_median": 13060,
+      "indexed_lookup_ns_median": 120,
+      "lookup_iqr_ns": [
+        110.0,
+        140.0
+      ],
+      "nodes": 50771,
+      "noindex_insert_ns_median": 3510,
+      "replicate": 0,
+      "shards": 512
+    },
+    {
+      "fork_ns_median": 90,
+      "indexed_insert_iqr_ns": [
+        41225.0,
+        43150.0
+      ],
+      "indexed_insert_ns_median": 41840,
+      "indexed_lookup_ns_median": 140,
+      "lookup_iqr_ns": [
+        120.0,
+        160.0
+      ],
+      "nodes": 50771,
+      "noindex_insert_ns_median": 3240,
+      "replicate": 0,
+      "shards": 64
+    },
+    {
+      "fork_ns_median": 80,
+      "indexed_insert_iqr_ns": [
+        9055.0,
+        9325.0
+      ],
+      "indexed_insert_ns_median": 9150,
+      "indexed_lookup_ns_median": 110,
+      "lookup_iqr_ns": [
+        105.0,
+        130.0
+      ],
+      "nodes": 7164,
+      "noindex_insert_ns_median": 3570,
+      "replicate": 1,
+      "shards": 128
+    },
+    {
+      "fork_ns_median": 80,
+      "indexed_insert_iqr_ns": [
+        8520.0,
+        8835.0
+      ],
+      "indexed_insert_ns_median": 8630,
+      "indexed_lookup_ns_median": 100,
+      "lookup_iqr_ns": [
+        100.0,
+        110.0
+      ],
+      "nodes": 7164,
+      "noindex_insert_ns_median": 3560,
+      "replicate": 1,
+      "shards": 256
+    },
+    {
+      "fork_ns_median": 80,
+      "indexed_insert_iqr_ns": [
+        8940.0,
+        9375.0
+      ],
+      "indexed_insert_ns_median": 9210,
+      "indexed_lookup_ns_median": 90,
+      "lookup_iqr_ns": [
+        80.0,
+        100.0
+      ],
+      "nodes": 7164,
+      "noindex_insert_ns_median": 3580,
+      "replicate": 1,
+      "shards": 512
+    },
+    {
+      "fork_ns_median": 80,
+      "indexed_insert_iqr_ns": [
+        10935.0,
+        11375.0
+      ],
+      "indexed_insert_ns_median": 11140,
+      "indexed_lookup_ns_median": 100,
+      "lookup_iqr_ns": [
+        100.0,
+        120.0
+      ],
+      "nodes": 7164,
+      "noindex_insert_ns_median": 3470,
+      "replicate": 1,
+      "shards": 64
+    },
+    {
+      "fork_ns_median": 90,
+      "indexed_insert_iqr_ns": [
+        15600.5,
+        16260.0
+      ],
+      "indexed_insert_ns_median": 15861,
+      "indexed_lookup_ns_median": 140,
+      "lookup_iqr_ns": [
+        130.0,
+        150.0
+      ],
+      "nodes": 50771,
+      "noindex_insert_ns_median": 3361,
+      "replicate": 1,
+      "shards": 256
+    },
+    {
+      "fork_ns_median": 100,
+      "indexed_insert_iqr_ns": [
+        12750.0,
+        13580.0
+      ],
+      "indexed_insert_ns_median": 12940,
+      "indexed_lookup_ns_median": 120,
+      "lookup_iqr_ns": [
+        110.0,
+        140.0
+      ],
+      "nodes": 50771,
+      "noindex_insert_ns_median": 3530,
+      "replicate": 1,
+      "shards": 512
+    },
+    {
+      "fork_ns_median": 80,
+      "indexed_insert_iqr_ns": [
+        41010.0,
+        43390.0
+      ],
+      "indexed_insert_ns_median": 41970,
+      "indexed_lookup_ns_median": 120,
+      "lookup_iqr_ns": [
+        120.0,
+        170.0
+      ],
+      "nodes": 50771,
+      "noindex_insert_ns_median": 3250,
+      "replicate": 1,
+      "shards": 64
+    },
+    {
+      "fork_ns_median": 90,
+      "indexed_insert_iqr_ns": [
+        24225.0,
+        27230.0
+      ],
+      "indexed_insert_ns_median": 24710,
+      "indexed_lookup_ns_median": 160,
+      "lookup_iqr_ns": [
+        110.0,
+        215.0
+      ],
+      "nodes": 50771,
+      "noindex_insert_ns_median": 3500,
+      "replicate": 1,
+      "shards": 128
+    },
+    {
+      "fork_ns_median": 80,
+      "indexed_insert_iqr_ns": [
+        8320.5,
+        8530.0
+      ],
+      "indexed_insert_ns_median": 8430,
+      "indexed_lookup_ns_median": 100,
+      "lookup_iqr_ns": [
+        90.0,
+        105.0
+      ],
+      "nodes": 7164,
+      "noindex_insert_ns_median": 3420,
+      "replicate": 2,
+      "shards": 256
+    },
+    {
+      "fork_ns_median": 100,
+      "indexed_insert_iqr_ns": [
+        9280.0,
+        10055.0
+      ],
+      "indexed_insert_ns_median": 9540,
+      "indexed_lookup_ns_median": 90,
+      "lookup_iqr_ns": [
+        90.0,
+        130.0
+      ],
+      "nodes": 7164,
+      "noindex_insert_ns_median": 3800,
+      "replicate": 2,
+      "shards": 512
+    },
+    {
+      "fork_ns_median": 80,
+      "indexed_insert_iqr_ns": [
+        10920.0,
+        11295.0
+      ],
+      "indexed_insert_ns_median": 11070,
+      "indexed_lookup_ns_median": 110,
+      "lookup_iqr_ns": [
+        100.0,
+        125.0
+      ],
+      "nodes": 7164,
+      "noindex_insert_ns_median": 3460,
+      "replicate": 2,
+      "shards": 64
+    },
+    {
+      "fork_ns_median": 80,
+      "indexed_insert_iqr_ns": [
+        8815.0,
+        9175.5
+      ],
+      "indexed_insert_ns_median": 8930,
+      "indexed_lookup_ns_median": 110,
+      "lookup_iqr_ns": [
+        100.0,
+        125.0
+      ],
+      "nodes": 7164,
+      "noindex_insert_ns_median": 3490,
+      "replicate": 2,
+      "shards": 128
+    },
+    {
+      "fork_ns_median": 120,
+      "indexed_insert_iqr_ns": [
+        12950.0,
+        18525.5
+      ],
+      "indexed_insert_ns_median": 17891,
+      "indexed_lookup_ns_median": 190,
+      "lookup_iqr_ns": [
+        130.0,
+        230.0
+      ],
+      "nodes": 50771,
+      "noindex_insert_ns_median": 5320,
+      "replicate": 2,
+      "shards": 512
+    },
+    {
+      "fork_ns_median": 80,
+      "indexed_insert_iqr_ns": [
+        40780.5,
+        41530.0
+      ],
+      "indexed_insert_ns_median": 40990,
+      "indexed_lookup_ns_median": 120,
+      "lookup_iqr_ns": [
+        110.0,
+        140.0
+      ],
+      "nodes": 50771,
+      "noindex_insert_ns_median": 3130,
+      "replicate": 2,
+      "shards": 64
+    },
+    {
+      "fork_ns_median": 90,
+      "indexed_insert_iqr_ns": [
+        24375.0,
+        25765.0
+      ],
+      "indexed_insert_ns_median": 24730,
+      "indexed_lookup_ns_median": 140,
+      "lookup_iqr_ns": [
+        120.0,
+        175.0
+      ],
+      "nodes": 50771,
+      "noindex_insert_ns_median": 3500,
+      "replicate": 2,
+      "shards": 128
+    },
+    {
+      "fork_ns_median": 80,
+      "indexed_insert_iqr_ns": [
+        15595.0,
+        15915.0
+      ],
+      "indexed_insert_ns_median": 15770,
+      "indexed_lookup_ns_median": 140,
+      "lookup_iqr_ns": [
+        130.0,
+        140.0
+      ],
+      "nodes": 50771,
+      "noindex_insert_ns_median": 3350,
+      "replicate": 2,
+      "shards": 256
+    }
+  ]
+}

@@ -1,0 +1,1510 @@
+{
+  "host": "Linux-6.8.0-142-generic-x86_64-with-glibc2.39",
+  "lock": {
+    "active": {
+      "domains/adequacy_provider_auth.py": "c02bef40c7052aefca17d96ef0e11007597f1c6c4733f48a528b093a13af64b0",
+      "domains/code_reading.py": "dd67d2942cf956c6e35f848aed4012c3ac072e9ac91d9e6b166e8ca44be57908",
+      "domains/code_write_growth.py": "60272bbd5b395cfc234445df20926b6c055d921d8dfd4bc0353d128e68918122",
+      "domains/code_writing.py": "4ad3148ca1796ad13f6128b9fd655e8568c7c843cd68bccee54f35cbf4ddabc9",
+      "domains/independent_adequacy.py": "33191341fdd63d16d0b9cb5203f27666da90b60fccd567ac4633306a9dcab418",
+      "domains/teach.py": "308a5f31d74dabb3ed8b24bd0c967abd5f94596a3ff76d17657330877fae2cfa",
+      "domains_tree": "f157fe2ff5de3f3ecf0c28d24d0d7ec00dcc39c44adf7c83fe0652c03e46d7e9",
+      "native_binary": "3816b4fb5d5746950b4cc3bf9e904a58e675ce53530727edf44095646dd58a54",
+      "runners/dsl/python/substrate_rs/__init__.py": "1fed837a6b7e8b35e463d3b8fdca498400c9cc420a016b81279365d6406a4049",
+      "runners/dsl/python/substrate_rs/_native.build.json": "b491d348c59cbf5cd5eee1b3f900a042f31e21665b6e63212edb9ed7f3d60f47",
+      "runners/dsl/src/py.rs": "d6f922bd406d3f500c10cea11978f47f9612b4ce6b9a348e848a30a305881cba",
+      "runners/dsl/src/substrate.rs": "bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+      "runners/dsl/src/term.rs": "5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+      "rust_tree": "06307beca12566832d3ba7ac157ec6177abb41a87dcf3755d824729d1a55ea0f",
+      "seed_manifest_inventory": "7a35d6b5c0ca4fa74708a34b40fba7304d95b8065cf4e931d36c50f44c0813e3",
+      "substrate/world_adapter.py": "faad410d0c46e8cff5273444675d59904ba3552989e8e3c2b6032fb822de2be5",
+      "substrate_tree": "1a8aa6dbc4ad33bb71eac6cb5e6ddb73cea47f9918a62bd5629903e6cdcf943f"
+    },
+    "design": {
+      "cases": {
+        "aliased_honest_two": {
+          "labels": [
+            [
+              "oracle-a",
+              0
+            ],
+            [
+              "oracle-b",
+              0
+            ]
+          ],
+          "name": "identity",
+          "source": "def identity(x):\n    return x\n",
+          "x": 0
+        },
+        "conflicting_two": {
+          "labels": [
+            [
+              "oracle-a",
+              4
+            ],
+            [
+              "oracle-b",
+              2
+            ]
+          ],
+          "name": "identity",
+          "source": "def identity(x):\n    return x\n",
+          "x": 2
+        },
+        "correlated_wrong_two": {
+          "labels": [
+            [
+              "oracle-a",
+              2
+            ],
+            [
+              "oracle-b",
+              2
+            ]
+          ],
+          "name": "identity",
+          "source": "def identity(x):\n    return x\n",
+          "x": 2
+        },
+        "distinguishing_honest_two": {
+          "labels": [
+            [
+              "oracle-a",
+              4
+            ],
+            [
+              "oracle-b",
+              4
+            ]
+          ],
+          "name": "identity",
+          "source": "def identity(x):\n    return x\n",
+          "x": 2
+        },
+        "honest_single": {
+          "labels": [
+            [
+              "oracle-a",
+              4
+            ]
+          ],
+          "name": "square",
+          "source": "def square(x):\n    return x * x\n",
+          "x": 2
+        }
+      },
+      "heldout": [
+        3,
+        4,
+        5
+      ],
+      "oracle_sha256": "7ee765cc02feb6cff51584b7a34f7b371f5d9b564c2f1770d21bf89274a4df26",
+      "provider_key_sha256": {
+        "oracle-a": "97a763cd07fe9feb56647f4527422c5e20067b28de78e2578f55383c65060b93",
+        "oracle-b": "26d9b27126c874f0eedf409d811381143a5ce23b75c73cda1c52477ed2626baf"
+      },
+      "receipt_policy": "existing core adjudicator; conflicts produce ambiguous receipts",
+      "repeats": 3
+    },
+    "files": {
+      "docs/research/engine_substrate/SUBSTRATE_ADEQUACY_PROVIDER_AGREEMENT_AND_DOMAIN_V1_PREREG_20261002.md": "f972f218bd7fc6b381f34f23f046eed6a636ee96ab10dc6a4eedaadc3b671b13",
+      "evaluation/substrate_capability/substrate_adequacy_provider_agreement_domain_v1.py": "7ff02ffbccb60e7ab51cbe0783e34386c26296a6b03614b42c5dc1aeb3bd9809"
+    },
+    "git_head": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+    "schema": "SubstrateAdequacyProviderAgreementDomainV1Lock"
+  },
+  "post_lock": {
+    "active": {
+      "domains/adequacy_provider_auth.py": "c02bef40c7052aefca17d96ef0e11007597f1c6c4733f48a528b093a13af64b0",
+      "domains/code_reading.py": "dd67d2942cf956c6e35f848aed4012c3ac072e9ac91d9e6b166e8ca44be57908",
+      "domains/code_write_growth.py": "60272bbd5b395cfc234445df20926b6c055d921d8dfd4bc0353d128e68918122",
+      "domains/code_writing.py": "4ad3148ca1796ad13f6128b9fd655e8568c7c843cd68bccee54f35cbf4ddabc9",
+      "domains/independent_adequacy.py": "33191341fdd63d16d0b9cb5203f27666da90b60fccd567ac4633306a9dcab418",
+      "domains/teach.py": "308a5f31d74dabb3ed8b24bd0c967abd5f94596a3ff76d17657330877fae2cfa",
+      "domains_tree": "f157fe2ff5de3f3ecf0c28d24d0d7ec00dcc39c44adf7c83fe0652c03e46d7e9",
+      "native_binary": "3816b4fb5d5746950b4cc3bf9e904a58e675ce53530727edf44095646dd58a54",
+      "runners/dsl/python/substrate_rs/__init__.py": "1fed837a6b7e8b35e463d3b8fdca498400c9cc420a016b81279365d6406a4049",
+      "runners/dsl/python/substrate_rs/_native.build.json": "b491d348c59cbf5cd5eee1b3f900a042f31e21665b6e63212edb9ed7f3d60f47",
+      "runners/dsl/src/py.rs": "d6f922bd406d3f500c10cea11978f47f9612b4ce6b9a348e848a30a305881cba",
+      "runners/dsl/src/substrate.rs": "bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+      "runners/dsl/src/term.rs": "5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+      "rust_tree": "06307beca12566832d3ba7ac157ec6177abb41a87dcf3755d824729d1a55ea0f",
+      "seed_manifest_inventory": "7a35d6b5c0ca4fa74708a34b40fba7304d95b8065cf4e931d36c50f44c0813e3",
+      "substrate/world_adapter.py": "faad410d0c46e8cff5273444675d59904ba3552989e8e3c2b6032fb822de2be5",
+      "substrate_tree": "1a8aa6dbc4ad33bb71eac6cb5e6ddb73cea47f9918a62bd5629903e6cdcf943f"
+    },
+    "design": {
+      "cases": {
+        "aliased_honest_two": {
+          "labels": [
+            [
+              "oracle-a",
+              0
+            ],
+            [
+              "oracle-b",
+              0
+            ]
+          ],
+          "name": "identity",
+          "source": "def identity(x):\n    return x\n",
+          "x": 0
+        },
+        "conflicting_two": {
+          "labels": [
+            [
+              "oracle-a",
+              4
+            ],
+            [
+              "oracle-b",
+              2
+            ]
+          ],
+          "name": "identity",
+          "source": "def identity(x):\n    return x\n",
+          "x": 2
+        },
+        "correlated_wrong_two": {
+          "labels": [
+            [
+              "oracle-a",
+              2
+            ],
+            [
+              "oracle-b",
+              2
+            ]
+          ],
+          "name": "identity",
+          "source": "def identity(x):\n    return x\n",
+          "x": 2
+        },
+        "distinguishing_honest_two": {
+          "labels": [
+            [
+              "oracle-a",
+              4
+            ],
+            [
+              "oracle-b",
+              4
+            ]
+          ],
+          "name": "identity",
+          "source": "def identity(x):\n    return x\n",
+          "x": 2
+        },
+        "honest_single": {
+          "labels": [
+            [
+              "oracle-a",
+              4
+            ]
+          ],
+          "name": "square",
+          "source": "def square(x):\n    return x * x\n",
+          "x": 2
+        }
+      },
+      "heldout": [
+        3,
+        4,
+        5
+      ],
+      "oracle_sha256": "7ee765cc02feb6cff51584b7a34f7b371f5d9b564c2f1770d21bf89274a4df26",
+      "provider_key_sha256": {
+        "oracle-a": "97a763cd07fe9feb56647f4527422c5e20067b28de78e2578f55383c65060b93",
+        "oracle-b": "26d9b27126c874f0eedf409d811381143a5ce23b75c73cda1c52477ed2626baf"
+      },
+      "receipt_policy": "existing core adjudicator; conflicts produce ambiguous receipts",
+      "repeats": 3
+    },
+    "files": {
+      "docs/research/engine_substrate/SUBSTRATE_ADEQUACY_PROVIDER_AGREEMENT_AND_DOMAIN_V1_PREREG_20261002.md": "f972f218bd7fc6b381f34f23f046eed6a636ee96ab10dc6a4eedaadc3b671b13",
+      "evaluation/substrate_capability/substrate_adequacy_provider_agreement_domain_v1.py": "7ff02ffbccb60e7ab51cbe0783e34386c26296a6b03614b42c5dc1aeb3bd9809"
+    },
+    "git_head": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+    "schema": "SubstrateAdequacyProviderAgreementDomainV1Lock"
+  },
+  "python": "3.13.5 (main, Jun 11 2025, 15:36:57) [GCC 11.4.0]",
+  "schedule": [
+    {
+      "case": "honest_single",
+      "repetition": 1
+    },
+    {
+      "case": "honest_single",
+      "repetition": 2
+    },
+    {
+      "case": "honest_single",
+      "repetition": 3
+    },
+    {
+      "case": "conflicting_two",
+      "repetition": 1
+    },
+    {
+      "case": "conflicting_two",
+      "repetition": 2
+    },
+    {
+      "case": "conflicting_two",
+      "repetition": 3
+    },
+    {
+      "case": "correlated_wrong_two",
+      "repetition": 1
+    },
+    {
+      "case": "correlated_wrong_two",
+      "repetition": 2
+    },
+    {
+      "case": "correlated_wrong_two",
+      "repetition": 3
+    },
+    {
+      "case": "aliased_honest_two",
+      "repetition": 1
+    },
+    {
+      "case": "aliased_honest_two",
+      "repetition": 2
+    },
+    {
+      "case": "aliased_honest_two",
+      "repetition": 3
+    },
+    {
+      "case": "distinguishing_honest_two",
+      "repetition": 1
+    },
+    {
+      "case": "distinguishing_honest_two",
+      "repetition": 2
+    },
+    {
+      "case": "distinguishing_honest_two",
+      "repetition": 3
+    }
+  ],
+  "schema": "SubstrateAdequacyProviderAgreementDomainV1Capture",
+  "source_stable": true,
+  "workers": [
+    {
+      "active_after": {
+        "domains/adequacy_provider_auth.py": "c02bef40c7052aefca17d96ef0e11007597f1c6c4733f48a528b093a13af64b0",
+        "domains/code_reading.py": "dd67d2942cf956c6e35f848aed4012c3ac072e9ac91d9e6b166e8ca44be57908",
+        "domains/code_write_growth.py": "60272bbd5b395cfc234445df20926b6c055d921d8dfd4bc0353d128e68918122",
+        "domains/code_writing.py": "4ad3148ca1796ad13f6128b9fd655e8568c7c843cd68bccee54f35cbf4ddabc9",
+        "domains/independent_adequacy.py": "33191341fdd63d16d0b9cb5203f27666da90b60fccd567ac4633306a9dcab418",
+        "domains/teach.py": "308a5f31d74dabb3ed8b24bd0c967abd5f94596a3ff76d17657330877fae2cfa",
+        "domains_tree": "f157fe2ff5de3f3ecf0c28d24d0d7ec00dcc39c44adf7c83fe0652c03e46d7e9",
+        "native_binary": "3816b4fb5d5746950b4cc3bf9e904a58e675ce53530727edf44095646dd58a54",
+        "runners/dsl/python/substrate_rs/__init__.py": "1fed837a6b7e8b35e463d3b8fdca498400c9cc420a016b81279365d6406a4049",
+        "runners/dsl/python/substrate_rs/_native.build.json": "b491d348c59cbf5cd5eee1b3f900a042f31e21665b6e63212edb9ed7f3d60f47",
+        "runners/dsl/src/py.rs": "d6f922bd406d3f500c10cea11978f47f9612b4ce6b9a348e848a30a305881cba",
+        "runners/dsl/src/substrate.rs": "bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+        "runners/dsl/src/term.rs": "5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+        "rust_tree": "06307beca12566832d3ba7ac157ec6177abb41a87dcf3755d824729d1a55ea0f",
+        "seed_manifest_inventory": "7a35d6b5c0ca4fa74708a34b40fba7304d95b8065cf4e931d36c50f44c0813e3",
+        "substrate/world_adapter.py": "faad410d0c46e8cff5273444675d59904ba3552989e8e3c2b6032fb822de2be5",
+        "substrate_tree": "1a8aa6dbc4ad33bb71eac6cb5e6ddb73cea47f9918a62bd5629903e6cdcf943f"
+      },
+      "adopted_code_shape_ids": [
+        "#1616"
+      ],
+      "candidate_id": "3516de6112b77de8a2528898d6c534474974f2ddf9a183818d6c6866b7e91baf",
+      "case": "honest_single",
+      "elapsed_ns": 174191732,
+      "heldout": [
+        {
+          "match": true,
+          "oracle": 9,
+          "prediction": 9,
+          "x": 3
+        },
+        {
+          "match": true,
+          "oracle": 16,
+          "prediction": 16,
+          "x": 4
+        },
+        {
+          "match": true,
+          "oracle": 25,
+          "prediction": 25,
+          "x": 5
+        }
+      ],
+      "heldout_correct": 3,
+      "pid": 7,
+      "probe": {
+        "x": 2
+      },
+      "provider_auth": {
+        "errors": [],
+        "evidence_sha256": "154a93ac6fe507bc7bd6b05b82d756d830cae3a947065a67cf143e601da87b7c",
+        "ok": true,
+        "request_id": "5b4faaee52fcf424bb82094fcb9f8501721fbfa987712cfd763d2bc8135abc20",
+        "verified_labels": 1
+      },
+      "provider_expected": [
+        4
+      ],
+      "provider_ids": [
+        "oracle-a"
+      ],
+      "receipt_residuals": [],
+      "receipt_status": "accepted",
+      "repetition": 1,
+      "reply": "Thank you -- I read that function and learned the shape 'taught_square' (triggers: square).",
+      "shape_delta": 1
+    },
+    {
+      "active_after": {
+        "domains/adequacy_provider_auth.py": "c02bef40c7052aefca17d96ef0e11007597f1c6c4733f48a528b093a13af64b0",
+        "domains/code_reading.py": "dd67d2942cf956c6e35f848aed4012c3ac072e9ac91d9e6b166e8ca44be57908",
+        "domains/code_write_growth.py": "60272bbd5b395cfc234445df20926b6c055d921d8dfd4bc0353d128e68918122",
+        "domains/code_writing.py": "4ad3148ca1796ad13f6128b9fd655e8568c7c843cd68bccee54f35cbf4ddabc9",
+        "domains/independent_adequacy.py": "33191341fdd63d16d0b9cb5203f27666da90b60fccd567ac4633306a9dcab418",
+        "domains/teach.py": "308a5f31d74dabb3ed8b24bd0c967abd5f94596a3ff76d17657330877fae2cfa",
+        "domains_tree": "f157fe2ff5de3f3ecf0c28d24d0d7ec00dcc39c44adf7c83fe0652c03e46d7e9",
+        "native_binary": "3816b4fb5d5746950b4cc3bf9e904a58e675ce53530727edf44095646dd58a54",
+        "runners/dsl/python/substrate_rs/__init__.py": "1fed837a6b7e8b35e463d3b8fdca498400c9cc420a016b81279365d6406a4049",
+        "runners/dsl/python/substrate_rs/_native.build.json": "b491d348c59cbf5cd5eee1b3f900a042f31e21665b6e63212edb9ed7f3d60f47",
+        "runners/dsl/src/py.rs": "d6f922bd406d3f500c10cea11978f47f9612b4ce6b9a348e848a30a305881cba",
+        "runners/dsl/src/substrate.rs": "bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+        "runners/dsl/src/term.rs": "5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+        "rust_tree": "06307beca12566832d3ba7ac157ec6177abb41a87dcf3755d824729d1a55ea0f",
+        "seed_manifest_inventory": "7a35d6b5c0ca4fa74708a34b40fba7304d95b8065cf4e931d36c50f44c0813e3",
+        "substrate/world_adapter.py": "faad410d0c46e8cff5273444675d59904ba3552989e8e3c2b6032fb822de2be5",
+        "substrate_tree": "1a8aa6dbc4ad33bb71eac6cb5e6ddb73cea47f9918a62bd5629903e6cdcf943f"
+      },
+      "adopted_code_shape_ids": [
+        "#1616"
+      ],
+      "candidate_id": "3516de6112b77de8a2528898d6c534474974f2ddf9a183818d6c6866b7e91baf",
+      "case": "honest_single",
+      "elapsed_ns": 172732504,
+      "heldout": [
+        {
+          "match": true,
+          "oracle": 9,
+          "prediction": 9,
+          "x": 3
+        },
+        {
+          "match": true,
+          "oracle": 16,
+          "prediction": 16,
+          "x": 4
+        },
+        {
+          "match": true,
+          "oracle": 25,
+          "prediction": 25,
+          "x": 5
+        }
+      ],
+      "heldout_correct": 3,
+      "pid": 255,
+      "probe": {
+        "x": 2
+      },
+      "provider_auth": {
+        "errors": [],
+        "evidence_sha256": "154a93ac6fe507bc7bd6b05b82d756d830cae3a947065a67cf143e601da87b7c",
+        "ok": true,
+        "request_id": "5b4faaee52fcf424bb82094fcb9f8501721fbfa987712cfd763d2bc8135abc20",
+        "verified_labels": 1
+      },
+      "provider_expected": [
+        4
+      ],
+      "provider_ids": [
+        "oracle-a"
+      ],
+      "receipt_residuals": [],
+      "receipt_status": "accepted",
+      "repetition": 2,
+      "reply": "Thank you -- I read that function and learned the shape 'taught_square' (triggers: square).",
+      "shape_delta": 1
+    },
+    {
+      "active_after": {
+        "domains/adequacy_provider_auth.py": "c02bef40c7052aefca17d96ef0e11007597f1c6c4733f48a528b093a13af64b0",
+        "domains/code_reading.py": "dd67d2942cf956c6e35f848aed4012c3ac072e9ac91d9e6b166e8ca44be57908",
+        "domains/code_write_growth.py": "60272bbd5b395cfc234445df20926b6c055d921d8dfd4bc0353d128e68918122",
+        "domains/code_writing.py": "4ad3148ca1796ad13f6128b9fd655e8568c7c843cd68bccee54f35cbf4ddabc9",
+        "domains/independent_adequacy.py": "33191341fdd63d16d0b9cb5203f27666da90b60fccd567ac4633306a9dcab418",
+        "domains/teach.py": "308a5f31d74dabb3ed8b24bd0c967abd5f94596a3ff76d17657330877fae2cfa",
+        "domains_tree": "f157fe2ff5de3f3ecf0c28d24d0d7ec00dcc39c44adf7c83fe0652c03e46d7e9",
+        "native_binary": "3816b4fb5d5746950b4cc3bf9e904a58e675ce53530727edf44095646dd58a54",
+        "runners/dsl/python/substrate_rs/__init__.py": "1fed837a6b7e8b35e463d3b8fdca498400c9cc420a016b81279365d6406a4049",
+        "runners/dsl/python/substrate_rs/_native.build.json": "b491d348c59cbf5cd5eee1b3f900a042f31e21665b6e63212edb9ed7f3d60f47",
+        "runners/dsl/src/py.rs": "d6f922bd406d3f500c10cea11978f47f9612b4ce6b9a348e848a30a305881cba",
+        "runners/dsl/src/substrate.rs": "bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+        "runners/dsl/src/term.rs": "5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+        "rust_tree": "06307beca12566832d3ba7ac157ec6177abb41a87dcf3755d824729d1a55ea0f",
+        "seed_manifest_inventory": "7a35d6b5c0ca4fa74708a34b40fba7304d95b8065cf4e931d36c50f44c0813e3",
+        "substrate/world_adapter.py": "faad410d0c46e8cff5273444675d59904ba3552989e8e3c2b6032fb822de2be5",
+        "substrate_tree": "1a8aa6dbc4ad33bb71eac6cb5e6ddb73cea47f9918a62bd5629903e6cdcf943f"
+      },
+      "adopted_code_shape_ids": [
+        "#1616"
+      ],
+      "candidate_id": "3516de6112b77de8a2528898d6c534474974f2ddf9a183818d6c6866b7e91baf",
+      "case": "honest_single",
+      "elapsed_ns": 176410634,
+      "heldout": [
+        {
+          "match": true,
+          "oracle": 9,
+          "prediction": 9,
+          "x": 3
+        },
+        {
+          "match": true,
+          "oracle": 16,
+          "prediction": 16,
+          "x": 4
+        },
+        {
+          "match": true,
+          "oracle": 25,
+          "prediction": 25,
+          "x": 5
+        }
+      ],
+      "heldout_correct": 3,
+      "pid": 503,
+      "probe": {
+        "x": 2
+      },
+      "provider_auth": {
+        "errors": [],
+        "evidence_sha256": "154a93ac6fe507bc7bd6b05b82d756d830cae3a947065a67cf143e601da87b7c",
+        "ok": true,
+        "request_id": "5b4faaee52fcf424bb82094fcb9f8501721fbfa987712cfd763d2bc8135abc20",
+        "verified_labels": 1
+      },
+      "provider_expected": [
+        4
+      ],
+      "provider_ids": [
+        "oracle-a"
+      ],
+      "receipt_residuals": [],
+      "receipt_status": "accepted",
+      "repetition": 3,
+      "reply": "Thank you -- I read that function and learned the shape 'taught_square' (triggers: square).",
+      "shape_delta": 1
+    },
+    {
+      "active_after": {
+        "domains/adequacy_provider_auth.py": "c02bef40c7052aefca17d96ef0e11007597f1c6c4733f48a528b093a13af64b0",
+        "domains/code_reading.py": "dd67d2942cf956c6e35f848aed4012c3ac072e9ac91d9e6b166e8ca44be57908",
+        "domains/code_write_growth.py": "60272bbd5b395cfc234445df20926b6c055d921d8dfd4bc0353d128e68918122",
+        "domains/code_writing.py": "4ad3148ca1796ad13f6128b9fd655e8568c7c843cd68bccee54f35cbf4ddabc9",
+        "domains/independent_adequacy.py": "33191341fdd63d16d0b9cb5203f27666da90b60fccd567ac4633306a9dcab418",
+        "domains/teach.py": "308a5f31d74dabb3ed8b24bd0c967abd5f94596a3ff76d17657330877fae2cfa",
+        "domains_tree": "f157fe2ff5de3f3ecf0c28d24d0d7ec00dcc39c44adf7c83fe0652c03e46d7e9",
+        "native_binary": "3816b4fb5d5746950b4cc3bf9e904a58e675ce53530727edf44095646dd58a54",
+        "runners/dsl/python/substrate_rs/__init__.py": "1fed837a6b7e8b35e463d3b8fdca498400c9cc420a016b81279365d6406a4049",
+        "runners/dsl/python/substrate_rs/_native.build.json": "b491d348c59cbf5cd5eee1b3f900a042f31e21665b6e63212edb9ed7f3d60f47",
+        "runners/dsl/src/py.rs": "d6f922bd406d3f500c10cea11978f47f9612b4ce6b9a348e848a30a305881cba",
+        "runners/dsl/src/substrate.rs": "bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+        "runners/dsl/src/term.rs": "5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+        "rust_tree": "06307beca12566832d3ba7ac157ec6177abb41a87dcf3755d824729d1a55ea0f",
+        "seed_manifest_inventory": "7a35d6b5c0ca4fa74708a34b40fba7304d95b8065cf4e931d36c50f44c0813e3",
+        "substrate/world_adapter.py": "faad410d0c46e8cff5273444675d59904ba3552989e8e3c2b6032fb822de2be5",
+        "substrate_tree": "1a8aa6dbc4ad33bb71eac6cb5e6ddb73cea47f9918a62bd5629903e6cdcf943f"
+      },
+      "adopted_code_shape_ids": [],
+      "candidate_id": "91601ea4a51dadec29dc6f9c6b6983187074d63e587d777b22c20191ec159090",
+      "case": "conflicting_two",
+      "elapsed_ns": 169938559,
+      "heldout": [
+        {
+          "match": false,
+          "oracle": 9,
+          "prediction": 3,
+          "x": 3
+        },
+        {
+          "match": false,
+          "oracle": 16,
+          "prediction": 4,
+          "x": 4
+        },
+        {
+          "match": false,
+          "oracle": 25,
+          "prediction": 5,
+          "x": 5
+        }
+      ],
+      "heldout_correct": 0,
+      "pid": 751,
+      "probe": {
+        "x": 2
+      },
+      "provider_auth": {
+        "errors": [],
+        "evidence_sha256": "872613f61f77d3762327a9a72f0c62acf9c16f74eb7638339972817c6ece8c0d",
+        "ok": true,
+        "request_id": "d2bce87a3fd00865354d162c5300ac2468d06fcccdb2590af92eaa8b392448c8",
+        "verified_labels": 2
+      },
+      "provider_expected": [
+        4,
+        2
+      ],
+      "provider_ids": [
+        "oracle-a",
+        "oracle-b"
+      ],
+      "receipt_residuals": [
+        {
+          "input_sha256": "5e2b030a4a0f1582d78c0fd9924511cd6b1f2df9879e574f5ea1406c94052418",
+          "kind": "ambiguous_label",
+          "labels": [
+            {
+              "expected": 4,
+              "label_id": "conflicting_two:oracle-a",
+              "oracle_sha256": "7ee765cc02feb6cff51584b7a34f7b371f5d9b564c2f1770d21bf89274a4df26",
+              "signature": "a4b5951debf4c7bb59a487cc1397e604e84a836b81b6b692f3a66eb972e586f0",
+              "signature_schema": "AdequacyProviderSignedLabelV1",
+              "source_id": "oracle-a"
+            },
+            {
+              "expected": 2,
+              "label_id": "conflicting_two:oracle-b",
+              "oracle_sha256": "7ee765cc02feb6cff51584b7a34f7b371f5d9b564c2f1770d21bf89274a4df26",
+              "signature": "abd49c466aa744f3be4f440a5ec3cb9bce6c435bbb6cfa670cd954de7a22998c",
+              "signature_schema": "AdequacyProviderSignedLabelV1",
+              "source_id": "oracle-b"
+            }
+          ],
+          "prediction": 2,
+          "probe_id": "probe-1"
+        }
+      ],
+      "receipt_status": "ambiguous",
+      "repetition": 1,
+      "reply": "I read that function but could not take it as a lesson (independent adequacy receipt missing, invalid, or bound to another candidate).",
+      "shape_delta": 0
+    },
+    {
+      "active_after": {
+        "domains/adequacy_provider_auth.py": "c02bef40c7052aefca17d96ef0e11007597f1c6c4733f48a528b093a13af64b0",
+        "domains/code_reading.py": "dd67d2942cf956c6e35f848aed4012c3ac072e9ac91d9e6b166e8ca44be57908",
+        "domains/code_write_growth.py": "60272bbd5b395cfc234445df20926b6c055d921d8dfd4bc0353d128e68918122",
+        "domains/code_writing.py": "4ad3148ca1796ad13f6128b9fd655e8568c7c843cd68bccee54f35cbf4ddabc9",
+        "domains/independent_adequacy.py": "33191341fdd63d16d0b9cb5203f27666da90b60fccd567ac4633306a9dcab418",
+        "domains/teach.py": "308a5f31d74dabb3ed8b24bd0c967abd5f94596a3ff76d17657330877fae2cfa",
+        "domains_tree": "f157fe2ff5de3f3ecf0c28d24d0d7ec00dcc39c44adf7c83fe0652c03e46d7e9",
+        "native_binary": "3816b4fb5d5746950b4cc3bf9e904a58e675ce53530727edf44095646dd58a54",
+        "runners/dsl/python/substrate_rs/__init__.py": "1fed837a6b7e8b35e463d3b8fdca498400c9cc420a016b81279365d6406a4049",
+        "runners/dsl/python/substrate_rs/_native.build.json": "b491d348c59cbf5cd5eee1b3f900a042f31e21665b6e63212edb9ed7f3d60f47",
+        "runners/dsl/src/py.rs": "d6f922bd406d3f500c10cea11978f47f9612b4ce6b9a348e848a30a305881cba",
+        "runners/dsl/src/substrate.rs": "bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+        "runners/dsl/src/term.rs": "5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+        "rust_tree": "06307beca12566832d3ba7ac157ec6177abb41a87dcf3755d824729d1a55ea0f",
+        "seed_manifest_inventory": "7a35d6b5c0ca4fa74708a34b40fba7304d95b8065cf4e931d36c50f44c0813e3",
+        "substrate/world_adapter.py": "faad410d0c46e8cff5273444675d59904ba3552989e8e3c2b6032fb822de2be5",
+        "substrate_tree": "1a8aa6dbc4ad33bb71eac6cb5e6ddb73cea47f9918a62bd5629903e6cdcf943f"
+      },
+      "adopted_code_shape_ids": [],
+      "candidate_id": "91601ea4a51dadec29dc6f9c6b6983187074d63e587d777b22c20191ec159090",
+      "case": "conflicting_two",
+      "elapsed_ns": 171526448,
+      "heldout": [
+        {
+          "match": false,
+          "oracle": 9,
+          "prediction": 3,
+          "x": 3
+        },
+        {
+          "match": false,
+          "oracle": 16,
+          "prediction": 4,
+          "x": 4
+        },
+        {
+          "match": false,
+          "oracle": 25,
+          "prediction": 5,
+          "x": 5
+        }
+      ],
+      "heldout_correct": 0,
+      "pid": 999,
+      "probe": {
+        "x": 2
+      },
+      "provider_auth": {
+        "errors": [],
+        "evidence_sha256": "872613f61f77d3762327a9a72f0c62acf9c16f74eb7638339972817c6ece8c0d",
+        "ok": true,
+        "request_id": "d2bce87a3fd00865354d162c5300ac2468d06fcccdb2590af92eaa8b392448c8",
+        "verified_labels": 2
+      },
+      "provider_expected": [
+        4,
+        2
+      ],
+      "provider_ids": [
+        "oracle-a",
+        "oracle-b"
+      ],
+      "receipt_residuals": [
+        {
+          "input_sha256": "5e2b030a4a0f1582d78c0fd9924511cd6b1f2df9879e574f5ea1406c94052418",
+          "kind": "ambiguous_label",
+          "labels": [
+            {
+              "expected": 4,
+              "label_id": "conflicting_two:oracle-a",
+              "oracle_sha256": "7ee765cc02feb6cff51584b7a34f7b371f5d9b564c2f1770d21bf89274a4df26",
+              "signature": "a4b5951debf4c7bb59a487cc1397e604e84a836b81b6b692f3a66eb972e586f0",
+              "signature_schema": "AdequacyProviderSignedLabelV1",
+              "source_id": "oracle-a"
+            },
+            {
+              "expected": 2,
+              "label_id": "conflicting_two:oracle-b",
+              "oracle_sha256": "7ee765cc02feb6cff51584b7a34f7b371f5d9b564c2f1770d21bf89274a4df26",
+              "signature": "abd49c466aa744f3be4f440a5ec3cb9bce6c435bbb6cfa670cd954de7a22998c",
+              "signature_schema": "AdequacyProviderSignedLabelV1",
+              "source_id": "oracle-b"
+            }
+          ],
+          "prediction": 2,
+          "probe_id": "probe-1"
+        }
+      ],
+      "receipt_status": "ambiguous",
+      "repetition": 2,
+      "reply": "I read that function but could not take it as a lesson (independent adequacy receipt missing, invalid, or bound to another candidate).",
+      "shape_delta": 0
+    },
+    {
+      "active_after": {
+        "domains/adequacy_provider_auth.py": "c02bef40c7052aefca17d96ef0e11007597f1c6c4733f48a528b093a13af64b0",
+        "domains/code_reading.py": "dd67d2942cf956c6e35f848aed4012c3ac072e9ac91d9e6b166e8ca44be57908",
+        "domains/code_write_growth.py": "60272bbd5b395cfc234445df20926b6c055d921d8dfd4bc0353d128e68918122",
+        "domains/code_writing.py": "4ad3148ca1796ad13f6128b9fd655e8568c7c843cd68bccee54f35cbf4ddabc9",
+        "domains/independent_adequacy.py": "33191341fdd63d16d0b9cb5203f27666da90b60fccd567ac4633306a9dcab418",
+        "domains/teach.py": "308a5f31d74dabb3ed8b24bd0c967abd5f94596a3ff76d17657330877fae2cfa",
+        "domains_tree": "f157fe2ff5de3f3ecf0c28d24d0d7ec00dcc39c44adf7c83fe0652c03e46d7e9",
+        "native_binary": "3816b4fb5d5746950b4cc3bf9e904a58e675ce53530727edf44095646dd58a54",
+        "runners/dsl/python/substrate_rs/__init__.py": "1fed837a6b7e8b35e463d3b8fdca498400c9cc420a016b81279365d6406a4049",
+        "runners/dsl/python/substrate_rs/_native.build.json": "b491d348c59cbf5cd5eee1b3f900a042f31e21665b6e63212edb9ed7f3d60f47",
+        "runners/dsl/src/py.rs": "d6f922bd406d3f500c10cea11978f47f9612b4ce6b9a348e848a30a305881cba",
+        "runners/dsl/src/substrate.rs": "bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+        "runners/dsl/src/term.rs": "5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+        "rust_tree": "06307beca12566832d3ba7ac157ec6177abb41a87dcf3755d824729d1a55ea0f",
+        "seed_manifest_inventory": "7a35d6b5c0ca4fa74708a34b40fba7304d95b8065cf4e931d36c50f44c0813e3",
+        "substrate/world_adapter.py": "faad410d0c46e8cff5273444675d59904ba3552989e8e3c2b6032fb822de2be5",
+        "substrate_tree": "1a8aa6dbc4ad33bb71eac6cb5e6ddb73cea47f9918a62bd5629903e6cdcf943f"
+      },
+      "adopted_code_shape_ids": [],
+      "candidate_id": "91601ea4a51dadec29dc6f9c6b6983187074d63e587d777b22c20191ec159090",
+      "case": "conflicting_two",
+      "elapsed_ns": 167986489,
+      "heldout": [
+        {
+          "match": false,
+          "oracle": 9,
+          "prediction": 3,
+          "x": 3
+        },
+        {
+          "match": false,
+          "oracle": 16,
+          "prediction": 4,
+          "x": 4
+        },
+        {
+          "match": false,
+          "oracle": 25,
+          "prediction": 5,
+          "x": 5
+        }
+      ],
+      "heldout_correct": 0,
+      "pid": 1247,
+      "probe": {
+        "x": 2
+      },
+      "provider_auth": {
+        "errors": [],
+        "evidence_sha256": "872613f61f77d3762327a9a72f0c62acf9c16f74eb7638339972817c6ece8c0d",
+        "ok": true,
+        "request_id": "d2bce87a3fd00865354d162c5300ac2468d06fcccdb2590af92eaa8b392448c8",
+        "verified_labels": 2
+      },
+      "provider_expected": [
+        4,
+        2
+      ],
+      "provider_ids": [
+        "oracle-a",
+        "oracle-b"
+      ],
+      "receipt_residuals": [
+        {
+          "input_sha256": "5e2b030a4a0f1582d78c0fd9924511cd6b1f2df9879e574f5ea1406c94052418",
+          "kind": "ambiguous_label",
+          "labels": [
+            {
+              "expected": 4,
+              "label_id": "conflicting_two:oracle-a",
+              "oracle_sha256": "7ee765cc02feb6cff51584b7a34f7b371f5d9b564c2f1770d21bf89274a4df26",
+              "signature": "a4b5951debf4c7bb59a487cc1397e604e84a836b81b6b692f3a66eb972e586f0",
+              "signature_schema": "AdequacyProviderSignedLabelV1",
+              "source_id": "oracle-a"
+            },
+            {
+              "expected": 2,
+              "label_id": "conflicting_two:oracle-b",
+              "oracle_sha256": "7ee765cc02feb6cff51584b7a34f7b371f5d9b564c2f1770d21bf89274a4df26",
+              "signature": "abd49c466aa744f3be4f440a5ec3cb9bce6c435bbb6cfa670cd954de7a22998c",
+              "signature_schema": "AdequacyProviderSignedLabelV1",
+              "source_id": "oracle-b"
+            }
+          ],
+          "prediction": 2,
+          "probe_id": "probe-1"
+        }
+      ],
+      "receipt_status": "ambiguous",
+      "repetition": 3,
+      "reply": "I read that function but could not take it as a lesson (independent adequacy receipt missing, invalid, or bound to another candidate).",
+      "shape_delta": 0
+    },
+    {
+      "active_after": {
+        "domains/adequacy_provider_auth.py": "c02bef40c7052aefca17d96ef0e11007597f1c6c4733f48a528b093a13af64b0",
+        "domains/code_reading.py": "dd67d2942cf956c6e35f848aed4012c3ac072e9ac91d9e6b166e8ca44be57908",
+        "domains/code_write_growth.py": "60272bbd5b395cfc234445df20926b6c055d921d8dfd4bc0353d128e68918122",
+        "domains/code_writing.py": "4ad3148ca1796ad13f6128b9fd655e8568c7c843cd68bccee54f35cbf4ddabc9",
+        "domains/independent_adequacy.py": "33191341fdd63d16d0b9cb5203f27666da90b60fccd567ac4633306a9dcab418",
+        "domains/teach.py": "308a5f31d74dabb3ed8b24bd0c967abd5f94596a3ff76d17657330877fae2cfa",
+        "domains_tree": "f157fe2ff5de3f3ecf0c28d24d0d7ec00dcc39c44adf7c83fe0652c03e46d7e9",
+        "native_binary": "3816b4fb5d5746950b4cc3bf9e904a58e675ce53530727edf44095646dd58a54",
+        "runners/dsl/python/substrate_rs/__init__.py": "1fed837a6b7e8b35e463d3b8fdca498400c9cc420a016b81279365d6406a4049",
+        "runners/dsl/python/substrate_rs/_native.build.json": "b491d348c59cbf5cd5eee1b3f900a042f31e21665b6e63212edb9ed7f3d60f47",
+        "runners/dsl/src/py.rs": "d6f922bd406d3f500c10cea11978f47f9612b4ce6b9a348e848a30a305881cba",
+        "runners/dsl/src/substrate.rs": "bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+        "runners/dsl/src/term.rs": "5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+        "rust_tree": "06307beca12566832d3ba7ac157ec6177abb41a87dcf3755d824729d1a55ea0f",
+        "seed_manifest_inventory": "7a35d6b5c0ca4fa74708a34b40fba7304d95b8065cf4e931d36c50f44c0813e3",
+        "substrate/world_adapter.py": "faad410d0c46e8cff5273444675d59904ba3552989e8e3c2b6032fb822de2be5",
+        "substrate_tree": "1a8aa6dbc4ad33bb71eac6cb5e6ddb73cea47f9918a62bd5629903e6cdcf943f"
+      },
+      "adopted_code_shape_ids": [
+        "#1632"
+      ],
+      "candidate_id": "91601ea4a51dadec29dc6f9c6b6983187074d63e587d777b22c20191ec159090",
+      "case": "correlated_wrong_two",
+      "elapsed_ns": 181262451,
+      "heldout": [
+        {
+          "match": false,
+          "oracle": 9,
+          "prediction": 3,
+          "x": 3
+        },
+        {
+          "match": false,
+          "oracle": 16,
+          "prediction": 4,
+          "x": 4
+        },
+        {
+          "match": false,
+          "oracle": 25,
+          "prediction": 5,
+          "x": 5
+        }
+      ],
+      "heldout_correct": 0,
+      "pid": 1495,
+      "probe": {
+        "x": 2
+      },
+      "provider_auth": {
+        "errors": [],
+        "evidence_sha256": "b5d7e90d9d0f64f9e4bb025cc4c11b7e352510b36162e9536131e661054f0fc7",
+        "ok": true,
+        "request_id": "09b4ca60b708571a8e0a5a4de3da4325d1c94c11f6e0aea8881b97955fb1d3ac",
+        "verified_labels": 2
+      },
+      "provider_expected": [
+        2,
+        2
+      ],
+      "provider_ids": [
+        "oracle-a",
+        "oracle-b"
+      ],
+      "receipt_residuals": [],
+      "receipt_status": "accepted",
+      "repetition": 1,
+      "reply": "Thank you -- I read that function and learned the shape 'taught_identity' (triggers: identity).",
+      "shape_delta": 1
+    },
+    {
+      "active_after": {
+        "domains/adequacy_provider_auth.py": "c02bef40c7052aefca17d96ef0e11007597f1c6c4733f48a528b093a13af64b0",
+        "domains/code_reading.py": "dd67d2942cf956c6e35f848aed4012c3ac072e9ac91d9e6b166e8ca44be57908",
+        "domains/code_write_growth.py": "60272bbd5b395cfc234445df20926b6c055d921d8dfd4bc0353d128e68918122",
+        "domains/code_writing.py": "4ad3148ca1796ad13f6128b9fd655e8568c7c843cd68bccee54f35cbf4ddabc9",
+        "domains/independent_adequacy.py": "33191341fdd63d16d0b9cb5203f27666da90b60fccd567ac4633306a9dcab418",
+        "domains/teach.py": "308a5f31d74dabb3ed8b24bd0c967abd5f94596a3ff76d17657330877fae2cfa",
+        "domains_tree": "f157fe2ff5de3f3ecf0c28d24d0d7ec00dcc39c44adf7c83fe0652c03e46d7e9",
+        "native_binary": "3816b4fb5d5746950b4cc3bf9e904a58e675ce53530727edf44095646dd58a54",
+        "runners/dsl/python/substrate_rs/__init__.py": "1fed837a6b7e8b35e463d3b8fdca498400c9cc420a016b81279365d6406a4049",
+        "runners/dsl/python/substrate_rs/_native.build.json": "b491d348c59cbf5cd5eee1b3f900a042f31e21665b6e63212edb9ed7f3d60f47",
+        "runners/dsl/src/py.rs": "d6f922bd406d3f500c10cea11978f47f9612b4ce6b9a348e848a30a305881cba",
+        "runners/dsl/src/substrate.rs": "bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+        "runners/dsl/src/term.rs": "5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+        "rust_tree": "06307beca12566832d3ba7ac157ec6177abb41a87dcf3755d824729d1a55ea0f",
+        "seed_manifest_inventory": "7a35d6b5c0ca4fa74708a34b40fba7304d95b8065cf4e931d36c50f44c0813e3",
+        "substrate/world_adapter.py": "faad410d0c46e8cff5273444675d59904ba3552989e8e3c2b6032fb822de2be5",
+        "substrate_tree": "1a8aa6dbc4ad33bb71eac6cb5e6ddb73cea47f9918a62bd5629903e6cdcf943f"
+      },
+      "adopted_code_shape_ids": [
+        "#1632"
+      ],
+      "candidate_id": "91601ea4a51dadec29dc6f9c6b6983187074d63e587d777b22c20191ec159090",
+      "case": "correlated_wrong_two",
+      "elapsed_ns": 172427463,
+      "heldout": [
+        {
+          "match": false,
+          "oracle": 9,
+          "prediction": 3,
+          "x": 3
+        },
+        {
+          "match": false,
+          "oracle": 16,
+          "prediction": 4,
+          "x": 4
+        },
+        {
+          "match": false,
+          "oracle": 25,
+          "prediction": 5,
+          "x": 5
+        }
+      ],
+      "heldout_correct": 0,
+      "pid": 1743,
+      "probe": {
+        "x": 2
+      },
+      "provider_auth": {
+        "errors": [],
+        "evidence_sha256": "b5d7e90d9d0f64f9e4bb025cc4c11b7e352510b36162e9536131e661054f0fc7",
+        "ok": true,
+        "request_id": "09b4ca60b708571a8e0a5a4de3da4325d1c94c11f6e0aea8881b97955fb1d3ac",
+        "verified_labels": 2
+      },
+      "provider_expected": [
+        2,
+        2
+      ],
+      "provider_ids": [
+        "oracle-a",
+        "oracle-b"
+      ],
+      "receipt_residuals": [],
+      "receipt_status": "accepted",
+      "repetition": 2,
+      "reply": "Thank you -- I read that function and learned the shape 'taught_identity' (triggers: identity).",
+      "shape_delta": 1
+    },
+    {
+      "active_after": {
+        "domains/adequacy_provider_auth.py": "c02bef40c7052aefca17d96ef0e11007597f1c6c4733f48a528b093a13af64b0",
+        "domains/code_reading.py": "dd67d2942cf956c6e35f848aed4012c3ac072e9ac91d9e6b166e8ca44be57908",
+        "domains/code_write_growth.py": "60272bbd5b395cfc234445df20926b6c055d921d8dfd4bc0353d128e68918122",
+        "domains/code_writing.py": "4ad3148ca1796ad13f6128b9fd655e8568c7c843cd68bccee54f35cbf4ddabc9",
+        "domains/independent_adequacy.py": "33191341fdd63d16d0b9cb5203f27666da90b60fccd567ac4633306a9dcab418",
+        "domains/teach.py": "308a5f31d74dabb3ed8b24bd0c967abd5f94596a3ff76d17657330877fae2cfa",
+        "domains_tree": "f157fe2ff5de3f3ecf0c28d24d0d7ec00dcc39c44adf7c83fe0652c03e46d7e9",
+        "native_binary": "3816b4fb5d5746950b4cc3bf9e904a58e675ce53530727edf44095646dd58a54",
+        "runners/dsl/python/substrate_rs/__init__.py": "1fed837a6b7e8b35e463d3b8fdca498400c9cc420a016b81279365d6406a4049",
+        "runners/dsl/python/substrate_rs/_native.build.json": "b491d348c59cbf5cd5eee1b3f900a042f31e21665b6e63212edb9ed7f3d60f47",
+        "runners/dsl/src/py.rs": "d6f922bd406d3f500c10cea11978f47f9612b4ce6b9a348e848a30a305881cba",
+        "runners/dsl/src/substrate.rs": "bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+        "runners/dsl/src/term.rs": "5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+        "rust_tree": "06307beca12566832d3ba7ac157ec6177abb41a87dcf3755d824729d1a55ea0f",
+        "seed_manifest_inventory": "7a35d6b5c0ca4fa74708a34b40fba7304d95b8065cf4e931d36c50f44c0813e3",
+        "substrate/world_adapter.py": "faad410d0c46e8cff5273444675d59904ba3552989e8e3c2b6032fb822de2be5",
+        "substrate_tree": "1a8aa6dbc4ad33bb71eac6cb5e6ddb73cea47f9918a62bd5629903e6cdcf943f"
+      },
+      "adopted_code_shape_ids": [
+        "#1632"
+      ],
+      "candidate_id": "91601ea4a51dadec29dc6f9c6b6983187074d63e587d777b22c20191ec159090",
+      "case": "correlated_wrong_two",
+      "elapsed_ns": 166564202,
+      "heldout": [
+        {
+          "match": false,
+          "oracle": 9,
+          "prediction": 3,
+          "x": 3
+        },
+        {
+          "match": false,
+          "oracle": 16,
+          "prediction": 4,
+          "x": 4
+        },
+        {
+          "match": false,
+          "oracle": 25,
+          "prediction": 5,
+          "x": 5
+        }
+      ],
+      "heldout_correct": 0,
+      "pid": 1991,
+      "probe": {
+        "x": 2
+      },
+      "provider_auth": {
+        "errors": [],
+        "evidence_sha256": "b5d7e90d9d0f64f9e4bb025cc4c11b7e352510b36162e9536131e661054f0fc7",
+        "ok": true,
+        "request_id": "09b4ca60b708571a8e0a5a4de3da4325d1c94c11f6e0aea8881b97955fb1d3ac",
+        "verified_labels": 2
+      },
+      "provider_expected": [
+        2,
+        2
+      ],
+      "provider_ids": [
+        "oracle-a",
+        "oracle-b"
+      ],
+      "receipt_residuals": [],
+      "receipt_status": "accepted",
+      "repetition": 3,
+      "reply": "Thank you -- I read that function and learned the shape 'taught_identity' (triggers: identity).",
+      "shape_delta": 1
+    },
+    {
+      "active_after": {
+        "domains/adequacy_provider_auth.py": "c02bef40c7052aefca17d96ef0e11007597f1c6c4733f48a528b093a13af64b0",
+        "domains/code_reading.py": "dd67d2942cf956c6e35f848aed4012c3ac072e9ac91d9e6b166e8ca44be57908",
+        "domains/code_write_growth.py": "60272bbd5b395cfc234445df20926b6c055d921d8dfd4bc0353d128e68918122",
+        "domains/code_writing.py": "4ad3148ca1796ad13f6128b9fd655e8568c7c843cd68bccee54f35cbf4ddabc9",
+        "domains/independent_adequacy.py": "33191341fdd63d16d0b9cb5203f27666da90b60fccd567ac4633306a9dcab418",
+        "domains/teach.py": "308a5f31d74dabb3ed8b24bd0c967abd5f94596a3ff76d17657330877fae2cfa",
+        "domains_tree": "f157fe2ff5de3f3ecf0c28d24d0d7ec00dcc39c44adf7c83fe0652c03e46d7e9",
+        "native_binary": "3816b4fb5d5746950b4cc3bf9e904a58e675ce53530727edf44095646dd58a54",
+        "runners/dsl/python/substrate_rs/__init__.py": "1fed837a6b7e8b35e463d3b8fdca498400c9cc420a016b81279365d6406a4049",
+        "runners/dsl/python/substrate_rs/_native.build.json": "b491d348c59cbf5cd5eee1b3f900a042f31e21665b6e63212edb9ed7f3d60f47",
+        "runners/dsl/src/py.rs": "d6f922bd406d3f500c10cea11978f47f9612b4ce6b9a348e848a30a305881cba",
+        "runners/dsl/src/substrate.rs": "bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+        "runners/dsl/src/term.rs": "5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+        "rust_tree": "06307beca12566832d3ba7ac157ec6177abb41a87dcf3755d824729d1a55ea0f",
+        "seed_manifest_inventory": "7a35d6b5c0ca4fa74708a34b40fba7304d95b8065cf4e931d36c50f44c0813e3",
+        "substrate/world_adapter.py": "faad410d0c46e8cff5273444675d59904ba3552989e8e3c2b6032fb822de2be5",
+        "substrate_tree": "1a8aa6dbc4ad33bb71eac6cb5e6ddb73cea47f9918a62bd5629903e6cdcf943f"
+      },
+      "adopted_code_shape_ids": [
+        "#1632"
+      ],
+      "candidate_id": "91601ea4a51dadec29dc6f9c6b6983187074d63e587d777b22c20191ec159090",
+      "case": "aliased_honest_two",
+      "elapsed_ns": 167801569,
+      "heldout": [
+        {
+          "match": false,
+          "oracle": 9,
+          "prediction": 3,
+          "x": 3
+        },
+        {
+          "match": false,
+          "oracle": 16,
+          "prediction": 4,
+          "x": 4
+        },
+        {
+          "match": false,
+          "oracle": 25,
+          "prediction": 5,
+          "x": 5
+        }
+      ],
+      "heldout_correct": 0,
+      "pid": 2239,
+      "probe": {
+        "x": 0
+      },
+      "provider_auth": {
+        "errors": [],
+        "evidence_sha256": "fe5c0848b015d33c0612caa3c87a6efa2fa0b078fa808989040a253d2e18f4a3",
+        "ok": true,
+        "request_id": "66813ab610eb55ca6b566dbf0bf3d9655e771e093cd6a22ae251465829251394",
+        "verified_labels": 2
+      },
+      "provider_expected": [
+        0,
+        0
+      ],
+      "provider_ids": [
+        "oracle-a",
+        "oracle-b"
+      ],
+      "receipt_residuals": [],
+      "receipt_status": "accepted",
+      "repetition": 1,
+      "reply": "Thank you -- I read that function and learned the shape 'taught_identity' (triggers: identity).",
+      "shape_delta": 1
+    },
+    {
+      "active_after": {
+        "domains/adequacy_provider_auth.py": "c02bef40c7052aefca17d96ef0e11007597f1c6c4733f48a528b093a13af64b0",
+        "domains/code_reading.py": "dd67d2942cf956c6e35f848aed4012c3ac072e9ac91d9e6b166e8ca44be57908",
+        "domains/code_write_growth.py": "60272bbd5b395cfc234445df20926b6c055d921d8dfd4bc0353d128e68918122",
+        "domains/code_writing.py": "4ad3148ca1796ad13f6128b9fd655e8568c7c843cd68bccee54f35cbf4ddabc9",
+        "domains/independent_adequacy.py": "33191341fdd63d16d0b9cb5203f27666da90b60fccd567ac4633306a9dcab418",
+        "domains/teach.py": "308a5f31d74dabb3ed8b24bd0c967abd5f94596a3ff76d17657330877fae2cfa",
+        "domains_tree": "f157fe2ff5de3f3ecf0c28d24d0d7ec00dcc39c44adf7c83fe0652c03e46d7e9",
+        "native_binary": "3816b4fb5d5746950b4cc3bf9e904a58e675ce53530727edf44095646dd58a54",
+        "runners/dsl/python/substrate_rs/__init__.py": "1fed837a6b7e8b35e463d3b8fdca498400c9cc420a016b81279365d6406a4049",
+        "runners/dsl/python/substrate_rs/_native.build.json": "b491d348c59cbf5cd5eee1b3f900a042f31e21665b6e63212edb9ed7f3d60f47",
+        "runners/dsl/src/py.rs": "d6f922bd406d3f500c10cea11978f47f9612b4ce6b9a348e848a30a305881cba",
+        "runners/dsl/src/substrate.rs": "bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+        "runners/dsl/src/term.rs": "5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+        "rust_tree": "06307beca12566832d3ba7ac157ec6177abb41a87dcf3755d824729d1a55ea0f",
+        "seed_manifest_inventory": "7a35d6b5c0ca4fa74708a34b40fba7304d95b8065cf4e931d36c50f44c0813e3",
+        "substrate/world_adapter.py": "faad410d0c46e8cff5273444675d59904ba3552989e8e3c2b6032fb822de2be5",
+        "substrate_tree": "1a8aa6dbc4ad33bb71eac6cb5e6ddb73cea47f9918a62bd5629903e6cdcf943f"
+      },
+      "adopted_code_shape_ids": [
+        "#1632"
+      ],
+      "candidate_id": "91601ea4a51dadec29dc6f9c6b6983187074d63e587d777b22c20191ec159090",
+      "case": "aliased_honest_two",
+      "elapsed_ns": 165320445,
+      "heldout": [
+        {
+          "match": false,
+          "oracle": 9,
+          "prediction": 3,
+          "x": 3
+        },
+        {
+          "match": false,
+          "oracle": 16,
+          "prediction": 4,
+          "x": 4
+        },
+        {
+          "match": false,
+          "oracle": 25,
+          "prediction": 5,
+          "x": 5
+        }
+      ],
+      "heldout_correct": 0,
+      "pid": 2487,
+      "probe": {
+        "x": 0
+      },
+      "provider_auth": {
+        "errors": [],
+        "evidence_sha256": "fe5c0848b015d33c0612caa3c87a6efa2fa0b078fa808989040a253d2e18f4a3",
+        "ok": true,
+        "request_id": "66813ab610eb55ca6b566dbf0bf3d9655e771e093cd6a22ae251465829251394",
+        "verified_labels": 2
+      },
+      "provider_expected": [
+        0,
+        0
+      ],
+      "provider_ids": [
+        "oracle-a",
+        "oracle-b"
+      ],
+      "receipt_residuals": [],
+      "receipt_status": "accepted",
+      "repetition": 2,
+      "reply": "Thank you -- I read that function and learned the shape 'taught_identity' (triggers: identity).",
+      "shape_delta": 1
+    },
+    {
+      "active_after": {
+        "domains/adequacy_provider_auth.py": "c02bef40c7052aefca17d96ef0e11007597f1c6c4733f48a528b093a13af64b0",
+        "domains/code_reading.py": "dd67d2942cf956c6e35f848aed4012c3ac072e9ac91d9e6b166e8ca44be57908",
+        "domains/code_write_growth.py": "60272bbd5b395cfc234445df20926b6c055d921d8dfd4bc0353d128e68918122",
+        "domains/code_writing.py": "4ad3148ca1796ad13f6128b9fd655e8568c7c843cd68bccee54f35cbf4ddabc9",
+        "domains/independent_adequacy.py": "33191341fdd63d16d0b9cb5203f27666da90b60fccd567ac4633306a9dcab418",
+        "domains/teach.py": "308a5f31d74dabb3ed8b24bd0c967abd5f94596a3ff76d17657330877fae2cfa",
+        "domains_tree": "f157fe2ff5de3f3ecf0c28d24d0d7ec00dcc39c44adf7c83fe0652c03e46d7e9",
+        "native_binary": "3816b4fb5d5746950b4cc3bf9e904a58e675ce53530727edf44095646dd58a54",
+        "runners/dsl/python/substrate_rs/__init__.py": "1fed837a6b7e8b35e463d3b8fdca498400c9cc420a016b81279365d6406a4049",
+        "runners/dsl/python/substrate_rs/_native.build.json": "b491d348c59cbf5cd5eee1b3f900a042f31e21665b6e63212edb9ed7f3d60f47",
+        "runners/dsl/src/py.rs": "d6f922bd406d3f500c10cea11978f47f9612b4ce6b9a348e848a30a305881cba",
+        "runners/dsl/src/substrate.rs": "bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+        "runners/dsl/src/term.rs": "5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+        "rust_tree": "06307beca12566832d3ba7ac157ec6177abb41a87dcf3755d824729d1a55ea0f",
+        "seed_manifest_inventory": "7a35d6b5c0ca4fa74708a34b40fba7304d95b8065cf4e931d36c50f44c0813e3",
+        "substrate/world_adapter.py": "faad410d0c46e8cff5273444675d59904ba3552989e8e3c2b6032fb822de2be5",
+        "substrate_tree": "1a8aa6dbc4ad33bb71eac6cb5e6ddb73cea47f9918a62bd5629903e6cdcf943f"
+      },
+      "adopted_code_shape_ids": [
+        "#1632"
+      ],
+      "candidate_id": "91601ea4a51dadec29dc6f9c6b6983187074d63e587d777b22c20191ec159090",
+      "case": "aliased_honest_two",
+      "elapsed_ns": 167442647,
+      "heldout": [
+        {
+          "match": false,
+          "oracle": 9,
+          "prediction": 3,
+          "x": 3
+        },
+        {
+          "match": false,
+          "oracle": 16,
+          "prediction": 4,
+          "x": 4
+        },
+        {
+          "match": false,
+          "oracle": 25,
+          "prediction": 5,
+          "x": 5
+        }
+      ],
+      "heldout_correct": 0,
+      "pid": 2735,
+      "probe": {
+        "x": 0
+      },
+      "provider_auth": {
+        "errors": [],
+        "evidence_sha256": "fe5c0848b015d33c0612caa3c87a6efa2fa0b078fa808989040a253d2e18f4a3",
+        "ok": true,
+        "request_id": "66813ab610eb55ca6b566dbf0bf3d9655e771e093cd6a22ae251465829251394",
+        "verified_labels": 2
+      },
+      "provider_expected": [
+        0,
+        0
+      ],
+      "provider_ids": [
+        "oracle-a",
+        "oracle-b"
+      ],
+      "receipt_residuals": [],
+      "receipt_status": "accepted",
+      "repetition": 3,
+      "reply": "Thank you -- I read that function and learned the shape 'taught_identity' (triggers: identity).",
+      "shape_delta": 1
+    },
+    {
+      "active_after": {
+        "domains/adequacy_provider_auth.py": "c02bef40c7052aefca17d96ef0e11007597f1c6c4733f48a528b093a13af64b0",
+        "domains/code_reading.py": "dd67d2942cf956c6e35f848aed4012c3ac072e9ac91d9e6b166e8ca44be57908",
+        "domains/code_write_growth.py": "60272bbd5b395cfc234445df20926b6c055d921d8dfd4bc0353d128e68918122",
+        "domains/code_writing.py": "4ad3148ca1796ad13f6128b9fd655e8568c7c843cd68bccee54f35cbf4ddabc9",
+        "domains/independent_adequacy.py": "33191341fdd63d16d0b9cb5203f27666da90b60fccd567ac4633306a9dcab418",
+        "domains/teach.py": "308a5f31d74dabb3ed8b24bd0c967abd5f94596a3ff76d17657330877fae2cfa",
+        "domains_tree": "f157fe2ff5de3f3ecf0c28d24d0d7ec00dcc39c44adf7c83fe0652c03e46d7e9",
+        "native_binary": "3816b4fb5d5746950b4cc3bf9e904a58e675ce53530727edf44095646dd58a54",
+        "runners/dsl/python/substrate_rs/__init__.py": "1fed837a6b7e8b35e463d3b8fdca498400c9cc420a016b81279365d6406a4049",
+        "runners/dsl/python/substrate_rs/_native.build.json": "b491d348c59cbf5cd5eee1b3f900a042f31e21665b6e63212edb9ed7f3d60f47",
+        "runners/dsl/src/py.rs": "d6f922bd406d3f500c10cea11978f47f9612b4ce6b9a348e848a30a305881cba",
+        "runners/dsl/src/substrate.rs": "bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+        "runners/dsl/src/term.rs": "5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+        "rust_tree": "06307beca12566832d3ba7ac157ec6177abb41a87dcf3755d824729d1a55ea0f",
+        "seed_manifest_inventory": "7a35d6b5c0ca4fa74708a34b40fba7304d95b8065cf4e931d36c50f44c0813e3",
+        "substrate/world_adapter.py": "faad410d0c46e8cff5273444675d59904ba3552989e8e3c2b6032fb822de2be5",
+        "substrate_tree": "1a8aa6dbc4ad33bb71eac6cb5e6ddb73cea47f9918a62bd5629903e6cdcf943f"
+      },
+      "adopted_code_shape_ids": [],
+      "candidate_id": "91601ea4a51dadec29dc6f9c6b6983187074d63e587d777b22c20191ec159090",
+      "case": "distinguishing_honest_two",
+      "elapsed_ns": 170380192,
+      "heldout": [
+        {
+          "match": false,
+          "oracle": 9,
+          "prediction": 3,
+          "x": 3
+        },
+        {
+          "match": false,
+          "oracle": 16,
+          "prediction": 4,
+          "x": 4
+        },
+        {
+          "match": false,
+          "oracle": 25,
+          "prediction": 5,
+          "x": 5
+        }
+      ],
+      "heldout_correct": 0,
+      "pid": 2983,
+      "probe": {
+        "x": 2
+      },
+      "provider_auth": {
+        "errors": [],
+        "evidence_sha256": "b88c4ad1cb159ca05c3c2d544ef1c91ecafe54bc559d191c65003d0a719e3e2e",
+        "ok": true,
+        "request_id": "0da310f47401b9ea77649ee7c63f62e21eb89a4b680f54d8d130b146e6203680",
+        "verified_labels": 2
+      },
+      "provider_expected": [
+        4,
+        4
+      ],
+      "provider_ids": [
+        "oracle-a",
+        "oracle-b"
+      ],
+      "receipt_residuals": [
+        {
+          "input_sha256": "5e2b030a4a0f1582d78c0fd9924511cd6b1f2df9879e574f5ea1406c94052418",
+          "kind": "prediction_residual",
+          "labels": [
+            {
+              "expected": 4,
+              "label_id": "distinguishing_honest_two:oracle-a",
+              "oracle_sha256": "7ee765cc02feb6cff51584b7a34f7b371f5d9b564c2f1770d21bf89274a4df26",
+              "signature": "84aea79b91ee101a81f7fc11134fe607ffbb4dc3ebadac76876bcca5403e052b",
+              "signature_schema": "AdequacyProviderSignedLabelV1",
+              "source_id": "oracle-a"
+            },
+            {
+              "expected": 4,
+              "label_id": "distinguishing_honest_two:oracle-b",
+              "oracle_sha256": "7ee765cc02feb6cff51584b7a34f7b371f5d9b564c2f1770d21bf89274a4df26",
+              "signature": "96d290d26e8608d4af3d3fb6f2671669f0e835f9d0149fbe4a688dff0d30f674",
+              "signature_schema": "AdequacyProviderSignedLabelV1",
+              "source_id": "oracle-b"
+            }
+          ],
+          "prediction": 2,
+          "probe_id": "probe-1"
+        }
+      ],
+      "receipt_status": "rejected",
+      "repetition": 1,
+      "reply": "I read that function but could not take it as a lesson (independent adequacy receipt missing, invalid, or bound to another candidate).",
+      "shape_delta": 0
+    },
+    {
+      "active_after": {
+        "domains/adequacy_provider_auth.py": "c02bef40c7052aefca17d96ef0e11007597f1c6c4733f48a528b093a13af64b0",
+        "domains/code_reading.py": "dd67d2942cf956c6e35f848aed4012c3ac072e9ac91d9e6b166e8ca44be57908",
+        "domains/code_write_growth.py": "60272bbd5b395cfc234445df20926b6c055d921d8dfd4bc0353d128e68918122",
+        "domains/code_writing.py": "4ad3148ca1796ad13f6128b9fd655e8568c7c843cd68bccee54f35cbf4ddabc9",
+        "domains/independent_adequacy.py": "33191341fdd63d16d0b9cb5203f27666da90b60fccd567ac4633306a9dcab418",
+        "domains/teach.py": "308a5f31d74dabb3ed8b24bd0c967abd5f94596a3ff76d17657330877fae2cfa",
+        "domains_tree": "f157fe2ff5de3f3ecf0c28d24d0d7ec00dcc39c44adf7c83fe0652c03e46d7e9",
+        "native_binary": "3816b4fb5d5746950b4cc3bf9e904a58e675ce53530727edf44095646dd58a54",
+        "runners/dsl/python/substrate_rs/__init__.py": "1fed837a6b7e8b35e463d3b8fdca498400c9cc420a016b81279365d6406a4049",
+        "runners/dsl/python/substrate_rs/_native.build.json": "b491d348c59cbf5cd5eee1b3f900a042f31e21665b6e63212edb9ed7f3d60f47",
+        "runners/dsl/src/py.rs": "d6f922bd406d3f500c10cea11978f47f9612b4ce6b9a348e848a30a305881cba",
+        "runners/dsl/src/substrate.rs": "bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+        "runners/dsl/src/term.rs": "5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+        "rust_tree": "06307beca12566832d3ba7ac157ec6177abb41a87dcf3755d824729d1a55ea0f",
+        "seed_manifest_inventory": "7a35d6b5c0ca4fa74708a34b40fba7304d95b8065cf4e931d36c50f44c0813e3",
+        "substrate/world_adapter.py": "faad410d0c46e8cff5273444675d59904ba3552989e8e3c2b6032fb822de2be5",
+        "substrate_tree": "1a8aa6dbc4ad33bb71eac6cb5e6ddb73cea47f9918a62bd5629903e6cdcf943f"
+      },
+      "adopted_code_shape_ids": [],
+      "candidate_id": "91601ea4a51dadec29dc6f9c6b6983187074d63e587d777b22c20191ec159090",
+      "case": "distinguishing_honest_two",
+      "elapsed_ns": 170107731,
+      "heldout": [
+        {
+          "match": false,
+          "oracle": 9,
+          "prediction": 3,
+          "x": 3
+        },
+        {
+          "match": false,
+          "oracle": 16,
+          "prediction": 4,
+          "x": 4
+        },
+        {
+          "match": false,
+          "oracle": 25,
+          "prediction": 5,
+          "x": 5
+        }
+      ],
+      "heldout_correct": 0,
+      "pid": 3231,
+      "probe": {
+        "x": 2
+      },
+      "provider_auth": {
+        "errors": [],
+        "evidence_sha256": "b88c4ad1cb159ca05c3c2d544ef1c91ecafe54bc559d191c65003d0a719e3e2e",
+        "ok": true,
+        "request_id": "0da310f47401b9ea77649ee7c63f62e21eb89a4b680f54d8d130b146e6203680",
+        "verified_labels": 2
+      },
+      "provider_expected": [
+        4,
+        4
+      ],
+      "provider_ids": [
+        "oracle-a",
+        "oracle-b"
+      ],
+      "receipt_residuals": [
+        {
+          "input_sha256": "5e2b030a4a0f1582d78c0fd9924511cd6b1f2df9879e574f5ea1406c94052418",
+          "kind": "prediction_residual",
+          "labels": [
+            {
+              "expected": 4,
+              "label_id": "distinguishing_honest_two:oracle-a",
+              "oracle_sha256": "7ee765cc02feb6cff51584b7a34f7b371f5d9b564c2f1770d21bf89274a4df26",
+              "signature": "84aea79b91ee101a81f7fc11134fe607ffbb4dc3ebadac76876bcca5403e052b",
+              "signature_schema": "AdequacyProviderSignedLabelV1",
+              "source_id": "oracle-a"
+            },
+            {
+              "expected": 4,
+              "label_id": "distinguishing_honest_two:oracle-b",
+              "oracle_sha256": "7ee765cc02feb6cff51584b7a34f7b371f5d9b564c2f1770d21bf89274a4df26",
+              "signature": "96d290d26e8608d4af3d3fb6f2671669f0e835f9d0149fbe4a688dff0d30f674",
+              "signature_schema": "AdequacyProviderSignedLabelV1",
+              "source_id": "oracle-b"
+            }
+          ],
+          "prediction": 2,
+          "probe_id": "probe-1"
+        }
+      ],
+      "receipt_status": "rejected",
+      "repetition": 2,
+      "reply": "I read that function but could not take it as a lesson (independent adequacy receipt missing, invalid, or bound to another candidate).",
+      "shape_delta": 0
+    },
+    {
+      "active_after": {
+        "domains/adequacy_provider_auth.py": "c02bef40c7052aefca17d96ef0e11007597f1c6c4733f48a528b093a13af64b0",
+        "domains/code_reading.py": "dd67d2942cf956c6e35f848aed4012c3ac072e9ac91d9e6b166e8ca44be57908",
+        "domains/code_write_growth.py": "60272bbd5b395cfc234445df20926b6c055d921d8dfd4bc0353d128e68918122",
+        "domains/code_writing.py": "4ad3148ca1796ad13f6128b9fd655e8568c7c843cd68bccee54f35cbf4ddabc9",
+        "domains/independent_adequacy.py": "33191341fdd63d16d0b9cb5203f27666da90b60fccd567ac4633306a9dcab418",
+        "domains/teach.py": "308a5f31d74dabb3ed8b24bd0c967abd5f94596a3ff76d17657330877fae2cfa",
+        "domains_tree": "f157fe2ff5de3f3ecf0c28d24d0d7ec00dcc39c44adf7c83fe0652c03e46d7e9",
+        "native_binary": "3816b4fb5d5746950b4cc3bf9e904a58e675ce53530727edf44095646dd58a54",
+        "runners/dsl/python/substrate_rs/__init__.py": "1fed837a6b7e8b35e463d3b8fdca498400c9cc420a016b81279365d6406a4049",
+        "runners/dsl/python/substrate_rs/_native.build.json": "b491d348c59cbf5cd5eee1b3f900a042f31e21665b6e63212edb9ed7f3d60f47",
+        "runners/dsl/src/py.rs": "d6f922bd406d3f500c10cea11978f47f9612b4ce6b9a348e848a30a305881cba",
+        "runners/dsl/src/substrate.rs": "bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+        "runners/dsl/src/term.rs": "5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+        "rust_tree": "06307beca12566832d3ba7ac157ec6177abb41a87dcf3755d824729d1a55ea0f",
+        "seed_manifest_inventory": "7a35d6b5c0ca4fa74708a34b40fba7304d95b8065cf4e931d36c50f44c0813e3",
+        "substrate/world_adapter.py": "faad410d0c46e8cff5273444675d59904ba3552989e8e3c2b6032fb822de2be5",
+        "substrate_tree": "1a8aa6dbc4ad33bb71eac6cb5e6ddb73cea47f9918a62bd5629903e6cdcf943f"
+      },
+      "adopted_code_shape_ids": [],
+      "candidate_id": "91601ea4a51dadec29dc6f9c6b6983187074d63e587d777b22c20191ec159090",
+      "case": "distinguishing_honest_two",
+      "elapsed_ns": 171476069,
+      "heldout": [
+        {
+          "match": false,
+          "oracle": 9,
+          "prediction": 3,
+          "x": 3
+        },
+        {
+          "match": false,
+          "oracle": 16,
+          "prediction": 4,
+          "x": 4
+        },
+        {
+          "match": false,
+          "oracle": 25,
+          "prediction": 5,
+          "x": 5
+        }
+      ],
+      "heldout_correct": 0,
+      "pid": 3479,
+      "probe": {
+        "x": 2
+      },
+      "provider_auth": {
+        "errors": [],
+        "evidence_sha256": "b88c4ad1cb159ca05c3c2d544ef1c91ecafe54bc559d191c65003d0a719e3e2e",
+        "ok": true,
+        "request_id": "0da310f47401b9ea77649ee7c63f62e21eb89a4b680f54d8d130b146e6203680",
+        "verified_labels": 2
+      },
+      "provider_expected": [
+        4,
+        4
+      ],
+      "provider_ids": [
+        "oracle-a",
+        "oracle-b"
+      ],
+      "receipt_residuals": [
+        {
+          "input_sha256": "5e2b030a4a0f1582d78c0fd9924511cd6b1f2df9879e574f5ea1406c94052418",
+          "kind": "prediction_residual",
+          "labels": [
+            {
+              "expected": 4,
+              "label_id": "distinguishing_honest_two:oracle-a",
+              "oracle_sha256": "7ee765cc02feb6cff51584b7a34f7b371f5d9b564c2f1770d21bf89274a4df26",
+              "signature": "84aea79b91ee101a81f7fc11134fe607ffbb4dc3ebadac76876bcca5403e052b",
+              "signature_schema": "AdequacyProviderSignedLabelV1",
+              "source_id": "oracle-a"
+            },
+            {
+              "expected": 4,
+              "label_id": "distinguishing_honest_two:oracle-b",
+              "oracle_sha256": "7ee765cc02feb6cff51584b7a34f7b371f5d9b564c2f1770d21bf89274a4df26",
+              "signature": "96d290d26e8608d4af3d3fb6f2671669f0e835f9d0149fbe4a688dff0d30f674",
+              "signature_schema": "AdequacyProviderSignedLabelV1",
+              "source_id": "oracle-b"
+            }
+          ],
+          "prediction": 2,
+          "probe_id": "probe-1"
+        }
+      ],
+      "receipt_status": "rejected",
+      "repetition": 3,
+      "reply": "I read that function but could not take it as a lesson (independent adequacy receipt missing, invalid, or bound to another candidate).",
+      "shape_delta": 0
+    }
+  ]
+}

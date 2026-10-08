@@ -1,0 +1,2343 @@
+{
+  "checks": {
+    "12_scale_cells": true,
+    "candidate_counts": true,
+    "full_results_present": true,
+    "positive_recovery": true,
+    "predicate_null_refusal": true,
+    "three_fresh_source_stable_workers": true,
+    "valid_inputs_and_positive_timings": true
+  },
+  "claim_boundary": "Direct native GenInfer Term search over one fixed 2-D shear family and one selected predicate-null class; not full-seed acquisition time or general learning complexity.",
+  "configuration": {
+    "candidate_formula": "(2B+1)^4-1, B=3s",
+    "matrix": [
+      1,
+      1,
+      0,
+      1
+    ],
+    "replicates": 3,
+    "scales": [
+      1,
+      2,
+      3,
+      4
+    ]
+  },
+  "environment": {
+    "platform": "Linux-6.8.0-142-generic-x86_64-with-glibc2.39",
+    "python": "3.13.5 (main, Jun 11 2025, 15:36:57) [GCC 11.4.0]"
+  },
+  "lock_sha256": "5aad8ca1ddc16b31591a8e07c45114a398bd4bbfcbff308c397010ac41eb611b",
+  "locked_inputs": {
+    "cargo_lock_sha256": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+    "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+    "dirty_worktree": true,
+    "native_build_manifest_sha256": "2d10ff9cc7f9832d91d1603c74dd0a0e0c4c5d3080a618a33575e9d5400ae871",
+    "native_extension_sha256": "f5543ca015278bad6c65506a0d7d9acb85b33252e7121cdda1a56df63e8ad27b",
+    "protocol_sha256": "bffa9c6d55b1e410c7bcb737d08e5c27adcdb6c6921741ff1823be73a8e3c5fd",
+    "runner_sha256": "af213b2540404b1a426b9da94f77dd783184b2d7cbb5909598409cad189db2c6",
+    "seed_sha256": "3e1783cf566179061250572bbf7bc7bb54cacfafb83f8852008c4618d984a9c6",
+    "source_sha256": {
+      "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+      "runners/dsl/src/shape_decode.rs": "0e178705d0df8bef0a9d08d5a2efabd1131386b783e87546f33b8601b682ac2c",
+      "runners/dsl/src/term.rs": "043a0ea442125df2a77c04b47fe82790c53222f281d24afe4b77e4fccd7c3610",
+      "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb"
+    }
+  },
+  "post_run_inputs": {
+    "cargo_lock_sha256": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+    "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+    "dirty_worktree": true,
+    "native_build_manifest_sha256": "2d10ff9cc7f9832d91d1603c74dd0a0e0c4c5d3080a618a33575e9d5400ae871",
+    "native_extension_sha256": "f5543ca015278bad6c65506a0d7d9acb85b33252e7121cdda1a56df63e8ad27b",
+    "protocol_sha256": "bffa9c6d55b1e410c7bcb737d08e5c27adcdb6c6921741ff1823be73a8e3c5fd",
+    "runner_sha256": "af213b2540404b1a426b9da94f77dd783184b2d7cbb5909598409cad189db2c6",
+    "seed_sha256": "3e1783cf566179061250572bbf7bc7bb54cacfafb83f8852008c4618d984a9c6",
+    "source_sha256": {
+      "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+      "runners/dsl/src/shape_decode.rs": "0e178705d0df8bef0a9d08d5a2efabd1131386b783e87546f33b8601b682ac2c",
+      "runners/dsl/src/term.rs": "043a0ea442125df2a77c04b47fe82790c53222f281d24afe4b77e4fccd7c3610",
+      "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb"
+    }
+  },
+  "run_id": "substrate-geninfer-bound-scaling-v1-20260926",
+  "runs": [
+    {
+      "cases": [
+        {
+          "expected_bound": 3,
+          "expected_candidates": 2400,
+          "positive": {
+            "base": [
+              [
+                "cell",
+                0,
+                0,
+                "red"
+              ],
+              [
+                "cell",
+                1,
+                0,
+                "red"
+              ],
+              [
+                "cell",
+                2,
+                0,
+                "red"
+              ],
+              [
+                "cell",
+                2,
+                1,
+                "red"
+              ]
+            ],
+            "cpu_ns": 3025441,
+            "goal": [
+              [
+                "cell",
+                0,
+                0,
+                "red"
+              ],
+              [
+                "cell",
+                1,
+                0,
+                "red"
+              ],
+              [
+                "cell",
+                2,
+                0,
+                "red"
+              ],
+              [
+                "cell",
+                3,
+                1,
+                "red"
+              ]
+            ],
+            "result": {
+              "base": "bound_scale_base",
+              "checked": 2400,
+              "coord_dims": [
+                1,
+                2
+              ],
+              "dims": [],
+              "explained": true,
+              "matrix": [
+                1,
+                1,
+                0,
+                1
+              ],
+              "ncoord": 2,
+              "residual_dims": 0,
+              "transforms": []
+            },
+            "wall_ns": 3030429
+          },
+          "predicate_null": {
+            "base": [
+              [
+                "cell",
+                0,
+                0,
+                "red"
+              ],
+              [
+                "cell",
+                1,
+                0,
+                "red"
+              ],
+              [
+                "cell",
+                2,
+                0,
+                "red"
+              ],
+              [
+                "cell",
+                2,
+                1,
+                "red"
+              ]
+            ],
+            "cpu_ns": 1706930,
+            "goal": [
+              [
+                "noise",
+                0,
+                0,
+                "red"
+              ],
+              [
+                "cell",
+                1,
+                0,
+                "red"
+              ],
+              [
+                "cell",
+                2,
+                0,
+                "red"
+              ],
+              [
+                "cell",
+                3,
+                1,
+                "red"
+              ]
+            ],
+            "result": {
+              "base": null,
+              "checked": 2400,
+              "coord_dims": [],
+              "dims": [],
+              "explained": false,
+              "matrix": [],
+              "ncoord": 0,
+              "residual_dims": 0,
+              "transforms": []
+            },
+            "wall_ns": 1710470
+          },
+          "replicate": 0,
+          "scale": 1,
+          "source_inputs_end": {
+            "cargo_lock_sha256": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+            "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+            "dirty_worktree": true,
+            "native_build_manifest_sha256": "2d10ff9cc7f9832d91d1603c74dd0a0e0c4c5d3080a618a33575e9d5400ae871",
+            "native_extension_sha256": "f5543ca015278bad6c65506a0d7d9acb85b33252e7121cdda1a56df63e8ad27b",
+            "protocol_sha256": "bffa9c6d55b1e410c7bcb737d08e5c27adcdb6c6921741ff1823be73a8e3c5fd",
+            "runner_sha256": "af213b2540404b1a426b9da94f77dd783184b2d7cbb5909598409cad189db2c6",
+            "seed_sha256": "3e1783cf566179061250572bbf7bc7bb54cacfafb83f8852008c4618d984a9c6",
+            "source_sha256": {
+              "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+              "runners/dsl/src/shape_decode.rs": "0e178705d0df8bef0a9d08d5a2efabd1131386b783e87546f33b8601b682ac2c",
+              "runners/dsl/src/term.rs": "043a0ea442125df2a77c04b47fe82790c53222f281d24afe4b77e4fccd7c3610",
+              "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb"
+            }
+          },
+          "source_inputs_start": {
+            "cargo_lock_sha256": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+            "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+            "dirty_worktree": true,
+            "native_build_manifest_sha256": "2d10ff9cc7f9832d91d1603c74dd0a0e0c4c5d3080a618a33575e9d5400ae871",
+            "native_extension_sha256": "f5543ca015278bad6c65506a0d7d9acb85b33252e7121cdda1a56df63e8ad27b",
+            "protocol_sha256": "bffa9c6d55b1e410c7bcb737d08e5c27adcdb6c6921741ff1823be73a8e3c5fd",
+            "runner_sha256": "af213b2540404b1a426b9da94f77dd783184b2d7cbb5909598409cad189db2c6",
+            "seed_sha256": "3e1783cf566179061250572bbf7bc7bb54cacfafb83f8852008c4618d984a9c6",
+            "source_sha256": {
+              "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+              "runners/dsl/src/shape_decode.rs": "0e178705d0df8bef0a9d08d5a2efabd1131386b783e87546f33b8601b682ac2c",
+              "runners/dsl/src/term.rs": "043a0ea442125df2a77c04b47fe82790c53222f281d24afe4b77e4fccd7c3610",
+              "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb"
+            }
+          }
+        },
+        {
+          "expected_bound": 6,
+          "expected_candidates": 28560,
+          "positive": {
+            "base": [
+              [
+                "cell",
+                0,
+                0,
+                "red"
+              ],
+              [
+                "cell",
+                2,
+                0,
+                "red"
+              ],
+              [
+                "cell",
+                4,
+                0,
+                "red"
+              ],
+              [
+                "cell",
+                4,
+                2,
+                "red"
+              ]
+            ],
+            "cpu_ns": 33058409,
+            "goal": [
+              [
+                "cell",
+                0,
+                0,
+                "red"
+              ],
+              [
+                "cell",
+                2,
+                0,
+                "red"
+              ],
+              [
+                "cell",
+                4,
+                0,
+                "red"
+              ],
+              [
+                "cell",
+                6,
+                2,
+                "red"
+              ]
+            ],
+            "result": {
+              "base": "bound_scale_base",
+              "checked": 28560,
+              "coord_dims": [
+                1,
+                2
+              ],
+              "dims": [],
+              "explained": true,
+              "matrix": [
+                1,
+                1,
+                0,
+                1
+              ],
+              "ncoord": 2,
+              "residual_dims": 0,
+              "transforms": []
+            },
+            "wall_ns": 33084790
+          },
+          "predicate_null": {
+            "base": [
+              [
+                "cell",
+                0,
+                0,
+                "red"
+              ],
+              [
+                "cell",
+                2,
+                0,
+                "red"
+              ],
+              [
+                "cell",
+                4,
+                0,
+                "red"
+              ],
+              [
+                "cell",
+                4,
+                2,
+                "red"
+              ]
+            ],
+            "cpu_ns": 19655695,
+            "goal": [
+              [
+                "noise",
+                0,
+                0,
+                "red"
+              ],
+              [
+                "cell",
+                2,
+                0,
+                "red"
+              ],
+              [
+                "cell",
+                4,
+                0,
+                "red"
+              ],
+              [
+                "cell",
+                6,
+                2,
+                "red"
+              ]
+            ],
+            "result": {
+              "base": null,
+              "checked": 28560,
+              "coord_dims": [],
+              "dims": [],
+              "explained": false,
+              "matrix": [],
+              "ncoord": 0,
+              "residual_dims": 0,
+              "transforms": []
+            },
+            "wall_ns": 19659419
+          },
+          "replicate": 0,
+          "scale": 2,
+          "source_inputs_end": {
+            "cargo_lock_sha256": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+            "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+            "dirty_worktree": true,
+            "native_build_manifest_sha256": "2d10ff9cc7f9832d91d1603c74dd0a0e0c4c5d3080a618a33575e9d5400ae871",
+            "native_extension_sha256": "f5543ca015278bad6c65506a0d7d9acb85b33252e7121cdda1a56df63e8ad27b",
+            "protocol_sha256": "bffa9c6d55b1e410c7bcb737d08e5c27adcdb6c6921741ff1823be73a8e3c5fd",
+            "runner_sha256": "af213b2540404b1a426b9da94f77dd783184b2d7cbb5909598409cad189db2c6",
+            "seed_sha256": "3e1783cf566179061250572bbf7bc7bb54cacfafb83f8852008c4618d984a9c6",
+            "source_sha256": {
+              "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+              "runners/dsl/src/shape_decode.rs": "0e178705d0df8bef0a9d08d5a2efabd1131386b783e87546f33b8601b682ac2c",
+              "runners/dsl/src/term.rs": "043a0ea442125df2a77c04b47fe82790c53222f281d24afe4b77e4fccd7c3610",
+              "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb"
+            }
+          },
+          "source_inputs_start": {
+            "cargo_lock_sha256": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+            "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+            "dirty_worktree": true,
+            "native_build_manifest_sha256": "2d10ff9cc7f9832d91d1603c74dd0a0e0c4c5d3080a618a33575e9d5400ae871",
+            "native_extension_sha256": "f5543ca015278bad6c65506a0d7d9acb85b33252e7121cdda1a56df63e8ad27b",
+            "protocol_sha256": "bffa9c6d55b1e410c7bcb737d08e5c27adcdb6c6921741ff1823be73a8e3c5fd",
+            "runner_sha256": "af213b2540404b1a426b9da94f77dd783184b2d7cbb5909598409cad189db2c6",
+            "seed_sha256": "3e1783cf566179061250572bbf7bc7bb54cacfafb83f8852008c4618d984a9c6",
+            "source_sha256": {
+              "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+              "runners/dsl/src/shape_decode.rs": "0e178705d0df8bef0a9d08d5a2efabd1131386b783e87546f33b8601b682ac2c",
+              "runners/dsl/src/term.rs": "043a0ea442125df2a77c04b47fe82790c53222f281d24afe4b77e4fccd7c3610",
+              "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb"
+            }
+          }
+        },
+        {
+          "expected_bound": 9,
+          "expected_candidates": 130320,
+          "positive": {
+            "base": [
+              [
+                "cell",
+                0,
+                0,
+                "red"
+              ],
+              [
+                "cell",
+                3,
+                0,
+                "red"
+              ],
+              [
+                "cell",
+                6,
+                0,
+                "red"
+              ],
+              [
+                "cell",
+                6,
+                3,
+                "red"
+              ]
+            ],
+            "cpu_ns": 170385286,
+            "goal": [
+              [
+                "cell",
+                0,
+                0,
+                "red"
+              ],
+              [
+                "cell",
+                3,
+                0,
+                "red"
+              ],
+              [
+                "cell",
+                6,
+                0,
+                "red"
+              ],
+              [
+                "cell",
+                9,
+                3,
+                "red"
+              ]
+            ],
+            "result": {
+              "base": "bound_scale_base",
+              "checked": 130320,
+              "coord_dims": [
+                1,
+                2
+              ],
+              "dims": [],
+              "explained": true,
+              "matrix": [
+                1,
+                1,
+                0,
+                1
+              ],
+              "ncoord": 2,
+              "residual_dims": 0,
+              "transforms": []
+            },
+            "wall_ns": 170562281
+          },
+          "predicate_null": {
+            "base": [
+              [
+                "cell",
+                0,
+                0,
+                "red"
+              ],
+              [
+                "cell",
+                3,
+                0,
+                "red"
+              ],
+              [
+                "cell",
+                6,
+                0,
+                "red"
+              ],
+              [
+                "cell",
+                6,
+                3,
+                "red"
+              ]
+            ],
+            "cpu_ns": 92677905,
+            "goal": [
+              [
+                "noise",
+                0,
+                0,
+                "red"
+              ],
+              [
+                "cell",
+                3,
+                0,
+                "red"
+              ],
+              [
+                "cell",
+                6,
+                0,
+                "red"
+              ],
+              [
+                "cell",
+                9,
+                3,
+                "red"
+              ]
+            ],
+            "result": {
+              "base": null,
+              "checked": 130320,
+              "coord_dims": [],
+              "dims": [],
+              "explained": false,
+              "matrix": [],
+              "ncoord": 0,
+              "residual_dims": 0,
+              "transforms": []
+            },
+            "wall_ns": 92712311
+          },
+          "replicate": 0,
+          "scale": 3,
+          "source_inputs_end": {
+            "cargo_lock_sha256": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+            "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+            "dirty_worktree": true,
+            "native_build_manifest_sha256": "2d10ff9cc7f9832d91d1603c74dd0a0e0c4c5d3080a618a33575e9d5400ae871",
+            "native_extension_sha256": "f5543ca015278bad6c65506a0d7d9acb85b33252e7121cdda1a56df63e8ad27b",
+            "protocol_sha256": "bffa9c6d55b1e410c7bcb737d08e5c27adcdb6c6921741ff1823be73a8e3c5fd",
+            "runner_sha256": "af213b2540404b1a426b9da94f77dd783184b2d7cbb5909598409cad189db2c6",
+            "seed_sha256": "3e1783cf566179061250572bbf7bc7bb54cacfafb83f8852008c4618d984a9c6",
+            "source_sha256": {
+              "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+              "runners/dsl/src/shape_decode.rs": "0e178705d0df8bef0a9d08d5a2efabd1131386b783e87546f33b8601b682ac2c",
+              "runners/dsl/src/term.rs": "043a0ea442125df2a77c04b47fe82790c53222f281d24afe4b77e4fccd7c3610",
+              "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb"
+            }
+          },
+          "source_inputs_start": {
+            "cargo_lock_sha256": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+            "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+            "dirty_worktree": true,
+            "native_build_manifest_sha256": "2d10ff9cc7f9832d91d1603c74dd0a0e0c4c5d3080a618a33575e9d5400ae871",
+            "native_extension_sha256": "f5543ca015278bad6c65506a0d7d9acb85b33252e7121cdda1a56df63e8ad27b",
+            "protocol_sha256": "bffa9c6d55b1e410c7bcb737d08e5c27adcdb6c6921741ff1823be73a8e3c5fd",
+            "runner_sha256": "af213b2540404b1a426b9da94f77dd783184b2d7cbb5909598409cad189db2c6",
+            "seed_sha256": "3e1783cf566179061250572bbf7bc7bb54cacfafb83f8852008c4618d984a9c6",
+            "source_sha256": {
+              "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+              "runners/dsl/src/shape_decode.rs": "0e178705d0df8bef0a9d08d5a2efabd1131386b783e87546f33b8601b682ac2c",
+              "runners/dsl/src/term.rs": "043a0ea442125df2a77c04b47fe82790c53222f281d24afe4b77e4fccd7c3610",
+              "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb"
+            }
+          }
+        },
+        {
+          "expected_bound": 12,
+          "expected_candidates": 390624,
+          "positive": {
+            "base": [
+              [
+                "cell",
+                0,
+                0,
+                "red"
+              ],
+              [
+                "cell",
+                4,
+                0,
+                "red"
+              ],
+              [
+                "cell",
+                8,
+                0,
+                "red"
+              ],
+              [
+                "cell",
+                8,
+                4,
+                "red"
+              ]
+            ],
+            "cpu_ns": 440351409,
+            "goal": [
+              [
+                "cell",
+                0,
+                0,
+                "red"
+              ],
+              [
+                "cell",
+                4,
+                0,
+                "red"
+              ],
+              [
+                "cell",
+                8,
+                0,
+                "red"
+              ],
+              [
+                "cell",
+                12,
+                4,
+                "red"
+              ]
+            ],
+            "result": {
+              "base": "bound_scale_base",
+              "checked": 390624,
+              "coord_dims": [
+                1,
+                2
+              ],
+              "dims": [],
+              "explained": true,
+              "matrix": [
+                1,
+                1,
+                0,
+                1
+              ],
+              "ncoord": 2,
+              "residual_dims": 0,
+              "transforms": []
+            },
+            "wall_ns": 440401135
+          },
+          "predicate_null": {
+            "base": [
+              [
+                "cell",
+                0,
+                0,
+                "red"
+              ],
+              [
+                "cell",
+                4,
+                0,
+                "red"
+              ],
+              [
+                "cell",
+                8,
+                0,
+                "red"
+              ],
+              [
+                "cell",
+                8,
+                4,
+                "red"
+              ]
+            ],
+            "cpu_ns": 294037300,
+            "goal": [
+              [
+                "noise",
+                0,
+                0,
+                "red"
+              ],
+              [
+                "cell",
+                4,
+                0,
+                "red"
+              ],
+              [
+                "cell",
+                8,
+                0,
+                "red"
+              ],
+              [
+                "cell",
+                12,
+                4,
+                "red"
+              ]
+            ],
+            "result": {
+              "base": null,
+              "checked": 390624,
+              "coord_dims": [],
+              "dims": [],
+              "explained": false,
+              "matrix": [],
+              "ncoord": 0,
+              "residual_dims": 0,
+              "transforms": []
+            },
+            "wall_ns": 294350831
+          },
+          "replicate": 0,
+          "scale": 4,
+          "source_inputs_end": {
+            "cargo_lock_sha256": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+            "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+            "dirty_worktree": true,
+            "native_build_manifest_sha256": "2d10ff9cc7f9832d91d1603c74dd0a0e0c4c5d3080a618a33575e9d5400ae871",
+            "native_extension_sha256": "f5543ca015278bad6c65506a0d7d9acb85b33252e7121cdda1a56df63e8ad27b",
+            "protocol_sha256": "bffa9c6d55b1e410c7bcb737d08e5c27adcdb6c6921741ff1823be73a8e3c5fd",
+            "runner_sha256": "af213b2540404b1a426b9da94f77dd783184b2d7cbb5909598409cad189db2c6",
+            "seed_sha256": "3e1783cf566179061250572bbf7bc7bb54cacfafb83f8852008c4618d984a9c6",
+            "source_sha256": {
+              "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+              "runners/dsl/src/shape_decode.rs": "0e178705d0df8bef0a9d08d5a2efabd1131386b783e87546f33b8601b682ac2c",
+              "runners/dsl/src/term.rs": "043a0ea442125df2a77c04b47fe82790c53222f281d24afe4b77e4fccd7c3610",
+              "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb"
+            }
+          },
+          "source_inputs_start": {
+            "cargo_lock_sha256": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+            "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+            "dirty_worktree": true,
+            "native_build_manifest_sha256": "2d10ff9cc7f9832d91d1603c74dd0a0e0c4c5d3080a618a33575e9d5400ae871",
+            "native_extension_sha256": "f5543ca015278bad6c65506a0d7d9acb85b33252e7121cdda1a56df63e8ad27b",
+            "protocol_sha256": "bffa9c6d55b1e410c7bcb737d08e5c27adcdb6c6921741ff1823be73a8e3c5fd",
+            "runner_sha256": "af213b2540404b1a426b9da94f77dd783184b2d7cbb5909598409cad189db2c6",
+            "seed_sha256": "3e1783cf566179061250572bbf7bc7bb54cacfafb83f8852008c4618d984a9c6",
+            "source_sha256": {
+              "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+              "runners/dsl/src/shape_decode.rs": "0e178705d0df8bef0a9d08d5a2efabd1131386b783e87546f33b8601b682ac2c",
+              "runners/dsl/src/term.rs": "043a0ea442125df2a77c04b47fe82790c53222f281d24afe4b77e4fccd7c3610",
+              "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb"
+            }
+          }
+        }
+      ],
+      "finished_inputs": {
+        "cargo_lock_sha256": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+        "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+        "dirty_worktree": true,
+        "native_build_manifest_sha256": "2d10ff9cc7f9832d91d1603c74dd0a0e0c4c5d3080a618a33575e9d5400ae871",
+        "native_extension_sha256": "f5543ca015278bad6c65506a0d7d9acb85b33252e7121cdda1a56df63e8ad27b",
+        "protocol_sha256": "bffa9c6d55b1e410c7bcb737d08e5c27adcdb6c6921741ff1823be73a8e3c5fd",
+        "runner_sha256": "af213b2540404b1a426b9da94f77dd783184b2d7cbb5909598409cad189db2c6",
+        "seed_sha256": "3e1783cf566179061250572bbf7bc7bb54cacfafb83f8852008c4618d984a9c6",
+        "source_sha256": {
+          "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+          "runners/dsl/src/shape_decode.rs": "0e178705d0df8bef0a9d08d5a2efabd1131386b783e87546f33b8601b682ac2c",
+          "runners/dsl/src/term.rs": "043a0ea442125df2a77c04b47fe82790c53222f281d24afe4b77e4fccd7c3610",
+          "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb"
+        }
+      },
+      "pid": 44,
+      "replicate": 0,
+      "started_inputs": {
+        "cargo_lock_sha256": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+        "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+        "dirty_worktree": true,
+        "native_build_manifest_sha256": "2d10ff9cc7f9832d91d1603c74dd0a0e0c4c5d3080a618a33575e9d5400ae871",
+        "native_extension_sha256": "f5543ca015278bad6c65506a0d7d9acb85b33252e7121cdda1a56df63e8ad27b",
+        "protocol_sha256": "bffa9c6d55b1e410c7bcb737d08e5c27adcdb6c6921741ff1823be73a8e3c5fd",
+        "runner_sha256": "af213b2540404b1a426b9da94f77dd783184b2d7cbb5909598409cad189db2c6",
+        "seed_sha256": "3e1783cf566179061250572bbf7bc7bb54cacfafb83f8852008c4618d984a9c6",
+        "source_sha256": {
+          "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+          "runners/dsl/src/shape_decode.rs": "0e178705d0df8bef0a9d08d5a2efabd1131386b783e87546f33b8601b682ac2c",
+          "runners/dsl/src/term.rs": "043a0ea442125df2a77c04b47fe82790c53222f281d24afe4b77e4fccd7c3610",
+          "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb"
+        }
+      }
+    },
+    {
+      "cases": [
+        {
+          "expected_bound": 3,
+          "expected_candidates": 2400,
+          "positive": {
+            "base": [
+              [
+                "cell",
+                0,
+                0,
+                "red"
+              ],
+              [
+                "cell",
+                1,
+                0,
+                "red"
+              ],
+              [
+                "cell",
+                2,
+                0,
+                "red"
+              ],
+              [
+                "cell",
+                2,
+                1,
+                "red"
+              ]
+            ],
+            "cpu_ns": 2756211,
+            "goal": [
+              [
+                "cell",
+                0,
+                0,
+                "red"
+              ],
+              [
+                "cell",
+                1,
+                0,
+                "red"
+              ],
+              [
+                "cell",
+                2,
+                0,
+                "red"
+              ],
+              [
+                "cell",
+                3,
+                1,
+                "red"
+              ]
+            ],
+            "result": {
+              "base": "bound_scale_base",
+              "checked": 2400,
+              "coord_dims": [
+                1,
+                2
+              ],
+              "dims": [],
+              "explained": true,
+              "matrix": [
+                1,
+                1,
+                0,
+                1
+              ],
+              "ncoord": 2,
+              "residual_dims": 0,
+              "transforms": []
+            },
+            "wall_ns": 2760357
+          },
+          "predicate_null": {
+            "base": [
+              [
+                "cell",
+                0,
+                0,
+                "red"
+              ],
+              [
+                "cell",
+                1,
+                0,
+                "red"
+              ],
+              [
+                "cell",
+                2,
+                0,
+                "red"
+              ],
+              [
+                "cell",
+                2,
+                1,
+                "red"
+              ]
+            ],
+            "cpu_ns": 1748321,
+            "goal": [
+              [
+                "noise",
+                0,
+                0,
+                "red"
+              ],
+              [
+                "cell",
+                1,
+                0,
+                "red"
+              ],
+              [
+                "cell",
+                2,
+                0,
+                "red"
+              ],
+              [
+                "cell",
+                3,
+                1,
+                "red"
+              ]
+            ],
+            "result": {
+              "base": null,
+              "checked": 2400,
+              "coord_dims": [],
+              "dims": [],
+              "explained": false,
+              "matrix": [],
+              "ncoord": 0,
+              "residual_dims": 0,
+              "transforms": []
+            },
+            "wall_ns": 1750800
+          },
+          "replicate": 1,
+          "scale": 1,
+          "source_inputs_end": {
+            "cargo_lock_sha256": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+            "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+            "dirty_worktree": true,
+            "native_build_manifest_sha256": "2d10ff9cc7f9832d91d1603c74dd0a0e0c4c5d3080a618a33575e9d5400ae871",
+            "native_extension_sha256": "f5543ca015278bad6c65506a0d7d9acb85b33252e7121cdda1a56df63e8ad27b",
+            "protocol_sha256": "bffa9c6d55b1e410c7bcb737d08e5c27adcdb6c6921741ff1823be73a8e3c5fd",
+            "runner_sha256": "af213b2540404b1a426b9da94f77dd783184b2d7cbb5909598409cad189db2c6",
+            "seed_sha256": "3e1783cf566179061250572bbf7bc7bb54cacfafb83f8852008c4618d984a9c6",
+            "source_sha256": {
+              "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+              "runners/dsl/src/shape_decode.rs": "0e178705d0df8bef0a9d08d5a2efabd1131386b783e87546f33b8601b682ac2c",
+              "runners/dsl/src/term.rs": "043a0ea442125df2a77c04b47fe82790c53222f281d24afe4b77e4fccd7c3610",
+              "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb"
+            }
+          },
+          "source_inputs_start": {
+            "cargo_lock_sha256": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+            "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+            "dirty_worktree": true,
+            "native_build_manifest_sha256": "2d10ff9cc7f9832d91d1603c74dd0a0e0c4c5d3080a618a33575e9d5400ae871",
+            "native_extension_sha256": "f5543ca015278bad6c65506a0d7d9acb85b33252e7121cdda1a56df63e8ad27b",
+            "protocol_sha256": "bffa9c6d55b1e410c7bcb737d08e5c27adcdb6c6921741ff1823be73a8e3c5fd",
+            "runner_sha256": "af213b2540404b1a426b9da94f77dd783184b2d7cbb5909598409cad189db2c6",
+            "seed_sha256": "3e1783cf566179061250572bbf7bc7bb54cacfafb83f8852008c4618d984a9c6",
+            "source_sha256": {
+              "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+              "runners/dsl/src/shape_decode.rs": "0e178705d0df8bef0a9d08d5a2efabd1131386b783e87546f33b8601b682ac2c",
+              "runners/dsl/src/term.rs": "043a0ea442125df2a77c04b47fe82790c53222f281d24afe4b77e4fccd7c3610",
+              "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb"
+            }
+          }
+        },
+        {
+          "expected_bound": 6,
+          "expected_candidates": 28560,
+          "positive": {
+            "base": [
+              [
+                "cell",
+                0,
+                0,
+                "red"
+              ],
+              [
+                "cell",
+                2,
+                0,
+                "red"
+              ],
+              [
+                "cell",
+                4,
+                0,
+                "red"
+              ],
+              [
+                "cell",
+                4,
+                2,
+                "red"
+              ]
+            ],
+            "cpu_ns": 33936969,
+            "goal": [
+              [
+                "cell",
+                0,
+                0,
+                "red"
+              ],
+              [
+                "cell",
+                2,
+                0,
+                "red"
+              ],
+              [
+                "cell",
+                4,
+                0,
+                "red"
+              ],
+              [
+                "cell",
+                6,
+                2,
+                "red"
+              ]
+            ],
+            "result": {
+              "base": "bound_scale_base",
+              "checked": 28560,
+              "coord_dims": [
+                1,
+                2
+              ],
+              "dims": [],
+              "explained": true,
+              "matrix": [
+                1,
+                1,
+                0,
+                1
+              ],
+              "ncoord": 2,
+              "residual_dims": 0,
+              "transforms": []
+            },
+            "wall_ns": 33981156
+          },
+          "predicate_null": {
+            "base": [
+              [
+                "cell",
+                0,
+                0,
+                "red"
+              ],
+              [
+                "cell",
+                2,
+                0,
+                "red"
+              ],
+              [
+                "cell",
+                4,
+                0,
+                "red"
+              ],
+              [
+                "cell",
+                4,
+                2,
+                "red"
+              ]
+            ],
+            "cpu_ns": 20748705,
+            "goal": [
+              [
+                "noise",
+                0,
+                0,
+                "red"
+              ],
+              [
+                "cell",
+                2,
+                0,
+                "red"
+              ],
+              [
+                "cell",
+                4,
+                0,
+                "red"
+              ],
+              [
+                "cell",
+                6,
+                2,
+                "red"
+              ]
+            ],
+            "result": {
+              "base": null,
+              "checked": 28560,
+              "coord_dims": [],
+              "dims": [],
+              "explained": false,
+              "matrix": [],
+              "ncoord": 0,
+              "residual_dims": 0,
+              "transforms": []
+            },
+            "wall_ns": 20779356
+          },
+          "replicate": 1,
+          "scale": 2,
+          "source_inputs_end": {
+            "cargo_lock_sha256": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+            "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+            "dirty_worktree": true,
+            "native_build_manifest_sha256": "2d10ff9cc7f9832d91d1603c74dd0a0e0c4c5d3080a618a33575e9d5400ae871",
+            "native_extension_sha256": "f5543ca015278bad6c65506a0d7d9acb85b33252e7121cdda1a56df63e8ad27b",
+            "protocol_sha256": "bffa9c6d55b1e410c7bcb737d08e5c27adcdb6c6921741ff1823be73a8e3c5fd",
+            "runner_sha256": "af213b2540404b1a426b9da94f77dd783184b2d7cbb5909598409cad189db2c6",
+            "seed_sha256": "3e1783cf566179061250572bbf7bc7bb54cacfafb83f8852008c4618d984a9c6",
+            "source_sha256": {
+              "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+              "runners/dsl/src/shape_decode.rs": "0e178705d0df8bef0a9d08d5a2efabd1131386b783e87546f33b8601b682ac2c",
+              "runners/dsl/src/term.rs": "043a0ea442125df2a77c04b47fe82790c53222f281d24afe4b77e4fccd7c3610",
+              "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb"
+            }
+          },
+          "source_inputs_start": {
+            "cargo_lock_sha256": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+            "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+            "dirty_worktree": true,
+            "native_build_manifest_sha256": "2d10ff9cc7f9832d91d1603c74dd0a0e0c4c5d3080a618a33575e9d5400ae871",
+            "native_extension_sha256": "f5543ca015278bad6c65506a0d7d9acb85b33252e7121cdda1a56df63e8ad27b",
+            "protocol_sha256": "bffa9c6d55b1e410c7bcb737d08e5c27adcdb6c6921741ff1823be73a8e3c5fd",
+            "runner_sha256": "af213b2540404b1a426b9da94f77dd783184b2d7cbb5909598409cad189db2c6",
+            "seed_sha256": "3e1783cf566179061250572bbf7bc7bb54cacfafb83f8852008c4618d984a9c6",
+            "source_sha256": {
+              "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+              "runners/dsl/src/shape_decode.rs": "0e178705d0df8bef0a9d08d5a2efabd1131386b783e87546f33b8601b682ac2c",
+              "runners/dsl/src/term.rs": "043a0ea442125df2a77c04b47fe82790c53222f281d24afe4b77e4fccd7c3610",
+              "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb"
+            }
+          }
+        },
+        {
+          "expected_bound": 9,
+          "expected_candidates": 130320,
+          "positive": {
+            "base": [
+              [
+                "cell",
+                0,
+                0,
+                "red"
+              ],
+              [
+                "cell",
+                3,
+                0,
+                "red"
+              ],
+              [
+                "cell",
+                6,
+                0,
+                "red"
+              ],
+              [
+                "cell",
+                6,
+                3,
+                "red"
+              ]
+            ],
+            "cpu_ns": 150147961,
+            "goal": [
+              [
+                "cell",
+                0,
+                0,
+                "red"
+              ],
+              [
+                "cell",
+                3,
+                0,
+                "red"
+              ],
+              [
+                "cell",
+                6,
+                0,
+                "red"
+              ],
+              [
+                "cell",
+                9,
+                3,
+                "red"
+              ]
+            ],
+            "result": {
+              "base": "bound_scale_base",
+              "checked": 130320,
+              "coord_dims": [
+                1,
+                2
+              ],
+              "dims": [],
+              "explained": true,
+              "matrix": [
+                1,
+                1,
+                0,
+                1
+              ],
+              "ncoord": 2,
+              "residual_dims": 0,
+              "transforms": []
+            },
+            "wall_ns": 150160829
+          },
+          "predicate_null": {
+            "base": [
+              [
+                "cell",
+                0,
+                0,
+                "red"
+              ],
+              [
+                "cell",
+                3,
+                0,
+                "red"
+              ],
+              [
+                "cell",
+                6,
+                0,
+                "red"
+              ],
+              [
+                "cell",
+                6,
+                3,
+                "red"
+              ]
+            ],
+            "cpu_ns": 93920476,
+            "goal": [
+              [
+                "noise",
+                0,
+                0,
+                "red"
+              ],
+              [
+                "cell",
+                3,
+                0,
+                "red"
+              ],
+              [
+                "cell",
+                6,
+                0,
+                "red"
+              ],
+              [
+                "cell",
+                9,
+                3,
+                "red"
+              ]
+            ],
+            "result": {
+              "base": null,
+              "checked": 130320,
+              "coord_dims": [],
+              "dims": [],
+              "explained": false,
+              "matrix": [],
+              "ncoord": 0,
+              "residual_dims": 0,
+              "transforms": []
+            },
+            "wall_ns": 94623803
+          },
+          "replicate": 1,
+          "scale": 3,
+          "source_inputs_end": {
+            "cargo_lock_sha256": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+            "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+            "dirty_worktree": true,
+            "native_build_manifest_sha256": "2d10ff9cc7f9832d91d1603c74dd0a0e0c4c5d3080a618a33575e9d5400ae871",
+            "native_extension_sha256": "f5543ca015278bad6c65506a0d7d9acb85b33252e7121cdda1a56df63e8ad27b",
+            "protocol_sha256": "bffa9c6d55b1e410c7bcb737d08e5c27adcdb6c6921741ff1823be73a8e3c5fd",
+            "runner_sha256": "af213b2540404b1a426b9da94f77dd783184b2d7cbb5909598409cad189db2c6",
+            "seed_sha256": "3e1783cf566179061250572bbf7bc7bb54cacfafb83f8852008c4618d984a9c6",
+            "source_sha256": {
+              "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+              "runners/dsl/src/shape_decode.rs": "0e178705d0df8bef0a9d08d5a2efabd1131386b783e87546f33b8601b682ac2c",
+              "runners/dsl/src/term.rs": "043a0ea442125df2a77c04b47fe82790c53222f281d24afe4b77e4fccd7c3610",
+              "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb"
+            }
+          },
+          "source_inputs_start": {
+            "cargo_lock_sha256": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+            "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+            "dirty_worktree": true,
+            "native_build_manifest_sha256": "2d10ff9cc7f9832d91d1603c74dd0a0e0c4c5d3080a618a33575e9d5400ae871",
+            "native_extension_sha256": "f5543ca015278bad6c65506a0d7d9acb85b33252e7121cdda1a56df63e8ad27b",
+            "protocol_sha256": "bffa9c6d55b1e410c7bcb737d08e5c27adcdb6c6921741ff1823be73a8e3c5fd",
+            "runner_sha256": "af213b2540404b1a426b9da94f77dd783184b2d7cbb5909598409cad189db2c6",
+            "seed_sha256": "3e1783cf566179061250572bbf7bc7bb54cacfafb83f8852008c4618d984a9c6",
+            "source_sha256": {
+              "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+              "runners/dsl/src/shape_decode.rs": "0e178705d0df8bef0a9d08d5a2efabd1131386b783e87546f33b8601b682ac2c",
+              "runners/dsl/src/term.rs": "043a0ea442125df2a77c04b47fe82790c53222f281d24afe4b77e4fccd7c3610",
+              "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb"
+            }
+          }
+        },
+        {
+          "expected_bound": 12,
+          "expected_candidates": 390624,
+          "positive": {
+            "base": [
+              [
+                "cell",
+                0,
+                0,
+                "red"
+              ],
+              [
+                "cell",
+                4,
+                0,
+                "red"
+              ],
+              [
+                "cell",
+                8,
+                0,
+                "red"
+              ],
+              [
+                "cell",
+                8,
+                4,
+                "red"
+              ]
+            ],
+            "cpu_ns": 452401362,
+            "goal": [
+              [
+                "cell",
+                0,
+                0,
+                "red"
+              ],
+              [
+                "cell",
+                4,
+                0,
+                "red"
+              ],
+              [
+                "cell",
+                8,
+                0,
+                "red"
+              ],
+              [
+                "cell",
+                12,
+                4,
+                "red"
+              ]
+            ],
+            "result": {
+              "base": "bound_scale_base",
+              "checked": 390624,
+              "coord_dims": [
+                1,
+                2
+              ],
+              "dims": [],
+              "explained": true,
+              "matrix": [
+                1,
+                1,
+                0,
+                1
+              ],
+              "ncoord": 2,
+              "residual_dims": 0,
+              "transforms": []
+            },
+            "wall_ns": 452550538
+          },
+          "predicate_null": {
+            "base": [
+              [
+                "cell",
+                0,
+                0,
+                "red"
+              ],
+              [
+                "cell",
+                4,
+                0,
+                "red"
+              ],
+              [
+                "cell",
+                8,
+                0,
+                "red"
+              ],
+              [
+                "cell",
+                8,
+                4,
+                "red"
+              ]
+            ],
+            "cpu_ns": 281131926,
+            "goal": [
+              [
+                "noise",
+                0,
+                0,
+                "red"
+              ],
+              [
+                "cell",
+                4,
+                0,
+                "red"
+              ],
+              [
+                "cell",
+                8,
+                0,
+                "red"
+              ],
+              [
+                "cell",
+                12,
+                4,
+                "red"
+              ]
+            ],
+            "result": {
+              "base": null,
+              "checked": 390624,
+              "coord_dims": [],
+              "dims": [],
+              "explained": false,
+              "matrix": [],
+              "ncoord": 0,
+              "residual_dims": 0,
+              "transforms": []
+            },
+            "wall_ns": 281201222
+          },
+          "replicate": 1,
+          "scale": 4,
+          "source_inputs_end": {
+            "cargo_lock_sha256": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+            "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+            "dirty_worktree": true,
+            "native_build_manifest_sha256": "2d10ff9cc7f9832d91d1603c74dd0a0e0c4c5d3080a618a33575e9d5400ae871",
+            "native_extension_sha256": "f5543ca015278bad6c65506a0d7d9acb85b33252e7121cdda1a56df63e8ad27b",
+            "protocol_sha256": "bffa9c6d55b1e410c7bcb737d08e5c27adcdb6c6921741ff1823be73a8e3c5fd",
+            "runner_sha256": "af213b2540404b1a426b9da94f77dd783184b2d7cbb5909598409cad189db2c6",
+            "seed_sha256": "3e1783cf566179061250572bbf7bc7bb54cacfafb83f8852008c4618d984a9c6",
+            "source_sha256": {
+              "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+              "runners/dsl/src/shape_decode.rs": "0e178705d0df8bef0a9d08d5a2efabd1131386b783e87546f33b8601b682ac2c",
+              "runners/dsl/src/term.rs": "043a0ea442125df2a77c04b47fe82790c53222f281d24afe4b77e4fccd7c3610",
+              "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb"
+            }
+          },
+          "source_inputs_start": {
+            "cargo_lock_sha256": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+            "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+            "dirty_worktree": true,
+            "native_build_manifest_sha256": "2d10ff9cc7f9832d91d1603c74dd0a0e0c4c5d3080a618a33575e9d5400ae871",
+            "native_extension_sha256": "f5543ca015278bad6c65506a0d7d9acb85b33252e7121cdda1a56df63e8ad27b",
+            "protocol_sha256": "bffa9c6d55b1e410c7bcb737d08e5c27adcdb6c6921741ff1823be73a8e3c5fd",
+            "runner_sha256": "af213b2540404b1a426b9da94f77dd783184b2d7cbb5909598409cad189db2c6",
+            "seed_sha256": "3e1783cf566179061250572bbf7bc7bb54cacfafb83f8852008c4618d984a9c6",
+            "source_sha256": {
+              "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+              "runners/dsl/src/shape_decode.rs": "0e178705d0df8bef0a9d08d5a2efabd1131386b783e87546f33b8601b682ac2c",
+              "runners/dsl/src/term.rs": "043a0ea442125df2a77c04b47fe82790c53222f281d24afe4b77e4fccd7c3610",
+              "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb"
+            }
+          }
+        }
+      ],
+      "finished_inputs": {
+        "cargo_lock_sha256": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+        "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+        "dirty_worktree": true,
+        "native_build_manifest_sha256": "2d10ff9cc7f9832d91d1603c74dd0a0e0c4c5d3080a618a33575e9d5400ae871",
+        "native_extension_sha256": "f5543ca015278bad6c65506a0d7d9acb85b33252e7121cdda1a56df63e8ad27b",
+        "protocol_sha256": "bffa9c6d55b1e410c7bcb737d08e5c27adcdb6c6921741ff1823be73a8e3c5fd",
+        "runner_sha256": "af213b2540404b1a426b9da94f77dd783184b2d7cbb5909598409cad189db2c6",
+        "seed_sha256": "3e1783cf566179061250572bbf7bc7bb54cacfafb83f8852008c4618d984a9c6",
+        "source_sha256": {
+          "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+          "runners/dsl/src/shape_decode.rs": "0e178705d0df8bef0a9d08d5a2efabd1131386b783e87546f33b8601b682ac2c",
+          "runners/dsl/src/term.rs": "043a0ea442125df2a77c04b47fe82790c53222f281d24afe4b77e4fccd7c3610",
+          "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb"
+        }
+      },
+      "pid": 883,
+      "replicate": 1,
+      "started_inputs": {
+        "cargo_lock_sha256": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+        "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+        "dirty_worktree": true,
+        "native_build_manifest_sha256": "2d10ff9cc7f9832d91d1603c74dd0a0e0c4c5d3080a618a33575e9d5400ae871",
+        "native_extension_sha256": "f5543ca015278bad6c65506a0d7d9acb85b33252e7121cdda1a56df63e8ad27b",
+        "protocol_sha256": "bffa9c6d55b1e410c7bcb737d08e5c27adcdb6c6921741ff1823be73a8e3c5fd",
+        "runner_sha256": "af213b2540404b1a426b9da94f77dd783184b2d7cbb5909598409cad189db2c6",
+        "seed_sha256": "3e1783cf566179061250572bbf7bc7bb54cacfafb83f8852008c4618d984a9c6",
+        "source_sha256": {
+          "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+          "runners/dsl/src/shape_decode.rs": "0e178705d0df8bef0a9d08d5a2efabd1131386b783e87546f33b8601b682ac2c",
+          "runners/dsl/src/term.rs": "043a0ea442125df2a77c04b47fe82790c53222f281d24afe4b77e4fccd7c3610",
+          "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb"
+        }
+      }
+    },
+    {
+      "cases": [
+        {
+          "expected_bound": 3,
+          "expected_candidates": 2400,
+          "positive": {
+            "base": [
+              [
+                "cell",
+                0,
+                0,
+                "red"
+              ],
+              [
+                "cell",
+                1,
+                0,
+                "red"
+              ],
+              [
+                "cell",
+                2,
+                0,
+                "red"
+              ],
+              [
+                "cell",
+                2,
+                1,
+                "red"
+              ]
+            ],
+            "cpu_ns": 2998621,
+            "goal": [
+              [
+                "cell",
+                0,
+                0,
+                "red"
+              ],
+              [
+                "cell",
+                1,
+                0,
+                "red"
+              ],
+              [
+                "cell",
+                2,
+                0,
+                "red"
+              ],
+              [
+                "cell",
+                3,
+                1,
+                "red"
+              ]
+            ],
+            "result": {
+              "base": "bound_scale_base",
+              "checked": 2400,
+              "coord_dims": [
+                1,
+                2
+              ],
+              "dims": [],
+              "explained": true,
+              "matrix": [
+                1,
+                1,
+                0,
+                1
+              ],
+              "ncoord": 2,
+              "residual_dims": 0,
+              "transforms": []
+            },
+            "wall_ns": 3008849
+          },
+          "predicate_null": {
+            "base": [
+              [
+                "cell",
+                0,
+                0,
+                "red"
+              ],
+              [
+                "cell",
+                1,
+                0,
+                "red"
+              ],
+              [
+                "cell",
+                2,
+                0,
+                "red"
+              ],
+              [
+                "cell",
+                2,
+                1,
+                "red"
+              ]
+            ],
+            "cpu_ns": 1743691,
+            "goal": [
+              [
+                "noise",
+                0,
+                0,
+                "red"
+              ],
+              [
+                "cell",
+                1,
+                0,
+                "red"
+              ],
+              [
+                "cell",
+                2,
+                0,
+                "red"
+              ],
+              [
+                "cell",
+                3,
+                1,
+                "red"
+              ]
+            ],
+            "result": {
+              "base": null,
+              "checked": 2400,
+              "coord_dims": [],
+              "dims": [],
+              "explained": false,
+              "matrix": [],
+              "ncoord": 0,
+              "residual_dims": 0,
+              "transforms": []
+            },
+            "wall_ns": 1747260
+          },
+          "replicate": 2,
+          "scale": 1,
+          "source_inputs_end": {
+            "cargo_lock_sha256": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+            "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+            "dirty_worktree": true,
+            "native_build_manifest_sha256": "2d10ff9cc7f9832d91d1603c74dd0a0e0c4c5d3080a618a33575e9d5400ae871",
+            "native_extension_sha256": "f5543ca015278bad6c65506a0d7d9acb85b33252e7121cdda1a56df63e8ad27b",
+            "protocol_sha256": "bffa9c6d55b1e410c7bcb737d08e5c27adcdb6c6921741ff1823be73a8e3c5fd",
+            "runner_sha256": "af213b2540404b1a426b9da94f77dd783184b2d7cbb5909598409cad189db2c6",
+            "seed_sha256": "3e1783cf566179061250572bbf7bc7bb54cacfafb83f8852008c4618d984a9c6",
+            "source_sha256": {
+              "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+              "runners/dsl/src/shape_decode.rs": "0e178705d0df8bef0a9d08d5a2efabd1131386b783e87546f33b8601b682ac2c",
+              "runners/dsl/src/term.rs": "043a0ea442125df2a77c04b47fe82790c53222f281d24afe4b77e4fccd7c3610",
+              "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb"
+            }
+          },
+          "source_inputs_start": {
+            "cargo_lock_sha256": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+            "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+            "dirty_worktree": true,
+            "native_build_manifest_sha256": "2d10ff9cc7f9832d91d1603c74dd0a0e0c4c5d3080a618a33575e9d5400ae871",
+            "native_extension_sha256": "f5543ca015278bad6c65506a0d7d9acb85b33252e7121cdda1a56df63e8ad27b",
+            "protocol_sha256": "bffa9c6d55b1e410c7bcb737d08e5c27adcdb6c6921741ff1823be73a8e3c5fd",
+            "runner_sha256": "af213b2540404b1a426b9da94f77dd783184b2d7cbb5909598409cad189db2c6",
+            "seed_sha256": "3e1783cf566179061250572bbf7bc7bb54cacfafb83f8852008c4618d984a9c6",
+            "source_sha256": {
+              "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+              "runners/dsl/src/shape_decode.rs": "0e178705d0df8bef0a9d08d5a2efabd1131386b783e87546f33b8601b682ac2c",
+              "runners/dsl/src/term.rs": "043a0ea442125df2a77c04b47fe82790c53222f281d24afe4b77e4fccd7c3610",
+              "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb"
+            }
+          }
+        },
+        {
+          "expected_bound": 6,
+          "expected_candidates": 28560,
+          "positive": {
+            "base": [
+              [
+                "cell",
+                0,
+                0,
+                "red"
+              ],
+              [
+                "cell",
+                2,
+                0,
+                "red"
+              ],
+              [
+                "cell",
+                4,
+                0,
+                "red"
+              ],
+              [
+                "cell",
+                4,
+                2,
+                "red"
+              ]
+            ],
+            "cpu_ns": 33116109,
+            "goal": [
+              [
+                "cell",
+                0,
+                0,
+                "red"
+              ],
+              [
+                "cell",
+                2,
+                0,
+                "red"
+              ],
+              [
+                "cell",
+                4,
+                0,
+                "red"
+              ],
+              [
+                "cell",
+                6,
+                2,
+                "red"
+              ]
+            ],
+            "result": {
+              "base": "bound_scale_base",
+              "checked": 28560,
+              "coord_dims": [
+                1,
+                2
+              ],
+              "dims": [],
+              "explained": true,
+              "matrix": [
+                1,
+                1,
+                0,
+                1
+              ],
+              "ncoord": 2,
+              "residual_dims": 0,
+              "transforms": []
+            },
+            "wall_ns": 33170961
+          },
+          "predicate_null": {
+            "base": [
+              [
+                "cell",
+                0,
+                0,
+                "red"
+              ],
+              [
+                "cell",
+                2,
+                0,
+                "red"
+              ],
+              [
+                "cell",
+                4,
+                0,
+                "red"
+              ],
+              [
+                "cell",
+                4,
+                2,
+                "red"
+              ]
+            ],
+            "cpu_ns": 20678285,
+            "goal": [
+              [
+                "noise",
+                0,
+                0,
+                "red"
+              ],
+              [
+                "cell",
+                2,
+                0,
+                "red"
+              ],
+              [
+                "cell",
+                4,
+                0,
+                "red"
+              ],
+              [
+                "cell",
+                6,
+                2,
+                "red"
+              ]
+            ],
+            "result": {
+              "base": null,
+              "checked": 28560,
+              "coord_dims": [],
+              "dims": [],
+              "explained": false,
+              "matrix": [],
+              "ncoord": 0,
+              "residual_dims": 0,
+              "transforms": []
+            },
+            "wall_ns": 20757566
+          },
+          "replicate": 2,
+          "scale": 2,
+          "source_inputs_end": {
+            "cargo_lock_sha256": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+            "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+            "dirty_worktree": true,
+            "native_build_manifest_sha256": "2d10ff9cc7f9832d91d1603c74dd0a0e0c4c5d3080a618a33575e9d5400ae871",
+            "native_extension_sha256": "f5543ca015278bad6c65506a0d7d9acb85b33252e7121cdda1a56df63e8ad27b",
+            "protocol_sha256": "bffa9c6d55b1e410c7bcb737d08e5c27adcdb6c6921741ff1823be73a8e3c5fd",
+            "runner_sha256": "af213b2540404b1a426b9da94f77dd783184b2d7cbb5909598409cad189db2c6",
+            "seed_sha256": "3e1783cf566179061250572bbf7bc7bb54cacfafb83f8852008c4618d984a9c6",
+            "source_sha256": {
+              "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+              "runners/dsl/src/shape_decode.rs": "0e178705d0df8bef0a9d08d5a2efabd1131386b783e87546f33b8601b682ac2c",
+              "runners/dsl/src/term.rs": "043a0ea442125df2a77c04b47fe82790c53222f281d24afe4b77e4fccd7c3610",
+              "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb"
+            }
+          },
+          "source_inputs_start": {
+            "cargo_lock_sha256": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+            "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+            "dirty_worktree": true,
+            "native_build_manifest_sha256": "2d10ff9cc7f9832d91d1603c74dd0a0e0c4c5d3080a618a33575e9d5400ae871",
+            "native_extension_sha256": "f5543ca015278bad6c65506a0d7d9acb85b33252e7121cdda1a56df63e8ad27b",
+            "protocol_sha256": "bffa9c6d55b1e410c7bcb737d08e5c27adcdb6c6921741ff1823be73a8e3c5fd",
+            "runner_sha256": "af213b2540404b1a426b9da94f77dd783184b2d7cbb5909598409cad189db2c6",
+            "seed_sha256": "3e1783cf566179061250572bbf7bc7bb54cacfafb83f8852008c4618d984a9c6",
+            "source_sha256": {
+              "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+              "runners/dsl/src/shape_decode.rs": "0e178705d0df8bef0a9d08d5a2efabd1131386b783e87546f33b8601b682ac2c",
+              "runners/dsl/src/term.rs": "043a0ea442125df2a77c04b47fe82790c53222f281d24afe4b77e4fccd7c3610",
+              "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb"
+            }
+          }
+        },
+        {
+          "expected_bound": 9,
+          "expected_candidates": 130320,
+          "positive": {
+            "base": [
+              [
+                "cell",
+                0,
+                0,
+                "red"
+              ],
+              [
+                "cell",
+                3,
+                0,
+                "red"
+              ],
+              [
+                "cell",
+                6,
+                0,
+                "red"
+              ],
+              [
+                "cell",
+                6,
+                3,
+                "red"
+              ]
+            ],
+            "cpu_ns": 148337180,
+            "goal": [
+              [
+                "cell",
+                0,
+                0,
+                "red"
+              ],
+              [
+                "cell",
+                3,
+                0,
+                "red"
+              ],
+              [
+                "cell",
+                6,
+                0,
+                "red"
+              ],
+              [
+                "cell",
+                9,
+                3,
+                "red"
+              ]
+            ],
+            "result": {
+              "base": "bound_scale_base",
+              "checked": 130320,
+              "coord_dims": [
+                1,
+                2
+              ],
+              "dims": [],
+              "explained": true,
+              "matrix": [
+                1,
+                1,
+                0,
+                1
+              ],
+              "ncoord": 2,
+              "residual_dims": 0,
+              "transforms": []
+            },
+            "wall_ns": 148407668
+          },
+          "predicate_null": {
+            "base": [
+              [
+                "cell",
+                0,
+                0,
+                "red"
+              ],
+              [
+                "cell",
+                3,
+                0,
+                "red"
+              ],
+              [
+                "cell",
+                6,
+                0,
+                "red"
+              ],
+              [
+                "cell",
+                6,
+                3,
+                "red"
+              ]
+            ],
+            "cpu_ns": 91291105,
+            "goal": [
+              [
+                "noise",
+                0,
+                0,
+                "red"
+              ],
+              [
+                "cell",
+                3,
+                0,
+                "red"
+              ],
+              [
+                "cell",
+                6,
+                0,
+                "red"
+              ],
+              [
+                "cell",
+                9,
+                3,
+                "red"
+              ]
+            ],
+            "result": {
+              "base": null,
+              "checked": 130320,
+              "coord_dims": [],
+              "dims": [],
+              "explained": false,
+              "matrix": [],
+              "ncoord": 0,
+              "residual_dims": 0,
+              "transforms": []
+            },
+            "wall_ns": 91354163
+          },
+          "replicate": 2,
+          "scale": 3,
+          "source_inputs_end": {
+            "cargo_lock_sha256": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+            "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+            "dirty_worktree": true,
+            "native_build_manifest_sha256": "2d10ff9cc7f9832d91d1603c74dd0a0e0c4c5d3080a618a33575e9d5400ae871",
+            "native_extension_sha256": "f5543ca015278bad6c65506a0d7d9acb85b33252e7121cdda1a56df63e8ad27b",
+            "protocol_sha256": "bffa9c6d55b1e410c7bcb737d08e5c27adcdb6c6921741ff1823be73a8e3c5fd",
+            "runner_sha256": "af213b2540404b1a426b9da94f77dd783184b2d7cbb5909598409cad189db2c6",
+            "seed_sha256": "3e1783cf566179061250572bbf7bc7bb54cacfafb83f8852008c4618d984a9c6",
+            "source_sha256": {
+              "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+              "runners/dsl/src/shape_decode.rs": "0e178705d0df8bef0a9d08d5a2efabd1131386b783e87546f33b8601b682ac2c",
+              "runners/dsl/src/term.rs": "043a0ea442125df2a77c04b47fe82790c53222f281d24afe4b77e4fccd7c3610",
+              "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb"
+            }
+          },
+          "source_inputs_start": {
+            "cargo_lock_sha256": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+            "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+            "dirty_worktree": true,
+            "native_build_manifest_sha256": "2d10ff9cc7f9832d91d1603c74dd0a0e0c4c5d3080a618a33575e9d5400ae871",
+            "native_extension_sha256": "f5543ca015278bad6c65506a0d7d9acb85b33252e7121cdda1a56df63e8ad27b",
+            "protocol_sha256": "bffa9c6d55b1e410c7bcb737d08e5c27adcdb6c6921741ff1823be73a8e3c5fd",
+            "runner_sha256": "af213b2540404b1a426b9da94f77dd783184b2d7cbb5909598409cad189db2c6",
+            "seed_sha256": "3e1783cf566179061250572bbf7bc7bb54cacfafb83f8852008c4618d984a9c6",
+            "source_sha256": {
+              "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+              "runners/dsl/src/shape_decode.rs": "0e178705d0df8bef0a9d08d5a2efabd1131386b783e87546f33b8601b682ac2c",
+              "runners/dsl/src/term.rs": "043a0ea442125df2a77c04b47fe82790c53222f281d24afe4b77e4fccd7c3610",
+              "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb"
+            }
+          }
+        },
+        {
+          "expected_bound": 12,
+          "expected_candidates": 390624,
+          "positive": {
+            "base": [
+              [
+                "cell",
+                0,
+                0,
+                "red"
+              ],
+              [
+                "cell",
+                4,
+                0,
+                "red"
+              ],
+              [
+                "cell",
+                8,
+                0,
+                "red"
+              ],
+              [
+                "cell",
+                8,
+                4,
+                "red"
+              ]
+            ],
+            "cpu_ns": 472122278,
+            "goal": [
+              [
+                "cell",
+                0,
+                0,
+                "red"
+              ],
+              [
+                "cell",
+                4,
+                0,
+                "red"
+              ],
+              [
+                "cell",
+                8,
+                0,
+                "red"
+              ],
+              [
+                "cell",
+                12,
+                4,
+                "red"
+              ]
+            ],
+            "result": {
+              "base": "bound_scale_base",
+              "checked": 390624,
+              "coord_dims": [
+                1,
+                2
+              ],
+              "dims": [],
+              "explained": true,
+              "matrix": [
+                1,
+                1,
+                0,
+                1
+              ],
+              "ncoord": 2,
+              "residual_dims": 0,
+              "transforms": []
+            },
+            "wall_ns": 472278029
+          },
+          "predicate_null": {
+            "base": [
+              [
+                "cell",
+                0,
+                0,
+                "red"
+              ],
+              [
+                "cell",
+                4,
+                0,
+                "red"
+              ],
+              [
+                "cell",
+                8,
+                0,
+                "red"
+              ],
+              [
+                "cell",
+                8,
+                4,
+                "red"
+              ]
+            ],
+            "cpu_ns": 283449357,
+            "goal": [
+              [
+                "noise",
+                0,
+                0,
+                "red"
+              ],
+              [
+                "cell",
+                4,
+                0,
+                "red"
+              ],
+              [
+                "cell",
+                8,
+                0,
+                "red"
+              ],
+              [
+                "cell",
+                12,
+                4,
+                "red"
+              ]
+            ],
+            "result": {
+              "base": null,
+              "checked": 390624,
+              "coord_dims": [],
+              "dims": [],
+              "explained": false,
+              "matrix": [],
+              "ncoord": 0,
+              "residual_dims": 0,
+              "transforms": []
+            },
+            "wall_ns": 283527237
+          },
+          "replicate": 2,
+          "scale": 4,
+          "source_inputs_end": {
+            "cargo_lock_sha256": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+            "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+            "dirty_worktree": true,
+            "native_build_manifest_sha256": "2d10ff9cc7f9832d91d1603c74dd0a0e0c4c5d3080a618a33575e9d5400ae871",
+            "native_extension_sha256": "f5543ca015278bad6c65506a0d7d9acb85b33252e7121cdda1a56df63e8ad27b",
+            "protocol_sha256": "bffa9c6d55b1e410c7bcb737d08e5c27adcdb6c6921741ff1823be73a8e3c5fd",
+            "runner_sha256": "af213b2540404b1a426b9da94f77dd783184b2d7cbb5909598409cad189db2c6",
+            "seed_sha256": "3e1783cf566179061250572bbf7bc7bb54cacfafb83f8852008c4618d984a9c6",
+            "source_sha256": {
+              "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+              "runners/dsl/src/shape_decode.rs": "0e178705d0df8bef0a9d08d5a2efabd1131386b783e87546f33b8601b682ac2c",
+              "runners/dsl/src/term.rs": "043a0ea442125df2a77c04b47fe82790c53222f281d24afe4b77e4fccd7c3610",
+              "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb"
+            }
+          },
+          "source_inputs_start": {
+            "cargo_lock_sha256": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+            "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+            "dirty_worktree": true,
+            "native_build_manifest_sha256": "2d10ff9cc7f9832d91d1603c74dd0a0e0c4c5d3080a618a33575e9d5400ae871",
+            "native_extension_sha256": "f5543ca015278bad6c65506a0d7d9acb85b33252e7121cdda1a56df63e8ad27b",
+            "protocol_sha256": "bffa9c6d55b1e410c7bcb737d08e5c27adcdb6c6921741ff1823be73a8e3c5fd",
+            "runner_sha256": "af213b2540404b1a426b9da94f77dd783184b2d7cbb5909598409cad189db2c6",
+            "seed_sha256": "3e1783cf566179061250572bbf7bc7bb54cacfafb83f8852008c4618d984a9c6",
+            "source_sha256": {
+              "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+              "runners/dsl/src/shape_decode.rs": "0e178705d0df8bef0a9d08d5a2efabd1131386b783e87546f33b8601b682ac2c",
+              "runners/dsl/src/term.rs": "043a0ea442125df2a77c04b47fe82790c53222f281d24afe4b77e4fccd7c3610",
+              "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb"
+            }
+          }
+        }
+      ],
+      "finished_inputs": {
+        "cargo_lock_sha256": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+        "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+        "dirty_worktree": true,
+        "native_build_manifest_sha256": "2d10ff9cc7f9832d91d1603c74dd0a0e0c4c5d3080a618a33575e9d5400ae871",
+        "native_extension_sha256": "f5543ca015278bad6c65506a0d7d9acb85b33252e7121cdda1a56df63e8ad27b",
+        "protocol_sha256": "bffa9c6d55b1e410c7bcb737d08e5c27adcdb6c6921741ff1823be73a8e3c5fd",
+        "runner_sha256": "af213b2540404b1a426b9da94f77dd783184b2d7cbb5909598409cad189db2c6",
+        "seed_sha256": "3e1783cf566179061250572bbf7bc7bb54cacfafb83f8852008c4618d984a9c6",
+        "source_sha256": {
+          "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+          "runners/dsl/src/shape_decode.rs": "0e178705d0df8bef0a9d08d5a2efabd1131386b783e87546f33b8601b682ac2c",
+          "runners/dsl/src/term.rs": "043a0ea442125df2a77c04b47fe82790c53222f281d24afe4b77e4fccd7c3610",
+          "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb"
+        }
+      },
+      "pid": 1722,
+      "replicate": 2,
+      "started_inputs": {
+        "cargo_lock_sha256": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+        "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+        "dirty_worktree": true,
+        "native_build_manifest_sha256": "2d10ff9cc7f9832d91d1603c74dd0a0e0c4c5d3080a618a33575e9d5400ae871",
+        "native_extension_sha256": "f5543ca015278bad6c65506a0d7d9acb85b33252e7121cdda1a56df63e8ad27b",
+        "protocol_sha256": "bffa9c6d55b1e410c7bcb737d08e5c27adcdb6c6921741ff1823be73a8e3c5fd",
+        "runner_sha256": "af213b2540404b1a426b9da94f77dd783184b2d7cbb5909598409cad189db2c6",
+        "seed_sha256": "3e1783cf566179061250572bbf7bc7bb54cacfafb83f8852008c4618d984a9c6",
+        "source_sha256": {
+          "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+          "runners/dsl/src/shape_decode.rs": "0e178705d0df8bef0a9d08d5a2efabd1131386b783e87546f33b8601b682ac2c",
+          "runners/dsl/src/term.rs": "043a0ea442125df2a77c04b47fe82790c53222f281d24afe4b77e4fccd7c3610",
+          "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb"
+        }
+      }
+    }
+  ],
+  "schema_version": 1
+}

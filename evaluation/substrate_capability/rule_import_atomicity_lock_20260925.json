@@ -1,0 +1,69 @@
+{
+  "locked_inputs": {
+    "attempts_per_case": 25,
+    "bad_rule": {
+      "area": "atomicity_probe_area",
+      "effects": [],
+      "match": [
+        [
+          "source_var",
+          "atomicity_probe_edge",
+          "target_var"
+        ]
+      ],
+      "name": "malformed_suffix_rule",
+      "where": {
+        "a": {
+          "type": "Lit",
+          "value": 1
+        },
+        "b": {
+          "type": "UnknownAtomicityProbeTerm"
+        },
+        "type": "Eq"
+      }
+    },
+    "good_rules": [
+      {
+        "active": true,
+        "effects": [],
+        "match": [
+          [
+            "x",
+            "staged_edge",
+            "y"
+          ]
+        ],
+        "name": "staged_good_rule",
+        "where": {
+          "a": {
+            "type": "Lit",
+            "value": 1
+          },
+          "b": {
+            "type": "Lit",
+            "value": 1
+          },
+          "type": "Eq"
+        }
+      },
+      {
+        "active": false,
+        "effects": [],
+        "match": [
+          [
+            "x",
+            "staged_edge2",
+            "y"
+          ]
+        ],
+        "name": "staged_inactive_rule"
+      }
+    ],
+    "interner_source_sha256": "4772ba9a79cc0002b818e4c6981fa58a5b02f12d078c3756874de72ab206da31",
+    "native_sha256": "3e33a958148bb8d706b4ae15af1f090d66947b7d36734bbdcc31d25a5422b67f",
+    "py_binding_source_sha256": "3ac908299e7090696065c7725241a1d5218c53ac84bc4d8589ff70dab5360add",
+    "replicates": 3,
+    "runner_sha256": "2ca22a22768c7cd4d3c2d005c86edb6225b0220ce569ac1a843f20e4be803c51"
+  }
+}

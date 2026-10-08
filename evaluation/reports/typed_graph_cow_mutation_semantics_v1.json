@@ -1,0 +1,140 @@
+{
+  "binary": {
+    "path": "/home/matt/ozmadev/ocelot/runners/dsl/target/release/typed_graph_cow_mutation_semantics_probe",
+    "sha256": "sha256:9d1e994e839a24b76214e311c5fd23441f821fcc745b50eb042da4906d36a46f"
+  },
+  "host": {
+    "machine": "x86_64",
+    "platform": "Linux-6.8.0-142-generic-x86_64-with-glibc2.39"
+  },
+  "protocol": {
+    "backends": [
+      "eager",
+      "shared_records",
+      "shared_graph_pages"
+    ],
+    "limitations": [
+      "graph-level only; hash indexes and wider Substrate fields use their existing clone policies",
+      "single path topology",
+      "does not time operations or measure memory",
+      "no concurrent mutation"
+    ],
+    "mutations": [
+      "node attribute update and insertion",
+      "attribute removal",
+      "node retype",
+      "edge deletion",
+      "node deletion with incident-edge cascade",
+      "node append with freelist ID reuse",
+      "edge append",
+      "nested fork",
+      "divergent sibling mutation"
+    ],
+    "semantic_oracle": "canonical live-node records and outgoing edge structure/attrs from each branch compared to eager clone; original base signature also checked",
+    "sizes": [
+      771,
+      10771,
+      50771
+    ]
+  },
+  "rows": [
+    {
+      "backend": "eager",
+      "delete_append_id_reuse": true,
+      "fork_state_matches_eager": true,
+      "nested_fork_matches_eager": true,
+      "nodes": 771,
+      "primary_unchanged": true,
+      "sibling_isolation": true
+    },
+    {
+      "backend": "shared_records",
+      "delete_append_id_reuse": true,
+      "fork_state_matches_eager": true,
+      "nested_fork_matches_eager": true,
+      "nodes": 771,
+      "primary_unchanged": true,
+      "sibling_isolation": true
+    },
+    {
+      "backend": "shared_graph_pages",
+      "delete_append_id_reuse": true,
+      "fork_state_matches_eager": true,
+      "nested_fork_matches_eager": true,
+      "nodes": 771,
+      "primary_unchanged": true,
+      "sibling_isolation": true
+    },
+    {
+      "backend": "eager",
+      "delete_append_id_reuse": true,
+      "fork_state_matches_eager": true,
+      "nested_fork_matches_eager": true,
+      "nodes": 10771,
+      "primary_unchanged": true,
+      "sibling_isolation": true
+    },
+    {
+      "backend": "shared_records",
+      "delete_append_id_reuse": true,
+      "fork_state_matches_eager": true,
+      "nested_fork_matches_eager": true,
+      "nodes": 10771,
+      "primary_unchanged": true,
+      "sibling_isolation": true
+    },
+    {
+      "backend": "shared_graph_pages",
+      "delete_append_id_reuse": true,
+      "fork_state_matches_eager": true,
+      "nested_fork_matches_eager": true,
+      "nodes": 10771,
+      "primary_unchanged": true,
+      "sibling_isolation": true
+    },
+    {
+      "backend": "eager",
+      "delete_append_id_reuse": true,
+      "fork_state_matches_eager": true,
+      "nested_fork_matches_eager": true,
+      "nodes": 50771,
+      "primary_unchanged": true,
+      "sibling_isolation": true
+    },
+    {
+      "backend": "shared_records",
+      "delete_append_id_reuse": true,
+      "fork_state_matches_eager": true,
+      "nested_fork_matches_eager": true,
+      "nodes": 50771,
+      "primary_unchanged": true,
+      "sibling_isolation": true
+    },
+    {
+      "backend": "shared_graph_pages",
+      "delete_append_id_reuse": true,
+      "fork_state_matches_eager": true,
+      "nested_fork_matches_eager": true,
+      "nodes": 50771,
+      "primary_unchanged": true,
+      "sibling_isolation": true
+    }
+  ],
+  "runner": {
+    "path": "/home/matt/ozmadev/ocelot/evaluation/substrate_capability/typed_graph_cow_mutation_semantics_v1.py",
+    "sha256": "sha256:3b4cb44c008aa01efc4cf6e9c2f1c3dd36e5045739bb8cddd3e6f4823346068c"
+  },
+  "schema": "TypedGraphCowMutationSemanticsV1",
+  "sources": {
+    "runners/dsl/Cargo.lock": "sha256:409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+    "runners/dsl/Cargo.toml": "sha256:c4d8ffff2241352a5150b5a9937dbb8010e958b6f115235b7daeae716c1a9332",
+    "runners/dsl/src/bin/typed_graph_cow_mutation_semantics_probe.rs": "sha256:58c387358e16b76a74b2b9990cd76802f78d299a7cb2c7bea5a7c2d01be6da32",
+    "runners/dsl/src/cow_paged_vec.rs": "sha256:4b180c6aeb3cf9ee4391e65ba3aa50110b255da5697a909b46e7f4ec852939e4",
+    "runners/dsl/src/graph.rs": "sha256:d3394f6deccffe295942be2a3326efdec4802861a23621823ab2bb613b48cc90",
+    "runners/dsl/src/lib.rs": "sha256:5ebe65e3e335079b607779a2c49583149b2d87733f8da935926bbbc53bfbff45"
+  },
+  "toolchain": {
+    "cargo": "cargo 1.87.0 (Homebrew)",
+    "rustc": "rustc 1.87.0 (17067e9ac 2025-05-09) (Homebrew)"
+  }
+}

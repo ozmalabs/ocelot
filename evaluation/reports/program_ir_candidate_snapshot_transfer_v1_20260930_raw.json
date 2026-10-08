@@ -1,0 +1,3159 @@
+{
+  "claim_boundary": "isolated acquisition and exact Program/IR execution on two authored clamp tasks; not natural-task capability, formal P3-E1, or general CoW performance",
+  "environment": {
+    "OZMA_NO_LLM": "1",
+    "OZMA_SEED_PERSIST_DISABLED": "1",
+    "platform": "Linux-6.8.0-142-generic-x86_64-with-glibc2.39",
+    "python": "3.13.5 (main, Jun 11 2025, 15:36:57) [GCC 11.4.0]"
+  },
+  "lock_sha256": "a7ba26ccc490c199431f56b6f85eb340d33ca539eac94a16d3e450a9d4ccae2b",
+  "locked_inputs": {
+    "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+    "design": {
+      "arms": [
+        "candidate",
+        "frozen",
+        "exposure_without_pump"
+      ],
+      "candidate_validation_backends": [
+        "eager",
+        "shared_graph_pages"
+      ],
+      "repetitions": 5,
+      "schedule_seed": 20260930,
+      "tasks": {
+        "clamp_0_5": {
+          "heldout": [
+            -6,
+            -4,
+            -1,
+            2,
+            6,
+            9
+          ],
+          "high": 5,
+          "low": 0,
+          "request": "write a function clamp_value between bounds 0 and 5",
+          "training": [
+            [
+              -2,
+              0
+            ],
+            [
+              0,
+              0
+            ],
+            [
+              1,
+              1
+            ],
+            [
+              4,
+              4
+            ],
+            [
+              5,
+              5
+            ],
+            [
+              7,
+              5
+            ]
+          ]
+        },
+        "clamp_neg2_4": {
+          "heldout": [
+            -8,
+            -3,
+            0,
+            2,
+            6,
+            9
+          ],
+          "high": 4,
+          "low": -2,
+          "request": "write a function clamp_value within limits negative two and 4",
+          "training": [
+            [
+              -5,
+              -2
+            ],
+            [
+              -2,
+              -2
+            ],
+            [
+              -1,
+              -1
+            ],
+            [
+              1,
+              1
+            ],
+            [
+              4,
+              4
+            ],
+            [
+              7,
+              4
+            ]
+          ]
+        }
+      }
+    },
+    "engine_provenance": {
+      "ambiguous": false,
+      "engine_source_fingerprint": "60c0e261013a7aebf60f0034e2b1166c85bfd0e00319884fd71e25890075b878",
+      "engine_tree": "/home/matt/ozmadev/ocelot",
+      "mtime": 1790759358.925161,
+      "native_path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+      "other_resolvable": [],
+      "sha256": "ba8700ec491f903a6effd93440efeed0aee8a5522489fbcb62647ed300c77c7b",
+      "short": "ba8700ec491f",
+      "source_fingerprint": "60c0e261013a7aebf60f0034e2b1166c85bfd0e00319884fd71e25890075b878",
+      "source_match": "own",
+      "stale_rust": [],
+      "this_tree": "/home/matt/ozmadev/ocelot"
+    },
+    "native_build_manifest_sha256": "1e1dfab562310378226ae55d4e42559bb60d7153776e0720094430825eecf22b",
+    "native_extension": {
+      "path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+      "sha256": "ba8700ec491f903a6effd93440efeed0aee8a5522489fbcb62647ed300c77c7b"
+    },
+    "rust_source_fingerprint": "60c0e261013a7aebf60f0034e2b1166c85bfd0e00319884fd71e25890075b878",
+    "schema_version": 1,
+    "source_sha256": {
+      "docs/research/engine_substrate/SUBSTRATE_PROGRAM_IR_CANDIDATE_SNAPSHOT_V1_PREREG_20260930.md": "6b24ef521a8eafc46b4d2e576284a5ed2bb2a83845142aa93f986d06fb728523",
+      "domains/code_writing.py": "4ad3148ca1796ad13f6128b9fd655e8568c7c843cd68bccee54f35cbf4ddabc9",
+      "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+      "domains/prog_retrieval.py": "c726c87171ece5ae722105da74dd5afde66e0d9a02e4138f06df2dfd777e2055",
+      "domains/prog_synthesis.py": "52c01df0e08483b3ad5b35c45da27f92b70805957f068995fbfbd8c57b9cae2b",
+      "runners/dsl/python/substrate_rs/__init__.py": "64bef29808d0432d165441c6a93739dc0ebcad1ca261f8ac0b42abb0e55b5c98",
+      "runners/dsl/python/substrate_rs/_native.build.json": "1e1dfab562310378226ae55d4e42559bb60d7153776e0720094430825eecf22b",
+      "runners/dsl/src/graph.rs": "d3394f6deccffe295942be2a3326efdec4802861a23621823ab2bb613b48cc90",
+      "runners/dsl/src/graph_rules.rs": "b0e9c5bf0bbb4bf278fdab03610fa3f6f82d01ad8ee898ec789982ff41812a50",
+      "runners/dsl/src/persist.rs": "053362c5650c63e592e913e1ac9ccca29d5bdcf55d64a7c9c224cc7b844d4712",
+      "runners/dsl/src/prog_eval.rs": "d419bda3288c534cbc8c35a3bccc29b67171b8297ecf8aeb43a474f77f0e1451",
+      "runners/dsl/src/py.rs": "0873791fc000e7166816d675d80dc28cd367d6fe9459f37e6b0a3c7770d0b0fa",
+      "runners/dsl/src/substrate.rs": "42ea6a928e0d94a82788794c02232ec17aca75d8b1b92649e3a96edb7379edb1",
+      "runners/dsl/src/synth_enumerate.rs": "f3ae5dd0b15f0fef1713fa92ccb563e4b573dd94b626f0bfed58413298ee6203",
+      "runners/dsl/src/term.rs": "264b838574c1fc1edb3ebb1284d2db84945e95e38e2d3f945e1fdc8a7475758f",
+      "scripts/analyze_program_ir_candidate_snapshot_transfer_v1.py": "ad206cb8e0828f48d42b09e5bc4f04500d2232cb434f0f8d7aed4f8fd0cfe7f3",
+      "scripts/program_ir_candidate_snapshot_transfer_v1.py": "4b43b82f7b131c8b6f23a5797e2fd4bf602ab0e905cc70e58531e6670b39f875",
+      "seeds/code_write_request_cues.json": "13e0cbeace3d712a20b2dd7a6abbb9c910b0cbfbac61ce1d978f89a987e8c36d",
+      "seeds/exact_families.json": "19c7e564a8712d173b37c76f0c2a5d3fde3fcdc68993d79d0857fe283587900a",
+      "seeds/program_synthesis.json": "9d657f4409e470626f3bb9adc1236b7c6c59976a7a1b16b38e566813324916bd",
+      "seeds/program_synthesis_grounding.json": "ec68c2e577cc6dc5c87ca1ac9a05b9f11966c9a7147894f216f1eb2cbe25ddea",
+      "seeds/program_synthesis_opgrammar.json": "8e747abefc9c4814a2b7bff1cce73acdef34d765e93dc1855d0a12dfc44042eb"
+    }
+  },
+  "parent_elapsed_s": 9.718456751026679,
+  "protocol": "program_ir_candidate_snapshot_transfer_v1_20260930",
+  "schedule": [
+    [
+      "clamp_neg2_4",
+      1
+    ],
+    [
+      "clamp_0_5",
+      5
+    ],
+    [
+      "clamp_0_5",
+      1
+    ],
+    [
+      "clamp_neg2_4",
+      5
+    ],
+    [
+      "clamp_0_5",
+      3
+    ],
+    [
+      "clamp_0_5",
+      2
+    ],
+    [
+      "clamp_neg2_4",
+      3
+    ],
+    [
+      "clamp_neg2_4",
+      2
+    ],
+    [
+      "clamp_0_5",
+      4
+    ],
+    [
+      "clamp_neg2_4",
+      4
+    ]
+  ],
+  "worker_count": 10,
+  "worker_failures": [],
+  "workers": [
+    {
+      "baseline_digest": "d02a07c4dbe73fc8273effd10385a5adf70d6137d197660ae3e41986db04fbb6",
+      "candidate": {
+        "construction": null,
+        "eager": {
+          "backend": "eager",
+          "branch_cpu_s": 0.083182653,
+          "branch_wall_s": 0.08318373101064935,
+          "fork_wall_s": 0.0014642510213889182,
+          "ir_root_count": 1,
+          "outputs": [
+            {
+              "exact": true,
+              "expected": -2,
+              "halted": true,
+              "input": -8,
+              "predicted": -2,
+              "trap": null
+            },
+            {
+              "exact": true,
+              "expected": -2,
+              "halted": true,
+              "input": -3,
+              "predicted": -2,
+              "trap": null
+            },
+            {
+              "exact": true,
+              "expected": 0,
+              "halted": true,
+              "input": 0,
+              "predicted": 0,
+              "trap": null
+            },
+            {
+              "exact": true,
+              "expected": 2,
+              "halted": true,
+              "input": 2,
+              "predicted": 2,
+              "trap": null
+            },
+            {
+              "exact": true,
+              "expected": 4,
+              "halted": true,
+              "input": 6,
+              "predicted": 4,
+              "trap": null
+            },
+            {
+              "exact": true,
+              "expected": 4,
+              "halted": true,
+              "input": 9,
+              "predicted": 4,
+              "trap": null
+            }
+          ],
+          "program_node_count": 1,
+          "result_digest": "9a864dc13d5318a75c85a2a0a7c06da723d7f7979d86a406df6833788bd5ca04",
+          "source_digest_before": "9a864dc13d5318a75c85a2a0a7c06da723d7f7979d86a406df6833788bd5ca04",
+          "source_digest_expected": "9a864dc13d5318a75c85a2a0a7c06da723d7f7979d86a406df6833788bd5ca04",
+          "source_unchanged": true,
+          "task_program_present": true
+        },
+        "enumerate_outcome": "ok",
+        "ir": {
+          "stmts": [
+            {
+              "default": null,
+              "name": "value",
+              "type": "ProgDefFnParam"
+            },
+            {
+              "type": "ProgReturn",
+              "value": {
+                "items": [
+                  {
+                    "type": "Lit",
+                    "value": 4
+                  },
+                  {
+                    "items": [
+                      {
+                        "name": "value",
+                        "type": "Var"
+                      },
+                      {
+                        "type": "Lit",
+                        "value": -2
+                      }
+                    ],
+                    "type": "Max"
+                  }
+                ],
+                "type": "Min"
+              }
+            }
+          ],
+          "type": "ProgSeq"
+        },
+        "ir_root_count": 1,
+        "program_attrs": {
+          "attempts": 0.0,
+          "construction": null,
+          "name": "clamp_neg2_4",
+          "program": "{\"type\": \"ProgSeq\", \"stmts\": [{\"type\": \"ProgDefFnParam\", \"name\": \"value\", \"default\": null}, {\"type\": \"ProgReturn\", \"value\": {\"items\": [{\"type\": \"Lit\", \"value\": 4}, {\"items\": [{\"name\": \"value\", \"type\": \"Var\"}, {\"type\": \"Lit\", \"value\": -2}], \"type\": \"Max\"}], \"type\": \"Min\"}}]}",
+          "provenance": "program_synthesis"
+        },
+        "program_count": 1,
+        "program_id": "#2619",
+        "rungs": {
+          "codebook": null,
+          "descend": null,
+          "enumerate": 1.0,
+          "exact": null,
+          "lattice": null
+        },
+        "shared_graph_pages": {
+          "backend": "shared_graph_pages",
+          "branch_cpu_s": 0.08392844199999994,
+          "branch_wall_s": 0.08393808698747307,
+          "fork_wall_s": 0.0005562739679589868,
+          "ir_root_count": 1,
+          "outputs": [
+            {
+              "exact": true,
+              "expected": -2,
+              "halted": true,
+              "input": -8,
+              "predicted": -2,
+              "trap": null
+            },
+            {
+              "exact": true,
+              "expected": -2,
+              "halted": true,
+              "input": -3,
+              "predicted": -2,
+              "trap": null
+            },
+            {
+              "exact": true,
+              "expected": 0,
+              "halted": true,
+              "input": 0,
+              "predicted": 0,
+              "trap": null
+            },
+            {
+              "exact": true,
+              "expected": 2,
+              "halted": true,
+              "input": 2,
+              "predicted": 2,
+              "trap": null
+            },
+            {
+              "exact": true,
+              "expected": 4,
+              "halted": true,
+              "input": 6,
+              "predicted": 4,
+              "trap": null
+            },
+            {
+              "exact": true,
+              "expected": 4,
+              "halted": true,
+              "input": 9,
+              "predicted": 4,
+              "trap": null
+            }
+          ],
+          "program_node_count": 1,
+          "result_digest": "9a864dc13d5318a75c85a2a0a7c06da723d7f7979d86a406df6833788bd5ca04",
+          "source_digest_before": "9a864dc13d5318a75c85a2a0a7c06da723d7f7979d86a406df6833788bd5ca04",
+          "source_digest_expected": "9a864dc13d5318a75c85a2a0a7c06da723d7f7979d86a406df6833788bd5ca04",
+          "source_unchanged": true,
+          "task_program_present": true
+        },
+        "snapshot_digest": "9a864dc13d5318a75c85a2a0a7c06da723d7f7979d86a406df6833788bd5ca04",
+        "snapshot_unchanged_after_eval": true,
+        "status": "accepted",
+        "train_cpu_s": 0.07970269099999999,
+        "train_wall_s": 0.07775864098221064,
+        "training_rows": [
+          [
+            -5,
+            -2
+          ],
+          [
+            -2,
+            -2
+          ],
+          [
+            -1,
+            -1
+          ],
+          [
+            1,
+            1
+          ],
+          [
+            4,
+            4
+          ],
+          [
+            7,
+            4
+          ]
+        ]
+      },
+      "elapsed_cpu_s": 0.6220505279999999,
+      "elapsed_wall_s": 0.6198946160147898,
+      "exposure_without_pump": {
+        "evaluation": {
+          "backend": "shared_graph_pages",
+          "branch_cpu_s": 0.050632983999999936,
+          "branch_wall_s": 0.05063178500859067,
+          "fork_wall_s": 0.0003498630248941481,
+          "ir_root_count": 0,
+          "outputs": [],
+          "program_node_count": 0,
+          "result_digest": "f36b74d3cca97ca92fcd710ef3b2375f597e0e749a1e5410908d6604b1b1f650",
+          "source_digest_before": "f36b74d3cca97ca92fcd710ef3b2375f597e0e749a1e5410908d6604b1b1f650",
+          "source_digest_expected": "f36b74d3cca97ca92fcd710ef3b2375f597e0e749a1e5410908d6604b1b1f650",
+          "source_unchanged": true,
+          "task_program_present": false
+        },
+        "ingest_cpu_s": 0.0007080099999999812,
+        "ingest_wall_s": 0.0007104050018824637,
+        "message_id": "#2591",
+        "request": "write a function clamp_value within limits negative two and 4",
+        "task_program_count_before_eval": 0,
+        "training_rows": [
+          [
+            -5,
+            -2
+          ],
+          [
+            -2,
+            -2
+          ],
+          [
+            -1,
+            -1
+          ],
+          [
+            1,
+            1
+          ],
+          [
+            4,
+            4
+          ],
+          [
+            7,
+            4
+          ]
+        ]
+      },
+      "frozen": {
+        "evaluation": {
+          "backend": "eager",
+          "branch_cpu_s": 9.433000000003133e-05,
+          "branch_wall_s": 9.599101031199098e-05,
+          "fork_wall_s": 8.229981176555157e-06,
+          "ir_root_count": 0,
+          "outputs": [],
+          "program_node_count": 0,
+          "result_digest": "d02a07c4dbe73fc8273effd10385a5adf70d6137d197660ae3e41986db04fbb6",
+          "source_digest_before": "d02a07c4dbe73fc8273effd10385a5adf70d6137d197660ae3e41986db04fbb6",
+          "source_digest_expected": "d02a07c4dbe73fc8273effd10385a5adf70d6137d197660ae3e41986db04fbb6",
+          "source_unchanged": true,
+          "task_program_present": false
+        },
+        "program_count": 0,
+        "task_program_count": 0
+      },
+      "isolation": {
+        "baseline_digest_after": "d02a07c4dbe73fc8273effd10385a5adf70d6137d197660ae3e41986db04fbb6",
+        "baseline_unchanged": true,
+        "candidate_snapshot_distinct": true,
+        "candidate_snapshot_unchanged": true,
+        "exposure_source_unchanged": true,
+        "frozen_source_unchanged": true
+      },
+      "peak_rss_kib": 60456,
+      "pid": 6,
+      "replicate": 1,
+      "task": "clamp_neg2_4",
+      "worker_error": null
+    },
+    {
+      "baseline_digest": "d02a07c4dbe73fc8273effd10385a5adf70d6137d197660ae3e41986db04fbb6",
+      "candidate": {
+        "construction": null,
+        "eager": {
+          "backend": "eager",
+          "branch_cpu_s": 0.09096059500000003,
+          "branch_wall_s": 0.09181649301899597,
+          "fork_wall_s": 0.0011418579961173236,
+          "ir_root_count": 1,
+          "outputs": [
+            {
+              "exact": true,
+              "expected": 0,
+              "halted": true,
+              "input": -6,
+              "predicted": 0,
+              "trap": null
+            },
+            {
+              "exact": true,
+              "expected": 0,
+              "halted": true,
+              "input": -4,
+              "predicted": 0,
+              "trap": null
+            },
+            {
+              "exact": true,
+              "expected": 0,
+              "halted": true,
+              "input": -1,
+              "predicted": 0,
+              "trap": null
+            },
+            {
+              "exact": true,
+              "expected": 2,
+              "halted": true,
+              "input": 2,
+              "predicted": 2,
+              "trap": null
+            },
+            {
+              "exact": true,
+              "expected": 5,
+              "halted": true,
+              "input": 6,
+              "predicted": 5,
+              "trap": null
+            },
+            {
+              "exact": true,
+              "expected": 5,
+              "halted": true,
+              "input": 9,
+              "predicted": 5,
+              "trap": null
+            }
+          ],
+          "program_node_count": 1,
+          "result_digest": "a67b872e4f338179c27d1524e1f4ffddb0619caf861c03ee64c5d7729f991ca0",
+          "source_digest_before": "a67b872e4f338179c27d1524e1f4ffddb0619caf861c03ee64c5d7729f991ca0",
+          "source_digest_expected": "a67b872e4f338179c27d1524e1f4ffddb0619caf861c03ee64c5d7729f991ca0",
+          "source_unchanged": true,
+          "task_program_present": true
+        },
+        "enumerate_outcome": "ok",
+        "ir": {
+          "stmts": [
+            {
+              "default": null,
+              "name": "value",
+              "type": "ProgDefFnParam"
+            },
+            {
+              "type": "ProgReturn",
+              "value": {
+                "items": [
+                  {
+                    "type": "Lit",
+                    "value": 5
+                  },
+                  {
+                    "items": [
+                      {
+                        "name": "value",
+                        "type": "Var"
+                      },
+                      {
+                        "type": "Lit",
+                        "value": 0
+                      }
+                    ],
+                    "type": "Max"
+                  }
+                ],
+                "type": "Min"
+              }
+            }
+          ],
+          "type": "ProgSeq"
+        },
+        "ir_root_count": 1,
+        "program_attrs": {
+          "attempts": 0.0,
+          "construction": null,
+          "name": "clamp_0_5",
+          "program": "{\"type\": \"ProgSeq\", \"stmts\": [{\"type\": \"ProgDefFnParam\", \"name\": \"value\", \"default\": null}, {\"type\": \"ProgReturn\", \"value\": {\"items\": [{\"type\": \"Lit\", \"value\": 5}, {\"items\": [{\"name\": \"value\", \"type\": \"Var\"}, {\"type\": \"Lit\", \"value\": 0}], \"type\": \"Max\"}], \"type\": \"Min\"}}]}",
+          "provenance": "program_synthesis"
+        },
+        "program_count": 1,
+        "program_id": "#2620",
+        "rungs": {
+          "codebook": null,
+          "descend": null,
+          "enumerate": 1.0,
+          "exact": null,
+          "lattice": null
+        },
+        "shared_graph_pages": {
+          "backend": "shared_graph_pages",
+          "branch_cpu_s": 0.06782138800000004,
+          "branch_wall_s": 0.06783112999983132,
+          "fork_wall_s": 0.00040618301136419177,
+          "ir_root_count": 1,
+          "outputs": [
+            {
+              "exact": true,
+              "expected": 0,
+              "halted": true,
+              "input": -6,
+              "predicted": 0,
+              "trap": null
+            },
+            {
+              "exact": true,
+              "expected": 0,
+              "halted": true,
+              "input": -4,
+              "predicted": 0,
+              "trap": null
+            },
+            {
+              "exact": true,
+              "expected": 0,
+              "halted": true,
+              "input": -1,
+              "predicted": 0,
+              "trap": null
+            },
+            {
+              "exact": true,
+              "expected": 2,
+              "halted": true,
+              "input": 2,
+              "predicted": 2,
+              "trap": null
+            },
+            {
+              "exact": true,
+              "expected": 5,
+              "halted": true,
+              "input": 6,
+              "predicted": 5,
+              "trap": null
+            },
+            {
+              "exact": true,
+              "expected": 5,
+              "halted": true,
+              "input": 9,
+              "predicted": 5,
+              "trap": null
+            }
+          ],
+          "program_node_count": 1,
+          "result_digest": "a67b872e4f338179c27d1524e1f4ffddb0619caf861c03ee64c5d7729f991ca0",
+          "source_digest_before": "a67b872e4f338179c27d1524e1f4ffddb0619caf861c03ee64c5d7729f991ca0",
+          "source_digest_expected": "a67b872e4f338179c27d1524e1f4ffddb0619caf861c03ee64c5d7729f991ca0",
+          "source_unchanged": true,
+          "task_program_present": true
+        },
+        "snapshot_digest": "a67b872e4f338179c27d1524e1f4ffddb0619caf861c03ee64c5d7729f991ca0",
+        "snapshot_unchanged_after_eval": true,
+        "status": "accepted",
+        "train_cpu_s": 0.101974177,
+        "train_wall_s": 0.10407281096559018,
+        "training_rows": [
+          [
+            -2,
+            0
+          ],
+          [
+            0,
+            0
+          ],
+          [
+            1,
+            1
+          ],
+          [
+            4,
+            4
+          ],
+          [
+            5,
+            5
+          ],
+          [
+            7,
+            5
+          ]
+        ]
+      },
+      "elapsed_cpu_s": 0.707569141,
+      "elapsed_wall_s": 0.7157187180127949,
+      "exposure_without_pump": {
+        "evaluation": {
+          "backend": "shared_graph_pages",
+          "branch_cpu_s": 0.08497629300000009,
+          "branch_wall_s": 0.08508070500101894,
+          "fork_wall_s": 0.0003915329580195248,
+          "ir_root_count": 0,
+          "outputs": [],
+          "program_node_count": 0,
+          "result_digest": "f2b5c7c0572520c5491c6a330ca2584550aaa5e8761bb0e44c665ada9b26aeea",
+          "source_digest_before": "f2b5c7c0572520c5491c6a330ca2584550aaa5e8761bb0e44c665ada9b26aeea",
+          "source_digest_expected": "f2b5c7c0572520c5491c6a330ca2584550aaa5e8761bb0e44c665ada9b26aeea",
+          "source_unchanged": true,
+          "task_program_present": false
+        },
+        "ingest_cpu_s": 0.0007185199999999448,
+        "ingest_wall_s": 0.0007201550179161131,
+        "message_id": "#2591",
+        "request": "write a function clamp_value between bounds 0 and 5",
+        "task_program_count_before_eval": 0,
+        "training_rows": [
+          [
+            -2,
+            0
+          ],
+          [
+            0,
+            0
+          ],
+          [
+            1,
+            1
+          ],
+          [
+            4,
+            4
+          ],
+          [
+            5,
+            5
+          ],
+          [
+            7,
+            5
+          ]
+        ]
+      },
+      "frozen": {
+        "evaluation": {
+          "backend": "eager",
+          "branch_cpu_s": 0.00015830999999999484,
+          "branch_wall_s": 0.00016158097423613071,
+          "fork_wall_s": 1.3140030205249786e-05,
+          "ir_root_count": 0,
+          "outputs": [],
+          "program_node_count": 0,
+          "result_digest": "d02a07c4dbe73fc8273effd10385a5adf70d6137d197660ae3e41986db04fbb6",
+          "source_digest_before": "d02a07c4dbe73fc8273effd10385a5adf70d6137d197660ae3e41986db04fbb6",
+          "source_digest_expected": "d02a07c4dbe73fc8273effd10385a5adf70d6137d197660ae3e41986db04fbb6",
+          "source_unchanged": true,
+          "task_program_present": false
+        },
+        "program_count": 0,
+        "task_program_count": 0
+      },
+      "isolation": {
+        "baseline_digest_after": "d02a07c4dbe73fc8273effd10385a5adf70d6137d197660ae3e41986db04fbb6",
+        "baseline_unchanged": true,
+        "candidate_snapshot_distinct": true,
+        "candidate_snapshot_unchanged": true,
+        "exposure_source_unchanged": true,
+        "frozen_source_unchanged": true
+      },
+      "peak_rss_kib": 59968,
+      "pid": 152,
+      "replicate": 5,
+      "task": "clamp_0_5",
+      "worker_error": null
+    },
+    {
+      "baseline_digest": "d02a07c4dbe73fc8273effd10385a5adf70d6137d197660ae3e41986db04fbb6",
+      "candidate": {
+        "construction": null,
+        "eager": {
+          "backend": "eager",
+          "branch_cpu_s": 0.09368460500000003,
+          "branch_wall_s": 0.09385151701280847,
+          "fork_wall_s": 0.0013774600229226053,
+          "ir_root_count": 1,
+          "outputs": [
+            {
+              "exact": true,
+              "expected": 0,
+              "halted": true,
+              "input": -6,
+              "predicted": 0,
+              "trap": null
+            },
+            {
+              "exact": true,
+              "expected": 0,
+              "halted": true,
+              "input": -4,
+              "predicted": 0,
+              "trap": null
+            },
+            {
+              "exact": true,
+              "expected": 0,
+              "halted": true,
+              "input": -1,
+              "predicted": 0,
+              "trap": null
+            },
+            {
+              "exact": true,
+              "expected": 2,
+              "halted": true,
+              "input": 2,
+              "predicted": 2,
+              "trap": null
+            },
+            {
+              "exact": true,
+              "expected": 5,
+              "halted": true,
+              "input": 6,
+              "predicted": 5,
+              "trap": null
+            },
+            {
+              "exact": true,
+              "expected": 5,
+              "halted": true,
+              "input": 9,
+              "predicted": 5,
+              "trap": null
+            }
+          ],
+          "program_node_count": 1,
+          "result_digest": "a67b872e4f338179c27d1524e1f4ffddb0619caf861c03ee64c5d7729f991ca0",
+          "source_digest_before": "a67b872e4f338179c27d1524e1f4ffddb0619caf861c03ee64c5d7729f991ca0",
+          "source_digest_expected": "a67b872e4f338179c27d1524e1f4ffddb0619caf861c03ee64c5d7729f991ca0",
+          "source_unchanged": true,
+          "task_program_present": true
+        },
+        "enumerate_outcome": "ok",
+        "ir": {
+          "stmts": [
+            {
+              "default": null,
+              "name": "value",
+              "type": "ProgDefFnParam"
+            },
+            {
+              "type": "ProgReturn",
+              "value": {
+                "items": [
+                  {
+                    "type": "Lit",
+                    "value": 5
+                  },
+                  {
+                    "items": [
+                      {
+                        "name": "value",
+                        "type": "Var"
+                      },
+                      {
+                        "type": "Lit",
+                        "value": 0
+                      }
+                    ],
+                    "type": "Max"
+                  }
+                ],
+                "type": "Min"
+              }
+            }
+          ],
+          "type": "ProgSeq"
+        },
+        "ir_root_count": 1,
+        "program_attrs": {
+          "attempts": 0.0,
+          "construction": null,
+          "name": "clamp_0_5",
+          "program": "{\"type\": \"ProgSeq\", \"stmts\": [{\"type\": \"ProgDefFnParam\", \"name\": \"value\", \"default\": null}, {\"type\": \"ProgReturn\", \"value\": {\"items\": [{\"type\": \"Lit\", \"value\": 5}, {\"items\": [{\"name\": \"value\", \"type\": \"Var\"}, {\"type\": \"Lit\", \"value\": 0}], \"type\": \"Max\"}], \"type\": \"Min\"}}]}",
+          "provenance": "program_synthesis"
+        },
+        "program_count": 1,
+        "program_id": "#2620",
+        "rungs": {
+          "codebook": null,
+          "descend": null,
+          "enumerate": 1.0,
+          "exact": null,
+          "lattice": null
+        },
+        "shared_graph_pages": {
+          "backend": "shared_graph_pages",
+          "branch_cpu_s": 0.05940230499999999,
+          "branch_wall_s": 0.05982204194879159,
+          "fork_wall_s": 0.0003793230280280113,
+          "ir_root_count": 1,
+          "outputs": [
+            {
+              "exact": true,
+              "expected": 0,
+              "halted": true,
+              "input": -6,
+              "predicted": 0,
+              "trap": null
+            },
+            {
+              "exact": true,
+              "expected": 0,
+              "halted": true,
+              "input": -4,
+              "predicted": 0,
+              "trap": null
+            },
+            {
+              "exact": true,
+              "expected": 0,
+              "halted": true,
+              "input": -1,
+              "predicted": 0,
+              "trap": null
+            },
+            {
+              "exact": true,
+              "expected": 2,
+              "halted": true,
+              "input": 2,
+              "predicted": 2,
+              "trap": null
+            },
+            {
+              "exact": true,
+              "expected": 5,
+              "halted": true,
+              "input": 6,
+              "predicted": 5,
+              "trap": null
+            },
+            {
+              "exact": true,
+              "expected": 5,
+              "halted": true,
+              "input": 9,
+              "predicted": 5,
+              "trap": null
+            }
+          ],
+          "program_node_count": 1,
+          "result_digest": "a67b872e4f338179c27d1524e1f4ffddb0619caf861c03ee64c5d7729f991ca0",
+          "source_digest_before": "a67b872e4f338179c27d1524e1f4ffddb0619caf861c03ee64c5d7729f991ca0",
+          "source_digest_expected": "a67b872e4f338179c27d1524e1f4ffddb0619caf861c03ee64c5d7729f991ca0",
+          "source_unchanged": true,
+          "task_program_present": true
+        },
+        "snapshot_digest": "a67b872e4f338179c27d1524e1f4ffddb0619caf861c03ee64c5d7729f991ca0",
+        "snapshot_unchanged_after_eval": true,
+        "status": "accepted",
+        "train_cpu_s": 0.10184693700000003,
+        "train_wall_s": 0.09895370400045067,
+        "training_rows": [
+          [
+            -2,
+            0
+          ],
+          [
+            0,
+            0
+          ],
+          [
+            1,
+            1
+          ],
+          [
+            4,
+            4
+          ],
+          [
+            5,
+            5
+          ],
+          [
+            7,
+            5
+          ]
+        ]
+      },
+      "elapsed_cpu_s": 0.654463297,
+      "elapsed_wall_s": 0.6550330700119957,
+      "exposure_without_pump": {
+        "evaluation": {
+          "backend": "shared_graph_pages",
+          "branch_cpu_s": 0.079281512,
+          "branch_wall_s": 0.07929690298624337,
+          "fork_wall_s": 0.0004385440261103213,
+          "ir_root_count": 0,
+          "outputs": [],
+          "program_node_count": 0,
+          "result_digest": "f2b5c7c0572520c5491c6a330ca2584550aaa5e8761bb0e44c665ada9b26aeea",
+          "source_digest_before": "f2b5c7c0572520c5491c6a330ca2584550aaa5e8761bb0e44c665ada9b26aeea",
+          "source_digest_expected": "f2b5c7c0572520c5491c6a330ca2584550aaa5e8761bb0e44c665ada9b26aeea",
+          "source_unchanged": true,
+          "task_program_present": false
+        },
+        "ingest_cpu_s": 0.00035101000000004046,
+        "ingest_wall_s": 0.00035300198942422867,
+        "message_id": "#2591",
+        "request": "write a function clamp_value between bounds 0 and 5",
+        "task_program_count_before_eval": 0,
+        "training_rows": [
+          [
+            -2,
+            0
+          ],
+          [
+            0,
+            0
+          ],
+          [
+            1,
+            1
+          ],
+          [
+            4,
+            4
+          ],
+          [
+            5,
+            5
+          ],
+          [
+            7,
+            5
+          ]
+        ]
+      },
+      "frozen": {
+        "evaluation": {
+          "backend": "eager",
+          "branch_cpu_s": 0.0001535500000000578,
+          "branch_wall_s": 0.00015561102190986276,
+          "fork_wall_s": 1.436000457033515e-05,
+          "ir_root_count": 0,
+          "outputs": [],
+          "program_node_count": 0,
+          "result_digest": "d02a07c4dbe73fc8273effd10385a5adf70d6137d197660ae3e41986db04fbb6",
+          "source_digest_before": "d02a07c4dbe73fc8273effd10385a5adf70d6137d197660ae3e41986db04fbb6",
+          "source_digest_expected": "d02a07c4dbe73fc8273effd10385a5adf70d6137d197660ae3e41986db04fbb6",
+          "source_unchanged": true,
+          "task_program_present": false
+        },
+        "program_count": 0,
+        "task_program_count": 0
+      },
+      "isolation": {
+        "baseline_digest_after": "d02a07c4dbe73fc8273effd10385a5adf70d6137d197660ae3e41986db04fbb6",
+        "baseline_unchanged": true,
+        "candidate_snapshot_distinct": true,
+        "candidate_snapshot_unchanged": true,
+        "exposure_source_unchanged": true,
+        "frozen_source_unchanged": true
+      },
+      "peak_rss_kib": 59732,
+      "pid": 298,
+      "replicate": 1,
+      "task": "clamp_0_5",
+      "worker_error": null
+    },
+    {
+      "baseline_digest": "d02a07c4dbe73fc8273effd10385a5adf70d6137d197660ae3e41986db04fbb6",
+      "candidate": {
+        "construction": null,
+        "eager": {
+          "backend": "eager",
+          "branch_cpu_s": 0.08627680299999996,
+          "branch_wall_s": 0.0885389790055342,
+          "fork_wall_s": 0.001166998001281172,
+          "ir_root_count": 1,
+          "outputs": [
+            {
+              "exact": true,
+              "expected": -2,
+              "halted": true,
+              "input": -8,
+              "predicted": -2,
+              "trap": null
+            },
+            {
+              "exact": true,
+              "expected": -2,
+              "halted": true,
+              "input": -3,
+              "predicted": -2,
+              "trap": null
+            },
+            {
+              "exact": true,
+              "expected": 0,
+              "halted": true,
+              "input": 0,
+              "predicted": 0,
+              "trap": null
+            },
+            {
+              "exact": true,
+              "expected": 2,
+              "halted": true,
+              "input": 2,
+              "predicted": 2,
+              "trap": null
+            },
+            {
+              "exact": true,
+              "expected": 4,
+              "halted": true,
+              "input": 6,
+              "predicted": 4,
+              "trap": null
+            },
+            {
+              "exact": true,
+              "expected": 4,
+              "halted": true,
+              "input": 9,
+              "predicted": 4,
+              "trap": null
+            }
+          ],
+          "program_node_count": 1,
+          "result_digest": "9a864dc13d5318a75c85a2a0a7c06da723d7f7979d86a406df6833788bd5ca04",
+          "source_digest_before": "9a864dc13d5318a75c85a2a0a7c06da723d7f7979d86a406df6833788bd5ca04",
+          "source_digest_expected": "9a864dc13d5318a75c85a2a0a7c06da723d7f7979d86a406df6833788bd5ca04",
+          "source_unchanged": true,
+          "task_program_present": true
+        },
+        "enumerate_outcome": "ok",
+        "ir": {
+          "stmts": [
+            {
+              "default": null,
+              "name": "value",
+              "type": "ProgDefFnParam"
+            },
+            {
+              "type": "ProgReturn",
+              "value": {
+                "items": [
+                  {
+                    "type": "Lit",
+                    "value": 4
+                  },
+                  {
+                    "items": [
+                      {
+                        "name": "value",
+                        "type": "Var"
+                      },
+                      {
+                        "type": "Lit",
+                        "value": -2
+                      }
+                    ],
+                    "type": "Max"
+                  }
+                ],
+                "type": "Min"
+              }
+            }
+          ],
+          "type": "ProgSeq"
+        },
+        "ir_root_count": 1,
+        "program_attrs": {
+          "attempts": 0.0,
+          "construction": null,
+          "name": "clamp_neg2_4",
+          "program": "{\"type\": \"ProgSeq\", \"stmts\": [{\"type\": \"ProgDefFnParam\", \"name\": \"value\", \"default\": null}, {\"type\": \"ProgReturn\", \"value\": {\"items\": [{\"type\": \"Lit\", \"value\": 4}, {\"items\": [{\"name\": \"value\", \"type\": \"Var\"}, {\"type\": \"Lit\", \"value\": -2}], \"type\": \"Max\"}], \"type\": \"Min\"}}]}",
+          "provenance": "program_synthesis"
+        },
+        "program_count": 1,
+        "program_id": "#2619",
+        "rungs": {
+          "codebook": null,
+          "descend": null,
+          "enumerate": 1.0,
+          "exact": null,
+          "lattice": null
+        },
+        "shared_graph_pages": {
+          "backend": "shared_graph_pages",
+          "branch_cpu_s": 0.05592038499999996,
+          "branch_wall_s": 0.05591992405243218,
+          "fork_wall_s": 0.0004463240038603544,
+          "ir_root_count": 1,
+          "outputs": [
+            {
+              "exact": true,
+              "expected": -2,
+              "halted": true,
+              "input": -8,
+              "predicted": -2,
+              "trap": null
+            },
+            {
+              "exact": true,
+              "expected": -2,
+              "halted": true,
+              "input": -3,
+              "predicted": -2,
+              "trap": null
+            },
+            {
+              "exact": true,
+              "expected": 0,
+              "halted": true,
+              "input": 0,
+              "predicted": 0,
+              "trap": null
+            },
+            {
+              "exact": true,
+              "expected": 2,
+              "halted": true,
+              "input": 2,
+              "predicted": 2,
+              "trap": null
+            },
+            {
+              "exact": true,
+              "expected": 4,
+              "halted": true,
+              "input": 6,
+              "predicted": 4,
+              "trap": null
+            },
+            {
+              "exact": true,
+              "expected": 4,
+              "halted": true,
+              "input": 9,
+              "predicted": 4,
+              "trap": null
+            }
+          ],
+          "program_node_count": 1,
+          "result_digest": "9a864dc13d5318a75c85a2a0a7c06da723d7f7979d86a406df6833788bd5ca04",
+          "source_digest_before": "9a864dc13d5318a75c85a2a0a7c06da723d7f7979d86a406df6833788bd5ca04",
+          "source_digest_expected": "9a864dc13d5318a75c85a2a0a7c06da723d7f7979d86a406df6833788bd5ca04",
+          "source_unchanged": true,
+          "task_program_present": true
+        },
+        "snapshot_digest": "9a864dc13d5318a75c85a2a0a7c06da723d7f7979d86a406df6833788bd5ca04",
+        "snapshot_unchanged_after_eval": true,
+        "status": "accepted",
+        "train_cpu_s": 0.09029263500000001,
+        "train_wall_s": 0.09365720703499392,
+        "training_rows": [
+          [
+            -5,
+            -2
+          ],
+          [
+            -2,
+            -2
+          ],
+          [
+            -1,
+            -1
+          ],
+          [
+            1,
+            1
+          ],
+          [
+            4,
+            4
+          ],
+          [
+            7,
+            4
+          ]
+        ]
+      },
+      "elapsed_cpu_s": 0.647926246,
+      "elapsed_wall_s": 0.667372650001198,
+      "exposure_without_pump": {
+        "evaluation": {
+          "backend": "shared_graph_pages",
+          "branch_cpu_s": 0.07887168199999994,
+          "branch_wall_s": 0.07892115000868216,
+          "fork_wall_s": 0.00040177302435040474,
+          "ir_root_count": 0,
+          "outputs": [],
+          "program_node_count": 0,
+          "result_digest": "f36b74d3cca97ca92fcd710ef3b2375f597e0e749a1e5410908d6604b1b1f650",
+          "source_digest_before": "f36b74d3cca97ca92fcd710ef3b2375f597e0e749a1e5410908d6604b1b1f650",
+          "source_digest_expected": "f36b74d3cca97ca92fcd710ef3b2375f597e0e749a1e5410908d6604b1b1f650",
+          "source_unchanged": true,
+          "task_program_present": false
+        },
+        "ingest_cpu_s": 0.0004094599999999726,
+        "ingest_wall_s": 0.00041246297769248486,
+        "message_id": "#2591",
+        "request": "write a function clamp_value within limits negative two and 4",
+        "task_program_count_before_eval": 0,
+        "training_rows": [
+          [
+            -5,
+            -2
+          ],
+          [
+            -2,
+            -2
+          ],
+          [
+            -1,
+            -1
+          ],
+          [
+            1,
+            1
+          ],
+          [
+            4,
+            4
+          ],
+          [
+            7,
+            4
+          ]
+        ]
+      },
+      "frozen": {
+        "evaluation": {
+          "backend": "eager",
+          "branch_cpu_s": 0.0001638999999999946,
+          "branch_wall_s": 0.00016673101345077157,
+          "fork_wall_s": 1.528096618130803e-05,
+          "ir_root_count": 0,
+          "outputs": [],
+          "program_node_count": 0,
+          "result_digest": "d02a07c4dbe73fc8273effd10385a5adf70d6137d197660ae3e41986db04fbb6",
+          "source_digest_before": "d02a07c4dbe73fc8273effd10385a5adf70d6137d197660ae3e41986db04fbb6",
+          "source_digest_expected": "d02a07c4dbe73fc8273effd10385a5adf70d6137d197660ae3e41986db04fbb6",
+          "source_unchanged": true,
+          "task_program_present": false
+        },
+        "program_count": 0,
+        "task_program_count": 0
+      },
+      "isolation": {
+        "baseline_digest_after": "d02a07c4dbe73fc8273effd10385a5adf70d6137d197660ae3e41986db04fbb6",
+        "baseline_unchanged": true,
+        "candidate_snapshot_distinct": true,
+        "candidate_snapshot_unchanged": true,
+        "exposure_source_unchanged": true,
+        "frozen_source_unchanged": true
+      },
+      "peak_rss_kib": 59708,
+      "pid": 444,
+      "replicate": 5,
+      "task": "clamp_neg2_4",
+      "worker_error": null
+    },
+    {
+      "baseline_digest": "d02a07c4dbe73fc8273effd10385a5adf70d6137d197660ae3e41986db04fbb6",
+      "candidate": {
+        "construction": null,
+        "eager": {
+          "backend": "eager",
+          "branch_cpu_s": 0.07784723100000002,
+          "branch_wall_s": 0.07784621202154085,
+          "fork_wall_s": 0.001080297981388867,
+          "ir_root_count": 1,
+          "outputs": [
+            {
+              "exact": true,
+              "expected": 0,
+              "halted": true,
+              "input": -6,
+              "predicted": 0,
+              "trap": null
+            },
+            {
+              "exact": true,
+              "expected": 0,
+              "halted": true,
+              "input": -4,
+              "predicted": 0,
+              "trap": null
+            },
+            {
+              "exact": true,
+              "expected": 0,
+              "halted": true,
+              "input": -1,
+              "predicted": 0,
+              "trap": null
+            },
+            {
+              "exact": true,
+              "expected": 2,
+              "halted": true,
+              "input": 2,
+              "predicted": 2,
+              "trap": null
+            },
+            {
+              "exact": true,
+              "expected": 5,
+              "halted": true,
+              "input": 6,
+              "predicted": 5,
+              "trap": null
+            },
+            {
+              "exact": true,
+              "expected": 5,
+              "halted": true,
+              "input": 9,
+              "predicted": 5,
+              "trap": null
+            }
+          ],
+          "program_node_count": 1,
+          "result_digest": "a67b872e4f338179c27d1524e1f4ffddb0619caf861c03ee64c5d7729f991ca0",
+          "source_digest_before": "a67b872e4f338179c27d1524e1f4ffddb0619caf861c03ee64c5d7729f991ca0",
+          "source_digest_expected": "a67b872e4f338179c27d1524e1f4ffddb0619caf861c03ee64c5d7729f991ca0",
+          "source_unchanged": true,
+          "task_program_present": true
+        },
+        "enumerate_outcome": "ok",
+        "ir": {
+          "stmts": [
+            {
+              "default": null,
+              "name": "value",
+              "type": "ProgDefFnParam"
+            },
+            {
+              "type": "ProgReturn",
+              "value": {
+                "items": [
+                  {
+                    "type": "Lit",
+                    "value": 5
+                  },
+                  {
+                    "items": [
+                      {
+                        "name": "value",
+                        "type": "Var"
+                      },
+                      {
+                        "type": "Lit",
+                        "value": 0
+                      }
+                    ],
+                    "type": "Max"
+                  }
+                ],
+                "type": "Min"
+              }
+            }
+          ],
+          "type": "ProgSeq"
+        },
+        "ir_root_count": 1,
+        "program_attrs": {
+          "attempts": 0.0,
+          "construction": null,
+          "name": "clamp_0_5",
+          "program": "{\"type\": \"ProgSeq\", \"stmts\": [{\"type\": \"ProgDefFnParam\", \"name\": \"value\", \"default\": null}, {\"type\": \"ProgReturn\", \"value\": {\"items\": [{\"type\": \"Lit\", \"value\": 5}, {\"items\": [{\"name\": \"value\", \"type\": \"Var\"}, {\"type\": \"Lit\", \"value\": 0}], \"type\": \"Max\"}], \"type\": \"Min\"}}]}",
+          "provenance": "program_synthesis"
+        },
+        "program_count": 1,
+        "program_id": "#2620",
+        "rungs": {
+          "codebook": null,
+          "descend": null,
+          "enumerate": 1.0,
+          "exact": null,
+          "lattice": null
+        },
+        "shared_graph_pages": {
+          "backend": "shared_graph_pages",
+          "branch_cpu_s": 0.048967682999999984,
+          "branch_wall_s": 0.04896682302933186,
+          "fork_wall_s": 0.0003411530051380396,
+          "ir_root_count": 1,
+          "outputs": [
+            {
+              "exact": true,
+              "expected": 0,
+              "halted": true,
+              "input": -6,
+              "predicted": 0,
+              "trap": null
+            },
+            {
+              "exact": true,
+              "expected": 0,
+              "halted": true,
+              "input": -4,
+              "predicted": 0,
+              "trap": null
+            },
+            {
+              "exact": true,
+              "expected": 0,
+              "halted": true,
+              "input": -1,
+              "predicted": 0,
+              "trap": null
+            },
+            {
+              "exact": true,
+              "expected": 2,
+              "halted": true,
+              "input": 2,
+              "predicted": 2,
+              "trap": null
+            },
+            {
+              "exact": true,
+              "expected": 5,
+              "halted": true,
+              "input": 6,
+              "predicted": 5,
+              "trap": null
+            },
+            {
+              "exact": true,
+              "expected": 5,
+              "halted": true,
+              "input": 9,
+              "predicted": 5,
+              "trap": null
+            }
+          ],
+          "program_node_count": 1,
+          "result_digest": "a67b872e4f338179c27d1524e1f4ffddb0619caf861c03ee64c5d7729f991ca0",
+          "source_digest_before": "a67b872e4f338179c27d1524e1f4ffddb0619caf861c03ee64c5d7729f991ca0",
+          "source_digest_expected": "a67b872e4f338179c27d1524e1f4ffddb0619caf861c03ee64c5d7729f991ca0",
+          "source_unchanged": true,
+          "task_program_present": true
+        },
+        "snapshot_digest": "a67b872e4f338179c27d1524e1f4ffddb0619caf861c03ee64c5d7729f991ca0",
+        "snapshot_unchanged_after_eval": true,
+        "status": "accepted",
+        "train_cpu_s": 0.106796577,
+        "train_wall_s": 0.11350276903249323,
+        "training_rows": [
+          [
+            -2,
+            0
+          ],
+          [
+            0,
+            0
+          ],
+          [
+            1,
+            1
+          ],
+          [
+            4,
+            4
+          ],
+          [
+            5,
+            5
+          ],
+          [
+            7,
+            5
+          ]
+        ]
+      },
+      "elapsed_cpu_s": 0.644485821,
+      "elapsed_wall_s": 0.6522048700135201,
+      "exposure_without_pump": {
+        "evaluation": {
+          "backend": "shared_graph_pages",
+          "branch_cpu_s": 0.07998870000000002,
+          "branch_wall_s": 0.08057742199162021,
+          "fork_wall_s": 0.0007128550205379725,
+          "ir_root_count": 0,
+          "outputs": [],
+          "program_node_count": 0,
+          "result_digest": "f2b5c7c0572520c5491c6a330ca2584550aaa5e8761bb0e44c665ada9b26aeea",
+          "source_digest_before": "f2b5c7c0572520c5491c6a330ca2584550aaa5e8761bb0e44c665ada9b26aeea",
+          "source_digest_expected": "f2b5c7c0572520c5491c6a330ca2584550aaa5e8761bb0e44c665ada9b26aeea",
+          "source_unchanged": true,
+          "task_program_present": false
+        },
+        "ingest_cpu_s": 0.0007056709999999633,
+        "ingest_wall_s": 0.0007081350195221603,
+        "message_id": "#2591",
+        "request": "write a function clamp_value between bounds 0 and 5",
+        "task_program_count_before_eval": 0,
+        "training_rows": [
+          [
+            -2,
+            0
+          ],
+          [
+            0,
+            0
+          ],
+          [
+            1,
+            1
+          ],
+          [
+            4,
+            4
+          ],
+          [
+            5,
+            5
+          ],
+          [
+            7,
+            5
+          ]
+        ]
+      },
+      "frozen": {
+        "evaluation": {
+          "backend": "eager",
+          "branch_cpu_s": 0.00018010999999995558,
+          "branch_wall_s": 0.00018242100486531854,
+          "fork_wall_s": 1.5389989130198956e-05,
+          "ir_root_count": 0,
+          "outputs": [],
+          "program_node_count": 0,
+          "result_digest": "d02a07c4dbe73fc8273effd10385a5adf70d6137d197660ae3e41986db04fbb6",
+          "source_digest_before": "d02a07c4dbe73fc8273effd10385a5adf70d6137d197660ae3e41986db04fbb6",
+          "source_digest_expected": "d02a07c4dbe73fc8273effd10385a5adf70d6137d197660ae3e41986db04fbb6",
+          "source_unchanged": true,
+          "task_program_present": false
+        },
+        "program_count": 0,
+        "task_program_count": 0
+      },
+      "isolation": {
+        "baseline_digest_after": "d02a07c4dbe73fc8273effd10385a5adf70d6137d197660ae3e41986db04fbb6",
+        "baseline_unchanged": true,
+        "candidate_snapshot_distinct": true,
+        "candidate_snapshot_unchanged": true,
+        "exposure_source_unchanged": true,
+        "frozen_source_unchanged": true
+      },
+      "peak_rss_kib": 60188,
+      "pid": 590,
+      "replicate": 3,
+      "task": "clamp_0_5",
+      "worker_error": null
+    },
+    {
+      "baseline_digest": "d02a07c4dbe73fc8273effd10385a5adf70d6137d197660ae3e41986db04fbb6",
+      "candidate": {
+        "construction": null,
+        "eager": {
+          "backend": "eager",
+          "branch_cpu_s": 0.05170295399999997,
+          "branch_wall_s": 0.05170991300838068,
+          "fork_wall_s": 0.000900436018127948,
+          "ir_root_count": 1,
+          "outputs": [
+            {
+              "exact": true,
+              "expected": 0,
+              "halted": true,
+              "input": -6,
+              "predicted": 0,
+              "trap": null
+            },
+            {
+              "exact": true,
+              "expected": 0,
+              "halted": true,
+              "input": -4,
+              "predicted": 0,
+              "trap": null
+            },
+            {
+              "exact": true,
+              "expected": 0,
+              "halted": true,
+              "input": -1,
+              "predicted": 0,
+              "trap": null
+            },
+            {
+              "exact": true,
+              "expected": 2,
+              "halted": true,
+              "input": 2,
+              "predicted": 2,
+              "trap": null
+            },
+            {
+              "exact": true,
+              "expected": 5,
+              "halted": true,
+              "input": 6,
+              "predicted": 5,
+              "trap": null
+            },
+            {
+              "exact": true,
+              "expected": 5,
+              "halted": true,
+              "input": 9,
+              "predicted": 5,
+              "trap": null
+            }
+          ],
+          "program_node_count": 1,
+          "result_digest": "a67b872e4f338179c27d1524e1f4ffddb0619caf861c03ee64c5d7729f991ca0",
+          "source_digest_before": "a67b872e4f338179c27d1524e1f4ffddb0619caf861c03ee64c5d7729f991ca0",
+          "source_digest_expected": "a67b872e4f338179c27d1524e1f4ffddb0619caf861c03ee64c5d7729f991ca0",
+          "source_unchanged": true,
+          "task_program_present": true
+        },
+        "enumerate_outcome": "ok",
+        "ir": {
+          "stmts": [
+            {
+              "default": null,
+              "name": "value",
+              "type": "ProgDefFnParam"
+            },
+            {
+              "type": "ProgReturn",
+              "value": {
+                "items": [
+                  {
+                    "type": "Lit",
+                    "value": 5
+                  },
+                  {
+                    "items": [
+                      {
+                        "name": "value",
+                        "type": "Var"
+                      },
+                      {
+                        "type": "Lit",
+                        "value": 0
+                      }
+                    ],
+                    "type": "Max"
+                  }
+                ],
+                "type": "Min"
+              }
+            }
+          ],
+          "type": "ProgSeq"
+        },
+        "ir_root_count": 1,
+        "program_attrs": {
+          "attempts": 0.0,
+          "construction": null,
+          "name": "clamp_0_5",
+          "program": "{\"type\": \"ProgSeq\", \"stmts\": [{\"type\": \"ProgDefFnParam\", \"name\": \"value\", \"default\": null}, {\"type\": \"ProgReturn\", \"value\": {\"items\": [{\"type\": \"Lit\", \"value\": 5}, {\"items\": [{\"name\": \"value\", \"type\": \"Var\"}, {\"type\": \"Lit\", \"value\": 0}], \"type\": \"Max\"}], \"type\": \"Min\"}}]}",
+          "provenance": "program_synthesis"
+        },
+        "program_count": 1,
+        "program_id": "#2620",
+        "rungs": {
+          "codebook": null,
+          "descend": null,
+          "enumerate": 1.0,
+          "exact": null,
+          "lattice": null
+        },
+        "shared_graph_pages": {
+          "backend": "shared_graph_pages",
+          "branch_cpu_s": 0.06664763799999995,
+          "branch_wall_s": 0.06664851203095168,
+          "fork_wall_s": 0.0005407229764387012,
+          "ir_root_count": 1,
+          "outputs": [
+            {
+              "exact": true,
+              "expected": 0,
+              "halted": true,
+              "input": -6,
+              "predicted": 0,
+              "trap": null
+            },
+            {
+              "exact": true,
+              "expected": 0,
+              "halted": true,
+              "input": -4,
+              "predicted": 0,
+              "trap": null
+            },
+            {
+              "exact": true,
+              "expected": 0,
+              "halted": true,
+              "input": -1,
+              "predicted": 0,
+              "trap": null
+            },
+            {
+              "exact": true,
+              "expected": 2,
+              "halted": true,
+              "input": 2,
+              "predicted": 2,
+              "trap": null
+            },
+            {
+              "exact": true,
+              "expected": 5,
+              "halted": true,
+              "input": 6,
+              "predicted": 5,
+              "trap": null
+            },
+            {
+              "exact": true,
+              "expected": 5,
+              "halted": true,
+              "input": 9,
+              "predicted": 5,
+              "trap": null
+            }
+          ],
+          "program_node_count": 1,
+          "result_digest": "a67b872e4f338179c27d1524e1f4ffddb0619caf861c03ee64c5d7729f991ca0",
+          "source_digest_before": "a67b872e4f338179c27d1524e1f4ffddb0619caf861c03ee64c5d7729f991ca0",
+          "source_digest_expected": "a67b872e4f338179c27d1524e1f4ffddb0619caf861c03ee64c5d7729f991ca0",
+          "source_unchanged": true,
+          "task_program_present": true
+        },
+        "snapshot_digest": "a67b872e4f338179c27d1524e1f4ffddb0619caf861c03ee64c5d7729f991ca0",
+        "snapshot_unchanged_after_eval": true,
+        "status": "accepted",
+        "train_cpu_s": 0.09188460299999995,
+        "train_wall_s": 0.09722305199829862,
+        "training_rows": [
+          [
+            -2,
+            0
+          ],
+          [
+            0,
+            0
+          ],
+          [
+            1,
+            1
+          ],
+          [
+            4,
+            4
+          ],
+          [
+            5,
+            5
+          ],
+          [
+            7,
+            5
+          ]
+        ]
+      },
+      "elapsed_cpu_s": 0.5796260849999999,
+      "elapsed_wall_s": 0.5849109730334021,
+      "exposure_without_pump": {
+        "evaluation": {
+          "backend": "shared_graph_pages",
+          "branch_cpu_s": 0.07967448100000007,
+          "branch_wall_s": 0.07972206600243226,
+          "fork_wall_s": 0.00041151302866637707,
+          "ir_root_count": 0,
+          "outputs": [],
+          "program_node_count": 0,
+          "result_digest": "f2b5c7c0572520c5491c6a330ca2584550aaa5e8761bb0e44c665ada9b26aeea",
+          "source_digest_before": "f2b5c7c0572520c5491c6a330ca2584550aaa5e8761bb0e44c665ada9b26aeea",
+          "source_digest_expected": "f2b5c7c0572520c5491c6a330ca2584550aaa5e8761bb0e44c665ada9b26aeea",
+          "source_unchanged": true,
+          "task_program_present": false
+        },
+        "ingest_cpu_s": 0.0006033399999999522,
+        "ingest_wall_s": 0.00060689402744174,
+        "message_id": "#2591",
+        "request": "write a function clamp_value between bounds 0 and 5",
+        "task_program_count_before_eval": 0,
+        "training_rows": [
+          [
+            -2,
+            0
+          ],
+          [
+            0,
+            0
+          ],
+          [
+            1,
+            1
+          ],
+          [
+            4,
+            4
+          ],
+          [
+            5,
+            5
+          ],
+          [
+            7,
+            5
+          ]
+        ]
+      },
+      "frozen": {
+        "evaluation": {
+          "backend": "eager",
+          "branch_cpu_s": 0.00021786000000001415,
+          "branch_wall_s": 0.00022150104632601142,
+          "fork_wall_s": 1.9880011677742004e-05,
+          "ir_root_count": 0,
+          "outputs": [],
+          "program_node_count": 0,
+          "result_digest": "d02a07c4dbe73fc8273effd10385a5adf70d6137d197660ae3e41986db04fbb6",
+          "source_digest_before": "d02a07c4dbe73fc8273effd10385a5adf70d6137d197660ae3e41986db04fbb6",
+          "source_digest_expected": "d02a07c4dbe73fc8273effd10385a5adf70d6137d197660ae3e41986db04fbb6",
+          "source_unchanged": true,
+          "task_program_present": false
+        },
+        "program_count": 0,
+        "task_program_count": 0
+      },
+      "isolation": {
+        "baseline_digest_after": "d02a07c4dbe73fc8273effd10385a5adf70d6137d197660ae3e41986db04fbb6",
+        "baseline_unchanged": true,
+        "candidate_snapshot_distinct": true,
+        "candidate_snapshot_unchanged": true,
+        "exposure_source_unchanged": true,
+        "frozen_source_unchanged": true
+      },
+      "peak_rss_kib": 60308,
+      "pid": 736,
+      "replicate": 2,
+      "task": "clamp_0_5",
+      "worker_error": null
+    },
+    {
+      "baseline_digest": "d02a07c4dbe73fc8273effd10385a5adf70d6137d197660ae3e41986db04fbb6",
+      "candidate": {
+        "construction": null,
+        "eager": {
+          "backend": "eager",
+          "branch_cpu_s": 0.07396469,
+          "branch_wall_s": 0.0739907140377909,
+          "fork_wall_s": 0.001125598035287112,
+          "ir_root_count": 1,
+          "outputs": [
+            {
+              "exact": true,
+              "expected": -2,
+              "halted": true,
+              "input": -8,
+              "predicted": -2,
+              "trap": null
+            },
+            {
+              "exact": true,
+              "expected": -2,
+              "halted": true,
+              "input": -3,
+              "predicted": -2,
+              "trap": null
+            },
+            {
+              "exact": true,
+              "expected": 0,
+              "halted": true,
+              "input": 0,
+              "predicted": 0,
+              "trap": null
+            },
+            {
+              "exact": true,
+              "expected": 2,
+              "halted": true,
+              "input": 2,
+              "predicted": 2,
+              "trap": null
+            },
+            {
+              "exact": true,
+              "expected": 4,
+              "halted": true,
+              "input": 6,
+              "predicted": 4,
+              "trap": null
+            },
+            {
+              "exact": true,
+              "expected": 4,
+              "halted": true,
+              "input": 9,
+              "predicted": 4,
+              "trap": null
+            }
+          ],
+          "program_node_count": 1,
+          "result_digest": "9a864dc13d5318a75c85a2a0a7c06da723d7f7979d86a406df6833788bd5ca04",
+          "source_digest_before": "9a864dc13d5318a75c85a2a0a7c06da723d7f7979d86a406df6833788bd5ca04",
+          "source_digest_expected": "9a864dc13d5318a75c85a2a0a7c06da723d7f7979d86a406df6833788bd5ca04",
+          "source_unchanged": true,
+          "task_program_present": true
+        },
+        "enumerate_outcome": "ok",
+        "ir": {
+          "stmts": [
+            {
+              "default": null,
+              "name": "value",
+              "type": "ProgDefFnParam"
+            },
+            {
+              "type": "ProgReturn",
+              "value": {
+                "items": [
+                  {
+                    "type": "Lit",
+                    "value": 4
+                  },
+                  {
+                    "items": [
+                      {
+                        "name": "value",
+                        "type": "Var"
+                      },
+                      {
+                        "type": "Lit",
+                        "value": -2
+                      }
+                    ],
+                    "type": "Max"
+                  }
+                ],
+                "type": "Min"
+              }
+            }
+          ],
+          "type": "ProgSeq"
+        },
+        "ir_root_count": 1,
+        "program_attrs": {
+          "attempts": 0.0,
+          "construction": null,
+          "name": "clamp_neg2_4",
+          "program": "{\"type\": \"ProgSeq\", \"stmts\": [{\"type\": \"ProgDefFnParam\", \"name\": \"value\", \"default\": null}, {\"type\": \"ProgReturn\", \"value\": {\"items\": [{\"type\": \"Lit\", \"value\": 4}, {\"items\": [{\"name\": \"value\", \"type\": \"Var\"}, {\"type\": \"Lit\", \"value\": -2}], \"type\": \"Max\"}], \"type\": \"Min\"}}]}",
+          "provenance": "program_synthesis"
+        },
+        "program_count": 1,
+        "program_id": "#2619",
+        "rungs": {
+          "codebook": null,
+          "descend": null,
+          "enumerate": 1.0,
+          "exact": null,
+          "lattice": null
+        },
+        "shared_graph_pages": {
+          "backend": "shared_graph_pages",
+          "branch_cpu_s": 0.08318903200000005,
+          "branch_wall_s": 0.0831900899647735,
+          "fork_wall_s": 0.0006081549800001085,
+          "ir_root_count": 1,
+          "outputs": [
+            {
+              "exact": true,
+              "expected": -2,
+              "halted": true,
+              "input": -8,
+              "predicted": -2,
+              "trap": null
+            },
+            {
+              "exact": true,
+              "expected": -2,
+              "halted": true,
+              "input": -3,
+              "predicted": -2,
+              "trap": null
+            },
+            {
+              "exact": true,
+              "expected": 0,
+              "halted": true,
+              "input": 0,
+              "predicted": 0,
+              "trap": null
+            },
+            {
+              "exact": true,
+              "expected": 2,
+              "halted": true,
+              "input": 2,
+              "predicted": 2,
+              "trap": null
+            },
+            {
+              "exact": true,
+              "expected": 4,
+              "halted": true,
+              "input": 6,
+              "predicted": 4,
+              "trap": null
+            },
+            {
+              "exact": true,
+              "expected": 4,
+              "halted": true,
+              "input": 9,
+              "predicted": 4,
+              "trap": null
+            }
+          ],
+          "program_node_count": 1,
+          "result_digest": "9a864dc13d5318a75c85a2a0a7c06da723d7f7979d86a406df6833788bd5ca04",
+          "source_digest_before": "9a864dc13d5318a75c85a2a0a7c06da723d7f7979d86a406df6833788bd5ca04",
+          "source_digest_expected": "9a864dc13d5318a75c85a2a0a7c06da723d7f7979d86a406df6833788bd5ca04",
+          "source_unchanged": true,
+          "task_program_present": true
+        },
+        "snapshot_digest": "9a864dc13d5318a75c85a2a0a7c06da723d7f7979d86a406df6833788bd5ca04",
+        "snapshot_unchanged_after_eval": true,
+        "status": "accepted",
+        "train_cpu_s": 0.09368627600000001,
+        "train_wall_s": 0.0968576489831321,
+        "training_rows": [
+          [
+            -5,
+            -2
+          ],
+          [
+            -2,
+            -2
+          ],
+          [
+            -1,
+            -1
+          ],
+          [
+            1,
+            1
+          ],
+          [
+            4,
+            4
+          ],
+          [
+            7,
+            4
+          ]
+        ]
+      },
+      "elapsed_cpu_s": 0.648448385,
+      "elapsed_wall_s": 0.6586537369876169,
+      "exposure_without_pump": {
+        "evaluation": {
+          "backend": "shared_graph_pages",
+          "branch_cpu_s": 0.07474312000000005,
+          "branch_wall_s": 0.07474039902444929,
+          "fork_wall_s": 0.0003471429808996618,
+          "ir_root_count": 0,
+          "outputs": [],
+          "program_node_count": 0,
+          "result_digest": "f36b74d3cca97ca92fcd710ef3b2375f597e0e749a1e5410908d6604b1b1f650",
+          "source_digest_before": "f36b74d3cca97ca92fcd710ef3b2375f597e0e749a1e5410908d6604b1b1f650",
+          "source_digest_expected": "f36b74d3cca97ca92fcd710ef3b2375f597e0e749a1e5410908d6604b1b1f650",
+          "source_unchanged": true,
+          "task_program_present": false
+        },
+        "ingest_cpu_s": 0.00046106999999995235,
+        "ingest_wall_s": 0.00047478399937972426,
+        "message_id": "#2591",
+        "request": "write a function clamp_value within limits negative two and 4",
+        "task_program_count_before_eval": 0,
+        "training_rows": [
+          [
+            -5,
+            -2
+          ],
+          [
+            -2,
+            -2
+          ],
+          [
+            -1,
+            -1
+          ],
+          [
+            1,
+            1
+          ],
+          [
+            4,
+            4
+          ],
+          [
+            7,
+            4
+          ]
+        ]
+      },
+      "frozen": {
+        "evaluation": {
+          "backend": "eager",
+          "branch_cpu_s": 9.609999999993235e-05,
+          "branch_wall_s": 9.869097266346216e-05,
+          "fork_wall_s": 8.5500068962574e-06,
+          "ir_root_count": 0,
+          "outputs": [],
+          "program_node_count": 0,
+          "result_digest": "d02a07c4dbe73fc8273effd10385a5adf70d6137d197660ae3e41986db04fbb6",
+          "source_digest_before": "d02a07c4dbe73fc8273effd10385a5adf70d6137d197660ae3e41986db04fbb6",
+          "source_digest_expected": "d02a07c4dbe73fc8273effd10385a5adf70d6137d197660ae3e41986db04fbb6",
+          "source_unchanged": true,
+          "task_program_present": false
+        },
+        "program_count": 0,
+        "task_program_count": 0
+      },
+      "isolation": {
+        "baseline_digest_after": "d02a07c4dbe73fc8273effd10385a5adf70d6137d197660ae3e41986db04fbb6",
+        "baseline_unchanged": true,
+        "candidate_snapshot_distinct": true,
+        "candidate_snapshot_unchanged": true,
+        "exposure_source_unchanged": true,
+        "frozen_source_unchanged": true
+      },
+      "peak_rss_kib": 60204,
+      "pid": 882,
+      "replicate": 3,
+      "task": "clamp_neg2_4",
+      "worker_error": null
+    },
+    {
+      "baseline_digest": "d02a07c4dbe73fc8273effd10385a5adf70d6137d197660ae3e41986db04fbb6",
+      "candidate": {
+        "construction": null,
+        "eager": {
+          "backend": "eager",
+          "branch_cpu_s": 0.07855725200000002,
+          "branch_wall_s": 0.07857608702033758,
+          "fork_wall_s": 0.0015818120446056128,
+          "ir_root_count": 1,
+          "outputs": [
+            {
+              "exact": true,
+              "expected": -2,
+              "halted": true,
+              "input": -8,
+              "predicted": -2,
+              "trap": null
+            },
+            {
+              "exact": true,
+              "expected": -2,
+              "halted": true,
+              "input": -3,
+              "predicted": -2,
+              "trap": null
+            },
+            {
+              "exact": true,
+              "expected": 0,
+              "halted": true,
+              "input": 0,
+              "predicted": 0,
+              "trap": null
+            },
+            {
+              "exact": true,
+              "expected": 2,
+              "halted": true,
+              "input": 2,
+              "predicted": 2,
+              "trap": null
+            },
+            {
+              "exact": true,
+              "expected": 4,
+              "halted": true,
+              "input": 6,
+              "predicted": 4,
+              "trap": null
+            },
+            {
+              "exact": true,
+              "expected": 4,
+              "halted": true,
+              "input": 9,
+              "predicted": 4,
+              "trap": null
+            }
+          ],
+          "program_node_count": 1,
+          "result_digest": "9a864dc13d5318a75c85a2a0a7c06da723d7f7979d86a406df6833788bd5ca04",
+          "source_digest_before": "9a864dc13d5318a75c85a2a0a7c06da723d7f7979d86a406df6833788bd5ca04",
+          "source_digest_expected": "9a864dc13d5318a75c85a2a0a7c06da723d7f7979d86a406df6833788bd5ca04",
+          "source_unchanged": true,
+          "task_program_present": true
+        },
+        "enumerate_outcome": "ok",
+        "ir": {
+          "stmts": [
+            {
+              "default": null,
+              "name": "value",
+              "type": "ProgDefFnParam"
+            },
+            {
+              "type": "ProgReturn",
+              "value": {
+                "items": [
+                  {
+                    "type": "Lit",
+                    "value": 4
+                  },
+                  {
+                    "items": [
+                      {
+                        "name": "value",
+                        "type": "Var"
+                      },
+                      {
+                        "type": "Lit",
+                        "value": -2
+                      }
+                    ],
+                    "type": "Max"
+                  }
+                ],
+                "type": "Min"
+              }
+            }
+          ],
+          "type": "ProgSeq"
+        },
+        "ir_root_count": 1,
+        "program_attrs": {
+          "attempts": 0.0,
+          "construction": null,
+          "name": "clamp_neg2_4",
+          "program": "{\"type\": \"ProgSeq\", \"stmts\": [{\"type\": \"ProgDefFnParam\", \"name\": \"value\", \"default\": null}, {\"type\": \"ProgReturn\", \"value\": {\"items\": [{\"type\": \"Lit\", \"value\": 4}, {\"items\": [{\"name\": \"value\", \"type\": \"Var\"}, {\"type\": \"Lit\", \"value\": -2}], \"type\": \"Max\"}], \"type\": \"Min\"}}]}",
+          "provenance": "program_synthesis"
+        },
+        "program_count": 1,
+        "program_id": "#2619",
+        "rungs": {
+          "codebook": null,
+          "descend": null,
+          "enumerate": 1.0,
+          "exact": null,
+          "lattice": null
+        },
+        "shared_graph_pages": {
+          "backend": "shared_graph_pages",
+          "branch_cpu_s": 0.07337598000000001,
+          "branch_wall_s": 0.07337605895008892,
+          "fork_wall_s": 0.0005376939661800861,
+          "ir_root_count": 1,
+          "outputs": [
+            {
+              "exact": true,
+              "expected": -2,
+              "halted": true,
+              "input": -8,
+              "predicted": -2,
+              "trap": null
+            },
+            {
+              "exact": true,
+              "expected": -2,
+              "halted": true,
+              "input": -3,
+              "predicted": -2,
+              "trap": null
+            },
+            {
+              "exact": true,
+              "expected": 0,
+              "halted": true,
+              "input": 0,
+              "predicted": 0,
+              "trap": null
+            },
+            {
+              "exact": true,
+              "expected": 2,
+              "halted": true,
+              "input": 2,
+              "predicted": 2,
+              "trap": null
+            },
+            {
+              "exact": true,
+              "expected": 4,
+              "halted": true,
+              "input": 6,
+              "predicted": 4,
+              "trap": null
+            },
+            {
+              "exact": true,
+              "expected": 4,
+              "halted": true,
+              "input": 9,
+              "predicted": 4,
+              "trap": null
+            }
+          ],
+          "program_node_count": 1,
+          "result_digest": "9a864dc13d5318a75c85a2a0a7c06da723d7f7979d86a406df6833788bd5ca04",
+          "source_digest_before": "9a864dc13d5318a75c85a2a0a7c06da723d7f7979d86a406df6833788bd5ca04",
+          "source_digest_expected": "9a864dc13d5318a75c85a2a0a7c06da723d7f7979d86a406df6833788bd5ca04",
+          "source_unchanged": true,
+          "task_program_present": true
+        },
+        "snapshot_digest": "9a864dc13d5318a75c85a2a0a7c06da723d7f7979d86a406df6833788bd5ca04",
+        "snapshot_unchanged_after_eval": true,
+        "status": "accepted",
+        "train_cpu_s": 0.08436554000000002,
+        "train_wall_s": 0.08458576101111248,
+        "training_rows": [
+          [
+            -5,
+            -2
+          ],
+          [
+            -2,
+            -2
+          ],
+          [
+            -1,
+            -1
+          ],
+          [
+            1,
+            1
+          ],
+          [
+            4,
+            4
+          ],
+          [
+            7,
+            4
+          ]
+        ]
+      },
+      "elapsed_cpu_s": 0.696923688,
+      "elapsed_wall_s": 0.6991105289780535,
+      "exposure_without_pump": {
+        "evaluation": {
+          "backend": "shared_graph_pages",
+          "branch_cpu_s": 0.10379623800000004,
+          "branch_wall_s": 0.10408829199150205,
+          "fork_wall_s": 0.00048624398186802864,
+          "ir_root_count": 0,
+          "outputs": [],
+          "program_node_count": 0,
+          "result_digest": "f36b74d3cca97ca92fcd710ef3b2375f597e0e749a1e5410908d6604b1b1f650",
+          "source_digest_before": "f36b74d3cca97ca92fcd710ef3b2375f597e0e749a1e5410908d6604b1b1f650",
+          "source_digest_expected": "f36b74d3cca97ca92fcd710ef3b2375f597e0e749a1e5410908d6604b1b1f650",
+          "source_unchanged": true,
+          "task_program_present": false
+        },
+        "ingest_cpu_s": 0.0007072000000000189,
+        "ingest_wall_s": 0.0007092360174283385,
+        "message_id": "#2591",
+        "request": "write a function clamp_value within limits negative two and 4",
+        "task_program_count_before_eval": 0,
+        "training_rows": [
+          [
+            -5,
+            -2
+          ],
+          [
+            -2,
+            -2
+          ],
+          [
+            -1,
+            -1
+          ],
+          [
+            1,
+            1
+          ],
+          [
+            4,
+            4
+          ],
+          [
+            7,
+            4
+          ]
+        ]
+      },
+      "frozen": {
+        "evaluation": {
+          "backend": "eager",
+          "branch_cpu_s": 0.00010727999999993187,
+          "branch_wall_s": 0.0001095599727705121,
+          "fork_wall_s": 1.0190007742494345e-05,
+          "ir_root_count": 0,
+          "outputs": [],
+          "program_node_count": 0,
+          "result_digest": "d02a07c4dbe73fc8273effd10385a5adf70d6137d197660ae3e41986db04fbb6",
+          "source_digest_before": "d02a07c4dbe73fc8273effd10385a5adf70d6137d197660ae3e41986db04fbb6",
+          "source_digest_expected": "d02a07c4dbe73fc8273effd10385a5adf70d6137d197660ae3e41986db04fbb6",
+          "source_unchanged": true,
+          "task_program_present": false
+        },
+        "program_count": 0,
+        "task_program_count": 0
+      },
+      "isolation": {
+        "baseline_digest_after": "d02a07c4dbe73fc8273effd10385a5adf70d6137d197660ae3e41986db04fbb6",
+        "baseline_unchanged": true,
+        "candidate_snapshot_distinct": true,
+        "candidate_snapshot_unchanged": true,
+        "exposure_source_unchanged": true,
+        "frozen_source_unchanged": true
+      },
+      "peak_rss_kib": 59960,
+      "pid": 1028,
+      "replicate": 2,
+      "task": "clamp_neg2_4",
+      "worker_error": null
+    },
+    {
+      "baseline_digest": "d02a07c4dbe73fc8273effd10385a5adf70d6137d197660ae3e41986db04fbb6",
+      "candidate": {
+        "construction": null,
+        "eager": {
+          "backend": "eager",
+          "branch_cpu_s": 0.102100048,
+          "branch_wall_s": 0.10389604000374675,
+          "fork_wall_s": 0.0012874690000899136,
+          "ir_root_count": 1,
+          "outputs": [
+            {
+              "exact": true,
+              "expected": 0,
+              "halted": true,
+              "input": -6,
+              "predicted": 0,
+              "trap": null
+            },
+            {
+              "exact": true,
+              "expected": 0,
+              "halted": true,
+              "input": -4,
+              "predicted": 0,
+              "trap": null
+            },
+            {
+              "exact": true,
+              "expected": 0,
+              "halted": true,
+              "input": -1,
+              "predicted": 0,
+              "trap": null
+            },
+            {
+              "exact": true,
+              "expected": 2,
+              "halted": true,
+              "input": 2,
+              "predicted": 2,
+              "trap": null
+            },
+            {
+              "exact": true,
+              "expected": 5,
+              "halted": true,
+              "input": 6,
+              "predicted": 5,
+              "trap": null
+            },
+            {
+              "exact": true,
+              "expected": 5,
+              "halted": true,
+              "input": 9,
+              "predicted": 5,
+              "trap": null
+            }
+          ],
+          "program_node_count": 1,
+          "result_digest": "a67b872e4f338179c27d1524e1f4ffddb0619caf861c03ee64c5d7729f991ca0",
+          "source_digest_before": "a67b872e4f338179c27d1524e1f4ffddb0619caf861c03ee64c5d7729f991ca0",
+          "source_digest_expected": "a67b872e4f338179c27d1524e1f4ffddb0619caf861c03ee64c5d7729f991ca0",
+          "source_unchanged": true,
+          "task_program_present": true
+        },
+        "enumerate_outcome": "ok",
+        "ir": {
+          "stmts": [
+            {
+              "default": null,
+              "name": "value",
+              "type": "ProgDefFnParam"
+            },
+            {
+              "type": "ProgReturn",
+              "value": {
+                "items": [
+                  {
+                    "type": "Lit",
+                    "value": 5
+                  },
+                  {
+                    "items": [
+                      {
+                        "name": "value",
+                        "type": "Var"
+                      },
+                      {
+                        "type": "Lit",
+                        "value": 0
+                      }
+                    ],
+                    "type": "Max"
+                  }
+                ],
+                "type": "Min"
+              }
+            }
+          ],
+          "type": "ProgSeq"
+        },
+        "ir_root_count": 1,
+        "program_attrs": {
+          "attempts": 0.0,
+          "construction": null,
+          "name": "clamp_0_5",
+          "program": "{\"type\": \"ProgSeq\", \"stmts\": [{\"type\": \"ProgDefFnParam\", \"name\": \"value\", \"default\": null}, {\"type\": \"ProgReturn\", \"value\": {\"items\": [{\"type\": \"Lit\", \"value\": 5}, {\"items\": [{\"name\": \"value\", \"type\": \"Var\"}, {\"type\": \"Lit\", \"value\": 0}], \"type\": \"Max\"}], \"type\": \"Min\"}}]}",
+          "provenance": "program_synthesis"
+        },
+        "program_count": 1,
+        "program_id": "#2620",
+        "rungs": {
+          "codebook": null,
+          "descend": null,
+          "enumerate": 1.0,
+          "exact": null,
+          "lattice": null
+        },
+        "shared_graph_pages": {
+          "backend": "shared_graph_pages",
+          "branch_cpu_s": 0.0928840740000001,
+          "branch_wall_s": 0.0947405849583447,
+          "fork_wall_s": 0.0005661249742843211,
+          "ir_root_count": 1,
+          "outputs": [
+            {
+              "exact": true,
+              "expected": 0,
+              "halted": true,
+              "input": -6,
+              "predicted": 0,
+              "trap": null
+            },
+            {
+              "exact": true,
+              "expected": 0,
+              "halted": true,
+              "input": -4,
+              "predicted": 0,
+              "trap": null
+            },
+            {
+              "exact": true,
+              "expected": 0,
+              "halted": true,
+              "input": -1,
+              "predicted": 0,
+              "trap": null
+            },
+            {
+              "exact": true,
+              "expected": 2,
+              "halted": true,
+              "input": 2,
+              "predicted": 2,
+              "trap": null
+            },
+            {
+              "exact": true,
+              "expected": 5,
+              "halted": true,
+              "input": 6,
+              "predicted": 5,
+              "trap": null
+            },
+            {
+              "exact": true,
+              "expected": 5,
+              "halted": true,
+              "input": 9,
+              "predicted": 5,
+              "trap": null
+            }
+          ],
+          "program_node_count": 1,
+          "result_digest": "a67b872e4f338179c27d1524e1f4ffddb0619caf861c03ee64c5d7729f991ca0",
+          "source_digest_before": "a67b872e4f338179c27d1524e1f4ffddb0619caf861c03ee64c5d7729f991ca0",
+          "source_digest_expected": "a67b872e4f338179c27d1524e1f4ffddb0619caf861c03ee64c5d7729f991ca0",
+          "source_unchanged": true,
+          "task_program_present": true
+        },
+        "snapshot_digest": "a67b872e4f338179c27d1524e1f4ffddb0619caf861c03ee64c5d7729f991ca0",
+        "snapshot_unchanged_after_eval": true,
+        "status": "accepted",
+        "train_cpu_s": 0.08425459200000002,
+        "train_wall_s": 0.08432699803961441,
+        "training_rows": [
+          [
+            -2,
+            0
+          ],
+          [
+            0,
+            0
+          ],
+          [
+            1,
+            1
+          ],
+          [
+            4,
+            4
+          ],
+          [
+            5,
+            5
+          ],
+          [
+            7,
+            5
+          ]
+        ]
+      },
+      "elapsed_cpu_s": 0.726495345,
+      "elapsed_wall_s": 0.7356313240015879,
+      "exposure_without_pump": {
+        "evaluation": {
+          "backend": "shared_graph_pages",
+          "branch_cpu_s": 0.08286256299999994,
+          "branch_wall_s": 0.08306209999136627,
+          "fork_wall_s": 0.0005544640007428825,
+          "ir_root_count": 0,
+          "outputs": [],
+          "program_node_count": 0,
+          "result_digest": "f2b5c7c0572520c5491c6a330ca2584550aaa5e8761bb0e44c665ada9b26aeea",
+          "source_digest_before": "f2b5c7c0572520c5491c6a330ca2584550aaa5e8761bb0e44c665ada9b26aeea",
+          "source_digest_expected": "f2b5c7c0572520c5491c6a330ca2584550aaa5e8761bb0e44c665ada9b26aeea",
+          "source_unchanged": true,
+          "task_program_present": false
+        },
+        "ingest_cpu_s": 0.00035493999999991477,
+        "ingest_wall_s": 0.0003561429912224412,
+        "message_id": "#2591",
+        "request": "write a function clamp_value between bounds 0 and 5",
+        "task_program_count_before_eval": 0,
+        "training_rows": [
+          [
+            -2,
+            0
+          ],
+          [
+            0,
+            0
+          ],
+          [
+            1,
+            1
+          ],
+          [
+            4,
+            4
+          ],
+          [
+            5,
+            5
+          ],
+          [
+            7,
+            5
+          ]
+        ]
+      },
+      "frozen": {
+        "evaluation": {
+          "backend": "eager",
+          "branch_cpu_s": 0.00017960999999999672,
+          "branch_wall_s": 0.00018216099124401808,
+          "fork_wall_s": 1.7140002455562353e-05,
+          "ir_root_count": 0,
+          "outputs": [],
+          "program_node_count": 0,
+          "result_digest": "d02a07c4dbe73fc8273effd10385a5adf70d6137d197660ae3e41986db04fbb6",
+          "source_digest_before": "d02a07c4dbe73fc8273effd10385a5adf70d6137d197660ae3e41986db04fbb6",
+          "source_digest_expected": "d02a07c4dbe73fc8273effd10385a5adf70d6137d197660ae3e41986db04fbb6",
+          "source_unchanged": true,
+          "task_program_present": false
+        },
+        "program_count": 0,
+        "task_program_count": 0
+      },
+      "isolation": {
+        "baseline_digest_after": "d02a07c4dbe73fc8273effd10385a5adf70d6137d197660ae3e41986db04fbb6",
+        "baseline_unchanged": true,
+        "candidate_snapshot_distinct": true,
+        "candidate_snapshot_unchanged": true,
+        "exposure_source_unchanged": true,
+        "frozen_source_unchanged": true
+      },
+      "peak_rss_kib": 60224,
+      "pid": 1174,
+      "replicate": 4,
+      "task": "clamp_0_5",
+      "worker_error": null
+    },
+    {
+      "baseline_digest": "d02a07c4dbe73fc8273effd10385a5adf70d6137d197660ae3e41986db04fbb6",
+      "candidate": {
+        "construction": null,
+        "eager": {
+          "backend": "eager",
+          "branch_cpu_s": 0.08003992200000004,
+          "branch_wall_s": 0.08006116800243035,
+          "fork_wall_s": 0.0015645709936507046,
+          "ir_root_count": 1,
+          "outputs": [
+            {
+              "exact": true,
+              "expected": -2,
+              "halted": true,
+              "input": -8,
+              "predicted": -2,
+              "trap": null
+            },
+            {
+              "exact": true,
+              "expected": -2,
+              "halted": true,
+              "input": -3,
+              "predicted": -2,
+              "trap": null
+            },
+            {
+              "exact": true,
+              "expected": 0,
+              "halted": true,
+              "input": 0,
+              "predicted": 0,
+              "trap": null
+            },
+            {
+              "exact": true,
+              "expected": 2,
+              "halted": true,
+              "input": 2,
+              "predicted": 2,
+              "trap": null
+            },
+            {
+              "exact": true,
+              "expected": 4,
+              "halted": true,
+              "input": 6,
+              "predicted": 4,
+              "trap": null
+            },
+            {
+              "exact": true,
+              "expected": 4,
+              "halted": true,
+              "input": 9,
+              "predicted": 4,
+              "trap": null
+            }
+          ],
+          "program_node_count": 1,
+          "result_digest": "9a864dc13d5318a75c85a2a0a7c06da723d7f7979d86a406df6833788bd5ca04",
+          "source_digest_before": "9a864dc13d5318a75c85a2a0a7c06da723d7f7979d86a406df6833788bd5ca04",
+          "source_digest_expected": "9a864dc13d5318a75c85a2a0a7c06da723d7f7979d86a406df6833788bd5ca04",
+          "source_unchanged": true,
+          "task_program_present": true
+        },
+        "enumerate_outcome": "ok",
+        "ir": {
+          "stmts": [
+            {
+              "default": null,
+              "name": "value",
+              "type": "ProgDefFnParam"
+            },
+            {
+              "type": "ProgReturn",
+              "value": {
+                "items": [
+                  {
+                    "type": "Lit",
+                    "value": 4
+                  },
+                  {
+                    "items": [
+                      {
+                        "name": "value",
+                        "type": "Var"
+                      },
+                      {
+                        "type": "Lit",
+                        "value": -2
+                      }
+                    ],
+                    "type": "Max"
+                  }
+                ],
+                "type": "Min"
+              }
+            }
+          ],
+          "type": "ProgSeq"
+        },
+        "ir_root_count": 1,
+        "program_attrs": {
+          "attempts": 0.0,
+          "construction": null,
+          "name": "clamp_neg2_4",
+          "program": "{\"type\": \"ProgSeq\", \"stmts\": [{\"type\": \"ProgDefFnParam\", \"name\": \"value\", \"default\": null}, {\"type\": \"ProgReturn\", \"value\": {\"items\": [{\"type\": \"Lit\", \"value\": 4}, {\"items\": [{\"name\": \"value\", \"type\": \"Var\"}, {\"type\": \"Lit\", \"value\": -2}], \"type\": \"Max\"}], \"type\": \"Min\"}}]}",
+          "provenance": "program_synthesis"
+        },
+        "program_count": 1,
+        "program_id": "#2619",
+        "rungs": {
+          "codebook": null,
+          "descend": null,
+          "enumerate": 1.0,
+          "exact": null,
+          "lattice": null
+        },
+        "shared_graph_pages": {
+          "backend": "shared_graph_pages",
+          "branch_cpu_s": 0.08174808199999994,
+          "branch_wall_s": 0.08174700004747137,
+          "fork_wall_s": 0.0005152139929123223,
+          "ir_root_count": 1,
+          "outputs": [
+            {
+              "exact": true,
+              "expected": -2,
+              "halted": true,
+              "input": -8,
+              "predicted": -2,
+              "trap": null
+            },
+            {
+              "exact": true,
+              "expected": -2,
+              "halted": true,
+              "input": -3,
+              "predicted": -2,
+              "trap": null
+            },
+            {
+              "exact": true,
+              "expected": 0,
+              "halted": true,
+              "input": 0,
+              "predicted": 0,
+              "trap": null
+            },
+            {
+              "exact": true,
+              "expected": 2,
+              "halted": true,
+              "input": 2,
+              "predicted": 2,
+              "trap": null
+            },
+            {
+              "exact": true,
+              "expected": 4,
+              "halted": true,
+              "input": 6,
+              "predicted": 4,
+              "trap": null
+            },
+            {
+              "exact": true,
+              "expected": 4,
+              "halted": true,
+              "input": 9,
+              "predicted": 4,
+              "trap": null
+            }
+          ],
+          "program_node_count": 1,
+          "result_digest": "9a864dc13d5318a75c85a2a0a7c06da723d7f7979d86a406df6833788bd5ca04",
+          "source_digest_before": "9a864dc13d5318a75c85a2a0a7c06da723d7f7979d86a406df6833788bd5ca04",
+          "source_digest_expected": "9a864dc13d5318a75c85a2a0a7c06da723d7f7979d86a406df6833788bd5ca04",
+          "source_unchanged": true,
+          "task_program_present": true
+        },
+        "snapshot_digest": "9a864dc13d5318a75c85a2a0a7c06da723d7f7979d86a406df6833788bd5ca04",
+        "snapshot_unchanged_after_eval": true,
+        "status": "accepted",
+        "train_cpu_s": 0.08719475099999996,
+        "train_wall_s": 0.09231644700048491,
+        "training_rows": [
+          [
+            -5,
+            -2
+          ],
+          [
+            -2,
+            -2
+          ],
+          [
+            -1,
+            -1
+          ],
+          [
+            1,
+            1
+          ],
+          [
+            4,
+            4
+          ],
+          [
+            7,
+            4
+          ]
+        ]
+      },
+      "elapsed_cpu_s": 0.646117984,
+      "elapsed_wall_s": 0.6529072650009766,
+      "exposure_without_pump": {
+        "evaluation": {
+          "backend": "shared_graph_pages",
+          "branch_cpu_s": 0.07900175200000004,
+          "branch_wall_s": 0.07936767302453518,
+          "fork_wall_s": 0.0003795320517383516,
+          "ir_root_count": 0,
+          "outputs": [],
+          "program_node_count": 0,
+          "result_digest": "f36b74d3cca97ca92fcd710ef3b2375f597e0e749a1e5410908d6604b1b1f650",
+          "source_digest_before": "f36b74d3cca97ca92fcd710ef3b2375f597e0e749a1e5410908d6604b1b1f650",
+          "source_digest_expected": "f36b74d3cca97ca92fcd710ef3b2375f597e0e749a1e5410908d6604b1b1f650",
+          "source_unchanged": true,
+          "task_program_present": false
+        },
+        "ingest_cpu_s": 0.00041279999999999095,
+        "ingest_wall_s": 0.00041442300425842404,
+        "message_id": "#2591",
+        "request": "write a function clamp_value within limits negative two and 4",
+        "task_program_count_before_eval": 0,
+        "training_rows": [
+          [
+            -5,
+            -2
+          ],
+          [
+            -2,
+            -2
+          ],
+          [
+            -1,
+            -1
+          ],
+          [
+            1,
+            1
+          ],
+          [
+            4,
+            4
+          ],
+          [
+            7,
+            4
+          ]
+        ]
+      },
+      "frozen": {
+        "evaluation": {
+          "backend": "eager",
+          "branch_cpu_s": 0.00011705000000006294,
+          "branch_wall_s": 0.00012002099538221955,
+          "fork_wall_s": 9.060022421181202e-06,
+          "ir_root_count": 0,
+          "outputs": [],
+          "program_node_count": 0,
+          "result_digest": "d02a07c4dbe73fc8273effd10385a5adf70d6137d197660ae3e41986db04fbb6",
+          "source_digest_before": "d02a07c4dbe73fc8273effd10385a5adf70d6137d197660ae3e41986db04fbb6",
+          "source_digest_expected": "d02a07c4dbe73fc8273effd10385a5adf70d6137d197660ae3e41986db04fbb6",
+          "source_unchanged": true,
+          "task_program_present": false
+        },
+        "program_count": 0,
+        "task_program_count": 0
+      },
+      "isolation": {
+        "baseline_digest_after": "d02a07c4dbe73fc8273effd10385a5adf70d6137d197660ae3e41986db04fbb6",
+        "baseline_unchanged": true,
+        "candidate_snapshot_distinct": true,
+        "candidate_snapshot_unchanged": true,
+        "exposure_source_unchanged": true,
+        "frozen_source_unchanged": true
+      },
+      "peak_rss_kib": 60236,
+      "pid": 1320,
+      "replicate": 4,
+      "task": "clamp_neg2_4",
+      "worker_error": null
+    }
+  ]
+}

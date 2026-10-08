@@ -1,0 +1,98 @@
+{
+  "analyzer_sha256": "d6e7634e2a94f7edcd7e0f3f821b33c9a8ced78219914cd60c22619fb3825191",
+  "capture_sha256": "d3416b3a9e38c28ab03f131cba5f496eeac45417fc4437adf16d2d83227ebdc6",
+  "checks": {
+    "all_closures_fixed_point_within_bound": true,
+    "alternated_query_arm_order": true,
+    "analyzer_hash_stable": true,
+    "checker_decisions_recomputed": true,
+    "complete_unique_60_case_matrix": true,
+    "exact_direct_and_materialized_answers_all_q": true,
+    "exact_materialized_relation_against_dfs": true,
+    "independent_checker_and_negative_control": true,
+    "source_lock_capture_current": true
+  },
+  "claim_limit": "targeted timing replication on two synthetic tree families; no natural-task prevalence or general scaling claim",
+  "crossover_rule": "median paired ratio < 1 and at least 24/30 repetitions favor materialization",
+  "errors": [],
+  "passed": true,
+  "schema": "FiniteKeyReachabilityProfileV1_3Analysis",
+  "summary": {
+    "binary_tree:N=128": {
+      "edge_count": 127,
+      "median_closure_ms": 1.8810185,
+      "median_install_ms": 0.331658,
+      "median_setup_ms": 0.233282,
+      "query_counts": {
+        "128": {
+          "crossover_criterion_met": true,
+          "favorable_repetitions": 21,
+          "median_direct_total_ms": 94.7226025,
+          "median_paired_ratio": 0.9643397712325597,
+          "median_profile_total_ms": 89.4967345
+        },
+        "256": {
+          "crossover_criterion_met": true,
+          "favorable_repetitions": 23,
+          "median_direct_total_ms": 184.347638,
+          "median_paired_ratio": 0.9408683814308233,
+          "median_profile_total_ms": 175.990008
+        },
+        "32": {
+          "crossover_criterion_met": false,
+          "favorable_repetitions": 12,
+          "median_direct_total_ms": 24.195076,
+          "median_paired_ratio": 1.0187430431183335,
+          "median_profile_total_ms": 24.8882785
+        },
+        "64": {
+          "crossover_criterion_met": true,
+          "favorable_repetitions": 16,
+          "median_direct_total_ms": 46.557075,
+          "median_paired_ratio": 0.9641754629450999,
+          "median_profile_total_ms": 46.474373
+        }
+      },
+      "reachable_pairs": 649,
+      "repetitions": 30
+    },
+    "ternary_tree:N=128": {
+      "edge_count": 127,
+      "median_closure_ms": 1.05518,
+      "median_install_ms": 0.3328035,
+      "median_setup_ms": 0.231652,
+      "query_counts": {
+        "128": {
+          "crossover_criterion_met": false,
+          "favorable_repetitions": 14,
+          "median_direct_total_ms": 85.522561,
+          "median_paired_ratio": 1.005862862787543,
+          "median_profile_total_ms": 85.594941
+        },
+        "256": {
+          "crossover_criterion_met": true,
+          "favorable_repetitions": 20,
+          "median_direct_total_ms": 174.83688,
+          "median_paired_ratio": 0.9550123807143472,
+          "median_profile_total_ms": 170.3501175
+        },
+        "32": {
+          "crossover_criterion_met": false,
+          "favorable_repetitions": 14,
+          "median_direct_total_ms": 21.5457325,
+          "median_paired_ratio": 1.0209030211055181,
+          "median_profile_total_ms": 22.730263
+        },
+        "64": {
+          "crossover_criterion_met": true,
+          "favorable_repetitions": 16,
+          "median_direct_total_ms": 43.42116,
+          "median_paired_ratio": 0.9832750598841065,
+          "median_profile_total_ms": 43.1726525
+        }
+      },
+      "reachable_pairs": 461,
+      "repetitions": 30
+    }
+  }
+}

@@ -1,0 +1,248 @@
+{
+  "checks": {
+    "all_four_contenders_wait_then_enter": true,
+    "all_operations_and_threads_clean": true,
+    "conversation_reply_and_lifecycle": true,
+    "normalized_shape_repeats": true,
+    "sources_stable": true,
+    "three_distinct_processes": true
+  },
+  "claim_boundary": "Four common adapter graph-handle/public API calls contend with one live conversation and share its per-adapter lock. Direct handles retained before wrapping and cross-adapter/native ownership remain outside this test.",
+  "environment": {
+    "platform": "Linux-6.8.0-142-generic-x86_64-with-glibc2.39",
+    "python": "3.13.5 (main, Jun 11 2025, 15:36:57) [GCC 11.4.0]"
+  },
+  "lock_sha256": "4a4ab541f737188ba3f9f605adc90d41830f0fb5ce6232ce3b098ad502c24bab",
+  "locked_inputs": {
+    "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+    "native_build_manifest_sha256": "2d10ff9cc7f9832d91d1603c74dd0a0e0c4c5d3080a618a33575e9d5400ae871",
+    "native_extension_sha256": "f5543ca015278bad6c65506a0d7d9acb85b33252e7121cdda1a56df63e8ad27b",
+    "protocol_sha256": "f779e85dedb37f5caa1f71242755a27ccee987ee3a60ee1cb633bc8d1175c5f2",
+    "runner_sha256": "9051e7cea5f3cf69db1eb01badc0305a9bf7fefe089ad218437d676986bdd86b",
+    "source_sha256": {
+      "boot_all": "cb3645106e9f3cd056b900f507e5f4dbea36849d0568189545c73de698713d27",
+      "conversation_action": "f580ec11415d91bb54e86a8d33cefd216b31c6a9b8531815ef717070a37165c6",
+      "discourse_seed": "0dc367275203b8abcfd0be63b3c0dbe0308de50e25bd869c3ac2c88f622c8823",
+      "native_py": "034e606b055938e952fd5ff42cda66c563a37ca89a50761b62f6662282499ca9",
+      "world_adapter": "892cbeeb9507fe641bcfd6b0cb30541a9e32a2aa787659096294e8c378467a17"
+    }
+  },
+  "post_run_inputs": {
+    "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+    "native_build_manifest_sha256": "2d10ff9cc7f9832d91d1603c74dd0a0e0c4c5d3080a618a33575e9d5400ae871",
+    "native_extension_sha256": "f5543ca015278bad6c65506a0d7d9acb85b33252e7121cdda1a56df63e8ad27b",
+    "protocol_sha256": "f779e85dedb37f5caa1f71242755a27ccee987ee3a60ee1cb633bc8d1175c5f2",
+    "runner_sha256": "9051e7cea5f3cf69db1eb01badc0305a9bf7fefe089ad218437d676986bdd86b",
+    "source_sha256": {
+      "boot_all": "cb3645106e9f3cd056b900f507e5f4dbea36849d0568189545c73de698713d27",
+      "conversation_action": "f580ec11415d91bb54e86a8d33cefd216b31c6a9b8531815ef717070a37165c6",
+      "discourse_seed": "0dc367275203b8abcfd0be63b3c0dbe0308de50e25bd869c3ac2c88f622c8823",
+      "native_py": "034e606b055938e952fd5ff42cda66c563a37ca89a50761b62f6662282499ca9",
+      "world_adapter": "892cbeeb9507fe641bcfd6b0cb30541a9e32a2aa787659096294e8c378467a17"
+    }
+  },
+  "run_id": "substrate-direct-native-access-serialization-v1-20260926",
+  "runs": [
+    {
+      "attempted": {
+        "race-adapter_tick": true,
+        "race-inner_node": true,
+        "race-s_inner_node": true,
+        "race-s_node": true
+      },
+      "conversation_reply": "I see the grey thing stays, the yellow counter, and the blue thing moves.",
+      "entered": {
+        "race-adapter_tick": true,
+        "race-inner_node": true,
+        "race-s_inner_node": true,
+        "race-s_node": true
+      },
+      "errors": [],
+      "event_kinds": [
+        "instruction",
+        "selection",
+        "execution",
+        "action_result"
+      ],
+      "event_order_gate": true,
+      "identity_gate": true,
+      "joined": true,
+      "lifecycle_gate": true,
+      "operation_set_complete": true,
+      "operations": {
+        "adapter_tick": 0,
+        "inner_node": "Agent",
+        "s_inner_node": "Agent",
+        "s_node": "Agent"
+      },
+      "pause_gate": true,
+      "pid": 7,
+      "replicate": 1,
+      "reply_parity": true,
+      "worker_finished_inputs": {
+        "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+        "native_build_manifest_sha256": "2d10ff9cc7f9832d91d1603c74dd0a0e0c4c5d3080a618a33575e9d5400ae871",
+        "native_extension_sha256": "f5543ca015278bad6c65506a0d7d9acb85b33252e7121cdda1a56df63e8ad27b",
+        "protocol_sha256": "f779e85dedb37f5caa1f71242755a27ccee987ee3a60ee1cb633bc8d1175c5f2",
+        "runner_sha256": "9051e7cea5f3cf69db1eb01badc0305a9bf7fefe089ad218437d676986bdd86b",
+        "source_sha256": {
+          "boot_all": "cb3645106e9f3cd056b900f507e5f4dbea36849d0568189545c73de698713d27",
+          "conversation_action": "f580ec11415d91bb54e86a8d33cefd216b31c6a9b8531815ef717070a37165c6",
+          "discourse_seed": "0dc367275203b8abcfd0be63b3c0dbe0308de50e25bd869c3ac2c88f622c8823",
+          "native_py": "034e606b055938e952fd5ff42cda66c563a37ca89a50761b62f6662282499ca9",
+          "world_adapter": "892cbeeb9507fe641bcfd6b0cb30541a9e32a2aa787659096294e8c378467a17"
+        }
+      },
+      "worker_started_inputs": {
+        "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+        "native_build_manifest_sha256": "2d10ff9cc7f9832d91d1603c74dd0a0e0c4c5d3080a618a33575e9d5400ae871",
+        "native_extension_sha256": "f5543ca015278bad6c65506a0d7d9acb85b33252e7121cdda1a56df63e8ad27b",
+        "protocol_sha256": "f779e85dedb37f5caa1f71242755a27ccee987ee3a60ee1cb633bc8d1175c5f2",
+        "runner_sha256": "9051e7cea5f3cf69db1eb01badc0305a9bf7fefe089ad218437d676986bdd86b",
+        "source_sha256": {
+          "boot_all": "cb3645106e9f3cd056b900f507e5f4dbea36849d0568189545c73de698713d27",
+          "conversation_action": "f580ec11415d91bb54e86a8d33cefd216b31c6a9b8531815ef717070a37165c6",
+          "discourse_seed": "0dc367275203b8abcfd0be63b3c0dbe0308de50e25bd869c3ac2c88f622c8823",
+          "native_py": "034e606b055938e952fd5ff42cda66c563a37ca89a50761b62f6662282499ca9",
+          "world_adapter": "892cbeeb9507fe641bcfd6b0cb30541a9e32a2aa787659096294e8c378467a17"
+        }
+      }
+    },
+    {
+      "attempted": {
+        "race-adapter_tick": true,
+        "race-inner_node": true,
+        "race-s_inner_node": true,
+        "race-s_node": true
+      },
+      "conversation_reply": "I see the grey thing stays, the yellow counter, and the blue thing moves.",
+      "entered": {
+        "race-adapter_tick": true,
+        "race-inner_node": true,
+        "race-s_inner_node": true,
+        "race-s_node": true
+      },
+      "errors": [],
+      "event_kinds": [
+        "instruction",
+        "selection",
+        "execution",
+        "action_result"
+      ],
+      "event_order_gate": true,
+      "identity_gate": true,
+      "joined": true,
+      "lifecycle_gate": true,
+      "operation_set_complete": true,
+      "operations": {
+        "adapter_tick": 0,
+        "inner_node": "Agent",
+        "s_inner_node": "Agent",
+        "s_node": "Agent"
+      },
+      "pause_gate": true,
+      "pid": 5502,
+      "replicate": 2,
+      "reply_parity": true,
+      "worker_finished_inputs": {
+        "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+        "native_build_manifest_sha256": "2d10ff9cc7f9832d91d1603c74dd0a0e0c4c5d3080a618a33575e9d5400ae871",
+        "native_extension_sha256": "f5543ca015278bad6c65506a0d7d9acb85b33252e7121cdda1a56df63e8ad27b",
+        "protocol_sha256": "f779e85dedb37f5caa1f71242755a27ccee987ee3a60ee1cb633bc8d1175c5f2",
+        "runner_sha256": "9051e7cea5f3cf69db1eb01badc0305a9bf7fefe089ad218437d676986bdd86b",
+        "source_sha256": {
+          "boot_all": "cb3645106e9f3cd056b900f507e5f4dbea36849d0568189545c73de698713d27",
+          "conversation_action": "f580ec11415d91bb54e86a8d33cefd216b31c6a9b8531815ef717070a37165c6",
+          "discourse_seed": "0dc367275203b8abcfd0be63b3c0dbe0308de50e25bd869c3ac2c88f622c8823",
+          "native_py": "034e606b055938e952fd5ff42cda66c563a37ca89a50761b62f6662282499ca9",
+          "world_adapter": "892cbeeb9507fe641bcfd6b0cb30541a9e32a2aa787659096294e8c378467a17"
+        }
+      },
+      "worker_started_inputs": {
+        "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+        "native_build_manifest_sha256": "2d10ff9cc7f9832d91d1603c74dd0a0e0c4c5d3080a618a33575e9d5400ae871",
+        "native_extension_sha256": "f5543ca015278bad6c65506a0d7d9acb85b33252e7121cdda1a56df63e8ad27b",
+        "protocol_sha256": "f779e85dedb37f5caa1f71242755a27ccee987ee3a60ee1cb633bc8d1175c5f2",
+        "runner_sha256": "9051e7cea5f3cf69db1eb01badc0305a9bf7fefe089ad218437d676986bdd86b",
+        "source_sha256": {
+          "boot_all": "cb3645106e9f3cd056b900f507e5f4dbea36849d0568189545c73de698713d27",
+          "conversation_action": "f580ec11415d91bb54e86a8d33cefd216b31c6a9b8531815ef717070a37165c6",
+          "discourse_seed": "0dc367275203b8abcfd0be63b3c0dbe0308de50e25bd869c3ac2c88f622c8823",
+          "native_py": "034e606b055938e952fd5ff42cda66c563a37ca89a50761b62f6662282499ca9",
+          "world_adapter": "892cbeeb9507fe641bcfd6b0cb30541a9e32a2aa787659096294e8c378467a17"
+        }
+      }
+    },
+    {
+      "attempted": {
+        "race-adapter_tick": true,
+        "race-inner_node": true,
+        "race-s_inner_node": true,
+        "race-s_node": true
+      },
+      "conversation_reply": "I see the grey thing stays, the yellow counter, and the blue thing moves.",
+      "entered": {
+        "race-adapter_tick": true,
+        "race-inner_node": true,
+        "race-s_inner_node": true,
+        "race-s_node": true
+      },
+      "errors": [],
+      "event_kinds": [
+        "instruction",
+        "selection",
+        "execution",
+        "action_result"
+      ],
+      "event_order_gate": true,
+      "identity_gate": true,
+      "joined": true,
+      "lifecycle_gate": true,
+      "operation_set_complete": true,
+      "operations": {
+        "adapter_tick": 0,
+        "inner_node": "Agent",
+        "s_inner_node": "Agent",
+        "s_node": "Agent"
+      },
+      "pause_gate": true,
+      "pid": 10997,
+      "replicate": 0,
+      "reply_parity": true,
+      "worker_finished_inputs": {
+        "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+        "native_build_manifest_sha256": "2d10ff9cc7f9832d91d1603c74dd0a0e0c4c5d3080a618a33575e9d5400ae871",
+        "native_extension_sha256": "f5543ca015278bad6c65506a0d7d9acb85b33252e7121cdda1a56df63e8ad27b",
+        "protocol_sha256": "f779e85dedb37f5caa1f71242755a27ccee987ee3a60ee1cb633bc8d1175c5f2",
+        "runner_sha256": "9051e7cea5f3cf69db1eb01badc0305a9bf7fefe089ad218437d676986bdd86b",
+        "source_sha256": {
+          "boot_all": "cb3645106e9f3cd056b900f507e5f4dbea36849d0568189545c73de698713d27",
+          "conversation_action": "f580ec11415d91bb54e86a8d33cefd216b31c6a9b8531815ef717070a37165c6",
+          "discourse_seed": "0dc367275203b8abcfd0be63b3c0dbe0308de50e25bd869c3ac2c88f622c8823",
+          "native_py": "034e606b055938e952fd5ff42cda66c563a37ca89a50761b62f6662282499ca9",
+          "world_adapter": "892cbeeb9507fe641bcfd6b0cb30541a9e32a2aa787659096294e8c378467a17"
+        }
+      },
+      "worker_started_inputs": {
+        "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+        "native_build_manifest_sha256": "2d10ff9cc7f9832d91d1603c74dd0a0e0c4c5d3080a618a33575e9d5400ae871",
+        "native_extension_sha256": "f5543ca015278bad6c65506a0d7d9acb85b33252e7121cdda1a56df63e8ad27b",
+        "protocol_sha256": "f779e85dedb37f5caa1f71242755a27ccee987ee3a60ee1cb633bc8d1175c5f2",
+        "runner_sha256": "9051e7cea5f3cf69db1eb01badc0305a9bf7fefe089ad218437d676986bdd86b",
+        "source_sha256": {
+          "boot_all": "cb3645106e9f3cd056b900f507e5f4dbea36849d0568189545c73de698713d27",
+          "conversation_action": "f580ec11415d91bb54e86a8d33cefd216b31c6a9b8531815ef717070a37165c6",
+          "discourse_seed": "0dc367275203b8abcfd0be63b3c0dbe0308de50e25bd869c3ac2c88f622c8823",
+          "native_py": "034e606b055938e952fd5ff42cda66c563a37ca89a50761b62f6662282499ca9",
+          "world_adapter": "892cbeeb9507fe641bcfd6b0cb30541a9e32a2aa787659096294e8c378467a17"
+        }
+      }
+    }
+  ],
+  "schedule": [
+    1,
+    2,
+    0
+  ],
+  "schema_version": 1
+}

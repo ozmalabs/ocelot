@@ -1,0 +1,119 @@
+{
+  "checks": {
+    "all_v3_locked_hashes_match": true,
+    "altered_summary_is_silently_returned_as_recalled": true,
+    "five_distinct_processes": true,
+    "intact_checkpoint_roundtrips_six_events_and_rules": true,
+    "malformed_checkpoint_returns_json_decode_error": true,
+    "missing_record_link_returns_explicit_insufficient_information": true,
+    "restored_adapter_close_exposes_vision_field_error": true
+  },
+  "input_hash_match": {
+    "amendment_v2": true,
+    "amendment_v3": true,
+    "episodic_seed": true,
+    "harness": true,
+    "memory_seed": true,
+    "native_build_manifest": true,
+    "native_extension": true,
+    "preregistration": true,
+    "world_adapter": true
+  },
+  "interpretation": "Graph checkpoints preserve episodic state and rule execution here, but do not detect valid-JSON semantic corruption; loaded adapter cleanup raises AttributeError.",
+  "lock_run_id": "substrate-episodic-checkpoint-recovery-20260925-v3",
+  "raw_sha256": "3b8c2368e2bd53f56e7135db138a1feeb5e99ff758b9b53dc4923a8d1988ae1c",
+  "run_id": "substrate-episodic-checkpoint-recovery-20260925-v2",
+  "summary": {
+    "checkpoint_bytes": 55566,
+    "readers": {
+      "altered_summary": {
+        "candidate_counts": [
+          1,
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "close_exception_type": "AttributeError",
+        "close_status": "error",
+        "load_ms": 7.194959,
+        "load_status": "loaded",
+        "median_query_tick_ms": 0.175761,
+        "pid": 2410992,
+        "rss_peak_kib": 31464,
+        "summaries": [
+          "CORRUPTION-MARKER",
+          "checkpoint-route-1-north",
+          "checkpoint-route-2-north",
+          "checkpoint-route-3-north",
+          "checkpoint-route-4-north",
+          "checkpoint-route-5-north"
+        ]
+      },
+      "intact": {
+        "candidate_counts": [
+          1,
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "close_exception_type": "AttributeError",
+        "close_status": "error",
+        "load_ms": 7.052188,
+        "load_status": "loaded",
+        "median_query_tick_ms": 0.166851,
+        "pid": 2410977,
+        "rss_peak_kib": 30840,
+        "summaries": [
+          "checkpoint-route-0-north",
+          "checkpoint-route-1-north",
+          "checkpoint-route-2-north",
+          "checkpoint-route-3-north",
+          "checkpoint-route-4-north",
+          "checkpoint-route-5-north"
+        ]
+      },
+      "malformed_json": {
+        "candidate_counts": [],
+        "close_exception_type": null,
+        "close_status": null,
+        "load_ms": 0.0,
+        "load_status": "error",
+        "median_query_tick_ms": null,
+        "pid": 2411020,
+        "rss_peak_kib": 26112,
+        "summaries": []
+      },
+      "missing_recorded_edge": {
+        "candidate_counts": [
+          1,
+          0,
+          1,
+          1,
+          1,
+          1
+        ],
+        "close_exception_type": "AttributeError",
+        "close_status": "error",
+        "load_ms": 7.057758,
+        "load_status": "loaded",
+        "median_query_tick_ms": 0.167021,
+        "pid": 2411006,
+        "rss_peak_kib": 30332,
+        "summaries": [
+          "checkpoint-route-0-north",
+          null,
+          "checkpoint-route-2-north",
+          "checkpoint-route-3-north",
+          "checkpoint-route-4-north",
+          "checkpoint-route-5-north"
+        ]
+      }
+    },
+    "writer_episode_count": 6,
+    "writer_pid": 2410968
+  }
+}

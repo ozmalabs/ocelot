@@ -1,0 +1,45 @@
+{
+  "all_checks_pass": true,
+  "by_bound": {
+    "12": {
+      "candidate_count": 390624,
+      "max_seconds": 0.45863461200497113,
+      "median_candidates_per_second": 892400.3245142071,
+      "median_seconds": 0.4377228349985671,
+      "min_seconds": 0.4341829639961361,
+      "samples": 5
+    },
+    "4": {
+      "candidate_count": 6560,
+      "max_seconds": 0.01091761599673191,
+      "median_candidates_per_second": 886748.3165349124,
+      "median_seconds": 0.0073978150030598044,
+      "min_seconds": 0.007301553996512666,
+      "samples": 5
+    },
+    "8": {
+      "candidate_count": 83520,
+      "max_seconds": 0.09593077799945604,
+      "median_candidates_per_second": 890293.4604596387,
+      "median_seconds": 0.09381176399620017,
+      "min_seconds": 0.09220586499577621,
+      "samples": 5
+    }
+  },
+  "checks": {
+    "all_calls_return_expected_generator": true,
+    "all_three_locked_bounds_present": true,
+    "candidate_counts_match_exhaustive_formula": true,
+    "five_finite_positive_samples_per_bound": true,
+    "native_extension_hash_current": true,
+    "schedule_and_sample_total_match_lock": true,
+    "source_hashes_current": true
+  },
+  "interpretation": "Descriptive per-call CPU wall time and candidate throughput for one positive, fixed 2-D family. Three bounds and five repeated calls do not establish an asymptotic runtime law or natural workload cost.",
+  "median_time_ratios": {
+    "B12_over_B4_median_time": 59.169205342053154,
+    "B8_over_B4_median_time": 12.681009724817228
+  },
+  "schema_version": 1,
+  "source": "evaluation/reports/substrate_geninfer_scale_probe_v1_20260926.json"
+}

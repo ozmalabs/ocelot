@@ -1,0 +1,273 @@
+{
+  "audits": [
+    {
+      "family": "shape_decode_codebook_helpers",
+      "scope_class": "whole node-type population scan plus data-dependent candidate/search work",
+      "source_evidence": [
+        {
+          "finding": "Every unscoped codebook load traverses the full current population of the requested node type.",
+          "line": 283,
+          "needle": "for nid in ctx.graph.nodes_of_type(codebook_type)",
+          "path": "runners/dsl/src/shape_decode.rs"
+        },
+        {
+          "finding": "Scope filtering is evaluated after population enumeration, before signature parsing and candidate work.",
+          "line": 285,
+          "needle": "if let (Some(scope), Some(key)) = (scope_filter, scope_key)",
+          "path": "runners/dsl/src/shape_decode.rs"
+        },
+        {
+          "finding": "Each selected population member has its attributes traversed to recover codebook fields.",
+          "line": 297,
+          "needle": "for (k, v) in node.attrs.iter()",
+          "path": "runners/dsl/src/shape_decode.rs"
+        },
+        {
+          "finding": "ShapeDecode cache misses additionally enumerate all RelationCueToken nodes to build an index.",
+          "line": 1202,
+          "needle": "for nid in ctx.graph.nodes_of_type(cue_type)",
+          "path": "runners/dsl/src/shape_decode.rs"
+        },
+        {
+          "finding": "ShapeDecode expansion work uses a per-call expansion budget (defaulted when nonpositive).",
+          "line": 1724,
+          "needle": "let sd_budget: u64",
+          "path": "runners/dsl/src/shape_decode.rs"
+        },
+        {
+          "finding": "The default ShapeDecode expansion budget is 20,000 candidate-state expansions.",
+          "line": 1579,
+          "needle": "pub(crate) const DEFAULT_SD_BUDGET: i64 = 20_000;",
+          "path": "runners/dsl/src/shape_decode.rs"
+        },
+        {
+          "finding": "ShapeDecode applies an optional scope filter after loading the complete codebook population.",
+          "line": 1661,
+          "needle": "apply_scope(&mut parts, scope_idx, arena, env, ctx);",
+          "path": "runners/dsl/src/shape_decode.rs"
+        },
+        {
+          "finding": "GenInfer admits only two-coordinate bases before the 2x2 matrix enumeration.",
+          "line": 3116,
+          "needle": "if n != 2 {",
+          "path": "runners/dsl/src/shape_decode.rs"
+        },
+        {
+          "finding": "GenInfer enumerates one coordinate of each 2x2 integer matrix per nested loop.",
+          "line": 3145,
+          "needle": "for m00 in -b..=b",
+          "path": "runners/dsl/src/shape_decode.rs"
+        },
+        {
+          "finding": "GenInfer enumerates one coordinate of each 2x2 integer matrix per nested loop.",
+          "line": 3146,
+          "needle": "for m01 in -b..=b",
+          "path": "runners/dsl/src/shape_decode.rs"
+        },
+        {
+          "finding": "GenInfer enumerates one coordinate of each 2x2 integer matrix per nested loop.",
+          "line": 3147,
+          "needle": "for m10 in -b..=b",
+          "path": "runners/dsl/src/shape_decode.rs"
+        },
+        {
+          "finding": "GenInfer enumerates one coordinate of each 2x2 integer matrix per nested loop.",
+          "line": 3148,
+          "needle": "for m11 in -b..=b",
+          "path": "runners/dsl/src/shape_decode.rs"
+        }
+      ],
+      "term_variants": [
+        {
+          "codebook_scope_behavior": "loads every codebook_type node; where a scope term exists, it is applied after loading",
+          "evaluator_helper": "eval_shape_decode",
+          "loader": "load_parts",
+          "runtime_rule_definition_count": 9,
+          "runtime_term_occurrences_in_unique_definitions": 13,
+          "source_review": "shape_decode.rs::eval_shape_decode; codebook node and attribute scans",
+          "term_variant": "ShapeDecode"
+        },
+        {
+          "codebook_scope_behavior": "loads every codebook_type node; where a scope term exists, it is applied after loading",
+          "evaluator_helper": "eval_transform_decode",
+          "loader": "load_parts",
+          "runtime_rule_definition_count": 2,
+          "runtime_term_occurrences_in_unique_definitions": 7,
+          "source_review": "shape_decode.rs::eval_transform_decode; held codebook scans",
+          "term_variant": "TransformDecode"
+        },
+        {
+          "codebook_scope_behavior": "loads every codebook_type node; where a scope term exists, it is applied after loading",
+          "evaluator_helper": "eval_dim_infer",
+          "loader": "load_parts",
+          "runtime_rule_definition_count": 2,
+          "runtime_term_occurrences_in_unique_definitions": 17,
+          "source_review": "shape_decode.rs::eval_dim_infer; codebook scans",
+          "term_variant": "DimInfer"
+        },
+        {
+          "codebook_scope_behavior": "iterates every codebook_type node, then filters scope_id before parsing/candidate work",
+          "evaluator_helper": "eval_gen_infer",
+          "loader": "load_parts_with_scope",
+          "runtime_rule_definition_count": 6,
+          "runtime_term_occurrences_in_unique_definitions": 44,
+          "source_review": "shape_decode.rs::eval_gen_infer; codebook/generator scans",
+          "term_variant": "GenInfer"
+        },
+        {
+          "codebook_scope_behavior": "loads every codebook_type node; where a scope term exists, it is applied after loading",
+          "evaluator_helper": "eval_time_infer",
+          "loader": "load_parts",
+          "runtime_rule_definition_count": 4,
+          "runtime_term_occurrences_in_unique_definitions": 30,
+          "source_review": "shape_decode.rs::eval_time_infer; source-audited conservative family",
+          "term_variant": "TimeInfer"
+        },
+        {
+          "codebook_scope_behavior": "loads every codebook_type node; where a scope term exists, it is applied after loading",
+          "evaluator_helper": "eval_depth_infer",
+          "loader": "load_parts",
+          "runtime_rule_definition_count": 2,
+          "runtime_term_occurrences_in_unique_definitions": 9,
+          "source_review": "shape_decode.rs::eval_depth_infer; source-audited conservative family",
+          "term_variant": "DepthInfer"
+        },
+        {
+          "codebook_scope_behavior": "loads every codebook_type node; where a scope term exists, it is applied after loading",
+          "evaluator_helper": "eval_blink_bridge",
+          "loader": "load_parts",
+          "runtime_rule_definition_count": 1,
+          "runtime_term_occurrences_in_unique_definitions": 10,
+          "source_review": "shape_decode.rs::eval_blink_bridge; source-audited conservative family",
+          "term_variant": "BlinkBridge"
+        },
+        {
+          "codebook_scope_behavior": "loads every codebook_type node; where a scope term exists, it is applied after loading",
+          "evaluator_helper": "eval_gap_abduce",
+          "loader": "load_parts",
+          "runtime_rule_definition_count": 1,
+          "runtime_term_occurrences_in_unique_definitions": 13,
+          "source_review": "shape_decode.rs::eval_gap_abduce; source-audited conservative family",
+          "term_variant": "GapAbduce"
+        },
+        {
+          "codebook_scope_behavior": "loads every codebook_type node; where a scope term exists, it is applied after loading",
+          "evaluator_helper": "eval_gap_verify",
+          "loader": "load_parts",
+          "runtime_rule_definition_count": 1,
+          "runtime_term_occurrences_in_unique_definitions": 19,
+          "source_review": "shape_decode.rs::eval_gap_verify; source-audited conservative family",
+          "term_variant": "GapVerify"
+        }
+      ],
+      "tractability_implication": "A scope filter can reduce parsing or candidate work but does not remove the codebook population traversal. ShapeDecode cache misses also enumerate the relation-cue population and its default expansion budget is 20,000. GenInfer restricts bases to two coordinate dimensions but performs four nested loops over a data-derived numeric bound B: up to (2B+1)^4 matrix candidates per eligible base. This is polynomial in B's numeric magnitude but can be exponential in the bit length of an unrestricted B; actual input distributions and per-call cost are not measured here."
+    },
+    {
+      "family": "ProgEval_graph_resident_program_decode",
+      "scope_class": "recursive child-subgraph traversal rooted at the supplied program node, followed by fuel-bounded execution",
+      "source_evidence": [
+        {
+          "finding": "When ProgEval receives a graph Node instead of an inline program, it decodes a graph-resident term subtree before execution.",
+          "line": 2208,
+          "needle": "crate::reflect::term_from_subgraph(",
+          "path": "runners/dsl/src/prog_eval.rs"
+        },
+        {
+          "finding": "Subgraph decoding recursively follows Term child edges; decode cost depends on reachable term-subgraph size.",
+          "line": 183,
+          "needle": "let child = term_from_subgraph(graph, interner, items[0].1, arena)?;",
+          "path": "runners/dsl/src/reflect.rs"
+        },
+        {
+          "finding": "Each decoded node enumerates all of its outgoing edges before selecting child edges.",
+          "line": 133,
+          "needle": "crate::access_trace::note_out_edges(graph, root, None);",
+          "path": "runners/dsl/src/reflect.rs"
+        },
+        {
+          "finding": "Execution has a fuel limit, but graph-subtree decoding occurs outside fuel-charged VM execution.",
+          "line": 2160,
+          "needle": "let fuel = if fuel <= 0 { DEFAULT_FUEL } else { fuel };",
+          "path": "runners/dsl/src/prog_eval.rs"
+        }
+      ],
+      "term_variants": [
+        {
+          "evaluator_helper": "eval_prog_eval",
+          "runtime_rule_definition_count": 5,
+          "runtime_term_occurrences_in_unique_definitions": 7,
+          "term_variant": "ProgEval"
+        }
+      ],
+      "tractability_implication": "Execution fuel does not bound graph decoding performed before execution. The decoder recursively follows child edges without an explicit visited-set or node budget in the inspected path; safe size bounds depend on graph-subtree shape/invariants."
+    },
+    {
+      "family": "Join_render_rule_resolution",
+      "scope_class": "per rendered node: language has_rule scan until matching render head, child/attribute binding, recursive template decode/evaluation",
+      "source_evidence": [
+        {
+          "finding": "Join's Node elements use the active render language and invoke graph-backed rendering.",
+          "line": 11419,
+          "needle": "// A Node element renders via the active Language",
+          "path": "runners/dsl/src/term.rs"
+        },
+        {
+          "finding": "Renderer searches the current language's has_rule neighbors for a matching head.",
+          "line": 11679,
+          "needle": "ctx.graph.neighbours(lang_nid, Some(has_rule))",
+          "path": "runners/dsl/src/term.rs"
+        },
+        {
+          "finding": "Recursive source rendering stops beyond a fixed holds_depth ceiling.",
+          "line": 10701,
+          "needle": "if ctx.holds_depth > 256 {",
+          "path": "runners/dsl/src/term.rs"
+        },
+        {
+          "finding": "A matched rule's template is decoded from its graph-resident Term subgraph.",
+          "line": 11775,
+          "needle": "crate::reflect::term_from_subgraph(ctx.graph, ctx.interner, tmpl_nid, &mut tmp)",
+          "path": "runners/dsl/src/term.rs"
+        }
+      ],
+      "term_variants": [
+        {
+          "evaluator_helper": "render_source_node",
+          "runtime_rule_definition_count": 1,
+          "runtime_term_occurrences_in_unique_definitions": 1,
+          "term_variant": "Join"
+        }
+      ],
+      "tractability_implication": "This is local to the source term and render-language neighborhood when the language is well-formed, but per-element scan cost depends on rule count and tuple arity. Nested render is depth-capped; template decoding cost depends on its reachable Term subgraph."
+    }
+  ],
+  "checks": {
+    "all_checks_pass": true,
+    "all_live_dynamic_helpers_covered": true,
+    "all_referenced_source_needles_present": true,
+    "definition_archive_is_hash_checked": true,
+    "source_inventory_and_join_pass": true
+  },
+  "claim_boundary": "This source audit establishes static graph-access routes in the inspected implementations, not invocation frequency, elapsed cost, complete transitive call graphs, or frame-locality. The codebook population traversal is explicit. ProgEval's graph-resident decode and Join's graph-resident renderer are conditional on runtime values. No factor scopes or task-frame ownership are inferred.",
+  "definitions_path": "evaluation/reports/live_rule_definitions_v1_20261005.json",
+  "definitions_sha256": "24fa05da5278cb15bac407950fec7a3a8a737c7385ae82677c8e2ae12cc3171e",
+  "inventory_path": "evaluation/reports/term_access_dependency_coverage_v1_2_20261005.json",
+  "inventory_sha256": "21b85effe082ca53cf13078de8869855319f8ab48698ad23311b40a03cc3050a",
+  "join_path": "evaluation/reports/live_frame_term_scope_join_v1_1_20261005.json",
+  "join_sha256": "376db8a4b8c7aa8cdf46df985ad8e53403a5b5f8d571402d85de8db3a8cb4e4a",
+  "run_id": "live-dynamic-helper-scope-audit-v1-20261005",
+  "schema": "LiveDynamicHelperScopeAuditV1",
+  "source_hashes": {
+    "runners/dsl/src/prog_eval.rs": "d419bda3288c534cbc8c35a3bccc29b67171b8297ecf8aeb43a474f77f0e1451",
+    "runners/dsl/src/reflect.rs": "d4cb8777c53adae3c9da57d8783e3b41e8231fa277a78a010626bf465b21a9f7",
+    "runners/dsl/src/shape_decode.rs": "4fe481559f1a43c4c54b8e367c8fbbffd639556128a086804464fe8ab02cfec0",
+    "runners/dsl/src/term.rs": "469b3827ec653fd7894fe0b1131fbef022b581a95cb381af81944d9c622c30d4"
+  },
+  "summary": {
+    "all_scanned_helpers_present": true,
+    "covered_live_dynamic_helper_variants": 11,
+    "live_dynamic_helper_variants": 11,
+    "source_evidence_items": 20,
+    "uncovered_live_dynamic_helper_variants": []
+  }
+}

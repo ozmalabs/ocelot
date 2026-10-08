@@ -1,0 +1,399 @@
+{
+  "field_counts": {
+    "Substrate": 51,
+    "TypedGraph": 25
+  },
+  "inputs": {
+    "runner_sha256": "b84b33c61c0d63dfe2ef6b58f9267422f1ece2036aeb9a21584aab05b380a766",
+    "substrate_source_sha256": "866e4dd75fa2c884d95c8d2ccb1b5415bfeb3ba1e928bebbc64e18d3a1b0d577",
+    "typedgraph_source_sha256": "72e0fb8edfd7bd3d435cccc4511ea2481288d1997747d0e538a4ecd16934c58d"
+  },
+  "schema": "ThoughtexperimentStateInventoryV3",
+  "scope": "Rust struct field census; policy labels are an explicit design checklist, not semantic verification",
+  "structures": {
+    "Substrate": [
+      {
+        "branch_policy": "semantic_overlay_required",
+        "line": 41,
+        "name": "graph"
+      },
+      {
+        "branch_policy": "branch_local_audit_identity",
+        "line": 43,
+        "name": "rule_audit_store_id"
+      },
+      {
+        "branch_policy": "semantic_overlay_required_stable_symbol_namespace",
+        "line": 44,
+        "name": "interner"
+      },
+      {
+        "branch_policy": "semantic_branch_copy_or_immutable_share",
+        "line": 45,
+        "name": "checker"
+      },
+      {
+        "branch_policy": "semantic_overlay_required_stable_term_namespace",
+        "line": 46,
+        "name": "terms"
+      },
+      {
+        "branch_policy": "semantic_branch_copy_or_immutable_share",
+        "line": 47,
+        "name": "concepts"
+      },
+      {
+        "branch_policy": "branch_local_telemetry",
+        "line": 50,
+        "name": "counters"
+      },
+      {
+        "branch_policy": "semantic_overlay_required",
+        "line": 56,
+        "name": "rules"
+      },
+      {
+        "branch_policy": "branch_local_allocator",
+        "line": 59,
+        "name": "next_rule_uid"
+      },
+      {
+        "branch_policy": "branch_local_observation",
+        "line": 63,
+        "name": "rule_firing_capture_active"
+      },
+      {
+        "branch_policy": "branch_local_observation",
+        "line": 64,
+        "name": "pending_turn_last_progress_rule"
+      },
+      {
+        "branch_policy": "branch_local_configuration",
+        "line": 65,
+        "name": "rule_state_trace_config"
+      },
+      {
+        "branch_policy": "branch_local_telemetry",
+        "line": 66,
+        "name": "rule_state_trace_events"
+      },
+      {
+        "branch_policy": "branch_local_telemetry",
+        "line": 67,
+        "name": "rule_state_trace_dropped"
+      },
+      {
+        "branch_policy": "derived_rebuild_or_invalidate",
+        "line": 72,
+        "name": "rule_edge_type_deps"
+      },
+      {
+        "branch_policy": "derived_rebuild_or_invalidate",
+        "line": 75,
+        "name": "rule_readers_by_key"
+      },
+      {
+        "branch_policy": "derived_rebuild_or_invalidate",
+        "line": 77,
+        "name": "rule_reads_any"
+      },
+      {
+        "branch_policy": "derived_rebuild_or_invalidate",
+        "line": 83,
+        "name": "rule_has_where"
+      },
+      {
+        "branch_policy": "derived_rebuild_or_invalidate",
+        "line": 87,
+        "name": "rule_dirty"
+      },
+      {
+        "branch_policy": "branch_local_telemetry",
+        "line": 93,
+        "name": "rule_cost_micros"
+      },
+      {
+        "branch_policy": "branch_local_telemetry",
+        "line": 94,
+        "name": "rule_cost_count"
+      },
+      {
+        "branch_policy": "branch_local_telemetry",
+        "line": 95,
+        "name": "rule_cost_progress"
+      },
+      {
+        "branch_policy": "branch_local_execution_state",
+        "line": 99,
+        "name": "any_mutation"
+      },
+      {
+        "branch_policy": "selective_checkpoint_neighbours_filter_argmax_holds_fail_closed_reachable_sd_ops",
+        "line": 107,
+        "name": "eval_cache"
+      },
+      {
+        "branch_policy": "derived_rebuild_or_invalidate",
+        "line": 112,
+        "name": "rule_where_jit"
+      },
+      {
+        "branch_policy": "derived_rebuild_or_invalidate",
+        "line": 122,
+        "name": "rule_cursors"
+      },
+      {
+        "branch_policy": "branch_local_version",
+        "line": 126,
+        "name": "edge_delete_version"
+      },
+      {
+        "branch_policy": "semantic_branch_local_version",
+        "line": 138,
+        "name": "gamma_epoch"
+      },
+      {
+        "branch_policy": "semantic_branch_local_reference",
+        "line": 142,
+        "name": "gamma_graph_root"
+      },
+      {
+        "branch_policy": "derived_rebuild_or_invalidate",
+        "line": 155,
+        "name": "shape_cache"
+      },
+      {
+        "branch_policy": "semantic_branch_local_value",
+        "line": 164,
+        "name": "active_shape_target"
+      },
+      {
+        "branch_policy": "branch_local_telemetry",
+        "line": 169,
+        "name": "shape_pruned_count"
+      },
+      {
+        "branch_policy": "external_exclude_or_sandbox",
+        "line": 177,
+        "name": "framebuffers"
+      },
+      {
+        "branch_policy": "branch_local_configuration",
+        "line": 192,
+        "name": "precise_dirty"
+      },
+      {
+        "branch_policy": "branch_local_telemetry",
+        "line": 203,
+        "name": "dirty_marks"
+      },
+      {
+        "branch_policy": "branch_local_configuration",
+        "line": 206,
+        "name": "dirty_telemetry"
+      },
+      {
+        "branch_policy": "branch_local_configuration",
+        "line": 215,
+        "name": "dirty_overaggressive"
+      },
+      {
+        "branch_policy": "branch_local_configuration",
+        "line": 221,
+        "name": "binding_projection"
+      },
+      {
+        "branch_policy": "branch_local_configuration",
+        "line": 227,
+        "name": "projection_overaggressive"
+      },
+      {
+        "branch_policy": "branch_local_configuration",
+        "line": 238,
+        "name": "empty_match_proof"
+      },
+      {
+        "branch_policy": "branch_local_configuration",
+        "line": 246,
+        "name": "empty_match_proof_unsound"
+      },
+      {
+        "branch_policy": "branch_local_telemetry",
+        "line": 249,
+        "name": "empty_match_skips"
+      },
+      {
+        "branch_policy": "branch_local_configuration",
+        "line": 266,
+        "name": "incremental_match"
+      },
+      {
+        "branch_policy": "branch_local_configuration",
+        "line": 274,
+        "name": "incremental_match_unsound"
+      },
+      {
+        "branch_policy": "branch_local_configuration",
+        "line": 286,
+        "name": "predicate_retraction"
+      },
+      {
+        "branch_policy": "branch_local_configuration",
+        "line": 293,
+        "name": "predicate_retraction_unsound"
+      },
+      {
+        "branch_policy": "derived_rebuild_or_invalidate",
+        "line": 297,
+        "name": "rule_dirty_nodes"
+      },
+      {
+        "branch_policy": "derived_rebuild_or_invalidate",
+        "line": 301,
+        "name": "rule_pred_retract_ok"
+      },
+      {
+        "branch_policy": "branch_local_configuration",
+        "line": 318,
+        "name": "gamma_residual_capture"
+      },
+      {
+        "branch_policy": "branch_local_observation",
+        "line": 325,
+        "name": "gamma_residual_root"
+      },
+      {
+        "branch_policy": "branch_local_allocator",
+        "line": 330,
+        "name": "next_fb_id"
+      }
+    ],
+    "TypedGraph": [
+      {
+        "branch_policy": "branch_local_version",
+        "line": 320,
+        "name": "mutation_version"
+      },
+      {
+        "branch_policy": "branch_local_observation",
+        "line": 323,
+        "name": "mutation_log"
+      },
+      {
+        "branch_policy": "branch_local_derived_read_view",
+        "line": 326,
+        "name": "edge_read_scope"
+      },
+      {
+        "branch_policy": "semantic_overlay_required",
+        "line": 329,
+        "name": "nodes"
+      },
+      {
+        "branch_policy": "branch_local_allocator",
+        "line": 332,
+        "name": "node_freelist"
+      },
+      {
+        "branch_policy": "semantic_overlay_required",
+        "line": 335,
+        "name": "edges"
+      },
+      {
+        "branch_policy": "branch_local_allocator",
+        "line": 336,
+        "name": "edge_freelist"
+      },
+      {
+        "branch_policy": "branch_local_version",
+        "line": 340,
+        "name": "edge_delete_generation"
+      },
+      {
+        "branch_policy": "semantic_overlay_required",
+        "line": 346,
+        "name": "edge_attrs"
+      },
+      {
+        "branch_policy": "derived_index_rebuild_or_overlay",
+        "line": 350,
+        "name": "by_type"
+      },
+      {
+        "branch_policy": "derived_index_rebuild_or_overlay",
+        "line": 353,
+        "name": "out"
+      },
+      {
+        "branch_policy": "derived_index_rebuild_or_overlay",
+        "line": 355,
+        "name": "in_"
+      },
+      {
+        "branch_policy": "derived_index_rebuild_or_overlay",
+        "line": 359,
+        "name": "out_by_type"
+      },
+      {
+        "branch_policy": "derived_index_rebuild_or_overlay",
+        "line": 363,
+        "name": "out_by_type_target_index"
+      },
+      {
+        "branch_policy": "derived_index_rebuild_or_overlay",
+        "line": 365,
+        "name": "in_by_type"
+      },
+      {
+        "branch_policy": "derived_index_rebuild_or_overlay",
+        "line": 371,
+        "name": "edges_by_type"
+      },
+      {
+        "branch_policy": "branch_local_version",
+        "line": 387,
+        "name": "edge_delete_version_by_type"
+      },
+      {
+        "branch_policy": "derived_index_rebuild_or_overlay",
+        "line": 401,
+        "name": "attr_indices"
+      },
+      {
+        "branch_policy": "empty_at_fork_branch_local_drain",
+        "line": 409,
+        "name": "pending_rule_edits"
+      },
+      {
+        "branch_policy": "empty_at_fork_branch_local_drain",
+        "line": 415,
+        "name": "pending_rule_patches"
+      },
+      {
+        "branch_policy": "empty_at_fork_branch_local_drain",
+        "line": 427,
+        "name": "pending_fb_samples"
+      },
+      {
+        "branch_policy": "empty_at_fork_branch_local_drain",
+        "line": 438,
+        "name": "pending_track_identity"
+      },
+      {
+        "branch_policy": "empty_at_fork_branch_local_drain",
+        "line": 459,
+        "name": "pending_net_collapses"
+      },
+      {
+        "branch_policy": "empty_at_fork_branch_local_drain",
+        "line": 467,
+        "name": "attr_write_log"
+      },
+      {
+        "branch_policy": "branch_local_configuration",
+        "line": 468,
+        "name": "log_attr_writes"
+      }
+    ]
+  }
+}

@@ -1,0 +1,3249 @@
+{
+  "captured_utc": "2026-10-03T20:01:14Z",
+  "lock_sha256": "9b7e86b0a65e00796bf57c2f03efece403368f8fbf75ca3300c5c422281624b1",
+  "schema": "ResidualTriggeredResynthesisV1Results",
+  "sources": {
+    "files": {
+      "docs/research/engine_substrate/RESIDUAL_TRIGGERED_RESYNTHESIS_V1_PREREG_20261004.md": "7d2d941674d0e1b2b6349b9614a636de6954112dd929de8160ec730dcbccef2d",
+      "domains/contract_query.py": "edb699caa4c57d4ee94e23cfaa9db630b454cc65c3d4c08ae5485c7643f4869e",
+      "domains/generator.py": "c80b06458695dcdf897d41eb9cfd3193b1d907e5fb548ff2dc843af2cdedee5f",
+      "evaluation/reports/adaptive_factored_operator_search_v1_20261004.json": "6749f0a434a6099a40f79c39b70f5938d2150a08d82a2c28ac182e0ca3f85bc6",
+      "evaluation/reports/adaptive_factored_operator_search_v1_analysis_20261004.json": "a79f892e532b9ffdc72c75488bf58e0935b5a27ddaca550fb2fb23172623583a",
+      "evaluation/reports/term_conditioned_audit_v1_20261004.json": "7994d989d64b4995d3a7882901317f1eb34d5538f8d2e4a196fd4dc79a3a8309",
+      "evaluation/reports/term_conditioned_audit_v1_analysis_20261004.json": "fd11be8745bd297fe9d5812d908ce47d065aad277ed8c5e9ea4d3e3cee572d5b",
+      "evaluation/substrate_capability/adaptive_factored_operator_search_v1.py": "5037122706fb07766886f45f66f7defec717040033d21418b1f8c00af189aef3",
+      "evaluation/substrate_capability/adaptive_factored_operator_search_v1_lock_20261004.json": "d981303a167efd6bbb5571ad7e58be6a86cea9125ac22c39a65b4ae883d44ef5",
+      "evaluation/substrate_capability/analyze_residual_triggered_resynthesis_v1.py": "06da419f8dc07783ff55ce6fe402d450eb91ea7ff38c817a791076b9d4596f17",
+      "evaluation/substrate_capability/analyze_term_conditioned_audit_v1.py": "463f90d04129270de026c3dfa532fdde088cce4f69066a6a03555022018bf52d",
+      "evaluation/substrate_capability/residual_triggered_resynthesis_v1.py": "fceaf8bff585d4827657431bc0eb04bdb736308ba6a9d6f10c492d0a4e68c817",
+      "evaluation/substrate_capability/term_conditioned_audit_v1.py": "95cb194005df6cb81291a5e90181eff82f2207920fc422b61ad09ef93acfdb55",
+      "evaluation/substrate_capability/term_conditioned_audit_v1_lock_20261004.json": "1edf82846d10567635f946d3c82597230e7c8cb86fe0e6cf295385f95c765469",
+      "runners/dsl/src/grammar.rs": "aaf6f571bf8e8761584c7473d3fe3130c5a6e395bff7f2b63f1cdcf6046b73f6",
+      "runners/dsl/src/synth_enumerate.rs": "f3ae5dd0b15f0fef1713fa92ccb563e4b573dd94b626f0bfed58413298ee6203",
+      "runners/dsl/src/term.rs": "a1bc1419941f8a1d4dcf6b51782f25d2a9c7f73935c266762ef54fa81e598040"
+    },
+    "native": {
+      "path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+      "sha256": "df49b1d8300f0f10179211649fa23d5c931089696b085b533845f90163dc0ecb"
+    },
+    "platform": "Linux-6.8.0-142-generic-x86_64-with-glibc2.39",
+    "python": "3.13.5 (main, Jun 11 2025, 15:36:57) [GCC 11.4.0]",
+    "rust_fingerprint": "84b8347a33e1836ba31f485c18d627a38b28564b9a5be7ba31900fe12e753c77"
+  },
+  "workers": [
+    {
+      "no_residual_control": null,
+      "residual": null,
+      "residual_arm": null,
+      "task": "additive",
+      "triggered": false,
+      "worker": 0
+    },
+    {
+      "no_residual_control": {
+        "branches": [
+          {
+            "candidate_ids": [
+              "term_3a9e19fa7e6e2650",
+              "term_6a5a818b30e84eac",
+              "term_02946168e0d3b0b8",
+              "term_f467e6ba7d6446de",
+              "term_d2ae86a86182f997",
+              "term_cfbfa34925d950cf",
+              "term_13d227d2d85ddfd6"
+            ],
+            "cpu_ns": 499465284,
+            "explored": 1873,
+            "halt_reason": "timeout",
+            "operator": "Times",
+            "wall_ns": 500819580
+          },
+          {
+            "candidate_ids": [
+              "term_6a5a818b30e84eac",
+              "term_02946168e0d3b0b8",
+              "term_f467e6ba7d6446de",
+              "term_d2ae86a86182f997",
+              "term_cfbfa34925d950cf",
+              "term_13d227d2d85ddfd6"
+            ],
+            "cpu_ns": 499452415,
+            "explored": 1919,
+            "halt_reason": "timeout",
+            "operator": "Abs",
+            "wall_ns": 500974711
+          },
+          {
+            "candidate_ids": [
+              "term_6a5a818b30e84eac",
+              "term_02946168e0d3b0b8",
+              "term_f467e6ba7d6446de",
+              "term_d2ae86a86182f997",
+              "term_cfbfa34925d950cf",
+              "term_13d227d2d85ddfd6"
+            ],
+            "cpu_ns": 501242776,
+            "explored": 1919,
+            "halt_reason": "timeout",
+            "operator": "Min",
+            "wall_ns": 501396034
+          },
+          {
+            "candidate_ids": [
+              "term_6a5a818b30e84eac",
+              "term_02946168e0d3b0b8",
+              "term_f467e6ba7d6446de",
+              "term_d2ae86a86182f997",
+              "term_cfbfa34925d950cf",
+              "term_13d227d2d85ddfd6"
+            ],
+            "cpu_ns": 501521096,
+            "explored": 1975,
+            "halt_reason": "timeout",
+            "operator": "Plus",
+            "wall_ns": 501653666
+          }
+        ],
+        "candidate_terms": [
+          {
+            "families": [
+              "Times"
+            ],
+            "id": "term_3a9e19fa7e6e2650",
+            "term": {
+              "a": {
+                "name": "ax",
+                "type": "Var"
+              },
+              "b": {
+                "arg": {
+                  "items": [
+                    {
+                      "name": "ax",
+                      "type": "Var"
+                    },
+                    {
+                      "name": "ay",
+                      "type": "Var"
+                    }
+                  ],
+                  "type": "Times"
+                },
+                "type": "Neg"
+              },
+              "type": "Eq"
+            }
+          },
+          {
+            "families": [
+              "Times",
+              "Abs",
+              "Min",
+              "Plus"
+            ],
+            "id": "term_6a5a818b30e84eac",
+            "term": {
+              "a": {
+                "name": "ay",
+                "type": "Var"
+              },
+              "b": {
+                "arg": {
+                  "items": [
+                    {
+                      "name": "ax",
+                      "type": "Var"
+                    },
+                    {
+                      "name": "ax",
+                      "type": "Var"
+                    }
+                  ],
+                  "type": "And"
+                },
+                "type": "Neg"
+              },
+              "type": "Eq"
+            }
+          },
+          {
+            "families": [
+              "Times",
+              "Abs",
+              "Min",
+              "Plus"
+            ],
+            "id": "term_02946168e0d3b0b8",
+            "term": {
+              "a": {
+                "name": "ay",
+                "type": "Var"
+              },
+              "b": {
+                "arg": {
+                  "items": [
+                    {
+                      "name": "ax",
+                      "type": "Var"
+                    },
+                    {
+                      "name": "ay",
+                      "type": "Var"
+                    }
+                  ],
+                  "type": "And"
+                },
+                "type": "Neg"
+              },
+              "type": "Eq"
+            }
+          },
+          {
+            "families": [
+              "Times",
+              "Abs",
+              "Min",
+              "Plus"
+            ],
+            "id": "term_f467e6ba7d6446de",
+            "term": {
+              "a": {
+                "name": "ay",
+                "type": "Var"
+              },
+              "b": {
+                "arg": {
+                  "items": [
+                    {
+                      "name": "ax",
+                      "type": "Var"
+                    },
+                    {
+                      "name": "ex",
+                      "type": "Var"
+                    }
+                  ],
+                  "type": "And"
+                },
+                "type": "Neg"
+              },
+              "type": "Eq"
+            }
+          },
+          {
+            "families": [
+              "Times",
+              "Abs",
+              "Min",
+              "Plus"
+            ],
+            "id": "term_d2ae86a86182f997",
+            "term": {
+              "a": {
+                "name": "ay",
+                "type": "Var"
+              },
+              "b": {
+                "arg": {
+                  "items": [
+                    {
+                      "name": "ax",
+                      "type": "Var"
+                    },
+                    {
+                      "name": "ey",
+                      "type": "Var"
+                    }
+                  ],
+                  "type": "And"
+                },
+                "type": "Neg"
+              },
+              "type": "Eq"
+            }
+          },
+          {
+            "families": [
+              "Times",
+              "Abs",
+              "Min",
+              "Plus"
+            ],
+            "id": "term_cfbfa34925d950cf",
+            "term": {
+              "a": {
+                "name": "ay",
+                "type": "Var"
+              },
+              "b": {
+                "arg": {
+                  "items": [
+                    {
+                      "name": "ay",
+                      "type": "Var"
+                    },
+                    {
+                      "name": "ex",
+                      "type": "Var"
+                    }
+                  ],
+                  "type": "And"
+                },
+                "type": "Neg"
+              },
+              "type": "Eq"
+            }
+          },
+          {
+            "families": [
+              "Times",
+              "Abs",
+              "Min",
+              "Plus"
+            ],
+            "id": "term_13d227d2d85ddfd6",
+            "term": {
+              "a": {
+                "name": "ay",
+                "type": "Var"
+              },
+              "b": {
+                "arg": {
+                  "items": [
+                    {
+                      "name": "ay",
+                      "type": "Var"
+                    },
+                    {
+                      "name": "ey",
+                      "type": "Var"
+                    }
+                  ],
+                  "type": "And"
+                },
+                "type": "Neg"
+              },
+              "type": "Eq"
+            }
+          }
+        ],
+        "decision": "accept",
+        "final_survivor_ids": [
+          "term_f467e6ba7d6446de"
+        ],
+        "initial_candidate_count": 7,
+        "scored_candidates": [
+          {
+            "id": "term_f467e6ba7d6446de",
+            "score": {
+              "exact": false,
+              "fn": 146,
+              "fp": 0,
+              "invalid": 0,
+              "n": 1296,
+              "tn": 1150,
+              "tp": 0
+            }
+          }
+        ],
+        "search_cpu_ns": 2001681571,
+        "search_wall_ns": 2004843991,
+        "selected_id": "term_f467e6ba7d6446de",
+        "selected_term": {
+          "a": {
+            "name": "ay",
+            "type": "Var"
+          },
+          "b": {
+            "arg": {
+              "items": [
+                {
+                  "name": "ax",
+                  "type": "Var"
+                },
+                {
+                  "name": "ex",
+                  "type": "Var"
+                }
+              ],
+              "type": "And"
+            },
+            "type": "Neg"
+          },
+          "type": "Eq"
+        },
+        "selection_labels": [
+          {
+            "after": 4,
+            "before": 7,
+            "label": false,
+            "row": [
+              3.0,
+              0.0,
+              3.0,
+              3.0
+            ],
+            "selector_entropy_bits": 0.9852281360342515
+          },
+          {
+            "after": 3,
+            "before": 4,
+            "label": false,
+            "row": [
+              0.0,
+              -2.0,
+              1.0,
+              1.0
+            ],
+            "selector_entropy_bits": 0.8112781244591328
+          },
+          {
+            "after": 1,
+            "before": 3,
+            "label": false,
+            "row": [
+              -3.0,
+              -1.0,
+              0.0,
+              -2.0
+            ],
+            "selector_entropy_bits": 0.9182958340544896
+          }
+        ],
+        "total_cpu_ns": 2016416695,
+        "total_wall_ns": 2019591678
+      },
+      "operator_order": [
+        "Times",
+        "Abs",
+        "Min",
+        "Plus"
+      ],
+      "residual": {
+        "candidate_prediction": true,
+        "label": 0,
+        "row": [
+          -3.0,
+          -1.75,
+          0.0,
+          0.0
+        ]
+      },
+      "residual_arm": {
+        "branches": [
+          {
+            "candidate_ids": [
+              "term_3a9e19fa7e6e2650",
+              "term_6a5a818b30e84eac",
+              "term_02946168e0d3b0b8",
+              "term_f467e6ba7d6446de",
+              "term_d2ae86a86182f997",
+              "term_cfbfa34925d950cf",
+              "term_13d227d2d85ddfd6"
+            ],
+            "cpu_ns": 501367265,
+            "explored": 1813,
+            "halt_reason": "timeout",
+            "operator": "Times",
+            "wall_ns": 501454657
+          },
+          {
+            "candidate_ids": [
+              "term_6a5a818b30e84eac",
+              "term_02946168e0d3b0b8",
+              "term_f467e6ba7d6446de",
+              "term_d2ae86a86182f997",
+              "term_cfbfa34925d950cf",
+              "term_13d227d2d85ddfd6"
+            ],
+            "cpu_ns": 500539756,
+            "explored": 1898,
+            "halt_reason": "timeout",
+            "operator": "Abs",
+            "wall_ns": 500805305
+          },
+          {
+            "candidate_ids": [
+              "term_6a5a818b30e84eac",
+              "term_02946168e0d3b0b8",
+              "term_f467e6ba7d6446de",
+              "term_d2ae86a86182f997",
+              "term_cfbfa34925d950cf",
+              "term_13d227d2d85ddfd6"
+            ],
+            "cpu_ns": 501578426,
+            "explored": 1902,
+            "halt_reason": "timeout",
+            "operator": "Min",
+            "wall_ns": 501586689
+          },
+          {
+            "candidate_ids": [
+              "term_6a5a818b30e84eac",
+              "term_02946168e0d3b0b8",
+              "term_f467e6ba7d6446de",
+              "term_d2ae86a86182f997",
+              "term_cfbfa34925d950cf",
+              "term_13d227d2d85ddfd6"
+            ],
+            "cpu_ns": 501236535,
+            "explored": 1832,
+            "halt_reason": "timeout",
+            "operator": "Plus",
+            "wall_ns": 501433720
+          }
+        ],
+        "candidate_terms": [
+          {
+            "families": [
+              "Times"
+            ],
+            "id": "term_3a9e19fa7e6e2650",
+            "term": {
+              "a": {
+                "name": "ax",
+                "type": "Var"
+              },
+              "b": {
+                "arg": {
+                  "items": [
+                    {
+                      "name": "ax",
+                      "type": "Var"
+                    },
+                    {
+                      "name": "ay",
+                      "type": "Var"
+                    }
+                  ],
+                  "type": "Times"
+                },
+                "type": "Neg"
+              },
+              "type": "Eq"
+            }
+          },
+          {
+            "families": [
+              "Times",
+              "Abs",
+              "Min",
+              "Plus"
+            ],
+            "id": "term_6a5a818b30e84eac",
+            "term": {
+              "a": {
+                "name": "ay",
+                "type": "Var"
+              },
+              "b": {
+                "arg": {
+                  "items": [
+                    {
+                      "name": "ax",
+                      "type": "Var"
+                    },
+                    {
+                      "name": "ax",
+                      "type": "Var"
+                    }
+                  ],
+                  "type": "And"
+                },
+                "type": "Neg"
+              },
+              "type": "Eq"
+            }
+          },
+          {
+            "families": [
+              "Times",
+              "Abs",
+              "Min",
+              "Plus"
+            ],
+            "id": "term_02946168e0d3b0b8",
+            "term": {
+              "a": {
+                "name": "ay",
+                "type": "Var"
+              },
+              "b": {
+                "arg": {
+                  "items": [
+                    {
+                      "name": "ax",
+                      "type": "Var"
+                    },
+                    {
+                      "name": "ay",
+                      "type": "Var"
+                    }
+                  ],
+                  "type": "And"
+                },
+                "type": "Neg"
+              },
+              "type": "Eq"
+            }
+          },
+          {
+            "families": [
+              "Times",
+              "Abs",
+              "Min",
+              "Plus"
+            ],
+            "id": "term_f467e6ba7d6446de",
+            "term": {
+              "a": {
+                "name": "ay",
+                "type": "Var"
+              },
+              "b": {
+                "arg": {
+                  "items": [
+                    {
+                      "name": "ax",
+                      "type": "Var"
+                    },
+                    {
+                      "name": "ex",
+                      "type": "Var"
+                    }
+                  ],
+                  "type": "And"
+                },
+                "type": "Neg"
+              },
+              "type": "Eq"
+            }
+          },
+          {
+            "families": [
+              "Times",
+              "Abs",
+              "Min",
+              "Plus"
+            ],
+            "id": "term_d2ae86a86182f997",
+            "term": {
+              "a": {
+                "name": "ay",
+                "type": "Var"
+              },
+              "b": {
+                "arg": {
+                  "items": [
+                    {
+                      "name": "ax",
+                      "type": "Var"
+                    },
+                    {
+                      "name": "ey",
+                      "type": "Var"
+                    }
+                  ],
+                  "type": "And"
+                },
+                "type": "Neg"
+              },
+              "type": "Eq"
+            }
+          },
+          {
+            "families": [
+              "Times",
+              "Abs",
+              "Min",
+              "Plus"
+            ],
+            "id": "term_cfbfa34925d950cf",
+            "term": {
+              "a": {
+                "name": "ay",
+                "type": "Var"
+              },
+              "b": {
+                "arg": {
+                  "items": [
+                    {
+                      "name": "ay",
+                      "type": "Var"
+                    },
+                    {
+                      "name": "ex",
+                      "type": "Var"
+                    }
+                  ],
+                  "type": "And"
+                },
+                "type": "Neg"
+              },
+              "type": "Eq"
+            }
+          },
+          {
+            "families": [
+              "Times",
+              "Abs",
+              "Min",
+              "Plus"
+            ],
+            "id": "term_13d227d2d85ddfd6",
+            "term": {
+              "a": {
+                "name": "ay",
+                "type": "Var"
+              },
+              "b": {
+                "arg": {
+                  "items": [
+                    {
+                      "name": "ay",
+                      "type": "Var"
+                    },
+                    {
+                      "name": "ey",
+                      "type": "Var"
+                    }
+                  ],
+                  "type": "And"
+                },
+                "type": "Neg"
+              },
+              "type": "Eq"
+            }
+          }
+        ],
+        "decision": "accept",
+        "final_survivor_ids": [
+          "term_f467e6ba7d6446de"
+        ],
+        "initial_candidate_count": 7,
+        "scored_candidates": [
+          {
+            "id": "term_f467e6ba7d6446de",
+            "score": {
+              "exact": false,
+              "fn": 146,
+              "fp": 0,
+              "invalid": 0,
+              "n": 1296,
+              "tn": 1150,
+              "tp": 0
+            }
+          }
+        ],
+        "search_cpu_ns": 2004721982,
+        "search_wall_ns": 2005280371,
+        "selected_id": "term_f467e6ba7d6446de",
+        "selected_term": {
+          "a": {
+            "name": "ay",
+            "type": "Var"
+          },
+          "b": {
+            "arg": {
+              "items": [
+                {
+                  "name": "ax",
+                  "type": "Var"
+                },
+                {
+                  "name": "ex",
+                  "type": "Var"
+                }
+              ],
+              "type": "And"
+            },
+            "type": "Neg"
+          },
+          "type": "Eq"
+        },
+        "selection_labels": [
+          {
+            "after": 4,
+            "before": 7,
+            "label": false,
+            "row": [
+              3.0,
+              0.0,
+              3.0,
+              3.0
+            ],
+            "selector_entropy_bits": 0.9852281360342515
+          },
+          {
+            "after": 3,
+            "before": 4,
+            "label": false,
+            "row": [
+              0.0,
+              -2.0,
+              1.0,
+              1.0
+            ],
+            "selector_entropy_bits": 0.8112781244591328
+          },
+          {
+            "after": 1,
+            "before": 3,
+            "label": false,
+            "row": [
+              -3.0,
+              -1.0,
+              0.0,
+              -2.0
+            ],
+            "selector_entropy_bits": 0.9182958340544896
+          }
+        ],
+        "total_cpu_ns": 2017557186,
+        "total_wall_ns": 2018124261
+      },
+      "seed": 82261005,
+      "task": "additive",
+      "triggered": true,
+      "worker": 1
+    },
+    {
+      "no_residual_control": null,
+      "residual": null,
+      "residual_arm": null,
+      "task": "additive",
+      "triggered": false,
+      "worker": 2
+    },
+    {
+      "no_residual_control": null,
+      "residual": null,
+      "residual_arm": null,
+      "task": "additive",
+      "triggered": false,
+      "worker": 3
+    },
+    {
+      "no_residual_control": null,
+      "residual": null,
+      "residual_arm": null,
+      "task": "additive",
+      "triggered": false,
+      "worker": 4
+    },
+    {
+      "no_residual_control": null,
+      "residual": null,
+      "residual_arm": null,
+      "task": "product",
+      "triggered": false,
+      "worker": 0
+    },
+    {
+      "no_residual_control": null,
+      "residual": null,
+      "residual_arm": null,
+      "task": "product",
+      "triggered": false,
+      "worker": 1
+    },
+    {
+      "no_residual_control": {
+        "branches": [
+          {
+            "candidate_ids": [
+              "term_a1ce7f375019ada6",
+              "term_02946168e0d3b0b8",
+              "term_82de8edf653e20c4",
+              "term_13d227d2d85ddfd6",
+              "term_f1c0087975d40daf"
+            ],
+            "cpu_ns": 499286404,
+            "explored": 1876,
+            "halt_reason": "timeout",
+            "operator": "Abs",
+            "wall_ns": 500708800
+          },
+          {
+            "candidate_ids": [
+              "term_a1ce7f375019ada6",
+              "term_02946168e0d3b0b8",
+              "term_82de8edf653e20c4",
+              "term_13d227d2d85ddfd6",
+              "term_f1c0087975d40daf"
+            ],
+            "cpu_ns": 501302436,
+            "explored": 2078,
+            "halt_reason": "timeout",
+            "operator": "Min",
+            "wall_ns": 501374943
+          },
+          {
+            "candidate_ids": [
+              "term_a1ce7f375019ada6",
+              "term_02946168e0d3b0b8",
+              "term_82de8edf653e20c4",
+              "term_13d227d2d85ddfd6",
+              "term_f1c0087975d40daf"
+            ],
+            "cpu_ns": 501315745,
+            "explored": 1820,
+            "halt_reason": "timeout",
+            "operator": "Plus",
+            "wall_ns": 501361324
+          },
+          {
+            "candidate_ids": [
+              "term_a1ce7f375019ada6",
+              "term_02946168e0d3b0b8",
+              "term_82de8edf653e20c4",
+              "term_13d227d2d85ddfd6",
+              "term_f1c0087975d40daf"
+            ],
+            "cpu_ns": 501298176,
+            "explored": 1991,
+            "halt_reason": "timeout",
+            "operator": "Times",
+            "wall_ns": 501334786
+          }
+        ],
+        "candidate_terms": [
+          {
+            "families": [
+              "Abs",
+              "Min",
+              "Plus",
+              "Times"
+            ],
+            "id": "term_a1ce7f375019ada6",
+            "term": {
+              "a": {
+                "name": "ay",
+                "type": "Var"
+              },
+              "b": {
+                "arg": {
+                  "a": {
+                    "name": "ax",
+                    "type": "Var"
+                  },
+                  "b": {
+                    "name": "ey",
+                    "type": "Var"
+                  },
+                  "type": "Eq"
+                },
+                "type": "Neg"
+              },
+              "type": "Eq"
+            }
+          },
+          {
+            "families": [
+              "Abs",
+              "Min",
+              "Plus",
+              "Times"
+            ],
+            "id": "term_02946168e0d3b0b8",
+            "term": {
+              "a": {
+                "name": "ay",
+                "type": "Var"
+              },
+              "b": {
+                "arg": {
+                  "items": [
+                    {
+                      "name": "ax",
+                      "type": "Var"
+                    },
+                    {
+                      "name": "ay",
+                      "type": "Var"
+                    }
+                  ],
+                  "type": "And"
+                },
+                "type": "Neg"
+              },
+              "type": "Eq"
+            }
+          },
+          {
+            "families": [
+              "Abs",
+              "Min",
+              "Plus",
+              "Times"
+            ],
+            "id": "term_82de8edf653e20c4",
+            "term": {
+              "a": {
+                "name": "ay",
+                "type": "Var"
+              },
+              "b": {
+                "arg": {
+                  "items": [
+                    {
+                      "name": "ay",
+                      "type": "Var"
+                    },
+                    {
+                      "name": "ay",
+                      "type": "Var"
+                    }
+                  ],
+                  "type": "And"
+                },
+                "type": "Neg"
+              },
+              "type": "Eq"
+            }
+          },
+          {
+            "families": [
+              "Abs",
+              "Min",
+              "Plus",
+              "Times"
+            ],
+            "id": "term_13d227d2d85ddfd6",
+            "term": {
+              "a": {
+                "name": "ay",
+                "type": "Var"
+              },
+              "b": {
+                "arg": {
+                  "items": [
+                    {
+                      "name": "ay",
+                      "type": "Var"
+                    },
+                    {
+                      "name": "ey",
+                      "type": "Var"
+                    }
+                  ],
+                  "type": "And"
+                },
+                "type": "Neg"
+              },
+              "type": "Eq"
+            }
+          },
+          {
+            "families": [
+              "Abs",
+              "Min",
+              "Plus",
+              "Times"
+            ],
+            "id": "term_f1c0087975d40daf",
+            "term": {
+              "a": {
+                "name": "ay",
+                "type": "Var"
+              },
+              "b": {
+                "arg": {
+                  "items": [
+                    {
+                      "name": "ex",
+                      "type": "Var"
+                    },
+                    {
+                      "name": "ey",
+                      "type": "Var"
+                    }
+                  ],
+                  "type": "And"
+                },
+                "type": "Neg"
+              },
+              "type": "Eq"
+            }
+          }
+        ],
+        "decision": "accept",
+        "final_survivor_ids": [
+          "term_a1ce7f375019ada6"
+        ],
+        "initial_candidate_count": 5,
+        "scored_candidates": [
+          {
+            "id": "term_a1ce7f375019ada6",
+            "score": {
+              "exact": false,
+              "fn": 120,
+              "fp": 0,
+              "invalid": 0,
+              "n": 1296,
+              "tn": 1176,
+              "tp": 0
+            }
+          }
+        ],
+        "search_cpu_ns": 2003202761,
+        "search_wall_ns": 2004779853,
+        "selected_id": "term_a1ce7f375019ada6",
+        "selected_term": {
+          "a": {
+            "name": "ay",
+            "type": "Var"
+          },
+          "b": {
+            "arg": {
+              "a": {
+                "name": "ax",
+                "type": "Var"
+              },
+              "b": {
+                "name": "ey",
+                "type": "Var"
+              },
+              "type": "Eq"
+            },
+            "type": "Neg"
+          },
+          "type": "Eq"
+        },
+        "selection_labels": [
+          {
+            "after": 2,
+            "before": 5,
+            "label": false,
+            "row": [
+              0.0,
+              -1.0,
+              -2.0,
+              3.0
+            ],
+            "selector_entropy_bits": 0.9709505944546686
+          },
+          {
+            "after": 1,
+            "before": 2,
+            "label": false,
+            "row": [
+              -3.0,
+              -1.0,
+              2.0,
+              2.0
+            ],
+            "selector_entropy_bits": 1.0
+          }
+        ],
+        "total_cpu_ns": 2014249914,
+        "total_wall_ns": 2015837615
+      },
+      "operator_order": [
+        "Abs",
+        "Min",
+        "Plus",
+        "Times"
+      ],
+      "residual": {
+        "candidate_prediction": true,
+        "label": 0,
+        "row": [
+          1.5,
+          0.0,
+          1.0,
+          -1.5
+        ]
+      },
+      "residual_arm": {
+        "branches": [
+          {
+            "candidate_ids": [
+              "term_f1c0087975d40daf"
+            ],
+            "cpu_ns": 499458254,
+            "explored": 1723,
+            "halt_reason": "timeout",
+            "operator": "Abs",
+            "wall_ns": 500700725
+          },
+          {
+            "candidate_ids": [
+              "term_f1c0087975d40daf"
+            ],
+            "cpu_ns": 500787456,
+            "explored": 1898,
+            "halt_reason": "timeout",
+            "operator": "Min",
+            "wall_ns": 500989426
+          },
+          {
+            "candidate_ids": [
+              "term_f1c0087975d40daf"
+            ],
+            "cpu_ns": 499931646,
+            "explored": 1734,
+            "halt_reason": "timeout",
+            "operator": "Plus",
+            "wall_ns": 501223029
+          },
+          {
+            "candidate_ids": [
+              "term_f1c0087975d40daf"
+            ],
+            "cpu_ns": 500730024,
+            "explored": 1849,
+            "halt_reason": "timeout",
+            "operator": "Times",
+            "wall_ns": 501281670
+          }
+        ],
+        "candidate_terms": [
+          {
+            "families": [
+              "Abs",
+              "Min",
+              "Plus",
+              "Times"
+            ],
+            "id": "term_f1c0087975d40daf",
+            "term": {
+              "a": {
+                "name": "ay",
+                "type": "Var"
+              },
+              "b": {
+                "arg": {
+                  "items": [
+                    {
+                      "name": "ex",
+                      "type": "Var"
+                    },
+                    {
+                      "name": "ey",
+                      "type": "Var"
+                    }
+                  ],
+                  "type": "And"
+                },
+                "type": "Neg"
+              },
+              "type": "Eq"
+            }
+          }
+        ],
+        "decision": "accept",
+        "final_survivor_ids": [
+          "term_f1c0087975d40daf"
+        ],
+        "initial_candidate_count": 1,
+        "scored_candidates": [
+          {
+            "id": "term_f1c0087975d40daf",
+            "score": {
+              "exact": false,
+              "fn": 120,
+              "fp": 0,
+              "invalid": 0,
+              "n": 1296,
+              "tn": 1176,
+              "tp": 0
+            }
+          }
+        ],
+        "search_cpu_ns": 2000907380,
+        "search_wall_ns": 2004194850,
+        "selected_id": "term_f1c0087975d40daf",
+        "selected_term": {
+          "a": {
+            "name": "ay",
+            "type": "Var"
+          },
+          "b": {
+            "arg": {
+              "items": [
+                {
+                  "name": "ex",
+                  "type": "Var"
+                },
+                {
+                  "name": "ey",
+                  "type": "Var"
+                }
+              ],
+              "type": "And"
+            },
+            "type": "Neg"
+          },
+          "type": "Eq"
+        },
+        "selection_labels": [],
+        "total_cpu_ns": 2011126683,
+        "total_wall_ns": 2014421020
+      },
+      "seed": 82261106,
+      "task": "product",
+      "triggered": true,
+      "worker": 2
+    },
+    {
+      "no_residual_control": null,
+      "residual": null,
+      "residual_arm": null,
+      "task": "product",
+      "triggered": false,
+      "worker": 3
+    },
+    {
+      "no_residual_control": null,
+      "residual": null,
+      "residual_arm": null,
+      "task": "product",
+      "triggered": false,
+      "worker": 4
+    },
+    {
+      "no_residual_control": null,
+      "residual": null,
+      "residual_arm": null,
+      "task": "absolute",
+      "triggered": false,
+      "worker": 0
+    },
+    {
+      "no_residual_control": null,
+      "residual": null,
+      "residual_arm": null,
+      "task": "absolute",
+      "triggered": false,
+      "worker": 1
+    },
+    {
+      "no_residual_control": null,
+      "residual": null,
+      "residual_arm": null,
+      "task": "absolute",
+      "triggered": false,
+      "worker": 2
+    },
+    {
+      "no_residual_control": null,
+      "residual": null,
+      "residual_arm": null,
+      "task": "absolute",
+      "triggered": false,
+      "worker": 3
+    },
+    {
+      "no_residual_control": {
+        "branches": [
+          {
+            "candidate_ids": [],
+            "cpu_ns": 499848875,
+            "explored": 1813,
+            "halt_reason": "timeout",
+            "operator": "Plus",
+            "wall_ns": 500941631
+          },
+          {
+            "candidate_ids": [],
+            "cpu_ns": 501154196,
+            "explored": 1988,
+            "halt_reason": "timeout",
+            "operator": "Times",
+            "wall_ns": 501297704
+          },
+          {
+            "candidate_ids": [
+              "term_8c49ee611cc3234c",
+              "term_332bd320936cc3b0",
+              "term_0d775a2495512e5f"
+            ],
+            "cpu_ns": 499946865,
+            "explored": 1833,
+            "halt_reason": "timeout",
+            "operator": "Abs",
+            "wall_ns": 500693702
+          },
+          {
+            "candidate_ids": [
+              "term_287c3563119a1474",
+              "term_fabbd3d48cfd7559",
+              "term_c6f6a2f0bc3dc80f",
+              "term_dd746700d215424c"
+            ],
+            "cpu_ns": 501173726,
+            "explored": 2031,
+            "halt_reason": "timeout",
+            "operator": "Min",
+            "wall_ns": 501328736
+          }
+        ],
+        "candidate_terms": [
+          {
+            "families": [
+              "Abs"
+            ],
+            "id": "term_8c49ee611cc3234c",
+            "term": {
+              "a": {
+                "name": "ax",
+                "type": "Var"
+              },
+              "b": {
+                "arg": {
+                  "arg": {
+                    "name": "ax",
+                    "type": "Var"
+                  },
+                  "type": "Abs"
+                },
+                "type": "Neg"
+              },
+              "type": "Eq"
+            }
+          },
+          {
+            "families": [
+              "Abs"
+            ],
+            "id": "term_332bd320936cc3b0",
+            "term": {
+              "a": {
+                "name": "ax",
+                "type": "Var"
+              },
+              "b": {
+                "arg": {
+                  "arg": {
+                    "name": "ex",
+                    "type": "Var"
+                  },
+                  "type": "Abs"
+                },
+                "type": "Neg"
+              },
+              "type": "Eq"
+            }
+          },
+          {
+            "families": [
+              "Abs"
+            ],
+            "id": "term_0d775a2495512e5f",
+            "term": {
+              "a": {
+                "arg": {
+                  "name": "ax",
+                  "type": "Var"
+                },
+                "type": "Abs"
+              },
+              "b": {
+                "arg": {
+                  "name": "ex",
+                  "type": "Var"
+                },
+                "type": "Abs"
+              },
+              "type": "Eq"
+            }
+          },
+          {
+            "families": [
+              "Min"
+            ],
+            "id": "term_287c3563119a1474",
+            "term": {
+              "a": {
+                "name": "ax",
+                "type": "Var"
+              },
+              "b": {
+                "items": [
+                  {
+                    "name": "ax",
+                    "type": "Var"
+                  },
+                  {
+                    "name": "ex",
+                    "type": "Var"
+                  }
+                ],
+                "type": "Min"
+              },
+              "type": "Eq"
+            }
+          },
+          {
+            "families": [
+              "Min"
+            ],
+            "id": "term_fabbd3d48cfd7559",
+            "term": {
+              "a": {
+                "name": "ax",
+                "type": "Var"
+              },
+              "b": {
+                "items": [
+                  {
+                    "name": "ax",
+                    "type": "Var"
+                  },
+                  {
+                    "arg": {
+                      "name": "ax",
+                      "type": "Var"
+                    },
+                    "type": "Neg"
+                  }
+                ],
+                "type": "Min"
+              },
+              "type": "Eq"
+            }
+          },
+          {
+            "families": [
+              "Min"
+            ],
+            "id": "term_c6f6a2f0bc3dc80f",
+            "term": {
+              "a": {
+                "name": "ax",
+                "type": "Var"
+              },
+              "b": {
+                "items": [
+                  {
+                    "name": "ax",
+                    "type": "Var"
+                  },
+                  {
+                    "arg": {
+                      "name": "ey",
+                      "type": "Var"
+                    },
+                    "type": "Neg"
+                  }
+                ],
+                "type": "Min"
+              },
+              "type": "Eq"
+            }
+          },
+          {
+            "families": [
+              "Min"
+            ],
+            "id": "term_dd746700d215424c",
+            "term": {
+              "a": {
+                "name": "ax",
+                "type": "Var"
+              },
+              "b": {
+                "items": [
+                  {
+                    "name": "ex",
+                    "type": "Var"
+                  },
+                  {
+                    "arg": {
+                      "name": "ex",
+                      "type": "Var"
+                    },
+                    "type": "Neg"
+                  }
+                ],
+                "type": "Min"
+              },
+              "type": "Eq"
+            }
+          }
+        ],
+        "decision": "accept",
+        "final_survivor_ids": [
+          "term_0d775a2495512e5f"
+        ],
+        "initial_candidate_count": 7,
+        "scored_candidates": [
+          {
+            "id": "term_0d775a2495512e5f",
+            "score": {
+              "exact": true,
+              "fn": 0,
+              "fp": 0,
+              "invalid": 0,
+              "n": 1296,
+              "tn": 864,
+              "tp": 432
+            }
+          }
+        ],
+        "search_cpu_ns": 2002123662,
+        "search_wall_ns": 2004261773,
+        "selected_id": "term_0d775a2495512e5f",
+        "selected_term": {
+          "a": {
+            "arg": {
+              "name": "ax",
+              "type": "Var"
+            },
+            "type": "Abs"
+          },
+          "b": {
+            "arg": {
+              "name": "ex",
+              "type": "Var"
+            },
+            "type": "Abs"
+          },
+          "type": "Eq"
+        },
+        "selection_labels": [
+          {
+            "after": 4,
+            "before": 7,
+            "label": false,
+            "row": [
+              -1.0,
+              -2.0,
+              2.0,
+              3.0
+            ],
+            "selector_entropy_bits": 0.9852281360342515
+          },
+          {
+            "after": 2,
+            "before": 4,
+            "label": true,
+            "row": [
+              1.0,
+              2.0,
+              1.0,
+              -1.0
+            ],
+            "selector_entropy_bits": 1.0
+          },
+          {
+            "after": 1,
+            "before": 2,
+            "label": false,
+            "row": [
+              -2.0,
+              -1.0,
+              3.0,
+              2.0
+            ],
+            "selector_entropy_bits": 1.0
+          }
+        ],
+        "total_cpu_ns": 2013323775,
+        "total_wall_ns": 2015471367
+      },
+      "operator_order": [
+        "Plus",
+        "Times",
+        "Abs",
+        "Min"
+      ],
+      "residual": {
+        "candidate_prediction": false,
+        "label": 1,
+        "row": [
+          -2.0,
+          0.5,
+          2.0,
+          -1.0
+        ]
+      },
+      "residual_arm": {
+        "branches": [
+          {
+            "candidate_ids": [],
+            "cpu_ns": 501354956,
+            "explored": 1927,
+            "halt_reason": "timeout",
+            "operator": "Plus",
+            "wall_ns": 501367468
+          },
+          {
+            "candidate_ids": [],
+            "cpu_ns": 501683385,
+            "explored": 1824,
+            "halt_reason": "timeout",
+            "operator": "Times",
+            "wall_ns": 501792900
+          },
+          {
+            "candidate_ids": [
+              "term_8c49ee611cc3234c",
+              "term_332bd320936cc3b0",
+              "term_0d775a2495512e5f"
+            ],
+            "cpu_ns": 501049556,
+            "explored": 1972,
+            "halt_reason": "timeout",
+            "operator": "Abs",
+            "wall_ns": 501048849
+          },
+          {
+            "candidate_ids": [
+              "term_287c3563119a1474",
+              "term_fabbd3d48cfd7559",
+              "term_c6f6a2f0bc3dc80f",
+              "term_dd746700d215424c"
+            ],
+            "cpu_ns": 500898096,
+            "explored": 1978,
+            "halt_reason": "timeout",
+            "operator": "Min",
+            "wall_ns": 501180220
+          }
+        ],
+        "candidate_terms": [
+          {
+            "families": [
+              "Abs"
+            ],
+            "id": "term_8c49ee611cc3234c",
+            "term": {
+              "a": {
+                "name": "ax",
+                "type": "Var"
+              },
+              "b": {
+                "arg": {
+                  "arg": {
+                    "name": "ax",
+                    "type": "Var"
+                  },
+                  "type": "Abs"
+                },
+                "type": "Neg"
+              },
+              "type": "Eq"
+            }
+          },
+          {
+            "families": [
+              "Abs"
+            ],
+            "id": "term_332bd320936cc3b0",
+            "term": {
+              "a": {
+                "name": "ax",
+                "type": "Var"
+              },
+              "b": {
+                "arg": {
+                  "arg": {
+                    "name": "ex",
+                    "type": "Var"
+                  },
+                  "type": "Abs"
+                },
+                "type": "Neg"
+              },
+              "type": "Eq"
+            }
+          },
+          {
+            "families": [
+              "Abs"
+            ],
+            "id": "term_0d775a2495512e5f",
+            "term": {
+              "a": {
+                "arg": {
+                  "name": "ax",
+                  "type": "Var"
+                },
+                "type": "Abs"
+              },
+              "b": {
+                "arg": {
+                  "name": "ex",
+                  "type": "Var"
+                },
+                "type": "Abs"
+              },
+              "type": "Eq"
+            }
+          },
+          {
+            "families": [
+              "Min"
+            ],
+            "id": "term_287c3563119a1474",
+            "term": {
+              "a": {
+                "name": "ax",
+                "type": "Var"
+              },
+              "b": {
+                "items": [
+                  {
+                    "name": "ax",
+                    "type": "Var"
+                  },
+                  {
+                    "name": "ex",
+                    "type": "Var"
+                  }
+                ],
+                "type": "Min"
+              },
+              "type": "Eq"
+            }
+          },
+          {
+            "families": [
+              "Min"
+            ],
+            "id": "term_fabbd3d48cfd7559",
+            "term": {
+              "a": {
+                "name": "ax",
+                "type": "Var"
+              },
+              "b": {
+                "items": [
+                  {
+                    "name": "ax",
+                    "type": "Var"
+                  },
+                  {
+                    "arg": {
+                      "name": "ax",
+                      "type": "Var"
+                    },
+                    "type": "Neg"
+                  }
+                ],
+                "type": "Min"
+              },
+              "type": "Eq"
+            }
+          },
+          {
+            "families": [
+              "Min"
+            ],
+            "id": "term_c6f6a2f0bc3dc80f",
+            "term": {
+              "a": {
+                "name": "ax",
+                "type": "Var"
+              },
+              "b": {
+                "items": [
+                  {
+                    "name": "ax",
+                    "type": "Var"
+                  },
+                  {
+                    "arg": {
+                      "name": "ey",
+                      "type": "Var"
+                    },
+                    "type": "Neg"
+                  }
+                ],
+                "type": "Min"
+              },
+              "type": "Eq"
+            }
+          },
+          {
+            "families": [
+              "Min"
+            ],
+            "id": "term_dd746700d215424c",
+            "term": {
+              "a": {
+                "name": "ax",
+                "type": "Var"
+              },
+              "b": {
+                "items": [
+                  {
+                    "name": "ex",
+                    "type": "Var"
+                  },
+                  {
+                    "arg": {
+                      "name": "ex",
+                      "type": "Var"
+                    },
+                    "type": "Neg"
+                  }
+                ],
+                "type": "Min"
+              },
+              "type": "Eq"
+            }
+          }
+        ],
+        "decision": "accept",
+        "final_survivor_ids": [
+          "term_0d775a2495512e5f"
+        ],
+        "initial_candidate_count": 7,
+        "scored_candidates": [
+          {
+            "id": "term_0d775a2495512e5f",
+            "score": {
+              "exact": true,
+              "fn": 0,
+              "fp": 0,
+              "invalid": 0,
+              "n": 1296,
+              "tn": 864,
+              "tp": 432
+            }
+          }
+        ],
+        "search_cpu_ns": 2004985993,
+        "search_wall_ns": 2005389437,
+        "selected_id": "term_0d775a2495512e5f",
+        "selected_term": {
+          "a": {
+            "arg": {
+              "name": "ax",
+              "type": "Var"
+            },
+            "type": "Abs"
+          },
+          "b": {
+            "arg": {
+              "name": "ex",
+              "type": "Var"
+            },
+            "type": "Abs"
+          },
+          "type": "Eq"
+        },
+        "selection_labels": [
+          {
+            "after": 4,
+            "before": 7,
+            "label": false,
+            "row": [
+              -1.0,
+              -2.0,
+              2.0,
+              3.0
+            ],
+            "selector_entropy_bits": 0.9852281360342515
+          },
+          {
+            "after": 2,
+            "before": 4,
+            "label": true,
+            "row": [
+              1.0,
+              2.0,
+              1.0,
+              -1.0
+            ],
+            "selector_entropy_bits": 1.0
+          },
+          {
+            "after": 1,
+            "before": 2,
+            "label": false,
+            "row": [
+              -2.0,
+              -1.0,
+              3.0,
+              2.0
+            ],
+            "selector_entropy_bits": 1.0
+          }
+        ],
+        "total_cpu_ns": 2015816226,
+        "total_wall_ns": 2016241029
+      },
+      "seed": 82261208,
+      "task": "absolute",
+      "triggered": true,
+      "worker": 4
+    },
+    {
+      "no_residual_control": {
+        "branches": [
+          {
+            "candidate_ids": [],
+            "cpu_ns": 500691115,
+            "explored": 1849,
+            "halt_reason": "timeout",
+            "operator": "Plus",
+            "wall_ns": 501486253
+          },
+          {
+            "candidate_ids": [],
+            "cpu_ns": 500937345,
+            "explored": 1981,
+            "halt_reason": "timeout",
+            "operator": "Times",
+            "wall_ns": 501047172
+          },
+          {
+            "candidate_ids": [],
+            "cpu_ns": 498574485,
+            "explored": 1793,
+            "halt_reason": "timeout",
+            "operator": "Abs",
+            "wall_ns": 500936843
+          },
+          {
+            "candidate_ids": [
+              "term_74d6c9d9c2d6b557"
+            ],
+            "cpu_ns": 501159995,
+            "explored": 1922,
+            "halt_reason": "timeout",
+            "operator": "Min",
+            "wall_ns": 501286976
+          }
+        ],
+        "candidate_terms": [
+          {
+            "families": [
+              "Min"
+            ],
+            "id": "term_74d6c9d9c2d6b557",
+            "term": {
+              "a": {
+                "name": "ey",
+                "type": "Var"
+              },
+              "b": {
+                "items": [
+                  {
+                    "name": "ax",
+                    "type": "Var"
+                  },
+                  {
+                    "name": "ay",
+                    "type": "Var"
+                  }
+                ],
+                "type": "Min"
+              },
+              "type": "Eq"
+            }
+          }
+        ],
+        "decision": "accept",
+        "final_survivor_ids": [
+          "term_74d6c9d9c2d6b557"
+        ],
+        "initial_candidate_count": 1,
+        "scored_candidates": [
+          {
+            "id": "term_74d6c9d9c2d6b557",
+            "score": {
+              "exact": false,
+              "fn": 125,
+              "fp": 55,
+              "invalid": 0,
+              "n": 1296,
+              "tn": 955,
+              "tp": 161
+            }
+          }
+        ],
+        "search_cpu_ns": 2001362940,
+        "search_wall_ns": 2004757244,
+        "selected_id": "term_74d6c9d9c2d6b557",
+        "selected_term": {
+          "a": {
+            "name": "ey",
+            "type": "Var"
+          },
+          "b": {
+            "items": [
+              {
+                "name": "ax",
+                "type": "Var"
+              },
+              {
+                "name": "ay",
+                "type": "Var"
+              }
+            ],
+            "type": "Min"
+          },
+          "type": "Eq"
+        },
+        "selection_labels": [],
+        "total_cpu_ns": 2009744173,
+        "total_wall_ns": 2013148977
+      },
+      "operator_order": [
+        "Plus",
+        "Times",
+        "Abs",
+        "Min"
+      ],
+      "residual": {
+        "candidate_prediction": false,
+        "label": 1,
+        "row": [
+          -2.0,
+          0.0,
+          -1.25,
+          -2.0
+        ]
+      },
+      "residual_arm": {
+        "branches": [
+          {
+            "candidate_ids": [],
+            "cpu_ns": 501506145,
+            "explored": 1724,
+            "halt_reason": "timeout",
+            "operator": "Plus",
+            "wall_ns": 501504477
+          },
+          {
+            "candidate_ids": [],
+            "cpu_ns": 501696196,
+            "explored": 1812,
+            "halt_reason": "timeout",
+            "operator": "Times",
+            "wall_ns": 501744680
+          },
+          {
+            "candidate_ids": [],
+            "cpu_ns": 500595856,
+            "explored": 1816,
+            "halt_reason": "timeout",
+            "operator": "Abs",
+            "wall_ns": 500914758
+          },
+          {
+            "candidate_ids": [
+              "term_74d6c9d9c2d6b557"
+            ],
+            "cpu_ns": 500992075,
+            "explored": 1844,
+            "halt_reason": "timeout",
+            "operator": "Min",
+            "wall_ns": 501716702
+          }
+        ],
+        "candidate_terms": [
+          {
+            "families": [
+              "Min"
+            ],
+            "id": "term_74d6c9d9c2d6b557",
+            "term": {
+              "a": {
+                "name": "ey",
+                "type": "Var"
+              },
+              "b": {
+                "items": [
+                  {
+                    "name": "ax",
+                    "type": "Var"
+                  },
+                  {
+                    "name": "ay",
+                    "type": "Var"
+                  }
+                ],
+                "type": "Min"
+              },
+              "type": "Eq"
+            }
+          }
+        ],
+        "decision": "accept",
+        "final_survivor_ids": [
+          "term_74d6c9d9c2d6b557"
+        ],
+        "initial_candidate_count": 1,
+        "scored_candidates": [
+          {
+            "id": "term_74d6c9d9c2d6b557",
+            "score": {
+              "exact": false,
+              "fn": 125,
+              "fp": 55,
+              "invalid": 0,
+              "n": 1296,
+              "tn": 955,
+              "tp": 161
+            }
+          }
+        ],
+        "search_cpu_ns": 2004790272,
+        "search_wall_ns": 2005880617,
+        "selected_id": "term_74d6c9d9c2d6b557",
+        "selected_term": {
+          "a": {
+            "name": "ey",
+            "type": "Var"
+          },
+          "b": {
+            "items": [
+              {
+                "name": "ax",
+                "type": "Var"
+              },
+              {
+                "name": "ay",
+                "type": "Var"
+              }
+            ],
+            "type": "Min"
+          },
+          "type": "Eq"
+        },
+        "selection_labels": [],
+        "total_cpu_ns": 2014818695,
+        "total_wall_ns": 2015925466
+      },
+      "seed": 82261304,
+      "task": "minimum",
+      "triggered": true,
+      "worker": 0
+    },
+    {
+      "no_residual_control": {
+        "branches": [
+          {
+            "candidate_ids": [
+              "term_d8a10c34690a3e1d",
+              "term_feb9a9d79a3567b2"
+            ],
+            "cpu_ns": 498861706,
+            "explored": 1843,
+            "halt_reason": "timeout",
+            "operator": "Times",
+            "wall_ns": 501436072
+          },
+          {
+            "candidate_ids": [
+              "term_daad1dd33c933337",
+              "term_de169bc56aec7525",
+              "term_0d775a2495512e5f",
+              "term_d8a10c34690a3e1d",
+              "term_feb9a9d79a3567b2"
+            ],
+            "cpu_ns": 500133575,
+            "explored": 1938,
+            "halt_reason": "timeout",
+            "operator": "Abs",
+            "wall_ns": 500619920
+          },
+          {
+            "candidate_ids": [
+              "term_8ce69d5abb9d2664",
+              "term_6038375572934e37",
+              "term_d8a10c34690a3e1d",
+              "term_feb9a9d79a3567b2",
+              "term_d1a763070eeeca5f"
+            ],
+            "cpu_ns": 500406866,
+            "explored": 1798,
+            "halt_reason": "timeout",
+            "operator": "Min",
+            "wall_ns": 501125304
+          },
+          {
+            "candidate_ids": [
+              "term_d8a10c34690a3e1d",
+              "term_feb9a9d79a3567b2"
+            ],
+            "cpu_ns": 501319516,
+            "explored": 1896,
+            "halt_reason": "timeout",
+            "operator": "Plus",
+            "wall_ns": 501449876
+          }
+        ],
+        "candidate_terms": [
+          {
+            "families": [
+              "Times",
+              "Abs",
+              "Min",
+              "Plus"
+            ],
+            "id": "term_d8a10c34690a3e1d",
+            "term": {
+              "a": {
+                "name": "ey",
+                "type": "Var"
+              },
+              "b": {
+                "arg": {
+                  "items": [
+                    {
+                      "name": "ax",
+                      "type": "Var"
+                    },
+                    {
+                      "name": "ey",
+                      "type": "Var"
+                    }
+                  ],
+                  "type": "And"
+                },
+                "type": "Neg"
+              },
+              "type": "Eq"
+            }
+          },
+          {
+            "families": [
+              "Times",
+              "Abs",
+              "Min",
+              "Plus"
+            ],
+            "id": "term_feb9a9d79a3567b2",
+            "term": {
+              "a": {
+                "name": "ey",
+                "type": "Var"
+              },
+              "b": {
+                "arg": {
+                  "items": [
+                    {
+                      "name": "ay",
+                      "type": "Var"
+                    },
+                    {
+                      "name": "ey",
+                      "type": "Var"
+                    }
+                  ],
+                  "type": "And"
+                },
+                "type": "Neg"
+              },
+              "type": "Eq"
+            }
+          },
+          {
+            "families": [
+              "Abs"
+            ],
+            "id": "term_daad1dd33c933337",
+            "term": {
+              "a": {
+                "name": "ex",
+                "type": "Var"
+              },
+              "b": {
+                "arg": {
+                  "arg": {
+                    "name": "ax",
+                    "type": "Var"
+                  },
+                  "type": "Abs"
+                },
+                "type": "Neg"
+              },
+              "type": "Eq"
+            }
+          },
+          {
+            "families": [
+              "Abs"
+            ],
+            "id": "term_de169bc56aec7525",
+            "term": {
+              "a": {
+                "name": "ey",
+                "type": "Var"
+              },
+              "b": {
+                "arg": {
+                  "arg": {
+                    "name": "ey",
+                    "type": "Var"
+                  },
+                  "type": "Abs"
+                },
+                "type": "Neg"
+              },
+              "type": "Eq"
+            }
+          },
+          {
+            "families": [
+              "Abs"
+            ],
+            "id": "term_0d775a2495512e5f",
+            "term": {
+              "a": {
+                "arg": {
+                  "name": "ax",
+                  "type": "Var"
+                },
+                "type": "Abs"
+              },
+              "b": {
+                "arg": {
+                  "name": "ex",
+                  "type": "Var"
+                },
+                "type": "Abs"
+              },
+              "type": "Eq"
+            }
+          },
+          {
+            "families": [
+              "Min"
+            ],
+            "id": "term_8ce69d5abb9d2664",
+            "term": {
+              "a": {
+                "name": "ex",
+                "type": "Var"
+              },
+              "b": {
+                "items": [
+                  {
+                    "name": "ax",
+                    "type": "Var"
+                  },
+                  {
+                    "name": "ay",
+                    "type": "Var"
+                  }
+                ],
+                "type": "Min"
+              },
+              "type": "Eq"
+            }
+          },
+          {
+            "families": [
+              "Min"
+            ],
+            "id": "term_6038375572934e37",
+            "term": {
+              "a": {
+                "name": "ex",
+                "type": "Var"
+              },
+              "b": {
+                "items": [
+                  {
+                    "name": "ax",
+                    "type": "Var"
+                  },
+                  {
+                    "arg": {
+                      "name": "ax",
+                      "type": "Var"
+                    },
+                    "type": "Neg"
+                  }
+                ],
+                "type": "Min"
+              },
+              "type": "Eq"
+            }
+          },
+          {
+            "families": [
+              "Min"
+            ],
+            "id": "term_d1a763070eeeca5f",
+            "term": {
+              "a": {
+                "name": "ey",
+                "type": "Var"
+              },
+              "b": {
+                "items": [
+                  {
+                    "name": "ey",
+                    "type": "Var"
+                  },
+                  {
+                    "arg": {
+                      "name": "ey",
+                      "type": "Var"
+                    },
+                    "type": "Neg"
+                  }
+                ],
+                "type": "Min"
+              },
+              "type": "Eq"
+            }
+          }
+        ],
+        "decision": "request_help",
+        "final_survivor_ids": [
+          "term_de169bc56aec7525",
+          "term_d1a763070eeeca5f"
+        ],
+        "initial_candidate_count": 8,
+        "scored_candidates": [
+          {
+            "id": "term_d8a10c34690a3e1d",
+            "score": {
+              "exact": false,
+              "fn": 286,
+              "fp": 0,
+              "invalid": 0,
+              "n": 1296,
+              "tn": 1010,
+              "tp": 0
+            }
+          },
+          {
+            "id": "term_feb9a9d79a3567b2",
+            "score": {
+              "exact": false,
+              "fn": 286,
+              "fp": 0,
+              "invalid": 0,
+              "n": 1296,
+              "tn": 1010,
+              "tp": 0
+            }
+          },
+          {
+            "id": "term_daad1dd33c933337",
+            "score": {
+              "exact": false,
+              "fn": 188,
+              "fp": 118,
+              "invalid": 0,
+              "n": 1296,
+              "tn": 892,
+              "tp": 98
+            }
+          },
+          {
+            "id": "term_de169bc56aec7525",
+            "score": {
+              "exact": false,
+              "fn": 116,
+              "fp": 478,
+              "invalid": 0,
+              "n": 1296,
+              "tn": 532,
+              "tp": 170
+            }
+          },
+          {
+            "id": "term_0d775a2495512e5f",
+            "score": {
+              "exact": false,
+              "fn": 144,
+              "fp": 290,
+              "invalid": 0,
+              "n": 1296,
+              "tn": 720,
+              "tp": 142
+            }
+          },
+          {
+            "id": "term_8ce69d5abb9d2664",
+            "score": {
+              "exact": false,
+              "fn": 125,
+              "fp": 55,
+              "invalid": 0,
+              "n": 1296,
+              "tn": 955,
+              "tp": 161
+            }
+          },
+          {
+            "id": "term_6038375572934e37",
+            "score": {
+              "exact": false,
+              "fn": 188,
+              "fp": 118,
+              "invalid": 0,
+              "n": 1296,
+              "tn": 892,
+              "tp": 98
+            }
+          },
+          {
+            "id": "term_d1a763070eeeca5f",
+            "score": {
+              "exact": false,
+              "fn": 116,
+              "fp": 478,
+              "invalid": 0,
+              "n": 1296,
+              "tn": 532,
+              "tp": 170
+            }
+          }
+        ],
+        "search_cpu_ns": 2000721663,
+        "search_wall_ns": 2004631172,
+        "selected_id": null,
+        "selected_term": null,
+        "selection_labels": [
+          {
+            "after": 4,
+            "before": 8,
+            "label": true,
+            "row": [
+              3.0,
+              -1.0,
+              1.0,
+              -1.0
+            ],
+            "selector_entropy_bits": 1.0
+          },
+          {
+            "after": 2,
+            "before": 4,
+            "label": true,
+            "row": [
+              2.0,
+              -3.0,
+              -1.0,
+              -3.0
+            ],
+            "selector_entropy_bits": 1.0
+          }
+        ],
+        "total_cpu_ns": 2086692366,
+        "total_wall_ns": 2090612377
+      },
+      "operator_order": [
+        "Times",
+        "Abs",
+        "Min",
+        "Plus"
+      ],
+      "residual": {
+        "candidate_prediction": true,
+        "label": 0,
+        "row": [
+          -0.25,
+          2.5,
+          -1.75,
+          -1.0
+        ]
+      },
+      "residual_arm": {
+        "branches": [
+          {
+            "candidate_ids": [],
+            "cpu_ns": 500628695,
+            "explored": 1823,
+            "halt_reason": "timeout",
+            "operator": "Times",
+            "wall_ns": 501147587
+          },
+          {
+            "candidate_ids": [
+              "term_daad1dd33c933337",
+              "term_0d775a2495512e5f"
+            ],
+            "cpu_ns": 501160116,
+            "explored": 1792,
+            "halt_reason": "timeout",
+            "operator": "Abs",
+            "wall_ns": 501227427
+          },
+          {
+            "candidate_ids": [
+              "term_8ce69d5abb9d2664",
+              "term_6038375572934e37"
+            ],
+            "cpu_ns": 501518496,
+            "explored": 1861,
+            "halt_reason": "timeout",
+            "operator": "Min",
+            "wall_ns": 501559120
+          },
+          {
+            "candidate_ids": [],
+            "cpu_ns": 501347025,
+            "explored": 1893,
+            "halt_reason": "timeout",
+            "operator": "Plus",
+            "wall_ns": 501430710
+          }
+        ],
+        "candidate_terms": [
+          {
+            "families": [
+              "Abs"
+            ],
+            "id": "term_daad1dd33c933337",
+            "term": {
+              "a": {
+                "name": "ex",
+                "type": "Var"
+              },
+              "b": {
+                "arg": {
+                  "arg": {
+                    "name": "ax",
+                    "type": "Var"
+                  },
+                  "type": "Abs"
+                },
+                "type": "Neg"
+              },
+              "type": "Eq"
+            }
+          },
+          {
+            "families": [
+              "Abs"
+            ],
+            "id": "term_0d775a2495512e5f",
+            "term": {
+              "a": {
+                "arg": {
+                  "name": "ax",
+                  "type": "Var"
+                },
+                "type": "Abs"
+              },
+              "b": {
+                "arg": {
+                  "name": "ex",
+                  "type": "Var"
+                },
+                "type": "Abs"
+              },
+              "type": "Eq"
+            }
+          },
+          {
+            "families": [
+              "Min"
+            ],
+            "id": "term_8ce69d5abb9d2664",
+            "term": {
+              "a": {
+                "name": "ex",
+                "type": "Var"
+              },
+              "b": {
+                "items": [
+                  {
+                    "name": "ax",
+                    "type": "Var"
+                  },
+                  {
+                    "name": "ay",
+                    "type": "Var"
+                  }
+                ],
+                "type": "Min"
+              },
+              "type": "Eq"
+            }
+          },
+          {
+            "families": [
+              "Min"
+            ],
+            "id": "term_6038375572934e37",
+            "term": {
+              "a": {
+                "name": "ex",
+                "type": "Var"
+              },
+              "b": {
+                "items": [
+                  {
+                    "name": "ax",
+                    "type": "Var"
+                  },
+                  {
+                    "arg": {
+                      "name": "ax",
+                      "type": "Var"
+                    },
+                    "type": "Neg"
+                  }
+                ],
+                "type": "Min"
+              },
+              "type": "Eq"
+            }
+          }
+        ],
+        "decision": "request_help",
+        "final_survivor_ids": [
+          "term_daad1dd33c933337",
+          "term_6038375572934e37"
+        ],
+        "initial_candidate_count": 4,
+        "scored_candidates": [
+          {
+            "id": "term_daad1dd33c933337",
+            "score": {
+              "exact": false,
+              "fn": 188,
+              "fp": 118,
+              "invalid": 0,
+              "n": 1296,
+              "tn": 892,
+              "tp": 98
+            }
+          },
+          {
+            "id": "term_0d775a2495512e5f",
+            "score": {
+              "exact": false,
+              "fn": 144,
+              "fp": 290,
+              "invalid": 0,
+              "n": 1296,
+              "tn": 720,
+              "tp": 142
+            }
+          },
+          {
+            "id": "term_8ce69d5abb9d2664",
+            "score": {
+              "exact": false,
+              "fn": 125,
+              "fp": 55,
+              "invalid": 0,
+              "n": 1296,
+              "tn": 955,
+              "tp": 161
+            }
+          },
+          {
+            "id": "term_6038375572934e37",
+            "score": {
+              "exact": false,
+              "fn": 188,
+              "fp": 118,
+              "invalid": 0,
+              "n": 1296,
+              "tn": 892,
+              "tp": 98
+            }
+          }
+        ],
+        "search_cpu_ns": 2004654332,
+        "search_wall_ns": 2005364844,
+        "selected_id": null,
+        "selected_term": null,
+        "selection_labels": [
+          {
+            "after": 2,
+            "before": 4,
+            "label": false,
+            "row": [
+              3.0,
+              3.0,
+              3.0,
+              -1.0
+            ],
+            "selector_entropy_bits": 1.0
+          }
+        ],
+        "total_cpu_ns": 2041108502,
+        "total_wall_ns": 2041827517
+      },
+      "seed": 82261305,
+      "task": "minimum",
+      "triggered": true,
+      "worker": 1
+    },
+    {
+      "no_residual_control": {
+        "branches": [
+          {
+            "candidate_ids": [
+              "term_a068c8917a20af13"
+            ],
+            "cpu_ns": 499637946,
+            "explored": 1763,
+            "halt_reason": "timeout",
+            "operator": "Abs",
+            "wall_ns": 500848970
+          },
+          {
+            "candidate_ids": [
+              "term_74d6c9d9c2d6b557",
+              "term_56359bba5b6dee0d"
+            ],
+            "cpu_ns": 500031205,
+            "explored": 1944,
+            "halt_reason": "timeout",
+            "operator": "Min",
+            "wall_ns": 501051121
+          },
+          {
+            "candidate_ids": [],
+            "cpu_ns": 500877956,
+            "explored": 1958,
+            "halt_reason": "timeout",
+            "operator": "Plus",
+            "wall_ns": 501078483
+          },
+          {
+            "candidate_ids": [],
+            "cpu_ns": 500961946,
+            "explored": 2027,
+            "halt_reason": "timeout",
+            "operator": "Times",
+            "wall_ns": 501383115
+          }
+        ],
+        "candidate_terms": [
+          {
+            "families": [
+              "Abs"
+            ],
+            "id": "term_a068c8917a20af13",
+            "term": {
+              "a": {
+                "arg": {
+                  "name": "ay",
+                  "type": "Var"
+                },
+                "type": "Abs"
+              },
+              "b": {
+                "arg": {
+                  "name": "ex",
+                  "type": "Var"
+                },
+                "type": "Abs"
+              },
+              "type": "Eq"
+            }
+          },
+          {
+            "families": [
+              "Min"
+            ],
+            "id": "term_74d6c9d9c2d6b557",
+            "term": {
+              "a": {
+                "name": "ey",
+                "type": "Var"
+              },
+              "b": {
+                "items": [
+                  {
+                    "name": "ax",
+                    "type": "Var"
+                  },
+                  {
+                    "name": "ay",
+                    "type": "Var"
+                  }
+                ],
+                "type": "Min"
+              },
+              "type": "Eq"
+            }
+          },
+          {
+            "families": [
+              "Min"
+            ],
+            "id": "term_56359bba5b6dee0d",
+            "term": {
+              "a": {
+                "name": "ey",
+                "type": "Var"
+              },
+              "b": {
+                "items": [
+                  {
+                    "name": "ay",
+                    "type": "Var"
+                  },
+                  {
+                    "name": "ey",
+                    "type": "Var"
+                  }
+                ],
+                "type": "Min"
+              },
+              "type": "Eq"
+            }
+          }
+        ],
+        "decision": "accept",
+        "final_survivor_ids": [
+          "term_74d6c9d9c2d6b557"
+        ],
+        "initial_candidate_count": 3,
+        "scored_candidates": [
+          {
+            "id": "term_74d6c9d9c2d6b557",
+            "score": {
+              "exact": false,
+              "fn": 125,
+              "fp": 55,
+              "invalid": 0,
+              "n": 1296,
+              "tn": 955,
+              "tp": 161
+            }
+          }
+        ],
+        "search_cpu_ns": 2001509053,
+        "search_wall_ns": 2004361689,
+        "selected_id": "term_74d6c9d9c2d6b557",
+        "selected_term": {
+          "a": {
+            "name": "ey",
+            "type": "Var"
+          },
+          "b": {
+            "items": [
+              {
+                "name": "ax",
+                "type": "Var"
+              },
+              {
+                "name": "ay",
+                "type": "Var"
+              }
+            ],
+            "type": "Min"
+          },
+          "type": "Eq"
+        },
+        "selection_labels": [
+          {
+            "after": 2,
+            "before": 3,
+            "label": false,
+            "row": [
+              2.0,
+              2.0,
+              -1.0,
+              -2.0
+            ],
+            "selector_entropy_bits": 0.9182958340544896
+          },
+          {
+            "after": 1,
+            "before": 2,
+            "label": false,
+            "row": [
+              0.0,
+              3.0,
+              3.0,
+              -2.0
+            ],
+            "selector_entropy_bits": 1.0
+          }
+        ],
+        "total_cpu_ns": 2015477116,
+        "total_wall_ns": 2018341684
+      },
+      "operator_order": [
+        "Abs",
+        "Min",
+        "Plus",
+        "Times"
+      ],
+      "residual": {
+        "candidate_prediction": true,
+        "label": 0,
+        "row": [
+          -1.75,
+          -1.5,
+          1.5,
+          0.0
+        ]
+      },
+      "residual_arm": {
+        "branches": [
+          {
+            "candidate_ids": [],
+            "cpu_ns": 500116406,
+            "explored": 2155,
+            "halt_reason": "timeout",
+            "operator": "Abs",
+            "wall_ns": 500796604
+          },
+          {
+            "candidate_ids": [
+              "term_74d6c9d9c2d6b557",
+              "term_56359bba5b6dee0d"
+            ],
+            "cpu_ns": 501034346,
+            "explored": 2017,
+            "halt_reason": "timeout",
+            "operator": "Min",
+            "wall_ns": 501091026
+          },
+          {
+            "candidate_ids": [],
+            "cpu_ns": 500921955,
+            "explored": 2083,
+            "halt_reason": "timeout",
+            "operator": "Plus",
+            "wall_ns": 501448850
+          },
+          {
+            "candidate_ids": [],
+            "cpu_ns": 500893906,
+            "explored": 1968,
+            "halt_reason": "timeout",
+            "operator": "Times",
+            "wall_ns": 500937267
+          }
+        ],
+        "candidate_terms": [
+          {
+            "families": [
+              "Min"
+            ],
+            "id": "term_74d6c9d9c2d6b557",
+            "term": {
+              "a": {
+                "name": "ey",
+                "type": "Var"
+              },
+              "b": {
+                "items": [
+                  {
+                    "name": "ax",
+                    "type": "Var"
+                  },
+                  {
+                    "name": "ay",
+                    "type": "Var"
+                  }
+                ],
+                "type": "Min"
+              },
+              "type": "Eq"
+            }
+          },
+          {
+            "families": [
+              "Min"
+            ],
+            "id": "term_56359bba5b6dee0d",
+            "term": {
+              "a": {
+                "name": "ey",
+                "type": "Var"
+              },
+              "b": {
+                "items": [
+                  {
+                    "name": "ay",
+                    "type": "Var"
+                  },
+                  {
+                    "name": "ey",
+                    "type": "Var"
+                  }
+                ],
+                "type": "Min"
+              },
+              "type": "Eq"
+            }
+          }
+        ],
+        "decision": "accept",
+        "final_survivor_ids": [
+          "term_74d6c9d9c2d6b557"
+        ],
+        "initial_candidate_count": 2,
+        "scored_candidates": [
+          {
+            "id": "term_74d6c9d9c2d6b557",
+            "score": {
+              "exact": false,
+              "fn": 125,
+              "fp": 55,
+              "invalid": 0,
+              "n": 1296,
+              "tn": 955,
+              "tp": 161
+            }
+          }
+        ],
+        "search_cpu_ns": 2002966613,
+        "search_wall_ns": 2004273747,
+        "selected_id": "term_74d6c9d9c2d6b557",
+        "selected_term": {
+          "a": {
+            "name": "ey",
+            "type": "Var"
+          },
+          "b": {
+            "items": [
+              {
+                "name": "ax",
+                "type": "Var"
+              },
+              {
+                "name": "ay",
+                "type": "Var"
+              }
+            ],
+            "type": "Min"
+          },
+          "type": "Eq"
+        },
+        "selection_labels": [
+          {
+            "after": 1,
+            "before": 2,
+            "label": false,
+            "row": [
+              2.0,
+              2.0,
+              -1.0,
+              -2.0
+            ],
+            "selector_entropy_bits": 1.0
+          }
+        ],
+        "total_cpu_ns": 2011666885,
+        "total_wall_ns": 2012981891
+      },
+      "seed": 82261306,
+      "task": "minimum",
+      "triggered": true,
+      "worker": 2
+    },
+    {
+      "no_residual_control": null,
+      "residual": null,
+      "residual_arm": null,
+      "task": "minimum",
+      "triggered": false,
+      "worker": 3
+    },
+    {
+      "no_residual_control": null,
+      "residual": null,
+      "residual_arm": null,
+      "task": "minimum",
+      "triggered": false,
+      "worker": 4
+    }
+  ]
+}

@@ -1,0 +1,53 @@
+{
+  "checks": {
+    "all_shape_signatures_lack_frame_id": true,
+    "all_shape_signatures_lack_scope_id": true,
+    "instrumented_parity_report_passes": true,
+    "raw_archive_matches_capture_summary": true,
+    "shape_signature_population_is_nonempty": true,
+    "single_full_graph_snapshot": true,
+    "three_worker_graph_semantics_reproduce": true
+  },
+  "frame_id_attribute_counts": {
+    "frame_id_absent": 410
+  },
+  "full_graph_snapshot_count": 1,
+  "graph_node_count": 25065,
+  "inputs": {
+    "capture_summary_sha256": "9b9f1acc2d2c1ecaa91c110f0f4fd431f07a99c861bfa5847ea2f2bc721c50e8",
+    "instrumented_parity_sha256": "a7a92c377b46214344dd631778b8d8d8b4abced5fada8fa46457ec6108c488f1",
+    "raw_path": "evaluation/reports/substrate_live_helper_work_capture_v1_4_workers_raw_20261005.json.gz",
+    "raw_sha256": "bf8efe07b7be556a22a52c5d4f716fee8c4c25c1c1e02d3f80b4d5ea2a75f39e"
+  },
+  "interpretation": "In this current v1.4 captured live route, no ShapeSignature has scope_id or frame_id. A new helper filter keyed by those attributes would return no codebook parts unless part ownership is established and recorded before helper execution. This does not establish that all substrate tasks lack frame-local codebooks.",
+  "passed": true,
+  "run_id": "live-codebook-frame-provenance-v1-analysis-20261005",
+  "schema": "LiveCodebookFrameProvenanceV1Analysis",
+  "scope_id_attribute_counts": {
+    "scope_id_absent": 410
+  },
+  "shape_signature_count": 410,
+  "shape_signature_kind_counts": {
+    "character": 54,
+    "code_construction": 7,
+    "code_write_construction": 27,
+    "construction": 30,
+    "faculty": 11,
+    "knowledge_causal": 2,
+    "knowledge_elaborative": 1,
+    "knowledge_enabling": 1,
+    "knowledge_goal": 3,
+    "knowledge_logical": 3,
+    "knowledge_partwhole": 1,
+    "math": 6,
+    "stroke": 237,
+    "substroke": 26,
+    "vision_contour": 1
+  },
+  "worker_count": 3,
+  "worker_graph_semantic_sha256": [
+    null,
+    null,
+    null
+  ]
+}

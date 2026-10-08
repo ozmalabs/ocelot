@@ -1,0 +1,141 @@
+{
+  "binary": {
+    "path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+    "sha256": "sha256:10591499783655e96d5a15c13ebae64bbe593543b671e03faadaffcd687af8f5"
+  },
+  "host": {
+    "machine": "x86_64",
+    "platform": "Linux-6.8.0-142-generic-x86_64-with-glibc2.39",
+    "python": "3.13.5"
+  },
+  "implementation_status": "matched positive/negative self-correction over unrelated path/star/grid topologies",
+  "protocol": {
+    "candidate_labels": [
+      "dedup_identity_fix",
+      "add_match_guard(control)"
+    ],
+    "order_seed": 20260930,
+    "semantic_gate": "exact top-level and nested residual equality across journal and whole-graph diff; expected positive/negative control; unchanged primary graph/rules",
+    "sizes": [
+      10000
+    ],
+    "timed_region": "baseline prediction, candidate application, branch prediction, and residual readout; topology fixture build excluded",
+    "topologies": [
+      "path",
+      "star",
+      "grid"
+    ]
+  },
+  "results": [
+    {
+      "candidate_label": "dedup_identity_fix",
+      "exact_nested_residual_parity": true,
+      "expected_control_outcome": true,
+      "journal_speedup": 9.360770921754098,
+      "median_ms": {
+        "journal": 201.1597405,
+        "legacy_whole_graph_diff": 1883.0102495
+      },
+      "primary_state_preserved": true,
+      "repeats": 2,
+      "topology": "path",
+      "unrelated_nodes": 10000,
+      "warmups": 1
+    },
+    {
+      "candidate_label": "add_match_guard(control)",
+      "exact_nested_residual_parity": true,
+      "expected_control_outcome": false,
+      "journal_speedup": 11.350305049300992,
+      "median_ms": {
+        "journal": 169.962199,
+        "legacy_whole_graph_diff": 1929.1228055000001
+      },
+      "primary_state_preserved": true,
+      "repeats": 2,
+      "topology": "path",
+      "unrelated_nodes": 10000,
+      "warmups": 1
+    },
+    {
+      "candidate_label": "dedup_identity_fix",
+      "exact_nested_residual_parity": true,
+      "expected_control_outcome": true,
+      "journal_speedup": 10.9419345488281,
+      "median_ms": {
+        "journal": 175.20673299999999,
+        "legacy_whole_graph_diff": 1917.100605
+      },
+      "primary_state_preserved": true,
+      "repeats": 2,
+      "topology": "star",
+      "unrelated_nodes": 10000,
+      "warmups": 1
+    },
+    {
+      "candidate_label": "add_match_guard(control)",
+      "exact_nested_residual_parity": true,
+      "expected_control_outcome": false,
+      "journal_speedup": 10.5341635475766,
+      "median_ms": {
+        "journal": 174.2587545,
+        "legacy_whole_graph_diff": 1835.6702195
+      },
+      "primary_state_preserved": true,
+      "repeats": 2,
+      "topology": "star",
+      "unrelated_nodes": 10000,
+      "warmups": 1
+    },
+    {
+      "candidate_label": "dedup_identity_fix",
+      "exact_nested_residual_parity": true,
+      "expected_control_outcome": true,
+      "journal_speedup": 8.661116323402748,
+      "median_ms": {
+        "journal": 216.10243,
+        "legacy_whole_graph_diff": 1871.6882839999998
+      },
+      "primary_state_preserved": true,
+      "repeats": 2,
+      "topology": "grid",
+      "unrelated_nodes": 10000,
+      "warmups": 1
+    },
+    {
+      "candidate_label": "add_match_guard(control)",
+      "exact_nested_residual_parity": true,
+      "expected_control_outcome": false,
+      "journal_speedup": 10.295950640347469,
+      "median_ms": {
+        "journal": 169.014723,
+        "legacy_whole_graph_diff": 1740.1672455
+      },
+      "primary_state_preserved": true,
+      "repeats": 2,
+      "topology": "grid",
+      "unrelated_nodes": 10000,
+      "warmups": 1
+    }
+  ],
+  "runner": {
+    "path": "/home/matt/ozmadev/ocelot/evaluation/substrate_capability/thoughtexperiment_topology_scaling_v1.py",
+    "sha256": "sha256:6c9b71eb6612e475b78c02ab779d2792f489ac1e72ba0a32d780ae6b3a080290"
+  },
+  "rust_source_fingerprint": "1dae2d3b1237d4421f399d41980363c9061f441c0e09eb3192ff15064338a123",
+  "schema": "ThoughtexperimentTopologyScalingV1",
+  "sources": {
+    "domains/collapse_model.py": "sha256:3ccf6713563c7ae64f7a69d34211a98fc3ec207233dc0ddfeb8a42965fc8b1b2",
+    "domains/edit_ops.py": "sha256:5fef079eff6c47e6feb7cd35a92e39913312835acd82c151ca726319c4e9da1c",
+    "domains/imagination.py": "sha256:14a71e5b9663a73e4451257e8fb171fd8eba51aebef2ef5b86eb7030f2e74e2c",
+    "domains/self_correction.py": "sha256:05e04d333131246e9d705a147b612f46bb77baf60e3818223dcbd7403b4713e0",
+    "evaluation/substrate_capability/thoughtexperiment_self_correction_copy_comparison_v1.py": "sha256:399cff2b650a131bcf4076d0e0a70f26c081c93aec6ea8a4686183b874ec56fc",
+    "runners/dsl/python/substrate_rs/__init__.py": "sha256:06173666a03c234273b116dc0007f9f9c1ab07d4ad7a3903d4082f0e92193aca",
+    "runners/dsl/src/graph.rs": "sha256:7615b3ecaa0abeef85e8b11e937163901e909ddba6bae55d0a5d7e714dab638d",
+    "runners/dsl/src/persist.rs": "sha256:053362c5650c63e592e913e1ac9ccca29d5bdcf55d64a7c9c224cc7b844d4712",
+    "runners/dsl/src/py.rs": "sha256:5d7a221d159248abfb70b105de309ffd29ff93588d36c76fe07600b4e0dc3eac",
+    "runners/dsl/src/substrate.rs": "sha256:65ca92f0dea8b5faefbda03762bd3277eef2e544d7d994011a40f76f94b3a930",
+    "seeds/shape_decode_loop.json": "sha256:3e1783cf566179061250572bbf7bc7bb54cacfafb83f8852008c4618d984a9c6",
+    "substrate/boot_core.py": "sha256:9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb"
+  }
+}

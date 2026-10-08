@@ -1,0 +1,135 @@
+{
+  "all_preregistered_gates_pass": false,
+  "analysis": "Resource-version scoped invalidation v1.1",
+  "gates": {
+    "initial_and_external_only_reject": false,
+    "locked_inputs_match": true,
+    "paired_final_graph_projection_parity": true,
+    "revision_update_accepts_only_frame_zero": true,
+    "scoped_callback_work_lower_at_n16_and_n64": true,
+    "six_cells_each": true,
+    "sizes_and_arms_complete": true,
+    "three_workers": true,
+    "wildcard_access_observed": true
+  },
+  "interpretation": "An explicit graph revision update makes the selected predicate eligible for evaluation. Caller-selected microtheory scoping preserves this fixture's final projection while reducing external callback work as the number of independent frames grows. This does not establish automatic resource watchers or natural frame locality.",
+  "limitations": [
+    "The scope is explicitly supplied by the caller; no owner/event queue automatically maps resource changes to Microtheories.",
+    "Callback counts measure this one rule and callback shape; seeded CAN rules were present to admit real Microtheory nodes but did not define the measured predicate.",
+    "Wall times are descriptive and are not used as a speedup gate.",
+    "Already asserted graph effects are monotonic; this probe only starts from rejected matches and does not test retraction."
+  ],
+  "size_summary": [
+    {
+      "callback_count_global": [
+        8,
+        8,
+        8
+      ],
+      "callback_count_scoped": [
+        4,
+        4,
+        4
+      ],
+      "n_frames": 4,
+      "replicates": [
+        {
+          "global_callbacks": 8,
+          "global_ns": 262021,
+          "scoped_callbacks": 4,
+          "scoped_ns": 153251,
+          "worker": 1
+        },
+        {
+          "global_callbacks": 8,
+          "global_ns": 286092,
+          "scoped_callbacks": 4,
+          "scoped_ns": 152421,
+          "worker": 2
+        },
+        {
+          "global_callbacks": 8,
+          "global_ns": 248911,
+          "scoped_callbacks": 4,
+          "scoped_ns": 141671,
+          "worker": 3
+        }
+      ],
+      "timing_status": "descriptive only"
+    },
+    {
+      "callback_count_global": [
+        32,
+        32,
+        32
+      ],
+      "callback_count_scoped": [
+        4,
+        4,
+        4
+      ],
+      "n_frames": 16,
+      "replicates": [
+        {
+          "global_callbacks": 32,
+          "global_ns": 809034,
+          "scoped_callbacks": 4,
+          "scoped_ns": 160691,
+          "worker": 1
+        },
+        {
+          "global_callbacks": 32,
+          "global_ns": 875435,
+          "scoped_callbacks": 4,
+          "scoped_ns": 157821,
+          "worker": 2
+        },
+        {
+          "global_callbacks": 32,
+          "global_ns": 808954,
+          "scoped_callbacks": 4,
+          "scoped_ns": 151930,
+          "worker": 3
+        }
+      ],
+      "timing_status": "descriptive only"
+    },
+    {
+      "callback_count_global": [
+        128,
+        128,
+        128
+      ],
+      "callback_count_scoped": [
+        4,
+        4,
+        4
+      ],
+      "n_frames": 64,
+      "replicates": [
+        {
+          "global_callbacks": 128,
+          "global_ns": 3190857,
+          "scoped_callbacks": 4,
+          "scoped_ns": 226202,
+          "worker": 1
+        },
+        {
+          "global_callbacks": 128,
+          "global_ns": 3602610,
+          "scoped_callbacks": 4,
+          "scoped_ns": 218911,
+          "worker": 2
+        },
+        {
+          "global_callbacks": 128,
+          "global_ns": 3011476,
+          "scoped_callbacks": 4,
+          "scoped_ns": 226091,
+          "worker": 3
+        }
+      ],
+      "timing_status": "descriptive only"
+    }
+  ]
+}

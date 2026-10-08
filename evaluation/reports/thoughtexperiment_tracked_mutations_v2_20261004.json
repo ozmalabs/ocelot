@@ -1,0 +1,285 @@
+{
+  "audit_script_sha256": "72ddf740b6b1c7b888a3e89b299ccd19ef2f9618e309a65a3529d627ec871b2b",
+  "claim_boundary": "Static source wiring audit only. It does not execute every path, cover unsafe aliasing, concurrency, interior mutation, or prove completeness beyond the enumerated public method list.",
+  "class_counts": {
+    "derived_index": 1,
+    "journal_control": 8,
+    "observer_control": 1,
+    "revision_tracked_scope": 1,
+    "semantic_edge_write": 5,
+    "semantic_node_write": 7
+  },
+  "errors": [],
+  "method_count": 23,
+  "passed": true,
+  "rows": [
+    {
+      "class": "observer_control",
+      "hooks_complete": true,
+      "line": 742,
+      "method": "clear_experiment_observers",
+      "present_hooks": [],
+      "required_hooks": []
+    },
+    {
+      "class": "derived_index",
+      "hooks_complete": true,
+      "line": 786,
+      "method": "declare_attr_index",
+      "present_hooks": [],
+      "required_hooks": []
+    },
+    {
+      "class": "journal_control",
+      "hooks_complete": true,
+      "line": 924,
+      "method": "begin_mutation_log",
+      "present_hooks": [],
+      "required_hooks": []
+    },
+    {
+      "class": "journal_control",
+      "hooks_complete": true,
+      "line": 932,
+      "method": "enable_rule_write_attribution",
+      "present_hooks": [],
+      "required_hooks": []
+    },
+    {
+      "class": "journal_control",
+      "hooks_complete": true,
+      "line": 946,
+      "method": "begin_rule_write_event",
+      "present_hooks": [],
+      "required_hooks": []
+    },
+    {
+      "class": "journal_control",
+      "hooks_complete": true,
+      "line": 950,
+      "method": "begin_rule_write_event_origins",
+      "present_hooks": [],
+      "required_hooks": []
+    },
+    {
+      "class": "journal_control",
+      "hooks_complete": true,
+      "line": 969,
+      "method": "finish_rule_write_event",
+      "present_hooks": [],
+      "required_hooks": []
+    },
+    {
+      "class": "journal_control",
+      "hooks_complete": true,
+      "line": 1004,
+      "method": "begin_experiment_delta_log",
+      "present_hooks": [],
+      "required_hooks": []
+    },
+    {
+      "class": "journal_control",
+      "hooks_complete": true,
+      "line": 1021,
+      "method": "checkpoint_experiment_delta_log",
+      "present_hooks": [],
+      "required_hooks": []
+    },
+    {
+      "class": "journal_control",
+      "hooks_complete": true,
+      "line": 1084,
+      "method": "finish_mutation_log",
+      "present_hooks": [],
+      "required_hooks": []
+    },
+    {
+      "class": "revision_tracked_scope",
+      "hooks_complete": true,
+      "line": 1092,
+      "method": "set_focus_edge_scope",
+      "present_hooks": [
+        "bump_mutation_version"
+      ],
+      "required_hooks": [
+        "bump_mutation_version"
+      ]
+    },
+    {
+      "class": "semantic_node_write",
+      "hooks_complete": true,
+      "line": 1287,
+      "method": "node_mut",
+      "present_hooks": [
+        "bump_mutation_version",
+        "log_node_mutation"
+      ],
+      "required_hooks": [
+        "bump_mutation_version",
+        "log_node_mutation"
+      ]
+    },
+    {
+      "class": "semantic_node_write",
+      "hooks_complete": true,
+      "line": 1456,
+      "method": "insert_node",
+      "present_hooks": [
+        "bump_mutation_version",
+        "log_node_added"
+      ],
+      "required_hooks": [
+        "bump_mutation_version",
+        "log_node_added"
+      ]
+    },
+    {
+      "class": "semantic_edge_write",
+      "hooks_complete": true,
+      "line": 1489,
+      "method": "insert_edge",
+      "present_hooks": [
+        "bump_mutation_version",
+        "log_edge_before",
+        "log_edge_mutation"
+      ],
+      "required_hooks": [
+        "bump_mutation_version",
+        "log_edge_before",
+        "log_edge_mutation"
+      ]
+    },
+    {
+      "class": "semantic_edge_write",
+      "hooks_complete": true,
+      "line": 1637,
+      "method": "delete_edge",
+      "present_hooks": [
+        "bump_mutation_version",
+        "log_edge_before",
+        "log_edge_mutation"
+      ],
+      "required_hooks": [
+        "bump_mutation_version",
+        "log_edge_before",
+        "log_edge_mutation"
+      ]
+    },
+    {
+      "class": "semantic_edge_write",
+      "hooks_complete": true,
+      "line": 1700,
+      "method": "delete_edges_batch",
+      "present_hooks": [
+        "bump_mutation_version",
+        "log_edge_before",
+        "log_edge_mutation"
+      ],
+      "required_hooks": [
+        "bump_mutation_version",
+        "log_edge_before",
+        "log_edge_mutation"
+      ]
+    },
+    {
+      "class": "semantic_edge_write",
+      "hooks_complete": true,
+      "line": 1811,
+      "method": "edge_attrs_mut",
+      "present_hooks": [
+        "bump_mutation_version",
+        "log_edge_before",
+        "log_edge_mutation"
+      ],
+      "required_hooks": [
+        "bump_mutation_version",
+        "log_edge_before",
+        "log_edge_mutation"
+      ]
+    },
+    {
+      "class": "semantic_node_write",
+      "hooks_complete": true,
+      "line": 1831,
+      "method": "delete_node",
+      "present_hooks": [
+        "bump_mutation_version",
+        "log_node_mutation",
+        "delete_edges_batch"
+      ],
+      "required_hooks": [
+        "bump_mutation_version",
+        "log_node_mutation",
+        "delete_edges_batch"
+      ]
+    },
+    {
+      "class": "semantic_node_write",
+      "hooks_complete": true,
+      "line": 1855,
+      "method": "set_node_attr",
+      "present_hooks": [
+        "node_mut"
+      ],
+      "required_hooks": [
+        "node_mut"
+      ]
+    },
+    {
+      "class": "semantic_node_write",
+      "hooks_complete": true,
+      "line": 1897,
+      "method": "remove_node_attr",
+      "present_hooks": [
+        "node_mut"
+      ],
+      "required_hooks": [
+        "node_mut"
+      ]
+    },
+    {
+      "class": "semantic_node_write",
+      "hooks_complete": true,
+      "line": 1915,
+      "method": "set_node_type",
+      "present_hooks": [
+        "node_mut"
+      ],
+      "required_hooks": [
+        "node_mut"
+      ]
+    },
+    {
+      "class": "semantic_node_write",
+      "hooks_complete": true,
+      "line": 2057,
+      "method": "restore_node",
+      "present_hooks": [
+        "bump_mutation_version",
+        "log_node_mutation",
+        "log_node_added"
+      ],
+      "required_hooks": [
+        "bump_mutation_version",
+        "log_node_mutation",
+        "log_node_added"
+      ]
+    },
+    {
+      "class": "semantic_edge_write",
+      "hooks_complete": true,
+      "line": 2102,
+      "method": "restore_edge",
+      "present_hooks": [
+        "insert_edge"
+      ],
+      "required_hooks": [
+        "insert_edge"
+      ]
+    }
+  ],
+  "schema": "ThoughtexperimentTrackedMutationsV2",
+  "scope": "Public TypedGraph methods whose signatures take &mut self, within the main impl block.",
+  "source": "runners/dsl/src/graph.rs",
+  "source_sha256": "ae30e2398bb03ccb7ad09c50dca4947add06623ff7c0d1f65955f31f1f76126d"
+}

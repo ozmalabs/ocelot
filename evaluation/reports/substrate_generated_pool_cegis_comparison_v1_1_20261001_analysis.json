@@ -1,0 +1,298 @@
+{
+  "all_checks_pass": false,
+  "arm_medians_by_task": {
+    "euler": {
+      "entropy_pool": {
+        "heldout_exact": true,
+        "oracle_calls": 5,
+        "queries": 2,
+        "worker_wall_s": 0.995356236002408
+      },
+      "first_pool": {
+        "heldout_exact": true,
+        "oracle_calls": 8,
+        "queries": 5,
+        "worker_wall_s": 0.9065873530344106
+      },
+      "mdl_cegis": {
+        "heldout_exact": true,
+        "oracle_calls": 20,
+        "queries": 17,
+        "worker_wall_s": 0.031386860995553434
+      },
+      "random_pool": {
+        "heldout_exact": true,
+        "oracle_calls": 5,
+        "queries": 2,
+        "worker_wall_s": 0.9503607249935158
+      }
+    },
+    "square": {
+      "entropy_pool": {
+        "heldout_exact": true,
+        "oracle_calls": 2,
+        "queries": 0,
+        "worker_wall_s": 0.07553417497547343
+      },
+      "first_pool": {
+        "heldout_exact": true,
+        "oracle_calls": 2,
+        "queries": 0,
+        "worker_wall_s": 0.06656681996537372
+      },
+      "mdl_cegis": {
+        "heldout_exact": true,
+        "oracle_calls": 12,
+        "queries": 10,
+        "worker_wall_s": 0.000859325984492898
+      },
+      "random_pool": {
+        "heldout_exact": true,
+        "oracle_calls": 2,
+        "queries": 0,
+        "worker_wall_s": 0.07017588597955182
+      }
+    },
+    "triangular": {
+      "entropy_pool": {
+        "heldout_exact": false,
+        "oracle_calls": 2,
+        "queries": 0,
+        "worker_wall_s": 0.05783597502158955
+      },
+      "first_pool": {
+        "heldout_exact": false,
+        "oracle_calls": 2,
+        "queries": 0,
+        "worker_wall_s": 0.05705637001665309
+      },
+      "mdl_cegis": {
+        "heldout_exact": false,
+        "oracle_calls": 3,
+        "queries": 1,
+        "worker_wall_s": 0.01728918799199164
+      },
+      "random_pool": {
+        "heldout_exact": false,
+        "oracle_calls": 2,
+        "queries": 0,
+        "worker_wall_s": 0.09064678597496822
+      }
+    }
+  },
+  "capture": "evaluation/reports/substrate_generated_pool_cegis_comparison_v1_1_20261001_raw.json",
+  "capture_sha256": "sha256:671564384a396b51e3add37204a9a224f823c85ad3be5f005740178749cb875b",
+  "check_count": 38,
+  "checks_passed": 37,
+  "failed_checks": [
+    "euler_mdl_cegis_queries_unique"
+  ],
+  "rows": [
+    {
+      "arm": "mdl_cegis",
+      "complete_pool": null,
+      "final_survivor_count": null,
+      "heldout_exact": false,
+      "index_heap_estimate_bytes": null,
+      "oracle_calls": 3,
+      "pool_size": null,
+      "queries": 1,
+      "selection_wall_s": null,
+      "stop_reason": "max_size",
+      "synthesis_wall_s": 0.017048763984348625,
+      "target_supported": null,
+      "task": "triangular",
+      "terms_explored": 1054,
+      "worker_wall_s": 0.01728918799199164
+    },
+    {
+      "arm": "entropy_pool",
+      "complete_pool": true,
+      "final_survivor_count": 1,
+      "heldout_exact": false,
+      "index_heap_estimate_bytes": 1527,
+      "oracle_calls": 2,
+      "pool_size": 1,
+      "queries": 0,
+      "selection_wall_s": 6.41600345261395e-05,
+      "stop_reason": "singleton",
+      "synthesis_wall_s": 0.05747337196953595,
+      "target_supported": false,
+      "task": "triangular",
+      "terms_explored": 945,
+      "worker_wall_s": 0.05783597502158955
+    },
+    {
+      "arm": "first_pool",
+      "complete_pool": true,
+      "final_survivor_count": 1,
+      "heldout_exact": false,
+      "index_heap_estimate_bytes": 0,
+      "oracle_calls": 2,
+      "pool_size": 1,
+      "queries": 0,
+      "selection_wall_s": 0.0,
+      "stop_reason": "singleton",
+      "synthesis_wall_s": 0.05678413697751239,
+      "target_supported": false,
+      "task": "triangular",
+      "terms_explored": 945,
+      "worker_wall_s": 0.05705637001665309
+    },
+    {
+      "arm": "random_pool",
+      "complete_pool": true,
+      "final_survivor_count": 1,
+      "heldout_exact": false,
+      "index_heap_estimate_bytes": 0,
+      "oracle_calls": 2,
+      "pool_size": 1,
+      "queries": 0,
+      "selection_wall_s": 0.0,
+      "stop_reason": "singleton",
+      "synthesis_wall_s": 0.09036274399841204,
+      "target_supported": false,
+      "task": "triangular",
+      "terms_explored": 945,
+      "worker_wall_s": 0.09064678597496822
+    },
+    {
+      "arm": "mdl_cegis",
+      "complete_pool": null,
+      "final_survivor_count": null,
+      "heldout_exact": true,
+      "index_heap_estimate_bytes": null,
+      "oracle_calls": 12,
+      "pool_size": null,
+      "queries": 10,
+      "selection_wall_s": null,
+      "stop_reason": "family_converged",
+      "synthesis_wall_s": 0.000717235030606389,
+      "target_supported": null,
+      "task": "square",
+      "terms_explored": 31,
+      "worker_wall_s": 0.000859325984492898
+    },
+    {
+      "arm": "entropy_pool",
+      "complete_pool": true,
+      "final_survivor_count": 1,
+      "heldout_exact": true,
+      "index_heap_estimate_bytes": 1447,
+      "oracle_calls": 2,
+      "pool_size": 1,
+      "queries": 0,
+      "selection_wall_s": 8.203997276723385e-05,
+      "stop_reason": "singleton",
+      "synthesis_wall_s": 0.07521432300563902,
+      "target_supported": true,
+      "task": "square",
+      "terms_explored": 945,
+      "worker_wall_s": 0.07553417497547343
+    },
+    {
+      "arm": "first_pool",
+      "complete_pool": true,
+      "final_survivor_count": 1,
+      "heldout_exact": true,
+      "index_heap_estimate_bytes": 0,
+      "oracle_calls": 2,
+      "pool_size": 1,
+      "queries": 0,
+      "selection_wall_s": 0.0,
+      "stop_reason": "singleton",
+      "synthesis_wall_s": 0.06637295702239498,
+      "target_supported": true,
+      "task": "square",
+      "terms_explored": 945,
+      "worker_wall_s": 0.06656681996537372
+    },
+    {
+      "arm": "random_pool",
+      "complete_pool": true,
+      "final_survivor_count": 1,
+      "heldout_exact": true,
+      "index_heap_estimate_bytes": 0,
+      "oracle_calls": 2,
+      "pool_size": 1,
+      "queries": 0,
+      "selection_wall_s": 0.0,
+      "stop_reason": "singleton",
+      "synthesis_wall_s": 0.07002164499135688,
+      "target_supported": true,
+      "task": "square",
+      "terms_explored": 945,
+      "worker_wall_s": 0.07017588597955182
+    },
+    {
+      "arm": "mdl_cegis",
+      "complete_pool": null,
+      "final_survivor_count": null,
+      "heldout_exact": true,
+      "index_heap_estimate_bytes": null,
+      "oracle_calls": 20,
+      "pool_size": null,
+      "queries": 17,
+      "selection_wall_s": null,
+      "stop_reason": "family_converged",
+      "synthesis_wall_s": 0.02957545599201694,
+      "target_supported": null,
+      "task": "euler",
+      "terms_explored": 398,
+      "worker_wall_s": 0.031386860995553434
+    },
+    {
+      "arm": "entropy_pool",
+      "complete_pool": true,
+      "final_survivor_count": 1,
+      "heldout_exact": true,
+      "index_heap_estimate_bytes": 49651,
+      "oracle_calls": 5,
+      "pool_size": 34,
+      "queries": 2,
+      "selection_wall_s": 0.003825128951575607,
+      "stop_reason": "singleton",
+      "synthesis_wall_s": 0.9879089810419828,
+      "target_supported": true,
+      "task": "euler",
+      "terms_explored": 10269,
+      "worker_wall_s": 0.995356236002408
+    },
+    {
+      "arm": "first_pool",
+      "complete_pool": true,
+      "final_survivor_count": 1,
+      "heldout_exact": true,
+      "index_heap_estimate_bytes": 0,
+      "oracle_calls": 8,
+      "pool_size": 34,
+      "queries": 5,
+      "selection_wall_s": 8.93004471436143e-06,
+      "stop_reason": "singleton",
+      "synthesis_wall_s": 0.9042858770117164,
+      "target_supported": true,
+      "task": "euler",
+      "terms_explored": 10269,
+      "worker_wall_s": 0.9065873530344106
+    },
+    {
+      "arm": "random_pool",
+      "complete_pool": true,
+      "final_survivor_count": 1,
+      "heldout_exact": true,
+      "index_heap_estimate_bytes": 0,
+      "oracle_calls": 5,
+      "pool_size": 34,
+      "queries": 2,
+      "selection_wall_s": 5.340029019862413e-06,
+      "stop_reason": "singleton",
+      "synthesis_wall_s": 0.9482215490425006,
+      "target_supported": true,
+      "task": "euler",
+      "terms_explored": 10269,
+      "worker_wall_s": 0.9503607249935158
+    }
+  ],
+  "schema": "GeneratedPoolCegisComparisonAnalysisV1",
+  "stale_sources": []
+}

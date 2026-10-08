@@ -1,0 +1,127 @@
+{
+  "by_model_fan_in": {
+    "qwen3_0_6b/fan_in_1": {
+      "aggregate_speedup": 1.1099296340519036,
+      "cases": 120,
+      "median_conditioned_ms": 0.09071599999999999,
+      "median_junction_tree_ms": 0.1608215,
+      "median_proposal_ms": 0.02203,
+      "paired_median_speedup": 1.1503771308487631,
+      "topology_cache_hits": 0
+    },
+    "qwen3_0_6b/fan_in_2": {
+      "aggregate_speedup": 0.9144657586349857,
+      "cases": 120,
+      "median_conditioned_ms": 0.442354,
+      "median_junction_tree_ms": 0.42135350000000005,
+      "median_proposal_ms": 0.0179205,
+      "paired_median_speedup": 1.0064922368093794,
+      "topology_cache_hits": 0
+    },
+    "qwen3_0_6b/fan_in_4": {
+      "aggregate_speedup": 0.31704623453011965,
+      "cases": 120,
+      "median_conditioned_ms": 27.869685,
+      "median_junction_tree_ms": 9.243305,
+      "median_proposal_ms": 0.176857,
+      "paired_median_speedup": 0.35529541776627516,
+      "topology_cache_hits": 0
+    },
+    "qwen3_0_6b/fan_in_8": {
+      "aggregate_speedup": 2.2030645729539606,
+      "cases": 120,
+      "median_conditioned_ms": 214.09972449999998,
+      "median_junction_tree_ms": 499.5145665,
+      "median_proposal_ms": 0.0,
+      "paired_median_speedup": 2.3042835379891367,
+      "topology_cache_hits": 117
+    },
+    "qwen3_1_7b/fan_in_1": {
+      "aggregate_speedup": 1.0643438133607992,
+      "cases": 120,
+      "median_conditioned_ms": 0.1129905,
+      "median_junction_tree_ms": 0.16244150000000002,
+      "median_proposal_ms": 0.0219805,
+      "paired_median_speedup": 1.0940635758272332,
+      "topology_cache_hits": 0
+    },
+    "qwen3_1_7b/fan_in_2": {
+      "aggregate_speedup": 0.9569011504377958,
+      "cases": 120,
+      "median_conditioned_ms": 0.4253335,
+      "median_junction_tree_ms": 0.41536799999999996,
+      "median_proposal_ms": 0.017750000000000002,
+      "paired_median_speedup": 1.001569298208752,
+      "topology_cache_hits": 0
+    },
+    "qwen3_1_7b/fan_in_4": {
+      "aggregate_speedup": 0.3213285118835536,
+      "cases": 120,
+      "median_conditioned_ms": 32.2135,
+      "median_junction_tree_ms": 9.8460775,
+      "median_proposal_ms": 1.14444,
+      "paired_median_speedup": 0.32493102072057367,
+      "topology_cache_hits": 0
+    },
+    "qwen3_1_7b/fan_in_8": {
+      "aggregate_speedup": 2.2691830266056745,
+      "cases": 120,
+      "median_conditioned_ms": 213.5797665,
+      "median_junction_tree_ms": 497.897657,
+      "median_proposal_ms": 0.0,
+      "paired_median_speedup": 2.3041080963472185,
+      "topology_cache_hits": 120
+    }
+  },
+  "checks": {
+    "exact_energy_and_direct_rescore": true,
+    "exact_prediction_parity": true,
+    "full_320_case_grid": true,
+    "no_failures": true,
+    "source_stable": true,
+    "three_fresh_workers": true,
+    "topology_reconstruction_and_census_join": true,
+    "upstream_gates": true,
+    "valid_states_and_no_mutation": true,
+    "width_certificates": true
+  },
+  "claim_boundary": "Three fresh workers over 320 unique generated and evaluator-pruned 16-node factor graphs; exact separator conditioning with component-wise exact MAP versus the current Python min-fill junction-tree implementation. Seed setup is shared and charged once per batch. Does not estimate natural-task prevalence or establish substrate-learning capability.",
+  "errors": [],
+  "gates_pass": true,
+  "schema": "LlmTransportVariedTopologySolverV1_3Analysis",
+  "worker_costs": [
+    {
+      "batch_speedup_including_seed": 1.9866504404193284,
+      "cache_hits": 79,
+      "monolithic_batch_ms_including_seed": 41914.018826,
+      "proposal_and_component_precompute_ms": 420.370736,
+      "proposal_and_precompute_amortized_ms_per_case": 1.31365855,
+      "replicate": 0,
+      "seed_initialization_ms": 2.174049,
+      "structural_batch_ms_including_seed": 21097.832801,
+      "unique_topologies": 241
+    },
+    {
+      "batch_speedup_including_seed": 1.9531493491066798,
+      "cache_hits": 79,
+      "monolithic_batch_ms_including_seed": 40613.436934,
+      "proposal_and_component_precompute_ms": 387.762699,
+      "proposal_and_precompute_amortized_ms_per_case": 1.2117584343749999,
+      "replicate": 1,
+      "seed_initialization_ms": 2.136239,
+      "structural_batch_ms_including_seed": 20793.820479,
+      "unique_topologies": 241
+    },
+    {
+      "batch_speedup_including_seed": 1.9571629398301786,
+      "cache_hits": 79,
+      "monolithic_batch_ms_including_seed": 40559.363709,
+      "proposal_and_component_precompute_ms": 387.458285,
+      "proposal_and_precompute_amortized_ms_per_case": 1.210807140625,
+      "replicate": 2,
+      "seed_initialization_ms": 2.107667,
+      "structural_batch_ms_including_seed": 20723.54983,
+      "unique_topologies": 241
+    }
+  ]
+}

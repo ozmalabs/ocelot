@@ -1,0 +1,91 @@
+{
+  "checks": [
+    {
+      "name": "capture_matches_lock",
+      "pass": true
+    },
+    {
+      "name": "current_lock_matches",
+      "pass": true
+    },
+    {
+      "name": "source_stable",
+      "pass": true
+    },
+    {
+      "name": "12_fresh_workers",
+      "pass": true
+    },
+    {
+      "name": "complete_schedule",
+      "pass": true
+    },
+    {
+      "name": "selection_records_recompute_and_bind",
+      "pass": true
+    },
+    {
+      "name": "provider_signatures_reverify",
+      "pass": true
+    },
+    {
+      "name": "core_receipts_recompute",
+      "pass": true
+    },
+    {
+      "name": "honest_selected_square_outcome",
+      "pass": true
+    },
+    {
+      "name": "alias_zero_entropy_outcome",
+      "pass": true
+    },
+    {
+      "name": "distinguishing_identity_truth_outcome",
+      "pass": true
+    },
+    {
+      "name": "selected_wrong_signer_outcome",
+      "pass": true
+    }
+  ],
+  "limits": [
+    "caller supplies challenger set and admissible domain",
+    "positive entropy proves separation only from the supplied challengers",
+    "trusted wrong labels still pass when consistent with candidate at selected input",
+    "one authored scalar family and one host"
+  ],
+  "passed": 12,
+  "schema": "SubstrateAdequacySelectedProbeAdoptionV1Analysis",
+  "summary": {
+    "alias_zero_entropy": {
+      "adoption_per_run": 0,
+      "heldout_correct_per_run": 0,
+      "n": 3,
+      "receipt_status": "accepted",
+      "selection_entropy_bits": -0.0
+    },
+    "distinguishing_identity_truth": {
+      "adoption_per_run": 0,
+      "heldout_correct_per_run": 0,
+      "n": 3,
+      "receipt_status": "rejected",
+      "selection_entropy_bits": 1.0
+    },
+    "honest_selected_square": {
+      "adoption_per_run": 1,
+      "heldout_correct_per_run": 3,
+      "n": 3,
+      "receipt_status": "accepted",
+      "selection_entropy_bits": 1.0
+    },
+    "selected_wrong_signer": {
+      "adoption_per_run": 1,
+      "heldout_correct_per_run": 0,
+      "n": 3,
+      "receipt_status": "accepted",
+      "selection_entropy_bits": 1.0
+    }
+  },
+  "total": 12
+}

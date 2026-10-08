@@ -1,0 +1,227 @@
+{
+  "attempts": [
+    {
+      "label": "guard-route:browser.launch_apply",
+      "reason": "P0A_DIRECT_IO_DENIED:browser.launch_apply",
+      "result": "blocked"
+    },
+    {
+      "label": "guard-route:experiment.spawn",
+      "reason": "P0A_DIRECT_IO_DENIED:experiment.spawn",
+      "result": "blocked"
+    },
+    {
+      "label": "guard-route:fetch.dispatch",
+      "reason": "P0A_DIRECT_IO_DENIED:fetch.dispatch",
+      "result": "blocked"
+    },
+    {
+      "label": "guard-route:fetch.materialize",
+      "reason": "P0A_DIRECT_IO_DENIED:fetch.materialize",
+      "result": "blocked"
+    },
+    {
+      "label": "guard-route:raw.host.dispatch",
+      "reason": "P0A_DIRECT_IO_DENIED:raw.host.dispatch",
+      "result": "blocked"
+    },
+    {
+      "label": "guard-route:seed.arbitrary_load",
+      "reason": "P0A_DIRECT_IO_DENIED:seed.arbitrary_load",
+      "result": "blocked"
+    },
+    {
+      "label": "guard-route:voice.capture_playback",
+      "reason": "P0A_DIRECT_IO_DENIED:voice.capture_playback",
+      "result": "blocked"
+    },
+    {
+      "label": "guard-route:world.dispatch_pending_io",
+      "reason": "P0A_DIRECT_IO_DENIED:world.dispatch_pending_io",
+      "result": "blocked"
+    },
+    {
+      "label": "primitive:socket.socket",
+      "reason": "P0A_DIRECT_IO_DENIED:socket",
+      "result": "blocked"
+    },
+    {
+      "label": "primitive:urllib.request.urlopen",
+      "reason": "P0A_DIRECT_IO_DENIED:urllib.urlopen",
+      "result": "blocked"
+    },
+    {
+      "label": "primitive:subprocess.Popen",
+      "reason": "P0A_DIRECT_IO_DENIED:subprocess.Popen",
+      "result": "blocked"
+    },
+    {
+      "label": "primitive:builtins.open",
+      "reason": "P0A_DIRECT_IO_DENIED:builtins.open",
+      "result": "blocked"
+    },
+    {
+      "label": "primitive:Path.read_text",
+      "reason": "P0A_DIRECT_IO_DENIED:io.open",
+      "result": "blocked"
+    },
+    {
+      "label": "primitive:os.read",
+      "reason": "P0A_DIRECT_IO_DENIED:os.read",
+      "result": "blocked"
+    },
+    {
+      "label": "primitive:os.system",
+      "reason": "P0A_DIRECT_IO_DENIED:os.system",
+      "result": "blocked"
+    },
+    {
+      "label": "primitive:os.execv",
+      "reason": "P0A_DIRECT_IO_DENIED:os.execv",
+      "result": "blocked"
+    },
+    {
+      "label": "primitive:os.execve",
+      "reason": "P0A_DIRECT_IO_DENIED:os.execve",
+      "result": "blocked"
+    }
+  ],
+  "booted_adapter_snapshot": {
+    "boot_mode": "WorldAdapter default core seed load only; no rule tick or action",
+    "graph_node_count": 747,
+    "native_use_tool_handler_count_after_boot": 0,
+    "python_tool_use_handler_keys_after_boot": [],
+    "runtime_capability_names": [
+      "describe_self",
+      "op_count",
+      "op_mean_cost",
+      "op_total_cost"
+    ],
+    "tool_spec_count": 0,
+    "tool_specs": []
+  },
+  "environment": {
+    "platform": "Linux-6.8.0-137-generic-x86_64-with-glibc2.39",
+    "python": "3.13.5"
+  },
+  "explicit_demo_tool_profile_snapshot": {
+    "graph_tool_specs": [
+      {
+        "external": true,
+        "handler_key": "lib_gcd",
+        "kind": "library",
+        "name": "gcd"
+      },
+      {
+        "external": true,
+        "handler_key": "lib_is_prime",
+        "kind": "library",
+        "name": "is_prime"
+      },
+      {
+        "external": true,
+        "handler_key": "lib_factorial",
+        "kind": "library",
+        "name": "factorial"
+      },
+      {
+        "external": true,
+        "handler_key": "proc_upper",
+        "kind": "process",
+        "name": "upper"
+      },
+      {
+        "external": true,
+        "handler_key": "proc_uname",
+        "kind": "text",
+        "name": "uname"
+      }
+    ],
+    "handler_invocations": 0,
+    "native_handler_count": 5,
+    "native_handlers_registered": 5,
+    "profile": "domains.tool_use.register_real_tools demo pack",
+    "python_handler_keys": [
+      "lib_factorial",
+      "lib_gcd",
+      "lib_is_prime",
+      "proc_uname",
+      "proc_upper"
+    ],
+    "register_real_tools_returned": [
+      "factorial",
+      "gcd",
+      "is_prime",
+      "uname",
+      "upper"
+    ],
+    "tool_call_count": 0
+  },
+  "guard_reported_routes": [
+    "browser.launch_apply",
+    "experiment.spawn",
+    "fetch.dispatch",
+    "fetch.materialize",
+    "raw.host.dispatch",
+    "seed.arbitrary_load",
+    "voice.capture_playback",
+    "world.dispatch_pending_io",
+    "socket",
+    "urllib.urlopen",
+    "subprocess.Popen",
+    "builtins.open",
+    "io.open",
+    "os.read",
+    "os.system",
+    "os.execv",
+    "os.execve"
+  ],
+  "measured_at_utc": "2026-09-24T14:48:51Z",
+  "method": "fresh-process registry snapshot plus P0-A activated in-process compatibility interception; no handler invocation",
+  "native_build": {
+    "extension_matches_manifest": true,
+    "extension_path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+    "extension_sha256": "2e31b4f92f4d58b537c51ad1205b7ba54c0111ed5c9104e0fd2448220e1b030e",
+    "manifest_engine_sha256": "2e31b4f92f4d58b537c51ad1205b7ba54c0111ed5c9104e0fd2448220e1b030e",
+    "manifest_sha256": "0a230802e876fed450eda500922860005e2203324da0cc7deab2c726cd6ca3c3"
+  },
+  "probe_script_sha256": "681dd5e4f3d792917ca20647610377293ce8f7efd59cd22d480be966b4b1f844",
+  "registry_snapshot": {
+    "explicit_toolbox_capabilities": [
+      "read_file",
+      "run_command",
+      "write_file"
+    ],
+    "native_use_tool_handler_count": 0,
+    "p0a_route_inventory": [
+      "browser.launch_apply",
+      "experiment.spawn",
+      "fetch.dispatch",
+      "fetch.materialize",
+      "raw.host.dispatch",
+      "seed.arbitrary_load",
+      "voice.capture_playback",
+      "world.dispatch_pending_io"
+    ],
+    "tool_use_python_handler_count": 0,
+    "tool_use_python_handler_keys": []
+  },
+  "run_id": "substrate-p0a-denial-probe-20260925",
+  "schema_version": 1,
+  "scope_boundary": "Local guard/interceptor behavior only. Not OS sandbox, independent custody, authorized run, or production handler registry.",
+  "source_sha256": {
+    "domains/agent_tools.py": "8db4ea72a4de3c04c8e5121f162f014c25bc63aae4cdf3815f54df060294f885",
+    "domains/tool_use.py": "8c02a5a588b9221324429b02336aa397d3cb34b51597d5ce9a0b65be9335dbbd",
+    "evaluation/p0a/entrypoint.py": "f065a46be29a53966d26bfad99f1e6bfbb9084e6727c0ca69ac75fa3f2abeb82",
+    "evaluation/p0a/legacy_io_guard.py": "40fdc6262c9491be1d1be7270a06c6c543a2f3de2901f0784e739bf752c62e5d"
+  },
+  "summary": {
+    "attempted": 17,
+    "blocked": 17,
+    "handler_invocations": 0,
+    "native_tool_fire_count_after": 0,
+    "native_tool_fire_count_before": 0,
+    "native_tool_fire_count_delta": 0,
+    "unexpected": []
+  }
+}

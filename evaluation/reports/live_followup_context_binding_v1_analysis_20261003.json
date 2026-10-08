@@ -1,0 +1,758 @@
+{
+  "by_condition": {
+    "fresh_control": {
+      "median_boundary_nodes": 0,
+      "median_cross_frame_edges": 0,
+      "median_edges": 11501,
+      "median_lexical_overlap": null,
+      "median_nodes": 25054,
+      "median_owned_goals": 1,
+      "median_peak_rss_mib": 1721.80859375,
+      "median_treewidth": 0,
+      "workers": 3
+    },
+    "known_answer": {
+      "median_boundary_nodes": 5,
+      "median_cross_frame_edges": 2,
+      "median_edges": 11582,
+      "median_lexical_overlap": 0,
+      "median_nodes": 25090,
+      "median_owned_goals": 1,
+      "median_peak_rss_mib": 1720.73046875,
+      "median_treewidth": 1,
+      "workers": 3
+    },
+    "unknown_fact": {
+      "median_boundary_nodes": 7,
+      "median_cross_frame_edges": 1,
+      "median_edges": 11647,
+      "median_lexical_overlap": 0,
+      "median_nodes": 25115,
+      "median_owned_goals": 2,
+      "median_peak_rss_mib": 1721.1953125,
+      "median_treewidth": 1,
+      "workers": 3
+    }
+  },
+  "claim_boundary": "Nine workers, two prior-answer contexts and a fresh-turn control, one fixed follow-up only.",
+  "errors": [
+    "known_answer: raw replicate digest mismatch",
+    "unknown_fact: raw replicate digest mismatch"
+  ],
+  "gates_pass": false,
+  "lexical_measure_definition": "Unique lowercase alphanumeric token overlap excluding the preregistered stop list; diagnostic only, not a semantic grounding score.",
+  "rows": [
+    {
+      "condition": "known_answer",
+      "cross_frame_edges": [
+        {
+          "source_frame": 25036,
+          "target_frame": 24945,
+          "type": "responds_to"
+        },
+        {
+          "source_frame": 25036,
+          "target_frame": 24945,
+          "type": "follows_event"
+        }
+      ],
+      "exact_interaction_treewidth": 1,
+      "goal_summaries": [
+        [
+          {
+            "id": 25024,
+            "kind": "communicate",
+            "status": null
+          }
+        ],
+        [
+          {
+            "id": 25052,
+            "kind": "answer_topic",
+            "status": "active"
+          },
+          {
+            "id": 25076,
+            "kind": "communicate",
+            "status": null
+          }
+        ]
+      ],
+      "graph_digest": "f7cc09c4bc6f6c184d9b6abfb38f2de29550687dcf3257efb844f0505ceeb19c",
+      "graph_edges": 11582,
+      "graph_nodes": 25090,
+      "interaction_edges": [
+        [
+          24945,
+          25036
+        ]
+      ],
+      "owned_goal_links": [
+        {
+          "goal_id": 25052,
+          "goal_kind": "answer_topic",
+          "message_id": 25036,
+          "prompt": "Can you explain that in simpler terms?"
+        }
+      ],
+      "owner_conflict_count": 0,
+      "peak_rss_bytes": 1804914688,
+      "pid": 6,
+      "prior_followup_lexical_overlap_count": 0,
+      "prior_followup_lexical_overlap_tokens": [],
+      "replicate": 0,
+      "replies": [
+        "I am organised into computer_architecture, communication, mathematics, engineering, video_coding_theory, databases_and_storage, art_design_drawing, embedded_iot_realtime, security_and_cryptography, cloud_infrastructure, machine_learning, and philosophy",
+        "What information should I use to answer that?"
+      ],
+      "root_ids": {
+        "Can you explain that in simpler terms?": [
+          25036
+        ],
+        "How are you organised?": [
+          24945
+        ]
+      },
+      "routes": [
+        [],
+        []
+      ],
+      "shared_boundary_node_count": 5,
+      "turn_count": 2,
+      "turn_prompts": [
+        "How are you organised?",
+        "Can you explain that in simpler terms?"
+      ],
+      "unowned_goal_count": 2,
+      "wall_ns": [
+        235577659,
+        222786612
+      ]
+    },
+    {
+      "condition": "known_answer",
+      "cross_frame_edges": [
+        {
+          "source_frame": 25036,
+          "target_frame": 24945,
+          "type": "responds_to"
+        },
+        {
+          "source_frame": 25036,
+          "target_frame": 24945,
+          "type": "follows_event"
+        }
+      ],
+      "exact_interaction_treewidth": 1,
+      "goal_summaries": [
+        [
+          {
+            "id": 25024,
+            "kind": "communicate",
+            "status": null
+          }
+        ],
+        [
+          {
+            "id": 25052,
+            "kind": "answer_topic",
+            "status": "active"
+          },
+          {
+            "id": 25076,
+            "kind": "communicate",
+            "status": null
+          }
+        ]
+      ],
+      "graph_digest": "673659a670a9a355cd07f9d7be7a2529950d3eacb41e9c001f74fd9e00d28afc",
+      "graph_edges": 11582,
+      "graph_nodes": 25090,
+      "interaction_edges": [
+        [
+          24945,
+          25036
+        ]
+      ],
+      "owned_goal_links": [
+        {
+          "goal_id": 25052,
+          "goal_kind": "answer_topic",
+          "message_id": 25036,
+          "prompt": "Can you explain that in simpler terms?"
+        }
+      ],
+      "owner_conflict_count": 0,
+      "peak_rss_bytes": 1803886592,
+      "pid": 2523,
+      "prior_followup_lexical_overlap_count": 0,
+      "prior_followup_lexical_overlap_tokens": [],
+      "replicate": 1,
+      "replies": [
+        "I am organised into computer_architecture, communication, mathematics, engineering, video_coding_theory, databases_and_storage, art_design_drawing, embedded_iot_realtime, security_and_cryptography, cloud_infrastructure, machine_learning, and philosophy",
+        "What information should I use to answer that?"
+      ],
+      "root_ids": {
+        "Can you explain that in simpler terms?": [
+          25036
+        ],
+        "How are you organised?": [
+          24945
+        ]
+      },
+      "routes": [
+        [],
+        []
+      ],
+      "shared_boundary_node_count": 5,
+      "turn_count": 2,
+      "turn_prompts": [
+        "How are you organised?",
+        "Can you explain that in simpler terms?"
+      ],
+      "unowned_goal_count": 2,
+      "wall_ns": [
+        264568358,
+        205359621
+      ]
+    },
+    {
+      "condition": "known_answer",
+      "cross_frame_edges": [
+        {
+          "source_frame": 25036,
+          "target_frame": 24945,
+          "type": "responds_to"
+        },
+        {
+          "source_frame": 25036,
+          "target_frame": 24945,
+          "type": "follows_event"
+        }
+      ],
+      "exact_interaction_treewidth": 1,
+      "goal_summaries": [
+        [
+          {
+            "id": 25024,
+            "kind": "communicate",
+            "status": null
+          }
+        ],
+        [
+          {
+            "id": 25052,
+            "kind": "answer_topic",
+            "status": "active"
+          },
+          {
+            "id": 25076,
+            "kind": "communicate",
+            "status": null
+          }
+        ]
+      ],
+      "graph_digest": "64597255f9294ee95109532c2abf13acb8bc4ec9865251f289cae3f2f9b9cfa2",
+      "graph_edges": 11582,
+      "graph_nodes": 25090,
+      "interaction_edges": [
+        [
+          24945,
+          25036
+        ]
+      ],
+      "owned_goal_links": [
+        {
+          "goal_id": 25052,
+          "goal_kind": "answer_topic",
+          "message_id": 25036,
+          "prompt": "Can you explain that in simpler terms?"
+        }
+      ],
+      "owner_conflict_count": 0,
+      "peak_rss_bytes": 1804316672,
+      "pid": 5040,
+      "prior_followup_lexical_overlap_count": 0,
+      "prior_followup_lexical_overlap_tokens": [],
+      "replicate": 2,
+      "replies": [
+        "I am organised into computer_architecture, communication, mathematics, engineering, video_coding_theory, databases_and_storage, art_design_drawing, embedded_iot_realtime, security_and_cryptography, cloud_infrastructure, machine_learning, and philosophy",
+        "What information should I use to answer that?"
+      ],
+      "root_ids": {
+        "Can you explain that in simpler terms?": [
+          25036
+        ],
+        "How are you organised?": [
+          24945
+        ]
+      },
+      "routes": [
+        [],
+        []
+      ],
+      "shared_boundary_node_count": 5,
+      "turn_count": 2,
+      "turn_prompts": [
+        "How are you organised?",
+        "Can you explain that in simpler terms?"
+      ],
+      "unowned_goal_count": 2,
+      "wall_ns": [
+        246525253,
+        206409240
+      ]
+    },
+    {
+      "condition": "unknown_fact",
+      "cross_frame_edges": [
+        {
+          "source_frame": 25059,
+          "target_frame": 24945,
+          "type": "follows_event"
+        }
+      ],
+      "exact_interaction_treewidth": 1,
+      "goal_summaries": [
+        [
+          {
+            "id": 24978,
+            "kind": "answer_topic",
+            "status": "active"
+          },
+          {
+            "id": 25045,
+            "kind": "communicate",
+            "status": null
+          }
+        ],
+        [
+          {
+            "id": 25077,
+            "kind": "answer_topic",
+            "status": "active"
+          },
+          {
+            "id": 25101,
+            "kind": "communicate",
+            "status": null
+          }
+        ]
+      ],
+      "graph_digest": "26bef1599e3f8689b929dcbaecceee2a83c61cb77385e57de4e9dca2c861aea5",
+      "graph_edges": 11647,
+      "graph_nodes": 25115,
+      "interaction_edges": [
+        [
+          24945,
+          25059
+        ]
+      ],
+      "owned_goal_links": [
+        {
+          "goal_id": 24978,
+          "goal_kind": "answer_topic",
+          "message_id": 24945,
+          "prompt": "What part of your organisation is most important?"
+        },
+        {
+          "goal_id": 25077,
+          "goal_kind": "answer_topic",
+          "message_id": 25059,
+          "prompt": "Can you explain that in simpler terms?"
+        }
+      ],
+      "owner_conflict_count": 0,
+      "peak_rss_bytes": 1805012992,
+      "pid": 7557,
+      "prior_followup_lexical_overlap_count": 0,
+      "prior_followup_lexical_overlap_tokens": [],
+      "replicate": 0,
+      "replies": [
+        "I don't hold anything about \u201cmost important\u201d yet, and I couldn't find it through the sources I have. Tell me about it and I'll remember.",
+        "What information should I use to answer that?"
+      ],
+      "root_ids": {
+        "Can you explain that in simpler terms?": [
+          25059
+        ],
+        "What part of your organisation is most important?": [
+          24945
+        ]
+      },
+      "routes": [
+        [],
+        []
+      ],
+      "shared_boundary_node_count": 7,
+      "turn_count": 2,
+      "turn_prompts": [
+        "What part of your organisation is most important?",
+        "Can you explain that in simpler terms?"
+      ],
+      "unowned_goal_count": 2,
+      "wall_ns": [
+        278482061,
+        126876641
+      ]
+    },
+    {
+      "condition": "unknown_fact",
+      "cross_frame_edges": [
+        {
+          "source_frame": 25059,
+          "target_frame": 24945,
+          "type": "follows_event"
+        }
+      ],
+      "exact_interaction_treewidth": 1,
+      "goal_summaries": [
+        [
+          {
+            "id": 24978,
+            "kind": "answer_topic",
+            "status": "active"
+          },
+          {
+            "id": 25045,
+            "kind": "communicate",
+            "status": null
+          }
+        ],
+        [
+          {
+            "id": 25077,
+            "kind": "answer_topic",
+            "status": "active"
+          },
+          {
+            "id": 25101,
+            "kind": "communicate",
+            "status": null
+          }
+        ]
+      ],
+      "graph_digest": "b86010f88202fd93f3142ab491a86f88b0a837fbc3b2f1b66f4653c5b25fdc37",
+      "graph_edges": 11647,
+      "graph_nodes": 25115,
+      "interaction_edges": [
+        [
+          24945,
+          25059
+        ]
+      ],
+      "owned_goal_links": [
+        {
+          "goal_id": 24978,
+          "goal_kind": "answer_topic",
+          "message_id": 24945,
+          "prompt": "What part of your organisation is most important?"
+        },
+        {
+          "goal_id": 25077,
+          "goal_kind": "answer_topic",
+          "message_id": 25059,
+          "prompt": "Can you explain that in simpler terms?"
+        }
+      ],
+      "owner_conflict_count": 0,
+      "peak_rss_bytes": 1804804096,
+      "pid": 10188,
+      "prior_followup_lexical_overlap_count": 0,
+      "prior_followup_lexical_overlap_tokens": [],
+      "replicate": 1,
+      "replies": [
+        "I don't hold anything about \u201cmost important\u201d yet, and I couldn't find it through the sources I have. Tell me about it and I'll remember.",
+        "What information should I use to answer that?"
+      ],
+      "root_ids": {
+        "Can you explain that in simpler terms?": [
+          25059
+        ],
+        "What part of your organisation is most important?": [
+          24945
+        ]
+      },
+      "routes": [
+        [],
+        []
+      ],
+      "shared_boundary_node_count": 7,
+      "turn_count": 2,
+      "turn_prompts": [
+        "What part of your organisation is most important?",
+        "Can you explain that in simpler terms?"
+      ],
+      "unowned_goal_count": 2,
+      "wall_ns": [
+        261910424,
+        123838174
+      ]
+    },
+    {
+      "condition": "unknown_fact",
+      "cross_frame_edges": [
+        {
+          "source_frame": 25059,
+          "target_frame": 24945,
+          "type": "follows_event"
+        }
+      ],
+      "exact_interaction_treewidth": 1,
+      "goal_summaries": [
+        [
+          {
+            "id": 24978,
+            "kind": "answer_topic",
+            "status": "active"
+          },
+          {
+            "id": 25045,
+            "kind": "communicate",
+            "status": null
+          }
+        ],
+        [
+          {
+            "id": 25077,
+            "kind": "answer_topic",
+            "status": "active"
+          },
+          {
+            "id": 25101,
+            "kind": "communicate",
+            "status": null
+          }
+        ]
+      ],
+      "graph_digest": "59ed595e76bcddd60ad5e90a736b5c146264ba9e7f4df7aae49d98467add83c4",
+      "graph_edges": 11647,
+      "graph_nodes": 25115,
+      "interaction_edges": [
+        [
+          24945,
+          25059
+        ]
+      ],
+      "owned_goal_links": [
+        {
+          "goal_id": 24978,
+          "goal_kind": "answer_topic",
+          "message_id": 24945,
+          "prompt": "What part of your organisation is most important?"
+        },
+        {
+          "goal_id": 25077,
+          "goal_kind": "answer_topic",
+          "message_id": 25059,
+          "prompt": "Can you explain that in simpler terms?"
+        }
+      ],
+      "owner_conflict_count": 0,
+      "peak_rss_bytes": 1803948032,
+      "pid": 12819,
+      "prior_followup_lexical_overlap_count": 0,
+      "prior_followup_lexical_overlap_tokens": [],
+      "replicate": 2,
+      "replies": [
+        "I don't hold anything about \u201cmost important\u201d yet, and I couldn't find it through the sources I have. Tell me about it and I'll remember.",
+        "What information should I use to answer that?"
+      ],
+      "root_ids": {
+        "Can you explain that in simpler terms?": [
+          25059
+        ],
+        "What part of your organisation is most important?": [
+          24945
+        ]
+      },
+      "routes": [
+        [],
+        []
+      ],
+      "shared_boundary_node_count": 7,
+      "turn_count": 2,
+      "turn_prompts": [
+        "What part of your organisation is most important?",
+        "Can you explain that in simpler terms?"
+      ],
+      "unowned_goal_count": 2,
+      "wall_ns": [
+        256588596,
+        125565896
+      ]
+    },
+    {
+      "condition": "fresh_control",
+      "cross_frame_edges": [],
+      "exact_interaction_treewidth": 0,
+      "goal_summaries": [
+        [
+          {
+            "id": 24977,
+            "kind": "answer_topic",
+            "status": "active"
+          },
+          {
+            "id": 25041,
+            "kind": "communicate",
+            "status": null
+          }
+        ]
+      ],
+      "graph_digest": "4914d1bc104f90d353a51ac336b065661b714e33011ae7d98589ee4158c1740b",
+      "graph_edges": 11501,
+      "graph_nodes": 25054,
+      "interaction_edges": [],
+      "owned_goal_links": [
+        {
+          "goal_id": 24977,
+          "goal_kind": "answer_topic",
+          "message_id": 24945,
+          "prompt": "Can you explain that in simpler terms?"
+        }
+      ],
+      "owner_conflict_count": 0,
+      "peak_rss_bytes": 1805447168,
+      "pid": 15450,
+      "prior_followup_lexical_overlap_count": null,
+      "prior_followup_lexical_overlap_tokens": null,
+      "replicate": 0,
+      "replies": [
+        "What information should I use to answer that?"
+      ],
+      "root_ids": {
+        "Can you explain that in simpler terms?": [
+          24945
+        ]
+      },
+      "routes": [
+        []
+      ],
+      "shared_boundary_node_count": 0,
+      "turn_count": 1,
+      "turn_prompts": [
+        "Can you explain that in simpler terms?"
+      ],
+      "unowned_goal_count": 1,
+      "wall_ns": [
+        236116295
+      ]
+    },
+    {
+      "condition": "fresh_control",
+      "cross_frame_edges": [],
+      "exact_interaction_treewidth": 0,
+      "goal_summaries": [
+        [
+          {
+            "id": 24977,
+            "kind": "answer_topic",
+            "status": "active"
+          },
+          {
+            "id": 25041,
+            "kind": "communicate",
+            "status": null
+          }
+        ]
+      ],
+      "graph_digest": "4914d1bc104f90d353a51ac336b065661b714e33011ae7d98589ee4158c1740b",
+      "graph_edges": 11501,
+      "graph_nodes": 25054,
+      "interaction_edges": [],
+      "owned_goal_links": [
+        {
+          "goal_id": 24977,
+          "goal_kind": "answer_topic",
+          "message_id": 24945,
+          "prompt": "Can you explain that in simpler terms?"
+        }
+      ],
+      "owner_conflict_count": 0,
+      "peak_rss_bytes": 1804529664,
+      "pid": 17853,
+      "prior_followup_lexical_overlap_count": null,
+      "prior_followup_lexical_overlap_tokens": null,
+      "replicate": 1,
+      "replies": [
+        "What information should I use to answer that?"
+      ],
+      "root_ids": {
+        "Can you explain that in simpler terms?": [
+          24945
+        ]
+      },
+      "routes": [
+        []
+      ],
+      "shared_boundary_node_count": 0,
+      "turn_count": 1,
+      "turn_prompts": [
+        "Can you explain that in simpler terms?"
+      ],
+      "unowned_goal_count": 1,
+      "wall_ns": [
+        236387499
+      ]
+    },
+    {
+      "condition": "fresh_control",
+      "cross_frame_edges": [],
+      "exact_interaction_treewidth": 0,
+      "goal_summaries": [
+        [
+          {
+            "id": 24977,
+            "kind": "answer_topic",
+            "status": "active"
+          },
+          {
+            "id": 25041,
+            "kind": "communicate",
+            "status": null
+          }
+        ]
+      ],
+      "graph_digest": "4914d1bc104f90d353a51ac336b065661b714e33011ae7d98589ee4158c1740b",
+      "graph_edges": 11501,
+      "graph_nodes": 25054,
+      "interaction_edges": [],
+      "owned_goal_links": [
+        {
+          "goal_id": 24977,
+          "goal_kind": "answer_topic",
+          "message_id": 24945,
+          "prompt": "Can you explain that in simpler terms?"
+        }
+      ],
+      "owner_conflict_count": 0,
+      "peak_rss_bytes": 1805586432,
+      "pid": 20256,
+      "prior_followup_lexical_overlap_count": null,
+      "prior_followup_lexical_overlap_tokens": null,
+      "replicate": 2,
+      "replies": [
+        "What information should I use to answer that?"
+      ],
+      "root_ids": {
+        "Can you explain that in simpler terms?": [
+          24945
+        ]
+      },
+      "routes": [
+        []
+      ],
+      "shared_boundary_node_count": 0,
+      "turn_count": 1,
+      "turn_prompts": [
+        "Can you explain that in simpler terms?"
+      ],
+      "unowned_goal_count": 1,
+      "wall_ns": [
+        245996201
+      ]
+    }
+  ],
+  "schema": "LiveFollowupContextBindingV1Analysis"
+}

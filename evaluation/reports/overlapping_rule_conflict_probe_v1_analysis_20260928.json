@@ -1,0 +1,59 @@
+{
+  "all_gates_pass": true,
+  "analysis": "Overlapping rule conflict probe v1",
+  "cells": {
+    "A_then_B:False": {
+      "callbacks": 12,
+      "final": 2,
+      "passes": 6,
+      "progress_steps": 12,
+      "status": "progress_budget_reached"
+    },
+    "A_then_B:True": {
+      "callbacks": 4,
+      "final": 2,
+      "passes": 2,
+      "progress_steps": 4,
+      "status": "repeated_graph_state"
+    },
+    "B_then_A:False": {
+      "callbacks": 12,
+      "final": 1,
+      "passes": 6,
+      "progress_steps": 12,
+      "status": "progress_budget_reached"
+    },
+    "B_then_A:True": {
+      "callbacks": 4,
+      "final": 1,
+      "passes": 2,
+      "progress_steps": 4,
+      "status": "repeated_graph_state"
+    }
+  },
+  "gates": {
+    "all_order_detection_cells": true,
+    "correct_A_then_B_budget_worker_1": true,
+    "correct_A_then_B_budget_worker_2": true,
+    "correct_A_then_B_budget_worker_3": true,
+    "correct_A_then_B_cycle_worker_1": true,
+    "correct_A_then_B_cycle_worker_2": true,
+    "correct_A_then_B_cycle_worker_3": true,
+    "correct_B_then_A_budget_worker_1": true,
+    "correct_B_then_A_budget_worker_2": true,
+    "correct_B_then_A_budget_worker_3": true,
+    "correct_B_then_A_cycle_worker_1": true,
+    "correct_B_then_A_cycle_worker_2": true,
+    "correct_B_then_A_cycle_worker_3": true,
+    "four_cells_each": true,
+    "locked_inputs_match": true,
+    "replicated_worker_signatures": true,
+    "three_workers": true
+  },
+  "interpretation": "Conflicting overlapping rules do not converge to one insertion-order-independent fixed point. With cycle detection the engine reports a repeated graph state; without it the step budget stops the loop. The last writer in each completed pass determines the observed value.",
+  "limitations": [
+    "One graph binding and two deterministic rules only.",
+    "Cycle detection fingerprints graph state; external callback side effects or other pending state may not be represented by that fingerprint.",
+    "This is not a general confluence or rewrite-system termination classification."
+  ]
+}

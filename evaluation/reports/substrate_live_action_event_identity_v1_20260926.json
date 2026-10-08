@@ -1,0 +1,404 @@
+{
+  "checks": {
+    "all_worker_gates_pass": true,
+    "same_event_and_goal_shape": true,
+    "three_fresh_pids": true
+  },
+  "claim_boundary": "One live full-seed instruction path, three fresh processes. Confirms that this path creates inbound event/Goal provenance but no selection/execution/action_result DiscourseEvents. Does not claim other producers are absent or assess task performance.",
+  "environment": {
+    "platform": "Linux-6.8.0-142-generic-x86_64-with-glibc2.39",
+    "python": "3.13.5 (main, Jun 11 2025, 15:36:57) [GCC 11.4.0]"
+  },
+  "lock_sha256": "1621a6408bbd9560a42e93006857ad86ee555e4345208857d1f31766d78b4460",
+  "locked_inputs": {
+    "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+    "native_build_manifest_sha256": "2d10ff9cc7f9832d91d1603c74dd0a0e0c4c5d3080a618a33575e9d5400ae871",
+    "native_extension_sha256": "f5543ca015278bad6c65506a0d7d9acb85b33252e7121cdda1a56df63e8ad27b",
+    "protocol_sha256": "30f663710fc7191a54d46c72b2c50e3c36d8f02de77681e44440907f6ad60fe7",
+    "runner_sha256": "a226196dcb2bc3cff692392d5841db51f30783776a3b0a53b0f6b713cb59f316",
+    "source_sha256": {
+      "conversation_action": "9319289a5932fd14637cd3dbad1134e4c17f7e905f50b69a8e3ba0af8a2eb8c8",
+      "discourse_seed": "37e400394bb440606d3661a50e26ee9570583fc912fec723bfa77c00a223451d",
+      "discourse_state": "e9f82407253bc3c1029e8008af2c8796f386b6c0555885f532049b9662a61409",
+      "phase4a_seed": "fff5e65ba7d5d1236781d0e6e41769b6ee7452edef5d75b34554e4f5d7e67bbc",
+      "world_adapter": "ce6389451b3a7783b18ffe6a76db2e6849a16ca57efb79a3567764240d09fb09"
+    }
+  },
+  "run_id": "substrate-live-action-event-identity-v1-20260926",
+  "runs": [
+    {
+      "boot_ns": 12257383218,
+      "discourse_state_id": 24841,
+      "gates": {
+        "new_action_goal_bound_to_input": true,
+        "no_operation_lifecycle_events": true,
+        "no_transition_by_operation_event": true,
+        "one_instruction_event": true
+      },
+      "inbound_event_id": 24843,
+      "inbound_message_id": 24834,
+      "new_discourse_events": [
+        {
+          "attrs": {
+            "event_index": 0,
+            "expectation": "action",
+            "interaction_mode": "event",
+            "kind": "instruction",
+            "payload": {
+              "dispatch_path": "instruction",
+              "grounding_evidence_path": "CommunicationInterpretation -> Concept.referent",
+              "grounding_status": "candidate_grounded",
+              "interaction_relation": null,
+              "learning_gap_identity": null,
+              "learning_observation_schema": null,
+              "learning_stage": null,
+              "learning_verification_status": null,
+              "literal_form": null,
+              "message_id": 24834,
+              "parsed_topic": "pressure"
+            },
+            "schema": "discourse_event.v1",
+            "topic": "pressure"
+          },
+          "for_goal_edges": [],
+          "id": 24843
+        }
+      ],
+      "new_goal_count": 3,
+      "new_goal_rows": [
+        {
+          "attrs": {
+            "content": "pressure",
+            "kind": "interpreted_instruction",
+            "order": 2,
+            "predicate": "check",
+            "source": "instruction_understanding",
+            "status": "active"
+          },
+          "comprehends_inbound": true,
+          "deliberations": [
+            {
+              "candidate_source": "discourse_state",
+              "id": 24903,
+              "status": "no_candidate"
+            },
+            {
+              "candidate_source": "discourse_state",
+              "id": 24905,
+              "status": "no_candidate"
+            }
+          ],
+          "goal_id": 24860,
+          "originated_in_inbound_event": true,
+          "transition_events": []
+        },
+        {
+          "attrs": {
+            "kind": "instruction",
+            "object": "pressure",
+            "origin_turn_id": 24834,
+            "predicate": "Check",
+            "source": "conversation"
+          },
+          "comprehends_inbound": true,
+          "deliberations": [
+            {
+              "candidate_source": "discourse_state",
+              "id": 24905,
+              "status": "no_candidate"
+            }
+          ],
+          "goal_id": 24900,
+          "originated_in_inbound_event": true,
+          "transition_events": []
+        },
+        {
+          "attrs": {
+            "content": [
+              "attached",
+              "check",
+              "goal",
+              "have",
+              "pressure",
+              "took"
+            ],
+            "force_kind": "inform",
+            "kind": "communicate",
+            "target_kind": "interlocutor"
+          },
+          "comprehends_inbound": false,
+          "deliberations": [],
+          "goal_id": 24910,
+          "originated_in_inbound_event": false,
+          "transition_events": []
+        }
+      ],
+      "pid": 2118422,
+      "replicate": 1,
+      "reply": "I took on the goal to Check the pressure, but I have no attached world/faculty to carry it out here.",
+      "state_event_count": 1,
+      "state_event_kind_counts": {
+        "action_result": 0,
+        "execution": 0,
+        "instruction": 1,
+        "selection": 0
+      },
+      "turn_ns": 3365836927
+    },
+    {
+      "boot_ns": 12165285136,
+      "discourse_state_id": 24841,
+      "gates": {
+        "new_action_goal_bound_to_input": true,
+        "no_operation_lifecycle_events": true,
+        "no_transition_by_operation_event": true,
+        "one_instruction_event": true
+      },
+      "inbound_event_id": 24843,
+      "inbound_message_id": 24834,
+      "new_discourse_events": [
+        {
+          "attrs": {
+            "event_index": 0,
+            "expectation": "action",
+            "interaction_mode": "event",
+            "kind": "instruction",
+            "payload": {
+              "dispatch_path": "instruction",
+              "grounding_evidence_path": "CommunicationInterpretation -> Concept.referent",
+              "grounding_status": "candidate_grounded",
+              "interaction_relation": null,
+              "learning_gap_identity": null,
+              "learning_observation_schema": null,
+              "learning_stage": null,
+              "learning_verification_status": null,
+              "literal_form": null,
+              "message_id": 24834,
+              "parsed_topic": "pressure"
+            },
+            "schema": "discourse_event.v1",
+            "topic": "pressure"
+          },
+          "for_goal_edges": [],
+          "id": 24843
+        }
+      ],
+      "new_goal_count": 3,
+      "new_goal_rows": [
+        {
+          "attrs": {
+            "content": "pressure",
+            "kind": "interpreted_instruction",
+            "order": 2,
+            "predicate": "check",
+            "source": "instruction_understanding",
+            "status": "active"
+          },
+          "comprehends_inbound": true,
+          "deliberations": [
+            {
+              "candidate_source": "discourse_state",
+              "id": 24903,
+              "status": "no_candidate"
+            },
+            {
+              "candidate_source": "discourse_state",
+              "id": 24905,
+              "status": "no_candidate"
+            }
+          ],
+          "goal_id": 24860,
+          "originated_in_inbound_event": true,
+          "transition_events": []
+        },
+        {
+          "attrs": {
+            "kind": "instruction",
+            "object": "pressure",
+            "origin_turn_id": 24834,
+            "predicate": "Check",
+            "source": "conversation"
+          },
+          "comprehends_inbound": true,
+          "deliberations": [
+            {
+              "candidate_source": "discourse_state",
+              "id": 24905,
+              "status": "no_candidate"
+            }
+          ],
+          "goal_id": 24900,
+          "originated_in_inbound_event": true,
+          "transition_events": []
+        },
+        {
+          "attrs": {
+            "content": [
+              "attached",
+              "check",
+              "goal",
+              "have",
+              "pressure",
+              "took"
+            ],
+            "force_kind": "inform",
+            "kind": "communicate",
+            "target_kind": "interlocutor"
+          },
+          "comprehends_inbound": false,
+          "deliberations": [],
+          "goal_id": 24910,
+          "originated_in_inbound_event": false,
+          "transition_events": []
+        }
+      ],
+      "pid": 2122994,
+      "replicate": 2,
+      "reply": "I took on the goal to Check the pressure, but I have no attached world/faculty to carry it out here.",
+      "state_event_count": 1,
+      "state_event_kind_counts": {
+        "action_result": 0,
+        "execution": 0,
+        "instruction": 1,
+        "selection": 0
+      },
+      "turn_ns": 3368688389
+    },
+    {
+      "boot_ns": 11903039279,
+      "discourse_state_id": 24841,
+      "gates": {
+        "new_action_goal_bound_to_input": true,
+        "no_operation_lifecycle_events": true,
+        "no_transition_by_operation_event": true,
+        "one_instruction_event": true
+      },
+      "inbound_event_id": 24843,
+      "inbound_message_id": 24834,
+      "new_discourse_events": [
+        {
+          "attrs": {
+            "event_index": 0,
+            "expectation": "action",
+            "interaction_mode": "event",
+            "kind": "instruction",
+            "payload": {
+              "dispatch_path": "instruction",
+              "grounding_evidence_path": "CommunicationInterpretation -> Concept.referent",
+              "grounding_status": "candidate_grounded",
+              "interaction_relation": null,
+              "learning_gap_identity": null,
+              "learning_observation_schema": null,
+              "learning_stage": null,
+              "learning_verification_status": null,
+              "literal_form": null,
+              "message_id": 24834,
+              "parsed_topic": "pressure"
+            },
+            "schema": "discourse_event.v1",
+            "topic": "pressure"
+          },
+          "for_goal_edges": [],
+          "id": 24843
+        }
+      ],
+      "new_goal_count": 3,
+      "new_goal_rows": [
+        {
+          "attrs": {
+            "content": "pressure",
+            "kind": "interpreted_instruction",
+            "order": 2,
+            "predicate": "check",
+            "source": "instruction_understanding",
+            "status": "active"
+          },
+          "comprehends_inbound": true,
+          "deliberations": [
+            {
+              "candidate_source": "discourse_state",
+              "id": 24903,
+              "status": "no_candidate"
+            },
+            {
+              "candidate_source": "discourse_state",
+              "id": 24905,
+              "status": "no_candidate"
+            }
+          ],
+          "goal_id": 24860,
+          "originated_in_inbound_event": true,
+          "transition_events": []
+        },
+        {
+          "attrs": {
+            "kind": "instruction",
+            "object": "pressure",
+            "origin_turn_id": 24834,
+            "predicate": "Check",
+            "source": "conversation"
+          },
+          "comprehends_inbound": true,
+          "deliberations": [
+            {
+              "candidate_source": "discourse_state",
+              "id": 24905,
+              "status": "no_candidate"
+            }
+          ],
+          "goal_id": 24900,
+          "originated_in_inbound_event": true,
+          "transition_events": []
+        },
+        {
+          "attrs": {
+            "content": [
+              "attached",
+              "check",
+              "goal",
+              "have",
+              "pressure",
+              "took"
+            ],
+            "force_kind": "inform",
+            "kind": "communicate",
+            "target_kind": "interlocutor"
+          },
+          "comprehends_inbound": false,
+          "deliberations": [],
+          "goal_id": 24910,
+          "originated_in_inbound_event": false,
+          "transition_events": []
+        }
+      ],
+      "pid": 2127545,
+      "replicate": 0,
+      "reply": "I took on the goal to Check the pressure, but I have no attached world/faculty to carry it out here.",
+      "state_event_count": 1,
+      "state_event_kind_counts": {
+        "action_result": 0,
+        "execution": 0,
+        "instruction": 1,
+        "selection": 0
+      },
+      "turn_ns": 3201270238
+    }
+  ],
+  "schedule": [
+    1,
+    2,
+    0
+  ],
+  "schema_version": 1,
+  "summary": {
+    "boot_ns_median": 12165285136,
+    "new_goal_count": 3,
+    "operation_event_counts": {
+      "action_result": 0,
+      "execution": 0,
+      "instruction": 1,
+      "selection": 0
+    },
+    "turn_ns_median": 3365836927
+  }
+}

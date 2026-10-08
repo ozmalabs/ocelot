@@ -1,0 +1,266 @@
+{
+  "cells": [
+    {
+      "changed": false,
+      "family": "set_attr_if_different",
+      "plain": {
+        "dropped": 0,
+        "event_count": 0,
+        "events": [],
+        "final": 1,
+        "initial": 1,
+        "progress": 0,
+        "status": "fixed_point",
+        "target_node": "#0",
+        "target_write_event_count": 0,
+        "trace_enabled": false
+      },
+      "semantic_match": true,
+      "traced": {
+        "dropped": 0,
+        "event_count": 1,
+        "events": [
+          [
+            1,
+            "pattern_edge",
+            0,
+            "trigger",
+            1,
+            1
+          ]
+        ],
+        "final": 1,
+        "initial": 1,
+        "progress": 0,
+        "status": "fixed_point",
+        "target_node": "#0",
+        "target_write_event_count": 0,
+        "trace_enabled": true
+      }
+    },
+    {
+      "changed": true,
+      "family": "set_attr_if_different",
+      "plain": {
+        "dropped": 0,
+        "event_count": 0,
+        "events": [],
+        "final": 1,
+        "initial": 0,
+        "progress": 1,
+        "status": "fixed_point",
+        "target_node": "#0",
+        "target_write_event_count": 0,
+        "trace_enabled": false
+      },
+      "semantic_match": true,
+      "traced": {
+        "dropped": 0,
+        "event_count": 2,
+        "events": [
+          [
+            1,
+            "pattern_edge",
+            0,
+            "trigger",
+            1,
+            1
+          ],
+          [
+            1,
+            "effect_attr_write",
+            0,
+            "target",
+            null,
+            1
+          ]
+        ],
+        "final": 1,
+        "initial": 0,
+        "progress": 1,
+        "status": "fixed_point",
+        "target_node": "#0",
+        "target_write_event_count": 1,
+        "trace_enabled": true
+      }
+    },
+    {
+      "family": "use_tool",
+      "plain": {
+        "dropped": 0,
+        "event_count": 0,
+        "events": [],
+        "handler_calls": 1,
+        "progress": 0,
+        "status": "fixed_point",
+        "trace_enabled": false
+      },
+      "semantic_match": true,
+      "traced": {
+        "dropped": 0,
+        "event_count": 1,
+        "events": [
+          [
+            1,
+            "pattern_edge",
+            0,
+            "trigger",
+            1,
+            1
+          ]
+        ],
+        "handler_calls": 1,
+        "progress": 0,
+        "status": "fixed_point",
+        "trace_enabled": true
+      }
+    }
+  ],
+  "checks": {
+    "attribute_semantics_match": true,
+    "changed_attribute_has_write_event": true,
+    "no_trace_overflow": true,
+    "tool_callback_has_no_tool_event_kind": true,
+    "tool_callback_independently_observed": true,
+    "tool_semantics_match": true,
+    "unchanged_attribute_has_no_write_event": true
+  },
+  "claim_boundary": "Paired mechanism probes for two known trace limits; not general recall or cost coverage.",
+  "environment": {
+    "platform": "Linux-6.8.0-142-generic-x86_64-with-glibc2.39",
+    "python": "3.13.5 (main, Jun 11 2025, 15:36:57) [GCC 11.4.0]"
+  },
+  "provenance": {
+    "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+    "native_build_manifest_sha256": "5f2be0340aff964b896e73c69a9a697e25f4f2273d24d3b997653139b9aa036b",
+    "native_extension_sha256": "7cced460b3bf06b78688e73dcd524aa6dc78b63cc04e619846d00962644cc951",
+    "source_sha256": {
+      "runners/dsl/src/access_trace.rs": "69948c99775d9d87640a3626b14d77f9584e2785b8f89c2a9394a0b5c9ec0ba1",
+      "runners/dsl/src/py.rs": "11c82c44174c05385050e75cd85a8ad4979b12e8f70e23308f37a42b1b6fcb4d",
+      "runners/dsl/src/rewrite.rs": "4b7aa6ada5d555357795b94277dbac46c16cd39ab67ad666e1acfb8db463839c",
+      "runners/dsl/src/term.rs": "c91c9227cd581dad9c858b65e3653daafdef4ec76f140e336b3b32f3ce52ee64",
+      "runners/dsl/src/tools.rs": "adde1024c48f3b16b5214e0322572202e2c3f1cbec130035f632afd022092731",
+      "scripts/substrate_access_trace_blindspot_probe_v1.py": "0f1cbf7f821c3b03daaa9e0da3d6630263351dfe3236a0fb468a001cf3e0428c"
+    }
+  },
+  "run_id": "substrate-access-trace-blindspot-probe-v1-20260926",
+  "run_manifest": {
+    "captured_utc": "2026-09-26T11:12:09.702690+00:00",
+    "engine": {
+      "build_is_stale": false,
+      "native_build_manifest_sha256": "5f2be0340aff964b896e73c69a9a697e25f4f2273d24d3b997653139b9aa036b",
+      "native_extension_path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+      "native_extension_sha256": "7cced460b3bf06b78688e73dcd524aa6dc78b63cc04e619846d00962644cc951",
+      "rust_source_fingerprint": "7527d122cd5772c2b89d6eb169f4f2e1f6ce6f0be18ad1ca6d90e739435aea97"
+    },
+    "execution": {
+      "argv": [
+        "/home/linuxbrew/.linuxbrew/opt/python@3.13/bin/python3.13",
+        "scripts/substrate_access_trace_blindspot_probe_v1.py"
+      ],
+      "command_display": "/home/linuxbrew/.linuxbrew/opt/python@3.13/bin/python3.13 scripts/substrate_access_trace_blindspot_probe_v1.py",
+      "python_executable": "/home/linuxbrew/.linuxbrew/opt/python@3.13/bin/python3.13",
+      "python_version": "3.13.5 (main, Jun 11 2025, 15:36:57) [GCC 11.4.0]",
+      "relevant_environment": {
+        "PYTHONPATH": "runners/dsl/python:."
+      }
+    },
+    "exit_status": 0,
+    "explicit_inputs": {
+      "docs/research/engine_substrate/SUBSTRATE_ACCESS_TRACE_BLINDSPOT_PROBE_V1_PREREG_20260926.md": {
+        "exists": true,
+        "group": "protocol",
+        "sha256": "a2553fd2de4e200874e16bc57f0e5b2578691e4d9d598168aec026cc574fcf53"
+      },
+      "docs/research/engine_substrate/SUBSTRATE_BENCHMARK_PROTOCOL.md": {
+        "exists": true,
+        "group": "protocol",
+        "sha256": "0d0a2e66df62f2ff9080b3f31838c368a9f4e6c18ad90d8ba0ccb37fb02f17e9"
+      },
+      "runners/dsl/Cargo.lock": {
+        "exists": true,
+        "group": "build_inputs",
+        "sha256": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9"
+      },
+      "runners/dsl/Cargo.toml": {
+        "exists": true,
+        "group": "build_inputs",
+        "sha256": "c4d8ffff2241352a5150b5a9937dbb8010e958b6f115235b7daeae716c1a9332"
+      },
+      "runners/dsl/src/access_trace.rs": {
+        "exists": true,
+        "group": "source",
+        "sha256": "69948c99775d9d87640a3626b14d77f9584e2785b8f89c2a9394a0b5c9ec0ba1"
+      },
+      "runners/dsl/src/py.rs": {
+        "exists": true,
+        "group": "source",
+        "sha256": "11c82c44174c05385050e75cd85a8ad4979b12e8f70e23308f37a42b1b6fcb4d"
+      },
+      "runners/dsl/src/rewrite.rs": {
+        "exists": true,
+        "group": "source",
+        "sha256": "4b7aa6ada5d555357795b94277dbac46c16cd39ab67ad666e1acfb8db463839c"
+      },
+      "runners/dsl/src/term.rs": {
+        "exists": true,
+        "group": "source",
+        "sha256": "c91c9227cd581dad9c858b65e3653daafdef4ec76f140e336b3b32f3ce52ee64"
+      },
+      "runners/dsl/src/tools.rs": {
+        "exists": true,
+        "group": "source",
+        "sha256": "adde1024c48f3b16b5214e0322572202e2c3f1cbec130035f632afd022092731"
+      },
+      "scripts/substrate_access_trace_blindspot_probe_v1.py": {
+        "exists": true,
+        "group": "runner",
+        "sha256": "0f1cbf7f821c3b03daaa9e0da3d6630263351dfe3236a0fb468a001cf3e0428c"
+      },
+      "scripts/substrate_run_manifest.py": {
+        "exists": true,
+        "group": "manifest_capture",
+        "sha256": "1839aba2e74787ae1eab57e794b7fdcd376d0cdab4bc5be86fc18c38588b10ca"
+      }
+    },
+    "hardware": {
+      "cpu_model": "AMD Ryzen 9 5900X 12-Core Processor",
+      "logical_cpu_count": 24,
+      "machine": "x86_64",
+      "memory_total_bytes": 67342565376,
+      "platform": "Linux-6.8.0-142-generic-x86_64-with-glibc2.39",
+      "system": "Linux",
+      "workspace_filesystem_free_bytes": 32463605760,
+      "workspace_filesystem_total_bytes": 982627737600
+    },
+    "manifest_schema": "substrate-run-manifest-v1",
+    "repository": {
+      "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+      "dirty_workspace": {
+        "scope_note": "Unrelated untracked artifact contents are not recursively hashed; benchmark-relevant files are content-hashed in explicit_inputs.",
+        "status_porcelain_sha256": "4afab8734296285ebec372a0a47def579beb889fc3b40efef182cdee2d757bec",
+        "status_record_count": 3187,
+        "tracked_dirty_content_index_sha256": "403653cedf29d39597c2c275786eb7955792aa63b1c46fd2cb9ab3723e4ea69c",
+        "tracked_dirty_file_count": 121,
+        "untracked_path_count": 3066,
+        "untracked_path_inventory_sha256": "c7978188051f44b4cf34c1976b4519b15219b7c014137ec85f3df74dca9b0f9f"
+      },
+      "root": "/home/matt/ozmadev/ocelot"
+    },
+    "run_end_utc": "2026-09-26T11:12:09.702699+00:00",
+    "run_id": "substrate-access-trace-blindspot-probe-v1-20260926",
+    "run_started_utc": "2026-09-26T11:12:09.683892+00:00",
+    "stdout_stderr_capture": {
+      "bytes": 314,
+      "path": "evaluation/run_logs/substrate-access-trace-blindspot-probe-v1-20260926.stdout_stderr.log",
+      "scope": "parent-process stdout/stderr before the final structured summary print",
+      "sha256": "5461fc4fa3c53d1b21e7124f9acbe7b4fc559763c7094f86e21920a6b7fd5107"
+    },
+    "stdout_stderr_note": null,
+    "toolchain": {
+      "cargo": "cargo 1.87.0 (Homebrew)",
+      "rustc": "rustc 1.87.0 (17067e9ac 2025-05-09) (Homebrew)"
+    }
+  },
+  "schema_version": 1
+}

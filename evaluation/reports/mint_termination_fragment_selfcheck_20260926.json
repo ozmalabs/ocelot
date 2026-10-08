@@ -1,0 +1,298 @@
+{
+  "checks_pass": true,
+  "fixtures": {
+    "computed_key": {
+      "accepted": false,
+      "bound_basis": null,
+      "edge_type_count": null,
+      "fragment": "monotone_finite_key_insertions_v0",
+      "initial_edge_fact_count": 1,
+      "initial_node_count": 2,
+      "initial_node_ids": [
+        "n0",
+        "n1"
+      ],
+      "not_claimed": [
+        "weak acyclicity",
+        "arbitrary computed keys",
+        "constructed fresh values",
+        "deletion or replacement effects",
+        "hard CPU/wall-time bound",
+        "polynomial matching cost per firing"
+      ],
+      "possible_edge_fact_count_upper_bound": null,
+      "possible_node_count_upper_bound": null,
+      "progress_steps_upper_bound": null,
+      "reasons": [
+        "rule[0].effects[0]: dedup attrs must contain only finite scalar JSON literals"
+      ],
+      "unique_mint_signatures": null
+    },
+    "duplicate_initial_edge_fact": {
+      "accepted": false,
+      "bound_basis": null,
+      "edge_type_count": null,
+      "fragment": "monotone_finite_key_insertions_v0",
+      "initial_edge_fact_count": 1,
+      "initial_node_count": 2,
+      "initial_node_ids": [
+        "n0",
+        "n1"
+      ],
+      "not_claimed": [
+        "weak acyclicity",
+        "arbitrary computed keys",
+        "constructed fresh values",
+        "deletion or replacement effects",
+        "hard CPU/wall-time bound",
+        "polynomial matching cost per firing"
+      ],
+      "possible_edge_fact_count_upper_bound": null,
+      "possible_node_count_upper_bound": null,
+      "progress_steps_upper_bound": null,
+      "reasons": [
+        "initial_edges[1]: duplicate edge fact; provide one canonical initial fact"
+      ],
+      "unique_mint_signatures": null
+    },
+    "duplicate_initial_node_id": {
+      "accepted": false,
+      "bound_basis": null,
+      "edge_type_count": null,
+      "fragment": "monotone_finite_key_insertions_v0",
+      "initial_edge_fact_count": 0,
+      "initial_node_count": 1,
+      "initial_node_ids": [
+        "n0"
+      ],
+      "not_claimed": [
+        "weak acyclicity",
+        "arbitrary computed keys",
+        "constructed fresh values",
+        "deletion or replacement effects",
+        "hard CPU/wall-time bound",
+        "polynomial matching cost per firing"
+      ],
+      "possible_edge_fact_count_upper_bound": null,
+      "possible_node_count_upper_bound": null,
+      "progress_steps_upper_bound": null,
+      "reasons": [
+        "initial_node_ids: duplicate node IDs"
+      ],
+      "unique_mint_signatures": null
+    },
+    "edge_endpoint_missing_from_node_inventory": {
+      "accepted": false,
+      "bound_basis": null,
+      "edge_type_count": null,
+      "fragment": "monotone_finite_key_insertions_v0",
+      "initial_edge_fact_count": 1,
+      "initial_node_count": 1,
+      "initial_node_ids": [
+        "n0"
+      ],
+      "not_claimed": [
+        "weak acyclicity",
+        "arbitrary computed keys",
+        "constructed fresh values",
+        "deletion or replacement effects",
+        "hard CPU/wall-time bound",
+        "polynomial matching cost per firing"
+      ],
+      "possible_edge_fact_count_upper_bound": null,
+      "possible_node_count_upper_bound": null,
+      "progress_steps_upper_bound": null,
+      "reasons": [
+        "initial_edges: endpoint IDs must all occur in initial_node_ids"
+      ],
+      "unique_mint_signatures": null
+    },
+    "edge_type_is_not_binding": {
+      "accepted": false,
+      "bound_basis": null,
+      "edge_type_count": null,
+      "fragment": "monotone_finite_key_insertions_v0",
+      "initial_edge_fact_count": 1,
+      "initial_node_count": 2,
+      "initial_node_ids": [
+        "n0",
+        "n1"
+      ],
+      "not_claimed": [
+        "weak acyclicity",
+        "arbitrary computed keys",
+        "constructed fresh values",
+        "deletion or replacement effects",
+        "hard CPU/wall-time bound",
+        "polynomial matching cost per firing"
+      ],
+      "possible_edge_fact_count_upper_bound": null,
+      "possible_node_count_upper_bound": null,
+      "progress_steps_upper_bound": null,
+      "reasons": [
+        "rule[0].effects[0]: edge endpoints must be bound by the match or an earlier mint effect"
+      ],
+      "unique_mint_signatures": null
+    },
+    "isolated_initial_node_counted": {
+      "accepted": true,
+      "bound_basis": "Each AddNodeIfAbsent with one fixed literal type/key signature can insert at most one node; empty-attribute AddEdge can insert only one directed triple per endpoint pair and edge type. Positive matching and insertion-only effects preserve a finite graph universe. The bound is a coarse O((N+R)^2 E) upper bound on progressing firings, for fixed rules.",
+      "edge_type_count": 1,
+      "fragment": "monotone_finite_key_insertions_v0",
+      "initial_edge_fact_count": 1,
+      "initial_node_count": 3,
+      "initial_node_ids": [
+        "isolated",
+        "n0",
+        "n1"
+      ],
+      "not_claimed": [
+        "weak acyclicity",
+        "arbitrary computed keys",
+        "constructed fresh values",
+        "deletion or replacement effects",
+        "hard CPU/wall-time bound",
+        "polynomial matching cost per firing"
+      ],
+      "possible_edge_fact_count_upper_bound": 16,
+      "possible_node_count_upper_bound": 4,
+      "progress_steps_upper_bound": 16,
+      "reasons": [],
+      "unique_mint_signatures": 1
+    },
+    "preexisting_edge_attribute_replacement": {
+      "accepted": false,
+      "bound_basis": null,
+      "edge_type_count": null,
+      "fragment": "monotone_finite_key_insertions_v0",
+      "initial_edge_fact_count": 1,
+      "initial_node_count": 2,
+      "initial_node_ids": [
+        "n0",
+        "n1"
+      ],
+      "not_claimed": [
+        "weak acyclicity",
+        "arbitrary computed keys",
+        "constructed fresh values",
+        "deletion or replacement effects",
+        "hard CPU/wall-time bound",
+        "polynomial matching cost per firing"
+      ],
+      "possible_edge_fact_count_upper_bound": null,
+      "possible_node_count_upper_bound": null,
+      "progress_steps_upper_bound": null,
+      "reasons": [
+        "rule[0].effects[0]: AddEdge may replace attributes on a pre-existing edge of this type; outside insertion-only fragment"
+      ],
+      "unique_mint_signatures": null
+    },
+    "recursive_finite_key": {
+      "accepted": true,
+      "bound_basis": "Each AddNodeIfAbsent with one fixed literal type/key signature can insert at most one node; empty-attribute AddEdge can insert only one directed triple per endpoint pair and edge type. Positive matching and insertion-only effects preserve a finite graph universe. The bound is a coarse O((N+R)^2 E) upper bound on progressing firings, for fixed rules.",
+      "edge_type_count": 1,
+      "fragment": "monotone_finite_key_insertions_v0",
+      "initial_edge_fact_count": 1,
+      "initial_node_count": 2,
+      "initial_node_ids": [
+        "n0",
+        "n1"
+      ],
+      "not_claimed": [
+        "weak acyclicity",
+        "arbitrary computed keys",
+        "constructed fresh values",
+        "deletion or replacement effects",
+        "hard CPU/wall-time bound",
+        "polynomial matching cost per firing"
+      ],
+      "possible_edge_fact_count_upper_bound": 9,
+      "possible_node_count_upper_bound": 3,
+      "progress_steps_upper_bound": 9,
+      "reasons": [],
+      "unique_mint_signatures": 1
+    },
+    "recursive_fresh_node": {
+      "accepted": false,
+      "bound_basis": null,
+      "edge_type_count": null,
+      "fragment": "monotone_finite_key_insertions_v0",
+      "initial_edge_fact_count": 1,
+      "initial_node_count": 2,
+      "initial_node_ids": [
+        "n0",
+        "n1"
+      ],
+      "not_claimed": [
+        "weak acyclicity",
+        "arbitrary computed keys",
+        "constructed fresh values",
+        "deletion or replacement effects",
+        "hard CPU/wall-time bound",
+        "polynomial matching cost per firing"
+      ],
+      "possible_edge_fact_count_upper_bound": null,
+      "possible_node_count_upper_bound": null,
+      "progress_steps_upper_bound": null,
+      "reasons": [
+        "rule[0].effects[0]: effect 'add_node' is outside the insertion-only finite-key fragment",
+        "rule[0].effects[1]: edge endpoints must be bound by the match or an earlier mint effect"
+      ],
+      "unique_mint_signatures": null
+    },
+    "replacement_effect": {
+      "accepted": false,
+      "bound_basis": null,
+      "edge_type_count": null,
+      "fragment": "monotone_finite_key_insertions_v0",
+      "initial_edge_fact_count": 1,
+      "initial_node_count": 2,
+      "initial_node_ids": [
+        "n0",
+        "n1"
+      ],
+      "not_claimed": [
+        "weak acyclicity",
+        "arbitrary computed keys",
+        "constructed fresh values",
+        "deletion or replacement effects",
+        "hard CPU/wall-time bound",
+        "polynomial matching cost per firing"
+      ],
+      "possible_edge_fact_count_upper_bound": null,
+      "possible_node_count_upper_bound": null,
+      "progress_steps_upper_bound": null,
+      "reasons": [
+        "rule[0].effects[0]: effect 'set_attr' is outside the insertion-only finite-key fragment"
+      ],
+      "unique_mint_signatures": null
+    },
+    "unsupported_condition_clause": {
+      "accepted": false,
+      "bound_basis": null,
+      "edge_type_count": null,
+      "fragment": "monotone_finite_key_insertions_v0",
+      "initial_edge_fact_count": 1,
+      "initial_node_count": 2,
+      "initial_node_ids": [
+        "n0",
+        "n1"
+      ],
+      "not_claimed": [
+        "weak acyclicity",
+        "arbitrary computed keys",
+        "constructed fresh values",
+        "deletion or replacement effects",
+        "hard CPU/wall-time bound",
+        "polynomial matching cost per firing"
+      ],
+      "possible_edge_fact_count_upper_bound": null,
+      "possible_node_count_upper_bound": null,
+      "progress_steps_upper_bound": null,
+      "reasons": [
+        "rule[0]: unsupported rule fields; only name, match, and effects are admitted"
+      ],
+      "unique_mint_signatures": null
+    }
+  }
+}

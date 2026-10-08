@@ -1,0 +1,89 @@
+{
+  "checks": {
+    "all_locked_hashes_match": true,
+    "capacity_two_accept_then_refuse": true,
+    "four_expected_scenarios": true,
+    "maintenance_extends_expiry_then_releases_content": true,
+    "replacement_targets_low_priority_foreign_task": true,
+    "unmaintained_expires_on_boundary_and_releases_content": true
+  },
+  "input_hash_match": {
+    "amendment": true,
+    "episodic_seed": true,
+    "harness": true,
+    "memory_seed": true,
+    "native_build_manifest": true,
+    "native_extension": true,
+    "preregistration": true,
+    "world_adapter": true
+  },
+  "interpretation": "The authored two-slot capacity/replacement and epoch expiry/maintenance behaviors matched this synthetic protocol.",
+  "lock_run_id": "substrate-working-memory-capacity-ttl-20260925-v2",
+  "raw_sha256": "d1bd3db06bc7591e97172680f485627ccf406db8375ebab4f9321bbfee36d184",
+  "run_id": "substrate-working-memory-capacity-ttl-20260925-v2",
+  "summary": {
+    "capacity": {
+      "active_slots": 2,
+      "boot_ms": 11.391982,
+      "gate_results": [
+        "accepted",
+        "accepted",
+        "refused"
+      ],
+      "rss_peak_kib": 36088,
+      "slot_count": 2,
+      "tick_ms": {
+        "input-0": 0.411803,
+        "input-1": 0.155541,
+        "input-2": 0.153091
+      }
+    },
+    "replacement": {
+      "active_slots": 2,
+      "boot_ms": 11.767675,
+      "gate_results": [
+        "accepted",
+        "accepted",
+        "accepted_with_interference"
+      ],
+      "rss_peak_kib": 35844,
+      "slot_count": 2,
+      "tick_ms": {
+        "input-high-chat": 0.166871,
+        "input-low-chat": 0.420153,
+        "input-project": 0.154981
+      }
+    },
+    "ttl_maintained": {
+      "active_slots": 0,
+      "boot_ms": 11.850245,
+      "gate_results": [
+        "accepted",
+        null
+      ],
+      "rss_peak_kib": 35444,
+      "slot_count": 1,
+      "tick_ms": {
+        "clock-16": 0.137101,
+        "clock-8": 0.149421,
+        "clock-9": 0.122931,
+        "input": 0.415763,
+        "maintain-8": 0.150131
+      }
+    },
+    "ttl_unmaintained": {
+      "active_slots": 0,
+      "boot_ms": 11.599104,
+      "gate_results": [
+        "accepted"
+      ],
+      "rss_peak_kib": 35948,
+      "slot_count": 1,
+      "tick_ms": {
+        "clock-8": 0.141791,
+        "clock-9": 0.12893,
+        "input": 0.399422
+      }
+    }
+  }
+}

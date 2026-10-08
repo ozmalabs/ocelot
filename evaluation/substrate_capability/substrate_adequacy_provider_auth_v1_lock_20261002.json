@@ -1,0 +1,77 @@
+{
+  "active": {
+    "domains/adequacy_probe_selection.py": "b8d75708d4e193f16bd071861af08658a907d020281d3c9106a9582c82e8acd9",
+    "domains/adequacy_provider_auth.py": "3b0c7c36e580944b6bd0212b3002fe6b75f24ecfd5ff170f88f1dbf70c95246c",
+    "domains/ast_to_term.py": "7ef48f9ecb67975428713ae1d2d54100fcdd39fc434dd586803059224f7cdcdb",
+    "domains/code_reading.py": "dd67d2942cf956c6e35f848aed4012c3ac072e9ac91d9e6b166e8ca44be57908",
+    "domains/code_write_growth.py": "691fd96072687baf2b99c6b3c9816cc6bb44805e35bec13f070a30061151761c",
+    "domains/code_writing.py": "4ad3148ca1796ad13f6128b9fd655e8568c7c843cd68bccee54f35cbf4ddabc9",
+    "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+    "domains/independent_adequacy.py": "33191341fdd63d16d0b9cb5203f27666da90b60fccd567ac4633306a9dcab418",
+    "domains/teach.py": "308a5f31d74dabb3ed8b24bd0c967abd5f94596a3ff76d17657330877fae2cfa",
+    "domains_tree": "e29f96afd19d54f1dbe10ead940bdee12091b0c09ef1939bfda06f0a5ae8dd04",
+    "native_binary": "3816b4fb5d5746950b4cc3bf9e904a58e675ce53530727edf44095646dd58a54",
+    "oracle": "b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+    "python_native_tree": "4d4cb4aaaed3c395638b0485fc0d871749150149aded5e81491b42c7fdeb5402",
+    "runners/dsl/python/substrate_rs/__init__.py": "1fed837a6b7e8b35e463d3b8fdca498400c9cc420a016b81279365d6406a4049",
+    "runners/dsl/python/substrate_rs/_native.build.json": "b491d348c59cbf5cd5eee1b3f900a042f31e21665b6e63212edb9ed7f3d60f47",
+    "runners/dsl/src/graph_rules.rs": "b0e9c5bf0bbb4bf278fdab03610fa3f6f82d01ad8ee898ec789982ff41812a50",
+    "runners/dsl/src/py.rs": "d6f922bd406d3f500c10cea11978f47f9612b4ce6b9a348e848a30a305881cba",
+    "runners/dsl/src/substrate.rs": "bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+    "runners/dsl/src/term.rs": "5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+    "rust_tree": "06307beca12566832d3ba7ac157ec6177abb41a87dcf3755d824729d1a55ea0f",
+    "seed_manifest_inventory": "f1098a8168c0663746dffb253eb7230435957b3f8f8aa6d5c8197d224cf946b1",
+    "substrate/boot_all.py": "2bdf46f19228e1d85dbdcf12383116ceeb72aab0efe7ddd0cc6a51d23b45d220",
+    "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+    "substrate/seed_loader.py": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27",
+    "substrate/world_adapter.py": "7aeeb3d418fade3c90dc2d28a64a2685880d0a45d9fd47e4b6c2f6b6dd649023",
+    "substrate_tree": "206c8d6c975998dae706c64fe23be1ae7af659fd749577d978aafa1c30d7fdba"
+  },
+  "design": {
+    "attacker_key_sha256": "43c2f98531595f0c074a20521eb45af7d48dd44327b883c489d583a015fb1707",
+    "cases": {
+      "correct_candidate": {
+        "name": "square",
+        "signed": "truth",
+        "source": "def square(x):\n    return x * x\n"
+      },
+      "forged_unsigned": {
+        "name": "identity",
+        "signed": "none",
+        "source": "def identity(x):\n    return x\n"
+      },
+      "honest_wrong_candidate": {
+        "name": "identity",
+        "signed": "truth",
+        "source": "def identity(x):\n    return x\n"
+      },
+      "trusted_incorrect": {
+        "name": "identity",
+        "signed": "false",
+        "source": "def identity(x):\n    return x\n"
+      }
+    },
+    "known": [
+      {
+        "expected": 0,
+        "inputs": {
+          "x": 0
+        }
+      }
+    ],
+    "probe": {
+      "x": 2
+    },
+    "provider_id": "independent-codewrite-oracle-v1:b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+    "repetitions": 3,
+    "signature": "HMAC-SHA256 over provider/request/probe/input/label/oracle identity",
+    "test_key_sha256": "cdee085de13a3f6f8499687d5e736ceeebb0920ef0a04ee9f55cc00dd600c52c"
+  },
+  "files": {
+    "docs/research/engine_substrate/SUBSTRATE_ADEQUACY_PROVIDER_AUTH_V1_PREREG_20261002.md": "9e2ae4a4d101b9520b063c2705a193896ee3d3561c94cc8c4631a0f4b9a542c1",
+    "evaluation/substrate_capability/independent_codewrite_oracles.py": "b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+    "evaluation/substrate_capability/substrate_adequacy_provider_auth_v1.py": "701f69fdfaaabfed153a72a0042fb1e9d918b88c8fd4a095f194fdb37426b3ed"
+  },
+  "git_head": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+  "schema": "SubstrateAdequacyProviderAuthV1Lock"
+}

@@ -1,0 +1,151 @@
+{
+  "acquisition_cells": {
+    "coupled_quadratic:plus_times_tuple": {
+      "acquisition_wall_ms": {
+        "max": 1.131247,
+        "median": 0.9268505,
+        "p90": 1.0782540999999999
+      },
+      "application_cost": {
+        "1": {
+          "max_us_per_call": null,
+          "median_us_per_call": null,
+          "min_us_per_call": null
+        },
+        "100": {
+          "max_us_per_call": null,
+          "median_us_per_call": null,
+          "min_us_per_call": null
+        },
+        "2": {
+          "max_us_per_call": null,
+          "median_us_per_call": null,
+          "min_us_per_call": null
+        },
+        "5": {
+          "max_us_per_call": null,
+          "median_us_per_call": null,
+          "min_us_per_call": null
+        }
+      },
+      "canonical_term_repeat_count": 0,
+      "exact_heldout_transfer": 0,
+      "fit_but_failed_transfer": 0,
+      "found": 0,
+      "halt_reasons": {
+        "max_size": 10
+      },
+      "n": 10,
+      "not_found": 10,
+      "peak_process_rss_bytes": 32612352,
+      "tested_candidates_median": 305.0
+    },
+    "coupled_quadratic:plus_tuple": {
+      "acquisition_wall_ms": {
+        "max": 0.370922,
+        "median": 0.304137,
+        "p90": 0.347432
+      },
+      "application_cost": {
+        "1": {
+          "max_us_per_call": null,
+          "median_us_per_call": null,
+          "min_us_per_call": null
+        },
+        "100": {
+          "max_us_per_call": null,
+          "median_us_per_call": null,
+          "min_us_per_call": null
+        },
+        "2": {
+          "max_us_per_call": null,
+          "median_us_per_call": null,
+          "min_us_per_call": null
+        },
+        "5": {
+          "max_us_per_call": null,
+          "median_us_per_call": null,
+          "min_us_per_call": null
+        }
+      },
+      "canonical_term_repeat_count": 0,
+      "exact_heldout_transfer": 0,
+      "fit_but_failed_transfer": 0,
+      "found": 0,
+      "halt_reasons": {
+        "max_size": 10
+      },
+      "n": 10,
+      "not_found": 10,
+      "peak_process_rss_bytes": 32612352,
+      "tested_candidates_median": 84.0
+    },
+    "linear_control:plus_tuple": {
+      "acquisition_wall_ms": {
+        "max": 0.293252,
+        "median": 0.272526,
+        "p90": 0.29086700000000004
+      },
+      "application_cost": {
+        "1": {
+          "max_us_per_call": 14.54,
+          "median_us_per_call": 12.915,
+          "min_us_per_call": 9.16
+        },
+        "100": {
+          "max_us_per_call": 9.48595,
+          "median_us_per_call": 8.984705,
+          "min_us_per_call": 5.24883
+        },
+        "2": {
+          "max_us_per_call": 11.27,
+          "median_us_per_call": 10.1975,
+          "min_us_per_call": 6.255
+        },
+        "5": {
+          "max_us_per_call": 10.292200000000001,
+          "median_us_per_call": 9.420000000000002,
+          "min_us_per_call": 5.276
+        }
+      },
+      "canonical_term_repeat_count": 1,
+      "exact_heldout_transfer": 10,
+      "fit_but_failed_transfer": 0,
+      "found": 10,
+      "halt_reasons": {
+        "solved": 10
+      },
+      "n": 10,
+      "not_found": 0,
+      "peak_process_rss_bytes": 32612352,
+      "tested_candidates_median": 71.0
+    }
+  },
+  "checks": {
+    "capture_and_current_sources_match_lock": true,
+    "complete_unique_30_acquisition_matrix": true,
+    "every_acquired_program_independently_rechecked": true,
+    "linear_positive_control_acquired_and_transfers": true,
+    "loaded_native_hash_matches_lock": true,
+    "locked_task_tables_match_independent_targets": true,
+    "one_header_and_footer": true,
+    "source_native_stable_during_run": true,
+    "worker_fields_and_candidate_accounting_valid": true
+  },
+  "claim_boundary": "Synthetic fixed-size integer maps acquired as native SynthEnumerate Terms and tested on held-out pairs. This measures bounded executable-program induction and reuse; comparison to GenInfer v1.5 is cross-path and descriptive, not an integrated mint/adoption result or natural-task prevalence claim.",
+  "errors": [],
+  "heldout_errors": [],
+  "integrity_pass": true,
+  "limitations": [
+    "One coupled quadratic map and one linear positive control; no task-distribution sampling.",
+    "Candidate caps bound search work; refusal at the cap is not evidence of non-representability.",
+    "Held-out outcomes are deterministic and repeated runs are not independent statistical samples.",
+    "Application cost includes the native Python binding and validation loop; it is not isolated Rust instruction time."
+  ],
+  "passed_checks": 9,
+  "run_id": "synthenumerate_coupled_quadratic_v1_20261005",
+  "run_process_cpu_seconds": 0.07380278,
+  "run_wall_seconds": 0.073866765,
+  "total_checks": 9,
+  "worker_count": 30
+}
