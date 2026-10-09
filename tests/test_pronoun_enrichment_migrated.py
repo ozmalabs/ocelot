@@ -94,11 +94,14 @@ def test_unsafe_shadow_referent_stays_unresolved():
     Concept match and no deictic match, the rule must NOT use it -- honest
     abstention, matching the old behaviour exactly (no Concept minted here)."""
     a = _fresh(shadow_read=True)
-    # No Concept named "saturn" this time -- the safety gate must decline.
-    reply = a.converse("Saturn has rings. What is it made of?", speech_act="question")
+    # No Concept named "zorblat" -- the safety gate must decline. (Since the
+    # tranche-15 lexical qualia index, a word WordNet knows -- "saturn" --
+    # becomes a held word with qualia when it is first heard, so the unsafe
+    # case needs a token with no sense: it stays unheld.)
+    reply = a.converse("Zorblat has rings. What is it made of?", speech_act="question")
     mid = a._last_turn_inbound
     attrs = a.s.node(mid)["attrs"]
-    assert attrs.get("shadow_referent") == "saturn", "the shadow read itself still resolves it"
+    assert attrs.get("shadow_referent") == "zorblat", "the shadow read itself still resolves it"
     assert attrs.get("pronoun_referent_source") is None, (
         "unsafe (no Concept/deictic match) referent must not be used")
     assert not any(g.get("source") == "pronoun_shadow_enrichment" for g in _goals(a))

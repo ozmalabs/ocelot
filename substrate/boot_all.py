@@ -2205,6 +2205,16 @@ def load_all_seeds(agent, seed_dir=None, skip=(), *, seed_ids=None,
         except Exception as e:
             rep["curriculum_study_dispatch_failed"] = f"{type(e).__name__}: {e}"
 
+    # LEXICAL QUALIA INDEX — every held word links to one or more qualia. The
+    # Quale nodes and their has_quale DAG load as native seed data
+    # (seeds/lexical_qualia.json); this mechanical, idempotent pass installs the
+    # persisted word -> sense links onto held Concepts via the Concept.name
+    # index (domains/lexical_qualia.py). No decision: the table is the seed's.
+    try:
+        from domains import lexical_qualia as _lq
+        rep["lexical_qualia"] = _lq.install_word_links(agent)
+    except Exception as e:
+        rep["lexical_qualia_failed"] = f"{type(e).__name__}: {e}"
     # GROUNDING-REACHABILITY SUBSTRATE — mint `grounded_in` edges from the
     # grounding signals that already exist (perception ingestion, a real
     # teacher_hook exchange, a judged Experiment outcome, a live vision-world

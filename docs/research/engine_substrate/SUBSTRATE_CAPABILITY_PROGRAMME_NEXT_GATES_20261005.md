@@ -361,3 +361,14 @@ See the [results](RECURSIVE_SELF_IMPROVEMENT_TRANCHE14_RESULTS_20261009.md).
 - **Regression:** 0 new failures.
 
 Next: a supply of natural concerns; protecting the agent's own pipeline rules from all variation families.
+
+## 2026-10-09 recursive self-improvement tranche 15
+
+See the [results](RECURSIVE_SELF_IMPROVEMENT_TRANCHE15_RESULTS_20261009.md).
+
+- **Native, persisted lexical qualia index.** 20,571 `Quale` nodes form a `has_quale` DAG, and every one of the 5,109 held words links to at least one quale. New words become held with qualia when WordNet gives them a sense.
+- **Steering matches by qualia** (`conversation_steering` v2.0.0). For example, "ordering" names an "alphabetise" concern.
+- **Regression:** 0 attributable failures across 344 files, after 1 test-premise update.
+- **Open:** the conversation profile's RSS went from 150 to 322 MB (index plus WordNet).
+
+Next: bring the index back inside the RSS envelope, and ground the identity-only words.

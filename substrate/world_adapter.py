@@ -1933,7 +1933,32 @@ class WorldAdapter:
         # that inspect the held inventory read their owning graph structures
         # directly instead of requiring a turn-time edge to every Concept.
         self._backfill_knows_concept_for_message(mid)
+        # SELF-CONCERN QUALIA (tranche 15): a filed SelfConcern's `content` is
+        # read the same way a turn is -- tokenised into Mentions the native
+        # intent rules resolve to held Concepts -- so a concern carries the
+        # same quale index as the words that name it. Mechanical, once per
+        # concern (a concern with mentions is skipped).
+        self._tokenise_self_concerns()
         return mid
+
+    def _tokenise_self_concerns(self):
+        try:
+            concerns = list(self.s.nodes("SelfConcern"))
+        except Exception:  # noqa: BLE001 -- type absent on a bare graph
+            return
+        for sc in concerns:
+            if not self.s.has_node(sc):
+                continue
+            try:
+                if list(self.inner.neighbours(sc, "has_mention")):
+                    continue
+            except Exception:  # noqa: BLE001
+                continue
+            content = self.s.node(sc)["attrs"].get("content")
+            if not isinstance(content, str) or not content.strip():
+                continue
+            self._tokenise_mentions(sc, content)
+            self._backfill_knows_concept_for_message(sc)
 
     def _channel(self):
         """The single conversation Channel the agent participates in (as
@@ -2580,6 +2605,19 @@ class WorldAdapter:
                     node for node in self.s.nodes("Concept")
                     if self.s.node(node)["attrs"].get("name") == text
                 ]
+            if not candidates:
+                # LEXICAL QUALIA (tranche 15): a word the agent does not hold
+                # yet becomes a held word when WordNet (external data, I/O
+                # boundary) gives it a sense or the held ClosedClass data gives
+                # it a role -- minted with its has_quale links, so every held
+                # word carries qualia. A token with neither stays unheld.
+                try:
+                    from domains import lexical_qualia as _lq
+                    minted = _lq.ground_word(self, text)
+                except Exception:  # noqa: BLE001 -- grounding never breaks a turn
+                    minted = None
+                if minted is not None:
+                    candidates = [minted]
             for concept in candidates:
                 if concept not in known:
                     self.inner.add_edge_unchecked(
