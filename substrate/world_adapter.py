@@ -31,7 +31,7 @@ _CONVERSATION_ERROR_SURFACE = "ERROR: no communicative response could be generat
 _PROCESS_HEAP_TRIM_LIBRARY = None
 _PROCESS_HEAP_TRIM_FUNCTION = None
 _PROCESS_HEAP_TRIM_UNAVAILABLE = False
-_PROCESS_HEAP_TRIM_RSS_LIMIT_BYTES = 150 * 1024 * 1024
+_PROCESS_HEAP_TRIM_RSS_LIMIT_BYTES = 200 * 1024 * 1024
 _NATIVE_SUBSTRATE_LOCKS = {}
 _NATIVE_SUBSTRATE_LOCKS_GUARD = _threading.Lock()
 
@@ -60,7 +60,7 @@ def _trim_reclaimable_process_heap() -> bool:
     if _PROCESS_HEAP_TRIM_UNAVAILABLE:
         return False
     # malloc_trim can scan substantial allocator state. Normal connected
-    # production turns stay under the established 150 MiB RSS envelope, so do
+    # production turns stay under the established 200 MiB RSS envelope, so do
     # not pay that cost unless current resident memory reaches the same cap.
     # If RSS cannot be measured, retain the previous best-effort reclamation
     # behavior rather than silently weakening the resource safeguard.

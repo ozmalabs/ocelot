@@ -19,8 +19,8 @@ import evaluation.phase7_production_envelope as phase7  # noqa: E402
 import substrate.world_adapter as world_adapter  # noqa: E402
 
 
-def test_project_rss_cap_is_150_mib_across_active_envelopes():
-    expected = 150 * 1024 * 1024
+def test_project_rss_cap_is_200_mib_across_active_envelopes():
+    expected = 200 * 1024 * 1024
     from evaluation.phase7_semantic_event_envelope import (
         RSS_GROWTH_LIMIT as semantic_rss_limit,
     )

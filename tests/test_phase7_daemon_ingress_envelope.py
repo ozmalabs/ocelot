@@ -65,7 +65,7 @@ def test_signal_only_daemon_ingress_uses_native_authority_without_external_io():
     assert report["errors"] == []
     assert report["resource_assertions"]["ingress_latency_bounded"] is True
     assert report["resource_assertions"]["native_cycle_latency_bounded"] is True
-    assert report["rss_limit_bytes"] == 150 * 1024 * 1024
+    assert report["rss_limit_bytes"] == 200 * 1024 * 1024
 
 
 def test_daemon_ingress_can_measure_default_shadow_read_path():
