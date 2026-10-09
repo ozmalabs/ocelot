@@ -444,6 +444,13 @@ def test_rule_literal_adoption_vetoed_on_non_skippable_provenance(light_agent):
 
 def test_knob_edit_pick_and_compose_unaffected(agent):
     a = agent
+    # Fixed-step path pinned: since variation_ops v1.15.0 (tranche 12) the
+    # default is step_mode="grain", which abstains on an agent that has
+    # observed no gated-signal values (no frame to step on).
+    rf._ensure_seed_chain(a.s, a.inner, a.agent, ("variation_ops",))
+    for _n in a.s.nodes("VariationOp"):
+        if a.s.node(_n)["attrs"].get("name") == "knob_edit":
+            a.s.set_attr(_n, "step_mode", "fixed")
     sc = a.s.add_node("SelfConcern", {
         "status": "noted", "source": "explicit_report", "kind": "reported",
         "content": "your reading reform swallowed threshold is wrong"})

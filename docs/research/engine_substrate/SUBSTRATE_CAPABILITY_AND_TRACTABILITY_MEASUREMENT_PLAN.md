@@ -1,3 +1,10 @@
+**Recursive self-improvement tranche 12 (2026-10-09):** ([results](RECURSIVE_SELF_IMPROVEMENT_TRANCHE12_RESULTS_20261009.md))
+
+- **Two preregistered promotions passed and are now defaults:**
+  - grain-quantised knob steps, with an exact grain-end step: 5/5 against 1/5 across three corpora;
+  - unscored-route exploration for instruction gaps: zero-overlap verbs 6/6 against 0/6, with no cost on scored verbs.
+- **Regression.** 0 attributable failures across 221 files.
+
 **Recursive self-improvement tranche 11 (2026-10-08):** ([results](RECURSIVE_SELF_IMPROVEMENT_TRANCHE11_RESULTS_20261008.md))
 
 - **Healthy boot.** Files read directly by domain modules moved to `domain_data/`, and the Qwen3 harvest fragments moved out of `seeds/generated/`. Boot: 730/730 seeds, 0 anomalies, `healthy`.
