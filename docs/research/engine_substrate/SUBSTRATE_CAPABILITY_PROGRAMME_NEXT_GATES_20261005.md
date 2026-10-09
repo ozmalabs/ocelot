@@ -372,3 +372,11 @@ See the [results](RECURSIVE_SELF_IMPROVEMENT_TRANCHE15_RESULTS_20261009.md).
 - **Open:** the conversation profile's RSS went from 150 to 322 MB (index plus WordNet).
 
 Next: bring the index back inside the RSS envelope, and ground the identity-only words.
+
+## 2026-10-10 recursive self-improvement tranche 16
+
+See the [results](RECURSIVE_SELF_IMPROVEMENT_TRANCHE16_RESULTS_20261010.md).
+
+- **Persisted WordNet sense table** (sqlite, 18.8 MB). It reproduces NLTK's `synsets` exactly, with 0 mismatches over 5,124 probes, and replaces in-process NLTK for qualia grounding.
+- **Conversation-profile RSS: 322 → 167 MB.** Ingress is 18 ms. The index is still 17 MB over the 150 MB envelope; closing that needs a decision (lazy activation, a revised envelope, or engine per-node cost).
+- **Regression:** 0 new failures across 344 files.

@@ -1,3 +1,9 @@
+**Recursive self-improvement tranche 16 (2026-10-10):** ([results](RECURSIVE_SELF_IMPROVEMENT_TRANCHE16_RESULTS_20261010.md))
+
+- **Qualia grounding uses a persisted, exact WordNet sense table instead of in-process NLTK.**
+- **Conversation-profile RSS: 322 → 167 MB.** The remaining 17 MB over the 150 MB envelope is the native cost of 20,571 Quale nodes.
+- **Regression.** 0 new failures.
+
 **Recursive self-improvement tranche 15 (2026-10-09):** ([results](RECURSIVE_SELF_IMPROVEMENT_TRANCHE15_RESULTS_20261009.md))
 
 - **Every held word now links to one or more native, persisted qualia** (a conceptual index of 20,571 Quale nodes in a `has_quale` DAG).
