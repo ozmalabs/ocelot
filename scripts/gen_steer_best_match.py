@@ -23,8 +23,8 @@ from pathlib import Path
 
 P = Path(__file__).resolve().parents[1] / "seeds/conversation_steering.json"
 d = json.loads(P.read_text())
-if d["version"] == "1.2.0":
-    print("already applied"); raise SystemExit(0)
+if tuple(map(int, d["version"].split("."))) >= (1, 2, 0):
+    print("already applied (superseded by gen_steer_qualia_match.py from v2.0.0)", d["version"]); raise SystemExit(0)
 rule = next(r for r in d["rules"] if r["name"] == "steer_promote_concern")
 items = rule["where"]["items"]
 idx = next(i for i, it in enumerate(items)

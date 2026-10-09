@@ -1,3 +1,10 @@
+**Recursive self-improvement tranche 15 (2026-10-09):** ([results](RECURSIVE_SELF_IMPROVEMENT_TRANCHE15_RESULTS_20261009.md))
+
+- **Every held word now links to one or more native, persisted qualia** (a conceptual index of 20,571 Quale nodes in a `has_quale` DAG).
+- **Steering matches a turn to a filed concern by shared qualia, not words.**
+- **Regression.** 0 attributable failures across 344 files.
+- **Open cost.** Conversation-profile RSS went from 150 to 322 MB.
+
 **Recursive self-improvement tranche 14 (2026-10-09):** ([results](RECURSIVE_SELF_IMPROVEMENT_TRANCHE14_RESULTS_20261009.md))
 
 - **Mixed-kind credit gate v2 passed (preregistered, real verdicts).** With a misordered family that really dispatches, outcome credit cut the misordered kind's replays from 8 to 5 at equal success (4/4), left the other kind unchanged, and made 0 false adoptions.
