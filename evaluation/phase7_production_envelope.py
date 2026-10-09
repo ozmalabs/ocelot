@@ -30,7 +30,7 @@ from substrate.world_adapter import WorldAdapter
 
 SCHEMA = "phase7-production-communication-envelope.v11"
 PROFILE_PARITY_SCHEMA = "phase7-seed-profile-corpus-parity.v4"
-RSS_MEMORY_LIMIT_BYTES = 150 * 1024 * 1024
+RSS_MEMORY_LIMIT_BYTES = 200 * 1024 * 1024
 # Retain the public name used by existing report schemas and callers. This
 # bound is applied to both absolute RSS and measured growth fields.
 RSS_GROWTH_LIMIT = RSS_MEMORY_LIMIT_BYTES

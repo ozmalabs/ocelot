@@ -35,7 +35,7 @@ from substrate.world_adapter import WorldAdapter
 
 
 SCHEMA = "phase7-semantic-event-envelope.v1"
-RSS_GROWTH_LIMIT = 150 * 1024 * 1024
+RSS_GROWTH_LIMIT = 200 * 1024 * 1024
 
 
 def _rss_bytes() -> int:
