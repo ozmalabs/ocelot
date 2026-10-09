@@ -1,6 +1,6 @@
 {
  "id": "conversation_steering",
- "version": "1.1.0",
+ "version": "1.2.0",
  "depends_on": [
   "intent"
  ],
@@ -178,11 +178,11 @@
      "received",
      "m"
     ],
-   [
-    "agent",
-    "has_self_concern",
-    "sc"
-   ]
+    [
+     "agent",
+     "has_self_concern",
+     "sc"
+    ]
    ],
    "index_hints": [
     {
@@ -541,13 +541,10 @@
       }
      },
      {
-      "type": "Eq",
-      "a": {
-       "type": "Var",
-       "name": "sc"
-      },
-      "b": {
-       "type": "Argmin",
+      "type": "Let",
+      "name": "steer_best",
+      "value": {
+       "type": "MaxOver",
        "source": {
         "type": "Filter",
         "source": {
@@ -699,10 +696,440 @@
          ]
         }
        },
-       "var_name": "z",
+       "var_name": "w",
        "value": {
+        "type": "Count",
+        "source": {
+         "type": "FilterList",
+         "source": {
+          "type": "Neighbours",
+          "node": {
+           "type": "Var",
+           "name": "m"
+          },
+          "edge_type": "has_mention"
+         },
+         "var_name": "mn2",
+         "predicate": {
+          "type": "And",
+          "items": [
+           {
+            "type": "Not",
+            "arg": {
+             "type": "In",
+             "member": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "mn2"
+              },
+              "key": "text"
+             },
+             "container": {
+              "type": "Lit",
+              "value": [
+               "the",
+               "a",
+               "an",
+               "on",
+               "to",
+               "of",
+               "in",
+               "at",
+               "for",
+               "and",
+               "or",
+               "it",
+               "its",
+               "this",
+               "that",
+               "my",
+               "your",
+               "you",
+               "yours",
+               "me",
+               "we",
+               "us",
+               "is",
+               "are",
+               "was",
+               "be",
+               "do",
+               "does",
+               "did",
+               "have",
+               "has",
+               "had",
+               "please",
+               "not",
+               "no",
+               "so",
+               "up",
+               "about",
+               "with",
+               "gap",
+               "gaps",
+               "concern",
+               "concerns",
+               "limitation",
+               "limitations",
+               "weakness",
+               "weaknesses",
+               "shortcoming",
+               "shortcomings",
+               "promote",
+               "pursue",
+               "prioritise",
+               "prioritize",
+               "work",
+               "working",
+               "focus",
+               "drop",
+               "retire",
+               "stop",
+               "abandon",
+               "dismiss"
+              ]
+             }
+            }
+           },
+           {
+            "type": "Gte",
+            "a": {
+             "type": "StringIndexOf",
+             "haystack": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "w"
+              },
+              "key": "content"
+             },
+             "needle": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "mn2"
+              },
+              "key": "text"
+             }
+            },
+            "b": {
+             "type": "Lit",
+             "value": 0
+            }
+           }
+          ]
+         }
+        }
+       },
+       "default": {
+        "type": "Lit",
+        "value": 0
+       }
+      },
+      "body": {
+       "type": "Eq",
+       "a": {
         "type": "Var",
-        "name": "z"
+        "name": "sc"
+       },
+       "b": {
+        "type": "Argmin",
+        "source": {
+         "type": "Filter",
+         "source": {
+          "type": "NodesOfType",
+          "node_type": "SelfConcern"
+         },
+         "var_name": "y",
+         "predicate": {
+          "type": "And",
+          "items": [
+           {
+            "type": "And",
+            "items": [
+             {
+              "type": "Eq",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "y"
+               },
+               "key": "status"
+              },
+              "b": {
+               "type": "Lit",
+               "value": "noted"
+              }
+             },
+             {
+              "type": "Exists",
+              "source": {
+               "type": "Neighbours",
+               "node": {
+                "type": "Var",
+                "name": "m"
+               },
+               "edge_type": "has_mention"
+              },
+              "var_name": "mn2",
+              "predicate": {
+               "type": "And",
+               "items": [
+                {
+                 "type": "Not",
+                 "arg": {
+                  "type": "In",
+                  "member": {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "mn2"
+                   },
+                   "key": "text"
+                  },
+                  "container": {
+                   "type": "Lit",
+                   "value": [
+                    "the",
+                    "a",
+                    "an",
+                    "on",
+                    "to",
+                    "of",
+                    "in",
+                    "at",
+                    "for",
+                    "and",
+                    "or",
+                    "it",
+                    "its",
+                    "this",
+                    "that",
+                    "my",
+                    "your",
+                    "you",
+                    "yours",
+                    "me",
+                    "we",
+                    "us",
+                    "is",
+                    "are",
+                    "was",
+                    "be",
+                    "do",
+                    "does",
+                    "did",
+                    "have",
+                    "has",
+                    "had",
+                    "please",
+                    "not",
+                    "no",
+                    "so",
+                    "up",
+                    "about",
+                    "with",
+                    "gap",
+                    "gaps",
+                    "concern",
+                    "concerns",
+                    "limitation",
+                    "limitations",
+                    "weakness",
+                    "weaknesses",
+                    "shortcoming",
+                    "shortcomings",
+                    "promote",
+                    "pursue",
+                    "prioritise",
+                    "prioritize",
+                    "work",
+                    "working",
+                    "focus",
+                    "drop",
+                    "retire",
+                    "stop",
+                    "abandon",
+                    "dismiss"
+                   ]
+                  }
+                 }
+                },
+                {
+                 "type": "Gte",
+                 "a": {
+                  "type": "StringIndexOf",
+                  "haystack": {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "y"
+                   },
+                   "key": "content"
+                  },
+                  "needle": {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "mn2"
+                   },
+                   "key": "text"
+                  }
+                 },
+                 "b": {
+                  "type": "Lit",
+                  "value": 0
+                 }
+                }
+               ]
+              }
+             }
+            ]
+           },
+           {
+            "type": "Eq",
+            "a": {
+             "type": "Count",
+             "source": {
+              "type": "FilterList",
+              "source": {
+               "type": "Neighbours",
+               "node": {
+                "type": "Var",
+                "name": "m"
+               },
+               "edge_type": "has_mention"
+              },
+              "var_name": "mn2",
+              "predicate": {
+               "type": "And",
+               "items": [
+                {
+                 "type": "Not",
+                 "arg": {
+                  "type": "In",
+                  "member": {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "mn2"
+                   },
+                   "key": "text"
+                  },
+                  "container": {
+                   "type": "Lit",
+                   "value": [
+                    "the",
+                    "a",
+                    "an",
+                    "on",
+                    "to",
+                    "of",
+                    "in",
+                    "at",
+                    "for",
+                    "and",
+                    "or",
+                    "it",
+                    "its",
+                    "this",
+                    "that",
+                    "my",
+                    "your",
+                    "you",
+                    "yours",
+                    "me",
+                    "we",
+                    "us",
+                    "is",
+                    "are",
+                    "was",
+                    "be",
+                    "do",
+                    "does",
+                    "did",
+                    "have",
+                    "has",
+                    "had",
+                    "please",
+                    "not",
+                    "no",
+                    "so",
+                    "up",
+                    "about",
+                    "with",
+                    "gap",
+                    "gaps",
+                    "concern",
+                    "concerns",
+                    "limitation",
+                    "limitations",
+                    "weakness",
+                    "weaknesses",
+                    "shortcoming",
+                    "shortcomings",
+                    "promote",
+                    "pursue",
+                    "prioritise",
+                    "prioritize",
+                    "work",
+                    "working",
+                    "focus",
+                    "drop",
+                    "retire",
+                    "stop",
+                    "abandon",
+                    "dismiss"
+                   ]
+                  }
+                 }
+                },
+                {
+                 "type": "Gte",
+                 "a": {
+                  "type": "StringIndexOf",
+                  "haystack": {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "y"
+                   },
+                   "key": "content"
+                  },
+                  "needle": {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "mn2"
+                   },
+                   "key": "text"
+                  }
+                 },
+                 "b": {
+                  "type": "Lit",
+                  "value": 0
+                 }
+                }
+               ]
+              }
+             }
+            },
+            "b": {
+             "type": "Var",
+             "name": "steer_best"
+            }
+           }
+          ]
+         }
+        },
+        "var_name": "z",
+        "value": {
+         "type": "Var",
+         "name": "z"
+        }
        }
       }
      }
@@ -776,7 +1203,8 @@
      "sent",
      "reply"
     ]
-   ]
+   ],
+   "comment": " v1.2.0 (tranche 14): among matching noted concerns, the one with the MOST matched mention words wins (ties: oldest). Fixes a quoted-steer-text comprehension concern stealing the promote."
   },
   {
    "name": "steer_retire_concern",
@@ -786,11 +1214,11 @@
      "received",
      "m"
     ],
-   [
-    "agent",
-    "has_self_concern",
-    "sc"
-   ]
+    [
+     "agent",
+     "has_self_concern",
+     "sc"
+    ]
    ],
    "index_hints": [
     {

@@ -1,3 +1,12 @@
+**Recursive self-improvement tranche 14 (2026-10-09):** ([results](RECURSIVE_SELF_IMPROVEMENT_TRANCHE14_RESULTS_20261009.md))
+
+- **Mixed-kind credit gate v2 passed (preregistered, real verdicts).** With a misordered family that really dispatches, outcome credit cut the misordered kind's replays from 8 to 5 at equal success (4/4), left the other kind unchanged, and made 0 false adoptions.
+- **Fixes:**
+  - steering now promotes the best-matching concern;
+  - the rule-literal family no longer proposes variants it could never adopt.
+- **Census.** Natural conversation still supplies almost no experiment concerns.
+- **Regression.** 0 new failures.
+
 **Recursive self-improvement tranche 13 (2026-10-09):** ([results](RECURSIVE_SELF_IMPROVEMENT_TRANCHE13_RESULTS_20261009.md))
 
 - **Storage.** The child runner's multi-GB variant graph is no longer written.

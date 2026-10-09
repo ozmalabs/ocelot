@@ -714,3 +714,27 @@ def test_knob_signal_types_derived_structurally():
     a.converse("The bag includes a map and a torch.", speech_act="statement")
     rep = _knob_for(a, "you reform list sentences too eagerly, test whether the residual marker threshold is too low")
     assert rep["built"] and rep["attr"] == "reform_residual_threshold" and rep["new_value"] == 3.0
+
+
+# --- TRANCHE 14: rule_literal_edit proposes only adoptable, untried rules ----------
+
+def test_rule_literal_pick_is_adoptable_and_skips_tried_rules(agent):
+    agent.converse("Condense the data.", speech_act="request")
+    agent.converse("Work on the condense data gap.", speech_act="request")
+    jd._steer_tick(agent)
+    jd._concern_tick(agent)          # mints the agent's own runtime author rule (no seed provenance)
+    text = "you reform list sentences too eagerly, test whether the hardcoded residual marker threshold floor is too low"
+    sc = agent.s.add_node("SelfConcern", {"kind": "reported", "status": "noted", "source": "explicit", "content": text})
+    agent.inner.add_edge_unchecked(agent.agent, "has_self_concern", sc)
+    jd.promote_self_concern(agent, str(sc.value))
+    key = f"promoted_self_concern_{sc.value}"
+    first = rf._compose_rule_literal_variant(agent, [key], key)
+    assert first.get("built")
+    name = first.get("rule_name") or first.get("removed_rule")
+    assert not name.startswith("author_experiment_from_residual_")
+    assert rf._rule_denylisted(agent.s, name)[0] is False, "never propose a variant the adoption gate denies"
+    exp = agent.s.add_node("Experiment", {"axis_tag": key, "outcome": "inconclusive", "status": "done"})
+    d = agent.s.add_node("SeedDelta", {"variation_op": "rule_literal_edit", "act_rule_varied": name})
+    agent.inner.add_edge_unchecked(exp, "has_delta", d)
+    second = rf._compose_rule_literal_variant(agent, [key], key)
+    assert not second.get("built") or (second.get("rule_name") or second.get("removed_rule")) != name
