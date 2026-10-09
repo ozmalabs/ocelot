@@ -338,3 +338,14 @@ See the [results](RECURSIVE_SELF_IMPROVEMENT_TRANCHE12_RESULTS_20261009.md).
 - **Regression:** 0 attributable failures. The credit boot default is unchanged.
 
 Next: a mixed-kind credit gate (lab boot), child-runner storage, and structural `grain_signal_types`.
+
+## 2026-10-09 recursive self-improvement tranche 13
+
+See the [results](RECURSIVE_SELF_IMPROVEMENT_TRANCHE13_RESULTS_20261009.md).
+
+- **Child runner** no longer writes the multi-GB variant graph, which nothing read. Run directories drop from GBs to about 109 MB.
+- **Structural grain signal source** (opt-in).
+- **Preregistered mixed-kind credit gate: FAIL** (M1, M2). Credit and no-credit handled the same: instruction 3/4, reported 4/4. Credit did steer later first picks (3/4). The cause is that tranche 11's abstain-close made the misordered prior free, so there was nothing for credit to save.
+- **Regression:** 0 new failures.
+
+Next: a mixed-kind gate with a non-abstaining misordered family; the `alphabetise` residual.

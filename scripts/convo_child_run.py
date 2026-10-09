@@ -147,7 +147,8 @@ Output contract (identical keys to arc_child_run's, read by
     the reasoning text names which baseline (``recorded`` or ``control``)
     the "changed"/"unchanged" verdict was checked against.
   * ``<out>/final_graph.json`` — best-effort ``agent.s.graph_to_dict()`` of
-    the VARIANT agent (the candidate the parent would adopt).
+    the VARIANT agent, written ONLY when the delta sets ``keep_final_graph``
+    or ``OZMA_CHILD_KEEP_GRAPH=1`` (tranche 13: multi-GB, unread).
   * ``<out>/result.json`` — ``{"status": "done"|"failed", "frames", "score",
     "won", "over", "boot_mode", "removed_rules", "error": optional}`` plus
     informational extras (``flagged``, ``flagged_changed``, ``regressions``).
@@ -161,6 +162,7 @@ from __future__ import annotations
 import argparse
 import gc
 import json
+import os
 import sys
 import time
 import traceback
@@ -691,7 +693,15 @@ def main() -> int:
                 trace_fp.close()
             except Exception:
                 pass
-        if agent is not None:
+        # STORAGE (tranche 13): the variant graph is multi-GB per run and no
+        # consumer reads it for the conversation family (adoption re-applies
+        # the delta to the parent). Written only on request: delta
+        # `keep_final_graph` or OZMA_CHILD_KEEP_GRAPH=1.
+        keep_graph = bool(delta.get("keep_final_graph")) if isinstance(delta, dict) else False
+        keep_graph = keep_graph or os.environ.get("OZMA_CHILD_KEEP_GRAPH") == "1"
+        if agent is not None and not keep_graph:
+            result["final_graph_written"] = False
+        if agent is not None and keep_graph:
             try:
                 with open(graph_path, "w") as f:
                     json.dump(agent.s.graph_to_dict(), f)
