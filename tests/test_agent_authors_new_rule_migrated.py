@@ -697,3 +697,20 @@ def test_explore_unscored_is_the_cue_set_edit_default():
     rf._ensure_seed_chain(a.s, a.inner, a.agent, ("variation_ops",))
     at = [a.s.node(n)["attrs"] for n in a.s.nodes("VariationOp") if a.s.node(n)["attrs"].get("name") == "cue_set_edit"][0]
     assert at.get("explore_unscored") == 1
+
+
+# --- TRANCHE 13: structural grain signal source --------------------------------
+
+def test_knob_signal_types_derived_structurally():
+    a = WorldAdapter(seeds=(), shadow_read=True)
+    load_all_seeds(a)
+    a.converse("The kit includes a hammer, a saw and a drill.", speech_act="statement")
+    assert rf._knob_signal_types(a.inner, a.s, "reform_residual_threshold") == ["SentenceParse"]
+    assert rf._knob_signal_types(a.inner, a.s, "no_such_knob") == []
+    for n in a.s.nodes("VariationOp"):
+        if a.s.node(n)["attrs"].get("name") == "knob_edit":
+            a.s.set_attr(n, "grain_signal_source", "structural")
+            a.s.set_attr(n, "grain_signal_types", [])      # no held list: must derive
+    a.converse("The bag includes a map and a torch.", speech_act="statement")
+    rep = _knob_for(a, "you reform list sentences too eagerly, test whether the residual marker threshold is too low")
+    assert rep["built"] and rep["attr"] == "reform_residual_threshold" and rep["new_value"] == 3.0

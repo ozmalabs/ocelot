@@ -3466,6 +3466,72 @@ def _knob_gated_signal(native, knob_attr: str):
     return found[0] if len(found) == 1 else None
 
 
+def _knob_signal_types(native, sub, knob_attr: str):
+    """Tranche 13: derive WHERE a knob's gated signal lives structurally, not
+    from a held list. Find the active rule whose comparison gates a signal on
+    `knob_attr` (as _knob_gated_signal does), take the signal side's Var, find
+    the rule's own match triple that binds that Var, and return the node
+    types of the nodes that triple's edge actually binds in the graph (exact
+    graph read). [] when not derivable -- the caller then falls back to the
+    held `grain_signal_types` override."""
+    flip = {"Lte", "Lt", "Gte", "Gt"}
+
+    def mentions(t):
+        if isinstance(t, dict):
+            if t.get("type") == "Attr" and t.get("key") == knob_attr:
+                return True
+            return any(mentions(v) for v in t.values())
+        if isinstance(t, list):
+            return any(mentions(v) for v in t)
+        return False
+
+    def signal_vars(t, out):
+        if isinstance(t, dict):
+            if t.get("type") in flip and isinstance(t.get("a"), dict) and isinstance(t.get("b"), dict):
+                for side, other in ((t["a"], t["b"]), (t["b"], t["a"])):
+                    nd = side.get("node") if side.get("type") == "Attr" else None
+                    if isinstance(nd, dict) and nd.get("type") == "Var" and mentions(other) and not mentions(side):
+                        out.add(nd.get("name"))
+            for v in t.values():
+                signal_vars(v, out)
+        elif isinstance(t, list):
+            for v in t:
+                signal_vars(v, out)
+
+    try:
+        rules = native.export_rules()
+    except Exception:  # noqa: BLE001
+        return []
+    types = set()
+    for r in rules:
+        if not (isinstance(r, dict) and r.get("active", True)):
+            continue
+        vs = set()
+        signal_vars(r.get("where"), vs)
+        if not vs:
+            continue
+        for trip in r.get("match") or []:
+            if not (isinstance(trip, (list, tuple)) and len(trip) == 3):
+                continue
+            src, edge, tgt = trip
+            if src not in vs and tgt not in vs:
+                continue
+            # the edge's endpoints in the live graph, on the bound side(s).
+            # Exact full scan (a type is admitted at its first node that has
+            # the edge); measured ~5 s on a full boot, so this path is opt-in.
+            for n in list(sub.nodes()) if hasattr(sub, "nodes") else []:
+                try:
+                    ty = sub.node(n)["type"]
+                    if ty in types:
+                        continue
+                    if (src in vs and list(native.neighbours(n, edge))) or \
+                            (tgt in vs and list(native.in_neighbours(n, edge))):
+                        types.add(ty)
+                except Exception:  # noqa: BLE001
+                    continue
+    return sorted(types)
+
+
 def _frame_quantum(values):
     """The observed frame's own quantum: the exact GCD (over rationals, read
     from the floats' exact binary values) of the gaps between distinct
@@ -3687,6 +3753,12 @@ def _compose_knob_variant(agent, keys, tag: str) -> dict[str, Any]:
         cands.sort(key=lambda c: -c[0])
         walls = []
         chosen = None
+        def _sig_types(c_attr):
+            # Tranche 13: structural derivation when grain_signal_source ==
+            # "structural"; otherwise (default) the held grain_signal_types list.
+            if str((op_at or {}).get("grain_signal_source") or "") == "structural":
+                return _knob_signal_types(native0, sub0, c_attr) or list((op_at or {}).get("grain_signal_types") or [])
+            return list((op_at or {}).get("grain_signal_types") or [])
         for _ov, c_node, c_attr, c_type in cands:
             c_old = float(sub0.node(c_node)["attrs"].get(c_attr))
             gs = _knob_gated_signal(native0, c_attr)
@@ -3694,7 +3766,7 @@ def _compose_knob_variant(agent, keys, tag: str) -> dict[str, Any]:
                 walls.append(f"{c_attr}: no unique gating comparison in the active rules"); continue
             g_op, sig = gs
             vals = []
-            for gt in ((op_at or {}).get("grain_signal_types") or []):
+            for gt in _sig_types(c_attr):
                 for n in sub0.nodes(str(gt)):
                     v = sub0.node(n)["attrs"].get(sig)
                     if isinstance(v, (int, float)) and not isinstance(v, bool):
@@ -3713,7 +3785,7 @@ def _compose_knob_variant(agent, keys, tag: str) -> dict[str, Any]:
                 if gs is None:
                     continue
                 g_op, sig = gs
-                vals = [float(sub0.node(n)["attrs"].get(sig)) for gt in ((op_at or {}).get("grain_signal_types") or [])
+                vals = [float(sub0.node(n)["attrs"].get(sig)) for gt in _sig_types(c_attr)
                         for n in sub0.nodes(str(gt))
                         if isinstance(sub0.node(n)["attrs"].get(sig), (int, float))
                         and not isinstance(sub0.node(n)["attrs"].get(sig), bool)]

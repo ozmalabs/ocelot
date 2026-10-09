@@ -1,3 +1,9 @@
+**Recursive self-improvement tranche 13 (2026-10-09):** ([results](RECURSIVE_SELF_IMPROVEMENT_TRANCHE13_RESULTS_20261009.md))
+
+- **Storage.** The child runner's multi-GB variant graph is no longer written.
+- **Mixed-kind credit gate failed its preregistered improvement gates.** Credit and no-credit handled the same: instruction 3/4, reported 4/4, 0 false adoptions. The misordered family now abstains at zero cost, so credit's measured value is ordering (3/4 correct later first picks), not saved replays.
+- **Regression.** 0 new failures.
+
 **Recursive self-improvement tranche 12 (2026-10-09):** ([results](RECURSIVE_SELF_IMPROVEMENT_TRANCHE12_RESULTS_20261009.md))
 
 - **Two preregistered promotions passed and are now defaults:**
