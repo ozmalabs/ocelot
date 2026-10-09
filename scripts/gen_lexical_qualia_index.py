@@ -2,7 +2,7 @@
 """Emit seeds/lexical_qualia.json -- the persisted LEXICAL QUALIA INDEX.
 
 Every held word links to one or more qualia. A quale is a native graph node,
-`Quale{name, dimension, lemma, pos, depth, extent}`, and the index is one
+`Quale{name, dimension, extent}`, and the index is one
 edge type, `has_quale`:
 
   Concept(word) -has_quale-> Quale(sense)          every sense of the word
@@ -17,7 +17,9 @@ that says which dimensions are resolved and how general a shared quale may be
 before it stops discriminating ("entity" is shared by most nouns).
 
 Dimensions:
-  lexical:sense   -- a WordNet synset (the word's senses and their hypernyms)
+  lexical:sense   -- a WordNet synset (the word's senses and their hypernyms),
+                     read from the persisted sense table
+                     domain_data/wordnet_senses.sqlite (domains/wordnet_table)
   closed_class    -- a grammatical role held in domain_data/reading_constructions
                      ClosedClass (determiner, preposition, auxiliary, ...): the
                      quale of a function word is its role, not a WordNet sense
@@ -74,22 +76,19 @@ def closed_class_roles():
 
 
 def build(words):
-    from domains.dict_teacher import _wordnet
-    wn = _wordnet()
+    from domains import wordnet_table as wt
     roles = closed_class_roles()
     qualia = {}            # name -> attrs
     parents = {}           # name -> set(parent names)
     word_q = {}            # word -> [quale names]
 
-    def add_sense(s):
-        nm = s.name()
+    def add_sense(nm):
         if nm in qualia:
             return
-        qualia[nm] = {"name": nm, "dimension": "lexical:sense", "lemma": s.lemmas()[0].name().lower(),
-                      "pos": s.pos(), "depth": int(s.min_depth())}
-        ps = set(s.hypernyms()) | set(s.instance_hypernyms())
-        parents[nm] = {p.name() for p in ps}
-        for p in ps:
+        qualia[nm] = {"name": nm, "dimension": "lexical:sense"}
+        ps = set(wt.hypernyms(nm))
+        parents[nm] = ps
+        for p in sorted(ps):
             add_sense(p)
 
     for w in words:
@@ -97,19 +96,19 @@ def build(words):
             names = []
             for r in sorted(roles[w]):
                 q = "closed_class:" + r
-                qualia.setdefault(q, {"name": q, "dimension": "closed_class", "lemma": r, "pos": "", "depth": 0})
+                qualia.setdefault(q, {"name": q, "dimension": "closed_class"})
                 parents.setdefault(q, set())
                 names.append(q)
             word_q[w] = names
             continue
-        syns = sorted(wn.synsets(w), key=lambda s: s.name())
+        syns = sorted(set(wt.synsets(w)))
         if syns:
-            for s in syns:
-                add_sense(s)
-            word_q[w] = [s.name() for s in syns]
+            for nm in syns:
+                add_sense(nm)
+            word_q[w] = syns
             continue
         q = "identity:" + w
-        qualia[q] = {"name": q, "dimension": "lexical:identity", "lemma": w, "pos": "", "depth": 0}
+        qualia[q] = {"name": q, "dimension": "lexical:identity"}
         parents[q] = set()
         word_q[w] = [q]
 

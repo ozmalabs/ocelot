@@ -112,3 +112,31 @@ def test_generators_are_idempotent():
         out = subprocess.run([sys.executable, os.path.join(ROOT, "scripts", script)],
                              capture_output=True, text=True, cwd=ROOT)
         assert out.returncode == 0 and "already applied" in out.stdout, (script, out.stdout, out.stderr)
+
+
+# --- tranche 16: persisted sense table replaces in-process WordNet -----------------
+
+def test_sense_table_reproduces_wordnet_synsets_exactly():
+    """domains/wordnet_table answers from domain_data/wordnet_senses.sqlite
+    with NLTK's own index and morphy; it must agree with NLTK."""
+    from domains import wordnet_table as wt
+    from domains.dict_teacher import _wordnet
+    wn = _wordnet()
+    for w in ("arranging", "geese", "ran", "better", "data", "alphabetise", "sort", "the", "zorblat"):
+        assert sorted(set(wt.synsets(w))) == sorted({s.name() for s in wn.synsets(w)}), w
+    assert wt.hypernyms("alphabetize.v.01") == ["arrange.v.01"]
+
+
+def test_runtime_grounding_does_not_load_the_wordnet_corpus(monkeypatch):
+    """A word heard for the first time is grounded from the on-disk table: the
+    lexical qualia path never calls the in-process NLTK corpus."""
+    from domains import dict_teacher as dt
+    calls = []
+    real = dt._wordnet
+    monkeypatch.setattr(dt, "_wordnet", lambda *a, **k: calls.append(1) or real(*a, **k))
+    a = WorldAdapter(seeds=())
+    load_all_seeds(a)
+    before = len(calls)
+    c = lq.ground_word(a, "alphabetise")
+    assert c is not None and lq.held_qualia(a, c)
+    assert len(calls) == before, "lexical qualia grounding must not touch NLTK"
