@@ -4133,11 +4133,38 @@ def _compose_rule_literal_variant(agent, keys, tag: str) -> dict[str, Any]:
 
     import json as _json
     _ensure_where_literal_rule_provenance(sub0, native0)
+    # ADOPTABLE-ONLY + TRIED EXCLUSION (tranche 14). (1) A rule the adoption
+    # gate would deny (_rule_denylisted: unknown provenance, or a seed whose
+    # SeedSummary is not skippable) is not proposed -- measured: the pick chose
+    # the agent's OWN runtime-authored `author_experiment_from_residual_*`
+    # rule (from_seed ''), a variant that could never be adopted, so every
+    # replay of it was waste. (2) A rule this concern's own experiments already
+    # judged refuted/inconclusive under this family is not re-proposed (the
+    # knob_edit exclusion's twin; measured: the same literal was re-proposed
+    # 3 times per concern when exclude_inconclusive is off).
+    adoptable_seeds = {sub0.node(n)["attrs"].get("seed_id") for n in sub0.nodes("SeedSummary")
+                       if sub0.node(n)["attrs"].get("skippable") == 1.0}
+    tried_rules = set()
+    for e in sub0.nodes("Experiment"):
+        eat = sub0.node(e)["attrs"]
+        if eat.get("axis_tag") != key or eat.get("outcome") not in ("refuted", "inconclusive"):
+            continue
+        try:
+            for d in native0.neighbours(e, "has_delta"):
+                dat = sub0.node(d)["attrs"]
+                if dat.get("variation_op") == "rule_literal_edit" and dat.get("act_rule_varied"):
+                    tried_rules.add(str(dat.get("act_rule_varied")))
+        except Exception:  # noqa: BLE001
+            pass
     candidate_rows = []   # [(rule_name, rule_json)] -- the pool, gathered once
     best = None   # (overlap, rule_name, rule_json, cand_index, cand_node)
     for n in sub0.nodes("RuleSummary"):
         at = sub0.node(n)["attrs"]
         if at.get("writes_where_literal") != 1.0 or at.get("skippable") != 1.0:
+            continue
+        if not at.get("from_seed") or at.get("from_seed") not in adoptable_seeds:
+            continue
+        if at.get("name") in tried_rules:
             continue
         try:
             rule_json = _json.loads(at.get("rule_json") or "{}")

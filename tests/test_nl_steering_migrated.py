@@ -327,3 +327,25 @@ def test_steering_rules_round_trip_canon_body():
         assert c1, f"{r['name']} must canonicalise"
         assert jd._canon_rule_body(json.loads(c1)) == c1, (
             f"{r['name']} must round-trip byte-identically")
+
+
+def test_steer_promotes_the_best_matching_concern_not_the_oldest():
+    """conversation_steering v1.2.0 (tranche 14): an OLDER concern that shares
+    one word with the steer turn (here a shadow-read divergence concern that
+    quotes an earlier steer phrase) must not steal the promote from the
+    concern the turn actually names."""
+    import jabberwock_daemon as jd
+    a = WorldAdapter(seeds=())
+    load_all_seeds(a)
+    a.converse("Hello.", speech_act="greeting")
+    old = a.s.add_node("SelfConcern", {
+        "kind": "comprehension", "status": "noted", "source": "implicit",
+        "content": "comprehension classified this as 'instruction' but the deep reader heard "
+                   "'statement' (recurring; e.g. \"Work on the condense data gap.\")"})
+    a.inner.add_edge_unchecked(a.agent, "has_self_concern", old)
+    a.converse("Alphabetise the data.", speech_act="request")
+    a.converse("Work on the alphabetise data gap.", speech_act="request")
+    p = jd._steer_tick(a)
+    assert p and p[0].get("ok") and p[0].get("kind") == "instruction"
+    assert "alphabetise" in p[0].get("about", "")
+    assert a.s.node(old)["attrs"].get("status") == "noted"

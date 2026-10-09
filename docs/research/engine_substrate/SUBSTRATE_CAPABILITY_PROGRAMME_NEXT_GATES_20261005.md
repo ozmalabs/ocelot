@@ -349,3 +349,15 @@ See the [results](RECURSIVE_SELF_IMPROVEMENT_TRANCHE13_RESULTS_20261009.md).
 - **Regression:** 0 new failures.
 
 Next: a mixed-kind gate with a non-abstaining misordered family; the `alphabetise` residual.
+
+## 2026-10-09 recursive self-improvement tranche 14
+
+See the [results](RECURSIVE_SELF_IMPROVEMENT_TRANCHE14_RESULTS_20261009.md).
+
+- **Preregistered mixed-kind credit gate v2: PASS on all four gates.** The misordered family now dispatches, and credit cut the reported kind from 8 replays to 5 (4/4 handled either way) with no effect on the instruction kind. This is the first real-verdict evidence that credit saves replays on a mixed stream.
+- **Steering fix** (`conversation_steering` v1.2.0): the best-matching concern is promoted. This fixes the tranche-13 `alphabetise` miss.
+- **`rule_literal_edit`** proposes only adoptable, untried rules. It had been editing the agent's own runtime author rule.
+- **Census v2:** natural conversation still yields 1–2 experiment concerns per 258 turns.
+- **Regression:** 0 new failures.
+
+Next: a supply of natural concerns; protecting the agent's own pipeline rules from all variation families.
