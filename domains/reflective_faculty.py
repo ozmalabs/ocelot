@@ -3466,6 +3466,49 @@ def _knob_gated_signal(native, knob_attr: str):
     return found[0] if len(found) == 1 else None
 
 
+def _frame_quantum(values):
+    """The observed frame's own quantum: the exact GCD (over rationals, read
+    from the floats' exact binary values) of the gaps between distinct
+    observed values. None when fewer than 2 distinct values exist."""
+    from fractions import Fraction
+    from math import gcd
+    vals = sorted({Fraction(v) for v in values})
+    if len(vals) < 2:
+        return None
+    num, den = 0, 1
+    for a, b in zip(vals, vals[1:]):
+        d = b - a
+        num, den = gcd(num * d.denominator, d.numerator * den), den * d.denominator
+        g = gcd(num, den)
+        num, den = num // g, den // g
+    return Fraction(num, den)
+
+
+def _grain_end_step(values, op: str, t: float, direction: str):
+    """Tranche 12 GRAIN-END step: when no interior separating step exists,
+    move the gate ONE QUANTUM past the end of the observed frame (still on
+    the frame's own lattice -- exact, no tolerance): decrease_fires -> fire on
+    none of the observed values; increase_fires -> fire on all of them. Only
+    ever offered as a last resort by the builder, after every candidate
+    knob's interior step has been refused."""
+    q = _frame_quantum(values)
+    if q is None:
+        return None, "fewer than 2 distinct observed values -- no quantum to step by"
+    vals = sorted(set(values))
+    if op not in ("Gte", "Gt"):
+        return None, f"gate operator {op!r} is not a lower bound"
+    fires = (lambda v, th: v >= th) if op == "Gte" else (lambda v, th: v > th)
+    if direction == "decrease_fires":
+        if not any(fires(v, t) for v in vals):
+            return None, "nothing currently fires -- cannot fire less"
+        new_t = float(max(vals) + q) if op == "Gte" else float(max(vals))
+    else:
+        if all(fires(v, t) for v in vals):
+            return None, "everything already fires -- cannot fire more"
+        new_t = float(min(vals)) if op == "Gte" else float(min(vals) - q)
+    return new_t, f"grain-end: observed {vals}, quantum {q}; {op} gate {t} -> {new_t} ({direction})"
+
+
 def _grain_step(values, op: str, t: float, direction: str):
     """The next threshold ON THE SIGNAL'S OWN GRAIN (the distinct values the
     gated signal actually took on this agent), never a fixed epsilon:
@@ -3661,6 +3704,25 @@ def _compose_knob_variant(agent, keys, tag: str) -> dict[str, Any]:
                 walls.append(f"{c_attr} (signal {sig!r}): {why}"); continue
             chosen = (c_node, c_attr, c_type, c_old, g_new, why)
             break
+        if chosen is None and int((op_at or {}).get("grain_end") or 0) == 1:
+            # LAST RESORT (tranche 12, opt-in grain_end==1): no knob has an
+            # interior separating step; offer the first candidate whose frame
+            # admits a grain-end step (one quantum past the observed frame).
+            for _ov, c_node, c_attr, c_type in cands:
+                gs = _knob_gated_signal(native0, c_attr)
+                if gs is None:
+                    continue
+                g_op, sig = gs
+                vals = [float(sub0.node(n)["attrs"].get(sig)) for gt in ((op_at or {}).get("grain_signal_types") or [])
+                        for n in sub0.nodes(str(gt))
+                        if isinstance(sub0.node(n)["attrs"].get(sig), (int, float))
+                        and not isinstance(sub0.node(n)["attrs"].get(sig), bool)]
+                c_old = float(sub0.node(c_node)["attrs"].get(c_attr))
+                g_new, why = _grain_end_step(vals, g_op, c_old, direction)
+                if g_new is None:
+                    walls.append(f"{c_attr} grain-end: {why}"); continue
+                chosen = (c_node, c_attr, c_type, c_old, g_new, why)
+                break
         if chosen is None:
             return {"built": False, "tried": sorted(tried), "wall": "step_mode=grain: " + "; ".join(walls)}
         target, attr_key, ntype, old_value, new_value, grain_note = chosen

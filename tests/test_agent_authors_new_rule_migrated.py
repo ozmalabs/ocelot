@@ -302,6 +302,12 @@ def _wire_concern(a, key, kind, verb):
 
 def test_cue_variant_abstains_honestly(light_agent):
     a = light_agent
+    # Cases 1-3 pin the honest abstain with explore_unscored OFF (it is the
+    # default since variation_ops v1.16.0, tranche 12; case 3b covers ON).
+    rf._ensure_seed_chain(a.s, a.inner, a.agent, ("variation_ops",))
+    for n in a.s.nodes("VariationOp"):
+        if a.s.node(n)["attrs"].get("name") == "cue_set_edit":
+            a.s.set_attr(n, "explore_unscored", 0)
     # route-carrying Concepts the pick scores against (the pool routes)
     for nm, rt in (("read", "comprehend_text"), ("run", "world_action"),
                    ("summarise", "self_report")):
@@ -317,10 +323,18 @@ def test_cue_variant_abstains_honestly(light_agent):
     r = rf._compose_cue_variant(a, ["k_routed"], "t2")
     assert r["built"] is False and "abstained" in r["wall"]
 
-    # 3. zero character overlap -> abstain, never a random route
+    # 3. zero bigram overlap -> abstain when explore_unscored is off; since
+    # variation_ops v1.16.0 (tranche 12, preregistered promotion) the default
+    # proposes the best UNTRIED pooled route instead -- the replay judges it.
     _wire_concern(a, "k_zero", "instruction", "zzz")
     r = rf._compose_cue_variant(a, ["k_zero"], "t3")
     assert r["built"] is False and "abstained" in r["wall"]
+    for n in a.s.nodes("VariationOp"):
+        if a.s.node(n)["attrs"].get("name") == "cue_set_edit":
+            a.s.set_attr(n, "explore_unscored", 1)
+    _wire_concern(a, "k_zero2", "instruction", "zzzz")
+    r = rf._compose_cue_variant(a, ["k_zero2"], "t3b")
+    assert r["built"] is True and r["route"] in ("world_action", "comprehend_text")
 
     # 4. and the genuine case builds a Concept whose route is pooled.
     # RULE_SIGNATURE_PRODUCTION_WIRING v1.4.0: cue_route_pick's own scoring
@@ -479,6 +493,7 @@ def test_replay_head_routes_reported_concern_to_experiment(light_agent):
 def test_knob_builder_excludes_knobs_already_tried(agent):
     """The knob_edit builder skips a knob this concern's own experiments
     already judged inconclusive/refuted, so a retry moves a different knob."""
+    _fixed_step(agent)
     text = "you reform the topic too eagerly, test whether the threshold is too low"
     sc = agent.s.add_node("SelfConcern", {"kind": "reported", "status": "noted", "source": "explicit", "content": text})
     agent.inner.add_edge_unchecked(agent.agent, "has_self_concern", sc)
@@ -508,6 +523,15 @@ def test_shadow_read_runs_on_a_chat_turn():
 
 # --- TRANCHE 8: knob_edit POLARITY ----------------------------------------------
 
+def _fixed_step(agent):
+    """Pin the pre-tranche-12 fixed knob_step path (grain is the default since
+    variation_ops v1.15.0; these tests cover the fixed step)."""
+    rf._ensure_seed_chain(agent.s, agent.inner, agent.agent, ("variation_ops",))
+    for n in agent.s.nodes("VariationOp"):
+        if agent.s.node(n)["attrs"].get("name") == "knob_edit":
+            agent.s.set_attr(n, "step_mode", "fixed")
+
+
 def _knob_for(agent, text):
     sc = agent.s.add_node("SelfConcern", {"kind": "reported", "status": "noted", "source": "explicit", "content": text})
     agent.inner.add_edge_unchecked(agent.agent, "has_self_concern", sc)
@@ -517,6 +541,7 @@ def _knob_for(agent, text):
 
 
 def test_knob_direction_follows_concern_polarity(agent):
+    _fixed_step(agent)
     eager = _knob_for(agent, "you reform the topic too eagerly, test whether the threshold is too low")
     rare = _knob_for(agent, "you reform the topic too rarely, test whether the threshold is too high")
     assert eager["built"] and rare["built"]
@@ -627,7 +652,13 @@ def test_stale_retry_mark_is_cleared_when_a_family_judge_supports(agent):
 def test_abstained_cue_variant_is_never_dispatched(agent):
     """'sort' shares no bigram with any pooled route Concept, so cue_route_pick
     abstains; the delta is stamped variant_abstained and the experiment is
-    closed 'abstained' by a graph rule -- never left 'requested' for a child."""
+    closed 'abstained' by a graph rule -- never left 'requested' for a child.
+    (explore_unscored is the default since variation_ops v1.16.0; turned off
+    here to reproduce the abstain.)"""
+    rf._ensure_seed_chain(agent.s, agent.inner, agent.agent, ("variation_ops",))
+    for n in agent.s.nodes("VariationOp"):
+        if agent.s.node(n)["attrs"].get("name") == "cue_set_edit":
+            agent.s.set_attr(n, "explore_unscored", 0)
     agent.converse("Please sort the notes.", speech_act="request")
     agent.converse("Work on the sort notes gap.", speech_act="request")
     p = jd._steer_tick(agent)
@@ -640,3 +671,29 @@ def test_abstained_cue_variant_is_never_dispatched(agent):
     d = next(iter(agent.inner.neighbours(e, "has_delta")))
     assert agent.s.node(d)["attrs"].get("variant_abstained") == 1.0
     assert agent.s.node(e)["attrs"].get("outcome") == "abstained"
+
+
+# --- TRANCHE 12: grain-end step on the frame's own quantum ----------------------
+
+def test_frame_quantum_and_grain_end_are_exact():
+    from fractions import Fraction
+    assert rf._frame_quantum([0.0, 0.5, 0.5]) == Fraction(1, 2)
+    assert rf._frame_quantum([0.0, 2.0, 3.0, 5.0]) == Fraction(1)
+    assert rf._frame_quantum([1.0]) is None
+    assert rf._grain_end_step([0.0, 0.5], "Gte", 0.5, "decrease_fires")[0] == 1.0   # fires on none observed
+    assert rf._grain_end_step([0.0, 0.5], "Gte", 0.5, "increase_fires")[0] == 0.0   # fires on all observed
+    assert rf._grain_end_step([0.0, 0.5], "Gte", 1.0, "decrease_fires")[0] is None  # already fires on none
+
+
+def test_grain_is_the_knob_edit_default():
+    a = WorldAdapter(seeds=())
+    rf._ensure_seed_chain(a.s, a.inner, a.agent, ("variation_ops",))
+    at = [a.s.node(n)["attrs"] for n in a.s.nodes("VariationOp") if a.s.node(n)["attrs"].get("name") == "knob_edit"][0]
+    assert at.get("step_mode") == "grain" and at.get("grain_end") == 1
+
+
+def test_explore_unscored_is_the_cue_set_edit_default():
+    a = WorldAdapter(seeds=())
+    rf._ensure_seed_chain(a.s, a.inner, a.agent, ("variation_ops",))
+    at = [a.s.node(n)["attrs"] for n in a.s.nodes("VariationOp") if a.s.node(n)["attrs"].get("name") == "cue_set_edit"][0]
+    assert at.get("explore_unscored") == 1

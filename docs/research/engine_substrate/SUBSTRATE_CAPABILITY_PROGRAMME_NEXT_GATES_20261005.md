@@ -326,3 +326,15 @@ See the [results](RECURSIVE_SELF_IMPROVEMENT_TRANCHE11_RESULTS_20261008.md).
 - **Finding:** `variation_credit` is `self_load_only`, so it is not loaded on production boots. Needs a decision.
 
 Next: decide on loading credit by default; a principled rule for grain-end gates; a mixed-kind credit gate.
+
+## 2026-10-09 recursive self-improvement tranche 12
+
+See the [results](RECURSIVE_SELF_IMPROVEMENT_TRANCHE12_RESULTS_20261009.md).
+
+- **Grain-end step** (one exact frame quantum past the observed frame).
+- **Grain promotion v3: PASS.** Grain 5/5 in 5 experiments against fixed 1/5 in 8. `knob_edit` now defaults to grain.
+- **`explore_unscored` promotion: PASS.** Zero-overlap verbs 6/6 against 0/6; overlap verbs unchanged. Now the default.
+- **Disk-full incident:** `experiment_conclusions` was truncated and restored. The explore result was rerun cleanly and was identical.
+- **Regression:** 0 attributable failures. The credit boot default is unchanged.
+
+Next: a mixed-kind credit gate (lab boot), child-runner storage, and structural `grain_signal_types`.
