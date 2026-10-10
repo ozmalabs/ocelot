@@ -1870,15 +1870,15 @@ def _clean_head(surface: str, language: str = "en") -> str:
     if head_i is None:
         head_i = len(core) - 1
     # (4) longest held lexical compound ending at the head, else the bare head.
+    #     The persisted sense table (domains/wordnet_table) reproduces NLTK's
+    #     wn.synsets exactly, without loading the in-process corpus (tranche 18).
     try:
-        from nltk.corpus import wordnet as wn
-        for start in range(0, head_i + 1):
-            key = "_".join(core[start:head_i + 1])
-            try:
-                if wn.synsets(key):
+        from domains import wordnet_table as wt
+        if wt.available():
+            for start in range(0, head_i + 1):
+                key = "_".join(core[start:head_i + 1])
+                if wt.synsets(key):
                     return key
-            except Exception:
-                break
     except Exception:
         pass
     return core[head_i]
