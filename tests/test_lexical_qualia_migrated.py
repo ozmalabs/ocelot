@@ -98,6 +98,10 @@ def test_steering_names_a_concern_by_qualia_not_words():
     import jabberwock_daemon as jd
     a = WorldAdapter(seeds=())
     load_all_seeds(a)
+    # tranche 20: this test isolates the HUMAN steer's choice; the agent's own
+    # self-promotion (seeds/self_promotion.json) is tested in test_self_promotion_migrated.
+    for _n in a.s.nodes("SelfPromotionPolicy"):
+        a.s.set_attr(_n, "enabled", 0)
     a.converse("Hello.", speech_act="greeting")
     a.converse("Condense the data.", speech_act="request")
     a.converse("Alphabetise the list.", speech_act="request")
@@ -202,6 +206,10 @@ def test_steering_names_a_concern_through_a_definition():
     import jabberwock_daemon as jd
     a = WorldAdapter(seeds=())
     load_all_seeds(a)
+    # tranche 20: this test isolates the HUMAN steer's choice; the agent's own
+    # self-promotion (seeds/self_promotion.json) is tested in test_self_promotion_migrated.
+    for _n in a.s.nodes("SelfPromotionPolicy"):
+        a.s.set_attr(_n, "enabled", 0)
     a.converse("Hello.", speech_act="greeting")
     a.converse("Condense the data.", speech_act="request")
     a.converse("Debug the kubernetes rollout.", speech_act="request")

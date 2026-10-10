@@ -1,3 +1,9 @@
+**Recursive self-improvement tranche 20 (2026-10-10):** ([results](RECURSIVE_SELF_IMPROVEMENT_TRANCHE20_RESULTS_20261010.md))
+
+- **Endemic recursive self-improvement: preregistered gates pass.** On natural requests with no human in the loop, the agent files, promotes, tests and adopts its own fixes: 45 of 47 gaps, 0 false adoptions.
+- **Its improver gets cheaper from its own outcomes.** It needs 1.00 experiments per fix with route credit, against 1.29 without.
+- **Self-promotion and route credit are on by default.**
+
 **Recursive self-improvement tranche 19 (2026-10-10):** ([results](RECURSIVE_SELF_IMPROVEMENT_TRANCHE19_RESULTS_20261010.md))
 
 - **The self-improvement loop can no longer vary or adopt changes to its own machinery.** Exposure fell from 43 rules to 0. This includes the steering rule that carries the human promotion gate.
