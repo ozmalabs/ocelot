@@ -1,3 +1,7 @@
+**Lexical qualia work parked (2026-10-10):** ([parking note](LEXICAL_QUALIA_PARKED_20261010.md))
+
+- Tranches 15–18 are parked: a native qualia index, steering by qualia, and a measured genus reader. The programme returns to recursive self-improvement.
+
 **Recursive self-improvement tranche 18 (2026-10-10):** ([results](RECURSIVE_SELF_IMPROVEMENT_TRANCHE18_RESULTS_20261010.md))
 
 - **Genus reading is now measured exactly.** A WordNet-hypernym benchmark covers 3,242 held words. It is valid on quoted glosses and only a loose lower bound on free text.
