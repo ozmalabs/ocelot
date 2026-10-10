@@ -2618,6 +2618,18 @@ class WorldAdapter:
                     minted = None
                 if minted is not None:
                     candidates = [minted]
+            else:
+                # EVERY held word links to one or more qualia (tranche 17): a
+                # Concept minted at runtime by a path that does not know the
+                # index (teach_microtheory, dictionary ingest, learn_word)
+                # gets its qualia the first time a turn refers to it. No-op
+                # when it already has them.
+                try:
+                    from domains import lexical_qualia as _lq
+                    for concept in candidates:
+                        _lq.ensure_qualia(self, concept)
+                except Exception:  # noqa: BLE001 -- grounding never breaks a turn
+                    pass
             for concept in candidates:
                 if concept not in known:
                     self.inner.add_edge_unchecked(

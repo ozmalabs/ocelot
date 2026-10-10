@@ -380,3 +380,15 @@ See the [results](RECURSIVE_SELF_IMPROVEMENT_TRANCHE16_RESULTS_20261010.md).
 - **Persisted WordNet sense table** (sqlite, 18.8 MB). It reproduces NLTK's `synsets` exactly, with 0 mismatches over 5,124 probes, and replaces in-process NLTK for qualia grounding.
 - **Conversation-profile RSS: 322 → 167 MB.** Ingress is 18 ms. The index is still 17 MB over the 150 MB envelope; closing that needs a decision (lazy activation, a revised envelope, or engine per-node cost).
 - **Regression:** 0 new failures across 344 files.
+
+## 2026-10-10 recursive self-improvement tranche 17
+
+See the [results](RECURSIVE_SELF_IMPROVEMENT_TRANCHE17_RESULTS_20261010.md).
+
+- **Project RSS cap raised to 200 MiB** at the user's direction (`029d6e21`).
+- **Definitional grounding.** Of the 598 identity-only held words, 367 are now grounded through their held definition's genus (`lexical:definition` quale, parents = genus noun senses) and 36 through their function-word role. 195 names and disambiguation stubs remain identity-only. By manual reading, about 77% of genus picks are plausible.
+- **Runtime invariant.** A runtime-minted Concept gets its qualia on first mention.
+- **Steering v2.1.0** resolves definitional qualia: "orchestrator" names a "kubernetes" concern.
+- **RSS** 184.6 MiB; **regression** 0 new failures.
+
+Next: raise genus precision; ground the remaining names; more index consumers.

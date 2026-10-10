@@ -21,8 +21,17 @@ Dimensions:
                      read from the persisted sense table
                      domain_data/wordnet_senses.sqlite (domains/wordnet_table)
   closed_class    -- a grammatical role held in domain_data/reading_constructions
-                     ClosedClass (determiner, preposition, auxiliary, ...): the
-                     quale of a function word is its role, not a WordNet sense
+                     ClosedClass (determiner, preposition, auxiliary, ...), or
+                     (v1.1.0) for a word with no WordNet sense, the role the
+                     held function-word faculty gives it (pronoun, conjunction,
+                     ...): the quale of a function word is its role, not a sense
+  lexical:definition -- (v1.1.0) a held word with no sense and no role whose
+                     held DEFINITION names a genus: Quale{name:"definition:<w>",
+                     genus} with has_quale parents = the genus's WordNet noun
+                     senses ("kubernetes: Container orchestrator ..." ->
+                     orchestrator.n.*). The genus reader is
+                     domains/lexical_qualia.definition_genus; the genus is kept
+                     on the quale so every pick is auditable.
   lexical:identity-- the word's own identity quale, ONLY for a held word with no
                      sense and no role (proper names, jargon). It is the honest
                      degenerate quale until the word is grounded; the count is
@@ -50,37 +59,35 @@ WORD_RE = re.compile(r"^[a-z][a-z'-]*$")
 
 
 def held_words():
+    """{word: definition-or-None} over every single-token Concept name on a
+    full boot. The definition is the first string `definition` attr among the
+    Concepts of that name, in node-id order (deterministic)."""
     os.environ.setdefault("OZMA_SEED_PERSIST_DISABLED", "1")
     from substrate.world_adapter import WorldAdapter
     from substrate.boot_all import load_all_seeds
     a = WorldAdapter(seeds=())
     load_all_seeds(a, skip=("lexical_qualia",))
-    names = set()
-    for c in a.s.nodes("Concept"):
-        nm = a.s.node(c)["attrs"].get("name")
+    names = {}
+    for c in a.s.nodes("Concept"):          # node-id (mint) order
+        at = a.s.node(c)["attrs"]
+        nm = at.get("name")
         if isinstance(nm, str) and WORD_RE.match(nm):
-            names.add(nm)
-    return sorted(names)
-
-
-def closed_class_roles():
-    d = json.loads((ROOT / "domain_data/reading_constructions.json").read_text())
-    roles = {}
-    for n in d.get("nodes", []):
-        if n.get("type") != "ClosedClass":
-            continue
-        role = n.get("attrs", {}).get("role")
-        for f in n.get("attrs", {}).get("forms") or []:
-            roles.setdefault(str(f).lower(), set()).add(str(role))
-    return roles
+            d = at.get("definition")
+            if names.get(nm) is None:
+                names[nm] = d if isinstance(d, str) and d.strip() else None
+    return dict(sorted(names.items()))
 
 
 def build(words):
+    """The one precedence rule (domains/lexical_qualia.qualia_plan) applied to
+    every held word: closed_class role > WordNet senses > function-word role >
+    definition genus > identity."""
     from domains import wordnet_table as wt
-    roles = closed_class_roles()
+    from domains import lexical_qualia as lq
     qualia = {}            # name -> attrs
     parents = {}           # name -> set(parent names)
     word_q = {}            # word -> [quale names]
+    via = {}               # word -> how its qualia were grounded
 
     def add_sense(nm):
         if nm in qualia:
@@ -91,26 +98,23 @@ def build(words):
         for p in sorted(ps):
             add_sense(p)
 
-    for w in words:
-        if w in roles:
-            names = []
-            for r in sorted(roles[w]):
-                q = "closed_class:" + r
-                qualia.setdefault(q, {"name": q, "dimension": "closed_class"})
-                parents.setdefault(q, set())
-                names.append(q)
-            word_q[w] = names
-            continue
-        syns = sorted(set(wt.synsets(w)))
-        if syns:
-            for nm in syns:
-                add_sense(nm)
-            word_q[w] = syns
-            continue
-        q = "identity:" + w
-        qualia[q] = {"name": q, "dimension": "lexical:identity"}
-        parents[q] = set()
-        word_q[w] = [q]
+    for w, definition in words.items():
+        plan = lq.qualia_plan(w, definition, allow_identity=True)
+        via[w] = plan["via"]
+        names = []
+        for name, dim, extra, sense_parents in plan["qualia"]:
+            if dim == "lexical:sense":
+                add_sense(name)
+            else:
+                attrs = {"name": name, "dimension": dim}
+                attrs.update(extra)
+                qualia.setdefault(name, attrs)
+                ps = parents.setdefault(name, set())
+                for sp in sense_parents or []:
+                    add_sense(sp)
+                    ps.add(sp)
+            names.append(name)
+        word_q[w] = names
 
     # extent: how many held words' closures contain each quale (exact count)
     closure_cache = {}
@@ -134,7 +138,7 @@ def build(words):
             extent[q] += 1
     for q in qualia:
         qualia[q]["extent"] = extent[q]
-    return qualia, parents, word_q
+    return qualia, parents, word_q, via
 
 
 def _dump(seed) -> str:
@@ -163,7 +167,7 @@ def _dump(seed) -> str:
 
 def main():
     words = held_words()
-    qualia, parents, word_q = build(words)
+    qualia, parents, word_q, via = build(words)
     names = sorted(qualia)
     local = {nm: i + 1 for i, nm in enumerate(names)}
     nodes = [{"local_id": 0, "type": "QualiaIndex",
@@ -175,13 +179,16 @@ def main():
     dims = {}
     for q in qualia.values():
         dims[q["dimension"]] = dims.get(q["dimension"], 0) + 1
-    identity_words = sorted(w for w, qs in word_q.items() if qs and qs[0].startswith("identity:"))
+    identity_words = sorted(w for w, v in via.items() if v == "identity")
+    by_via = {}
+    for v in via.values():
+        by_via[v] = by_via.get(v, 0) + 1
     seed = {
-        "id": "lexical_qualia", "version": "1.0.0", "depends_on": [],
+        "id": "lexical_qualia", "version": "1.1.0", "depends_on": [],
         "description": __doc__,
         "stats": {"held_words": len(word_q), "qualia": len(names), "dag_edges": len(edges),
                   "word_links": sum(len(v) for v in word_q.values()), "by_dimension": dims,
-                  "identity_only_words": len(identity_words)},
+                  "identity_only_words": len(identity_words), "words_by_grounding": by_via},
         "nodes": nodes, "edges": edges, "rules": [],
         "productions": [
             {"provenance": "seed:lexical_qualia:has_quale_word", "src": {"type": "Concept", "var": "w"},

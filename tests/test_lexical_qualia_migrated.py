@@ -140,3 +140,77 @@ def test_runtime_grounding_does_not_load_the_wordnet_corpus(monkeypatch):
     c = lq.ground_word(a, "alphabetise")
     assert c is not None and lq.held_qualia(a, c)
     assert len(calls) == before, "lexical qualia grounding must not touch NLTK"
+
+
+# --- tranche 17: definitional grounding + the runtime coverage invariant --------
+
+def _names(a, nodes):
+    return {a.s.node(q)["attrs"]["name"] for q in nodes}
+
+
+def test_jargon_word_is_grounded_through_its_definition_genus(agent):
+    """'kubernetes' has no WordNet sense; its held definition ("Container
+    orchestrator: ...") names the genus, so its quale is the definition whose
+    parents are the genus's noun senses -- and it meets another word there."""
+    k = _concept(agent, "kubernetes")
+    (q,) = lq.held_qualia(agent, k)
+    at = agent.s.node(q)["attrs"]
+    assert at["name"] == "definition:kubernetes" and at["dimension"] == "lexical:definition"
+    assert at["genus"] == "orchestrator"
+    assert "orchestrator.n.01" in _names(agent, _closure(agent, k))
+    ms, svc = _concept(agent, "microservice"), _concept(agent, "service")
+    assert _names(agent, _closure(agent, ms) & _closure(agent, svc)) & {"service.n.01", "service.n.02"}
+
+
+def test_senseless_function_word_gets_its_role_and_stub_stays_identity(agent):
+    assert _names(agent, lq.held_qualia(agent, _concept(agent, "she"))) == {"closed_class:pronoun"}
+    # a disambiguation stub ("Bour may refer to:") names no genus: honest identity
+    assert _names(agent, lq.held_qualia(agent, _concept(agent, "bour"))) == {"identity:bour"}
+    assert lq.definition_genus("bour", "Bour may refer to:") is None
+
+
+def test_index_stats_match_the_graph(agent):
+    import json
+    seed = json.load(open(os.path.join(ROOT, "seeds", "lexical_qualia.json")))
+    st = seed["stats"]
+    dims = {}
+    for q in agent.s.nodes("Quale"):
+        d = agent.s.node(q)["attrs"]["dimension"]
+        dims[d] = dims.get(d, 0) + 1
+    assert dims.get("lexical:identity", 0) == st["identity_only_words"] == st["words_by_grounding"]["identity"]
+    assert dims.get("lexical:definition", 0) == st["words_by_grounding"]["definition"]
+
+
+def test_runtime_minted_concept_gets_qualia_when_first_referred_to():
+    """A Concept minted by a path that does not know the index (as
+    teach_microtheory does) gains qualia the first time a turn mentions it."""
+    a = WorldAdapter(seeds=())
+    load_all_seeds(a)
+    c = a.s.add_node("Concept", {"name": "quokkaware",
+                                 "definition": "A small marsupial mascot used in the test fixture."})
+    assert not lq.held_qualia(a, c)
+    a.converse("Tell me about quokkaware.", speech_act="request")
+    (q,) = lq.held_qualia(a, c)
+    assert a.s.node(q)["attrs"]["genus"] == "mascot"
+    assert "mascot.n.01" in _names(a, _closure(a, c))
+
+
+def test_steering_names_a_concern_through_a_definition():
+    """'orchestrator' never appears in either concern; it is what kubernetes
+    was DEFINED as. Before tranche 17 kubernetes carried only its identity
+    quale and this turn fell to the clarify floor."""
+    import jabberwock_daemon as jd
+    a = WorldAdapter(seeds=())
+    load_all_seeds(a)
+    a.converse("Hello.", speech_act="greeting")
+    a.converse("Condense the data.", speech_act="request")
+    a.converse("Debug the kubernetes rollout.", speech_act="request")
+    a.converse("Work on the orchestrator gap.", speech_act="request")
+    p = jd._steer_tick(a)
+    assert p and p[0].get("ok") and "kubernetes" in p[0].get("about", ""), p
+
+
+def test_steering_aperture_generator_is_idempotent():
+    out = subprocess.run([sys.executable, os.path.join(ROOT, "scripts", "gen_steer_aperture_definition.py")],
+                         capture_output=True, text=True, cwd=ROOT)
+    assert out.returncode == 0 and "already applied" in out.stdout, (out.stdout, out.stderr)
