@@ -404,3 +404,7 @@ See the [results](RECURSIVE_SELF_IMPROVEMENT_TRANCHE18_RESULTS_20261010.md).
 - **Regression:** 0 new failures. **RSS:** 185.6 MiB.
 
 Next: a reader-independent gold set for jargon genera (teacher confirmation); decide on the corroboration gate; `concept_signature` reading `has_quale`.
+
+## 2026-10-10 lexical qualia work parked
+
+At the user's direction, the lexical qualia / genus line (tranches 15–18) is **parked**: [LEXICAL_QUALIA_PARKED_20261010.md](LEXICAL_QUALIA_PARKED_20261010.md) records what exists, the measured state, the invariant tests, two open decisions and the resume points. The programme refocuses on recursive self-improvement from the tranche-14 "Next" list: natural concern supply, protecting the agent's own pipeline rules from every variation family, and reproducing mixed-kind gate v2.
