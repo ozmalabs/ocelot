@@ -1305,6 +1305,10 @@ _FROZEN_SEED_IDS = frozenset({
     # reading_collapse.py/reading_drive.py, are domain CODE, not seed JSON —
     # they have no SeedSummary and are not ablatable this way at all).
     "intent",
+    # (5) IMPROVEMENT INTEGRITY (tranche 19) — the held list of node types
+    # whose rules ARE the self-improvement loop (seeds/improvement_integrity
+    # .json). The loop must not ablate or edit the list that protects it.
+    "improvement_integrity",
 })
 
 _SEED_SUMMARY_TYPE = "SeedSummary"

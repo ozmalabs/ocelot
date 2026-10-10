@@ -1,3 +1,9 @@
+**Recursive self-improvement tranche 19 (2026-10-10):** ([results](RECURSIVE_SELF_IMPROVEMENT_TRANCHE19_RESULTS_20261010.md))
+
+- **The self-improvement loop can no longer vary or adopt changes to its own machinery.** Exposure fell from 43 rules to 0. This includes the steering rule that carries the human promotion gate.
+- **Improvement capability preserved.** The preregistered gate passes on two stream orders.
+- **Credit's saving is reproduced on a second order.**
+
 **Lexical qualia work parked (2026-10-10):** ([parking note](LEXICAL_QUALIA_PARKED_20261010.md))
 
 - Tranches 15–18 are parked: a native qualia index, steering by qualia, and a measured genus reader. The programme returns to recursive self-improvement.

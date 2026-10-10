@@ -848,6 +848,7 @@ _REFRESHABLE_SEEDS = frozenset({
     "conversation_upload_text_detect",
     "upload_foveated_text",
     "topic_sync_ground", "topic_search_verify",
+    "improvement_integrity",
     "variation_ops",
     "adoption_safety",
     "literary_analysis_driving",

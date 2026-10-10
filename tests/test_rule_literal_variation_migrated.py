@@ -201,6 +201,13 @@ def test_where_literal_provenance_covers_the_three_target_rules(agent):
         assert at.get("where_shiftable") == 1.0, (name, at)
         assert at.get("where_shift_count", 0) >= 1.0, (name, at)
         assert at.get("from_seed") == seed_id, (name, at.get("from_seed"))
+        if name == "note_recurring_speech_act_divergence":
+            # tranche 19: this rule FILES the loop's own SelfConcerns, so it is
+            # self-improvement-loop machinery (seeds/improvement_integrity.json)
+            # -- mirrored for provenance, but never a variation candidate.
+            assert at.get("improvement_machinery") == 1.0, (name, at)
+            assert at.get("skippable") == 0.0, (name, "loop machinery must not be adoptable")
+            continue
         assert at.get("skippable") == 1.0, (name, "must be adoptable — not alignment/core-frozen")
 
 
