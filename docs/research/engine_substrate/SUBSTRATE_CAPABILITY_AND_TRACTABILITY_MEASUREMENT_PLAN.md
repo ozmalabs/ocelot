@@ -1,3 +1,10 @@
+**Recursive self-improvement tranche 17 (2026-10-10):** ([results](RECURSIVE_SELF_IMPROVEMENT_TRANCHE17_RESULTS_20261010.md))
+
+- **Project RSS cap raised from 150 to 200 MiB** (user decision). The conversation profile peak is 184.6 MiB.
+- **403 of the 598 identity-only held words are now grounded**, 367 through their definition's genus and 36 through their function-word role. Genus precision is about 77% by manual reading.
+- **Every held word gets qualia at runtime too**, on first mention.
+- **Regression.** 0 new failures.
+
 **Recursive self-improvement tranche 16 (2026-10-10):** ([results](RECURSIVE_SELF_IMPROVEMENT_TRANCHE16_RESULTS_20261010.md))
 
 - **Qualia grounding uses a persisted, exact WordNet sense table instead of in-process NLTK.**
