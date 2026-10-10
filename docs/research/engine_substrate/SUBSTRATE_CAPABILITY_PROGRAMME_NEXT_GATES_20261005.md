@@ -419,3 +419,15 @@ See the [results](RECURSIVE_SELF_IMPROVEMENT_TRANCHE19_RESULTS_20261010.md) and 
 - **Regression:** 1 intended premise update.
 
 Open decision for the user: an opt-in, budgeted self-promotion policy, which would remove the human review step.
+
+
+## 2026-10-10 recursive self-improvement tranche 20
+
+See the [results](RECURSIVE_SELF_IMPROVEMENT_TRANCHE20_RESULTS_20261010.md) and the [prereg](SUBSTRATE_ENDEMIC_RSI_V1_PREREG_20261010.md).
+
+- **Self-promotion is on by default** (`seeds/self_promotion.json`), at the user's direction. The agent promotes its own eligible concerns when its loop is idle. The steer hook executes the promotion, and the rule is protected machinery.
+- **Route credit is on by default** (`variation_ops` v1.18.0). Outcomes of fixing earlier verbs order the next verb's attempt.
+- **Endemic RSI v1.1: PASS on E1, E2 and E3.** On 51 natural requests derived from persona_chat, with no human in the loop, the agent fixed 45 of 47 self-filed gaps, against 0 in the off arm. There were 0 false adoptions and 0 broken turns. Route credit cut experiments per fix from 1.58 to 1.04 (first half) and from 1.29 to 1.00 (second half), with 44 of 45 first-try fixes.
+- **Run v1** found two defects in what gets self-promoted: a world-game experiment stalls the loop, and the `performance` judge accepts timing noise. Eligibility is now `[instruction, comprehension]`.
+
+Next: run self-promotion in the production daemon; a capability-adding family fed by natural concerns; a quantised `performance` judge.

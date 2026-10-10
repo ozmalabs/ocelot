@@ -337,6 +337,10 @@ def test_steer_promotes_the_best_matching_concern_not_the_oldest():
     import jabberwock_daemon as jd
     a = WorldAdapter(seeds=())
     load_all_seeds(a)
+    # tranche 20: this test isolates the HUMAN steer's choice; the agent's own
+    # self-promotion (seeds/self_promotion.json) is tested in test_self_promotion_migrated.
+    for _n in a.s.nodes("SelfPromotionPolicy"):
+        a.s.set_attr(_n, "enabled", 0)
     a.converse("Hello.", speech_act="greeting")
     old = a.s.add_node("SelfConcern", {
         "kind": "comprehension", "status": "noted", "source": "implicit",
