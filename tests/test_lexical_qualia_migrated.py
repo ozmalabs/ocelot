@@ -214,3 +214,57 @@ def test_steering_aperture_generator_is_idempotent():
     out = subprocess.run([sys.executable, os.path.join(ROOT, "scripts", "gen_steer_aperture_definition.py")],
                          capture_output=True, text=True, cwd=ROOT)
     assert out.returncode == 0 and "already applied" in out.stdout, (out.stdout, out.stderr)
+
+
+# --- tranche 18: exact genus benchmark + reader fixes ---------------------------
+
+@pytest.mark.parametrize("word,definition,genus", [
+    # a held "X of Y" compound is one head
+    ("lake", "(noun) a body of (usually fresh) water surrounded by land", "body_of_water"),
+    # a relativizer ends the head NP even after an adjective-primary noun
+    ("thieves", "(noun) a criminal who takes property belonging to someone else", "criminal"),
+    # a postnominal participle opens its own phrase ...
+    ("captain", "(noun) an officer holding a rank below a major", "officer"),
+    # ... a prenominal one is part of the head NP
+    ("connectome", "The complete wiring diagram of an organism's nervous system.", "wiring_diagram"),
+    ("deque", "Double-ended queue. Insert and remove at both ends.", "queue"),
+    # gloss bookkeeping segments are not the gloss
+    ("laughs", "(noun) the sound of laughing; synonyms: laugh, laughter", None),
+])
+def test_genus_reader_cases(word, definition, genus):
+    g = lq.definition_genus(word, definition)
+    assert (g or {}).get("genus") == genus, g
+
+
+def test_genus_benchmark_reader_beats_tranche17_on_held_glosses():
+    """The exact benchmark (evaluation/genus_reader_benchmark): on the held
+    TEST split of quoted WordNet glosses the tranche-18 reader is more precise
+    than the tranche-17 reader, and on the manually audited identity domain it
+    changes few picks."""
+    from evaluation import genus_reader_benchmark as bench
+    from evaluation.genus_reader_compare import _t17_reader
+    held = bench.held_words_cached()
+    old = bench.score(_t17_reader(), held)["buckets"]["gloss:test"]
+    new = bench.score(lq.definition_genus, held)["buckets"]["gloss:test"]
+    assert new["precision"] >= old["precision"] + 0.03, (old, new)
+    assert new["coverage"] >= 0.93
+    audit = bench.manual_audit(lq.definition_genus)
+    assert audit["changed"] <= 10 and audit["unchanged_wrong"] <= 81, audit
+
+
+def test_reading_collapse_compound_lookup_uses_the_sense_table(monkeypatch):
+    from domains import dict_teacher as dt
+    from domains import reading_collapse as rc
+    calls = []
+    real = dt._wordnet
+    monkeypatch.setattr(dt, "_wordnet", lambda *a, **k: calls.append(1) or real(*a, **k))
+    import builtins
+    real_import = builtins.__import__
+
+    def guarded(name, *a, **k):
+        if name.startswith("nltk"):
+            calls.append(name)
+        return real_import(name, *a, **k)
+    monkeypatch.setattr(builtins, "__import__", guarded)
+    assert rc._clean_head("aphanitic fine-grained extrusive igneous rock formed") == "igneous_rock"
+    assert calls == []

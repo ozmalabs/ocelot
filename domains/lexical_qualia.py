@@ -155,13 +155,19 @@ def _ensure_sense(sub, native, name: str, minted: list):
 # closed-class role from the held function-word faculty. Only a word with
 # neither keeps the honest identity quale.
 # --------------------------------------------------------------------------- #
-_DISAMBIG_RE = re.compile(r"\b(?:may (?:also )?refer to|can refer to|is the name of|may (?:also )?be:)", re.I)
+_DISAMBIG_RE = re.compile(r"\b(?:may (?:also )?refer to|can refer to|is the name of|may (?:also )?be:|"
+                          r"is (?:a )?(?:sur|given )?name of:)", re.I)
 _POS_TAG_RE = re.compile(r"^\(([a-z ]+)\)\s*")
 _SEGMENT_RE = re.compile(r"\.\s|\.$|:|;|\n|\s[\u2014\u2013]\s|\s--\s")
 _CLAUSE_CUT_RE = re.compile(r"[,(\[/+|=\u2014\u2013\"\u201c\u201d]")
 _COPULA_LEAD_RE = re.compile(r"^(?P<lead>.{1,80}?)\s+(?:is|was|are|were)\s+(?:a|an|the)\s+(?P<rest>.+)$", re.I)
 _COPULA_ANY_RE = re.compile(r"\s(?:is|was|are|were)\s", re.I)
 _GENUS_SEGMENTS = 3
+_PAREN_RE = re.compile(r"\([^()]*\)")
+# a quoted dictionary gloss's bookkeeping segments ("synonyms: ...", "e.g. ...",
+# "+3 other senses") are not the gloss
+_GLOSS_META_RE = re.compile(r"^(?:synonyms?\b|e\.g\b|eg\b|\+\d+ other senses?|also\b|see also\b)", re.I)
+_GLOSS_TAIL_RE = re.compile(r"[;,]?\s*(?:\bsynonyms?:|\be\.g\.|\+\d+ other senses?)", re.I)
 _ANALOGUE_RE = re.compile(r"\bsubstrate analogue\b", re.I)
 _RELATIVIZERS = frozenset({"that", "which", "who", "whom", "whose", "where", "when", "whereby"})
 _EMPTY_HEADS = frozenset({"type", "types", "kind", "kinds", "sort", "sorts", "form", "forms",
@@ -190,6 +196,23 @@ def function_role(word: str, definition=None):
     return spec.get("function") if spec else None
 
 
+def _postnominal_participle(cq, toks, i, p) -> bool:
+    """A participle AFTER the head that opens its own phrase ("an officer
+    HOLDING a rank", "an element BELONGING to") -- followed by a determiner, a
+    preposition or nothing. A prenominal participle ("a RETIRED footballer",
+    "a WIRING diagram", "Double-ENDED queue") is followed by a noun and is part
+    of the head NP, so it does not cut."""
+    t = toks[i]
+    if not (t.endswith(("ing", "ed")) and "verb" in p):
+        return False
+    nxt = cq._function_of(toks[i + 1]) if i + 1 < len(toks) else None
+    if nxt == "determiner":          # "an officer HOLDING a rank": a VP, whatever POS ranks first
+        return True
+    if p[:1] == ["noun"]:
+        return False
+    return i + 1 >= len(toks) or nxt == "preposition"
+
+
 def _genus_of_segment(seg: str, word: str):
     """The head noun of one definition segment, by the held POS faculty
     (consumption_quality) and the sense table (compounds): the same steps as
@@ -197,7 +220,7 @@ def _genus_of_segment(seg: str, word: str):
     after a noun (a participle differentia: "Planet ORBITING another star")."""
     from domains import consumption_quality as cq
     from domains import wordnet_table as wt
-    seg = _CLAUSE_CUT_RE.split(seg, 1)[0]
+    seg = _CLAUSE_CUT_RE.split(_PAREN_RE.sub(" ", seg), 1)[0]
     toks = [t.strip("'.") for t in cq._tokens(re.sub(r"[^a-z'\- ]", " ", seg.lower()))]
     toks = [t for t in toks if t]
     # an EMPTY head ("a TYPE OF lichen", "a FORM OF the given name") names
@@ -211,45 +234,67 @@ def _genus_of_segment(seg: str, word: str):
             break        # the head came first ("a person who lacks any sort of")
     if not toks:
         return None
+    # a held "X of Y" compound is one head ("a BODY OF WATER", "point of view"):
+    # merge it before the preposition cut reads "of" as a postmodifier.
+    merged, i = [], 0
+    while i < len(toks):
+        if i + 2 < len(toks) and toks[i + 1] == "of" and wt.synsets("%s_of_%s" % (toks[i], toks[i + 2])):
+            merged.append("%s_of_%s" % (toks[i], toks[i + 2]))
+            i += 3
+        else:
+            merged.append(toks[i])
+            i += 1
+    toks = merged
 
     def prim(t):
         p = cq._pos(t)
         return p[0] if p else ""
 
-    seen_noun = False
+    seen_noun = seen_any_noun = closed_by_clause = False
     for i, t in enumerate(toks):
         p = cq._pos(t)
         fn = cq._function_of(t)
-        if seen_noun and (fn in ("preposition", "conjunction") or t in _RELATIVIZERS
-                          or (p and p[0] == "verb")):
+        if (seen_noun and (fn in ("preposition", "conjunction") or t in _RELATIVIZERS
+                           or (p and p[0] == "verb"))) or (seen_any_noun and (
+                t in _RELATIVIZERS or _postnominal_participle(cq, toks, i, p))):
+            closed_by_clause = t in _RELATIVIZERS or _postnominal_participle(cq, toks, i, p)
             toks = toks[:i]
             break
-        if (not p or p[0] == "noun") and fn is None:
-            seen_noun = True
+        if fn is None and (not p or "noun" in p):
+            seen_any_noun = True
+            if not p or p[0] == "noun":
+                seen_noun = True
     end = len(toks)
     while end > 1 and (prim(toks[end - 1]) in ("verb", "adv", "conj", "det")
                        or cq._function_of(toks[end - 1]) in ("determiner", "conjunction")):
         end -= 1
     core = toks[:end]
-    head_i = None
-    for i in range(len(core) - 1, -1, -1):
+
+    def is_head(t, any_noun=False):
         # the head is a noun by its PRIMARY reading (or an out-of-vocabulary
         # technical token), not a proper name, a closed-class word or a stray
-        # letter ("C. elegans"): otherwise this segment names no genus.
-        p = cq._pos(core[i])
-        if ((not p or p[0] == "noun") and cq._function_of(core[i]) is None
-                and len(core[i]) >= 3):
-            head_i = i
-            break
-    if head_i is None:
-        return None
-    for start in range(0, head_i + 1):
-        key = "_".join(core[start:head_i + 1])
-        if key == word:
-            continue
-        syns = sorted({s for s in wt.synsets(key) if s.split(".")[-2] == "n"})
-        if syns:
-            return key, syns
+        # letter ("C. elegans").
+        p = cq._pos(t)
+        ok = ("noun" in p) if any_noun else (not p or p[0] == "noun")
+        return ok and cq._function_of(t) is None and len(t) >= 3
+
+    heads = [i for i in range(len(core) - 1, -1, -1) if is_head(core[i])]
+    if not heads and closed_by_clause and core and is_head(core[-1], any_noun=True):
+        heads = [len(core) - 1]   # "a CRIMINAL who takes": the clause names its head
+    # the rightmost candidate that IS a held noun; a verb-form candidate with
+    # no noun sense is skipped ("a hollow device MADE of" -> "device"), an
+    # unheld noun stops the search. The longest held compound ending at the
+    # head wins.
+    for head_i in heads:
+        for start in range(0, head_i + 1):
+            key = "_".join(core[start:head_i + 1])
+            if key == word:
+                continue
+            syns = sorted({s for s in wt.synsets(key) if s.split(".")[-2] == "n"})
+            if syns:
+                return key, syns
+        if "verb" not in cq._pos(core[head_i]):
+            return None          # an unheld noun head ("... reference ENCODER"): no genus
     return None
 
 
@@ -271,7 +316,11 @@ def definition_genus(word: str, definition):
     cut = _ANALOGUE_RE.search(text)
     if cut:
         text = text[:cut.start()]
+    meta = _GLOSS_TAIL_RE.search(text)
+    if meta:
+        text = text[:meta.start()]
     segs = [s.strip() for s in _SEGMENT_RE.split(text) if s and s.strip()]
+    segs = [s for s in segs if not _GLOSS_META_RE.match(s)]
     for seg in segs[:_GENUS_SEGMENTS]:
         m = _COPULA_LEAD_RE.match(seg)
         if m and word in m.group("lead").lower():
@@ -282,6 +331,45 @@ def definition_genus(word: str, definition):
         if got:
             return {"genus": got[0], "senses": got[1], "segment": seg[:120]}
     return None
+
+
+def definition_genus_by_reading(agent, word: str, definition):
+    """The genus by the AGENT'S OWN READER: the first definition sentence is
+    read as the clause "<word> is <sentence>" (or as written, when it already
+    predicates the word with a copula) by reading_collapse.read_clause_order_n,
+    whose definitional construction names the is_a genus with a clean head.
+    No write, no learning. {genus, senses, segment} or None."""
+    if not isinstance(definition, str) or not definition.strip():
+        return None
+    text = definition.strip()
+    if _DISAMBIG_RE.search(text[:240]):
+        return None
+    text = _POS_TAG_RE.sub("", text)
+    cut = _ANALOGUE_RE.search(text)
+    if cut:
+        text = text[:cut.start()]
+    segs = [s.strip() for s in _SEGMENT_RE.split(text) if s and s.strip()]
+    if not segs:
+        return None
+    seg = segs[0]
+    if _COPULA_ANY_RE.search(" " + seg[:90] + " ") and word in seg[:90].lower():
+        clause = seg
+    else:
+        clause = "%s is %s" % (word, seg[0].lower() + seg[1:])
+    try:
+        from domains import reading_collapse as rc
+        out = rc.read_clause_order_n(agent, clause, write=False, learn=False)
+    except Exception:  # noqa: BLE001 -- an unreadable clause names no genus
+        return None
+    genus = out.get("genus")
+    if not isinstance(genus, str) or not genus or genus == word:
+        return None
+    genus = genus.lower()
+    from domains import wordnet_table as wt
+    senses = sorted({s for s in wt.synsets(genus) if s.split(".")[-2] == "n"})
+    if not senses:
+        return None
+    return {"genus": genus, "senses": senses, "segment": seg[:120]}
 
 
 def qualia_plan(word: str, definition=None, *, allow_identity: bool = True):

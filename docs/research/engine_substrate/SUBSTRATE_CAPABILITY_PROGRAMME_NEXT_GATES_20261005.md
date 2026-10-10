@@ -392,3 +392,15 @@ See the [results](RECURSIVE_SELF_IMPROVEMENT_TRANCHE17_RESULTS_20261010.md).
 - **RSS** 184.6 MiB; **regression** 0 new failures.
 
 Next: raise genus precision; ground the remaining names; more index consumers.
+
+## 2026-10-10 recursive self-improvement tranche 18
+
+See the [results](RECURSIVE_SELF_IMPROVEMENT_TRANCHE18_RESULTS_20261010.md).
+
+- **Exact genus benchmark** (`evaluation/genus_reader_benchmark.py`, frozen fixture, dev/test split). It is valid on quoted WordNet glosses; on free text it is only a lower bound, because WordNet lacks the technical senses.
+- **Head reader v2:** held-out gloss precision 0.637 → 0.673. On the manually audited identity domain, about 79% of picks are plausible (was 77.9%).
+- **The agent's own reader** (`read_clause_order_n`) is not better. Agreement between the two readers corroborates (0.73 vs 0.51), but is not adopted as a gate.
+- `_clean_head` uses the sense table instead of NLTK.
+- **Regression:** 0 new failures. **RSS:** 185.6 MiB.
+
+Next: a reader-independent gold set for jargon genera (teacher confirmation); decide on the corroboration gate; `concept_signature` reading `has_quale`.

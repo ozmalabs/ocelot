@@ -1,3 +1,10 @@
+**Recursive self-improvement tranche 18 (2026-10-10):** ([results](RECURSIVE_SELF_IMPROVEMENT_TRANCHE18_RESULTS_20261010.md))
+
+- **Genus reading is now measured exactly.** A WordNet-hypernym benchmark covers 3,242 held words. It is valid on quoted glosses and only a loose lower bound on free text.
+- **Head reader v2:** held-out gloss precision 0.637 → 0.673. The manual identity domain moves from about 77.9% to 79%.
+- **The agent's own reader is not better.** Agreement between the two readers is a strong corroboration signal (0.73 vs 0.51), measured but not adopted as a gate.
+- **Regression.** 0 new failures; RSS 185.6 MiB.
+
 **Recursive self-improvement tranche 17 (2026-10-10):** ([results](RECURSIVE_SELF_IMPROVEMENT_TRANCHE17_RESULTS_20261010.md))
 
 - **Project RSS cap raised from 150 to 200 MiB** (user decision). The conversation profile peak is 184.6 MiB.

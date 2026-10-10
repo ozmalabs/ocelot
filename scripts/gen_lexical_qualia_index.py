@@ -184,7 +184,7 @@ def main():
     for v in via.values():
         by_via[v] = by_via.get(v, 0) + 1
     seed = {
-        "id": "lexical_qualia", "version": "1.1.0", "depends_on": [],
+        "id": "lexical_qualia", "version": "1.2.0", "depends_on": [],
         "description": __doc__,
         "stats": {"held_words": len(word_q), "qualia": len(names), "dag_edges": len(edges),
                   "word_links": sum(len(v) for v in word_q.values()), "by_dimension": dims,
