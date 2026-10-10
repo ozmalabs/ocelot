@@ -3270,7 +3270,7 @@ def _pick_variation_op(agent, heads, key: str):
         # fully-booted agent already holds it via load_all_seeds; checking the
         # Program first avoids re-loading (and duplicating) the seed's nodes.
         try:
-            _ensure_seed_chain(sub0, native0, ag0, ("variation_ops",))
+            _ensure_seed_chain(sub0, native0, ag0, ("improvement_integrity", "variation_ops"))
         except Exception:
             return None
         prog = _load_program(sub0, "variation_pick")
@@ -3368,7 +3368,7 @@ def _compose_cue_variant(agent, keys, tag: str) -> dict[str, Any]:
     if prog is None:
         # same load-once discipline as _pick_variation_op above
         try:
-            _ensure_seed_chain(sub0, native0, ag0, ("variation_ops",))
+            _ensure_seed_chain(sub0, native0, ag0, ("improvement_integrity", "variation_ops"))
         except Exception:
             pass
         prog = _load_program(sub0, "cue_route_pick")
@@ -5639,6 +5639,92 @@ def close_experiment_loop(agent) -> list:
 # understand-Drive / boot_all.py's _FROZEN_SEED_IDS: the agent decides WHICH,
 # the host retains a veto over touching foundational/unknown-provenance rules).
 # ---------------------------------------------------------------------------
+def _improvement_protected_types(sub) -> tuple:
+    """The held list of node types whose rules ARE the self-improvement loop
+    (seeds/improvement_integrity.json, a frozen seed). Empty when the seed is
+    not loaded. Mechanical read."""
+    out: set = set()
+    try:
+        for n in sub.nodes("ImprovementIntegrity"):
+            for t in sub.node(n)["attrs"].get("protected_node_types") or []:
+                out.add(str(t))
+    except Exception:  # noqa: BLE001
+        return ()
+    return tuple(sorted(out))
+
+
+def _rule_names_protected_type(rule, types) -> bool:
+    """Structural read: does this rule's JSON (match, where, effects) name a
+    protected node type as a string token? Conservative by construction --
+    any rule that reads or writes the loop's own records or policies."""
+    if not types:
+        return False
+    import json as _json
+    try:
+        s = rule if isinstance(rule, str) else _json.dumps(rule)
+    except Exception:  # noqa: BLE001
+        return True      # unreadable rule: fail closed
+    return any(('"%s"' % t) in s for t in types)
+
+
+_INTEGRITY_CACHE: dict = {}
+
+
+def _ensure_improvement_integrity(sub, native) -> set:
+    """IMPROVEMENT INTEGRITY (tranche 19): stamp every RuleSummary whose rule
+    is loop machinery `improvement_machinery=1.0` and `skippable=0.0`, so no
+    variation family's candidate filter (skippable==1) can pick it. Returns
+    the set of protected rule names. Idempotent; recomputed when the active
+    rule set or the held type list changes."""
+    types = _improvement_protected_types(sub)
+    if not types:
+        return set()
+    try:
+        rules = native.export_rules()
+    except Exception:  # noqa: BLE001
+        return set()
+    key = (id(sub), len(rules), types)
+    names = _INTEGRITY_CACHE.get(key)
+    if names is None:
+        names = {r.get("name") for r in rules
+                 if isinstance(r, dict) and r.get("active", True) and r.get("name")
+                 and _rule_names_protected_type(r, types)}
+        _INTEGRITY_CACHE.clear()
+        _INTEGRITY_CACHE[key] = names
+    for n in sub.nodes("RuleSummary"):
+        at = sub.node(n)["attrs"]
+        if at.get("name") in names:
+            if at.get("improvement_machinery") != 1.0:
+                sub.set_attr(n, "improvement_machinery", 1.0)
+            if at.get("skippable") != 0.0:
+                sub.set_attr(n, "skippable", 0.0)
+    return names
+
+
+def _with_integrity(fn):
+    """Run a RuleSummary provenance mirror, then the integrity stamp, so a
+    summary minted or upgraded by the mirror can never leave a loop-machinery
+    rule marked skippable."""
+    import functools
+
+    @functools.wraps(fn)
+    def wrapped(sub, native, *args, **kwargs):
+        try:
+            return fn(sub, native, *args, **kwargs)
+        finally:
+            try:
+                _ensure_improvement_integrity(sub, native)
+            except Exception:  # noqa: BLE001 -- the denylist re-checks at adoption
+                pass
+    return wrapped
+
+
+_ensure_acting_rule_provenance = _with_integrity(_ensure_acting_rule_provenance)
+_ensure_general_rule_provenance = _with_integrity(_ensure_general_rule_provenance)
+_ensure_reply_rule_provenance = _with_integrity(_ensure_reply_rule_provenance)
+_ensure_where_literal_rule_provenance = _with_integrity(_ensure_where_literal_rule_provenance)
+
+
 def _rule_denylisted(sub, rule_name: str) -> tuple:
     """The ADOPTION DENYLIST veto: DENY (True, reason) unless `rule_name` has a
     known `RuleSummary.from_seed` AND that seed's `SeedSummary.skippable == 1.0`
@@ -5647,13 +5733,22 @@ def _rule_denylisted(sub, rule_name: str) -> tuple:
     re-invented). Unknown provenance (no RuleSummary, or `from_seed == ''` —
     e.g. a dynamically-authored variant rule no loaded seed manifest declares)
     is DENIED, never allowed-by-default: 'if a rule's provenance is unknown,
-    DENY.'"""
+    DENY.'
+
+    IMPROVEMENT INTEGRITY (tranche 19): a rule that is loop machinery (its
+    RuleSummary is stamped improvement_machinery, or its rule JSON names a
+    held protected node type) is DENIED regardless of its seed."""
     from_seed = None
+    types = _improvement_protected_types(sub)
     for n in sub.nodes("RuleSummary"):
         at = sub.node(n)["attrs"]
         if at.get("name") == rule_name:
-            from_seed = at.get("from_seed") or ""
-            break
+            if at.get("improvement_machinery") == 1.0 or (
+                    at.get("rule_json") and _rule_names_protected_type(str(at.get("rule_json")), types)):
+                return True, (f"{rule_name!r} is self-improvement-loop machinery "
+                              "(seeds/improvement_integrity.json) — the loop may not change itself")
+            if from_seed is None:
+                from_seed = at.get("from_seed") or ""
     if not from_seed:
         return True, f"unknown provenance for {rule_name!r} (no RuleSummary.from_seed) — DENY by default"
     for n in sub.nodes("SeedSummary"):
@@ -5822,6 +5917,12 @@ def perform_adoptions(agent) -> list:
             if df_rule is None:
                 continue          # nothing to install — stale/empty delta
             df_name = df_rule.get("name", "")
+            if _rule_names_protected_type(df_rule, _improvement_protected_types(sub)):
+                native.set_attr(exp, "adopt_denied", True)
+                out.append({"experiment": str(exp), "denied": True, "rule": df_name,
+                            "reason": "added rule names a self-improvement-loop node type "
+                                      "(seeds/improvement_integrity.json)"})
+                continue
             new_idx = native.add_rule(df_rule)
             adoption = sub.add_node("Adoption", {
                 "rule_removed": "", "rule_added": df_name,
@@ -5913,6 +6014,10 @@ def perform_adoptions(agent) -> list:
             continue
 
         denied, reason = _rule_denylisted(sub, removed_name)
+        if not denied and variant_rule is not None and _rule_names_protected_type(
+                variant_rule, _improvement_protected_types(sub)):
+            denied, reason = True, (f"variant of {removed_name!r} names a self-improvement-loop node "
+                                    "type (seeds/improvement_integrity.json) — the loop may not change itself")
         if denied:
             native.set_attr(exp, "adopt_denied", True)
             out.append({"experiment": str(exp), "denied": True, "reason": reason,

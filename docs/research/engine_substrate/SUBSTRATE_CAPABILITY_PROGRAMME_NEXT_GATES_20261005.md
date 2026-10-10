@@ -408,3 +408,14 @@ Next: a reader-independent gold set for jargon genera (teacher confirmation); de
 ## 2026-10-10 lexical qualia work parked
 
 At the user's direction, the lexical qualia / genus line (tranches 15–18) is **parked**: [LEXICAL_QUALIA_PARKED_20261010.md](LEXICAL_QUALIA_PARKED_20261010.md) records what exists, the measured state, the invariant tests, two open decisions and the resume points. The programme refocuses on recursive self-improvement from the tranche-14 "Next" list: natural concern supply, protecting the agent's own pipeline rules from every variation family, and reproducing mixed-kind gate v2.
+
+## 2026-10-10 recursive self-improvement tranche 19
+
+See the [results](RECURSIVE_SELF_IMPROVEMENT_TRANCHE19_RESULTS_20261010.md) and the [prereg](SUBSTRATE_IMPROVEMENT_INTEGRITY_GATE_V1_PREREG_20261010.md).
+
+- **Improvement integrity.** The loop may no longer vary or adopt changes to itself. Before this tranche, 43 of 53 loop-machinery rules were variation candidates that the adoption gate allowed. One of them was `steer_promote_concern`, which carries the human promotion gate; a reported concern built an adoptable variant of it.
+- **The guard.** A frozen `seeds/improvement_integrity.json` holds the loop's node types. Every rule that names one is stamped non-skippable and denied at adoption. Exposure after the change: 0.
+- **Gate PASS on two stream orders:** 4/4 handled for both kinds in arms B and C, with 0 false adoptions. Credit still saves replays on reversed order o2 (5 vs 8 experiments), so mixed-kind gate v2 is reproduced.
+- **Regression:** 1 intended premise update.
+
+Open decision for the user: an opt-in, budgeted self-promotion policy, which would remove the human review step.
