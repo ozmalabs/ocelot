@@ -67,6 +67,16 @@ CLEARED = ["00_is",
 # Phrases that set out the excluded document's contents rather than naming it.
 FORBIDDEN = ["proposal closure", "execution semantics", "reference execution"]
 
+# Additional build inputs explicitly included in cleared papers. These are
+# copied only into the temporary HTML build tree; raw inputs are not emitted
+# as website assets. Paths are relative to papers/ and preserve LaTeX's
+# ../derivations/... references from each isolated paper directory.
+HTML_INPUTS = {
+    "11_relational_information_ethics": [
+        "derivations/11_relational_information_ethics_finite.py",
+    ],
+}
+
 READING_ORDER = """Graphic Equalisation --- what is claimed, and where (%(draft)s)
 
 One assumption: that to be is to stand in relation and to cohere in it, with no
@@ -583,6 +593,15 @@ def build_html(names, root, workdir):
         if not os.path.isdir(figures_dst):
             shutil.copytree(figures_src, figures_dst)
 
+    for name in names:
+        for relative in HTML_INPUTS.get(name, []):
+            source = os.path.join(root, "papers", relative)
+            if not os.path.isfile(source):
+                fail("%s HTML build input is missing: %s" % (name, relative))
+            destination = os.path.join(workdir, relative)
+            os.makedirs(os.path.dirname(destination), exist_ok=True)
+            shutil.copy2(source, destination)
+
     produced = {}
     # Authoritative resolved reference numbers, and a stem->slug map (slug==name
     # here) so cross-references can link to the target paper's page.
@@ -869,6 +888,8 @@ PAPER_FAMILIES = [
     ("10", "Applied Graphic Equalisation",
      "The account applied to one frame to make a separate point, rather than bridged to a "
      "field: the geopolitical and civilisational future."),
+    ("11", "Relational Information Accounting",
+     "Whole-system consequences and agent valuations, including ethics and moral injury."),
 ]
 _FAMILY_ORDER = [p for p, _, _ in PAPER_FAMILIES]
 _FAMILY_META = {p: (t, d) for p, t, d in PAPER_FAMILIES}
@@ -912,6 +933,7 @@ KIND_OVERRIDE = {
     # Filename contains "application" but this is a bridge to a field (four
     # classical experiments put to the substrate), so it is a grounding.
     "02b_seldon_manifolds_social_and_psychological_application": "grounding",
+    "11_relational_information_ethics": "theory",
 }
 
 # Human-readable label for each kind badge.
