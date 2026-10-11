@@ -43,7 +43,11 @@ def boot(shadow):
     assert rep.get("selection_complete") and not rep.get("failed"), rep.get("failed")
     a.shadow_read = shadow
     a.deep_ingest = shadow
+    a.turn_path = "production"
     jd._ensure_supervisory_scheduler(a)
+    if os.environ.get("ERSI_SELF_PROMOTION") == "0":     # the off arm: a human must promote
+        for n in a.s.nodes("SelfPromotionPolicy"):
+            a.s.set_attr(n, "enabled", 0)
     st = jd.DaemonState(a, "seeds")
     st.runs_dir = tempfile.mkdtemp(prefix="ersid-")
     return st
@@ -72,6 +76,7 @@ def one_cycle(st):
                     continue
                 if status == "explicit_error":
                     reply = a.graph_turn_reply(tid)
+                a.record_turn_outcome(tid, status)
                 done[tid] = (status, reply)
                 st.pending_turns.pop(tid, None)
         jd._execute_host_action_requests(st)
@@ -168,7 +173,10 @@ def main():
     faulthandler.register(signal.SIGUSR1, all_threads=True)
     kind, shadow_arm = sys.argv[1], sys.argv[2]
     n = int(sys.argv[3]) if len(sys.argv) > 3 else 10 ** 6
-    out = ROOT / f"evaluation/reports/endemic_rsi_daemon_v1_{kind}_{shadow_arm}{'' if n >= 10**6 else f'_n{n}'}_20261010.json"
+    arm = "_off" if os.environ.get("ERSI_SELF_PROMOTION") == "0" else ""
+    label = os.environ.get("ERSI_LABEL", "")
+    out = ROOT / (f"evaluation/reports/endemic_rsi_daemon_v1_{kind}_{shadow_arm}{'' if n >= 10**6 else f'_n{n}'}"
+                  f"{arm}{('_' + label) if label else ''}_20261010.json")
     if out.exists():
         raise SystemExit("refusing to overwrite")
     shadow = shadow_arm == "shadow"

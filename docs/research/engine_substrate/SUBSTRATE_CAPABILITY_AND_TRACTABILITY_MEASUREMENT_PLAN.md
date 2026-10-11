@@ -1,3 +1,8 @@
+**Recursive self-improvement tranche 22 (2026-10-10):** ([results](RECURSIVE_SELF_IMPROVEMENT_TRANCHE22_RESULTS_20261010.md))
+
+- **First endemic self-improvement on the production path.** Natural conversation went in with no human involved. The agent filed, promoted, varied, judged (with a production-path replay) and adopted a fix. Its unanswered statements fell from 60 to 44 errors, with 0 turns made worse.
+- **Gates.** The preregistered P1–P4 pass. The fix is modest: an honest receipt in place of the error floor.
+
 **Recursive self-improvement tranche 21 (2026-10-10):** ([results](RECURSIVE_SELF_IMPROVEMENT_TRANCHE21_RESULTS_20261010.md))
 
 - **Tranche 20's endemic gains were on the `converse()` path, not the production daemon path.** Production already answered those requests.

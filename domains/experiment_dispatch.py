@@ -238,6 +238,11 @@ def _spawn(agent, runs_dir, exp) -> None:
     # inert in the trial. Mechanical copy of the parent's own flag — the
     # child applies it after boot, exactly like the daemon's CLI flag does.
     delta["parent_shadow_read"] = bool(getattr(agent, "shadow_read", False))
+    # PRODUCTION-PATH REPLAY (tranche 21/22): a parent whose live turns arrive
+    # through ingest_turn -> graph release (the daemon) is replayed the same
+    # way, so the judge validates the behaviour production actually exhibits.
+    # The daemon (and its in-process measurement twin) mark the agent.
+    delta["parent_turn_path"] = str(getattr(agent, "turn_path", "") or "converse")
     delta_path = run_dir / "delta.json"
     with open(delta_path, "w") as f:
         json.dump(delta, f)

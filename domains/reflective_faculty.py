@@ -4545,6 +4545,185 @@ def _compose_shape_mint(agent, keys, tag: str) -> dict[str, Any]:
 # Name-keyed registry — the SAME pattern _COMPOSER_REGISTRY uses for
 # `composer_pick`: the held `variation_pick` Program names the op; this is a
 # mechanical lookup on the Term's verdict, not a decision.
+# ---------------------------------------------------------------------------
+# THE DISPOSITION-GENERALISATION FAMILY (tranche 22) -- the reply-side twin of
+# cue_set_edit. Measured on the production path (tranche 21): most natural
+# conversational failures are turns NO held arbitration rule selects a
+# disposition for (plain statements, e.g. "I like to watch movies and TV
+# shows." -> the explicit error floor), while a sibling turn class IS
+# handled -- `defer_response_assertion_without_proposition_uptake` selects a
+# neutral receipt for an assertion in RESPONSE position only.
+#
+# The variant GENERALISES a held (arbitration rule, reply rule) pair to the
+# failing turn's own evidence: the arbitration rule whose where-clause Eq-
+# guards on the interpretation `i` mismatch the failing interpretation on
+# EXACTLY ONE attr (never the schema/force/disposition identity guards) is
+# copied with that guard set to the failing value, under a NEW
+# arbitration_basis; the reply rule(s) keyed on the original basis are
+# copied to key on the new one with the same guard relaxed. Both are
+# ADD-ONLY (nothing removed): the held rules keep firing exactly as before.
+# The generalised arbitration also stamps receipt_selected_by_rule, which the
+# production release predicate accepts as a graph-selected receipt. The
+# dispatched replay (production path) judges it: the flagged unanswered
+# turn must change into a non-error reply, and no other recorded turn may
+# change. Honest abstain when no held pair is one guard away.
+# ---------------------------------------------------------------------------
+_GENERALISE_FIXED_KEYS = frozenset({"schema", "evidence_schema", "evidence_force", "cognitive_disposition"})
+
+
+def _guards_on(where, var):
+    """[(key, value, negated)] for every top-level Eq / Not-Eq guard on Attr(Var(var), key)
+    against a Lit in an And where-clause; None if the clause has any other item."""
+    items = where.get("items") if isinstance(where, dict) and where.get("type") == "And" else [where]
+    out = []
+    for it in items:
+        neg = False
+        node = it
+        if isinstance(node, dict) and node.get("type") == "Not":
+            neg, node = True, node.get("arg")
+        if not (isinstance(node, dict) and node.get("type") == "Eq"):
+            return None
+        a, b = node.get("a") or {}, node.get("b") or {}
+        if not (a.get("type") == "Attr" and (a.get("node") or {}).get("type") == "Var"
+                and b.get("type") == "Lit"):
+            return None
+        if (a.get("node") or {}).get("name") != var:
+            continue        # a guard on another variable (e.g. the message) is kept as is
+        out.append((a.get("key"), b.get("value"), neg))
+    return out
+
+
+def _guard_holds(attrs, key, value, neg):
+    v = attrs.get(key)
+    if value is None:
+        eq = v is None
+    else:
+        eq = v == value
+    return (not eq) if neg else eq
+
+
+def _relax_guard(rule, var, key, new_value):
+    import copy as _copy
+    r = _copy.deepcopy(rule)
+    items = r["where"]["items"] if r["where"].get("type") == "And" else [r["where"]]
+    for it in items:
+        node = it.get("arg") if it.get("type") == "Not" else it
+        a = node.get("a") or {}
+        if node.get("type") == "Eq" and a.get("type") == "Attr" and (a.get("node") or {}).get("name") == var \
+                and a.get("key") == key:
+            node["b"] = {"type": "Lit", "value": new_value}
+    return r
+
+
+def _compose_disposition_generalise(agent, keys, tag: str) -> dict[str, Any]:
+    import json as _json
+    import re as _re
+    sub0, native0, _ag0 = _resolve_agent(agent)
+    key = str(keys[0]) if keys else ""
+    standing = next((n for n in sub0.nodes("StandingConcern") if sub0.node(n)["attrs"].get("name") == key), None)
+    if standing is None:
+        return {"built": False, "wall": "no StandingConcern carries this capability key"}
+    msg = None
+    for sc in sub0.nodes("SelfConcern"):
+        try:
+            if standing in native0.neighbours(sc, "promoted_to"):
+                msgs = list(native0.neighbours(sc, "about_message"))
+                msg = msgs[0] if msgs else None
+                break
+        except Exception:  # noqa: BLE001
+            continue
+    if msg is None:
+        return {"built": False, "wall": "the promoting concern names no unanswered turn"}
+    interps = [i for i in native0.in_neighbours(msg, "interprets")
+               if sub0.node(i)["attrs"].get("schema") == "communication_interpretation.v1"]
+    if not interps:
+        return {"built": False, "wall": "the unanswered turn carries no communication interpretation"}
+    fattrs = dict(sub0.node(interps[0])["attrs"])
+    # the failing turn's interpretation as it stood BEFORE arbitration: no disposition yet
+    fattrs["cognitive_disposition"] = None
+    rules = [r for r in native0.export_rules() if isinstance(r, dict) and r.get("active", True)]
+    types = _improvement_protected_types(sub0)
+    adoptable_seeds = {sub0.node(n)["attrs"].get("seed_id") for n in sub0.nodes("SeedSummary")
+                       if sub0.node(n)["attrs"].get("skippable") == 1.0}
+    seed_of = _rule_seed_map(sub0)
+    tried = set()
+    for e in sub0.nodes("Experiment"):
+        eat = sub0.node(e)["attrs"]
+        if eat.get("axis_tag") != key or eat.get("outcome") not in ("refuted", "inconclusive"):
+            continue
+        for d in native0.neighbours(e, "has_delta"):
+            tried.add(str(sub0.node(d)["attrs"].get("generalise_source_rule") or ""))
+    cands = []
+    for r in rules:
+        if r.get("match") != [["agent", "holds_interpretation", "i"]]:
+            continue
+        eff = r.get("effects") or []
+        sets = {e[2]: e[3] for e in eff if isinstance(e, list) and len(e) == 4 and e[0] == "set_attr" and e[1] == "i"}
+        if not sets.get("cognitive_disposition") or not isinstance(sets.get("arbitration_basis"), str):
+            continue
+        if r.get("name") in tried or _rule_names_protected_type(r, types):
+            continue
+        if seed_of.get(r.get("name")) not in adoptable_seeds and not str(r.get("name", "")).endswith("_generalised"):
+            continue
+        guards = _guards_on(r.get("where") or {}, "i")
+        if not guards:
+            continue
+        miss = [(k, v, n) for (k, v, n) in guards if not _guard_holds(fattrs, k, v, n)]
+        if len(miss) != 1 or miss[0][0] in _GENERALISE_FIXED_KEYS or miss[0][2]:
+            continue
+        cands.append((r, miss[0][0], sets))
+
+    def _realisers(basis):
+        out = []
+        for r2 in rules:
+            g2 = _guards_on(r2.get("where") or {}, "i")
+            if g2 and any(k == "arbitration_basis" and v == basis and not n for k, v, n in g2) \
+                    and not _rule_names_protected_type(r2, types) \
+                    and any(isinstance(e, list) and e[:2] == ["add_node", "reply"] for e in (r2.get("effects") or [])):
+                out.append(r2)
+        return out
+    # only a pair the agent can actually SAY something with: the arbitration's
+    # basis must have a held reply rule that mints a reply Message
+    cands = [c for c in cands if _realisers(c[2]["arbitration_basis"])]
+    if not cands:
+        return {"built": False, "wall": ("no held arbitration rule selects a disposition for this turn's evidence "
+                "with exactly one non-identity guard changed -- honest abstain")}
+    cands.sort(key=lambda c: c[0].get("name", ""))
+    src, mkey, sets = cands[0]
+    new_value = fattrs.get(mkey)
+    old_basis = sets["arbitration_basis"]
+    slug = _re.sub(r"[^a-z0-9]+", "_", str(new_value).lower()).strip("_") or "none"
+    new_basis = f"{old_basis}__{mkey}_{slug}"
+    arb = _relax_guard(src, "i", mkey, new_value)
+    arb["name"] = f"{src['name']}__{mkey}_{slug}_generalised"
+    arb["effects"] = [(["set_attr", "i", "arbitration_basis", new_basis]
+                       if isinstance(e, list) and e[:3] == ["set_attr", "i", "arbitration_basis"] else e)
+                      for e in src["effects"]] + [["set_attr", "i", "receipt_selected_by_rule", "neutral_receipt"]]
+    arb.pop("active", None)
+    arb["comment"] = (f"disposition_generalise (tranche 22): {src['name']} with guard i.{mkey} relaxed to "
+                      f"{new_value!r}; basis {new_basis!r}. Adopted only if the production replay supports it.")
+    replies = []
+    for r in _realisers(old_basis):
+        guards = _guards_on(r.get("where") or {}, "i")
+        rr = _relax_guard(r, "i", "arbitration_basis", new_basis)
+        if any(k == mkey for k, _v, _n in guards):
+            rr = _relax_guard(rr, "i", mkey, new_value)
+        rr["name"] = f"{r['name']}__{mkey}_{slug}_generalised"
+        rr.pop("active", None)
+        rr["comment"] = f"disposition_generalise (tranche 22): {r['name']} keyed on basis {new_basis!r}."
+        replies.append(rr)
+    if not replies:
+        return {"built": False, "wall": f"no held reply rule realises basis {old_basis!r} -- nothing to generalise"}
+    existing = {r.get("name") for r in rules}
+    if arb["name"] in existing:
+        return {"built": False, "wall": f"{arb['name']} is already held"}
+    return {"built": True, "rules": [arb] + replies, "source_rule": src["name"], "guard": mkey,
+            "new_value": new_value, "basis": new_basis,
+            "how": (f"The unanswered turn's interpretation differs from {src['name']}'s held guards only on "
+                    f"i.{mkey} ({new_value!r}); I copied it and its {len(replies)} reply rule(s) under basis "
+                    f"{new_basis!r}, add-only, for the production replay to judge.")}
+
+
 _VARIATION_REGISTRY = {
     "cue_set_edit": _compose_cue_variant,
     "reply_ablation": _compose_reply_ablation,
@@ -4552,6 +4731,7 @@ _VARIATION_REGISTRY = {
     "rule_literal_edit": _compose_rule_literal_variant,
     "datum_feedback_rule": _compose_datum_feedback_rule,
     "shape_mint": _compose_shape_mint,
+    "disposition_generalise": _compose_disposition_generalise,
     # structural_edit / threshold_shift are registered below, after their
     # builders are defined (module load order), same dict.
 }
@@ -5043,6 +5223,7 @@ def _compose_experiment_rule(agent, keys, rels) -> dict[str, Any]:
     lit_report = None               # ditto — the rule-literal-edit family (WHERE-CLAUSE-VARIATION, 'ruleliteral')
     datum_report = None             # ditto — the datum-feedback-rule family (COMPOSER-CAPABILITY, 'datumfeedback')
     shape_report = None             # ditto — the shape-mint family (COMPOSER-CAPABILITY, 'shapemint')
+    gen_report = None               # ditto — the disposition-generalise family (tranche 22)
     variation_op = None             # the variation_pick Program's verdict (None until 'test' authors a delta)
     conversation = "replay" in rp   # the conversation experiment family (Wave 3)
     # A test only needs a detached process/world when its grounded relations
@@ -5385,6 +5566,19 @@ def _compose_experiment_rule(agent, keys, rels) -> dict[str, Any]:
                 delta_attrs["datum_feedback_edit"] = 1.0
                 delta_attrs["datum_feedback_datum_attr"] = datum_report["datum_attr"]
                 delta_attrs["datum_feedback_belief_attr"] = datum_report["belief_attr"]
+        elif variation_op == "disposition_generalise" and variation_builder is not None:
+            # THE DISPOSITION-GENERALISATION VARIANT (tranche 22) -- see
+            # _compose_disposition_generalise: ADD-ONLY copies of a held
+            # arbitration rule + its reply rule(s), one guard relaxed to the
+            # unanswered turn's own evidence. `generalise_edit` marks the delta
+            # so perform_adoptions installs a SUPPORTED winner's rules.
+            gen_report = variation_builder(agent, keys, tag)
+            if gen_report.get("built"):
+                add_rules_list.extend(gen_report["rules"])
+                delta_attrs["generalise_edit"] = 1.0
+                delta_attrs["generalise_source_rule"] = gen_report["source_rule"]
+                delta_attrs["generalise_guard"] = gen_report["guard"]
+                delta_attrs["generalise_basis"] = gen_report["basis"]
         elif variation_op == "shape_mint" and variation_builder is not None:
             # THE SHAPE-MINT VARIANT (COMPOSER-CAPABILITY) — see
             # _compose_shape_mint: constructs a brand-new InterlocutorShape
@@ -5471,7 +5665,8 @@ def _compose_experiment_rule(agent, keys, rels) -> dict[str, Any]:
         # any rule marks).
         if (cue_report is not None and cue_report.get("built")) or (knob_report is not None and knob_report.get("built")) \
                 or (datum_report is not None and datum_report.get("built")) \
-                or (shape_report is not None and shape_report.get("built")):
+                or (shape_report is not None and shape_report.get("built")) \
+                or (gen_report is not None and gen_report.get("built")):
             # CUE-EDIT / KNOB-EDIT / DATUM-FEEDBACK / SHAPE-MINT FAMILIES (Wave 5 /
             # RESIDUAL-CLOSURE / COMPOSER-CAPABILITY): the delta carries NO varied
             # rule — the genuine-variant criterion is the cue concept, the knob
@@ -5491,6 +5686,8 @@ def _compose_experiment_rule(agent, keys, rels) -> dict[str, Any]:
                     Not(Eq(Attr(V("delta"), "datum_feedback_belief_attr"), L(None)))),
                 And(Not(Eq(Attr(V("delta"), "shape_mint_name"), L(""))),
                     Not(Eq(Attr(V("delta"), "shape_mint_name"), L(None)))),
+                And(Not(Eq(Attr(V("delta"), "generalise_basis"), L(""))),
+                    Not(Eq(Attr(V("delta"), "generalise_basis"), L(None)))),
             ]}
             adopt_where = And(
                 Eq(Attr(V("exp"), "outcome"), L("supported")),
@@ -5895,6 +6092,49 @@ def perform_adoptions(agent) -> list:
                         "knob_old_value": knob_old_value, "knob_new_value": knob_new_value,
                         "rule_removed": "", "rule_added": "",
                         "taught": trec, "saved": trec.get("saved")})
+            continue
+
+        # DISPOSITION-GENERALISE ADOPTION (tranche 22): install the supported
+        # add-only rule copies into the parent (nothing removed); any rule
+        # naming a loop node type is denied (improvement integrity).
+        if da.get("generalise_edit") == 1.0 and da.get("generalise_basis"):
+            try:
+                gen_rules = _json.loads(da.get("add_rules") or "[]")
+            except Exception:
+                gen_rules = []
+            if not gen_rules:
+                continue
+            ptypes = _improvement_protected_types(sub)
+            if any(_rule_names_protected_type(r, ptypes) for r in gen_rules):
+                native.set_attr(exp, "adopt_denied", True)
+                out.append({"experiment": str(exp), "denied": True,
+                            "reason": "a generalised rule names a self-improvement-loop node type"})
+                continue
+            live = {r.get("name") for r in native.export_rules() if isinstance(r, dict) and r.get("active", True)}
+            added = []
+            for r in gen_rules:
+                if r.get("name") not in live:
+                    native.add_rule(r)
+                    added.append(r.get("name"))
+            adoption = sub.add_node("Adoption", {
+                "rule_removed": "", "rule_added": ",".join(added),
+                "generalise_basis": da.get("generalise_basis"),
+                "generalise_source_rule": da.get("generalise_source_rule") or "",
+                "experiment_id": str(exp), "tick": _time.time(), "original_rule_json": "",
+            })
+            try:
+                native.add_edge_unchecked(exp, "adopted_as", adoption)
+            except Exception:
+                pass
+            native.set_attr(exp, "adopted", True)
+            trec = teach(agent, "TaughtHint",
+                         {"topic": (f"adoption: generalised {da.get('generalise_source_rule')!r} to basis "
+                                    f"{da.get('generalise_basis')!r} (experiment {exp})"),
+                          "answer": "adopted", "rule_removed": "", "rule_added": ",".join(added),
+                          "experiment_id": str(exp)},
+                         category="experiment_conclusions")
+            out.append({"experiment": str(exp), "adoption": adoption, "rule_removed": "",
+                        "rule_added": ",".join(added), "taught": trec, "saved": trec.get("saved")})
             continue
 
         # DATUM-FEEDBACK ADOPTION (COMPOSER-CAPABILITY — see
