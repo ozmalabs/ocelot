@@ -85,6 +85,12 @@ def main() -> int:
             problems.append("%s: does not input paper_metadata.tex" % path.name)
         if DRAFT_RE.search(src) or DATE_REV_RE.search(src):
             problems.append("%s: retains handwritten draft or revision metadata" % path.name)
+        for line_number, line in enumerate(src.splitlines(), 1):
+            if r"\PaperDisplayDate" in line and not (
+                line.lstrip().startswith(r"\date{") or r"\PaperDraft" in line
+            ):
+                problems.append("%s:%d: document date macro used as a source/event date" %
+                                (path.name, line_number))
         required = (r"\PaperDraft", r"\PaperDisplayDate", r"\PaperRevision")
         if stem == "01s_graphic_equalisation_statement":
             required = (r"\PaperFooterStamp",)

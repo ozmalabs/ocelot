@@ -69,7 +69,8 @@ def stems(names):
         return names
     out = subprocess.run(["git", "diff", "--name-only", "HEAD", "--", "papers/formal"],
                          capture_output=True, text=True, cwd=FORMAL.parent.parent).stdout
-    return sorted({Path(l).stem for l in out.split() if l.endswith(".tex")})
+    return sorted({Path(l).stem for l in out.split() if l.endswith(".tex") and Path(l).name != "paper_metadata.tex"
+                   and not Path(l).name.endswith(".counts.tex")})
 
 def cmd_build(a):
     metadata = subprocess.run([sys.executable, str(Path(__file__).parent / "build_paper_metadata.py")])

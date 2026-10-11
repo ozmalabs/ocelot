@@ -4,6 +4,8 @@
 \usepackage{lmodern,amsmath,amssymb,amsthm,mathtools,booktabs,hyperref,enumitem,microtype}
 \usepackage[margin=1in]{geometry}
 \usepackage{natbib}
+\usepackage{xr-hyper}
+\externaldocument[GE-]{01_law_of_graphic_equalisation_theory_referenced}
 
 \newtheorem{theorem}{Theorem}[section]
 \newtheorem{proposition}[theorem]{Proposition}
@@ -33,8 +35,7 @@
 \textbf{DRAFT --- \PaperDraft r\PaperRevision} (\PaperDisplayDate).
 This document is under active revision and is circulated for comment, not as a
 finished result. Definitions, numbering and claims may change between drafts;
-cite the version string above if referring to it. Sections marked as
-falsifiability commitments are the intended points of attack.}}
+cite the version string above if referring to it. The finite-profile proof and the conformance conditions of Section~\ref{sec:tests} are the intended points of attack.}}
 \end{center}
 \vspace{1em}
 
@@ -44,20 +45,20 @@ The companion theory of Graphic Equalisation is stated extensionally: a realised
 
 This paper gives one constructive reference realisation. It specifies synchronous rule closure over an immutable antecedent base, provisional identity handling, typed well-formedness predicates, deterministic compatible merge, local and world-directed target decomposition, optional represented valuation, boundary exposure, provenance-preserving residual construction, and conditions for order-independent least-fixed-point closure. The construction is both executable semantics and experimental apparatus: implementation forced ambiguous prose to resolve into explicit causal choices.
 
-No claim is made that nature literally executes these algorithms. The claim is that, under the stated conditions, this construction realises the abstract deterministic dynamics reproducibly.
+No claim is made that nature literally executes these algorithms. The claim is that, under the stated conditions, the finite core satisfies the stated determinism constraint; the optional interfaces require additional declared policies.
 \end{abstract}
 
 \section{Separation from the theory}\label{sec:separation}
 
 \paragraph{Reading for the claim.}
-What this construction buys is one executable semantics that forced the theory's ambiguities to resolve into explicit causal choices. As with the companion theory, the components used here are individually established and cited as such; the claim is their arrangement, which is not reachable by evaluating those components separately, since they are stipulated to be known. The composition inherits the extensional theory's own falsifiability commitment rather than restating it here.
+What this construction buys is one executable semantics that forced the theory's ambiguities to resolve into explicit causal choices. As with the companion theory, the components used here are individually established and cited as such; the claim is their arrangement, which is not reachable by evaluating those components separately, since they are stipulated to be known. The construction inherits the extensional theory's composition challenge. Its own conformance claim fails if a finite-profile execution depends on rule enumeration, reads a same-round addition, or commits a boundary family rejected by its stated well-formedness predicate.
 
 The theory defines
 \[
 G_t\rightarrow\mathcal P(G_t)\xrightarrow{\mathcal C_t}G_{t+1}.
 \]
 
-This paper constructs one finite executable representation of $\mathcal P(G_t)$ and one deterministic graph/world execution semantics. Proposal records, synchronous rounds, provisional identifiers, explicit merge functions, \textsc{FAIL} values, causal collection cuts, and executor tie handling are implementation-specific.
+Section~\ref{sec:finite-profile} constructs a finite executable core. The optional decision, publication and exposure interfaces below are extension contracts requiring supplied policies, not further closed algorithms. The core constructs one finite executable representation of $\mathcal P(G_t)$ and one deterministic graph/world execution semantics. Proposal records, synchronous rounds, provisional identifiers, explicit merge functions, \textsc{FAIL} values, causal collection cuts, and executor tie handling are implementation-specific.
 
 The distinction follows a standard separation in semantics between an extensional relation and one operational procedure that computes or realises it. Fixed-point semantics for recursive rule systems provide a particularly close computational precedent \citep{tarski1955,cousot1977,ceri1989}.
 
@@ -99,15 +100,15 @@ Typed mutations reduce extensionally to
 \Pi_G=\{\operatorname{ADD},\operatorname{REMOVE}\}.
 \]
 
-\begin{theorem}[Finite graph rewrite completeness]\label{thm:add-remove}
+\begin{remark}[Finite add/remove representation]\label{thm:add-remove}
 For every pair of finite graph states $G$ and $H$, a finite sequence of ADD and REMOVE operations transforms $G$ into $H$.
-\end{theorem}
+\end{remark}
 
 \begin{proof}
 Remove every represented fact in $G\setminus H$ and add every represented fact in $H\setminus G$.
 \end{proof}
 
-The theorem is intentionally weak: it establishes representational completeness for finite extensional graph state, not efficiency, confluence, or semantic preservation.
+The set identity is intentionally weak: it establishes representational completeness for finite extensional graph state, not efficiency, confluence, or semantic preservation.
 
 \section{Guarded proposals}\label{sec:proposals}
 
@@ -118,6 +119,80 @@ A reference proposal is
 where $P_G$ is a source-local antecedent condition, $P_{\mathcal B}$ an optional boundary-language precondition, $\mathbf a$ a finite set of provisional identities, and $\mathcal D$ a finite transformation term.
 
 Proposal objects are implementation artefacts representing possible deformations. They are not substrate primitives.
+
+\section{A finite executable core}\label{sec:finite-profile}
+Fix a finite constant set $A$, a finite typed relational vocabulary, and a
+finite set $U$ of possible ground proposal records. A graph is represented
+by node facts $\operatorname{Node}(a)$ and edge facts
+$\operatorname{Edge}_t(a,b)$, plus facts encoding the fixed rules $r$ and
+grammar $\Gamma$ for this invocation. Every edge endpoint must have a node
+fact. Frames are selected edge types and boundary targets, not an additional
+primitive (theory Definitions~\ref{GE-def:graph}, \ref{GE-def:frame}).
+
+Each rule is a finite positive Horn clause. Its body reads base facts or
+positive proposal facts; its head emits one keyed record
+$u=(k,\tau,P^+,P^-)$ with finite addition and removal sets. The key is
+(rule identifier, ground binding), so repeating the same derivation emits
+the same record. In this profile there is no unbounded name invention:
+any provisional identities are preallocated members of $A$. Negation reads
+only the immutable base, if used. Proposed removal does not delete a premise
+during closure. These restrictions make ground rule instances finite.
+
+Put $L=2^U$, ordered by inclusion, with bottom $\varnothing$ and total
+join $\sqcup_D=\cup$. For $D\in L$,
+\[
+\operatorname{Frontier}^+(D)=\bigcup_{u\in D}P_u^+,
+\qquad
+\widetilde g(D)=g^{\rm base}\cup\operatorname{Frontier}^+(D).
+\]
+This union is a symbolic matching view, never a realised commit. Define
+\[
+F(D)=D\cup\{u\in U:\text{a ground rule body is true in }
+                   \widetilde g(D)\text{ and emits }u\}.
+\]
+A round evaluates all enabled instances on this fixed view. Incompatibility
+is retained as proposal data; it cannot make the lattice join partial.
+
+For a boundary target $\tau$, collect $D_\tau$ and let
+$P_\tau^\pm=\bigcup_{u\in D_\tau}P_u^\pm$. Set
+$\operatorname{WF}(g,P_\tau)$ true exactly when additions and removals are
+disjoint, every fact has the declared type and arity, every removal exists
+in the base, and the candidate graph
+$(g\setminus P_\tau^-)\cup P_\tau^+$ has all edge endpoints and satisfies
+the explicitly supplied finite grammar predicates. Realisation returns
+\[
+\Delta_\tau^R=
+\begin{cases}(P_\tau^+,P_\tau^-),&\operatorname{WF}(g,P_\tau),\\
+(\varnothing,\varnothing),&\text{otherwise}.
+\end{cases}
+\]
+Thus the policy rejects the whole conflicting boundary family, independent
+of enumeration order. Its transient witness records every contributing key,
+the predicate failures and acceptance status. Applying $\Delta_\tau^R$
+constructs the collapse step; comparing it with each proposal constructs
+the residual (theory Definitions~\ref{GE-def:admissible},
+\ref{GE-def:collapse}, \ref{GE-def:residual}). Rejection is this executor's
+policy, not the only admissible grounding.
+
+The typed predicates below specialise as follows in this core:
+$\mathrm{WF}_{\rm sym}$ checks fact types and disjoint effects before
+substituting preallocated names; $\mathrm{WF}_{\rm app}$ is realised
+$\mathrm{WF}$ after substitution; $\mathrm{WF}_{\rm rel}$ checks a supplied
+finite boundary translation; $\mathrm{WF}_{\rm seq}$ checks dependency
+ordering; $\mathrm{WF}_{\rm sym}^W$ repeats the symbolic check on a world
+base; and $\mathrm{WF}_{\rm decision}$ combines these checks for a selected
+family. A translation is a declared finite table; dependency ordering is
+acyclicity of the declared dependency graph. Valuation and prospect functions
+are optional supplied functions, absent from this minimal profile.
+
+For example, from $g=\{\operatorname{Node}(a),\operatorname{Node}(b)\}$,
+a rule emits $u_1$ adding $\operatorname{Edge}(a,b)$; a second rule matches
+that positive proposal fact and emits $u_2$ adding
+$\operatorname{Edge}(b,a)$. The successive proposal sets are
+$\varnothing$, $\{u_1\}$, $\{u_1,u_2\}$ and then stable. Both edges
+are committed together at their common target if its grammar permits them.
+A proposal also removing $\operatorname{Edge}(a,b)$ conflicts and causes
+this boundary family to be rejected, while the proposal lattice remains intact.
 
 \section{Proposal construction function}\label{sec:closure-function}
 
@@ -169,7 +244,7 @@ D^{(k+1)}
 =
 D^{(k)}\sqcup_D E^{(k)},
 \]
-with deterministic merge over compatible effects and explicit incompatibility otherwise.
+with total set union during closure; incompatibility is recorded and handled only by the realisation policy of Section~\ref{sec:finite-profile}.
 
 This is one constructive realisation of the theory-level antecedent-state principle. Comparable staged semantics appear in rule evaluation and deductive databases, where immediate-consequence operators repeatedly extend a fact set until closure \citep{ceri1989}.
 
@@ -181,30 +256,27 @@ F_{g^{\mathrm{base}},r,\Gamma}
 \]
 be the synchronous proposal operator.
 
-\begin{theorem}[Order-independent proposal closure]\label{thm:lfp}
-If
-\[
-D_a\subseteq D_b
-\Rightarrow
-F(D_a)\subseteq F(D_b),
-\]
-positive derivation is monotone, admissibility is base-stable or monotone proposal-sensitive, merge is deterministic on compatible effects, and fresh-name invention is appropriately stratified, then
-\[
-\boxed{
-D^*
-=
-\operatorname{lfp}
-\left(
-F_{g^{\mathrm{base}},r,\Gamma}
-\right)
-}
-\]
-is independent of rule enumeration order.
+\begin{theorem}[Finite order-independent proposal closure]\label{thm:lfp}
+For the finite positive profile of Section~\ref{sec:finite-profile}, synchronous
+iteration $D^{k+1}=F(D^k)$ from $D^0=\varnothing$ reaches $\operatorname{lfp}(F)$
+after at most $|U|$ strict growth rounds. The result is independent of the
+enumeration of ground rule instances within each round.
 \end{theorem}
+\begin{proof}
+Positive bodies remain true as $D$ grows, so $F$ is monotone and inflationary
+on the finite complete lattice $2^U$. Each nonstationary round adds a member
+of $U$, hence there are at most $|U|$ strict rounds. At stationarity the
+set is a fixed point. For any fixed point $X$, induction from
+$D^0\subseteq X$ and monotonicity gives $D^k\subseteq X$; the stationary
+set is therefore least. A round's union depends only on its enabled set,
+not its enumeration. Realisation conflicts are handled after closure and
+cannot invalidate this lattice argument.
+\end{proof}
+
 
 The existence of least fixed points for monotone operators on complete lattices is classical \citep{tarski1955}; fixed-point semantics are foundational in denotational semantics and abstract interpretation \citep{cousot1977}, and least-fixed-point evaluation is standard for positive recursive rule systems \citep{ceri1989}.
 
-The theorem above adds implementation-specific conditions needed for this executor's proposal language and merge semantics. Finite termination additionally requires a finite active domain or represented stopping/freshness conditions.
+The proof applies to the finite profile just defined. Extensions with recursive fresh-name invention need a new termination argument; a monotone operator alone does not imply finite termination.
 
 \section{Removal and freshness stratification}\label{sec:stratification}
 
@@ -368,7 +440,7 @@ B_{G_j\rightarrow W,e}^{\mathrm{exposed}}
 B_{W,e}^{\mathrm{external}}.
 \]
 
-A graph-world recursively uses deterministic resolution. More generally, the reference implementation assumes that a causally complete antecedent configuration determines the realised successor, in accordance with the Graph Law.
+A graph-world recursively uses deterministic resolution. More generally, the reference implementation assumes that a causally complete antecedent configuration determines the realised successor, as a design assumption under the Graph Law schema and the theory's separate determinism commitment.
 
 \begin{remark}[The antecedent base is present structure]\label{rem:base-is-present}
 ``Antecedent'' here names the immutable base a round reads, not a retained temporal history. Consistently with how the Graph Law treats history, prior rounds influence a closure only where their consequences survive in the base being read; the executor holds no stack of earlier graph states and requires none. Reproducibility is therefore stated over causally sufficient \emph{present} structure --- identical bases yield identical realised successors --- and not over an agreement of histories.
@@ -453,7 +525,7 @@ A reference implementation should test:
 
 \section{What implementation taught the theory}\label{sec:lessons}
 
-The constructive work forced distinctions that survive replacement of this executor:
+The following design-history distinctions guide this executor and proposed replacements; they are not theorems about every possible executor:
 
 \begin{enumerate}[leftmargin=*]
 \item antecedent state is distinct from consequences of the current transition;

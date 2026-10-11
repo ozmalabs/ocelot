@@ -56,7 +56,8 @@ CLEARED = ["00_is",
            "06_assessing_an_account_of_this_kind",
            "07_causal_attitude_networks_on_the_substrate",
            "08_certified_answers_as_an_audit",
-           "10_applied_graphic_equalisation"]
+           "10_applied_graphic_equalisation",
+           "11_relational_information_ethics"]
 # This is a deliberately fail-closed allowlist. The excluded adaptation theory
 # and implementation papers (09 and 09a), together with the constructive
 # realisation (A1), relate to autonomous-control capability or executable

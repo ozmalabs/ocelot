@@ -49,15 +49,11 @@ attack.}}
 
 \begin{abstract}
 Four classical experiments were put to a substrate built for other reasons, and one of the four does
-not reproduce. Contact comfort \citep{harlow1958} does, with an ablation control establishing which
-structure carries it, and so does learned helplessness \citep{seligman1967}, with the contingency
-manipulation that makes it a result about coupling rather than about aversiveness.
-The delay-of-gratification task does something more useful than reproduce: the substrate exhibits,
-constructively, why the measure is confounded --- identical dispositions produce different wait
+not reproduce. A contact-drive fixture motivated by contact comfort \citep{harlow1958} exhibits a cloth preference with an ablation control. A non-contingency fixture motivated by learned helplessness \citep{seligman1967} reduces attempts during induction; without an escapable transfer phase it does not establish learned helplessness.
+The delay rule has two effective inputs and exhibits non-identifiability when belief is unobserved --- identical dispositions produce different wait
 times under different beliefs about reliability, and dispositions differing fourfold produce
 identical wait times under compensating beliefs. That agrees with what the empirical literature
-already found \citep{kidd2013,watts2018}, which is the point rather than a discovery: an account
-that had to be told this would be worth less than one in which it falls out. The fourth is a negative and is reported as the most informative of them: face inversion
+already found \citep{kidd2013,watts2018}, which is the point rather than a discovery: the two-parameter construction does not independently explain the empirical phenomenon. The fourth is a negative and is reported as the most informative of them: face inversion
 \citep{yin1969} and the Thatcher illusion \citep{thompson1980} are \emph{not} reproduced, because the
 substrate has no privileged upright frame to be costly to leave --- a diagnosed boundary rather than a
 failure, and one that carries a commitment about what adding the missing frame should do.
@@ -97,6 +93,11 @@ what was found, and the scope the run holds under; it names no implementation id
 is not re-disclaimed at each section below.
 
 \section{Contact comfort}\label{sec:harlow}
+The reported fixture implements contact-driven approach. This paper supplies
+no competing hunger weight or wire-surrogate feeding arm, so it does not yet
+reproduce Harlow's contact-versus-nutrition contrast. The numerical fixture
+result below is conditional on the supplied contact drive.
+
 \citet{harlow1958} found infant macaques preferring a cloth surrogate offering no food to a wire
 surrogate offering it, and fleeing to the cloth under stress. The substrate was given a contact
 drive and the same two-surrogate arrangement.
@@ -114,7 +115,7 @@ infants preferring cloth & $200/200$ & $0/200$\\
 \end{center}
 
 \emph{What the interval is over needs saying, because two different estimands sit in that table.}
-Each of the $200$ subjects contributes a \emph{fraction} of its own directed behaviour, and the
+These intervals describe the author-selected parameter draws; their full jitter distributions are needed to reproduce the spread and are not specified here. Each of the $200$ subjects contributes a \emph{fraction} of its own directed behaviour, and the
 interval is the normal-approximation interval on the mean of those fractions --- between-subject
 $\mathrm{sd}=0.039$, so $\pm 1.96\,\mathrm{sd}/\sqrt{n}$. It is \emph{not} a binomial interval on a
 proportion of subjects, which at this $n$ would be about ten times wider ($[0.742, 0.853]$). The
@@ -208,6 +209,10 @@ entailments and not additional evidence for the psychology, which already has be
 \end{remark}
 
 \section{Learned helplessness, and what the contingency manipulation shows}\label{sec:helplessness}
+The record reported here does not specify a post-induction transfer test in
+a newly escapable apparatus. The table therefore establishes a contingency
+learning fixture, not the transfer deficit of learned helplessness.
+
 \citet{seligman1967} established that the deficit follows from \emph{non-contingency} between action
 and outcome rather than from aversive experience as such, which is what the contingent control arm is
 for. Both arms were run at $n=200$ over $60$ ticks.
@@ -299,6 +304,13 @@ when it exists}, and each of the four above stands on that footing. The remainde
 a reader knows the selection was made from something, and so that a later paper reporting more of
 it is understood as continuing this one rather than announcing a new result.
 
+\paragraph{Reproduction boundary.} The numerical claims below retain their
+original run dates and scope. A reader needs the referenced run artifacts,
+configuration and code revision to reproduce them; the paper alone is not a
+complete reproduction package. A record-dependent commitment is not independently
+runnable until those artifacts are supplied. No new empirical run is reported
+in this revision.
+
 \section{Falsifiability commitments}\label{sec:falsifiability}
 
 \noindent\emph{On the tags.} Each commitment below is marked \textsc{[shape]} or \textsc{[detail]}.
@@ -311,18 +323,21 @@ which is the more serious of the two and is still a boundary rather than an anni
 \item \textsc{[detail]}~\textbf{Contact preference is carried by the contact drive.} Fails if the
 preference survives ablation of that drive at comparable magnitude, in which case the arrangement
 rather than the drive is producing it.
-\item \textsc{[shape]}~\textbf{The delay measure is not identifiable for disposition.} Fails if some
-assignment of beliefs recovers disposition uniquely from wait time in this substrate --- that is, if
-the two directions exhibited above can both be blocked without adding structure for the purpose.
+\item \textsc{[detail]}~\textbf{Delay-rule identifiability.} Check the reported pairs of parameter
+settings against the stated wait rule. Non-identifiability concerns unknown
+belief and disposition jointly; holding belief fixed or observing it can permit
+recovery of disposition. The two-knob confound is a model property, not an
+independent empirical prediction.
+
 \item \textsc{[detail]}~\textbf{Impatience does not require a deficit.} Fails if a short wait cannot
 be produced from a patient disposition by belief alone, which is the arm reported in
 Remark~\ref{rem:rational-impatience} and would be settled against by its non-replication.
-\item \textsc{[detail]}~\textbf{Helplessness follows non-contingency, not aversive experience.} Fails
+\item \textsc{[detail]}~\textbf{Attempt suppression during non-contingency.} Fails
 if the contingent arm develops the deficit at comparable magnitude, the aversive experience being
 matched across arms by construction --- in which case the manipulation is not doing the work the
 design attributes to it.
 \item \textsc{[shape]}~\textbf{The inversion cost is absent because a privileged upright frame is
-absent.} \emph{Fails if adding a privileged upright frame does not restore the inversion cost.} This
+absent.} \emph{Fails if the added upright grounding produces no greater inversion cost in the configural channel than the part-based control, or fails to produce the upright-dependent Thatcher asymmetry.} This
 is the negative of Section~\ref{sec:inversion} stated as a claim about what the missing commitment
 \emph{is}, rather than as a report that something did not happen: the diagnosis says uniform inversion
 folds to a rotation the composition treats as free (the adaptability paper's

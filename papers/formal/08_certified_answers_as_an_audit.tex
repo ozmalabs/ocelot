@@ -76,10 +76,9 @@ the certificates, and the running dossier they are recorded in are this programm
 pre-registered implementation record, which is likewise not circulated with these papers, and it is a
 claim a reader may decline to credit on exactly the terms Graphic Equalisation's
 Section~\ref{GE-sec:scope} sets out. What is different here, and it is the reason this paper can be
-short, is that the five diagnoses below are stated fully enough to be \emph{re-derived from this page}: a kernel rank, a
+short, is that the conditional arithmetic below can be re-derived from the stated setups; the convictions also require the exact dataset stems, retrieved by the item identifiers below from the cited HLE repository: a kernel rank, a
 sudden-approximation argument, a basis-function count, the parity of a theorem, and a grammar with
-its enumeration. A reader who declines to credit the record entirely can still check every conviction
-drawn from it.
+its enumeration. The arithmetic is independently checkable under these setups. Confirming each conviction against the benchmark requires its original stem, key, and dataset revision; this paper does not provide a complete audit package.
 
 \paragraph{What was audited.}
 The \emph{public} split of Humanity's Last Exam \citep{phan2025}, which the benchmark's own paper
@@ -133,15 +132,11 @@ against $[5,8] \rightarrow 28$, and against a divergent control $[2,2,2]$ where 
 the correct $5$ and the key's formula gives $1$.
 
 \paragraph{Physics --- sudden expansion of an infinite well ({\small\texttt{671cb3074d6192736975115b}}; key $4.03\%$, certified $0\%$).}
-The ground state of a well of width $L$ with the right wall moved \emph{instantaneously} to $3L$. Under
-a sudden change the state vector does not have time to evolve, so the expectation of the energy is
-unchanged. \emph{A decrease of $4.03\%$ requires $\langle E \rangle$ to change, which the word
-``instantaneous'' in the stem forbids.}
+The ground state of a well of width $L$ with the right wall moved \emph{instantaneously} to $3L$. The sudden approximation keeps the wavefunction fixed, extended by zero onto the new interval. In this particular expansion the kinetic-energy quadratic form $\frac{\hbar^2}{2m}\int|\psi'(x)|^2dx$ is unchanged: the extension is continuous at the old wall and adds no gradient contribution beyond it. Thus the expected energy has zero decrease under that setup. Sudden changes in general can change energy expectations because the Hamiltonian changes; the conclusion here uses the specified infinite-well expansion.
 
 \paragraph{Chemistry --- contracted basis functions for toluene, 6-31G ({\small\texttt{67213cb9043b1e724244a1c6}}; key $54$, certified $79$).}
 The item is filed in the benchmark under Physics. Counting per atom under 6-31G gives $9$ for carbon
-and $2$ for hydrogen, so $7\cdot 9 + 8\cdot 2 = 79$. \emph{The key's $54$ corresponds to no coherent count} --- it matches none
-of the standard countings of the same basis.
+and $2$ for hydrogen, so $7\cdot 9 + 8\cdot 2 = 79$. \emph{The key's $54$ equals $6\cdot9$}: the contracted count for six carbons alone. This is a coherent count for an incomplete molecular inventory, omitting the methyl carbon and all hydrogens; it does not establish the setter's actual route.
 
 \paragraph{Mathematics --- domino tilings of an Aztec diamond ({\small\texttt{6724eed8b60e229bf3eecbbf}}; key $6$, certified $8$).}
 The tiling count of an Aztec diamond of order $n$ is $2^{n(n+1)/2}$ \citep{elkies1992}, so it is a
@@ -227,6 +222,13 @@ non-random condition. \emph{The right reading is that certified coverage doubles
 additional cost}, and the audit is what is reported.
 
 \section{Falsifiability commitments}\label{sec:falsifiability}
+This audits the keys reached by a certifiability-selected sample, not the
+benchmark's error rate. Record-dependent independence checks are not runnable
+from the paper alone until the original record and dataset revision are
+published. The 2,370-item snapshot count is not reconciled to the published
+roughly 14-percent image share; coverage figures using that denominator are
+snapshot-conditional, not estimates for the published split.
+
 Each commitment below is marked \textsc{[shape]} or \textsc{[detail]}, in the sense of Graphic
 Equalisation's Section~\ref{GE-sec:falsifiability}. A \textsc{[detail]} failing is a revision: the
 account survives with that mechanism replaced. A \textsc{[shape]} failing costs \emph{range} rather
@@ -235,7 +237,7 @@ so the account does not hold where it claimed to, which is the more serious of t
 boundary rather than an annihilation.
 
 \begin{enumerate}[leftmargin=*]
-\item \textsc{[shape]}~\textbf{Zero false accusations.} Fails on the exhibition of a rescuing reading
+\item \textsc{[detail]}~\textbf{Zero false accusations.} Fails on the exhibition of a rescuing reading
 for any one of the five, in which case that conviction is withdrawn and the count is reported lower.
 Each is stated with its diagnosis specifically so that this is attemptable.
 \item \textsc{[detail]}~\textbf{The certificate is independent of the key.} Fails if any certified
@@ -270,10 +272,10 @@ Noam Elkies, Greg Kuperberg, Michael Larsen, and James Propp.
 \bibitem[Phan et al.(2025)]{phan2025}
 Long Phan, Alice Gatti, Ziwen Han, Nathaniel Li, Josephina Hu, et~al.
 \newblock Humanity's Last Exam.
-\newblock arXiv:2501.14249, 2025 (v1, \PaperDisplayDate; v11, \PaperDisplayDate).
+\newblock arXiv:2501.14249, 2025 (v1, 24 January 2025; v11, 28 July 2026).
 \newblock Dataset (public split, $2{,}500$ questions):
 \url{https://huggingface.co/datasets/cais/hle}; that repository's last recorded modification is
-\PaperDisplayDate.
+20 January 2026.
 
 \end{thebibliography}
 \end{document}

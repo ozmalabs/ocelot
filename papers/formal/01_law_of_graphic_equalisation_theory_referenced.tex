@@ -22,6 +22,7 @@
 \newtheorem{definition}{Definition}[section]
 \newtheorem{theorem}[definition]{Theorem}
 \newtheorem{proposition}[definition]{Proposition}
+\newtheorem{schema}[definition]{Schema}
 \newtheorem{hypothesis}[definition]{Hypothesis}
 \newtheorem{corollary}[definition]{Corollary}
 \theoremstyle{remark}\newtheorem{remark}[definition]{Remark}
@@ -58,6 +59,10 @@ This paper proposes that one minimal structure underlies phenomena usually studi
 Read at this level, several things ordinarily treated as background turn out to be constructed rather than given --- a privileged standpoint from which to measure among them, and the substrate that remains once every removable commitment is stripped away is strikingly small, with most of what is called law being contingent upon it rather than necessary to it. Time is one of the constructed things: it is not a dimension of the substrate but a dimension a frame builds from the order among its own changes.
 
 These are claims about information, of which physical theory is taken to be one embodiment rather than a rival. The theory asserts nothing about the nature of pre-relational existence; it begins where distinguishable relational structure can first be represented, and treats the limit of that reach as a frontier instrumentation moves rather than a fixed wall.
+Provenance is relational rather than an intrinsic origin label: a frame
+infers it from present structure, records, and interactions. Different
+histories compatible with the same evidence can prevent unique recovery;
+adequate traces can establish a local attribution under declared assumptions.
 \end{abstract}
 
 \tableofcontents
@@ -130,7 +135,7 @@ representative one.
 \paragraph{Level of the claims.}
 The claims here are about \emph{information}: distinction, relation, frame, admissibility, realisation, residual. Physical theory is taken to be an embodiment of information rather than a competitor to it, alongside other embodiments --- cognitive, institutional, computational --- which differ in how much structure they instantiate rather than in kind. This is the position that licenses treating an inertial reference frame and a representational frame as the same sort of object (Axiom~\ref{ax:no-view}), and it locates the epistemic boundary below both: what embodiments are made of remains unspecified. It also fixes what this account does not attempt, which is worth saying once rather than conceding repeatedly: the constants belong to the embodiments. Where a number appears anywhere in this programme it is borrowed from a grounding and never derived here, because a framework that produced the constants would be a rival physical theory rather than the thing physical theories are stated in. \emph{This is the framework the rules live in, not a re-derivation of the rules.}
 
-The layering must not be allowed to function as a shield, so the condition under which a physical result bears on a claim here is stated in advance. \textbf{A physical result bears on an information-level claim when it settles an informational fact}, and not when it merely disagrees about mechanism in one embodiment. Bell's theorem and Kochen--Specker are the model: they do not report a mechanism, they establish that a class of pre-measurement values cannot be re-read as unheld-but-realised, which is a fact about distinction and therefore reaches this level directly (Section~\ref{sec:determinism}). Landauer's principle is a second instance, establishing a lower bound on the physical cost of a specified informational operation \citep{landauer1961}; under the substrate's no-copy default it is read below as the floor cost of change as such rather than of erasure specifically (Section~\ref{sec:interface}). A result that constrains what can be distinguished, held, or converted is admissible evidence here; a result about how a particular embodiment happens to be arranged is not.
+The layering must not be allowed to function as a shield, so the condition under which a physical result bears on a claim here is stated in advance. \textbf{A physical result bears on an information-level claim when it settles an informational fact}, and not when it merely disagrees about mechanism in one embodiment. Bell's theorem and Kochen--Specker are the model: they do not report a mechanism, they establish that a class of pre-measurement values cannot be re-read as unheld-but-realised, which is a fact about distinction and therefore reaches this level directly (Section~\ref{sec:determinism}). Landauer's principle is a second instance, establishing a lower bound on the physical cost of a specified informational operation \citep{landauer1961}; it constrains logical erasure, not bijective change or reversible uncomputation (Section~\ref{sec:interface}). A result that constrains what can be distinguished, held, or converted is admissible evidence here; a result about how a particular embodiment happens to be arranged is not.
 
 \paragraph{Provenance of the primitives.}
 The components of $G=(g,r,\Gamma)$ and its dynamic were not derived together from a single starting point, and stating how each arrived is more useful than presenting the triple as an austere posit reasoned out in advance.
@@ -246,7 +251,7 @@ treated in the assessment companion (its Section~\ref{AS-sec:risk}) rather than 
 \paragraph{What kind of document this is.} \emph{It is not a paper, and the paper exists separately.}
 \nSections{} sections in \nParts{} parts carry \nResults{} numbered results --- definitions
 \nDefinitions{}, propositions \nPropositions{}, remarks \nRemarks{}, corollaries \nCorollaries{},
-hypotheses \nHypotheses{}, theorems \nTheorems{}, axioms \nAxioms{} --- over \nBibitems{} references,
+hypotheses \nHypotheses{}, theorems \nTheorems{}, axioms \nAxioms{}, schemas \nSchemas{} --- over \nBibitems{} references,
 of which \nCited{} are cited in the text. Those counts are generated from this file at build time and
 cannot drift from it. That is the shape of a reference work, and it is why this one opens with a
 table of contents and a map of its companions. The document a reader wanting the claims rather than
@@ -301,6 +306,90 @@ shape and answers that the pieces are implemented while the composite is not
 (its Section~\ref{SG-sec:scope}), which is a claim that could turn out false without anything here
 turning out false. The exposure lives there, and Remark~\ref{rem:inherited} says so of the axiom generally.
 \end{remark}
+
+\subsection{Provenance is relational and its attribution is inferred}\label{sec:provenance-principle}
+
+\begin{definition}[Relational provenance]\label{def:provenance}
+Provenance is a relation between a structure or event and the causal
+organisation or history that produced it. A provenance attribution is a
+frame's account of that relation, constrained by the evidence the frame
+can distinguish. Neither an origin nor a source is an additional intrinsic
+mark carried independently of the relations and traces that make it
+distinguishable.
+\end{definition}
+
+\begin{remark}[Status of the principle]\label{rem:provenance-status}
+This is a derivational treatment of an established concept. Source-monitoring
+theory treats remembered origins as judgments based on memory characteristics
+and other available information \citep{johnson1993}. Causal identification
+characterises when causal queries can be recovered from observational or
+interventional information under stated models \citep{shpitserpearl2008}.
+Database provenance formalises relationships between derived outputs,
+contributing inputs, and source locations \citep{buneman2001}. These are
+distinct precedents with their own scopes; none is being claimed as a
+derivation of this entire ontology.
+
+\emph{Provenance is inferred, not inherent} states the relational discipline
+for origin. Actual causal relations do not wait for an attribution. What a
+frame knows of them comes through its relations to present structure,
+records, and effects, under Axiom~\ref{ax:no-view}. The principle adds no
+origin primitive or further observer to the substrate. The attribution is
+itself represented structure and can affect subsequent action.
+
+A provenance record can be carried explicitly. Such a record is evidence
+whose relation to its claimed source must be established in the frame;
+writing an origin into a label does not make the label authenticate its own
+history. Conversely, reliable recording and controlled intervention can
+make a local attribution determinate. The principle does not say that
+every origin is unknowable or that actual histories are interchangeable.
+
+Graphic Equalisation's contribution here is derivational backing from its
+relational commitments and a common account of the principle's applications.
+The dependencies are explicit: the relational ontology supplies the account
+of origin as a causal relation; relative grounding places its operational
+characterisation in a frame; the declared evidence map then yields the
+recovery or non-recovery result. The no-view axiom alone does not prove the
+absence of an intrinsic historical property. The backing is conditional on
+these foundational commitments and the distinction between actual relation
+and represented attribution.
+The evidence-relative proposition below states a standard identifiability
+argument in that account's terms; neither the underlying concept nor the
+argument is claimed as a new discovery. ``Inferred'' also does not require
+conscious deliberation: source-monitoring judgments can be automatic or
+deliberate \citep{johnson1993}.
+\end{remark}
+
+\begin{proposition}[Provenance recovery is evidence-relative]\label{prop:provenance-inference}
+For a declared family of candidate histories \(H_F\), let \(O_F(h)\) be the
+evidence distinguishable in frame \(F\), and let \(\pi_F(h)\) give the
+provenance distinction being asked about. The compatible provenance set is
+\[
+P_F(s)=\{\pi_F(h):h\in H_F,\ O_F(h)=s\}.
+\]
+If two compatible histories have different provenance, the evidence \(s\)
+does not determine a unique attribution. A singleton \(P_F(s)\) determines
+that distinction only relative to the declared history family and evidence
+model. An empty set indicates that the model supplies no compatible history.
+\end{proposition}
+\begin{proof}
+A recovery rule receiving the same evidence \(s\) has the same input for
+both histories. It cannot return their different provenance values as one
+uniquely warranted answer. If every compatible history has the same value,
+the requested distinction is fixed within that family. Neither conclusion
+establishes that the family includes every actual causal alternative.
+\end{proof}
+
+This is the general principle; operator supply in
+Section~\ref{sec:rule-runner} is one application. The imagined/perceived
+distinction in the mind companion and the deliberate/autonomous distinction
+in the decision-making companion are others. An output alone need not
+identify which process produced it. Where no relevant history survives in
+the evidence available to a frame, that frame cannot recover it by adding
+an origin label. Where a trace survives, it constrains the attribution
+through its actual relations. Loss of evidence limits inference; it does
+not undo the causal event.
+
+\subsection{Further consequences of relative grounding}
 
 \begin{remark}[The axiom in bits]\label{rem:axiom-in-bits}
 The axiom is clearer stated as a measure, and stated that way it is the same result as
@@ -411,8 +500,8 @@ proved here.
 
 Well-posedness comes from Axiom~\ref{ax:no-view} and could come from nowhere else, since description length is
 defined only against a vocabulary and \emph{shortest simpliciter} is not a quantity. The standing
-objection to any constitutive reading of description length --- that complexity is machine-relative up
-to an additive constant --- is therefore not answered here but \emph{accepted}: the constant is the
+objection to any constitutive reading of description length --- that Kolmogorov complexity is universal-machine-relative up
+to an additive constant (not a general invariance theorem for practical MDL codes) --- is therefore not answered here but \emph{accepted}: the constant is the
 frame. Converting an objection into a thesis is only honest where the thesis was motivated
 independently of the objection, which is the case here, Axiom~\ref{ax:no-view} having been argued for on other
 grounds entirely.
@@ -466,7 +555,7 @@ This removes a privileged frame, not determinacy. Within a frame, relations may 
 \midrule
 Inherited &
 Both of \emph{Is}'s propositions: to be is to stand in relation, and to cohere in it &
-\emph{Is}, Propositions~\ref{IS-prop:is} and~\ref{IS-prop:cohere}. Taking the second adds nothing, since it is derived there from the first plus the measure (Remark~\ref{rem:cohere})\\[2pt]
+\emph{Is}, Propositions~\ref{IS-prop:is} and~\ref{IS-prop:cohere}. The second is its stated structural coherence condition; the informational rendering agrees with it but does not ground it (Remark~\ref{rem:cohere})\\[2pt]
 Admitted &
 That anything \emph{happens} &
 Unpaid, and one of two --- the other being \emph{Is}'s claim that there is anything at all\\[2pt]
@@ -476,9 +565,12 @@ Something has to do the happening; the least graph that does anything is a rule.
 Postulated &
 A realisation operator; a destroy\slash preserve distinction &
 The attempt to dissolve collapse traded it for union\\[2pt]
-Not postulated, a consequence &
+Imported &
+An information measure on represented relations &
+Shannon-style measurement requires declared variables and distributions; absent at the base of \emph{Is}\\[2pt]
+Operational consequence and methodological guard &
 Axiom~\ref{ax:no-view} &
-Follows from \emph{Is}'s claim plus the measure (Remark~\ref{rem:axiom-in-bits}); guard in this paper, commitment in the groundings\\
+The weak no-informative-view result uses the measure (Remark~\ref{rem:axiom-in-bits}); the full frame-indexing discipline is stipulated here\\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -496,7 +588,7 @@ in the review record.
 Both halves are inherited and the second is not decorative: relation alone is satisfied by a relation to
 oneself, which carries nothing, so what is taken over is \emph{Is}'s pair of propositions and not
 the first alone (Remark~\ref{rem:cohere}). Nothing is added here by taking the second, since the
-companion derives it from the first together with the measure.
+companion states coherence structurally, without an information measure.
 
 \emph{Admitted.} That anything \emph{happens}. \emph{Is} is careful to say this is not required for
 there to be anything, so it is a real addition, and it is not derived from anything here. It is one of
@@ -561,14 +653,13 @@ information-preserving write is a change that destroys nothing --- the physics c
 free continuation (its Section~\ref{PH-sec:noether}) --- so the two criteria are distinct and the account uses the second. The claim that
 the discarding class is the general one is empirical and is counted here.
 
-\emph{Not postulated, and a consequence rather than an axiom.} Axiom~\ref{ax:no-view}. The \emph{of what} is the
+\emph{Imported measure and operational consequence.} The informational rendering adds an information measure over represented variables and a declared distribution \citep{shannon1948}; it is not supplied by the untyped base graph. The weak conclusion below concerns information accessible through a relation. It does not prove that every fact is frame-indexed. The full frame-indexing language is retained as the account's methodological guard.  Axiom~\ref{ax:no-view}. The \emph{of what} is the
 load-bearing part of it: it follows from the
 companion's claim together with the measure, in the two steps Remark~\ref{rem:axiom-in-bits} sets out
 --- to be is to stand in relation, a relation is what carries information, so a standpoint in no
 relation to what it views carries nothing about it and there is no informative view from nowhere. What
 the axiom denies was always an \emph{operational} view from nowhere, and that qualifier is the whole of
-the claim rather than decoration on it. Below that derivation the unqualified reading still applies
-and is not displaced by it. In this paper every use of it refuses
+the claim rather than decoration on it. The unqualified frame-indexing reading is a separate discipline and is not a consequence of that derivation. In this paper every use of it refuses
 an import --- no frame-free denominator, no absolute threshold, no evaluator standing outside every
 frame --- which is a discipline governing what the account may say, and a discipline is not a place
 this paper can fail. That is a claim about \emph{this paper} and it does not generalise: in the
@@ -581,9 +672,8 @@ is what Section~\ref{sec:falsifiability} says of this account generally.
 
 \emph{A third tier.} Between postulate and consequence sit the results stated as hypotheses or marked
 undischarged: Minimal graph sufficiency (Hypothesis~\ref{hyp:minimal-graph}), Discrete sufficiency
-(Hypothesis~\ref{hyp:discrete}), Located degradation (Hypothesis~\ref{hyp:located-degradation}), the
-Law of Graphic Equalisation itself (Hypothesis~\ref{hyp:the-law}), and the near-uniqueness of the
-cheap cut (Hypothesis~\ref{hyp:cheap-cut}). These are bets, and a two-tier ledger has nowhere to put them.
+(Hypothesis~\ref{hyp:discrete}), Located degradation (Hypothesis~\ref{hyp:located-degradation}), and the near-uniqueness of the
+cheap cut (Hypothesis~\ref{hyp:cheap-cut}). The recurrence schema organises the definitions rather than adding a separate empirical bet; the other entries carry the substantive hypotheses. A two-tier ledger has nowhere to put those bets.
 
 \emph{What is offered as consequence}, and offered rather than proved: the residual's non-admission
 reading, the impossibility of complete self-transparency, the conditional that having time requires
@@ -997,10 +1087,15 @@ The subscripts on $\Coll_t$ index a frame's own succession and must not be read 
 \end{remark}
 
 \section{The Law of Graphic Equalisation}\label{sec:the-law}
-\begin{hypothesis}[Law of Graphic Equalisation]\label{hyp:the-law}
-For realised graph $G_t$, present graph structure determines admissible continuation structure $\Poss(G_t)$. Interaction and collapse realise successor $G_{t+1}$, and that realised successor becomes the antecedent graph for the next local transition. Recursive dynamics are generated by repeated equalisation between present represented structure, admissible transformation, containing constraints, and realised continuation.
-\end{hypothesis}
-Hypothesis~\ref{hyp:the-law} is \emph{the Law} throughout, and \emph{the Graph Law} where the contrast
+\begin{schema}[Law of Graphic Equalisation]\label{hyp:the-law}
+For realised graph $G_t$, its present structure specifies admissible
+continuations $\Poss(G_t)$. Interaction and collapse realise $G_{t+1}$,
+which becomes the antecedent for the next local transition. Here
+\emph{equalisation} names this accommodation of a proposed continuation to
+represented admissibility and containing constraints. It imposes no further
+numerical balance or fixed-point condition beyond the stated recurrence.
+\end{schema}
+Schema~\ref{hyp:the-law} is \emph{the Law} throughout, and \emph{the Graph Law} where the contrast
 with a grounding's own laws matters. Thus
 \[\boxed{G_t\rightarrow\Poss(G_t)\xrightarrow{\Coll_t}G_{t+1}\rightarrow\Poss(G_{t+1})\xrightarrow{\Coll_{t+1}}G_{t+2}\rightarrow\cdots.}\]
 
@@ -1079,15 +1174,17 @@ is the identity relation under which $W$ tracks that situated instance.
 \end{definition}
 SELF and SUPERGRAPH identity are distinct types. A copy can preserve SELF identity while receiving a new SUPERGRAPH identity, and one SUPERGRAPH identity may persist through extensive changes to internal state and self-description.
 
-\begin{theorem}[No frame-free identity]\label{thm:no-frame-free}
-The substrate alone does not determine whether two represented instances are the same graph independently of an individuating frame.
-\end{theorem}
+\begin{corollary}[No frame-free SUPERGRAPH tracking identity]\label{thm:no-frame-free}
+The substrate alone supplies no $\operatorname{Id}_W$ tracking edge without
+an individuating frame $W$. This follows from Definitions~\ref{def:frame}
+and~\ref{def:supergraph-identity}; it does not deny SELF continuity across an
+actual run (Definition~\ref{def:self-identity}).
+\end{corollary}
 \begin{proof}
 That two instances are the same is an identity relation, and an identity relation here is an
 $\operatorname{Id}_W$ edge (Definition~\ref{def:supergraph-identity}). An edge of that kind is
 instantiated by a frame, since to individuate is to instantiate such an edge
-(Definition~\ref{def:frame}), and by Axiom~\ref{ax:no-view} there is no standpoint outside every frame
-at which one could be instantiated instead. The substrate with no frame nominated therefore
+(Definition~\ref{def:frame}). The substrate with no frame nominated therefore
 instantiates no such edge, and settles nothing about whether the two instances are the same.
 \end{proof}
 
@@ -1402,7 +1499,7 @@ and why a frame that retained all it ever met would pay the most rather than the
 \end{remark}
 
 \begin{proposition}[Cost characteristically reduces to the write]\label{prop:economics}
-In the substrate as characterised here, the boundary relation itself is free, and the standing structure persisting is free \emph{to the frame}; the operation that costs is a delta that writes over that structure, and $r$ is what writes. Whether persistence is free \emph{simpliciter} is set by the rules of the superframes, which may sustain a frame without charge or require a write to keep it standing, and the substrate does not decide between them. \emph{Free} here means information-preserving rather than absent: evaluating a rule is itself a write, and is unpaid because it destroys nothing (Remark~\ref{rem:evaluation-writes}). To that extent
+In the substrate as characterised here, the boundary relation itself is free, and the standing structure persisting is free \emph{to the frame}; the operation that costs is a delta that writes over that structure, and $r$ is what writes. Whether persistence is free \emph{simpliciter} is set by the rules of the superframes, which may sustain a frame without charge or require a write to keep it standing, and the substrate does not decide between them. \emph{Free} to the frame means unbilled to that frame. Information preservation is a separate property: evaluating a rule can be a reversible write, but reversibility alone does not fix its physical cost (Remark~\ref{rem:evaluation-writes}). To that extent
 \[
 \boxed{\text{cost is paid by rules.}}
 \]
@@ -1427,8 +1524,19 @@ Removal is therefore not free either, being a write. Pruning happens when accumu
 \end{remark}
 For a well-formed graph the rules rarely need to write against the standing structure, so cost approaches zero.
 
-\begin{remark}[Landauer is the physical floor of change, not of erasure]\label{rem:landauer-change}
-Proposition~\ref{prop:economics} has a measured physical floor, and it is the strongest kind of evidence admitted here (a physical result settling an informational fact). Landauer's principle bounds below the energy dissipated by a logically irreversible operation \citep{landauer1961}; it is stated for erasure because erasure was the paradigm case studied. But under no-copy a substrate change destroys its predecessor unless it was paid to be kept, so change and irreversible operation coincide, and the Landauer bound is the floor cost of \emph{change} as such, with erasure merely its cleanest instance. That is the strong form of the claim and is not derived: an append-only rule is a change that is not irreversible, and nothing here forbids one, so what follows holds for the class of changes that discard, and that this class is the general one is itself part of what is claimed. Reversible computation is the confirming case rather than the exception: it reaches near-zero dissipation only by \emph{not} destroying its predecessors, i.e.\ by retaining the whole history \citep{bennett1973}, which is the paid copy of Proposition~\ref{prop:economics}. There is accordingly no free change under this economics (Remark~\ref{rem:writeability}) --- one either forgets and pays the energy floor or keeps and pays the storage floor --- and the thermodynamic arrow is the running total of these floors, which grounds the ``direction'' of Remark~\ref{rem:no-ratchet} physically: change dissipates irretrievably, so its costs accumulate one way.
+\begin{remark}[Landauer bounds logically irreversible change]\label{rem:landauer-change}
+Landauer's principle concerns logical information lost in a many-to-one
+operation, with the usual $k_{\mathrm B}T\ln 2$ bound for erasing one unbiased
+bit in a thermal setting \citep{landauer1961}. A predecessor ceasing to be
+instantiated is not sufficient: a NOT gate or a unitary update overwrites its
+state bijectively and permits recovery without a saved copy. No-copy therefore
+does not make every change logically irreversible. Bennett's reversible
+construction computes, copies the output and uncomputes its temporary history,
+retaining the input rather than permanently retaining the whole trajectory
+\citep{bennett1973}. This physical bound supports the logically irreversible
+subclass of the economics; it supplies no universal energy floor for change,
+copying, persistence or reversible evaluation. Their actual resource costs
+require a physical implementation and a declared accounting boundary.
 \end{remark}
 
 \begin{proposition}[Evaluation is a write, and free because information-preserving]\label{prop:evaluation-writes}
@@ -1436,8 +1544,7 @@ A read is an operation that returns a datum; the returned datum has to be somewh
 a substrate that is graph all the way down there is no return channel outside the structure, so the
 value materialises as structure and the write is the return. Evaluation is a write in that plain
 sense: a match outcome, a position in an ordering, and the fact of having tried are returned values,
-and returned values are structure. It is nonetheless unpaid, because it destroys nothing --- \emph{free}
-here means information-preserving rather than absent. What it costs does not follow from that: a rule's
+and returned values are structure. It is information-preserving where its return map is injective. The reference economics leaves it unbilled to the evaluating frame; neither statement establishes zero physical cost. What it costs does not follow from that: a rule's
 cost is set by whatever supplies its primitives and is inherited along provision, so reversibility is a
 structural fact about a map while cost is a fact about what supplies a primitive, and the two must not
 be run together.
@@ -1474,8 +1581,14 @@ What is free is not the running, only the not-yet-forgetting --- and free only r
 that cannot see the bill.
 \end{remark}
 
-\begin{remark}[The Red Queen is the floor cost of change, per substrate]\label{rem:red-queen}
-A recurring puzzle across biology, culture, and competition --- that a system must change continuously merely to hold its position --- follows immediately and needs no arms-race machinery of its own. Holding a relation to a containing frame that is itself changing requires continuous change, and by Remark~\ref{rem:landauer-change} every change pays the floor; standing still is not a zero-cost option because the leaky real holding of a state is itself the paid correction of unwanted change. The cultural form is the same floor with no-copy attached: a generator is structure built by a large accumulated pile of changes, its floor was paid once by whoever built it, and because change does not cross a substrate boundary --- only its cheap results, symbols, do --- that floor is paid afresh in every substrate that wants the generator. Van Valen's evolutionary Red Queen, the cultural treadmill of relearning, and coordination arms races are then one object: continuous paid change to hold position against a changing container, floored by Landauer.
+\begin{remark}[The Red Queen requires continuing adaptation costs]\label{rem:red-queen}
+Maintaining a relation to a changing containing frame can require repeated
+adaptation. In a grounding with positive adaptation costs, those costs recur
+even when relative position does not improve. This is a structural reading of
+the evolutionary Red Queen and cultural relearning, not a derivation of a
+universal thermodynamic treadmill. Landauer supplies a floor only for logical
+information erased during those changes (Remark~\ref{rem:landauer-change});
+reversible changes and copied generators need separate resource accounting.
 \end{remark}
 
 \begin{remark}[What is required and what is optimisation]\label{rem:nothing-compulsory}
@@ -1497,7 +1610,7 @@ This is the difference in kind that separates such a substrate from those whose 
 is itself the copyable object. Priority is not claimed and would be wrong: the weights of a trained
 network are also a copyable generator, built rather than sampled, and the difference here is that the
 generator is inspectable and rule-governed structure rather than an opaque parameterisation --- a
-difference in kind of access, not in whether copying a generator is possible. The copy remains a distinct SUPERGRAPH identity (Theorem~\ref{thm:no-frame-free}) and diverges once it runs on its own containing frame; what is shared is the paid-for generator, not the subsequent individuation.
+difference in kind of access, not in whether copying a generator is possible. The copy remains a distinct SUPERGRAPH identity (Corollary~\ref{thm:no-frame-free}) and diverges once it runs on its own containing frame; what is shared is the paid-for generator, not the subsequent individuation.
 
 \section{Residual}\label{sec:residual}
 Suppose a frame represents expected or attempted deformation $\delta^P$ and collapse yields realised deformation $\delta^R$.
@@ -1545,7 +1658,7 @@ yields no continuation.
 
 \begin{proposition}[Decoherence is one operation; the frames are what differ]\label{prop:decoherence-one}
 Decoherence is one operation. It does not come in kinds and it
-does not come in degrees, and the two cases above fail identically. What differs between them is the
+does not come in degrees, and intended and unintended incoherence both return no coherent state. What differs between them is the
 frame --- arithmetic in one, kinematics in the other --- and \emph{the frames are what make the cases
 different, not the failure}. ``Everything in the superframe'' is a constant expression whose value is
 frame-relative, which is Axiom~\ref{ax:no-view} applied to incoherence rather than to observation.
@@ -2232,7 +2345,7 @@ No collapse presents a temporal coordinate. Succession is a relation \emph{betwe
 \end{proposition}
 
 \begin{corollary}[Reactive frames have succession and no time]\label{cor:reactive}
-A frame that transforms under the Law (Hypothesis~\ref{hyp:the-law}) without inferring relations among its held states participates fully in realised change and has $T=\mathrm{NULL}$. Nothing in its dynamics is thereby impaired: change is what the substrate supplies and the order among changes is carried by them, while time is what an inferring frame constructs from that order.
+A frame that transforms under the Law (Schema~\ref{hyp:the-law}) without inferring relations among its held states participates fully in realised change and has $T=\mathrm{NULL}$. Nothing in its dynamics is thereby impaired: change is what the substrate supplies and the order among changes is carried by them, while time is what an inferring frame constructs from that order.
 \end{corollary}
 This orders two capabilities that are usually treated as independent. Inference is not a faculty a temporal agent happens to have; it is the precondition for being a temporal agent at all. It also grades: the temporal structure a frame holds is bounded by the inferential structure it can construct, so ``how much time'' a frame has is a question about its inference and not about the world.
 
@@ -2312,7 +2425,7 @@ The honest limit is that computing's designers are people, so convergence could 
 \end{remark}
 
 \begin{remark}[Physics groundings are developed in a companion]\label{rem:physics-companion}
-The reading of $c$ as a frame's own change-throughput unit, and the shapes that follow from it --- the invariance of $c$ as a theorem, the reconciliation of special and general relativity as one change-budget spent on motion or on change-load, the dimensional constants as frame-units with the uncertainty principle and the Landauer floor among them, the Planck scale as the frontier, and the second law as no-copy accumulation --- are developed in the physics companion (its Sections~\ref{PH-sec:c-rate}, \ref{PH-sec:sr-gr}, \ref{PH-sec:constants}, \ref{PH-sec:planck} and~\ref{PH-sec:second-law}). They are information-level groundings in the sense of Section~\ref{sec:scope}, and are kept out of the present paper so that the substrate theory stands without them.
+The physics companion explores conditional clock-budget, quantum and thermodynamic groundings (its Sections~\ref{PH-sec:c-rate}, \ref{PH-sec:sr-gr}, \ref{PH-sec:amplitudes} and~\ref{PH-sec:second-law}). A local clock-unit convention does not establish observed light-speed invariance or a spacetime metric. Born reconstruction requires additional probability and composition premises, and no-copy alone is not the second law. These interpretations are kept separate so that the substrate theory stands without them.
 \end{remark}
 
 \part{Provenance and its limit}
@@ -2329,6 +2442,12 @@ about what a graph can learn of where they come from.
 \end{definition}
 
 \begin{remark}[Exposure is excluded; leakage is produced]\label{rem:exposure-leakage}
+The foundational provenance principle of
+Section~\ref{sec:provenance-principle} applies here to the supply of operators.
+The question is how present effects constrain a frame's account of what
+supplies its primitives, not whether each primitive carries an intrinsic
+source certificate.
+
 Two different things can be meant by provenance being hidden, and running them together inverts the
 relation between them.
 
@@ -2360,15 +2479,20 @@ does with it is \emph{infer}. The cache is not perceived; the timings are, and t
 from them.
 \end{remark}
 
-\begin{proposition}[Primitives leak, and complete provenance is still unrecoverable]\label{prop:leak}
-A primitive discloses the structure beneath it: leaking is ordinary rather than exceptional
-(Remark~\ref{rem:exposure-leakage}). What does not follow is that provenance can be recovered entire.
-Every act of recovery is itself
-performed by primitives, so a graph inferring what lies beneath one operator does so using others
-whose own provenance is not thereby in view, and there is no position from which the whole supply is
-inspected at once. The result is the standing shape: \emph{partial always, complete never} --- leaks
-give a graph real and sometimes decisive knowledge of what supplies it, and never the closure of that
-question.
+\begin{proposition}[Primitive leakage and the scope of provenance recovery]\label{prop:leak}
+Primitive effects can disclose supplying structure; leakage is ordinary in
+the cases of Remark~\ref{rem:exposure-leakage}. A declared local provider map
+can be identified where its compatible provenance set is a singleton.
+Where two admissible supply histories produce identical available evidence
+but differ in requested provider provenance, that distinction is not
+identified (Proposition~\ref{prop:provenance-inference}).
+
+Local identification under an evidence and supply model does not certify
+that model's exhaustive coverage of an unrestricted supply chain. The
+account's nonclosure of that unrestricted question is a separately argued
+commitment of Section~\ref{sec:prohibition}, not an unconditional consequence
+of the evidence-relative proposition or of the fact that inference itself
+uses primitives.
 \end{proposition}
 This is what the physics companion's treatment of $c$ (its Section~\ref{PH-sec:c-rate}) turns on rather than contradicts. A frame cannot
 read the rate beneath its primitives directly, and has nonetheless obtained a number for it by
@@ -2388,13 +2512,38 @@ Proposition~\ref{prop:runner-opaque} separates two claims that are easily run to
 
 What does not depend on the cost model is weaker and survives reflection: \emph{no level is self-transparent}. Reflection makes the levels explicit and pays for each; it does not terminate in a level transparent to itself. Since the rules are graph and a frame can read and rewrite them (Definition~\ref{def:frame}), while its own running is not graph it holds, the asymmetry is exact: a frame is transparent to itself in precisely one respect and opaque in precisely the other. \emph{It can know what it is and cannot observe its being it.} Self-modification is available; self-observation at the level of the modifying is not.
 \end{remark}
-This is constructively demonstrable rather than merely argued. A computation realised inside another rule system --- a graph whose rules are implemented within the mechanics of a game or a universal cellular automaton \citep{berlekamp1982} --- is a blind subframe: from inside it computes at its own change-count and has no means to detect that its ``compute'' is the tokens of the host, or that the host may be advancing it by a single serial loop. Building one confirms the opacity directly, and puts the observer of any frame on the same footing. Consequently the question ``where is the universe's compute done'' has the precise form: it asks after the provenance of the universe's own primitives --- self-supplied, or supplied from a substrate not itself --- and is undetermined from inside. The theory declines to decide it; it is a question about a coupling below the frontier, and the demonstrable opacity is why no internal observation settles it.
+Hidden supply has a constructive instance. A computation realised inside
+another rule system, such as the mechanics of a game or a universal cellular
+automaton \citep{berlekamp1982}, can be a blind subframe: its local change
+count need not disclose whether a host advances it by a serial loop. This
+establishes that such opacity is possible, not that every provider map is
+hidden. For a frame admitting self-supplied and externally supplied histories
+with the same available evidence, the question ``where is its compute done''
+is not identified. Additional leakage or records can distinguish a declared
+local supply model; the model does not certify its own unrestricted coverage.
+The corresponding question about the universe's primitives remains open in
+this account, whose frontier argument is separate from this constructed case.
 
 \begin{proposition}[A primitive is another graph's running, exposed]\label{prop:runner-recursion}
 Nothing supplying a primitive is a substance apart from graph data. An operator is the observable running of some other graph, which has primitives of its own, supplied in the same way. A graph's ``primitives'' are therefore the observable running of other graphs, exposed as an operator set, with no primitive runner at the base. The regress bottoms not at a floor but at the epistemic frontier of Section~\ref{sec:scope}: below the lowest measured level is the unclaimed pre-relational substrate.
 \end{proposition}
 A single chain --- code over machine code over microcode over silicon over electromagnetism over quantum physics --- is one path through that provision, and a common one, but not its shape: a process takes arithmetic from its processor, file operations from a kernel that relays them to a device, and remote calls from a machine that is not beneath it in any sense. Fan-out and relay are ordinary, and the tower is the degenerate case in which provision happens to be a chain.
-Two consequences. Opacity is per \emph{operator} rather than per level (Proposition~\ref{prop:runner-opaque}): a graph uses its operators and cannot see beneath any of them, so its operator set is its frontier --- and since provision may fan out, it cannot tell which of its operators share a provider and which do not. Two primitives supplied by one supergraph and two supplied by different ones are in-frame indistinguishable, so a graph does not know how many runners it has, or that the number is one. And economics is inherited along provision: an operator costs what the runner of that operator charges, which costs what \emph{its} providers charge, down to whatever floors each route reaches (Remark~\ref{rem:landauer-change}). Where provision is a chain this is one bill passed upward, and the cost of a thought is the biological cost is the biochemical cost is the electromagnetic cost; where it is not, it is a sum over provenances whose routes may differ in length and may not all terminate at the same floor. The same form, graph data that runs, sits at every level: each level \emph{is} the structure, because a runner is the same kind of thing it runs.
+Two consequences. Opacity is per \emph{operator} rather than per level
+(Proposition~\ref{prop:runner-opaque}): an operator's available interface need
+not disclose its provider. Since provision may fan out, provider counts and
+shared supply require their own evidence. Where one-provider and multiple-provider
+realisations produce the same available evidence, that count is not identified;
+distinguishing records can instead determine it within a declared model.
+
+Economics is inherited along provision: an operator costs what the runner
+of that operator charges, which costs what \emph{its} providers charge, down
+to whatever floors each route reaches (Remark~\ref{rem:landauer-change}).
+Where provision is a chain this is one bill passed upward, and the cost of a
+thought is the biological cost is the biochemical cost is the electromagnetic
+cost; where it is not, it is a sum over provenances whose routes may differ in
+length and may not all terminate at the same floor. The same form, graph data
+that runs, sits at every level: each level \emph{is} the structure, because a
+runner is the same kind of thing it runs.
 
 A rule's action, moreover, is a \emph{pointer} into its runner, not a copy of the work. The work is done once, in the runner, and every rule invoking that operator points to the same doing --- like a shared operation defined once and called from everywhere, never re-implemented. Two things follow. Work is never duplicated, which is why copying a generator copies its pointers and shares the pointed-to work: the copy costs only its addressing, not its labour (the economic root of the copyable-generator result, Proposition~\ref{prop:copyable-generators}). And a rule's rate is not a property of the rule but the rate of the operation its pointer lands on --- a shallow, cheap tier or a deep, slow one. Rules take different rates because they point to work done at different depths of the stack, and the rate is inherited from there rather than assigned as a knob on the rule: to make a rule faster one points its action at faster work, never tunes a rate parameter it does not have.
 
@@ -2776,7 +2925,7 @@ For a fully specified antecedent configuration---including the graph state, oper
 G_{t+1}.
 }
 \]
-The Law (Hypothesis~\ref{hyp:the-law}) contains no primitive random actualisation operator.
+The Law (Schema~\ref{hyp:the-law}) contains no primitive random actualisation operator.
 \end{proposition}
 
 Proposition~\ref{prop:determinism} is to be read through Proposition~\ref{prop:present-sufficiency}: the antecedent configuration is causally sufficient \emph{present} structure, not a retained temporal history. Determinism is a relation between present structure and realised continuation, and Proposition~\ref{prop:determinable} keeps it from being overstated --- a determinable continuation is not thereby a determined one.
@@ -2796,7 +2945,7 @@ Thus
 The order of discovery ran from quantum measurement outward, not from a general primitive inward. Collapse was adopted because compatibility with quantum measurement is a constraint on any theory of realised change, and was then assumed to hold generally. The bridge is therefore stated conditionally because the \emph{generalisation} is the conjecture, not because the compatibility is in doubt. This is the structure of a promoted constraint --- a fact that must hold in one regime, assumed to hold everywhere, with the consequences derived and exposed to falsification --- and it is why Section~\ref{sec:falsifiability} carries a falsifier for the bridge specifically. Origin does not establish a claim; the falsifier is what does the work either way.
 \end{remark}
 
-The distinction of Remark~\ref{rem:undetermined-vs-undisclosed} is what makes quantum measurement the visible case for the conditional collapse bridge (Remark~\ref{rem:qm-provenance}). In that regime the pre-measurement alternatives provably cannot be re-read as an \emph{undisclosed} already-realised classical value: Bell's theorem excludes the local hidden-variable class and Kochen--Specker constrains noncontextual value assignment \citep{bell1964,kochen1967}. What remains is \emph{undetermined} in the strict sense --- not a value withheld, but no value yet. Elsewhere the two readings are usually interchangeable in practice; there they are not.
+The distinction of Remark~\ref{rem:undetermined-vs-undisclosed} is what makes quantum measurement the visible case for the conditional collapse bridge (Remark~\ref{rem:qm-provenance}). In that regime the pre-measurement alternatives cannot, under locality and noncontextuality, be re-read as an \emph{undisclosed} already-realised classical value: Bell's theorem excludes the local hidden-variable class and Kochen--Specker constrains noncontextual value assignment \citep{bell1964,kochen1967}. What remains is \emph{undetermined} in the strict sense --- not a value withheld, but no value yet. Elsewhere the two readings are usually interchangeable in practice; there they are not.
 
 Deterministic quantum models demonstrate that empirical quantum statistics do not by themselves force fundamental stochasticity: Bohm's hidden-variable construction is explicitly deterministic \citep{bohm1952}, while the constraints just cited rule out the local and noncontextual hidden-variable classes rather than determinism as such. Graphic Equalisation does not identify itself with Bohmian mechanics; these results establish only that determinism must be distinguished from locality and noncontextuality.
 
@@ -2806,7 +2955,7 @@ A stochastic law may be bolted onto a grounding as an epistemic predictive model
 \longrightarrow
 \text{frame-limited uncertainty model},
 \]
-not a modification of the Law (Hypothesis~\ref{hyp:the-law}) into a stochastic substrate.
+not a modification of the Law (Schema~\ref{hyp:the-law}) into a stochastic substrate.
 
 \part{Positioning, falsifiers, and close}
 \section{Positioning and prior art}\label{sec:prior-art}
@@ -2882,7 +3031,7 @@ absolutely, and what a bit is of cannot be said without naming the frame that sa
 
 \paragraph{Information and minimum description.} The preference for the smallest sufficient ontology is the method's rather than this paper's, and is set out with its prior art in \emph{Is}. What matters here is only its consequence for one hypothesis: it motivates the Discrete Sufficiency Hypothesis (Hypothesis~\ref{hyp:discrete}) and does not prove it.
 
-\paragraph{Standing beside, not replacing.} Graphic Equalisation is not proposed as a replacement for established theories. It is intended to sit beneath or beside them as a substrate description. A grounding may add continuous geometry, conservation laws, quantum amplitudes, relativistic metrics, biological mechanisms, institutional rules, or probabilistic models of unresolved lower-frame observations. In particular, relational quantum mechanics \citep{rovelli1996}, Everettian relative-state quantum mechanics \citep{everett1957}, and deterministic Bohmian mechanics \citep{bohm1952} make mutually different commitments while remaining compatible with large parts of standard quantum phenomenology; this paper does not require choosing among those complete physical models at the substrate-definition stage. Such additions do not alter Proposition~\ref{prop:determinism}: within the Law (Hypothesis~\ref{hyp:the-law}), realised transition remains deterministic once the causally complete antecedent configuration is specified.
+\paragraph{Standing beside, not replacing.} Graphic Equalisation is not proposed as a replacement for established theories. It is intended to sit beneath or beside them as a substrate description. A grounding may add continuous geometry, conservation laws, quantum amplitudes, relativistic metrics, biological mechanisms, institutional rules, or probabilistic models of unresolved lower-frame observations. In particular, relational quantum mechanics \citep{rovelli1996}, Everettian relative-state quantum mechanics \citep{everett1957}, and deterministic Bohmian mechanics \citep{bohm1952} make mutually different commitments while remaining compatible with large parts of standard quantum phenomenology; this paper does not require choosing among those complete physical models at the substrate-definition stage. Such additions do not alter Proposition~\ref{prop:determinism}: within the Law (Schema~\ref{hyp:the-law}), realised transition remains deterministic once the causally complete antecedent configuration is specified.
 
 The substrate claim remains
 \[
@@ -2915,7 +3064,21 @@ not hold where it claimed to --- the more serious of the two, and still a bounda
 annihilation. The distinction is the one Section~\ref{sec:scope} rests its epistemic claim on, and marking it here is
 what makes that claim checkable rather than asserted.
 
-\paragraph{\textnormal{\textsc{[shape]}}~Composition.} Prior to the component commitments below: the arrangement claim of Section~\ref{sec:scope} fails if the structure's recurrence across unrelated domains is an artefact of description rather than a property of those domains. Evidence against it would be a demonstration that any sufficiently rich domain can be rendered in this vocabulary with equal facility, including domains chosen adversarially to lack the structure. Evidence bearing on it is independent re-derivation, in a domain's own idiom, without reference to this theory --- which rules out this vocabulary having supplied the structure, and does not by itself distinguish the composition claim from the shared-constraint reading the account predicts anyway. The burden here is deliberately on the negative side, because that side is closeable: a single adversarial domain rendered with equal facility settles it against the claim. No requirement is placed on the positive side to exhibit domains that share \emph{nothing} --- every pair of domains shares something, so that standard is unmeetable in principle, and discharging it would mean enumerating domains until an assessor chose to stop. A test whose stopping condition lies with the assessor rather than with the claim is not a test, and this paper does not offer one.
+\paragraph{\textnormal{\textsc{[shape]}}~Composition.}
+The arrangement claim needs a comparative test; ``equal facility'' alone has no
+measurement rule. One candidate protocol fixes a code, lossless domain-to-graph
+maps, permitted auxiliary machinery, reconstruction criterion, and resource
+budget before rendering matched target and adversarial control domains. Let
+$d(D)=L_{\rm GE}(D)-L_{\rm native}(D)$ include the mapping, added rules and
+residual description lengths. The comparative prediction is
+$\overline d_{\rm control}-\overline d_{\rm target}>0$; a nonpositive
+difference challenges that advantage under the declared protocol.
+Independent renderers and a prespecified uncertainty rule are needed for a noisy
+sample. This protocol has not been registered or run. It tests compression
+advantage under its fixed code, not the ontology, and no operational composition
+falsifier is claimed to have been passed. Independent recurrence in a domain's
+own idiom remains suggestive evidence, also compatible with shared constraints.
+
 \begin{enumerate}[leftmargin=*]
 \item \textsc{[detail]}~\textbf{Solutions are nearly unique under a binding constraint.} Hypothesis~\ref{hyp:cheap-cut}, the posit under Propositions~\ref{prop:convergence-observed} and~\ref{prop:compression-convergence}. Fails if structures optimising hard against the same binding constraint, over the same region, are exhibited arriving at arrangements that do not resemble each other --- in which case constraint narrows the space without selecting within it, and both propositions weaken to that.
 \item \textsc{[detail]}~\textbf{Located degradation.} Fails if, for classifications whose purpose is specifiable in advance of inspecting their failures, failure cases are distributed no differently near the purpose boundary than across the rest of the domain (Hypothesis~\ref{hyp:located-degradation}).
@@ -2947,15 +3110,25 @@ what makes that claim checkable rather than asserted.
 \item \textsc{[detail]}~\textbf{A hazard is a signed capability change above a frame-relative threshold.} Fails if a disclosure can be a hazard to a frame in which the negative sign is not admissible, or if the magnitude at which one counts is fixed independently of the frame bearing it rather than as a ratio to what that frame can absorb. Fails also if the threshold sits somewhere other than where the impact forces a write.
 \item \textsc{[detail]}~\textbf{Externalising lengthens the interval before a crossing is legible.} Fails if the time for a crossing's cost to become signable is independent of whether the frame bearing it can report --- that is, if costs placed on frames that cannot signal return no more slowly than costs placed on frames that can (Section~\ref{sec:crossings}).
 \item \textsc{[shape]}~\textbf{No free lunch.} Fails on a realised change whose cost is absent in the frame that made it \emph{and} in the container that sustains it, on inspection of both --- a payment traced to neither rather than merely not yet looked for. The burden is finite and on the negative side: asking instead for a cost absent at \emph{every} frame would demand an enumeration this account says cannot terminate, and for which Axiom~\ref{ax:no-view} supplies no standpoint. The claim is empirical, not modal. A costless change is admissible; none has been traced. Note that a frame experiencing freeness is not the counterexample and never was --- at the table the next plate genuinely costs the diner nothing, and the buffet pays --- so the test is whether the payment appears anywhere it is looked for, not whether some frame gets something for nothing.
-\item \textsc{[shape]}~\textbf{Termination follows supply, not containment.} Fails if containment alone determines it --- if a subgraph must stop when the graph containing it stops, even where its primitives are supplied from beyond that graph (Proposition~\ref{prop:termination-supply}). The partial case carries its own clause: fails if a frame losing part of its supply must either stop or continue correctly, rather than running with an incomplete operation set and undefined behaviour, or if such a frame can enumerate what it has lost from inside --- which would also falsify the provenance commitment below.
+\item \textsc{[shape]}~\textbf{Termination follows supply, not containment.} Fails if containment alone determines it --- if a subgraph must stop when the graph containing it stops, even where its primitives are supplied from beyond that graph (Proposition~\ref{prop:termination-supply}). The partial case carries its own clause: fails if a frame losing part of its supply must either stop or continue correctly, rather than running with an incomplete operation set and undefined behaviour, or if such a frame can certify exhaustive unrestricted knowledge of its lost supply from inside, without assuming a complete provider registry. A local enumeration under a declared registry does not falsify the provenance commitment below.
 \item \textsc{[shape]}~\textbf{The relativity of grounding is a consequence, and can fail as one.} Fails if a view can be informative without standing in relation to what it views, or if relation is not what carries information here. A consequence has content and can fail, which a posit or a costless guard could not (Remark~\ref{rem:axiom-in-bits}). The second disjunct is \emph{Is}'s own identification of distinction with relation, so this is where the account is thinnest rather than where it is safest, and it is marked \textsc{[shape]} because what fails with it is the range of everything derived through it.
 \item \textsc{[detail]}~\textbf{Description length is constitutive, not merely a method.} Fails if a relation carrying no content \emph{given the others} nevertheless adds to what a thing is --- the conditional form of Remark~\ref{rem:self-edge}'s result, which Remark~\ref{rem:mdl-ontic} uses and does not prove. Marked \textsc{[detail]} because the account survives its failure: minimum description length reverts to the imported method \emph{Is} already had, and only the claim that the two are one principle at two grips is lost.
-\item \textsc{[shape]}~\textbf{Provenance is never closed by inference.} Fails if a frame can \emph{settle} the provenance of its own operator set from inside: if some in-frame procedure establishes, rather than merely evidences, whether its operators are self-supplied, how many distinct structures supply them, or whether a serial hidden supply underlies an apparently asynchronous frame. Not that primitives fail to leak --- they do, and Proposition~\ref{prop:leak} says so. This is the single prohibition (Proposition~\ref{prop:prohibition}) in operational form, argued in Section~\ref{sec:prohibition}.
+\item \textsc{[shape]}~\textbf{Provenance is never closed by inference.}
+The claim concerns assumption-free final closure of the recursively supplying
+operators, not identification of a declared finite provider map. It is
+challenged by an in-frame procedure establishing exhaustive unrestricted
+supply coverage without assuming the completeness of its candidate model.
+Where admissible supply alternatives have identical available evidence but
+different provider provenance, they remain unidentifiable
+(Proposition~\ref{prop:provenance-inference}). Local identification from leakage
+or reliable records is permitted (Proposition~\ref{prop:leak}). The unrestricted
+nonclosure is the separately argued frontier commitment of
+Section~\ref{sec:prohibition}, not a theorem derived merely from evidence dependence.
 \end{enumerate}
 
 \noindent\emph{Scope note (not a falsifier).} \emph{Carries no falsifiable content} names the same condition the assessment companion reaches by asking whether \emph{attempting} a counterexample has an outcome (its Proposition~\ref{AS-prop:discriminator}). Where the putative counterexample would not cohere, neither \emph{testable} nor \emph{empty} applies as a reader's ordinary falsifiability frame hears it; the distinction sits below the grain at which falsifiability is usually argued.
 
-The Law itself (Hypothesis~\ref{hyp:the-law}) is not a separate entry above because its content is exposed jointly by three that are: \emph{Antecedent-state} stakes what a realised transition may read, \emph{Graph-law determinism} stakes that present structure fixes the successor, and \emph{Partial-order sufficiency} stakes that no order beyond the boundary-induced one is required. A reader checking coverage for the Law by name will find it there rather than under its own heading.
+The Law itself (Schema~\ref{hyp:the-law}) is not a separate entry above because its content is exposed jointly by three that are: \emph{Antecedent-state} stakes what a realised transition may read, \emph{Graph-law determinism} stakes that present structure fixes the successor, and \emph{Partial-order sufficiency} stakes that no order beyond the boundary-induced one is required. A reader checking coverage for the Law by name will find it there rather than under its own heading.
 
 Two claims are stated here rather than counted in the list above, being consequences rather than wagers --- the standard is the one the composition paragraph sets, that a test whose stopping condition lies with the assessor is not a test. \emph{Admissibility is not armour} (Proposition~\ref{prop:self-governance}) and \emph{higher-frame first-class structure} (Proposition~\ref{prop:higher-frame}) are closer to consequences of the definitions than to empirical risks: given a container that may force arbitrarily, self-admissibility not constraining it follows, and given that a frame's state about another frame is ordinary state, its independence from that other frame's primitives follows. They are retained because they are load-bearing and a reader should see what they commit to, and they are marked here as derivations rather than wagers.
 
@@ -2974,8 +3147,7 @@ is postulated or derived moves where a failure would propagate from and not whet
 \item \textsc{[shape]}~\textbf{Realisation is single-valued.} Fails if realised dynamics are better accounted for by retaining the admissible set than by selecting one member of it --- and the qualification is the whole test: a treatment carrying all continuations forward must recover the observed statistics from the retained structure \emph{without adding a measure over it to do so}, since retention that needs a weighting has reintroduced selection under another name.
 \item \textsc{[shape]}~\textbf{No-copy} (the destroy\slash preserve postulate's exposure)\textbf{.} Fails if a substrate change can preserve its predecessor
 without paying to keep it --- if retention is available at no cost rather than as a purchased record.
-What is at stake is the Landauer reading of Section~\ref{sec:interface}, which requires change and
-irreversible operation to coincide. The arrow of the event order is \emph{not} at stake, though it is
+The retention-cost postulate requires a specified resource ledger. Landauer bounds logically irreversible erasure and does not require every change to be irreversible; reversible uncomputation is compatible with it (Section~\ref{sec:interface}). The arrow of the event order is \emph{not} at stake, though it is
 easily thought to be: direction is carried by the asymmetry of enablement, which stands
 whether or not a change preserves what it followed.
 \end{enumerate}
@@ -2983,11 +3155,16 @@ whether or not a change preserves what it followed.
 Four of the entries above are one risk counted four times, and the list says so rather than banking
 the arithmetic. \emph{Provenance is never closed by inference}, \emph{A boundary is known only by
 crossing it}, \emph{A swallowed failure is relocated, never closed} and the second clause of
-\emph{Termination follows supply} are each falsified by the same event: an in-frame procedure that
-\emph{settles} a question rather than relocating it. They are kept as separate entries because they name genuinely different places to look for the
+\emph{Termination follows supply} concern the same closure pattern at
+different interfaces. Each is assessed within its stated scope: an in-frame
+procedure must settle the relevant question without assuming the exhaustive
+coverage whose establishment is at issue. Local identification within a
+declared finite supply model is not a counterexample to unrestricted
+provenance nonclosure. They are kept as separate entries because they name genuinely different places to look for the
 event, which is what a falsifier is for, and not because failing them would cost four separate
-things. Failing any one of them is the single prohibition of
-Section~\ref{sec:prohibition} failing, and that is one result, not four.
+things. The shared frontier argument is the single prohibition of
+Section~\ref{sec:prohibition}; the analogy does not remove the scope and
+premises of each entry.
 
 Two notes on the list as a whole. Nothing is claimed to be closeable cheaply --- \emph{discrete sufficiency} (Hypothesis~\ref{hyp:discrete}) requires ruling out every discrete representation including dynamically varying ones, which is hard rather than ill-formed, and the distinction between the two is the point of this paragraph. And the marks themselves are revisable: a mark records what a failure would cost the account, and setting out a further commitment can sharpen the criterion by which an earlier one was assigned.
 
@@ -2995,6 +3172,12 @@ Two notes on the list as a whole. Nothing is claimed to be closeable cheaply ---
 The theory is deliberately small. A graph need not know what it is, where it is, what will happen, or what it wants. Present structure determines admissible continuation; interaction and collapse produce realised history; realised history changes the antecedent from which subsequent possibility is generated.
 
 Recursion requires no external homunculus. Where the grammar acts on its own represented structure, the grammar is the loop (Proposition~\ref{prop:grammar-is-loop}). World forcing is not self-action, residual is discrepancy rather than diagnosis, history matters only where it survives as present structure, and identity exists only under individuation by a frame.
+
+Provenance is a causal relation whose attribution is inferred from the
+evidence a frame can distinguish. A record can constrain that attribution
+without being an intrinsic certificate of origin. Locally unique recovery
+under a stated model and complete recovery of the supply of one's own
+operators are different claims.
 
 Pressed for what is compulsory, the theory keeps almost nothing. What survives every attempted removal is structure with relations among its parts; what rules running adds is that anything \emph{happens} (Remark~\ref{rem:only-g}), which is the condition of everything this account is about and is not the condition of there being anything; the specific laws above it --- inertia, closure, the shape of collapse, and the write-economics itself --- are contingent rule content rather than necessities, and not strict universals (Remark~\ref{rem:writeability}), which is the sense in which this substrate underlies groundings without dictating them.
 
@@ -3095,6 +3278,14 @@ Timothy F. Bresnahan and M.~Trajtenberg.
 Eric A. Brewer.
 \newblock Towards robust distributed systems.
 \newblock In \emph{Proceedings of the 19th ACM Symposium on Principles of Distributed Computing (PODC)}, keynote, 2000.
+
+\bibitem[Buneman et~al.(2001)]{buneman2001}
+Peter Buneman, Sanjeev Khanna, and Wang-Chiew Tan.
+\newblock Why and where: A characterization of data provenance.
+\newblock In Jan Van den Bussche and Victor Vianu, editors,
+\emph{Database Theory --- ICDT 2001}, Lecture Notes in Computer Science
+1973, pages 316--330. Springer, 2001.
+\newblock \href{https://doi.org/10.1007/3-540-44503-X_20}{doi:10.1007/3-540-44503-X\_20}.
 
 \bibitem[Capecchi(1989)]{capecchi1989}
 Mario R. Capecchi.
@@ -3235,6 +3426,12 @@ Adam B. Jaffe, Manuel Trajtenberg, and Rebecca Henderson.
 E. T. Jaynes.
 \newblock Information theory and statistical mechanics.
 \newblock \emph{Physical Review}, 106:620--630, 1957.
+
+\bibitem[Johnson et~al.(1993)]{johnson1993}
+Marcia K. Johnson, Shahin Hashtroudi, and D. Stephen Lindsay.
+\newblock Source monitoring.
+\newblock \emph{Psychological Bulletin}, 114(1):3--28, 1993.
+\newblock \href{https://doi.org/10.1037/0033-2909.114.1.3}{doi:10.1037/0033-2909.114.1.3}.
 
 \bibitem[J\"onsson et~al.(2008)J\"onsson, Rabbow, Schill, Harms-Ringdahl, and Rettberg]{jonsson2008}
 K.~Ingemar J\"onsson, Elke Rabbow, Ralph O. Schill, Mats Harms-Ringdahl, and Petra Rettberg.
@@ -3448,6 +3645,12 @@ Sextus Empiricus.
 Claude~E. Shannon.
 \newblock A mathematical theory of communication.
 \newblock \emph{Bell System Technical Journal}, 27(3):379--423, 1948.
+
+\bibitem[Shpitser and Pearl(2008)]{shpitserpearl2008}
+Ilya Shpitser and Judea Pearl.
+\newblock Complete identification methods for the causal hierarchy.
+\newblock \emph{Journal of Machine Learning Research}, 9:1941--1979, 2008.
+\newblock \url{https://jmlr.org/papers/v9/shpitser08a.html}.
 
 \bibitem[Smith(1982)]{smith1982}
 Brian Cantwell Smith.

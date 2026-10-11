@@ -33,7 +33,7 @@
 \fbox{\parbox{0.92\textwidth}{\small
 \textbf{DRAFT --- \PaperDraft r\PaperRevision} (\PaperDisplayDate).
 Circulated for comment, not as a finished result. \textbf{This revision reports the programme's record
-to \PaperDisplayDate}; its first revision reported the same record as it stood on the morning of
+to 14 August 2026}; its first revision reported the same record as it stood on the morning of
 13 August, and the record moved past all three of that revision's findings within two days. Every
 remark below therefore carries the date of the rung it reports. Two of the first revision's five
 falsifiability commitments have fired against the record; both are reported as fired. Sections marked
@@ -53,10 +53,7 @@ therefore too strong. The former per-network scope blocker is resolved: native s
 the target microtheory, while the deliberately retained unscoped runner remains graph-global.
 
 The native transition commits $-1$, $0$, or $+1$ from a temperature-scaled local field, and is
-asynchronous because each rule commitment is visible to the next match. The two-state energy descent
-argument is structural: it applies only to the binary restriction. Three-state convergence remains an
-empirical question rather than a theorem, and its current native-default deployment is therefore an
-open operational commitment rather than a proved convergence result.
+asynchronous because each rule commitment is visible to the next match. A finite-state convergence argument is available for symmetric couplings, fixed nonnegative thresholds, no self-coupling, and asynchronous updates with the stated tie rule. This includes the ternary state space. Deployment under learning, decay, changing temperature, or asymmetric couplings remains an operational question; the fixed-parameter proof does not cover those paths.
 The historical synchronous mean-field cycle and its damping correction, the registered resolution
 results, and the performance figures below are reported as dated measurements rather than claims about
 the present primary backend. Loopy belief propagation and bounded-treewidth junction-tree inference
@@ -97,7 +94,7 @@ host and driven by seed-resident network data. The rules written against it did 
 reason was worth having.
 
 \begin{remark}[The hosted stage, and the null that dated within a day]\label{rem:hosted}
-\emph{(Record of \PaperDisplayDate.)} There was no term surface for the dynamics at all, so the fifteen
+\emph{(Record of 13 August 2026.)} There was no term surface for the dynamics at all, so the fifteen
 rules written against the network were inert --- and the
 obvious diagnosis, missing or malformed match clauses, was not the reason. The relaxation existed only across a host-language boundary, so a
 rule could not express it, could not be matched against it, and could not mint against it. The rules
@@ -109,7 +106,7 @@ was the network's data and its results, not its dynamics --- was true for about 
 \end{remark}
 
 \begin{remark}[The dynamics are native, and two engine findings came with them]\label{rem:native}
-\emph{(Record of \PaperDisplayDate.)} The update was expressed in the existing term vocabulary as
+\emph{(Record of 13 August 2026.)} The update was expressed in the existing term vocabulary as
 five rules and four admissibility productions, with \emph{no new domain-specific term kind}; the
 subsequent native-default deployment also added a compiled runner capability for scoped rule
 execution. A concept's local field is the sum of its external and identity fields and the
@@ -118,9 +115,7 @@ field --- three-valued, with a neutral band --- whenever it differs from the hel
 symmetric coupling must consequently be represented by two directed causal-influence edges: the
 implementation does not infer an undirected coupling. The update is asynchronous by the engine's own
 execution model rather than by arrangement: one progressing binding is committed per pass, and the
-next match reads the graph as it now stands. The two-valued case has the usual bounded-energy descent
-argument for every committed flip; for the three-valued case, the observed absence of cycles on the
-reported draws is evidence, not a general convergence theorem. This meets the criterion
+next match reads the graph as it now stands. Energy descent applies only if paired weights are equal, self-couplings are zero, fields and thresholds are fixed during settling, and updates are asynchronous. The implementation must enforce or check those conditions; two directed edges alone do not establish symmetry. The finite three-state case under those conditions is derived below; the draw record does not establish them for arbitrary changing networks. This meets the criterion
 Section~\ref{sec:moved} gives for \emph{moved} rather than \emph{hosted}.
 
 Two engine-level findings were made and corrected while building, and both belong to the machinery
@@ -134,6 +129,24 @@ coverage, because a coverage tie is broken on accumulated fit rather than on few
 Occam violation in a tie-break; it was worked around by scoping the codebook to one candidate at a
 time, and is reported rather than fixed.
 \end{remark}
+For a fixed positive inverse temperature, absorb its scaling into $J$ and $h$ (or divide the threshold by it). For the fixed symmetric three-state case, put $s_i\in\{-1,0,1\}$,
+$J_{ij}=J_{ji}$, $J_{ii}=0$ and $\theta_i\ge0$. The local field is
+$H_i=h_i+\sum_jJ_{ij}s_j$, and the update selects $+1$ above $\theta_i$,
+$-1$ below $-\theta_i$, and zero otherwise. Define
+\[
+E(s)=-\frac12\sum_{i,j}J_{ij}s_is_j-\sum_i h_i s_i
+       +\sum_i\theta_i s_i^2.
+\]
+Changing only $s_i$ changes $E$ by
+$-H_i(s'_i-s_i)+\theta_i((s'_i)^2-s_i^2)$. The threshold rule
+minimises this coordinate energy. Each change strictly lowers $E$, except
+at threshold equality when choosing zero leaves $E$ equal and lowers
+$\sum_i s_i^2$. Thus the pair $(E,\sum_i s_i^2)$ decreases
+lexicographically on a finite state space. A fair asynchronous schedule
+terminates at a fixed point. Learning or changing fields during settling,
+asymmetry, and synchronous multi-node changes are outside this proof.
+
+
 
 \paragraph{Current execution boundary.} The former per-network scope blocker is resolved. Native
 consumers call scoped settling, which limits rule firing to the target microtheory while preserving
@@ -155,7 +168,7 @@ reasons to misdescribe ordinary CAN dynamics as hosted.
 \section{The solver: what the oscillation turned out to be}\label{sec:solver}
 
 \begin{remark}[The oscillation was the update schedule, and the record found it]\label{rem:found}
-\emph{(Record of \PaperDisplayDate.)} What was observed is not in doubt and reproduces exactly. On a
+\emph{(Record of 13 August 2026.)} What was observed is not in doubt and reproduces exactly. On a
 fixed eight-node draw with a fixed nonzero field per node and a fixed start, the relaxation returns
 different states at $400$ and $401$ iterations (opposite-parity gap $5.615746$) and the same state at
 $400$ and $402$: a persistent period-2 cycle against a same-parity control. This paper's first
@@ -190,6 +203,16 @@ the binary real and confirmed again; it ran on the uncorrected solver, and re-ru
 the corrected one is named in the record as a follow-on it did not perform.
 \end{remark}
 
+\paragraph{Frustration convention.}
+The state-map scorer uses
+$F(s)=\sum_{(i,j)}(|J_{ij}|-J_{ij}s_i s_j)$ over its enumerated couplings.
+A satisfied binary edge contributes zero, an opposed edge $2|J_{ij}|$,
+and an edge incident to a neutral state $|J_{ij}|$. The neutral option can
+reduce this score by avoiding opposed commitments without showing uncertainty
+has been resolved. Vocabulary comparisons require identical couplings and
+scoring conventions; this is a metric-specific result, not a theorem about
+attitude quality.
+
 \section{Performance: the complexity question is the wrong one}\label{sec:performance}
 The natural objection to putting an Ising model anywhere is that its ground-state problem is hard.
 \citet{barahona1982} makes the sharp version available: the planar two-dimensional problem
@@ -206,7 +229,7 @@ attempting the exponential case. The practical question is therefore which expli
 procedure is appropriate for a stated network, objective, and resource bound.
 
 \begin{remark}[The solver ladder is an auxiliary toolbox]\label{rem:hierarchy}
-\emph{(Record of \PaperDisplayDate.)} Mean field is the first and weakest step of a known ladder --- mean
+\emph{(Record of 14 August 2026.)} Mean field is the first and weakest step of a known ladder --- mean
 field, then Bethe and loopy belief propagation, then Kikuchi and generalized belief propagation
 \citep{yedidia2005} --- and it is weakest \emph{precisely} in the regime of loops, strong local
 correlation and frustration, which is the regime the frustration and basin audits exist to detect.
@@ -253,7 +276,7 @@ substantially less independent than their count suggests.
 \section{Results}\label{sec:results}
 
 \begin{remark}[The registered scaling prediction is reversed, and its magnitudes moved]\label{rem:null}
-\emph{(Record of \PaperDisplayDate.)} The primary registered prediction --- that coarse quantization would
+\emph{(Record of 13 August 2026.)} The primary registered prediction --- that coarse quantization would
 yield fewer distinct basins than fine, with the gap widening in network size --- \emph{is not
 confirmed, and the measured direction is closer to reversed}. As first measured, coarse yields
 \emph{more} distinct basins ($6$ against $4$ at $N=4$; $15$ against $4$ at $N=8$), a higher
@@ -292,7 +315,7 @@ the representation's own way of declining to commit, and that is what the frustr
 \end{remark}
 
 \begin{remark}[Resolution separates the basins, with a control that says so]\label{rem:bigville}
-\emph{(Record of \PaperDisplayDate.)} A second registered run, on a population of simulated residents each
+\emph{(Record of 13 August 2026.)} A second registered run, on a population of simulated residents each
 carrying its own network at its own representational resolution, confirmed both of its predictions.
 
 The manipulation check is large: the coarse resident's mean rounding error is about $9.2$ times the
@@ -308,6 +331,13 @@ the low-resolution group against $1.38$ in the high). \emph{The control is what 
 reporting}: holding resolution fixed across the population collapses the trait-to-frustration
 correlation from $-0.33$ to $-0.08$, so resolution rather than some correlated trait is carrying it.
 \end{remark}
+
+\paragraph{Reproduction boundary.} The numerical claims below retain their
+original run dates and scope. A reader needs the referenced run artifacts,
+configuration and code revision to reproduce them; the paper alone is not a
+complete reproduction package. A record-dependent commitment is not independently
+runnable until those artifacts are supplied. No new empirical run is reported
+in this revision.
 
 \section{Falsifiability commitments}\label{sec:falsifiability}
 Each commitment below is marked \textsc{[shape]} or \textsc{[detail]}. A \textsc{[detail]} failing is a

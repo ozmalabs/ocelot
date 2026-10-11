@@ -5,6 +5,8 @@
 \usepackage[margin=1in]{geometry}
 \usepackage{natbib}
 \usepackage{hyperref}
+\usepackage{xr-hyper}
+\externaldocument[PH-]{01a_graphic_equalisation_physics_grounding}
 
 \newtheorem{definition}{Definition}[section]
 \newtheorem{proposition}[definition]{Proposition}
@@ -112,6 +114,14 @@ alteration class, $\kappa$ its ordered cost domain, $\mathcal R_t$ relevant
 support, and $\Obs_t$ its record relation. This is project-level typed
 vocabulary; it is not a phase space, action, metric, clock, or source tensor.
 \end{definition}
+An alteration class must declare its support, equivalence relation on
+alterations, comparison currency $\kappa$, realised reference condition,
+resource budget, admissibility and measurement procedure. If any required
+component is unavailable, the corresponding class cost is undefined, not
+silently zero. The zero in the reuse convention belongs only to a fully
+instantiated class.
+
+
 
 \begin{definition}[History-bearing attribution record]\label{def:history}
 For an interval $[t_0,t]$, a \emph{history-bearing attribution record} is
@@ -255,14 +265,14 @@ class. Calling this a momentum-like reading is permissible only as a structural
 analogy. Calling it physical momentum, force, energy, action, mass, or
 stress--energy requires a separate map with units and measurements.
 
-\section{Narrative information-force derivation contract}\label{sec:informationforce}
+\section{Narrative residual-gradient derivation contract}\label{sec:informationforce}
 This section makes the proposed direction of grounding explicit: physical gravity
 is to be recovered from a realization of present operative Narrative, not used
 to define the general continuation principle. The following is a new conditional
 contract. It does not assert that the current corpus already supplies physical
 gravity, a force in Newtons, or a source equation.
 
-\begin{hypothesis}[H-IF: information-force realization]\label{hyp:informationforce}
+\begin{hypothesis}[H-IF: residual-gradient realization]\label{hyp:informationforce}
 A candidate realization supplies a differential information-state space
 $\mathcal Q_I$, a preparation/readout map
 \[
@@ -277,12 +287,12 @@ where $\tau$ is an operational physical-clock reading and
 $\mathcal A_{\rm acc}$ is a declared proper-acceleration/support observable,
 a residual functional $\mathcal R_I:\mathcal Q_I\to K_I$, and a declared
 ordered or differentiable value structure on $K_I$. Where its derivative is
-defined, the \emph{information force} is the residual derivative
+defined, the \emph{residual gradient} is the residual derivative
 \[
  \boxed{\mathcal F_I(q):=-D\mathcal R_I(q)\in T_q^*\mathcal Q_I.}\tag{IF1}
 \]
 A response map $B_q:T_q^*\mathcal Q_I\to T_q\mathcal Q_I$, if used to select
-an update direction, must be supplied separately. Thus the information force is
+an update direction, must be supplied separately. Thus the residual gradient is
 intrinsic to the declared information realization: it is the covector of
 unresolved balance, not a metaphorical name for a later mechanical force.
 \end{hypothesis}
@@ -320,15 +330,15 @@ $\mathcal R_I$.
 
 \begin{proposition}[Conditional gravity-derivation target]\label{prop:ifrecovery}
 If one realization satisfies H-IF, closes the maps in (IF2)--(IF3), and proves
-F1--F6, G1--G8, H-PC, history-bearing attribution, universal coupling, and the
+F1--F6, IG1--IG8, H-PC, history-bearing attribution, universal coupling, and the
 stated weak-field and precision limits, then that realization derives its
-claimed physical gravitational regime from the information-force construction.
+claimed physical gravitational regime from the residual-gradient construction.
 In particular, it must recover the Newtonian force law in its stated limit and
 the free-path/source/clock relations it claims in the relativistic regime.
 \end{proposition}
 \begin{proof}
 H-IF supplies a typed residual derivative; (IF2) supplies its testable physical
-momentum-exchange meaning; and (IF3), together with G1--G8, supplies a source,
+momentum-exchange meaning; and (IF3), together with IG1--IG8, supplies a source,
 geometry, matter coupling, and observables. F1--F6 establish the flat recovery,
 while the remaining listed conditions establish the gravitational recovery and
 its empirical domain. Each arrow is a stated premise, so the conclusion applies
@@ -348,8 +358,13 @@ standard low-energy matter remains a grounding interpretation unless it states
 a finite additional discriminator.
 
 \section{Conditional metric-source recovery of general relativity}\label{sec:gr}
+These recovery gates bound the physics companion's
+Remark~\ref{PH-prop:sr-gr} and Remark~\ref{PH-cor:reconcile}:
+calling both masses change-load establishes neither universal coupling nor
+an equivalence-principle prediction.
+
 This section gives the exact classical GR consequence of a supplied metric-source
-realization. It does not claim that the generic information-force derivative
+realization. It does not claim that the generic residual-gradient derivative
 selects such a realization. In units $c=1$, let a candidate supply an oriented,
 time-orientable four-dimensional Lorentzian manifold $(M,g)$, its Levi--Civita
 connection, a non-null boundary prescription, matter fields $\psi$, and a
@@ -513,7 +528,7 @@ remains conditional; it cannot be used here as an established geometry theorem.
 This is a separate conditional programme, not a claim that electromagnetism is
 already present in the inherited vocabulary. It proposes electromagnetic (EM)
 physics as a distinct field-edge grounding or physical realization of the same
-information-force structure in H-IF: it retains the single core residual
+residual-gradient structure in H-IF: it retains the single core residual
 derivative $\mathcal F_I=-D\mathcal R_I$ in (IF1), rather than adding a second
 residual force. The proposed EM realization is neither gravity nor a
 re-identification of gravitational load-shaped propagation. It has its own
@@ -685,16 +700,16 @@ curved spacetime or on a subsystem. It requires a current, symmetry, or stated
 replacement and explicit field/boundary exchange.
 
 \subsection{Load-shaped-map target}
-\begin{condition}[G1--G8: load-shaped free-propagation conditions]\label{cond:curved}
-A realization must provide: (G1) a controlled map to a Lorentzian metric
+\begin{condition}[IG1--IG8: load-shaped free-propagation conditions]\label{cond:curved}
+A realization must provide: (IG1) a controlled map to a Lorentzian metric
 $g_{\mu\nu}$ and a declared connection $\nabla$, including whether it is
-Levi--Civita or the constraint that determines otherwise; (G2) a causal and
-proper-time clock observable; (G3) a matter coupling and test-body
-approximation; (G4) a derivation of the metric geodesic law from that coupling;
-(G5) a dimensioned operational load/source map to $T^{\rm eff}_{\mu\nu}$;
-(G6) a metric field equation or explicitly parameterized metric modification;
-(G7) compatible source/exchange and boundary accounting; and (G8) tidal and
-accelerometer observables. Only if G1--G8 yield
+Levi--Civita or the constraint that determines otherwise; (IG2) a causal and
+proper-time clock observable; (IG3) a matter coupling and test-body
+approximation; (IG4) a derivation of the metric geodesic law from that coupling;
+(IG5) a dimensioned operational load/source map to $T^{\rm eff}_{\mu\nu}$;
+(IG6) a metric field equation or explicitly parameterized metric modification;
+(IG7) compatible source/exchange and boundary accounting; and (IG8) tidal and
+accelerometer observables. Only if IG1--IG8 yield
 \[
  \boxed{u^\nu\nabla_\nu u^\mu=0}
 \]
@@ -712,7 +727,7 @@ accounting; it cannot insert an untyped cost into a field equation
 \section{Equivalence and source obligations}\label{sec:obligations}
 \begin{hypothesis}[H-PC: physical passive-continuation bridge]\label{hyp:bridge}
 One concrete realization assigns the same declared physical passive-reuse
-sector to both the F1--F6 flat regime and the G1--G8 load-shaped regime, with
+sector to both the F1--F6 flat regime and the IG1--IG8 load-shaped regime, with
 all maps in Section~\ref{sec:maps} defined and measured.
 \end{hypothesis}
 
@@ -744,7 +759,7 @@ Passive reuse has zero additional alteration cost in its declared class; it is n
 \addlinespace
 Momentum is not force; persistence alone does not prove momentum conservation. & H-F: carried structure maps to measured four-momentum in a flat regime. & Close F1--F6 and derive $dp^\mu/d\tau=0$, including symmetry, isolation, and flux accounting. & Recover inertial transport and measured momentum balance within the declared special-relativistic/\allowbreak Newtonian domain.\\
 \addlinespace
-Free GR test-body motion has zero proper acceleration; support and tides remain real. & H-G: a dimensioned load maps to controlled geometry and matter coupling. & Close G1--G8 and derive $u^\nu\nabla_\nu u^\mu=0$ plus source dynamics. & Meet accelerometer, tidal, weak-field, redshift, light-propagation, and PPN limits.\\
+Free GR test-body motion has zero proper acceleration; support and tides remain real. & H-G: a dimensioned load maps to controlled geometry and matter coupling. & Close IG1--IG8 and derive $u^\nu\nabla_\nu u^\mu=0$ plus source dynamics. & Meet accelerometer, tidal, weak-field, redshift, light-propagation, and PPN limits.\\
 \addlinespace
 A present passive continuation is historically underdetermined; proper acceleration is only a local relation. & H-I: a history-bearing attribution record has a specified inference relation. & Define retained changes, source/support history, uncertainty, scale, and comparison protocol without a privileged observer. & Match local accelerometer results while testing momentum/load attribution through the declared historical record.\\
 \addlinespace
@@ -775,7 +790,7 @@ defined; it does not supply them \citep{donoghue1994,burgess2004}.
 
 \section{Recovery conditions and falsifiers}\label{sec:falsifiers}
 The conditional reconciliation is met only if one realization closes F1--F6
-and G1--G8, supplies H-PC's common implemented dynamics, calculates universal
+and IG1--IG8, supplies H-PC's common implemented dynamics, calculates universal
 coupling and source exchange, and recovers the declared tested limits. Even
 then it establishes two controlled readings of a law, not a force identity.
 
@@ -821,7 +836,7 @@ explanatory attribution requires a history-bearing record and the stated
 inference map. That requirement supplies no contrary identity claim.
 
 H-EM adds a distinct, conditional electromagnetic field-edge programme while
-preserving those limits. It retains one information-force residual derivative
+preserving those limits. It retains one residual-gradient residual derivative
 and requires separately typed state/clock, local gauge, charge/current, matter,
 dynamics, observables, interface, exchange, covariance, and empirical-recovery
 bridges. It does not derive physical electromagnetism, Maxwell theory, or QED;
