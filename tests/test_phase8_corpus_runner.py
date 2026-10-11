@@ -827,7 +827,7 @@ def test_trace_dimensions_are_declared_for_the_full_corpus_observation_contract(
         "profile": "conversation_corpus_prepass",
         "prepass_mode": "sealed_corpus_lexical_candidate_closure",
         "lexical_candidate_count": 150,
-        "loaded_seed_count": 96,
+        "loaded_seed_count": 105,
         "selection_complete": True,
         "incremental_content_loading": False,
     }
@@ -871,7 +871,7 @@ def test_trace_dimensions_are_declared_for_the_full_corpus_observation_contract(
             "profile": "conversation_hybrid_prepass",
             "prepass_mode": "corpus_connected_prepass_with_live_fallback",
             "lexical_candidate_count": 150,
-            "loaded_seed_count": 96,
+            "loaded_seed_count": 105,
             "selection_complete": True,
             "incremental_content_loading": True,
         }
@@ -895,8 +895,11 @@ def test_trace_dimensions_are_declared_for_the_full_corpus_observation_contract(
         corpus, runtime_seed_profile="conversation_incremental")
     incremental_summary = incremental["system_under_test"][
         "runtime_seed_profile_summary"]
-    assert incremental_summary["initial_loaded_seed_count"] == 74
-    assert incremental_summary["loaded_seed_count"] == 96
+    # tranche 21: the conversation profile's anchors include the
+    # self-improvement loop (boot_profiles.CONVERSATION_SELF_IMPROVEMENT_ANCHORS):
+    # 74 -> 83 initial, 96 -> 105 after the corpus prepass; still 22 incremental.
+    assert incremental_summary["initial_loaded_seed_count"] == 83
+    assert incremental_summary["loaded_seed_count"] == 105
     assert incremental_summary["incrementally_added_seed_count"] == 22
     assert incremental_summary["prepass_status_counts"] == {
         "loaded": 50, "already_available": 1, "unavailable": 23,

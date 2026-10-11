@@ -431,3 +431,17 @@ See the [results](RECURSIVE_SELF_IMPROVEMENT_TRANCHE20_RESULTS_20261010.md) and 
 - **Run v1** found two defects in what gets self-promoted: a world-game experiment stalls the loop, and the `performance` judge accepts timing noise. Eligibility is now `[instruction, comprehension]`.
 
 Next: run self-promotion in the production daemon; a capability-adding family fed by natural concerns; a quantised `performance` judge.
+
+## 2026-10-10 recursive self-improvement tranche 21
+
+See the [results](RECURSIVE_SELF_IMPROVEMENT_TRANCHE21_RESULTS_20261010.md).
+
+- **Correction to tranche 20.** Its endemic gains were on the `converse()` path, which tests and the replay judge use. The production daemon path (`ingest_turn` → graph release) already answers those 51 natural requests by goal-taking and files no gaps, so tranche 20 did not change production behaviour.
+- **Production now runs the loop.** The conversation profile gains the self-improvement anchors.
+- **Two production defects fixed:**
+  - comprehension concerns were misrouted to the comprehension composer (`composer_dispatch` v1.2.0);
+  - dispatched experiments were never ingested (`_dispatch_tick` deferral).
+- **Production measurement** (120 natural turns): 66 error or none, 29 spurious goal-takes. The agent self-promoted 1 concern and ran 1 experiment (refuted), with 0 adoptions. Endemic RSI is **not yet** shown in production. The bottlenecks are supply (the real failures file no concern) and fit (no family can add a reply).
+- **Regression:** 1 fixed, 1 premise updated; 6 curriculum failures shown to be pre-existing.
+
+Next: judge on the production path; file concerns from the agent's own error and spurious goal-take turns; a reply-adding family.

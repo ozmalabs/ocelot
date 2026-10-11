@@ -1,3 +1,9 @@
+**Recursive self-improvement tranche 21 (2026-10-10):** ([results](RECURSIVE_SELF_IMPROVEMENT_TRANCHE21_RESULTS_20261010.md))
+
+- **Tranche 20's endemic gains were on the `converse()` path, not the production daemon path.** Production already answered those requests.
+- **Production now carries and runs the self-improvement loop.** Two defects were fixed along the way: concern misrouting and an experiment-ingest stall.
+- **On 120 natural turns, production self-improvement fixes nothing yet.** The agent's real failures, 66 error or none and 29 spurious goal-takes, file no concerns, and no variation family can add a reply.
+
 **Recursive self-improvement tranche 20 (2026-10-10):** ([results](RECURSIVE_SELF_IMPROVEMENT_TRANCHE20_RESULTS_20261010.md))
 
 - **Endemic recursive self-improvement: preregistered gates pass.** On natural requests with no human in the loop, the agent files, promotes, tests and adopts its own fixes: 45 of 47 gaps, 0 false adoptions.

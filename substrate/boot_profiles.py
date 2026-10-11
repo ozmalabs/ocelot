@@ -60,6 +60,27 @@ CONVERSATION_SEED_ANCHORS = frozenset({
     "wordnet_common_objects",
 })
 
+# SELF-IMPROVEMENT anchors (tranche 21). The production daemon boots this
+# profile; without these the agent could file gaps but its own promotion, the
+# variation repertoire, the experiment judges, the retry policy, the adoption
+# regression veto and the integrity list were absent (reflective_faculty
+# lazily loaded only some of them, and adoption_safety never). Endemic
+# recursive self-improvement (tranche 20) must run in the profile production
+# actually uses.
+CONVERSATION_SELF_IMPROVEMENT_ANCHORS = frozenset({
+    "improvement_integrity",
+    "self_promotion",
+    "variation_ops",
+    "instruction_repair_retry",
+    "adoption_safety",
+    "self_optimisation",
+    "conversation_experiment",
+    # the agent's own comprehension self-observation (latency, recurring
+    # shallow/deep-reader divergence): a natural concern supply
+    "comprehension_health",
+})
+CONVERSATION_SEED_ANCHORS = CONVERSATION_SEED_ANCHORS | CONVERSATION_SELF_IMPROVEMENT_ANCHORS
+
 # Runtime modules observed in the fixed production-shaped conversation profile.
 # Importing this group at profile boot moves its one-time import cost out of the
 # first user turn; these are runtime dependencies, not additional seed content.

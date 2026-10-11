@@ -59,7 +59,12 @@ def run(arm, n_req):
     jd, rf = T.jd, T.rf
     from substrate.world_adapter import WorldAdapter
     from substrate.boot_all import load_all_seeds
-    a = WorldAdapter(seeds=(), shadow_read=True); load_all_seeds(a)
+    a = WorldAdapter(seeds=(), shadow_read=True)
+    if os.environ.get("ERSI_PROFILE") == "conversation":   # the daemon's default production profile
+        from substrate.boot_profiles import load_conversation_seed_profile
+        load_conversation_seed_profile(a)
+    else:
+        load_all_seeds(a)
     for n in a.s.nodes("SelfPromotionPolicy"):
         a.s.set_attr(n, "enabled", 0 if arm == "off" else 1)
     for n in a.s.nodes("VariationOp"):
