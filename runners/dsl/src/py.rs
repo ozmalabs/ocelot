@@ -14344,6 +14344,24 @@ fn argmin_tie_reset() {
     crate::argmin_tie::reset();
 }
 
+/// `[(selector, value_term, mixed, wins, all_null)]` for every selector site
+/// that saw a None-valued candidate (null-candidate census; observing only).
+#[pyfunction]
+fn argmin_null_sites(py: Python<'_>) -> PyResult<PyObject> {
+    let out = pyo3::types::PyList::empty_bound(py);
+    for (key, mixed, wins, all_null) in crate::argmin_tie::null_sites() {
+        let mut parts = key.splitn(2, '\u{1}');
+        let d = PyDict::new_bound(py);
+        d.set_item("selector", parts.next().unwrap_or(""))?;
+        d.set_item("value_term", parts.next().unwrap_or(""))?;
+        d.set_item("mixed", mixed)?;
+        d.set_item("wins", wins)?;
+        d.set_item("all_null", all_null)?;
+        out.append(d)?;
+    }
+    Ok(out.into())
+}
+
 /// `{firings, ties, empties, refusals, unique_term_firings, mode}`.
 ///
 /// `ties` and `empties` are SEPARATE on purpose: a tie-refusal and an
@@ -14352,12 +14370,17 @@ fn argmin_tie_reset() {
 #[pyfunction]
 fn argmin_tie_stats(py: Python<'_>) -> PyResult<PyObject> {
     let (firings, ties, empties, refusals, unique_term) = crate::argmin_tie::stats();
+    let (null_mixed, null_wins, null_all) = crate::argmin_tie::null_stats();
     let d = PyDict::new_bound(py);
     d.set_item("firings", firings)?;
     d.set_item("ties", ties)?;
     d.set_item("empties", empties)?;
     d.set_item("refusals", refusals)?;
     d.set_item("unique_term_firings", unique_term)?;
+    // null-candidate census (observing only; see argmin_tie.rs)
+    d.set_item("null_mixed", null_mixed)?;
+    d.set_item("null_wins", null_wins)?;
+    d.set_item("null_all", null_all)?;
     d.set_item(
         "mode",
         match crate::argmin_tie::mode() {
@@ -14502,6 +14525,7 @@ pub(crate) fn register(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(argmin_tie_reset, m)?)?;
     m.add_function(wrap_pyfunction!(argmin_tie_stats, m)?)?;
     m.add_function(wrap_pyfunction!(argmin_tie_sites, m)?)?;
+    m.add_function(wrap_pyfunction!(argmin_null_sites, m)?)?;
     m.add_function(wrap_pyfunction!(retinal_layout_sample, m)?)?;
     m.add_function(wrap_pyfunction!(allocentric_retinal_projection, m)?)?;
     m.add_function(wrap_pyfunction!(gammatone_band, m)?)?;

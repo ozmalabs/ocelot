@@ -291,7 +291,9 @@ def test_adoption_safety_seed_loads_and_round_trips(agent):
     # the rule round-trips canonically (the _REFRESHABLE_SEEDS contract: an
     # unchanged rule is never churned by the resume refresh path)
     seed = json.load(open(os.path.join(ROOT, "seeds", "adoption_safety.json")))
-    assert seed["id"] == "adoption_safety" and len(seed["rules"]) == 1
+    assert seed["id"] == "adoption_safety" and len(seed["rules"]) == 2
+    assert [r["name"] for r in seed["rules"]] == ["adopt_denied_on_regression",
+                                                  "adopt_denied_on_overridden_verdict"]
     file_canon = jd._canon_rule_body(seed["rules"][0])
     live_canon = jd._canon_rule_body(live[0])
     assert file_canon and file_canon == live_canon, \

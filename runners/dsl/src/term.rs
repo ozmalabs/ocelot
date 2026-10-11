@@ -13679,11 +13679,21 @@ fn argmin_or_argmax_over(
     // improvement, incremented on EXACT equality (`cmp_value == Equal`).
     // §13: exact equality, no epsilon, nowhere to put one.
     let mut n_at_best: usize = 0;
+    // NULL CENSUS (argmin_tie, observing only): how many candidate values were
+    // None, out of how many candidates.
+    let mut n_seen: usize = 0;
+    let mut n_null: usize = 0;
     for it_ref in snap.iter() {
         let it = it_ref.clone();
         env.push((var_name, it.clone()));
         let v = evaluate(arena, value, env, ctx);
         env.pop();
+        if tie_audit {
+            n_seen += 1;
+            if matches!(v, Value::None) {
+                n_null += 1;
+            }
+        }
         if auditing {
             n_candidates += 1;
             if first_elem.is_none() {
@@ -13752,6 +13762,11 @@ fn argmin_or_argmax_over(
         if is_tie {
             let key = crate::jsonio::term_to_json(arena, value, ctx.interner).to_string();
             argmin_tie::note_site(if want_min { "Argmin" } else { "Argmax" }, &key, true);
+        }
+        let winner_null = matches!(&best, Some((bv, _)) if matches!(bv, Value::None));
+        if let Some(obs) = argmin_tie::note_nulls(n_seen, n_null, winner_null) {
+            let key = crate::jsonio::term_to_json(arena, value, ctx.interner).to_string();
+            argmin_tie::note_null_site(if want_min { "Argmin" } else { "Argmax" }, &key, obs);
         }
     }
     if require_unique {
