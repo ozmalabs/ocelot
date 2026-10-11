@@ -68,6 +68,9 @@ class TieReport:
             "per_test": self.per_test,
             "outcomes": self.outcomes,
             "sites": sites,
+            # null-candidate census (2026-10-10): sites where a selector saw a
+            # None-valued candidate; totals carry null_mixed/null_wins/null_all
+            "null_sites": _native.argmin_null_sites(),
             "exitstatus": int(exitstatus),
         }
         dest = pathlib.Path(
@@ -79,7 +82,8 @@ class TieReport:
             tr.write_line(
                 f"[argmin_tie] mode={out['mode']} firings={s['firings']} "
                 f"ties={s['ties']} empties={s['empties']} "
-                f"refusals={s['refusals']} -> {dest}")
+                f"refusals={s['refusals']} null_mixed={s.get('null_mixed')} "
+                f"null_wins={s.get('null_wins')} null_all={s.get('null_all')} -> {dest}")
 
 
 def pytest_configure(config):
