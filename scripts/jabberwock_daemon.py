@@ -2638,7 +2638,7 @@ def _auto_approve_tick(adapter: WorldAdapter) -> None:
 
 # --- dispatch hook (best-effort; the module is built in parallel) ------------
 
-def _dispatch_tick(adapter: WorldAdapter, runs_dir: str) -> None:
+def _dispatch_tick(adapter: WorldAdapter, runs_dir: str):
     try:
         from domains.experiment_dispatch import scan_and_dispatch
     except ImportError:
@@ -2647,6 +2647,21 @@ def _dispatch_tick(adapter: WorldAdapter, runs_dir: str) -> None:
         scan_and_dispatch(adapter, runs_dir)
     except Exception as e:  # noqa: BLE001 -- never let a dispatch hiccup kill the tick loop
         log(f"dispatch error (continuing): {e}")
+        return
+    # INGEST STALL (tranche 21, measured on the production path): the graph
+    # requests `dispatch` for an Experiment that is `requested`; the child then
+    # runs asynchronously and the Experiment is `running`, which no demand rule
+    # covers, so its result was never ingested and the loop stalled for good.
+    # Keep THIS request alive (deferred, re-executed next tick, no new nodes)
+    # while any dispatched child is still running; the next scan ingests it.
+    # Mechanical: a status read, no choice of what to do.
+    try:
+        if any(adapter.s.node(n)["attrs"].get("status") == "running"
+               for n in adapter.s.nodes("Experiment")):
+            return {"host_action_deferred": True}
+    except Exception:  # noqa: BLE001
+        pass
+    return None
 
 
 # --- fetch hook (best-effort; mirrors the dispatch hook exactly) -------------
