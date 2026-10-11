@@ -216,7 +216,7 @@ def paper_meta(src):
     title, subtitle = "", ""
     if m:
         raw = m.group(1)
-        parts = re.split(r"\\\\\s*\\large\s*", raw, maxsplit=1)
+        parts = re.split(r"\\\\(?:\s*\[[^\]]*\])?\s*\\large\s*", raw, maxsplit=1)
         title = detex(parts[0])
         subtitle = detex(parts[1]) if len(parts) > 1 else ""
     m = ABSTRACT_RE.search(src)
