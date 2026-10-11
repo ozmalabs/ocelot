@@ -65,7 +65,7 @@ def _load_delta(path) -> dict:
     if not path:
         return {"skip_seeds": [], "add_rules": [], "remove_rules": [],
                 "add_concepts": [], "remove_concepts": [], "set_node_attrs": [],
-                "parent_shadow_read": False}
+                "parent_shadow_read": False, "parent_turn_path": ""}
     with open(path) as f:
         d = json.load(f)
     return {"skip_seeds": list(d.get("skip_seeds") or []),
@@ -74,6 +74,10 @@ def _load_delta(path) -> dict:
             # False, so a replaying child must re-arm it to run the SAME
             # comprehension the parent ran (see experiment_dispatch._spawn).
             "parent_shadow_read": bool(d.get("parent_shadow_read") or False),
+            # tranche 23: the path the parent's live turns took ("production"
+            # = ingest_turn -> tick -> release). Before this it was dropped
+            # here, so every tranche-22 replay ran on converse().
+            "parent_turn_path": str(d.get("parent_turn_path") or ""),
             "add_rules": list(d.get("add_rules") or []),
             "remove_rules": list(d.get("remove_rules") or []),
             # Wave 5 (cue-set-edit variation family): typed nodes to add /

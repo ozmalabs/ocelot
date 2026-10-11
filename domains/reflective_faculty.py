@@ -4724,6 +4724,132 @@ def _compose_disposition_generalise(agent, keys, tag: str) -> dict[str, Any]:
                     f"{new_basis!r}, add-only, for the production replay to judge.")}
 
 
+# ---------------------------------------------------------------------------
+# THE DEEP-READER CORRECTION FAMILY (tranche 23). The agent runs a shallow
+# reader (comp_kind -> the arbitration) and a deep reader (shadow_speech_act)
+# on every turn; comprehension_health files a `comprehension` concern when the
+# two disagree the SAME way recurrently (e.g. shallow 'instruction', deep
+# 'statement': "I like to play video games too!" -> "I took on the goal to play
+# the video games ..."). Measured on the production path (tranche 21): 29 of
+# 120 natural turns were such spurious goal-takes.
+#
+# The variant lets the deep reader's verdict OVERRIDE the shallow arbitration
+# for exactly that disagreement: (1) the arbitration rule that claimed the
+# concern's turn is REPLACED by a copy guarded "not when the deep reader heard
+# <deep>" (the only change; every other turn arbitrates byte-identically);
+# (2) an ADDED arbitration rule selects the neutral, non-endorsing receipt for
+# turns with that disagreement (graph-stamped receipt_selected_by_rule), and
+# (3) an ADDED reply rule (a copy of the held response-assertion receipt
+# rule's effects) realises it. Judged by the production-path replay; the
+# concern's own disagreement class is the scope (convo_child_run).
+# ---------------------------------------------------------------------------
+def _compose_deep_reader_correct(agent, keys, tag: str) -> dict[str, Any]:
+    import copy as _copy
+    import re as _re
+    sub0, native0, _ag0 = _resolve_agent(agent)
+    key = str(keys[0]) if keys else ""
+    standing = next((n for n in sub0.nodes("StandingConcern") if sub0.node(n)["attrs"].get("name") == key), None)
+    if standing is None:
+        return {"built": False, "wall": "no StandingConcern carries this capability key"}
+    msg = None
+    for sc in sub0.nodes("SelfConcern"):
+        try:
+            if standing in native0.neighbours(sc, "promoted_to"):
+                msgs = list(native0.neighbours(sc, "about_message"))
+                msg = msgs[0] if msgs else None
+                break
+        except Exception:  # noqa: BLE001
+            continue
+    if msg is None:
+        return {"built": False, "wall": "the promoting concern names no turn"}
+    mat = sub0.node(msg)["attrs"]
+    shallow, deep = mat.get("comp_kind"), mat.get("shadow_speech_act")
+    if not shallow or not deep or shallow == deep:
+        return {"built": False, "wall": "the concern's turn carries no shallow/deep reader disagreement"}
+    interps = [i for i in native0.in_neighbours(msg, "interprets")
+               if sub0.node(i)["attrs"].get("schema") == "communication_interpretation.v1"]
+    if not interps:
+        return {"built": False, "wall": "the turn carries no communication interpretation"}
+    basis = sub0.node(interps[0])["attrs"].get("arbitration_basis")
+    # the concern's own turn also fixes the LITERAL class the correction may
+    # touch: measured in tranche 23, the deep reader also hears "Paint the
+    # fence." as a statement, so a correction keyed on the reader pair alone
+    # turned real imperatives into receipts. Every imperative probed opens
+    # with a content word; 23 of 29 persona misreads open with a function word.
+    first_role = sub0.node(interps[0])["attrs"].get("literal_first_role")
+    if not first_role:
+        return {"built": False, "wall": "the concern's turn carries no literal_first_role to scope the correction"}
+    rules = [r for r in native0.export_rules() if isinstance(r, dict) and r.get("active", True)]
+    types = _improvement_protected_types(sub0)
+    adoptable_seeds = {sub0.node(n)["attrs"].get("seed_id") for n in sub0.nodes("SeedSummary")
+                       if sub0.node(n)["attrs"].get("skippable") == 1.0}
+    seed_of = _rule_seed_map(sub0)
+    arb = next((r for r in rules if r.get("match") == [["agent", "holds_interpretation", "i"]]
+                and ["set_attr", "i", "arbitration_basis", basis] in (r.get("effects") or [])), None)
+    if arb is None:
+        return {"built": False, "wall": f"no held arbitration rule writes the turn's basis {basis!r}"}
+    if _rule_names_protected_type(arb, types) or seed_of.get(arb.get("name")) not in adoptable_seeds:
+        return {"built": False, "wall": f"{arb.get('name')!r} is not an adoptable rule"}
+    held_reply = next((r for r in rules if r.get("name") == "reply_to_deferred_response_assertion"), None)
+    if held_reply is None:
+        return {"built": False, "wall": "no held neutral-receipt reply rule to realise the correction"}
+    slug = _re.sub(r"[^a-z0-9]+", "_", f"{shallow}_as_{deep}_{first_role}").strip("_")
+    heard = lambda: {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "literal_first_role"},
+         "b": {"type": "Lit", "value": first_role}},
+        {"type": "Exists", "source": {"type": "Neighbours", "node": {"type": "Var", "name": "i"},
+                                      "edge_type": "interprets"},
+                     "var_name": "drm", "predicate": {"type": "And", "items": [
+                         {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "drm"}, "key": "comp_kind"},
+                          "b": {"type": "Lit", "value": shallow}},
+                         {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "drm"},
+                                              "key": "shadow_speech_act"}, "b": {"type": "Lit", "value": deep}}]}}]}
+    variant = _copy.deepcopy(arb)
+    variant.pop("active", None)
+    variant["name"] = f"{arb['name']}_deepread_{tag}"
+    variant["where"] = {"type": "And", "items": [variant["where"], {"type": "Not", "arg": heard()}]}
+    variant["comment"] = (f"deep_reader_correct (tranche 23): {arb['name']}, except when the deep reader heard "
+                          f"{deep!r} where the shallow reader classified {shallow!r}.")
+    new_basis = f"deep_reader_{slug}_receipt"
+    receipt_arb = {
+        "name": f"arbitrate_deep_reader_{slug}_receipt_{tag}",
+        "comment": (f"deep_reader_correct (tranche 23): a turn the shallow reader classified {shallow!r} and the "
+                    f"deep reader heard {deep!r} gets the neutral, non-endorsing receipt."),
+        "match": [["agent", "holds_interpretation", "i"]],
+        "where": {"type": "And", "items": [
+            {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "schema"},
+             "b": {"type": "Lit", "value": "communication_interpretation.v1"}},
+            {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "cognitive_disposition"},
+             "b": {"type": "Lit", "value": None}},
+            {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "communicative_force"},
+             "b": {"type": "Lit", "value": None}},
+            heard()]},
+        "effects": [["set_attr", "i", "communicative_force", "assertion_or_correction"],
+                    ["set_attr", "i", "cognitive_disposition", "defer"],
+                    ["set_attr", "i", "cognitive_goal", "update_common_ground"],
+                    ["set_attr", "i", "arbitration_basis", new_basis],
+                    ["set_attr", "i", "receipt_selected_by_rule", "neutral_receipt"]]}
+    flag = f"deep_reader_receipt_minted_{tag}"
+    receipt_reply = {
+        "name": f"reply_deep_reader_{slug}_receipt_{tag}",
+        "comment": "deep_reader_correct (tranche 23): realises the receipt with the held response-assertion receipt's effects.",
+        "match": [["agent", "holds_interpretation", "i"], ["i", "interprets", "m"]],
+        "where": {"type": "And", "items": [
+            {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "arbitration_basis"},
+             "b": {"type": "Lit", "value": new_basis}},
+            {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": flag},
+                                    "b": {"type": "Lit", "value": 1}}}]},
+        "effects": [["set_attr", "m", flag, 1]] + [e for e in _copy.deepcopy(held_reply["effects"])
+                                                     if not (isinstance(e, list) and e[:2] == ["set_attr", "m"])]}
+    if any(r.get("name") in (variant["name"], receipt_arb["name"]) for r in rules):
+        return {"built": False, "wall": "this correction is already held"}
+    return {"built": True, "removed_rule": arb["name"], "rules": [variant, receipt_arb, receipt_reply],
+            "shallow": shallow, "deep": deep, "basis": new_basis,
+            "how": (f"My deep reader heard {deep!r} where {arb['name']} arbitrated {shallow!r} ({basis!r}); I let "
+                    f"the deep reader veto that arbitration for this disagreement and answer with the neutral "
+                    f"receipt, for the production replay to judge.")}
+
+
 _VARIATION_REGISTRY = {
     "cue_set_edit": _compose_cue_variant,
     "reply_ablation": _compose_reply_ablation,
@@ -4732,6 +4858,7 @@ _VARIATION_REGISTRY = {
     "datum_feedback_rule": _compose_datum_feedback_rule,
     "shape_mint": _compose_shape_mint,
     "disposition_generalise": _compose_disposition_generalise,
+    "deep_reader_correct": _compose_deep_reader_correct,
     # structural_edit / threshold_shift are registered below, after their
     # builders are defined (module load order), same dict.
 }
@@ -5579,6 +5706,19 @@ def _compose_experiment_rule(agent, keys, rels) -> dict[str, Any]:
                 delta_attrs["generalise_source_rule"] = gen_report["source_rule"]
                 delta_attrs["generalise_guard"] = gen_report["guard"]
                 delta_attrs["generalise_basis"] = gen_report["basis"]
+        elif variation_op == "deep_reader_correct" and variation_builder is not None:
+            # THE DEEP-READER CORRECTION (tranche 23) -- see _compose_deep_reader_correct:
+            # replace the misreading arbitration rule with a deep-reader-guarded copy
+            # and ADD the receipt arbitration + reply. `deep_reader_edit` marks the
+            # delta so perform_adoptions installs ALL added rules.
+            dr_report = variation_builder(agent, keys, tag)
+            if dr_report.get("built"):
+                add_rules_list.extend(dr_report["rules"])
+                import json as _json2
+                delta_attrs["remove_rules"] = _json2.dumps([dr_report["removed_rule"]])
+                delta_attrs["act_rule_varied"] = dr_report["removed_rule"]
+                delta_attrs["deep_reader_edit"] = 1.0
+                delta_attrs["deep_reader_pair"] = f"{dr_report['shallow']}>{dr_report['deep']}"
         elif variation_op == "shape_mint" and variation_builder is not None:
             # THE SHAPE-MINT VARIANT (COMPOSER-CAPABILITY) — see
             # _compose_shape_mint: constructs a brand-new InterlocutorShape
@@ -6091,6 +6231,55 @@ def perform_adoptions(agent) -> list:
                         "knob_node_type": knob_type, "knob_attr": knob_attr,
                         "knob_old_value": knob_old_value, "knob_new_value": knob_new_value,
                         "rule_removed": "", "rule_added": "",
+                        "taught": trec, "saved": trec.get("saved")})
+            continue
+
+        # DEEP-READER CORRECTION ADOPTION (tranche 23): replace the misreading
+        # arbitration rule (denylist + integrity gates) and install the added
+        # receipt rules.
+        if da.get("deep_reader_edit") == 1.0 and da.get("act_rule_varied"):
+            removed_name = da.get("act_rule_varied")
+            try:
+                dr_rules = _json.loads(da.get("add_rules") or "[]")
+            except Exception:
+                dr_rules = []
+            denied, reason = _rule_denylisted(sub, removed_name)
+            ptypes = _improvement_protected_types(sub)
+            if not denied and any(_rule_names_protected_type(r, ptypes) for r in dr_rules):
+                denied, reason = True, "an added rule names a self-improvement-loop node type"
+            if denied or not dr_rules:
+                native.set_attr(exp, "adopt_denied", True)
+                out.append({"experiment": str(exp), "denied": True, "reason": reason, "rule": removed_name})
+                continue
+            exported = native.export_rules()
+            idx = next((i for i, r in enumerate(exported) if isinstance(r, dict) and r.get("active", True)
+                        and r.get("name") == removed_name), None)
+            if idx is None:
+                continue
+            original_json = dict(exported[idx])
+            original_json.pop("active", None)
+            native.remove_rule(idx)
+            for r in dr_rules:
+                native.add_rule(r)
+            adoption = sub.add_node("Adoption", {
+                "rule_removed": removed_name, "rule_added": ",".join(r.get("name", "") for r in dr_rules),
+                "deep_reader_pair": da.get("deep_reader_pair") or "",
+                "experiment_id": str(exp), "tick": _time.time(),
+                "original_rule_json": _json.dumps(original_json),
+            })
+            try:
+                native.add_edge_unchecked(exp, "adopted_as", adoption)
+            except Exception:
+                pass
+            native.set_attr(exp, "adopted", True)
+            trec = teach(agent, "TaughtHint",
+                         {"topic": (f"adoption: deep reader overrides {removed_name!r} for "
+                                    f"{da.get('deep_reader_pair')!r} (experiment {exp})"),
+                          "answer": "adopted", "rule_removed": removed_name,
+                          "rule_added": ",".join(r.get("name", "") for r in dr_rules), "experiment_id": str(exp)},
+                         category="experiment_conclusions")
+            out.append({"experiment": str(exp), "adoption": adoption, "rule_removed": removed_name,
+                        "rule_added": ",".join(r.get("name", "") for r in dr_rules),
                         "taught": trec, "saved": trec.get("saved")})
             continue
 

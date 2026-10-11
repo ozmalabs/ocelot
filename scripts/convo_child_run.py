@@ -199,6 +199,7 @@ def read_corpus(agent) -> list:
     S, I = agent.s, agent.inner
     flagged_ids = set()
     steering_ids = set()
+    scope_pairs = set()
     for sc in S.nodes("SelfConcern"):
         if not I.has_node(sc):
             continue
@@ -209,7 +210,15 @@ def read_corpus(agent) -> list:
         # that turn IS what a cue-set-edit experiment is trying to change).
         # Mechanical edge read, same as before; no status filter (a promoted
         # concern's turn is still the target turn).
-        if S.node(sc)["attrs"].get("kind") in ("reply_fix", "instruction", "unanswered"):
+        if S.node(sc)["attrs"].get("kind") == "comprehension":
+            # tranche 23: a comprehension concern names a shallow/deep reader
+            # DISAGREEMENT CLASS; every turn with that same disagreement is in
+            # the concern's scope (changing it is the point, not a regression)
+            for mid in I.neighbours(sc, "about_message"):
+                if I.has_node(mid):
+                    at0 = S.node(mid)["attrs"]
+                    scope_pairs.add((at0.get("comp_kind"), at0.get("shadow_speech_act"), _first_role(S, I, mid)))
+        if S.node(sc)["attrs"].get("kind") in ("reply_fix", "instruction", "unanswered", "comprehension"):
             for mid in I.neighbours(sc, "about_message"):
                 if I.has_node(mid):
                     flagged_ids.add(int(mid.value))
@@ -260,8 +269,20 @@ def read_corpus(agent) -> list:
                 break
         probes.append({"turn_id": int(m.value), "text": text, "reply": recorded,
                        "speech_act": act or "statement",
-                       "flagged": int(m.value) in flagged_ids})
+                       "flagged": int(m.value) in flagged_ids,
+                       "in_scope": (a.get("speech_act_divergence") == 1.0
+                                    and (a.get("comp_kind"), a.get("shadow_speech_act"),
+                                         _first_role(S, I, m)) in scope_pairs)})
     return probes
+
+
+def _first_role(S, I, mid):
+    """The turn's communication interpretation's literal_first_role (the
+    literal class a deep_reader_correct correction is scoped to)."""
+    for i in I.in_neighbours(mid, "interprets"):
+        if I.has_node(i) and S.node(i)["attrs"].get("schema") == "communication_interpretation.v1":
+            return S.node(i)["attrs"].get("literal_first_role")
+    return None
 
 
 def _apply_rule_swap(agent, delta: dict) -> list:
@@ -710,8 +731,10 @@ def main() -> int:
                 # second same-class unanswered turn, and the old scorer
                 # counted that as a regression. Scored 0 (no credit claimed,
                 # no penalty); reported as `repaired`.
-                if changed and _is_broken_reply(baseline_text, control["errors"][i]) \
-                        and not _is_broken_reply(replayed, stats["errors"][i]):
+                if changed and not _is_broken_reply(replayed, stats["errors"][i]) and (
+                        _is_broken_reply(baseline_text, control["errors"][i]) or probe.get("in_scope")):
+                    # error -> reply, or a turn in the concern's own
+                    # disagreement class answered differently (tranche 23)
                     repaired += 1
                     changed = False
                     baseline = "control (repaired)"

@@ -32,9 +32,13 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path[:0] = [str(ROOT), str(ROOT / "runners/dsl/python"), str(ROOT / "scripts")]
 ERR = "ERROR: no communicative response could be generated."
 IDLE_WAIT_S = 240
+# tranche 23: real imperatives, retested after the stream on both agents -- a
+# correction of the shallow reader must not stop these being taken as goals
+CONTROL_IMPERATIVES = ["Bake the cake.", "Write the book.", "Paint the fence.", "Open the door.",
+                       "Plant the tree.", "Clean the kitchen."]
 
 
-def boot(shadow):
+def boot(shadow, promote=None):
     import jabberwock_daemon as jd
     from substrate.world_adapter import WorldAdapter
     from substrate.boot_profiles import load_conversation_seed_profile
@@ -45,7 +49,9 @@ def boot(shadow):
     a.deep_ingest = shadow
     a.turn_path = "production"
     jd._ensure_supervisory_scheduler(a)
-    if os.environ.get("ERSI_SELF_PROMOTION") == "0":     # the off arm: a human must promote
+    if promote is None:
+        promote = os.environ.get("ERSI_SELF_PROMOTION") != "0"
+    if not promote:     # the off arm (a human must promote), and the fresh-boot baseline
         for n in a.s.nodes("SelfPromotionPolicy"):
             a.s.set_attr(n, "enabled", 0)
     st = jd.DaemonState(a, "seeds")
@@ -197,15 +203,25 @@ def main():
     print("LIVE", json.dumps(live, default=str)[:3000], flush=True)
     # behaviour where production sees it: the same turns, production path, post-run agent vs fresh boot
     after = [classify(say(st, t, max_cycles=15)[1]) for t in turns]
-    fresh = boot(shadow)
+    controls_after = [classify(say(st, t, max_cycles=15)[1]) for t in CONTROL_IMPERATIVES]
+    # tranche 23: the baseline must not improve itself during its own retest
+    # (say() runs the host-action loop) -- before this, the fresh boot could
+    # self-promote and adopt mid-retest, understating every post-run gain
+    fresh = boot(shadow, promote=False)
     say(fresh, "Hello.")
     before = [classify(say(fresh, t, max_cycles=15)[1]) for t in turns]
+    controls_before = [classify(say(fresh, t, max_cycles=15)[1]) for t in CONTROL_IMPERATIVES]
+    fresh_adoptions = len(fresh.adapter.s.nodes("Adoption"))
     summ = {
         "turns": len(turns), "elapsed_s": round(time.time() - t0, 1),
         "first_pass": dict(collections.Counter(r["class"] for r in rows)),
         "retest_post_run": dict(collections.Counter(after)),
         "retest_fresh_boot": dict(collections.Counter(before)),
         "changed_turns": sum(1 for x, y in zip(after, before) if x != y),
+        "to_error": sum(1 for x, y in zip(after, before) if x == "error_or_none" and y != "error_or_none"),
+        "controls_post_run": dict(zip(CONTROL_IMPERATIVES, controls_after)),
+        "controls_fresh_boot": dict(zip(CONTROL_IMPERATIVES, controls_before)),
+        "fresh_boot_adoptions": fresh_adoptions,
         **{k: v for k, v in live.items() if k != "experiments"},
         "experiments_n": len(live["experiments"]),
         "experiments_by_op_outcome": dict(collections.Counter(
