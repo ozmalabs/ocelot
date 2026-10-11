@@ -175,13 +175,16 @@ receptor methylation, and suppresses the next tumble when things improve
 ([PLOS Comp Biol](https://journals.plos.org/ploscompbiol/article?id=10.1371%2Fjournal.pcbi.1000735)).
 The comparison is performed *by moving through the world*.
 
-**The woodlouse stores it in its legs.** Turn alternation — forced left, then right — is
-explained by BALM, bilaterally asymmetrical leg movements arising mechanically from
-negotiating the curve
-([Springer](https://link.springer.com/content/pdf/10.3758/BF03200018.pdf)). The memory of
-the last turn is body state, not representation. **A different body therefore breaks ties
-differently with no representational difference at all** — which is this project's
-"same capability, two bodies" thesis arriving from biology, at zero cognitive cost.
+**The woodlouse carries the effect in locomotor state.** Turn alternation — a forced
+turn influencing the subsequent free turn — is supported by experiments on BALM,
+bilaterally asymmetrical leg movements following prior turns
+([Hughes, 1985](https://link.springer.com/content/pdf/10.3758/BF03200018.pdf)). The study
+leaves its neural-versus-muscular control unresolved. Prior movement can therefore
+affect later choice through carried bodily state without requiring an explicit
+comparison of routes. This supports the project's "same capability, two bodies"
+mechanism: different locomotor state can change the response at the same visible
+junction. It does not establish absence of all internal representation or zero
+cognitive or execution cost.
 
 **The ant colony stores it in the world.** On Deneubourg's double bridge, each ant chooses
 probabilistically on pheromone and deposits more; positive feedback amplifies an initial
