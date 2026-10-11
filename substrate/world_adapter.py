@@ -9299,7 +9299,7 @@ class WorldAdapter:
             # same neutral receipt the held response-assertion rule does.
             rule_selected = (
                 attrs.get("receipt_selected_by_rule") == "neutral_receipt"
-                and attrs.get("evidence_force") == "assertion_or_correction"
+                and attrs.get("evidence_force") in ("assertion_or_correction", "action_request")
                 and attrs.get("cognitive_disposition") == "defer"
                 and attrs.get("cognitive_goal") == "update_common_ground")
             assertion_receipt = (

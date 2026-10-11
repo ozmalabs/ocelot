@@ -73,7 +73,10 @@ def test_credit_changes_the_first_choice_for_a_new_concern_of_that_kind_only():
     first = lab.episode("reply_fix", fixes="shape_mint")
     assert first == ["knob_edit", "datum_feedback_rule", "shape_mint"]
     assert lab.episode("reply_fix", fixes="shape_mint") == ["shape_mint"]
-    assert lab.pick(lab.concern("comprehension")) == "knob_edit", "credit is per concern kind"
+    # a comprehension concern's own uncredited default (tranche 23: the
+    # comprehension-scoped deep_reader_correct family, priority 9) -- the
+    # reply_fix credit above does not move it to shape_mint
+    assert lab.pick(lab.concern("comprehension")) == "deep_reader_correct", "credit is per concern kind"
 
 
 def test_credit_recovers_when_the_world_changes():

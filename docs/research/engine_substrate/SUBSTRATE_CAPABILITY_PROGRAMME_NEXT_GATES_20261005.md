@@ -465,3 +465,17 @@ See the [results](RECURSIVE_SELF_IMPROVEMENT_TRANCHE22_RESULTS_20261010.md) and 
 - **Regression:** targeted (61 files); 0 attributable failures.
 
 Next: interrogative unanswered classes; statements misread as action requests; observe chained generalisation; check fresh-boot determinism.
+
+## 2026-10-10 recursive self-improvement tranche 23
+
+See the [results](RECURSIVE_SELF_IMPROVEMENT_TRANCHE23_RESULTS_20261010.md) and the [prereg](SUBSTRATE_ENDEMIC_RSI_PRODUCTION_V2_PREREG_20261010.md).
+
+- **Second endemic family on the production path: preregistered gates D1–D4 pass (run `t23b`).** The agent filed its recurring shallow/deep reader disagreement, promoted it itself, built `deep_reader_correct` (the deep reader vetoes the misreading arbitration for that class and answers with a receipt), judged it by replay and adopted it. On 120 natural turns, spurious goal-takes fell 29 → 7 and errors fell 66 → 44. 0 turns got worse, the 6/6 control imperatives were kept, and the off arm adopted nothing.
+- **The first run (`t23`) failed D2.** The correction was too broad: it also turned real imperatives into receipts. It is now scoped by `literal_first_role` too (amendment written before the rerun).
+- **Measurement defects fixed:**
+  - replays never ran on the production path (`_load_delta` dropped `parent_turn_path`, which also affects tranche 22);
+  - the fresh-boot baseline self-adopted during its own retest (tranche 22's gain was 66 → 44, not 60 → 44);
+  - the speed judge refuted every comprehension trial.
+- **Regression:** targeted (63 files); 0 attributable failures.
+
+Next: the adoption/speed-judge ordering defect; interrogative classes; content-first misreads; chained improvement.

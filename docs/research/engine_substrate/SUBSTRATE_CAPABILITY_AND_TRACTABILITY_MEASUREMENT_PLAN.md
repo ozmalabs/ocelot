@@ -1,3 +1,9 @@
+**Recursive self-improvement tranche 23 (2026-10-10):** ([results](RECURSIVE_SELF_IMPROVEMENT_TRANCHE23_RESULTS_20261010.md))
+
+- **The agent corrects its own reader on the production path.** It noticed that its shallow and deep readers recurrently disagree. It then promoted, built, judged and adopted a deep-reader veto with a receipt. Spurious goal-takes fell 29 → 7, errors fell 66 → 44, 0 turns got worse, and real imperatives were kept.
+- **Gates.** The preregistered D1–D4 pass on the second run. The first run failed D2 (the correction was too broad), so the correction was rescoped.
+- **Measurement corrections to tranche 22.** Its replays ran on `converse()`, and its baseline was 66, not 60.
+
 **Recursive self-improvement tranche 22 (2026-10-10):** ([results](RECURSIVE_SELF_IMPROVEMENT_TRANCHE22_RESULTS_20261010.md))
 
 - **First endemic self-improvement on the production path.** Natural conversation went in with no human involved. The agent filed, promoted, varied, judged (with a production-path replay) and adopted a fix. Its unanswered statements fell from 60 to 44 errors, with 0 turns made worse.
