@@ -1,6 +1,6 @@
 {
  "id": "cognitive_scheduler",
- "version": "1.0.1",
+ "version": "1.0.2",
  "self_load_only": true,
  "depends_on": [
   "cognitive_areas"
@@ -3813,19 +3813,39 @@
          "type": "And",
          "items": [
           {
-           "type": "Gt",
-           "a": {
-            "type": "Attr",
-            "node": {
-             "type": "Var",
-             "name": "source"
+           "type": "Or",
+           "items": [
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "source"
+              },
+              "key": "conclusion_ready"
+             },
+             "b": {
+              "type": "Lit",
+              "value": true
+             }
             },
-            "key": "conclusion_ready"
-           },
-           "b": {
-            "type": "Lit",
-            "value": 0
-           }
+            {
+             "type": "Gt",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "source"
+              },
+              "key": "conclusion_ready"
+             },
+             "b": {
+              "type": "Lit",
+              "value": 0
+             }
+            }
+           ]
           },
           {
            "type": "Not",
@@ -4004,19 +4024,39 @@
             "type": "And",
             "items": [
              {
-              "type": "Gt",
-              "a": {
-               "type": "Attr",
-               "node": {
-                "type": "Var",
-                "name": "source"
+              "type": "Or",
+              "items": [
+               {
+                "type": "Eq",
+                "a": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "source"
+                 },
+                 "key": "conclusion_ready"
+                },
+                "b": {
+                 "type": "Lit",
+                 "value": true
+                }
                },
-               "key": "conclusion_ready"
-              },
-              "b": {
-               "type": "Lit",
-               "value": 0
-              }
+               {
+                "type": "Gt",
+                "a": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "source"
+                 },
+                 "key": "conclusion_ready"
+                },
+                "b": {
+                 "type": "Lit",
+                 "value": 0
+                }
+               }
+              ]
              },
              {
               "type": "Not",
@@ -9129,19 +9169,39 @@
          "type": "And",
          "items": [
           {
-           "type": "Gt",
-           "a": {
-            "type": "Attr",
-            "node": {
-             "type": "Var",
-             "name": "source"
+           "type": "Or",
+           "items": [
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "source"
+              },
+              "key": "conclusion_ready"
+             },
+             "b": {
+              "type": "Lit",
+              "value": true
+             }
             },
-            "key": "conclusion_ready"
-           },
-           "b": {
-            "type": "Lit",
-            "value": 0
-           }
+            {
+             "type": "Gt",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "source"
+              },
+              "key": "conclusion_ready"
+             },
+             "b": {
+              "type": "Lit",
+              "value": 0
+             }
+            }
+           ]
           },
           {
            "type": "Not",
@@ -9320,19 +9380,39 @@
             "type": "And",
             "items": [
              {
-              "type": "Gt",
-              "a": {
-               "type": "Attr",
-               "node": {
-                "type": "Var",
-                "name": "source"
+              "type": "Or",
+              "items": [
+               {
+                "type": "Eq",
+                "a": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "source"
+                 },
+                 "key": "conclusion_ready"
+                },
+                "b": {
+                 "type": "Lit",
+                 "value": true
+                }
                },
-               "key": "conclusion_ready"
-              },
-              "b": {
-               "type": "Lit",
-               "value": 0
-              }
+               {
+                "type": "Gt",
+                "a": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "source"
+                 },
+                 "key": "conclusion_ready"
+                },
+                "b": {
+                 "type": "Lit",
+                 "value": 0
+                }
+               }
+              ]
              },
              {
               "type": "Not",

@@ -9039,6 +9039,26 @@ class WorldAdapter:
                 return str(attrs["text"])
         return self._graph_reply_for(mid)
 
+    def record_turn_outcome(self, mid, status):
+        """MECHANICAL outcome datum for a completed production-path turn (the
+        _record_instruction_outcome precedent): the terminal status the daemon
+        observed when the turn completed ('reply_released', 'explicit_error',
+        'not_expected', ...). Written onto the inbound Message as
+        `turn_outcome` so graph rules can read what actually happened -- an
+        error-candidate Message responding to a turn is not evidence the turn
+        went unanswered (a later faculty may have released a reply and
+        suppressed it). Never a decision."""
+        try:
+            if isinstance(mid, int):
+                import substrate_rs as srs
+                mid = srs.NodeID(mid)
+            if mid is not None and self.s.has_node(mid):
+                self.inner.set_attr(mid, "turn_outcome", str(status))
+                return True
+        except Exception:  # noqa: BLE001 -- a datum write never breaks a turn
+            pass
+        return False
+
     def graph_turn_reply_outcome(self, mid):
         """Read graph terminality without treating an explicit error as success."""
         if isinstance(mid, int):
@@ -9273,12 +9293,21 @@ class WorldAdapter:
                 "unavailable_action_response")
             if attrs.get("evidence_schema") != "communication_evidence.v1":
                 return False
+            # tranche 22: a receipt the GRAPH selected by a generalised
+            # arbitration rule (disposition_generalise family) -- the rule
+            # itself stamps receipt_selected_by_rule; the reply rule mints the
+            # same neutral receipt the held response-assertion rule does.
+            rule_selected = (
+                attrs.get("receipt_selected_by_rule") == "neutral_receipt"
+                and attrs.get("evidence_force") == "assertion_or_correction"
+                and attrs.get("cognitive_disposition") == "defer"
+                and attrs.get("cognitive_goal") == "update_common_ground")
             assertion_receipt = (
                 attrs.get("evidence_force") == "assertion_or_correction"
                 and attrs.get("language_statement_act") == "assertion"
                 and attrs.get("cognitive_disposition") == "defer"
                 and (standalone or response))
-            return assertion_receipt or unavailable_action_response
+            return assertion_receipt or unavailable_action_response or rule_selected
         except Exception:
             return False
 

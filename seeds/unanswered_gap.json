@@ -1,0 +1,1614 @@
+{
+ "id": "unanswered_gap",
+ "version": "1.0.0",
+ "depends_on": [
+  "gap_awareness"
+ ],
+ "description": "Emit seeds/unanswered_gap.json (tranche 22): the agent files its OWN\nunanswered turns as concerns.\n\nMeasured on the production path (tranche 21, 120 natural turns): 66 replies\nwere the explicit error floor or nothing, and none of them filed a concern,\nso the self-improvement loop never saw its commonest failure.\n`note_unanswered_turn` files one SelfConcern{kind:'unanswered'} per EVIDENCE\nCLASS: the (evidence_force, literal_form, interaction_mode,\ninteraction_relation, language_statement_act) signature of the turn's\ncommunication interpretation. It files only once that class has gone\nunanswered at least `min_recurrence` times (UnansweredGapPolicy, agent-\neditable), and never twice for a class already held by a concern. \"Unanswered\"\nis read off the graph: the turn's own `turn_outcome` datum is 'explicit_error'\n(WorldAdapter.record_turn_outcome, written when the daemon completes the turn). The concern points about_message at the turn, so the\nconversation replay treats it as the flagged probe, the turn that must change.\nIdempotent.\n",
+ "nodes": [
+  {
+   "local_id": 0,
+   "type": "UnansweredGapPolicy",
+   "attrs": {
+    "name": "unanswered_gap",
+    "enabled": 1,
+    "min_recurrence": 2,
+    "description": "Agent-held policy: how many unanswered turns of one evidence class make a concern."
+   }
+  }
+ ],
+ "edges": [
+  {
+   "src": {
+    "role": "agent_root"
+   },
+   "type": "has_unanswered_gap_policy",
+   "tgt": {
+    "local": 0
+   },
+   "attrs": {}
+  }
+ ],
+ "productions": [],
+ "rules": [
+  {
+   "name": "note_unanswered_turn",
+   "comment": "File the agent's own recurring unanswered turn class as an experiment-eligible concern (see seed description).",
+   "match": [
+    [
+     "agent",
+     "received",
+     "m"
+    ],
+    [
+     "i",
+     "interprets",
+     "m"
+    ],
+    [
+     "agent",
+     "has_unanswered_gap_policy",
+     "pol"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "pol"
+       },
+       "key": "enabled"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "m"
+       },
+       "key": "from"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "interlocutor"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "i"
+       },
+       "key": "schema"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "communication_interpretation.v1"
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "m"
+        },
+        "key": "unanswered_gap_noted"
+       },
+       "b": {
+        "type": "Lit",
+        "value": 1
+       }
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "m"
+       },
+       "key": "turn_outcome"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "explicit_error"
+      }
+     },
+     {
+      "type": "Gte",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "Message"
+        },
+        "var_name": "m2",
+        "predicate": {
+         "type": "And",
+         "items": [
+          {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "m2"
+            },
+            "key": "from"
+           },
+           "b": {
+            "type": "Lit",
+            "value": "interlocutor"
+           }
+          },
+          {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "m2"
+            },
+            "key": "turn_outcome"
+           },
+           "b": {
+            "type": "Lit",
+            "value": "explicit_error"
+           }
+          },
+          {
+           "type": "Exists",
+           "source": {
+            "type": "InNeighbours",
+            "node": {
+             "type": "Var",
+             "name": "m2"
+            },
+            "edge_type": "interprets"
+           },
+           "var_name": "i2",
+           "predicate": {
+            "type": "And",
+            "items": [
+             {
+              "type": "Eq",
+              "a": {
+               "type": "IfThenElse",
+               "cond": {
+                "type": "Eq",
+                "a": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "i2"
+                 },
+                 "key": "evidence_force"
+                },
+                "b": {
+                 "type": "Lit",
+                 "value": null
+                }
+               },
+               "then": {
+                "type": "Lit",
+                "value": ""
+               },
+               "other": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "i2"
+                },
+                "key": "evidence_force"
+               }
+              },
+              "b": {
+               "type": "IfThenElse",
+               "cond": {
+                "type": "Eq",
+                "a": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "i"
+                 },
+                 "key": "evidence_force"
+                },
+                "b": {
+                 "type": "Lit",
+                 "value": null
+                }
+               },
+               "then": {
+                "type": "Lit",
+                "value": ""
+               },
+               "other": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "i"
+                },
+                "key": "evidence_force"
+               }
+              }
+             },
+             {
+              "type": "Eq",
+              "a": {
+               "type": "IfThenElse",
+               "cond": {
+                "type": "Eq",
+                "a": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "i2"
+                 },
+                 "key": "literal_form"
+                },
+                "b": {
+                 "type": "Lit",
+                 "value": null
+                }
+               },
+               "then": {
+                "type": "Lit",
+                "value": ""
+               },
+               "other": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "i2"
+                },
+                "key": "literal_form"
+               }
+              },
+              "b": {
+               "type": "IfThenElse",
+               "cond": {
+                "type": "Eq",
+                "a": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "i"
+                 },
+                 "key": "literal_form"
+                },
+                "b": {
+                 "type": "Lit",
+                 "value": null
+                }
+               },
+               "then": {
+                "type": "Lit",
+                "value": ""
+               },
+               "other": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "i"
+                },
+                "key": "literal_form"
+               }
+              }
+             },
+             {
+              "type": "Eq",
+              "a": {
+               "type": "IfThenElse",
+               "cond": {
+                "type": "Eq",
+                "a": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "i2"
+                 },
+                 "key": "interaction_mode"
+                },
+                "b": {
+                 "type": "Lit",
+                 "value": null
+                }
+               },
+               "then": {
+                "type": "Lit",
+                "value": ""
+               },
+               "other": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "i2"
+                },
+                "key": "interaction_mode"
+               }
+              },
+              "b": {
+               "type": "IfThenElse",
+               "cond": {
+                "type": "Eq",
+                "a": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "i"
+                 },
+                 "key": "interaction_mode"
+                },
+                "b": {
+                 "type": "Lit",
+                 "value": null
+                }
+               },
+               "then": {
+                "type": "Lit",
+                "value": ""
+               },
+               "other": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "i"
+                },
+                "key": "interaction_mode"
+               }
+              }
+             },
+             {
+              "type": "Eq",
+              "a": {
+               "type": "IfThenElse",
+               "cond": {
+                "type": "Eq",
+                "a": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "i2"
+                 },
+                 "key": "interaction_relation"
+                },
+                "b": {
+                 "type": "Lit",
+                 "value": null
+                }
+               },
+               "then": {
+                "type": "Lit",
+                "value": ""
+               },
+               "other": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "i2"
+                },
+                "key": "interaction_relation"
+               }
+              },
+              "b": {
+               "type": "IfThenElse",
+               "cond": {
+                "type": "Eq",
+                "a": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "i"
+                 },
+                 "key": "interaction_relation"
+                },
+                "b": {
+                 "type": "Lit",
+                 "value": null
+                }
+               },
+               "then": {
+                "type": "Lit",
+                "value": ""
+               },
+               "other": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "i"
+                },
+                "key": "interaction_relation"
+               }
+              }
+             },
+             {
+              "type": "Eq",
+              "a": {
+               "type": "IfThenElse",
+               "cond": {
+                "type": "Eq",
+                "a": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "i2"
+                 },
+                 "key": "language_statement_act"
+                },
+                "b": {
+                 "type": "Lit",
+                 "value": null
+                }
+               },
+               "then": {
+                "type": "Lit",
+                "value": ""
+               },
+               "other": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "i2"
+                },
+                "key": "language_statement_act"
+               }
+              },
+              "b": {
+               "type": "IfThenElse",
+               "cond": {
+                "type": "Eq",
+                "a": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "i"
+                 },
+                 "key": "language_statement_act"
+                },
+                "b": {
+                 "type": "Lit",
+                 "value": null
+                }
+               },
+               "then": {
+                "type": "Lit",
+                "value": ""
+               },
+               "other": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "i"
+                },
+                "key": "language_statement_act"
+               }
+              }
+             }
+            ]
+           }
+          }
+         ]
+        }
+       }
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "pol"
+       },
+       "key": "min_recurrence"
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "NodesOfType",
+        "node_type": "SelfConcern"
+       },
+       "var_name": "sc2",
+       "predicate": {
+        "type": "And",
+        "items": [
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "sc2"
+           },
+           "key": "kind"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "unanswered"
+          }
+         },
+         {
+          "type": "Eq",
+          "a": {
+           "type": "IfThenElse",
+           "cond": {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "sc2"
+             },
+             "key": "sig_evidence_force"
+            },
+            "b": {
+             "type": "Lit",
+             "value": null
+            }
+           },
+           "then": {
+            "type": "Lit",
+            "value": ""
+           },
+           "other": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "sc2"
+            },
+            "key": "sig_evidence_force"
+           }
+          },
+          "b": {
+           "type": "IfThenElse",
+           "cond": {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "i"
+             },
+             "key": "evidence_force"
+            },
+            "b": {
+             "type": "Lit",
+             "value": null
+            }
+           },
+           "then": {
+            "type": "Lit",
+            "value": ""
+           },
+           "other": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "i"
+            },
+            "key": "evidence_force"
+           }
+          }
+         },
+         {
+          "type": "Eq",
+          "a": {
+           "type": "IfThenElse",
+           "cond": {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "sc2"
+             },
+             "key": "sig_literal_form"
+            },
+            "b": {
+             "type": "Lit",
+             "value": null
+            }
+           },
+           "then": {
+            "type": "Lit",
+            "value": ""
+           },
+           "other": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "sc2"
+            },
+            "key": "sig_literal_form"
+           }
+          },
+          "b": {
+           "type": "IfThenElse",
+           "cond": {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "i"
+             },
+             "key": "literal_form"
+            },
+            "b": {
+             "type": "Lit",
+             "value": null
+            }
+           },
+           "then": {
+            "type": "Lit",
+            "value": ""
+           },
+           "other": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "i"
+            },
+            "key": "literal_form"
+           }
+          }
+         },
+         {
+          "type": "Eq",
+          "a": {
+           "type": "IfThenElse",
+           "cond": {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "sc2"
+             },
+             "key": "sig_interaction_mode"
+            },
+            "b": {
+             "type": "Lit",
+             "value": null
+            }
+           },
+           "then": {
+            "type": "Lit",
+            "value": ""
+           },
+           "other": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "sc2"
+            },
+            "key": "sig_interaction_mode"
+           }
+          },
+          "b": {
+           "type": "IfThenElse",
+           "cond": {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "i"
+             },
+             "key": "interaction_mode"
+            },
+            "b": {
+             "type": "Lit",
+             "value": null
+            }
+           },
+           "then": {
+            "type": "Lit",
+            "value": ""
+           },
+           "other": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "i"
+            },
+            "key": "interaction_mode"
+           }
+          }
+         },
+         {
+          "type": "Eq",
+          "a": {
+           "type": "IfThenElse",
+           "cond": {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "sc2"
+             },
+             "key": "sig_interaction_relation"
+            },
+            "b": {
+             "type": "Lit",
+             "value": null
+            }
+           },
+           "then": {
+            "type": "Lit",
+            "value": ""
+           },
+           "other": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "sc2"
+            },
+            "key": "sig_interaction_relation"
+           }
+          },
+          "b": {
+           "type": "IfThenElse",
+           "cond": {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "i"
+             },
+             "key": "interaction_relation"
+            },
+            "b": {
+             "type": "Lit",
+             "value": null
+            }
+           },
+           "then": {
+            "type": "Lit",
+            "value": ""
+           },
+           "other": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "i"
+            },
+            "key": "interaction_relation"
+           }
+          }
+         },
+         {
+          "type": "Eq",
+          "a": {
+           "type": "IfThenElse",
+           "cond": {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "sc2"
+             },
+             "key": "sig_language_statement_act"
+            },
+            "b": {
+             "type": "Lit",
+             "value": null
+            }
+           },
+           "then": {
+            "type": "Lit",
+            "value": ""
+           },
+           "other": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "sc2"
+            },
+            "key": "sig_language_statement_act"
+           }
+          },
+          "b": {
+           "type": "IfThenElse",
+           "cond": {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "i"
+             },
+             "key": "language_statement_act"
+            },
+            "b": {
+             "type": "Lit",
+             "value": null
+            }
+           },
+           "then": {
+            "type": "Lit",
+            "value": ""
+           },
+           "other": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "i"
+            },
+            "key": "language_statement_act"
+           }
+          }
+         }
+        ]
+       }
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Var",
+       "name": "m"
+      },
+      "b": {
+       "type": "Argmin",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "Message"
+        },
+        "var_name": "m4",
+        "predicate": {
+         "type": "And",
+         "items": [
+          {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "m4"
+            },
+            "key": "from"
+           },
+           "b": {
+            "type": "Lit",
+            "value": "interlocutor"
+           }
+          },
+          {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "m4"
+            },
+            "key": "turn_outcome"
+           },
+           "b": {
+            "type": "Lit",
+            "value": "explicit_error"
+           }
+          },
+          {
+           "type": "Exists",
+           "source": {
+            "type": "InNeighbours",
+            "node": {
+             "type": "Var",
+             "name": "m4"
+            },
+            "edge_type": "interprets"
+           },
+           "var_name": "i4",
+           "predicate": {
+            "type": "And",
+            "items": [
+             {
+              "type": "Eq",
+              "a": {
+               "type": "IfThenElse",
+               "cond": {
+                "type": "Eq",
+                "a": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "i4"
+                 },
+                 "key": "evidence_force"
+                },
+                "b": {
+                 "type": "Lit",
+                 "value": null
+                }
+               },
+               "then": {
+                "type": "Lit",
+                "value": ""
+               },
+               "other": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "i4"
+                },
+                "key": "evidence_force"
+               }
+              },
+              "b": {
+               "type": "IfThenElse",
+               "cond": {
+                "type": "Eq",
+                "a": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "i"
+                 },
+                 "key": "evidence_force"
+                },
+                "b": {
+                 "type": "Lit",
+                 "value": null
+                }
+               },
+               "then": {
+                "type": "Lit",
+                "value": ""
+               },
+               "other": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "i"
+                },
+                "key": "evidence_force"
+               }
+              }
+             },
+             {
+              "type": "Eq",
+              "a": {
+               "type": "IfThenElse",
+               "cond": {
+                "type": "Eq",
+                "a": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "i4"
+                 },
+                 "key": "literal_form"
+                },
+                "b": {
+                 "type": "Lit",
+                 "value": null
+                }
+               },
+               "then": {
+                "type": "Lit",
+                "value": ""
+               },
+               "other": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "i4"
+                },
+                "key": "literal_form"
+               }
+              },
+              "b": {
+               "type": "IfThenElse",
+               "cond": {
+                "type": "Eq",
+                "a": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "i"
+                 },
+                 "key": "literal_form"
+                },
+                "b": {
+                 "type": "Lit",
+                 "value": null
+                }
+               },
+               "then": {
+                "type": "Lit",
+                "value": ""
+               },
+               "other": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "i"
+                },
+                "key": "literal_form"
+               }
+              }
+             },
+             {
+              "type": "Eq",
+              "a": {
+               "type": "IfThenElse",
+               "cond": {
+                "type": "Eq",
+                "a": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "i4"
+                 },
+                 "key": "interaction_mode"
+                },
+                "b": {
+                 "type": "Lit",
+                 "value": null
+                }
+               },
+               "then": {
+                "type": "Lit",
+                "value": ""
+               },
+               "other": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "i4"
+                },
+                "key": "interaction_mode"
+               }
+              },
+              "b": {
+               "type": "IfThenElse",
+               "cond": {
+                "type": "Eq",
+                "a": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "i"
+                 },
+                 "key": "interaction_mode"
+                },
+                "b": {
+                 "type": "Lit",
+                 "value": null
+                }
+               },
+               "then": {
+                "type": "Lit",
+                "value": ""
+               },
+               "other": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "i"
+                },
+                "key": "interaction_mode"
+               }
+              }
+             },
+             {
+              "type": "Eq",
+              "a": {
+               "type": "IfThenElse",
+               "cond": {
+                "type": "Eq",
+                "a": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "i4"
+                 },
+                 "key": "interaction_relation"
+                },
+                "b": {
+                 "type": "Lit",
+                 "value": null
+                }
+               },
+               "then": {
+                "type": "Lit",
+                "value": ""
+               },
+               "other": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "i4"
+                },
+                "key": "interaction_relation"
+               }
+              },
+              "b": {
+               "type": "IfThenElse",
+               "cond": {
+                "type": "Eq",
+                "a": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "i"
+                 },
+                 "key": "interaction_relation"
+                },
+                "b": {
+                 "type": "Lit",
+                 "value": null
+                }
+               },
+               "then": {
+                "type": "Lit",
+                "value": ""
+               },
+               "other": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "i"
+                },
+                "key": "interaction_relation"
+               }
+              }
+             },
+             {
+              "type": "Eq",
+              "a": {
+               "type": "IfThenElse",
+               "cond": {
+                "type": "Eq",
+                "a": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "i4"
+                 },
+                 "key": "language_statement_act"
+                },
+                "b": {
+                 "type": "Lit",
+                 "value": null
+                }
+               },
+               "then": {
+                "type": "Lit",
+                "value": ""
+               },
+               "other": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "i4"
+                },
+                "key": "language_statement_act"
+               }
+              },
+              "b": {
+               "type": "IfThenElse",
+               "cond": {
+                "type": "Eq",
+                "a": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "i"
+                 },
+                 "key": "language_statement_act"
+                },
+                "b": {
+                 "type": "Lit",
+                 "value": null
+                }
+               },
+               "then": {
+                "type": "Lit",
+                "value": ""
+               },
+               "other": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "i"
+                },
+                "key": "language_statement_act"
+               }
+              }
+             }
+            ]
+           }
+          }
+         ]
+        }
+       },
+       "var_name": "m4",
+       "value": {
+        "type": "Var",
+        "name": "m4"
+       },
+       "default": null
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "m",
+     "unanswered_gap_noted",
+     1
+    ],
+    [
+     "add_node",
+     "sc",
+     "SelfConcern",
+     {
+      "status": "noted",
+      "source": "implicit",
+      "kind": "unanswered",
+      "content": {
+       "__term__": {
+        "type": "StringConcat",
+        "parts": [
+         {
+          "type": "Lit",
+          "value": "I could not respond to a "
+         },
+         {
+          "type": "IfThenElse",
+          "cond": {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "i"
+            },
+            "key": "literal_form"
+           },
+           "b": {
+            "type": "Lit",
+            "value": null
+           }
+          },
+          "then": {
+           "type": "Lit",
+           "value": ""
+          },
+          "other": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "i"
+           },
+           "key": "literal_form"
+          }
+         },
+         {
+          "type": "Lit",
+          "value": " "
+         },
+         {
+          "type": "IfThenElse",
+          "cond": {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "i"
+            },
+            "key": "evidence_force"
+           },
+           "b": {
+            "type": "Lit",
+            "value": null
+           }
+          },
+          "then": {
+           "type": "Lit",
+           "value": ""
+          },
+          "other": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "i"
+           },
+           "key": "evidence_force"
+          }
+         },
+         {
+          "type": "Lit",
+          "value": " turn (relation '"
+         },
+         {
+          "type": "IfThenElse",
+          "cond": {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "i"
+            },
+            "key": "interaction_relation"
+           },
+           "b": {
+            "type": "Lit",
+            "value": null
+           }
+          },
+          "then": {
+           "type": "Lit",
+           "value": ""
+          },
+          "other": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "i"
+           },
+           "key": "interaction_relation"
+          }
+         },
+         {
+          "type": "Lit",
+          "value": "', act '"
+         },
+         {
+          "type": "IfThenElse",
+          "cond": {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "i"
+            },
+            "key": "language_statement_act"
+           },
+           "b": {
+            "type": "Lit",
+            "value": null
+           }
+          },
+          "then": {
+           "type": "Lit",
+           "value": ""
+          },
+          "other": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "i"
+           },
+           "key": "language_statement_act"
+          }
+         },
+         {
+          "type": "Lit",
+          "value": "'), e.g. \""
+         },
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "m"
+          },
+          "key": "text"
+         },
+         {
+          "type": "Lit",
+          "value": "\""
+         }
+        ]
+       }
+      },
+      "sig_evidence_force": {
+       "__term__": {
+        "type": "IfThenElse",
+        "cond": {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "i"
+          },
+          "key": "evidence_force"
+         },
+         "b": {
+          "type": "Lit",
+          "value": null
+         }
+        },
+        "then": {
+         "type": "Lit",
+         "value": ""
+        },
+        "other": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "i"
+         },
+         "key": "evidence_force"
+        }
+       }
+      },
+      "sig_literal_form": {
+       "__term__": {
+        "type": "IfThenElse",
+        "cond": {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "i"
+          },
+          "key": "literal_form"
+         },
+         "b": {
+          "type": "Lit",
+          "value": null
+         }
+        },
+        "then": {
+         "type": "Lit",
+         "value": ""
+        },
+        "other": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "i"
+         },
+         "key": "literal_form"
+        }
+       }
+      },
+      "sig_interaction_mode": {
+       "__term__": {
+        "type": "IfThenElse",
+        "cond": {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "i"
+          },
+          "key": "interaction_mode"
+         },
+         "b": {
+          "type": "Lit",
+          "value": null
+         }
+        },
+        "then": {
+         "type": "Lit",
+         "value": ""
+        },
+        "other": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "i"
+         },
+         "key": "interaction_mode"
+        }
+       }
+      },
+      "sig_interaction_relation": {
+       "__term__": {
+        "type": "IfThenElse",
+        "cond": {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "i"
+          },
+          "key": "interaction_relation"
+         },
+         "b": {
+          "type": "Lit",
+          "value": null
+         }
+        },
+        "then": {
+         "type": "Lit",
+         "value": ""
+        },
+        "other": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "i"
+         },
+         "key": "interaction_relation"
+        }
+       }
+      },
+      "sig_language_statement_act": {
+       "__term__": {
+        "type": "IfThenElse",
+        "cond": {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "i"
+          },
+          "key": "language_statement_act"
+         },
+         "b": {
+          "type": "Lit",
+          "value": null
+         }
+        },
+        "then": {
+         "type": "Lit",
+         "value": ""
+        },
+        "other": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "i"
+         },
+         "key": "language_statement_act"
+        }
+       }
+      }
+     }
+    ],
+    [
+     "add_edge",
+     "agent",
+     "has_self_concern",
+     "sc"
+    ],
+    [
+     "add_edge",
+     "sc",
+     "about_message",
+     "m"
+    ]
+   ]
+  }
+ ]
+}

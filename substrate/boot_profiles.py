@@ -78,6 +78,8 @@ CONVERSATION_SELF_IMPROVEMENT_ANCHORS = frozenset({
     # the agent's own comprehension self-observation (latency, recurring
     # shallow/deep-reader divergence): a natural concern supply
     "comprehension_health",
+    # tranche 22: the agent's own recurring unanswered turns as concerns
+    "unanswered_gap",
 })
 CONVERSATION_SEED_ANCHORS = CONVERSATION_SEED_ANCHORS | CONVERSATION_SELF_IMPROVEMENT_ANCHORS
 

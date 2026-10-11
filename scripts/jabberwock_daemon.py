@@ -850,6 +850,7 @@ _REFRESHABLE_SEEDS = frozenset({
     "topic_sync_ground", "topic_search_verify",
     "improvement_integrity",
     "self_promotion",
+    "unanswered_gap",
     "variation_ops",
     "adoption_safety",
     "literary_analysis_driving",
@@ -2442,7 +2443,7 @@ def _promote_relations_for_concern(kind: str, content_words: list, tag: str) -> 
         for w in content_words[:4]:
             relations.append([w, "TARGET", "of", "READ"])
         return relations, "prog_read"
-    want_experiment = (kind in ("self_improvement", "instruction", "performance", "comprehension")
+    want_experiment = (kind in ("self_improvement", "instruction", "performance", "comprehension", "unanswered")
                        or _content_suggests_experiment(content_words))
     if want_experiment:
         # RESIDUAL-CLOSURE wave: a 'reported' concern (gap_awareness's
@@ -2453,7 +2454,7 @@ def _promote_relations_for_concern(kind: str, content_words: list, tag: str) -> 
         # this is what lets a reported held-threshold gap reach the knob_edit
         # family + the replay world instead of a meaningless ARC episode.
         if kind in ("reply_fix", "knowledge", "instruction", "performance",
-                    "comprehension", "reported"):
+                    "comprehension", "reported", "unanswered"):
             relations = [
                 ["test", "HYPOTHESIS", "about", tag],
                 ["replay", "TURN", "in", "CONVERSATION"],
@@ -4355,6 +4356,7 @@ def tick_loop(state: DaemonState, stop: threading.Event, hz: float,
                             continue
                         if terminal_status == "explicit_error":
                             reply = state.adapter.graph_turn_reply(turn_id)
+                        state.adapter.record_turn_outcome(turn_id, terminal_status)
                         completed_turns.append(turn_id)
                         completion = {
                             "type": "chat_completed", "text": text,
@@ -5232,6 +5234,9 @@ def main() -> int:
     # restores `shadow_read=False` — the CLI flag is the single source of
     # truth for the daemon regardless of fresh-boot vs resume.
     adapter.shadow_read = bool(args.shadow_read)
+    # tranche 22: this agent's live turns take the production path (ingest_turn
+    # -> graph release); experiment children replay it the same way
+    adapter.turn_path = "production"
     # Wave 4 (Deep-Reader unification): `deep_ingest` travels with `shadow_read`
     # for this daemon (no separate CLI flag -- same "same flag family" as
     # WorldAdapter.__init__'s default) -- set explicitly for the SAME reason

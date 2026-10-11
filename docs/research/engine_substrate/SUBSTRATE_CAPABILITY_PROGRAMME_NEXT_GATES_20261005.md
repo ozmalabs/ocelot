@@ -445,3 +445,23 @@ See the [results](RECURSIVE_SELF_IMPROVEMENT_TRANCHE21_RESULTS_20261010.md).
 - **Regression:** 1 fixed, 1 premise updated; 6 curriculum failures shown to be pre-existing.
 
 Next: judge on the production path; file concerns from the agent's own error and spurious goal-take turns; a reply-adding family.
+
+## 2026-10-10 recursive self-improvement tranche 22
+
+See the [results](RECURSIVE_SELF_IMPROVEMENT_TRANCHE22_RESULTS_20261010.md) and the [prereg](SUBSTRATE_ENDEMIC_RSI_PRODUCTION_V1_PREREG_20261010.md).
+
+- **Endemic RSI on the production path: preregistered gates P1–P4 pass.** On 120 natural turns through the daemon's own loop, with no human, the agent:
+  - filed its own unanswered-turn classes (`unanswered_gap`);
+  - promoted them itself;
+  - generalised a held receipt disposition (`disposition_generalise`);
+  - judged the change with a production-path replay and adopted it.
+
+  Errors fell from 60 to 44 (16 error → reply, 0 worse). The off arm adopted nothing.
+- **Production defects fixed:**
+  - the scheduler never requested `close` (a bool guard), so nothing had ever been adopted in production;
+  - "unanswered" is now read from a recorded `turn_outcome`;
+  - a duplicate-filing race;
+  - the replay scorer penalised repaired turns.
+- **Regression:** targeted (61 files); 0 attributable failures.
+
+Next: interrogative unanswered classes; statements misread as action requests; observe chained generalisation; check fresh-boot determinism.

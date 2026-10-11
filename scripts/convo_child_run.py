@@ -209,7 +209,7 @@ def read_corpus(agent) -> list:
         # that turn IS what a cue-set-edit experiment is trying to change).
         # Mechanical edge read, same as before; no status filter (a promoted
         # concern's turn is still the target turn).
-        if S.node(sc)["attrs"].get("kind") in ("reply_fix", "instruction"):
+        if S.node(sc)["attrs"].get("kind") in ("reply_fix", "instruction", "unanswered"):
             for mid in I.neighbours(sc, "about_message"):
                 if I.has_node(mid):
                     flagged_ids.add(int(mid.value))
@@ -243,6 +243,14 @@ def read_corpus(agent) -> list:
             continue
         text = (a.get("text") or "").strip()
         recorded = (a.get("comp_reply_text") or "").strip()
+        if not recorded:
+            # tranche 22: a production turn that ended on the explicit error
+            # floor records no comp_reply_text; its reply is the graph-minted
+            # terminal message (terminal_outcome='explicit_error')
+            for r in I.in_neighbours(m, "responds_to"):
+                if I.has_node(r) and S.node(r)["attrs"].get("terminal_outcome") == "explicit_error":
+                    recorded = (S.node(r)["attrs"].get("text") or "").strip()
+                    break
         if not text or not recorded:
             continue
         act = None
@@ -417,6 +425,37 @@ def _count_witness(agent, witness) -> int:
     return 0
 
 
+def _production_turn(agent, text, speech_act=None, max_cycles=40):
+    """One turn on the PRODUCTION path (tranche 22): exactly the daemon's
+    ingest + tick-loop body (jabberwock_daemon._ingest_daemon_chat_turn and
+    tick_loop) -- ingest_turn with the classified speech act, then tick /
+    comprehend / settle / release_graph_selected_response until the graph
+    releases a reply or a terminal outcome. Returns the reply surface or None.
+    Host actions are not executed (a replay must not dispatch or fetch)."""
+    from substrate.boot_profiles import prepass_conversation_turn
+    try:
+        prepass_conversation_turn(agent, text)
+    except Exception:  # noqa: BLE001 -- the daemon also continues without it
+        pass
+    mid = agent.ingest_turn(text, speech_act=agent.classify_speech_act(text))
+    agent._last_turn_inbound = mid
+    tid = int(mid.value)
+    for _ in range(max_cycles):
+        agent.tick()
+        agent.comprehend()
+        agent.settle_post_comprehension_authority([tid])
+        reply = agent.release_graph_selected_response(mid)
+        if reply is not None:
+            agent.record_turn_outcome(tid, "reply_released")
+            return reply
+        status = agent.graph_turn_reply_outcome(tid)
+        if status in ("expected", "unrepresented", "reply_ready"):
+            continue
+        agent.record_turn_outcome(tid, status)
+        return agent.graph_turn_reply(tid)
+    return None
+
+
 def _replay_pass(agent, probes, witness=None):
     """ONE mechanical replay of the corpus on an agent that is already fully
     booted (and, for a variant pass, already carries the delta applied in
@@ -443,7 +482,10 @@ def _replay_pass(agent, probes, witness=None):
     for probe in probes:
         t0 = time.perf_counter()
         try:
-            replayed = agent.converse(probe["text"], speech_act=probe["speech_act"])
+            if getattr(agent, "_replay_turn_path", "converse") == "production":
+                replayed = _production_turn(agent, probe["text"])
+            else:
+                replayed = agent.converse(probe["text"], speech_act=probe["speech_act"])
         except Exception as e:  # noqa: BLE001 — one bad probe must not kill the episode
             replayed = None
             probe_error = f"{type(e).__name__}: {e}"
@@ -481,6 +523,10 @@ def _arm_parent_fidelity(agent, delta: dict) -> None:
     if delta.get("parent_shadow_read"):
         agent.shadow_read = True
         agent.deep_ingest = True
+    # tranche 22: replay on the path the parent's live turns took
+    agent._replay_turn_path = ("production" if delta.get("parent_turn_path") == "production"
+                               else "converse")
+    agent.turn_path = delta.get("parent_turn_path") or "converse"
 
 
 _READING_WARMED = False
@@ -615,6 +661,11 @@ def main() -> int:
         flagged_changed = 0
         broken_fixes = 0
         regressions = 0
+        repaired = 0
+
+        def _is_broken_reply(txt, err):
+            return (not str(txt or "").strip()
+                    or str(txt).strip() == _CONVERSATION_ERROR_SURFACE or bool(err))
         for i, probe in enumerate(probes):
             replayed = stats["replies"][i]
             if probe["flagged"]:
@@ -652,6 +703,18 @@ def main() -> int:
             else:
                 baseline, baseline_text = "control", control["replies"][i]
                 changed = replayed != baseline_text
+                # REPAIRED, not regressed (tranche 22): an unflagged turn the
+                # CONTROL answered with the error floor (or nothing) and the
+                # VARIANT answers with a real surface was not broken by the
+                # delta -- measured: a generalised receipt also answered a
+                # second same-class unanswered turn, and the old scorer
+                # counted that as a regression. Scored 0 (no credit claimed,
+                # no penalty); reported as `repaired`.
+                if changed and _is_broken_reply(baseline_text, control["errors"][i]) \
+                        and not _is_broken_reply(replayed, stats["errors"][i]):
+                    repaired += 1
+                    changed = False
+                    baseline = "control (repaired)"
                 if changed:
                     regressions += 1
                     score -= 1
@@ -668,7 +731,8 @@ def main() -> int:
                   "won": score > 0, "over": True, "boot_mode": boot_mode,
                   "removed_rules": removed_rules,
                   "flagged": flagged_n, "flagged_changed": flagged_changed,
-                  "broken_fixes": broken_fixes, "regressions": regressions, "avg_turn_ms": stats["avg_turn_ms"]}
+                  "broken_fixes": broken_fixes, "regressions": regressions, "repaired": repaired,
+                  "avg_turn_ms": stats["avg_turn_ms"]}
         if knob_probe:
             result["control_reforms"] = int(control["reforms"])
             result["variant_reforms"] = int(stats["reforms"])
