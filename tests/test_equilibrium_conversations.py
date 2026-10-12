@@ -28,7 +28,7 @@ from test_equilibrium_discourse import MEETING, THREAD  # noqa: E402
 from test_equilibrium_discourse_service import synthetic_window  # noqa: E402
 from test_equilibrium_tracking import WINDOWS as TRK_WINDOWS, _turns as _tracking_turns  # noqa: E402
 
-TAX = "eq-tax-0.6.0"
+TAX = "eq-tax-0.7.0"
 _TOP = {"ok", "taxonomy_version", "conversation_id", "seq", "turns", "quanta_delta", "episodes_delta",
         "open_questions"}
 _QD = {"quantum_id", "op", "actor_ref", "trait", "polarity", "match", "target_ref", "evidence_add",
@@ -69,7 +69,7 @@ def client_parse_conversation(doc: dict, cid: str, ids_so_far: set[str], batch: 
         assert set().union(*(q[k] for k in ("evidence_add", "evidence_remove", "counter_add",
                                              "counter_remove"))) <= ids_so_far
         assert q.get("match", "exact") in ("exact", "partial", "weak")
-        assert all(_CODE.fullmatch(r) and r.endswith(":0.6.0") for r in q.get("rule_ids", ()))
+        assert all(_CODE.fullmatch(r) and r.endswith(":0.7.0") for r in q.get("rule_ids", ()))
     for e in doc["episodes_delta"]:
         assert e["op"] in ("upsert", "retract")
         if e["op"] == "upsert":

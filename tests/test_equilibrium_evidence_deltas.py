@@ -1,4 +1,4 @@
-"""Equilibrium conversation EVIDENCE DELTAS (track T3e, pack 0.6.0, eq-tax-0.6.0).
+"""Equilibrium conversation EVIDENCE DELTAS (track T3e, pack 0.6.0; contract unchanged in eq-tax-0.7.0).
 
 /turns, /close and every /_batch item carry `quanta_delta` / `episodes_delta`
 instead of whole rows; folding them in seq order (tests/equilibrium_delta_fold.py,
@@ -23,7 +23,7 @@ from equilibrium_delta_fold import DeltaFold, FoldError  # noqa: E402
 from test_equilibrium_classifier_service import _free_port, _req, _start, _stop  # noqa: E402
 from test_equilibrium_discourse_service import synthetic_window  # noqa: E402
 
-TAX = "eq-tax-0.6.0"
+TAX = "eq-tax-0.7.0"
 
 
 def T(i, a, text, r=None):
@@ -77,18 +77,29 @@ def test_retraction_counter_removal_and_reappearance(srv, svc):
     first = _floor(outs[0], "ana")
     assert len(first) == 1
     qid = first[0]["quantum_id"]
-    assert first[0]["evidence_add"] == ["f1", "f2", "f4"] and first[0]["counter_add"] == ["f3"]
-    assert first[0]["target_ref"] is None and first[0]["match"] in ("exact", "partial", "weak")
-    # batch 2: same quantum, runner-up bea -> cy: only the change is on the wire
+    # 0.7.0: bounded anchors -- the holder's first turn / the runner-up's first turn
+    assert first[0]["evidence_add"] == ["f1"] and first[0]["counter_add"] == ["f3"]
+    assert first[0]["target_ref"] is None and first[0]["match"] == "partial"
+    assert first[0]["rule_ids"] == [f"eq.quanta.{r}:0.7.0" for r in (
+        "interaction.floor", "interaction.floor.counter", "interaction.floor.evidence",
+        "match.partial_by_construction")]
+    # batch 2: same quantum, runner-up bea -> cy: one counter ref out, one in (0.6.0: the
+    # runner-up's every turn out, the new runner-up's every turn in)
     d2 = [d for d in outs[1] if d["quantum_id"] == qid]
-    assert d2 == [{"quantum_id": qid, "op": "upsert", "evidence_add": ["f7", "f8"], "evidence_remove": [],
-                   "counter_add": ["f5", "f6"], "counter_remove": ["f3"]}]
+    assert d2 == [{"quantum_id": qid, "op": "upsert", "evidence_add": [], "evidence_remove": [],
+                   "counter_add": ["f5"], "counter_remove": ["f3"]}]
     # batch 3: bea ties ana -> the floor quantum no longer holds
     assert {"quantum_id": qid, "op": "retract"} in outs[2]
-    # batch 4: it holds again -> a fresh upsert carrying the full current lists
+    # batch 4: it holds again -> a fresh upsert carrying the full (bounded) current lists
     d4 = [d for d in outs[3] if d["quantum_id"] == qid]
     assert len(d4) == 1 and d4[0]["trait"] == "interaction.floor" and d4[0]["evidence_remove"] == []
-    assert d4[0]["evidence_add"] == ["f1", "f2", "f4", "f7", "f8", "f13", "f14"]
+    assert d4[0]["evidence_add"] == ["f1"] and d4[0]["counter_add"] == ["f3"]
+    # the turn shares are the per-actor interaction.floor_share quanta: monotone, never retracted
+    share = [d for o in outs for d in o if d.get("trait") == "interaction.floor_share" and d["actor_ref"] == "ana"]
+    sid = share[0]["quantum_id"]
+    rows = [d for o in outs for d in o if d["quantum_id"] == sid]
+    assert [d["evidence_add"] for d in rows] == [["f1", "f2", "f4"], ["f7", "f8"], ["f13", "f14"]]
+    assert all(d["op"] == "upsert" and not d["evidence_remove"] and not d["counter_add"] for d in rows)
     fin = svc.conversation_close("dl:floor")
     assert fin["quanta_delta"] == [] and fin["episodes_delta"] == [] and fin["turns"] == []
 
@@ -209,7 +220,7 @@ def test_http_turns_close_and_batch_shape(srv, tmp_path):
         assert set(item) == {"conversation_id", "ok", "seq", "turns", "quanta_delta", "episodes_delta",
                              "open_questions"}
         f.apply(item)
-        assert all(r.endswith(":0.6.0") for d in item["quanta_delta"] for r in d.get("rule_ids", ()))
+        assert all(r.endswith(":0.7.0") for d in item["quanta_delta"] for r in d.get("rule_ids", ()))
         st, fin, _ = _req(port, "POST", "/v1/conversations/h:1/close")
         assert st == 200 and fin["quanta_delta"] == [] and fin["episodes_delta"] == []
         # /v1/discourse keeps the full rows

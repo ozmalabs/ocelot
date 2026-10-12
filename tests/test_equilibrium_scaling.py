@@ -20,7 +20,7 @@ from test_equilibrium_conversations import client_parse_conversation  # noqa: E4
 from test_equilibrium_discourse_service import synthetic_window  # noqa: E402
 from equilibrium_delta_fold import DeltaFold  # noqa: E402
 
-TAX = "eq-tax-0.6.0"
+TAX = "eq-tax-0.7.0"
 
 
 @pytest.fixture(scope="module")
@@ -424,3 +424,84 @@ def test_http_batch_contract(server):
     assert st == 200 and doc["conversation_id"] == "_batch"
     st, doc, _ = _req(server, "POST", "/v1/conversations/_batch", {"items": []})
     assert st == 400 and doc["error"]["code"] == "bad_request"
+
+
+# ---- 0.7.0 (T3f): corroboration / contest with bounded claim state -----------------
+_CLAIMY = [("ana", "As a nurse I see this every week."), ("bea", "Ana, good point."),
+           ("ana", "I'm a doctor and the cache is cold."), ("cy", "But ana, see https://example.org/x"),
+           ("dov", "Ana, fair point."), ("bea", "The build is green."), ("ana", "As an engineer I built it."),
+           ("cy", "Ana, you're right."), ("dov", "But ana, the latency doc says otherwise https://example.org/y"),
+           ("bea", "Lunch at noon.")]
+
+
+def _claimy(n):
+    return [{"id": f"c{i:05d}", "actor_ref": _CLAIMY[i % 10][0], "text": _CLAIMY[i % 10][1],
+             **({"reply_to": f"c{i - 1:05d}"} if _CLAIMY[i % 10][1].startswith(("Ana", "But")) else {})}
+            for i in range(n)]
+
+
+def _competence_oracle(f, wire_turns):
+    """Test-side oracle of the (unchanged) relation, from wire fields only: claims are
+    the claimant's competence.claimed evidence; a corroborating reply carries a
+    concession / deference label and addresses the claimant; a contest carries a
+    reply-leading contrast and grounding and addresses the claimant."""
+    pos = {t["id"]: i for i, t in enumerate(wire_turns)}
+    claims = {}
+    for q in f.quanta():
+        if q["trait"] == "competence.claimed" and q["polarity"] == "+":
+            claims[q["actor_ref"]] = [pos[m] for m in q["evidence"]]
+    want = {}
+    for t in wire_turns:
+        lab = t["labels"]
+        corr = bool(lab.get("concession")) or any("msg.deference" in r for r in lab["rule_ids"])
+        cont = any("reply_contrast" in r for r in lab["rule_ids"]) and (
+            bool(lab.get("substantive_markers")) or "technical" in lab.get("domains", []))
+        for a in t["addressees"]:
+            cl = [c for c in claims.get(a, []) if c < pos[t["id"]]]
+            for kind, on, tgt in (("competence.corroborated", corr, None), ("competence.contested", cont, t["_author"])):
+                if on and cl:
+                    e = want.setdefault((a, kind, tgt), set())
+                    e.update(cl)
+                    e.add(pos[t["id"]])
+    return {k: sorted(v) for k, v in want.items()}
+
+
+def test_competence_pairing_equals_relation_and_work_is_bounded(svc):
+    """0.7.0: replies are no longer paired with every earlier claim; the per-actor /
+    per-(actor, replier) claim state gives the same evidence (oracle from the wire at
+    every prefix) and the matcher work per batch does not grow with the prefix."""
+    from domains import equilibrium_classify as ec
+    turns = _claimy(420)
+    f, seen = DeltaFold(), []
+    for i in range(0, len(turns), 60):
+        out = svc.conversation_turns("cmp:orc", "thread", turns[i:i + 60])
+        f.turns(turns[i:i + 60])
+        f.apply(out)
+        for t, src in zip(out["turns"], turns[i:i + 60]):
+            seen.append({**t, "_author": src["actor_ref"]})
+        pos = {t["id"]: k for k, t in enumerate(seen)}
+        got = {(q["actor_ref"], q["trait"], q.get("target_ref")): sorted(pos[m] for m in q["evidence"])
+               for q in f.quanta() if q["trait"] in ("competence.corroborated", "competence.contested")}
+        assert got == _competence_oracle(f, seen)
+    assert len(got) == 3 and max(len(v) for v in got.values()) > 100
+    keys = ("eq.competence.",)
+    base, root = ec.boot()
+    b = base.snapshot().fork()
+    st = ec.conversation_open(b, root, "cmp:w", "thread")
+    T = _claimy(1250)
+    S = type(ec._native(b))
+    work = {}
+    for i in range(0, 1250, 50):
+        if i not in (100, 1200):
+            ec.conversation_ingest(b, root, st, T[i:i + 50])
+            continue
+        S.scale_audit_reset(); S.scale_audit_per_rule_reset()
+        S.scale_audit_set_enabled(True); S.scale_audit_set_per_rule_enabled(True)
+        try:
+            ec.conversation_ingest(b, root, st, T[i:i + 50])
+        finally:
+            S.scale_audit_set_enabled(False); S.scale_audit_set_per_rule_enabled(False)
+        names = {r[0]: r[2] for r in S.scale_audit_rule_metadata_snapshot()}
+        work[i] = sum(c for k, _p, c in S.scale_audit_match_clause_snapshot()
+                      if any(x in names.get(k, "") for x in keys) and "claim_grounding" not in names.get(k, ""))
+    assert work[100] > 0 and work[1200] < 1.2 * work[100], work  # measured 1334 / 1334 (12x the prefix)

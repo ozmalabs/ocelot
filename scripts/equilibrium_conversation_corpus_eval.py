@@ -46,7 +46,18 @@ def main(src: str) -> None:
     lat, close_lat, threads, rss_peak = [], [], [], []
     agg = {k: 0 for k in ("meetings", "turns", "tracked", "declared", "none", "questions",
                           "answered_q", "open_at_close", "answers", "answers_adjacent",
-                          "multi_target", "addressed", "quanta", "episodes")}
+                          "multi_target", "addressed", "quanta", "episodes", "backchannel_turns",
+                          "answers_by_backchannel", "backchannel_responses_to_questions")}
+    # measurement only (never fed back): the seeded closed-class backchannel codebook,
+    # read from the pack, applied to the ingest tokeniser's forms of each turn
+    from domains import equilibrium_classify as ec
+    bc = {n["attrs"]["form"] for m in ec.pack_manifests() if m["id"] == "equilibrium_tracking"
+          for n in m["nodes"] if n["type"] == "EqBackchannel"}
+    bc = bc or set(filter(None, os.environ.get("EQ_BC_FORMS", "").split(",")))  # (an older pack: compare)
+
+    def backchannel(text):
+        forms = ec._alias_forms(text)
+        return bool(forms) and set(forms) <= bc and "://" not in text and "`" not in text
     traits: dict[str, int] = {}
     dist = []
     for f in files:
@@ -58,12 +69,17 @@ def main(src: str) -> None:
         cid = f"ami:{agg['meetings']}"
         pos = {t["id"]: i for i, t in enumerate(turns)}
         qids, answered, tids = set(), set(), set()
+        bct = {t["id"] for t in turns if bc and backchannel(t["text"])}
+        agg["backchannel_turns"] += len(bct)
         for k in range(0, len(turns), 100):
             t0 = time.perf_counter()
             out = svc.conversation_turns(cid, "meeting", turns[k:k + 100])
             lat.append((time.perf_counter() - t0) * 1000)
             for t in out["turns"]:
                 agg[t["basis"]] += 1
+                if t["id"] in bct:
+                    agg["answers_by_backchannel"] += len(t["answers"])
+                    agg["backchannel_responses_to_questions"] += any(r in qids for r in t["responds_to"])
                 agg["multi_target"] += len(t["responds_to"]) > 1
                 agg["addressed"] += bool(t["addressees"])
                 tids.add(t["thread_id"])
@@ -75,8 +91,10 @@ def main(src: str) -> None:
                     d = pos[t["id"]] - pos[a]
                     dist.append(d)
                     agg["answers_adjacent"] += d == 1
+        sess = svc.sessions[cid]  # complete rows (the close response carries deltas since 0.6.0)
+        fin = ec.conversation_full(sess.branch, svc.root, sess.state)
         t0 = time.perf_counter()
-        fin = svc.conversation_close(cid)
+        svc.conversation_close(cid)
         close_lat.append((time.perf_counter() - t0) * 1000)
         rss_peak.append(_rss_kib())
         agg["meetings"] += 1

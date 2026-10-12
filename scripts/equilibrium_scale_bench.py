@@ -115,7 +115,12 @@ class _Wire:
         oq = [f.quantum_row(d["quantum_id"]) for d in out["quanta_delta"] if d["op"] == "upsert"]
         oe = [f.episode_row(d["episode_id"])[0] for d in out["episodes_delta"] if d["op"] == "upsert"]
         rest = {k: v for k, v in out.items() if k not in ("quanta_delta", "episodes_delta")}
-        return {"bytes": self._n(out), "delta_bytes": self._n(out["quanta_delta"]) + self._n(out["episodes_delta"]),
+        trait = lambda d: (f.q.get(d["quantum_id"]) or {}).get("trait") or d.get("trait")
+        floor = [d for d in out["quanta_delta"] if trait(d) == "interaction.floor"]
+        share = [d for d in out["quanta_delta"] if trait(d) == "interaction.floor_share"]
+        swap = any(d["op"] == "upsert" and d.get("counter_remove") for d in floor)
+        return {"bytes": self._n(out), "floor_bytes": self._n(floor) if floor else 0,
+                "share_bytes": self._n(share) if share else 0, "floor_swap": int(swap), "delta_bytes": self._n(out["quanta_delta"]) + self._n(out["episodes_delta"]),
                 "old_bytes": self._n({**rest, "quanta": oq, "episodes": oe}),
                 "old_rows_bytes": self._n(oq) + self._n(oe),
                 "q_rows": len(out["quanta_delta"]), "e_rows": len(out["episodes_delta"])}
@@ -129,13 +134,14 @@ def bench_a(lengths):
     turns = _turns(top + 300, seed=4242)
     lat_at, all_lat = {}, []
     split, split_at, wire, wire_at = _Split(), {}, _Wire(), {}
+    every = []
     pos = 0
     for L in sorted(lengths):
         while pos < L:
             t0 = time.perf_counter()
             out = s.conversation_turns("bench:a", "thread", turns[pos:pos + 100])
             all_lat.append((pos + 100, time.perf_counter() - t0))
-            wire.account(turns[pos:pos + 100], out)
+            every.append(wire.account(turns[pos:pos + 100], out))
             pos += 100
         probe, rows, sizes = [], [], []
         for _ in range(3):  # three consecutive 100-turn batches at ~L
@@ -146,6 +152,7 @@ def bench_a(lengths):
             probe.append(time.perf_counter() - t0)
             all_lat.append((pos + 100, probe[-1]))
             sizes.append(wire.account(turns[pos:pos + 100], got[0]))
+            every.append(sizes[-1])
             pos += 100
         lat_at[L] = statistics.median(probe)
         split_at[L] = {k: statistics.median(r.get(k, 0.0) for r in rows) for k in rows[0]}
@@ -155,6 +162,8 @@ def bench_a(lengths):
         print("(a)          split (median ms): " + ", ".join(
             f"{k} {v * 1e3:.1f}" for k, v in split_at[L].items()), flush=True)
         w = wire_at[L]
+        print(f"(a)          floor rows (median of probes): {w['floor_bytes']} B, floor_share rows "
+              f"{w['share_bytes']} B; swap probes {sum(x['floor_swap'] for x in sizes)}/3", flush=True)
         print(f"(a)          wire (median of probes): response {w['bytes'] / 1024:.1f} KiB, deltas "
               f"{w['delta_bytes'] / 1024:.1f} KiB ({w['q_rows']:.0f} quanta / {w['e_rows']:.0f} episode rows); "
               f"0.5.x would send {w['old_bytes'] / 1024:.1f} KiB (rows {w['old_rows_bytes'] / 1024:.1f} KiB)",
@@ -170,6 +179,12 @@ def bench_a(lengths):
         if len(big) >= 2:
             for k in ("bytes", "delta_bytes", "old_bytes"):
                 print(f"(a) wire {k}: exponent over L >= 1000 {_fit(big, [wire_at[x][k] for x in big]):.3f}")
+    sw = [x for x in every if x["floor_swap"]]
+    print(f"(a) whole conversation ({len(every)} batches): response {sum(x['bytes'] for x in every) / 2**20:.2f} MiB, "
+          f"floor rows {sum(x['floor_bytes'] for x in every) / 1024:.1f} KiB, floor_share rows "
+          f"{sum(x['share_bytes'] for x in every) / 1024:.1f} KiB; runner-up swap batches {len(sw)}: floor rows "
+          f"{sum(x['floor_bytes'] for x in sw) / 1024:.1f} KiB (max {max([x['floor_bytes'] for x in sw] or [0])} B), "
+          f"responses {sum(x['bytes'] for x in sw) / 1024:.1f} KiB")
     if len(xs) >= 2:
         print(f"(a) growth exponent over L={xs}: {_fit(xs, [lat_at[x] for x in xs]):.3f} "
               f"(1.0 = linear in prefix, 0 = flat)")
