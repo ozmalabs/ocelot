@@ -721,7 +721,10 @@ class ClassifierService:
             self._drop(cid, sess, None)
             self.conversations_opened -= 1
 
-    def conversation_turns(self, cid: str, kind: str, turns: list[dict]) -> dict:
+    def conversation_turns(self, cid: str, kind: str, turns: list[dict],
+                           close_after: bool = False) -> dict:
+        """Ingest one batch; ``close_after`` makes batch ingest+close one
+        serialized operation on the conversation session."""
         self._require_healthy()
         ec = self._ec
         with self._slot():
@@ -751,9 +754,17 @@ class ClassifierService:
                 with self._meta:
                     if self.sessions.get(cid) is sess:
                         self.sessions.move_to_end(cid)
+                if close_after:
+                    # Keep sess.lock held across the close. A concurrent /turns,
+                    # /close, or /_batch item must not interleave between this
+                    # item's ingest and its requested close.
+                    with self._meta:
+                        self._drop(cid, sess, None)
             finally:
                 sess.lock.release()
         self._after_batch(turns=len(turns))
+        if close_after:
+            self._after_batch(conversations_closed=1)
         return conversation_to_wire(result, ec.TAXONOMY_VERSION)
 
     def conversation_close(self, cid: str, read_out: bool = True) -> dict | None:
@@ -776,9 +787,8 @@ class ClassifierService:
     def _batch_item(self, item: dict) -> dict:
         cid = item["conversation_id"]
         try:
-            out = self.conversation_turns(cid, item["kind"], item["turns"])
-            if item.get("close") is True:
-                self.conversation_close(cid, read_out=False)
+            out = self.conversation_turns(cid, item["kind"], item["turns"],
+                                          close_after=item.get("close") is True)
         except BaseDrift:
             raise
         except ApiError as e:
