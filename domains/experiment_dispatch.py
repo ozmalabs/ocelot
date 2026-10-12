@@ -155,13 +155,16 @@ def _seed_delta_of(agent, exp) -> dict:
                 "datum_feedback_belief_attr": a.get("datum_feedback_belief_attr") or "",
                 "shape_mint_edit": float(a.get("shape_mint_edit") or 0.0),
                 "shape_mint_name": a.get("shape_mint_name") or "",
-                "shape_mint_party": a.get("shape_mint_party") or ""}
+                "shape_mint_party": a.get("shape_mint_party") or "",
+                # plan P3b: the delta's DECLARED witness (seeds/self_optimisation.json
+                # v1.7.0 declare_witness_*); the child measures what it names
+                "witness_kind": a.get("witness_kind") or ""}
     return {"skip_seeds": [], "add_rules": [], "remove_rules": [],
             "add_concepts": [], "remove_concepts": [], "set_node_attrs": [],
             "rule_literal_edit": 0.0, "rule_literal_witness": "",
             "datum_feedback_edit": 0.0, "datum_feedback_datum_attr": "",
             "datum_feedback_belief_attr": "", "shape_mint_edit": 0.0,
-            "shape_mint_name": "", "shape_mint_party": ""}
+            "shape_mint_name": "", "shape_mint_party": "", "witness_kind": ""}
 
 
 def _stamp_performance_baseline(agent, exp) -> None:
@@ -592,7 +595,8 @@ def restart_experiment(agent, id_str: str) -> dict:
                        ("control_reforms", ""), ("variant_reforms", ""),
                        ("knob_judged", ""),
                        ("control_belief", ""), ("variant_belief", ""),
-                       ("datum_feedback_judged", ""), ("shape_mint_judged", "")):
+                       ("datum_feedback_judged", ""), ("shape_mint_judged", ""),
+                       ("witness_judged", "")):   # self_optimisation v1.7.0 (plan P3b)
         try:
             I.set_attr(exp, key, blank)
         except Exception:  # noqa: BLE001

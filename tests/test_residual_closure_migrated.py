@@ -330,7 +330,7 @@ def test_r1_vertical_slice_end_to_end(tmp_path):
     # JUDGE: the agent's own rules (generic + knob judge) verdict it
     a.tick()
     at = dict(a.s.node(exp)["attrs"])
-    assert at.get("knob_judged") is True, at
+    assert at.get("witness_judged") is True, at   # self_optimisation v1.7.0: the declared reforms witness
     assert at.get("outcome") in ("supported", "refuted", "inconclusive")
     if int(at.get("regressions") or 0) > 0:
         assert at.get("outcome") == "refuted", "regressions always refute a knob trial"

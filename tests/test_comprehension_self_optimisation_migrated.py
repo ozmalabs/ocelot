@@ -262,7 +262,7 @@ def test_performance_experiment_supported_when_faster_and_clean(agent, tmp_path)
     at = a.s.node(exp)["attrs"]
     assert at.get("avg_turn_ms") is not None and at["avg_turn_ms"] < 10_000.0
     assert int(at.get("regressions") or 0) == 0
-    assert at.get("performance_judged") is True
+    assert at.get("witness_judged") is True   # self_optimisation v1.7.0: the declared latency witness
     assert at.get("outcome") == "supported", at
 
 
@@ -301,7 +301,7 @@ def test_performance_experiment_refuted_on_regression_regardless_of_speed(agent,
     a.comprehend()
     at = a.s.node(exp)["attrs"]
     assert int(at.get("regressions") or 0) >= 1
-    assert at.get("performance_judged") is True
+    assert at.get("witness_judged") is True   # self_optimisation v1.7.0: the declared latency witness
     assert at.get("outcome") == "refuted", \
         "a regression must refute even though avg_turn_ms beat the (generous) baseline"
 
@@ -339,7 +339,7 @@ def test_promoted_performance_concern_reaches_a_dispatched_experiment(agent, tmp
     a.comprehend()
     at = S.node(exp)["attrs"]
     assert at.get("avg_turn_ms") is not None
-    assert at.get("performance_judged") is True
+    assert at.get("witness_judged") is True   # self_optimisation v1.7.0: the declared latency witness
     assert at.get("outcome") in ("supported", "refuted", "inconclusive")
 
 

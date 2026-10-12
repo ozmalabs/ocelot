@@ -33,7 +33,12 @@ _PROCESS_HEAP_TRIM_FUNCTION = None
 _PROCESS_HEAP_TRIM_UNAVAILABLE = False
 _PROCESS_HEAP_TRIM_RSS_LIMIT_BYTES = 200 * 1024 * 1024
 _NATIVE_SUBSTRATE_LOCKS = {}
-_NATIVE_SUBSTRATE_LOCKS_GUARD = _threading.Lock()
+# Reentrant: a facade's __del__ takes this guard, and a garbage collection
+# triggered by an allocation INSIDE a `with _NATIVE_SUBSTRATE_LOCKS_GUARD:`
+# block (e.g. creating the next facade's RLock) runs that __del__ on the same
+# thread. With a plain Lock that self-deadlocked (measured: the 30th
+# WorldAdapter(seeds=()) of a test process hung in __init__ -> __del__).
+_NATIVE_SUBSTRATE_LOCKS_GUARD = _threading.RLock()
 
 
 def _current_process_rss_bytes():

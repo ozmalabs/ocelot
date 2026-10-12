@@ -81,7 +81,8 @@ def _experiment(a, *, avg_turn_ms, baseline_ms, score=1, perf=True):
 def test_overridden_supported_verdict_is_denied_and_not_adopted(agent):
     a = agent
     live = {r["name"] for r in a.inner.export_rules() if r.get("active", True)}
-    assert {"adopt_denied_on_overridden_verdict", "judge_performance_experiment_outcome"} <= live
+    # self_optimisation v1.7.0 (plan P3b): the speed judge is the declared latency witness
+    assert {"adopt_denied_on_overridden_verdict", "declare_witness_performance", "judge_declared_witness_outcome"} <= live
     exp = _experiment(a, avg_turn_ms=320.0, baseline_ms=70.0)   # slower than baseline: the speed judge refutes
     at = a.s.node(exp)["attrs"]
     assert at.get("adopt_ready") is True, "the generic verdict marked it adopt-ready (the race)"

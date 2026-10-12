@@ -1,0 +1,1048 @@
+{
+ "source": "seeds/self_optimisation.json v1.6.0 (commit 54ed7588): the five family judges replaced by the witness judge in v1.7.0",
+ "rules": [
+  {
+   "name": "judge_performance_experiment_outcome",
+   "match": [
+    [
+     "exp",
+     "has_delta",
+     "delta"
+    ],
+    [
+     "exp",
+     "analysed",
+     "run"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "delta"
+       },
+       "key": "performance_objective"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "exp"
+        },
+        "key": "avg_turn_ms"
+       },
+       "b": {
+        "type": "Lit",
+        "value": null
+       }
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "delta"
+        },
+        "key": "baseline_avg_turn_ms"
+       },
+       "b": {
+        "type": "Lit",
+        "value": null
+       }
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "exp"
+        },
+        "key": "performance_judged"
+       },
+       "b": {
+        "type": "Lit",
+        "value": true
+       }
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "delta"
+        },
+        "key": "deep_reader_edit"
+       },
+       "b": {
+        "type": "Lit",
+        "value": 1.0
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "exp",
+     "performance_judged",
+     true
+    ],
+    [
+     "set_attr",
+     "exp",
+     "outcome",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Gt",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "exp"
+         },
+         "key": "regressions"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0
+        }
+       },
+       "then": {
+        "type": "Lit",
+        "value": "refuted"
+       },
+       "other": {
+        "type": "IfThenElse",
+        "cond": {
+         "type": "Lt",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "exp"
+          },
+          "key": "avg_turn_ms"
+         },
+         "b": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "delta"
+          },
+          "key": "baseline_avg_turn_ms"
+         }
+        },
+        "then": {
+         "type": "Lit",
+         "value": "supported"
+        },
+        "other": {
+         "type": "IfThenElse",
+         "cond": {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "exp"
+           },
+           "key": "avg_turn_ms"
+          },
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "delta"
+           },
+           "key": "baseline_avg_turn_ms"
+          }
+         },
+         "then": {
+          "type": "Lit",
+          "value": "inconclusive"
+         },
+         "other": {
+          "type": "Lit",
+          "value": "refuted"
+         }
+        }
+       }
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "judge_knob_experiment_outcome",
+   "comment": "RESIDUAL-CLOSURE (knob_edit family, v1.1.0): the verdict for a held-threshold (knob) experiment, judged on the family's DIRECT observable -- 'fewer spurious reforms' -- from the child's own CONTROLLED double-pass report (scripts/convo_child_run.py: control pass at the parent's held value, then apply the knob delta, then the variant pass; same process, same warm caches -- the run-15 protected-control lesson, never a cold child vs a warm parent). Correctness first: ANY regression refutes regardless of the reform count (and seeds/adoption_safety.json's veto would deny adoption anyway); then strictly fewer reform marks in the variant pass supports, a tied count is inconclusive (the knob moved nothing observable), MORE reforms refutes -- a knob trial that measures worse REFUTES, never adopts (the residual-closure directive's honest-judge requirement). Same match-clause 'analysed' sequencing as the performance judge (the engine-gotcha note in this seed's description applies); OVERRIDES the generic score-sign verdict for knob deltas exactly as the performance judge does for performance_objective deltas. v1.3.0 (tranche 8): direction-aware -- delta.knob_direction=='increase_fires' supports MORE reform marks (the concern said the reform fires too rarely); absent/decrease_fires keeps the fewer-supports verdict.",
+   "match": [
+    [
+     "exp",
+     "has_delta",
+     "delta"
+    ],
+    [
+     "exp",
+     "analysed",
+     "run"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "delta"
+       },
+       "key": "knob_edit"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "exp"
+        },
+        "key": "control_reforms"
+       },
+       "b": {
+        "type": "Lit",
+        "value": null
+       }
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "exp"
+        },
+        "key": "variant_reforms"
+       },
+       "b": {
+        "type": "Lit",
+        "value": null
+       }
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "exp"
+        },
+        "key": "knob_judged"
+       },
+       "b": {
+        "type": "Lit",
+        "value": true
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "exp",
+     "knob_judged",
+     true
+    ],
+    [
+     "set_attr",
+     "exp",
+     "outcome",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Gt",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "exp"
+         },
+         "key": "regressions"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0
+        }
+       },
+       "then": {
+        "type": "Lit",
+        "value": "refuted"
+       },
+       "other": {
+        "type": "IfThenElse",
+        "cond": {
+         "type": "IfThenElse",
+         "cond": {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "delta"
+           },
+           "key": "knob_direction"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "increase_fires"
+          }
+         },
+         "then": {
+          "type": "Gt",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "exp"
+           },
+           "key": "variant_reforms"
+          },
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "exp"
+           },
+           "key": "control_reforms"
+          }
+         },
+         "other": {
+          "type": "Lt",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "exp"
+           },
+           "key": "variant_reforms"
+          },
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "exp"
+           },
+           "key": "control_reforms"
+          }
+         }
+        },
+        "then": {
+         "type": "Lit",
+         "value": "supported"
+        },
+        "other": {
+         "type": "IfThenElse",
+         "cond": {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "exp"
+           },
+           "key": "variant_reforms"
+          },
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "exp"
+           },
+           "key": "control_reforms"
+          }
+         },
+         "then": {
+          "type": "Lit",
+          "value": "inconclusive"
+         },
+         "other": {
+          "type": "Lit",
+          "value": "refuted"
+         }
+        }
+       }
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "judge_rule_literal_outcome",
+   "comment": "WHERE-CLAUSE-VARIATION (rule_literal_edit family, v1.2.0): the verdict for a held-rule-literal experiment, judged on the family's DIRECT observable -- the picked rule's own structural WITNESS fire-count -- from the child's CONTROLLED double-pass report (scripts/convo_child_run.py: control pass at the ORIGINAL rule, then the rule swap, then the variant pass; same process, same warm caches -- the run-15 protected-control lesson, never a cold child vs a warm parent). Correctness first: ANY regression refutes regardless of the witness delta (and seeds/adoption_safety.json's veto would deny adoption anyway). Then the verdict is checked against WHAT THE CONCERN ASKED FOR (delta.rule_literal_direction, set by _compose_rule_literal_variant's direction lexicon at compose time): 'increase_fires' (the concern said the rule fires too rarely) supports iff variant_witness_fires > control_witness_fires; 'decrease_fires' (fires too eagerly) supports iff variant_witness_fires < control_witness_fires; either way an unchanged witness count is inconclusive (the literal shift moved nothing observable) and the wrong-way delta refutes. Same match-clause 'analysed' sequencing as the performance/knob judges (the engine-gotcha note in this seed's description applies); OVERRIDES the generic score-sign verdict for rule_literal_edit deltas exactly as the other two family judges do for their own marker.",
+   "match": [
+    [
+     "exp",
+     "has_delta",
+     "delta"
+    ],
+    [
+     "exp",
+     "analysed",
+     "run"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "delta"
+       },
+       "key": "rule_literal_edit"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "exp"
+        },
+        "key": "control_witness_fires"
+       },
+       "b": {
+        "type": "Lit",
+        "value": null
+       }
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "exp"
+        },
+        "key": "variant_witness_fires"
+       },
+       "b": {
+        "type": "Lit",
+        "value": null
+       }
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "exp"
+        },
+        "key": "rule_literal_judged"
+       },
+       "b": {
+        "type": "Lit",
+        "value": true
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "exp",
+     "rule_literal_judged",
+     true
+    ],
+    [
+     "set_attr",
+     "exp",
+     "outcome",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Gt",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "exp"
+         },
+         "key": "regressions"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0
+        }
+       },
+       "then": {
+        "type": "Lit",
+        "value": "refuted"
+       },
+       "other": {
+        "type": "IfThenElse",
+        "cond": {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "delta"
+          },
+          "key": "rule_literal_direction"
+         },
+         "b": {
+          "type": "Lit",
+          "value": "increase_fires"
+         }
+        },
+        "then": {
+         "type": "IfThenElse",
+         "cond": {
+          "type": "Gt",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "exp"
+           },
+           "key": "variant_witness_fires"
+          },
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "exp"
+           },
+           "key": "control_witness_fires"
+          }
+         },
+         "then": {
+          "type": "Lit",
+          "value": "supported"
+         },
+         "other": {
+          "type": "IfThenElse",
+          "cond": {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "exp"
+            },
+            "key": "variant_witness_fires"
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "exp"
+            },
+            "key": "control_witness_fires"
+           }
+          },
+          "then": {
+           "type": "Lit",
+           "value": "inconclusive"
+          },
+          "other": {
+           "type": "Lit",
+           "value": "refuted"
+          }
+         }
+        },
+        "other": {
+         "type": "IfThenElse",
+         "cond": {
+          "type": "Lt",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "exp"
+           },
+           "key": "variant_witness_fires"
+          },
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "exp"
+           },
+           "key": "control_witness_fires"
+          }
+         },
+         "then": {
+          "type": "Lit",
+          "value": "supported"
+         },
+         "other": {
+          "type": "IfThenElse",
+          "cond": {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "exp"
+            },
+            "key": "variant_witness_fires"
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "exp"
+            },
+            "key": "control_witness_fires"
+           }
+          },
+          "then": {
+           "type": "Lit",
+           "value": "inconclusive"
+          },
+          "other": {
+           "type": "Lit",
+           "value": "refuted"
+          }
+         }
+        }
+       }
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "judge_datum_feedback_outcome",
+   "comment": "COMPOSER-CAPABILITY (datum_feedback_rule family, v1.3.0): the verdict for a datum-feedback experiment (a genuinely NEW, ADD-ONLY rule that feeds a recorded datum back into a held belief -- see reflective_faculty._compose_datum_feedback_rule), judged on the family's DIRECT observable -- the interlocutor belief's own before/after VALUE -- from the child's CONTROLLED double-pass report (scripts/convo_child_run.py: control pass with the authored rule absent, then install it, then the variant pass; same process, same warm caches -- the run-15 protected-control lesson, never a cold child vs a warm parent). Correctness first: ANY regression refutes regardless of the belief delta (and seeds/adoption_safety.json's veto would deny adoption anyway); then STRICTLY LOWER variant_belief than control_belief supports (the v1 fixed direction -- the belief moves DOWN as the datum accrues, matching the motivating case), a tied belief is inconclusive (the rule moved nothing observable -- e.g. the datum never changed during the replay), a HIGHER belief refutes. Same match-clause 'analysed' sequencing as the knob/rule-literal judges (the engine-gotcha note in this seed's description applies); OVERRIDES the generic score-sign verdict for datum_feedback_edit deltas exactly as the other family judges do for their own marker.",
+   "match": [
+    [
+     "exp",
+     "has_delta",
+     "delta"
+    ],
+    [
+     "exp",
+     "analysed",
+     "run"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "delta"
+       },
+       "key": "datum_feedback_edit"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "exp"
+        },
+        "key": "control_belief"
+       },
+       "b": {
+        "type": "Lit",
+        "value": null
+       }
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "exp"
+        },
+        "key": "variant_belief"
+       },
+       "b": {
+        "type": "Lit",
+        "value": null
+       }
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "exp"
+        },
+        "key": "datum_feedback_judged"
+       },
+       "b": {
+        "type": "Lit",
+        "value": true
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "exp",
+     "datum_feedback_judged",
+     true
+    ],
+    [
+     "set_attr",
+     "exp",
+     "outcome",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Gt",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "exp"
+         },
+         "key": "regressions"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0
+        }
+       },
+       "then": {
+        "type": "Lit",
+        "value": "refuted"
+       },
+       "other": {
+        "type": "IfThenElse",
+        "cond": {
+         "type": "Lt",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "exp"
+          },
+          "key": "variant_belief"
+         },
+         "b": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "exp"
+          },
+          "key": "control_belief"
+         }
+        },
+        "then": {
+         "type": "Lit",
+         "value": "supported"
+        },
+        "other": {
+         "type": "IfThenElse",
+         "cond": {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "exp"
+           },
+           "key": "variant_belief"
+          },
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "exp"
+           },
+           "key": "control_belief"
+          }
+         },
+         "then": {
+          "type": "Lit",
+          "value": "inconclusive"
+         },
+         "other": {
+          "type": "Lit",
+          "value": "refuted"
+         }
+        }
+       }
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "judge_shape_mint_outcome",
+   "comment": "COMPOSER-CAPABILITY (shape_mint family, v1.3.0): the verdict for a shape-mint experiment (a brand-new InterlocutorShape constructed from a poor-fit party's own dominant accumulated features -- see reflective_faculty._compose_shape_mint), judged on the family's DIRECT observable -- decode_shape's own FIT COUNT for that party, before/after -- from the child's CONTROLLED double-pass report (scripts/convo_child_run.py: control pass with the minted shape absent, then install it via add_concepts, then the variant pass; same process, same warm caches -- the run-15 protected-control lesson). Correctness first: ANY regression refutes regardless of the fit delta (and seeds/adoption_safety.json's veto would deny adoption anyway); then STRICTLY HIGHER variant_belief (fit) than control_belief supports (the minted shape genuinely explains the party better), a tied fit is inconclusive (the mint moved nothing observable), a LOWER fit refutes. Same match-clause 'analysed' sequencing as the knob/rule-literal/datum-feedback judges (the engine-gotcha note in this seed's description applies); OVERRIDES the generic score-sign verdict for shape_mint_edit deltas exactly as the other family judges do for their own marker.",
+   "match": [
+    [
+     "exp",
+     "has_delta",
+     "delta"
+    ],
+    [
+     "exp",
+     "analysed",
+     "run"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "delta"
+       },
+       "key": "shape_mint_edit"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "exp"
+        },
+        "key": "control_belief"
+       },
+       "b": {
+        "type": "Lit",
+        "value": null
+       }
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "exp"
+        },
+        "key": "variant_belief"
+       },
+       "b": {
+        "type": "Lit",
+        "value": null
+       }
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "exp"
+        },
+        "key": "shape_mint_judged"
+       },
+       "b": {
+        "type": "Lit",
+        "value": true
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "exp",
+     "shape_mint_judged",
+     true
+    ],
+    [
+     "set_attr",
+     "exp",
+     "outcome",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Gt",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "exp"
+         },
+         "key": "regressions"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0
+        }
+       },
+       "then": {
+        "type": "Lit",
+        "value": "refuted"
+       },
+       "other": {
+        "type": "IfThenElse",
+        "cond": {
+         "type": "Gt",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "exp"
+          },
+          "key": "variant_belief"
+         },
+         "b": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "exp"
+          },
+          "key": "control_belief"
+         }
+        },
+        "then": {
+         "type": "Lit",
+         "value": "supported"
+        },
+        "other": {
+         "type": "IfThenElse",
+         "cond": {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "exp"
+           },
+           "key": "variant_belief"
+          },
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "exp"
+           },
+           "key": "control_belief"
+          }
+         },
+         "then": {
+          "type": "Lit",
+          "value": "inconclusive"
+         },
+         "other": {
+          "type": "Lit",
+          "value": "refuted"
+         }
+        }
+       }
+      }
+     }
+    ]
+   ]
+  }
+ ]
+}

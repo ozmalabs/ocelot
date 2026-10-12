@@ -596,10 +596,19 @@ def main() -> int:
     agent = None            # the VARIANT agent — final_graph.json is ITS graph (the adoption candidate)
     trace_fp = None
     try:
-        rule_literal_probe = bool(delta.get("rule_literal_edit"))
-        datum_feedback_probe = bool(delta.get("datum_feedback_edit"))
-        shape_mint_probe = bool(delta.get("shape_mint_edit"))
-        knob_probe = bool(delta.get("set_node_attrs"))
+        # DECLARED WITNESS (plan P3b): the delta names what to measure
+        # (seeds/self_optimisation.json v1.7.0 declare_witness_*). A delta
+        # dispatched before its declaration rule ran falls back to the family
+        # markers, which is the same mapping.
+        witness_kind = str(delta.get("witness_kind") or "")
+        rule_literal_probe = (witness_kind == "rule_witness_fires"
+                              or (not witness_kind and bool(delta.get("rule_literal_edit"))))
+        datum_feedback_probe = (witness_kind == "interlocutor_belief"
+                                or (not witness_kind and bool(delta.get("datum_feedback_edit"))))
+        shape_mint_probe = (witness_kind == "classified_parties"
+                            or (not witness_kind and bool(delta.get("shape_mint_edit"))))
+        node_attr_delta = bool(delta.get("set_node_attrs"))
+        knob_probe = witness_kind == "reforms" or (not witness_kind and node_attr_delta)
         witness = None
         if rule_literal_probe:
             try:
@@ -658,7 +667,7 @@ def main() -> int:
             agent = _load_snapshot_agent(args.snapshot)
         _arm_parent_fidelity(agent, delta)
         removed_rules = apply_delta(agent, delta)
-        if knob_probe:
+        if node_attr_delta:
             apply_node_attr_delta(agent, delta)
 
         stats = _replay_pass(agent, probes, witness=witness)
