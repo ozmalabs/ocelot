@@ -479,3 +479,22 @@ See the [results](RECURSIVE_SELF_IMPROVEMENT_TRANCHE23_RESULTS_20261010.md) and 
 - **Regression:** targeted (63 files); 0 attributable failures.
 
 Next: the adoption/speed-judge ordering defect; interrogative classes; content-first misreads; chained improvement.
+
+## 2026-10-10 recursive self-improvement tranche 24
+
+See the [results](RECURSIVE_SELF_IMPROVEMENT_TRANCHE24_RESULTS_20261010.md) and the [prereg](SUBSTRATE_ENDEMIC_RSI_CHAINED_V1_PREREG_20261010.md).
+
+- **Chained endemic RSI on the production path: preregistered gates C1–C5 pass.** One of the agent's adoptions put a class it had abstained on within reach. The agent then:
+  - reopened that concern (its repertoire epoch had changed);
+  - generalised its own earlier generalisation;
+  - adopted the result.
+
+  Post-run errors were 25, against 44 in the identical arm without reopening. Against the fresh boot, errors fell 66 → 25 and goal-takes fell 29 → 7. 0 turns got worse and controls were kept. The off arm adopted nothing.
+- **Mechanism:**
+  - abstentions are stamped with the repertoire epoch;
+  - the pick's abstention exclusion is epoch-scoped;
+  - `irr_reopen_on_new_capability`;
+  - a scheduler demand for agent retries, which before this ran in production only if another concern was pending.
+- **Regression:** targeted (85 files); 0 attributable failures.
+
+Next: interrogative classes (16 of 25 remaining errors); short agreements; deeper chains.

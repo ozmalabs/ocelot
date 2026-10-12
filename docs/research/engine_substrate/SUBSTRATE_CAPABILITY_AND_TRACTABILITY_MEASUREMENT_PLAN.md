@@ -1,3 +1,8 @@
+**Recursive self-improvement tranche 24 (2026-10-10):** ([results](RECURSIVE_SELF_IMPROVEMENT_TRANCHE24_RESULTS_20261010.md))
+
+- **First chained self-improvement on the production path.** After one of its own adoptions, the agent reopened a concern it had abstained on. It fixed that concern by generalising the rule it had just adopted. Errors were 25, against 44 without reopening (66 on a fresh boot). 0 turns got worse.
+- **Gates.** The preregistered C1–C5 pass.
+
 **Recursive self-improvement tranche 23 (2026-10-10):** ([results](RECURSIVE_SELF_IMPROVEMENT_TRANCHE23_RESULTS_20261010.md))
 
 - **The agent corrects its own reader on the production path.** It noticed that its shallow and deep readers recurrently disagree. It then promoted, built, judged and adopted a deep-reader veto with a receipt. Spurious goal-takes fell 29 → 7, errors fell 66 → 44, 0 turns got worse, and real imperatives were kept.

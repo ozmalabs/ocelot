@@ -1,12 +1,12 @@
 {
  "id": "cognitive_scheduler",
- "version": "1.0.2",
+ "version": "1.0.3",
  "self_load_only": true,
  "depends_on": [
   "cognitive_areas"
  ],
  "area": "scheduler",
- "description": "Graph-native policy for asynchronous cognition: dependency readiness, epoch rearm, salience-driven effort, backpressure worker feedback, graph-visible shedding, bounded residual projection, and graph-selected host-action supervision.",
+ "description": "Graph-native policy for asynchronous cognition: dependency readiness, epoch rearm, salience-driven effort, backpressure worker feedback, graph-visible shedding, bounded residual projection, and graph-selected host-action supervision. v1.0.3 (tranche 24): supervise_requested_retry(+_rearm) -- the `concern` host action is also requested while a SelfConcern carries retry_requested (before this an agent retry ran only if another concern happened to be pending).",
  "microtheory": {
   "name": "cognitive_scheduler",
   "description": "surprise/effort/backpressure policy over native CognitiveTasks"
@@ -11895,6 +11895,515 @@
      "host_requested"
     ]
    ]
+  },
+  {
+   "name": "supervise_requested_retry",
+   "area": "supervision",
+   "order": 1,
+   "latency_class": "hard_realtime",
+   "match": [],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Exists",
+      "source": {
+       "type": "NodesOfType",
+       "node_type": "SelfConcern"
+      },
+      "var_name": "source",
+      "predicate": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "source"
+        },
+        "key": "retry_requested"
+       },
+       "b": {
+        "type": "Lit",
+        "value": 1
+       }
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "NodesOfType",
+        "node_type": "HostActionRequest"
+       },
+       "var_name": "request",
+       "predicate": {
+        "type": "And",
+        "items": [
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "request"
+           },
+           "key": "action"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "concern"
+          }
+         },
+         {
+          "type": "Or",
+          "items": [
+           {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "request"
+             },
+             "key": "status"
+            },
+            "b": {
+             "type": "Lit",
+             "value": "pending"
+            }
+           },
+           {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "request"
+             },
+             "key": "status"
+            },
+            "b": {
+             "type": "Lit",
+             "value": "requested"
+            }
+           },
+           {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "request"
+             },
+             "key": "status"
+            },
+            "b": {
+             "type": "Lit",
+             "value": "running"
+            }
+           }
+          ]
+         }
+        ]
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "request",
+     "HostActionRequest",
+     {
+      "action": "concern",
+      "source_type": "SelfConcern",
+      "source": {
+       "__term__": {
+        "type": "Argmax",
+        "source": {
+         "type": "Filter",
+         "source": {
+          "type": "NodesOfType",
+          "node_type": "SelfConcern"
+         },
+         "var_name": "source",
+         "predicate": {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "source"
+           },
+           "key": "retry_requested"
+          },
+          "b": {
+           "type": "Lit",
+           "value": 1
+          }
+         }
+        },
+        "var_name": "candidate",
+        "value": {
+         "type": "IfThenElse",
+         "cond": {
+          "type": "Gt",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "candidate"
+           },
+           "key": "supervision_priority"
+          },
+          "b": {
+           "type": "Lit",
+           "value": 0
+          }
+         },
+         "then": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "candidate"
+          },
+          "key": "supervision_priority"
+         },
+         "other": {
+          "type": "Lit",
+          "value": 1
+         }
+        },
+        "default": null
+       }
+      },
+      "status": "pending",
+      "urgency": 1,
+      "residual": 1,
+      "estimated_cost": 1,
+      "deadline": 0,
+      "priority": 1
+     }
+    ],
+    [
+     "add_node",
+     "task",
+     "CognitiveTask",
+     {
+      "kind": "host_action",
+      "action": "concern",
+      "area": "supervision",
+      "status": "pending",
+      "urgency": 1,
+      "residual": 1,
+      "estimated_cost": 1,
+      "deadline": 0,
+      "priority": 1,
+      "input_epoch": 0,
+      "logical_time": 0
+     }
+    ],
+    [
+     "add_edge",
+     "request",
+     "scheduled_as",
+     "task",
+     {}
+    ]
+   ],
+   "comment": "tranche 24: request the `concern` host action while a SelfConcern carries retry_requested (its executor runs the agent's own retry); one in-flight concern request at a time."
+  },
+  {
+   "name": "supervise_requested_retry_rearm",
+   "area": "supervision",
+   "order": 1,
+   "latency_class": "hard_realtime",
+   "match": [
+    [
+     "previous",
+     "scheduled_as",
+     "previous_task"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "previous"
+       },
+       "key": "action"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "concern"
+      }
+     },
+     {
+      "type": "Or",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "previous"
+         },
+         "key": "status"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "done"
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "previous"
+         },
+         "key": "status"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "failed"
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "previous"
+         },
+         "key": "status"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "unavailable"
+        }
+       }
+      ]
+     },
+     {
+      "type": "Exists",
+      "source": {
+       "type": "NodesOfType",
+       "node_type": "SelfConcern"
+      },
+      "var_name": "source",
+      "predicate": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "source"
+        },
+        "key": "retry_requested"
+       },
+       "b": {
+        "type": "Lit",
+        "value": 1
+       }
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "NodesOfType",
+        "node_type": "HostActionRequest"
+       },
+       "var_name": "request",
+       "predicate": {
+        "type": "And",
+        "items": [
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "request"
+           },
+           "key": "action"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "concern"
+          }
+         },
+         {
+          "type": "Or",
+          "items": [
+           {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "request"
+             },
+             "key": "status"
+            },
+            "b": {
+             "type": "Lit",
+             "value": "pending"
+            }
+           },
+           {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "request"
+             },
+             "key": "status"
+            },
+            "b": {
+             "type": "Lit",
+             "value": "requested"
+            }
+           },
+           {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "request"
+             },
+             "key": "status"
+            },
+            "b": {
+             "type": "Lit",
+             "value": "running"
+            }
+           }
+          ]
+         }
+        ]
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "request",
+     "HostActionRequest",
+     {
+      "action": "concern",
+      "source_type": "SelfConcern",
+      "source": {
+       "__term__": {
+        "type": "Argmax",
+        "source": {
+         "type": "Filter",
+         "source": {
+          "type": "NodesOfType",
+          "node_type": "SelfConcern"
+         },
+         "var_name": "source",
+         "predicate": {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "source"
+           },
+           "key": "retry_requested"
+          },
+          "b": {
+           "type": "Lit",
+           "value": 1
+          }
+         }
+        },
+        "var_name": "candidate",
+        "value": {
+         "type": "IfThenElse",
+         "cond": {
+          "type": "Gt",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "candidate"
+           },
+           "key": "supervision_priority"
+          },
+          "b": {
+           "type": "Lit",
+           "value": 0
+          }
+         },
+         "then": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "candidate"
+          },
+          "key": "supervision_priority"
+         },
+         "other": {
+          "type": "Lit",
+          "value": 1
+         }
+        },
+        "default": null
+       }
+      },
+      "status": "pending",
+      "urgency": 1,
+      "residual": 1,
+      "estimated_cost": 1,
+      "deadline": 0,
+      "priority": 1
+     }
+    ],
+    [
+     "add_node",
+     "task",
+     "CognitiveTask",
+     {
+      "kind": "host_action",
+      "action": "concern",
+      "area": "supervision",
+      "status": "pending",
+      "urgency": 1,
+      "residual": 1,
+      "estimated_cost": 1,
+      "deadline": 0,
+      "priority": 1,
+      "input_epoch": 0,
+      "logical_time": 0
+     }
+    ],
+    [
+     "add_edge",
+     "request",
+     "scheduled_as",
+     "task",
+     {}
+    ]
+   ],
+   "comment": "tranche 24: request the `concern` host action while a SelfConcern carries retry_requested (its executor runs the agent's own retry); one in-flight concern request at a time."
   }
  ]
 }

@@ -4615,12 +4615,21 @@ def _relax_guard(rule, var, key, new_value):
     return r
 
 
+def _live_standing_for_key(sub0, key):
+    """The StandingConcern carrying `key` that is still live. A reopened concern
+    (tranche 24) leaves its earlier StandingConcern behind as `retired` under the
+    same name, and that one no longer has the promoted_to edge."""
+    named = [n for n in sub0.nodes("StandingConcern") if sub0.node(n)["attrs"].get("name") == key]
+    live = [n for n in named if sub0.node(n)["attrs"].get("status") != "retired"]
+    return (live or named or [None])[-1]
+
+
 def _compose_disposition_generalise(agent, keys, tag: str) -> dict[str, Any]:
     import json as _json
     import re as _re
     sub0, native0, _ag0 = _resolve_agent(agent)
     key = str(keys[0]) if keys else ""
-    standing = next((n for n in sub0.nodes("StandingConcern") if sub0.node(n)["attrs"].get("name") == key), None)
+    standing = _live_standing_for_key(sub0, key)
     if standing is None:
         return {"built": False, "wall": "no StandingConcern carries this capability key"}
     msg = None
@@ -4748,7 +4757,7 @@ def _compose_deep_reader_correct(agent, keys, tag: str) -> dict[str, Any]:
     import re as _re
     sub0, native0, _ag0 = _resolve_agent(agent)
     key = str(keys[0]) if keys else ""
-    standing = next((n for n in sub0.nodes("StandingConcern") if sub0.node(n)["attrs"].get("name") == key), None)
+    standing = _live_standing_for_key(sub0, key)
     if standing is None:
         return {"built": False, "wall": "no StandingConcern carries this capability key"}
     msg = None
