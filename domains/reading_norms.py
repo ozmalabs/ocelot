@@ -98,6 +98,28 @@ def effective_trace_capacity(agent, register: Optional[str], *, widened: bool = 
     return int(base) if val is None else int(val)
 
 
+def effective_turn_capacity(agent, register: Optional[str] = "conversational", *,
+                            widened: bool = False, default: int = 8) -> int:
+    """The CONVERSATION turn ring's effective capacity N: the SAME held
+    `reading_derive_trace_capacity` Program the reading ring uses, evaluated
+    over the register row's `turn_capacity_*` / `turn_widen_step` attrs
+    (seeds/reading_aperture.json v1.3.0) and whether the conversation has spent
+    its one-shot widen (TurnRing.capacity_widened, set by the
+    `conversation_widen_turn_capacity_once` rule). The clamp is held data."""
+    sub, native = _resolve(agent)
+    budget = budget_for_register(sub, register)
+    if budget is None or budget.get("turn_capacity_base") is None:
+        return default
+    base = float(budget["turn_capacity_base"])
+    env = {"base": base,
+           "min_cap": float(budget.get("turn_capacity_min", base)),
+           "max_cap": float(budget.get("turn_capacity_max", base)),
+           "widen_step": float(budget.get("turn_widen_step", 0.0)),
+           "widened": 1.0 if widened else 0.0}
+    val = _eval_program(sub, native, "reading_derive_trace_capacity", env)
+    return int(base) if val is None else int(val)
+
+
 def effective_max_order(agent, register: Optional[str], *, reform_count: float = 0.0,
                         default: int = 2) -> int:
     """The order-N descent's EFFECTIVE depth for this flow: the held
@@ -185,7 +207,7 @@ def flow_register(sub, flow) -> Optional[str]:
 
 
 __all__ = [
-    "budget_for_register", "effective_trace_capacity", "effective_max_order",
+    "budget_for_register", "effective_trace_capacity", "effective_turn_capacity", "effective_max_order",
     "effective_max_revisits", "reform_pressure_factor",
     "record_eviction_pressure", "record_reform", "flow_register",
 ]

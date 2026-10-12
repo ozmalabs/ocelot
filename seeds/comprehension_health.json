@@ -1,9 +1,9 @@
 {
  "id": "comprehension_health",
- "version": "1.0.1",
- "depends_on": ["intent"],
+ "version": "1.1.0",
+ "depends_on": ["intent", "conversation_turn_ring"],
  "capability_keys": ["comprehension_health", "self_optimisation_sense"],
- "description": "SELF-OPTIMISATION, sense side (2026-07-10). The deep-reader/comprehension process runs SHADOW on every daemon chat turn and mechanically records its own health onto each Message (world_adapter._write_comprehension_to_graph / _record_shadow_health, per CLAUDE.md's adapter-may-maintain-a-rolling-datum exception): speech_act_divergence + comp_kind/shadow_speech_act, shadow_latency_ms + a monotonic shadow_seq, and the Agent-level rolling shadow_latency_recent_avg. This seed is the gap_awareness TWIN for that data: it DECIDES (as graph rules, never Python) when a recorded deficiency is a SelfConcern worth filing, so the agent notices its own comprehension process's problems as ITS OWN gaps, the same way it already notices unresolved topics/reported deficiencies/self-account gaps. Two rules:\n\n(1) note_recurring_speech_act_divergence -- a SINGLE disagreement between the front end's comp_kind and the deep reader's shadow_speech_act is not yet a pattern (comp_kind is deliberately pragmatic in places, per the Wave-3 cutover note in world_adapter.py); RECURRENCE (>=3 Messages sharing the SAME (comp_kind, shadow_speech_act) pair) is the graph's own signal that something is systematically off, not noise. The recurrence count is a held Count/Filter Term over NodesOfType('Message') -- a graph decision, never Python arithmetic. Fires from exactly ONE canonical binding per pair (the EARLIEST divergent Message in the group, selected via the shadow_seq ordering datum: 'no other same-pair divergent Message has a smaller shadow_seq') so a threshold-crossing round can never mint more than one SelfConcern for the same pair even before the content-dedup guard would catch a LATER round's attempt -- both guards compose, belt and braces.\n\n(2) note_comprehension_latency_gap -- a HealthNorm{metric, ceiling} node (seed data below) holds the latency BELIEF the rule compares the Agent's own shadow_latency_recent_avg against: the threshold is data the agent could later revise (teach() a new ceiling), never a Python literal. Fires once per crossing (content-deduped), from the single canonical 'latest shadow-read Message' binding (same shadow_seq trick, applied to ALL shadow-read messages rather than only divergent ones).\n\nBoth mint SelfConcern{status:'noted', source:'implicit', kind:'comprehension'|'performance', content:<data>} -- the SAME node shape gap_awareness.json mints, so the existing human-gated promote pipeline (scripts/jabberwock_daemon.py::promote_self_concern -> StandingConcern) and surfacing reader (reflective_faculty._run_self_gaps, 'what gaps do you have?') both find these gaps for free, no new plumbing. seeds/self_optimisation.json is the LAB twin: it gives the promoted 'performance'/'comprehension' concern's self-experiment an EFFICIENCY objective once it reaches the conversation experiment world. || v1.0.1 (2026-10-10, long-session cost): note_comprehension_latency_gap evaluates its cheap conditions (rolling average present and above the held ceiling, concern not yet filed) BEFORE the scan over all Messages for the latest shadow_seq. Measured: that scan ran for every received message on every re-match (0.9 ms/turn at turn 25, 190 ms/turn at turn 150). The where clause is a pure conjunction; the order does not change which bindings fire.",
+ "description": "SELF-OPTIMISATION, sense side (2026-07-10). The deep-reader/comprehension process runs SHADOW on every daemon chat turn and mechanically records its own health onto each Message (world_adapter._write_comprehension_to_graph / _record_shadow_health, per CLAUDE.md's adapter-may-maintain-a-rolling-datum exception): speech_act_divergence + comp_kind/shadow_speech_act, shadow_latency_ms + a monotonic shadow_seq, and the Agent-level rolling shadow_latency_recent_avg. This seed is the gap_awareness TWIN for that data: it DECIDES (as graph rules, never Python) when a recorded deficiency is a SelfConcern worth filing, so the agent notices its own comprehension process's problems as ITS OWN gaps, the same way it already notices unresolved topics/reported deficiencies/self-account gaps. Two rules:\n\n(1) note_recurring_speech_act_divergence -- a SINGLE disagreement between the front end's comp_kind and the deep reader's shadow_speech_act is not yet a pattern (comp_kind is deliberately pragmatic in places, per the Wave-3 cutover note in world_adapter.py); RECURRENCE (>=3 Messages sharing the SAME (comp_kind, shadow_speech_act) pair) is the graph's own signal that something is systematically off, not noise. The recurrence count is a held Count/Filter Term over NodesOfType('Message') -- a graph decision, never Python arithmetic. Fires from exactly ONE canonical binding per pair (the EARLIEST divergent Message in the group, selected via the shadow_seq ordering datum: 'no other same-pair divergent Message has a smaller shadow_seq') so a threshold-crossing round can never mint more than one SelfConcern for the same pair even before the content-dedup guard would catch a LATER round's attempt -- both guards compose, belt and braces.\n\n(2) note_comprehension_latency_gap -- a HealthNorm{metric, ceiling} node (seed data below) holds the latency BELIEF the rule compares the Agent's own shadow_latency_recent_avg against: the threshold is data the agent could later revise (teach() a new ceiling), never a Python literal. Fires once per crossing (content-deduped), from the single canonical 'latest shadow-read Message' binding (same shadow_seq trick, applied to ALL shadow-read messages rather than only divergent ones).\n\nBoth mint SelfConcern{status:'noted', source:'implicit', kind:'comprehension'|'performance', content:<data>} -- the SAME node shape gap_awareness.json mints, so the existing human-gated promote pipeline (scripts/jabberwock_daemon.py::promote_self_concern -> StandingConcern) and surfacing reader (reflective_faculty._run_self_gaps, 'what gaps do you have?') both find these gaps for free, no new plumbing. seeds/self_optimisation.json is the LAB twin: it gives the promoted 'performance'/'comprehension' concern's self-experiment an EFFICIENCY objective once it reaches the conversation experiment world. || v1.0.1 (2026-10-10, long-session cost): note_comprehension_latency_gap evaluates its cheap conditions (rolling average present and above the held ceiling, concern not yet filed) BEFORE the scan over all Messages for the latest shadow_seq. Measured: that scan ran for every received message on every re-match (0.9 ms/turn at turn 25, 190 ms/turn at turn 150). The where clause is a pure conjunction; the order does not change which bindings fire. || v1.1.0 (2026-10-10, conversation turn ring): the recurrence rule reads a TurnShape tally and its oldest member, and the latency rule compares with agent.latest_shadow_seq, instead of scanning every Message (scripts/gen_comprehension_health_shapes.py).",
  "nodes": [
   {
    "local_id": 1,
@@ -19,150 +19,657 @@
  "productions": [],
  "rules": [
   {
-   "name": "note_recurring_speech_act_divergence",
-   "match": [["agent", "received", "m"]],
+   "name": "tally_divergence_class",
+   "comment": "Fold an attended shallow/deep reader disagreement into its class TurnShape (the conceptual tier the recurrence rule reads).",
+   "match": [
+    [
+     "agent",
+     "received",
+     "m"
+    ]
+   ],
    "where": {
     "type": "And",
     "items": [
-     {"type": "Eq",
-      "a": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "speech_act_divergence"},
-      "b": {"type": "Lit", "value": 1.0}},
-     {"type": "Not", "arg": {
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "m"
+       },
+       "key": "speech_act_divergence"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
        "type": "Eq",
-       "a": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "divergence_health_noted"},
-       "b": {"type": "Lit", "value": 1.0}}},
-     {"type": "Not", "arg": {
-       "type": "Exists",
-       "source": {"type": "NodesOfType", "node_type": "Message"},
-       "var_name": "m2",
-       "predicate": {"type": "And", "items": [
-         {"type": "Eq",
-          "a": {"type": "Attr", "node": {"type": "Var", "name": "m2"}, "key": "speech_act_divergence"},
-          "b": {"type": "Lit", "value": 1.0}},
-         {"type": "Eq",
-          "a": {"type": "Attr", "node": {"type": "Var", "name": "m2"}, "key": "comp_kind"},
-          "b": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "comp_kind"}},
-         {"type": "Eq",
-          "a": {"type": "Attr", "node": {"type": "Var", "name": "m2"}, "key": "shadow_speech_act"},
-          "b": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "shadow_speech_act"}},
-         {"type": "Lt",
-          "a": {"type": "Attr", "node": {"type": "Var", "name": "m2"}, "key": "shadow_seq"},
-          "b": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "shadow_seq"}}
-       ]}
-     }},
-     {"type": "Gte",
-      "a": {"type": "Count", "source": {"type": "Filter",
-        "source": {"type": "NodesOfType", "node_type": "Message"},
-        "var_name": "m3",
-        "predicate": {"type": "And", "items": [
-          {"type": "Eq",
-           "a": {"type": "Attr", "node": {"type": "Var", "name": "m3"}, "key": "speech_act_divergence"},
-           "b": {"type": "Lit", "value": 1.0}},
-          {"type": "Eq",
-           "a": {"type": "Attr", "node": {"type": "Var", "name": "m3"}, "key": "comp_kind"},
-           "b": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "comp_kind"}},
-          {"type": "Eq",
-           "a": {"type": "Attr", "node": {"type": "Var", "name": "m3"}, "key": "shadow_speech_act"},
-           "b": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "shadow_speech_act"}}
-        ]}
-      }},
-      "b": {"type": "Lit", "value": 3.0}},
-     {"type": "Not", "arg": {
-       "type": "Exists",
-       "source": {"type": "NodesOfType", "node_type": "SelfConcern"},
-       "var_name": "sc2",
-       "predicate": {"type": "Eq",
-        "a": {"type": "Attr", "node": {"type": "Var", "name": "sc2"}, "key": "content"},
-        "b": {"type": "StringConcat", "parts": [
-          {"type": "Lit", "value": "comprehension classified this as '"},
-          {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "comp_kind"},
-          {"type": "Lit", "value": "' but the deep reader heard '"},
-          {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "shadow_speech_act"},
-          {"type": "Lit", "value": "' (recurring; e.g. \""},
-          {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "text"},
-          {"type": "Lit", "value": "\")"}
-        ]}}
-     }}
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "m"
+        },
+        "key": "divergence_tallied"
+       },
+       "b": {
+        "type": "Lit",
+        "value": 1
+       }
+      }
+     }
     ]
    },
    "effects": [
-    ["set_attr", "m", "divergence_health_noted", 1.0],
-    ["add_node", "sc", "SelfConcern", {
-      "status": "noted", "source": "implicit", "kind": "comprehension",
-      "content": {"__term__": {"type": "StringConcat", "parts": [
-        {"type": "Lit", "value": "comprehension classified this as '"},
-        {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "comp_kind"},
-        {"type": "Lit", "value": "' but the deep reader heard '"},
-        {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "shadow_speech_act"},
-        {"type": "Lit", "value": "' (recurring; e.g. \""},
-        {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "text"},
-        {"type": "Lit", "value": "\")"}
-      ]}}
-    }],
-    ["add_edge", "agent", "has_self_concern", "sc"],
-    ["add_edge", "sc", "about_message", "m"]
+    [
+     "add_node_if_absent",
+     "sh",
+     "TurnShape",
+     {
+      "shape_kind": "divergence",
+      "sig_comp_kind": {
+       "__term__": {
+        "type": "IfThenElse",
+        "cond": {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "m"
+          },
+          "key": "comp_kind"
+         },
+         "b": {
+          "type": "Lit",
+          "value": null
+         }
+        },
+        "then": {
+         "type": "Lit",
+         "value": ""
+        },
+        "other": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "m"
+         },
+         "key": "comp_kind"
+        }
+       }
+      },
+      "sig_shadow_speech_act": {
+       "__term__": {
+        "type": "IfThenElse",
+        "cond": {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "m"
+          },
+          "key": "shadow_speech_act"
+         },
+         "b": {
+          "type": "Lit",
+          "value": null
+         }
+        },
+        "then": {
+         "type": "Lit",
+         "value": ""
+        },
+        "other": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "m"
+         },
+         "key": "shadow_speech_act"
+        }
+       }
+      }
+     }
+    ],
+    [
+     "add_edge",
+     "agent",
+     "has_turn_shape",
+     "sh"
+    ],
+    [
+     "add_edge",
+     "sh",
+     "has_member",
+     "m"
+    ],
+    [
+     "add_edge",
+     "m",
+     "member_of",
+     "sh"
+    ],
+    [
+     "set_attr",
+     "m",
+     "divergence_tallied",
+     1
+    ]
+   ]
+  },
+  {
+   "name": "mark_divergence_shape_first_member",
+   "comment": "The oldest member of a divergence TurnShape is its first_member (the turn the concern names), marked while that turn is attended; loaded right after the tally so one pass folds, marks and files.",
+   "match": [
+    [
+     "agent",
+     "received",
+     "m"
+    ],
+    [
+     "m",
+     "member_of",
+     "sh"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "sh"
+       },
+       "key": "shape_kind"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "divergence"
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "sh"
+        },
+        "edge_type": "first_member"
+       },
+       "var_name": "_f",
+       "predicate": {
+        "type": "Lit",
+        "value": true
+       }
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Var",
+       "name": "m"
+      },
+      "b": {
+       "type": "Argmin",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "sh"
+        },
+        "edge_type": "has_member"
+       },
+       "var_name": "x",
+       "value": {
+        "type": "Var",
+        "name": "x"
+       },
+       "default": null
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_edge",
+     "sh",
+     "first_member",
+     "m"
+    ]
+   ]
+  },
+  {
+   "name": "note_recurring_speech_act_divergence",
+   "match": [
+    [
+     "agent",
+     "has_turn_shape",
+     "sh"
+    ],
+    [
+     "sh",
+     "first_member",
+     "m"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "sh"
+       },
+       "key": "shape_kind"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "divergence"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "m"
+       },
+       "key": "speech_act_divergence"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "m"
+        },
+        "key": "divergence_health_noted"
+       },
+       "b": {
+        "type": "Lit",
+        "value": 1.0
+       }
+      }
+     },
+     {
+      "type": "Gte",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "sh"
+        },
+        "edge_type": "has_member"
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 3.0
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "NodesOfType",
+        "node_type": "SelfConcern"
+       },
+       "var_name": "sc2",
+       "predicate": {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "sc2"
+         },
+         "key": "content"
+        },
+        "b": {
+         "type": "StringConcat",
+         "parts": [
+          {
+           "type": "Lit",
+           "value": "comprehension classified this as '"
+          },
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "m"
+           },
+           "key": "comp_kind"
+          },
+          {
+           "type": "Lit",
+           "value": "' but the deep reader heard '"
+          },
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "m"
+           },
+           "key": "shadow_speech_act"
+          },
+          {
+           "type": "Lit",
+           "value": "' (recurring; e.g. \""
+          },
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "m"
+           },
+           "key": "text"
+          },
+          {
+           "type": "Lit",
+           "value": "\")"
+          }
+         ]
+        }
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "m",
+     "divergence_health_noted",
+     1.0
+    ],
+    [
+     "add_node",
+     "sc",
+     "SelfConcern",
+     {
+      "status": "noted",
+      "source": "implicit",
+      "kind": "comprehension",
+      "content": {
+       "__term__": {
+        "type": "StringConcat",
+        "parts": [
+         {
+          "type": "Lit",
+          "value": "comprehension classified this as '"
+         },
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "m"
+          },
+          "key": "comp_kind"
+         },
+         {
+          "type": "Lit",
+          "value": "' but the deep reader heard '"
+         },
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "m"
+          },
+          "key": "shadow_speech_act"
+         },
+         {
+          "type": "Lit",
+          "value": "' (recurring; e.g. \""
+         },
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "m"
+          },
+          "key": "text"
+         },
+         {
+          "type": "Lit",
+          "value": "\")"
+         }
+        ]
+       }
+      }
+     }
+    ],
+    [
+     "add_edge",
+     "agent",
+     "has_self_concern",
+     "sc"
+    ],
+    [
+     "add_edge",
+     "sc",
+     "about_message",
+     "m"
+    ]
    ]
   },
   {
    "name": "note_comprehension_latency_gap",
-   "match": [["agent", "received", "m"]],
+   "match": [
+    [
+     "agent",
+     "received",
+     "m"
+    ]
+   ],
    "where": {
     "type": "And",
     "items": [
-     {"type": "Not", "arg": {
+     {
+      "type": "Not",
+      "arg": {
        "type": "Eq",
-       "a": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "shadow_seq"},
-       "b": {"type": "Lit", "value": null}}},
-     {"type": "Not", "arg": {
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "m"
+        },
+        "key": "shadow_seq"
+       },
+       "b": {
+        "type": "Lit",
+        "value": null
+       }
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
        "type": "Eq",
-       "a": {"type": "Attr", "node": {"type": "Var", "name": "agent"}, "key": "shadow_latency_recent_avg"},
-       "b": {"type": "Lit", "value": null}}},
-     {"type": "Let", "name": "norm",
-      "value": {"type": "Argmax",
-        "source": {"type": "Filter",
-          "source": {"type": "NodesOfType", "node_type": "HealthNorm"},
-          "var_name": "n",
-          "predicate": {"type": "Eq",
-            "a": {"type": "Attr", "node": {"type": "Var", "name": "n"}, "key": "metric"},
-            "b": {"type": "Lit", "value": "shadow_latency_ms"}}},
-        "var_name": "x", "value": {"type": "Lit", "value": 0}, "default": null},
-      "body": {"type": "And", "items": [
-        {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Var", "name": "norm"}, "b": {"type": "Lit", "value": null}}},
-        {"type": "Gt",
-         "a": {"type": "Attr", "node": {"type": "Var", "name": "agent"}, "key": "shadow_latency_recent_avg"},
-         "b": {"type": "Attr", "node": {"type": "Var", "name": "norm"}, "key": "ceiling"}}
-      ]}},
-     {"type": "Not", "arg": {
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "agent"
+        },
+        "key": "shadow_latency_recent_avg"
+       },
+       "b": {
+        "type": "Lit",
+        "value": null
+       }
+      }
+     },
+     {
+      "type": "Let",
+      "name": "norm",
+      "value": {
+       "type": "Argmax",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "HealthNorm"
+        },
+        "var_name": "n",
+        "predicate": {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "n"
+          },
+          "key": "metric"
+         },
+         "b": {
+          "type": "Lit",
+          "value": "shadow_latency_ms"
+         }
+        }
+       },
+       "var_name": "x",
+       "value": {
+        "type": "Lit",
+        "value": 0
+       },
+       "default": null
+      },
+      "body": {
+       "type": "And",
+       "items": [
+        {
+         "type": "Not",
+         "arg": {
+          "type": "Eq",
+          "a": {
+           "type": "Var",
+           "name": "norm"
+          },
+          "b": {
+           "type": "Lit",
+           "value": null
+          }
+         }
+        },
+        {
+         "type": "Gt",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "agent"
+          },
+          "key": "shadow_latency_recent_avg"
+         },
+         "b": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "norm"
+          },
+          "key": "ceiling"
+         }
+        }
+       ]
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
        "type": "Exists",
-       "source": {"type": "NodesOfType", "node_type": "SelfConcern"},
+       "source": {
+        "type": "NodesOfType",
+        "node_type": "SelfConcern"
+       },
        "var_name": "sc2",
-       "predicate": {"type": "Eq",
-        "a": {"type": "Attr", "node": {"type": "Var", "name": "sc2"}, "key": "content"},
-        "b": {"type": "Lit", "value": "shadow-read comprehension latency (rolling average) exceeds its held ceiling"}}
-     }},
-     {"type": "Not", "arg": {
-       "type": "Exists",
-       "source": {"type": "NodesOfType", "node_type": "Message"},
-       "var_name": "m2",
-       "predicate": {"type": "And", "items": [
-         {"type": "Not", "arg": {
-           "type": "Eq",
-           "a": {"type": "Attr", "node": {"type": "Var", "name": "m2"}, "key": "shadow_seq"},
-           "b": {"type": "Lit", "value": null}}},
-         {"type": "Gt",
-          "a": {"type": "Attr", "node": {"type": "Var", "name": "m2"}, "key": "shadow_seq"},
-          "b": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "shadow_seq"}}
-       ]}
-     }}
+       "predicate": {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "sc2"
+         },
+         "key": "content"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "shadow-read comprehension latency (rolling average) exceeds its held ceiling"
+        }
+       }
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "m"
+       },
+       "key": "shadow_seq"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "agent"
+       },
+       "key": "latest_shadow_seq"
+      }
+     }
     ]
    },
    "effects": [
-    ["add_node", "sc", "SelfConcern", {
-      "status": "noted", "source": "implicit", "kind": "performance",
+    [
+     "add_node",
+     "sc",
+     "SelfConcern",
+     {
+      "status": "noted",
+      "source": "implicit",
+      "kind": "performance",
       "content": "shadow-read comprehension latency (rolling average) exceeds its held ceiling",
       "metric": "shadow_latency_ms"
-    }],
-    ["add_edge", "agent", "has_self_concern", "sc"]
+     }
+    ],
+    [
+     "add_edge",
+     "agent",
+     "has_self_concern",
+     "sc"
+    ]
    ]
   }
  ]

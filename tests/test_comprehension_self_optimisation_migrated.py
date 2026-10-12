@@ -208,6 +208,9 @@ def test_latency_above_norm_files_performance_concern_below_does_not(agent):
     S, I = a.s, a.inner
     mid = S.add_node("Message", {"from": "interlocutor", "text": "hi", "shadow_seq": 1.0})
     I.add_edge_unchecked(a.agent, "received", mid)
+    # the newest-turn datum WorldAdapter._record_shadow_health writes next to
+    # the message's shadow_seq (comprehension_health v1.1.0 reads it)
+    I.set_attr(a.agent, "latest_shadow_seq", 1.0)
 
     I.set_attr(a.agent, "shadow_latency_recent_avg", 10.0)   # HealthNorm ceiling is 50.0
     a.comprehend()

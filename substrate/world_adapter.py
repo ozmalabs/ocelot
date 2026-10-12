@@ -8816,6 +8816,9 @@ class WorldAdapter:
         self.inner.set_attr(mid, "shadow_latency_ms", float(latency_ms))
         self._shadow_seq_counter = getattr(self, "_shadow_seq_counter", 0) + 1
         self.inner.set_attr(mid, "shadow_seq", float(self._shadow_seq_counter))
+        # the newest shadow-read turn, as a datum (comprehension_health v1.1.0
+        # compares with it instead of scanning every Message)
+        self.inner.set_attr(self.agent, "latest_shadow_seq", float(self._shadow_seq_counter))
         window = getattr(self, "_shadow_latency_window", None)
         if window is None:
             window = []
@@ -9087,13 +9090,17 @@ class WorldAdapter:
                 import substrate_rs as srs
                 mid = srs.NodeID(mid)
             if mid is not None and self.s.has_node(mid):
-                # index the datum so rules can enumerate unanswered turns
-                # without scanning every Message (unanswered_gap v1.1.0)
-                if not getattr(self, "_turn_outcome_index_ready", False):
-                    if not self.inner.has_attr_index("Message", "turn_outcome"):
-                        self.inner.declare_attr_index("Message", "turn_outcome")
-                    self._turn_outcome_index_ready = True
                 self.inner.set_attr(mid, "turn_outcome", str(status))
+                # the conversation TURN RING (domains/conversation_aperture.py,
+                # the reading ring applied to turns): bound the attended turns
+                # to N. Mechanical: eligibility and salience are graph data;
+                # this turn is not yet eligible (its shapes fold on the next
+                # tick), so it is never the one evicted here.
+                try:
+                    from domains import conversation_aperture as _ca
+                    _ca.enforce_turn_buffer(self)
+                except Exception:  # noqa: BLE001 -- the ring never breaks a turn
+                    pass
                 return True
         except Exception:  # noqa: BLE001 -- a datum write never breaks a turn
             pass

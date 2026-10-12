@@ -1,0 +1,496 @@
+{
+ "id": "conversation_turn_ring",
+ "version": "1.0.0",
+ "depends_on": [
+  "reading_aperture"
+ ],
+ "description": "Emit seeds/conversation_turn_ring.json: the reading aperture applied to\nconversation turns (the ring, its retention salience and its one-shot widen).\n\nThe conversation keeps the last N concluded interlocutor turns ATTENDED\n(`agent received m`), N from the conversational ApertureBudget row's\nturn_capacity_* attrs via the SAME held reading_derive_trace_capacity\nProgram the reading ring uses (domains/reading_norms.effective_turn_capacity,\nseeds/reading_aperture.json v1.3.0). domains/conversation_aperture.\nenforce_turn_buffer (mechanical, the reading_scope.enforce_trace_buffer twin)\nevicts the lowest-salience, oldest eligible turn: `received` is replaced by\n`agent remembers m`, nothing else changes. Older turns survive conceptually\nin the TurnShape tier, which the shape-owning seeds build and read\n(unanswered_gap, comprehension_health).\n\nRules (graph decisions; Python only executes):\n  * turn_salience_from_outcome -- a concluded turn's retention salience, from\n    held TurnRingPolicy weights (unanswered > reader disagreement > other).\n    It is written only once the turn has been folded into its shapes, so a\n    turn is never evicted before the shape tier holds it. A turn with no\n    salience is never evicted.\n  * conversation_widen_turn_capacity_once -- the reading ladder's rung 1: an\n    eviction at or above the held turn_widen_salience_threshold widens the\n    ring once (TurnRing.capacity_widened).\nEach shape-owning seed marks its own shapes' first_member (the oldest\nmember, while it is attended) right after its tally, because rules run in\nload order within a pass and the ring loads before the shape seeds.\nIdempotent.\n",
+ "nodes": [
+  {
+   "local_id": 0,
+   "type": "TurnRingPolicy",
+   "attrs": {
+    "name": "conversation_turn_ring",
+    "enabled": 1,
+    "salience_unanswered": 1.0,
+    "salience_divergent": 0.5,
+    "salience_default": 0.0,
+    "description": "Agent-held retention weights for the conversation turn ring: an unanswered turn is kept longest, then a turn the two readers disagreed on, then the rest. Editing these changes which turns stay attended."
+   }
+  },
+  {
+   "local_id": 1,
+   "type": "TurnRing",
+   "attrs": {
+    "name": "conversation",
+    "description": "The conversation's turn ring: eviction pressure (traces_evicted, max_evicted_salience) and its one-shot widen (capacity_widened)."
+   }
+  }
+ ],
+ "edges": [
+  {
+   "src": {
+    "role": "agent_root"
+   },
+   "type": "has_turn_ring_policy",
+   "tgt": {
+    "local": 0
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "role": "agent_root"
+   },
+   "type": "has_turn_ring",
+   "tgt": {
+    "local": 1
+   },
+   "attrs": {}
+  }
+ ],
+ "productions": [],
+ "rules": [
+  {
+   "name": "turn_salience_from_outcome",
+   "comment": "A concluded, shape-folded interlocutor turn gets its ring-retention salience from the held TurnRingPolicy weights (see seed description).",
+   "match": [
+    [
+     "agent",
+     "received",
+     "m"
+    ],
+    [
+     "agent",
+     "has_turn_ring_policy",
+     "pol"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "pol"
+       },
+       "key": "enabled"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "m"
+       },
+       "key": "from"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "interlocutor"
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "m"
+        },
+        "key": "turn_outcome"
+       },
+       "b": {
+        "type": "Lit",
+        "value": null
+       }
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "m"
+       },
+       "key": "turn_salience"
+      },
+      "b": {
+       "type": "Lit",
+       "value": null
+      }
+     },
+     {
+      "type": "Or",
+      "items": [
+       {
+        "type": "Not",
+        "arg": {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "m"
+          },
+          "key": "turn_outcome"
+         },
+         "b": {
+          "type": "Lit",
+          "value": "explicit_error"
+         }
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "m"
+         },
+         "key": "unanswered_tallied"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 1
+        }
+       },
+       {
+        "type": "Not",
+        "arg": {
+         "type": "Exists",
+         "source": {
+          "type": "NodesOfType",
+          "node_type": "UnansweredGapPolicy"
+         },
+         "var_name": "_any",
+         "predicate": {
+          "type": "Lit",
+          "value": true
+         }
+        }
+       },
+       {
+        "type": "Not",
+        "arg": {
+         "type": "Exists",
+         "source": {
+          "type": "InNeighbours",
+          "node": {
+           "type": "Var",
+           "name": "m"
+          },
+          "edge_type": "interprets"
+         },
+         "var_name": "i",
+         "predicate": {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "i"
+           },
+           "key": "schema"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "communication_interpretation.v1"
+          }
+         }
+        }
+       }
+      ]
+     },
+     {
+      "type": "Or",
+      "items": [
+       {
+        "type": "Not",
+        "arg": {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "m"
+          },
+          "key": "speech_act_divergence"
+         },
+         "b": {
+          "type": "Lit",
+          "value": 1.0
+         }
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "m"
+         },
+         "key": "divergence_tallied"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 1
+        }
+       },
+       {
+        "type": "Not",
+        "arg": {
+         "type": "Exists",
+         "source": {
+          "type": "NodesOfType",
+          "node_type": "HealthNorm"
+         },
+         "var_name": "_any",
+         "predicate": {
+          "type": "Lit",
+          "value": true
+         }
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "m",
+     "turn_salience",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "m"
+         },
+         "key": "turn_outcome"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "explicit_error"
+        }
+       },
+       "then": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "pol"
+        },
+        "key": "salience_unanswered"
+       },
+       "other": {
+        "type": "IfThenElse",
+        "cond": {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "m"
+          },
+          "key": "speech_act_divergence"
+         },
+         "b": {
+          "type": "Lit",
+          "value": 1.0
+         }
+        },
+        "then": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "pol"
+         },
+         "key": "salience_divergent"
+        },
+        "other": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "pol"
+         },
+         "key": "salience_default"
+        }
+       }
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "conversation_widen_turn_capacity_once",
+   "comment": "Rung 1 of the reading overflow ladder, for turns: an eviction at or above the held turn_widen_salience_threshold widens the turn ring once.",
+   "match": [
+    [
+     "agent",
+     "has_turn_ring",
+     "ring"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "ring"
+        },
+        "key": "capacity_widened"
+       },
+       "b": {
+        "type": "Lit",
+        "value": 1.0
+       }
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "ring"
+        },
+        "key": "max_evicted_salience"
+       },
+       "b": {
+        "type": "Lit",
+        "value": null
+       }
+      }
+     },
+     {
+      "type": "Let",
+      "name": "budget",
+      "value": {
+       "type": "Argmax",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "ApertureBudget"
+        },
+        "var_name": "b",
+        "predicate": {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "b"
+          },
+          "key": "register"
+         },
+         "b": {
+          "type": "Lit",
+          "value": "conversational"
+         }
+        }
+       },
+       "var_name": "x",
+       "value": {
+        "type": "Lit",
+        "value": 0
+       },
+       "default": null
+      },
+      "body": {
+       "type": "And",
+       "items": [
+        {
+         "type": "Not",
+         "arg": {
+          "type": "Eq",
+          "a": {
+           "type": "Var",
+           "name": "budget"
+          },
+          "b": {
+           "type": "Lit",
+           "value": null
+          }
+         }
+        },
+        {
+         "type": "Not",
+         "arg": {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "budget"
+           },
+           "key": "turn_widen_salience_threshold"
+          },
+          "b": {
+           "type": "Lit",
+           "value": null
+          }
+         }
+        },
+        {
+         "type": "Gte",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "ring"
+          },
+          "key": "max_evicted_salience"
+         },
+         "b": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "budget"
+          },
+          "key": "turn_widen_salience_threshold"
+         }
+        }
+       ]
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "ring",
+     "capacity_widened",
+     1.0
+    ]
+   ]
+  }
+ ]
+}

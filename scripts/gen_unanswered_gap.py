@@ -25,6 +25,20 @@ cheaply, and (b) the two scans enumerate NodesWhere(Message, turn_outcome,
 'explicit_error') -- the unanswered messages only -- instead of every Message
 (WorldAdapter.record_turn_outcome declares the attr index). The where clause
 is a pure conjunction, so reordering it cannot change which bindings fire.
+
+v2.0.0 (2026-10-10, conversation turn ring): the rule reads the SHAPE, not
+the history. Only the last N turns stay attended (seeds/
+conversation_turn_ring.json, the reading aperture applied to turns), so the
+recurrence is held as a TurnShape{shape_kind:'unanswered', sig_*} per
+evidence class: `tally_unanswered_class` folds each attended unanswered turn
+into its class shape (has_member / member_of) while it is attended, and
+`note_unanswered_turn` fires on the shape -- its oldest member (first_member,
+marked by `mark_unanswered_shape_first_member` while that turn is attended;
+it sits right after the tally so one rule pass folds a turn, marks the
+shape's first member and files) once the class has min_recurrence members -- with
+the same concern, content and about_message as before. Same decision as
+v1.x: the class count, the oldest member and the no-concern-yet guard are
+unchanged; only where they are read from changed.
 Idempotent.
 """
 import json
@@ -57,40 +71,63 @@ def same_sig(i_a, i_b):
     return And(*[Eq(Or0(A(i_a, k)), Or0(A(i_b, k))) for k in SIG])
 
 
-# v1.1.0: the unanswered Messages only (indexed); the predicate below still
-# checks turn_outcome, so the result is identical with or without the index
-UNANSWERED_MESSAGES = {"type": "NodesWhere", "node_type": "Message", "attr_key": "turn_outcome",
-                       "value": L("explicit_error")}
+TALLY = {
+    "name": "tally_unanswered_class",
+    "comment": "Fold an attended unanswered turn into its evidence-class TurnShape (the conceptual tier the history rule reads).",
+    "match": [["agent", "received", "m"], ["i", "interprets", "m"]],
+    "where": And(
+        Eq(A("m", "from"), L("interlocutor")),
+        Eq(A("i", "schema"), L("communication_interpretation.v1")),
+        unanswered("m"),
+        Not(Eq(A("m", "unanswered_tallied"), L(1)))),
+    "effects": [
+        ["add_node_if_absent", "sh", "TurnShape", {
+            "shape_kind": "unanswered", **{"sig_" + k: {"__term__": Or0(A("i", k))} for k in SIG}}],
+        ["add_edge", "agent", "has_turn_shape", "sh"],
+        ["add_edge", "sh", "has_member", "m"],
+        ["add_edge", "m", "member_of", "sh"],
+        ["set_attr", "m", "unanswered_tallied", 1],
+    ],
+}
+
+def first_member_rule(kind):
+    """The oldest member of a `kind` TurnShape is its first_member (the turn a
+    concern about the class names), marked while that turn is attended. Owned
+    by the shape seed and loaded right after its tally (rules run in load
+    order within a pass)."""
+    return {
+        "name": "mark_%s_shape_first_member" % kind,
+        "comment": "The oldest member of a %s TurnShape is its first_member, marked while that turn is attended." % kind,
+        "match": [["agent", "received", "m"], ["m", "member_of", "sh"]],
+        "where": And(
+            Eq(A("sh", "shape_kind"), L(kind)),
+            Not(Ex({"type": "Neighbours", "node": V("sh"), "edge_type": "first_member"}, "_f", L(True))),
+            Eq(V("m"), {"type": "Argmin", "source": {"type": "Neighbours", "node": V("sh"), "edge_type": "has_member"},
+                        "var_name": "x", "value": V("x"), "default": None})),
+        "effects": [["add_edge", "sh", "first_member", "m"]],
+    }
+
+
+FIRST = first_member_rule("unanswered")
 
 RULE = {
     "name": "note_unanswered_turn",
     "comment": "File the agent's own recurring unanswered turn class as an experiment-eligible concern (see seed description).",
-    "match": [["agent", "received", "m"], ["i", "interprets", "m"], ["agent", "has_unanswered_gap_policy", "pol"]],
+    # v2.0.0: matched on the class SHAPE and its oldest member, not on every received turn
+    "match": [["agent", "has_turn_shape", "sh"], ["sh", "first_member", "m"], ["i", "interprets", "m"],
+              ["agent", "has_unanswered_gap_policy", "pol"]],
     "where": And(
         Eq(A("pol", "enabled"), L(1)),
-        Eq(A("m", "from"), L("interlocutor")),
+        Eq(A("sh", "shape_kind"), L("unanswered")),
         Eq(A("i", "schema"), L("communication_interpretation.v1")),
         Not(Eq(A("m", "unanswered_gap_noted"), L(1))),
-        unanswered("m"),
-        # no concern already holds this class (cheap: SelfConcerns are few;
-        # checked before the scans below -- v1.1.0)
+        # no concern already holds this class (SelfConcerns are few)
         Not(Ex({"type": "NodesOfType", "node_type": "SelfConcern"}, "sc2", And(
             Eq(A("sc2", "kind"), L("unanswered")),
             *[Eq(Or0(A("sc2", "sig_" + k)), Or0(A("i", k))) for k in SIG]))),
         # the class has gone unanswered at least min_recurrence times
-        {"type": "Gte", "a": {"type": "Count", "source": {"type": "Filter", "source": UNANSWERED_MESSAGES,
-                                                          "var_name": "m2", "predicate": And(
-            Eq(A("m2", "from"), L("interlocutor")), unanswered("m2"),
-            Ex(InNb("m2", "interprets"), "i2", same_sig("i2", "i")))}},
-         "b": A("pol", "min_recurrence")},
-        # one filing per class per pass: only the OLDEST unanswered message of
-        # the class files (two same-class turns in one fixpoint pass filed two
-        # concerns -- measured in the first tranche-22 run)
-        Eq(V("m"), {"type": "Argmin", "source": {"type": "Filter", "source": UNANSWERED_MESSAGES,
-                                                  "var_name": "m4", "predicate": And(
-            Eq(A("m4", "from"), L("interlocutor")), unanswered("m4"),
-            Ex(InNb("m4", "interprets"), "i4", same_sig("i4", "i")))},
-            "var_name": "m4", "value": V("m4"), "default": None})),
+        {"type": "Gte", "a": {"type": "Count", "source": {"type": "Neighbours", "node": V("sh"), "edge_type": "has_member"}},
+         "b": A("pol", "min_recurrence")}),
     "effects": [
         ["set_attr", "m", "unanswered_gap_noted", 1],
         ["add_node", "sc", "SelfConcern", {
@@ -107,15 +144,15 @@ RULE = {
 
 seed = {
     "id": "unanswered_gap",
-    "version": "1.1.0",
-    "depends_on": ["gap_awareness"],
+    "version": "2.0.0",
+    "depends_on": ["gap_awareness", "conversation_turn_ring"],
     "description": __doc__,
     "nodes": [{"local_id": 0, "type": "UnansweredGapPolicy", "attrs": {
         "name": "unanswered_gap", "enabled": 1, "min_recurrence": 2,
         "description": "Agent-held policy: how many unanswered turns of one evidence class make a concern."}}],
     "edges": [{"src": {"role": "agent_root"}, "type": "has_unanswered_gap_policy", "tgt": {"local": 0}, "attrs": {}}],
     "productions": [],
-    "rules": [RULE],
+    "rules": [TALLY, FIRST, RULE],
 }
 P.write_text(json.dumps(seed, indent=1, ensure_ascii=True) + "\n")
 print("unanswered_gap", seed["version"])
