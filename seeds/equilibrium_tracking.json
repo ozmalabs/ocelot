@@ -1,0 +1,3720 @@
+{
+ "depends_on": [
+  "equilibrium_climate",
+  "equilibrium_window",
+  "equilibrium_scope"
+ ],
+ "description": "Conversation tracking (T3c O2): a seeded turn cursor over the retained conversation fork derives addressees (name mention of a known actor_ref, second person to the last addresser), tracked responds_to (most recent compatible open question / pending address / contrasted claim), eq_answers, the open-question set (eq_qud) and same-actor continuation. EqSecondPerson closed-class codebook.",
+ "edges": [
+  {
+   "attrs": {},
+   "src": {
+    "role": "agent_root"
+   },
+   "tgt": {
+    "local": 0
+   },
+   "type": "eq_has_second_person"
+  },
+  {
+   "attrs": {},
+   "src": {
+    "role": "agent_root"
+   },
+   "tgt": {
+    "local": 1
+   },
+   "type": "eq_has_second_person"
+  },
+  {
+   "attrs": {},
+   "src": {
+    "role": "agent_root"
+   },
+   "tgt": {
+    "local": 2
+   },
+   "type": "eq_has_second_person"
+  },
+  {
+   "attrs": {},
+   "src": {
+    "role": "agent_root"
+   },
+   "tgt": {
+    "local": 3
+   },
+   "type": "eq_has_second_person"
+  },
+  {
+   "attrs": {},
+   "src": {
+    "role": "agent_root"
+   },
+   "tgt": {
+    "local": 4
+   },
+   "type": "eq_has_second_person"
+  },
+  {
+   "attrs": {},
+   "src": {
+    "role": "agent_root"
+   },
+   "tgt": {
+    "local": 5
+   },
+   "type": "eq_has_second_person"
+  },
+  {
+   "attrs": {},
+   "src": {
+    "role": "agent_root"
+   },
+   "tgt": {
+    "local": 6
+   },
+   "type": "eq_has_second_person"
+  },
+  {
+   "attrs": {},
+   "src": {
+    "role": "agent_root"
+   },
+   "tgt": {
+    "local": 7
+   },
+   "type": "eq_has_second_person"
+  },
+  {
+   "attrs": {},
+   "src": {
+    "role": "agent_root"
+   },
+   "tgt": {
+    "local": 8
+   },
+   "type": "eq_has_second_person"
+  },
+  {
+   "attrs": {},
+   "src": {
+    "role": "agent_root"
+   },
+   "tgt": {
+    "local": 9
+   },
+   "type": "eq_has_second_person"
+  },
+  {
+   "attrs": {},
+   "src": {
+    "role": "agent_root"
+   },
+   "tgt": {
+    "local": 10
+   },
+   "type": "eq_has_second_person"
+  }
+ ],
+ "id": "equilibrium_tracking",
+ "nodes": [
+  {
+   "attrs": {
+    "form": "you"
+   },
+   "local_id": 0,
+   "type": "EqSecondPerson"
+  },
+  {
+   "attrs": {
+    "form": "your"
+   },
+   "local_id": 1,
+   "type": "EqSecondPerson"
+  },
+  {
+   "attrs": {
+    "form": "yours"
+   },
+   "local_id": 2,
+   "type": "EqSecondPerson"
+  },
+  {
+   "attrs": {
+    "form": "yourself"
+   },
+   "local_id": 3,
+   "type": "EqSecondPerson"
+  },
+  {
+   "attrs": {
+    "form": "yourselves"
+   },
+   "local_id": 4,
+   "type": "EqSecondPerson"
+  },
+  {
+   "attrs": {
+    "form": "you're"
+   },
+   "local_id": 5,
+   "type": "EqSecondPerson"
+  },
+  {
+   "attrs": {
+    "form": "you've"
+   },
+   "local_id": 6,
+   "type": "EqSecondPerson"
+  },
+  {
+   "attrs": {
+    "form": "you'll"
+   },
+   "local_id": 7,
+   "type": "EqSecondPerson"
+  },
+  {
+   "attrs": {
+    "form": "you'd"
+   },
+   "local_id": 8,
+   "type": "EqSecondPerson"
+  },
+  {
+   "attrs": {
+    "form": "ya"
+   },
+   "local_id": 9,
+   "type": "EqSecondPerson"
+  },
+  {
+   "attrs": {
+    "form": "y'all"
+   },
+   "local_id": 10,
+   "type": "EqSecondPerson"
+  }
+ ],
+ "productions": [
+  {
+   "edge_type": "eq_has_second_person",
+   "provenance": "equilibrium_tracking:Agent_eq_has_second_person_EqSecondPerson",
+   "src": {
+    "type": "Agent",
+    "var": "a"
+   },
+   "tgt": {
+    "type": "EqSecondPerson",
+    "var": "b"
+   }
+  },
+  {
+   "edge_type": "eq_prev_turn",
+   "provenance": "equilibrium_tracking:Message_eq_prev_turn_Message",
+   "src": {
+    "type": "Message",
+    "var": "a"
+   },
+   "tgt": {
+    "type": "Message",
+    "var": "b"
+   }
+  },
+  {
+   "edge_type": "eq_trk_to",
+   "provenance": "equilibrium_tracking:Message_eq_trk_to_Message",
+   "src": {
+    "type": "Message",
+    "var": "a"
+   },
+   "tgt": {
+    "type": "Message",
+    "var": "b"
+   }
+  },
+  {
+   "edge_type": "eq_continues",
+   "provenance": "equilibrium_tracking:Message_eq_continues_Message",
+   "src": {
+    "type": "Message",
+    "var": "a"
+   },
+   "tgt": {
+    "type": "Message",
+    "var": "b"
+   }
+  },
+  {
+   "edge_type": "eq_trk_pending",
+   "provenance": "equilibrium_tracking:EqWindow_eq_trk_pending_Message",
+   "src": {
+    "type": "EqWindow",
+    "var": "a"
+   },
+   "tgt": {
+    "type": "Message",
+    "var": "b"
+   }
+  },
+  {
+   "edge_type": "eq_trk_cur",
+   "provenance": "equilibrium_tracking:EqWindow_eq_trk_cur_Message",
+   "src": {
+    "type": "EqWindow",
+    "var": "a"
+   },
+   "tgt": {
+    "type": "Message",
+    "var": "b"
+   }
+  },
+  {
+   "edge_type": "eq_qud",
+   "provenance": "equilibrium_tracking:EqWindow_eq_qud_Message",
+   "src": {
+    "type": "EqWindow",
+    "var": "a"
+   },
+   "tgt": {
+    "type": "Message",
+    "var": "b"
+   }
+  },
+  {
+   "edge_type": "eq_pending",
+   "provenance": "equilibrium_tracking:EqActor_eq_pending_Message",
+   "src": {
+    "type": "EqActor",
+    "var": "a"
+   },
+   "tgt": {
+    "type": "Message",
+    "var": "b"
+   }
+  },
+  {
+   "edge_type": "eq_last_addressed_by",
+   "provenance": "equilibrium_tracking:EqActor_eq_last_addressed_by_Message",
+   "src": {
+    "type": "EqActor",
+    "var": "a"
+   },
+   "tgt": {
+    "type": "Message",
+    "var": "b"
+   }
+  },
+  {
+   "edge_type": "eq_last_claim",
+   "provenance": "equilibrium_tracking:EqActor_eq_last_claim_Message",
+   "src": {
+    "type": "EqActor",
+    "var": "a"
+   },
+   "tgt": {
+    "type": "Message",
+    "var": "b"
+   }
+  }
+ ],
+ "rules": [
+  {
+   "batch": true,
+   "effects": [
+    [
+     "add_edge",
+     "m",
+     "eq_continues",
+     "p"
+    ]
+   ],
+   "match": [
+    [
+     "agent",
+     "eq_window",
+     "w"
+    ],
+    [
+     "w",
+     "eq_has_turn",
+     "m"
+    ],
+    [
+     "m",
+     "eq_prev_turn",
+     "p"
+    ],
+    [
+     "m",
+     "eq_authored_by",
+     "a"
+    ],
+    [
+     "p",
+     "eq_authored_by",
+     "a"
+    ]
+   ],
+   "name": "eq.trk.continues",
+   "where": {
+    "type": "Lit",
+    "value": true
+   }
+  },
+  {
+   "batch": true,
+   "effects": [
+    [
+     "add_edge",
+     "w",
+     "eq_trk_cur",
+     "m"
+    ],
+    [
+     "del_edge",
+     "w",
+     "eq_trk_pending",
+     "m"
+    ]
+   ],
+   "match": [
+    [
+     "agent",
+     "eq_window",
+     "w"
+    ],
+    [
+     "w",
+     "eq_trk_pending",
+     "m"
+    ]
+   ],
+   "name": "eq.trk.cursor",
+   "where": {
+    "items": [
+     {
+      "arg": {
+       "predicate": {
+        "type": "Lit",
+        "value": true
+       },
+       "source": {
+        "edge_type": "eq_trk_cur",
+        "node": {
+         "name": "w",
+         "type": "Var"
+        },
+        "type": "Neighbours"
+       },
+       "type": "Exists",
+       "var_name": "c"
+      },
+      "type": "Not"
+     },
+     {
+      "arg": {
+       "predicate": {
+        "container": {
+         "edge_type": "eq_trk_pending",
+         "node": {
+          "name": "w",
+          "type": "Var"
+         },
+         "type": "Neighbours"
+        },
+        "member": {
+         "name": "y",
+         "type": "Var"
+        },
+        "type": "In"
+       },
+       "source": {
+        "edge_type": "eq_prev_turn",
+        "node": {
+         "name": "m",
+         "type": "Var"
+        },
+        "type": "Neighbours"
+       },
+       "type": "Exists",
+       "var_name": "y"
+      },
+      "type": "Not"
+     }
+    ],
+    "type": "And"
+   }
+  },
+  {
+   "batch": true,
+   "effects": [
+    [
+     "add_edge",
+     "m",
+     "eq_addresses",
+     "b"
+    ]
+   ],
+   "match": [
+    [
+     "agent",
+     "eq_window",
+     "w"
+    ],
+    [
+     "w",
+     "eq_trk_cur",
+     "m"
+    ],
+    [
+     "m",
+     "eq_authored_by",
+     "a"
+    ],
+    [
+     "m",
+     "eq_has_token",
+     "t"
+    ],
+    [
+     "w",
+     "eq_has_actor",
+     "b"
+    ]
+   ],
+   "name": "eq.trk.addressee.mention",
+   "where": {
+    "items": [
+     {
+      "a": {
+       "key": "form",
+       "node": {
+        "name": "t",
+        "type": "Var"
+       },
+       "type": "Attr"
+      },
+      "b": {
+       "key": "eq_name_form",
+       "node": {
+        "name": "b",
+        "type": "Var"
+       },
+       "type": "Attr"
+      },
+      "type": "Eq"
+     },
+     {
+      "arg": {
+       "a": {
+        "name": "a",
+        "type": "Var"
+       },
+       "b": {
+        "name": "b",
+        "type": "Var"
+       },
+       "type": "Eq"
+      },
+      "type": "Not"
+     },
+     {
+      "a": {
+       "key": "eq_first_pos",
+       "node": {
+        "name": "b",
+        "type": "Var"
+       },
+       "type": "Attr"
+      },
+      "b": {
+       "key": "eq_turn_pos",
+       "node": {
+        "name": "m",
+        "type": "Var"
+       },
+       "type": "Attr"
+      },
+      "type": "Lt"
+     }
+    ],
+    "type": "And"
+   }
+  },
+  {
+   "batch": true,
+   "effects": [
+    [
+     "add_edge",
+     "m",
+     "eq_addresses",
+     "b"
+    ]
+   ],
+   "match": [
+    [
+     "agent",
+     "eq_window",
+     "w"
+    ],
+    [
+     "w",
+     "eq_trk_cur",
+     "m"
+    ],
+    [
+     "m",
+     "eq_authored_by",
+     "a"
+    ],
+    [
+     "a",
+     "eq_last_addressed_by",
+     "x"
+    ],
+    [
+     "x",
+     "eq_authored_by",
+     "b"
+    ]
+   ],
+   "name": "eq.trk.addressee.second_person",
+   "where": {
+    "items": [
+     {
+      "arg": {
+       "predicate": {
+        "type": "Lit",
+        "value": true
+       },
+       "source": {
+        "edge_type": "eq_addresses",
+        "node": {
+         "name": "m",
+         "type": "Var"
+        },
+        "type": "Neighbours"
+       },
+       "type": "Exists",
+       "var_name": "ad_m"
+      },
+      "type": "Not"
+     },
+     {
+      "arg": {
+       "a": {
+        "name": "a",
+        "type": "Var"
+       },
+       "b": {
+        "name": "b",
+        "type": "Var"
+       },
+       "type": "Eq"
+      },
+      "type": "Not"
+     },
+     {
+      "predicate": {
+       "predicate": {
+        "a": {
+         "key": "form",
+         "node": {
+          "name": "sp",
+          "type": "Var"
+         },
+         "type": "Attr"
+        },
+        "b": {
+         "key": "form",
+         "node": {
+          "name": "t2",
+          "type": "Var"
+         },
+         "type": "Attr"
+        },
+        "type": "Eq"
+       },
+       "source": {
+        "edge_type": "eq_has_second_person",
+        "node": {
+         "name": "agent",
+         "type": "Var"
+        },
+        "type": "Neighbours"
+       },
+       "type": "Exists",
+       "var_name": "sp"
+      },
+      "source": {
+       "edge_type": "eq_has_token",
+       "node": {
+        "name": "m",
+        "type": "Var"
+       },
+       "type": "Neighbours"
+      },
+      "type": "Exists",
+      "var_name": "t2"
+     }
+    ],
+    "type": "And"
+   }
+  },
+  {
+   "batch": true,
+   "effects": [
+    [
+     "add_edge",
+     "m",
+     "eq_trk_to",
+     "x"
+    ]
+   ],
+   "match": [
+    [
+     "agent",
+     "eq_window",
+     "w"
+    ],
+    [
+     "w",
+     "eq_trk_cur",
+     "m"
+    ],
+    [
+     "m",
+     "eq_authored_by",
+     "a"
+    ],
+    [
+     "w",
+     "eq_qud",
+     "x"
+    ],
+    [
+     "x",
+     "eq_authored_by",
+     "b"
+    ]
+   ],
+   "name": "eq.trk.responds.open_question",
+   "where": {
+    "items": [
+     {
+      "a": {
+       "key": "eq_reply_to_ref",
+       "node": {
+        "name": "m",
+        "type": "Var"
+       },
+       "type": "Attr"
+      },
+      "b": {
+       "type": "Lit",
+       "value": null
+      },
+      "type": "Eq"
+     },
+     {
+      "arg": {
+       "a": {
+        "name": "a",
+        "type": "Var"
+       },
+       "b": {
+        "name": "b",
+        "type": "Var"
+       },
+       "type": "Eq"
+      },
+      "type": "Not"
+     },
+     {
+      "items": [
+       {
+        "container": {
+         "edge_type": "eq_addresses",
+         "node": {
+          "name": "x",
+          "type": "Var"
+         },
+         "type": "Neighbours"
+        },
+        "member": {
+         "name": "a",
+         "type": "Var"
+        },
+        "type": "In"
+       },
+       {
+        "items": [
+         {
+          "arg": {
+           "predicate": {
+            "type": "Lit",
+            "value": true
+           },
+           "source": {
+            "edge_type": "eq_addresses",
+            "node": {
+             "name": "x",
+             "type": "Var"
+            },
+            "type": "Neighbours"
+           },
+           "type": "Exists",
+           "var_name": "xa_x"
+          },
+          "type": "Not"
+         },
+         {
+          "arg": {
+           "a": {
+            "key": "eqlab:msg.speech_act=question",
+            "node": {
+             "name": "m",
+             "type": "Var"
+            },
+            "type": "Attr"
+           },
+           "b": {
+            "type": "Lit",
+            "value": true
+           },
+           "type": "Eq"
+          },
+          "type": "Not"
+         }
+        ],
+        "type": "And"
+       }
+      ],
+      "type": "Or"
+     },
+     {
+      "items": [
+       {
+        "items": [
+         {
+          "arg": {
+           "predicate": {
+            "type": "Lit",
+            "value": true
+           },
+           "source": {
+            "edge_type": "eq_addresses",
+            "node": {
+             "name": "m",
+             "type": "Var"
+            },
+            "type": "Neighbours"
+           },
+           "type": "Exists",
+           "var_name": "ad_m"
+          },
+          "type": "Not"
+         },
+         {
+          "container": {
+           "edge_type": "eq_addresses",
+           "node": {
+            "name": "m",
+            "type": "Var"
+           },
+           "type": "Neighbours"
+          },
+          "member": {
+           "name": "b",
+           "type": "Var"
+          },
+          "type": "In"
+         }
+        ],
+        "type": "Or"
+       },
+       {
+        "items": [
+         {
+          "a": {
+           "key": "eq_platform_thread",
+           "node": {
+            "name": "m",
+            "type": "Var"
+           },
+           "type": "Attr"
+          },
+          "b": {
+           "type": "Lit",
+           "value": null
+          },
+          "type": "Eq"
+         },
+         {
+          "a": {
+           "key": "eq_platform_thread",
+           "node": {
+            "name": "m",
+            "type": "Var"
+           },
+           "type": "Attr"
+          },
+          "b": {
+           "key": "eq_platform_thread",
+           "node": {
+            "name": "x",
+            "type": "Var"
+           },
+           "type": "Attr"
+          },
+          "type": "Eq"
+         }
+        ],
+        "type": "Or"
+       }
+      ],
+      "type": "And"
+     },
+     {
+      "arg": {
+       "predicate": {
+        "items": [
+         {
+          "a": {
+           "key": "eq_turn_pos",
+           "node": {
+            "name": "yq",
+            "type": "Var"
+           },
+           "type": "Attr"
+          },
+          "b": {
+           "key": "eq_turn_pos",
+           "node": {
+            "name": "x",
+            "type": "Var"
+           },
+           "type": "Attr"
+          },
+          "type": "Gt"
+         },
+         {
+          "items": [
+           {
+            "container": {
+             "edge_type": "eq_addresses",
+             "node": {
+              "name": "yq",
+              "type": "Var"
+             },
+             "type": "Neighbours"
+            },
+            "member": {
+             "name": "a",
+             "type": "Var"
+            },
+            "type": "In"
+           },
+           {
+            "items": [
+             {
+              "arg": {
+               "predicate": {
+                "type": "Lit",
+                "value": true
+               },
+               "source": {
+                "edge_type": "eq_addresses",
+                "node": {
+                 "name": "yq",
+                 "type": "Var"
+                },
+                "type": "Neighbours"
+               },
+               "type": "Exists",
+               "var_name": "xa_yq"
+              },
+              "type": "Not"
+             },
+             {
+              "arg": {
+               "a": {
+                "key": "eqlab:msg.speech_act=question",
+                "node": {
+                 "name": "m",
+                 "type": "Var"
+                },
+                "type": "Attr"
+               },
+               "b": {
+                "type": "Lit",
+                "value": true
+               },
+               "type": "Eq"
+              },
+              "type": "Not"
+             }
+            ],
+            "type": "And"
+           }
+          ],
+          "type": "Or"
+         },
+         {
+          "predicate": {
+           "items": [
+            {
+             "items": [
+              {
+               "arg": {
+                "a": {
+                 "name": "au_yq",
+                 "type": "Var"
+                },
+                "b": {
+                 "name": "a",
+                 "type": "Var"
+                },
+                "type": "Eq"
+               },
+               "type": "Not"
+              },
+              {
+               "items": [
+                {
+                 "items": [
+                  {
+                   "arg": {
+                    "predicate": {
+                     "type": "Lit",
+                     "value": true
+                    },
+                    "source": {
+                     "edge_type": "eq_addresses",
+                     "node": {
+                      "name": "m",
+                      "type": "Var"
+                     },
+                     "type": "Neighbours"
+                    },
+                    "type": "Exists",
+                    "var_name": "ad_m"
+                   },
+                   "type": "Not"
+                  },
+                  {
+                   "container": {
+                    "edge_type": "eq_addresses",
+                    "node": {
+                     "name": "m",
+                     "type": "Var"
+                    },
+                    "type": "Neighbours"
+                   },
+                   "member": {
+                    "name": "au_yq",
+                    "type": "Var"
+                   },
+                   "type": "In"
+                  }
+                 ],
+                 "type": "Or"
+                },
+                {
+                 "items": [
+                  {
+                   "a": {
+                    "key": "eq_platform_thread",
+                    "node": {
+                     "name": "m",
+                     "type": "Var"
+                    },
+                    "type": "Attr"
+                   },
+                   "b": {
+                    "type": "Lit",
+                    "value": null
+                   },
+                   "type": "Eq"
+                  },
+                  {
+                   "a": {
+                    "key": "eq_platform_thread",
+                    "node": {
+                     "name": "m",
+                     "type": "Var"
+                    },
+                    "type": "Attr"
+                   },
+                   "b": {
+                    "key": "eq_platform_thread",
+                    "node": {
+                     "name": "yq",
+                     "type": "Var"
+                    },
+                    "type": "Attr"
+                   },
+                   "type": "Eq"
+                  }
+                 ],
+                 "type": "Or"
+                }
+               ],
+               "type": "And"
+              }
+             ],
+             "type": "And"
+            },
+            {
+             "items": [
+              {
+               "arg": {
+                "predicate": {
+                 "type": "Lit",
+                 "value": true
+                },
+                "source": {
+                 "edge_type": "eq_addresses",
+                 "node": {
+                  "name": "m",
+                  "type": "Var"
+                 },
+                 "type": "Neighbours"
+                },
+                "type": "Exists",
+                "var_name": "ad_m"
+               },
+               "type": "Not"
+              },
+              {
+               "a": {
+                "name": "au_yq",
+                "type": "Var"
+               },
+               "b": {
+                "name": "b",
+                "type": "Var"
+               },
+               "type": "Eq"
+              }
+             ],
+             "type": "Or"
+            }
+           ],
+           "type": "And"
+          },
+          "source": {
+           "edge_type": "eq_authored_by",
+           "node": {
+            "name": "yq",
+            "type": "Var"
+           },
+           "type": "Neighbours"
+          },
+          "type": "Exists",
+          "var_name": "au_yq"
+         }
+        ],
+        "type": "And"
+       },
+       "source": {
+        "edge_type": "eq_qud",
+        "node": {
+         "name": "w",
+         "type": "Var"
+        },
+        "type": "Neighbours"
+       },
+       "type": "Exists",
+       "var_name": "yq"
+      },
+      "type": "Not"
+     }
+    ],
+    "type": "And"
+   }
+  },
+  {
+   "batch": true,
+   "effects": [
+    [
+     "add_edge",
+     "m",
+     "eq_trk_to",
+     "x"
+    ]
+   ],
+   "match": [
+    [
+     "agent",
+     "eq_window",
+     "w"
+    ],
+    [
+     "w",
+     "eq_trk_cur",
+     "m"
+    ],
+    [
+     "m",
+     "eq_authored_by",
+     "a"
+    ],
+    [
+     "a",
+     "eq_pending",
+     "x"
+    ],
+    [
+     "x",
+     "eq_authored_by",
+     "b"
+    ]
+   ],
+   "name": "eq.trk.responds.pending_address",
+   "where": {
+    "items": [
+     {
+      "a": {
+       "key": "eq_reply_to_ref",
+       "node": {
+        "name": "m",
+        "type": "Var"
+       },
+       "type": "Attr"
+      },
+      "b": {
+       "type": "Lit",
+       "value": null
+      },
+      "type": "Eq"
+     },
+     {
+      "arg": {
+       "a": {
+        "name": "a",
+        "type": "Var"
+       },
+       "b": {
+        "name": "b",
+        "type": "Var"
+       },
+       "type": "Eq"
+      },
+      "type": "Not"
+     },
+     {
+      "items": [
+       {
+        "items": [
+         {
+          "arg": {
+           "predicate": {
+            "type": "Lit",
+            "value": true
+           },
+           "source": {
+            "edge_type": "eq_addresses",
+            "node": {
+             "name": "m",
+             "type": "Var"
+            },
+            "type": "Neighbours"
+           },
+           "type": "Exists",
+           "var_name": "ad_m"
+          },
+          "type": "Not"
+         },
+         {
+          "container": {
+           "edge_type": "eq_addresses",
+           "node": {
+            "name": "m",
+            "type": "Var"
+           },
+           "type": "Neighbours"
+          },
+          "member": {
+           "name": "b",
+           "type": "Var"
+          },
+          "type": "In"
+         }
+        ],
+        "type": "Or"
+       },
+       {
+        "items": [
+         {
+          "a": {
+           "key": "eq_platform_thread",
+           "node": {
+            "name": "m",
+            "type": "Var"
+           },
+           "type": "Attr"
+          },
+          "b": {
+           "type": "Lit",
+           "value": null
+          },
+          "type": "Eq"
+         },
+         {
+          "a": {
+           "key": "eq_platform_thread",
+           "node": {
+            "name": "m",
+            "type": "Var"
+           },
+           "type": "Attr"
+          },
+          "b": {
+           "key": "eq_platform_thread",
+           "node": {
+            "name": "x",
+            "type": "Var"
+           },
+           "type": "Attr"
+          },
+          "type": "Eq"
+         }
+        ],
+        "type": "Or"
+       }
+      ],
+      "type": "And"
+     },
+     {
+      "arg": {
+       "predicate": {
+        "items": [
+         {
+          "items": [
+           {
+            "container": {
+             "edge_type": "eq_addresses",
+             "node": {
+              "name": "zq",
+              "type": "Var"
+             },
+             "type": "Neighbours"
+            },
+            "member": {
+             "name": "a",
+             "type": "Var"
+            },
+            "type": "In"
+           },
+           {
+            "items": [
+             {
+              "arg": {
+               "predicate": {
+                "type": "Lit",
+                "value": true
+               },
+               "source": {
+                "edge_type": "eq_addresses",
+                "node": {
+                 "name": "zq",
+                 "type": "Var"
+                },
+                "type": "Neighbours"
+               },
+               "type": "Exists",
+               "var_name": "xa_zq"
+              },
+              "type": "Not"
+             },
+             {
+              "arg": {
+               "a": {
+                "key": "eqlab:msg.speech_act=question",
+                "node": {
+                 "name": "m",
+                 "type": "Var"
+                },
+                "type": "Attr"
+               },
+               "b": {
+                "type": "Lit",
+                "value": true
+               },
+               "type": "Eq"
+              },
+              "type": "Not"
+             }
+            ],
+            "type": "And"
+           }
+          ],
+          "type": "Or"
+         },
+         {
+          "predicate": {
+           "items": [
+            {
+             "items": [
+              {
+               "arg": {
+                "a": {
+                 "name": "au_zq",
+                 "type": "Var"
+                },
+                "b": {
+                 "name": "a",
+                 "type": "Var"
+                },
+                "type": "Eq"
+               },
+               "type": "Not"
+              },
+              {
+               "items": [
+                {
+                 "items": [
+                  {
+                   "arg": {
+                    "predicate": {
+                     "type": "Lit",
+                     "value": true
+                    },
+                    "source": {
+                     "edge_type": "eq_addresses",
+                     "node": {
+                      "name": "m",
+                      "type": "Var"
+                     },
+                     "type": "Neighbours"
+                    },
+                    "type": "Exists",
+                    "var_name": "ad_m"
+                   },
+                   "type": "Not"
+                  },
+                  {
+                   "container": {
+                    "edge_type": "eq_addresses",
+                    "node": {
+                     "name": "m",
+                     "type": "Var"
+                    },
+                    "type": "Neighbours"
+                   },
+                   "member": {
+                    "name": "au_zq",
+                    "type": "Var"
+                   },
+                   "type": "In"
+                  }
+                 ],
+                 "type": "Or"
+                },
+                {
+                 "items": [
+                  {
+                   "a": {
+                    "key": "eq_platform_thread",
+                    "node": {
+                     "name": "m",
+                     "type": "Var"
+                    },
+                    "type": "Attr"
+                   },
+                   "b": {
+                    "type": "Lit",
+                    "value": null
+                   },
+                   "type": "Eq"
+                  },
+                  {
+                   "a": {
+                    "key": "eq_platform_thread",
+                    "node": {
+                     "name": "m",
+                     "type": "Var"
+                    },
+                    "type": "Attr"
+                   },
+                   "b": {
+                    "key": "eq_platform_thread",
+                    "node": {
+                     "name": "zq",
+                     "type": "Var"
+                    },
+                    "type": "Attr"
+                   },
+                   "type": "Eq"
+                  }
+                 ],
+                 "type": "Or"
+                }
+               ],
+               "type": "And"
+              }
+             ],
+             "type": "And"
+            },
+            {
+             "items": [
+              {
+               "arg": {
+                "predicate": {
+                 "type": "Lit",
+                 "value": true
+                },
+                "source": {
+                 "edge_type": "eq_addresses",
+                 "node": {
+                  "name": "m",
+                  "type": "Var"
+                 },
+                 "type": "Neighbours"
+                },
+                "type": "Exists",
+                "var_name": "ad_m"
+               },
+               "type": "Not"
+              },
+              {
+               "a": {
+                "name": "au_zq",
+                "type": "Var"
+               },
+               "b": {
+                "name": "b",
+                "type": "Var"
+               },
+               "type": "Eq"
+              }
+             ],
+             "type": "Or"
+            }
+           ],
+           "type": "And"
+          },
+          "source": {
+           "edge_type": "eq_authored_by",
+           "node": {
+            "name": "zq",
+            "type": "Var"
+           },
+           "type": "Neighbours"
+          },
+          "type": "Exists",
+          "var_name": "au_zq"
+         }
+        ],
+        "type": "And"
+       },
+       "source": {
+        "edge_type": "eq_qud",
+        "node": {
+         "name": "w",
+         "type": "Var"
+        },
+        "type": "Neighbours"
+       },
+       "type": "Exists",
+       "var_name": "zq"
+      },
+      "type": "Not"
+     },
+     {
+      "arg": {
+       "predicate": {
+        "items": [
+         {
+          "a": {
+           "key": "eq_turn_pos",
+           "node": {
+            "name": "yp",
+            "type": "Var"
+           },
+           "type": "Attr"
+          },
+          "b": {
+           "key": "eq_turn_pos",
+           "node": {
+            "name": "x",
+            "type": "Var"
+           },
+           "type": "Attr"
+          },
+          "type": "Gt"
+         },
+         {
+          "predicate": {
+           "items": [
+            {
+             "items": [
+              {
+               "arg": {
+                "a": {
+                 "name": "au_yp",
+                 "type": "Var"
+                },
+                "b": {
+                 "name": "a",
+                 "type": "Var"
+                },
+                "type": "Eq"
+               },
+               "type": "Not"
+              },
+              {
+               "items": [
+                {
+                 "items": [
+                  {
+                   "arg": {
+                    "predicate": {
+                     "type": "Lit",
+                     "value": true
+                    },
+                    "source": {
+                     "edge_type": "eq_addresses",
+                     "node": {
+                      "name": "m",
+                      "type": "Var"
+                     },
+                     "type": "Neighbours"
+                    },
+                    "type": "Exists",
+                    "var_name": "ad_m"
+                   },
+                   "type": "Not"
+                  },
+                  {
+                   "container": {
+                    "edge_type": "eq_addresses",
+                    "node": {
+                     "name": "m",
+                     "type": "Var"
+                    },
+                    "type": "Neighbours"
+                   },
+                   "member": {
+                    "name": "au_yp",
+                    "type": "Var"
+                   },
+                   "type": "In"
+                  }
+                 ],
+                 "type": "Or"
+                },
+                {
+                 "items": [
+                  {
+                   "a": {
+                    "key": "eq_platform_thread",
+                    "node": {
+                     "name": "m",
+                     "type": "Var"
+                    },
+                    "type": "Attr"
+                   },
+                   "b": {
+                    "type": "Lit",
+                    "value": null
+                   },
+                   "type": "Eq"
+                  },
+                  {
+                   "a": {
+                    "key": "eq_platform_thread",
+                    "node": {
+                     "name": "m",
+                     "type": "Var"
+                    },
+                    "type": "Attr"
+                   },
+                   "b": {
+                    "key": "eq_platform_thread",
+                    "node": {
+                     "name": "yp",
+                     "type": "Var"
+                    },
+                    "type": "Attr"
+                   },
+                   "type": "Eq"
+                  }
+                 ],
+                 "type": "Or"
+                }
+               ],
+               "type": "And"
+              }
+             ],
+             "type": "And"
+            },
+            {
+             "items": [
+              {
+               "arg": {
+                "predicate": {
+                 "type": "Lit",
+                 "value": true
+                },
+                "source": {
+                 "edge_type": "eq_addresses",
+                 "node": {
+                  "name": "m",
+                  "type": "Var"
+                 },
+                 "type": "Neighbours"
+                },
+                "type": "Exists",
+                "var_name": "ad_m"
+               },
+               "type": "Not"
+              },
+              {
+               "a": {
+                "name": "au_yp",
+                "type": "Var"
+               },
+               "b": {
+                "name": "b",
+                "type": "Var"
+               },
+               "type": "Eq"
+              }
+             ],
+             "type": "Or"
+            }
+           ],
+           "type": "And"
+          },
+          "source": {
+           "edge_type": "eq_authored_by",
+           "node": {
+            "name": "yp",
+            "type": "Var"
+           },
+           "type": "Neighbours"
+          },
+          "type": "Exists",
+          "var_name": "au_yp"
+         }
+        ],
+        "type": "And"
+       },
+       "source": {
+        "edge_type": "eq_pending",
+        "node": {
+         "name": "a",
+         "type": "Var"
+        },
+        "type": "Neighbours"
+       },
+       "type": "Exists",
+       "var_name": "yp"
+      },
+      "type": "Not"
+     }
+    ],
+    "type": "And"
+   }
+  },
+  {
+   "batch": true,
+   "effects": [
+    [
+     "add_edge",
+     "m",
+     "eq_trk_to",
+     "x"
+    ]
+   ],
+   "match": [
+    [
+     "agent",
+     "eq_window",
+     "w"
+    ],
+    [
+     "w",
+     "eq_trk_cur",
+     "m"
+    ],
+    [
+     "m",
+     "eq_authored_by",
+     "a"
+    ],
+    [
+     "w",
+     "eq_has_actor",
+     "b"
+    ],
+    [
+     "b",
+     "eq_last_claim",
+     "x"
+    ]
+   ],
+   "name": "eq.trk.responds.claim",
+   "where": {
+    "items": [
+     {
+      "a": {
+       "key": "eq_reply_to_ref",
+       "node": {
+        "name": "m",
+        "type": "Var"
+       },
+       "type": "Attr"
+      },
+      "b": {
+       "type": "Lit",
+       "value": null
+      },
+      "type": "Eq"
+     },
+     {
+      "arg": {
+       "a": {
+        "name": "a",
+        "type": "Var"
+       },
+       "b": {
+        "name": "b",
+        "type": "Var"
+       },
+       "type": "Eq"
+      },
+      "type": "Not"
+     },
+     {
+      "items": [
+       {
+        "items": [
+         {
+          "arg": {
+           "predicate": {
+            "type": "Lit",
+            "value": true
+           },
+           "source": {
+            "edge_type": "eq_addresses",
+            "node": {
+             "name": "m",
+             "type": "Var"
+            },
+            "type": "Neighbours"
+           },
+           "type": "Exists",
+           "var_name": "ad_m"
+          },
+          "type": "Not"
+         },
+         {
+          "container": {
+           "edge_type": "eq_addresses",
+           "node": {
+            "name": "m",
+            "type": "Var"
+           },
+           "type": "Neighbours"
+          },
+          "member": {
+           "name": "b",
+           "type": "Var"
+          },
+          "type": "In"
+         }
+        ],
+        "type": "Or"
+       },
+       {
+        "items": [
+         {
+          "a": {
+           "key": "eq_platform_thread",
+           "node": {
+            "name": "m",
+            "type": "Var"
+           },
+           "type": "Attr"
+          },
+          "b": {
+           "type": "Lit",
+           "value": null
+          },
+          "type": "Eq"
+         },
+         {
+          "a": {
+           "key": "eq_platform_thread",
+           "node": {
+            "name": "m",
+            "type": "Var"
+           },
+           "type": "Attr"
+          },
+          "b": {
+           "key": "eq_platform_thread",
+           "node": {
+            "name": "x",
+            "type": "Var"
+           },
+           "type": "Attr"
+          },
+          "type": "Eq"
+         }
+        ],
+        "type": "Or"
+       }
+      ],
+      "type": "And"
+     },
+     {
+      "items": [
+       {
+        "predicate": {
+         "items": [
+          {
+           "arg": {
+            "predicate": {
+             "a": {
+              "key": "eq_pos",
+              "node": {
+               "name": "lk",
+               "type": "Var"
+              },
+              "type": "Attr"
+             },
+             "b": {
+              "key": "eq_pos",
+              "node": {
+               "name": "lt",
+               "type": "Var"
+              },
+              "type": "Attr"
+             },
+             "type": "Lt"
+            },
+            "source": {
+             "edge_type": "eq_has_token",
+             "node": {
+              "name": "m",
+              "type": "Var"
+             },
+             "type": "Neighbours"
+            },
+            "type": "Exists",
+            "var_name": "lk"
+           },
+           "type": "Not"
+          },
+          {
+           "predicate": {
+            "items": [
+             {
+              "a": {
+               "key": "rel",
+               "node": {
+                "name": "lc",
+                "type": "Var"
+               },
+               "type": "Attr"
+              },
+              "b": {
+               "type": "Lit",
+               "value": "contrast"
+              },
+              "type": "Eq"
+             },
+             {
+              "a": {
+               "key": "form",
+               "node": {
+                "name": "lc",
+                "type": "Var"
+               },
+               "type": "Attr"
+              },
+              "b": {
+               "key": "form",
+               "node": {
+                "name": "lt",
+                "type": "Var"
+               },
+               "type": "Attr"
+              },
+              "type": "Eq"
+             }
+            ],
+            "type": "And"
+           },
+           "source": {
+            "edge_type": "eq_has_coh_marker",
+            "node": {
+             "name": "agent",
+             "type": "Var"
+            },
+            "type": "Neighbours"
+           },
+           "type": "Exists",
+           "var_name": "lc"
+          }
+         ],
+         "type": "And"
+        },
+        "source": {
+         "edge_type": "eq_has_token",
+         "node": {
+          "name": "m",
+          "type": "Var"
+         },
+         "type": "Neighbours"
+        },
+        "type": "Exists",
+        "var_name": "lt"
+       },
+       {
+        "a": {
+         "key": "eqlab:msg.concession",
+         "node": {
+          "name": "m",
+          "type": "Var"
+         },
+         "type": "Attr"
+        },
+        "b": {
+         "type": "Lit",
+         "value": true
+        },
+        "type": "Eq"
+       },
+       {
+        "a": {
+         "key": "eqlab:msg.disagreement",
+         "node": {
+          "name": "m",
+          "type": "Var"
+         },
+         "type": "Attr"
+        },
+        "b": {
+         "type": "Lit",
+         "value": true
+        },
+        "type": "Eq"
+       }
+      ],
+      "type": "Or"
+     },
+     {
+      "arg": {
+       "predicate": {
+        "items": [
+         {
+          "arg": {
+           "a": {
+            "name": "c",
+            "type": "Var"
+           },
+           "b": {
+            "name": "a",
+            "type": "Var"
+           },
+           "type": "Eq"
+          },
+          "type": "Not"
+         },
+         {
+          "predicate": {
+           "items": [
+            {
+             "a": {
+              "key": "eq_turn_pos",
+              "node": {
+               "name": "z",
+               "type": "Var"
+              },
+              "type": "Attr"
+             },
+             "b": {
+              "key": "eq_turn_pos",
+              "node": {
+               "name": "x",
+               "type": "Var"
+              },
+              "type": "Attr"
+             },
+             "type": "Gt"
+            },
+            {
+             "items": [
+              {
+               "items": [
+                {
+                 "arg": {
+                  "predicate": {
+                   "type": "Lit",
+                   "value": true
+                  },
+                  "source": {
+                   "edge_type": "eq_addresses",
+                   "node": {
+                    "name": "m",
+                    "type": "Var"
+                   },
+                   "type": "Neighbours"
+                  },
+                  "type": "Exists",
+                  "var_name": "ad_m"
+                 },
+                 "type": "Not"
+                },
+                {
+                 "container": {
+                  "edge_type": "eq_addresses",
+                  "node": {
+                   "name": "m",
+                   "type": "Var"
+                  },
+                  "type": "Neighbours"
+                 },
+                 "member": {
+                  "name": "c",
+                  "type": "Var"
+                 },
+                 "type": "In"
+                }
+               ],
+               "type": "Or"
+              },
+              {
+               "items": [
+                {
+                 "a": {
+                  "key": "eq_platform_thread",
+                  "node": {
+                   "name": "m",
+                   "type": "Var"
+                  },
+                  "type": "Attr"
+                 },
+                 "b": {
+                  "type": "Lit",
+                  "value": null
+                 },
+                 "type": "Eq"
+                },
+                {
+                 "a": {
+                  "key": "eq_platform_thread",
+                  "node": {
+                   "name": "m",
+                   "type": "Var"
+                  },
+                  "type": "Attr"
+                 },
+                 "b": {
+                  "key": "eq_platform_thread",
+                  "node": {
+                   "name": "z",
+                   "type": "Var"
+                  },
+                  "type": "Attr"
+                 },
+                 "type": "Eq"
+                }
+               ],
+               "type": "Or"
+              }
+             ],
+             "type": "And"
+            }
+           ],
+           "type": "And"
+          },
+          "source": {
+           "edge_type": "eq_last_claim",
+           "node": {
+            "name": "c",
+            "type": "Var"
+           },
+           "type": "Neighbours"
+          },
+          "type": "Exists",
+          "var_name": "z"
+         }
+        ],
+        "type": "And"
+       },
+       "source": {
+        "edge_type": "eq_has_actor",
+        "node": {
+         "name": "w",
+         "type": "Var"
+        },
+        "type": "Neighbours"
+       },
+       "type": "Exists",
+       "var_name": "c"
+      },
+      "type": "Not"
+     }
+    ],
+    "type": "And"
+   }
+  },
+  {
+   "batch": true,
+   "effects": [
+    [
+     "add_edge",
+     "m",
+     "eq_addresses",
+     "b"
+    ]
+   ],
+   "match": [
+    [
+     "agent",
+     "eq_window",
+     "w"
+    ],
+    [
+     "w",
+     "eq_trk_cur",
+     "m"
+    ],
+    [
+     "m",
+     "eq_authored_by",
+     "a"
+    ],
+    [
+     "m",
+     "eq_trk_to",
+     "x"
+    ],
+    [
+     "x",
+     "eq_authored_by",
+     "b"
+    ]
+   ],
+   "name": "eq.trk.addressee.target",
+   "where": {
+    "arg": {
+     "a": {
+      "name": "a",
+      "type": "Var"
+     },
+     "b": {
+      "name": "b",
+      "type": "Var"
+     },
+     "type": "Eq"
+    },
+    "type": "Not"
+   }
+  },
+  {
+   "batch": true,
+   "effects": [
+    [
+     "add_edge",
+     "m",
+     "eq_answers",
+     "p"
+    ]
+   ],
+   "match": [
+    [
+     "agent",
+     "eq_window",
+     "w"
+    ],
+    [
+     "w",
+     "eq_trk_cur",
+     "m"
+    ],
+    [
+     "m",
+     "eq_authored_by",
+     "a"
+    ],
+    [
+     "m",
+     "eq_responds_to",
+     "p"
+    ],
+    [
+     "p",
+     "eq_authored_by",
+     "b"
+    ]
+   ],
+   "name": "eq.trk.answers.declared",
+   "where": {
+    "items": [
+     {
+      "arg": {
+       "a": {
+        "name": "a",
+        "type": "Var"
+       },
+       "b": {
+        "name": "b",
+        "type": "Var"
+       },
+       "type": "Eq"
+      },
+      "type": "Not"
+     },
+     {
+      "a": {
+       "key": "eqlab:msg.speech_act=question",
+       "node": {
+        "name": "p",
+        "type": "Var"
+       },
+       "type": "Attr"
+      },
+      "b": {
+       "type": "Lit",
+       "value": true
+      },
+      "type": "Eq"
+     },
+     {
+      "a": {
+       "key": "eq_turn_pos",
+       "node": {
+        "name": "m",
+        "type": "Var"
+       },
+       "type": "Attr"
+      },
+      "b": {
+       "key": "eq_turn_pos",
+       "node": {
+        "name": "p",
+        "type": "Var"
+       },
+       "type": "Attr"
+      },
+      "type": "Gt"
+     },
+     {
+      "arg": {
+       "predicate": {
+        "items": [
+         {
+          "a": {
+           "key": "role",
+           "node": {
+            "name": "cc_m_nonanswer",
+            "type": "Var"
+           },
+           "type": "Attr"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "nonanswer"
+          },
+          "type": "Eq"
+         },
+         {
+          "a": {
+           "name": {
+            "key": "lab_key",
+            "node": {
+             "name": "cc_m_nonanswer",
+             "type": "Var"
+            },
+            "type": "Attr"
+           },
+           "node": {
+            "name": "m",
+            "type": "Var"
+           },
+           "type": "AttrByName"
+          },
+          "b": {
+           "type": "Lit",
+           "value": true
+          },
+          "type": "Eq"
+         }
+        ],
+        "type": "And"
+       },
+       "source": {
+        "edge_type": "eq_has_climate_cue",
+        "node": {
+         "name": "agent",
+         "type": "Var"
+        },
+        "type": "Neighbours"
+       },
+       "type": "Exists",
+       "var_name": "cc_m_nonanswer"
+      },
+      "type": "Not"
+     },
+     {
+      "arg": {
+       "items": [
+        {
+         "predicate": {
+          "items": [
+           {
+            "a": {
+             "key": "role",
+             "node": {
+              "name": "cc_m_dismiss",
+              "type": "Var"
+             },
+             "type": "Attr"
+            },
+            "b": {
+             "type": "Lit",
+             "value": "dismiss"
+            },
+            "type": "Eq"
+           },
+           {
+            "a": {
+             "name": {
+              "key": "lab_key",
+              "node": {
+               "name": "cc_m_dismiss",
+               "type": "Var"
+              },
+              "type": "Attr"
+             },
+             "node": {
+              "name": "m",
+              "type": "Var"
+             },
+             "type": "AttrByName"
+            },
+            "b": {
+             "type": "Lit",
+             "value": true
+            },
+            "type": "Eq"
+           }
+          ],
+          "type": "And"
+         },
+         "source": {
+          "edge_type": "eq_has_climate_cue",
+          "node": {
+           "name": "agent",
+           "type": "Var"
+          },
+          "type": "Neighbours"
+         },
+         "type": "Exists",
+         "var_name": "cc_m_dismiss"
+        },
+        {
+         "items": [
+          {
+           "predicate": {
+            "items": [
+             {
+              "a": {
+               "key": "role",
+               "node": {
+                "name": "cc_m_status",
+                "type": "Var"
+               },
+               "type": "Attr"
+              },
+              "b": {
+               "type": "Lit",
+               "value": "status"
+              },
+              "type": "Eq"
+             },
+             {
+              "a": {
+               "name": {
+                "key": "lab_key",
+                "node": {
+                 "name": "cc_m_status",
+                 "type": "Var"
+                },
+                "type": "Attr"
+               },
+               "node": {
+                "name": "m",
+                "type": "Var"
+               },
+               "type": "AttrByName"
+              },
+              "b": {
+               "type": "Lit",
+               "value": true
+              },
+              "type": "Eq"
+             }
+            ],
+            "type": "And"
+           },
+           "source": {
+            "edge_type": "eq_has_climate_cue",
+            "node": {
+             "name": "agent",
+             "type": "Var"
+            },
+            "type": "Neighbours"
+           },
+           "type": "Exists",
+           "var_name": "cc_m_status"
+          },
+          {
+           "arg": {
+            "predicate": {
+             "items": [
+              {
+               "a": {
+                "key": "role",
+                "node": {
+                 "name": "cc_m_ground",
+                 "type": "Var"
+                },
+                "type": "Attr"
+               },
+               "b": {
+                "type": "Lit",
+                "value": "ground"
+               },
+               "type": "Eq"
+              },
+              {
+               "a": {
+                "name": {
+                 "key": "lab_key",
+                 "node": {
+                  "name": "cc_m_ground",
+                  "type": "Var"
+                 },
+                 "type": "Attr"
+                },
+                "node": {
+                 "name": "m",
+                 "type": "Var"
+                },
+                "type": "AttrByName"
+               },
+               "b": {
+                "type": "Lit",
+                "value": true
+               },
+               "type": "Eq"
+              }
+             ],
+             "type": "And"
+            },
+            "source": {
+             "edge_type": "eq_has_climate_cue",
+             "node": {
+              "name": "agent",
+              "type": "Var"
+             },
+             "type": "Neighbours"
+            },
+            "type": "Exists",
+            "var_name": "cc_m_ground"
+           },
+           "type": "Not"
+          }
+         ],
+         "type": "And"
+        }
+       ],
+       "type": "Or"
+      },
+      "type": "Not"
+     }
+    ],
+    "type": "And"
+   }
+  },
+  {
+   "batch": true,
+   "effects": [
+    [
+     "add_edge",
+     "m",
+     "eq_answers",
+     "p"
+    ]
+   ],
+   "match": [
+    [
+     "agent",
+     "eq_window",
+     "w"
+    ],
+    [
+     "w",
+     "eq_trk_cur",
+     "m"
+    ],
+    [
+     "m",
+     "eq_authored_by",
+     "a"
+    ],
+    [
+     "m",
+     "eq_trk_to",
+     "p"
+    ],
+    [
+     "p",
+     "eq_authored_by",
+     "b"
+    ]
+   ],
+   "name": "eq.trk.answers.tracked",
+   "where": {
+    "items": [
+     {
+      "arg": {
+       "a": {
+        "name": "a",
+        "type": "Var"
+       },
+       "b": {
+        "name": "b",
+        "type": "Var"
+       },
+       "type": "Eq"
+      },
+      "type": "Not"
+     },
+     {
+      "a": {
+       "key": "eqlab:msg.speech_act=question",
+       "node": {
+        "name": "p",
+        "type": "Var"
+       },
+       "type": "Attr"
+      },
+      "b": {
+       "type": "Lit",
+       "value": true
+      },
+      "type": "Eq"
+     },
+     {
+      "a": {
+       "key": "eq_turn_pos",
+       "node": {
+        "name": "m",
+        "type": "Var"
+       },
+       "type": "Attr"
+      },
+      "b": {
+       "key": "eq_turn_pos",
+       "node": {
+        "name": "p",
+        "type": "Var"
+       },
+       "type": "Attr"
+      },
+      "type": "Gt"
+     },
+     {
+      "arg": {
+       "predicate": {
+        "items": [
+         {
+          "a": {
+           "key": "role",
+           "node": {
+            "name": "cc_m_nonanswer",
+            "type": "Var"
+           },
+           "type": "Attr"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "nonanswer"
+          },
+          "type": "Eq"
+         },
+         {
+          "a": {
+           "name": {
+            "key": "lab_key",
+            "node": {
+             "name": "cc_m_nonanswer",
+             "type": "Var"
+            },
+            "type": "Attr"
+           },
+           "node": {
+            "name": "m",
+            "type": "Var"
+           },
+           "type": "AttrByName"
+          },
+          "b": {
+           "type": "Lit",
+           "value": true
+          },
+          "type": "Eq"
+         }
+        ],
+        "type": "And"
+       },
+       "source": {
+        "edge_type": "eq_has_climate_cue",
+        "node": {
+         "name": "agent",
+         "type": "Var"
+        },
+        "type": "Neighbours"
+       },
+       "type": "Exists",
+       "var_name": "cc_m_nonanswer"
+      },
+      "type": "Not"
+     },
+     {
+      "arg": {
+       "items": [
+        {
+         "predicate": {
+          "items": [
+           {
+            "a": {
+             "key": "role",
+             "node": {
+              "name": "cc_m_dismiss",
+              "type": "Var"
+             },
+             "type": "Attr"
+            },
+            "b": {
+             "type": "Lit",
+             "value": "dismiss"
+            },
+            "type": "Eq"
+           },
+           {
+            "a": {
+             "name": {
+              "key": "lab_key",
+              "node": {
+               "name": "cc_m_dismiss",
+               "type": "Var"
+              },
+              "type": "Attr"
+             },
+             "node": {
+              "name": "m",
+              "type": "Var"
+             },
+             "type": "AttrByName"
+            },
+            "b": {
+             "type": "Lit",
+             "value": true
+            },
+            "type": "Eq"
+           }
+          ],
+          "type": "And"
+         },
+         "source": {
+          "edge_type": "eq_has_climate_cue",
+          "node": {
+           "name": "agent",
+           "type": "Var"
+          },
+          "type": "Neighbours"
+         },
+         "type": "Exists",
+         "var_name": "cc_m_dismiss"
+        },
+        {
+         "items": [
+          {
+           "predicate": {
+            "items": [
+             {
+              "a": {
+               "key": "role",
+               "node": {
+                "name": "cc_m_status",
+                "type": "Var"
+               },
+               "type": "Attr"
+              },
+              "b": {
+               "type": "Lit",
+               "value": "status"
+              },
+              "type": "Eq"
+             },
+             {
+              "a": {
+               "name": {
+                "key": "lab_key",
+                "node": {
+                 "name": "cc_m_status",
+                 "type": "Var"
+                },
+                "type": "Attr"
+               },
+               "node": {
+                "name": "m",
+                "type": "Var"
+               },
+               "type": "AttrByName"
+              },
+              "b": {
+               "type": "Lit",
+               "value": true
+              },
+              "type": "Eq"
+             }
+            ],
+            "type": "And"
+           },
+           "source": {
+            "edge_type": "eq_has_climate_cue",
+            "node": {
+             "name": "agent",
+             "type": "Var"
+            },
+            "type": "Neighbours"
+           },
+           "type": "Exists",
+           "var_name": "cc_m_status"
+          },
+          {
+           "arg": {
+            "predicate": {
+             "items": [
+              {
+               "a": {
+                "key": "role",
+                "node": {
+                 "name": "cc_m_ground",
+                 "type": "Var"
+                },
+                "type": "Attr"
+               },
+               "b": {
+                "type": "Lit",
+                "value": "ground"
+               },
+               "type": "Eq"
+              },
+              {
+               "a": {
+                "name": {
+                 "key": "lab_key",
+                 "node": {
+                  "name": "cc_m_ground",
+                  "type": "Var"
+                 },
+                 "type": "Attr"
+                },
+                "node": {
+                 "name": "m",
+                 "type": "Var"
+                },
+                "type": "AttrByName"
+               },
+               "b": {
+                "type": "Lit",
+                "value": true
+               },
+               "type": "Eq"
+              }
+             ],
+             "type": "And"
+            },
+            "source": {
+             "edge_type": "eq_has_climate_cue",
+             "node": {
+              "name": "agent",
+              "type": "Var"
+             },
+             "type": "Neighbours"
+            },
+            "type": "Exists",
+            "var_name": "cc_m_ground"
+           },
+           "type": "Not"
+          }
+         ],
+         "type": "And"
+        }
+       ],
+       "type": "Or"
+      },
+      "type": "Not"
+     }
+    ],
+    "type": "And"
+   }
+  },
+  {
+   "batch": true,
+   "effects": [
+    [
+     "del_edge",
+     "w",
+     "eq_qud",
+     "p"
+    ]
+   ],
+   "match": [
+    [
+     "agent",
+     "eq_window",
+     "w"
+    ],
+    [
+     "w",
+     "eq_trk_cur",
+     "m"
+    ],
+    [
+     "m",
+     "eq_answers",
+     "p"
+    ],
+    [
+     "w",
+     "eq_qud",
+     "p"
+    ]
+   ],
+   "name": "eq.trk.qud.close",
+   "where": {
+    "type": "Lit",
+    "value": true
+   }
+  },
+  {
+   "batch": true,
+   "effects": [
+    [
+     "add_edge",
+     "w",
+     "eq_qud",
+     "m"
+    ]
+   ],
+   "match": [
+    [
+     "agent",
+     "eq_window",
+     "w"
+    ],
+    [
+     "w",
+     "eq_trk_cur",
+     "m"
+    ]
+   ],
+   "name": "eq.trk.qud.open",
+   "where": {
+    "a": {
+     "key": "eqlab:msg.speech_act=question",
+     "node": {
+      "name": "m",
+      "type": "Var"
+     },
+     "type": "Attr"
+    },
+    "b": {
+     "type": "Lit",
+     "value": true
+    },
+    "type": "Eq"
+   }
+  },
+  {
+   "batch": true,
+   "effects": [
+    [
+     "del_edge",
+     "a",
+     "eq_pending",
+     "x"
+    ]
+   ],
+   "match": [
+    [
+     "agent",
+     "eq_window",
+     "w"
+    ],
+    [
+     "w",
+     "eq_trk_cur",
+     "m"
+    ],
+    [
+     "m",
+     "eq_authored_by",
+     "a"
+    ],
+    [
+     "a",
+     "eq_pending",
+     "x"
+    ]
+   ],
+   "name": "eq.trk.pending.taken",
+   "where": {
+    "type": "Lit",
+    "value": true
+   }
+  },
+  {
+   "batch": true,
+   "effects": [
+    [
+     "add_edge",
+     "b",
+     "eq_pending",
+     "m"
+    ]
+   ],
+   "match": [
+    [
+     "agent",
+     "eq_window",
+     "w"
+    ],
+    [
+     "w",
+     "eq_trk_cur",
+     "m"
+    ],
+    [
+     "m",
+     "eq_authored_by",
+     "a"
+    ],
+    [
+     "m",
+     "eq_addresses",
+     "b"
+    ]
+   ],
+   "name": "eq.trk.pending.add",
+   "where": {
+    "arg": {
+     "a": {
+      "name": "a",
+      "type": "Var"
+     },
+     "b": {
+      "name": "b",
+      "type": "Var"
+     },
+     "type": "Eq"
+    },
+    "type": "Not"
+   }
+  },
+  {
+   "batch": true,
+   "effects": [
+    [
+     "del_edge",
+     "b",
+     "eq_last_addressed_by",
+     "x"
+    ]
+   ],
+   "match": [
+    [
+     "agent",
+     "eq_window",
+     "w"
+    ],
+    [
+     "w",
+     "eq_trk_cur",
+     "m"
+    ],
+    [
+     "m",
+     "eq_authored_by",
+     "a"
+    ],
+    [
+     "m",
+     "eq_addresses",
+     "b"
+    ],
+    [
+     "b",
+     "eq_last_addressed_by",
+     "x"
+    ]
+   ],
+   "name": "eq.trk.addressed_by.drop",
+   "where": {
+    "arg": {
+     "a": {
+      "name": "a",
+      "type": "Var"
+     },
+     "b": {
+      "name": "b",
+      "type": "Var"
+     },
+     "type": "Eq"
+    },
+    "type": "Not"
+   }
+  },
+  {
+   "batch": true,
+   "effects": [
+    [
+     "add_edge",
+     "b",
+     "eq_last_addressed_by",
+     "m"
+    ]
+   ],
+   "match": [
+    [
+     "agent",
+     "eq_window",
+     "w"
+    ],
+    [
+     "w",
+     "eq_trk_cur",
+     "m"
+    ],
+    [
+     "m",
+     "eq_authored_by",
+     "a"
+    ],
+    [
+     "m",
+     "eq_addresses",
+     "b"
+    ]
+   ],
+   "name": "eq.trk.addressed_by.set",
+   "where": {
+    "arg": {
+     "a": {
+      "name": "a",
+      "type": "Var"
+     },
+     "b": {
+      "name": "b",
+      "type": "Var"
+     },
+     "type": "Eq"
+    },
+    "type": "Not"
+   }
+  },
+  {
+   "batch": true,
+   "effects": [
+    [
+     "del_edge",
+     "a",
+     "eq_last_claim",
+     "x"
+    ]
+   ],
+   "match": [
+    [
+     "agent",
+     "eq_window",
+     "w"
+    ],
+    [
+     "w",
+     "eq_trk_cur",
+     "m"
+    ],
+    [
+     "m",
+     "eq_authored_by",
+     "a"
+    ],
+    [
+     "a",
+     "eq_last_claim",
+     "x"
+    ]
+   ],
+   "name": "eq.trk.claim.drop",
+   "where": {
+    "items": [
+     {
+      "a": {
+       "key": "eqlab:msg.speech_act=assertion",
+       "node": {
+        "name": "m",
+        "type": "Var"
+       },
+       "type": "Attr"
+      },
+      "b": {
+       "type": "Lit",
+       "value": true
+      },
+      "type": "Eq"
+     },
+     {
+      "a": {
+       "key": "eqlab:msg.speech_act=directive",
+       "node": {
+        "name": "m",
+        "type": "Var"
+       },
+       "type": "Attr"
+      },
+      "b": {
+       "type": "Lit",
+       "value": true
+      },
+      "type": "Eq"
+     }
+    ],
+    "type": "Or"
+   }
+  },
+  {
+   "batch": true,
+   "effects": [
+    [
+     "add_edge",
+     "a",
+     "eq_last_claim",
+     "m"
+    ]
+   ],
+   "match": [
+    [
+     "agent",
+     "eq_window",
+     "w"
+    ],
+    [
+     "w",
+     "eq_trk_cur",
+     "m"
+    ],
+    [
+     "m",
+     "eq_authored_by",
+     "a"
+    ]
+   ],
+   "name": "eq.trk.claim.set",
+   "where": {
+    "items": [
+     {
+      "a": {
+       "key": "eqlab:msg.speech_act=assertion",
+       "node": {
+        "name": "m",
+        "type": "Var"
+       },
+       "type": "Attr"
+      },
+      "b": {
+       "type": "Lit",
+       "value": true
+      },
+      "type": "Eq"
+     },
+     {
+      "a": {
+       "key": "eqlab:msg.speech_act=directive",
+       "node": {
+        "name": "m",
+        "type": "Var"
+       },
+       "type": "Attr"
+      },
+      "b": {
+       "type": "Lit",
+       "value": true
+      },
+      "type": "Eq"
+     }
+    ],
+    "type": "Or"
+   }
+  },
+  {
+   "batch": true,
+   "effects": [
+    [
+     "set_attr",
+     "m",
+     "eq_thread",
+     {
+      "__term__": {
+       "key": "eq_thread",
+       "node": {
+        "name": "p",
+        "type": "Var"
+       },
+       "type": "Attr"
+      }
+     }
+    ]
+   ],
+   "match": [
+    [
+     "agent",
+     "eq_window",
+     "w"
+    ],
+    [
+     "w",
+     "eq_trk_cur",
+     "m"
+    ],
+    [
+     "m",
+     "eq_reply_to",
+     "p"
+    ]
+   ],
+   "name": "eq.trk.thread.inherit_eq_reply_to",
+   "where": {
+    "items": [
+     {
+      "a": {
+       "key": "eq_thread",
+       "node": {
+        "name": "m",
+        "type": "Var"
+       },
+       "type": "Attr"
+      },
+      "b": {
+       "type": "Lit",
+       "value": null
+      },
+      "type": "Eq"
+     },
+     {
+      "arg": {
+       "a": {
+        "key": "eq_thread",
+        "node": {
+         "name": "p",
+         "type": "Var"
+        },
+        "type": "Attr"
+       },
+       "b": {
+        "type": "Lit",
+        "value": null
+       },
+       "type": "Eq"
+      },
+      "type": "Not"
+     },
+     {
+      "arg": {
+       "predicate": {
+        "a": {
+         "key": "eq_turn_pos",
+         "node": {
+          "name": "p1",
+          "type": "Var"
+         },
+         "type": "Attr"
+        },
+        "b": {
+         "key": "eq_turn_pos",
+         "node": {
+          "name": "p",
+          "type": "Var"
+         },
+         "type": "Attr"
+        },
+        "type": "Lt"
+       },
+       "source": {
+        "edge_type": "eq_reply_to",
+        "node": {
+         "name": "m",
+         "type": "Var"
+        },
+        "type": "Neighbours"
+       },
+       "type": "Exists",
+       "var_name": "p1"
+      },
+      "type": "Not"
+     },
+     {
+      "arg": {
+       "predicate": {
+        "a": {
+         "key": "eq_turn_pos",
+         "node": {
+          "name": "p2",
+          "type": "Var"
+         },
+         "type": "Attr"
+        },
+        "b": {
+         "key": "eq_turn_pos",
+         "node": {
+          "name": "p",
+          "type": "Var"
+         },
+         "type": "Attr"
+        },
+        "type": "Lt"
+       },
+       "source": {
+        "edge_type": "eq_trk_to",
+        "node": {
+         "name": "m",
+         "type": "Var"
+        },
+        "type": "Neighbours"
+       },
+       "type": "Exists",
+       "var_name": "p2"
+      },
+      "type": "Not"
+     }
+    ],
+    "type": "And"
+   }
+  },
+  {
+   "batch": true,
+   "effects": [
+    [
+     "set_attr",
+     "m",
+     "eq_thread",
+     {
+      "__term__": {
+       "key": "eq_thread",
+       "node": {
+        "name": "p",
+        "type": "Var"
+       },
+       "type": "Attr"
+      }
+     }
+    ]
+   ],
+   "match": [
+    [
+     "agent",
+     "eq_window",
+     "w"
+    ],
+    [
+     "w",
+     "eq_trk_cur",
+     "m"
+    ],
+    [
+     "m",
+     "eq_trk_to",
+     "p"
+    ]
+   ],
+   "name": "eq.trk.thread.inherit_eq_trk_to",
+   "where": {
+    "items": [
+     {
+      "a": {
+       "key": "eq_thread",
+       "node": {
+        "name": "m",
+        "type": "Var"
+       },
+       "type": "Attr"
+      },
+      "b": {
+       "type": "Lit",
+       "value": null
+      },
+      "type": "Eq"
+     },
+     {
+      "arg": {
+       "a": {
+        "key": "eq_thread",
+        "node": {
+         "name": "p",
+         "type": "Var"
+        },
+        "type": "Attr"
+       },
+       "b": {
+        "type": "Lit",
+        "value": null
+       },
+       "type": "Eq"
+      },
+      "type": "Not"
+     },
+     {
+      "arg": {
+       "predicate": {
+        "a": {
+         "key": "eq_turn_pos",
+         "node": {
+          "name": "p1",
+          "type": "Var"
+         },
+         "type": "Attr"
+        },
+        "b": {
+         "key": "eq_turn_pos",
+         "node": {
+          "name": "p",
+          "type": "Var"
+         },
+         "type": "Attr"
+        },
+        "type": "Lt"
+       },
+       "source": {
+        "edge_type": "eq_reply_to",
+        "node": {
+         "name": "m",
+         "type": "Var"
+        },
+        "type": "Neighbours"
+       },
+       "type": "Exists",
+       "var_name": "p1"
+      },
+      "type": "Not"
+     },
+     {
+      "arg": {
+       "predicate": {
+        "a": {
+         "key": "eq_turn_pos",
+         "node": {
+          "name": "p2",
+          "type": "Var"
+         },
+         "type": "Attr"
+        },
+        "b": {
+         "key": "eq_turn_pos",
+         "node": {
+          "name": "p",
+          "type": "Var"
+         },
+         "type": "Attr"
+        },
+        "type": "Lt"
+       },
+       "source": {
+        "edge_type": "eq_trk_to",
+        "node": {
+         "name": "m",
+         "type": "Var"
+        },
+        "type": "Neighbours"
+       },
+       "type": "Exists",
+       "var_name": "p2"
+      },
+      "type": "Not"
+     }
+    ],
+    "type": "And"
+   }
+  },
+  {
+   "batch": true,
+   "effects": [
+    [
+     "set_attr",
+     "m",
+     "eq_thread",
+     {
+      "__term__": {
+       "key": "eq_ref",
+       "node": {
+        "name": "m",
+        "type": "Var"
+       },
+       "type": "Attr"
+      }
+     }
+    ]
+   ],
+   "match": [
+    [
+     "agent",
+     "eq_window",
+     "w"
+    ],
+    [
+     "w",
+     "eq_trk_cur",
+     "m"
+    ]
+   ],
+   "name": "eq.trk.thread.root",
+   "where": {
+    "a": {
+     "key": "eq_thread",
+     "node": {
+      "name": "m",
+      "type": "Var"
+     },
+     "type": "Attr"
+    },
+    "b": {
+     "type": "Lit",
+     "value": null
+    },
+    "type": "Eq"
+   }
+  },
+  {
+   "batch": true,
+   "effects": [
+    [
+     "del_edge",
+     "w",
+     "eq_trk_cur",
+     "m"
+    ]
+   ],
+   "match": [
+    [
+     "agent",
+     "eq_window",
+     "w"
+    ],
+    [
+     "w",
+     "eq_trk_cur",
+     "m"
+    ]
+   ],
+   "name": "eq.trk.release",
+   "where": {
+    "type": "Lit",
+    "value": true
+   }
+  },
+  {
+   "batch": true,
+   "effects": [
+    [
+     "add_edge",
+     "m",
+     "eq_responds_to",
+     "x"
+    ],
+    [
+     "set_attr",
+     "m",
+     "eq_basis",
+     "tracked"
+    ]
+   ],
+   "match": [
+    [
+     "agent",
+     "eq_window",
+     "w"
+    ],
+    [
+     "w",
+     "eq_has_turn",
+     "m"
+    ],
+    [
+     "m",
+     "eq_trk_to",
+     "x"
+    ]
+   ],
+   "name": "eq.trk.materialise",
+   "where": {
+    "items": [
+     {
+      "arg": {
+       "predicate": {
+        "type": "Lit",
+        "value": true
+       },
+       "source": {
+        "edge_type": "eq_trk_cur",
+        "node": {
+         "name": "w",
+         "type": "Var"
+        },
+        "type": "Neighbours"
+       },
+       "type": "Exists",
+       "var_name": "c"
+      },
+      "type": "Not"
+     },
+     {
+      "arg": {
+       "predicate": {
+        "type": "Lit",
+        "value": true
+       },
+       "source": {
+        "edge_type": "eq_trk_pending",
+        "node": {
+         "name": "w",
+         "type": "Var"
+        },
+        "type": "Neighbours"
+       },
+       "type": "Exists",
+       "var_name": "q"
+      },
+      "type": "Not"
+     }
+    ],
+    "type": "And"
+   }
+  }
+ ],
+ "self_load_only": true,
+ "taxonomy_version": "eq-tax-0.5.0",
+ "version": "0.5.0"
+}

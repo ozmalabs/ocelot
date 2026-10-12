@@ -1,4 +1,8 @@
-"""Equilibrium behavioural quanta (stream T3b, pack 0.4.0): adapter-level goldens.
+"""Equilibrium behavioural quanta (streams T3b/T3c, pack 0.5.0): adapter-level goldens.
+
+0.5.0 note: turn adjacency is no longer structure; the G-M1 meeting golden now
+DECLARES the replies the old adjacency rule inferred (identical expectations), and
+the same meeting without declared replies is asserted separately.
 
 Slice-2 note: the sealed slice-1 golden windows are compared on their 0.3.0
 trait vocabulary unchanged; the 0.4.0 space-climate traits they now also carry
@@ -100,9 +104,73 @@ def _check_wire_invariants(out, turns):
 
 
 # ---- G-M1: meeting --------------------------------------------------------
-def test_golden_meeting_window(base):
+def _meeting_declared(rows=MEETING):
+    """The G-M1 meeting with each turn DECLARING a reply to the previous turn:
+    exactly the response edges the pre-0.5.0 adjacency rule inferred for it
+    (every adjacent pair has two different speakers)."""
+    turns = _meeting_turns(rows)
+    for prev, t in zip(turns, turns[1:]):
+        t["reply_to"] = prev["id"]
+    return turns
+
+
+def test_meeting_without_declared_replies_tracks_structure(base):
+    """0.5.0 (T3c O2): adjacency is still not structure, but the seeded turn cursor
+    TRACKS it. G-M1 with no declared replies: the dismissal t03 responds to the open
+    room question t02 without closing it; the withdrawal t04 responds to the address
+    t03 made to its author; actor_a's assertion t05 answers t02 (QUD first: the
+    question is still open for actor_a); the contrast-led t06 responds to actor_a's
+    latest claim t05; the concession t07 responds to t06. Turns that address nobody
+    and follow no open item get basis none (t01, t08, t09)."""
     turns = _meeting_turns()
+    out = _disc(base, turns, kind="meeting", window_id="w_meet_0")
+    _check_wire_invariants(out, turns)
+    rows = {t["id"]: (t["responds_to"], t["basis"], t["addressees"], t["answers"]) for t in out["turns"]}
+    assert rows == {
+        "t01": ([], "none", [], []), "t02": ([], "none", [], []),
+        "t03": (["t02"], "tracked", ["member_003"], []),
+        "t04": (["t03"], "tracked", ["actor_a"], []),
+        "t05": (["t02"], "tracked", ["member_003"], ["t02"]),
+        "t06": (["t05"], "tracked", ["actor_a"], []),
+        "t07": (["t06"], "tracked", ["expert_e"], []),
+        "t08": ([], "none", [], []), "t09": ([], "none", [], []),
+    }
+    assert {t["id"]: t["thread_id"] for t in out["turns"]} == {
+        **{k: "t02" for k in ("t02", "t03", "t04", "t05", "t06", "t07")},
+        "t01": "t01", "t08": "t08", "t09": "t09"}
+    q = _q(out)
+    assert set(q) == {
+        ("actor_a", "competence.claim_grounding", "-", None),
+        ("actor_a", "competence.claimed", "+", None),
+        ("actor_a", "competence.contested", "+", "expert_e"),
+        ("actor_a", "inquiry.answered", "+", "member_003"),
+        ("actor_a", "interaction.floor", "+", None),
+        ("actor_a", "response.dismissal", "+", "member_003"),
+        ("actor_a", "response.engagement", "+", "expert_e"),
+        ("actor_a", "stance.concession", "+", "expert_e"),
+        ("actor_a", "stance.deescalation", "+", "expert_e"),
+        ("actor_a", "stance.hostility", "+", "member_003"),
+        ("actor_a", "status.claim", "+", None),
+        ("expert_e", "competence.acknowledged", "+", "actor_a"),
+        ("expert_e", "competence.demonstrated", "+", None),
+        ("expert_e", "competence.demonstrated.citation", "+", None),
+        ("expert_e", "competence.demonstrated.technical", "+", None),
+        ("expert_e", "epistemic.citation", "+", None),
+        ("expert_e", "voice.dissent", "+", "actor_a"),
+        ("member_002", "stance.deescalation", "+", None),
+        ("member_003", "competence.demonstrated", "+", None),
+        ("member_003", "competence.demonstrated.technical", "+", None),
+        ("member_003", "epistemic.hedging", "+", None),
+        ("member_003", "interaction.withdrawal", "+", None),
+    }
+    assert out["open_questions"] == []
+
+
+def test_golden_meeting_window(base):
+    turns = _meeting_declared()
     out = _disc(base, turns, kind="meeting", window_id="w_meet_1")
+    assert {t["basis"] for t in out["turns"][1:]} == {"declared"} and out["turns"][0]["basis"] == "none"
+    assert {t["thread_id"] for t in out["turns"]} == {"t01"}
     _check_wire_invariants(out, turns)
     q = _q(out)
     assert _slice1(q) == {
@@ -191,8 +259,16 @@ def test_golden_thread_window(base):
         ("member_101", "stance.deescalation", "+", "actor_a"),
         ("member_102", "epistemic.question_demand", "+", "expert_e"),
         ("member_102", "interaction.floor", "+", None),
+        # O2: consecutive turns p6 -> p7 by the same actor (`eq_continues`, an
+        # ordering edge, NOT a response: p7's responds_to stays the declared p5)
         ("member_102", "interaction.run", "+", None),
     }
+    tw = {t["id"]: t for t in out["turns"]}
+    assert tw["p7"]["responds_to"] == ["p5"] and tw["p7"]["basis"] == "declared"
+    assert tw["p3"]["responds_to"] == ["p1"] and tw["p3"]["basis"] == "declared"
+    assert tw["p3"]["addressees"] == ["actor_a"] and tw["p5"]["answers"] == ["p3"]
+    assert tw["p1"]["basis"] == "none" and {t["thread_id"] for t in out["turns"]} == {"p1"}
+    assert out["open_questions"] == ["p6", "p7"]
     assert q[("actor_a", "competence.claimed", "+", None)]["match"] == "partial"  # one act
     assert q[("actor_a", "competence.corroborated", "+", None)]["evidence"] == ["p1", "p2"]
     assert q[("actor_a", "competence.claim_grounding", "+", None)]["evidence"] == ["p1", "p2"]
@@ -367,7 +443,7 @@ def test_negated_and_hedged_concession_quanta(base):
 
 # ---- PREREG P4: determinism + invariances ---------------------------------
 def test_determinism_and_actor_relabelling_invariance(base):
-    turns = _meeting_turns()
+    turns = _meeting_declared()
     a = _disc(base, turns, kind="meeting")
     b = _disc(base, turns, kind="meeting")
     a.pop("steps"), b.pop("steps")
@@ -407,14 +483,14 @@ def test_new_trait_and_composite_are_data_only(base):
     _add_codebook(fork, root, "EqTraitCompose", "eq_has_trait_compose", {  # disabled: never minted
         "trait": "pattern.sealioning", "pole": "+", "req_a_trait": "stance.hostility", "req_a_pole": "+",
         "req_b_trait": "status.claim", "req_b_pole": "+", "same_target": False})
-    q = _q(_disc(base, _meeting_turns(), kind="meeting", fork=fork))
+    q = _q(_disc(base, _meeting_declared(), kind="meeting", fork=fork))
     assert q[("expert_e", "probe.link_sharing", "+", None)]["evidence"] == ["t06"]
     combo = q[("actor_a", "probe.combo", "+", None)]
     assert combo["match"] == "partial"  # weakest of hostility(partial) and status.claim(exact)
     assert set(combo["evidence"]) == {"t01", "t03"}
     assert ("actor_a", "pattern.sealioning", "+", None) not in q
     # and the frozen base never saw any of it
-    assert not any(k[1].startswith("probe.") for k in _q(_disc(base, _meeting_turns(), kind="meeting")))
+    assert not any(k[1].startswith("probe.") for k in _q(_disc(base, _meeting_declared(), kind="meeting")))
 
 
 # ---- compliance -------------------------------------------------------------
