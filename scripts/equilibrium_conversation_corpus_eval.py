@@ -44,7 +44,9 @@ def main(src: str) -> None:
         return
     rss0 = _rss_kib()
     lat, close_lat, threads, rss_peak = [], [], [], []
-    agg = {k: 0 for k in ("meetings", "turns", "tracked", "declared", "none", "questions",
+    # basis counts are FIRST emissions; 0.8.0 revisions are counted as turns_delta entries
+    # and their (late) answers join the answered set
+    agg = {k: 0 for k in ("meetings", "turns", "tracked", "declared", "held", "none", "turns_delta", "questions",
                           "answered_q", "open_at_close", "answers", "answers_adjacent",
                           "multi_target", "addressed", "quanta", "episodes", "backchannel_turns",
                           "answers_by_backchannel", "backchannel_responses_to_questions")}
@@ -91,6 +93,9 @@ def main(src: str) -> None:
                     d = pos[t["id"]] - pos[a]
                     dist.append(d)
                     agg["answers_adjacent"] += d == 1
+            for d in out["turns_delta"]:
+                agg["turns_delta"] += 1
+                answered.update(d["answers"])
         sess = svc.sessions[cid]  # complete rows (the close response carries deltas since 0.6.0)
         fin = ec.conversation_full(sess.branch, svc.root, sess.state)
         t0 = time.perf_counter()

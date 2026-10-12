@@ -32,8 +32,23 @@ worker client (equilibrium_worker/classify.py, OcelotClassifier):
                           spoken, and so may a quantum's actor_ref / target_ref)
                      -> {"ok","taxonomy_version","conversation_id","seq",
                          "turns":[{"id","labels"(as /v1/classify),"responds_to","basis",
-                                   "addressees","thread_id","topic_id","answers"}],
+                                   "confidence","candidates","addressees","thread_id","topic_id",
+                                   "topic_candidates","answers"}],
+                         "turns_delta":[{"id","responds_to","basis","confidence","candidates",
+                                         "addressees","thread_id","answers","topic_id",
+                                         "topic_candidates"}],
                          "quanta_delta":[...],"episodes_delta":[...],"open_questions"}
+                        (eq-tax-0.8.0 HELD-OPEN reply attribution, shared contract
+                         docs/research/psychology_affect/EQ_TAX_0_8_0_HELD_COLLAPSE.md:
+                         basis declared|tracked|held|none; confidence declared|strong|weak|
+                         held|null; candidates [{ref, cues}] (<= 16, closed cue codebook);
+                         turns_delta = full structure of earlier turns this call revised --
+                         a held turn collapsed / taken up, or frozen (its author spoke again,
+                         or close); folding it over the first emission gives the one-shot
+                         structure. Amendment A: topic_candidates [{ref, cues}] (<= 16, closed
+                         topic cue codebook) = the live issues (questions) the turn is under;
+                         topic_id = the dominating one, else null (held / none); topic fields
+                         are revisable by topic uptake and travel in turns_delta)
                         (0.6.0 EVIDENCE DELTAS, relative to everything emitted earlier for
                          the conversation, in seq order; only quanta / episodes this call
                          changed appear:
@@ -47,18 +62,21 @@ worker client (equilibrium_worker/classify.py, OcelotClassifier):
                          folding them in order gives exactly the full rows; open_questions
                          is a full list)
   POST /v1/conversations/{id}/close  -> same shape, "turns":[], deltas of this call (no ticks:
-                                        empty); frees the retained fork
+                                        empty; turns_delta: the held frontier, frozen at
+                                        close); frees the retained fork
   GET  /v1/conversations/{id}        -> {"ok","conversation_id","seq","idle_ttl_s","kind"}
   POST /v1/conversations/_batch      (shared batch contract)
                      -> {"taxonomy_version"?, "items":[{"conversation_id","kind","turns":[as /turns],
                          "participants"?: [as /turns], "close"?: bool}]}  (1..64 items, <= 2,000 turns in total, <= 100 per item,
                          each conversation_id at most once)
                      -> {"ok":true,"taxonomy_version","results":[ {"conversation_id","ok":true,
-                         seq,turns,quanta_delta,episodes_delta,open_questions} (as /turns)
+                         seq,turns,turns_delta,quanta_delta,episodes_delta,open_questions} (as /turns)
                          | {"conversation_id","ok":false,"error":{code,message,retryable}} ]}
                         results in request order; items run in parallel on the worker pool; a
                         per-item failure does not fail the batch; "close":true frees the
-                        conversation after its turns are ingested (the result is the turns read-out)
+                        conversation after its turns are ingested (the result is the turns read-out;
+                        0.8.0: its turns_delta also carries the close's frozen held frontier,
+                        turns of this item excluded, one entry per id)
      errors: 404 unknown_conversation; 409 conversation_evicted | out_of_order | duplicate_turn;
              413 too_large; 400 bad_request -- {ok:false,error:{code,message,retryable}}, no input echo
 
@@ -148,7 +166,19 @@ BATCH_KEYS = frozenset({"taxonomy_version", "items"})
 BATCH_ITEM_KEYS = frozenset({"conversation_id", "kind", "turns", "close", "participants"})
 DEFAULT_WORKERS = max(1, min(8, os.cpu_count() or 1))
 MAX_TOMBSTONES = 4096  # evicted ids remembered (-> 409 conversation_evicted), LRU-capped
-BASES = frozenset({"declared", "tracked", "none"})
+BASES = frozenset({"declared", "tracked", "held", "none"})
+# eq-tax-0.8.0 held-open reply attribution (shared contract
+# docs/research/psychology_affect/EQ_TAX_0_8_0_HELD_COLLAPSE.md): closed cue codebook,
+# categorical confidence, bounded candidate set
+CUE_CODES = frozenset({"adjacent", "open_question", "addressed", "vocative", "second_person", "contrast",
+                       "answer_form", "same_thread", "uptake"})
+CONFIDENCES = frozenset({"declared", "strong", "weak", "held"})
+MAX_CANDIDATES = 16
+# eq-tax-0.8.0 Amendment A: the topic relation (live issues the turn is under), closed
+# topic cue codebook, same bound and dominance shape
+TOPIC_CUE_CODES = frozenset({"open_question", "via_reply", "vocative", "same_thread", "uptake", "answer_form"})
+STRUCTURE_KEYS = ("responds_to", "basis", "confidence", "candidates", "addressees", "thread_id", "answers",
+                  "topic_id", "topic_candidates")
 # The client's contract ID pattern (^[A-Za-z0-9_.:@!+=-]{1,255}$). Turn ids are
 # capped 3 shorter so the derived episode id "ep:<root turn id>" still fits it.
 ID_CHARS = frozenset("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_.:@!+=-")
@@ -560,22 +590,108 @@ def discourse_to_wire(result: dict, taxonomy_version: str) -> dict:
             "episodes": episodes_to_wire(result["episodes"])}
 
 
+def structure_violation(t: dict) -> str | None:
+    """The eq-tax-0.8.0 turn-structure invariants (turn objects and turns_delta rows);
+    None when they hold. Refs are checked against the row itself (never self); that
+    they are EARLIER turns of the segment holds by construction (the rules only ever
+    reach earlier turns) and is asserted client-side in the tests."""
+    basis, conf, cands, rsp, ans = t["basis"], t["confidence"], t["candidates"], t["responds_to"], t["answers"]
+    if basis not in BASES or not isinstance(t["thread_id"], str):
+        return "basis / thread"
+    if conf is not None and conf not in CONFIDENCES:
+        return "confidence"
+    if len(cands) > MAX_CANDIDATES:
+        return "too many candidates"
+    refs = [c["ref"] for c in cands]
+    if len(set(refs)) != len(refs) or any(not c["cues"] or len(set(c["cues"])) != len(c["cues"])
+                                          or not set(c["cues"]) <= CUE_CODES for c in cands):
+        return "candidate cues"
+    if t["id"] in set(rsp) | set(ans) | set(refs):
+        return "self reference"
+    if (basis == "none") != (not cands and not rsp and conf is None):
+        return "basis none"
+    if basis == "held" and not (not rsp and len(cands) >= 2 and conf == "held" and not ans):
+        return "basis held"
+    if basis == "tracked" and not (rsp and set(rsp) <= set(refs) and conf in ("strong", "weak")):
+        return "basis tracked"
+    if basis == "declared" and conf != "declared":
+        return "basis declared"
+    if (conf == "held") != (basis == "held"):
+        return "confidence held"
+    if not set(ans) <= set(rsp):
+        return "answers"
+    return topic_violation(t)
+
+
+def _cands_ok(cands, codes) -> bool:
+    refs = [c["ref"] for c in cands]
+    return (len(cands) <= MAX_CANDIDATES and len(set(refs)) == len(refs)
+            and all(c["cues"] and len(set(c["cues"])) == len(c["cues"]) and set(c["cues"]) <= codes
+                    for c in cands))
+
+
+def topic_violation(t: dict) -> str | None:
+    """Amendment A topic invariants: topic_id is the ref of the candidate whose cue set
+    strictly contains every rival's (a sole candidate vacuously), else null (held when
+    >= 2 candidates, none when no candidate); never self. A mechanical check of the
+    rules' output, not a decision."""
+    tid, cands = t["topic_id"], t["topic_candidates"]
+    if not _cands_ok(cands, TOPIC_CUE_CODES):
+        return "topic candidates"
+    refs = [c["ref"] for c in cands]
+    if t["id"] in refs or tid == t["id"]:
+        return "topic self reference"
+    cues = {c["ref"]: set(c["cues"]) for c in cands}
+
+    def dominates(r):
+        return all(cues[o] < cues[r] for o in refs if o != r)
+    if tid is None:
+        return "topic held" if any(dominates(r) for r in refs) else None
+    if tid not in cues or not dominates(tid):
+        return "topic id"
+    return None
+
+
+def structure_to_wire(t: dict) -> dict:
+    """Type conversion of one turn's structure fields; an invariant violation is a
+    500, never a guess."""
+    why = structure_violation(t)
+    if why is not None:
+        raise RuntimeError(f"turn structure violates the contract: {why}")
+    return {"responds_to": list(t["responds_to"]), "basis": t["basis"], "confidence": t["confidence"],
+            "candidates": [{"ref": c["ref"], "cues": list(c["cues"])} for c in t["candidates"]],
+            "addressees": list(t["addressees"]), "thread_id": t["thread_id"], "answers": list(t["answers"]),
+            "topic_id": t["topic_id"],
+            "topic_candidates": [{"ref": c["ref"], "cues": list(c["cues"])} for c in t["topic_candidates"]]}
+
+
 def conversation_to_wire(result: dict, taxonomy_version: str) -> dict:
     """Re-shape one conversation read-out (turns batch or close) into the shared
-    /v1/conversations response. Per-turn `labels` is the /v1/classify object."""
+    /v1/conversations response. Per-turn `labels` is the /v1/classify object;
+    `turns_delta` (0.8.0) is the full structure of each earlier turn this call revised."""
     turns = []
     for t in result["turns"]:
-        if t["basis"] not in BASES or not isinstance(t["thread_id"], str):
-            raise RuntimeError("turn without a structure basis / thread")
-        turns.append({"id": t["id"], "labels": to_wire(t["read"]),
-                      "responds_to": list(t["responds_to"]), "basis": t["basis"],
-                      "addressees": list(t["addressees"]), "thread_id": t["thread_id"],
-                      "topic_id": t["topic_id"], "answers": list(t["answers"])})
+        st = structure_to_wire(t)
+        turns.append({"id": t["id"], "labels": to_wire(t["read"]), "responds_to": st["responds_to"],
+                      "basis": st["basis"], "confidence": st["confidence"], "candidates": st["candidates"],
+                      "addressees": st["addressees"], "thread_id": st["thread_id"],
+                      "topic_id": st["topic_id"], "topic_candidates": st["topic_candidates"],
+                      "answers": st["answers"]})
     return {"ok": True, "taxonomy_version": taxonomy_version,
             "conversation_id": result["conversation_id"], "seq": result["seq"], "turns": turns,
+            "turns_delta": [{"id": d["id"], **structure_to_wire(d)} for d in result["turns_delta"]],
             "quanta_delta": quanta_delta_to_wire(result["quanta_delta"]),
             "episodes_delta": episodes_delta_to_wire(result["episodes_delta"]),
             "open_questions": list(result["open_questions"])}
+
+
+def merge_turns_delta(out: dict, final: list[dict]) -> list[dict]:
+    """A /_batch item with close: the turns read-out's turns_delta plus the close's
+    final (frozen) entries, minus this item's own turns; one entry per id. Mechanical:
+    both are full structure rows of the same fork state."""
+    own = {t["id"] for t in out["turns"]}
+    have = {d["id"] for d in out["turns_delta"]}
+    return out["turns_delta"] + [d for d in final if d["id"] not in own | have]
 
 
 def _no_dupes(pairs):
@@ -884,7 +1000,8 @@ class ClassifierService:
         try:
             out = self.conversation_turns(cid, item["kind"], item["turns"], item.get("participants"))
             if item.get("close") is True:
-                self.conversation_close(cid, read_out=False)
+                fin = self.conversation_close(cid)
+                out["turns_delta"] = merge_turns_delta(out, fin["turns_delta"])
         except BaseDrift:
             raise
         except ApiError as e:
