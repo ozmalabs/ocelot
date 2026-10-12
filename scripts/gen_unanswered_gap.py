@@ -14,6 +14,17 @@ editable), and never twice for a class already held by a concern. "Unanswered"
 is read off the graph: the turn's own `turn_outcome` datum is 'explicit_error'
 (WorldAdapter.record_turn_outcome, written when the daemon completes the turn). The concern points about_message at the turn, so the
 conversation replay treats it as the flagged probe, the turn that must change.
+
+v1.1.0 (2026-10-10, long-session cost): same decision, cheaper evaluation.
+Measured: this rule was the costliest in a long session (1.5 ms/turn at turn
+25, 245 ms/turn at turn 150) because every unanswered message whose class
+already had a concern was never marked noted and re-ran two scans over ALL
+Messages on every re-match. Now (a) the "class already held" check, over the
+few SelfConcerns, runs before the scans, so such a message is rejected
+cheaply, and (b) the two scans enumerate NodesWhere(Message, turn_outcome,
+'explicit_error') -- the unanswered messages only -- instead of every Message
+(WorldAdapter.record_turn_outcome declares the attr index). The where clause
+is a pure conjunction, so reordering it cannot change which bindings fire.
 Idempotent.
 """
 import json
@@ -46,6 +57,11 @@ def same_sig(i_a, i_b):
     return And(*[Eq(Or0(A(i_a, k)), Or0(A(i_b, k))) for k in SIG])
 
 
+# v1.1.0: the unanswered Messages only (indexed); the predicate below still
+# checks turn_outcome, so the result is identical with or without the index
+UNANSWERED_MESSAGES = {"type": "NodesWhere", "node_type": "Message", "attr_key": "turn_outcome",
+                       "value": L("explicit_error")}
+
 RULE = {
     "name": "note_unanswered_turn",
     "comment": "File the agent's own recurring unanswered turn class as an experiment-eligible concern (see seed description).",
@@ -56,20 +72,21 @@ RULE = {
         Eq(A("i", "schema"), L("communication_interpretation.v1")),
         Not(Eq(A("m", "unanswered_gap_noted"), L(1))),
         unanswered("m"),
+        # no concern already holds this class (cheap: SelfConcerns are few;
+        # checked before the scans below -- v1.1.0)
+        Not(Ex({"type": "NodesOfType", "node_type": "SelfConcern"}, "sc2", And(
+            Eq(A("sc2", "kind"), L("unanswered")),
+            *[Eq(Or0(A("sc2", "sig_" + k)), Or0(A("i", k))) for k in SIG]))),
         # the class has gone unanswered at least min_recurrence times
-        {"type": "Gte", "a": {"type": "Count", "source": {"type": "Filter", "source": {"type": "NodesOfType", "node_type": "Message"},
+        {"type": "Gte", "a": {"type": "Count", "source": {"type": "Filter", "source": UNANSWERED_MESSAGES,
                                                           "var_name": "m2", "predicate": And(
             Eq(A("m2", "from"), L("interlocutor")), unanswered("m2"),
             Ex(InNb("m2", "interprets"), "i2", same_sig("i2", "i")))}},
          "b": A("pol", "min_recurrence")},
-        # no concern already holds this class
-        Not(Ex({"type": "NodesOfType", "node_type": "SelfConcern"}, "sc2", And(
-            Eq(A("sc2", "kind"), L("unanswered")),
-            *[Eq(Or0(A("sc2", "sig_" + k)), Or0(A("i", k))) for k in SIG]))),
         # one filing per class per pass: only the OLDEST unanswered message of
         # the class files (two same-class turns in one fixpoint pass filed two
         # concerns -- measured in the first tranche-22 run)
-        Eq(V("m"), {"type": "Argmin", "source": {"type": "Filter", "source": {"type": "NodesOfType", "node_type": "Message"},
+        Eq(V("m"), {"type": "Argmin", "source": {"type": "Filter", "source": UNANSWERED_MESSAGES,
                                                   "var_name": "m4", "predicate": And(
             Eq(A("m4", "from"), L("interlocutor")), unanswered("m4"),
             Ex(InNb("m4", "interprets"), "i4", same_sig("i4", "i")))},
@@ -90,7 +107,7 @@ RULE = {
 
 seed = {
     "id": "unanswered_gap",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "depends_on": ["gap_awareness"],
     "description": __doc__,
     "nodes": [{"local_id": 0, "type": "UnansweredGapPolicy", "attrs": {

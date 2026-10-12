@@ -71,6 +71,8 @@ The growth is superlinear. The production daemon would degrade the same way in a
 
 Candidate cause, untested: rules that `Count` over all `Message` nodes for every new message. One example is tranche 22's `note_unanswered_turn` recurrence count, which makes each turn O(n), so a session costs O(n²). This needs a measured diagnosis before any fix.
 
+**Diagnosed and fixed:** see [LONG_SESSION_COST_FIX_RESULTS_20261010.md](LONG_SESSION_COST_FIX_RESULTS_20261010.md). The main cause was about 30 per-turn Python reply lookups that scanned the whole session, plus four rules. Turn 126–150 cost fell from 10.6 to 0.79 s per turn, with byte-identical replies.
+
 ## 4. Labelling (human step, required for Q0)
 
 `evaluation/labels/reply_quality_heldout_v1.csv`:

@@ -2978,7 +2978,7 @@ class WorldAdapter:
             reply_mid = None
         else:
             reply_mid = next((candidate for candidate in
-                              self.agent_outbound_messages()
+                              self.agent_outbound_replies_to(inbound)
                               if inbound in self.responds_to(candidate)
                               and self.s.node(candidate)["attrs"].get("from")
                               == "agent"
@@ -3026,7 +3026,7 @@ class WorldAdapter:
             return None
         reply_pair = next(((candidate, str(self.s.node(candidate)["attrs"].get(
             "text") or "").strip()) for candidate in
-            self.agent_outbound_messages()
+            self.agent_outbound_replies_to(inbound)
             if inbound in self.responds_to(candidate)
             and self.s.node(candidate)["attrs"].get("from") == "agent"
             and str(self.s.node(candidate)["attrs"].get("text")
@@ -3937,7 +3937,7 @@ class WorldAdapter:
                     or source_speakers != current_speakers):
                 return None
 
-            reply_nodes = [reply for reply in self.agent_outbound_messages()
+            reply_nodes = [reply for reply in self.agent_outbound_replies_to(inbound)
                            if inbound in self.responds_to(reply)
                            and self.s.node(reply)["attrs"].get(
                                "native_reported_content_recall") == 1.0]
@@ -4190,6 +4190,40 @@ class WorldAdapter:
         return [node for node in messages
                 if not self.s.node(node)["attrs"].get(
                     "turn_reply_suppressed")]
+
+    def agent_outbound_replies_to(self, mid):
+        """The subset of `agent_outbound_messages()` that responds to `mid`,
+        in the same (node-id) order, read from `mid`'s own `responds_to`
+        in-edges. Every per-turn reply lookup used to scan ALL outbound
+        messages and filter by `mid in responds_to(reply)`: O(session length)
+        per lookup, called many times per turn, so a session cost O(n^2)
+        (measured: 0.3 s/turn at turn 25, 6.5 s/turn at turn 150). Same
+        result set, O(replies to this turn)."""
+        if mid is None:
+            return []
+        # Keep the Message.from attr index declared exactly as the full scan
+        # did on first use (it is graph state other selectors can read).
+        self._ensure_outbound_message_index()
+        if isinstance(mid, int):
+            import substrate_rs as srs
+            mid = srs.NodeID(mid)
+        try:
+            if not self.s.has_node(mid):
+                return []
+            cands = self.inner.in_neighbours(mid, "responds_to")
+        except Exception:  # noqa: BLE001 -- an unreadable turn has no replies
+            return []
+        out = []
+        for node in cands:
+            if not self.s.has_node(node):
+                continue
+            n = self.s.node(node)
+            if n.get("type") != "Message":
+                continue
+            attrs = n["attrs"]
+            if attrs.get("from") == "agent" and not attrs.get("turn_reply_suppressed"):
+                out.append(node)
+        return sorted(set(out), key=lambda node: int(node.value))
 
     def _ensure_outbound_message_index(self):
         """Index immutable sender identity; suppression remains a live read."""
@@ -6407,7 +6441,7 @@ class WorldAdapter:
                     or state.get("interaction_mode") != "non_turn"):
                 return None
             self.inner.set_attr(inbound, "communication_route", "blocked")
-            for candidate in self.agent_outbound_messages():
+            for candidate in self.agent_outbound_replies_to(inbound):
                 if (inbound in self.responds_to(candidate)
                         and str(self.s.node(candidate)["attrs"].get(
                             "text") or "").strip()):
@@ -6751,7 +6785,7 @@ class WorldAdapter:
         `floor:1.0` — a mechanical read of the rule's own marker, used when a
         fulfilled topic/meta answer must not be shadowed by the bare floor."""
         last = None
-        for r in self.agent_outbound_messages():
+        for r in self.agent_outbound_replies_to(mid):
             a = self.s.node(r)["attrs"]
             if a.get("text") and mid in self.responds_to(r):
                 if skip_floor and a.get("floor") == 1.0:
@@ -8975,7 +9009,7 @@ class WorldAdapter:
                     or receipt_attrs.get("turn_message_id") != int(mid.value)):
                 continue
             committed = set(self.inner.neighbours(receipt, "releases"))
-            for reply in reversed(self.agent_outbound_messages()):
+            for reply in reversed(self.agent_outbound_replies_to(mid)):
                 attrs = self.s.node(reply)["attrs"]
                 if (mid not in self.responds_to(reply)
                         or attrs.get("native_instruction_reply_plan")
@@ -8998,7 +9032,7 @@ class WorldAdapter:
             "attention_acknowledgment", "self_organisation",
             "self_model_rule", "causal_relation_answer",
         }
-        for reply in reversed(self.agent_outbound_messages()):
+        for reply in reversed(self.agent_outbound_replies_to(mid)):
             attrs = self.s.node(reply)["attrs"]
             plan = (attrs.get("native_standalone_assertion_reply_plan")
                     or attrs.get("native_correction_reply_plan")
@@ -9021,7 +9055,7 @@ class WorldAdapter:
         # Grounded information replies are rule-authored surface messages
         # without a speech-act edge. They outrank an honest floor only after
         # the same turn's information ProductionGateReceipt is released.
-        for reply in reversed(self.agent_outbound_messages()):
+        for reply in reversed(self.agent_outbound_replies_to(mid)):
             attrs = self.s.node(reply)["attrs"]
             if (mid not in self.responds_to(reply)
                     or attrs.get("native_information_reply_plan")
@@ -9053,6 +9087,12 @@ class WorldAdapter:
                 import substrate_rs as srs
                 mid = srs.NodeID(mid)
             if mid is not None and self.s.has_node(mid):
+                # index the datum so rules can enumerate unanswered turns
+                # without scanning every Message (unanswered_gap v1.1.0)
+                if not getattr(self, "_turn_outcome_index_ready", False):
+                    if not self.inner.has_attr_index("Message", "turn_outcome"):
+                        self.inner.declare_attr_index("Message", "turn_outcome")
+                    self._turn_outcome_index_ready = True
                 self.inner.set_attr(mid, "turn_outcome", str(status))
                 return True
         except Exception:  # noqa: BLE001 -- a datum write never breaks a turn
@@ -9068,7 +9108,7 @@ class WorldAdapter:
             return "unrepresented"
         if self._graph_selected_explicit_error(mid):
             return "explicit_error"
-        for reply in self.agent_outbound_messages():
+        for reply in self.agent_outbound_replies_to(mid):
             attrs = self.s.node(reply)["attrs"]
             if (mid in self.responds_to(reply)
                     and attrs.get("terminal_outcome") == "explicit_error"
@@ -9103,7 +9143,7 @@ class WorldAdapter:
                     and self.s.node(reply)["attrs"].get(
                         "native_typed_acknowledgement_reply_plan")
                     == "neutral_receipt"
-                    for reply in self.agent_outbound_messages())):
+                    for reply in self.agent_outbound_replies_to(mid))):
             return {"status": "expected",
                     "expected_response_acts": ["acknowledgment"]}
         if self._native_reflective_answer_selected(mid):
@@ -9183,7 +9223,7 @@ class WorldAdapter:
             self.inner.set_attr(mid, "communication_route", "blocked"
                                 if reason == "native_blocked_non_turn"
                                 else "defer")
-            for candidate in self.agent_outbound_messages():
+            for candidate in self.agent_outbound_replies_to(mid):
                 if mid not in self.responds_to(candidate):
                     continue
                 if str(self.s.node(candidate)["attrs"].get("text") or "").strip():
@@ -9360,7 +9400,7 @@ class WorldAdapter:
                 mid in self.responds_to(reply)
                 and self.s.node(reply)["attrs"].get(
                     "native_reflective_answer_plan") == faculty
-                for reply in self.agent_outbound_messages())
+                for reply in self.agent_outbound_replies_to(mid))
         except Exception:
             return False
 
@@ -9402,7 +9442,7 @@ class WorldAdapter:
             if surface is not None and str(surface).strip() != str(expected).strip():
                 return None
             surface = expected
-            for reply in self.agent_outbound_messages():
+            for reply in self.agent_outbound_replies_to(mid):
                 if (mid not in self.responds_to(reply)
                         or self.s.node(reply)["attrs"].get(
                             "native_reflective_answer_plan") != faculty):
@@ -9454,7 +9494,7 @@ class WorldAdapter:
                 or str(evidence_attrs.get("delivery_surface") or "").strip()
                 != str(surface or "").strip()):
             return None
-        replies = [reply for reply in self.agent_outbound_messages()
+        replies = [reply for reply in self.agent_outbound_replies_to(mid)
                    if mid in self.responds_to(reply)
                    and self.s.node(reply)["attrs"].get(
                        "native_reflective_answer_plan") == "self_organisation"]
@@ -9495,7 +9535,7 @@ class WorldAdapter:
             mid = srs.NodeID(mid)
         if not self._native_typed_acknowledgement_receipt_selected(mid):
             return None
-        replies = [reply for reply in self.agent_outbound_messages()
+        replies = [reply for reply in self.agent_outbound_replies_to(mid)
                    if mid in self.responds_to(reply)
                    and self.s.node(reply)["attrs"].get(
                        "native_typed_acknowledgement_reply_plan")
@@ -9528,7 +9568,7 @@ class WorldAdapter:
             mid = srs.NodeID(mid)
         if not self._native_standalone_assertion_receipt_selected(mid):
             return None
-        replies = [reply for reply in self.agent_outbound_messages()
+        replies = [reply for reply in self.agent_outbound_replies_to(mid)
                    if mid in self.responds_to(reply)
                    and self.s.node(reply)["attrs"].get(
                        "native_standalone_assertion_reply_plan") ==
@@ -9574,7 +9614,7 @@ class WorldAdapter:
             mid = srs.NodeID(mid)
         if not self._native_correction_receipt_selected(mid):
             return None
-        replies = [reply for reply in self.agent_outbound_messages()
+        replies = [reply for reply in self.agent_outbound_replies_to(mid)
                    if mid in self.responds_to(reply)
                    and self.s.node(reply)["attrs"].get(
                        "native_correction_reply_plan") == "correction_receipt"]
@@ -9626,7 +9666,7 @@ class WorldAdapter:
         )
         if not (incoming_social or graph_selected_social):
             return None
-        replies = [reply for reply in self.agent_outbound_messages()
+        replies = [reply for reply in self.agent_outbound_replies_to(mid)
                    if mid in self.responds_to(reply)]
         if graph_selected_social:
             interpretation = self.s.node(mid)["attrs"].get(
@@ -9821,7 +9861,7 @@ class WorldAdapter:
             if released is None:
                 return None
             reply = next((candidate for candidate in
-                          self.agent_outbound_messages()
+                          self.agent_outbound_replies_to(mid)
                           if mid in self.responds_to(candidate)
                           and str(self.s.node(candidate)["attrs"].get("text")
                                   or "").strip() == released), None)
@@ -9912,7 +9952,7 @@ class WorldAdapter:
             self.inner.set_attr(
                 committed_reply, "native_action_reply_plan",
                 "conversation_action_graph")
-            for candidate in self.agent_outbound_messages():
+            for candidate in self.agent_outbound_replies_to(mid):
                 if (candidate != committed_reply
                         and mid in self.responds_to(candidate)
                         and str(self.s.node(candidate)["attrs"].get(
@@ -9954,7 +9994,7 @@ class WorldAdapter:
             return None
         inbound_attrs = self.s.node(mid)["attrs"]
         if inbound_attrs.get("communication_repair_route") == "causal_evidence":
-            committed = next((node for node in self.agent_outbound_messages()
+            committed = next((node for node in self.agent_outbound_replies_to(mid)
                               if mid in self.responds_to(node)
                               and self.s.node(node)["attrs"].get(
                                   "native_causal_repair_reply") == 1.0
@@ -10178,7 +10218,7 @@ class WorldAdapter:
                 return None
             if not direct_selected_answer:
                 return None
-        candidates = [reply for reply in self.agent_outbound_messages()
+        candidates = [reply for reply in self.agent_outbound_replies_to(mid)
                       if mid in self.responds_to(reply)
                       and (direct_selected_answer or str(
                           self.s.node(reply)["attrs"].get("text") or "").strip())]
@@ -10214,7 +10254,7 @@ class WorldAdapter:
                 reply, "native_information_reply_plan",
                 "supported_selected_concept_answer" if direct_selected_answer
                 else "grounded_answer_topic")
-            for candidate in self.agent_outbound_messages():
+            for candidate in self.agent_outbound_replies_to(mid):
                 if candidate != reply and mid in self.responds_to(candidate):
                     self.inner.set_attr(candidate, "turn_reply_suppressed", True)
                     self.inner.set_attr(
@@ -10243,7 +10283,7 @@ class WorldAdapter:
         if any(mid in self.responds_to(reply)
                and self.s.node(reply)["attrs"].get("terminal_outcome")
                == "explicit_error"
-               for reply in self.agent_outbound_messages()):
+               for reply in self.agent_outbound_replies_to(mid)):
             return None
         goal = next((node for node in self.inner.neighbours(
             self.agent, "has_goal")
@@ -10270,7 +10310,7 @@ class WorldAdapter:
         )
         if not exhausted:
             return None
-        candidates = [reply for reply in self.agent_outbound_messages()
+        candidates = [reply for reply in self.agent_outbound_replies_to(mid)
                       if mid in self.responds_to(reply)
                       and str(self.s.node(reply)["attrs"].get("text") or "").strip()
                       and self.s.node(reply)["attrs"].get("floor") != 1.0]
@@ -10952,7 +10992,7 @@ class WorldAdapter:
                      or interpretation_attrs.get("evidence_communicative_act")
                      == "ability_action_offer")):
             self.inner.set_attr(mid, "communication_route", "defer")
-            for candidate in self.agent_outbound_messages():
+            for candidate in self.agent_outbound_replies_to(mid):
                 if mid in self.responds_to(candidate):
                     self.inner.set_attr(candidate, "turn_reply_suppressed", True)
                     self.inner.set_attr(
@@ -10974,7 +11014,7 @@ class WorldAdapter:
             # the diagnostic error surface is not a reply to an incomplete
             # contribution.
             self.inner.set_attr(mid, "communication_route", "defer")
-            for candidate in self.agent_outbound_messages():
+            for candidate in self.agent_outbound_replies_to(mid):
                 if mid in self.responds_to(candidate):
                     self.inner.set_attr(candidate, "turn_reply_suppressed", True)
                     self.inner.set_attr(
@@ -11017,7 +11057,7 @@ class WorldAdapter:
                 surface_kind_override="inquire_context_word")
             if released_repair is not None:
                 greeting_plans = [
-                    node for node in self.agent_outbound_messages()
+                    node for node in self.agent_outbound_replies_to(mid)
                     if (mid in self.responds_to(node)
                         and self.s.node(node)["attrs"].get(
                             "native_compound_greeting_plan") == 1)
@@ -11063,7 +11103,7 @@ class WorldAdapter:
                 self.inner.add_edge_unchecked(
                     composition_message, "composes", greeting_message)
                 repair_messages = [
-                    node for node in self.agent_outbound_messages()
+                    node for node in self.agent_outbound_replies_to(mid)
                     if (node != greeting_message
                         and mid in self.responds_to(node)
                         and self.s.node(node)["attrs"].get(
@@ -12125,7 +12165,7 @@ class WorldAdapter:
             self._form_reply_intent_for_text("answer", meta_reply)
             return self._finish_turn_reply(mid, meta_reply, source="adapter")
 
-        replies = [r for r in self.agent_outbound_messages()
+        replies = [r for r in self.agent_outbound_replies_to(mid)
                    if mid in self.responds_to(r)]
         native_social_reply = self._native_social_answer_selected(mid)
         native_correction_reply = self._native_correction_receipt_selected(mid)
