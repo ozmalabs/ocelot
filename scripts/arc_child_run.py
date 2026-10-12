@@ -126,7 +126,14 @@ def apply_concept_delta(agent, delta: dict) -> list:
     by both child runners (imported by convo_child_run, like _load_delta).
     Returns the names actually added."""
     added = []
-    for item in (delta.get("add_concepts") or []):
+    # IMPROVEMENT INTEGRITY (plan P3): a node of a self-improvement-loop type
+    # (or the adoption gate's own provenance evidence) is never minted by a
+    # delta, here or at adoption; refused items are reported on the delta
+    from domains.delta_integrity import filter_protected
+    filtered, refused = filter_protected(agent.s, {"add_concepts": delta.get("add_concepts") or []})
+    if refused:
+        delta.setdefault("integrity_refused", []).extend(refused)
+    for item in filtered["add_concepts"]:
         if not isinstance(item, dict):
             continue
         attrs = dict(item.get("attrs") or {})
@@ -159,7 +166,14 @@ def apply_node_attr_delta(agent, delta: dict) -> list:
     runners (imported by convo_child_run, like apply_concept_delta). Returns
     the list of (type, key_value, attr_name) tuples actually set."""
     changed = []
-    for item in (delta.get("set_node_attrs") or []):
+    # IMPROVEMENT INTEGRITY (plan P3): a delta may not edit a self-improvement
+    # loop node (e.g. a VariationPolicy) or the adoption gate's provenance
+    # evidence; refused items are reported on the delta
+    from domains.delta_integrity import filter_protected
+    filtered, refused = filter_protected(agent.s, {"set_node_attrs": delta.get("set_node_attrs") or []})
+    if refused:
+        delta.setdefault("integrity_refused", []).extend(refused)
+    for item in filtered["set_node_attrs"]:
         if not isinstance(item, dict):
             continue
         ntype = str(item.get("type") or "")

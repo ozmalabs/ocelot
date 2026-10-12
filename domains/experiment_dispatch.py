@@ -302,12 +302,19 @@ def _ingest_result(agent, exp, run_dir: Path) -> None:
     # OWN rules can read it (seeds/adoption_safety.json's regression veto).
     # Mechanical copy of what the child already decided/reported: only keys
     # actually present in result.json are carried, no defaults invented.
-    for key in ("flagged", "flagged_changed", "broken_fixes", "regressions"):
+    for key in ("flagged", "flagged_changed", "broken_fixes", "regressions", "integrity_refused"):
         if key in result:
             try:
                 I.set_attr(run, key, int(result.get(key) or 0))
             except Exception:  # noqa: BLE001 — a malformed extra never blocks ingest
                 pass
+    if "integrity_refused" in result:
+        # plan P3: the child refused part of the delta (it touches the loop);
+        # recorded on the Experiment, and the adoption gate denies the delta
+        try:
+            I.set_attr(exp, "integrity_refused", int(result.get("integrity_refused") or 0))
+        except Exception:  # noqa: BLE001
+            pass
     if "regressions" in result:
         try:
             # A broken fix (flagged turn now fails: empty/error surface) is a

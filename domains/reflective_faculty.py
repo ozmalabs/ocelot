@@ -5988,29 +5988,17 @@ def close_experiment_loop(agent) -> list:
 def _improvement_protected_types(sub) -> tuple:
     """The held list of node types whose rules ARE the self-improvement loop
     (seeds/improvement_integrity.json, a frozen seed). Empty when the seed is
-    not loaded. Mechanical read."""
-    out: set = set()
-    try:
-        for n in sub.nodes("ImprovementIntegrity"):
-            for t in sub.node(n)["attrs"].get("protected_node_types") or []:
-                out.add(str(t))
-    except Exception:  # noqa: BLE001
-        return ()
-    return tuple(sorted(out))
+    not loaded. Mechanical read (shared with the child: domains/delta_integrity)."""
+    from domains.delta_integrity import protected_types
+    return protected_types(sub)
 
 
 def _rule_names_protected_type(rule, types) -> bool:
     """Structural read: does this rule's JSON (match, where, effects) name a
     protected node type as a string token? Conservative by construction --
     any rule that reads or writes the loop's own records or policies."""
-    if not types:
-        return False
-    import json as _json
-    try:
-        s = rule if isinstance(rule, str) else _json.dumps(rule)
-    except Exception:  # noqa: BLE001
-        return True      # unreadable rule: fail closed
-    return any(('"%s"' % t) in s for t in types)
+    from domains.delta_integrity import rule_names_protected_type
+    return rule_names_protected_type(rule, types)
 
 
 _INTEGRITY_CACHE: dict = {}
@@ -6106,32 +6094,357 @@ def _rule_denylisted(sub, rule_name: str) -> tuple:
     return True, f"{rule_name!r} names seed {from_seed!r} but no SeedSummary exists for it — DENY"
 
 
-def perform_adoptions(agent) -> list:
-    """PERFORM ADOPTION: for every Experiment the agent's OWN `mark_adopt_ready_*`
-    rule marked `adopt_ready` (and not yet adopted/denied), mechanically fold the
-    winning acting-variant INTO THE PARENT ITSELF: `remove_rule` the original
-    (Rust tombstones it — stable index, inherently recoverable, never truly
-    deleted) + `add_rule` the variant (the SAME rule JSON the delta already
-    carried in `add_rules`, dispatched-and-judged, never re-derived), mint an
-    `Adoption{rule_removed, rule_added, experiment_id, tick, original_rule_json}`
-    record (the `original_rule_json` is what `revert_adoption` needs — tombstones
-    can't be un-tombstoned, so reverting RE-ADDS the original as a fresh slot),
-    and teach() a TaughtHint. GUARDRAIL: `_rule_denylisted` is a hard veto this
-    function enforces regardless of what any rule marked — a denied Experiment is
-    marked `adopt_denied` (so it is never re-checked) but its rule stays active,
-    unmodified. Idempotent (an already-adopted or already-denied Experiment is
-    skipped). Returns the list of records created this call (teach() dicts for
-    adoptions; `{'denied': True, ...}` dicts for vetoed candidates)."""
+# ---------------------------------------------------------------------------
+# ONE GENERIC WHOLE-DELTA ADOPTION PATH (plan P3, 2026-10-10).
+#
+# Every family's fold-back is the same five mechanical operations on the
+# parent: tombstone named rules, install rules, set node attrs (found by a key
+# attr), add nodes (optionally taught into a seed), remove Concepts. Until P3
+# each family re-implemented its subset in its own perform_adoptions branch,
+# and revert_adoption guessed the family from whichever attrs the Adoption
+# carried. Two of them could not be undone: a disposition_generalise adoption
+# stored no original state at all, and a deep_reader_correct revert looked up
+# its comma-joined added-rule names as ONE rule name, so it re-added the
+# original while every added rule stayed live.
+#
+# `_adopt_whole_delta` applies a PLAN (the five lists) and writes the FULL
+# prior state onto the Adoption (`prior_state`): every removed rule's exact
+# JSON, every added rule's name, every edited attr's observed old value,
+# every added node's id, every removed Concept's attrs. `_revert_whole_delta`
+# undoes exactly that, whatever the family. The family branches below only
+# translate their delta into a plan and keep their own Adoption attrs, out
+# keys and TaughtHint wording, so every recorded adoption reproduces.
+#
+# INTEGRITY GAP (P3): the gate now reads the WHOLE plan (domains/
+# delta_integrity.py): a removed rule must pass `_rule_denylisted`, and an
+# added rule, a node-attr edit or a node addition may not touch a
+# protected_node_types type (or the gate's own RuleSummary/SeedSummary
+# evidence). Before, only rules were checked, and only in some branches: a
+# knob delta could rewrite a VariationPolicy and a shape-mint delta could
+# teach any node type.
+# ---------------------------------------------------------------------------
+def _find_by_key(sub, ntype, key_attr, key_value):
+    for n in sub.nodes(ntype):
+        if sub.node(n)["attrs"].get(key_attr) == key_value:
+            return n
+    return None
+
+
+def _last_active_rule_idx(native, name):
+    """The last active export slot named `name` (the slot every family's
+    fold-back has always tombstoned), or None."""
+    idx = None
+    exported = native.export_rules()
+    for i, r in enumerate(exported):
+        if isinstance(r, dict) and r.get("active", True) and r.get("name") == name:
+            idx = i
+    return idx, exported
+
+
+def _whole_delta_violation(sub, plan) -> tuple:
+    """(denied, reason, rule): the integrity gate over the whole plan."""
+    for name in plan.get("remove_rules") or []:
+        denied, reason = _rule_denylisted(sub, name)
+        if denied:
+            return True, reason, name
+    from domains.delta_integrity import delta_violations
+    reasons = delta_violations(sub, {"add_rules": plan.get("add_rules") or [],
+                                     "set_node_attrs": plan.get("set_node_attrs") or [],
+                                     "add_nodes": plan.get("add_nodes") or []})
+    if reasons:
+        return True, reasons[0] + " (seeds/improvement_integrity.json) -- the loop may not change itself", None
+    return False, "", None
+
+
+def _adopt_whole_delta(agent, exp, plan, adoption_attrs) -> tuple:
+    """Apply `plan` to the parent and mint its Adoption. Returns
+    (status, info): status 'denied' (info = {reason, rule}), 'stale' (a named
+    rule or attr target is no longer live; nothing changed) or 'adopted'
+    (info = {adoption, state, taught_nodes}).
+
+    plan keys (all optional):
+      remove_rules   [name]              tombstone the last active slot of each
+      add_rules      [rule]              install
+      skip_live_adds bool                an add whose name is already live is skipped
+      set_node_attrs [{type, key_attr, key_value, attrs}]
+      add_nodes      [{type, attrs, category}]  category -> teach() into that seed
+      remove_concepts [name]             remove live Concept nodes by name
+    """
     from domains.teach import teach
     import json as _json
     import time as _time
+    sub, native, _ag = _resolve_agent(agent)
+    denied, reason, rule = _whole_delta_violation(sub, plan)
+    if denied:
+        native.set_attr(exp, "adopt_denied", True)
+        return "denied", {"reason": reason, "rule": rule}
+
+    # resolve every target before touching anything (a stale plan changes nothing)
+    removals = []
+    for name in plan.get("remove_rules") or []:
+        idx, exported = _last_active_rule_idx(native, name)
+        if idx is None:
+            return "stale", {"missing_rule": name}
+        original = dict(exported[idx])
+        original.pop("active", None)
+        removals.append((name, idx, original))
+    edits = []
+    for item in plan.get("set_node_attrs") or []:
+        target = _find_by_key(sub, str(item.get("type") or ""), str(item.get("key_attr") or ""),
+                              item.get("key_value"))
+        if target is None:
+            return "stale", {"missing_target": item.get("type")}
+        edits.append((item, target))
+
+    state = {"removed_rules": [], "added_rules": [], "set_attrs": [], "added_nodes": [],
+             "removed_concepts": []}
+    for name, idx, original in removals:
+        native.remove_rule(idx)
+        state["removed_rules"].append({"name": name, "idx": int(idx), "json": original})
+    live = None
+    if plan.get("skip_live_adds"):
+        live = {r.get("name") for r in native.export_rules() if isinstance(r, dict) and r.get("active", True)}
+    for r in plan.get("add_rules") or []:
+        if live is not None and r.get("name") in live:
+            continue
+        new_idx = native.add_rule(r)
+        state["added_rules"].append({"name": r.get("name", ""),
+                                     "idx": int(new_idx) if new_idx is not None else -1})
+    for item, target in edits:
+        tat = sub.node(target)["attrs"]
+        for k, v in (item.get("attrs") or {}).items():
+            state["set_attrs"].append({"type": item.get("type"), "key_attr": item.get("key_attr"),
+                                       "key_value": item.get("key_value"), "attr": k,
+                                       "had": k in tat, "old": tat.get(k), "new": v})
+            native.set_attr(target, k, v)
+    taught = []
+    for item in plan.get("add_nodes") or []:
+        ntype = str(item.get("type") or "Concept")
+        attrs = dict(item.get("attrs") or {})
+        if item.get("category"):
+            rec = teach(agent, ntype, attrs, category=item["category"])
+            node = rec.get("node")
+        else:
+            rec, node = None, sub.add_node(ntype, attrs)
+        taught.append(rec)
+        try:
+            node_int = int(node.value)
+        except Exception:  # noqa: BLE001
+            node_int = -1
+        state["added_nodes"].append({"type": ntype, "node": node_int, "name": attrs.get("name"),
+                                     "category": item.get("category") or ""})
+    for name in plan.get("remove_concepts") or []:
+        for n in list(sub.nodes("Concept")):
+            a2 = sub.node(n)["attrs"]
+            if a2.get("name") == name:
+                state["removed_concepts"].append({"attrs": dict(a2)})
+                (getattr(native, "remove_node", None) or sub.remove_node)(n)
+
+    adoption = sub.add_node("Adoption", dict(adoption_attrs, experiment_id=str(exp), tick=_time.time(),
+                                             whole_delta=1.0, prior_state=_json.dumps(state, default=str)))
+    try:
+        native.add_edge_unchecked(exp, "adopted_as", adoption)
+    except Exception:  # noqa: BLE001
+        pass
+    native.set_attr(exp, "adopted", True)
+    return "adopted", {"adoption": adoption, "state": state, "taught_nodes": taught}
+
+
+def _revert_whole_delta(agent, adoption_node, at) -> dict:
+    """Undo exactly what `_adopt_whole_delta` recorded, in reverse: re-add
+    removed Concepts, remove added nodes, restore edited attrs, tombstone added
+    rules, re-add removed rules as fresh slots (Rust tombstones are one-way).
+    A node taught into a seed manifest leaves that manifest entry in place (the
+    documented `seed_manifest_residual`)."""
+    import json as _json
+    sub, native, _ag = _resolve_agent(agent)
+    state = _json.loads(at.get("prior_state") or "{}")
+    ok = True
+    for rc in reversed(state.get("removed_concepts") or []):
+        try:
+            sub.add_node("Concept", dict(rc.get("attrs") or {}))
+        except Exception:  # noqa: BLE001
+            ok = False
+    removed_nodes = []
+    import substrate_rs as _srs
+    for an in reversed(state.get("added_nodes") or []):
+        nid = _srs.NodeID(int(an.get("node", -1))) if int(an.get("node", -1)) >= 0 else None
+        if nid is not None and sub.has_node(nid):
+            (getattr(native, "remove_node", None) or sub.remove_node)(nid)
+            removed_nodes.append(an.get("name"))
+        else:
+            ok = False
+    restored_attrs = []
+    for sa in reversed(state.get("set_attrs") or []):
+        target = _find_by_key(sub, str(sa.get("type") or ""), str(sa.get("key_attr") or ""), sa.get("key_value"))
+        if target is None:
+            ok = False
+            continue
+        native.set_attr(target, sa["attr"], sa.get("old"))
+        restored_attrs.append(sa["attr"])
+    tombstoned = []
+    revert_removed_idx = -1
+    for ar in reversed(state.get("added_rules") or []):
+        idx, _ = _last_active_rule_idx(native, ar.get("name"))
+        if idx is not None and native.remove_rule(idx):
+            tombstoned.append(ar.get("name"))
+            revert_removed_idx = idx
+        else:
+            ok = False
+    restored_rules = []
+    revert_added_idx = -1
+    for rr in reversed(state.get("removed_rules") or []):
+        new_idx = native.add_rule(rr["json"])
+        if new_idx is None:
+            ok = False
+        else:
+            restored_rules.append(rr["name"])
+            revert_added_idx = new_idx
+    for e in sub.nodes("Experiment"):
+        if str(e) == str(at.get("experiment_id")) and sub.has_node(e):
+            native.set_attr(e, "adopted", False)
+            # a reverted adoption is never silently re-adopted by the next
+            # perform_adoptions pass (its adopt_ready mark still stands)
+            native.set_attr(e, "adoption_reverted", True)
+            break
+    native.set_attr(adoption_node, "reverted", True)
+    if state.get("removed_rules") or state.get("added_rules"):
+        native.set_attr(adoption_node, "revert_removed_idx", float(revert_removed_idx))
+        native.set_attr(adoption_node, "revert_added_idx", float(revert_added_idx))
+    out = {"reverted": ok, "restored_rules": restored_rules, "tombstoned_rules": tombstoned,
+           "restored_attrs": restored_attrs, "removed_nodes": removed_nodes}
+    # the family-specific report keys callers have always read
+    if at.get("cue_concept_added"):
+        out.update(removed_concept=at.get("cue_concept_added"), cue_route=at.get("cue_route"),
+                   seed_manifest_residual=True)
+    if at.get("knob_attr"):
+        out.update(restored_knob=at.get("knob_attr"),
+                   restored_value=(state.get("set_attrs") or [{}])[0].get("old"))
+    if at.get("belief_attr"):
+        out.update(removed_rule=at.get("rule_added"))
+    if at.get("shape_name"):
+        out.update(removed_shape=at.get("shape_name"), seed_manifest_residual=True)
+    if state.get("removed_rules"):
+        out.update(restored_rule=at.get("rule_removed"), restored_idx=revert_added_idx,
+                   tombstoned_variant=at.get("rule_added"))
+    return out
+
+
+def _json_list(da, key):
+    import json as _json
+    try:
+        v = _json.loads(da.get(key) or "[]")
+    except Exception:  # noqa: BLE001
+        return []
+    return v if isinstance(v, list) else []
+
+
+def _adoption_plan(da) -> tuple:
+    """Translate a SeedDelta into (family, plan, adoption_attrs), or None when
+    the delta carries nothing adoptable. Family markers are checked in the
+    order the branches always were, so the same delta picks the same fold."""
+    add_rules = _json_list(da, "add_rules")
+    cue_verb = str(da.get("cue_concept_added") or "")
+    cue_route = str(da.get("cue_route") or "")
+    if da.get("cue_edit") == 1.0 and cue_verb and cue_route:
+        cattrs = {"name": cue_verb, "instruction_route": cue_route}
+        if da.get("cue_route_scope"):
+            cattrs["route_object_scope"] = str(da.get("cue_route_scope"))   # adopt what was tested
+        return "cue", {"add_nodes": [{"type": "Concept", "attrs": cattrs,
+                                      "category": "comprehend_instruction"}]}, \
+            {"rule_removed": "", "rule_added": "", "cue_concept_added": cue_verb, "cue_route": cue_route,
+             "original_rule_json": ""}
+    knob_attr = str(da.get("knob_attr") or "")
+    if da.get("knob_edit") == 1.0 and knob_attr:
+        return "knob", {"set_node_attrs": [{"type": str(da.get("knob_node_type") or ""),
+                                            "key_attr": str(da.get("knob_key_attr") or ""),
+                                            "key_value": da.get("knob_key_value"),
+                                            "attrs": {knob_attr: da.get("knob_new_value")}}]}, \
+            {"rule_removed": "", "rule_added": "",
+             "knob_node_type": str(da.get("knob_node_type") or ""),
+             "knob_key_attr": str(da.get("knob_key_attr") or ""),
+             "knob_key_value": da.get("knob_key_value"), "knob_attr": knob_attr,
+             "knob_old_value": da.get("knob_old_value"), "knob_new_value": da.get("knob_new_value"),
+             "original_rule_json": ""}
+    if da.get("deep_reader_edit") == 1.0 and da.get("act_rule_varied"):
+        removed = da.get("act_rule_varied")
+        if not add_rules:
+            return "deep_reader_empty", {"remove_rules": [removed]}, {}
+        return "deep_reader", {"remove_rules": [removed], "add_rules": add_rules}, \
+            {"rule_removed": removed, "rule_added": ",".join(r.get("name", "") for r in add_rules),
+             "deep_reader_pair": da.get("deep_reader_pair") or ""}
+    if da.get("generalise_edit") == 1.0 and da.get("generalise_basis"):
+        if not add_rules:
+            return None
+        return "generalise", {"add_rules": add_rules, "skip_live_adds": True}, \
+            {"rule_removed": "", "generalise_basis": da.get("generalise_basis"),
+             "generalise_source_rule": da.get("generalise_source_rule") or "", "original_rule_json": ""}
+    belief_attr = str(da.get("datum_feedback_belief_attr") or "")
+    if da.get("datum_feedback_edit") == 1.0 and belief_attr:
+        if not add_rules:
+            return None
+        return "datum", {"add_rules": add_rules[:1]}, \
+            {"rule_removed": "", "rule_added": add_rules[0].get("name", ""),
+             "datum_feedback_datum_attr": da.get("datum_feedback_datum_attr") or "",
+             "belief_attr": belief_attr, "original_rule_json": ""}
+    shape_name = str(da.get("shape_mint_name") or "")
+    if da.get("shape_mint_edit") == 1.0 and shape_name:
+        items = _json_list(da, "add_concepts")
+        if not items:
+            return None
+        item = items[0]
+        return "shape", {"add_nodes": [{"type": str(item.get("type") or "InterlocutorShape"),
+                                        "attrs": dict(item.get("attrs") or {}),
+                                        "category": "interlocutor_shapes"}]}, \
+            {"rule_removed": "", "rule_added": "", "shape_name": shape_name,
+             "shape_mint_party": da.get("shape_mint_party") or "", "original_rule_json": ""}
+    removed = da.get("act_rule_varied") or ""
+    if removed:
+        variant = next((r for r in add_rules if isinstance(r, dict)
+                        and str(r.get("name", "")).startswith(removed + "_")), None)
+        if variant is None and da.get("ablation") != 1.0:
+            return None
+        return "replace", {"remove_rules": [removed], "add_rules": [variant] if variant else []}, \
+            {"rule_removed": removed, "rule_added": variant.get("name") if variant else ""}
+    if da.get("whole_delta") == 1.0:
+        # a delta with no family marker: the generic path applies it as written
+        nodes = [{"type": str(i.get("type") or "Concept"), "attrs": dict(i.get("attrs") or {}),
+                  "category": str(da.get("concept_category") or "")}
+                 for i in _json_list(da, "add_concepts") if isinstance(i, dict)]
+        plan = {"remove_rules": _json_list(da, "remove_rules"), "add_rules": add_rules,
+                "set_node_attrs": _json_list(da, "set_node_attrs"), "add_nodes": nodes,
+                "remove_concepts": _json_list(da, "remove_concepts")}
+        if not any(plan.values()):
+            return None
+        return "whole", plan, {"rule_removed": ",".join(plan["remove_rules"]),
+                               "rule_added": ",".join(r.get("name", "") for r in add_rules),
+                               "original_rule_json": ""}
+    return None
+
+
+def perform_adoptions(agent) -> list:
+    """PERFORM ADOPTION: for every Experiment the agent's OWN `mark_adopt_ready_*`
+    rule marked `adopt_ready` (and not yet adopted, denied or reverted), fold
+    the judged delta INTO THE PARENT ITSELF through the one generic path
+    (`_adopt_whole_delta`): the delta is translated into a plan
+    (`_adoption_plan`), the integrity gate reads the whole plan, the full prior
+    state lands on the `Adoption` record (so `revert_adoption` can undo any
+    family), and a TaughtHint is taught. GUARDRAIL: the denylist and
+    integrity gate are hard vetoes this function enforces regardless of what
+    any rule marked -- a denied Experiment is marked `adopt_denied` (never
+    re-checked) and the parent is left unmodified. Idempotent. Returns the
+    records created this call (teach() dicts for adoptions; `{'denied': True,
+    ...}` dicts for vetoed candidates)."""
+    from domains.teach import teach
+    import json as _json
     sub, native, ag_node = _resolve_agent(agent)
     out = []
     for exp in list(sub.nodes("Experiment")):
         if not sub.has_node(exp):
             continue
         at = sub.node(exp)["attrs"]
-        if not at.get("adopt_ready") or at.get("adopted") or at.get("adopt_denied"):
+        if (not at.get("adopt_ready") or at.get("adopted") or at.get("adopt_denied")
+                or at.get("adoption_reverted")):
             continue
         delta = None
         for d in native.neighbours(exp, "has_delta"):
@@ -6141,375 +6454,98 @@ def perform_adoptions(agent) -> list:
         if delta is None:
             continue
         da = sub.node(delta)["attrs"]
-
-        # CUE-SET-EDIT ADOPTION (Wave 5 — see _compose_cue_variant): a delta
-        # flagged `cue_edit` carries NO rule to remove or install; adopting the
-        # winner = teach() the judged Concept{name, instruction_route} into the
-        # owning seed (comprehend_instruction — the seed that holds the verb
-        # Concepts this route family lives in; teach() is the documented
-        # persistence facility: live node NOW + seed manifest for future boots)
-        # + mint the Adoption record. No denylist gate applies because NOTHING
-        # is removed and the route was picked from routes the agent already
-        # holds (the cue_route_pick pool) — the only new graph datum is one
-        # Concept the dispatched replay already validated. Revert = remove the
-        # Concept node (see revert_adoption's cue branch).
-        cue_verb = str(da.get("cue_concept_added") or "")
-        cue_route = str(da.get("cue_route") or "")
-        if da.get("cue_edit") == 1.0 and cue_verb and cue_route:
-            _cattrs = {"name": cue_verb, "instruction_route": cue_route}
-            if da.get("cue_route_scope"):
-                _cattrs["route_object_scope"] = str(da.get("cue_route_scope"))   # adopt what was tested
-            rec = teach(agent, "Concept", _cattrs, category="comprehend_instruction")
-            try:
-                concept_int = int(rec["node"].value)
-            except Exception:
-                concept_int = -1
-            adoption = sub.add_node("Adoption", {
-                "rule_removed": "", "rule_added": "",
-                "cue_concept_added": cue_verb, "cue_route": cue_route,
-                "concept_node": concept_int,
-                "experiment_id": str(exp), "tick": _time.time(),
-                "original_rule_json": "",
-            })
-            try:
-                native.add_edge_unchecked(exp, "adopted_as", adoption)
-            except Exception:
-                pass
-            native.set_attr(exp, "adopted", True)
-            trec = teach(agent, "TaughtHint",
-                         {"topic": f"adoption: cue concept {cue_verb!r} routed to "
-                                   f"{cue_route!r} (experiment {exp})",
-                          "answer": "adopted", "rule_removed": "", "rule_added": "",
-                          "cue_concept_added": cue_verb, "cue_route": cue_route,
-                          "experiment_id": str(exp)},
-                         category="experiment_conclusions")
-            out.append({"experiment": str(exp), "adoption": adoption,
-                        "cue_concept_added": cue_verb, "cue_route": cue_route,
-                        "rule_removed": "", "rule_added": "",
-                        "cue_taught": rec,        # the Concept teach() record (owning seed + persisted flag)
-                        "taught": trec, "saved": trec.get("saved")})
+        planned = _adoption_plan(da)
+        if planned is None:
             continue
-
-        # KNOB-EDIT ADOPTION (RESIDUAL-CLOSURE — see _compose_knob_variant): a
-        # delta flagged `knob_edit` carries NO rule to remove or install either;
-        # adopting the winner = apply the SAME set_node_attrs change the
-        # dispatched replay already validated onto the PARENT'S OWN matching
-        # node (find-by key_attr/key_value, exactly like the child runners'
-        # apply_node_attr_delta) + mint the Adoption record (carrying the OLD
-        # value, so revert_adoption can restore it — the node-attr twin of
-        # original_rule_json). No denylist gate applies: nothing is removed,
-        # and the knob is a held BELIEF (not a frozen/alignment rule) the
-        # dispatched replay already exercised.
-        knob_attr = str(da.get("knob_attr") or "")
-        if da.get("knob_edit") == 1.0 and knob_attr:
-            knob_type = str(da.get("knob_node_type") or "")
-            knob_key_attr = str(da.get("knob_key_attr") or "")
-            knob_key_value = da.get("knob_key_value")
-            knob_new_value = da.get("knob_new_value")
-            knob_old_value = da.get("knob_old_value")
-            target = None
-            for n in sub.nodes(knob_type):
-                if sub.node(n)["attrs"].get(knob_key_attr) == knob_key_value:
-                    target = n
-                    break
-            if target is None:
-                continue        # the parent no longer carries this knob (stale) — nothing to fold back
-            native.set_attr(target, knob_attr, knob_new_value)
-            adoption = sub.add_node("Adoption", {
-                "rule_removed": "", "rule_added": "",
-                "knob_node_type": knob_type, "knob_key_attr": knob_key_attr,
-                "knob_key_value": knob_key_value, "knob_attr": knob_attr,
-                "knob_old_value": knob_old_value, "knob_new_value": knob_new_value,
-                "experiment_id": str(exp), "tick": _time.time(),
-                "original_rule_json": "",
-            })
-            try:
-                native.add_edge_unchecked(exp, "adopted_as", adoption)
-            except Exception:
-                pass
-            native.set_attr(exp, "adopted", True)
-            trec = teach(agent, "TaughtHint",
-                         {"topic": (f"adoption: knob {knob_attr!r} on {knob_type}("
-                                    f"{knob_key_attr}={knob_key_value!r}) shifted "
-                                    f"{knob_old_value} -> {knob_new_value} (experiment {exp})"),
-                          "answer": "adopted", "rule_removed": "", "rule_added": "",
-                          "knob_attr": knob_attr, "knob_new_value": knob_new_value,
-                          "experiment_id": str(exp)},
-                         category="experiment_conclusions")
-            out.append({"experiment": str(exp), "adoption": adoption,
-                        "knob_node_type": knob_type, "knob_attr": knob_attr,
-                        "knob_old_value": knob_old_value, "knob_new_value": knob_new_value,
-                        "rule_removed": "", "rule_added": "",
-                        "taught": trec, "saved": trec.get("saved")})
-            continue
-
-        # DEEP-READER CORRECTION ADOPTION (tranche 23): replace the misreading
-        # arbitration rule (denylist + integrity gates) and install the added
-        # receipt rules.
-        if da.get("deep_reader_edit") == 1.0 and da.get("act_rule_varied"):
-            removed_name = da.get("act_rule_varied")
-            try:
-                dr_rules = _json.loads(da.get("add_rules") or "[]")
-            except Exception:
-                dr_rules = []
-            denied, reason = _rule_denylisted(sub, removed_name)
-            ptypes = _improvement_protected_types(sub)
-            if not denied and any(_rule_names_protected_type(r, ptypes) for r in dr_rules):
-                denied, reason = True, "an added rule names a self-improvement-loop node type"
-            if denied or not dr_rules:
-                native.set_attr(exp, "adopt_denied", True)
-                out.append({"experiment": str(exp), "denied": True, "reason": reason, "rule": removed_name})
-                continue
-            exported = native.export_rules()
-            idx = next((i for i, r in enumerate(exported) if isinstance(r, dict) and r.get("active", True)
-                        and r.get("name") == removed_name), None)
-            if idx is None:
-                continue
-            original_json = dict(exported[idx])
-            original_json.pop("active", None)
-            native.remove_rule(idx)
-            for r in dr_rules:
-                native.add_rule(r)
-            adoption = sub.add_node("Adoption", {
-                "rule_removed": removed_name, "rule_added": ",".join(r.get("name", "") for r in dr_rules),
-                "deep_reader_pair": da.get("deep_reader_pair") or "",
-                "experiment_id": str(exp), "tick": _time.time(),
-                "original_rule_json": _json.dumps(original_json),
-            })
-            try:
-                native.add_edge_unchecked(exp, "adopted_as", adoption)
-            except Exception:
-                pass
-            native.set_attr(exp, "adopted", True)
-            trec = teach(agent, "TaughtHint",
-                         {"topic": (f"adoption: deep reader overrides {removed_name!r} for "
-                                    f"{da.get('deep_reader_pair')!r} (experiment {exp})"),
-                          "answer": "adopted", "rule_removed": removed_name,
-                          "rule_added": ",".join(r.get("name", "") for r in dr_rules), "experiment_id": str(exp)},
-                         category="experiment_conclusions")
-            out.append({"experiment": str(exp), "adoption": adoption, "rule_removed": removed_name,
-                        "rule_added": ",".join(r.get("name", "") for r in dr_rules),
-                        "taught": trec, "saved": trec.get("saved")})
-            continue
-
-        # DISPOSITION-GENERALISE ADOPTION (tranche 22): install the supported
-        # add-only rule copies into the parent (nothing removed); any rule
-        # naming a loop node type is denied (improvement integrity).
-        if da.get("generalise_edit") == 1.0 and da.get("generalise_basis"):
-            try:
-                gen_rules = _json.loads(da.get("add_rules") or "[]")
-            except Exception:
-                gen_rules = []
-            if not gen_rules:
-                continue
-            ptypes = _improvement_protected_types(sub)
-            if any(_rule_names_protected_type(r, ptypes) for r in gen_rules):
-                native.set_attr(exp, "adopt_denied", True)
-                out.append({"experiment": str(exp), "denied": True,
-                            "reason": "a generalised rule names a self-improvement-loop node type"})
-                continue
-            live = {r.get("name") for r in native.export_rules() if isinstance(r, dict) and r.get("active", True)}
-            added = []
-            for r in gen_rules:
-                if r.get("name") not in live:
-                    native.add_rule(r)
-                    added.append(r.get("name"))
-            adoption = sub.add_node("Adoption", {
-                "rule_removed": "", "rule_added": ",".join(added),
-                "generalise_basis": da.get("generalise_basis"),
-                "generalise_source_rule": da.get("generalise_source_rule") or "",
-                "experiment_id": str(exp), "tick": _time.time(), "original_rule_json": "",
-            })
-            try:
-                native.add_edge_unchecked(exp, "adopted_as", adoption)
-            except Exception:
-                pass
-            native.set_attr(exp, "adopted", True)
-            trec = teach(agent, "TaughtHint",
-                         {"topic": (f"adoption: generalised {da.get('generalise_source_rule')!r} to basis "
-                                    f"{da.get('generalise_basis')!r} (experiment {exp})"),
-                          "answer": "adopted", "rule_removed": "", "rule_added": ",".join(added),
-                          "experiment_id": str(exp)},
-                         category="experiment_conclusions")
-            out.append({"experiment": str(exp), "adoption": adoption, "rule_removed": "",
-                        "rule_added": ",".join(added), "taught": trec, "saved": trec.get("saved")})
-            continue
-
-        # DATUM-FEEDBACK ADOPTION (COMPOSER-CAPABILITY — see
-        # _compose_datum_feedback_rule): a delta flagged `datum_feedback_edit`
-        # carries a genuinely NEW, ADD-ONLY rule (no original to remove) —
-        # adopting the winner = install it into the PARENT ITSELF (mechanical
-        # add_rule, mirroring `perform_adoptions`'s own tombstone-then-add
-        # shape minus the tombstone half, since nothing is replaced) + mint
-        # the Adoption record. No denylist gate applies: nothing is removed
-        # (the SAME reasoning the cue-edit/knob-edit branches above already
-        # apply — `_rule_denylisted` exists to veto REMOVING a foundational
-        # rule, and this branch removes nothing).
-        belief_attr = str(da.get("datum_feedback_belief_attr") or "")
-        if da.get("datum_feedback_edit") == 1.0 and belief_attr:
-            try:
-                df_add_rules = _json.loads(da.get("add_rules") or "[]")
-            except Exception:
-                df_add_rules = []
-            df_rule = df_add_rules[0] if df_add_rules else None
-            if df_rule is None:
-                continue          # nothing to install — stale/empty delta
-            df_name = df_rule.get("name", "")
-            if _rule_names_protected_type(df_rule, _improvement_protected_types(sub)):
-                native.set_attr(exp, "adopt_denied", True)
-                out.append({"experiment": str(exp), "denied": True, "rule": df_name,
-                            "reason": "added rule names a self-improvement-loop node type "
-                                      "(seeds/improvement_integrity.json)"})
-                continue
-            new_idx = native.add_rule(df_rule)
-            adoption = sub.add_node("Adoption", {
-                "rule_removed": "", "rule_added": df_name,
-                "datum_feedback_datum_attr": da.get("datum_feedback_datum_attr") or "",
-                "belief_attr": belief_attr,
-                "experiment_id": str(exp), "tick": _time.time(),
-                "added_idx": int(new_idx) if new_idx is not None else -1,
-                "original_rule_json": "",
-            })
-            try:
-                native.add_edge_unchecked(exp, "adopted_as", adoption)
-            except Exception:
-                pass
-            native.set_attr(exp, "adopted", True)
-            trec = teach(agent, "TaughtHint",
-                         {"topic": (f"adoption: datum-feedback rule {df_name!r} installed — feeds "
-                                    f"{da.get('datum_feedback_datum_attr')!r} back into {belief_attr!r} "
-                                    f"(experiment {exp})"),
-                          "answer": "adopted", "rule_removed": "", "rule_added": df_name,
-                          "belief_attr": belief_attr, "experiment_id": str(exp)},
-                         category="experiment_conclusions")
-            out.append({"experiment": str(exp), "adoption": adoption, "rule_removed": "",
-                        "rule_added": df_name, "belief_attr": belief_attr,
-                        "taught": trec, "saved": trec.get("saved")})
-            continue
-
-        # SHAPE-MINT ADOPTION (COMPOSER-CAPABILITY — see _compose_shape_mint):
-        # a delta flagged `shape_mint_edit` carries a brand-new
-        # InterlocutorShape node (add_concepts, already generalized to typed
-        # nodes) — adopting the winner = teach() it into the owning seed (the
-        # SAME persistence facility the cue-edit branch above uses for a new
-        # Concept — live node NOW + seed manifest for future boots) + mint
-        # the Adoption record. No denylist gate applies: nothing is removed,
-        # and the shape is a NEW codebook entry the dispatched replay already
-        # exercised.
-        shape_name = str(da.get("shape_mint_name") or "")
-        if da.get("shape_mint_edit") == 1.0 and shape_name:
-            try:
-                sm_add_concepts = _json.loads(da.get("add_concepts") or "[]")
-            except Exception:
-                sm_add_concepts = []
-            sm_item = sm_add_concepts[0] if sm_add_concepts else None
-            if sm_item is None:
-                continue          # nothing to install — stale/empty delta
-            sm_attrs = dict(sm_item.get("attrs") or {})
-            sm_type = str(sm_item.get("type") or "InterlocutorShape")
-            rec = teach(agent, sm_type, sm_attrs, category="interlocutor_shapes")
-            try:
-                shape_node_int = int(rec["node"].value)
-            except Exception:
-                shape_node_int = -1
-            adoption = sub.add_node("Adoption", {
-                "rule_removed": "", "rule_added": "",
-                "shape_name": shape_name, "shape_node": shape_node_int,
-                "shape_mint_party": da.get("shape_mint_party") or "",
-                "experiment_id": str(exp), "tick": _time.time(),
-                "original_rule_json": "",
-            })
-            try:
-                native.add_edge_unchecked(exp, "adopted_as", adoption)
-            except Exception:
-                pass
-            native.set_attr(exp, "adopted", True)
-            trec = teach(agent, "TaughtHint",
-                         {"topic": f"adoption: InterlocutorShape {shape_name!r} minted (experiment {exp})",
-                          "answer": "adopted", "rule_removed": "", "rule_added": "",
-                          "shape_name": shape_name, "experiment_id": str(exp)},
-                         category="experiment_conclusions")
-            out.append({"experiment": str(exp), "adoption": adoption, "rule_removed": "", "rule_added": "",
-                        "shape_name": shape_name, "shape_taught": rec,
-                        "taught": trec, "saved": trec.get("saved")})
-            continue
-
-        removed_name = da.get("act_rule_varied") or ""
-        try:
-            add_rules = _json.loads(da.get("add_rules") or "[]")
-        except Exception:
-            add_rules = []
-        variant_rule = next((r for r in add_rules
-                             if isinstance(r, dict) and str(r.get("name", "")).startswith(removed_name + "_")),
-                            None) if removed_name else None
-        # ABLATION ADOPTION (the conversation family's vary — see
-        # _compose_reply_ablation): a delta flagged `ablation` carries NO
-        # replacement rule by design; adopting the winner = remove-only fold-back
-        # (the original's exact JSON still lands on the Adoption record, so
-        # revert_adoption restores it the same way). Same denylist gate below.
-        is_ablation = da.get("ablation") == 1.0
-        if not removed_name or (variant_rule is None and not is_ablation):
-            continue
-
-        denied, reason = _rule_denylisted(sub, removed_name)
-        if not denied and variant_rule is not None and _rule_names_protected_type(
-                variant_rule, _improvement_protected_types(sub)):
-            denied, reason = True, (f"variant of {removed_name!r} names a self-improvement-loop node "
-                                    "type (seeds/improvement_integrity.json) — the loop may not change itself")
-        if denied:
+        family, plan, adoption_attrs = planned
+        if family == "deep_reader_empty":
+            # a deep-reader delta that installs nothing is denied, as before
+            denied, reason, _r = _whole_delta_violation(sub, plan)
             native.set_attr(exp, "adopt_denied", True)
-            out.append({"experiment": str(exp), "denied": True, "reason": reason,
-                        "rule": removed_name})
+            out.append({"experiment": str(exp), "denied": True, "reason": reason or "no rules to install",
+                        "rule": plan["remove_rules"][0]})
             continue
-
-        exported = native.export_rules()
-        idx = None
-        for i, r in enumerate(exported):
-            if isinstance(r, dict) and r.get("active", True) and r.get("name") == removed_name:
-                idx = i
-        if idx is None:
-            continue           # the named rule isn't live (already removed some other way) — nothing to adopt
-        original_json = dict(exported[idx])
-        original_json.pop("active", None)
-        native.remove_rule(idx)                      # tombstone the original (stable idx, recoverable)
-        # install the winner in the PARENT itself; an ablation adoption installs nothing
-        new_idx = native.add_rule(variant_rule) if variant_rule is not None else None
-
-        adoption = sub.add_node("Adoption", {
-            "rule_removed": removed_name,
-            "rule_added": (variant_rule.get("name") if variant_rule is not None else ""),
-            "experiment_id": str(exp), "tick": _time.time(),
-            "removed_idx": int(idx),
-            "added_idx": int(new_idx) if new_idx is not None else -1,
-            "original_rule_json": _json.dumps(original_json),
-        })
-        try:
-            native.add_edge_unchecked(exp, "adopted_as", adoption)
-        except Exception:
-            pass
-        native.set_attr(exp, "adopted", True)
-        added_name = variant_rule.get("name") if variant_rule is not None else ""
-        topic = (f"adoption: rule {removed_name!r} replaced by {added_name!r} (experiment {exp})"
-                 if added_name else
-                 f"adoption: rule {removed_name!r} ablated (experiment {exp})")
-        rec = teach(agent, "TaughtHint",
-                    {"topic": topic,
-                     "answer": "adopted", "rule_removed": removed_name,
-                     "rule_added": added_name, "experiment_id": str(exp)},
-                    category="experiment_conclusions")
+        status, info = _adopt_whole_delta(agent, exp, plan, adoption_attrs)
+        if status == "stale":
+            continue
+        if status == "denied":
+            rec = {"experiment": str(exp), "denied": True, "reason": info["reason"]}
+            rule = info.get("rule") or (plan.get("remove_rules") or [None])[0] \
+                or ((plan.get("add_rules") or [{}])[0] or {}).get("name")
+            if rule:
+                rec["rule"] = rule
+            out.append(rec)
+            continue
+        adoption = info["adoption"]
+        state = info["state"]
+        added = [r["name"] for r in state["added_rules"]]
+        if family == "generalise":
+            native.set_attr(adoption, "rule_added", ",".join(added))
+        if family in ("cue", "shape"):
+            node_int = state["added_nodes"][0]["node"]
+            native.set_attr(adoption, "concept_node" if family == "cue" else "shape_node", node_int)
+        if family == "replace":
+            native.set_attr(adoption, "removed_idx", int(state["removed_rules"][0]["idx"]))
+            native.set_attr(adoption, "added_idx", int(state["added_rules"][0]["idx"]) if added else -1)
+            native.set_attr(adoption, "original_rule_json", _json.dumps(state["removed_rules"][0]["json"]))
+        if family == "deep_reader":
+            native.set_attr(adoption, "original_rule_json", _json.dumps(state["removed_rules"][0]["json"]))
+        if family == "datum":
+            native.set_attr(adoption, "added_idx", int(state["added_rules"][0]["idx"]))
+        ad = sub.node(adoption)["attrs"]
+        removed_name = ad.get("rule_removed") or ""
+        added_name = ad.get("rule_added") or ""
+        hint = {"answer": "adopted", "rule_removed": removed_name, "rule_added": added_name,
+                "experiment_id": str(exp)}
+        extra = {}
+        if family == "cue":
+            hint.update(topic=f"adoption: cue concept {ad['cue_concept_added']!r} routed to "
+                              f"{ad['cue_route']!r} (experiment {exp})",
+                        cue_concept_added=ad["cue_concept_added"], cue_route=ad["cue_route"])
+            extra = {"cue_concept_added": ad["cue_concept_added"], "cue_route": ad["cue_route"],
+                     "cue_taught": info["taught_nodes"][0]}
+        elif family == "knob":
+            hint.update(topic=(f"adoption: knob {ad['knob_attr']!r} on {ad['knob_node_type']}("
+                               f"{ad['knob_key_attr']}={ad['knob_key_value']!r}) shifted "
+                               f"{ad['knob_old_value']} -> {ad['knob_new_value']} (experiment {exp})"),
+                        knob_attr=ad["knob_attr"], knob_new_value=ad["knob_new_value"])
+            extra = {"knob_node_type": ad["knob_node_type"], "knob_attr": ad["knob_attr"],
+                     "knob_old_value": ad["knob_old_value"], "knob_new_value": ad["knob_new_value"]}
+        elif family == "deep_reader":
+            hint.update(topic=(f"adoption: deep reader overrides {removed_name!r} for "
+                               f"{ad.get('deep_reader_pair')!r} (experiment {exp})"))
+        elif family == "generalise":
+            hint.update(topic=(f"adoption: generalised {da.get('generalise_source_rule')!r} to basis "
+                               f"{da.get('generalise_basis')!r} (experiment {exp})"))
+        elif family == "datum":
+            hint.update(topic=(f"adoption: datum-feedback rule {added_name!r} installed — feeds "
+                               f"{da.get('datum_feedback_datum_attr')!r} back into {ad['belief_attr']!r} "
+                               f"(experiment {exp})"), belief_attr=ad["belief_attr"])
+            extra = {"belief_attr": ad["belief_attr"]}
+        elif family == "shape":
+            hint.update(topic=f"adoption: InterlocutorShape {ad['shape_name']!r} minted (experiment {exp})",
+                        shape_name=ad["shape_name"])
+            extra = {"shape_name": ad["shape_name"], "shape_taught": info["taught_nodes"][0]}
+        elif family == "replace":
+            hint.update(topic=(f"adoption: rule {removed_name!r} replaced by {added_name!r} (experiment {exp})"
+                               if added_name else
+                               f"adoption: rule {removed_name!r} ablated (experiment {exp})"))
+        else:
+            hint.update(topic=(f"adoption: whole delta (removed {removed_name or 'nothing'!r}, added "
+                               f"{added_name or 'nothing'!r}, {len(state['set_attrs'])} attr edit(s), "
+                               f"{len(state['added_nodes'])} node(s)) (experiment {exp})"))
+        trec = teach(agent, "TaughtHint", hint, category="experiment_conclusions")
         out.append({"experiment": str(exp), "adoption": adoption, "rule_removed": removed_name,
-                    "rule_added": added_name, "taught": rec, "saved": rec.get("saved")})
+                    "rule_added": added_name, **extra, "taught": trec, "saved": trec.get("saved")})
     return out
 
 
 def revert_adoption(agent, adoption_node) -> dict:
-    """ROLLBACK an Adoption: Rust tombstones are inherently one-way (a removed
-    slot never reactivates — see runners/dsl/src/py.rs's `remove_rule`), so
-    revert does not "un-tombstone"; it RE-ADDS the original rule's exact JSON
-    (captured on the `Adoption` node at adoption time, never re-derived) as a
-    FRESH slot, and tombstones the variant. Host mechanical I/O only — reverses
-    what `perform_adoptions` did; makes no new decision. Idempotent (a
-    already-reverted Adoption is a no-op)."""
+    """ROLLBACK an Adoption. An adoption made through the generic path
+    (`whole_delta`) carries its full prior state and is undone exactly by
+    `_revert_whole_delta`, whatever the family. Records minted before P3 are
+    reverted by the per-family legacy code below. Host mechanical I/O only;
+    idempotent (an already-reverted Adoption is a no-op)."""
     import json as _json
     sub, native, ag_node = _resolve_agent(agent)
     try:
@@ -6521,6 +6557,15 @@ def revert_adoption(agent, adoption_node) -> dict:
     at = sub.node(adoption_node)["attrs"]
     if at.get("reverted"):
         return {"reverted": False, "reason": "already reverted"}
+    if at.get("whole_delta") == 1.0 and at.get("prior_state"):
+        return _revert_whole_delta(agent, adoption_node, at)
+    return _revert_adoption_legacy(agent, adoption_node, at)
+
+
+def _revert_adoption_legacy(agent, adoption_node, at) -> dict:
+    """Pre-P3 Adoption records (no prior_state): the per-family reverts."""
+    import json as _json
+    sub, native, ag_node = _resolve_agent(agent)
     if at.get("cue_concept_added"):
         # CUE-SET-EDIT REVERT (Wave 5): the adoption installed one Concept
         # (live + taught into the owning seed manifest); reverting removes the

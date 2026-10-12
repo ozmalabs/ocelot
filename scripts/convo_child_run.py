@@ -777,6 +777,9 @@ def main() -> int:
         if datum_feedback_probe or shape_mint_probe:
             result["control_belief"] = float(control_belief) if control_belief is not None else 0.0
             result["variant_belief"] = float(variant_belief) if variant_belief is not None else 0.0
+        if delta.get("integrity_refused"):
+            # plan P3: delta parts the child refused to apply (loop types)
+            result["integrity_refused"] = len(delta["integrity_refused"])
         if control["shadow_ms"] is not None:
             result["control_shadow_ms"] = float(control["shadow_ms"])
         if stats["shadow_ms"] is not None:
