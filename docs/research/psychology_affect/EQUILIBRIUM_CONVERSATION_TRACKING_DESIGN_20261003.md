@@ -359,3 +359,45 @@ Prefix-proportional work that is left, measured in RESULTS §5:
   earlier claim;
 - a floor runner-up change, which rewrites O(turns / actors) counter edges. This is
   the size of the wire change.
+
+## T3e. Evidence deltas on the conversation wire (pack 0.6.0, eq-tax-0.6.0)
+
+This removes the first item of the list above.
+
+**Contract.** `/turns`, `/close` and every ok `/_batch` item replace `quanta` /
+`episodes` with `quanta_delta` / `episodes_delta`. Full field list: RESULTS §6.1;
+module docstring of `services/equilibrium_classifier/server.py`.
+
+- Deltas are relative to everything emitted earlier for the conversation, in seq order.
+  Folding them gives exactly the full rows a full read gives at that point.
+- Only quanta / episodes that changed in the call appear.
+- A quantum that stops holding is `retract`ed. If it holds again later, it gets a fresh
+  upsert with its full lists.
+- `quantum_id` is a digest of the permanent quantum node's identity key, so it is
+  stable within the conversation.
+- `open_questions` stays a full list (it is bounded).
+- `/v1/discourse` keeps full rows; it reads `conversation_full`.
+- Close runs no ticks, so its deltas are empty.
+
+**Where the delta comes from.** It is the engine plus a ledger, with no Python
+decisions:
+
+- Every conversation tick is `run_rules_edge_delta`, a new engine primitive. The graph
+  keeps edge before-images for the run, and the primitive reports:
+  - the NET existence change of the read-out's edge types: quantum existence,
+    evidence, counter, episode membership, facet;
+  - the touched EqQuantum / EqEpisode / EqEpFacet nodes.
+- The adapter diffs mechanically:
+  - An evidence pair's previous state is the engine's first-seen state.
+  - A row's previous existence and scalar fields are its ledger mark (`eqemit:q:<node>`
+    / `eqemit:e:<node>` on the edge-less EqLedger). The mark is written when the row is
+    emitted and cleared on retract.
+
+**Prefix-proportional work that is left:**
+
+- A floor runner-up change. Its delta is a real O(turns of the runner-up)
+  remove / add, because the counter set is all of the runner-up's turns.
+- A re-appearing quantum's full lists.
+- `eq.competence.corroborated` / `.contested`, as before.
+- Measured in RESULTS §6.4: response size exponent 0.05, read-out exponent 0.21
+  (stage B: 0.56 / 0.60).

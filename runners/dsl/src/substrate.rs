@@ -6098,6 +6098,54 @@ impl Substrate {
         }
     }
 
+    /// Rule settlement with an EXACT net edge change, restricted to
+    /// `edge_types`, plus the touched nodes restricted to `node_types`.
+    /// The graph keeps the first-seen state of every touched edge (edge
+    /// before-images only, O(touched edges)); an edge whose existence after
+    /// the run differs from its first-seen state is reported as
+    /// `(key, exists_now)`. Edges added and deleted within the run, and
+    /// attr-only rewrites of an existing edge, are not net changes.
+    /// Touched nodes are conservative (as `run_rules_delta_report`).
+    pub fn run_rules_edge_delta(
+        &mut self,
+        max_steps: usize,
+        detect_cycles: bool,
+        edge_types: &[String],
+        node_types: &[String],
+    ) -> (RuleRunReport, Vec<(NodeID, Sym)>, Vec<(EdgeKey, bool)>) {
+        self.graph.begin_edge_before_log();
+        let run = self.run_rules_report(max_steps, detect_cycles);
+        let log = self.graph.finish_mutation_log();
+        // resolved AFTER the run: a type first interned by the run is included
+        let edge_types: Vec<Sym> = edge_types.iter().filter_map(|t| self.interner.lookup(t)).collect();
+        let node_types: Vec<Sym> = node_types.iter().filter_map(|t| self.interner.lookup(t)).collect();
+        let mut nodes: Vec<(NodeID, Sym)> = log
+            .changed_nodes
+            .into_iter()
+            .filter_map(|nid| {
+                let ty = if self.graph.has_node(nid) {
+                    Some(self.graph.node(nid).type_)
+                } else {
+                    log.node_types.get(&nid).copied()
+                };
+                ty.filter(|t| node_types.contains(t)).map(|t| (nid, t))
+            })
+            .collect();
+        nodes.sort_unstable();
+        let mut edges: Vec<(EdgeKey, bool)> = log
+            .before_edges
+            .unwrap_or_default()
+            .into_iter()
+            .filter(|(key, _)| edge_types.contains(&key.edge_type))
+            .filter_map(|(key, before)| {
+                let now = self.graph.has_edge(key.src, key.edge_type, key.tgt);
+                (now != before.is_some()).then_some((key, now))
+            })
+            .collect();
+        edges.sort_unstable_by_key(|(key, _)| (key.src, key.edge_type, key.tgt));
+        (run, nodes, edges)
+    }
+
     /// Exact graph-content diff oracle for validating the mutation-site
     /// observer. This is O(V+E) and intentionally separate from the report
     /// method used to collect candidate notifications.

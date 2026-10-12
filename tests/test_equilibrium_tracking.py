@@ -16,6 +16,7 @@ import pytest
 os.environ.setdefault("OZMA_NO_LLM", "1")
 
 from domains import equilibrium_classify as eq  # noqa: E402
+from equilibrium_delta_fold import DeltaFold  # noqa: E402
 
 HELLO = [("h1", "ana", "Morning all."), ("h2", "bea", "Hi there."),
          ("h3", "cy", "Hello."), ("h4", "dov", "Hey.")]
@@ -145,7 +146,11 @@ def test_dismissal_does_not_close(srv_svc):
     assert tb == {"d3": ([], "none", []), "d4": (["d1"], "tracked", ["d1"])}
     assert b["open_questions"] == []
     fin = svc.conversation_close("trk:dismiss")
-    keys = {(q["actor_ref"], q["trait"], q.get("target_ref")) for q in fin["quanta"]}
+    f = DeltaFold()  # the client folds the 0.6.0 evidence deltas
+    f.turns(rows)
+    for out in (a, b, fin):
+        f.apply(out)
+    keys = {(q["actor_ref"], q["trait"], q.get("target_ref")) for q in f.quanta()}
     assert ("bea", "response.dismissal", "ana") in keys and ("bea", "inquiry.answered", "ana") in keys
 
 

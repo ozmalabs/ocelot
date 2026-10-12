@@ -4279,6 +4279,48 @@ impl PySubstrate {
         rule_delta_report_to_pyobj(py, &report, &guard.interner)
     }
 
+    /// Rule settlement with the EXACT net edge change of the run, restricted
+    /// to `edge_types` (edge before-images only, O(touched edges)), and the
+    /// touched node ids restricted to `node_types`, grouped by type. Returns
+    /// {"progress_steps", "status", "affected_nodes": {node_type: [id]},
+    ///  "edges_changed": [(src, edge_type, tgt, exists_now)]}.
+    #[pyo3(signature = (max_steps, edge_types, node_types, detect_cycles=false))]
+    fn run_rules_edge_delta<'py>(
+        &mut self,
+        py: Python<'py>,
+        max_steps: usize,
+        edge_types: Vec<String>,
+        node_types: Vec<String>,
+        detect_cycles: bool,
+    ) -> PyResult<Bound<'py, PyAny>> {
+        crate::scale_audit::ffi(1, 0);
+        crate::scale_audit::begin_epoch();
+        let (run, nodes, edges) = py.allow_threads(|| {
+            let mut guard = self.inner.lock().expect("substrate mutex poisoned");
+            guard.run_rules_edge_delta(max_steps, detect_cycles, &edge_types, &node_types)
+        });
+        let guard = self.inner.lock().expect("substrate mutex poisoned");
+        let status = match run.status {
+            crate::substrate::RuleRunStatus::FixedPoint => "fixed_point",
+            crate::substrate::RuleRunStatus::RepeatedGraphState => "repeated_graph_state",
+            crate::substrate::RuleRunStatus::ProgressBudgetReached => "progress_budget_reached",
+        };
+        let edges: Vec<(u32, String, u32, bool)> = edges
+            .iter()
+            .map(|(key, now)| (key.src.0, guard.interner.resolve(key.edge_type).to_string(), key.tgt.0, *now))
+            .collect();
+        let mut by_type: std::collections::BTreeMap<String, Vec<u32>> = std::collections::BTreeMap::new();
+        for (nid, ty) in &nodes {
+            by_type.entry(guard.interner.resolve(*ty).to_string()).or_default().push(nid.0);
+        }
+        json_to_pyobj(py, &serde_json::json!({
+            "status": status,
+            "progress_steps": run.progress_steps,
+            "affected_nodes": by_type,
+            "edges_changed": edges,
+        }))
+    }
+
     /// Exact O(V+E) graph-state oracle for checking the mutation-site report.
     #[pyo3(signature = (max_steps=100_000, detect_cycles=false))]
     fn run_rules_snapshot_delta_report<'py>(
