@@ -30,6 +30,16 @@ worker client (equilibrium_worker/classify.py, OcelotClassifier):
   POST /v1/conversations/{id}/close  -> same shape, "turns":[], COMPLETE final quanta/episodes;
                                         frees the retained fork
   GET  /v1/conversations/{id}        -> {"ok","conversation_id","seq","idle_ttl_s","kind"}
+  POST /v1/conversations/_batch      (shared batch contract)
+                     -> {"taxonomy_version"?, "items":[{"conversation_id","kind","turns":[as /turns],
+                         "close"?: bool}]}  (1..64 items, <= 2,000 turns in total, <= 100 per item,
+                         each conversation_id at most once)
+                     -> {"ok":true,"taxonomy_version","results":[ {"conversation_id","ok":true,
+                         seq,turns,quanta,episodes,open_questions} (as /turns)
+                         | {"conversation_id","ok":false,"error":{code,message,retryable}} ]}
+                        results in request order; items run in parallel on the worker pool; a
+                        per-item failure does not fail the batch; "close":true frees the
+                        conversation after its turns are ingested (the result is the turns read-out)
      errors: 404 unknown_conversation; 409 conversation_evicted | out_of_order | duplicate_turn;
              413 too_large; 400 bad_request -- {ok:false,error:{code,message,retryable}}, no input echo
 
@@ -38,8 +48,12 @@ frozen base snapshot (incremental ingest; see domains/equilibrium_classify.py).
 Idle TTL (default 900 s, --conversation-idle-ttl-s / EQ_CONV_IDLE_TTL_S) and an LRU
 cap (default 64, --max-conversations / EQ_CONV_MAX) evict retained forks; an evicted
 id answers 409 conversation_evicted (the last 4,096 evicted ids are remembered).
-Every request holds ONE global lock (per-conversation locking is not verified safe
-over sibling copy-on-write forks).
+Concurrency: one lock PER CONVERSATION (a conversation's batches are serialised),
+a short metadata lock for the session map / counters, and a bounded worker pool
+(--workers / EQ_WORKERS, default min(8, cpus)) that every engine call goes through;
+independent conversations run in parallel (the engine releases the GIL inside
+run_rules and every fork has its own engine mutex). The frozen base is shared
+read-only; its revision is checked after every request.
 
 Frozen fork-per-batch: the base substrate + pack is booted ONCE, snap =
 base.snapshot(); every request classifies on branch = snap.fork(), which is
@@ -67,6 +81,8 @@ import sys
 import threading
 import time
 from collections import OrderedDict
+from concurrent.futures import ThreadPoolExecutor
+from contextlib import contextmanager
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from typing import Any
@@ -97,6 +113,13 @@ MAX_CONV_TURNS = 100
 MAX_CONV_BODY_BYTES = 4_194_304  # 100 turns x 4000 chars, worst-case JSON escaping
 DEFAULT_IDLE_TTL_S = 900
 DEFAULT_MAX_CONVERSATIONS = 64
+# /v1/conversations/_batch (shared batch contract)
+MAX_BATCH_ITEMS = 64
+MAX_BATCH_TURNS = 2_000
+MAX_BATCH_BODY_BYTES = MAX_CONV_BODY_BYTES * (MAX_BATCH_TURNS // MAX_CONV_TURNS)
+BATCH_KEYS = frozenset({"taxonomy_version", "items"})
+BATCH_ITEM_KEYS = frozenset({"conversation_id", "kind", "turns", "close"})
+DEFAULT_WORKERS = max(1, min(8, os.cpu_count() or 1))
 MAX_TOMBSTONES = 4096  # evicted ids remembered (-> 409 conversation_evicted), LRU-capped
 BASES = frozenset({"declared", "tracked", "none"})
 # The client's contract ID pattern (^[A-Za-z0-9_.:@!+=-]{1,255}$). Turn ids are
@@ -314,6 +337,60 @@ def validate_conversation(doc: Any, taxonomy_version: str) -> tuple[str, list[di
     return kind, _validate_turns(turns, CONV_TURN_KEYS, bad)
 
 
+def validate_batch(doc: Any, taxonomy_version: str) -> list[dict]:
+    """Closed validation of a POST /v1/conversations/_batch body (shared batch
+    contract). Any schema error fails the whole request (400, path only, never
+    input); per-item runtime errors are reported per item by the service."""
+    def bad(path: str, why: str) -> ApiError:
+        return ApiError(400, "bad_request", f"{path}: {why}")
+    if not isinstance(doc, dict):
+        raise bad("$", "must be an object")
+    if set(doc) - BATCH_KEYS:
+        raise bad("$", "unknown field")
+    tv = doc.get("taxonomy_version")
+    if tv is not None and tv != taxonomy_version:
+        raise ApiError(409, "taxonomy_mismatch", "taxonomy_version does not match the served pack")
+    items = doc.get("items")
+    if not isinstance(items, list):
+        raise bad("$.items", "must be an array")
+    if not items:
+        raise bad("$.items", "must not be empty")
+    if len(items) > MAX_BATCH_ITEMS:
+        raise ApiError(413, "too_large", f"at most {MAX_BATCH_ITEMS} items per batch")
+    out, seen, total = [], set(), 0
+    for i, it in enumerate(items):
+        p = f"$.items[{i}]"
+        if not isinstance(it, dict):
+            raise bad(p, "must be an object")
+        if set(it) - BATCH_ITEM_KEYS:
+            raise bad(p, "unknown field")
+        cid = it.get("conversation_id")
+        if not isinstance(cid, str) or not valid_conversation_id(cid):
+            raise bad(p + ".conversation_id", "must match [A-Za-z0-9_.:~-]{1,200}")
+        if cid in seen:
+            raise bad(p + ".conversation_id", "repeats in the batch")
+        seen.add(cid)
+        if it.get("kind") not in WINDOW_KINDS:
+            raise bad(p + ".kind", "must be 'meeting', 'thread' or 'channel'")
+        close = it.get("close", False)
+        if not isinstance(close, bool):
+            raise bad(p + ".close", "must be a boolean")
+        turns = it.get("turns")
+        if not isinstance(turns, list):
+            raise bad(p + ".turns", "must be an array")
+        if len(turns) > MAX_CONV_TURNS:
+            raise ApiError(413, "too_large", f"at most {MAX_CONV_TURNS} turns per item")
+        total += len(turns)
+        if total > MAX_BATCH_TURNS:
+            raise ApiError(413, "too_large", f"at most {MAX_BATCH_TURNS} turns per batch")
+
+        def ibad(path: str, why: str, _p=p) -> ApiError:
+            return bad(_p + path[1:], why)
+        out.append({"conversation_id": cid, "kind": it["kind"], "close": close,
+                    "turns": _validate_turns(turns, CONV_TURN_KEYS, ibad)})
+    return out
+
+
 def validate_discourse(doc: Any, taxonomy_version: str) -> tuple[dict, list[dict]]:
     """Closed validation of a /v1/discourse request (shared contract, design §3).
     Mechanical schema checks only; error messages carry field paths, never input."""
@@ -421,29 +498,42 @@ def parse_json(raw: bytes) -> Any:
 
 class Session:
     """One retained conversation: its fork of the frozen base + the adapter handle
-    (the conversation node id). Turns, actors, seq and order marks live in the fork."""
-    __slots__ = ("branch", "state", "kind", "last_used")
+    (the conversation node id) + its lock (one batch at a time per conversation).
+    Turns, actors, seq and order marks live in the fork. `branch is None` means
+    the session was dropped (closed / evicted / failed) while someone waited."""
+    __slots__ = ("branch", "state", "kind", "last_used", "lock", "fresh")
 
     def __init__(self, branch, state, kind: str, now: float) -> None:
         self.branch, self.state, self.kind, self.last_used = branch, state, kind, now
+        self.lock = threading.Lock()
+        self.fresh = True  # registered, first batch not yet accepted
 
 
 class ClassifierService:
     """Boots the frozen base once; serves fork-per-batch classification and
     retained-fork conversations.
 
-    Concurrency: ONE global lock serialises every request (classify, discourse,
-    conversations). Per-conversation locks were not adopted: forks share
-    copy-on-write pages with the base and with each other, and concurrent mutation
-    of sibling forks plus the base revision / strong-digest checks has not been
-    verified safe, so the global lock stays."""
+    Concurrency: every engine call runs under one of `workers` slots (a bounded
+    semaphore; /_batch items are dispatched on a pool of the same size), so at
+    most `workers` forks are being worked at once. A conversation's batches are
+    serialised by its own lock; independent conversations proceed in parallel on
+    their own forks (each fork has its own engine mutex and run_rules releases the
+    GIL). `_meta` guards only the session map, tombstones and counters and is
+    never held across engine work; a busy session is never evicted. The frozen
+    base is never mutated: its source revision is checked after every request and
+    a strong digest every `strong_every` requests."""
 
     def __init__(self, strong_every: int = STRONG_CHECK_EVERY,
                  idle_ttl_s: float = DEFAULT_IDLE_TTL_S,
-                 max_conversations: int = DEFAULT_MAX_CONVERSATIONS, clock=time.monotonic) -> None:
+                 max_conversations: int = DEFAULT_MAX_CONVERSATIONS, clock=time.monotonic,
+                 workers: int = DEFAULT_WORKERS) -> None:
         from domains import equilibrium_classify as ec
         self._ec = ec
-        self._lock = threading.Lock()
+        self._meta = threading.Lock()
+        self._strong_lock = threading.Lock()
+        self.workers = max(1, int(workers))
+        self._slots = threading.BoundedSemaphore(self.workers)
+        self._pool = ThreadPoolExecutor(max_workers=self.workers, thread_name_prefix="eq-conv")
         self.strong_every = strong_every
         self.base, self.root = ec.boot()
         self.snap = self.base.snapshot()
@@ -459,6 +549,7 @@ class ClassifierService:
         self.conversations_closed = 0
         self.conversations_evicted = {"idle_ttl": 0, "lru": 0}
         self.batches = 0
+        self.batch_requests = 0
         self.messages = 0
         self.windows = 0
         self.turns = 0
@@ -477,41 +568,52 @@ class ClassifierService:
                            "seed_pack_sha256": self.pack_sha256,
                            "ocelot_commit": self.commit, "mode": MODE}
 
+    @contextmanager
+    def _slot(self):
+        self._slots.acquire()
+        try:
+            yield
+        finally:
+            self._slots.release()
+
     def _strong_check(self) -> bool:
-        d = strong_digest(self.base)
-        ok = d == self.digest0
-        self.last_strong = {"batch": self.batches, "digest": d, "ok": ok}
-        if not ok:
+        with self._strong_lock:
+            d = strong_digest(self.base)
+            ok = d == self.digest0
+            with self._meta:
+                self.last_strong = {"batch": self.batches, "digest": d, "ok": ok}
+                if not ok:
+                    self.healthy = False
+            return ok
+
+    def _after_batch(self, **counts: int) -> None:
+        """Base checks after every request: source revision always, strong digest
+        every `strong_every` requests (outside the metadata lock)."""
+        with self._meta:
+            self.batches += 1
+            for k, v in counts.items():
+                setattr(self, k, getattr(self, k) + v)
+            due = self.batches % self.strong_every == 0
+        if tuple(self.snap.source_revision) != self.rev0:
             self.healthy = False
-        return ok
+            raise BaseDrift()
+        if due and not self._strong_check():
+            raise BaseDrift()
+
+    def _require_healthy(self) -> None:
+        if not self.healthy:
+            raise BaseDrift()
 
     def classify(self, messages: list[dict]) -> list[dict]:
-        with self._lock:
-            if not self.healthy:
-                raise BaseDrift()
+        self._require_healthy()
+        with self._slot():
             branch = self.snap.fork()
             try:
                 results = self._ec.classify(branch, self.root, messages)
             finally:
                 del branch
-            self.batches += 1
-            self.messages += len(messages)
-            if tuple(self.snap.source_revision) != self.rev0:
-                self.healthy = False
-                raise BaseDrift()
-            if self.batches % self.strong_every == 0 and not self._strong_check():
-                raise BaseDrift()
-            return [to_wire(r) for r in results]
-
-    def _after_batch(self) -> None:
-        """Base checks after every batch: source revision always, strong digest
-        every `strong_every` batches (both under the global lock)."""
-        self.batches += 1
-        if tuple(self.snap.source_revision) != self.rev0:
-            self.healthy = False
-            raise BaseDrift()
-        if self.batches % self.strong_every == 0 and not self._strong_check():
-            raise BaseDrift()
+        self._after_batch(messages=len(messages))
+        return [to_wire(r) for r in results]
 
     def _budget(self, fn, *args):
         try:
@@ -529,10 +631,9 @@ class ClassifierService:
     def discourse(self, window: dict, turns: list[dict]) -> dict:
         """/v1/discourse = open + turns (chunks of MAX_CONV_TURNS) + close on one
         fork that is dropped afterwards; quanta/episodes are the close read-out."""
-        with self._lock:
-            if not self.healthy:
-                raise BaseDrift()
-            ec = self._ec
+        self._require_healthy()
+        ec = self._ec
+        with self._slot():
             branch = self.snap.fork()
             try:
                 st = ec.conversation_open(branch, self.root, window["window_id"], window["kind"])
@@ -544,107 +645,189 @@ class ClassifierService:
                 fin = self._budget(ec.conversation_close, branch, self.root, st)
             finally:
                 del branch
-            self.windows += 1
-            self.turns += len(turns)
-            self._after_batch()
-            result = {"window_id": window["window_id"], "messages": [t["read"] for t in got],
-                      "quanta": fin["quanta"], "episodes": fin["episodes"]}
-            return discourse_to_wire(result, ec.TAXONOMY_VERSION)
+        self._after_batch(windows=1, turns=len(turns))
+        result = {"window_id": window["window_id"], "messages": [t["read"] for t in got],
+                  "quanta": fin["quanta"], "episodes": fin["episodes"]}
+        return discourse_to_wire(result, ec.TAXONOMY_VERSION)
 
     # ---- /v1/conversations ----------------------------------------------------
-    def _evict(self, cid: str, reason: str) -> None:
-        sess = self.sessions.pop(cid)
+    # Lock order: a worker slot, then (briefly) _meta, then a session lock; _meta
+    # is released before a session lock is waited on. Eviction only takes a
+    # session lock non-blockingly, so it never waits on (or drops) a busy session.
+    def _drop(self, cid: str, sess: Session, reason: str | None) -> None:
+        """Drop a session whose lock the caller holds. reason=None: closed or
+        failed (no tombstone); else evicted ('idle_ttl' | 'lru'). Caller holds _meta."""
+        if self.sessions.get(cid) is sess:
+            del self.sessions[cid]
         sess.branch = sess.state = None  # drop the retained fork
-        self.tombstones[cid] = reason
-        self.tombstones.move_to_end(cid)
-        while len(self.tombstones) > MAX_TOMBSTONES:
-            self.tombstones.popitem(last=False)
-        self.conversations_evicted[reason] += 1
+        if reason is not None:
+            self.tombstones[cid] = reason
+            self.tombstones.move_to_end(cid)
+            while len(self.tombstones) > MAX_TOMBSTONES:
+                self.tombstones.popitem(last=False)
+            self.conversations_evicted[reason] += 1
+
+    def _try_evict(self, cid: str, reason: str) -> bool:
+        sess = self.sessions[cid]
+        if not sess.lock.acquire(blocking=False):
+            return False  # busy: never evicted under a running batch
+        try:
+            self._drop(cid, sess, reason)
+        finally:
+            sess.lock.release()
+        return True
 
     def _sweep(self, now: float) -> None:
         for cid in [c for c, x in self.sessions.items() if now - x.last_used > self.idle_ttl_s]:
-            self._evict(cid, "idle_ttl")
+            self._try_evict(cid, "idle_ttl")
 
-    def _get(self, cid: str, now: float) -> Session:
-        self._sweep(now)
-        sess = self.sessions.get(cid)
-        if sess is None:
-            if cid in self.tombstones:
-                raise ApiError(409, "conversation_evicted",
-                               "conversation state was evicted (idle TTL or capacity); "
-                               "resubmit it under a new conversation id")
-            raise ApiError(404, "unknown_conversation", "no such open conversation")
-        return sess
+    def _make_room(self, keep: str) -> None:
+        """LRU cap: evict the least recently used IDLE sessions (never `keep`, never
+        a busy one). With every older session busy the map may exceed the cap by at
+        most the number of in-flight requests until the next accepted batch."""
+        for cid in list(self.sessions):
+            if len(self.sessions) <= self.max_conversations:
+                return
+            if cid != keep:
+                self._try_evict(cid, "lru")
 
-    def conversation_turns(self, cid: str, kind: str, turns: list[dict]) -> dict:
-        with self._lock:
-            if not self.healthy:
-                raise BaseDrift()
-            ec = self._ec
+    def _acquire(self, cid: str, now: float, kind: str | None) -> Session:
+        """Return the session for `cid` with its lock HELD. kind=None: it must
+        exist; else a missing one is registered (fresh) for `kind`."""
+        while True:
+            with self._meta:
+                self._sweep(now)
+                sess = self.sessions.get(cid)
+                if sess is None:
+                    if cid in self.tombstones:
+                        raise ApiError(409, "conversation_evicted",
+                                       "conversation state was evicted (idle TTL or capacity); "
+                                       "resubmit it under a new conversation id")
+                    if kind is None:
+                        raise ApiError(404, "unknown_conversation", "no such open conversation")
+                    branch = self.snap.fork()
+                    sess = Session(branch, self._ec.conversation_open(branch, self.root, cid, kind),
+                                   kind, now)
+                    self.sessions[cid] = sess
+                    self.conversations_opened += 1
+            sess.lock.acquire()
+            if sess.branch is not None:
+                return sess
+            sess.lock.release()  # dropped while we waited: look it up again
+
+    def _drop_fresh(self, cid: str, sess: Session) -> None:
+        """A fresh session whose first batch was refused leaves no state behind."""
+        with self._meta:
+            self._drop(cid, sess, None)
+            self.conversations_opened -= 1
+
+    def conversation_turns(self, cid: str, kind: str, turns: list[dict],
+                           close_after: bool = False) -> dict:
+        """Ingest one batch; ``close_after`` makes batch ingest+close one
+        serialized operation on the conversation session."""
+        self._require_healthy()
+        ec = self._ec
+        with self._slot():
             now = self._clock()
+            sess = self._acquire(cid, now, kind)
             try:
-                sess = self._get(cid, now)
-            except ApiError as e:
-                if e.code != "unknown_conversation":
+                if sess.kind != kind:
+                    raise ApiError(400, "bad_request", "$.kind: does not match the conversation")
+                try:
+                    self._check_order(sess.branch, sess.state, turns)  # atomic: nothing ingested on 409
+                except ApiError:
+                    if sess.fresh:
+                        self._drop_fresh(cid, sess)
                     raise
-                sess = None
-            if sess is not None and sess.kind != kind:
-                raise ApiError(400, "bad_request", "$.kind: does not match the conversation")
-            fresh = sess is None
-            if fresh:
-                branch = self.snap.fork()
-                sess = Session(branch, ec.conversation_open(branch, self.root, cid, kind), kind, now)
-            self._check_order(sess.branch, sess.state, turns)  # atomic: nothing ingested on 409
-            if fresh:
-                while len(self.sessions) >= self.max_conversations:
-                    self._evict(next(iter(self.sessions)), "lru")
-                self.sessions[cid] = sess
-                self.conversations_opened += 1
-            try:
-                result = ec.conversation_ingest(sess.branch, self.root, sess.state, turns)
-            except ec.BudgetExhausted:
-                self.sessions.pop(cid, None)  # state is partial: drop it
-                sess.branch = sess.state = None
-                raise ApiError(422, "budget_exhausted",
-                               "rule fuel exhausted before the fixpoint; conversation dropped") from None
-            sess.last_used = now
-            self.sessions.move_to_end(cid)
-            self.turns += len(turns)
-            self._after_batch()
-            return conversation_to_wire(result, ec.TAXONOMY_VERSION)
-
-    def conversation_close(self, cid: str) -> dict:
-        with self._lock:
-            if not self.healthy:
-                raise BaseDrift()
-            ec = self._ec
-            sess = self._get(cid, self._clock())
-            try:
-                result = self._budget(ec.conversation_close, sess.branch, self.root, sess.state)
+                if sess.fresh:
+                    sess.fresh = False
+                    with self._meta:
+                        self._make_room(keep=cid)
+                try:
+                    result = ec.conversation_ingest(sess.branch, self.root, sess.state, turns)
+                except ec.BudgetExhausted:
+                    with self._meta:
+                        self._drop(cid, sess, None)  # state is partial: drop it
+                    raise ApiError(422, "budget_exhausted",
+                                   "rule fuel exhausted before the fixpoint; conversation dropped") from None
+                sess.last_used = now
+                with self._meta:
+                    if self.sessions.get(cid) is sess:
+                        self.sessions.move_to_end(cid)
+                if close_after:
+                    # Keep sess.lock held across the close. A concurrent /turns,
+                    # /close, or /_batch item must not interleave between this
+                    # item's ingest and its requested close.
+                    with self._meta:
+                        self._drop(cid, sess, None)
             finally:
-                self.sessions.pop(cid, None)
-                sess.branch = sess.state = None
-            self.conversations_closed += 1
-            self._after_batch()
-            return conversation_to_wire(result, ec.TAXONOMY_VERSION)
+                sess.lock.release()
+        self._after_batch(turns=len(turns))
+        if close_after:
+            self._after_batch(conversations_closed=1)
+        return conversation_to_wire(result, ec.TAXONOMY_VERSION)
+
+    def conversation_close(self, cid: str, read_out: bool = True) -> dict | None:
+        """Close: the COMPLETE final read-out (read_out=False: just free the fork,
+        used by /_batch `close`), then drop the retained fork."""
+        self._require_healthy()
+        ec = self._ec
+        with self._slot():
+            sess = self._acquire(cid, self._clock(), None)
+            try:
+                result = (self._budget(ec.conversation_close, sess.branch, self.root, sess.state)
+                          if read_out else None)
+            finally:
+                with self._meta:
+                    self._drop(cid, sess, None)
+                sess.lock.release()
+        self._after_batch(conversations_closed=1)
+        return conversation_to_wire(result, ec.TAXONOMY_VERSION) if read_out else None
+
+    def _batch_item(self, item: dict) -> dict:
+        cid = item["conversation_id"]
+        try:
+            out = self.conversation_turns(cid, item["kind"], item["turns"],
+                                          close_after=item.get("close") is True)
+        except BaseDrift:
+            raise
+        except ApiError as e:
+            return {"conversation_id": cid, "ok": False,
+                    "error": {"code": e.code, "message": e.message, "retryable": e.retryable}}
+        except Exception:  # never echo input or tracebacks
+            return {"conversation_id": cid, "ok": False,
+                    "error": {"code": "internal", "message": "internal error", "retryable": False}}
+        out.pop("taxonomy_version")
+        return out
+
+    def conversation_batch(self, items: list[dict]) -> dict:
+        """/v1/conversations/_batch: items run in parallel on the worker pool;
+        results in request order; a per-item failure is reported in its result."""
+        self._require_healthy()
+        futures = [self._pool.submit(self._batch_item, it) for it in items]
+        results = [f.result() for f in futures]  # BaseDrift propagates (process exits)
+        with self._meta:
+            self.batch_requests += 1
+        return {"ok": True, "taxonomy_version": self._ec.TAXONOMY_VERSION, "results": results}
 
     def conversation_get(self, cid: str) -> dict:
-        with self._lock:
-            sess = self._get(cid, self._clock())
+        sess = self._acquire(cid, self._clock(), None)
+        try:
             info = self._ec.conversation_info(sess.branch, sess.state)
-            return {"ok": True, "conversation_id": info["conversation_id"], "seq": info["seq"],
-                    "idle_ttl_s": int(self.idle_ttl_s), "kind": info["kind"]}
+        finally:
+            sess.lock.release()
+        return {"ok": True, "conversation_id": info["conversation_id"], "seq": info["seq"],
+                "idle_ttl_s": int(self.idle_ttl_s), "kind": info["kind"]}
 
     def health(self) -> bool:
-        with self._lock:
-            if self.healthy and tuple(self.snap.source_revision) != self.rev0:
-                self.healthy = False
-            if self.healthy:
-                self._strong_check()
-            return self.healthy
+        if self.healthy and tuple(self.snap.source_revision) != self.rev0:
+            self.healthy = False
+        if self.healthy:
+            self._strong_check()
+        return self.healthy
 
     def info(self) -> dict:
-        with self._lock:
+        with self._meta:
             return {
                 "ok": True, "name": SERVICE_NAME,
                 "taxonomy_version": self._ec.TAXONOMY_VERSION,
@@ -666,6 +849,7 @@ class ClassifierService:
                          "strong_digest_last": dict(self.last_strong),
                          "batches_served": self.batches, "messages_served": self.messages,
                          "windows_served": self.windows, "turns_served": self.turns,
+                         "batch_requests_served": self.batch_requests,
                          "healthy": self.healthy},
                 "limits": {"max_messages": MAX_MESSAGES, "max_body_bytes": MAX_BODY_BYTES,
                            "max_text_chars": MAX_TEXT_LEN,
@@ -674,16 +858,21 @@ class ClassifierService:
                            "strong_check_every_batches": self.strong_every,
                            "max_conversation_turns_per_call": MAX_CONV_TURNS,
                            "max_conversation_body_bytes": MAX_CONV_BODY_BYTES,
+                           "max_batch_items": MAX_BATCH_ITEMS,
+                           "max_batch_turns": MAX_BATCH_TURNS,
+                           "max_batch_body_bytes": MAX_BATCH_BODY_BYTES,
                            "conversation_idle_ttl_s": self.idle_ttl_s,
                            "max_conversations": self.max_conversations},
                 "conversations": {"open": len(self.sessions), "opened": self.conversations_opened,
                                   "closed": self.conversations_closed,
                                   "evicted": dict(self.conversations_evicted),
-                                  "concurrency": "global_lock"},
+                                  "concurrency": "per_conversation_locks",
+                                  "workers": self.workers},
                 "endpoints": {"/v1/classify": "ok", "/v1/discourse": "ok",
                               "/v1/conversations/{id}/turns": "ok",
                               "/v1/conversations/{id}/close": "ok",
-                              "GET /v1/conversations/{id}": "ok"},
+                              "GET /v1/conversations/{id}": "ok",
+                              "/v1/conversations/_batch": "ok"},
             }
 
 
@@ -764,6 +953,11 @@ def make_handler(service: ClassifierService):
         def do_POST(self):
             p = self._path()
             try:
+                if p == "/v1/conversations/_batch":
+                    tax = service.provenance["taxonomy_version"]
+                    items = validate_batch(parse_json(self._body(MAX_BATCH_BODY_BYTES)), tax)
+                    self._send(200, service.conversation_batch(items))
+                    return
                 cp = self._conv_path() if p.startswith("/v1/conversations/") else None
                 if cp is not None and cp[1] == "turns":
                     tax = service.provenance["taxonomy_version"]
@@ -809,12 +1003,13 @@ def make_handler(service: ClassifierService):
 
 
 def serve(host: str, port: int, idle_ttl_s: float = DEFAULT_IDLE_TTL_S,
-          max_conversations: int = DEFAULT_MAX_CONVERSATIONS) -> None:
+          max_conversations: int = DEFAULT_MAX_CONVERSATIONS, workers: int = DEFAULT_WORKERS) -> None:
     require_no_llm()
     require_loopback(host)
     _setup_engine()
     t0 = time.perf_counter()
-    service = ClassifierService(idle_ttl_s=idle_ttl_s, max_conversations=max_conversations)
+    service = ClassifierService(idle_ttl_s=idle_ttl_s, max_conversations=max_conversations,
+                                workers=workers)
     httpd = ThreadingHTTPServer((BIND_HOST, port), make_handler(service))
     httpd.daemon_threads = True
     if httpd.server_address[0] != BIND_HOST:
@@ -838,10 +1033,12 @@ def main(argv: list[str] | None = None) -> None:
                     default=float(os.environ.get("EQ_CONV_IDLE_TTL_S", DEFAULT_IDLE_TTL_S)))
     ap.add_argument("--max-conversations", type=int,
                     default=int(os.environ.get("EQ_CONV_MAX", DEFAULT_MAX_CONVERSATIONS)))
+    ap.add_argument("--workers", type=int, default=int(os.environ.get("EQ_WORKERS", DEFAULT_WORKERS)),
+                    help="engine worker slots (parallel conversations)")
     a = ap.parse_args(argv)
-    if a.conversation_idle_ttl_s <= 0 or a.max_conversations < 1:
-        raise RefuseStart("conversation TTL must be > 0 and max conversations >= 1")
-    serve(a.host, a.port, a.conversation_idle_ttl_s, a.max_conversations)
+    if a.conversation_idle_ttl_s <= 0 or a.max_conversations < 1 or a.workers < 1:
+        raise RefuseStart("conversation TTL must be > 0, max conversations >= 1, workers >= 1")
+    serve(a.host, a.port, a.conversation_idle_ttl_s, a.max_conversations, a.workers)
 
 
 if __name__ == "__main__":

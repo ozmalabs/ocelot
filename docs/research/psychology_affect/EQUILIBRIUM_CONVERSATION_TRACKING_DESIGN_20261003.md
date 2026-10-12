@@ -195,3 +195,167 @@ Always null. No graph-native lexical-overlap topic shape was built in this stage
 - **Rule order.** Within-pass phase order relies on the manifest's rule order.
   The goldens and the incremental==one-shot tests guard it; no engine-level
   phase primitive is used.
+
+## T3d. Scaling: concurrency, batching, frontier-driven evaluation (pack 0.5.1)
+
+Results and predictions: EQUILIBRIUM_CONVERSATION_SCALING_RESULTS_20261004.md. The wire
+is unchanged apart from the version strings (`0.5.1` / `eq-tax-0.5.1`). One endpoint
+is new: `POST /v1/conversations/_batch`, which follows the shared batch contract.
+
+**Concurrency** (services/equilibrium_classifier/server.py)
+
+- The global lock is gone. Each conversation has its own lock, so its batches are
+  serialised.
+- `_meta` guards only the session map, the tombstones and the counters, and is never
+  held across engine work.
+- All engine work goes through `workers` slots (`--workers` / `EQ_WORKERS`, default
+  min(8, cpus)). `/_batch` items run on a thread pool of the same size.
+- Threads work because `run_rules` releases the GIL and every fork has its own engine
+  mutex. A pre-change probe measured 2.4× at 8 threads. Process pools were not needed.
+- A busy session is never evicted: eviction only try-locks.
+- The base revision is checked after every request, and the strong digest every N
+  requests.
+
+**Engine** (runners/dsl, all flags default OFF, so the committed engine is
+byte-identical when they are off)
+
+- `set_batch_incremental`: a `batch` rule takes the semi-naive cursor path. It falls
+  back to the full batch pass only on a cold or invalidated cursor, and then installs
+  its cursors at the pre-apply frontier. It also admits repeated match edge types,
+  deduplicated by the canonical binding key.
+- `set_fresh_node_exempt` (the isolated-node exemption):
+  - An external `add_node`, or a `set_attr` on a node with no edges, dirties only the
+    rules that can see such a node: a Type read, or a non-local opaque read. The
+    new `RewriteRule.reads_any_nonlocal` is `reads_any` minus `TypeOf`/`AttrByName`.
+  - An external `add_edge` clears the cursors of that edge type's term readers.
+- The adapter also turns on `incremental_match`, `precise_dirty` and
+  `empty_match_proof`, and keeps per-conversation bookkeeping on an edge-less
+  `EqLedger` node.
+
+**Pack** (scripts/_equilibrium_quanta_rules.py `LIVE_L1`/`LIVE_L2`/`apply_live`)
+
+- The monotone strata rules run live on the retained fork, driven by per-batch
+  frontier marks:
+  - L1: `w -eq_l1-> m`, plus `agent -eq_l1_open-> w` for `eq.ep.extend`. A root turn
+    enrols the older turn it answers, so extension must see old turns.
+  - L2: `agent -eq_l2_open-> w` + `w -eq_l2-> m` + `w -eq_qnew-> q`. Here `q` is a
+    quantum first minted in this batch, found by a ledger set difference. The cue
+    counter's `.newq` twin pairs a new quantum with every turn of its author.
+- The marks are removed once the layer's fixpoint is reached. A full re-match of a
+  live rule therefore sees only the frontier, and a closed layer is skipped by the
+  empty-match proof.
+- The per-turn window and tracking rules bind the S0 frontier `w -eq_l0-> m`, which
+  is removed after the tracking fixpoint. These rules are `eq.win.responds_to.reply`,
+  `eq.win.thread.platform`, `eq.trk.materialise` and `eq.trk.continues`.
+- `eq.ep.facet` is gated by `eq_l1_open`.
+- The non-monotone rules stay on the per-batch scratch fork, unchanged: floor,
+  selective non-response, unanswered, claim grounding, generative outcome, match
+  shapes, compose.
+- Exactness check: all 26 golden runs (351 per-batch responses) captured from the T3c
+  code are byte-identical, after normalising 0.5.0 → 0.5.1.
+
+**What remains O(prefix) per batch.** Measured: the 100-turn batch latency
+exponent is 1.02 over prefixes of 1k–10k, so per-batch cost is NOT yet sub-linear. It
+is about 2× below T3c (see RESULTS). The O(prefix) parts are:
+
+- The S0 msg rules over `agent -received-> m` whenever their cursors are cleared.
+  The cause was not established; `neg_op` is one example.
+- The scratch tier: its rules bind over all actors, questions, quanta and episodes,
+  and the unanswered/responsiveness rules scan later turns.
+- `AttrByName` rules: any attr write clears their cursors (per-node predicate
+  retraction does not cover dynamic-key reads), e.g. `eq.ep.facet`.
+- The read-out: quanta, episodes and open questions are re-read every batch, and
+  each emitted row is re-signed.
+
+The next step is retraction rules for the six non-monotone families, so that they
+can also run live.
+
+### T3d stage B: the non-monotone families run live (no scratch fork)
+
+The per-batch scratch fork is gone. Every rule now runs on the retained fork, and the
+read-out reads the retained fork directly. The read-out after each batch must still
+equal a one-shot run over the same prefix. Three things keep that contract
+(scripts/_equilibrium_quanta_rules.py, "0.5.1 stage B"):
+
+**Bounded rolling state, finalised by the turn cursor** (equilibrium_tracking, before
+`eq.trk.release`):
+
+- **Per-actor turn count.** `eq.trk.nturns` increments `a.eq_nturns` once per tracked
+  turn, guarded by `m -eq_counted-> a`.
+- **Unanswered wait set.** `w -eq_unans_wait-> q` holds questions no other actor has
+  posted after yet. The first later turn by another actor moves the question to
+  `q -eq_unans_due-> w`. In steady state the wait set holds only the trailing
+  questions of one actor.
+- **Non-response wait set.** `a -eq_rsp_wait-> q` holds b's questions to a that a has
+  not answered by posting since. a's next turn moves each one to `q -eq_rsp_due-> a`.
+  When a responds (declared or tracked), `q -eq_rsp_ans-> a` is added.
+- **Episode marks.** For the episode families, each turn's cue role is marked once on
+  the L1 frontier: `m -eq_cue_resolve | eq_cue_escalate | eq_cue_extend-> w` and
+  `m -eq_fx_cue-> f`. Membership marks `m -eq_ep_res | eq_ep_esc-> e` then feed the
+  generative outcome. These marks also replace the dynamic cue look-up and the
+  `eq_l1_open` gate of `eq.ep.extend` / `eq.ep.facet`.
+
+**Dedicated retraction edges.** A fact that a later turn can invalidate lives on its
+own small edge type:
+
+- `a -eq_nm_quantum-> q`: the quantum exists now. The read-out unions it with
+  `eq_has_quantum`.
+- `q -eq_evidence_nm-> m`: open evidence.
+- `q -eq_counter_nm-> m`: the floor's runner-up turns.
+- `q -eq_floor_ru-> b`: the current runner-up.
+
+The monotone parts stay on the committed types: floor evidence (every turn of the
+actor) and the answered-question counters. Each family's quantum node is permanent,
+linked by `eq_floor_node`, `eq_rsp_node`, `eq_unans_node`, `eq_cg_pos_node` or
+`eq_cg_neg_node`. The node accrues its monotone parts whether or not it currently
+exists, so when a quantum re-appears it reads exactly the one-shot row.
+
+The retractions:
+
+- **Event-driven.** Unanswered and non-response evidence is retracted when the answer
+  edge arrives. This uses `eq_answers` + `enabled(inquiry.answered)`, which is the
+  input that `eq.quanta.inquiry.answered` itself consumes.
+- **Small candidate sets.** Existence (`*.vanish`), runner-up and runner-up-turn
+  retractions match only the dedicated edges.
+- **Floor family.** It compares the batch-final copy `a.eq_nturns_b`, taken atomically
+  on the L1 frontier. So it sees one state per batch: holder and runner-up flip at most
+  once per batch.
+
+**Switching shapes.** Each match-shape rule (quanta exact / partial / weak, composite)
+also sets its siblings' provenance to null; the read-out skips null attrs.
+Generative resolved / escalated / reopened are mutually exclusive and clear each
+other. A facet-match provenance on the episode is cleared once no facet of that
+episode holds the shape any more.
+
+**Pack conditions** (asserted by `check_nm_pack` at build time):
+
+- No EqTraitCue row names a non-monotone trait. Cue rules never saw scratch quanta,
+  and they must not see the live successors.
+- No EqTraitCompose row exists. Composites read `eq_has_quantum` only.
+
+**Engine** (both flags default OFF, enabled only by `incremental_engine` on
+conversation forks):
+
+- `set_hop_frontier` refines `write_frontier`'s locality, computed as a second
+  install-time variant (`RewriteRule.wf_hop_alt`):
+  - `SetT` / `Pick` / `Union` / `Intersect` / `Difference` / `Plus` / `Minus` are
+    transparent.
+  - An attr read of an `Exists` variable over `Neighbours(v, E)` / `InNeighbours(v, E)`
+    of a match variable is one-hop local. A write of that key on x seeds x's
+    E-neighbours, e.g. "no facet of e holds shape s" re-checks only e.
+  - A `DelEdge` of a type the rule does not match counts as a read at its two bound
+    endpoints, so retraction rules can be write-frontier eligible.
+- `set_delete_frontier`: a rule-effect `DelEdge (s, E, t)` makes a non-matching reader
+  of E re-check only the bindings of s and t, provided every read it makes of E is
+  local or is a seedable `AddEdge` of its own. A reader that only deletes E is not
+  woken at all. Readers that match E still go stale through the per-type delete
+  version. The graph keeps a rule-effect delete log (`edge_delete_log`) for this.
+
+Prefix-proportional work that is left, measured in RESULTS §5:
+
+- the read-out of changed rows, whose evidence lists grow with the conversation (this
+  is wire size);
+- `eq.competence.corroborated` / `.contested`, whose shape pairs a reply with every
+  earlier claim;
+- a floor runner-up change, which rewrites O(turns / actors) counter edges. This is
+  the size of the wire change.

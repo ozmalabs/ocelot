@@ -77,8 +77,8 @@ def test_golden_climate_window(base):
     }
     msgs = {m["id"]: m for m in out["messages"]}
     # which dissent shape fired is auditable per turn
-    assert msgs["c02"]["labels"]["msg.dissent"]["rule_ids"] == ["eq.msg.dissent.disagreement_cue@0.5.0"]
-    assert msgs["c04"]["labels"]["msg.dissent"]["rule_ids"] == ["eq.msg.dissent.negated_echo@0.5.0"]
+    assert msgs["c02"]["labels"]["msg.dissent"]["rule_ids"] == ["eq.msg.dissent.disagreement_cue@0.5.1"]
+    assert msgs["c04"]["labels"]["msg.dissent"]["rule_ids"] == ["eq.msg.dissent.negated_echo@0.5.1"]
     assert "msg.dissent_hedged" in msgs["c10"]["labels"]
     assert "msg.error_admission_negated" in msgs["c09"]["labels"]
     assert "msg.error_admission" not in msgs["c09"]["labels"]
@@ -222,12 +222,14 @@ def test_climate_traits_are_shadow_and_versioned(base):
     st = eq._label_status(snap.fork(), root)
     for t in CLIMATE_TRAITS:
         assert st[t]["status"] == "shadow" and st[t]["kind"] == "trait" and st[t]["since_pack"] == "0.4.0", t
-    assert eq.PACK_VERSION == "0.5.0" and eq.TAXONOMY_VERSION == "eq-tax-0.5.0"
+    assert eq.PACK_VERSION == "0.5.1" and eq.TAXONOMY_VERSION == "eq-tax-0.5.1"
     climate = next(m for m in eq.pack_manifests() if m["id"] == "equilibrium_climate")
     assert {n["type"] for n in climate["nodes"]} == {"EqClimateCue"}
     assert {r["name"] for r in climate["rules"]} == {
         "eq.quanta.response.dismissal", "eq.quanta.response.engagement", "eq.quanta.inquiry.answered",
-        "eq.quanta.inquiry.unanswered", "eq.quanta.inquiry.unanswered.counter"}
+        "eq.quanta.inquiry.unanswered", "eq.quanta.inquiry.unanswered.counter",
+        # 0.5.1 stage B: unanswered runs live (permanent node + answer-driven retraction)
+        "eq.quanta.inquiry.unanswered.node", "eq.quanta.inquiry.unanswered.retract"}
 
 
 def test_disabling_a_climate_trait_is_data_only(base):

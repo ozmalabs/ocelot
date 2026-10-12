@@ -42,13 +42,14 @@ import functools
 import hashlib
 import json
 import re
+import threading
 from typing import Any, Iterable
 
 from substrate.boot_core import boot_core
 from substrate.seed_loader import manifest_for
 
-PACK_VERSION = "0.5.0"
-TAXONOMY_VERSION = "eq-tax-0.5.0"
+PACK_VERSION = "0.5.1"
+TAXONOMY_VERSION = "eq-tax-0.5.1"
 PACK_IDS = ("equilibrium_tokens", "equilibrium_window", "equilibrium_lexicon",
             "equilibrium_scope", "equilibrium_msg", "equilibrium_pattern",
             "equilibrium_traits", "equilibrium_quanta", "equilibrium_competence",
@@ -117,20 +118,29 @@ def _wordnet():
     return wn
 
 
+# NLTK's WordNet reader is not thread-safe (lazily opened, shared data-file
+# handles); conversations are ingested on parallel worker threads, so every
+# WordNet lookup is serialised (the lru caches below make repeats lock-free).
+_WN_LOCK = threading.Lock()
+
+
 @functools.lru_cache(maxsize=65_536)
 def lemma(form: str) -> str:
     """Opaque string normalisation: WordNet morphy (verb reading, then noun),
     else the form itself. Shared with the seed builder so cue words and tokens
     are normalised by the same function."""
     wn = _wordnet()
-    return wn.morphy(form, "v") or wn.morphy(form, "n") or form
+    with _WN_LOCK:
+        return wn.morphy(form, "v") or wn.morphy(form, "n") or form
 
 
 @functools.lru_cache(maxsize=65_536)
 def noun_class(form: str) -> str | None:
     """First-sense WordNet noun lexname of the token's lemma as a class token
     ("<noun.person>"); first sense is a lookup, not a disambiguation decision."""
-    syn = _wordnet().synsets(lemma(form), "n")
+    lem = lemma(form)
+    with _WN_LOCK:
+        syn = _wordnet().synsets(lem, "n")
     return f"<{syn[0].lexname()}>" if syn else None
 
 
@@ -236,24 +246,81 @@ def classify(substrate, agent_root, messages: Iterable[dict]) -> list[dict]:
 #     batch ticks them on a SCRATCH fork of the retained fork, reads out, and
 #     drops it: the read-out after every batch equals a one-shot run over the
 #     same prefix.
+#   * 0.5.1 (T3d): the MONOTONE strata rules (per-turn evidence / hedged /
+#     counter cues, run, question demand, response type, answered, episode
+#     root / extend / facet, competence corroboration) run LIVE on the retained
+#     fork instead, driven by per-turn layer marks (L1 `eq_l1` + `eq_l1_open`,
+#     then L2 `eq_l2` + `eq_l2_open` + `eq_qnew`) added after the tracking fixpoint and removed after
+#     the layer's fixpoint (the batch frontier) -- each turn is evaluated once.
+#     (scripts/_equilibrium_quanta_rules.py LIVE_L1 / LIVE_L2).
+#   * 0.5.1 stage B: the NON-MONOTONE families (floor, selective non-response,
+#     unanswered, claim grounding, generative outcome, match shapes) run live too,
+#     with bounded rolling state the turn cursor finalises and dedicated retraction
+#     edges (`eq_nm_quantum`, `eq_evidence_nm`, `eq_counter_nm`, ...). There is no
+#     scratch fork; the read-out after every batch still equals a one-shot run over
+#     the same prefix (golden- and per-prefix-checked, RESULTS T3d §5).
 #   * EMIT reads per-turn structure for the batch's turns, the quanta/episodes
 #     that are new or changed since they were last emitted (emitted marks are
 #     `eqemit:` attrs on the conversation node, compared mechanically), and the
 #     open questions. close() emits the complete final set.
 # Turn / actor lookup is the substrate's attr index (Message.eq_ref,
-# EqActor.actor_ref) on the retained fork; the handle below holds only the
-# conversation node id.
+# EqActor.actor_ref) on the retained fork. Per-conversation bookkeeping (seq,
+# next turn position, last ts / ref, emitted marks) lives on an EqLedger node in
+# the same fork that has NO edges: no rule binds or reaches it, so writing it
+# never invalidates a rule's incremental cursor (isolated-node exemption). The
+# handle below holds only the two node ids.
+#
+# Incremental evaluation (track T3d): conversation forks run the engine's
+# semi-naive matching for every rule (incremental_match + precise_dirty +
+# isolated-node exemption + batch_incremental): a batch's run_rules enumerates
+# only bindings driven by the batch's new edges. Stage A (T3d scaling) adds four
+# more evaluation-strategy flags that remove the remaining whole-prefix re-matches
+# of the S0 / tracking / live layers: own_write_exempt (an effect's own dedup
+# look-up never clears a cursor), precise_rule_deletes (the tracking cursor's
+# DelEdge no longer clears EVERY rule's cursor), seeded_join_order (semi-naive
+# sub-matches join outward from the seed with index hints + pushdown) and
+# write_frontier (a local attr / edge write re-checks only the bindings of the
+# written node). These are evaluation-strategy flags; the fixpoint they reach is
+# the same (golden-checked, RESULTS T3d stage A).
+# Stage B adds hop_frontier (one-hop local attr reads) and delete_frontier (a
+# retraction edge's delete re-checks only its endpoints' bindings).
+# Read-out is a DELTA (see _emit): only quanta / episodes the batch's ticks wrote
+# are re-read; open questions are the tracking rules' graph-resident QUD set
+# `w -eq_qud-> q`.
 CONVERSATION_KINDS = ("meeting", "thread", "channel")
 QUESTION_KEY = "eqlab:msg.speech_act=question"
 EMIT_PREFIX = "eqemit:"
+# a conversation's quanta: monotone (`eq_has_quantum`) and the non-monotone families'
+# currently EXISTING ones (`eq_nm_quantum`); evidence / counter edges likewise include
+# the families' retractable types (pack 0.5.1 stage B, scripts/_equilibrium_quanta_rules.py)
+QUANTUM_EDGES = ("eq_has_quantum", "eq_nm_quantum")
+EVIDENCE_EDGES = ("eq_evidence", "eq_hedged", "eq_context", "eq_evidence_nm")
+COUNTER_EDGES = ("eq_counter", "eq_counter_nm")
 
 
 class Conversation:
-    """Adapter handle for one retained conversation fork: the EqWindow node id."""
-    __slots__ = ("w",)
+    """Adapter handle for one retained conversation fork: the EqWindow node id
+    and its (edge-less) EqLedger bookkeeping node id."""
+    __slots__ = ("w", "ledger")
 
-    def __init__(self, w) -> None:
-        self.w = w
+    def __init__(self, w, ledger) -> None:
+        self.w, self.ledger = w, ledger
+
+
+def incremental_engine(n) -> None:
+    """Turn on semi-naive evaluation for every rule of this substrate (and of
+    forks taken from it): an engine evaluation strategy, not a decision."""
+    n.set_incremental_match(True)
+    n.set_precise_dirty(True)
+    n.set_fresh_node_exempt(True)
+    n.set_batch_incremental(True)
+    n.set_own_write_exempt(True)  # an effect's own dedup look-up never clears a cursor
+    n.set_precise_rule_deletes(True)  # a DelEdge-only rule invalidates per deleted type
+    n.set_seeded_join_order(True)  # seeded sub-matches join outward from the seed
+    n.set_write_frontier(True)  # a local attr write re-checks only bindings of the written node
+    n.set_empty_match_proof(True)  # a closed live layer (no frontier mark) matches nothing
+    n.set_hop_frontier(True)  # a one-hop local attr write re-checks only its E-neighbours' bindings
+    n.set_delete_frontier(True)  # a retraction edge's delete re-checks only its endpoints' bindings
 
 
 def _lookup(n, typ: str, key: str, value: str):
@@ -263,19 +330,23 @@ def _lookup(n, typ: str, key: str, value: str):
 
 def conversation_open(substrate, agent_root, conversation_id: str, kind: str) -> Conversation:
     n = _native(substrate)
+    incremental_engine(n)
     for typ, key in (("Message", "eq_ref"), ("EqActor", "actor_ref")):
         if not n.has_attr_index(typ, key):
             n.declare_attr_index(typ, key)
     w = n.add_node("EqWindow", {"window_id": str(conversation_id),
                                 "conversation_id": str(conversation_id),
-                                "eq_kind": str(kind), "eq_seq": 0})
+                                "eq_kind": str(kind)})
+    ledger = n.add_node("EqLedger", {"eq_seq": 0, "eq_next_pos": 0})  # never gets an edge
     n.add_edge(agent_root, "eq_window", w)
-    return Conversation(w)
+    return Conversation(w, ledger)
 
 
 def conversation_info(substrate, state: Conversation) -> dict:
-    a = _native(substrate).node(state.w)["attrs"]
-    return {"conversation_id": a["conversation_id"], "seq": a["eq_seq"], "kind": a["eq_kind"]}
+    n = _native(substrate)
+    a = n.node(state.w)["attrs"]
+    return {"conversation_id": a["conversation_id"], "seq": n.node(state.ledger)["attrs"]["eq_seq"],
+            "kind": a["eq_kind"]}
 
 
 def conversation_check(substrate, state: Conversation, turns: list[dict]) -> str | None:
@@ -283,7 +354,7 @@ def conversation_check(substrate, state: Conversation, turns: list[dict]) -> str
     repeats in the batch or already exists in the conversation, 'out_of_order'
     if a ts_ms is earlier than the latest ts_ms seen (ties keep array order)."""
     n = _native(substrate)
-    last = n.node(state.w)["attrs"].get("eq_last_ts")
+    last = n.node(state.ledger)["attrs"].get("eq_last_ts")
     seen: set[str] = set()
     for t in turns:
         tid = str(t["id"])
@@ -305,8 +376,8 @@ def conversation_ingest(substrate, agent_root, state: Conversation, turns: list[
        "episodes": [new/changed], "open_questions": [...], "steps": [...]}"""
     n = _native(substrate)
     w = state.w
-    pos = len(n.neighbours(w, "eq_has_turn"))
-    last_ref = n.node(w)["attrs"].get("eq_last_ref")
+    book = n.node(state.ledger)["attrs"]
+    pos, last_ref, last_ts = book["eq_next_pos"], book.get("eq_last_ref"), None
     prev = _lookup(n, "Message", "eq_ref", last_ref) if last_ref is not None else None
     nodes = []
     for t in turns:
@@ -334,6 +405,7 @@ def conversation_ingest(substrate, agent_root, state: Conversation, turns: list[
             actor = n.add_node("EqActor", aattrs)
             n.add_edge(w, "eq_has_actor", actor)
         n.add_edge(w, "eq_has_turn", m)
+        n.add_edge(w, "eq_l0", m)  # S0 / tracking frontier mark (removed after tracking)
         n.add_edge(m, "eq_authored_by", actor)
         if prev is not None:
             n.add_edge(m, "eq_prev_turn", prev)  # turn ORDER (cursor + continuation only)
@@ -341,25 +413,76 @@ def conversation_ingest(substrate, agent_root, state: Conversation, turns: list[
         if tgt is not None:
             n.add_edge(m, "eq_reply_to", tgt)
         if t.get("ts_ms") is not None:
-            n.set_attr(w, "eq_last_ts", int(t["ts_ms"]))
+            last_ts = int(t["ts_ms"])
         nodes.append(m)
     if turns:
-        n.set_attr(w, "eq_last_ref", str(turns[-1]["id"]))
-    s0 = n.run_rules(DISCOURSE_FUEL)  # S0 on the retained fork
+        n.set_attr(state.ledger, "eq_last_ref", str(turns[-1]["id"]))
+        n.set_attr(state.ledger, "eq_next_pos", pos)
+    if last_ts is not None:
+        n.set_attr(state.ledger, "eq_last_ts", last_ts)
+    touched: set = set()  # ids of the nodes this batch's ticks wrote (delta read-out)
+    s0 = _tick(n, touched)  # S0 on the retained fork
     if s0 >= DISCOURSE_FUEL:
         raise BudgetExhausted("rule fuel exhausted")
     # S0 is at fixpoint for the new turns: queue them for the seeded turn cursor
     # (equilibrium_tracking) and tick again on the retained fork
     for m in nodes:
         n.add_edge(w, "eq_trk_pending", m)
-    trk = n.run_rules(DISCOURSE_FUEL)
+    trk = _tick(n, touched)
     if trk >= DISCOURSE_FUEL:
         raise BudgetExhausted("rule fuel exhausted")
-    seq = n.node(w)["attrs"]["eq_seq"] + 1
-    n.set_attr(w, "eq_seq", seq)
-    out = _emit(substrate, agent_root, state, nodes, full=False)
-    out["steps"] = [s0, trk] + out["steps"]
+    # the batch's turns are final for the per-turn window / tracking rules:
+    # retire them from that frontier, so later batches never re-match them
+    for m in nodes:
+        n.remove_edge(w, "eq_l0", m)
+    # the tracked turns enter the LIVE (monotone) strata layers in order -- L1
+    # per-turn rules, then L2 (rules whose absence test reads an L1 fact) -- as
+    # the layer's frontier marks, which are removed once its fixpoint is reached
+    live = []
+    for layer in ("eq_l1", "eq_l2"):
+        for m in nodes:
+            n.add_edge(w, layer, m)
+        if layer == "eq_l1":
+            n.add_edge(agent_root, "eq_l1_open", w)
+        if layer == "eq_l2":
+            qnew = _new_quanta(n, state)
+            for q in qnew:
+                n.add_edge(w, "eq_qnew", q)
+            n.add_edge(agent_root, "eq_l2_open", w)
+        live.append(_tick(n, touched))
+        if live[-1] >= DISCOURSE_FUEL:
+            raise BudgetExhausted("rule fuel exhausted")
+        for m in nodes:
+            n.remove_edge(w, layer, m)
+        if layer == "eq_l1":
+            n.remove_edge(agent_root, "eq_l1_open", w)
+        if layer == "eq_l2":
+            n.remove_edge(agent_root, "eq_l2_open", w)
+            for q in qnew:
+                n.remove_edge(w, "eq_qnew", q)
+    seq = book["eq_seq"] + 1
+    n.set_attr(state.ledger, "eq_seq", seq)
+    out = _emit(substrate, agent_root, state, nodes, full=False, touched=touched)
+    out["steps"] = [s0, trk] + live + out["steps"]
     return out
+
+
+def _new_quanta(n, state: Conversation) -> list:
+    """Quanta first minted on the retained fork in this batch (mechanical set
+    difference against the ledger's `eqq:` marks; bounded by actors x quanta,
+    not by conversation length; the quantum keys are read in bulk)."""
+    seen = n.node(state.ledger)["attrs"]
+    qs = [q for a in n.neighbours(state.w, "eq_has_actor") for q in n.neighbours(a, "eq_has_quantum")]
+    if not qs:
+        return []
+    cols = [n.get_attr_many(qs, k) for k in ("q_actor", "q_trait", "q_pole", "q_target")]
+    new = []
+    for q, actor, trait, pole, target in zip(qs, *cols):
+        k = f"eqq:{actor}|{trait}|{pole}|{'' if target is None else target}"
+        if k not in seen:
+            n.set_attr(state.ledger, k, True)
+            new.append(q)
+    return new
 
 
 def conversation_close(substrate, agent_root, state: Conversation) -> dict:
@@ -368,24 +491,40 @@ def conversation_close(substrate, agent_root, state: Conversation) -> dict:
     return _emit(substrate, agent_root, state, [], full=True)
 
 
-def run_strata(substrate, agent_root) -> list[int]:
+def run_strata(substrate, agent_root, touched: set | None = None) -> list[int]:
     """Tick to fixpoint, then open each seeded EqStratum in its seeded order and
-    tick again. Returns the step count of every tick."""
+    tick again. Returns the step count of every tick. With `touched`, every tick
+    is the engine's delta-reporting run and the ids of the nodes it wrote are
+    added to `touched` (mechanical bookkeeping for the delta read-out)."""
     n = _native(substrate)
     strata = sorted(n.neighbours(agent_root, "eq_has_stratum"),
                     key=lambda x: n.node(x)["attrs"]["eq_stratum"])
-    steps = [n.run_rules(DISCOURSE_FUEL)]
+    steps = [_tick(n, touched)]
     for st in strata:
         n.add_edge(agent_root, n.node(st)["attrs"]["eq_open_edge"], st)
-        steps.append(n.run_rules(DISCOURSE_FUEL))
+        steps.append(_tick(n, touched))
     if any(k >= DISCOURSE_FUEL for k in steps):
         raise BudgetExhausted("rule fuel exhausted")
     return steps
 
 
+def _tick(n, touched: set | None) -> int:
+    """One run_rules fixpoint; with `touched`, the delta-reporting variant (same
+    fixpoint) whose written-node ids are collected."""
+    if touched is None:
+        return n.run_rules(DISCOURSE_FUEL)
+    rep = n.run_rules_delta_report(DISCOURSE_FUEL)
+    touched.update(rep["affected_nodes"])
+    return rep["progress_steps"]
+
+
 def _refs(n, nodes) -> list[str]:
-    rows = [n.node(x)["attrs"] for x in nodes]
-    return [r["eq_ref"] for r in sorted(rows, key=lambda r: r["eq_turn_pos"])]
+    """turn refs in turn order (two bulk attr reads; positions are unique)"""
+    nodes = list(nodes)
+    if not nodes:
+        return []
+    pos, ref = n.get_attr_many(nodes, "eq_turn_pos"), n.get_attr_many(nodes, "eq_ref")
+    return [r for _, r in sorted(zip(pos, ref))]
 
 
 def _read_turn(f, m, status) -> dict:
@@ -400,19 +539,21 @@ def _read_turn(f, m, status) -> dict:
             "answers": _refs(n, n.neighbours(m, "eq_answers"))}
 
 
-def _read_quanta(n, w) -> list[dict]:
+def _read_quanta(n, w, only: list | None = None) -> list[dict]:
+    """Every quantum of the conversation, or only the quanta in `only`."""
     quanta = []
-    for a in n.neighbours(w, "eq_has_actor"):
-        for q in n.neighbours(a, "eq_has_quantum"):
+    if only is None:
+        only = [q for a in n.neighbours(w, "eq_has_actor") for et in QUANTUM_EDGES
+                for q in n.neighbours(a, et)]
+    for q in only:
             qa = n.node(q)["attrs"]
             # eq_context (0.4.0): the turn a relational quantum replies to (e.g. the
             # question of inquiry.answered) -- evidence on the wire, not counted by
             # the seeded match shapes
-            ev = (set(n.neighbours(q, "eq_evidence")) | set(n.neighbours(q, "eq_hedged"))
-                  | set(n.neighbours(q, "eq_context")))
+            ev = {x for et in EVIDENCE_EDGES for x in n.neighbours(q, et)}
             row = {"actor_ref": qa["q_actor"], "trait": qa["q_trait"], "polarity": qa["q_pole"],
                    "match": qa.get("eq_match"), "evidence": _refs(n, ev),
-                   "counter_evidence": _refs(n, n.neighbours(q, "eq_counter")),
+                   "counter_evidence": _refs(n, {x for et in COUNTER_EDGES for x in n.neighbours(q, et)}),
                    "rule_ids": _rule_ids(qa, RULE_PREFIX)}
             if qa.get("q_target"):
                 row["target_ref"] = qa["q_target"]
@@ -421,9 +562,10 @@ def _read_quanta(n, w) -> list[dict]:
     return quanta
 
 
-def _read_episodes(n, w) -> list[dict]:
+def _read_episodes(n, w, only: list | None = None) -> list[dict]:
+    """Every episode of the conversation, or only the episodes in `only`."""
     episodes = []
-    for e in n.neighbours(w, "eq_has_episode"):
+    for e in (n.neighbours(w, "eq_has_episode") if only is None else only):
         ea = n.node(e)["attrs"]
         turns = n.in_neighbours(e, "eq_in_episode")
         members = sorted((n.node(x)["attrs"] for x in turns), key=lambda r: r["eq_turn_pos"])
@@ -442,9 +584,33 @@ def _read_episodes(n, w) -> list[dict]:
 
 
 def _open_questions(n, w) -> list[str]:
-    qs = [x for x in n.neighbours(w, "eq_has_turn")
-          if n.node(x)["attrs"].get(QUESTION_KEY) is True and not n.in_neighbours(x, "eq_answers")]
-    return _refs(n, qs)
+    """The open-question set is graph-resident: the tracking rules keep
+    `w -eq_qud-> q` for every question turn not yet answered (opened when the
+    question is tracked, closed by the tracked `eq_answers` edge, the only source
+    of that edge), so the read-out is O(open questions), not a scan of the turns."""
+    return _refs(n, n.neighbours(w, "eq_qud"))
+
+
+def _touched_rows(n, w, ids) -> tuple[list, list]:
+    """Map written-node ids to this conversation's quanta and episodes (a facet
+    stands for its episode). Mechanical: type + ownership look-ups only."""
+    import substrate_rs as srs
+    actors = set(n.neighbours(w, "eq_has_actor"))
+    quanta, episodes = set(), set()
+    for i in ids:
+        x = srs.NodeID(i)
+        if not n.has_node(x):
+            continue
+        typ = n.node(x)["type"]
+        if typ == "EqQuantum":
+            if any(a in actors for et in QUANTUM_EDGES for a in n.in_neighbours(x, et)):
+                quanta.add(x)
+        elif typ == "EqEpisode":
+            episodes.add(x)
+        elif typ == "EqEpFacet":
+            episodes.update(n.in_neighbours(x, "eq_has_facet"))
+    episodes = {e for e in episodes if w in n.in_neighbours(e, "eq_has_episode")}
+    return sorted(quanta, key=lambda x: x.value), sorted(episodes, key=lambda x: x.value)
 
 
 def _sig(row: dict) -> str:
@@ -452,11 +618,11 @@ def _sig(row: dict) -> str:
     return hashlib.sha256(blob.encode("utf-8")).hexdigest()[:32]
 
 
-def _delta(n, w, kind: str, rows: list[dict], key, seq: int, full: bool) -> list[dict]:
+def _delta(n, ledger, kind: str, rows: list[dict], key, seq: int, full: bool) -> list[dict]:
     """Mechanical emitted-mark comparison: a row is emitted when its signature
-    differs from the `eqemit:` mark on the conversation node (or when `full`)."""
+    differs from the `eqemit:` mark on the conversation's ledger (or when `full`)."""
     out = []
-    marks = n.node(w)["attrs"]
+    marks = n.node(ledger)["attrs"]
     for r in rows:
         k = f"{EMIT_PREFIX}{kind}:{json.dumps(key(r), separators=(',', ':'))}"
         sig = _sig(r)
@@ -464,32 +630,36 @@ def _delta(n, w, kind: str, rows: list[dict], key, seq: int, full: bool) -> list
         if full or prev is None or prev.split(":", 1)[1] != sig:
             out.append(r)
         if prev is None or prev.split(":", 1)[1] != sig:
-            n.set_attr(w, k, f"{seq}:{sig}")
+            n.set_attr(ledger, k, f"{seq}:{sig}")
     return out
 
 
-def _emit(substrate, agent_root, state: Conversation, nodes: list, full: bool) -> dict:
+def _emit(substrate, agent_root, state: Conversation, nodes: list, full: bool,
+          touched: set | None = None) -> dict:
+    """Read-out of the retained fork. DELTA read-out (`touched` given, not `full`):
+    every quantum / episode row is a function of the retained fork, and every
+    fact a row reads is a node attr or an edge AT the row's node, so a row can
+    differ from its last emitted value only if this batch's ticks wrote it
+    (`touched`, the engine's delta report: attr writes, and both endpoints of
+    every added or deleted edge). Only those rows are re-read and compared with
+    the ledger marks; `full` re-reads everything."""
     n = _native(substrate)
     w = state.w
-    snap = substrate.snapshot()
-    scratch = snap.fork()  # strata run here; dropped below
-    del snap
-    try:
-        steps = run_strata(scratch, agent_root)[1:]
-        f = _native(scratch)
-        status = _label_status(scratch, agent_root)
-        turns = [_read_turn(scratch, m, status) for m in nodes]
-        quanta, episodes = _read_quanta(f, w), _read_episodes(f, w)
-        open_q = _open_questions(f, w)
-    finally:
-        del scratch
-    seq = n.node(w)["attrs"]["eq_seq"]
+    status = _label_status(substrate, agent_root)
+    turns = [_read_turn(substrate, m, status) for m in nodes]
+    if touched is not None and not full:
+        cq, ce = _touched_rows(n, w, touched)
+        quanta, episodes = _read_quanta(n, w, cq), _read_episodes(n, w, ce)
+    else:
+        quanta, episodes = _read_quanta(n, w), _read_episodes(n, w)
+    open_q = _open_questions(n, w)
+    seq = n.node(state.ledger)["attrs"]["eq_seq"]
     qkey = lambda r: [r["actor_ref"], r["trait"], r["polarity"], r.get("target_ref", "")]  # noqa: E731
     return {"conversation_id": n.node(w)["attrs"]["conversation_id"], "seq": seq,
             "turns": turns,
-            "quanta": _delta(n, w, "q", quanta, qkey, seq, full),
-            "episodes": _delta(n, w, "e", episodes, lambda r: [r["episode_id"]], seq, full),
-            "open_questions": open_q, "steps": steps}
+            "quanta": _delta(n, state.ledger, "q", quanta, qkey, seq, full),
+            "episodes": _delta(n, state.ledger, "e", episodes, lambda r: [r["episode_id"]], seq, full),
+            "open_questions": open_q, "steps": []}
 
 
 def discourse(substrate, agent_root, window: dict, turns: Iterable[dict]) -> dict:

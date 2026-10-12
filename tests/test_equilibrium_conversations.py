@@ -26,7 +26,7 @@ from test_equilibrium_discourse import MEETING, THREAD  # noqa: E402
 from test_equilibrium_discourse_service import synthetic_window  # noqa: E402
 from test_equilibrium_tracking import WINDOWS as TRK_WINDOWS, _turns as _tracking_turns  # noqa: E402
 
-TAX = "eq-tax-0.5.0"
+TAX = "eq-tax-0.5.1"
 _TOP = {"ok", "taxonomy_version", "conversation_id", "seq", "turns", "quanta", "episodes",
         "open_questions"}
 _TURN = {"id", "labels", "responds_to", "basis", "addressees", "thread_id", "topic_id", "answers"}
@@ -57,7 +57,7 @@ def client_parse_conversation(doc: dict, cid: str, ids_so_far: set[str], batch: 
     for q in doc["quanta"]:
         assert set(q["evidence"]) | set(q["counter_evidence"]) <= ids_so_far
         assert q["match"] in ("exact", "partial", "weak")
-        assert all(_CODE.fullmatch(r) and r.endswith(":0.5.0") for r in q["rule_ids"])
+        assert all(_CODE.fullmatch(r) and r.endswith(":0.5.1") for r in q["rule_ids"])
     for e in doc["episodes"]:
         assert set(e["turns"]) <= ids_so_far
     assert set(doc["open_questions"]) <= ids_so_far
@@ -349,7 +349,7 @@ def test_http_contract_and_errors(server):
     assert st == 200 and g == {"ok": True, "conversation_id": "c.h-1:x~y", "seq": 2, "idle_ttl_s": 900,
                                "kind": "thread"}
     st, info, _ = _req(server, "GET", "/v1/info")
-    assert info["conversations"]["open"] == 1 and info["conversations"]["concurrency"] == "global_lock"
+    assert info["conversations"]["open"] == 1 and info["conversations"]["concurrency"] == "per_conversation_locks"
     st, fin, _ = _req(server, "POST", "/v1/conversations/c.h-1:x~y/close")
     assert st == 200 and fin["turns"] == [] and fin["quanta"]
     client_parse_conversation(fin, "c.h-1:x~y", {t["id"] for t in turns}, [])

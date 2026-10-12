@@ -74,8 +74,8 @@
    "match": [
     [
      "agent",
-     "eq_stratum_2",
-     "st"
+     "eq_window",
+     "w"
     ],
     [
      "a",
@@ -91,6 +91,11 @@
      "m2",
      "eq_addresses",
      "a"
+    ],
+    [
+     "w",
+     "eq_l1",
+     "m2"
     ]
    ],
    "name": "eq.competence.corroborated",
@@ -309,8 +314,8 @@
    "match": [
     [
      "agent",
-     "eq_stratum_2",
-     "st"
+     "eq_window",
+     "w"
     ],
     [
      "a",
@@ -331,6 +336,11 @@
      "m2",
      "eq_authored_by",
      "b"
+    ],
+    [
+     "w",
+     "eq_l1",
+     "m2"
     ]
    ],
    "name": "eq.competence.contested",
@@ -528,6 +538,75 @@
    "batch": true,
    "effects": [
     [
+     "add_edge",
+     "a",
+     "eq_cg_grounded",
+     "g"
+    ]
+   ],
+   "match": [
+    [
+     "a",
+     "eq_has_quantum",
+     "g"
+    ]
+   ],
+   "name": "eq.competence.grounded",
+   "where": {
+    "items": [
+     {
+      "a": {
+       "key": "q_trait",
+       "node": {
+        "name": "g",
+        "type": "Var"
+       },
+       "type": "Attr"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "competence.demonstrated"
+      },
+      "type": "Eq"
+     },
+     {
+      "a": {
+       "key": "q_trait",
+       "node": {
+        "name": "g",
+        "type": "Var"
+       },
+       "type": "Attr"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "competence.acknowledged"
+      },
+      "type": "Eq"
+     },
+     {
+      "a": {
+       "key": "q_trait",
+       "node": {
+        "name": "g",
+        "type": "Var"
+       },
+       "type": "Attr"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "competence.corroborated"
+      },
+      "type": "Eq"
+     }
+    ],
+    "type": "Or"
+   }
+  },
+  {
+   "batch": true,
+   "effects": [
+    [
      "add_node_if_absent",
      "q",
      "EqQuantum",
@@ -565,6 +644,144 @@
     [
      "add_edge",
      "a",
+     "eq_cg_pos_node",
+     "q"
+    ]
+   ],
+   "match": [
+    [
+     "agent",
+     "eq_window",
+     "w"
+    ],
+    [
+     "a",
+     "eq_has_quantum",
+     "qc"
+    ],
+    [
+     "a",
+     "eq_cg_grounded",
+     "g"
+    ]
+   ],
+   "name": "eq.competence.claim_grounding.node_pos",
+   "where": {
+    "items": [
+     {
+      "items": [
+       {
+        "a": {
+         "key": "q_trait",
+         "node": {
+          "name": "qc",
+          "type": "Var"
+         },
+         "type": "Attr"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "competence.claimed"
+        },
+        "type": "Eq"
+       },
+       {
+        "a": {
+         "key": "q_pole",
+         "node": {
+          "name": "qc",
+          "type": "Var"
+         },
+         "type": "Attr"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "+"
+        },
+        "type": "Eq"
+       }
+      ],
+      "type": "And"
+     },
+     {
+      "arg": {
+       "predicate": {
+        "items": [
+         {
+          "a": {
+           "key": "label",
+           "node": {
+            "name": "ls",
+            "type": "Var"
+           },
+           "type": "Attr"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "competence.claim_grounding"
+          },
+          "type": "Eq"
+         },
+         {
+          "a": {
+           "key": "status",
+           "node": {
+            "name": "ls",
+            "type": "Var"
+           },
+           "type": "Attr"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "disabled"
+          },
+          "type": "Eq"
+         }
+        ],
+        "type": "And"
+       },
+       "source": {
+        "edge_type": "eq_has_label_status",
+        "node": {
+         "name": "agent",
+         "type": "Var"
+        },
+        "type": "Neighbours"
+       },
+       "type": "Exists",
+       "var_name": "ls"
+      },
+      "type": "Not"
+     },
+     {
+      "arg": {
+       "predicate": {
+        "type": "Lit",
+        "value": true
+       },
+       "source": {
+        "edge_type": "eq_cg_pos_node",
+        "node": {
+         "name": "a",
+         "type": "Var"
+        },
+        "type": "Neighbours"
+       },
+       "type": "Exists",
+       "var_name": "y"
+      },
+      "type": "Not"
+     }
+    ],
+    "type": "And"
+   }
+  },
+  {
+   "batch": true,
+   "effects": [
+    [
+     "add_edge",
+     "a",
      "eq_has_quantum",
      "q"
     ],
@@ -584,8 +801,8 @@
    "match": [
     [
      "agent",
-     "eq_stratum_3",
-     "st"
+     "eq_window",
+     "w"
     ],
     [
      "a",
@@ -596,6 +813,11 @@
      "qc",
      "eq_evidence",
      "m1"
+    ],
+    [
+     "a",
+     "eq_cg_pos_node",
+     "q"
     ]
    ],
    "name": "eq.competence.claim_grounding.grounded_claim",
@@ -688,57 +910,11 @@
      },
      {
       "predicate": {
-       "items": [
-        {
-         "a": {
-          "key": "q_trait",
-          "node": {
-           "name": "g",
-           "type": "Var"
-          },
-          "type": "Attr"
-         },
-         "b": {
-          "type": "Lit",
-          "value": "competence.demonstrated"
-         },
-         "type": "Eq"
-        },
-        {
-         "a": {
-          "key": "q_trait",
-          "node": {
-           "name": "g",
-           "type": "Var"
-          },
-          "type": "Attr"
-         },
-         "b": {
-          "type": "Lit",
-          "value": "competence.acknowledged"
-         },
-         "type": "Eq"
-        },
-        {
-         "a": {
-          "key": "q_trait",
-          "node": {
-           "name": "g",
-           "type": "Var"
-          },
-          "type": "Attr"
-         },
-         "b": {
-          "type": "Lit",
-          "value": "competence.corroborated"
-         },
-         "type": "Eq"
-        }
-       ],
-       "type": "Or"
+       "type": "Lit",
+       "value": true
       },
       "source": {
-       "edge_type": "eq_has_quantum",
+       "edge_type": "eq_cg_grounded",
        "node": {
         "name": "a",
         "type": "Var"
@@ -755,41 +931,6 @@
   {
    "batch": true,
    "effects": [
-    [
-     "add_node_if_absent",
-     "q",
-     "EqQuantum",
-     {
-      "q_actor": {
-       "__term__": {
-        "key": "actor_ref",
-        "node": {
-         "name": "a",
-         "type": "Var"
-        },
-        "type": "Attr"
-       }
-      },
-      "q_pole": {
-       "__term__": {
-        "type": "Lit",
-        "value": "+"
-       }
-      },
-      "q_target": {
-       "__term__": {
-        "type": "Lit",
-        "value": ""
-       }
-      },
-      "q_trait": {
-       "__term__": {
-        "type": "Lit",
-        "value": "competence.claim_grounding"
-       }
-      }
-     }
-    ],
     [
      "add_edge",
      "a",
@@ -812,8 +953,8 @@
    "match": [
     [
      "agent",
-     "eq_stratum_3",
-     "st"
+     "eq_window",
+     "w"
     ],
     [
      "a",
@@ -822,13 +963,18 @@
     ],
     [
      "a",
-     "eq_has_quantum",
+     "eq_cg_grounded",
      "g"
     ],
     [
      "g",
      "eq_evidence",
      "m2"
+    ],
+    [
+     "a",
+     "eq_cg_pos_node",
+     "q"
     ]
    ],
    "name": "eq.competence.claim_grounding.grounding",
@@ -918,56 +1064,6 @@
        "var_name": "ls"
       },
       "type": "Not"
-     },
-     {
-      "items": [
-       {
-        "a": {
-         "key": "q_trait",
-         "node": {
-          "name": "g",
-          "type": "Var"
-         },
-         "type": "Attr"
-        },
-        "b": {
-         "type": "Lit",
-         "value": "competence.demonstrated"
-        },
-        "type": "Eq"
-       },
-       {
-        "a": {
-         "key": "q_trait",
-         "node": {
-          "name": "g",
-          "type": "Var"
-         },
-         "type": "Attr"
-        },
-        "b": {
-         "type": "Lit",
-         "value": "competence.acknowledged"
-        },
-        "type": "Eq"
-       },
-       {
-        "a": {
-         "key": "q_trait",
-         "node": {
-          "name": "g",
-          "type": "Var"
-         },
-         "type": "Attr"
-        },
-        "b": {
-         "type": "Lit",
-         "value": "competence.corroborated"
-        },
-        "type": "Eq"
-       }
-      ],
-      "type": "Or"
      }
     ],
     "type": "And"
@@ -1014,7 +1110,164 @@
     [
      "add_edge",
      "a",
+     "eq_cg_neg_node",
+     "q"
+    ]
+   ],
+   "match": [
+    [
+     "agent",
+     "eq_window",
+     "w"
+    ],
+    [
+     "a",
      "eq_has_quantum",
+     "qc"
+    ],
+    [
+     "qc",
+     "eq_evidence",
+     "m1"
+    ]
+   ],
+   "name": "eq.competence.claim_grounding.node_neg",
+   "where": {
+    "items": [
+     {
+      "items": [
+       {
+        "a": {
+         "key": "q_trait",
+         "node": {
+          "name": "qc",
+          "type": "Var"
+         },
+         "type": "Attr"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "competence.claimed"
+        },
+        "type": "Eq"
+       },
+       {
+        "a": {
+         "key": "q_pole",
+         "node": {
+          "name": "qc",
+          "type": "Var"
+         },
+         "type": "Attr"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "+"
+        },
+        "type": "Eq"
+       }
+      ],
+      "type": "And"
+     },
+     {
+      "arg": {
+       "predicate": {
+        "items": [
+         {
+          "a": {
+           "key": "label",
+           "node": {
+            "name": "ls",
+            "type": "Var"
+           },
+           "type": "Attr"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "competence.claim_grounding"
+          },
+          "type": "Eq"
+         },
+         {
+          "a": {
+           "key": "status",
+           "node": {
+            "name": "ls",
+            "type": "Var"
+           },
+           "type": "Attr"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "disabled"
+          },
+          "type": "Eq"
+         }
+        ],
+        "type": "And"
+       },
+       "source": {
+        "edge_type": "eq_has_label_status",
+        "node": {
+         "name": "agent",
+         "type": "Var"
+        },
+        "type": "Neighbours"
+       },
+       "type": "Exists",
+       "var_name": "ls"
+      },
+      "type": "Not"
+     },
+     {
+      "arg": {
+       "predicate": {
+        "type": "Lit",
+        "value": true
+       },
+       "source": {
+        "edge_type": "eq_cg_grounded",
+        "node": {
+         "name": "a",
+         "type": "Var"
+        },
+        "type": "Neighbours"
+       },
+       "type": "Exists",
+       "var_name": "g"
+      },
+      "type": "Not"
+     },
+     {
+      "arg": {
+       "predicate": {
+        "type": "Lit",
+        "value": true
+       },
+       "source": {
+        "edge_type": "eq_cg_neg_node",
+        "node": {
+         "name": "a",
+         "type": "Var"
+        },
+        "type": "Neighbours"
+       },
+       "type": "Exists",
+       "var_name": "y"
+      },
+      "type": "Not"
+     }
+    ],
+    "type": "And"
+   }
+  },
+  {
+   "batch": true,
+   "effects": [
+    [
+     "add_edge",
+     "a",
+     "eq_nm_quantum",
      "q"
     ],
     [
@@ -1033,8 +1286,8 @@
    "match": [
     [
      "agent",
-     "eq_stratum_3",
-     "st"
+     "eq_window",
+     "w"
     ],
     [
      "a",
@@ -1045,6 +1298,11 @@
      "qc",
      "eq_evidence",
      "m1"
+    ],
+    [
+     "a",
+     "eq_cg_neg_node",
+     "q"
     ]
    ],
    "name": "eq.competence.claim_grounding.ungrounded",
@@ -1138,57 +1396,11 @@
      {
       "arg": {
        "predicate": {
-        "items": [
-         {
-          "a": {
-           "key": "q_trait",
-           "node": {
-            "name": "g",
-            "type": "Var"
-           },
-           "type": "Attr"
-          },
-          "b": {
-           "type": "Lit",
-           "value": "competence.demonstrated"
-          },
-          "type": "Eq"
-         },
-         {
-          "a": {
-           "key": "q_trait",
-           "node": {
-            "name": "g",
-            "type": "Var"
-           },
-           "type": "Attr"
-          },
-          "b": {
-           "type": "Lit",
-           "value": "competence.acknowledged"
-          },
-          "type": "Eq"
-         },
-         {
-          "a": {
-           "key": "q_trait",
-           "node": {
-            "name": "g",
-            "type": "Var"
-           },
-           "type": "Attr"
-          },
-          "b": {
-           "type": "Lit",
-           "value": "competence.corroborated"
-          },
-          "type": "Eq"
-         }
-        ],
-        "type": "Or"
+        "type": "Lit",
+        "value": true
        },
        "source": {
-        "edge_type": "eq_has_quantum",
+        "edge_type": "eq_cg_grounded",
         "node": {
          "name": "a",
          "type": "Var"
@@ -1203,9 +1415,68 @@
     ],
     "type": "And"
    }
+  },
+  {
+   "batch": true,
+   "effects": [
+    [
+     "del_edge",
+     "a",
+     "eq_nm_quantum",
+     "q"
+    ]
+   ],
+   "match": [
+    [
+     "a",
+     "eq_nm_quantum",
+     "q"
+    ],
+    [
+     "a",
+     "eq_cg_grounded",
+     "g"
+    ]
+   ],
+   "name": "eq.competence.claim_grounding.ungrounded.vanish",
+   "where": {
+    "items": [
+     {
+      "a": {
+       "key": "q_trait",
+       "node": {
+        "name": "q",
+        "type": "Var"
+       },
+       "type": "Attr"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "competence.claim_grounding"
+      },
+      "type": "Eq"
+     },
+     {
+      "a": {
+       "key": "q_pole",
+       "node": {
+        "name": "q",
+        "type": "Var"
+       },
+       "type": "Attr"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "-"
+      },
+      "type": "Eq"
+     }
+    ],
+    "type": "And"
+   }
   }
  ],
  "self_load_only": true,
- "taxonomy_version": "eq-tax-0.5.0",
- "version": "0.5.0"
+ "taxonomy_version": "eq-tax-0.5.1",
+ "version": "0.5.1"
 }

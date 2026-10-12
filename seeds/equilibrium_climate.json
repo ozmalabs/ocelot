@@ -417,17 +417,12 @@
    "match": [
     [
      "agent",
-     "eq_stratum_1",
-     "st"
-    ],
-    [
-     "agent",
      "eq_window",
      "w"
     ],
     [
      "w",
-     "eq_has_turn",
+     "eq_l1",
      "m"
     ],
     [
@@ -802,17 +797,12 @@
    "match": [
     [
      "agent",
-     "eq_stratum_1",
-     "st"
-    ],
-    [
-     "agent",
      "eq_window",
      "w"
     ],
     [
      "w",
-     "eq_has_turn",
+     "eq_l1",
      "m"
     ],
     [
@@ -1244,17 +1234,12 @@
    "match": [
     [
      "agent",
-     "eq_stratum_1",
-     "st"
-    ],
-    [
-     "agent",
      "eq_window",
      "w"
     ],
     [
      "w",
-     "eq_has_turn",
+     "eq_l1",
      "m"
     ],
     [
@@ -1366,37 +1351,20 @@
     [
      "add_edge",
      "b",
-     "eq_has_quantum",
+     "eq_unans_node",
      "q"
-    ],
-    [
-     "set_attr",
-     "q",
-     "eqrule:eq.quanta.inquiry.unanswered",
-     true
-    ],
-    [
-     "add_edge",
-     "q",
-     "eq_evidence",
-     "qt"
     ]
    ],
    "match": [
-    [
-     "agent",
-     "eq_stratum_2",
-     "st"
-    ],
     [
      "agent",
      "eq_window",
      "w"
     ],
     [
-     "w",
-     "eq_has_turn",
-     "qt"
+     "qt",
+     "eq_unans_due",
+     "w"
     ],
     [
      "qt",
@@ -1404,51 +1372,80 @@
      "b"
     ]
    ],
-   "name": "eq.quanta.inquiry.unanswered",
+   "name": "eq.quanta.inquiry.unanswered.node",
    "where": {
     "items": [
      {
-      "a": {
-       "key": "eqlab:msg.speech_act=question",
-       "node": {
-        "name": "qt",
-        "type": "Var"
-       },
-       "type": "Attr"
-      },
-      "b": {
-       "type": "Lit",
-       "value": true
-      },
-      "type": "Eq"
-     },
-     {
       "arg": {
-       "predicate": {
-        "a": {
-         "key": "q_trait",
-         "node": {
-          "name": "qa_qt",
-          "type": "Var"
+       "items": [
+        {
+         "arg": {
+          "predicate": {
+           "items": [
+            {
+             "a": {
+              "key": "label",
+              "node": {
+               "name": "ls",
+               "type": "Var"
+              },
+              "type": "Attr"
+             },
+             "b": {
+              "type": "Lit",
+              "value": "inquiry.answered"
+             },
+             "type": "Eq"
+            },
+            {
+             "a": {
+              "key": "status",
+              "node": {
+               "name": "ls",
+               "type": "Var"
+              },
+              "type": "Attr"
+             },
+             "b": {
+              "type": "Lit",
+              "value": "disabled"
+             },
+             "type": "Eq"
+            }
+           ],
+           "type": "And"
+          },
+          "source": {
+           "edge_type": "eq_has_label_status",
+           "node": {
+            "name": "agent",
+            "type": "Var"
+           },
+           "type": "Neighbours"
+          },
+          "type": "Exists",
+          "var_name": "ls"
          },
-         "type": "Attr"
+         "type": "Not"
         },
-        "b": {
-         "type": "Lit",
-         "value": "inquiry.answered"
-        },
-        "type": "Eq"
-       },
-       "source": {
-        "edge_type": "eq_context",
-        "node": {
-         "name": "qt",
-         "type": "Var"
-        },
-        "type": "InNeighbours"
-       },
-       "type": "Exists",
-       "var_name": "qa_qt"
+        {
+         "predicate": {
+          "type": "Lit",
+          "value": true
+         },
+         "source": {
+          "edge_type": "eq_answers",
+          "node": {
+           "name": "qt",
+           "type": "Var"
+          },
+          "type": "InNeighbours"
+         },
+         "type": "Exists",
+         "var_name": "an_qt"
+        }
+       ],
+       "type": "And"
       },
       "type": "Not"
      },
@@ -1503,69 +1500,285 @@
       "type": "Not"
      },
      {
-      "predicate": {
-       "items": [
-        {
-         "a": {
-          "key": "eq_turn_pos",
-          "node": {
-           "name": "x",
-           "type": "Var"
-          },
-          "type": "Attr"
-         },
-         "b": {
-          "key": "eq_turn_pos",
-          "node": {
-           "name": "qt",
-           "type": "Var"
-          },
-          "type": "Attr"
-         },
-         "type": "Gt"
+      "arg": {
+       "predicate": {
+        "type": "Lit",
+        "value": true
+       },
+       "source": {
+        "edge_type": "eq_unans_node",
+        "node": {
+         "name": "b",
+         "type": "Var"
         },
+        "type": "Neighbours"
+       },
+       "type": "Exists",
+       "var_name": "y"
+      },
+      "type": "Not"
+     }
+    ],
+    "type": "And"
+   }
+  },
+  {
+   "batch": true,
+   "effects": [
+    [
+     "add_edge",
+     "b",
+     "eq_nm_quantum",
+     "q"
+    ],
+    [
+     "set_attr",
+     "q",
+     "eqrule:eq.quanta.inquiry.unanswered",
+     true
+    ],
+    [
+     "add_edge",
+     "q",
+     "eq_evidence_nm",
+     "qt"
+    ]
+   ],
+   "match": [
+    [
+     "agent",
+     "eq_window",
+     "w"
+    ],
+    [
+     "qt",
+     "eq_unans_due",
+     "w"
+    ],
+    [
+     "qt",
+     "eq_authored_by",
+     "b"
+    ],
+    [
+     "b",
+     "eq_unans_node",
+     "q"
+    ]
+   ],
+   "name": "eq.quanta.inquiry.unanswered",
+   "where": {
+    "items": [
+     {
+      "arg": {
+       "items": [
         {
          "arg": {
           "predicate": {
-           "a": {
-            "name": "y_x",
-            "type": "Var"
-           },
-           "b": {
-            "name": "b",
-            "type": "Var"
-           },
-           "type": "Eq"
+           "items": [
+            {
+             "a": {
+              "key": "label",
+              "node": {
+               "name": "ls",
+               "type": "Var"
+              },
+              "type": "Attr"
+             },
+             "b": {
+              "type": "Lit",
+              "value": "inquiry.answered"
+             },
+             "type": "Eq"
+            },
+            {
+             "a": {
+              "key": "status",
+              "node": {
+               "name": "ls",
+               "type": "Var"
+              },
+              "type": "Attr"
+             },
+             "b": {
+              "type": "Lit",
+              "value": "disabled"
+             },
+             "type": "Eq"
+            }
+           ],
+           "type": "And"
           },
           "source": {
-           "edge_type": "eq_authored_by",
+           "edge_type": "eq_has_label_status",
            "node": {
-            "name": "x",
+            "name": "agent",
             "type": "Var"
            },
            "type": "Neighbours"
           },
           "type": "Exists",
-          "var_name": "y_x"
+          "var_name": "ls"
          },
          "type": "Not"
+        },
+        {
+         "predicate": {
+          "type": "Lit",
+          "value": true
+         },
+         "source": {
+          "edge_type": "eq_answers",
+          "node": {
+           "name": "qt",
+           "type": "Var"
+          },
+          "type": "InNeighbours"
+         },
+         "type": "Exists",
+         "var_name": "an_qt"
         }
        ],
        "type": "And"
       },
-      "source": {
-       "edge_type": "eq_has_turn",
-       "node": {
-        "name": "w",
-        "type": "Var"
+      "type": "Not"
+     },
+     {
+      "arg": {
+       "predicate": {
+        "items": [
+         {
+          "a": {
+           "key": "label",
+           "node": {
+            "name": "ls",
+            "type": "Var"
+           },
+           "type": "Attr"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "inquiry.unanswered"
+          },
+          "type": "Eq"
+         },
+         {
+          "a": {
+           "key": "status",
+           "node": {
+            "name": "ls",
+            "type": "Var"
+           },
+           "type": "Attr"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "disabled"
+          },
+          "type": "Eq"
+         }
+        ],
+        "type": "And"
        },
-       "type": "Neighbours"
+       "source": {
+        "edge_type": "eq_has_label_status",
+        "node": {
+         "name": "agent",
+         "type": "Var"
+        },
+        "type": "Neighbours"
+       },
+       "type": "Exists",
+       "var_name": "ls"
       },
-      "type": "Exists",
-      "var_name": "x"
+      "type": "Not"
      }
     ],
     "type": "And"
+   }
+  },
+  {
+   "batch": true,
+   "effects": [
+    [
+     "del_edge",
+     "q",
+     "eq_evidence_nm",
+     "qt"
+    ]
+   ],
+   "match": [
+    [
+     "agent",
+     "eq_window",
+     "w"
+    ],
+    [
+     "x",
+     "eq_answers",
+     "qt"
+    ],
+    [
+     "qt",
+     "eq_authored_by",
+     "b"
+    ],
+    [
+     "b",
+     "eq_unans_node",
+     "q"
+    ]
+   ],
+   "name": "eq.quanta.inquiry.unanswered.retract",
+   "where": {
+    "arg": {
+     "predicate": {
+      "items": [
+       {
+        "a": {
+         "key": "label",
+         "node": {
+          "name": "ls",
+          "type": "Var"
+         },
+         "type": "Attr"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "inquiry.answered"
+        },
+        "type": "Eq"
+       },
+       {
+        "a": {
+         "key": "status",
+         "node": {
+          "name": "ls",
+          "type": "Var"
+         },
+         "type": "Attr"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "disabled"
+        },
+        "type": "Eq"
+       }
+      ],
+      "type": "And"
+     },
+     "source": {
+      "edge_type": "eq_has_label_status",
+      "node": {
+       "name": "agent",
+       "type": "Var"
+      },
+      "type": "Neighbours"
+     },
+     "type": "Exists",
+     "var_name": "ls"
+    },
+    "type": "Not"
    }
   },
   {
@@ -1587,12 +1800,12 @@
    "match": [
     [
      "agent",
-     "eq_stratum_2",
-     "st"
+     "eq_window",
+     "w"
     ],
     [
      "b",
-     "eq_has_quantum",
+     "eq_unans_node",
      "q"
     ],
     [
@@ -1604,21 +1817,6 @@
    "name": "eq.quanta.inquiry.unanswered.counter",
    "where": {
     "items": [
-     {
-      "a": {
-       "key": "q_trait",
-       "node": {
-        "name": "q",
-        "type": "Var"
-       },
-       "type": "Attr"
-      },
-      "b": {
-       "type": "Lit",
-       "value": "inquiry.unanswered"
-      },
-      "type": "Eq"
-     },
      {
       "a": {
        "key": "eqlab:msg.speech_act=question",
@@ -1635,49 +1833,75 @@
       "type": "Eq"
      },
      {
-      "predicate": {
-       "a": {
-        "key": "q_trait",
-        "node": {
-         "name": "qa_qt",
-         "type": "Var"
+      "items": [
+       {
+        "arg": {
+         "predicate": {
+          "items": [
+           {
+            "a": {
+             "key": "label",
+             "node": {
+              "name": "ls",
+              "type": "Var"
+             },
+             "type": "Attr"
+            },
+            "b": {
+             "type": "Lit",
+             "value": "inquiry.answered"
+            },
+            "type": "Eq"
+           },
+           {
+            "a": {
+             "key": "status",
+             "node": {
+              "name": "ls",
+              "type": "Var"
+             },
+             "type": "Attr"
+            },
+            "b": {
+             "type": "Lit",
+             "value": "disabled"
+            },
+            "type": "Eq"
+           }
+          ],
+          "type": "And"
+         },
+         "source": {
+          "edge_type": "eq_has_label_status",
+          "node": {
+           "name": "agent",
+           "type": "Var"
+          },
+          "type": "Neighbours"
+         },
+         "type": "Exists",
+         "var_name": "ls"
         },
-        "type": "Attr"
+        "type": "Not"
        },
-       "b": {
-        "type": "Lit",
-        "value": "inquiry.answered"
-       },
-       "type": "Eq"
-      },
-      "source": {
-       "edge_type": "eq_context",
-       "node": {
-        "name": "qt",
-        "type": "Var"
-       },
-       "type": "InNeighbours"
-      },
-      "type": "Exists",
-      "var_name": "qa_qt"
-     },
-     {
-      "arg": {
-       "container": {
-        "edge_type": "eq_evidence",
-        "node": {
-         "name": "q",
-         "type": "Var"
+       {
+        "predicate": {
+         "type": "Lit",
+         "value": true
         },
-        "type": "Neighbours"
-       },
-       "member": {
-        "name": "qt",
-        "type": "Var"
-       },
-       "type": "In"
-      },
-      "type": "Not"
+        "source": {
+         "edge_type": "eq_answers",
+         "node": {
+          "name": "qt",
+          "type": "Var"
+         },
+         "type": "InNeighbours"
+        },
+        "type": "Exists",
+        "var_name": "an_qt"
+       }
+      ],
+      "type": "And"
      }
     ],
     "type": "And"
@@ -1685,6 +1909,6 @@
   }
  ],
  "self_load_only": true,
- "taxonomy_version": "eq-tax-0.5.0",
- "version": "0.5.0"
+ "taxonomy_version": "eq-tax-0.5.1",
+ "version": "0.5.1"
 }

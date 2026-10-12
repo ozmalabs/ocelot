@@ -262,6 +262,117 @@ pub struct Substrate {
     /// byte-identical, and the honest coverage boundary. That shape is ladder
     /// rung B's target (per-binding predicate retraction), not this rung.
     pub(crate) incremental_match: bool,
+    /// ISOLATED-NODE WRITE EXEMPTION (equilibrium scaling), **DEFAULT FALSE**;
+    /// takes effect together with `precise_dirty`. An EXTERNAL `add_node` (and
+    /// an external `set_attr` on a node with NO edges) normally dirties and
+    /// cursor-clears every where-rule reading one of the written attr keys, and
+    /// every `reads_any` rule. A node with no edges is in no existing binding and
+    /// no term path reaches it, so with this flag such a write dirties only the
+    /// rules that can see it: a `Type` read of its type (`NodesOfType`,
+    /// `NodesWhere`, `AddNodeIfAbsent`) or a NON-LOCAL opaque read
+    /// (`reads_any_nonlocal`; `TypeOf`/`AttrByName` read nodes already bound).
+    /// Its attrs become observable only through an edge added later, so an
+    /// external `add_edge` additionally clears the cursor of every rule whose
+    /// where/effect terms read that edge type (`term_edge_reads`, the same
+    /// invalidation the rule-effect path applies) or that reads non-locally; a
+    /// pure match-edge driver keeps its cursor and is handled semi-naively.
+    /// Net: an append-only ingest of fresh subgraphs keeps rules on the
+    /// incremental path. OFF ⇒ the committed engine, byte-identical.
+    pub(crate) fresh_node_exempt: bool,
+    /// SEMI-NAIVE FOR BATCH RULES (equilibrium scaling), **DEFAULT FALSE**.
+    /// A `batch` rule normally re-enumerates its WHOLE binding set on every
+    /// visit (`batch_apply_rule`). With this on, a batch rule first tries the
+    /// semi-naive cursor path (`try_incremental_match`: delta-driven, every
+    /// distinct new binding evaluated against the pre-apply graph and applied
+    /// once — the same snapshot semantics), and only when that bails (cold or
+    /// invalidated cursor, repeated match edge type, k==0, reads_external) runs
+    /// the committed full batch pass and then installs its cursors at the
+    /// pre-apply frontier, exactly as the cold path does for non-batch rules.
+    /// Re-firing an old binding is a no-op for idempotent effects, which is
+    /// the only case where the two paths can differ; where-flips on stable
+    /// bindings are covered by the same cursor invalidation every non-batch
+    /// rule relies on. Under this flag the semi-naive path also admits rules
+    /// whose match repeats an edge type (dedup by canonical binding key).
+    /// OFF ⇒ the committed engine, byte-identical.
+    pub(crate) batch_incremental: bool,
+    /// OWN-WRITE EXEMPTION (equilibrium scaling), **DEFAULT FALSE**. Deciding
+    /// whether a rule-effect write must CLEAR a consumer's semi-naive cursor
+    /// (not whether it dirties it) uses the consumer's `read_set_strict` /
+    /// `term_edge_reads_strict` -- the keys its where-clause and computed effect
+    /// args read -- instead of `read_set` / `term_edge_reads`, which also hold
+    /// its effects' own write-target look-ups (`AddEdge`'s edge type,
+    /// `AddNodeIfAbsent`'s type + key attrs, `SetAttr`'s key). Those look-ups
+    /// only make re-firing an already-fired binding a no-op, so a write to them
+    /// cannot flip which bindings match; the committed engine already treats an
+    /// effect-only attr read this way for where-LESS rules. Without it every
+    /// such rule clears its OWN cursor whenever it fires (e.g. a rule adding an
+    /// `eq_neg_next` edge), so its next visit is a full re-match.
+    /// OFF ⇒ the committed engine, byte-identical.
+    pub(crate) own_write_exempt: bool,
+    /// PRECISE RULE-EFFECT EDGE DELETES (equilibrium scaling), **DEFAULT
+    /// FALSE**. Under `incremental_match`, a progressing rule with ANY delete
+    /// effect clears EVERY rule's cursor (the global-bump equivalent, needed
+    /// because a `DelNode` cascade deletes edges of types the effect list does
+    /// not name). With this on, a rule whose only delete effects are `DelEdge`
+    /// (no `DelNode` / `ReplaceValue`: the deleted types are exactly the named
+    /// ones) instead invalidates exactly as an external `remove_edge` does:
+    /// the per-type delete version (bumped by the graph) stales every cursor
+    /// MATCHING a deleted type, `invalidate_readers_of_deleted_edge_type`
+    /// clears every where/term reader of it, and `reads_any_nonlocal` rules are
+    /// cleared conservatively. OFF ⇒ the committed engine, byte-identical.
+    pub(crate) precise_rule_deletes: bool,
+    /// SEEDED JOIN ORDER (equilibrium scaling), **DEFAULT FALSE**. The
+    /// semi-naive and node-seeded paths solve the rest of a pattern from a
+    /// seed edge with the remaining match edges in their DECLARED order, and
+    /// without the rule's index hints; an edge whose endpoints are both still
+    /// unbound is then a scan of its whole edge type, once per seed (e.g. a
+    /// cue rule driven by a new `eq_next` edge re-scans every `received` edge).
+    /// With this on, the remaining edges are ordered greedily by connectivity
+    /// to the bound variables (both endpoints bound first, then one, ties in
+    /// declared order), the rule's index hints and where-conjunct pushdown are
+    /// kept, and a both-bound edge is probed from its smaller side
+    /// (`RewriteRule::both_bound_probe`). Matcher traversal only: the binding
+    /// SET is unchanged.
+    /// OFF ⇒ the committed engine.
+    pub(crate) seeded_join_order: bool,
+    /// WRITE FRONTIER (equilibrium scaling), **DEFAULT FALSE**. A rule-effect
+    /// attr write that would clear a consumer's cursor only because the
+    /// consumer's where / computed args read that attr (incl. a dynamically
+    /// named attr of a match variable, `AttrByName`) instead SEEDS the written
+    /// nodes, when the consumer is `wf_ok` and the key is not one it reads off
+    /// its match frontier (`wf_nonlocal_keys`): such a write can flip only
+    /// bindings that bind the written node. The consumer's next visit first
+    /// re-evaluates the bindings incident to those nodes (the node-seeded pass
+    /// of `try_predicate_retraction`, without its unchanged-edges precondition
+    /// and leaving the cursor to the semi-naive pass), then takes its usual
+    /// semi-naive / full path for new edges. Without it, a mint-once guard
+    /// (`eqfire:<rule>` unset) makes every firing rule full-rematch the whole
+    /// conversation on its next visit. Arms the graph's attr-write log.
+    /// OFF ⇒ the committed engine, byte-identical.
+    pub(crate) write_frontier: bool,
+    /// HOP FRONTIER (equilibrium scaling stage B), **DEFAULT FALSE**. Refines
+    /// `write_frontier`'s locality (`RewriteRule::wf_hop_alt`): pure set /
+    /// arithmetic operators are transparent, and an attr read of an `Exists`
+    /// variable ranging over `Neighbours(v, E)` / `InNeighbours(v, E)` of a match
+    /// variable is one-hop local -- a rule-effect write of that key on node `x`
+    /// seeds the `E`-neighbours of `x` (the only `v` it can flip) instead of
+    /// clearing the reader's cursor. Without it e.g. "no facet of episode e holds
+    /// shape s" full-rematches every episode whenever any facet's shape is
+    /// written. OFF ⇒ the committed engine, byte-identical.
+    pub(crate) hop_frontier: bool,
+    /// DELETE FRONTIER (equilibrium scaling stage B), **DEFAULT FALSE**; needs
+    /// `write_frontier` + `precise_rule_deletes`. A rule-effect `DelEdge` of
+    /// `(s, E, t)` makes a NON-matching reader of `E` re-check only the bindings
+    /// of `s` and `t` (node-seeded, cursor kept) when every read it makes of `E`
+    /// is local (`wf_local_out` / `wf_local_in`) or is its own `AddEdge` target
+    /// with a match-bound endpoint (`own_edge_seedable`): a delete can re-enable
+    /// only a binding whose where reads `E` at `s` / `t`, or one that re-adds the
+    /// deleted edge (and so binds `s` or `t`). Readers MATCHING `E` still go stale
+    /// through the per-type delete version (full re-match), and every other
+    /// reader is cleared as before. Without it a retraction edge (e.g. an open
+    /// question's evidence edge, deleted once answered) full-rematches the rule
+    /// that adds it. OFF ⇒ the committed engine, byte-identical.
+    pub(crate) delete_frontier: bool,
     /// FALSIFIER for `incremental_match`, **DEFAULT FALSE**. Makes cursor
     /// validation MISS a retraction: a cursor is treated as valid w.r.t. deletes
     /// regardless of its edge type's delete version, so a delete of a rule's OWN
@@ -293,6 +404,9 @@ pub struct Substrate {
     /// maintained ONLY when `predicate_retraction` is on. Parallel to
     /// `rule_cursors`. Node ids are unbounded integers (no float bookkeeping).
     pub(crate) rule_dirty_nodes: Vec<rustc_hash::FxHashSet<NodeID>>,
+    /// Write frontier: nodes dirtied ONLY by a dynamically-named attr write (see
+    /// `write_frontier`); re-checked only at the rule's `AttrByName` variables.
+    pub(crate) rule_dirty_dyn_nodes: Vec<rustc_hash::FxHashSet<NodeID>>,
     /// Per-rule static eligibility for the node-seeded path: has a where,
     /// add-only effects, non-repeated edge types, not `reads_external`, k≥1.
     /// Computed once in `add_rule`. Parallel to `rule_cursors`.
@@ -771,10 +885,19 @@ impl Substrate {
             empty_match_proof_unsound: false,
             empty_match_skips: Vec::new(),
             incremental_match: false,
+            fresh_node_exempt: false,
+            batch_incremental: false,
+            own_write_exempt: false,
+            precise_rule_deletes: false,
+            seeded_join_order: false,
+            write_frontier: false,
+            hop_frontier: false,
+            delete_frontier: false,
             incremental_match_unsound: false,
             predicate_retraction: false,
             predicate_retraction_unsound: false,
             rule_dirty_nodes: Vec::new(),
+            rule_dirty_dyn_nodes: Vec::new(),
             rule_pred_retract_ok: Vec::new(),
             gamma_residual_capture: false,
             gamma_residual_root: None,
@@ -885,6 +1008,14 @@ impl Substrate {
         fork.empty_match_proof = self.empty_match_proof;
         fork.empty_match_proof_unsound = self.empty_match_proof_unsound;
         fork.incremental_match = self.incremental_match;
+        fork.fresh_node_exempt = self.fresh_node_exempt;
+        fork.batch_incremental = self.batch_incremental;
+        fork.own_write_exempt = self.own_write_exempt;
+        fork.precise_rule_deletes = self.precise_rule_deletes;
+        fork.seeded_join_order = self.seeded_join_order;
+        fork.write_frontier = self.write_frontier;
+        fork.hop_frontier = self.hop_frontier;
+        fork.delete_frontier = self.delete_frontier;
         fork.incremental_match_unsound = self.incremental_match_unsound;
         fork.predicate_retraction = self.predicate_retraction;
         fork.predicate_retraction_unsound = self.predicate_retraction_unsound;
@@ -907,6 +1038,7 @@ impl Substrate {
         fork.dirty_marks = [0; 9];
         fork.empty_match_skips.clear();
         fork.rule_dirty_nodes = self.rule_dirty_nodes.clone();
+        fork.rule_dirty_dyn_nodes = self.rule_dirty_dyn_nodes.clone();
         fork.rule_pred_retract_ok = self.rule_pred_retract_ok.clone();
         #[cfg(all(target_arch = "x86_64", target_os = "linux"))]
         {
@@ -1597,6 +1729,9 @@ impl Substrate {
     /// call this, so the append-only incremental win is preserved.
     #[inline]
     fn invalidate_readers_of_deleted_edge_type(&mut self, edge_type: Sym) {
+        // delete frontier: only rule-effect DelEdges are handled precisely; any
+        // other delete path (external / cascade) takes this conservative one
+        self.graph.edge_delete_log.clear();
         if !self.incremental_match {
             return;
         }
@@ -1627,6 +1762,119 @@ impl Substrate {
                 .any(|me| me.edge_type == edge_type);
             if !matches_et {
                 self.rule_cursors[i].clear();
+            }
+        }
+    }
+
+    /// DELETE FRONTIER (`delete_frontier`): the precise twin of
+    /// `invalidate_readers_of_deleted_edge_type` for the rule-effect `DelEdge`s
+    /// in `log`. A reader MATCHING the type is left to the per-type delete
+    /// version (stale ⇒ full re-match), exactly as before. A non-matching reader
+    /// whose every read of the type is local, or is its own seedable `AddEdge`
+    /// target, re-checks the bindings of the deleted edge's endpoints (node-
+    /// seeded, cursor kept); any other reader is cleared as before.
+    fn invalidate_readers_of_deleted_edges(&mut self, log: &[(NodeID, Sym, NodeID)]) {
+        if !self.incremental_match || self.incremental_match_unsound {
+            return;
+        }
+        for &(src, edge_type, tgt) in log {
+            for i in 0..self.rule_edge_type_deps.len().min(self.rule_cursors.len()) {
+                if !self.rule_edge_type_deps[i].contains(&edge_type) {
+                    continue;
+                }
+                let r = &self.rules[i];
+                if r.match_edges.iter().any(|me| me.edge_type == edge_type) {
+                    continue;
+                }
+                // a rule that only DELETES this type (no match / term read, no
+                // AddEdge of it) cannot be re-enabled by its deletion: re-firing
+                // would delete an absent edge
+                let reads_term = r.term_edge_reads_strict.contains(&edge_type);
+                let only_del = !reads_term
+                    && r.effects.iter().all(|e| match e {
+                        crate::rewrite::Effect::AddEdge { edge_type: et, .. } => *et != edge_type,
+                        crate::rewrite::Effect::DelEdge { .. }
+                        | crate::rewrite::Effect::SetAttr { .. }
+                        | crate::rewrite::Effect::SetAttrIfDifferent { .. }
+                        | crate::rewrite::Effect::AddNodeIfAbsent { .. } => true,
+                        _ => false,
+                    })
+                    && r.effects.iter().any(|e| matches!(e,
+                        crate::rewrite::Effect::DelEdge { edge_type: et, .. } if *et == edge_type));
+                if only_del {
+                    continue;
+                }
+                let term_local = !r.term_edge_reads_strict.contains(&edge_type)
+                    || r.wf_local_out.contains(&edge_type)
+                    || r.wf_local_in.contains(&edge_type);
+                // a binding that would RE-ADD the deleted edge binds an endpoint
+                let adds = r.effects.iter().any(|e| matches!(e,
+                    crate::rewrite::Effect::AddEdge { edge_type: et, .. } if *et == edge_type));
+                let own_ok = !adds || r.own_edge_seedable.contains(&edge_type);
+                if r.wf_ok && term_local && own_ok && i < self.rule_dirty_nodes.len() {
+                    self.rule_dirty_nodes[i].insert(src);
+                    self.rule_dirty_nodes[i].insert(tgt);
+                    self.rule_dirty[i] = true;
+                } else {
+                    self.rule_cursors[i].clear();
+                }
+            }
+        }
+    }
+
+    /// Fresh-node exemption: an EXTERNAL insert of `edge_type` clears the cursor
+    /// of every rule whose where/effect terms read that type (a new edge can
+    /// change a term's value on a STABLE binding; a pure match-edge driver keeps
+    /// its cursor). Mirrors the rule-effect path's `hits_term_edge`.
+    fn invalidate_term_readers_of_edge_type(&mut self, edge_type: Sym, src: NodeID, tgt: NodeID) {
+        for j in 0..self.rules.len().min(self.rule_cursors.len()) {
+            // write frontier: a term read of `edge_type` that is only ever
+            // Neighbours / InNeighbours of a bound variable can flip only the
+            // bindings of the new edge's src / tgt -- seed those, keep the cursor
+            if self.write_frontier
+                && self.rules[j].wf_ok
+                && !self.rules[j].reads_any_nonlocal
+                && (self.rules[j].wf_local_out.contains(&edge_type)
+                    || self.rules[j].wf_local_in.contains(&edge_type))
+                && j < self.rule_dirty_nodes.len()
+            {
+                if self.rules[j].wf_local_out.contains(&edge_type) {
+                    self.rule_dirty_nodes[j].insert(src);
+                }
+                if self.rules[j].wf_local_in.contains(&edge_type) {
+                    self.rule_dirty_nodes[j].insert(tgt);
+                }
+                self.rule_dirty[j] = true;
+                continue;
+            }
+            let ter = if self.own_write_exempt {
+                &self.rules[j].term_edge_reads_strict
+            } else {
+                &self.rules[j].term_edge_reads
+            };
+            if self.rules[j].reads_any_nonlocal || ter.contains(&edge_type) {
+                self.rule_dirty[j] = true;
+                self.rule_cursors[j].clear();
+            }
+        }
+    }
+
+    /// Isolated-node write exemption: a write (insert / attr) to a node with NO
+    /// edges is observable only by type enumeration (`Type` read key) or by an
+    /// opaque non-local read; attrs / type of a bound node are unreachable
+    /// because no binding or term path reaches an isolated node.
+    fn mark_isolated_write(&mut self, ty: Sym) {
+        self.any_mutation = true;
+        let key = crate::rewrite::RuleKey::Type(ty);
+        for j in 0..self.rules.len().min(self.rule_cursors.len()) {
+            let rs = if self.own_write_exempt {
+                &self.rules[j].read_set_strict
+            } else {
+                &self.rules[j].read_set
+            };
+            if self.rules[j].reads_any_nonlocal || rs.contains(&key) {
+                self.rule_dirty[j] = true;
+                self.rule_cursors[j].clear();
             }
         }
     }
@@ -1767,6 +2015,53 @@ impl Substrate {
     /// Block 192000 controls. Both DEFAULT FALSE — see the field docs.
     pub fn set_incremental_match(&mut self, on: bool) {
         self.incremental_match = on;
+    }
+    /// Fresh-node exemption control. DEFAULT FALSE — see the field doc.
+    pub fn set_fresh_node_exempt(&mut self, on: bool) {
+        self.fresh_node_exempt = on;
+    }
+    /// Semi-naive for batch rules. DEFAULT FALSE — see the field doc.
+    pub fn set_batch_incremental(&mut self, on: bool) {
+        self.batch_incremental = on;
+    }
+    /// Own-write exemption control. DEFAULT FALSE — see the field doc.
+    pub fn set_own_write_exempt(&mut self, on: bool) {
+        self.own_write_exempt = on;
+    }
+    /// Precise rule-effect edge deletes control. DEFAULT FALSE — see the field doc.
+    pub fn set_precise_rule_deletes(&mut self, on: bool) {
+        self.precise_rule_deletes = on;
+    }
+    /// Seeded join order control. DEFAULT FALSE — see the field doc.
+    pub fn set_seeded_join_order(&mut self, on: bool) {
+        self.seeded_join_order = on;
+    }
+    /// Hop frontier control. DEFAULT FALSE — see the field doc.
+    pub fn set_hop_frontier(&mut self, on: bool) {
+        self.hop_frontier = on;
+        for r in self.rules.iter_mut() {
+            r.set_wf_hop(on);
+        }
+    }
+    /// Delete frontier control. DEFAULT FALSE — see the field doc.
+    pub fn set_delete_frontier(&mut self, on: bool) {
+        self.delete_frontier = on;
+        self.graph.log_edge_deletes = on;
+        if !on {
+            self.graph.edge_delete_log.clear();
+        }
+    }
+    /// Write frontier control. DEFAULT FALSE — see the field doc.
+    pub fn set_write_frontier(&mut self, on: bool) {
+        self.write_frontier = on;
+        self.graph.log_attr_writes = on || self.predicate_retraction;
+        self.graph.log_edge_writes = on;
+        if self.rule_dirty_nodes.len() < self.rules.len() {
+            self.rule_dirty_nodes.resize(self.rules.len(), Default::default());
+        }
+        if self.rule_dirty_dyn_nodes.len() < self.rules.len() {
+            self.rule_dirty_dyn_nodes.resize(self.rules.len(), Default::default());
+        }
     }
     pub fn set_incremental_match_unsound(&mut self, on: bool) {
         self.incremental_match_unsound = on;
@@ -2102,12 +2397,14 @@ impl Substrate {
                 c.clear();
             }
             self.graph.attr_write_log.clear(); // block 292000: blanket path takes no frontier
+            self.graph.edge_write_log.clear();
             return;
         }
         let wset: smallvec::SmallVec<[crate::rewrite::RuleKey; 16]> =
             self.rules[fired].write_set.iter().copied().collect();
         if wset.is_empty() {
             self.graph.attr_write_log.clear();
+            self.graph.edge_write_log.clear();
             return;
         }
         for j in 0..self.rules.len() {
@@ -2170,6 +2467,26 @@ impl Substrate {
                 let type_hit = wset.iter().any(|k| {
                     rj.read_set.contains(k) && matches!(k, crate::rewrite::RuleKey::Type(_))
                 });
+                let (type_hit, hits_attr, hits_term_edge) = if self.own_write_exempt {
+                    // own-write exemption: only where / computed-arg reads can
+                    // flip an existing binding (see the field doc)
+                    (
+                        wset.iter().any(|k| {
+                            rj.read_set_strict.contains(k)
+                                && matches!(k, crate::rewrite::RuleKey::Type(_))
+                        }),
+                        wset.iter().any(|k| {
+                            rj.read_set_strict.contains(k)
+                                && matches!(k, crate::rewrite::RuleKey::Attr(_))
+                        }),
+                        wset.iter().any(|k| match k {
+                            crate::rewrite::RuleKey::Edge(et) => rj.term_edge_reads_strict.contains(et),
+                            _ => false,
+                        }),
+                    )
+                } else {
+                    (type_hit, hits_attr, hits_term_edge)
+                };
                 let invalidate_cursor =
                     rj.reads_any || type_hit || (hits_attr && has_where) || hits_term_edge;
                 if self.dirty_telemetry {
@@ -2195,6 +2512,23 @@ impl Substrate {
                     let covered = self.predicate_retraction
                         && pure_attr_flip
                         && self.rule_pred_retract_ok.get(j).copied().unwrap_or(false);
+                    let wf = !covered
+                        && self.write_frontier
+                        && rj.wf_ok
+                        && !type_hit
+                        && wset.iter().all(|k| match k {
+                            crate::rewrite::RuleKey::Edge(et) => {
+                                !rj.term_edge_reads_strict.contains(et)
+                                    || rj.wf_local_out.contains(et)
+                                    || rj.wf_local_in.contains(et)
+                            }
+                            _ => true,
+                        })
+                        && !(rj.reads_any
+                            && wset.iter().any(|k| matches!(k, crate::rewrite::RuleKey::Type(_))))
+                        && !wset.iter().any(|k| {
+                            matches!(k, crate::rewrite::RuleKey::Attr(a) if rj.wf_nonlocal_keys.contains(a))
+                        });
                     if covered {
                         if j >= self.rule_dirty_nodes.len() {
                             self.rule_dirty_nodes
@@ -2203,6 +2537,55 @@ impl Substrate {
                         for &(nid, wkey) in self.graph.attr_write_log.iter() {
                             if rj.read_set.contains(&crate::rewrite::RuleKey::Attr(wkey)) {
                                 self.rule_dirty_nodes[j].insert(nid);
+                            }
+                        }
+                    } else if wf {
+                        // write frontier: every attr this write can flip lives on a
+                        // node the binding binds -- seed those nodes, keep the cursor
+                        if j >= self.rule_dirty_nodes.len() {
+                            self.rule_dirty_nodes
+                                .resize(self.rules.len(), Default::default());
+                        }
+                        if j >= self.rule_dirty_dyn_nodes.len() {
+                            self.rule_dirty_dyn_nodes
+                                .resize(self.rules.len(), Default::default());
+                        }
+                        let dyn_local = rj.wf_dyn_local;
+                        for &(nid, wkey) in self.graph.attr_write_log.iter() {
+                            if rj.read_set_strict.contains(&crate::rewrite::RuleKey::Attr(wkey)) {
+                                self.rule_dirty_nodes[j].insert(nid);
+                            } else if dyn_local {
+                                self.rule_dirty_dyn_nodes[j].insert(nid);
+                            }
+                        }
+                        // a new edge read only as Neighbours / InNeighbours of a
+                        // bound variable can flip only bindings of its src / tgt
+                        for &(es, et, eto) in self.graph.edge_write_log.iter() {
+                            if rj.wf_local_out.contains(&et) {
+                                self.rule_dirty_nodes[j].insert(es);
+                            }
+                            if rj.wf_local_in.contains(&et) {
+                                self.rule_dirty_nodes[j].insert(eto);
+                            }
+                        }
+                        // hop frontier: a one-hop local attr read flips only the
+                        // bindings of the written node's E-neighbours
+                        if self.hop_frontier && !rj.wf_hop.is_empty() {
+                            for &(nid, wkey) in self.graph.attr_write_log.iter() {
+                                for &(k, et, out) in rj.wf_hop.iter() {
+                                    if k != wkey || !self.graph.has_node(nid) {
+                                        continue;
+                                    }
+                                    if out {
+                                        for &ei in self.graph.in_edges_slice(nid, Some(et)) {
+                                            self.rule_dirty_nodes[j].insert(self.graph.edge(ei).src);
+                                        }
+                                    } else {
+                                        for &ei in self.graph.out_edges_slice(nid, Some(et)) {
+                                            self.rule_dirty_nodes[j].insert(self.graph.edge(ei).tgt);
+                                        }
+                                    }
+                                }
                             }
                         }
                     } else {
@@ -2214,6 +2597,7 @@ impl Substrate {
         // block 292000: drain the per-fire rule-effect attr-write log. Empty when
         // predicate_retraction is off (nothing was pushed) ⇒ no-op, byte/cost-identical.
         self.graph.attr_write_log.clear();
+        self.graph.edge_write_log.clear();
     }
 
     // --- extend ---
@@ -2228,7 +2612,11 @@ impl Substrate {
             smallvec::SmallVec::new()
         };
         let nid = self.graph.insert_node(type_, attrs);
-        if self.precise_dirty {
+        if self.precise_dirty && self.fresh_node_exempt {
+            // fresh node: no edges, so its attrs are unobservable to any existing
+            // binding; only a type enumeration can see it (see the field doc)
+            self.mark_isolated_write(type_);
+        } else if self.precise_dirty {
             self.mark_external_write(Some(type_), &keys);
         } else {
             self.mark_node_mutation();
@@ -2263,6 +2651,10 @@ impl Substrate {
                     .insert_edge(src, edge_type, tgt, attrs)
                     .expect("admitted edge must connect existing nodes");
                 self.mark_edge_type_dirty(edge_type);
+                self.graph.edge_write_log.clear(); // external write: the log is rule-effect only
+                if self.fresh_node_exempt {
+                    self.invalidate_term_readers_of_edge_type(edge_type, src, tgt);
+                }
                 Ok(result)
             }
             CheckOutcome::Type1NoProduction {
@@ -2533,7 +2925,22 @@ impl Substrate {
                 return;
             }
         }
+        if self.precise_dirty && self.fresh_node_exempt && self.graph.has_node(nid)
+            && self.graph.out_edges_slice(nid, None).is_empty()
+            && self.graph.in_edges_slice(nid, None).is_empty()
+        {
+            let ty = self.graph.node(nid).type_;
+            self.graph.set_node_attr(nid, key, value);
+            if self.write_frontier && !self.predicate_retraction {
+                self.graph.attr_write_log.clear(); // external write: the log is rule-effect only
+            }
+            self.mark_isolated_write(ty);
+            return;
+        }
         self.graph.set_node_attr(nid, key, value);
+        if self.write_frontier && !self.predicate_retraction {
+            self.graph.attr_write_log.clear(); // external write: the log is rule-effect only
+        }
         // PREDICATE RETRACTION (block 194000): an external attr write records
         // the written node against the covered where-rules that read this key
         // (node-seeded re-eval next visit) instead of clearing their whole
@@ -3364,6 +3771,8 @@ impl Substrate {
     }
 
     fn refresh_rule_slot_after_patch(&mut self, i: usize) {
+        let hop = self.hop_frontier;
+        self.rules[i].set_wf_hop(hop);
         let mut deps: rustc_hash::FxHashSet<Sym> = Default::default();
         for key in &self.rules[i].read_set {
             if let crate::rewrite::RuleKey::Edge(edge_type) = key {
@@ -3600,6 +4009,7 @@ impl Substrate {
         // fire direction only, no derived-tuple retraction — that is the next
         // rung. All computed once, read only when the flag is on.
         self.rule_dirty_nodes.push(rustc_hash::FxHashSet::default());
+        self.rule_dirty_dyn_nodes.push(rustc_hash::FxHashSet::default());
         let ok = {
             let k = rule.match_edges.len();
             let mut seen: rustc_hash::FxHashSet<Sym> = Default::default();
@@ -3655,6 +4065,8 @@ impl Substrate {
             self.rule_where_jit.push(compiled);
         }
         let idx = crate::rewrite::RuleIdx(idx_usize as u32);
+        let mut rule = rule;
+        rule.set_wf_hop(self.hop_frontier);
         self.rules.push(rule);
         // Γ has changed — bump the epoch so any installed L2
         // dispatcher's compiled-artefact cache treats prior
@@ -3889,6 +4301,19 @@ impl Substrate {
     /// add-only (checked at `add_rule`), so there is no derived-tuple retraction
     /// to miss — the fire direction only.
     fn try_predicate_retraction(&mut self, rule_idx: usize) -> Option<bool> {
+        self.try_predicate_retraction_mode(rule_idx, false)
+    }
+
+    /// `frontier = true` is the write-frontier pre-pass (`write_frontier`): the
+    /// same node-seeded re-evaluation, but new edges may exist (the semi-naive
+    /// pass that follows handles them and owns the cursor), so the cursor is
+    /// only version-checked and is neither required unchanged nor re-stored.
+    fn try_predicate_retraction_mode(&mut self, rule_idx: usize, frontier: bool) -> Option<bool> {
+        if frontier {
+            if !self.write_frontier || !self.rules[rule_idx].wf_ok {
+                return None;
+            }
+        } else {
         if !self.predicate_retraction {
             return None;
         }
@@ -3900,7 +4325,12 @@ impl Substrate {
         {
             return None;
         }
-        if rule_idx >= self.rule_dirty_nodes.len() || self.rule_dirty_nodes[rule_idx].is_empty() {
+        }
+        let no_dyn = !frontier
+            || self.rule_dirty_dyn_nodes.get(rule_idx).map_or(true, |d| d.is_empty());
+        if rule_idx >= self.rule_dirty_nodes.len()
+            || (self.rule_dirty_nodes[rule_idx].is_empty() && no_dyn)
+        {
             return None;
         }
         let rule_clone = self.rules[rule_idx].clone();
@@ -3912,18 +4342,45 @@ impl Substrate {
             let cur_len = self.graph.edges_by_type(me.edge_type).len();
             let expected_ver = self.cursor_version(me.edge_type);
             match self.rule_cursors[rule_idx].get(&me.edge_type).copied() {
-                Some((c, dv)) if dv == expected_ver && c == cur_len => {}
+                Some((c, dv)) if dv == expected_ver && (frontier || c == cur_len) => {}
                 _ => {
                     self.rule_dirty_nodes[rule_idx].clear();
-                    self.rule_cursors[rule_idx].clear();
+                    if frontier {
+                        self.rule_dirty_dyn_nodes[rule_idx].clear();
+                    }
+                    if !frontier {
+                        self.rule_cursors[rule_idx].clear();
+                    }
                     return None;
                 }
             }
         }
         // Dirty nodes, sorted by id for a DETERMINISTIC seeding order (and so
         // the unsound falsifier drops a well-defined node).
+        if frontier && self.match_set_provably_empty(&rule_clone) {
+            // no binding exists now; any later one needs a new match edge, which
+            // the semi-naive pass drives against the full graph
+            self.rule_dirty_nodes[rule_idx].clear();
+            self.rule_dirty_dyn_nodes[rule_idx].clear();
+            return Some(false);
+        }
         let mut dirty: Vec<NodeID> = self.rule_dirty_nodes[rule_idx].iter().copied().collect();
         dirty.sort();
+        // write frontier: nodes dirtied only by a dynamically-named attr write
+        // re-check only the bindings that bind them to an `AttrByName` variable
+        let mut dyn_only: Vec<NodeID> = if frontier {
+            let full = &self.rule_dirty_nodes[rule_idx];
+            self.rule_dirty_dyn_nodes[rule_idx]
+                .iter()
+                .copied()
+                .filter(|n| !full.contains(n))
+                .collect()
+        } else {
+            Vec::new()
+        };
+        dyn_only.sort();
+        let n_full = dirty.len();
+        dirty.extend(dyn_only);
         if self.predicate_retraction_unsound && !dirty.is_empty() {
             // FALSIFIER: silently drop one dirty node ⇒ a binding that flipped
             // to TRUE on it is never re-fired ⇒ diverges from the full rescan.
@@ -3945,19 +4402,27 @@ impl Substrate {
         // to `d` at some match position, so every such binding is reached.
         // Borrows mirror `try_incremental_match` (immutable self + &mut cache).
         let mut bindings: Vec<crate::rewrite::Binding> = Vec::new();
-        for &d in &dirty {
+        for (di, &d) in dirty.iter().enumerate() {
+            let dyn_d = di >= n_full;
             for drive_i in 0..rule_clone.match_edges.len() {
                 let drive_me = rule_clone.match_edges[drive_i].clone();
+                let src_ok = !dyn_d || rule_clone.wf_dyn_vars.contains(&drive_me.src_var);
+                let tgt_ok = !dyn_d || rule_clone.wf_dyn_vars.contains(&drive_me.tgt_var);
+                if !src_ok && !tgt_ok {
+                    continue;
+                }
                 // Incident edges of this type at d, as SRC (d = src_var) and as
                 // TGT (d = tgt_var). Collect endpoints first (releases the graph
                 // adjacency borrow before the match call takes &self.graph).
                 let mut seeds: smallvec::SmallVec<[(NodeID, NodeID); 8]> =
                     smallvec::SmallVec::new();
+                if src_ok {
                 for &ei in self.graph.out_edges_slice(d, Some(drive_me.edge_type)) {
                     let e = self.graph.edge(ei);
                     seeds.push((e.src, e.tgt));
                 }
-                if drive_me.tgt_var != drive_me.src_var {
+                }
+                if tgt_ok && drive_me.tgt_var != drive_me.src_var {
                     for &ei in self.graph.in_edges_slice(d, Some(drive_me.edge_type)) {
                         let e = self.graph.edge(ei);
                         seeds.push((e.src, e.tgt));
@@ -3965,11 +4430,19 @@ impl Substrate {
                 }
                 let mut sub_edges = rule_clone.match_edges.clone();
                 sub_edges.remove(drive_i);
+                let seeded = self.seeded_join_order;
+                if seeded {
+                    sub_edges = seeded_join_order(sub_edges, drive_me.src_var, drive_me.tgt_var);
+                }
                 let sub_rule = crate::rewrite::RewriteRule {
                     name: rule_clone.name,
                     match_edges: sub_edges,
                     where_: rule_clone.where_,
                     effects: rule_clone.effects.clone(),
+                    index_hints: if seeded { rule_clone.index_hints.clone() } else { Vec::new() },
+                    // pushdown is order-independent (a conjunct runs once its vars are bound)
+                    where_conjuncts: if seeded { rule_clone.where_conjuncts.clone() } else { Vec::new() },
+                    both_bound_probe: seeded,
                     ..Default::default()
                 };
                 for (e_src, e_tgt) in seeds {
@@ -4036,6 +4509,10 @@ impl Substrate {
         // Consumed this rule's dirty-node set. Re-store cursors at the current
         // (unchanged) lengths + versions so the next visit is valid.
         self.rule_dirty_nodes[rule_idx].clear();
+        if frontier {
+            self.rule_dirty_dyn_nodes[rule_idx].clear();
+            return Some(progressed_any);
+        }
         let ets: Vec<Sym> = rule_clone
             .match_edges
             .iter()
@@ -4086,9 +4563,14 @@ impl Substrate {
         // Defer rules whose match-edges repeat an edge_type — would need
         // lex-order semi-naive to avoid double-counting bindings.
         {
+            // A repeated match edge type makes two driving positions find the
+            // same binding; `seen_bindings` below dedups by the canonical binding
+            // key across ALL positions, so under `batch_incremental` the repeat
+            // costs duplicates only (each binding with >= 1 new edge is found by
+            // driving from that edge's slot against the full other slots).
             let mut seen: FxHashSet<Sym> = Default::default();
             for me in &rule_clone.match_edges {
-                if !seen.insert(me.edge_type) {
+                if !seen.insert(me.edge_type) && !self.batch_incremental {
                     return None;
                 }
             }
@@ -4243,11 +4725,19 @@ impl Substrate {
                 // resolve via the standard matcher.
                 let mut sub_edges = rule_clone.match_edges.clone();
                 sub_edges.remove(drive_i);
+                let seeded = self.seeded_join_order;
+                if seeded {
+                    sub_edges = seeded_join_order(sub_edges, drive_me.src_var, drive_me.tgt_var);
+                }
                 let sub_rule = crate::rewrite::RewriteRule {
                     name: rule_clone.name,
                     match_edges: sub_edges,
                     where_: rule_clone.where_,
                     effects: rule_clone.effects.clone(),
+                    index_hints: if seeded { rule_clone.index_hints.clone() } else { Vec::new() },
+                    // pushdown is order-independent (a conjunct runs once its vars are bound)
+                    where_conjuncts: if seeded { rule_clone.where_conjuncts.clone() } else { Vec::new() },
+                    both_bound_probe: seeded,
                     ..Default::default()
                 };
 
@@ -4681,7 +5171,43 @@ impl Substrate {
         // process only edges new since last visit. Falls back to
         // full re-match for k-edge rules and for rules whose
         // cursor was invalidated by an intervening delete.
-        let progressed = if self.rules[rule_idx].batch {
+        let wf_pre = self.write_frontier
+            && (self.rule_dirty_nodes.get(rule_idx).map_or(false, |d| !d.is_empty())
+                || self.rule_dirty_dyn_nodes.get(rule_idx).map_or(false, |d| !d.is_empty()))
+            && self.try_predicate_retraction_mode(rule_idx, true).unwrap_or(false);
+        let progressed = if self.rules[rule_idx].batch && self.batch_incremental {
+            if let Some(p) = self.try_incremental_match(rule_idx) {
+                p
+            } else {
+                let rule = self.rules[rule_idx].clone();
+                let mut frontier: FxHashMap<Sym, (usize, u64)> = FxHashMap::default();
+                for me in &rule.match_edges {
+                    frontier.entry(me.edge_type).or_insert_with(|| {
+                        (self.graph.edges_by_type(me.edge_type).len(), self.cursor_version(me.edge_type))
+                    });
+                }
+                let p = if self.match_set_provably_empty(&rule) {
+                    self.note_empty_match_skip(rule_idx);
+                    false
+                } else {
+                    crate::rewrite::batch_apply_rule(
+                        &rule,
+                        &mut self.terms,
+                        &mut self.graph,
+                        &mut self.interner,
+                        Some(&mut self.concepts),
+                        Some(&self.framebuffers),
+                        Some(&mut self.eval_cache),
+                        None,
+                    )
+                };
+                self.eval_cache.clear_graph_dependent();
+                for (et, lv) in frontier {
+                    self.rule_cursors[rule_idx].insert(et, lv);
+                }
+                p
+            }
+        } else if self.rules[rule_idx].batch {
             // slice (b): batch-safe rule — apply EVERY binding this pass
             // (no per-binding undo/clone/restart). Collapses per-cell
             // perception rules from O(cells^2) passes to O(cells).
@@ -5076,6 +5602,12 @@ impl Substrate {
             }
             res
         };
+        let progressed = progressed || wf_pre;
+        if self.write_frontier && !progressed {
+            // a non-progressing attempt left the graph unchanged (undone writes)
+            self.graph.attr_write_log.clear();
+            self.graph.edge_write_log.clear();
+        }
         crate::fallback_trace::set_current_rule(None);
         if let Some(c) = self.rule_cost_micros.get_mut(rule_idx) {
             *c += __cost_t0.elapsed().as_micros() as u64;
@@ -5128,8 +5660,46 @@ impl Substrate {
                 // delete-effecting rule pays the full invalidation, as it does
                 // under OFF.
                 if self.incremental_match {
-                    for c in self.rule_cursors.iter_mut() {
-                        c.clear();
+                    let edge_only = self.precise_rule_deletes
+                        && self.rules[rule_idx].effects.iter().all(|e| {
+                            !matches!(
+                                e,
+                                crate::rewrite::Effect::DelNode { .. }
+                                    | crate::rewrite::Effect::ReplaceValue { .. }
+                            )
+                        });
+                    if edge_only {
+                        // DelEdge-only: the deleted types are exactly the named
+                        // ones (no cascade). Match-edge readers go stale through
+                        // the per-type delete version the graph bumped; clear the
+                        // where/term readers and the non-local opaque readers.
+                        let ets: smallvec::SmallVec<[Sym; 4]> = self.rules[rule_idx]
+                            .effects
+                            .iter()
+                            .filter_map(|e| match e {
+                                crate::rewrite::Effect::DelEdge { edge_type, .. } => Some(*edge_type),
+                                _ => None,
+                            })
+                            .collect();
+                        if self.delete_frontier && self.write_frontier {
+                            let log = std::mem::take(&mut self.graph.edge_delete_log);
+                            self.invalidate_readers_of_deleted_edges(&log);
+                        } else {
+                            for et in ets {
+                                self.invalidate_readers_of_deleted_edge_type(et);
+                            }
+                        }
+                        for j in 0..self.rules.len().min(self.rule_cursors.len()) {
+                            if self.rules[j].reads_any_nonlocal {
+                                self.rule_dirty[j] = true;
+                                self.rule_cursors[j].clear();
+                            }
+                        }
+                    } else {
+                        self.graph.edge_delete_log.clear();
+                        for c in self.rule_cursors.iter_mut() {
+                            c.clear();
+                        }
                     }
                 }
             }
@@ -9193,4 +9763,37 @@ mod tests {
             "control: with go=1 present up front, consume MUST fire"
         );
     }
+}
+
+/// Greedy connectivity order for a seeded sub-match (`seeded_join_order`): from
+/// the seed's bound variables, repeatedly take the remaining edge with the most
+/// bound endpoints (2 = an O(1) membership test, 1 = an adjacency walk, 0 = a
+/// type scan), ties in declared order. Traversal only -- same binding set.
+pub(crate) fn seeded_join_order(
+    edges: Vec<crate::rewrite::MatchEdge>,
+    a: Sym,
+    b: Sym,
+) -> Vec<crate::rewrite::MatchEdge> {
+    let mut bound: smallvec::SmallVec<[Sym; 8]> = smallvec::smallvec![a, b];
+    let mut rest = edges;
+    let mut out = Vec::with_capacity(rest.len());
+    while !rest.is_empty() {
+        let mut best = 0usize;
+        let mut best_score = -1i32;
+        for (i, me) in rest.iter().enumerate() {
+            let sc = bound.contains(&me.src_var) as i32 + bound.contains(&me.tgt_var) as i32;
+            if sc > best_score {
+                best_score = sc;
+                best = i;
+            }
+        }
+        let me = rest.remove(best);
+        for v in [me.src_var, me.tgt_var] {
+            if !bound.contains(&v) {
+                bound.push(v);
+            }
+        }
+        out.push(me);
+    }
+    out
 }
