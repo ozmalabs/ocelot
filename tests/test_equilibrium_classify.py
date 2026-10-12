@@ -48,9 +48,10 @@ GOLDEN = [
     ("expert_e_03", "See https://docs.example.org/tutorial/lists.html for details.",
      {"msg.speech_act": ["assertion"], "msg.substantive_markers": ["link"]},
      {"speech_act.sak_statement", "substantive_markers.link_url"}),
-    ("actor_a_03", "Sorry, I misread your answer.",
-     {"msg.speech_act": ["assertion"], "msg.deescalation": [True]},
-     {"speech_act.sak_statement", "deescalation.cue_unigram"}),
+    ("actor_a_03", "Sorry, I misread your answer.",  # 0.4.0: also an error admission
+     {"msg.speech_act": ["assertion"], "msg.deescalation": [True], "msg.error_admission": [True]},
+     {"speech_act.sak_statement", "deescalation.cue_unigram", "error_admission.cue_bigram",
+      "error_admission.affirmed"}),
     ("actor_a_04", "Fair point, that works.",  # 0.2.0: also a concession cue
      {"msg.speech_act": ["assertion"], "msg.deescalation": [True], "msg.concession": [True]},
      {"speech_act.sak_statement", "deescalation.cue_bigram", "concession.cue_bigram"}),
@@ -70,9 +71,11 @@ GOLDEN = [
     ("expert_e_07", "Tuples are immutable, cf. the data model docs.",
      {"msg.speech_act": ["assertion"], "msg.substantive_markers": ["citation"]},
      {"speech_act.sak_statement", "substantive_markers.citation_cue_unigram"}),
-    ("actor_a_07", "My bad, you\u2019re right.",  # two bigram cues, one rule fire
-     {"msg.speech_act": ["assertion"], "msg.deescalation": [True], "msg.concession": [True]},
-     {"speech_act.sak_statement", "deescalation.cue_bigram", "concession.cue_bigram"}),
+    ("actor_a_07", "My bad, you\u2019re right.",  # two bigram cues, one rule fire; 0.4.0 error admission
+     {"msg.speech_act": ["assertion"], "msg.deescalation": [True], "msg.concession": [True],
+      "msg.error_admission": [True]},
+     {"speech_act.sak_statement", "deescalation.cue_bigram", "concession.cue_bigram",
+      "error_admission.cue_bigram", "error_admission.affirmed"}),
     ("expert_e_08", "Here is a fix: `sorted(xs, reverse=True)` and more at https://example.org/sorting",
      {"msg.speech_act": ["assertion"], "msg.substantive_markers": ["code", "link"]},
      {"speech_act.sak_statement", "substantive_markers.code_inline", "substantive_markers.link_url"}),
@@ -81,8 +84,9 @@ GOLDEN = [
      {"speech_act.sak_question", "substantive_markers.code_inline", "substantive_markers.question_act"}),
     ("actor_a_09", "Thanks, it works now.",  # gratitude is NOT supported in this slice
      {"msg.speech_act": ["assertion"]}, {"speech_act.sak_statement"}),
-    ("expert_e_09", "That is wrong and you know it.",  # hostile in tone, but no seeded cue
-     {"msg.speech_act": ["assertion"]}, {"speech_act.sak_statement"}),
+    ("expert_e_09", "That is wrong and you know it.",  # no hostility cue; 0.4.0 disagreement formula
+     {"msg.speech_act": ["assertion"], "msg.disagreement": [True]},
+     {"speech_act.sak_statement", "disagreement.cue_trigram", "disagreement.affirmed"}),
     ("actor_a_10", "Run `echo sorry` again.",  # cue inside code is not a cue
      {"msg.speech_act": ["assertion"], "msg.substantive_markers": ["code"]},
      {"speech_act.sak_statement", "substantive_markers.code_inline"}),
@@ -273,7 +277,7 @@ def test_lexicon_cues_are_contiguous_and_num_slot_is_scoped():
     assert {c["cue"] for c in cues} == {
         "deescalation", "citation", "concession", "status_claim", "hostility", "domain_technical",
         "credential", "credential_denial", "deference", "booster", "withdrawal", "dismissal",
-        "tribal", "procedural"}
+        "tribal", "procedural", "disagreement", "error_admission", "error_denial", "evidence_request"}
 
 
 def test_builder_reproduces_checked_in_seeds():

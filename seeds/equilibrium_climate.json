@@ -1,0 +1,1964 @@
+{
+ "depends_on": [
+  "equilibrium_quanta"
+ ],
+ "description": "Space-climate relational traits (0.4.0): EqClimateCue{role,lab_key} reply codebook (stimulus / dismiss / status / ground / engage / nonanswer) and the S1/S2 rules for response.dismissal, response.engagement, inquiry.answered, inquiry.unanswered.",
+ "edges": [
+  {
+   "attrs": {},
+   "src": {
+    "role": "agent_root"
+   },
+   "tgt": {
+    "local": 0
+   },
+   "type": "eq_has_climate_cue"
+  },
+  {
+   "attrs": {},
+   "src": {
+    "role": "agent_root"
+   },
+   "tgt": {
+    "local": 1
+   },
+   "type": "eq_has_climate_cue"
+  },
+  {
+   "attrs": {},
+   "src": {
+    "role": "agent_root"
+   },
+   "tgt": {
+    "local": 2
+   },
+   "type": "eq_has_climate_cue"
+  },
+  {
+   "attrs": {},
+   "src": {
+    "role": "agent_root"
+   },
+   "tgt": {
+    "local": 3
+   },
+   "type": "eq_has_climate_cue"
+  },
+  {
+   "attrs": {},
+   "src": {
+    "role": "agent_root"
+   },
+   "tgt": {
+    "local": 4
+   },
+   "type": "eq_has_climate_cue"
+  },
+  {
+   "attrs": {},
+   "src": {
+    "role": "agent_root"
+   },
+   "tgt": {
+    "local": 5
+   },
+   "type": "eq_has_climate_cue"
+  },
+  {
+   "attrs": {},
+   "src": {
+    "role": "agent_root"
+   },
+   "tgt": {
+    "local": 6
+   },
+   "type": "eq_has_climate_cue"
+  },
+  {
+   "attrs": {},
+   "src": {
+    "role": "agent_root"
+   },
+   "tgt": {
+    "local": 7
+   },
+   "type": "eq_has_climate_cue"
+  },
+  {
+   "attrs": {},
+   "src": {
+    "role": "agent_root"
+   },
+   "tgt": {
+    "local": 8
+   },
+   "type": "eq_has_climate_cue"
+  },
+  {
+   "attrs": {},
+   "src": {
+    "role": "agent_root"
+   },
+   "tgt": {
+    "local": 9
+   },
+   "type": "eq_has_climate_cue"
+  },
+  {
+   "attrs": {},
+   "src": {
+    "role": "agent_root"
+   },
+   "tgt": {
+    "local": 10
+   },
+   "type": "eq_has_climate_cue"
+  },
+  {
+   "attrs": {},
+   "src": {
+    "role": "agent_root"
+   },
+   "tgt": {
+    "local": 11
+   },
+   "type": "eq_has_climate_cue"
+  },
+  {
+   "attrs": {},
+   "src": {
+    "role": "agent_root"
+   },
+   "tgt": {
+    "local": 12
+   },
+   "type": "eq_has_climate_cue"
+  },
+  {
+   "attrs": {},
+   "src": {
+    "role": "agent_root"
+   },
+   "tgt": {
+    "local": 13
+   },
+   "type": "eq_has_climate_cue"
+  },
+  {
+   "attrs": {},
+   "src": {
+    "role": "agent_root"
+   },
+   "tgt": {
+    "local": 14
+   },
+   "type": "eq_has_climate_cue"
+  },
+  {
+   "attrs": {},
+   "src": {
+    "role": "agent_root"
+   },
+   "tgt": {
+    "local": 15
+   },
+   "type": "eq_has_climate_cue"
+  },
+  {
+   "attrs": {},
+   "src": {
+    "role": "agent_root"
+   },
+   "tgt": {
+    "local": 16
+   },
+   "type": "eq_has_climate_cue"
+  },
+  {
+   "attrs": {},
+   "src": {
+    "role": "agent_root"
+   },
+   "tgt": {
+    "local": 17
+   },
+   "type": "eq_has_climate_cue"
+  }
+ ],
+ "id": "equilibrium_climate",
+ "nodes": [
+  {
+   "attrs": {
+    "lab_key": "eqlab:msg.speech_act=question",
+    "role": "stimulus"
+   },
+   "local_id": 0,
+   "type": "EqClimateCue"
+  },
+  {
+   "attrs": {
+    "lab_key": "eqlab:msg.dissent",
+    "role": "stimulus"
+   },
+   "local_id": 1,
+   "type": "EqClimateCue"
+  },
+  {
+   "attrs": {
+    "lab_key": "eqlab:msg.challenge",
+    "role": "stimulus"
+   },
+   "local_id": 2,
+   "type": "EqClimateCue"
+  },
+  {
+   "attrs": {
+    "lab_key": "eqlab:msg.dismissal",
+    "role": "dismiss"
+   },
+   "local_id": 3,
+   "type": "EqClimateCue"
+  },
+  {
+   "attrs": {
+    "lab_key": "eqlab:msg.hostility",
+    "role": "dismiss"
+   },
+   "local_id": 4,
+   "type": "EqClimateCue"
+  },
+  {
+   "attrs": {
+    "lab_key": "eqlab:msg.status_claim",
+    "role": "status"
+   },
+   "local_id": 5,
+   "type": "EqClimateCue"
+  },
+  {
+   "attrs": {
+    "lab_key": "eqlab:msg.substantive_markers=code",
+    "role": "ground"
+   },
+   "local_id": 6,
+   "type": "EqClimateCue"
+  },
+  {
+   "attrs": {
+    "lab_key": "eqlab:msg.substantive_markers=link",
+    "role": "ground"
+   },
+   "local_id": 7,
+   "type": "EqClimateCue"
+  },
+  {
+   "attrs": {
+    "lab_key": "eqlab:msg.substantive_markers=citation",
+    "role": "ground"
+   },
+   "local_id": 8,
+   "type": "EqClimateCue"
+  },
+  {
+   "attrs": {
+    "lab_key": "eqlab:msg.domain=technical",
+    "role": "ground"
+   },
+   "local_id": 9,
+   "type": "EqClimateCue"
+  },
+  {
+   "attrs": {
+    "lab_key": "eqlab:msg.substantive_markers=code",
+    "role": "engage"
+   },
+   "local_id": 10,
+   "type": "EqClimateCue"
+  },
+  {
+   "attrs": {
+    "lab_key": "eqlab:msg.substantive_markers=link",
+    "role": "engage"
+   },
+   "local_id": 11,
+   "type": "EqClimateCue"
+  },
+  {
+   "attrs": {
+    "lab_key": "eqlab:msg.substantive_markers=citation",
+    "role": "engage"
+   },
+   "local_id": 12,
+   "type": "EqClimateCue"
+  },
+  {
+   "attrs": {
+    "lab_key": "eqlab:msg.domain=technical",
+    "role": "engage"
+   },
+   "local_id": 13,
+   "type": "EqClimateCue"
+  },
+  {
+   "attrs": {
+    "lab_key": "eqlab:msg.concession",
+    "role": "engage"
+   },
+   "local_id": 14,
+   "type": "EqClimateCue"
+  },
+  {
+   "attrs": {
+    "lab_key": "eqlab:msg.speech_act=question",
+    "role": "engage"
+   },
+   "local_id": 15,
+   "type": "EqClimateCue"
+  },
+  {
+   "attrs": {
+    "lab_key": "eqlab:msg.speech_act=question",
+    "role": "nonanswer"
+   },
+   "local_id": 16,
+   "type": "EqClimateCue"
+  },
+  {
+   "attrs": {
+    "lab_key": "eqlab:msg.withdrawal",
+    "role": "nonanswer"
+   },
+   "local_id": 17,
+   "type": "EqClimateCue"
+  }
+ ],
+ "productions": [
+  {
+   "edge_type": "eq_has_climate_cue",
+   "provenance": "equilibrium_climate:Agent_eq_has_climate_cue_EqClimateCue",
+   "src": {
+    "type": "Agent",
+    "var": "a"
+   },
+   "tgt": {
+    "type": "EqClimateCue",
+    "var": "b"
+   }
+  }
+ ],
+ "rules": [
+  {
+   "batch": true,
+   "effects": [
+    [
+     "add_node_if_absent",
+     "q",
+     "EqQuantum",
+     {
+      "q_actor": {
+       "__term__": {
+        "key": "actor_ref",
+        "node": {
+         "name": "a",
+         "type": "Var"
+        },
+        "type": "Attr"
+       }
+      },
+      "q_pole": {
+       "__term__": {
+        "type": "Lit",
+        "value": "+"
+       }
+      },
+      "q_target": {
+       "__term__": {
+        "key": "actor_ref",
+        "node": {
+         "name": "b",
+         "type": "Var"
+        },
+        "type": "Attr"
+       }
+      },
+      "q_trait": {
+       "__term__": {
+        "type": "Lit",
+        "value": "response.dismissal"
+       }
+      }
+     }
+    ],
+    [
+     "add_edge",
+     "a",
+     "eq_has_quantum",
+     "q"
+    ],
+    [
+     "set_attr",
+     "q",
+     "eqrule:eq.quanta.response.dismissal",
+     true
+    ],
+    [
+     "add_edge",
+     "q",
+     "eq_evidence",
+     "m"
+    ],
+    [
+     "add_edge",
+     "q",
+     "eq_context",
+     "p"
+    ]
+   ],
+   "match": [
+    [
+     "agent",
+     "eq_stratum_1",
+     "st"
+    ],
+    [
+     "agent",
+     "eq_window",
+     "w"
+    ],
+    [
+     "w",
+     "eq_has_turn",
+     "m"
+    ],
+    [
+     "m",
+     "eq_authored_by",
+     "a"
+    ],
+    [
+     "m",
+     "eq_responds_to",
+     "p"
+    ],
+    [
+     "p",
+     "eq_authored_by",
+     "b"
+    ]
+   ],
+   "name": "eq.quanta.response.dismissal",
+   "where": {
+    "items": [
+     {
+      "predicate": {
+       "items": [
+        {
+         "a": {
+          "key": "role",
+          "node": {
+           "name": "cc_p_stimulus",
+           "type": "Var"
+          },
+          "type": "Attr"
+         },
+         "b": {
+          "type": "Lit",
+          "value": "stimulus"
+         },
+         "type": "Eq"
+        },
+        {
+         "a": {
+          "name": {
+           "key": "lab_key",
+           "node": {
+            "name": "cc_p_stimulus",
+            "type": "Var"
+           },
+           "type": "Attr"
+          },
+          "node": {
+           "name": "p",
+           "type": "Var"
+          },
+          "type": "AttrByName"
+         },
+         "b": {
+          "type": "Lit",
+          "value": true
+         },
+         "type": "Eq"
+        }
+       ],
+       "type": "And"
+      },
+      "source": {
+       "edge_type": "eq_has_climate_cue",
+       "node": {
+        "name": "agent",
+        "type": "Var"
+       },
+       "type": "Neighbours"
+      },
+      "type": "Exists",
+      "var_name": "cc_p_stimulus"
+     },
+     {
+      "items": [
+       {
+        "predicate": {
+         "items": [
+          {
+           "a": {
+            "key": "role",
+            "node": {
+             "name": "cc_m_dismiss",
+             "type": "Var"
+            },
+            "type": "Attr"
+           },
+           "b": {
+            "type": "Lit",
+            "value": "dismiss"
+           },
+           "type": "Eq"
+          },
+          {
+           "a": {
+            "name": {
+             "key": "lab_key",
+             "node": {
+              "name": "cc_m_dismiss",
+              "type": "Var"
+             },
+             "type": "Attr"
+            },
+            "node": {
+             "name": "m",
+             "type": "Var"
+            },
+            "type": "AttrByName"
+           },
+           "b": {
+            "type": "Lit",
+            "value": true
+           },
+           "type": "Eq"
+          }
+         ],
+         "type": "And"
+        },
+        "source": {
+         "edge_type": "eq_has_climate_cue",
+         "node": {
+          "name": "agent",
+          "type": "Var"
+         },
+         "type": "Neighbours"
+        },
+        "type": "Exists",
+        "var_name": "cc_m_dismiss"
+       },
+       {
+        "items": [
+         {
+          "predicate": {
+           "items": [
+            {
+             "a": {
+              "key": "role",
+              "node": {
+               "name": "cc_m_status",
+               "type": "Var"
+              },
+              "type": "Attr"
+             },
+             "b": {
+              "type": "Lit",
+              "value": "status"
+             },
+             "type": "Eq"
+            },
+            {
+             "a": {
+              "name": {
+               "key": "lab_key",
+               "node": {
+                "name": "cc_m_status",
+                "type": "Var"
+               },
+               "type": "Attr"
+              },
+              "node": {
+               "name": "m",
+               "type": "Var"
+              },
+              "type": "AttrByName"
+             },
+             "b": {
+              "type": "Lit",
+              "value": true
+             },
+             "type": "Eq"
+            }
+           ],
+           "type": "And"
+          },
+          "source": {
+           "edge_type": "eq_has_climate_cue",
+           "node": {
+            "name": "agent",
+            "type": "Var"
+           },
+           "type": "Neighbours"
+          },
+          "type": "Exists",
+          "var_name": "cc_m_status"
+         },
+         {
+          "arg": {
+           "predicate": {
+            "items": [
+             {
+              "a": {
+               "key": "role",
+               "node": {
+                "name": "cc_m_ground",
+                "type": "Var"
+               },
+               "type": "Attr"
+              },
+              "b": {
+               "type": "Lit",
+               "value": "ground"
+              },
+              "type": "Eq"
+             },
+             {
+              "a": {
+               "name": {
+                "key": "lab_key",
+                "node": {
+                 "name": "cc_m_ground",
+                 "type": "Var"
+                },
+                "type": "Attr"
+               },
+               "node": {
+                "name": "m",
+                "type": "Var"
+               },
+               "type": "AttrByName"
+              },
+              "b": {
+               "type": "Lit",
+               "value": true
+              },
+              "type": "Eq"
+             }
+            ],
+            "type": "And"
+           },
+           "source": {
+            "edge_type": "eq_has_climate_cue",
+            "node": {
+             "name": "agent",
+             "type": "Var"
+            },
+            "type": "Neighbours"
+           },
+           "type": "Exists",
+           "var_name": "cc_m_ground"
+          },
+          "type": "Not"
+         }
+        ],
+        "type": "And"
+       }
+      ],
+      "type": "Or"
+     },
+     {
+      "arg": {
+       "predicate": {
+        "items": [
+         {
+          "a": {
+           "key": "label",
+           "node": {
+            "name": "ls",
+            "type": "Var"
+           },
+           "type": "Attr"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "response.dismissal"
+          },
+          "type": "Eq"
+         },
+         {
+          "a": {
+           "key": "status",
+           "node": {
+            "name": "ls",
+            "type": "Var"
+           },
+           "type": "Attr"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "disabled"
+          },
+          "type": "Eq"
+         }
+        ],
+        "type": "And"
+       },
+       "source": {
+        "edge_type": "eq_has_label_status",
+        "node": {
+         "name": "agent",
+         "type": "Var"
+        },
+        "type": "Neighbours"
+       },
+       "type": "Exists",
+       "var_name": "ls"
+      },
+      "type": "Not"
+     }
+    ],
+    "type": "And"
+   }
+  },
+  {
+   "batch": true,
+   "effects": [
+    [
+     "add_node_if_absent",
+     "q",
+     "EqQuantum",
+     {
+      "q_actor": {
+       "__term__": {
+        "key": "actor_ref",
+        "node": {
+         "name": "a",
+         "type": "Var"
+        },
+        "type": "Attr"
+       }
+      },
+      "q_pole": {
+       "__term__": {
+        "type": "Lit",
+        "value": "+"
+       }
+      },
+      "q_target": {
+       "__term__": {
+        "key": "actor_ref",
+        "node": {
+         "name": "b",
+         "type": "Var"
+        },
+        "type": "Attr"
+       }
+      },
+      "q_trait": {
+       "__term__": {
+        "type": "Lit",
+        "value": "response.engagement"
+       }
+      }
+     }
+    ],
+    [
+     "add_edge",
+     "a",
+     "eq_has_quantum",
+     "q"
+    ],
+    [
+     "set_attr",
+     "q",
+     "eqrule:eq.quanta.response.engagement",
+     true
+    ],
+    [
+     "add_edge",
+     "q",
+     "eq_evidence",
+     "m"
+    ],
+    [
+     "add_edge",
+     "q",
+     "eq_context",
+     "p"
+    ]
+   ],
+   "match": [
+    [
+     "agent",
+     "eq_stratum_1",
+     "st"
+    ],
+    [
+     "agent",
+     "eq_window",
+     "w"
+    ],
+    [
+     "w",
+     "eq_has_turn",
+     "m"
+    ],
+    [
+     "m",
+     "eq_authored_by",
+     "a"
+    ],
+    [
+     "m",
+     "eq_responds_to",
+     "p"
+    ],
+    [
+     "p",
+     "eq_authored_by",
+     "b"
+    ]
+   ],
+   "name": "eq.quanta.response.engagement",
+   "where": {
+    "items": [
+     {
+      "predicate": {
+       "items": [
+        {
+         "a": {
+          "key": "role",
+          "node": {
+           "name": "cc_p_stimulus",
+           "type": "Var"
+          },
+          "type": "Attr"
+         },
+         "b": {
+          "type": "Lit",
+          "value": "stimulus"
+         },
+         "type": "Eq"
+        },
+        {
+         "a": {
+          "name": {
+           "key": "lab_key",
+           "node": {
+            "name": "cc_p_stimulus",
+            "type": "Var"
+           },
+           "type": "Attr"
+          },
+          "node": {
+           "name": "p",
+           "type": "Var"
+          },
+          "type": "AttrByName"
+         },
+         "b": {
+          "type": "Lit",
+          "value": true
+         },
+         "type": "Eq"
+        }
+       ],
+       "type": "And"
+      },
+      "source": {
+       "edge_type": "eq_has_climate_cue",
+       "node": {
+        "name": "agent",
+        "type": "Var"
+       },
+       "type": "Neighbours"
+      },
+      "type": "Exists",
+      "var_name": "cc_p_stimulus"
+     },
+     {
+      "predicate": {
+       "items": [
+        {
+         "a": {
+          "key": "role",
+          "node": {
+           "name": "cc_m_engage",
+           "type": "Var"
+          },
+          "type": "Attr"
+         },
+         "b": {
+          "type": "Lit",
+          "value": "engage"
+         },
+         "type": "Eq"
+        },
+        {
+         "a": {
+          "name": {
+           "key": "lab_key",
+           "node": {
+            "name": "cc_m_engage",
+            "type": "Var"
+           },
+           "type": "Attr"
+          },
+          "node": {
+           "name": "m",
+           "type": "Var"
+          },
+          "type": "AttrByName"
+         },
+         "b": {
+          "type": "Lit",
+          "value": true
+         },
+         "type": "Eq"
+        }
+       ],
+       "type": "And"
+      },
+      "source": {
+       "edge_type": "eq_has_climate_cue",
+       "node": {
+        "name": "agent",
+        "type": "Var"
+       },
+       "type": "Neighbours"
+      },
+      "type": "Exists",
+      "var_name": "cc_m_engage"
+     },
+     {
+      "arg": {
+       "items": [
+        {
+         "predicate": {
+          "items": [
+           {
+            "a": {
+             "key": "role",
+             "node": {
+              "name": "cc_m_dismiss",
+              "type": "Var"
+             },
+             "type": "Attr"
+            },
+            "b": {
+             "type": "Lit",
+             "value": "dismiss"
+            },
+            "type": "Eq"
+           },
+           {
+            "a": {
+             "name": {
+              "key": "lab_key",
+              "node": {
+               "name": "cc_m_dismiss",
+               "type": "Var"
+              },
+              "type": "Attr"
+             },
+             "node": {
+              "name": "m",
+              "type": "Var"
+             },
+             "type": "AttrByName"
+            },
+            "b": {
+             "type": "Lit",
+             "value": true
+            },
+            "type": "Eq"
+           }
+          ],
+          "type": "And"
+         },
+         "source": {
+          "edge_type": "eq_has_climate_cue",
+          "node": {
+           "name": "agent",
+           "type": "Var"
+          },
+          "type": "Neighbours"
+         },
+         "type": "Exists",
+         "var_name": "cc_m_dismiss"
+        },
+        {
+         "items": [
+          {
+           "predicate": {
+            "items": [
+             {
+              "a": {
+               "key": "role",
+               "node": {
+                "name": "cc_m_status",
+                "type": "Var"
+               },
+               "type": "Attr"
+              },
+              "b": {
+               "type": "Lit",
+               "value": "status"
+              },
+              "type": "Eq"
+             },
+             {
+              "a": {
+               "name": {
+                "key": "lab_key",
+                "node": {
+                 "name": "cc_m_status",
+                 "type": "Var"
+                },
+                "type": "Attr"
+               },
+               "node": {
+                "name": "m",
+                "type": "Var"
+               },
+               "type": "AttrByName"
+              },
+              "b": {
+               "type": "Lit",
+               "value": true
+              },
+              "type": "Eq"
+             }
+            ],
+            "type": "And"
+           },
+           "source": {
+            "edge_type": "eq_has_climate_cue",
+            "node": {
+             "name": "agent",
+             "type": "Var"
+            },
+            "type": "Neighbours"
+           },
+           "type": "Exists",
+           "var_name": "cc_m_status"
+          },
+          {
+           "arg": {
+            "predicate": {
+             "items": [
+              {
+               "a": {
+                "key": "role",
+                "node": {
+                 "name": "cc_m_ground",
+                 "type": "Var"
+                },
+                "type": "Attr"
+               },
+               "b": {
+                "type": "Lit",
+                "value": "ground"
+               },
+               "type": "Eq"
+              },
+              {
+               "a": {
+                "name": {
+                 "key": "lab_key",
+                 "node": {
+                  "name": "cc_m_ground",
+                  "type": "Var"
+                 },
+                 "type": "Attr"
+                },
+                "node": {
+                 "name": "m",
+                 "type": "Var"
+                },
+                "type": "AttrByName"
+               },
+               "b": {
+                "type": "Lit",
+                "value": true
+               },
+               "type": "Eq"
+              }
+             ],
+             "type": "And"
+            },
+            "source": {
+             "edge_type": "eq_has_climate_cue",
+             "node": {
+              "name": "agent",
+              "type": "Var"
+             },
+             "type": "Neighbours"
+            },
+            "type": "Exists",
+            "var_name": "cc_m_ground"
+           },
+           "type": "Not"
+          }
+         ],
+         "type": "And"
+        }
+       ],
+       "type": "Or"
+      },
+      "type": "Not"
+     },
+     {
+      "arg": {
+       "predicate": {
+        "items": [
+         {
+          "a": {
+           "key": "label",
+           "node": {
+            "name": "ls",
+            "type": "Var"
+           },
+           "type": "Attr"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "response.engagement"
+          },
+          "type": "Eq"
+         },
+         {
+          "a": {
+           "key": "status",
+           "node": {
+            "name": "ls",
+            "type": "Var"
+           },
+           "type": "Attr"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "disabled"
+          },
+          "type": "Eq"
+         }
+        ],
+        "type": "And"
+       },
+       "source": {
+        "edge_type": "eq_has_label_status",
+        "node": {
+         "name": "agent",
+         "type": "Var"
+        },
+        "type": "Neighbours"
+       },
+       "type": "Exists",
+       "var_name": "ls"
+      },
+      "type": "Not"
+     }
+    ],
+    "type": "And"
+   }
+  },
+  {
+   "batch": true,
+   "effects": [
+    [
+     "add_node_if_absent",
+     "q",
+     "EqQuantum",
+     {
+      "q_actor": {
+       "__term__": {
+        "key": "actor_ref",
+        "node": {
+         "name": "a",
+         "type": "Var"
+        },
+        "type": "Attr"
+       }
+      },
+      "q_pole": {
+       "__term__": {
+        "type": "Lit",
+        "value": "+"
+       }
+      },
+      "q_target": {
+       "__term__": {
+        "key": "actor_ref",
+        "node": {
+         "name": "b",
+         "type": "Var"
+        },
+        "type": "Attr"
+       }
+      },
+      "q_trait": {
+       "__term__": {
+        "type": "Lit",
+        "value": "inquiry.answered"
+       }
+      }
+     }
+    ],
+    [
+     "add_edge",
+     "a",
+     "eq_has_quantum",
+     "q"
+    ],
+    [
+     "set_attr",
+     "q",
+     "eqrule:eq.quanta.inquiry.answered",
+     true
+    ],
+    [
+     "add_edge",
+     "q",
+     "eq_evidence",
+     "m"
+    ],
+    [
+     "add_edge",
+     "q",
+     "eq_context",
+     "p"
+    ]
+   ],
+   "match": [
+    [
+     "agent",
+     "eq_stratum_1",
+     "st"
+    ],
+    [
+     "agent",
+     "eq_window",
+     "w"
+    ],
+    [
+     "w",
+     "eq_has_turn",
+     "m"
+    ],
+    [
+     "m",
+     "eq_authored_by",
+     "a"
+    ],
+    [
+     "m",
+     "eq_responds_to",
+     "p"
+    ],
+    [
+     "p",
+     "eq_authored_by",
+     "b"
+    ]
+   ],
+   "name": "eq.quanta.inquiry.answered",
+   "where": {
+    "items": [
+     {
+      "a": {
+       "key": "eqlab:msg.speech_act=question",
+       "node": {
+        "name": "p",
+        "type": "Var"
+       },
+       "type": "Attr"
+      },
+      "b": {
+       "type": "Lit",
+       "value": true
+      },
+      "type": "Eq"
+     },
+     {
+      "a": {
+       "key": "eq_turn_pos",
+       "node": {
+        "name": "m",
+        "type": "Var"
+       },
+       "type": "Attr"
+      },
+      "b": {
+       "key": "eq_turn_pos",
+       "node": {
+        "name": "p",
+        "type": "Var"
+       },
+       "type": "Attr"
+      },
+      "type": "Gt"
+     },
+     {
+      "arg": {
+       "predicate": {
+        "items": [
+         {
+          "a": {
+           "key": "role",
+           "node": {
+            "name": "cc_m_nonanswer",
+            "type": "Var"
+           },
+           "type": "Attr"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "nonanswer"
+          },
+          "type": "Eq"
+         },
+         {
+          "a": {
+           "name": {
+            "key": "lab_key",
+            "node": {
+             "name": "cc_m_nonanswer",
+             "type": "Var"
+            },
+            "type": "Attr"
+           },
+           "node": {
+            "name": "m",
+            "type": "Var"
+           },
+           "type": "AttrByName"
+          },
+          "b": {
+           "type": "Lit",
+           "value": true
+          },
+          "type": "Eq"
+         }
+        ],
+        "type": "And"
+       },
+       "source": {
+        "edge_type": "eq_has_climate_cue",
+        "node": {
+         "name": "agent",
+         "type": "Var"
+        },
+        "type": "Neighbours"
+       },
+       "type": "Exists",
+       "var_name": "cc_m_nonanswer"
+      },
+      "type": "Not"
+     },
+     {
+      "arg": {
+       "items": [
+        {
+         "predicate": {
+          "items": [
+           {
+            "a": {
+             "key": "role",
+             "node": {
+              "name": "cc_m_dismiss",
+              "type": "Var"
+             },
+             "type": "Attr"
+            },
+            "b": {
+             "type": "Lit",
+             "value": "dismiss"
+            },
+            "type": "Eq"
+           },
+           {
+            "a": {
+             "name": {
+              "key": "lab_key",
+              "node": {
+               "name": "cc_m_dismiss",
+               "type": "Var"
+              },
+              "type": "Attr"
+             },
+             "node": {
+              "name": "m",
+              "type": "Var"
+             },
+             "type": "AttrByName"
+            },
+            "b": {
+             "type": "Lit",
+             "value": true
+            },
+            "type": "Eq"
+           }
+          ],
+          "type": "And"
+         },
+         "source": {
+          "edge_type": "eq_has_climate_cue",
+          "node": {
+           "name": "agent",
+           "type": "Var"
+          },
+          "type": "Neighbours"
+         },
+         "type": "Exists",
+         "var_name": "cc_m_dismiss"
+        },
+        {
+         "items": [
+          {
+           "predicate": {
+            "items": [
+             {
+              "a": {
+               "key": "role",
+               "node": {
+                "name": "cc_m_status",
+                "type": "Var"
+               },
+               "type": "Attr"
+              },
+              "b": {
+               "type": "Lit",
+               "value": "status"
+              },
+              "type": "Eq"
+             },
+             {
+              "a": {
+               "name": {
+                "key": "lab_key",
+                "node": {
+                 "name": "cc_m_status",
+                 "type": "Var"
+                },
+                "type": "Attr"
+               },
+               "node": {
+                "name": "m",
+                "type": "Var"
+               },
+               "type": "AttrByName"
+              },
+              "b": {
+               "type": "Lit",
+               "value": true
+              },
+              "type": "Eq"
+             }
+            ],
+            "type": "And"
+           },
+           "source": {
+            "edge_type": "eq_has_climate_cue",
+            "node": {
+             "name": "agent",
+             "type": "Var"
+            },
+            "type": "Neighbours"
+           },
+           "type": "Exists",
+           "var_name": "cc_m_status"
+          },
+          {
+           "arg": {
+            "predicate": {
+             "items": [
+              {
+               "a": {
+                "key": "role",
+                "node": {
+                 "name": "cc_m_ground",
+                 "type": "Var"
+                },
+                "type": "Attr"
+               },
+               "b": {
+                "type": "Lit",
+                "value": "ground"
+               },
+               "type": "Eq"
+              },
+              {
+               "a": {
+                "name": {
+                 "key": "lab_key",
+                 "node": {
+                  "name": "cc_m_ground",
+                  "type": "Var"
+                 },
+                 "type": "Attr"
+                },
+                "node": {
+                 "name": "m",
+                 "type": "Var"
+                },
+                "type": "AttrByName"
+               },
+               "b": {
+                "type": "Lit",
+                "value": true
+               },
+               "type": "Eq"
+              }
+             ],
+             "type": "And"
+            },
+            "source": {
+             "edge_type": "eq_has_climate_cue",
+             "node": {
+              "name": "agent",
+              "type": "Var"
+             },
+             "type": "Neighbours"
+            },
+            "type": "Exists",
+            "var_name": "cc_m_ground"
+           },
+           "type": "Not"
+          }
+         ],
+         "type": "And"
+        }
+       ],
+       "type": "Or"
+      },
+      "type": "Not"
+     },
+     {
+      "arg": {
+       "predicate": {
+        "items": [
+         {
+          "a": {
+           "key": "label",
+           "node": {
+            "name": "ls",
+            "type": "Var"
+           },
+           "type": "Attr"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "inquiry.answered"
+          },
+          "type": "Eq"
+         },
+         {
+          "a": {
+           "key": "status",
+           "node": {
+            "name": "ls",
+            "type": "Var"
+           },
+           "type": "Attr"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "disabled"
+          },
+          "type": "Eq"
+         }
+        ],
+        "type": "And"
+       },
+       "source": {
+        "edge_type": "eq_has_label_status",
+        "node": {
+         "name": "agent",
+         "type": "Var"
+        },
+        "type": "Neighbours"
+       },
+       "type": "Exists",
+       "var_name": "ls"
+      },
+      "type": "Not"
+     }
+    ],
+    "type": "And"
+   }
+  },
+  {
+   "batch": true,
+   "effects": [
+    [
+     "add_node_if_absent",
+     "q",
+     "EqQuantum",
+     {
+      "q_actor": {
+       "__term__": {
+        "key": "actor_ref",
+        "node": {
+         "name": "b",
+         "type": "Var"
+        },
+        "type": "Attr"
+       }
+      },
+      "q_pole": {
+       "__term__": {
+        "type": "Lit",
+        "value": "+"
+       }
+      },
+      "q_target": {
+       "__term__": {
+        "type": "Lit",
+        "value": ""
+       }
+      },
+      "q_trait": {
+       "__term__": {
+        "type": "Lit",
+        "value": "inquiry.unanswered"
+       }
+      }
+     }
+    ],
+    [
+     "add_edge",
+     "b",
+     "eq_has_quantum",
+     "q"
+    ],
+    [
+     "set_attr",
+     "q",
+     "eqrule:eq.quanta.inquiry.unanswered",
+     true
+    ],
+    [
+     "add_edge",
+     "q",
+     "eq_evidence",
+     "qt"
+    ]
+   ],
+   "match": [
+    [
+     "agent",
+     "eq_stratum_2",
+     "st"
+    ],
+    [
+     "agent",
+     "eq_window",
+     "w"
+    ],
+    [
+     "w",
+     "eq_has_turn",
+     "qt"
+    ],
+    [
+     "qt",
+     "eq_authored_by",
+     "b"
+    ]
+   ],
+   "name": "eq.quanta.inquiry.unanswered",
+   "where": {
+    "items": [
+     {
+      "a": {
+       "key": "eqlab:msg.speech_act=question",
+       "node": {
+        "name": "qt",
+        "type": "Var"
+       },
+       "type": "Attr"
+      },
+      "b": {
+       "type": "Lit",
+       "value": true
+      },
+      "type": "Eq"
+     },
+     {
+      "arg": {
+       "predicate": {
+        "a": {
+         "key": "q_trait",
+         "node": {
+          "name": "qa_qt",
+          "type": "Var"
+         },
+         "type": "Attr"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "inquiry.answered"
+        },
+        "type": "Eq"
+       },
+       "source": {
+        "edge_type": "eq_context",
+        "node": {
+         "name": "qt",
+         "type": "Var"
+        },
+        "type": "InNeighbours"
+       },
+       "type": "Exists",
+       "var_name": "qa_qt"
+      },
+      "type": "Not"
+     },
+     {
+      "arg": {
+       "predicate": {
+        "items": [
+         {
+          "a": {
+           "key": "label",
+           "node": {
+            "name": "ls",
+            "type": "Var"
+           },
+           "type": "Attr"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "inquiry.unanswered"
+          },
+          "type": "Eq"
+         },
+         {
+          "a": {
+           "key": "status",
+           "node": {
+            "name": "ls",
+            "type": "Var"
+           },
+           "type": "Attr"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "disabled"
+          },
+          "type": "Eq"
+         }
+        ],
+        "type": "And"
+       },
+       "source": {
+        "edge_type": "eq_has_label_status",
+        "node": {
+         "name": "agent",
+         "type": "Var"
+        },
+        "type": "Neighbours"
+       },
+       "type": "Exists",
+       "var_name": "ls"
+      },
+      "type": "Not"
+     },
+     {
+      "predicate": {
+       "items": [
+        {
+         "a": {
+          "key": "eq_turn_pos",
+          "node": {
+           "name": "x",
+           "type": "Var"
+          },
+          "type": "Attr"
+         },
+         "b": {
+          "key": "eq_turn_pos",
+          "node": {
+           "name": "qt",
+           "type": "Var"
+          },
+          "type": "Attr"
+         },
+         "type": "Gt"
+        },
+        {
+         "arg": {
+          "predicate": {
+           "a": {
+            "name": "y_x",
+            "type": "Var"
+           },
+           "b": {
+            "name": "b",
+            "type": "Var"
+           },
+           "type": "Eq"
+          },
+          "source": {
+           "edge_type": "eq_authored_by",
+           "node": {
+            "name": "x",
+            "type": "Var"
+           },
+           "type": "Neighbours"
+          },
+          "type": "Exists",
+          "var_name": "y_x"
+         },
+         "type": "Not"
+        }
+       ],
+       "type": "And"
+      },
+      "source": {
+       "edge_type": "eq_has_turn",
+       "node": {
+        "name": "w",
+        "type": "Var"
+       },
+       "type": "Neighbours"
+      },
+      "type": "Exists",
+      "var_name": "x"
+     }
+    ],
+    "type": "And"
+   }
+  },
+  {
+   "batch": true,
+   "effects": [
+    [
+     "add_edge",
+     "q",
+     "eq_counter",
+     "qt"
+    ],
+    [
+     "set_attr",
+     "q",
+     "eqrule:eq.quanta.inquiry.unanswered.counter",
+     true
+    ]
+   ],
+   "match": [
+    [
+     "agent",
+     "eq_stratum_2",
+     "st"
+    ],
+    [
+     "b",
+     "eq_has_quantum",
+     "q"
+    ],
+    [
+     "qt",
+     "eq_authored_by",
+     "b"
+    ]
+   ],
+   "name": "eq.quanta.inquiry.unanswered.counter",
+   "where": {
+    "items": [
+     {
+      "a": {
+       "key": "q_trait",
+       "node": {
+        "name": "q",
+        "type": "Var"
+       },
+       "type": "Attr"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "inquiry.unanswered"
+      },
+      "type": "Eq"
+     },
+     {
+      "a": {
+       "key": "eqlab:msg.speech_act=question",
+       "node": {
+        "name": "qt",
+        "type": "Var"
+       },
+       "type": "Attr"
+      },
+      "b": {
+       "type": "Lit",
+       "value": true
+      },
+      "type": "Eq"
+     },
+     {
+      "predicate": {
+       "a": {
+        "key": "q_trait",
+        "node": {
+         "name": "qa_qt",
+         "type": "Var"
+        },
+        "type": "Attr"
+       },
+       "b": {
+        "type": "Lit",
+        "value": "inquiry.answered"
+       },
+       "type": "Eq"
+      },
+      "source": {
+       "edge_type": "eq_context",
+       "node": {
+        "name": "qt",
+        "type": "Var"
+       },
+       "type": "InNeighbours"
+      },
+      "type": "Exists",
+      "var_name": "qa_qt"
+     },
+     {
+      "arg": {
+       "container": {
+        "edge_type": "eq_evidence",
+        "node": {
+         "name": "q",
+         "type": "Var"
+        },
+        "type": "Neighbours"
+       },
+       "member": {
+        "name": "qt",
+        "type": "Var"
+       },
+       "type": "In"
+      },
+      "type": "Not"
+     }
+    ],
+    "type": "And"
+   }
+  }
+ ],
+ "self_load_only": true,
+ "taxonomy_version": "eq-tax-0.4.0",
+ "version": "0.4.0"
+}

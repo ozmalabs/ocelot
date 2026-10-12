@@ -21,7 +21,7 @@ from test_equilibrium_classifier_service import (  # shared harness (same direct
     ROOT, SECRET, _CODE, _client_parse, _free_port, _req, _start, _stop, _strace_ok,
     _strace_writes, _tree_state, synthetic_messages)
 
-TAX = "eq-tax-0.3.0"
+TAX = "eq-tax-0.4.0"
 # The Equilibrium worker client's reply checks (equilibrium_worker/classify.py parse_discourse).
 _ID = re.compile(r"^[A-Za-z0-9_.:@!+=-]{1,255}$")
 _TRAIT = re.compile(r"^[a-z][a-z0-9_]*(\.[a-z][a-z0-9_]*){0,7}$")
@@ -84,16 +84,26 @@ _CUE_LINES = [
     "Perhaps you're right.", "As a nurse I see this weekly.", "Never mind, I'll leave it there.",
     "Why would that matter here?", "The p99 latency doubled.", "You people never listen.",
 ]
+# 0.4.0 space-climate cue lines (dissent, error admission, challenge, questions, dismissal)
+_CLIMATE_LINES = [
+    "I disagree, the cache is warm.", "The cache isn't cold.", "I was wrong about the deploy.",
+    "I was not wrong.", "What's the evidence for that?", "But why should we trust it?",
+    "Stay in your lane.", "Who owns the warmup job?", "Is the queue drained yet?",
+    "Perhaps that's not the case.", "I don't disagree.", "Good point, see https://example.org/y",
+]
+CLIMATE_TRAITS = ("voice.dissent", "voice.error_admission", "inquiry.challenge", "inquiry.answered",
+                  "inquiry.unanswered", "response.dismissal", "response.engagement")
 
 
-def synthetic_window(n: int, seed: int, kind: str = "thread", actors: int = 12) -> tuple[dict, list[dict]]:
+def synthetic_window(n: int, seed: int, kind: str = "thread", actors: int = 12,
+                     lines: list[str] | None = None) -> tuple[dict, list[dict]]:
     """Deterministic synthetic window (no corpus): chat lines + cue lines, pseudonymous
     actors, threads reply to an earlier turn, meetings carry no reply edges."""
     rnd = random.Random(seed)
     base = synthetic_messages(n, seed=seed)
     turns = []
     for i, m in enumerate(base):
-        text = rnd.choice(_CUE_LINES) if rnd.random() < 0.35 else m["text"]
+        text = rnd.choice(lines or _CUE_LINES) if rnd.random() < 0.35 else m["text"]
         t = {"id": f"w{seed}_{i:04d}", "actor_ref": f"member_{rnd.randint(1, actors):03d}", "text": text,
              "ts_ms": 1_700_000_000_000 + i * 1000}
         if kind == "thread" and i and rnd.random() < 0.7:
@@ -117,10 +127,12 @@ def _post(port, body, **kw):
 
 def test_info_lists_trait_vocabulary(server):
     st, doc, _ = _req(server, "GET", "/v1/info")
-    assert st == 200 and doc["taxonomy_version"] == TAX and doc["seed_pack_version"] == "0.3.0"
+    assert st == 200 and doc["taxonomy_version"] == TAX and doc["seed_pack_version"] == "0.4.0"
     assert doc["endpoints"]["/v1/discourse"] == "ok"
     ts = doc["trait_status"]
     assert ts["competence.claimed"] == "shadow" and ts["interaction.floor"] == "shadow"
+    # 0.4.0 space-climate traits, all shadow
+    assert {k: ts.get(k) for k in CLIMATE_TRAITS} == {k: "shadow" for k in CLIMATE_TRAITS}
     assert all(v == "disabled" for k, v in ts.items() if k.startswith("pattern."))
     assert all(v == "shadow" for k, v in ts.items() if not k.startswith("pattern."))
     assert all(_TRAIT.fullmatch(k) for k in ts)
@@ -138,7 +150,7 @@ def test_discourse_contract_golden_meeting(server):
     assert ("actor_a", "interaction.floor", "+", None) in keys
     assert ("actor_a", "competence.claim_grounding", "-", None) in keys
     assert ("member_003", "interaction.withdrawal", "+", None) in keys
-    assert all(r.endswith(":0.3.0") for q in doc["quanta"] for r in q["rule_ids"])
+    assert all(r.endswith(":0.4.0") for q in doc["quanta"] for r in q["rule_ids"])
     assert [e["episode_id"] for e in doc["episodes"]] == ["ep:t02", "ep:t05"]
     # messages[] are byte-identical in shape to /v1/classify items for the same text
     st2, cdoc, _ = _req(server, "POST", "/v1/classify",
@@ -151,6 +163,23 @@ def test_discourse_contract_golden_meeting(server):
                 assert dm[k] == cm[k], (dm["id"], k)
     # deterministic across requests (fork per request)
     assert _post(server, {"window": WINDOW, "turns": TURNS})[1] == doc
+
+
+def test_discourse_contract_climate_window(server):
+    """0.4.0: the /v1/discourse contract is unchanged; quanta just carry the new codes."""
+    from test_equilibrium_climate import CLIMATE
+    win = {"window_id": "w_climate_1", "kind": "thread"}
+    turns = [{"id": i, "actor_ref": a, "text": t, **({"reply_to": r} if r else {})} for i, a, t, r in CLIMATE]
+    st, doc, _ = _post(server, {"taxonomy_version": TAX, "window": win, "turns": turns})
+    assert st == 200, doc
+    client_parse_discourse(doc, win, turns)
+    got = {q["trait"] for q in doc["quanta"]} & set(CLIMATE_TRAITS)
+    assert got == set(CLIMATE_TRAITS)
+    ans = next(q for q in doc["quanta"] if q["trait"] == "inquiry.answered")
+    assert (ans["actor_ref"], ans["target_ref"], ans["evidence"]) == ("expert_e", "member_m", ["c06", "c07"])
+    un = next(q for q in doc["quanta"] if q["trait"] == "inquiry.unanswered")
+    assert (un["actor_ref"], un["evidence"], "target_ref" in un) == ("member_n", ["c08"], False)
+    assert all(r.endswith(":0.4.0") for q in doc["quanta"] for r in q["rule_ids"])
 
 
 def test_dangling_reply_and_no_cue_window(server):
@@ -243,7 +272,8 @@ def test_base_unchanged_after_10k_discourse_turns(tmp_path):
         info0 = _req(port, "GET", "/v1/info")[1]
         plan = [(500, 100 + k) for k in range(20)] + [(100, 200 + k) for k in range(100)]
         for k, (n, seed) in enumerate(plan):  # PREREG P7: 20 x 500 + 100 x 100 turns
-            win, turns = synthetic_window(n, seed=seed, kind="thread" if k % 2 else "meeting")
+            win, turns = synthetic_window(n, seed=seed, kind="thread" if k % 2 else "meeting",
+                                          lines=_CUE_LINES + _CLIMATE_LINES)  # 0.4.0: exercise climate rules
             st, doc, _ = _post(port, {"window": win, "turns": turns}, timeout=300)
             assert st == 200, doc
             client_parse_discourse(doc, win, turns)
@@ -299,6 +329,12 @@ def test_measure_discourse_throughput_and_rss_concurrency1(tmp_path):
                     for i in range(reps)]
             lat = sorted(_replay_windows(port, wins))
             res[n] = (lat[len(lat) // 2], lat[int(len(lat) * 0.95) - 1], lat[-1], n * reps / sum(lat), reps)
+        for n, reps in ((200, 10), (500, 10)):  # 0.4.0: climate-cue mix (not comparable to slice 1)
+            wins = [synthetic_window(n, seed=3000 + n + i, kind="thread" if i % 2 else "meeting",
+                                     lines=_CUE_LINES + _CLIMATE_LINES) for i in range(reps)]
+            lat = sorted(_replay_windows(port, wins))
+            res[f"{n} climate-mix"] = (lat[len(lat) // 2], lat[int(len(lat) * 0.95) - 1], lat[-1],
+                                       n * reps / sum(lat), reps)
         hwm = int(re.search(r"VmHWM:\s+(\d+)", status.read_text()).group(1))
     finally:
         _stop(proc)

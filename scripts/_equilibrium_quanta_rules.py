@@ -1,5 +1,5 @@
-"""Equilibrium pack 0.3.0 (stream T3b): Rule JSON + codebook DATA for the
-window / scope / traits / quanta / competence / episode manifests.
+"""Equilibrium pack 0.4.0 (stream T3b): Rule JSON + codebook DATA for the
+window / scope / traits / quanta / competence / episode / climate manifests.
 
 BUILD-TIME ONLY, imported by scripts/build_equilibrium_seed_pack.py. This module
 only ASSEMBLES Rule JSON and codebook rows (CLAUDE.md "_compose_*/builder scripts
@@ -115,29 +115,46 @@ BOUNDARIES = ("but", "however", "although", "though", "yet", "whereas", "neverth
 # through load_seed_manifest: "seed node missing local_id"), plus "actually".
 CONTRAST_MARKERS = ("however", "but", "yet", "although", "nevertheless", "nonetheless",
                     "whereas", "actually")
+# 0.4.0: closed-class function words (determiners, pronouns, auxiliaries,
+# prepositions, conjunctions, degree adverbs). LEXICAL by design §5.4 like the
+# operators above; used only to stop a negated-echo dissent from matching on a
+# function word ("not the ...", "isn't it ...").
+CLOSED_CLASS = (
+    "a", "an", "the", "this", "that", "these", "those", "it", "its", "it's", "i", "i'm", "me",
+    "my", "we", "us", "our", "you", "your", "he", "she", "they", "them", "their", "there",
+    "here", "what", "which", "who", "how", "why", "when", "where", "be", "is", "are", "was",
+    "were", "been", "being", "am", "do", "does", "did", "have", "has", "had", "will", "would",
+    "should", "can", "could", "must", "shall", "to", "of", "in", "on", "at", "for", "with",
+    "by", "from", "as", "about", "into", "and", "or", "if", "so", "then", "than", "just",
+    "really", "very", "quite", "too", "all", "any", "some", "much", "more", "even", "only",
+    "sure", "yet", "really", "always", "ever", "one")
 SCOPE_ITEMS = ([("EqScopeOp", {"op": "neg", "form": f}) for f in NEGATORS]
                + [("EqScopeOp", {"op": "hedge", "form": f}) for f in HEDGES]
                + [("EqScopeBoundary", {"form": f}) for f in BOUNDARIES]
-               + [("EqCohMarker", {"rel": "contrast", "form": f}) for f in CONTRAST_MARKERS])
+               + [("EqCohMarker", {"rel": "contrast", "form": f}) for f in CONTRAST_MARKERS]
+               + [("EqClosedClass", {"form": f}) for f in dict.fromkeys(CLOSED_CLASS)])
 SCOPE_EDGE = {"EqScopeOp": "eq_has_scope_op", "EqScopeBoundary": "eq_has_scope_boundary",
-              "EqCohMarker": "eq_has_coh_marker"}
+              "EqCohMarker": "eq_has_coh_marker", "EqClosedClass": "eq_has_closed_class"}
 
 
-def in_scope(op):
+def in_scope(op, m="m", t="t", sfx=""):
     """Head token `t` of message `m` is in the scope of an `op` operator: an
     operator token earlier in the same clause with no clause-boundary word
     between them (positions compared relationally; clause index from the
-    tokeniser's sentence punctuation)."""
+    tokeniser's sentence punctuation). `sfx` renames the inner variables so the
+    shape can be used on a second (message, token) pair in the same rule (0.4.0)."""
+    o, s, k, bd = (f"{v}{sfx}" for v in ("o", "s", "k", "bd"))
+
     def same_clause(x):
-        return Eq(A(x, "eq_clause"), A("t", "eq_clause"))
-    return Ex(Nb("m", "eq_has_token"), "o", And(
-        same_clause("o"), Lt(A("o", "eq_pos"), A("t", "eq_pos")),
-        Ex(Nb("agent", "eq_has_scope_op"), "s",
-           And(Eq(A("s", "op"), L(op)), Eq(A("s", "form"), A("o", "form")))),
-        Not(Ex(Nb("m", "eq_has_token"), "k", And(
-            same_clause("k"), Lt(A("o", "eq_pos"), A("k", "eq_pos")),
-            Lt(A("k", "eq_pos"), A("t", "eq_pos")),
-            Ex(Nb("agent", "eq_has_scope_boundary"), "bd", Eq(A("bd", "form"), A("k", "form")))))))
+        return Eq(A(x, "eq_clause"), A(t, "eq_clause"))
+    return Ex(Nb(m, "eq_has_token"), o, And(
+        same_clause(o), Lt(A(o, "eq_pos"), A(t, "eq_pos")),
+        Ex(Nb("agent", "eq_has_scope_op"), s,
+           And(Eq(A(s, "op"), L(op)), Eq(A(s, "form"), A(o, "form")))),
+        Not(Ex(Nb(m, "eq_has_token"), k, And(
+            same_clause(k), Lt(A(o, "eq_pos"), A(k, "eq_pos")),
+            Lt(A(k, "eq_pos"), A(t, "eq_pos")),
+            Ex(Nb("agent", "eq_has_scope_boundary"), bd, Eq(A(bd, "form"), A(k, "form")))))))
     )
 
 
@@ -594,6 +611,158 @@ EPISODE_RULES = [
     rule("eq.ep.facet_match.weak", FXMATCH, Not(Gt(Count(FX_E), Count(FX_C))), _fx_match("weak")),
 ]
 
+# ---- space-climate traits (pack 0.4.0; voice / inquiry / response) ----------
+# msg layer (S0, positive-only: every negation below is over ingest tokens or a
+# seeded codebook, never over a label derived in the same stratum).
+ASSERTION = lab("msg.speech_act", "assertion")
+DIRECTIVE = lab("msg.speech_act", "directive")
+RESP_P = [RECV, ["m", "eq_responds_to", "p"]]
+
+
+def _claim_turn(p):
+    """The turn makes a claim or proposal (assertion / directive); positive, so
+    it is safe inside S0 where the speech-act labels are still being derived."""
+    return Or(has(p, ASSERTION), has(p, DIRECTIVE))
+
+
+CLIMATE_MSG_RULES = [
+    # dissent is itself a claim-type turn (a contesting QUESTION is inquiry.challenge):
+    # explicit disagreement formula replying to another actor's claim
+    msg_rule("eq.msg.dissent.disagreement_cue", RESP_P,
+             [has("m", lab("msg.disagreement")), _claim_turn("m"), _claim_turn("p")]),
+    # reply OPENING with a contrast connective against another actor's claim
+    msg_rule("eq.msg.dissent.contrast_claim", RESP_P,
+             [has("m", lab("msg.reply_contrast")), _claim_turn("m"), _claim_turn("p")]),
+    # negated echo: a negator immediately followed by a content token whose lemma
+    # the prior claim carries un-negated ("the cache is cold" / "it isn't cold").
+    # Two linear steps (no token x token product): (a) mark the content token
+    # right after a negator in a responding turn, (b) look for its lemma in the
+    # replied-to claim.
+    {"name": "eq.msg.negated_token.neg_op", "batch": True,
+     "match": [RECV, ["m", "eq_responds_to", "p"], ["agent", "eq_has_scope_op", "sn"],
+               ["m", "eq_has_token", "o"], ["o", "eq_next", "t"]],
+     "where": And(Eq(A("sn", "op"), L("neg")), Eq(A("sn", "form"), A("o", "form")),
+                  Not(Ex(Nb("agent", "eq_has_closed_class"), "cc", Eq(A("cc", "form"), A("t", "form")))),
+                  Not(Ex(Nb("agent", "eq_has_scope_op"), "sx", Eq(A("sx", "form"), A("t", "form"))))),
+     "effects": [["add_edge", "m", "eq_neg_next", "t"]]},
+    msg_rule("eq.msg.dissent.negated_echo",
+             RESP_P + [["m", "eq_neg_next", "t"], ["p", "eq_has_token", "u"]],
+             [Eq(A("u", "lemma"), A("t", "lemma")), _claim_turn("m"), _claim_turn("p"),
+              Not(in_scope("neg", m="p", t="u", sfx="_p"))]),
+    msg_rule("eq.msg.dissent_hedged.hedge_op", [RECV],
+             [has("m", lab("msg.dissent")), has("m", lab("msg.hedge"))]),
+    # challenge: a question opening with a contrast, or an evidence request, replying to another actor
+    msg_rule("eq.msg.challenge.contrast_question", RESP_P,
+             [has("m", QUESTION), has("m", lab("msg.reply_contrast"))]),
+    msg_rule("eq.msg.challenge.evidence_request", RESP_P, [has("m", lab("msg.evidence_request"))]),
+    msg_rule("eq.msg.challenge_hedged.hedge_op", [RECV],
+             [has("m", lab("msg.challenge")), has("m", lab("msg.hedge"))]),
+]
+
+CLIMATE_TRAITS = [
+    ("voice.dissent", "+", True, "disagreement toward another actor's claim: disagreement formula, "
+     "reply-leading contrast, or negated echo of the prior claim; target = actor disagreed with"),
+    ("voice.error_admission", "+", False, "admission of one's own error (negation-aware formulae)"),
+    ("inquiry.challenge", "+", True, "question opening with a contrast, or evidence request, "
+     "replying to another actor's turn"),
+    ("inquiry.answered", "+", True, "on the ANSWERER: later non-question, non-dismissive, "
+     "non-withdrawal reply to another actor's question; evidence = [question, answer]"),
+    ("inquiry.unanswered", "+", False, "on the ASKER: question with no inquiry.answered over the "
+     "completed window although another actor posted later; counter = the asker's answered questions"),
+    ("response.dismissal", "+", True, "dismissal / hostility cue, or status claim without grounding, "
+     "replying to a question, dissent or challenge; target = the dismissed actor"),
+    ("response.engagement", "+", True, "grounding, concession or follow-up question, without a "
+     "dismissive cue, replying to a question, dissent or challenge"),
+]
+CLIMATE_TRAIT_CUES = [
+    ("voice.dissent", "+", lab("msg.dissent"), "evidence", "author"),
+    ("voice.dissent", "+", lab("msg.dissent_hedged"), "hedged", "author"),
+    ("voice.dissent", "+", lab("msg.disagreement_negated"), "counter", "author"),
+    ("voice.error_admission", "+", lab("msg.error_admission"), "evidence", "author"),
+    ("voice.error_admission", "+", lab("msg.error_admission_hedged"), "hedged", "author"),
+    ("voice.error_admission", "+", lab("msg.error_admission_negated"), "counter", "author"),
+    ("inquiry.challenge", "+", lab("msg.challenge"), "evidence", "author"),
+    ("inquiry.challenge", "+", lab("msg.challenge_hedged"), "hedged", "author"),
+    ("inquiry.challenge", "+", lab("msg.evidence_request_negated"), "counter", "author"),
+]
+TRAITS += CLIMATE_TRAITS
+TRAIT_CUES += CLIMATE_TRAIT_CUES
+_TARGETABLE.update({t: tg for t, _p, tg, _n in CLIMATE_TRAITS})
+CLIMATE_TRAIT_NAMES = tuple(t for t, *_ in CLIMATE_TRAITS)
+
+# relational reply codebook (EqClimateCue{role, lab_key}); rules read the roles
+CLIMATE_CUES = (
+    [("stimulus", k) for k in (QUESTION, lab("msg.dissent"), lab("msg.challenge"))]
+    + [("dismiss", lab(k)) for k in ("msg.dismissal", "msg.hostility")]
+    + [("status", lab("msg.status_claim"))]
+    + [("ground", k) for k in GROUNDED_KEYS]
+    + [("engage", k) for k in GROUNDED_KEYS + (lab("msg.concession"), QUESTION)]
+    + [("nonanswer", k) for k in (QUESTION, lab("msg.withdrawal"))])
+
+
+def climate_items():
+    return [("EqClimateCue", {"role": r, "lab_key": k}) for r, k in CLIMATE_CUES]
+
+
+CLIMATE_EDGE = {"EqClimateCue": "eq_has_climate_cue"}
+
+
+def _cc(m, role):
+    v = f"cc_{m}_{role}"
+    return Ex(Nb("agent", "eq_has_climate_cue"), v,
+              And(Eq(A(v, "role"), L(role)), Eq(ABN(m, A(v, "lab_key")), L(True))))
+
+
+def _dismissive(m):
+    return Or(_cc(m, "dismiss"), And(_cc(m, "status"), Not(_cc(m, "ground"))))
+
+
+REPLY = [WIN, TURN, AUTH, ["m", "eq_responds_to", "p"], ["p", "eq_authored_by", "b"]]
+
+
+def _reply_mint(trait, name):
+    """quantum on the replier `a`, target = the replied-to actor `b`; the reply
+    is evidence, the turn replied to is context (read out as evidence, not
+    counted by the match shapes: one reply = one act)."""
+    return (mint("q", "a", A("a", REF), L(trait), L("+"), A("b", REF), name)
+            + [["add_edge", "q", "eq_evidence", "m"], ["add_edge", "q", "eq_context", "p"]])
+
+
+def _answered(qt):
+    v = f"qa_{qt}"
+    return Ex(InNb(qt, "eq_context"), v, Eq(A(v, "q_trait"), L("inquiry.answered")))
+
+
+CLIMATE_RULES = [
+    # S1 (reads S0 labels, incl. their absence: S0 is at fixpoint). Conjunct
+    # order is cost order only (cheapest / most selective first).
+    rule("eq.quanta.response.dismissal", [ST(1)] + REPLY,
+         And(_cc("p", "stimulus"), _dismissive("m"), enabled(L("response.dismissal"))),
+         _reply_mint("response.dismissal", "eq.quanta.response.dismissal")),
+    rule("eq.quanta.response.engagement", [ST(1)] + REPLY,
+         And(_cc("p", "stimulus"), _cc("m", "engage"), Not(_dismissive("m")),
+             enabled(L("response.engagement"))),
+         _reply_mint("response.engagement", "eq.quanta.response.engagement")),
+    rule("eq.quanta.inquiry.answered", [ST(1)] + REPLY,
+         And(has("p", QUESTION), Gt(A("m", POS), A("p", POS)),
+             Not(_cc("m", "nonanswer")), Not(_dismissive("m")), enabled(L("inquiry.answered"))),
+         _reply_mint("inquiry.answered", "eq.quanta.inquiry.answered")),
+    # S2 (reads the ABSENCE of S1 inquiry.answered over the completed window).
+    # Absence is relative: only once another actor has posted after the question.
+    rule("eq.quanta.inquiry.unanswered",
+         [ST(2), WIN, ["w", "eq_has_turn", "qt"], ["qt", "eq_authored_by", "b"]],
+         And(has("qt", QUESTION), Not(_answered("qt")), enabled(L("inquiry.unanswered")),
+             Ex(Nb("w", "eq_has_turn"), "x", And(Gt(A("x", POS), A("qt", POS)),
+                                                Not(_authored_by("x", "b"))))),
+         mint("q", "b", A("b", REF), L("inquiry.unanswered"), L("+"), L(""),
+              "eq.quanta.inquiry.unanswered") + [["add_edge", "q", "eq_evidence", "qt"]]),
+    rule("eq.quanta.inquiry.unanswered.counter",
+         [ST(2), ["b", "eq_has_quantum", "q"], ["qt", "eq_authored_by", "b"]],
+         And(Eq(A("q", "q_trait"), L("inquiry.unanswered")), has("qt", QUESTION), _answered("qt"),
+             Not(In(V("qt"), Nb("q", "eq_evidence")))),
+         [["add_edge", "q", "eq_counter", "qt"], prov("q", "eq.quanta.inquiry.unanswered.counter")]),
+]
+
 # ---- ingest / derived edge vocabulary (Γ productions) -----------------------
 WINDOW_EDGE_TYPES = [
     ("Agent", "eq_window", "EqWindow"), ("EqWindow", "eq_has_actor", "EqActor"),
@@ -607,7 +776,9 @@ SCOPE_EDGE_TYPES = [("Agent", e, t) for t, e in SCOPE_EDGE.items()]
 TRAIT_EDGE_TYPES = [("Agent", e, t) for t, e in TRAIT_EDGE.items()]
 QUANTA_EDGE_TYPES = [("EqActor", "eq_has_quantum", "EqQuantum"),
                      ("EqQuantum", "eq_evidence", "Message"), ("EqQuantum", "eq_counter", "Message"),
-                     ("EqQuantum", "eq_hedged", "Message"), ("EqQuantum", "eq_component", "EqQuantum")]
+                     ("EqQuantum", "eq_hedged", "Message"), ("EqQuantum", "eq_component", "EqQuantum"),
+                     ("EqQuantum", "eq_context", "Message")]
+CLIMATE_EDGE_TYPES = [("Agent", e, t) for t, e in CLIMATE_EDGE.items()]
 EPISODE_EDGE_TYPES = [("Agent", e, t) for t, e in EPISODE_EDGE.items()] + [
     ("EqWindow", "eq_has_episode", "EqEpisode"), ("EqEpisode", "eq_root", "Message"),
     ("Message", "eq_in_episode", "EqEpisode"), ("EqEpisode", "eq_has_facet", "EqEpFacet"),
