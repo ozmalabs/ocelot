@@ -167,7 +167,9 @@ def snapshot(st):
         exps.append({"axis": at.get("axis_tag"), "status": at.get("status"), "outcome": at.get("outcome"),
                      "adopted": bool(at.get("adopted")), "op": da.get("variation_op"),
                      "abstained": bool(da.get("variant_abstained")), "route": da.get("cue_route"),
-                     "rule": da.get("act_rule_varied"), "error": str(at.get("error") or "")[:200]})
+                     "rule": da.get("act_rule_varied"), "error": str(at.get("error") or "")[:200],
+                     "quality_delta": at.get("quality_delta"), "quality_drops": at.get("quality_drops"),
+                     "quality_gains": at.get("quality_gains")})
     adoptions = [{k: s.node(n)["attrs"].get(k) for k in ("rule_removed", "rule_added", "cue_concept_added",
                                                          "cue_route", "knob_attr", "experiment_id")}
                  for n in s.nodes("Adoption")]
@@ -213,16 +215,35 @@ def main():
     out.with_suffix(".live.json").write_text(json.dumps({"rows": rows, "live": live}, indent=1, default=str) + "\n")
     print("LIVE", json.dumps(live, default=str)[:3000], flush=True)
     # behaviour where production sees it: the same turns, production path, post-run agent vs fresh boot
-    after = [classify(say(st, t, max_cycles=15)[1]) for t in turns]
+    from domains import reply_quality as rq
+    after_replies = [(say(st, t, max_cycles=15)[1] or "") for t in turns]
+    after = [classify(r) for r in after_replies]
     controls_after = [classify(say(st, t, max_cycles=15)[1]) for t in CONTROL_IMPERATIVES]
     # tranche 23: the baseline must not improve itself during its own retest
     # (say() runs the host-action loop) -- before this, the fresh boot could
     # self-promote and adopt mid-retest, understating every post-run gain
     fresh = boot(shadow, promote=False)
     say(fresh, "Hello.")
-    before = [classify(say(fresh, t, max_cycles=15)[1]) for t in turns]
+    before_replies = [(say(fresh, t, max_cycles=15)[1] or "") for t in turns]
+    before = [classify(r) for r in before_replies]
     controls_before = [classify(say(fresh, t, max_cycles=15)[1]) for t in CONTROL_IMPERATIVES]
     fresh_adoptions = len(fresh.adapter.s.nodes("Adoption"))
+    # P0 (open-ended plan): ReplyQuality v1, report-only, on both retests
+    q_after = [rq.assess(t, r) for t, r in zip(turns, after_replies)]
+    q_before = [rq.assess(t, r) for t, r in zip(turns, before_replies)]
+    quality = {
+        "post_run": rq.summarise([q["score"] for q in q_after]),
+        "fresh_boot": rq.summarise([q["score"] for q in q_before]),
+        "changed_turns": rq.summarise([qa["score"] for qa, qb, a, b in zip(q_after, q_before, after_replies, before_replies)
+                                       if a != b]),
+        "changed_turns_before": rq.summarise([qb["score"] for qa, qb, a, b in zip(q_after, q_before, after_replies,
+                                                                                   before_replies) if a != b]),
+        "drops": sum(1 for qa, qb in zip(q_after, q_before) if qa["score"] < qb["score"]),
+        "gains": sum(1 for qa, qb in zip(q_after, q_before) if qa["score"] > qb["score"]),
+        "transitions": dict(collections.Counter(f"{qb['reason']} => {qa['reason']}"
+                                                for qa, qb, a, b in zip(q_after, q_before, after_replies, before_replies)
+                                                if a != b)),
+    }
     summ = {
         "turns": len(turns), "elapsed_s": round(time.time() - t0, 1),
         "first_pass": dict(collections.Counter(r["class"] for r in rows)),
@@ -233,6 +254,7 @@ def main():
         "controls_post_run": dict(zip(CONTROL_IMPERATIVES, controls_after)),
         "controls_fresh_boot": dict(zip(CONTROL_IMPERATIVES, controls_before)),
         "fresh_boot_adoptions": fresh_adoptions,
+        "reply_quality": quality,
         **{k: v for k, v in live.items() if k != "experiments"},
         "experiments_n": len(live["experiments"]),
         "experiments_by_op_outcome": dict(collections.Counter(
@@ -241,7 +263,11 @@ def main():
     print("SUMMARY", json.dumps(summ), flush=True)
     out.write_text(json.dumps({"schema": "EndemicRSIDaemonV1", "stream": kind, "shadow": shadow, "rows": rows,
                                "experiments": live["experiments"], "retest_post_run": after,
-                               "retest_fresh_boot": before, "summary": summ}, indent=1, default=str) + "\n")
+                               "retest_fresh_boot": before,
+                               "retest_post_run_replies": [r[:300] for r in after_replies],
+                               "retest_fresh_boot_replies": [r[:300] for r in before_replies],
+                               "retest_post_run_quality": q_after, "retest_fresh_boot_quality": q_before,
+                               "summary": summ}, indent=1, default=str) + "\n")
 
 
 if __name__ == "__main__":

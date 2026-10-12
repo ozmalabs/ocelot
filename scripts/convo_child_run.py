@@ -750,12 +750,24 @@ def main() -> int:
                                        "self_report": replayed[:400]}) + "\n")
         trace_fp.flush()
 
+        # REPLY QUALITY (P0, report-only -- domains/reply_quality.py): the
+        # same probes scored for FIT on both passes. Reported, never scored:
+        # gate Q0 must first show the measure agrees with human labels.
+        from domains import reply_quality as _rq
+        q_control = [_rq.assess(p["text"], control["replies"][i])["score"] for i, p in enumerate(probes)]
+        q_variant = [_rq.assess(p["text"], stats["replies"][i])["score"] for i, p in enumerate(probes)]
+
         result = {"status": "done", "frames": len(probes), "score": score,
                   "won": score > 0, "over": True, "boot_mode": boot_mode,
                   "removed_rules": removed_rules,
                   "flagged": flagged_n, "flagged_changed": flagged_changed,
                   "broken_fixes": broken_fixes, "regressions": regressions, "repaired": repaired,
-                  "avg_turn_ms": stats["avg_turn_ms"]}
+                  "avg_turn_ms": stats["avg_turn_ms"],
+                  "quality_control_mean": _rq.summarise(q_control)["mean"],
+                  "quality_variant_mean": _rq.summarise(q_variant)["mean"],
+                  "quality_delta": (round((sum(q_variant) - sum(q_control)) / len(probes), 4) if probes else 0.0),
+                  "quality_drops": sum(1 for a, b in zip(q_control, q_variant) if b < a),
+                  "quality_gains": sum(1 for a, b in zip(q_control, q_variant) if b > a)}
         if knob_probe:
             result["control_reforms"] = int(control["reforms"])
             result["variant_reforms"] = int(stats["reforms"])

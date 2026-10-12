@@ -327,6 +327,19 @@ def _ingest_result(agent, exp, run_dir: Path) -> None:
             I.set_attr(exp, "avg_turn_ms", avg_ms)
         except Exception:  # noqa: BLE001
             pass
+    # REPLY QUALITY (P0, report-only): the child's fit measure on both passes,
+    # copied onto the Run and Experiment so it is inspectable. No rule reads
+    # it yet; gate Q0 (agreement with human labels) comes first.
+    for key in ("quality_control_mean", "quality_variant_mean", "quality_delta",
+                "quality_drops", "quality_gains"):
+        if result.get(key) is not None:
+            try:
+                val = result[key]
+                val = int(val) if key in ("quality_drops", "quality_gains") else float(val)
+                I.set_attr(run, key, val)
+                I.set_attr(exp, key, val)
+            except Exception:  # noqa: BLE001 — a malformed extra never blocks ingest
+                pass
     # RESIDUAL-CLOSURE (knob_edit family): the child's CONTROLLED double-pass
     # report — reform marks minted per pass (the verdict inputs
     # seeds/self_optimisation.json's judge_knob_experiment_outcome reads:
