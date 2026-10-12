@@ -29,6 +29,11 @@ def main():
     import long_session_cost_v1 as L
     turns = L.turns_of(n)
     st = E.boot(True, promote=False)
+    if "--incremental" in sys.argv:
+        # engine evaluation strategy only (semi-naive matching); see
+        # domains/equilibrium_classify.incremental_engine
+        from domains.equilibrium_classify import incremental_engine
+        incremental_engine(st.adapter.inner._native)
     acc = collections.defaultdict(float)
     L.say(st, "Hello.", acc)
     replies, windows = [], []

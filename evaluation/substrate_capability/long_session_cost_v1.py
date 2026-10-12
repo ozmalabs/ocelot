@@ -20,7 +20,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 sys.path[:0] = [str(ROOT), str(ROOT / "runners/dsl/python"), str(ROOT / "scripts"), str(Path(__file__).parent)]
 
-PHASES = ("tick", "comprehend", "settle", "release", "host")
+PHASES = ("ingest", "tick", "comprehend", "settle", "release", "host")
 
 
 def timed_cycle(st, acc):
@@ -66,7 +66,9 @@ def timed_cycle(st, acc):
 def say(st, text, acc, max_cycles=15):
     import jabberwock_daemon as jd
     with jd.AGENT_LOCK:
+        t = time.perf_counter()
         tid = jd._ingest_daemon_chat_turn(st, text)
+        acc["ingest"] += time.perf_counter() - t
     for _ in range(max_cycles):
         done = timed_cycle(st, acc)
         if tid in done:
@@ -91,6 +93,10 @@ def main():
     out = ROOT / f"evaluation/reports/long_session_cost_v1_n{n}{('_' + label) if label else ''}_20261010.json"
     st = E.boot(True, promote=False)
     a = st.adapter
+    if os.environ.get("LSC_INCREMENTAL") == "1":
+        # engine evaluation strategy only (semi-naive matching)
+        from domains.equilibrium_classify import incremental_engine
+        incremental_engine(a.inner._native)
     say(st, "Hello.", collections.defaultdict(float))
     windows = []
     turns = turns_of(n)
