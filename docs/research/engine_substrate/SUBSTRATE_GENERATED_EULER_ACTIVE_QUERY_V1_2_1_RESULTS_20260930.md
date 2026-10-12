@@ -1,0 +1,7 @@
+# Generated Euler Active Query v1.2.1 Results
+
+Version 1.2.1 applies the CEGIS numeric tolerance (`1e-9`) to cached filtering and compares complete cached and uncached query paths and survivor sets. The corrected replay passes all 437 analysis checks, with exact sequence and survivor parity on all three anchors.
+
+The query outcomes remain the same: entropy used 2–3 oracle calls, fixed-first 5–7, and seeded-random a median of 4; all runs ended with a hypothesis matching the six held-out Euler cases. Median uncached decision-plus-oracle time is 42.95 ms. Cached decision-plus-oracle time after build is 4.56 ms, with a 39.29 ms one-time build and 642,367 bytes estimated Python heap; total single-episode time is 44.15 ms. For one episode the cache is slightly slower. A median-based amortization calculation suggests the build cost can pay off with two uses of the same index, and the [branch reuse result](SUBSTRATE_QUERY_INDEX_BRANCH_REUSE_V1_1_RESULTS_20260930.md) directly measures larger serial batches.
+
+This is a bounded Euler pool result. Cache heap omits native term objects and RSS. See the [v1.2.1 amendment](SUBSTRATE_GENERATED_EULER_ACTIVE_QUERY_V1_2_1_AMENDMENT_20260930.md), [source-locked runner](../../../scripts/substrate_generated_euler_active_query_v1_2_1.py), [analysis](../../../evaluation/reports/substrate_generated_euler_active_query_v1_2_1_20260930_analysis.json), and [raw capture](../../../evaluation/reports/substrate_generated_euler_active_query_v1_2_1_20260930_raw.json).

@@ -184,11 +184,18 @@ def _model(agent) -> dict:
 def _vec(m: dict, name: str) -> dict:
     """tf-idf vector for a microtheory name OR a bare concept string. A concept with no microtheory
     bag falls back to its own name tokens (still an edge-carried attr — the concept's own label)."""
+    vectors = m.setdefault("_vectors", {})
+    cached = vectors.get(name)
+    if cached is not None:
+        return cached
     bag = m["mt_tokens"].get(name)
     if not bag:
         bag = {t: 1 for t in _tok(name)}
     N, df = m["N"], m["df"]
-    return {t: c * math.log(N / (1 + df.get(t, 0))) for t, c in bag.items()}
+    vector = {t: c * math.log(N / (1 + df.get(t, 0)))
+              for t, c in bag.items()}
+    vectors[name] = vector
+    return vector
 
 
 def _cos(a: dict, b: dict) -> float:

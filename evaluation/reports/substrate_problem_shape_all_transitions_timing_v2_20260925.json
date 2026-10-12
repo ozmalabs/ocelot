@@ -1,0 +1,1855 @@
+{
+  "design": {
+    "N": 8,
+    "codebook_mode": "dynamic",
+    "mix": "recurrent_residual",
+    "order_counts": {
+      "baseline_first": 6,
+      "candidate_first": 6
+    },
+    "pairs": 12,
+    "rng_seed": 20260925,
+    "workers": 24
+  },
+  "interpretation_limit": "12 fresh-process pairs on one N=8 authored recurrent-residual workload; exploratory timing only, not a scaling or substrate-wide performance claim",
+  "pairs": [
+    {
+      "arms": {
+        "baseline": {
+          "all_checks_pass": true,
+          "arm": "baseline",
+          "boot_cpu_ns": 22426044138,
+          "boot_wall_ns": 21619469728,
+          "host_index_maintenance_ns_total": 0,
+          "mints_by_step": [
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "observation_cpu_ns_by_step": [
+            23822306,
+            27577667,
+            16234684,
+            29450988,
+            17527085,
+            30670989,
+            21150756,
+            18942865
+          ],
+          "observation_cpu_ns_total": 185377340,
+          "observation_metric": "full_closure_observe",
+          "observation_wall_ns_by_step": [
+            23816781,
+            27581979,
+            16231343,
+            30531802,
+            17752135,
+            32778578,
+            21206751,
+            18955114
+          ],
+          "observation_wall_ns_total": 188854483,
+          "peak_rss_bytes": 1791971328,
+          "problem_shape_candidate_pairs_total": 263,
+          "problem_shape_term_evaluations_total": 2011,
+          "process_id": 1663846,
+          "ps_mint_candidate_pairs_total": 0,
+          "ps_mint_term_evaluations_total": 0,
+          "task_status_final": [
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized"
+          ],
+          "task_status_initial": [
+            "residual",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized"
+          ],
+          "variant": "dynamic"
+        },
+        "candidate": {
+          "all_checks_pass": true,
+          "arm": "candidate",
+          "boot_cpu_ns": 22219654295,
+          "boot_wall_ns": 21369413044,
+          "host_index_maintenance_ns_total": 381825,
+          "mints_by_step": [
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "observation_cpu_ns_by_step": [
+            12593564,
+            19327475,
+            20993796,
+            25869247,
+            20897166,
+            23407386,
+            18536885,
+            20439486
+          ],
+          "observation_cpu_ns_total": 162065005,
+          "observation_metric": "eventized_observe_including_host_index_event_maintenance",
+          "observation_wall_ns_by_step": [
+            12593906,
+            19327556,
+            20993650,
+            25869586,
+            20897088,
+            23418958,
+            18545340,
+            20970029
+          ],
+          "observation_wall_ns_total": 162616113,
+          "peak_rss_bytes": 1792098304,
+          "problem_shape_candidate_pairs_total": 66,
+          "problem_shape_term_evaluations_total": 1008,
+          "process_id": 1687602,
+          "ps_mint_candidate_pairs_total": 6,
+          "ps_mint_term_evaluations_total": 116,
+          "task_status_final": [
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized"
+          ],
+          "task_status_initial": [
+            "residual",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized"
+          ],
+          "variant": "all_transition_events_plus_key_support_counter"
+        }
+      },
+      "complete": true,
+      "cpu_delta_ns_candidate_minus_baseline": -23312335,
+      "cpu_ratio_candidate_over_baseline": 0.8742438800772522,
+      "execution_order": [
+        "baseline",
+        "candidate"
+      ],
+      "pair": 1,
+      "semantic_parity": true,
+      "wall_delta_ns_candidate_minus_baseline": -26238370,
+      "wall_ratio_candidate_over_baseline": 0.8610656756292092
+    },
+    {
+      "arms": {
+        "baseline": {
+          "all_checks_pass": true,
+          "arm": "baseline",
+          "boot_cpu_ns": 23948350979,
+          "boot_wall_ns": 23508577633,
+          "host_index_maintenance_ns_total": 0,
+          "mints_by_step": [
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "observation_cpu_ns_by_step": [
+            16380644,
+            22052196,
+            20526375,
+            17187705,
+            25952017,
+            28027947,
+            25987967,
+            19364255
+          ],
+          "observation_cpu_ns_total": 175479106,
+          "observation_metric": "full_closure_observe",
+          "observation_wall_ns_by_step": [
+            16377944,
+            22048707,
+            20523235,
+            17184021,
+            25972227,
+            28822098,
+            26011878,
+            19360037
+          ],
+          "observation_wall_ns_total": 176300147,
+          "peak_rss_bytes": 1792208896,
+          "problem_shape_candidate_pairs_total": 263,
+          "problem_shape_term_evaluations_total": 2011,
+          "process_id": 1695369,
+          "ps_mint_candidate_pairs_total": 0,
+          "ps_mint_term_evaluations_total": 0,
+          "task_status_final": [
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized"
+          ],
+          "task_status_initial": [
+            "residual",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized"
+          ],
+          "variant": "dynamic"
+        },
+        "candidate": {
+          "all_checks_pass": true,
+          "arm": "candidate",
+          "boot_cpu_ns": 23886878469,
+          "boot_wall_ns": 22983737004,
+          "host_index_maintenance_ns_total": 482722,
+          "mints_by_step": [
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "observation_cpu_ns_by_step": [
+            22995816,
+            18138035,
+            22589566,
+            18238365,
+            20157286,
+            20565096,
+            23220296,
+            17548764
+          ],
+          "observation_cpu_ns_total": 163453224,
+          "observation_metric": "eventized_observe_including_host_index_event_maintenance",
+          "observation_wall_ns_by_step": [
+            22996525,
+            18137147,
+            22589681,
+            18239028,
+            20157603,
+            20564615,
+            23335837,
+            17548913
+          ],
+          "observation_wall_ns_total": 163569349,
+          "peak_rss_bytes": 1792045056,
+          "problem_shape_candidate_pairs_total": 66,
+          "problem_shape_term_evaluations_total": 1008,
+          "process_id": 1700598,
+          "ps_mint_candidate_pairs_total": 6,
+          "ps_mint_term_evaluations_total": 116,
+          "task_status_final": [
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized"
+          ],
+          "task_status_initial": [
+            "residual",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized"
+          ],
+          "variant": "all_transition_events_plus_key_support_counter"
+        }
+      },
+      "complete": true,
+      "cpu_delta_ns_candidate_minus_baseline": -12025882,
+      "cpu_ratio_candidate_over_baseline": 0.9314682968580886,
+      "execution_order": [
+        "baseline",
+        "candidate"
+      ],
+      "pair": 2,
+      "semantic_parity": true,
+      "wall_delta_ns_candidate_minus_baseline": -12730798,
+      "wall_ratio_candidate_over_baseline": 0.9277890675837043
+    },
+    {
+      "arms": {
+        "baseline": {
+          "all_checks_pass": true,
+          "arm": "baseline",
+          "boot_cpu_ns": 22166713489,
+          "boot_wall_ns": 21431753680,
+          "host_index_maintenance_ns_total": 0,
+          "mints_by_step": [
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "observation_cpu_ns_by_step": [
+            23990977,
+            24350116,
+            16166174,
+            14654424,
+            14918334,
+            18621295,
+            17437225,
+            20231535
+          ],
+          "observation_cpu_ns_total": 150370080,
+          "observation_metric": "full_closure_observe",
+          "observation_wall_ns_by_step": [
+            23987482,
+            24345724,
+            16170472,
+            14652791,
+            14915953,
+            18618301,
+            17435012,
+            20227393
+          ],
+          "observation_wall_ns_total": 150353128,
+          "peak_rss_bytes": 1791688704,
+          "problem_shape_candidate_pairs_total": 263,
+          "problem_shape_term_evaluations_total": 2011,
+          "process_id": 1710935,
+          "ps_mint_candidate_pairs_total": 0,
+          "ps_mint_term_evaluations_total": 0,
+          "task_status_final": [
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized"
+          ],
+          "task_status_initial": [
+            "residual",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized"
+          ],
+          "variant": "dynamic"
+        },
+        "candidate": {
+          "all_checks_pass": true,
+          "arm": "candidate",
+          "boot_cpu_ns": 22919089850,
+          "boot_wall_ns": 22185043166,
+          "host_index_maintenance_ns_total": 402984,
+          "mints_by_step": [
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "observation_cpu_ns_by_step": [
+            27274727,
+            27499917,
+            14966044,
+            20293715,
+            27397327,
+            17964755,
+            24814576,
+            28796428
+          ],
+          "observation_cpu_ns_total": 189007489,
+          "observation_metric": "eventized_observe_including_host_index_event_maintenance",
+          "observation_wall_ns_by_step": [
+            27274766,
+            28255284,
+            14991303,
+            20293513,
+            27397318,
+            17972606,
+            24855319,
+            29004210
+          ],
+          "observation_wall_ns_total": 190044319,
+          "peak_rss_bytes": 1792598016,
+          "problem_shape_candidate_pairs_total": 66,
+          "problem_shape_term_evaluations_total": 1008,
+          "process_id": 1705691,
+          "ps_mint_candidate_pairs_total": 6,
+          "ps_mint_term_evaluations_total": 116,
+          "task_status_final": [
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized"
+          ],
+          "task_status_initial": [
+            "residual",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized"
+          ],
+          "variant": "all_transition_events_plus_key_support_counter"
+        }
+      },
+      "complete": true,
+      "cpu_delta_ns_candidate_minus_baseline": 38637409,
+      "cpu_ratio_candidate_over_baseline": 1.2569487826301615,
+      "execution_order": [
+        "candidate",
+        "baseline"
+      ],
+      "pair": 3,
+      "semantic_parity": true,
+      "wall_delta_ns_candidate_minus_baseline": 39691191,
+      "wall_ratio_candidate_over_baseline": 1.2639864665801965
+    },
+    {
+      "arms": {
+        "baseline": {
+          "all_checks_pass": true,
+          "arm": "baseline",
+          "boot_cpu_ns": 23182963613,
+          "boot_wall_ns": 22395607894,
+          "host_index_maintenance_ns_total": 0,
+          "mints_by_step": [
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "observation_cpu_ns_by_step": [
+            17316914,
+            16479105,
+            21487596,
+            17286625,
+            18354605,
+            16146534,
+            19763675,
+            15486514
+          ],
+          "observation_cpu_ns_total": 142321568,
+          "observation_metric": "full_closure_observe",
+          "observation_wall_ns_by_step": [
+            17311501,
+            16476455,
+            21546363,
+            17295801,
+            18350849,
+            16157592,
+            19761190,
+            15484597
+          ],
+          "observation_wall_ns_total": 142384348,
+          "peak_rss_bytes": 1791791104,
+          "problem_shape_candidate_pairs_total": 263,
+          "problem_shape_term_evaluations_total": 2011,
+          "process_id": 1720902,
+          "ps_mint_candidate_pairs_total": 0,
+          "ps_mint_term_evaluations_total": 0,
+          "task_status_final": [
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized"
+          ],
+          "task_status_initial": [
+            "residual",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized"
+          ],
+          "variant": "dynamic"
+        },
+        "candidate": {
+          "all_checks_pass": true,
+          "arm": "candidate",
+          "boot_cpu_ns": 23418848677,
+          "boot_wall_ns": 22637207588,
+          "host_index_maintenance_ns_total": 447271,
+          "mints_by_step": [
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "observation_cpu_ns_by_step": [
+            17117185,
+            21052985,
+            22902186,
+            20405636,
+            17411595,
+            24580726,
+            25300206,
+            15529964
+          ],
+          "observation_cpu_ns_total": 164300483,
+          "observation_metric": "eventized_observe_including_host_index_event_maintenance",
+          "observation_wall_ns_by_step": [
+            17117440,
+            21053600,
+            22902504,
+            20418965,
+            17412242,
+            24580697,
+            25334352,
+            15540358
+          ],
+          "observation_wall_ns_total": 164360158,
+          "peak_rss_bytes": 1792675840,
+          "problem_shape_candidate_pairs_total": 66,
+          "problem_shape_term_evaluations_total": 1008,
+          "process_id": 1715842,
+          "ps_mint_candidate_pairs_total": 6,
+          "ps_mint_term_evaluations_total": 116,
+          "task_status_final": [
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized"
+          ],
+          "task_status_initial": [
+            "residual",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized"
+          ],
+          "variant": "all_transition_events_plus_key_support_counter"
+        }
+      },
+      "complete": true,
+      "cpu_delta_ns_candidate_minus_baseline": 21978915,
+      "cpu_ratio_candidate_over_baseline": 1.1544313719196797,
+      "execution_order": [
+        "candidate",
+        "baseline"
+      ],
+      "pair": 4,
+      "semantic_parity": true,
+      "wall_delta_ns_candidate_minus_baseline": 21975810,
+      "wall_ratio_candidate_over_baseline": 1.1543414729826904
+    },
+    {
+      "arms": {
+        "baseline": {
+          "all_checks_pass": true,
+          "arm": "baseline",
+          "boot_cpu_ns": 23407399083,
+          "boot_wall_ns": 22533172771,
+          "host_index_maintenance_ns_total": 0,
+          "mints_by_step": [
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "observation_cpu_ns_by_step": [
+            24572336,
+            23324135,
+            19340886,
+            15307444,
+            23435166,
+            22194986,
+            19513615,
+            18979185
+          ],
+          "observation_cpu_ns_total": 166667753,
+          "observation_metric": "full_closure_observe",
+          "observation_wall_ns_by_step": [
+            24799618,
+            24069742,
+            19337057,
+            15303796,
+            23431038,
+            22191008,
+            19511388,
+            18976164
+          ],
+          "observation_wall_ns_total": 167619811,
+          "peak_rss_bytes": 1792581632,
+          "problem_shape_candidate_pairs_total": 263,
+          "problem_shape_term_evaluations_total": 2011,
+          "process_id": 1731123,
+          "ps_mint_candidate_pairs_total": 0,
+          "ps_mint_term_evaluations_total": 0,
+          "task_status_final": [
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized"
+          ],
+          "task_status_initial": [
+            "residual",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized"
+          ],
+          "variant": "dynamic"
+        },
+        "candidate": {
+          "all_checks_pass": true,
+          "arm": "candidate",
+          "boot_cpu_ns": 23798146319,
+          "boot_wall_ns": 22939310568,
+          "host_index_maintenance_ns_total": 488194,
+          "mints_by_step": [
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "observation_cpu_ns_by_step": [
+            17321265,
+            21071776,
+            24827187,
+            24062486,
+            17558975,
+            21891466,
+            19035845,
+            17140344
+          ],
+          "observation_cpu_ns_total": 162909344,
+          "observation_metric": "eventized_observe_including_host_index_event_maintenance",
+          "observation_wall_ns_by_step": [
+            17321511,
+            21071729,
+            24827348,
+            24120472,
+            17567763,
+            21891766,
+            19035834,
+            17140890
+          ],
+          "observation_wall_ns_total": 162977313,
+          "peak_rss_bytes": 1793196032,
+          "problem_shape_candidate_pairs_total": 66,
+          "problem_shape_term_evaluations_total": 1008,
+          "process_id": 1726062,
+          "ps_mint_candidate_pairs_total": 6,
+          "ps_mint_term_evaluations_total": 116,
+          "task_status_final": [
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized"
+          ],
+          "task_status_initial": [
+            "residual",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized"
+          ],
+          "variant": "all_transition_events_plus_key_support_counter"
+        }
+      },
+      "complete": true,
+      "cpu_delta_ns_candidate_minus_baseline": -3758409,
+      "cpu_ratio_candidate_over_baseline": 0.9774496929829012,
+      "execution_order": [
+        "candidate",
+        "baseline"
+      ],
+      "pair": 5,
+      "semantic_parity": true,
+      "wall_delta_ns_candidate_minus_baseline": -4642498,
+      "wall_ratio_candidate_over_baseline": 0.9723034051148047
+    },
+    {
+      "arms": {
+        "baseline": {
+          "all_checks_pass": true,
+          "arm": "baseline",
+          "boot_cpu_ns": 23342862058,
+          "boot_wall_ns": 22550484639,
+          "host_index_maintenance_ns_total": 0,
+          "mints_by_step": [
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "observation_cpu_ns_by_step": [
+            16012324,
+            28843217,
+            26928747,
+            22581536,
+            21243236,
+            23558845,
+            27071657,
+            21116956
+          ],
+          "observation_cpu_ns_total": 187356518,
+          "observation_metric": "full_closure_observe",
+          "observation_wall_ns_by_step": [
+            16018091,
+            28839388,
+            26924284,
+            22577951,
+            21239980,
+            24538705,
+            28269924,
+            21114300
+          ],
+          "observation_wall_ns_total": 189522623,
+          "peak_rss_bytes": 1792303104,
+          "problem_shape_candidate_pairs_total": 263,
+          "problem_shape_term_evaluations_total": 2011,
+          "process_id": 1741292,
+          "ps_mint_candidate_pairs_total": 0,
+          "ps_mint_term_evaluations_total": 0,
+          "task_status_final": [
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized"
+          ],
+          "task_status_initial": [
+            "residual",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized"
+          ],
+          "variant": "dynamic"
+        },
+        "candidate": {
+          "all_checks_pass": true,
+          "arm": "candidate",
+          "boot_cpu_ns": 22432956921,
+          "boot_wall_ns": 21593654862,
+          "host_index_maintenance_ns_total": 326672,
+          "mints_by_step": [
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "observation_cpu_ns_by_step": [
+            14993864,
+            27887247,
+            20004595,
+            16843665,
+            25709837,
+            19086555,
+            18475315,
+            14635484
+          ],
+          "observation_cpu_ns_total": 157636562,
+          "observation_metric": "eventized_observe_including_host_index_event_maintenance",
+          "observation_wall_ns_by_step": [
+            14994123,
+            27887031,
+            20107952,
+            16865938,
+            25720115,
+            19086894,
+            18475870,
+            14646941
+          ],
+          "observation_wall_ns_total": 157784864,
+          "peak_rss_bytes": 1792438272,
+          "problem_shape_candidate_pairs_total": 66,
+          "problem_shape_term_evaluations_total": 1008,
+          "process_id": 1736373,
+          "ps_mint_candidate_pairs_total": 6,
+          "ps_mint_term_evaluations_total": 116,
+          "task_status_final": [
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized"
+          ],
+          "task_status_initial": [
+            "residual",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized"
+          ],
+          "variant": "all_transition_events_plus_key_support_counter"
+        }
+      },
+      "complete": true,
+      "cpu_delta_ns_candidate_minus_baseline": -29719956,
+      "cpu_ratio_candidate_over_baseline": 0.8413721800700843,
+      "execution_order": [
+        "candidate",
+        "baseline"
+      ],
+      "pair": 6,
+      "semantic_parity": true,
+      "wall_delta_ns_candidate_minus_baseline": -31737759,
+      "wall_ratio_candidate_over_baseline": 0.83253841416072
+    },
+    {
+      "arms": {
+        "baseline": {
+          "all_checks_pass": true,
+          "arm": "baseline",
+          "boot_cpu_ns": 22041500029,
+          "boot_wall_ns": 21278870954,
+          "host_index_maintenance_ns_total": 0,
+          "mints_by_step": [
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "observation_cpu_ns_by_step": [
+            20044025,
+            27297717,
+            22679165,
+            22225896,
+            19642615,
+            13834004,
+            29775048,
+            20425766
+          ],
+          "observation_cpu_ns_total": 175924236,
+          "observation_metric": "full_closure_observe",
+          "observation_wall_ns_by_step": [
+            20039461,
+            27434288,
+            29915166,
+            22222758,
+            19649039,
+            13833535,
+            29976187,
+            20422005
+          ],
+          "observation_wall_ns_total": 183492439,
+          "peak_rss_bytes": 1792942080,
+          "problem_shape_candidate_pairs_total": 263,
+          "problem_shape_term_evaluations_total": 2011,
+          "process_id": 1746425,
+          "ps_mint_candidate_pairs_total": 0,
+          "ps_mint_term_evaluations_total": 0,
+          "task_status_final": [
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized"
+          ],
+          "task_status_initial": [
+            "residual",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized"
+          ],
+          "variant": "dynamic"
+        },
+        "candidate": {
+          "all_checks_pass": true,
+          "arm": "candidate",
+          "boot_cpu_ns": 23484280946,
+          "boot_wall_ns": 22726543564,
+          "host_index_maintenance_ns_total": 398893,
+          "mints_by_step": [
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "observation_cpu_ns_by_step": [
+            24343177,
+            15997534,
+            15882935,
+            24936826,
+            20265965,
+            18281785,
+            16070515,
+            23623316
+          ],
+          "observation_cpu_ns_total": 159402053,
+          "observation_metric": "eventized_observe_including_host_index_event_maintenance",
+          "observation_wall_ns_by_step": [
+            24343494,
+            15997691,
+            15888781,
+            24936649,
+            20266783,
+            18281059,
+            16070562,
+            23622738
+          ],
+          "observation_wall_ns_total": 159407757,
+          "peak_rss_bytes": 1792184320,
+          "problem_shape_candidate_pairs_total": 66,
+          "problem_shape_term_evaluations_total": 1008,
+          "process_id": 1751555,
+          "ps_mint_candidate_pairs_total": 6,
+          "ps_mint_term_evaluations_total": 116,
+          "task_status_final": [
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized"
+          ],
+          "task_status_initial": [
+            "residual",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized"
+          ],
+          "variant": "all_transition_events_plus_key_support_counter"
+        }
+      },
+      "complete": true,
+      "cpu_delta_ns_candidate_minus_baseline": -16522183,
+      "cpu_ratio_candidate_over_baseline": 0.9060835313219721,
+      "execution_order": [
+        "baseline",
+        "candidate"
+      ],
+      "pair": 7,
+      "semantic_parity": true,
+      "wall_delta_ns_candidate_minus_baseline": -24084682,
+      "wall_ratio_candidate_over_baseline": 0.8687429186114857
+    },
+    {
+      "arms": {
+        "baseline": {
+          "all_checks_pass": true,
+          "arm": "baseline",
+          "boot_cpu_ns": 23557480188,
+          "boot_wall_ns": 23140417349,
+          "host_index_maintenance_ns_total": 0,
+          "mints_by_step": [
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "observation_cpu_ns_by_step": [
+            25797277,
+            25895377,
+            24136506,
+            15097674,
+            23012327,
+            17253555,
+            22843947,
+            15624744
+          ],
+          "observation_cpu_ns_total": 169661407,
+          "observation_metric": "full_closure_observe",
+          "observation_wall_ns_by_step": [
+            25868594,
+            25927144,
+            24128822,
+            15095621,
+            25334990,
+            17250976,
+            22840543,
+            15622304
+          ],
+          "observation_wall_ns_total": 172068994,
+          "peak_rss_bytes": 1791774720,
+          "problem_shape_candidate_pairs_total": 263,
+          "problem_shape_term_evaluations_total": 2011,
+          "process_id": 1763332,
+          "ps_mint_candidate_pairs_total": 0,
+          "ps_mint_term_evaluations_total": 0,
+          "task_status_final": [
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized"
+          ],
+          "task_status_initial": [
+            "residual",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized"
+          ],
+          "variant": "dynamic"
+        },
+        "candidate": {
+          "all_checks_pass": true,
+          "arm": "candidate",
+          "boot_cpu_ns": 23060625926,
+          "boot_wall_ns": 22463689265,
+          "host_index_maintenance_ns_total": 409644,
+          "mints_by_step": [
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "observation_cpu_ns_by_step": [
+            23501506,
+            30603228,
+            23220717,
+            16205854,
+            17906655,
+            20639236,
+            20404355,
+            20212776
+          ],
+          "observation_cpu_ns_total": 172694327,
+          "observation_metric": "eventized_observe_including_host_index_event_maintenance",
+          "observation_wall_ns_by_step": [
+            23501537,
+            30634275,
+            23220835,
+            16206009,
+            17951220,
+            20639458,
+            20404336,
+            20223066
+          ],
+          "observation_wall_ns_total": 172780736,
+          "peak_rss_bytes": 1792774144,
+          "problem_shape_candidate_pairs_total": 66,
+          "problem_shape_term_evaluations_total": 1008,
+          "process_id": 1756655,
+          "ps_mint_candidate_pairs_total": 6,
+          "ps_mint_term_evaluations_total": 116,
+          "task_status_final": [
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized"
+          ],
+          "task_status_initial": [
+            "residual",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized"
+          ],
+          "variant": "all_transition_events_plus_key_support_counter"
+        }
+      },
+      "complete": true,
+      "cpu_delta_ns_candidate_minus_baseline": 3032920,
+      "cpu_ratio_candidate_over_baseline": 1.0178763105506958,
+      "execution_order": [
+        "candidate",
+        "baseline"
+      ],
+      "pair": 8,
+      "semantic_parity": true,
+      "wall_delta_ns_candidate_minus_baseline": 711742,
+      "wall_ratio_candidate_over_baseline": 1.0041363756680068
+    },
+    {
+      "arms": {
+        "baseline": {
+          "all_checks_pass": true,
+          "arm": "baseline",
+          "boot_cpu_ns": 22536856001,
+          "boot_wall_ns": 22206380692,
+          "host_index_maintenance_ns_total": 0,
+          "mints_by_step": [
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "observation_cpu_ns_by_step": [
+            13951434,
+            18170875,
+            16008234,
+            15451454,
+            18071215,
+            22633846,
+            17680975,
+            21674486
+          ],
+          "observation_cpu_ns_total": 143642519,
+          "observation_metric": "full_closure_observe",
+          "observation_wall_ns_by_step": [
+            13950024,
+            18166992,
+            16004418,
+            15441215,
+            18068192,
+            22628193,
+            17673619,
+            21670546
+          ],
+          "observation_wall_ns_total": 143603199,
+          "peak_rss_bytes": 1792167936,
+          "problem_shape_candidate_pairs_total": 263,
+          "problem_shape_term_evaluations_total": 2011,
+          "process_id": 1770534,
+          "ps_mint_candidate_pairs_total": 0,
+          "ps_mint_term_evaluations_total": 0,
+          "task_status_final": [
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized"
+          ],
+          "task_status_initial": [
+            "residual",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized"
+          ],
+          "variant": "dynamic"
+        },
+        "candidate": {
+          "all_checks_pass": true,
+          "arm": "candidate",
+          "boot_cpu_ns": 21673954200,
+          "boot_wall_ns": 20769203517,
+          "host_index_maintenance_ns_total": 320622,
+          "mints_by_step": [
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "observation_cpu_ns_by_step": [
+            18735315,
+            17436335,
+            18797195,
+            16736835,
+            25877257,
+            19952845,
+            23873606,
+            19170055
+          ],
+          "observation_cpu_ns_total": 160579443,
+          "observation_metric": "eventized_observe_including_host_index_event_maintenance",
+          "observation_wall_ns_by_step": [
+            18735517,
+            17436078,
+            18807477,
+            16736954,
+            25894886,
+            19953095,
+            23873572,
+            19170419
+          ],
+          "observation_wall_ns_total": 160607998,
+          "peak_rss_bytes": 1792778240,
+          "problem_shape_candidate_pairs_total": 66,
+          "problem_shape_term_evaluations_total": 1008,
+          "process_id": 1776792,
+          "ps_mint_candidate_pairs_total": 6,
+          "ps_mint_term_evaluations_total": 116,
+          "task_status_final": [
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized"
+          ],
+          "task_status_initial": [
+            "residual",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized"
+          ],
+          "variant": "all_transition_events_plus_key_support_counter"
+        }
+      },
+      "complete": true,
+      "cpu_delta_ns_candidate_minus_baseline": 16936924,
+      "cpu_ratio_candidate_over_baseline": 1.1179102407693087,
+      "execution_order": [
+        "baseline",
+        "candidate"
+      ],
+      "pair": 9,
+      "semantic_parity": true,
+      "wall_delta_ns_candidate_minus_baseline": 17004799,
+      "wall_ratio_candidate_over_baseline": 1.1184151823804427
+    },
+    {
+      "arms": {
+        "baseline": {
+          "all_checks_pass": true,
+          "arm": "baseline",
+          "boot_cpu_ns": 22697546074,
+          "boot_wall_ns": 22470311136,
+          "host_index_maintenance_ns_total": 0,
+          "mints_by_step": [
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "observation_cpu_ns_by_step": [
+            14903594,
+            24490037,
+            22135146,
+            21865756,
+            25464237,
+            22922656,
+            25839866,
+            17471674
+          ],
+          "observation_cpu_ns_total": 175092966,
+          "observation_metric": "full_closure_observe",
+          "observation_wall_ns_by_step": [
+            14900122,
+            24485098,
+            22131271,
+            22174351,
+            25460294,
+            22997407,
+            26355930,
+            17468880
+          ],
+          "observation_wall_ns_total": 175973353,
+          "peak_rss_bytes": 1792495616,
+          "problem_shape_candidate_pairs_total": 263,
+          "problem_shape_term_evaluations_total": 2011,
+          "process_id": 1786680,
+          "ps_mint_candidate_pairs_total": 0,
+          "ps_mint_term_evaluations_total": 0,
+          "task_status_final": [
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized"
+          ],
+          "task_status_initial": [
+            "residual",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized"
+          ],
+          "variant": "dynamic"
+        },
+        "candidate": {
+          "all_checks_pass": true,
+          "arm": "candidate",
+          "boot_cpu_ns": 22211614986,
+          "boot_wall_ns": 21423357709,
+          "host_index_maintenance_ns_total": 369214,
+          "mints_by_step": [
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "observation_cpu_ns_by_step": [
+            23769076,
+            29983978,
+            20589276,
+            20142545,
+            14024344,
+            19741065,
+            21446446,
+            19760315
+          ],
+          "observation_cpu_ns_total": 169457045,
+          "observation_metric": "eventized_observe_including_host_index_event_maintenance",
+          "observation_wall_ns_by_step": [
+            23768151,
+            29983964,
+            20589390,
+            20141687,
+            14024366,
+            19740645,
+            21480086,
+            19760005
+          ],
+          "observation_wall_ns_total": 169488294,
+          "peak_rss_bytes": 1792155648,
+          "problem_shape_candidate_pairs_total": 66,
+          "problem_shape_term_evaluations_total": 1008,
+          "process_id": 1781691,
+          "ps_mint_candidate_pairs_total": 6,
+          "ps_mint_term_evaluations_total": 116,
+          "task_status_final": [
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized"
+          ],
+          "task_status_initial": [
+            "residual",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized"
+          ],
+          "variant": "all_transition_events_plus_key_support_counter"
+        }
+      },
+      "complete": true,
+      "cpu_delta_ns_candidate_minus_baseline": -5635921,
+      "cpu_ratio_candidate_over_baseline": 0.9678118365988501,
+      "execution_order": [
+        "candidate",
+        "baseline"
+      ],
+      "pair": 10,
+      "semantic_parity": true,
+      "wall_delta_ns_candidate_minus_baseline": -6485059,
+      "wall_ratio_candidate_over_baseline": 0.9631474942686351
+    },
+    {
+      "arms": {
+        "baseline": {
+          "all_checks_pass": true,
+          "arm": "baseline",
+          "boot_cpu_ns": 23393829515,
+          "boot_wall_ns": 22513947140,
+          "host_index_maintenance_ns_total": 0,
+          "mints_by_step": [
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "observation_cpu_ns_by_step": [
+            13845113,
+            24616227,
+            14437964,
+            25370467,
+            18211485,
+            15633425,
+            20208645,
+            22682926
+          ],
+          "observation_cpu_ns_total": 155006252,
+          "observation_metric": "full_closure_observe",
+          "observation_wall_ns_by_step": [
+            13842355,
+            24611619,
+            14434708,
+            25366854,
+            18208055,
+            15629797,
+            20206999,
+            22679586
+          ],
+          "observation_wall_ns_total": 154979973,
+          "peak_rss_bytes": 1791864832,
+          "problem_shape_candidate_pairs_total": 263,
+          "problem_shape_term_evaluations_total": 2011,
+          "process_id": 1791780,
+          "ps_mint_candidate_pairs_total": 0,
+          "ps_mint_term_evaluations_total": 0,
+          "task_status_final": [
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized"
+          ],
+          "task_status_initial": [
+            "residual",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized"
+          ],
+          "variant": "dynamic"
+        },
+        "candidate": {
+          "all_checks_pass": true,
+          "arm": "candidate",
+          "boot_cpu_ns": 24268576558,
+          "boot_wall_ns": 23199092646,
+          "host_index_maintenance_ns_total": 411622,
+          "mints_by_step": [
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "observation_cpu_ns_by_step": [
+            26324507,
+            20595546,
+            24895086,
+            21535246,
+            26178927,
+            16256084,
+            19210785,
+            22555246
+          ],
+          "observation_cpu_ns_total": 177551427,
+          "observation_metric": "eventized_observe_including_host_index_event_maintenance",
+          "observation_wall_ns_by_step": [
+            26324651,
+            20596212,
+            24912732,
+            21535669,
+            26199410,
+            16256502,
+            19210572,
+            22555545
+          ],
+          "observation_wall_ns_total": 177591293,
+          "peak_rss_bytes": 1791844352,
+          "problem_shape_candidate_pairs_total": 66,
+          "problem_shape_term_evaluations_total": 1008,
+          "process_id": 1797002,
+          "ps_mint_candidate_pairs_total": 6,
+          "ps_mint_term_evaluations_total": 116,
+          "task_status_final": [
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized"
+          ],
+          "task_status_initial": [
+            "residual",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized"
+          ],
+          "variant": "all_transition_events_plus_key_support_counter"
+        }
+      },
+      "complete": true,
+      "cpu_delta_ns_candidate_minus_baseline": 22545175,
+      "cpu_ratio_candidate_over_baseline": 1.1454468752653926,
+      "execution_order": [
+        "baseline",
+        "candidate"
+      ],
+      "pair": 11,
+      "semantic_parity": true,
+      "wall_delta_ns_candidate_minus_baseline": 22611320,
+      "wall_ratio_candidate_over_baseline": 1.1458983348771135
+    },
+    {
+      "arms": {
+        "baseline": {
+          "all_checks_pass": true,
+          "arm": "baseline",
+          "boot_cpu_ns": 24504350367,
+          "boot_wall_ns": 23658956492,
+          "host_index_maintenance_ns_total": 0,
+          "mints_by_step": [
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "observation_cpu_ns_by_step": [
+            26526767,
+            23835327,
+            18618845,
+            15594555,
+            23190086,
+            21697496,
+            18195194,
+            23066337
+          ],
+          "observation_cpu_ns_total": 170724607,
+          "observation_metric": "full_closure_observe",
+          "observation_wall_ns_by_step": [
+            26522024,
+            23831995,
+            18616359,
+            15600338,
+            23195760,
+            21713930,
+            18213136,
+            23061220
+          ],
+          "observation_wall_ns_total": 170754762,
+          "peak_rss_bytes": 1791926272,
+          "problem_shape_candidate_pairs_total": 263,
+          "problem_shape_term_evaluations_total": 2011,
+          "process_id": 1802293,
+          "ps_mint_candidate_pairs_total": 0,
+          "ps_mint_term_evaluations_total": 0,
+          "task_status_final": [
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized"
+          ],
+          "task_status_initial": [
+            "residual",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized"
+          ],
+          "variant": "dynamic"
+        },
+        "candidate": {
+          "all_checks_pass": true,
+          "arm": "candidate",
+          "boot_cpu_ns": 22554949804,
+          "boot_wall_ns": 21645190819,
+          "host_index_maintenance_ns_total": 344012,
+          "mints_by_step": [
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "observation_cpu_ns_by_step": [
+            21008086,
+            30721958,
+            19075045,
+            15232894,
+            24050237,
+            18174395,
+            20068946,
+            14833364
+          ],
+          "observation_cpu_ns_total": 163164925,
+          "observation_metric": "eventized_observe_including_host_index_event_maintenance",
+          "observation_wall_ns_by_step": [
+            21008106,
+            30721243,
+            19075093,
+            15233106,
+            24050568,
+            18174336,
+            20069180,
+            14833053
+          ],
+          "observation_wall_ns_total": 163164685,
+          "peak_rss_bytes": 1792401408,
+          "problem_shape_candidate_pairs_total": 66,
+          "problem_shape_term_evaluations_total": 1008,
+          "process_id": 1807470,
+          "ps_mint_candidate_pairs_total": 6,
+          "ps_mint_term_evaluations_total": 116,
+          "task_status_final": [
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized"
+          ],
+          "task_status_initial": [
+            "residual",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized",
+            "recognized"
+          ],
+          "variant": "all_transition_events_plus_key_support_counter"
+        }
+      },
+      "complete": true,
+      "cpu_delta_ns_candidate_minus_baseline": -7559682,
+      "cpu_ratio_candidate_over_baseline": 0.9557200210746422,
+      "execution_order": [
+        "baseline",
+        "candidate"
+      ],
+      "pair": 12,
+      "semantic_parity": true,
+      "wall_delta_ns_candidate_minus_baseline": -7590077,
+      "wall_ratio_candidate_over_baseline": 0.9555498370229932
+    }
+  ],
+  "provenance": {
+    "build_manifest_sha256": "17ff3eeb86c411de804ea1c26f1707d228b3812333e40add4df65d23b1be0a91",
+    "dirty_worktree": true,
+    "git_head": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+    "lock_sha256": "1d3fe83ea1a89be95be9adfd9b1193f723e1fe41c8b2600c890d58b93b5fd25c",
+    "locked_inputs": {
+      "baseline_raw_sha256": "ecb5e363847ba774561b76981fc256db2be41a3417084ec44a415bc266f6e0ee",
+      "baseline_runner_sha256": "a34ca8184db1e08f834fe0560b061d77a4d7592014fdc33ab223e39d414174ce",
+      "bigville_source_sha256": "b08857bf14bd4161c1d80ee4f19684a480937d87bec938049cf00e2bca9f1d02",
+      "build_manifest_sha256": "17ff3eeb86c411de804ea1c26f1707d228b3812333e40add4df65d23b1be0a91",
+      "candidate_runner_sha256": "c92c00ab92d457c4cf65a44e17b10024038fd348e1cbf1f6ad531e7f55575f56",
+      "cargo_lock_sha256": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+      "cast_seed_sha256": "b22ee380240b8f5618cba0f9d9c074fabc993fdd4082cf671ca1f65b5c8bb989",
+      "decomposition_source_sha256": "0ff01b92732d40d718b61c9b8fbe5494a48517dc942041884ccf0b1a88c4e85e",
+      "execution_amendment_sha256": "5fb1df947bbdb02d24e8de56393ae589f2ec4373159c11ea5c54ffcb24417850",
+      "native_sha256": "d9fc3f8a8fe2b146881b4cfb5b196c5ddc0f833a3da12a9f5fae0ca5bfa7d00a",
+      "preregistration_sha256": "a9859a73c0f42da4bf06aed1a74473c75a2191410e4d1fbc71bc2e595955f4e1",
+      "prior_pair_analyzer_sha256": "dfcdd747ac275590ad13c34930578fb2fe3ad594c610336f20a0542157438e2e",
+      "prior_pair_runner_sha256": "016cb5b19cf1e1d4c13778fb449f8b8e36fc603314e646a90430538eecb43f75",
+      "problem_shape_seed_sha256": "eb32bf403b59dba551b96f4e11bf3b996b2bf7febf73a29acba11dc668093ce7",
+      "problem_shape_source_sha256": "d88f2285362e089a0b1a9e5005bb2aef0b713ec937e5d986b51e502b61d8704b",
+      "runner_sha256": "5bb9962c00789de9ba047d3e2a648be4407011a160886a73eeeb123829b53842",
+      "shape_decode_seed_sha256": "3e1783cf566179061250572bbf7bc7bb54cacfafb83f8852008c4618d984a9c6",
+      "solver_dispatch_source_sha256": "336b4a09b660582e10e0889791d269c8edfdc1ecd6b0c870de865860bfd2fb2f"
+    },
+    "logical_cpu_count": 24,
+    "native_sha256": "d9fc3f8a8fe2b146881b4cfb5b196c5ddc0f833a3da12a9f5fae0ca5bfa7d00a",
+    "platform": "Linux-6.8.0-142-generic-x86_64-with-glibc2.39",
+    "python": "3.13.5 (main, Jun 11 2025, 15:36:57) [GCC 11.4.0]"
+  },
+  "run_id": "problem-shape-all-transitions-timing-v2-20260925",
+  "run_state": "locked_exploratory_repeated_paired_timing",
+  "schema_version": 1,
+  "summary": {
+    "all_pairs_semantically_valid": true,
+    "candidate_cpu_ratio_median": 0.9726307647908756,
+    "candidate_faster_pair_count": 7,
+    "candidate_wall_ratio_mean": 1.0056595537400002,
+    "candidate_wall_ratio_median": 0.9677254496917199,
+    "candidate_wall_ratio_range": [
+      0.83253841416072,
+      1.2639864665801965
+    ],
+    "median_wall_delta_ns": -5563778.5,
+    "median_wall_ratio_pair_bootstrap_95": [
+      0.8982659930975949,
+      1.1321567586287782
+    ],
+    "unique_process_ids": true
+  }
+}

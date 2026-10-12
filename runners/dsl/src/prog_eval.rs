@@ -2205,6 +2205,9 @@ pub(crate) fn eval_prog_eval(
         let pv = evaluate(arena, prog, env, ctx);
         match pv {
             Value::Node(nid) => {
+                let _helper_work = crate::access_trace::enter_helper_scope(
+                    crate::access_trace::HELPER_PROG_EVAL_DECODE,
+                );
                 match crate::reflect::term_from_subgraph(
                     ctx.graph,
                     ctx.interner,

@@ -25,6 +25,8 @@ old two-call ``gr.run`` did). No Python rule engine.
 """
 from __future__ import annotations
 
+from itertools import product
+
 from substrate_rs import (And, Attr, Eq, Exists, Lit, Neighbours, Not, Or, Plus,
                           Term, Times, TypeOf, Var, _native)
 
@@ -52,6 +54,40 @@ def new_graph():
                     "provenance": "language",
                 })
     return g
+
+
+_PARSE_CHAIN_TYPES = ("Anchor", "Char", "Word", "Number",
+                     "Constituent", "Marker")
+_PARSE_EDGE_TRIPLES = tuple(
+    (src, "next", tgt)
+    for src, tgt in product(_PARSE_CHAIN_TYPES, repeat=2)
+) + (
+    ("Constituent", "meaning", "Meaning"),
+    ("Constituent", "has_slot", "Slot"),
+    ("Meaning", "arg", "Arg"),
+    ("Arg", "value", "Meaning"),
+)
+
+
+def _new_parse_graph():
+    """Create the parser's exact typed edge grammar, not the public open graph.
+
+    ``new_graph`` remains the permissive language-schema constructor for
+    external callers. The hot parser scratch graph only needs the chain and
+    argument edges this module actually creates; opening every one of 12 x 12 x
+    6 triples costs hundreds of native calls per utterance.
+    """
+    graph = _native.Substrate()
+    for src, edge_type, tgt in _PARSE_EDGE_TRIPLES:
+        graph.add_production({
+            "src": {"type": src, "var": "s"},
+            "edge_type": edge_type,
+            "tgt": {"type": tgt, "var": "t"},
+            "where": None,
+            "weight": {"type": "Lit", "value": 1.0},
+            "provenance": "language_parser",
+        })
+    return graph
 
 
 def _enc(v):
@@ -248,14 +284,16 @@ def lexical_rules(forms: list[tuple[str, str]]) -> list[dict]:
     return words + _number_rules()
 
 
-def lex(text: str, forms: list[tuple[str, str]]) -> list[dict]:
-    """Reduce ``text`` to its sequence of lexical constituents (Words/Numbers),
-    by running the recognition rules then cleanup to a fixed point on the engine.
-    ``forms`` is [(form, category), …] — the words the lexicon knows."""
-    g = new_graph()
-    head, _ = ingest(g, text)
+def _lex_graph(text: str, forms: list[tuple[str, str]]):
+    """Build a native lexical chain for ``text`` using ``forms``."""
+    g = _new_parse_graph()
+    head, tail = ingest(g, text)
     _run(g, [g.add_rule(r) for r in lexical_rules(forms)])
     _run(g, [g.add_rule(_cleanup_rule())])
+    return g, head, tail
+
+
+def _lex_readback(g, head) -> list[dict]:
     out, cur = [], head
     while True:
         nbrs = g.neighbours(cur, "next")
@@ -270,6 +308,12 @@ def lex(text: str, forms: list[tuple[str, str]]) -> list[dict]:
             out.append({"kind": "Number", "value": a["value"]})
         cur = nxt
     return out
+
+
+def lex(text: str, forms: list[tuple[str, str]]) -> list[dict]:
+    """Reduce text to lexical constituents via the native recognition rules."""
+    g, head, _tail = _lex_graph(text, forms)
+    return _lex_readback(g, head)
 
 
 # --- composition / Merge — the dorsal+Broca's faculty -----------------------
@@ -356,10 +400,15 @@ def comprehend(text: str, lexicon: list[dict], audience=None) -> list:
     """
     forms = [(s["form"], _sign_kind(s)) for s in lexicon]
     by_form = {s["form"]: s for s in lexicon}
-    g = new_graph()
-    head = g.add_node("Anchor", {"id": "h"})
+    g, head, tail = _lex_graph(text, forms)
+    tokens = _lex_readback(g, head)
+    # Preserve graph-authored lexical recognition, but reuse its scratch graph
+    # for semantic composition instead of constructing a second native graph.
+    for old_node in list(g.nodes()):
+        if old_node != head and old_node != tail:
+            g.remove_node(old_node)
     prev, i = head, 0
-    for tok in lex(text, forms):
+    for tok in tokens:
         if tok["kind"] == "Number":
             node = g.add_node("Constituent", {"id": f"k{i}", "cat": "expr"})
             g.add_edge(node, "meaning",
@@ -381,7 +430,7 @@ def comprehend(text: str, lexicon: list[dict], audience=None) -> list:
                                  "dir": arg.get("dir", "R"), "filled": 0}), {})
         g.add_edge(prev, "next", node, {})
         prev, i = node, i + 1
-    g.add_edge(prev, "next", g.add_node("Anchor", {"id": "t"}), {})
+    g.add_edge(prev, "next", tail, {})
     _run(g, [g.add_rule(r) for r in _merge_rules()])
     out, cur = [], head
     while True:

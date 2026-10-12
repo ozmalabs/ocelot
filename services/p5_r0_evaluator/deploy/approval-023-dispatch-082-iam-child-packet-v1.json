@@ -1,0 +1,52 @@
+{
+  "schema": "P5R0APPROVAL023DISPATCH082IAMChildPacketV1",
+  "classification": "reviewed_execution_packet_non_release",
+  "parent_approval_id": "P5-MASTER-001/APPROVAL-023",
+  "dispatch_id": "P5-MASTER-001/DISPATCH-082",
+  "operation_id": "provision_gcs_only_iam_boundary",
+  "scope": ["provision_gcs_only_iam_boundary"],
+  "status": "approved_single_operation_enabled",
+  "attempt_id": "dispatch082-iam-20260920-a7f4c2d9",
+  "sources": {
+    "iam_definition_digest": "sha256:817ce6cff5f25487ba131a2d587fbcd489a52245e3a8173aa6320862ed49ce25",
+    "gcs_capability_definition_digest": "sha256:705c5323a8bf8f300547d2051cf128825b03e0415c334dd452cd4e9db0280ee2",
+    "prestate_artifact_digest": "sha256:03c83325fd531f0a2db39f0d54d02b10ae7cfa96577ab3cc93046602f109b946",
+    "prestate_state_digest": "sha256:a7580109437962f92903ff8d03f03a3f3de386b1da0f51e2cb73aff2518dc692",
+    "live_observation_digest": "sha256:2c458caa916c4720e70a50e2c84b362e9c8be05bcee796a707d0b3f7c3f2ca0f"
+  },
+  "source_paths": {
+    "iam_definition_path": "services/p5_r0_evaluator/deploy/rs069r18r13-iam-provisioning-definition-v1.json",
+    "gcs_capability_definition_path": "services/p5_r0_evaluator/deploy/gcs-capability-definition.json",
+    "prestate_artifact_path": "var/p5-r0-rs069/rs069r18r13-iam-prestate-v2.json",
+    "live_observation_path": "var/p5-r0-approval-022/approval-022-live-observation-v1.json"
+  },
+  "target": {
+    "project_id": "ocelot-proof",
+    "project_number": "141633828616",
+    "bucket": "p5-evaluator-ocelot-proof-141633828616",
+    "service_account": "p5-r0-gcs-only@ocelot-proof.iam.gserviceaccount.com",
+    "custom_role": "projects/ocelot-proof/roles/p5R0Operation4BundleWriterV1",
+    "wif_principal": "principalSet://iam.googleapis.com/projects/141633828616/locations/global/workloadIdentityPools/p5-cs-pool/attribute.image_digest/sha256:394a0707d1e162315bdf22de4ff034a7cf75a32b919cef6f12bba501521be11c"
+  },
+  "apply_contract": {
+    "fixed_gcloud_path": "/home/matt/google-cloud-sdk/bin/gcloud",
+    "shell": false,
+    "stdin": "DEVNULL",
+    "adc_discovery": false,
+    "credential_export": false,
+    "service_account_keys": false,
+    "later_operations_enabled": false,
+    "cloud_operations": [],
+    "mutations_performed": false
+  },
+  "rollback": {
+    "order": ["target_service_account_policy", "bucket_policy", "custom_role"],
+    "poststate_failure": "rollback_and_verify_exact_prestate",
+    "ambiguous_state": "manual_review_no_retry",
+    "created_service_account": "never_delete_automatically"
+  },
+  "later_operations_enabled": false,
+  "cloud_operations": [],
+  "mutations_performed": false,
+  "artifact_digest": "sha256:5c1671e34559897a4fb62c67c575280df9897bb733496fd8fbea224d7961e4e4"
+}

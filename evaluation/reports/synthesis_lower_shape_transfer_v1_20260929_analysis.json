@@ -1,0 +1,184 @@
+{
+  "ablation_to_trigger_candidate_ratios": {
+    "threshold4": 3.9592200336533705,
+    "threshold6": 1.4439807661761945
+  },
+  "all_preregistered_gates_pass": false,
+  "behavioral_gates": {
+    "threshold4_ablation_hits_candidate_cap_at_least_4_of_5": true,
+    "threshold4_lexical_ablation_selects_no_shape": true,
+    "threshold4_median_candidate_reduction_at_least_1_5x": true,
+    "threshold4_trigger_exact_transfer_at_least_4_of_5": true,
+    "threshold4_trigger_selects_registered_shape_without_harness_ops": true,
+    "threshold6_ablation_hits_candidate_cap_at_least_4_of_5": true,
+    "threshold6_lexical_ablation_selects_no_shape": true,
+    "threshold6_median_candidate_reduction_at_least_1_5x": false,
+    "threshold6_trigger_exact_transfer_at_least_4_of_5": true,
+    "threshold6_trigger_selects_registered_shape_without_harness_ops": true
+  },
+  "behavioral_pass": false,
+  "capture_integrity_pass": true,
+  "case_results": {
+    "threshold4:lexical_ablation": {
+      "accepted": 0,
+      "candidate_tests": {
+        "max": 200000,
+        "median": 200000,
+        "min": 200000
+      },
+      "exact_transfer_workers": 0,
+      "false_accept_workers": 0,
+      "gapped": 5,
+      "holdout_exact_predictions": 0,
+      "holdout_prediction_count": 0,
+      "message_operator_selections": [
+        "None"
+      ],
+      "n": 5,
+      "pump_cpu_ms": {
+        "median": 282.534075
+      },
+      "pump_wall_ms": {
+        "max": 288.518015,
+        "median": 282.198815,
+        "min": 263.012683
+      },
+      "selected_operator_lists": [
+        "[]"
+      ],
+      "selected_shapes": [
+        "None"
+      ]
+    },
+    "threshold4:trigger": {
+      "accepted": 5,
+      "candidate_tests": {
+        "max": 50515,
+        "median": 50515,
+        "min": 50515
+      },
+      "exact_transfer_workers": 5,
+      "false_accept_workers": 0,
+      "gapped": 0,
+      "holdout_exact_predictions": 30,
+      "holdout_prediction_count": 30,
+      "message_operator_selections": [
+        "1"
+      ],
+      "n": 5,
+      "pump_cpu_ms": {
+        "median": 158.185852
+      },
+      "pump_wall_ms": {
+        "max": 187.269669,
+        "median": 156.464617,
+        "min": 149.602855
+      },
+      "selected_operator_lists": [
+        "['Times', 'Lt', 'IfThenElse']"
+      ],
+      "selected_shapes": [
+        "thresholded_lower_branch"
+      ]
+    },
+    "threshold6:lexical_ablation": {
+      "accepted": 0,
+      "candidate_tests": {
+        "max": 200000,
+        "median": 200000,
+        "min": 200000
+      },
+      "exact_transfer_workers": 0,
+      "false_accept_workers": 0,
+      "gapped": 5,
+      "holdout_exact_predictions": 0,
+      "holdout_prediction_count": 0,
+      "message_operator_selections": [
+        "None"
+      ],
+      "n": 5,
+      "pump_cpu_ms": {
+        "median": 215.057268
+      },
+      "pump_wall_ms": {
+        "max": 237.002446,
+        "median": 213.761089,
+        "min": 207.824271
+      },
+      "selected_operator_lists": [
+        "[]"
+      ],
+      "selected_shapes": [
+        "None"
+      ]
+    },
+    "threshold6:trigger": {
+      "accepted": 5,
+      "candidate_tests": {
+        "max": 138506,
+        "median": 138506,
+        "min": 138506
+      },
+      "exact_transfer_workers": 5,
+      "false_accept_workers": 0,
+      "gapped": 0,
+      "holdout_exact_predictions": 30,
+      "holdout_prediction_count": 30,
+      "message_operator_selections": [
+        "1"
+      ],
+      "n": 5,
+      "pump_cpu_ms": {
+        "median": 203.915818
+      },
+      "pump_wall_ms": {
+        "max": 202.407392,
+        "median": 201.415979,
+        "min": 192.265766
+      },
+      "selected_operator_lists": [
+        "['Times', 'Lt', 'IfThenElse']"
+      ],
+      "selected_shapes": [
+        "thresholded_lower_branch"
+      ]
+    }
+  },
+  "integrity_checks": {
+    "accepted_programs_have_six_independent_holdout_rows": true,
+    "all_workers_reach_rung3_terminal": true,
+    "all_workers_source_stable": true,
+    "complete_unique_20_cell_matrix": true,
+    "current_source_and_native_match_lock": true,
+    "footer_lock_unchanged": true,
+    "locked_schedule_header_footer": true,
+    "no_worker_failures": true
+  },
+  "interpretation": "Tests this registered thresholded-lower selector across two fixed scalar piecewise-scaling tasks and a lexical ablation. It does not establish operator selection beyond this shape family or general grammar induction.",
+  "lock_sha256": "7049eb8cb93ec2cfa334c868ec4e3bf492f5424ad6de59f9686dea238f4e8181",
+  "native_matches_lock": true,
+  "passed_integrity_checks": 8,
+  "raw_sha256": "8a5e02264838cc1d95c9e88b6122da18e40cf6423ff7bd115a7c8e635b4de902",
+  "run_id": "synthesis_lower_shape_transfer_v1_20260929",
+  "source_file_matches": {
+    "domains/code_writing.py": true,
+    "domains/engine_provenance.py": true,
+    "domains/prog_retrieval.py": true,
+    "domains/prog_synthesis.py": true,
+    "runners/dsl/python/substrate_rs/__init__.py": true,
+    "runners/dsl/python/substrate_rs/_native.build.json": true,
+    "runners/dsl/src/graph_rules.rs": true,
+    "runners/dsl/src/prog_eval.rs": true,
+    "runners/dsl/src/py.rs": true,
+    "runners/dsl/src/substrate.rs": true,
+    "runners/dsl/src/synth_enumerate.rs": true,
+    "runners/dsl/src/term.rs": true,
+    "seeds/code_write_request_cues.json": true,
+    "seeds/exact_families.json": true,
+    "seeds/program_synthesis.json": true,
+    "seeds/program_synthesis_grounding.json": true,
+    "seeds/program_synthesis_opgrammar.json": true
+  },
+  "total_integrity_checks": 8,
+  "worker_failures": []
+}

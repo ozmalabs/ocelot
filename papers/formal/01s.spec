@@ -18,8 +18,7 @@ Equalisation} (Theory) is the case for it. What is missing here is not detail bu
 \emph{argument} --- the removals that establish how little is required are the long
 paper's bulk and its actual work, so anything below that a reader wants shown rather
 than asserted is shown there. Calling this a short form would describe
-it by its length instead of by what it does. Every axiom, definition, theorem and
-proposition below is pulled from the long paper at build time, and so are the
+it by its length instead of by what it does. Every labelled block below is pulled from the long paper at build time, and so are the
 falsifiability commitments attached to them, so none of those can drift from it; the
 commitments the long paper carries for material \emph{not} stated here are listed by
 title at the end, so the omission stays checkable in this document rather than only in
@@ -39,9 +38,9 @@ who doubts a particular claim here should expect to be persuaded there and not b
 \end{abstract}
 
 \section{The substrate}
-The substrate is structure, the transformations operative upon it, and a grammar of which relations
-may exist. Only the first is required for there to be anything; the other two are what a world in
-which anything \emph{happens} costs. Nothing beyond the three is primitive, and anything else exists
+The substrate is structure, the transformations operative upon it, and a grammar of which transformations
+are admissible. Only the first is required for there to be anything; the other two are what a world in
+which anything \emph{happens} costs. Nothing beyond the three is claimed primitive, and anything else exists
 where a graph happens to represent it.
 
 @pull def:graph
@@ -55,8 +54,7 @@ realisation selects one of them, which then becomes the antecedent for what foll
 @pull hyp:the-law
 
 A realised deformation is not submitted for entry, so what a containing grammar declines is not undone
-by the declining; it stays where it is. That remainder is the residual, and admitting it is the only
-route by which a grammar grows.
+by the declining; it stays where it is. That remainder is the residual, and admitting it is how a grammar grows from residual.
 
 @pull def:residual
 @pull prop:residual-inadmissible
@@ -94,6 +92,16 @@ demarcates them.
 @pull def:aperture
 @pull def:change-grammar
 @pull def:states
+
+Provenance is a relation to what produced a structure or event. Its attribution
+is inferred from evidence available in a frame; an origin record is evidence,
+not a self-authenticating intrinsic mark. A local attribution can be unique
+under a declared model. This is distinct from assumption-free closure of the
+recursively supplying operators, which is separately argued in the long paper.
+
+@pull def:provenance
+@pull rem:provenance-status
+@pull prop:provenance-inference
 
 What a frame's gates admit, and what it can reach from where it stands, are two quantities and not
 one; a disclosure that moves a gate changes what the gates admit, and that is where an information hazard is
@@ -162,7 +170,7 @@ Stepping back: the account forbids very little, and what it does forbid is one t
 
 @pull prop:prohibition
 
-That prohibition has a formal analogue --- a language of sufficient strength cannot define its own
+That prohibition has a formal analogue --- under classical bivalence, a language strong enough to represent its own syntax cannot define its own
 truth predicate, and must be given it from a metalanguage --- and the analogue is proved, though the
 mapping from frames to formal systems is argued rather than proved. What is forbidden is complete
 self-capture and not partial self-modelling, which is why reflective towers work and a frame can know
@@ -188,6 +196,10 @@ set, including those for results not stated here, and the omitted commitments ar
 title, so the omission stays visible rather than becoming a claim.
 
 \begin{enumerate}[leftmargin=*]
+@falsifier Time is inferred, not primitive
+@falsifier Closure is the default operational clock hypothesis
+@falsifier Two gates, and absence is not residual
+@falsifier Partial-order sufficiency
 @falsifier Composition
 @falsifier Minimal graph sufficiency
 @falsifier Discrete sufficiency

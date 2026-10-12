@@ -1,0 +1,5 @@
+# Nonlinear dimension induction v1.4 instrumentation amendment
+
+The v1.4 runner repeated the locked 40-cell v1.3 design and captured a 40-cell source/native-stable run. Its proposed GenInfer metrics were placed on `EvalCtx` and read from the per-Substrate `Counters` API. Inspection after capture showed that production rule effects construct fresh `EvalCtx` values in `rewrite.rs` without threading the owning substrate's counter reference. The v1.4 capture therefore reports zero for every proposed GenInfer counter, including enabled cells whose nonlinear closure takes about 1.95 seconds.
+
+The v1.4 analyzer checked that metric fields existed and reconciled internally, but did not require positive enabled-path activity. It admitted this inert instrument. Preserve the raw capture and analysis as a failed instrumentation attempt; do not use its zero counts as capability evidence. V1.5 moves counters to the actual GenInfer Term and kernel operation sites behind the existing scale-audit gate, adds positive enabled and zero frozen controls, and independently reconciles candidate counts.

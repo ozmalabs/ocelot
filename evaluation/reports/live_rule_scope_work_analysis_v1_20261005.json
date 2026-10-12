@@ -1,0 +1,86 @@
+{
+  "capture_summary_sha256": "3509d237321215b3b12f614fafe98cde48ab2d63efb44cece5398795d9f6f2b2",
+  "checks": {
+    "all_checks_pass": true,
+    "all_three_worker_access_traces_reproduce_per_prompt": true,
+    "all_three_worker_traces_reproduce_per_prompt": true,
+    "capture_summary_matches_raw": true,
+    "no_work_events_dropped": true
+  },
+  "claim_boundary": "Work rows report the native work counters present in this captured route. They do not directly count dynamic helper invocations or identify all graph nodes visited; syntax and helper scope findings remain static. Units are summed across three replicated workers for storage and must not be interpreted as one-request cost.",
+  "raw_gzip_sha256": "1864a228605baf8374a4cf7ea3ed772812b8baeb4bc514d8b7e5b154e60ce231",
+  "raw_path": "evaluation/reports/substrate_live_frame_rule_scope_capture_v1_3_workers_raw_20261005.json.gz",
+  "raw_uncompressed_sha256": "9f6de84f50654cf8bfc8f0233f6d1171e6d99fb47c4430d990c4e25faad26cc7",
+  "run_id": "live-rule-scope-work-analysis-v1-20261005",
+  "schema": "LiveRuleScopeWorkAnalysisV1",
+  "summary": {
+    "dropped_work_events": 0,
+    "prompt_worker_parity": {
+      "describe who you are": {
+        "same_access_rows": true,
+        "same_work_rows": true,
+        "worker_ids": [
+          0,
+          1,
+          2
+        ]
+      },
+      "report your organisation": {
+        "same_access_rows": true,
+        "same_work_rows": true,
+        "worker_ids": [
+          0,
+          1,
+          2
+        ]
+      }
+    },
+    "prompts": 2,
+    "raw_work_row_count_across_workers": 270,
+    "total_work_units_across_workers": 472347,
+    "work_row_shapes": {
+      "5": 270
+    },
+    "work_units_by_kind_across_workers": {
+      "operation_kind": 45,
+      "scheduler_dirty_vector_slots": 177015,
+      "scheduler_external_poll_slots": 177015,
+      "scheduler_fixedpoint_probe_slots": 777,
+      "scheduler_pass": 75,
+      "scheduler_selected_rules": 117420
+    },
+    "work_units_by_operation_and_kind_across_workers": [
+      {
+        "kind": "operation_kind",
+        "operation_id": 0,
+        "units": 45
+      },
+      {
+        "kind": "scheduler_dirty_vector_slots",
+        "operation_id": 0,
+        "units": 177015
+      },
+      {
+        "kind": "scheduler_external_poll_slots",
+        "operation_id": 0,
+        "units": 177015
+      },
+      {
+        "kind": "scheduler_fixedpoint_probe_slots",
+        "operation_id": 0,
+        "units": 777
+      },
+      {
+        "kind": "scheduler_pass",
+        "operation_id": 0,
+        "units": 75
+      },
+      {
+        "kind": "scheduler_selected_rules",
+        "operation_id": 0,
+        "units": 117420
+      }
+    ],
+    "workers": 3
+  }
+}

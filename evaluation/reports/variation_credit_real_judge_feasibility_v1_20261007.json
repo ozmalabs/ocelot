@@ -1,0 +1,53 @@
+{
+ "boot_seconds": 12.141956806182861,
+ "checks": {
+  "both_dispatched_done": true,
+  "break_refuted": true,
+  "fix_supported": true,
+  "real_verdicts_credited": true
+ },
+ "credits": {
+  "reply_ablation|reply_fix": [
+   1,
+   1
+  ],
+  "structural_edit|reply_fix": [
+   1,
+   0
+  ]
+ },
+ "native_sha256": "1b942c6222fbd7b946b789f257422d04d92330c5f2783e3bf9ebd993bf605a8f",
+ "pick_after": "reply_ablation",
+ "pick_before": "reply_ablation",
+ "schema": "VariationCreditRealJudgeFeasibilityV1",
+ "trials": [
+  {
+   "credited": 1,
+   "judged_outcome": "supported",
+   "label": "fix",
+   "op": "reply_ablation",
+   "outcome": "supported",
+   "regressions": 0,
+   "remove_rules": [
+    "reply_self_identity"
+   ],
+   "score": 1,
+   "seconds": 27.84218144416809,
+   "status": "done"
+  },
+  {
+   "credited": 1,
+   "judged_outcome": "refuted",
+   "label": "break",
+   "op": "structural_edit",
+   "outcome": "refuted",
+   "regressions": 1,
+   "remove_rules": [
+    "reply_to_adjacency_pair"
+   ],
+   "score": -1,
+   "seconds": 28.01127600669861,
+   "status": "done"
+  }
+ ]
+}

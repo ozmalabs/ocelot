@@ -1,0 +1,38 @@
+{
+  "schema": "phase7-daemon-oneshot-resource.v1",
+  "measurement": "GNU time maximum resident set for the actual daemon CLI in --once mode",
+  "date": "2026-09-28",
+  "seed_profile": "conversation",
+  "fresh_boot": true,
+  "seed_selection_complete": true,
+  "selected_seed_count": 74,
+  "graph_nodes_after_daemon_boot": 2094,
+  "shadow_read_enabled": false,
+  "network_listeners_enabled": false,
+  "host_actions_dispatched": false,
+  "checkpoint_written": true,
+  "strict_seed_profile_checkpoints": true,
+  "allocator_environment": {
+    "PYTHONMALLOC": "malloc",
+    "MALLOC_ARENA_MAX": "1",
+    "MALLOC_TRIM_THRESHOLD_": "32768"
+  },
+  "elapsed_wall_seconds": 1.23,
+  "maximum_rss_kib": 106980,
+  "maximum_rss_bytes": 109547520,
+  "rss_limit_bytes": 104857600,
+  "rss_limit_exceeded_bytes": 4689920,
+  "resource_gate_passed": false,
+  "allocator_threshold_trial": {
+    "MALLOC_MMAP_THRESHOLD_": "32768",
+    "MALLOC_TRIM_THRESHOLD_": "0",
+    "maximum_rss_kib": 107316,
+    "interpretation": "worse than the baseline allocator configuration"
+  },
+  "command_template": "env PYTHONMALLOC=malloc MALLOC_ARENA_MAX=1 MALLOC_TRIM_THRESHOLD_=32768 /usr/bin/time -v python3 scripts/jabberwock_daemon.py --once --no-http --socket '' --no-attach-libraries --no-llm --seeds conversation --strict-seed-profile-checkpoints --ckpt-dir <fresh-temp-dir>/checkpoints --runs-dir <fresh-temp-dir>/runs",
+  "notes": [
+    "The daemon's --shadow-read default is now false; the measurement omitted both --shadow-read and --no-shadow-read.",
+    "This is an actual fresh daemon boot/checkpoint process measurement, not an in-process harness RSS delta.",
+    "The measurement does not close latency, full-turn completion, cognition, production, or comparative-evaluation gates."
+  ]
+}

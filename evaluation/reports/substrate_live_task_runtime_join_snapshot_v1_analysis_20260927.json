@@ -1,0 +1,89 @@
+{
+  "all_checks_pass": true,
+  "checks": {
+    "all_three_workers_same_pre_action_graph": true,
+    "expected_installed_pattern": true,
+    "native_candidates_equal_two_exact_graph_passes": true,
+    "per_rule_pairs_equal_candidate_tests": true,
+    "two_scheduler_passes_each": true,
+    "unique_target_rule_pattern": true
+  },
+  "checks_passed": 6,
+  "checks_total": 6,
+  "independent_graph_enumeration": {
+    "candidate_tests_by_clause": [
+      2,
+      8,
+      22
+    ],
+    "candidate_tests_one_pass": 32,
+    "complete_bindings": 22,
+    "partial_bindings_after_clause": [
+      2,
+      8,
+      22
+    ],
+    "relation_populations": {
+      "has_intent": 2,
+      "has_mention": 8,
+      "refers_to": 22
+    }
+  },
+  "interpretation": "The exact captured graph has 2 has_intent edges, 8 has_mention edges, and 22 refers_to edges. Following the installed source-bound lookup order, an independent matcher counts 2+8+22=32 candidate edge visits in one pass and finds 22 complete bindings. The native target rule reports 64 candidate tests in two scheduler passes at the pre-action transition, exactly 32 per pass. This ties actual runtime graph structure to native candidate counters for one rule; it does not validate other rules or predict complete closure cost.",
+  "native_closure_observations": [
+    {
+      "native_rule_candidate_pairs": 64,
+      "native_rule_candidate_tests": 64,
+      "native_rule_enumerations": 2,
+      "replicate": 0,
+      "runtime_graph_edges": 11762,
+      "runtime_graph_nodes": 25142,
+      "runtime_graph_sha256": "7106e589432124cd5da4fbe25c5e41a1f93c6d64a5379031761ef62ae2bfdf3a",
+      "scheduler_passes": 2
+    },
+    {
+      "native_rule_candidate_pairs": 64,
+      "native_rule_candidate_tests": 64,
+      "native_rule_enumerations": 2,
+      "replicate": 1,
+      "runtime_graph_edges": 11762,
+      "runtime_graph_nodes": 25142,
+      "runtime_graph_sha256": "7106e589432124cd5da4fbe25c5e41a1f93c6d64a5379031761ef62ae2bfdf3a",
+      "scheduler_passes": 2
+    },
+    {
+      "native_rule_candidate_pairs": 64,
+      "native_rule_candidate_tests": 64,
+      "native_rule_enumerations": 2,
+      "replicate": 2,
+      "runtime_graph_edges": 11762,
+      "runtime_graph_nodes": 25142,
+      "runtime_graph_sha256": "7106e589432124cd5da4fbe25c5e41a1f93c6d64a5379031761ef62ae2bfdf3a",
+      "scheduler_passes": 2
+    }
+  ],
+  "raw_sha256": "7828635f8cf277fe56387571a57eb11939b17d5596dd097c7a09397aa2976032",
+  "runtime_graph_file_sha256": "5ca856402bc7f673bb4675fd8a2feeff07da509284fb5ce2f485b0bb5dc47775",
+  "schema_version": 1,
+  "target_rule": {
+    "installed_match": [
+      [
+        "m",
+        "has_intent",
+        "intent"
+      ],
+      [
+        "m",
+        "has_mention",
+        "mention"
+      ],
+      [
+        "mention",
+        "refers_to",
+        "c"
+      ]
+    ],
+    "name": "rule_intent_about_mentioned_concept",
+    "rule_index": 370
+  }
+}

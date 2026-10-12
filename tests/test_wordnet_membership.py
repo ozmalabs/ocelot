@@ -1,6 +1,8 @@
 """Low-residency lemma membership matches NLTK's WordNet morphology."""
 from __future__ import annotations
 
+import subprocess
+import sys
 from pathlib import Path
 
 from domains import wordnet_membership as membership
@@ -17,7 +19,8 @@ def _write_wordnet_fixture(root: Path) -> None:
         encoding="utf-8",
     )
     (root / "index.verb").write_text(
-        "walk v 1 1 @ 1 1 00000003\n",
+        "walk v 1 1 @ 1 1 00000003\n"
+        "report v 1 1 @ 1 1 00000004\n",
         encoding="utf-8",
     )
     (root / "noun.exc").write_text("mice mouse\n", encoding="utf-8")
@@ -37,10 +40,22 @@ def test_wordnet_membership_preserves_nltk_suffix_and_exception_rules(
     assert membership.has_synset("mice") is True
     assert membership.has_synset("walked") is True
     assert membership.has_synset("xwalked") is False
+    assert membership.lemmas("walked", "v") == ("walk",)
+    assert membership.lemmas("reports", "v") == ("report",)
+    assert membership.lemmas("mice", "n") == ("mouse",)
+    assert membership.lemmas("xwalked", "v") == ()
 
     for connection in membership._CONNECTIONS.values():
         connection.close()
     membership._CONNECTIONS.clear()
+
+
+def test_live_membership_does_not_import_nltk_package() -> None:
+    code = (
+        "import sys; from domains.wordnet_membership import has_synset; "
+        "has_synset('weather'); assert 'nltk' not in sys.modules"
+    )
+    subprocess.run([sys.executable, "-c", code], check=True, cwd=Path.cwd())
 
 
 def test_wordnet_membership_matches_nltk_on_live_english_forms() -> None:

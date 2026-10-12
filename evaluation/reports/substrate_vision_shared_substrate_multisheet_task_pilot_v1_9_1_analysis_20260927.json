@@ -1,0 +1,68 @@
+{
+  "case_summary": {
+    "theta_0_phase_0.000000_both": {
+      "elapsed_s": 0.39674202699097805,
+      "passes": 1497,
+      "progress": 1500,
+      "status": "fixed_point"
+    },
+    "theta_0_phase_1.570796_both": {
+      "elapsed_s": 0.5701533030078281,
+      "passes": 2174,
+      "progress": 2178,
+      "status": "repeated_graph_state"
+    },
+    "theta_135_phase_0.000000_both": {
+      "elapsed_s": 2.3336046659969725,
+      "passes": 8850,
+      "progress": 8855,
+      "status": "repeated_graph_state"
+    },
+    "theta_135_phase_1.570796_both": {
+      "elapsed_s": 0.5985605530149769,
+      "passes": 2276,
+      "progress": 2281,
+      "status": "repeated_graph_state"
+    },
+    "theta_45_phase_0.000000_both": {
+      "elapsed_s": 1.3984630790073425,
+      "passes": 5232,
+      "progress": 5237,
+      "status": "repeated_graph_state"
+    },
+    "theta_45_phase_1.570796_both": {
+      "elapsed_s": 0.36593499200535007,
+      "passes": 1416,
+      "progress": 1421,
+      "status": "repeated_graph_state"
+    },
+    "theta_90_phase_0.000000_both": {
+      "elapsed_s": 0.4961490400019102,
+      "passes": 1788,
+      "progress": 1792,
+      "status": "repeated_graph_state"
+    },
+    "theta_90_phase_1.570796_both": {
+      "elapsed_s": 0.7462910840113182,
+      "passes": 2844,
+      "progress": 2848,
+      "status": "repeated_graph_state"
+    }
+  },
+  "checks": {
+    "all_eight_prior_cap_cases_replayed": true,
+    "each_run_exceeded_instrumentation_horizon": true,
+    "exact_initial_input_graphs_match_v1_9": true,
+    "full_closure_terminal_class_observed": true,
+    "pixel_counts_match_retinal_bursts": true,
+    "source_stable": true,
+    "within_native_progress_budget": true
+  },
+  "input": "evaluation/reports/substrate_vision_shared_substrate_multisheet_task_pilot_v1_9_1_20260927.json",
+  "interpretation": "All eight global both-sheet cases previously cut off by the 512-pass Python trace horizon terminate under the native full-closure runner from byte-equivalent initial input graphs. One reaches a fixed point and seven end by exact repeated-graph detection, from 1,416 to 8,850 passes, all below the 1.6M progress ceiling. The prior pass cap was an instrumentation horizon, not evidence of unresolved engine termination for these eight cases. This remains one prepared state and one visual family; cycle periods are not exposed by the native summary API.",
+  "pass": true,
+  "status_counts": {
+    "fixed_point": 1,
+    "repeated_graph_state": 7
+  }
+}

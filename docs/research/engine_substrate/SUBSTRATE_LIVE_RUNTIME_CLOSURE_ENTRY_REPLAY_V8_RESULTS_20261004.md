@@ -1,0 +1,9 @@
+# Live runtime closure-entry replay v8 results — 2026-10-04
+
+Schema V6 adds deterministic checkpoint serialization for `argmax` and `holds` cache entries alongside neighbour and filter entries. The source-locked capture and replay passed on the 15 primary `run_rules` call-entry states across two requests. Parent task, reply, graph digest, and behavioral counter parity passed. Independent analysis reports exact equality for all 13,376 per-rule metric cells and for aggregate candidate, Term, enumeration, and where counters.
+
+This route contains nonempty neighbour and filter entries (up to 73 and 6 respectively), but argmax and holds were empty in every captured state. Thus V8 confirms compatibility of the expanded schema and dynamically validates nonempty neighbour/filter restoration; it does not dynamically validate the new argmax/holds payload paths. Reachable and SD-operation payloads remain unsupported and fail closed when nonempty. Graph serialization retains the documented one-ULP limitation in two timestamp values.
+
+Evidence: [v8 preregistration](SUBSTRATE_LIVE_RUNTIME_CLOSURE_ENTRY_REPLAY_V8_PREREG_20261004.md), [state capture runner](../../../evaluation/substrate_capability/live_runtime_closure_entry_states_v6.py), [state analysis](../../../evaluation/reports/live_runtime_closure_entry_states_v6_analysis_20261004.json), [replay runner](../../../evaluation/substrate_capability/live_runtime_closure_entry_replay_v8.py), [replay analysis](../../../evaluation/reports/live_runtime_closure_entry_replay_v8_analysis_20261004.json), and [source lock](../../../evaluation/substrate_capability/live_runtime_closure_entry_replay_v8_lock_20261004.json).
+
+This remains one authored route and does not establish natural workload prevalence, scaling, general tractability, or substrate-led learning.

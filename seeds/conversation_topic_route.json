@@ -1,6 +1,6 @@
 {
   "id": "conversation_topic_route",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "depends_on": ["intent"],
   "_shadow_span_note": "v1.2.0 (blind-spot closure R7): the route now DEFERS when the turn's shadow read found a RICHER multi-word topic key (world_adapter._shadow_read_turn's shadow_doc_topic -- a newly-minted SmEntity this turn whose name matches an EXISTING HeldAnswer topic, e.g. 'wright_brothers' for 'the Wright brothers', where this rule's own comp_topic would only carry the head-truncated 'wright'). seeds/conversation_topic_span.json::route_shadow_topic_to_answer mints the SAME Goal{kind:answer_topic} shape keyed on the richer name instead. shadow_doc_topic is a pre-tick Message attribute (the adapter writes it before either rule ever runs), so this guard is a static precondition, not an install-order race.",
   "_self_possessive_note": "v1.1.0: the route now DEFERS when the graph UNDERSTANDS the topic is the agent's OWN ('how does YOUR collapse function work' -> was grounding 'your collapse' externally). The understanding is graph-native, not a Python string check: a mention that refers_to a SECOND-PERSON Concept (your/yours) AND immediately determines a following noun (has a next_mention) is a possessive self-reference -- the possessed nominal is ABOUT THE AGENT. When such a possessive is present the route does not fire, so the turn falls to the reflexive self/meta path (comprehend_text's honest_self/self_process dispatch) that already handles it. 'what do you know about the moon' has no such possessive ('you' is the subject, 'moon' is preceded by 'the'), so the moon route is unaffected. The discriminator (possessive self vs subject self + external object) lives in referent resolution + mention adjacency the rule reads -- the graph deciding, from what it resolved.",
@@ -19,6 +19,8 @@
         "items": [
           {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "comp_kind"}, "b": {"type": "Lit", "value": "question"}},
           {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "topic_pending"}, "b": {"type": "Lit", "value": 1.0}},
+          {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "language_confirmation_request"}, "b": {"type": "Lit", "value": "proposition_confirmation"}}},
+          {"type": "Not", "arg": {"type": "Exists", "source": {"type": "Neighbours", "node": {"type": "Var", "name": "m"}, "edge_type": "has_interpretation"}, "var_name": "partial_i", "predicate": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "partial_i"}, "key": "literal_form"}, "b": {"type": "Lit", "value": "fragment"}}}},
           {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "comprehended"}, "b": {"type": "Lit", "value": 1.0}}},
           {"type": "Not", "arg": {"type": "And", "items": [
             {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "comp_relation_focus"}, "b": {"type": "Lit", "value": "polar"}},

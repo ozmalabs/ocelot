@@ -1,0 +1,65 @@
+{
+  "capability_result": "Both frozen reduced profiles preserve stable selection and source inputs but fail the preregistered task capability gate. V1 returns the ungrounded-identity floor; v2 grounds the identity but returns only \u201cI am Jabberwock.\u201d Neither selects/resolves the requested scene-description Goal. Their low measured RSS therefore demonstrates a memory/capability tradeoff, not a successful lightweight operating mode.",
+  "checks": {
+    "conversation_instruction_identity_same_full_source_native": true,
+    "conversation_instruction_identity_selection_complete": true,
+    "conversation_instruction_identity_source_stable": true,
+    "conversation_only_same_full_source_native": true,
+    "conversation_only_selection_complete": true,
+    "conversation_only_source_stable": true
+  },
+  "integrity_gates_pass": true,
+  "memory_comparison_boundary": "Selective profiles share the full capture source/native hashes. RSS phase values are one worker per profile; full-profile 2.508 GiB peak comes from five-process same-source timing plus an OS high-water cross-check.",
+  "profile_metrics": {
+    "conversation_instruction_identity": {
+      "after_boot_current_rss_gib": 0.0479,
+      "after_requests_current_rss_gib": 0.0805,
+      "all_goals_resolved": false,
+      "capability_gate_pass": false,
+      "expected_scene_reply": false,
+      "indexed_corpus_seed_count": 742,
+      "peak_rss_gib": 0.1288,
+      "reply_values": [
+        "I am Jabberwock."
+      ],
+      "selected_seed_count": 8,
+      "selected_seed_ids": [
+        "relations",
+        "faculty_lessons",
+        "psychology",
+        "conversation",
+        "intent",
+        "communication_intent_arbitration",
+        "comprehend_instruction",
+        "jabberwock_identity"
+      ]
+    },
+    "conversation_only": {
+      "after_boot_current_rss_gib": 0.0495,
+      "after_requests_current_rss_gib": 0.0799,
+      "all_goals_resolved": false,
+      "capability_gate_pass": false,
+      "expected_scene_reply": false,
+      "indexed_corpus_seed_count": 742,
+      "peak_rss_gib": 0.1287,
+      "reply_values": [
+        "no substrate identity grounded (boot the identity seed \u2014 jabberwock_identity \u2014 to answer this)"
+      ],
+      "selected_seed_count": 4,
+      "selected_seed_ids": [
+        "relations",
+        "faculty_lessons",
+        "psychology",
+        "conversation"
+      ]
+    },
+    "full_seed_reference": {
+      "note": "Peak RSS is independently given by same-source uninstrumented five-process timing and OS cross-check; not present in v2.4 capture.",
+      "peak_rss_median_gib": 2.508,
+      "request_lifecycle_pass": true
+    }
+  },
+  "run_id": "describe-scene-selective-seed-profiles-v1-analysis-20260927",
+  "schema_version": 1,
+  "source_full_capture": "evaluation/reports/substrate_live_describe_scene_access_trace_v2_4_20260927.json"
+}

@@ -1,0 +1,5 @@
+# Frame topology cost attribution v1.1 amendment
+
+**Recorded before confirmatory capture, 2026-09-26.** The v1 attribution run is preserved at `evaluation/reports/substrate_frame_topology_cost_attribution_v1_20260926.json`. Its semantic and global-counter checks passed, but its per-rule gate failed for every scoped phase: `run_rules_opts_scoped` did not establish the native per-rule audit context. Exact v1 runner, Rust input snapshots, and native binary are archived.
+
+For v1.1, add a counter-only context around each scoped rule attempt. Carry each rule's original vector index through the active-rule clone so tombstoned gaps do not compact or mislabel attribution. A confirmatory fixture removes rule slot 1 (`propagate_off`) and reinstalls that same rule in slot 4, preserving the live rule family while creating active indices `{0,2,3,4}`. The gate requires rows at those indices only, correct rule names, additive candidate/Term counter conservation, and event/full state parity with per-rule audit enabled. No matching, effect, scheduling, or queue decision may branch on audit mode. Record v1.1 source/native/build hashes and retain the v1 gap capture unchanged.

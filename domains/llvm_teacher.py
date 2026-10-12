@@ -31,7 +31,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any, Callable
 
-from .wiki_teacher import extract_subject       # share subject extraction
+from .question_subject import extract_subject
 
 
 # ----------------------------------------------------------------------------

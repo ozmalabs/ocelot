@@ -128,11 +128,37 @@ def test_non_question_statements_sustain_dialogue():
             f"Turn {idx + 1} produced insufficient response: {reply!r}"
         )
 
-        # Inbound Message must have ConversationDecisionState stamped
+        # Legacy continuation candidates carry the settle-back state. The
+        # direct fact path now instead requires native Phase 4A selection and
+        # an exact-surface receipt linked to that selected candidate.
         mid = getattr(wa, "_last_turn_inbound", None)
         assert mid is not None
         decision_states = list(wa.inner.neighbours(mid, "has_decision_state"))
-        assert len(decision_states) >= 1, f"Turn {idx + 1} did not record ConversationDecisionState"
+        trace = wa.reply_turn_trace(wa.last_turn_inbound_id())
+        assert trace["reply"] == reply
+        if decision_states:
+            assert trace["reply_from"] == "adapter"
+            reply_message = next(
+                wa.s.node(node)["attrs"] for node in wa.s.nodes("Message")
+                if int(node.value) == trace["reply_id"])
+            assert reply_message["conversation_decision_state_id"] == int(
+                decision_states[-1].value)
+        else:
+            deliberations = [d for d in wa.s.nodes("Deliberation")
+                             if mid in wa.inner.neighbours(
+                                 d, "generated_from_message")]
+            selected = [candidate for d in deliberations
+                        if wa.s.node(d)["attrs"].get("status") == "selected"
+                        for selection in wa.inner.neighbours(d, "has_selection")
+                        for candidate in wa.inner.neighbours(
+                            selection, "selects_candidate")]
+            assert selected, f"Turn {idx + 1} lacks native continuation selection"
+            released = [receipt for receipt in wa.s.nodes("ProductionGateReceipt")
+                        if wa.s.node(receipt)["attrs"].get("turn_message_id")
+                        == int(mid.value)
+                        and wa.s.node(receipt)["attrs"].get("surface") == reply]
+            assert len(released) == 1
+            assert list(wa.inner.neighbours(released[0], "releases")) == selected
 
     assert wa._donkey["n"] == 0, "All conversational turns executed with donkey=0 (zero LLM)"
 

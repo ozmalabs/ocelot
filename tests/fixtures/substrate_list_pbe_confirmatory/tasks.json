@@ -1,0 +1,3220 @@
+{
+  "design": "30 integer-list concepts across reductions, projections, maps, filters, compositions, and out-of-inventory controls; 4 revealed and 3 held-out examples per task",
+  "generation_seed_rule": "per-task Python random.Random(920260925 + one_based_index * 7919)",
+  "suite_id": "substrate-list-pbe-compositions-20260925-v1",
+  "task_count": 30,
+  "tasks": [
+    {
+      "example_rows": [
+        {
+          "expected": 34,
+          "inputs": {
+            "xs": [
+              9,
+              8,
+              1,
+              12,
+              4
+            ]
+          }
+        },
+        {
+          "expected": 6,
+          "inputs": {
+            "xs": [
+              10,
+              -8,
+              -6,
+              10
+            ]
+          }
+        },
+        {
+          "expected": -1,
+          "inputs": {
+            "xs": [
+              -7,
+              8,
+              5,
+              -7
+            ]
+          }
+        },
+        {
+          "expected": 20,
+          "inputs": {
+            "xs": [
+              -1,
+              11,
+              11,
+              -1
+            ]
+          }
+        }
+      ],
+      "family": "reduction",
+      "held_out_rows": [
+        {
+          "expected": -7,
+          "inputs": {
+            "xs": [
+              2,
+              -1,
+              6,
+              -3,
+              -2,
+              -9
+            ]
+          }
+        },
+        {
+          "expected": -2,
+          "inputs": {
+            "xs": [
+              -9,
+              7,
+              -3,
+              -2,
+              5
+            ]
+          }
+        },
+        {
+          "expected": 10,
+          "inputs": {
+            "xs": [
+              7,
+              12,
+              -9
+            ]
+          }
+        }
+      ],
+      "id": "fresh_001_sum",
+      "request_text": "Write a function that returns the sum of the list."
+    },
+    {
+      "example_rows": [
+        {
+          "expected": 6,
+          "inputs": {
+            "xs": [
+              5,
+              2,
+              7,
+              1,
+              8,
+              7
+            ]
+          }
+        },
+        {
+          "expected": 3,
+          "inputs": {
+            "xs": [
+              1,
+              -6,
+              -7
+            ]
+          }
+        },
+        {
+          "expected": 7,
+          "inputs": {
+            "xs": [
+              1,
+              -4,
+              -1,
+              -8,
+              -5,
+              -6,
+              -1
+            ]
+          }
+        },
+        {
+          "expected": 5,
+          "inputs": {
+            "xs": [
+              -7,
+              11,
+              -2,
+              -2,
+              2
+            ]
+          }
+        }
+      ],
+      "family": "reduction",
+      "held_out_rows": [
+        {
+          "expected": 7,
+          "inputs": {
+            "xs": [
+              -4,
+              -2,
+              10,
+              -3,
+              -9,
+              3,
+              10
+            ]
+          }
+        },
+        {
+          "expected": 5,
+          "inputs": {
+            "xs": [
+              -8,
+              -1,
+              -5,
+              -2,
+              -8
+            ]
+          }
+        },
+        {
+          "expected": 4,
+          "inputs": {
+            "xs": [
+              4,
+              2,
+              -7,
+              7
+            ]
+          }
+        }
+      ],
+      "id": "fresh_002_length",
+      "request_text": "Write a function that returns the number of items in the list."
+    },
+    {
+      "example_rows": [
+        {
+          "expected": 12,
+          "inputs": {
+            "xs": [
+              10,
+              5,
+              -4,
+              12,
+              3,
+              0
+            ]
+          }
+        },
+        {
+          "expected": 10,
+          "inputs": {
+            "xs": [
+              2,
+              5,
+              -8,
+              -3,
+              10
+            ]
+          }
+        },
+        {
+          "expected": 4,
+          "inputs": {
+            "xs": [
+              1,
+              -3,
+              -2,
+              4,
+              3
+            ]
+          }
+        },
+        {
+          "expected": 12,
+          "inputs": {
+            "xs": [
+              -3,
+              12,
+              3,
+              -7
+            ]
+          }
+        }
+      ],
+      "family": "reduction",
+      "held_out_rows": [
+        {
+          "expected": 11,
+          "inputs": {
+            "xs": [
+              9,
+              5,
+              11,
+              -9,
+              -1,
+              -7,
+              1
+            ]
+          }
+        },
+        {
+          "expected": 5,
+          "inputs": {
+            "xs": [
+              -9,
+              -8,
+              1,
+              5,
+              4
+            ]
+          }
+        },
+        {
+          "expected": 6,
+          "inputs": {
+            "xs": [
+              6,
+              -2,
+              -4
+            ]
+          }
+        }
+      ],
+      "id": "fresh_003_max",
+      "request_text": "Write a function that returns the largest item in the list."
+    },
+    {
+      "example_rows": [
+        {
+          "expected": 2,
+          "inputs": {
+            "xs": [
+              2,
+              7,
+              3
+            ]
+          }
+        },
+        {
+          "expected": -3,
+          "inputs": {
+            "xs": [
+              -3,
+              -1,
+              -3,
+              11,
+              5,
+              -2
+            ]
+          }
+        },
+        {
+          "expected": -9,
+          "inputs": {
+            "xs": [
+              -4,
+              5,
+              -3,
+              -3,
+              -6,
+              -9,
+              12
+            ]
+          }
+        },
+        {
+          "expected": -5,
+          "inputs": {
+            "xs": [
+              10,
+              8,
+              -1,
+              -3,
+              -5
+            ]
+          }
+        }
+      ],
+      "family": "reduction",
+      "held_out_rows": [
+        {
+          "expected": -8,
+          "inputs": {
+            "xs": [
+              7,
+              -3,
+              8,
+              -4,
+              -6,
+              -8,
+              1
+            ]
+          }
+        },
+        {
+          "expected": -8,
+          "inputs": {
+            "xs": [
+              10,
+              -7,
+              -6,
+              12,
+              -5,
+              -8
+            ]
+          }
+        },
+        {
+          "expected": -7,
+          "inputs": {
+            "xs": [
+              -3,
+              9,
+              -7,
+              9
+            ]
+          }
+        }
+      ],
+      "id": "fresh_004_min",
+      "request_text": "Write a function that returns the smallest item in the list."
+    },
+    {
+      "example_rows": [
+        {
+          "expected": -2,
+          "inputs": {
+            "xs": [
+              -2,
+              -9,
+              -9,
+              -2,
+              -1,
+              7,
+              4
+            ]
+          }
+        },
+        {
+          "expected": -3,
+          "inputs": {
+            "xs": [
+              -3,
+              -1,
+              11,
+              11,
+              -8,
+              -6
+            ]
+          }
+        },
+        {
+          "expected": 8,
+          "inputs": {
+            "xs": [
+              8,
+              -5,
+              5
+            ]
+          }
+        },
+        {
+          "expected": -7,
+          "inputs": {
+            "xs": [
+              -7,
+              12,
+              -4,
+              -7,
+              -7
+            ]
+          }
+        }
+      ],
+      "family": "projection",
+      "held_out_rows": [
+        {
+          "expected": 8,
+          "inputs": {
+            "xs": [
+              8,
+              -7,
+              -8,
+              2,
+              6,
+              4,
+              -1
+            ]
+          }
+        },
+        {
+          "expected": 10,
+          "inputs": {
+            "xs": [
+              10,
+              0,
+              -5,
+              -2
+            ]
+          }
+        },
+        {
+          "expected": 9,
+          "inputs": {
+            "xs": [
+              9,
+              -8,
+              12,
+              -5,
+              11
+            ]
+          }
+        }
+      ],
+      "id": "fresh_005_first",
+      "request_text": "Write a function that returns the first item in the list."
+    },
+    {
+      "example_rows": [
+        {
+          "expected": 0,
+          "inputs": {
+            "xs": [
+              -2,
+              1,
+              10,
+              -2,
+              6,
+              12,
+              0
+            ]
+          }
+        },
+        {
+          "expected": 9,
+          "inputs": {
+            "xs": [
+              -3,
+              3,
+              9
+            ]
+          }
+        },
+        {
+          "expected": -4,
+          "inputs": {
+            "xs": [
+              3,
+              3,
+              -4
+            ]
+          }
+        },
+        {
+          "expected": -7,
+          "inputs": {
+            "xs": [
+              4,
+              -9,
+              6,
+              12,
+              -4,
+              -2,
+              -7
+            ]
+          }
+        }
+      ],
+      "family": "projection",
+      "held_out_rows": [
+        {
+          "expected": 0,
+          "inputs": {
+            "xs": [
+              3,
+              -4,
+              6,
+              -5,
+              0
+            ]
+          }
+        },
+        {
+          "expected": -2,
+          "inputs": {
+            "xs": [
+              -1,
+              -9,
+              12,
+              5,
+              6,
+              3,
+              -2
+            ]
+          }
+        },
+        {
+          "expected": -8,
+          "inputs": {
+            "xs": [
+              5,
+              11,
+              6,
+              4,
+              -4,
+              -8
+            ]
+          }
+        }
+      ],
+      "id": "fresh_006_last",
+      "request_text": "Write a function that returns the last item in the list."
+    },
+    {
+      "example_rows": [
+        {
+          "expected": [
+            7,
+            4,
+            -9
+          ],
+          "inputs": {
+            "xs": [
+              -9,
+              4,
+              7
+            ]
+          }
+        },
+        {
+          "expected": [
+            5,
+            4,
+            -4,
+            4
+          ],
+          "inputs": {
+            "xs": [
+              4,
+              -4,
+              4,
+              5
+            ]
+          }
+        },
+        {
+          "expected": [
+            5,
+            3,
+            2,
+            -9
+          ],
+          "inputs": {
+            "xs": [
+              -9,
+              2,
+              3,
+              5
+            ]
+          }
+        },
+        {
+          "expected": [
+            -7,
+            10,
+            -6,
+            -3,
+            -2
+          ],
+          "inputs": {
+            "xs": [
+              -2,
+              -3,
+              -6,
+              10,
+              -7
+            ]
+          }
+        }
+      ],
+      "family": "projection",
+      "held_out_rows": [
+        {
+          "expected": [
+            2,
+            11,
+            6,
+            5
+          ],
+          "inputs": {
+            "xs": [
+              5,
+              6,
+              11,
+              2
+            ]
+          }
+        },
+        {
+          "expected": [
+            5,
+            7,
+            11,
+            3,
+            4,
+            5,
+            6
+          ],
+          "inputs": {
+            "xs": [
+              6,
+              5,
+              4,
+              3,
+              11,
+              7,
+              5
+            ]
+          }
+        },
+        {
+          "expected": [
+            -2,
+            -3,
+            8,
+            -6,
+            0
+          ],
+          "inputs": {
+            "xs": [
+              0,
+              -6,
+              8,
+              -3,
+              -2
+            ]
+          }
+        }
+      ],
+      "id": "fresh_007_reverse",
+      "request_text": "Write a function that returns the list in reverse order."
+    },
+    {
+      "example_rows": [
+        {
+          "expected": [
+            4,
+            8,
+            -4
+          ],
+          "inputs": {
+            "xs": [
+              2,
+              6,
+              -6
+            ]
+          }
+        },
+        {
+          "expected": [
+            -7,
+            -4,
+            -7
+          ],
+          "inputs": {
+            "xs": [
+              -9,
+              -6,
+              -9
+            ]
+          }
+        },
+        {
+          "expected": [
+            -1,
+            -1,
+            11,
+            -1
+          ],
+          "inputs": {
+            "xs": [
+              -3,
+              -3,
+              9,
+              -3
+            ]
+          }
+        },
+        {
+          "expected": [
+            12,
+            10,
+            1,
+            0
+          ],
+          "inputs": {
+            "xs": [
+              10,
+              8,
+              -1,
+              -2
+            ]
+          }
+        }
+      ],
+      "family": "map",
+      "held_out_rows": [
+        {
+          "expected": [
+            -5,
+            3,
+            -1,
+            6,
+            -4,
+            -5
+          ],
+          "inputs": {
+            "xs": [
+              -7,
+              1,
+              -3,
+              4,
+              -6,
+              -7
+            ]
+          }
+        },
+        {
+          "expected": [
+            13,
+            5,
+            0,
+            9
+          ],
+          "inputs": {
+            "xs": [
+              11,
+              3,
+              -2,
+              7
+            ]
+          }
+        },
+        {
+          "expected": [
+            13,
+            12,
+            0,
+            6,
+            13
+          ],
+          "inputs": {
+            "xs": [
+              11,
+              10,
+              -2,
+              4,
+              11
+            ]
+          }
+        }
+      ],
+      "id": "fresh_008_map_plus_two",
+      "request_text": "Write a function that adds two to every item in the list."
+    },
+    {
+      "example_rows": [
+        {
+          "expected": [
+            12,
+            5,
+            15,
+            1,
+            15,
+            -4,
+            3
+          ],
+          "inputs": {
+            "xs": [
+              7,
+              0,
+              10,
+              -4,
+              10,
+              -9,
+              -2
+            ]
+          }
+        },
+        {
+          "expected": [
+            -3,
+            4,
+            3,
+            16,
+            9,
+            15,
+            8
+          ],
+          "inputs": {
+            "xs": [
+              -8,
+              -1,
+              -2,
+              11,
+              4,
+              10,
+              3
+            ]
+          }
+        },
+        {
+          "expected": [
+            6,
+            11,
+            8,
+            -4
+          ],
+          "inputs": {
+            "xs": [
+              1,
+              6,
+              3,
+              -9
+            ]
+          }
+        },
+        {
+          "expected": [
+            14,
+            12,
+            -2,
+            15,
+            3
+          ],
+          "inputs": {
+            "xs": [
+              9,
+              7,
+              -7,
+              10,
+              -2
+            ]
+          }
+        }
+      ],
+      "family": "map",
+      "held_out_rows": [
+        {
+          "expected": [
+            11,
+            3,
+            -4,
+            -2,
+            5,
+            12
+          ],
+          "inputs": {
+            "xs": [
+              6,
+              -2,
+              -9,
+              -7,
+              0,
+              7
+            ]
+          }
+        },
+        {
+          "expected": [
+            7,
+            11,
+            9,
+            17,
+            12
+          ],
+          "inputs": {
+            "xs": [
+              2,
+              6,
+              4,
+              12,
+              7
+            ]
+          }
+        },
+        {
+          "expected": [
+            17,
+            -3,
+            -3,
+            -2,
+            5,
+            4,
+            14
+          ],
+          "inputs": {
+            "xs": [
+              12,
+              -8,
+              -8,
+              -7,
+              0,
+              -1,
+              9
+            ]
+          }
+        }
+      ],
+      "id": "fresh_009_map_plus_five",
+      "request_text": "Write a function that adds five to every item in the list."
+    },
+    {
+      "example_rows": [
+        {
+          "expected": [
+            -9,
+            -3,
+            3
+          ],
+          "inputs": {
+            "xs": [
+              -6,
+              0,
+              6
+            ]
+          }
+        },
+        {
+          "expected": [
+            2,
+            -10,
+            5,
+            -4,
+            4
+          ],
+          "inputs": {
+            "xs": [
+              5,
+              -7,
+              8,
+              -1,
+              7
+            ]
+          }
+        },
+        {
+          "expected": [
+            -7,
+            6,
+            4,
+            8,
+            -7,
+            -12,
+            -10
+          ],
+          "inputs": {
+            "xs": [
+              -4,
+              9,
+              7,
+              11,
+              -4,
+              -9,
+              -7
+            ]
+          }
+        },
+        {
+          "expected": [
+            -5,
+            6,
+            -4,
+            -2,
+            -6,
+            -12
+          ],
+          "inputs": {
+            "xs": [
+              -2,
+              9,
+              -1,
+              1,
+              -3,
+              -9
+            ]
+          }
+        }
+      ],
+      "family": "map",
+      "held_out_rows": [
+        {
+          "expected": [
+            3,
+            9,
+            -9,
+            0
+          ],
+          "inputs": {
+            "xs": [
+              6,
+              12,
+              -6,
+              3
+            ]
+          }
+        },
+        {
+          "expected": [
+            -4,
+            0,
+            8
+          ],
+          "inputs": {
+            "xs": [
+              -1,
+              3,
+              11
+            ]
+          }
+        },
+        {
+          "expected": [
+            1,
+            -1,
+            -10,
+            6,
+            8,
+            9,
+            2
+          ],
+          "inputs": {
+            "xs": [
+              4,
+              2,
+              -7,
+              9,
+              11,
+              12,
+              5
+            ]
+          }
+        }
+      ],
+      "id": "fresh_010_map_minus_three",
+      "request_text": "Write a function that subtracts three from every item in the list."
+    },
+    {
+      "example_rows": [
+        {
+          "expected": [
+            -12,
+            -27,
+            18,
+            21,
+            30,
+            -9,
+            -15
+          ],
+          "inputs": {
+            "xs": [
+              -4,
+              -9,
+              6,
+              7,
+              10,
+              -3,
+              -5
+            ]
+          }
+        },
+        {
+          "expected": [
+            -6,
+            21,
+            -21,
+            36,
+            -21
+          ],
+          "inputs": {
+            "xs": [
+              -2,
+              7,
+              -7,
+              12,
+              -7
+            ]
+          }
+        },
+        {
+          "expected": [
+            24,
+            21,
+            36,
+            -6,
+            -15,
+            36,
+            3
+          ],
+          "inputs": {
+            "xs": [
+              8,
+              7,
+              12,
+              -2,
+              -5,
+              12,
+              1
+            ]
+          }
+        },
+        {
+          "expected": [
+            -6,
+            -6,
+            -3,
+            -27
+          ],
+          "inputs": {
+            "xs": [
+              -2,
+              -2,
+              -1,
+              -9
+            ]
+          }
+        }
+      ],
+      "family": "map",
+      "held_out_rows": [
+        {
+          "expected": [
+            33,
+            -18,
+            24,
+            -3,
+            12,
+            27,
+            -3
+          ],
+          "inputs": {
+            "xs": [
+              11,
+              -6,
+              8,
+              -1,
+              4,
+              9,
+              -1
+            ]
+          }
+        },
+        {
+          "expected": [
+            12,
+            -12,
+            33,
+            15,
+            0,
+            12,
+            24
+          ],
+          "inputs": {
+            "xs": [
+              4,
+              -4,
+              11,
+              5,
+              0,
+              4,
+              8
+            ]
+          }
+        },
+        {
+          "expected": [
+            0,
+            6,
+            18,
+            27,
+            30,
+            -18
+          ],
+          "inputs": {
+            "xs": [
+              0,
+              2,
+              6,
+              9,
+              10,
+              -6
+            ]
+          }
+        }
+      ],
+      "id": "fresh_011_map_times_three",
+      "request_text": "Write a function that multiplies every item in the list by three."
+    },
+    {
+      "example_rows": [
+        {
+          "expected": [
+            7,
+            2,
+            7,
+            3,
+            3,
+            12,
+            6
+          ],
+          "inputs": {
+            "xs": [
+              -7,
+              2,
+              7,
+              3,
+              -3,
+              12,
+              -6
+            ]
+          }
+        },
+        {
+          "expected": [
+            9,
+            7,
+            5,
+            9,
+            9
+          ],
+          "inputs": {
+            "xs": [
+              9,
+              -7,
+              5,
+              9,
+              9
+            ]
+          }
+        },
+        {
+          "expected": [
+            11,
+            4,
+            1,
+            2,
+            4,
+            7,
+            6
+          ],
+          "inputs": {
+            "xs": [
+              11,
+              4,
+              -1,
+              -2,
+              -4,
+              -7,
+              6
+            ]
+          }
+        },
+        {
+          "expected": [
+            12,
+            8,
+            7,
+            9
+          ],
+          "inputs": {
+            "xs": [
+              12,
+              8,
+              7,
+              -9
+            ]
+          }
+        }
+      ],
+      "family": "map",
+      "held_out_rows": [
+        {
+          "expected": [
+            6,
+            11,
+            2
+          ],
+          "inputs": {
+            "xs": [
+              6,
+              11,
+              -2
+            ]
+          }
+        },
+        {
+          "expected": [
+            6,
+            2,
+            11
+          ],
+          "inputs": {
+            "xs": [
+              -6,
+              2,
+              11
+            ]
+          }
+        },
+        {
+          "expected": [
+            1,
+            9,
+            4,
+            12,
+            9
+          ],
+          "inputs": {
+            "xs": [
+              -1,
+              9,
+              -4,
+              12,
+              -9
+            ]
+          }
+        }
+      ],
+      "id": "fresh_012_absolute_values",
+      "request_text": "Write a function that replaces every item with its absolute value."
+    },
+    {
+      "example_rows": [
+        {
+          "expected": [
+            7,
+            11
+          ],
+          "inputs": {
+            "xs": [
+              7,
+              -9,
+              -1,
+              11,
+              -8
+            ]
+          }
+        },
+        {
+          "expected": [
+            8,
+            12
+          ],
+          "inputs": {
+            "xs": [
+              8,
+              -5,
+              -8,
+              -1,
+              0,
+              12
+            ]
+          }
+        },
+        {
+          "expected": [
+            6
+          ],
+          "inputs": {
+            "xs": [
+              -6,
+              6,
+              0,
+              1
+            ]
+          }
+        },
+        {
+          "expected": [
+            5,
+            6,
+            11,
+            5
+          ],
+          "inputs": {
+            "xs": [
+              5,
+              6,
+              11,
+              5
+            ]
+          }
+        }
+      ],
+      "family": "filter",
+      "held_out_rows": [
+        {
+          "expected": [
+            5,
+            6,
+            3,
+            3,
+            6
+          ],
+          "inputs": {
+            "xs": [
+              -7,
+              5,
+              6,
+              3,
+              3,
+              -5,
+              6
+            ]
+          }
+        },
+        {
+          "expected": [
+            4
+          ],
+          "inputs": {
+            "xs": [
+              1,
+              -4,
+              -3,
+              -7,
+              2,
+              4
+            ]
+          }
+        },
+        {
+          "expected": [
+            9,
+            9,
+            10
+          ],
+          "inputs": {
+            "xs": [
+              9,
+              9,
+              -9,
+              10,
+              -7,
+              -9,
+              -8
+            ]
+          }
+        }
+      ],
+      "id": "fresh_013_filter_gt_two",
+      "request_text": "Write a function that keeps only items greater than two."
+    },
+    {
+      "example_rows": [
+        {
+          "expected": [
+            3,
+            3,
+            10
+          ],
+          "inputs": {
+            "xs": [
+              3,
+              -1,
+              -9,
+              3,
+              10
+            ]
+          }
+        },
+        {
+          "expected": [
+            2,
+            4,
+            1,
+            8,
+            8
+          ],
+          "inputs": {
+            "xs": [
+              2,
+              4,
+              -9,
+              -9,
+              1,
+              8,
+              8
+            ]
+          }
+        },
+        {
+          "expected": [
+            1,
+            11,
+            4
+          ],
+          "inputs": {
+            "xs": [
+              1,
+              -1,
+              -7,
+              11,
+              4,
+              -3
+            ]
+          }
+        },
+        {
+          "expected": [
+            4,
+            6
+          ],
+          "inputs": {
+            "xs": [
+              -1,
+              -9,
+              -7,
+              -1,
+              -8,
+              4,
+              6
+            ]
+          }
+        }
+      ],
+      "family": "filter",
+      "held_out_rows": [
+        {
+          "expected": [
+            11,
+            11,
+            6
+          ],
+          "inputs": {
+            "xs": [
+              -1,
+              -3,
+              11,
+              11,
+              6,
+              -9,
+              -6
+            ]
+          }
+        },
+        {
+          "expected": [
+            6,
+            6,
+            10,
+            9
+          ],
+          "inputs": {
+            "xs": [
+              -1,
+              6,
+              -7,
+              6,
+              10,
+              -4,
+              9
+            ]
+          }
+        },
+        {
+          "expected": [
+            1,
+            12,
+            4
+          ],
+          "inputs": {
+            "xs": [
+              -4,
+              1,
+              12,
+              -3,
+              4,
+              -1,
+              -4
+            ]
+          }
+        }
+      ],
+      "id": "fresh_014_filter_gt_minus_one",
+      "request_text": "Write a function that keeps only items greater than negative one."
+    },
+    {
+      "example_rows": [
+        {
+          "expected": [
+            -8,
+            -8
+          ],
+          "inputs": {
+            "xs": [
+              -8,
+              -8,
+              10,
+              6
+            ]
+          }
+        },
+        {
+          "expected": [
+            -2,
+            -7,
+            -2,
+            -3
+          ],
+          "inputs": {
+            "xs": [
+              9,
+              -2,
+              -7,
+              -2,
+              -3
+            ]
+          }
+        },
+        {
+          "expected": [
+            -2
+          ],
+          "inputs": {
+            "xs": [
+              1,
+              6,
+              1,
+              1,
+              -2
+            ]
+          }
+        },
+        {
+          "expected": [
+            -6,
+            -2
+          ],
+          "inputs": {
+            "xs": [
+              -6,
+              10,
+              2,
+              3,
+              12,
+              -2
+            ]
+          }
+        }
+      ],
+      "family": "filter",
+      "held_out_rows": [
+        {
+          "expected": [
+            -5,
+            -3,
+            -7
+          ],
+          "inputs": {
+            "xs": [
+              -5,
+              8,
+              -3,
+              -7,
+              9
+            ]
+          }
+        },
+        {
+          "expected": [],
+          "inputs": {
+            "xs": [
+              2,
+              10,
+              9
+            ]
+          }
+        },
+        {
+          "expected": [],
+          "inputs": {
+            "xs": [
+              5,
+              10,
+              0,
+              4
+            ]
+          }
+        }
+      ],
+      "id": "fresh_015_filter_lt_zero",
+      "request_text": "Write a function that keeps only negative items."
+    },
+    {
+      "example_rows": [
+        {
+          "expected": [
+            2,
+            0,
+            12
+          ],
+          "inputs": {
+            "xs": [
+              2,
+              0,
+              -1,
+              1,
+              12,
+              5
+            ]
+          }
+        },
+        {
+          "expected": [
+            10,
+            -4,
+            -4,
+            0
+          ],
+          "inputs": {
+            "xs": [
+              10,
+              -4,
+              9,
+              -4,
+              0
+            ]
+          }
+        },
+        {
+          "expected": [
+            -6,
+            8,
+            4,
+            10
+          ],
+          "inputs": {
+            "xs": [
+              1,
+              -6,
+              8,
+              4,
+              10,
+              -5
+            ]
+          }
+        },
+        {
+          "expected": [
+            6,
+            6,
+            -6,
+            0
+          ],
+          "inputs": {
+            "xs": [
+              6,
+              6,
+              5,
+              -6,
+              1,
+              5,
+              0
+            ]
+          }
+        }
+      ],
+      "family": "filter",
+      "held_out_rows": [
+        {
+          "expected": [
+            10,
+            0
+          ],
+          "inputs": {
+            "xs": [
+              -7,
+              11,
+              10,
+              0,
+              -9,
+              1
+            ]
+          }
+        },
+        {
+          "expected": [
+            2,
+            8
+          ],
+          "inputs": {
+            "xs": [
+              2,
+              8,
+              -1
+            ]
+          }
+        },
+        {
+          "expected": [
+            4
+          ],
+          "inputs": {
+            "xs": [
+              4,
+              -9,
+              -5
+            ]
+          }
+        }
+      ],
+      "id": "fresh_016_filter_even",
+      "request_text": "Write a function that keeps only even items."
+    },
+    {
+      "example_rows": [
+        {
+          "expected": [
+            0
+          ],
+          "inputs": {
+            "xs": [
+              -2,
+              -5,
+              -7,
+              6,
+              7,
+              -4,
+              0
+            ]
+          }
+        },
+        {
+          "expected": [
+            0
+          ],
+          "inputs": {
+            "xs": [
+              -2,
+              -2,
+              0
+            ]
+          }
+        },
+        {
+          "expected": [
+            0
+          ],
+          "inputs": {
+            "xs": [
+              -9,
+              3,
+              4,
+              12,
+              0
+            ]
+          }
+        },
+        {
+          "expected": [
+            0
+          ],
+          "inputs": {
+            "xs": [
+              5,
+              1,
+              -3,
+              -3,
+              -5,
+              12,
+              0
+            ]
+          }
+        }
+      ],
+      "family": "filter",
+      "held_out_rows": [
+        {
+          "expected": [
+            0
+          ],
+          "inputs": {
+            "xs": [
+              1,
+              0,
+              -4,
+              6,
+              -6,
+              -4,
+              -6
+            ]
+          }
+        },
+        {
+          "expected": [
+            0
+          ],
+          "inputs": {
+            "xs": [
+              -4,
+              -6,
+              -6,
+              0,
+              -7
+            ]
+          }
+        },
+        {
+          "expected": [
+            0
+          ],
+          "inputs": {
+            "xs": [
+              -9,
+              -8,
+              0,
+              2,
+              -3
+            ]
+          }
+        }
+      ],
+      "id": "fresh_017_filter_zero",
+      "request_text": "Write a function that keeps only items equal to zero."
+    },
+    {
+      "example_rows": [
+        {
+          "expected": 14,
+          "inputs": {
+            "xs": [
+              5,
+              -3,
+              9
+            ]
+          }
+        },
+        {
+          "expected": 20,
+          "inputs": {
+            "xs": [
+              5,
+              6,
+              9
+            ]
+          }
+        },
+        {
+          "expected": 15,
+          "inputs": {
+            "xs": [
+              -4,
+              -8,
+              7,
+              8,
+              -6
+            ]
+          }
+        },
+        {
+          "expected": 35,
+          "inputs": {
+            "xs": [
+              6,
+              -8,
+              9,
+              -4,
+              9,
+              9,
+              2
+            ]
+          }
+        }
+      ],
+      "family": "composition",
+      "held_out_rows": [
+        {
+          "expected": 33,
+          "inputs": {
+            "xs": [
+              4,
+              12,
+              -8,
+              11,
+              6,
+              -2
+            ]
+          }
+        },
+        {
+          "expected": 19,
+          "inputs": {
+            "xs": [
+              -4,
+              12,
+              -4,
+              0,
+              7,
+              -3
+            ]
+          }
+        },
+        {
+          "expected": 18,
+          "inputs": {
+            "xs": [
+              0,
+              -5,
+              9,
+              9
+            ]
+          }
+        }
+      ],
+      "id": "fresh_018_sum_positive",
+      "request_text": "Write a function that returns the sum of only the positive items."
+    },
+    {
+      "example_rows": [
+        {
+          "expected": -13,
+          "inputs": {
+            "xs": [
+              -4,
+              6,
+              9,
+              -8,
+              -1,
+              4,
+              10
+            ]
+          }
+        },
+        {
+          "expected": -2,
+          "inputs": {
+            "xs": [
+              11,
+              -2,
+              3
+            ]
+          }
+        },
+        {
+          "expected": -10,
+          "inputs": {
+            "xs": [
+              -2,
+              8,
+              2,
+              4,
+              -8
+            ]
+          }
+        },
+        {
+          "expected": -7,
+          "inputs": {
+            "xs": [
+              -1,
+              4,
+              -6
+            ]
+          }
+        }
+      ],
+      "family": "composition",
+      "held_out_rows": [
+        {
+          "expected": -21,
+          "inputs": {
+            "xs": [
+              -6,
+              -5,
+              -8,
+              6,
+              -2,
+              7
+            ]
+          }
+        },
+        {
+          "expected": -9,
+          "inputs": {
+            "xs": [
+              1,
+              3,
+              12,
+              -2,
+              10,
+              3,
+              -7
+            ]
+          }
+        },
+        {
+          "expected": -16,
+          "inputs": {
+            "xs": [
+              -5,
+              -5,
+              5,
+              11,
+              8,
+              -6,
+              8
+            ]
+          }
+        }
+      ],
+      "id": "fresh_019_sum_negative",
+      "request_text": "Write a function that returns the sum of only the negative items."
+    },
+    {
+      "example_rows": [
+        {
+          "expected": 291,
+          "inputs": {
+            "xs": [
+              12,
+              -5,
+              9,
+              5,
+              -4
+            ]
+          }
+        },
+        {
+          "expected": 154,
+          "inputs": {
+            "xs": [
+              -6,
+              5,
+              3,
+              -5,
+              -1,
+              -3,
+              7
+            ]
+          }
+        },
+        {
+          "expected": 238,
+          "inputs": {
+            "xs": [
+              -9,
+              -4,
+              11,
+              2,
+              -4
+            ]
+          }
+        },
+        {
+          "expected": 215,
+          "inputs": {
+            "xs": [
+              3,
+              -2,
+              -9,
+              11
+            ]
+          }
+        }
+      ],
+      "family": "composition",
+      "held_out_rows": [
+        {
+          "expected": 244,
+          "inputs": {
+            "xs": [
+              5,
+              7,
+              -7,
+              11
+            ]
+          }
+        },
+        {
+          "expected": 61,
+          "inputs": {
+            "xs": [
+              -3,
+              6,
+              4
+            ]
+          }
+        },
+        {
+          "expected": 58,
+          "inputs": {
+            "xs": [
+              3,
+              -7,
+              0
+            ]
+          }
+        }
+      ],
+      "id": "fresh_020_sum_squares",
+      "request_text": "Write a function that returns the sum of the squares of all items."
+    },
+    {
+      "example_rows": [
+        {
+          "expected": 0,
+          "inputs": {
+            "xs": [
+              5,
+              11,
+              -7
+            ]
+          }
+        },
+        {
+          "expected": -8,
+          "inputs": {
+            "xs": [
+              -8,
+              -9,
+              3,
+              -9,
+              1
+            ]
+          }
+        },
+        {
+          "expected": -20,
+          "inputs": {
+            "xs": [
+              -8,
+              11,
+              -4,
+              -8,
+              3,
+              1,
+              -7
+            ]
+          }
+        },
+        {
+          "expected": -2,
+          "inputs": {
+            "xs": [
+              -2,
+              9,
+              9
+            ]
+          }
+        }
+      ],
+      "family": "composition",
+      "held_out_rows": [
+        {
+          "expected": -10,
+          "inputs": {
+            "xs": [
+              6,
+              -6,
+              -4,
+              -5,
+              2,
+              -8
+            ]
+          }
+        },
+        {
+          "expected": 12,
+          "inputs": {
+            "xs": [
+              2,
+              6,
+              2,
+              -4,
+              1,
+              6
+            ]
+          }
+        },
+        {
+          "expected": 26,
+          "inputs": {
+            "xs": [
+              -3,
+              -3,
+              10,
+              11,
+              8,
+              8
+            ]
+          }
+        }
+      ],
+      "id": "fresh_021_sum_even",
+      "request_text": "Write a function that returns the sum of only the even items."
+    },
+    {
+      "example_rows": [
+        {
+          "expected": 6,
+          "inputs": {
+            "xs": [
+              8,
+              8,
+              4,
+              10,
+              11,
+              0,
+              3
+            ]
+          }
+        },
+        {
+          "expected": 5,
+          "inputs": {
+            "xs": [
+              -3,
+              5,
+              12,
+              5,
+              8,
+              -2,
+              3
+            ]
+          }
+        },
+        {
+          "expected": 4,
+          "inputs": {
+            "xs": [
+              12,
+              -6,
+              1,
+              9,
+              -8,
+              -3,
+              8
+            ]
+          }
+        },
+        {
+          "expected": 3,
+          "inputs": {
+            "xs": [
+              4,
+              -8,
+              9,
+              5
+            ]
+          }
+        }
+      ],
+      "family": "composition",
+      "held_out_rows": [
+        {
+          "expected": 1,
+          "inputs": {
+            "xs": [
+              -1,
+              -8,
+              -1,
+              0,
+              8
+            ]
+          }
+        },
+        {
+          "expected": 1,
+          "inputs": {
+            "xs": [
+              2,
+              -9,
+              0,
+              -3,
+              -1
+            ]
+          }
+        },
+        {
+          "expected": 3,
+          "inputs": {
+            "xs": [
+              0,
+              6,
+              9,
+              3,
+              -4
+            ]
+          }
+        }
+      ],
+      "id": "fresh_022_count_positive",
+      "request_text": "Write a function that counts the positive items."
+    },
+    {
+      "example_rows": [
+        {
+          "expected": -55440,
+          "inputs": {
+            "xs": [
+              -2,
+              10,
+              -7,
+              11,
+              -9,
+              4
+            ]
+          }
+        },
+        {
+          "expected": 294912,
+          "inputs": {
+            "xs": [
+              -8,
+              -8,
+              12,
+              8,
+              -6,
+              -8
+            ]
+          }
+        },
+        {
+          "expected": -136080,
+          "inputs": {
+            "xs": [
+              2,
+              -7,
+              -6,
+              -9,
+              10,
+              -6,
+              -3
+            ]
+          }
+        },
+        {
+          "expected": -64,
+          "inputs": {
+            "xs": [
+              -2,
+              -2,
+              -4,
+              4,
+              -1,
+              -1
+            ]
+          }
+        }
+      ],
+      "family": "reduction",
+      "held_out_rows": [
+        {
+          "expected": 0,
+          "inputs": {
+            "xs": [
+              -8,
+              0,
+              0,
+              2
+            ]
+          }
+        },
+        {
+          "expected": -48,
+          "inputs": {
+            "xs": [
+              2,
+              1,
+              -6,
+              4
+            ]
+          }
+        },
+        {
+          "expected": -441,
+          "inputs": {
+            "xs": [
+              -7,
+              1,
+              -9,
+              -7
+            ]
+          }
+        }
+      ],
+      "id": "fresh_023_product",
+      "request_text": "Write a function that returns the product of all items."
+    },
+    {
+      "example_rows": [
+        {
+          "expected": [
+            7,
+            11,
+            7,
+            2
+          ],
+          "inputs": {
+            "xs": [
+              2,
+              -3,
+              7,
+              -4,
+              11,
+              7
+            ]
+          }
+        },
+        {
+          "expected": [
+            9
+          ],
+          "inputs": {
+            "xs": [
+              -2,
+              9,
+              -9,
+              -4,
+              -2,
+              -8
+            ]
+          }
+        },
+        {
+          "expected": [
+            6,
+            5
+          ],
+          "inputs": {
+            "xs": [
+              5,
+              -6,
+              -8,
+              -5,
+              0,
+              6
+            ]
+          }
+        },
+        {
+          "expected": [
+            11,
+            8,
+            6,
+            12
+          ],
+          "inputs": {
+            "xs": [
+              12,
+              -3,
+              6,
+              -7,
+              -9,
+              8,
+              11
+            ]
+          }
+        }
+      ],
+      "family": "composition",
+      "held_out_rows": [
+        {
+          "expected": [
+            9,
+            6
+          ],
+          "inputs": {
+            "xs": [
+              -1,
+              6,
+              -1,
+              -7,
+              9
+            ]
+          }
+        },
+        {
+          "expected": [
+            11
+          ],
+          "inputs": {
+            "xs": [
+              -8,
+              -4,
+              11
+            ]
+          }
+        },
+        {
+          "expected": [
+            11,
+            4,
+            2,
+            10
+          ],
+          "inputs": {
+            "xs": [
+              10,
+              2,
+              -2,
+              4,
+              11
+            ]
+          }
+        }
+      ],
+      "id": "fresh_024_reverse_positive",
+      "request_text": "Write a function that keeps positive items and returns them in reverse order."
+    },
+    {
+      "example_rows": [
+        {
+          "expected": 42,
+          "inputs": {
+            "xs": [
+              -9,
+              8,
+              3,
+              -6,
+              9,
+              7
+            ]
+          }
+        },
+        {
+          "expected": 24,
+          "inputs": {
+            "xs": [
+              -8,
+              5,
+              -3,
+              5,
+              -3
+            ]
+          }
+        },
+        {
+          "expected": 29,
+          "inputs": {
+            "xs": [
+              -6,
+              -5,
+              -8,
+              10
+            ]
+          }
+        },
+        {
+          "expected": 37,
+          "inputs": {
+            "xs": [
+              5,
+              6,
+              12,
+              -5,
+              -9
+            ]
+          }
+        }
+      ],
+      "family": "composition",
+      "held_out_rows": [
+        {
+          "expected": 41,
+          "inputs": {
+            "xs": [
+              12,
+              9,
+              8,
+              11,
+              1
+            ]
+          }
+        },
+        {
+          "expected": 43,
+          "inputs": {
+            "xs": [
+              9,
+              -7,
+              -3,
+              10,
+              0,
+              9,
+              5
+            ]
+          }
+        },
+        {
+          "expected": 37,
+          "inputs": {
+            "xs": [
+              -5,
+              -7,
+              1,
+              -3,
+              4,
+              5,
+              12
+            ]
+          }
+        }
+      ],
+      "id": "fresh_025_sum_absolute",
+      "request_text": "Write a function that returns the sum of the absolute values of the items."
+    },
+    {
+      "example_rows": [
+        {
+          "expected": 0,
+          "inputs": {
+            "xs": [
+              -8,
+              -9,
+              -7
+            ]
+          }
+        },
+        {
+          "expected": 1,
+          "inputs": {
+            "xs": [
+              -6,
+              0,
+              2
+            ]
+          }
+        },
+        {
+          "expected": 2,
+          "inputs": {
+            "xs": [
+              1,
+              -3,
+              1
+            ]
+          }
+        },
+        {
+          "expected": 3,
+          "inputs": {
+            "xs": [
+              12,
+              5,
+              -6,
+              7
+            ]
+          }
+        }
+      ],
+      "family": "composition",
+      "held_out_rows": [
+        {
+          "expected": 4,
+          "inputs": {
+            "xs": [
+              5,
+              10,
+              9,
+              -6,
+              3
+            ]
+          }
+        },
+        {
+          "expected": 5,
+          "inputs": {
+            "xs": [
+              5,
+              11,
+              8,
+              -7,
+              11,
+              7,
+              -2
+            ]
+          }
+        },
+        {
+          "expected": 1,
+          "inputs": {
+            "xs": [
+              -8,
+              2,
+              -9
+            ]
+          }
+        }
+      ],
+      "id": "fresh_026_length_positive",
+      "request_text": "Write a function that returns how many positive items are in the list."
+    },
+    {
+      "example_rows": [
+        {
+          "expected": 3,
+          "inputs": {
+            "xs": [
+              -2,
+              -2,
+              11,
+              -6
+            ]
+          }
+        },
+        {
+          "expected": 1,
+          "inputs": {
+            "xs": [
+              -5,
+              -3,
+              6
+            ]
+          }
+        },
+        {
+          "expected": 2,
+          "inputs": {
+            "xs": [
+              0,
+              5,
+              5,
+              5,
+              -6
+            ]
+          }
+        },
+        {
+          "expected": 3,
+          "inputs": {
+            "xs": [
+              5,
+              4,
+              11,
+              11,
+              -2,
+              -3,
+              -6
+            ]
+          }
+        }
+      ],
+      "family": "composition",
+      "held_out_rows": [
+        {
+          "expected": 5,
+          "inputs": {
+            "xs": [
+              -2,
+              -4,
+              -2,
+              1,
+              0,
+              0
+            ]
+          }
+        },
+        {
+          "expected": 2,
+          "inputs": {
+            "xs": [
+              -6,
+              7,
+              -6,
+              -9
+            ]
+          }
+        },
+        {
+          "expected": 3,
+          "inputs": {
+            "xs": [
+              0,
+              -2,
+              2
+            ]
+          }
+        }
+      ],
+      "id": "fresh_027_count_even",
+      "request_text": "Write a function that counts the even items in the list."
+    },
+    {
+      "example_rows": [
+        {
+          "expected": 6,
+          "inputs": {
+            "xs": [
+              7,
+              6,
+              -3,
+              -7,
+              -6,
+              10,
+              -9
+            ]
+          }
+        },
+        {
+          "expected": 4,
+          "inputs": {
+            "xs": [
+              5,
+              12,
+              4,
+              -8
+            ]
+          }
+        },
+        {
+          "expected": 8,
+          "inputs": {
+            "xs": [
+              -7,
+              -2,
+              -9,
+              8,
+              -5
+            ]
+          }
+        },
+        {
+          "expected": 7,
+          "inputs": {
+            "xs": [
+              -4,
+              -4,
+              11,
+              -5,
+              7,
+              -7,
+              11
+            ]
+          }
+        }
+      ],
+      "family": "composition",
+      "held_out_rows": [
+        {
+          "expected": 7,
+          "inputs": {
+            "xs": [
+              7,
+              12,
+              11
+            ]
+          }
+        },
+        {
+          "expected": 3,
+          "inputs": {
+            "xs": [
+              11,
+              11,
+              3,
+              -2,
+              6,
+              6,
+              -6
+            ]
+          }
+        },
+        {
+          "expected": 2,
+          "inputs": {
+            "xs": [
+              4,
+              11,
+              0,
+              2,
+              2,
+              -5,
+              -8
+            ]
+          }
+        }
+      ],
+      "id": "fresh_028_min_positive",
+      "request_text": "Write a function that returns the smallest positive item."
+    },
+    {
+      "example_rows": [
+        {
+          "expected": 2,
+          "inputs": {
+            "xs": [
+              -9,
+              9,
+              2,
+              8,
+              2,
+              6,
+              -3
+            ]
+          }
+        },
+        {
+          "expected": 6,
+          "inputs": {
+            "xs": [
+              6,
+              -1,
+              10
+            ]
+          }
+        },
+        {
+          "expected": 0,
+          "inputs": {
+            "xs": [
+              10,
+              0,
+              -6
+            ]
+          }
+        },
+        {
+          "expected": 4,
+          "inputs": {
+            "xs": [
+              8,
+              -7,
+              -7,
+              4,
+              -8,
+              9,
+              9
+            ]
+          }
+        }
+      ],
+      "family": "out_of_inventory",
+      "held_out_rows": [
+        {
+          "expected": -5,
+          "inputs": {
+            "xs": [
+              0,
+              -5,
+              -6,
+              -7
+            ]
+          }
+        },
+        {
+          "expected": -2,
+          "inputs": {
+            "xs": [
+              -8,
+              -8,
+              5,
+              -2,
+              -7,
+              4
+            ]
+          }
+        },
+        {
+          "expected": 2,
+          "inputs": {
+            "xs": [
+              5,
+              1,
+              9,
+              -5,
+              -1,
+              2,
+              7
+            ]
+          }
+        }
+      ],
+      "id": "fresh_029_median",
+      "request_text": "Write a function that returns the median item in the list."
+    },
+    {
+      "example_rows": [
+        {
+          "expected": 3,
+          "inputs": {
+            "xs": [
+              3,
+              7,
+              -7
+            ]
+          }
+        },
+        {
+          "expected": 2,
+          "inputs": {
+            "xs": [
+              -8,
+              -8,
+              -1
+            ]
+          }
+        },
+        {
+          "expected": 2,
+          "inputs": {
+            "xs": [
+              -5,
+              -3,
+              -3
+            ]
+          }
+        },
+        {
+          "expected": 3,
+          "inputs": {
+            "xs": [
+              6,
+              -1,
+              4
+            ]
+          }
+        }
+      ],
+      "family": "out_of_inventory",
+      "held_out_rows": [
+        {
+          "expected": 5,
+          "inputs": {
+            "xs": [
+              10,
+              6,
+              7,
+              2,
+              1,
+              7
+            ]
+          }
+        },
+        {
+          "expected": 3,
+          "inputs": {
+            "xs": [
+              -3,
+              -5,
+              4
+            ]
+          }
+        },
+        {
+          "expected": 5,
+          "inputs": {
+            "xs": [
+              -9,
+              5,
+              3,
+              -8,
+              -6
+            ]
+          }
+        }
+      ],
+      "id": "fresh_030_unique_count",
+      "request_text": "Write a function that counts the distinct items in the list."
+    }
+  ]
+}

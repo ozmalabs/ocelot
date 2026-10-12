@@ -1,0 +1,240 @@
+{
+  "approval": {
+    "approval_id": null,
+    "approved": false,
+    "enabled": false,
+    "master_approved": false,
+    "required_text": "Master/security explicitly approves this exact RS-069R17 operation-2 packet; prior operation-1 approval is not reusable.",
+    "user_approved": false
+  },
+  "classification": "repository_definition_only_review_request",
+  "desired_state": {
+    "condition": {
+      "audience": "assertion.aud == 'https://sts.googleapis.com'",
+      "debug_state": "assertion.dbgstat == 'disabled-since-boot'",
+      "hardware_model": "assertion.hwmodel == 'GCP_AMD_SEV'",
+      "image_digest": "assertion.submods.container.image_digest == 'sha256:394a0707d1e162315bdf22de4ff034a7cf75a32b919cef6f12bba501521be11c'",
+      "issuer": "assertion.iss == 'https://confidentialcomputing.googleapis.com'",
+      "project_id": "assertion.submods.gce.project_id == 'ocelot-proof'",
+      "project_number": "assertion.submods.gce.project_number == '141633828616'",
+      "secure_boot": "assertion.secboot == true",
+      "smoke": "assertion.submods.container.env.P5R0_CONFIDENTIAL_SPACE_SMOKE == '0'",
+      "subject_prefix": "assertion.sub.startsWith('https://www.googleapis.com/compute/v1/projects/ocelot-proof/zones/us-east1-b/instances/')",
+      "tee": "assertion.swname == 'CONFIDENTIAL_SPACE'",
+      "workload": "assertion.submods.container.env.P5R0_EXPECTED_WORKLOAD == 'evaluator'",
+      "zone": "assertion.submods.gce.zone == 'us-east1-b'"
+    },
+    "condition_digest": "sha256:453ed15ca81674386de5b636ff959d194bffbf6400f1f97bd7abb4551dd83b05",
+    "mapping": {
+      "attribute.confidential_space_smoke": "assertion.submods.container.env.P5R0_CONFIDENTIAL_SPACE_SMOKE",
+      "attribute.debug_state": "assertion.dbgstat",
+      "attribute.hardware_model": "assertion.hwmodel",
+      "attribute.image_digest": "assertion.submods.container.image_digest",
+      "attribute.project_id": "assertion.submods.gce.project_id",
+      "attribute.project_number": "assertion.submods.gce.project_number",
+      "attribute.secure_boot": "assertion.secboot",
+      "attribute.tee": "assertion.swname",
+      "attribute.workload": "assertion.submods.container.env.P5R0_EXPECTED_WORKLOAD",
+      "attribute.zone": "assertion.submods.gce.zone",
+      "google.subject": "assertion.sub"
+    },
+    "mapping_condition_digest": "sha256:2ac146ae1d83a92bc2a373d8970572849db9ebf848dcec6e888410f13e72575a",
+    "mapping_digest": "sha256:d2eab6649e36e384c3902a2eb2a5463a49c419112bbaf8f3e87bf6d57f93993a",
+    "remediation_digest": "sha256:f0826548224e51f1e713aa395e742457162370edda18af1de04331f6c1ba9a58",
+    "remediation_path": "services/p5_r0_evaluator/deploy/rs-068-wip-policy-remediation.json",
+    "template_digest": "sha256:6fa7bce32adc7a7b50e745f2af4b36913ee0a7c6e44bd358b5996820f5018941",
+    "template_path": "services/p5_r0_evaluator/deploy/wip-provider-policy.cel.tmpl"
+  },
+  "forbidden_operations": [
+    "WIP/IAM mutation",
+    "gcloud or cloud SDK invocation",
+    "KMS signing",
+    "GCS upload",
+    "Cloud Run deployment",
+    "VM creation",
+    "FreeTSA call",
+    "task or supervisor execution",
+    "enabling any later operation"
+  ],
+  "later_operations": [
+    {"id": "bind_self_custodied_authority_and_kms", "order": 3, "enabled": false},
+    {"id": "ingest_generated_bundle_to_gcs", "order": 4, "enabled": false},
+    {"id": "configure_cloud_run_and_confidential_space", "order": 5, "enabled": false},
+    {"id": "prepare_supervisor_and_run_request", "order": 6, "enabled": false},
+    {"id": "cleanup_or_rollback", "order": 7, "enabled": false}
+  ],
+  "master_run": "P5-MASTER-001",
+  "operation_1_context": {
+    "binding_path": "var/p5-r0-rs069r1/candidate-image-binding.json",
+    "candidate_image_digest": "sha256:394a0707d1e162315bdf22de4ff034a7cf75a32b919cef6f12bba501521be11c",
+    "immutable_verified": null,
+    "later_operations_skipped": true,
+    "remote_digest_verified": true,
+    "remote_provenance_verified": null,
+    "target_reference": "us-east1-docker.pkg.dev/ocelot-proof/p5-cs/evaluator@sha256:394a0707d1e162315bdf22de4ff034a7cf75a32b919cef6f12bba501521be11c",
+    "target_repository": "p5-cs"
+  },
+  "preconditions": [
+    "Operation 1's corrected p5-cs image digest is the reviewed immutable candidate digest and is bound exactly in the desired condition.",
+    "The WIP provider resource is supplied from a canonical reviewed source in the exact //iam.googleapis.com/projects/{number}/locations/global/workloadIdentityPools/{pool}/providers/{provider} format; it is never substituted with the token audience.",
+    "The real attested project, zone, and image claim record is independently supplied for the exact candidate image; local test tokens and inferred claims do not satisfy it.",
+    "The desired remediation, mapping, condition, claim paths, template digest, audience digest, and provider-resource digest match this packet byte-for-byte.",
+    "The observed incomplete mapping is reviewed as the prior state; no existing WIP/IAM mutation is assumed.",
+    "A fresh explicit security/master approval names this exact request scope, operation ID/order, target, input digests, and desired mapping/condition digest.",
+    "No operation 3-7 approval or enablement is implied by this packet."
+  ],
+  "prior_approval_context": {
+    "approval_id": "P5-MASTER-001/APPROVAL-002-RS069R6-OP1",
+    "approval_request_ref": "services/p5_r0_evaluator/deploy/rs-069r6-operation-1-approval-request.json",
+    "approved": true,
+    "master_approved": true,
+    "scope": ["bind_candidate_image_digest"],
+    "user_approved": true,
+    "reusable_for_operation_2": false,
+    "non_reuse_reason": "The existing approval is operation-1-only; operation 2 requires a separate explicit approval for this exact WIP mapping and condition."
+  },
+  "proposed_state": {
+    "iam_state": "unchanged",
+    "later_operations": "disabled",
+    "master_decision": "pending",
+    "operation_2": "blocked_pending_explicit_approval",
+    "wip_provider_state": "unchanged"
+  },
+  "request_id": "RS-069R17-OP2-REVIEW-ONLY",
+  "request_scope_digest": "sha256:30809b70128f994de9a27cf5dfc20bfa3ff63a1c904adbd9903c43a097bace1e",
+  "required_inputs": {
+    "attested_project_zone_and_image": {
+      "format": "reviewed claim record from one real token issued by the exact candidate image",
+      "secret": false,
+      "source": "REQUIRED_INPUT:claims from one real token issued by the exact candidate image",
+      "value": null
+    },
+    "candidate_image_digest": {
+      "format": "sha256:64 lowercase hex",
+      "secret": false,
+      "source": "operation 1 corrected p5-cs remote digest verification",
+      "value": "sha256:394a0707d1e162315bdf22de4ff034a7cf75a32b919cef6f12bba501521be11c"
+    },
+    "claim_paths": {
+      "format": "closed claim-path map",
+      "secret": false,
+      "source": "RS-068 claim contract / current RS-069 typed plan",
+      "value": {
+        "audience": "aud",
+        "debug_state": "dbgstat",
+        "expires_at": "exp",
+        "hardware_model": "hwmodel",
+        "image_digest": "submods.container.image_digest",
+        "issued_at": "iat",
+        "issuer": "iss",
+        "nonce": "eat_nonce",
+        "project_id": "submods.gce.project_id",
+        "project_number": "submods.gce.project_number",
+        "secure_boot": "secboot",
+        "smoke": "submods.container.env.P5R0_CONFIDENTIAL_SPACE_SMOKE",
+        "subject": "sub",
+        "tee": "swname",
+        "workload": "submods.container.env.P5R0_EXPECTED_WORKLOAD",
+        "zone": "submods.gce.zone"
+      }
+    },
+    "claim_paths_digest": {
+      "format": "sha256:64 lowercase hex",
+      "secret": false,
+      "source": "current RS-069 typed plan",
+      "value": "sha256:c74680dc29fd2d16b74c4e8e9e918b98bc9ad3fe0aba2f7cacd730ea2f31f092"
+    },
+    "provider_resource_digest": {
+      "format": "sha256:64 lowercase hex of the exact provider resource",
+      "secret": false,
+      "source": "REQUIRED_INPUT:canonical reviewed WIP provider resource",
+      "value": null
+    },
+    "sts_audience_digest": {
+      "format": "sha256:64 lowercase hex",
+      "secret": false,
+      "source": "current RS-069 typed plan",
+      "value": "sha256:bea837e48bc096387db88f6ec11441669756e8877fdac28f86fb86d2ef3be89c"
+    },
+    "wip_policy_template_digest": {
+      "format": "sha256:64 lowercase hex of wip-provider-policy.cel.tmpl",
+      "secret": false,
+      "source": "reviewed local source file; current typed plan source binding remains unresolved until approval review",
+      "value": "sha256:6fa7bce32adc7a7b50e745f2af4b36913ee0a7c6e44bd358b5996820f5018941"
+    },
+    "wip_provider_resource": {
+      "format": "//iam.googleapis.com/projects/{number}/locations/global/workloadIdentityPools/{pool}/providers/{provider}",
+      "secret": false,
+      "source": "REQUIRED_INPUT:canonical reviewed WIP provider resource",
+      "value": null
+    },
+    "wip_token_audience": {
+      "format": "HTTPS audience",
+      "secret": false,
+      "source": "services/p5_r0_evaluator/deploy/rs-068-authority-binding-request.json",
+      "value": "https://sts.googleapis.com"
+    },
+    "zone_digest": {
+      "format": "sha256:64 lowercase hex of the reviewed attested project/zone/image record",
+      "secret": false,
+      "source": "REQUIRED_INPUT:claims from one real token issued by the exact candidate image",
+      "value": null
+    }
+  },
+  "rollback_rules": [
+    "Before any apply, discard this proposal on any input, target, mapping, condition, or digest mismatch and leave the repository definition unchanged.",
+    "If a future approved apply cannot prove the exact approved provider fingerprint, stop and revert only through approved IaC state; do not broaden the condition or repair by direct IAM/WIP mutation.",
+    "If any mutation is observed outside the exact approved operation, stop, preserve evidence, and require a new master decision; do not continue or infer rollback ownership."
+  ],
+  "runsheet_item": "RS-069R17",
+  "scope": ["correct_wip_provider_claim_mapping"],
+  "schema": "P5R0RS069R17Operation2ApprovalRequestV1",
+  "status": "blocked_pending_explicit_operation_2_approval",
+  "stop_rules": [
+    "Missing or noncanonical provider resource, provider/audience confusion, unresolved provider digest, or unresolved attested claim record.",
+    "Any mapping, condition, claim path, candidate image, p5-cs target, remediation, template, or digest drift.",
+    "Any required condition term is absent, unknown, inferred from a local test token, or contains an unresolved marker.",
+    "Any direct WIP/IAM API call, gcloud/cloud SDK call, KMS signing, GCS upload, deployment, VM creation, FreeTSA call, supervisor invocation, or task execution is proposed or observed.",
+    "Any attempt to reuse the operation-1 approval, widen scope, enable a later operation, or treat this review packet as applied state."
+  ],
+  "target": {
+    "project_id": "ocelot-proof",
+    "provider_resource": null,
+    "region": "us-east1",
+    "repository": "p5-cs",
+    "repository_observation": "read_only_existing_repository"
+  },
+  "typed_plan_binding": {
+    "approval_gate": {
+      "approval_record_digest": null,
+      "approval_record_ref": null,
+      "approved": false,
+      "enabled": false,
+      "master_approved": false,
+      "user_approved": false
+    },
+    "dependency_ids": ["bind_candidate_image_digest"],
+    "input_digest_map": {
+      "candidate_image_digest": null,
+      "claim_paths_digest": "sha256:c74680dc29fd2d16b74c4e8e9e918b98bc9ad3fe0aba2f7cacd730ea2f31f092",
+      "provider_resource_digest": null,
+      "sts_audience_digest": "sha256:bea837e48bc096387db88f6ec11441669756e8877fdac28f86fb86d2ef3be89c",
+      "wip_policy_template_digest": null,
+      "zone_digest": null
+    },
+    "operation_id": "correct_wip_provider_claim_mapping",
+    "operation_order": 2,
+    "plan_digest": "sha256:b8219b29751cdb8f5486f28c0b30f160f7f8ab0e8209d5b9e582167caf20b154",
+    "plan_path": "services/p5_r0_evaluator/deploy/rs-069-iac-change-plan.json",
+    "plan_scope_digest": "sha256:914091d6a8cb46a10853e1daea929d140acd413dc0f31ce8db7c496fae4db96a"
+  },
+  "workflow": {
+    "apply_interface": "approved IaC workflow only",
+    "commands": [],
+    "direct_cloud_mutations": false,
+    "iam_mutation_performed": false,
+    "later_operations_enabled": false,
+    "mutations_performed": false,
+    "wip_mutation_performed": false
+  }
+}

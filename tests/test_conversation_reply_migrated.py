@@ -95,3 +95,21 @@ def test_agent_messages_are_not_replied_to():
     second_order = [r for r in wa.outbound_messages()
                     if reply in wa.responds_to(r)]
     assert second_order == []
+
+
+def test_outbound_message_index_preserves_order_and_live_suppression():
+    wa = WorldAdapter(seeds=())
+    first_agent = wa.s.add_node("Message", {"from": "agent"})
+    inbound = wa.s.add_node("Message", {"from": "user"})
+    adapter = wa.s.add_node("Message", {"from": "adapter"})
+    suppressed = wa.s.add_node("Message", {"from": "agent"})
+
+    assert wa.outbound_messages() == [first_agent, adapter, suppressed]
+    assert wa.agent_outbound_messages() == [first_agent, suppressed]
+
+    # Sender identity is indexed, but suppression is mutable and must not be
+    # captured in a stale cached list.
+    wa.inner.set_attr(suppressed, "turn_reply_suppressed", True)
+    wa.inner.set_attr(first_agent, "turn_reply_suppressed", True)
+    assert wa.outbound_messages() == [adapter]
+    assert wa.agent_outbound_messages() == []

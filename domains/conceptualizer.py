@@ -140,8 +140,13 @@ def _ensure_output_candidate_commit_rule(native) -> None:
             ["add_edge", "candidate", "has_committed", "committed"],
         ],
     }
-    existing = {r.get("name") for r in native.export_rules()
-                if isinstance(r, dict)}
+    # The live substrate may hold thousands of unrelated faculties. Probe the
+    # native name index for this one rule instead of serializing its entire rule
+    # corpus on every monitor round.
+    selective_export = getattr(native, "export_rules_prefix", None)
+    candidates = (selective_export(rule["name"])
+                  if selective_export is not None else native.export_rules())
+    existing = {r.get("name") for r in candidates if isinstance(r, dict)}
     native.add_rule(rule) if rule["name"] not in existing else None
 
 
@@ -355,7 +360,7 @@ def scan_and_conceptualize(agent, lexicon: list[dict], **select_kwargs) -> list[
     marked 'shaped'. Returns the per-request results produced THIS call."""
     sub, native, ag_node = _resolve(agent)
     results: list[dict] = []
-    for req in list(sub.nodes(_SHAPE_REQUEST_TYPE)):
+    for req in _requested_graph_nodes(sub, native, _SHAPE_REQUEST_TYPE):
         at = sub.node(req)["attrs"]
         if at.get("status") != "requested":
             continue
@@ -409,6 +414,19 @@ def scan_and_conceptualize(agent, lexicon: list[dict], **select_kwargs) -> list[
 #     revise_if_not_recoverable_<tag>) decides what happens next.
 # --------------------------------------------------------------------------- #
 
+def _requested_graph_nodes(sub, native, node_type: str) -> list:
+    """Read pending request nodes through the graph's maintained status index.
+
+    Requests are historical graph records: their status moves from
+    ``requested`` to ``shaped``/``monitored`` after the adapter consumes them.
+    Re-enumerating every historical node on every pipeline tick is unnecessary
+    work. The native attribute index is complete and incrementally maintained;
+    rules still author request creation and all semantic outcomes.
+    """
+    native.declare_attr_index(node_type, "status")
+    return list(native.nodes_where(node_type, "status", "requested"))
+
+
 def _decode_utterance(utterance: str, lexicon: list[dict]) -> set:
     """IMAGINE RECEPTION, literally: run the agent's OWN comprehension
     (`domains.language.comprehend`) over its OWN produced utterance -- the same lexicon
@@ -444,7 +462,7 @@ def scan_and_monitor(agent, lexicon: list[dict], *, candidate: str | None = None
     sub, native, ag_node = _resolve(agent)
     _ensure_output_candidate_commit_rule(native)
     results: list[dict] = []
-    for req in list(sub.nodes(_MONITOR_REQUEST_TYPE)):
+    for req in _requested_graph_nodes(sub, native, _MONITOR_REQUEST_TYPE):
         at = sub.node(req)["attrs"]
         if at.get("status") != "requested":
             continue
@@ -534,22 +552,38 @@ def run_pipeline(agent, lexicon: list[dict], *, rounds: int = 4, tick_budget: in
                  **select_kwargs) -> None:
     """PHASE-3 ENTRY POINT: run the full conceptualizer fixpoint -- form intent -> shape ->
     formulate -> monitor -> commit (looping through revise/re-monitor as needed) -- from one
-    call. Pumps `tick -> scan_and_conceptualize -> tick -> scan_and_monitor` a FIXED number of
-    `rounds` (mechanical repetition, never a decision over graph content: each scan is a no-op
-    once its own pending-request queue is empty, the SAME idempotency every scan in this module
-    already relies on). Call `mint_communicative_goal` first, then this, then `read_committed`
-    for the utterance cleared to emit -- nothing earlier in the pipeline is safe to emit."""
+    call. Pumps `tick -> scan_and_conceptualize -> tick -> scan_and_monitor` for at most
+    ``rounds`` iterations, stopping once both mechanical pending-request scans are empty.
+    Queue exhaustion is a worklist termination condition, not a content-based production
+    decision; the graph rules still decide commit vs revise and the final native pass consumes
+    the last monitor verdict. Call `mint_communicative_goal` first, then this, then
+    `read_committed` for the utterance cleared to emit -- nothing earlier in the pipeline is
+    safe to emit."""
     sub, native, ag_node = _resolve(agent)
     native_passes = 0
+    rounds_executed = 0
+    native_work_pending = False
     for _ in range(rounds):
+        rounds_executed += 1
         native.run_rules(tick_budget)
         native_passes += 1
-        scan_and_conceptualize(agent, lexicon, **select_kwargs)
+        shaped = scan_and_conceptualize(agent, lexicon, **select_kwargs)
+        # Shaping creates graph requests that the native rules must consume;
+        # when no shape was minted, a second whole-program rule pass is idle.
+        if shaped:
+            native.run_rules(tick_budget)
+            native_passes += 1
+        monitored = scan_and_monitor(agent, lexicon)
+        native_work_pending = bool(monitored)
+        if not shaped and not monitored:
+            break
+    # A monitor scan writes a Verdict that only the native rules may commit or
+    # revise from. Normally the next round settles it; flush exactly once only
+    # when the round budget ended immediately after that write. If the final
+    # round merely found no pending graph work, do not run another idle pass.
+    if native_work_pending:
         native.run_rules(tick_budget)
         native_passes += 1
-        scan_and_monitor(agent, lexicon)
-    native.run_rules(tick_budget)
-    native_passes += 1
     # This receipt covers native rule execution only. The surrounding scans
     # remain adapter-bound mechanical graph I/O and are not promoted to native
     # authority by this record.
@@ -558,6 +592,7 @@ def run_pipeline(agent, lexicon: list[dict], *, rounds: int = 4, tick_budget: in
         "provenance": "native_rule_readback:conceptualizer_pipeline",
         "rule": "conceptualizer_authored_rule_set",
         "rounds": int(rounds),
+        "rounds_executed": int(rounds_executed),
         "native_passes": int(native_passes),
         "tick_budget": int(tick_budget),
         "outcome_source": "native_rule_readback",

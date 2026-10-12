@@ -1,0 +1,1360 @@
+{
+  "design": "24 generated string transformations across replacement, split, substring count, append, prefix, and casefold-plus-suffix; four revealed and three held-out rows per task",
+  "generation_seed_rule": "per-task random.Random(920260926 + one_based_index * 7919)",
+  "suite_id": "substrate-string-pbe-transfer-20260926-v1",
+  "task_count": 24,
+  "tasks": [
+    {
+      "example_rows": [
+        {
+          "expected": "!DxBx?",
+          "inputs": {
+            "s": "!DaBa?"
+          }
+        },
+        {
+          "expected": "yzExDD_C",
+          "inputs": {
+            "s": "yzEaDD_C"
+          }
+        },
+        {
+          "expected": "czxBeb,d,AdCcxx ",
+          "inputs": {
+            "s": "czxBeb,d,AdCcxa "
+          }
+        },
+        {
+          "expected": "!y,DBxzc",
+          "inputs": {
+            "s": "!y,DBazc"
+          }
+        }
+      ],
+      "family": "replace",
+      "held_out_rows": [
+        {
+          "expected": " x-CD?A,xxb!",
+          "inputs": {
+            "s": " a-CD?A,aab!"
+          }
+        },
+        {
+          "expected": "xx_-dDc?",
+          "inputs": {
+            "s": "ax_-dDc?"
+          }
+        },
+        {
+          "expected": "x_E!!A",
+          "inputs": {
+            "s": "a_E!!A"
+          }
+        }
+      ],
+      "id": "string_replace_01",
+      "request_text": "Write a function that replaces every occurrence of 'a' with 'x'."
+    },
+    {
+      "example_rows": [
+        {
+          "expected": "?q!CbqbDddy",
+          "inputs": {
+            "s": "?e!CbebDddy"
+          }
+        },
+        {
+          "expected": "CABzqAa",
+          "inputs": {
+            "s": "CABzeAa"
+          }
+        },
+        {
+          "expected": "qBDx y!qcc",
+          "inputs": {
+            "s": "eBDx y!ecc"
+          }
+        },
+        {
+          "expected": "!yqaEB?EEc",
+          "inputs": {
+            "s": "!yeaEB?EEc"
+          }
+        }
+      ],
+      "family": "replace",
+      "held_out_rows": [
+        {
+          "expected": " D-Cbq",
+          "inputs": {
+            "s": " D-Cbe"
+          }
+        },
+        {
+          "expected": "q?d_B,xyEqqx?",
+          "inputs": {
+            "s": "e?d_B,xyEeex?"
+          }
+        },
+        {
+          "expected": "b,b, BEzqC?c",
+          "inputs": {
+            "s": "b,b, BEzeC?c"
+          }
+        }
+      ],
+      "id": "string_replace_02",
+      "request_text": "Write a function that replaces every occurrence of 'e' with 'q'."
+    },
+    {
+      "example_rows": [
+        {
+          "expected": "a?ax_,ByA",
+          "inputs": {
+            "s": "a?ax-,ByA"
+          }
+        },
+        {
+          "expected": "z?be?__ ,Dd?cz",
+          "inputs": {
+            "s": "z?be?-_ ,Dd?cz"
+          }
+        },
+        {
+          "expected": " x_z xeezAD",
+          "inputs": {
+            "s": " x-z xeezAD"
+          }
+        },
+        {
+          "expected": "!A_Dea_z",
+          "inputs": {
+            "s": "!A-Dea_z"
+          }
+        }
+      ],
+      "family": "replace",
+      "held_out_rows": [
+        {
+          "expected": "CeeCE_bD",
+          "inputs": {
+            "s": "CeeCE-bD"
+          }
+        },
+        {
+          "expected": "A_CcyC,,dDa",
+          "inputs": {
+            "s": "A-CcyC,,dDa"
+          }
+        },
+        {
+          "expected": "c_xcA!y_DBdB_Eb",
+          "inputs": {
+            "s": "c-xcA!y-DBdB-Eb"
+          }
+        }
+      ],
+      "id": "string_replace_03",
+      "request_text": "Write a function that replaces every occurrence of '-' with '_'."
+    },
+    {
+      "example_rows": [
+        {
+          "expected": "zz_Cd,e",
+          "inputs": {
+            "s": "Az_Cd,e"
+          }
+        },
+        {
+          "expected": "c_zzzabyDcz",
+          "inputs": {
+            "s": "c_AAAabyDcA"
+          }
+        },
+        {
+          "expected": "_xCyzd_y_",
+          "inputs": {
+            "s": "_xCyAd_y_"
+          }
+        },
+        {
+          "expected": "Byb cBdzz-!aC",
+          "inputs": {
+            "s": "Byb cBdzA-!aC"
+          }
+        }
+      ],
+      "family": "replace",
+      "held_out_rows": [
+        {
+          "expected": "B?-zae_e!eE",
+          "inputs": {
+            "s": "B?-Aae_e!eE"
+          }
+        },
+        {
+          "expected": " a_zCxcEz-",
+          "inputs": {
+            "s": " a_ACxcEA-"
+          }
+        },
+        {
+          "expected": "ezcd!D?Dz",
+          "inputs": {
+            "s": "eAcd!D?DA"
+          }
+        }
+      ],
+      "id": "string_replace_04",
+      "request_text": "Write a function that replaces every occurrence of 'A' with 'z'."
+    },
+    {
+      "example_rows": [
+        {
+          "expected": [
+            "eZb",
+            "YYbX",
+            "ffYZeX",
+            "Xacebb"
+          ],
+          "inputs": {
+            "s": "eZb,YYbX,ffYZeX,Xacebb"
+          }
+        },
+        {
+          "expected": [
+            "bfZa",
+            "YbeZ",
+            "adYYX",
+            "fdf"
+          ],
+          "inputs": {
+            "s": "bfZa,YbeZ,adYYX,fdf"
+          }
+        },
+        {
+          "expected": [
+            "bbYYf",
+            "XXafeX",
+            "bcZeYZ",
+            "ceZed",
+            "da"
+          ],
+          "inputs": {
+            "s": "bbYYf,XXafeX,bcZeYZ,ceZed,da"
+          }
+        },
+        {
+          "expected": [
+            "effXcY",
+            "cedb"
+          ],
+          "inputs": {
+            "s": "effXcY,cedb"
+          }
+        }
+      ],
+      "family": "split",
+      "held_out_rows": [
+        {
+          "expected": [
+            "aZYeY",
+            "eb",
+            "bb",
+            "YeabeX",
+            "cd"
+          ],
+          "inputs": {
+            "s": "aZYeY,eb,bb,YeabeX,cd"
+          }
+        },
+        {
+          "expected": [
+            "XeXa",
+            "eXe",
+            "dZa"
+          ],
+          "inputs": {
+            "s": "XeXa,eXe,dZa"
+          }
+        },
+        {
+          "expected": [
+            "XcadZX",
+            "accXec",
+            "XdbYc",
+            "eXe",
+            "YfZ"
+          ],
+          "inputs": {
+            "s": "XcadZX,accXec,XdbYc,eXe,YfZ"
+          }
+        }
+      ],
+      "id": "string_split_01",
+      "request_text": "Write a function that splits a string into parts using ','."
+    },
+    {
+      "example_rows": [
+        {
+          "expected": [
+            "ceZX",
+            "bYY",
+            "eYfd",
+            "fdZYef",
+            "aeX"
+          ],
+          "inputs": {
+            "s": "ceZX|bYY|eYfd|fdZYef|aeX"
+          }
+        },
+        {
+          "expected": [
+            "beZbaZ",
+            "Xdd",
+            "ZZa"
+          ],
+          "inputs": {
+            "s": "beZbaZ|Xdd|ZZa"
+          }
+        },
+        {
+          "expected": [
+            "Yebfdd",
+            "Yc"
+          ],
+          "inputs": {
+            "s": "Yebfdd|Yc"
+          }
+        },
+        {
+          "expected": [
+            "fcZfcb",
+            "XdY",
+            "bYYfX",
+            "XY"
+          ],
+          "inputs": {
+            "s": "fcZfcb|XdY|bYYfX|XY"
+          }
+        }
+      ],
+      "family": "split",
+      "held_out_rows": [
+        {
+          "expected": [
+            "YfX",
+            "fZZX",
+            "dbXb",
+            "ebZcXZ"
+          ],
+          "inputs": {
+            "s": "YfX|fZZX|dbXb|ebZcXZ"
+          }
+        },
+        {
+          "expected": [
+            "aed",
+            "aZ"
+          ],
+          "inputs": {
+            "s": "aed|aZ"
+          }
+        },
+        {
+          "expected": [
+            "bYe",
+            "ffcffX"
+          ],
+          "inputs": {
+            "s": "bYe|ffcffX"
+          }
+        }
+      ],
+      "id": "string_split_02",
+      "request_text": "Write a function that splits a string into parts using '|'."
+    },
+    {
+      "example_rows": [
+        {
+          "expected": [
+            "Xc",
+            "dZYbcb",
+            "aZ",
+            "cY"
+          ],
+          "inputs": {
+            "s": "Xc-dZYbcb-aZ-cY"
+          }
+        },
+        {
+          "expected": [
+            "dZe",
+            "eZ",
+            "dZaeYb",
+            "Zaed",
+            "bZedX"
+          ],
+          "inputs": {
+            "s": "dZe-eZ-dZaeYb-Zaed-bZedX"
+          }
+        },
+        {
+          "expected": [
+            "df",
+            "fY"
+          ],
+          "inputs": {
+            "s": "df-fY"
+          }
+        },
+        {
+          "expected": [
+            "af",
+            "acYb",
+            "ccZdaf",
+            "aaf",
+            "cX"
+          ],
+          "inputs": {
+            "s": "af-acYb-ccZdaf-aaf-cX"
+          }
+        }
+      ],
+      "family": "split",
+      "held_out_rows": [
+        {
+          "expected": [
+            "dacZba",
+            "fa",
+            "Zfcd",
+            "YffYe"
+          ],
+          "inputs": {
+            "s": "dacZba-fa-Zfcd-YffYe"
+          }
+        },
+        {
+          "expected": [
+            "bbb",
+            "bcXdcY",
+            "fZ",
+            "ZZZee"
+          ],
+          "inputs": {
+            "s": "bbb-bcXdcY-fZ-ZZZee"
+          }
+        },
+        {
+          "expected": [
+            "bda",
+            "aYXc",
+            "YXb",
+            "XXa",
+            "fbfafe"
+          ],
+          "inputs": {
+            "s": "bda-aYXc-YXb-XXa-fbfafe"
+          }
+        }
+      ],
+      "id": "string_split_03",
+      "request_text": "Write a function that splits a string into parts using '-'."
+    },
+    {
+      "example_rows": [
+        {
+          "expected": [
+            "Xb",
+            "aeeX",
+            "ebed",
+            "ddfa"
+          ],
+          "inputs": {
+            "s": "Xb;aeeX;ebed;ddfa"
+          }
+        },
+        {
+          "expected": [
+            "dZ",
+            "ffb"
+          ],
+          "inputs": {
+            "s": "dZ;ffb"
+          }
+        },
+        {
+          "expected": [
+            "ZZedZb",
+            "abc"
+          ],
+          "inputs": {
+            "s": "ZZedZb;abc"
+          }
+        },
+        {
+          "expected": [
+            "YefaaX",
+            "aXfe",
+            "eZ",
+            "XX",
+            "ZZZfXd"
+          ],
+          "inputs": {
+            "s": "YefaaX;aXfe;eZ;XX;ZZZfXd"
+          }
+        }
+      ],
+      "family": "split",
+      "held_out_rows": [
+        {
+          "expected": [
+            "ZYbb",
+            "bZ"
+          ],
+          "inputs": {
+            "s": "ZYbb;bZ"
+          }
+        },
+        {
+          "expected": [
+            "YYZfY",
+            "df",
+            "ff",
+            "fadac"
+          ],
+          "inputs": {
+            "s": "YYZfY;df;ff;fadac"
+          }
+        },
+        {
+          "expected": [
+            "XYa",
+            "cfba"
+          ],
+          "inputs": {
+            "s": "XYa;cfba"
+          }
+        }
+      ],
+      "id": "string_split_04",
+      "request_text": "Write a function that splits a string into parts using ';'."
+    },
+    {
+      "example_rows": [
+        {
+          "expected": 1,
+          "inputs": {
+            "s": "yyxa,cC?"
+          }
+        },
+        {
+          "expected": 2,
+          "inputs": {
+            "s": " EEaay"
+          }
+        },
+        {
+          "expected": 1,
+          "inputs": {
+            "s": ", e,xxCea,EC!"
+          }
+        },
+        {
+          "expected": 1,
+          "inputs": {
+            "s": "zEddDB,CBae _?x"
+          }
+        }
+      ],
+      "family": "count",
+      "held_out_rows": [
+        {
+          "expected": 2,
+          "inputs": {
+            "s": "db?-ab_ya!?"
+          }
+        },
+        {
+          "expected": 1,
+          "inputs": {
+            "s": "abB!_!byEB"
+          }
+        },
+        {
+          "expected": 1,
+          "inputs": {
+            "s": "yAy!ebaBBbDC?-e"
+          }
+        }
+      ],
+      "id": "string_count_01",
+      "request_text": "Write a function that counts occurrences of the substring 'a'."
+    },
+    {
+      "example_rows": [
+        {
+          "expected": 1,
+          "inputs": {
+            "s": "C? zxEC_th?b_?,yEC"
+          }
+        },
+        {
+          "expected": 1,
+          "inputs": {
+            "s": "CaxD_th!E!aa"
+          }
+        },
+        {
+          "expected": 1,
+          "inputs": {
+            "s": "_xthdzz,BE-_?ez"
+          }
+        },
+        {
+          "expected": 1,
+          "inputs": {
+            "s": "bthz,zdEE"
+          }
+        }
+      ],
+      "family": "count",
+      "held_out_rows": [
+        {
+          "expected": 1,
+          "inputs": {
+            "s": "ythA-bE "
+          }
+        },
+        {
+          "expected": 1,
+          "inputs": {
+            "s": " -AyeA-ethcdbB"
+          }
+        },
+        {
+          "expected": 1,
+          "inputs": {
+            "s": "e?th_y-_y,xddxcbbA"
+          }
+        }
+      ],
+      "id": "string_count_02",
+      "request_text": "Write a function that counts occurrences of the substring 'th'."
+    },
+    {
+      "example_rows": [
+        {
+          "expected": 1,
+          "inputs": {
+            "s": "ay!xyEc,z-"
+          }
+        },
+        {
+          "expected": 1,
+          "inputs": {
+            "s": "ecA_EbDxyB,yd z_d"
+          }
+        },
+        {
+          "expected": 1,
+          "inputs": {
+            "s": "zcxyBzA"
+          }
+        },
+        {
+          "expected": 1,
+          "inputs": {
+            "s": "bxAe?-?_-exy"
+          }
+        }
+      ],
+      "family": "count",
+      "held_out_rows": [
+        {
+          "expected": 1,
+          "inputs": {
+            "s": "?bxybxax!"
+          }
+        },
+        {
+          "expected": 1,
+          "inputs": {
+            "s": "!E-cxDbBbExy"
+          }
+        },
+        {
+          "expected": 1,
+          "inputs": {
+            "s": "xyC_dda!Ce,-EAA!!"
+          }
+        }
+      ],
+      "id": "string_count_03",
+      "request_text": "Write a function that counts occurrences of the substring 'xy'."
+    },
+    {
+      "example_rows": [
+        {
+          "expected": 2,
+          "inputs": {
+            "s": "!EB!CxA?DE aA?_C"
+          }
+        },
+        {
+          "expected": 2,
+          "inputs": {
+            "s": "xBc!Ce!"
+          }
+        },
+        {
+          "expected": 2,
+          "inputs": {
+            "s": "-!-!e,xAxDdac?ae"
+          }
+        },
+        {
+          "expected": 1,
+          "inputs": {
+            "s": "Bd!xycax?xa-C,"
+          }
+        }
+      ],
+      "family": "count",
+      "held_out_rows": [
+        {
+          "expected": 2,
+          "inputs": {
+            "s": "BzbAEzB!?zA!"
+          }
+        },
+        {
+          "expected": 1,
+          "inputs": {
+            "s": "Cb!?-cABb"
+          }
+        },
+        {
+          "expected": 1,
+          "inputs": {
+            "s": "bD!Abc-,_-Db"
+          }
+        }
+      ],
+      "id": "string_count_04",
+      "request_text": "Write a function that counts occurrences of the substring '!'."
+    },
+    {
+      "example_rows": [
+        {
+          "expected": "cDzD DyBe_!CzcE!",
+          "inputs": {
+            "s": "cDzD DyBe_!CzcE"
+          }
+        },
+        {
+          "expected": "_a__A!",
+          "inputs": {
+            "s": "_a__A"
+          }
+        },
+        {
+          "expected": "zE-Ez,Bd-z!",
+          "inputs": {
+            "s": "zE-Ez,Bd-z"
+          }
+        },
+        {
+          "expected": "C aDzD?!?bec!",
+          "inputs": {
+            "s": "C aDzD?!?bec"
+          }
+        }
+      ],
+      "family": "append",
+      "held_out_rows": [
+        {
+          "expected": "?ycby_aByb-a A!",
+          "inputs": {
+            "s": "?ycby_aByb-a A"
+          }
+        },
+        {
+          "expected": "Ez!eBCceby-dEz!",
+          "inputs": {
+            "s": "Ez!eBCceby-dEz"
+          }
+        },
+        {
+          "expected": "ya!dEbE,D,!",
+          "inputs": {
+            "s": "ya!dEbE,D,"
+          }
+        }
+      ],
+      "id": "string_append_01",
+      "request_text": "Write a function that adds the suffix '!' to a string."
+    },
+    {
+      "example_rows": [
+        {
+          "expected": "_EB!x__end",
+          "inputs": {
+            "s": "_EB!x"
+          }
+        },
+        {
+          "expected": "deBbC??Abbd__end",
+          "inputs": {
+            "s": "deBbC??Abbd"
+          }
+        },
+        {
+          "expected": "aA_Bb__end",
+          "inputs": {
+            "s": "aA_Bb"
+          }
+        },
+        {
+          "expected": " xbBA-EEx,Ex__end",
+          "inputs": {
+            "s": " xbBA-EEx,Ex"
+          }
+        }
+      ],
+      "family": "append",
+      "held_out_rows": [
+        {
+          "expected": "DB _cz-dxcy___end",
+          "inputs": {
+            "s": "DB _cz-dxcy_"
+          }
+        },
+        {
+          "expected": "DCze?Czx?beBx,__end",
+          "inputs": {
+            "s": "DCze?Czx?beBx,"
+          }
+        },
+        {
+          "expected": "ACC,xexzdzB!CCAd__end",
+          "inputs": {
+            "s": "ACC,xexzdzB!CCAd"
+          }
+        }
+      ],
+      "id": "string_append_02",
+      "request_text": "Write a function that adds the suffix '__end' to a string."
+    },
+    {
+      "example_rows": [
+        {
+          "expected": "eD !Dy!?",
+          "inputs": {
+            "s": "eD !Dy!"
+          }
+        },
+        {
+          "expected": "?AB,yd?ec-?_yBx?",
+          "inputs": {
+            "s": "?AB,yd?ec-?_yBx"
+          }
+        },
+        {
+          "expected": "e D-?c-bEE?",
+          "inputs": {
+            "s": "e D-?c-bEE"
+          }
+        },
+        {
+          "expected": "_yB, _Bec?",
+          "inputs": {
+            "s": "_yB, _Bec"
+          }
+        }
+      ],
+      "family": "append",
+      "held_out_rows": [
+        {
+          "expected": "a!c EBEcex??",
+          "inputs": {
+            "s": "a!c EBEcex?"
+          }
+        },
+        {
+          "expected": "_e!eby?EE cxA!?",
+          "inputs": {
+            "s": "_e!eby?EE cxA!"
+          }
+        },
+        {
+          "expected": "aaECBb_?",
+          "inputs": {
+            "s": "aaECBb_"
+          }
+        }
+      ],
+      "id": "string_append_03",
+      "request_text": "Write a function that adds the suffix '?' to a string."
+    },
+    {
+      "example_rows": [
+        {
+          "expected": "E-,DB-B!ca #",
+          "inputs": {
+            "s": "E-,DB-B!ca"
+          }
+        },
+        {
+          "expected": "-D,!eE?dz #",
+          "inputs": {
+            "s": "-D,!eE?dz"
+          }
+        },
+        {
+          "expected": "aebxybe ?Axx #",
+          "inputs": {
+            "s": "aebxybe ?Axx"
+          }
+        },
+        {
+          "expected": "!zeb byx #",
+          "inputs": {
+            "s": "!zeb byx"
+          }
+        }
+      ],
+      "family": "append",
+      "held_out_rows": [
+        {
+          "expected": "azAxyA,cBc?deE? #",
+          "inputs": {
+            "s": "azAxyA,cBc?deE?"
+          }
+        },
+        {
+          "expected": "?-E!bB?x?-beDxy #",
+          "inputs": {
+            "s": "?-E!bB?x?-beDxy"
+          }
+        },
+        {
+          "expected": "Bcdde #",
+          "inputs": {
+            "s": "Bcdde"
+          }
+        }
+      ],
+      "id": "string_append_04",
+      "request_text": "Write a function that adds the suffix ' #' to a string."
+    },
+    {
+      "example_rows": [
+        {
+          "expected": "pre_B,-z!-b-?e!?",
+          "inputs": {
+            "s": "B,-z!-b-?e!?"
+          }
+        },
+        {
+          "expected": "pre_cCe!x ?zyc!zBy",
+          "inputs": {
+            "s": "cCe!x ?zyc!zBy"
+          }
+        },
+        {
+          "expected": "pre_zAC?c,D _aec!aDz",
+          "inputs": {
+            "s": "zAC?c,D _aec!aDz"
+          }
+        },
+        {
+          "expected": "pre_y-A?AaBbD_ce!c",
+          "inputs": {
+            "s": "y-A?AaBbD_ce!c"
+          }
+        }
+      ],
+      "family": "prefix",
+      "held_out_rows": [
+        {
+          "expected": "pre_ y!-!A z-Aa",
+          "inputs": {
+            "s": " y!-!A z-Aa"
+          }
+        },
+        {
+          "expected": "pre_DCac_b,dC",
+          "inputs": {
+            "s": "DCac_b,dC"
+          }
+        },
+        {
+          "expected": "pre_c?c?CB ",
+          "inputs": {
+            "s": "c?c?CB "
+          }
+        }
+      ],
+      "id": "string_prefix_01",
+      "request_text": "Write a function that adds the prefix 'pre_' to a string."
+    },
+    {
+      "example_rows": [
+        {
+          "expected": "[eb bydBeayAAd",
+          "inputs": {
+            "s": "eb bydBeayAAd"
+          }
+        },
+        {
+          "expected": "[-!DDc dEcAC_e",
+          "inputs": {
+            "s": "-!DDc dEcAC_e"
+          }
+        },
+        {
+          "expected": "[ !az-BxzE?DD_Ez?",
+          "inputs": {
+            "s": " !az-BxzE?DD_Ez?"
+          }
+        },
+        {
+          "expected": "[yCEydza-xeE_z,,",
+          "inputs": {
+            "s": "yCEydza-xeE_z,,"
+          }
+        }
+      ],
+      "family": "prefix",
+      "held_out_rows": [
+        {
+          "expected": "[,bx_B_Ad?E",
+          "inputs": {
+            "s": ",bx_B_Ad?E"
+          }
+        },
+        {
+          "expected": "[yEBb?z aabAd?-_D",
+          "inputs": {
+            "s": "yEBb?z aabAd?-_D"
+          }
+        },
+        {
+          "expected": "[zdED_aex",
+          "inputs": {
+            "s": "zdED_aex"
+          }
+        }
+      ],
+      "id": "string_prefix_02",
+      "request_text": "Write a function that adds the prefix '[' to a string."
+    },
+    {
+      "example_rows": [
+        {
+          "expected": "go:e?C ,zdBax-aaB",
+          "inputs": {
+            "s": "e?C ,zdBax-aaB"
+          }
+        },
+        {
+          "expected": "go:DzADa!Ddb,AE",
+          "inputs": {
+            "s": "DzADa!Ddb,AE"
+          }
+        },
+        {
+          "expected": "go:Cz_xb,cx",
+          "inputs": {
+            "s": "Cz_xb,cx"
+          }
+        },
+        {
+          "expected": "go: CD z",
+          "inputs": {
+            "s": " CD z"
+          }
+        }
+      ],
+      "family": "prefix",
+      "held_out_rows": [
+        {
+          "expected": "go:aa_a-",
+          "inputs": {
+            "s": "aa_a-"
+          }
+        },
+        {
+          "expected": "go:cyCAcy ",
+          "inputs": {
+            "s": "cyCAcy "
+          }
+        },
+        {
+          "expected": "go:EAAdb-CdBxx",
+          "inputs": {
+            "s": "EAAdb-CdBxx"
+          }
+        }
+      ],
+      "id": "string_prefix_03",
+      "request_text": "Write a function that adds the prefix 'go:' to a string."
+    },
+    {
+      "example_rows": [
+        {
+          "expected": "Z,cb??Dxy-C",
+          "inputs": {
+            "s": ",cb??Dxy-C"
+          }
+        },
+        {
+          "expected": "Z!C!aBaE",
+          "inputs": {
+            "s": "!C!aBaE"
+          }
+        },
+        {
+          "expected": "ZDydez",
+          "inputs": {
+            "s": "Dydez"
+          }
+        },
+        {
+          "expected": "ZDe!C dx-e,ABy",
+          "inputs": {
+            "s": "De!C dx-e,ABy"
+          }
+        }
+      ],
+      "family": "prefix",
+      "held_out_rows": [
+        {
+          "expected": "ZcxCbBc--xD,E_aB?",
+          "inputs": {
+            "s": "cxCbBc--xD,E_aB?"
+          }
+        },
+        {
+          "expected": "ZbexdCAz",
+          "inputs": {
+            "s": "bexdCAz"
+          }
+        },
+        {
+          "expected": "Ze_B-aCECBaD,dCE",
+          "inputs": {
+            "s": "e_B-aCECBaD,dCE"
+          }
+        }
+      ],
+      "id": "string_prefix_04",
+      "request_text": "Write a function that adds the prefix 'Z' to a string."
+    },
+    {
+      "example_rows": [
+        {
+          "expected": "eceed!",
+          "inputs": {
+            "s": "ECeED"
+          }
+        },
+        {
+          "expected": "b_ebxa!",
+          "inputs": {
+            "s": "b_EBxa"
+          }
+        },
+        {
+          "expected": "a-yd_!",
+          "inputs": {
+            "s": "a-yD_"
+          }
+        },
+        {
+          "expected": "?ddecce!",
+          "inputs": {
+            "s": "?DDECCE"
+          }
+        }
+      ],
+      "family": "fold_suffix",
+      "held_out_rows": [
+        {
+          "expected": "b,bce ace be-x!!",
+          "inputs": {
+            "s": "b,BcE Ace be-x!"
+          }
+        },
+        {
+          "expected": "_,ae ebcady e  !",
+          "inputs": {
+            "s": "_,aE EbCAdy E  "
+          }
+        },
+        {
+          "expected": "-y,ydyz!",
+          "inputs": {
+            "s": "-y,yDyz"
+          }
+        }
+      ],
+      "id": "string_fold_suffix_01",
+      "request_text": "Write a function that converts a string to lowercase and then adds '!'."
+    },
+    {
+      "example_rows": [
+        {
+          "expected": "cxb!e,cae_a?::",
+          "inputs": {
+            "s": "CxB!e,cAe_a?"
+          }
+        },
+        {
+          "expected": "az_?zad?::",
+          "inputs": {
+            "s": "az_?zAD?"
+          }
+        },
+        {
+          "expected": "bbxecadey!_edd::",
+          "inputs": {
+            "s": "BBxECadey!_EdD"
+          }
+        },
+        {
+          "expected": "exxczzaya::",
+          "inputs": {
+            "s": "ExxCzzAya"
+          }
+        }
+      ],
+      "family": "fold_suffix",
+      "held_out_rows": [
+        {
+          "expected": "z?-ac?ceaczy,::",
+          "inputs": {
+            "s": "z?-Ac?CEaczy,"
+          }
+        },
+        {
+          "expected": "cebabe,b::",
+          "inputs": {
+            "s": "CebAbe,b"
+          }
+        },
+        {
+          "expected": "-,az-?axxazzecc-::",
+          "inputs": {
+            "s": "-,Az-?AxxAzzEcC-"
+          }
+        }
+      ],
+      "id": "string_fold_suffix_02",
+      "request_text": "Write a function that converts a string to lowercase and then adds '::'."
+    },
+    {
+      "example_rows": [
+        {
+          "expected": "x?-zd_done",
+          "inputs": {
+            "s": "x?-zd"
+          }
+        },
+        {
+          "expected": "- dx-,c-ybyxcb_done",
+          "inputs": {
+            "s": "- Dx-,C-ybyxCb"
+          }
+        },
+        {
+          "expected": "-ee?ab_done",
+          "inputs": {
+            "s": "-EE?Ab"
+          }
+        },
+        {
+          "expected": "za aazyadb_done",
+          "inputs": {
+            "s": "za AAzyAdb"
+          }
+        }
+      ],
+      "family": "fold_suffix",
+      "held_out_rows": [
+        {
+          "expected": "eb_be  d!?_done",
+          "inputs": {
+            "s": "EB_BE  d!?"
+          }
+        },
+        {
+          "expected": "azxe-db!a?-_done",
+          "inputs": {
+            "s": "azxE-DB!A?-"
+          }
+        },
+        {
+          "expected": "ddbcebcy_done",
+          "inputs": {
+            "s": "ddbcEBcy"
+          }
+        }
+      ],
+      "id": "string_fold_suffix_03",
+      "request_text": "Write a function that converts a string to lowercase and then adds '_done'."
+    },
+    {
+      "example_rows": [
+        {
+          "expected": "yybeydyd-d,caX",
+          "inputs": {
+            "s": "yybeydyd-d,CA"
+          }
+        },
+        {
+          "expected": "?aez-dddd,zd?-bX",
+          "inputs": {
+            "s": "?AEz-DDdD,zd?-B"
+          }
+        },
+        {
+          "expected": "xcc abX",
+          "inputs": {
+            "s": "xCC aB"
+          }
+        },
+        {
+          "expected": "?ddxyd_,a_cb!bbdX",
+          "inputs": {
+            "s": "?DDxyd_,a_cb!BbD"
+          }
+        }
+      ],
+      "family": "fold_suffix",
+      "held_out_rows": [
+        {
+          "expected": "!adcz,xe?b,cz X",
+          "inputs": {
+            "s": "!ADCz,xe?b,Cz "
+          }
+        },
+        {
+          "expected": "-!cab!ze?X",
+          "inputs": {
+            "s": "-!cAb!zE?"
+          }
+        },
+        {
+          "expected": "ba_?x,xdcxbX",
+          "inputs": {
+            "s": "ba_?x,xDcxB"
+          }
+        }
+      ],
+      "id": "string_fold_suffix_04",
+      "request_text": "Write a function that converts a string to lowercase and then adds 'X'."
+    }
+  ]
+}

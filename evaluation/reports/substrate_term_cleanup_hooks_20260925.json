@@ -1,0 +1,136 @@
+{
+  "all_cases_pass": true,
+  "cases": [
+    {
+      "callback_records": [
+        [
+          0,
+          "Term.Lit"
+        ],
+        [
+          1,
+          "Term.Var"
+        ],
+        [
+          2,
+          "Term.Reverse"
+        ],
+        [
+          3,
+          "Term.Cat"
+        ]
+      ],
+      "case": "success",
+      "error": null,
+      "hooks_match_removed_order": true,
+      "live_term_ids": [],
+      "passed": true,
+      "protected_ids": [],
+      "protected_silent": true,
+      "removed_ids": [
+        0,
+        1,
+        2,
+        3
+      ]
+    },
+    {
+      "callback_records": [
+        [
+          0,
+          "Term.Lit"
+        ],
+        [
+          2,
+          "Term.Reverse"
+        ],
+        [
+          3,
+          "Term.Cat"
+        ]
+      ],
+      "case": "shared_leaf",
+      "error": null,
+      "hooks_match_removed_order": true,
+      "live_term_ids": [
+        1
+      ],
+      "passed": true,
+      "protected_ids": [
+        1
+      ],
+      "protected_silent": true,
+      "removed_ids": [
+        0,
+        2,
+        3
+      ]
+    },
+    {
+      "all_events_dispatched": true,
+      "callback_records": [
+        [
+          "raising",
+          0,
+          "Term.Lit"
+        ],
+        [
+          "raising",
+          1,
+          "Term.Var"
+        ],
+        [
+          "raising",
+          2,
+          "Term.Reverse"
+        ],
+        [
+          "raising",
+          3,
+          "Term.Cat"
+        ]
+      ],
+      "case": "callback_raises_then_observer",
+      "first_error_surfaced": true,
+      "live_term_ids": [],
+      "mutation_committed": true,
+      "observed_error": "RuntimeError('hook_probe_failure')",
+      "observer_records": [
+        [
+          0,
+          "Term.Lit"
+        ],
+        [
+          1,
+          "Term.Var"
+        ],
+        [
+          2,
+          "Term.Reverse"
+        ],
+        [
+          3,
+          "Term.Cat"
+        ]
+      ]
+    }
+  ],
+  "claim_boundary": "hook accounting and failure semantics only; no arena compaction, concurrency, or broad performance claim",
+  "environment": {
+    "native_path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+    "native_sha256": "f887275c545582e7ee7a398c8798ab73d3e64ed7aec852bfddc7416686170bca",
+    "platform": "Linux-6.8.0-142-generic-x86_64-with-glibc2.39",
+    "python": "3.13.5 (main, Jun 11 2025, 15:36:57) [GCC 11.4.0]"
+  },
+  "provenance": {
+    "build_record_sha256": "dbfcab9225c63945f02685f881db0655e5e884927952cdca3d458f0ba1901420",
+    "git_head": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+    "lock_sha256": "909f4230bb3bd3d5013038e49a667e79eaea78ba2aef8471fac57f1cdf506f12",
+    "native_sha256": "f887275c545582e7ee7a398c8798ab73d3e64ed7aec852bfddc7416686170bca",
+    "preregistration_sha256": "6f7dfdae89859cd313158b27b2b918999ff28a5d2f6eba18b894fe47d15db2a2",
+    "runner_sha256": "72a000a0a810c8d0bd76baa273662bb6e4dde00f5146502d2248b124406dc0cb"
+  },
+  "run_id": "term-cleanup-hooks-20260925-v1",
+  "schema_version": 1,
+  "wall_ns": 451403
+}

@@ -1,6 +1,6 @@
 """Block 338000 — harvest the relations that PASSED calibration, at scale.
 
-Reads seeds/generated/qwen3_relation_calibration.json (written by
+Reads domain_data/llm_harvest/qwen3_relation_calibration.json (written by
 scripts/llm_calibrate_relations.py). For each relation the calibration marked
 `earned: true`, elicit it at scale over a larger inventory and write the reaped
 edges tagged source=qwen3 + per-relation trust. Relations that did NOT earn the
@@ -27,8 +27,8 @@ from domains import llm_hf_forward as hf
 from domains import llm_knowledge_seed as ks
 
 MODEL = "/applications/data/model_graph_work/Qwen3.8-4B-Distill"
-CALIB = "seeds/generated/qwen3_relation_calibration.json"
-OUT = "seeds/generated/qwen3_reaped_relations.json"
+CALIB = "domain_data/llm_harvest/qwen3_relation_calibration.json"
+OUT = "domain_data/llm_harvest/qwen3_reaped_relations.json"
 SOURCE = "qwen3"
 TRUST = 0.5
 BATCH = 32

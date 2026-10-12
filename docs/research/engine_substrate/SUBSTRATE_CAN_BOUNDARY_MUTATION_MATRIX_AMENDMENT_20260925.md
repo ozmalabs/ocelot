@@ -1,0 +1,5 @@
+# CAN cross-frame mutation matrix — diagnostic v1.1 amendment
+
+The original preregistered v1 execution is retained as a failed diagnostic, not silently corrected. It exposed two fixture defects: `insert_boundary_edge` was already present in the starting path, so that arm performed an upsert/no-op; and deleting node 4 removed its incident structure but the selected starting fields left every surviving node at its same fixed-point value, so the omitted-notification control was insensitive.
+
+Version 1.1 keeps N, frames, mutation list, caps, metrics, and overall pass rule. It makes two fixture-only corrections: omit edge (3,4) before the insertion case, and for the node-deletion case only, use `external_field(c3)=0` and `external_field(c4)=1` so c3's state depends on the soon-to-be-deleted c4. The revised diagnostic uses a distinct runner, lock, and raw output. Because the changes respond to observed v1 outcomes, v1.1 is discovery evidence and cannot be treated as a confirmatory rerun. Its purpose is to determine whether the broader mutation protocol is viable and to expose further limitations before a fresh preregistered confirmation.

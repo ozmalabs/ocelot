@@ -1,0 +1,62 @@
+{
+  "all_checks_pass": true,
+  "analysis_id": "substrate-high-degree-remove-node-scale-v1-1-independent-analysis",
+  "batch_analysis_sha256": "860515f5a3e377fb426d43998afd719e86c694fe78c2d39753ca82a4096461c7",
+  "batch_baseline_sha256": "67c2d3a5610d5f1bde2dd8728c8e2ae07646aa98247e6f4374413d5eb8cce746",
+  "cells": [
+    {
+      "median_batch_edge_delete_wall_ns": 3534504,
+      "median_remove_node_wall_ns": 558843,
+      "median_sequential_edge_delete_wall_ns": 35145290,
+      "median_setup_wall_ns": 5817807,
+      "n": 5000,
+      "remove_node_ns_per_incident_edge": 111.7686,
+      "remove_node_to_batch_edge_delete_ratio": 0.15811072784186975,
+      "remove_node_to_sequential_edge_delete_ratio": 0.015900935801070357,
+      "replicates": 3
+    },
+    {
+      "median_batch_edge_delete_wall_ns": 9164213,
+      "median_remove_node_wall_ns": 2680168,
+      "median_sequential_edge_delete_wall_ns": 550725101,
+      "median_setup_wall_ns": 24834489,
+      "n": 20000,
+      "remove_node_ns_per_incident_edge": 134.0084,
+      "remove_node_to_batch_edge_delete_ratio": 0.29246024726836883,
+      "remove_node_to_sequential_edge_delete_ratio": 0.004866616747871821,
+      "replicates": 3
+    },
+    {
+      "median_batch_edge_delete_wall_ns": 42708730,
+      "median_remove_node_wall_ns": 13360615,
+      "median_sequential_edge_delete_wall_ns": 8695205434,
+      "median_setup_wall_ns": 97431774,
+      "n": 80000,
+      "remove_node_ns_per_incident_edge": 167.0076875,
+      "remove_node_to_batch_edge_delete_ratio": 0.3128310066817721,
+      "remove_node_to_sequential_edge_delete_ratio": 0.0015365496653773482,
+      "replicates": 3
+    }
+  ],
+  "checks": {
+    "baseline_captures_pass": true,
+    "batch_independent_analysis_passed": true,
+    "public_remove_node_semantics_20000": true,
+    "public_remove_node_semantics_5000": true,
+    "public_remove_node_semantics_80000": true,
+    "run_manifest_success": true,
+    "runner_gates_pass": true,
+    "stable_parent_lock": true,
+    "three_workers_20000": true,
+    "three_workers_5000": true,
+    "three_workers_80000": true,
+    "unique_worker_pids": true,
+    "worker_snapshots_stable": true
+  },
+  "churn_baseline_sha256": "c657e9adff9437a74023ec59470ec9603d6d3f9a2c0b4fc2a5a8944c2e79e28f",
+  "claim_boundary": "Public remove_node correctness and time for deleting one high-degree source with outgoing homogeneous edges; no rule-heavy, incoming-hub, or natural-workload claim.",
+  "lock_sha256": "e41e2e2f9ae1cc6d332b8f11c4b4cfe0c6d535b49f086a2cb4bd25a238364d0e",
+  "raw_path": "evaluation/reports/substrate_high_degree_remove_node_scale_v1_1_20260928.json",
+  "raw_sha256": "df713dbd00be1211f430a6661cad71f9c4995a54c9c29bcc9a16ed55326ff9e5",
+  "schema_version": 1
+}

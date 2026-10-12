@@ -45,6 +45,14 @@ def test_read_instruction_reply_is_graph_produced_not_the_floor(agent):
     assert "modeled it internally" in reply.lower()
     # grounded in the extracted content (the internal model), not a bare ack
     assert "knight" in reply.lower()
+    receipts = agent.production_turn_evidence(
+        agent._last_turn_inbound)["production_gate_receipts"]
+    assert any(
+        receipt["status"] == "released"
+        and receipt["attrs"].get("parse_back_mode")
+        == "conversation_comprehend_text_graph"
+        and receipt["attrs"].get("surface") == reply
+        for receipt in receipts)
 
 
 def test_read_instruction_mints_comprehend_goal_via_rule(agent):
@@ -75,6 +83,15 @@ def test_question_still_answers_through_python_fallback_no_regression(agent):
     assert "no attached world" not in reply.lower()
 
 
+def test_read_instruction_keeps_leading_head_across_content_commas():
+    from domains.comprehend_text import comprehend_text
+
+    comp = comprehend_text(
+        None, "Read this: The knight rode into the dark forest, afraid but resolute.")
+    assert comp.kind == "instruction"
+    assert comp.dispatch["predicate"].lower() == "read"
+
+
 # --- Phase 2: the honest world-action floor, now a graph rule -------------
 
 def test_world_action_instruction_floors_via_graph_rule(agent):
@@ -86,12 +103,61 @@ def test_world_action_instruction_floors_via_graph_rule(agent):
     reply = agent.converse("Run the script.", speech_act="request")
     assert isinstance(reply, str) and reply.strip()
     assert "run" in reply.lower() and "no world or faculty" in reply.lower()
+    assert "run the script" in reply.lower()
+    receipts = agent.production_turn_evidence(
+        agent._last_turn_inbound)["production_gate_receipts"]
+    assert any(receipt["status"] == "released"
+               and receipt["attrs"].get("parse_back_mode")
+               == "conversation_instruction_graph"
+               and receipt["attrs"].get("surface") == reply
+               for receipt in receipts)
     # graph-rule signature: an instruction Goal linked by `comprehends`
     run_goals = [g for g in agent.s.nodes("Goal")
                  if agent.s.node(g)["attrs"].get("kind") == "instruction"
                  and agent.s.node(g)["attrs"].get("predicate") == "run"
                  and list(agent.inner.neighbours(g, "comprehends"))]
     assert run_goals, "the world-action floor Goal must be minted by the graph rule (with a comprehends edge)"
+
+
+def test_grounded_standalone_instruction_selects_act_without_claiming_execution(agent):
+    signal = "Check the pressure."
+    before = set(agent.s.nodes("Goal"))
+    reply = agent.converse(
+        signal, speech_act="request",
+        context={"interaction_mode": "non_turn",
+                 "interaction_relation": "standalone"})
+    inbound = agent._last_turn_inbound
+    attrs = dict(agent.s.node(inbound)["attrs"])
+    interpretation = attrs.get("communication_interpretation_id")
+    assert interpretation is not None
+    interpretation_attrs = agent.s.node(interpretation)["attrs"]
+    assert interpretation_attrs.get("cognitive_disposition") == "act"
+    assert interpretation_attrs.get("arbitration_basis") == (
+        "standalone_grounded_action_request")
+    goals = [goal for goal in agent.s.nodes("Goal")
+             if goal not in before
+             and agent.s.node(goal)["attrs"].get("kind")
+             == "interpreted_instruction"
+             and str(agent.s.node(goal)["attrs"].get("predicate", "")).lower()
+             == "check"]
+    assert goals, "the held route must preserve the recognized instruction goal"
+    assert list(agent.inner.neighbours(goals[-1], "comprehends")) == [inbound]
+    assert "no attached world" in reply.lower() or "no world" in reply.lower()
+    assert "checked the pressure" not in reply.lower()
+
+
+def test_standalone_temporally_deferred_instruction_stays_deferred(agent):
+    reply = agent.converse(
+        "When ready, check the pressure.", speech_act="request",
+        context={"interaction_mode": "non_turn",
+                 "interaction_relation": "standalone"})
+    inbound = agent._last_turn_inbound
+    attrs = dict(agent.s.node(inbound)["attrs"])
+    interpretation = attrs.get("communication_interpretation_id")
+    assert interpretation is not None
+    assert agent.s.node(interpretation)["attrs"].get(
+        "cognitive_disposition") == "defer"
+    assert reply
 
 
 def test_self_report_instruction_still_routes_through_python(agent):
@@ -118,6 +184,13 @@ def test_confident_self_improvement_instruction_files_a_self_concern_gated(agent
     assert isinstance(reply, str) and reply.strip()
     assert "self-concern" in reply.lower() and "review" in reply.lower()
     assert "grammar" in reply.lower(), "the confident reply names the grounded target"
+    receipts = agent.production_turn_evidence(
+        agent._last_turn_inbound)["production_gate_receipts"]
+    assert any(receipt["status"] == "released"
+               and receipt["attrs"].get("parse_back_mode")
+               == "conversation_instruction_graph"
+               and receipt["attrs"].get("surface") == reply
+               for receipt in receipts)
 
     scs = list(agent.s.nodes("SelfConcern"))
     assert len(scs) == before + 1, "a confident self-directed instruction must mint a SelfConcern"
@@ -140,6 +213,13 @@ def test_uncertain_self_improvement_instruction_asks_for_clarification(agent):
     assert isinstance(reply, str) and reply.strip()
     assert "sure i understand" in reply.lower() or "clarif" in reply.lower() or "which part" in reply.lower(), \
         "an ungrounded request must ask for clarification"
+    receipts = agent.production_turn_evidence(
+        agent._last_turn_inbound)["production_gate_receipts"]
+    assert any(receipt["status"] == "released"
+               and receipt["attrs"].get("parse_back_mode")
+               == "conversation_instruction_graph"
+               and receipt["attrs"].get("surface") == reply
+               for receipt in receipts)
     after = len(list(agent.s.nodes("SelfConcern")))
     assert after == before, "an uncertain request must NOT file a self-concern"
 

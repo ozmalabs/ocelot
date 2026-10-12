@@ -854,7 +854,7 @@ def eval_and_record(sub, ag_node, g) -> bool:
     back = sub._inner.term_subgraph_json(root)
     root2 = sub._inner.add_term_subgraph(json.loads(back))
     reflect_ok = 1.0 if sub._inner.term_subgraph_json(root2) == back else 0.0
-    sub.remove_node(root2)
+    sub._inner.remove_term_subgraph(root2)
     sub.set_attr(g, "ps_reflect_ok", reflect_ok)
     sub.add_edge_unchecked(g, "ps_ir_reflected", root)
     # 2) ProgEval over the REFLECTED subgraph per example row — the executed
@@ -1078,7 +1078,7 @@ def _screen_eval(sub, ir: Dict[str, Any], env: Dict[str, Any]):
     try:
         out = sub._inner.evaluate(_prog_eval_term("e", "p"), {"e": env, "p": root})
     finally:
-        sub.remove_node(root)
+        sub._inner.remove_term_subgraph(root)
     got = out.get("result")
     ok = out.get("halted") is True and out.get("trap") is None
     return got, ok
@@ -1444,6 +1444,21 @@ def run_enumerate(sub, ag_node, g) -> bool:
         "examples": {"type": "Lit", "value": rows},
         "max_size": 20, "max_candidates": 0, "saturate_k": 0,
         "field": ""}
+    # Evaluation hook for a declared per-goal candidate ceiling. The absent
+    # attribute preserves SynthEnumerate's native default and call-site
+    # adjustments; an explicit positive value replaces that default for this
+    # goal only. Ordinary product paths never mint this attribute.
+    requested_candidate_budget = at.get("ps_enum_candidate_budget")
+    if requested_candidate_budget is not None:
+        if (isinstance(requested_candidate_budget, bool)
+                or not isinstance(requested_candidate_budget, (int, float))
+                or not float(requested_candidate_budget).is_integer()
+                or not 1 <= int(requested_candidate_budget) <= 2_000_000):
+            sub.set_attr(g, "ps_enumerate_outcome", "failed")
+            sub.set_attr(g, "ps_enumerate_note", "invalid candidate budget")
+            sub.set_attr(g, "ps_enum_outcome_round", round_)
+            return True
+        spec["max_candidates"] = int(requested_candidate_budget)
     # The operator inventory is a graph verdict produced by
     # ps_select_synthesis_operator_shape.  This adapter merely transcribes
     # the held list into the existing Term contract.
@@ -2517,7 +2532,7 @@ def _foldup_reflect_and_eval(sub, g, ir, seq) -> None:
     back = sub._inner.term_subgraph_json(root)
     root2 = sub._inner.add_term_subgraph(json.loads(back))
     reflect_ok = 1.0 if sub._inner.term_subgraph_json(root2) == back else 0.0
-    sub.remove_node(root2)
+    sub._inner.remove_term_subgraph(root2)
     sub.set_attr(g, "ps_reflect_ok", reflect_ok)
     sub.add_edge_unchecked(g, "ps_ir_reflected", root)
     term = _prog_eval_term("e", "p")
@@ -2629,8 +2644,10 @@ def _eval_ir_on(sub, ir, env):
     """ProgEval of an IR dict on one env (pure, fueled) — the eval_and_record
     evaluation, locally scoped for the trace. Returns (got, ok)."""
     root = sub._inner.add_term_subgraph(ir)
-    out = sub._inner.evaluate(_prog_eval_term("e", "p"), {"e": env, "p": root})
-    sub.remove_node(root)
+    try:
+        out = sub._inner.evaluate(_prog_eval_term("e", "p"), {"e": env, "p": root})
+    finally:
+        sub._inner.remove_term_subgraph(root)
     got = out.get("result")
     ok = out.get("halted") is True and out.get("trap") is None
     return got, ok
@@ -2976,6 +2993,7 @@ def read_goal(sub, g) -> Dict[str, Any]:
             "grounded_constants": (
                 _plain(at.get("ps_enum_grounded_constants")) or []
             ),
+            "requested_candidate_budget": at.get("ps_enum_candidate_budget"),
             "tested": at.get("ps_enum_tested"),
             "distinct": at.get("ps_enum_distinct"),
             "solution_size": at.get("ps_enum_solution_size"),

@@ -1,0 +1,5 @@
+# Scheduler dirty-density v1 preregistration amendment (2026-09-26)
+
+The initial exploratory execution showed that the original prefix prediction for the short-circuit fixed-point probe was wrong: with a dirty prefix, the predicate becomes true at index zero, so the probe examines one slot regardless of the number of dirty prefix rules. The terminal clean pass still examines all `R` slots. The corrected prediction is `R+1` total fixed-point probe slots for prefix cells. Suffix cells remain `2R-k+1` because their first dirty rule is at index `R-k`.
+
+The exploratory output failed only those prefix probe-count checks. The runner wrote its raw report to the same fixed output path on the confirmatory rerun, so the exploratory raw report is not retained; do not treat that attempt as confirmatory evidence. The corrected 54-worker run was performed only after updating this amendment and expected-value analyzer, with the amendment added to the source/native fingerprint. No engine source or workload was changed between attempts.

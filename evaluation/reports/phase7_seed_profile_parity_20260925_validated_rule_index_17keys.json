@@ -1,0 +1,2465 @@
+{
+  "event_count": 8,
+  "event_ids": [
+    "information_question",
+    "direct_action",
+    "unresolved_reference",
+    "overlap_signal",
+    "correction",
+    "social_greeting",
+    "unavailable_world",
+    "error_empty"
+  ],
+  "profiles": {
+    "conversation": {
+      "boot_and_event_rss_growth_bytes": 1097728,
+      "boot_elapsed_ms": 355.246017,
+      "boot_rss_growth_bytes": 1097728,
+      "cold_start_rss_growth_bytes": 0,
+      "content_keys": [
+        "answer",
+        "are",
+        "behind",
+        "closed",
+        "describe",
+        "hello",
+        "how",
+        "it",
+        "move",
+        "no",
+        "north",
+        "object",
+        "open",
+        "the",
+        "there",
+        "think",
+        "you"
+      ],
+      "content_slices": {
+        "learned_lexicon": {
+          "matched_node_count": 12,
+          "requested_keys": [
+            "answer",
+            "are",
+            "behind",
+            "closed",
+            "describe",
+            "hello",
+            "how",
+            "it",
+            "move",
+            "no",
+            "north",
+            "object",
+            "open",
+            "the",
+            "there",
+            "think",
+            "you"
+          ],
+          "source_node_count": 3917
+        }
+      },
+      "conversation_latency_max_ms": 54.886111,
+      "conversation_latency_total_ms": 291.107609,
+      "conversation_rss_growth_bytes": 1097728,
+      "conversation_rss_peak_bytes": 1210769408,
+      "errors": [],
+      "event_count": 8,
+      "event_ids": [
+        "information_question",
+        "direct_action",
+        "unresolved_reference",
+        "overlap_signal",
+        "correction",
+        "social_greeting",
+        "unavailable_world",
+        "error_empty"
+      ],
+      "graph_after": {
+        "discourse_events": 8,
+        "edges": 2484,
+        "interpretations": 8,
+        "messages": 19,
+        "nodes": 2482,
+        "turns": 0
+      },
+      "graph_before": {
+        "discourse_events": 0,
+        "edges": 1520,
+        "interpretations": 0,
+        "messages": 0,
+        "nodes": 2230,
+        "turns": 0
+      },
+      "graph_growth": {
+        "discourse_events": 8,
+        "edges": 964,
+        "interpretations": 8,
+        "messages": 19,
+        "nodes": 252,
+        "turns": 0
+      },
+      "latency_ms": 295.25655,
+      "observations": [
+        {
+          "cognitive_disposition": null,
+          "communication_route": null,
+          "event_payload_literal_form": "interrogative",
+          "event_payload_relation": "turn_compatible",
+          "evidence_schema": "communication_evidence.v1",
+          "explicit_error": false,
+          "id": "information_question",
+          "interaction_mode": "turn_compatible",
+          "interaction_relation": "turn_compatible",
+          "interpretation": {
+            "arbitration_basis": "indirect_request_force",
+            "authority_status": "not_applicable",
+            "cognitive_disposition": null,
+            "cognitive_goal": "answer_or_learn",
+            "cognitive_goal_hypothesis": "answer_or_learn",
+            "communicative_force": "request_information",
+            "communicative_force_hypothesis": "request_information",
+            "evidence_force": "information_request",
+            "evidence_goal": "answer_or_learn",
+            "evidence_schema": "communication_evidence.v1",
+            "grounding_evidence_path": "CommunicationInterpretation -> selected_graph_faculty",
+            "grounding_status": "candidate_grounded",
+            "interaction_mode": "turn_compatible",
+            "interaction_relation": "turn_compatible",
+            "literal_form": "interrogative",
+            "schema": "communication_interpretation.v1"
+          },
+          "interpretation_schema": "communication_interpretation.v1",
+          "literal_form": "interrogative",
+          "message": {
+            "adjacency_replied_act": "answer",
+            "comp_dispatch_path": "table",
+            "comp_intent": "table:meta",
+            "comp_kind": "question"
+          },
+          "production_receipts": [],
+          "reply_present": true,
+          "trace_present": false,
+          "turn": {
+            "answer_commitment": {
+              "graph_linked_to_turn": true,
+              "kind": "linked_graph_answer_message",
+              "speech_act": "answer"
+            },
+            "concerns": [],
+            "current_topic": null,
+            "deliberations": [],
+            "goals": [],
+            "intent": {
+              "force": null,
+              "kind": null,
+              "status": null,
+              "topic": null
+            },
+            "mention_referents": [
+              [
+                "how"
+              ],
+              [
+                "are"
+              ],
+              [
+                "you",
+                "you",
+                "you"
+              ],
+              []
+            ],
+            "reply_commitment": null,
+            "reply_from": "adapter",
+            "reply_message_present": true
+          }
+        },
+        {
+          "cognitive_disposition": null,
+          "communication_route": "goal_only",
+          "event_payload_literal_form": "imperative",
+          "event_payload_relation": "turn_compatible",
+          "evidence_schema": "communication_evidence.v1",
+          "explicit_error": false,
+          "id": "direct_action",
+          "interaction_mode": "turn_compatible",
+          "interaction_relation": "turn_compatible",
+          "interpretation": {
+            "arbitration_basis": "instruction_force",
+            "authority_status": "not_applicable",
+            "cognitive_disposition": null,
+            "cognitive_goal": "act_or_clarify",
+            "cognitive_goal_hypothesis": "act_or_answer",
+            "communicative_force": "request_action",
+            "communicative_force_hypothesis": "request_action_or_account",
+            "evidence_force": "action_request",
+            "evidence_goal": "act_or_clarify",
+            "evidence_schema": "communication_evidence.v1",
+            "grounding_evidence_path": "CommunicationInterpretation -> Concept.referent",
+            "grounding_status": "candidate_grounded",
+            "interaction_mode": "turn_compatible",
+            "interaction_relation": "turn_compatible",
+            "literal_form": "imperative",
+            "relation_focus": "polar",
+            "schema": "communication_interpretation.v1"
+          },
+          "interpretation_schema": "communication_interpretation.v1",
+          "literal_form": "imperative",
+          "message": {
+            "communication_route": "goal_only",
+            "comp_dispatch_path": "instruction",
+            "comp_intent": "do:open(north)",
+            "comp_kind": "instruction",
+            "comp_relation_focus": "polar"
+          },
+          "production_receipts": [
+            {
+              "coverage": 1.0,
+              "parse_back_mode": "conversation_action_graph",
+              "recoverable": true,
+              "semantic_content": [
+                "agent",
+                "north"
+              ],
+              "semantic_event": "open",
+              "semantic_intent": "act",
+              "status": "released",
+              "withhold_reasons": []
+            }
+          ],
+          "reply_present": true,
+          "trace_present": false,
+          "turn": {
+            "answer_commitment": null,
+            "concerns": [],
+            "current_topic": null,
+            "deliberations": [
+              {
+                "attrs": {
+                  "candidate_source": "discourse_state",
+                  "candidate_trace_complete": 1.0,
+                  "consequence_gain": 1.0,
+                  "epoch": 1.0,
+                  "grounding_floor": 1.0,
+                  "novelty_gain": 1.0,
+                  "residual_cost_gain": 1.0,
+                  "source_candidate_count": 0.0,
+                  "status": "no_candidate"
+                },
+                "candidates": [],
+                "counterfactual_credit": [],
+                "selections": [],
+                "settlements": []
+              },
+              {
+                "attrs": {
+                  "candidate_source": "discourse_state",
+                  "candidate_trace_complete": 1.0,
+                  "consequence_gain": 1.0,
+                  "epoch": 1.0,
+                  "grounding_floor": 1.0,
+                  "novelty_gain": 1.0,
+                  "residual_cost_gain": 1.0,
+                  "source_candidate_count": 0.0,
+                  "status": "no_candidate"
+                },
+                "candidates": [],
+                "counterfactual_credit": [],
+                "selections": [],
+                "settlements": []
+              },
+              {
+                "attrs": {
+                  "candidate_source": "discourse_state",
+                  "candidate_trace_complete": 1.0,
+                  "consequence_gain": 1.0,
+                  "epoch": 1.0,
+                  "grounding_floor": 1.0,
+                  "novelty_gain": 1.0,
+                  "residual_cost_gain": 1.0,
+                  "source_candidate_count": 0.0,
+                  "status": "no_candidate"
+                },
+                "candidates": [],
+                "counterfactual_credit": [],
+                "selections": [],
+                "settlements": []
+              }
+            ],
+            "goals": [
+              {
+                "event_bound": true,
+                "kind": "instruction",
+                "predicate": "open",
+                "source": "conversation",
+                "status": "active"
+              },
+              {
+                "content": "north",
+                "event_bound": true,
+                "kind": "interpreted_instruction",
+                "order": 2,
+                "predicate": "open",
+                "source": "instruction_understanding",
+                "status": "active"
+              },
+              {
+                "event_bound": true,
+                "kind": "instruction",
+                "object": "north",
+                "predicate": "open",
+                "source": "conversation"
+              }
+            ],
+            "intent": {
+              "force": null,
+              "kind": null,
+              "status": null,
+              "topic": null
+            },
+            "mention_referents": [
+              [],
+              [
+                "open",
+                "open"
+              ],
+              [
+                "the"
+              ],
+              [
+                "north"
+              ],
+              []
+            ],
+            "reply_commitment": null,
+            "reply_from": "agent",
+            "reply_message_present": true
+          }
+        },
+        {
+          "cognitive_disposition": "repair",
+          "communication_route": "ask_back",
+          "event_payload_literal_form": "imperative",
+          "event_payload_relation": "standalone",
+          "evidence_schema": "communication_evidence.v1",
+          "explicit_error": false,
+          "id": "unresolved_reference",
+          "interaction_mode": "non_turn",
+          "interaction_relation": "standalone",
+          "interpretation": {
+            "arbitration_basis": "typed_unresolved_action_dependency",
+            "authority_status": "not_applicable",
+            "cognitive_disposition": "repair",
+            "cognitive_goal": "clarify_or_defer",
+            "cognitive_goal_hypothesis": "act_or_answer",
+            "communicative_force": "repair_or_defer",
+            "communicative_force_hypothesis": "request_action_or_account",
+            "evidence_force": "action_request",
+            "evidence_goal": "act_or_clarify",
+            "evidence_schema": "communication_evidence.v1",
+            "grounding_evidence_path": "",
+            "grounding_status": "unresolved",
+            "interaction_mode": "non_turn",
+            "interaction_relation": "standalone",
+            "language_referent_status": "unresolved",
+            "language_repair_focus": "it",
+            "literal_form": "imperative",
+            "relation_focus": "polar",
+            "schema": "communication_interpretation.v1"
+          },
+          "interpretation_schema": "communication_interpretation.v1",
+          "literal_form": "imperative",
+          "message": {
+            "communication_route": "ask_back",
+            "comp_anaphor": 1.0,
+            "comp_dispatch_path": "instruction",
+            "comp_intent": "do:Move(it)",
+            "comp_kind": "instruction",
+            "comp_relation_focus": "polar"
+          },
+          "production_receipts": [
+            {
+              "coverage": 1.0,
+              "parse_back_mode": "conversation_action_graph",
+              "recoverable": true,
+              "semantic_content": [
+                "agent",
+                "it"
+              ],
+              "semantic_event": "repair",
+              "semantic_intent": "request",
+              "status": "released",
+              "withhold_reasons": []
+            }
+          ],
+          "reply_present": true,
+          "trace_present": false,
+          "turn": {
+            "answer_commitment": null,
+            "concerns": [],
+            "current_topic": null,
+            "deliberations": [
+              {
+                "attrs": {
+                  "candidate_source": "discourse_state",
+                  "candidate_trace_complete": 1.0,
+                  "consequence_gain": 1.0,
+                  "epoch": 2.0,
+                  "grounding_floor": 1.0,
+                  "novelty_gain": 1.0,
+                  "residual_cost_gain": 1.0,
+                  "source_candidate_count": 0.0,
+                  "status": "no_candidate"
+                },
+                "candidates": [],
+                "counterfactual_credit": [],
+                "selections": [],
+                "settlements": []
+              },
+              {
+                "attrs": {
+                  "candidate_source": "discourse_state",
+                  "candidate_trace_complete": 1.0,
+                  "consequence_gain": 1.0,
+                  "epoch": 2.0,
+                  "grounding_floor": 1.0,
+                  "novelty_gain": 1.0,
+                  "residual_cost_gain": 1.0,
+                  "source_candidate_count": 0.0,
+                  "status": "no_candidate"
+                },
+                "candidates": [],
+                "counterfactual_credit": [],
+                "selections": [],
+                "settlements": []
+              }
+            ],
+            "goals": [
+              {
+                "event_bound": true,
+                "kind": "instruction",
+                "predicate": "move",
+                "source": "conversation",
+                "status": "active"
+              },
+              {
+                "content": "it",
+                "event_bound": true,
+                "kind": "interpreted_instruction",
+                "order": 2,
+                "predicate": "move",
+                "source": "instruction_understanding",
+                "status": "active"
+              }
+            ],
+            "intent": {
+              "force": null,
+              "kind": null,
+              "status": null,
+              "topic": null
+            },
+            "mention_referents": [
+              [
+                "move",
+                "move"
+              ],
+              [
+                "open",
+                "open",
+                "the",
+                "north",
+                "it"
+              ],
+              [
+                "there"
+              ]
+            ],
+            "reply_commitment": {
+              "expects_response": true,
+              "graph_linked_to_turn": true,
+              "speech_acts": [
+                "clarification"
+              ],
+              "trouble_source": "it"
+            },
+            "reply_from": "agent",
+            "reply_message_present": true
+          }
+        },
+        {
+          "cognitive_disposition": "defer",
+          "communication_route": "defer",
+          "event_payload_literal_form": "fragment",
+          "event_payload_relation": "overlap",
+          "evidence_schema": "communication_evidence.v1",
+          "explicit_error": false,
+          "id": "overlap_signal",
+          "interaction_mode": "non_turn",
+          "interaction_relation": "overlap",
+          "interpretation": {
+            "arbitration_basis": "typed_overlap_partial_event",
+            "authority_status": "not_applicable",
+            "cognitive_disposition": "defer",
+            "cognitive_goal": "clarify_or_defer",
+            "cognitive_goal_hypothesis": "update_common_ground",
+            "communicative_force": "assertion_or_correction",
+            "communicative_force_hypothesis": "assertion_or_report",
+            "evidence_force": "assertion_or_correction",
+            "evidence_goal": "update_common_ground",
+            "evidence_schema": "communication_evidence.v1",
+            "grounding_evidence_path": "",
+            "grounding_status": "unresolved",
+            "interaction_mode": "non_turn",
+            "interaction_relation": "overlap",
+            "literal_form": "fragment",
+            "relation_focus": "polar",
+            "schema": "communication_interpretation.v1"
+          },
+          "interpretation_schema": "communication_interpretation.v1",
+          "literal_form": "fragment",
+          "message": {
+            "adjacency_replied_act": "acknowledgment",
+            "communication_route": "defer",
+            "comp_dispatch_path": "statement",
+            "comp_intent": "assert",
+            "comp_kind": "statement",
+            "comp_relation_focus": "polar"
+          },
+          "production_receipts": [],
+          "reply_present": false,
+          "trace_present": false,
+          "turn": {
+            "answer_commitment": null,
+            "concerns": [],
+            "current_topic": null,
+            "deliberations": [],
+            "goals": [],
+            "intent": {
+              "force": null,
+              "kind": null,
+              "status": null,
+              "topic": null
+            },
+            "mention_referents": [
+              [],
+              [
+                "think"
+              ],
+              [
+                "the"
+              ],
+              []
+            ],
+            "reply_commitment": null,
+            "reply_from": "agent",
+            "reply_message_present": false
+          }
+        },
+        {
+          "cognitive_disposition": null,
+          "communication_route": null,
+          "event_payload_literal_form": "declarative",
+          "event_payload_relation": "response",
+          "evidence_schema": "communication_evidence.v1",
+          "explicit_error": true,
+          "id": "correction",
+          "interaction_mode": "turn_compatible",
+          "interaction_relation": "response",
+          "interpretation": {
+            "arbitration_basis": "declarative_force",
+            "authority_status": "not_applicable",
+            "cognitive_disposition": null,
+            "cognitive_goal": "update_common_ground",
+            "cognitive_goal_hypothesis": "update_common_ground",
+            "communicative_force": "assertion_or_correction",
+            "communicative_force_hypothesis": "assertion_or_report",
+            "evidence_force": "assertion_or_correction",
+            "evidence_goal": "update_common_ground",
+            "evidence_schema": "communication_evidence.v1",
+            "grounding_evidence_path": "",
+            "grounding_status": "unresolved",
+            "interaction_mode": "turn_compatible",
+            "interaction_relation": "response",
+            "literal_form": "declarative",
+            "relation_focus": "polar",
+            "schema": "communication_interpretation.v1"
+          },
+          "interpretation_schema": "communication_interpretation.v1",
+          "literal_form": "declarative",
+          "message": {
+            "adjacency_replied_act": "acknowledgment",
+            "comp_dispatch_path": "statement",
+            "comp_intent": "assert",
+            "comp_kind": "statement",
+            "comp_relation_focus": "polar"
+          },
+          "production_receipts": [],
+          "reply_present": true,
+          "trace_present": false,
+          "turn": {
+            "answer_commitment": null,
+            "concerns": [],
+            "current_topic": null,
+            "deliberations": [],
+            "goals": [],
+            "intent": {
+              "force": null,
+              "kind": null,
+              "status": null,
+              "topic": null
+            },
+            "mention_referents": [
+              [
+                "no"
+              ],
+              [
+                "the"
+              ],
+              [],
+              [],
+              [
+                "closed"
+              ]
+            ],
+            "reply_commitment": null,
+            "reply_from": "adapter",
+            "reply_message_present": true
+          }
+        },
+        {
+          "cognitive_disposition": null,
+          "communication_route": null,
+          "event_payload_literal_form": "social",
+          "event_payload_relation": "turn_compatible",
+          "evidence_schema": "communication_evidence.v1",
+          "explicit_error": false,
+          "id": "social_greeting",
+          "interaction_mode": "turn_compatible",
+          "interaction_relation": "turn_compatible",
+          "interpretation": {
+            "arbitration_basis": "social_act",
+            "authority_status": "not_applicable",
+            "cognitive_disposition": null,
+            "cognitive_goal": "coordinate_socially",
+            "cognitive_goal_hypothesis": "coordinate_socially",
+            "communicative_force": "social_action",
+            "communicative_force_hypothesis": "social_action",
+            "evidence_force": "social_action",
+            "evidence_goal": "coordinate_socially",
+            "evidence_schema": "communication_evidence.v1",
+            "grounding_evidence_path": "CommunicationInterpretation -> selected_graph_faculty",
+            "grounding_status": "candidate_grounded",
+            "interaction_mode": "turn_compatible",
+            "interaction_relation": "turn_compatible",
+            "literal_form": "social",
+            "schema": "communication_interpretation.v1"
+          },
+          "interpretation_schema": "communication_interpretation.v1",
+          "literal_form": "social",
+          "message": {
+            "adjacency_replied_act": "greeting"
+          },
+          "production_receipts": [
+            {
+              "coverage": 1.0,
+              "parse_back_mode": "conversation_social_graph",
+              "recoverable": true,
+              "semantic_content": [
+                "agent",
+                "interlocutor"
+              ],
+              "semantic_event": "greeting",
+              "semantic_intent": "coordinate_socially",
+              "status": "released",
+              "withhold_reasons": []
+            }
+          ],
+          "reply_present": true,
+          "trace_present": false,
+          "turn": {
+            "answer_commitment": null,
+            "concerns": [],
+            "current_topic": null,
+            "deliberations": [],
+            "goals": [],
+            "intent": {
+              "force": null,
+              "kind": null,
+              "status": null,
+              "topic": null
+            },
+            "mention_referents": [
+              [
+                "hello"
+              ]
+            ],
+            "reply_commitment": null,
+            "reply_from": "agent",
+            "reply_message_present": false
+          }
+        },
+        {
+          "cognitive_disposition": "blocked",
+          "communication_route": "honest_no_world",
+          "event_payload_literal_form": "imperative",
+          "event_payload_relation": "turn_compatible",
+          "evidence_schema": "communication_evidence.v1",
+          "explicit_error": false,
+          "id": "unavailable_world",
+          "interaction_mode": "turn_compatible",
+          "interaction_relation": "turn_compatible",
+          "interpretation": {
+            "arbitration_basis": "indirect_request_force",
+            "authority_status": "not_applicable",
+            "cognitive_disposition": "blocked",
+            "cognitive_goal": "answer_or_learn",
+            "cognitive_goal_hypothesis": "undetermined",
+            "communicative_force": "request_information",
+            "communicative_force_hypothesis": "undetermined",
+            "evidence_force": "information_request",
+            "evidence_goal": "answer_or_learn",
+            "evidence_schema": "communication_evidence.v1",
+            "grounding_evidence_path": "",
+            "grounding_status": "unresolved",
+            "interaction_mode": "turn_compatible",
+            "interaction_relation": "turn_compatible",
+            "language_world_dependency": "perceptual_scene",
+            "language_world_support": "missing",
+            "literal_form": "imperative",
+            "schema": "communication_interpretation.v1"
+          },
+          "interpretation_schema": "communication_interpretation.v1",
+          "literal_form": "imperative",
+          "message": {
+            "communication_route": "honest_no_world",
+            "comp_dispatch_path": "honest_no_world",
+            "comp_intent": "honest_no_world",
+            "comp_kind": "instruction"
+          },
+          "production_receipts": [
+            {
+              "coverage": 1.0,
+              "parse_back_mode": "conversation_action_graph",
+              "recoverable": true,
+              "semantic_content": [
+                "agent",
+                "instruction"
+              ],
+              "semantic_event": "describe",
+              "semantic_intent": "act",
+              "status": "released",
+              "withhold_reasons": []
+            }
+          ],
+          "reply_present": true,
+          "trace_present": false,
+          "turn": {
+            "answer_commitment": null,
+            "concerns": [],
+            "current_topic": null,
+            "deliberations": [
+              {
+                "attrs": {
+                  "candidate_source": "discourse_state",
+                  "candidate_trace_complete": 1.0,
+                  "consequence_gain": 1.0,
+                  "epoch": 6.0,
+                  "grounding_floor": 1.0,
+                  "novelty_gain": 1.0,
+                  "residual_cost_gain": 1.0,
+                  "source_candidate_count": 0.0,
+                  "status": "no_candidate"
+                },
+                "candidates": [],
+                "counterfactual_credit": [],
+                "selections": [],
+                "settlements": []
+              }
+            ],
+            "goals": [
+              {
+                "event_bound": true,
+                "kind": "instruction",
+                "object": "",
+                "predicate": "describe",
+                "source": "conversation"
+              }
+            ],
+            "intent": {
+              "force": null,
+              "kind": null,
+              "status": null,
+              "topic": null
+            },
+            "mention_referents": [
+              [
+                "describe",
+                "describe"
+              ],
+              [
+                "the"
+              ],
+              [
+                "object",
+                "object",
+                "object",
+                "object",
+                "object"
+              ],
+              [
+                "behind"
+              ],
+              [
+                "you",
+                "you",
+                "you"
+              ]
+            ],
+            "reply_commitment": null,
+            "reply_from": "agent",
+            "reply_message_present": false
+          }
+        },
+        {
+          "cognitive_disposition": "error",
+          "communication_route": null,
+          "event_payload_literal_form": "fragment",
+          "event_payload_relation": "turn_compatible",
+          "evidence_schema": "communication_evidence.v1",
+          "explicit_error": true,
+          "id": "error_empty",
+          "interaction_mode": "turn_compatible",
+          "interaction_relation": "turn_compatible",
+          "interpretation": {
+            "arbitration_basis": "explicit_failure",
+            "authority_status": "not_applicable",
+            "cognitive_disposition": "error",
+            "cognitive_goal": "error",
+            "cognitive_goal_hypothesis": "update_common_ground",
+            "communicative_force": "repair_or_defer",
+            "communicative_force_hypothesis": "assertion_or_report",
+            "evidence_force": "repair_or_defer",
+            "evidence_goal": "clarify_or_defer",
+            "evidence_schema": "communication_evidence.v1",
+            "grounding_evidence_path": "",
+            "grounding_status": "unresolved",
+            "interaction_mode": "turn_compatible",
+            "interaction_relation": "turn_compatible",
+            "literal_form": "fragment",
+            "relation_focus": "polar",
+            "schema": "communication_interpretation.v1"
+          },
+          "interpretation_schema": "communication_interpretation.v1",
+          "literal_form": "fragment",
+          "message": {
+            "adjacency_replied_act": "acknowledgment",
+            "comp_dispatch_path": "statement",
+            "comp_intent": "assert",
+            "comp_kind": "statement",
+            "comp_relation_focus": "polar"
+          },
+          "production_receipts": [],
+          "reply_present": true,
+          "trace_present": false,
+          "turn": {
+            "answer_commitment": null,
+            "concerns": [],
+            "current_topic": null,
+            "deliberations": [],
+            "goals": [],
+            "intent": {
+              "force": null,
+              "kind": null,
+              "status": null,
+              "topic": null
+            },
+            "mention_referents": [
+              []
+            ],
+            "reply_commitment": null,
+            "reply_from": "agent",
+            "reply_message_present": true
+          }
+        }
+      ],
+      "prewarm_wordnet_completed": false,
+      "prewarm_wordnet_elapsed_ms": 0.0,
+      "prewarm_wordnet_error": null,
+      "prewarm_wordnet_requested": false,
+      "resource_assertions": {
+        "boot_and_event_rss_growth_bounded": true,
+        "conversation_absolute_rss_bounded": false,
+        "conversation_rss_growth_bounded": true,
+        "rss_growth_bounded": true,
+        "rss_measured": true,
+        "steady_state_rss_growth_bounded": true
+      },
+      "rss_after_boot_bytes": 1210769408,
+      "rss_after_bytes": 1210769408,
+      "rss_before_boot_bytes": 1209671680,
+      "rss_before_bytes": 1210769408,
+      "rss_growth_bytes": 0,
+      "rss_samples": [
+        {
+          "conversation_elapsed_ms": 54.886111,
+          "conversation_rss_bytes": 1210769408,
+          "conversation_rss_delta_bytes": 0,
+          "elapsed_ms": 55.313893,
+          "graph": {
+            "discourse_events": 1,
+            "edges": 2007,
+            "interpretations": 1,
+            "messages": 3,
+            "nodes": 2295,
+            "turns": 0
+          },
+          "graph_delta": {
+            "discourse_events": 1,
+            "edges": 487,
+            "interpretations": 1,
+            "messages": 3,
+            "nodes": 65,
+            "turns": 0
+          },
+          "id": "information_question",
+          "new_modules": [],
+          "observation_elapsed_ms": 0.179191,
+          "observation_new_modules": [],
+          "observation_rss_delta_bytes": 0,
+          "rss_bytes": 1210769408,
+          "rss_delta_bytes": 0,
+          "runtime_new_modules": []
+        },
+        {
+          "conversation_elapsed_ms": 48.073076,
+          "conversation_rss_bytes": 1210769408,
+          "conversation_rss_delta_bytes": 0,
+          "elapsed_ms": 48.571618,
+          "graph": {
+            "discourse_events": 2,
+            "edges": 2108,
+            "interpretations": 2,
+            "messages": 5,
+            "nodes": 2335,
+            "turns": 0
+          },
+          "graph_delta": {
+            "discourse_events": 1,
+            "edges": 101,
+            "interpretations": 1,
+            "messages": 2,
+            "nodes": 40,
+            "turns": 0
+          },
+          "id": "direct_action",
+          "new_modules": [],
+          "observation_elapsed_ms": 0.291551,
+          "observation_new_modules": [],
+          "observation_rss_delta_bytes": 0,
+          "rss_bytes": 1210769408,
+          "rss_delta_bytes": 0,
+          "runtime_new_modules": []
+        },
+        {
+          "conversation_elapsed_ms": 47.804964,
+          "conversation_rss_bytes": 1210769408,
+          "conversation_rss_delta_bytes": 0,
+          "elapsed_ms": 48.332577,
+          "graph": {
+            "discourse_events": 3,
+            "edges": 2209,
+            "interpretations": 3,
+            "messages": 8,
+            "nodes": 2371,
+            "turns": 0
+          },
+          "graph_delta": {
+            "discourse_events": 1,
+            "edges": 101,
+            "interpretations": 1,
+            "messages": 3,
+            "nodes": 36,
+            "turns": 0
+          },
+          "id": "unresolved_reference",
+          "new_modules": [],
+          "observation_elapsed_ms": 0.324481,
+          "observation_new_modules": [],
+          "observation_rss_delta_bytes": 0,
+          "rss_bytes": 1210769408,
+          "rss_delta_bytes": 0,
+          "runtime_new_modules": []
+        },
+        {
+          "conversation_elapsed_ms": 22.529946,
+          "conversation_rss_bytes": 1210769408,
+          "conversation_rss_delta_bytes": 0,
+          "elapsed_ms": 22.941997,
+          "graph": {
+            "discourse_events": 4,
+            "edges": 2251,
+            "interpretations": 4,
+            "messages": 10,
+            "nodes": 2384,
+            "turns": 0
+          },
+          "graph_delta": {
+            "discourse_events": 1,
+            "edges": 42,
+            "interpretations": 1,
+            "messages": 2,
+            "nodes": 13,
+            "turns": 0
+          },
+          "id": "overlap_signal",
+          "new_modules": [],
+          "observation_elapsed_ms": 0.228021,
+          "observation_new_modules": [],
+          "observation_rss_delta_bytes": 0,
+          "rss_bytes": 1210769408,
+          "rss_delta_bytes": 0,
+          "runtime_new_modules": []
+        },
+        {
+          "conversation_elapsed_ms": 33.25282,
+          "conversation_rss_bytes": 1210769408,
+          "conversation_rss_delta_bytes": 0,
+          "elapsed_ms": 33.681582,
+          "graph": {
+            "discourse_events": 5,
+            "edges": 2317,
+            "interpretations": 5,
+            "messages": 13,
+            "nodes": 2420,
+            "turns": 0
+          },
+          "graph_delta": {
+            "discourse_events": 1,
+            "edges": 66,
+            "interpretations": 1,
+            "messages": 3,
+            "nodes": 36,
+            "turns": 0
+          },
+          "id": "correction",
+          "new_modules": [],
+          "observation_elapsed_ms": 0.225632,
+          "observation_new_modules": [],
+          "observation_rss_delta_bytes": 0,
+          "rss_bytes": 1210769408,
+          "rss_delta_bytes": 0,
+          "runtime_new_modules": []
+        },
+        {
+          "conversation_elapsed_ms": 21.4752,
+          "conversation_rss_bytes": 1210769408,
+          "conversation_rss_delta_bytes": 0,
+          "elapsed_ms": 21.912072,
+          "graph": {
+            "discourse_events": 6,
+            "edges": 2355,
+            "interpretations": 6,
+            "messages": 15,
+            "nodes": 2436,
+            "turns": 0
+          },
+          "graph_delta": {
+            "discourse_events": 1,
+            "edges": 38,
+            "interpretations": 1,
+            "messages": 2,
+            "nodes": 16,
+            "turns": 0
+          },
+          "id": "social_greeting",
+          "new_modules": [],
+          "observation_elapsed_ms": 0.252421,
+          "observation_new_modules": [],
+          "observation_rss_delta_bytes": 0,
+          "rss_bytes": 1210769408,
+          "rss_delta_bytes": 0,
+          "runtime_new_modules": []
+        },
+        {
+          "conversation_elapsed_ms": 37.906293,
+          "conversation_rss_bytes": 1210769408,
+          "conversation_rss_delta_bytes": 0,
+          "elapsed_ms": 38.545617,
+          "graph": {
+            "discourse_events": 7,
+            "edges": 2447,
+            "interpretations": 7,
+            "messages": 16,
+            "nodes": 2465,
+            "turns": 0
+          },
+          "graph_delta": {
+            "discourse_events": 1,
+            "edges": 92,
+            "interpretations": 1,
+            "messages": 1,
+            "nodes": 29,
+            "turns": 0
+          },
+          "id": "unavailable_world",
+          "new_modules": [],
+          "observation_elapsed_ms": 0.401362,
+          "observation_new_modules": [],
+          "observation_rss_delta_bytes": 0,
+          "rss_bytes": 1210769408,
+          "rss_delta_bytes": 0,
+          "runtime_new_modules": []
+        },
+        {
+          "conversation_elapsed_ms": 25.179199,
+          "conversation_rss_bytes": 1210769408,
+          "conversation_rss_delta_bytes": 0,
+          "elapsed_ms": 25.611692,
+          "graph": {
+            "discourse_events": 8,
+            "edges": 2484,
+            "interpretations": 8,
+            "messages": 19,
+            "nodes": 2482,
+            "turns": 0
+          },
+          "graph_delta": {
+            "discourse_events": 1,
+            "edges": 37,
+            "interpretations": 1,
+            "messages": 3,
+            "nodes": 17,
+            "turns": 0
+          },
+          "id": "error_empty",
+          "new_modules": [],
+          "observation_elapsed_ms": 0.251131,
+          "observation_new_modules": [],
+          "observation_rss_delta_bytes": 0,
+          "rss_bytes": 1210769408,
+          "rss_delta_bytes": 0,
+          "runtime_new_modules": []
+        }
+      ],
+      "schema": "phase7-production-communication-envelope.v6",
+      "seed_profile": "conversation",
+      "selected_seed_ids": [
+        "affective_state_core",
+        "dual_process_core",
+        "motor_core",
+        "adaptive_control_core",
+        "generative_world_model",
+        "default_mode_core",
+        "decision_core",
+        "perception_core",
+        "relations",
+        "math_capability_shapes",
+        "self_design_axis",
+        "shape_decode_loop",
+        "minting_recurrence_ledger",
+        "faculty_lessons",
+        "psychology",
+        "conversation",
+        "intent",
+        "question_driving",
+        "solver_dispatch",
+        "gap_awareness",
+        "communication_intent_arbitration",
+        "composer_dispatch",
+        "comprehend_instruction",
+        "conceptualizer",
+        "learning_core",
+        "conversation_attachment_route",
+        "conversation_upload_text_detect",
+        "upload_foveated_text",
+        "conversation_attachment_reply",
+        "conversation_topic_route",
+        "conversation_capability_route",
+        "self_processes",
+        "movement_affordances",
+        "conversation_capability_reply",
+        "conversation_deliberation_phase4a",
+        "conversation_topic_tracking",
+        "conversation_elaborate",
+        "conversation_grice",
+        "conversation_reply",
+        "conversation_honest_floor",
+        "conversation_reply_flag",
+        "conversation_self_concern",
+        "conversation_self_reply",
+        "conversation_steering",
+        "topic_search",
+        "conversation_topic_reply",
+        "conversation_topic_span",
+        "instruction_understanding",
+        "memory_core",
+        "episodic_working_memory_core",
+        "epistemics_core",
+        "experimentation_core",
+        "language_foundation",
+        "linguistics_foundation",
+        "first_person_routing",
+        "goal_construction",
+        "grounding",
+        "inference_affordances",
+        "interlocutor_shapes",
+        "jabberwock_creator",
+        "interlocutor_trust",
+        "learned_lexicon",
+        "lexical_ontology_roots",
+        "ling_syntax",
+        "procedural_effect_verbs",
+        "reflex_core",
+        "self_monitoring",
+        "speech_act_classify",
+        "theorem_core",
+        "topic_search_verify",
+        "topic_sync_ground",
+        "vision_foundation"
+      ],
+      "selection_complete": true,
+      "selection_unresolved": {
+        "missing_content_keys": [],
+        "missing_content_references": [],
+        "missing_dependencies": [],
+        "missing_seed_ids": []
+      },
+      "steady_state_rss_growth_bytes": 0,
+      "surface_text_used_as_semantics": false,
+      "turn_boundary_required": false
+    },
+    "full": {
+      "boot_and_event_rss_growth_bytes": 1516019712,
+      "boot_elapsed_ms": 13868.114002,
+      "boot_rss_growth_bytes": 1439133696,
+      "cold_start_rss_growth_bytes": 60682240,
+      "content_keys": [],
+      "content_slices": {},
+      "conversation_latency_max_ms": 3084.487232,
+      "conversation_latency_total_ms": 7635.551397,
+      "conversation_rss_growth_bytes": 1516019712,
+      "conversation_rss_peak_bytes": 1542057984,
+      "errors": [],
+      "event_count": 8,
+      "event_ids": [
+        "information_question",
+        "direct_action",
+        "unresolved_reference",
+        "overlap_signal",
+        "correction",
+        "social_greeting",
+        "unavailable_world",
+        "error_empty"
+      ],
+      "graph_after": {
+        "discourse_events": 8,
+        "edges": 22767,
+        "interpretations": 8,
+        "messages": 39,
+        "nodes": 25123,
+        "turns": 0
+      },
+      "graph_before": {
+        "discourse_events": 0,
+        "edges": 11088,
+        "interpretations": 0,
+        "messages": 0,
+        "nodes": 24754,
+        "turns": 0
+      },
+      "graph_growth": {
+        "discourse_events": 8,
+        "edges": 11679,
+        "interpretations": 8,
+        "messages": 39,
+        "nodes": 369,
+        "turns": 0
+      },
+      "latency_ms": 7641.997118,
+      "observations": [
+        {
+          "cognitive_disposition": null,
+          "communication_route": null,
+          "event_payload_literal_form": "interrogative",
+          "event_payload_relation": "turn_compatible",
+          "evidence_schema": "communication_evidence.v1",
+          "explicit_error": false,
+          "id": "information_question",
+          "interaction_mode": "turn_compatible",
+          "interaction_relation": "turn_compatible",
+          "interpretation": {
+            "arbitration_basis": "indirect_request_force",
+            "authority_status": "not_applicable",
+            "cognitive_disposition": null,
+            "cognitive_goal": "answer_or_learn",
+            "cognitive_goal_hypothesis": "answer_or_learn",
+            "communicative_force": "request_information",
+            "communicative_force_hypothesis": "request_information",
+            "evidence_force": "information_request",
+            "evidence_goal": "answer_or_learn",
+            "evidence_schema": "communication_evidence.v1",
+            "grounding_evidence_path": "CommunicationInterpretation -> selected_graph_faculty",
+            "grounding_status": "candidate_grounded",
+            "interaction_mode": "turn_compatible",
+            "interaction_relation": "turn_compatible",
+            "literal_form": "interrogative",
+            "schema": "communication_interpretation.v1"
+          },
+          "interpretation_schema": "communication_interpretation.v1",
+          "literal_form": "interrogative",
+          "message": {
+            "adjacency_replied_act": "answer",
+            "comp_dispatch_path": "table",
+            "comp_intent": "table:meta",
+            "comp_kind": "question"
+          },
+          "production_receipts": [],
+          "reply_present": true,
+          "trace_present": false,
+          "turn": {
+            "answer_commitment": {
+              "graph_linked_to_turn": true,
+              "kind": "linked_graph_answer_message",
+              "speech_act": "answer"
+            },
+            "concerns": [],
+            "current_topic": null,
+            "deliberations": [],
+            "goals": [],
+            "intent": {
+              "force": null,
+              "kind": null,
+              "status": null,
+              "topic": null
+            },
+            "mention_referents": [
+              [
+                "how"
+              ],
+              [
+                "are"
+              ],
+              [
+                "you",
+                "you",
+                "you"
+              ],
+              []
+            ],
+            "reply_commitment": null,
+            "reply_from": "adapter",
+            "reply_message_present": true
+          }
+        },
+        {
+          "cognitive_disposition": null,
+          "communication_route": "goal_only",
+          "event_payload_literal_form": "imperative",
+          "event_payload_relation": "turn_compatible",
+          "evidence_schema": "communication_evidence.v1",
+          "explicit_error": false,
+          "id": "direct_action",
+          "interaction_mode": "turn_compatible",
+          "interaction_relation": "turn_compatible",
+          "interpretation": {
+            "arbitration_basis": "instruction_force",
+            "authority_status": "not_applicable",
+            "cognitive_disposition": null,
+            "cognitive_goal": "act_or_clarify",
+            "cognitive_goal_hypothesis": "act_or_answer",
+            "communicative_force": "request_action",
+            "communicative_force_hypothesis": "request_action_or_account",
+            "evidence_force": "action_request",
+            "evidence_goal": "act_or_clarify",
+            "evidence_schema": "communication_evidence.v1",
+            "grounding_evidence_path": "CommunicationInterpretation -> Concept.referent",
+            "grounding_status": "candidate_grounded",
+            "interaction_mode": "turn_compatible",
+            "interaction_relation": "turn_compatible",
+            "literal_form": "imperative",
+            "relation_focus": "polar",
+            "schema": "communication_interpretation.v1"
+          },
+          "interpretation_schema": "communication_interpretation.v1",
+          "literal_form": "imperative",
+          "message": {
+            "communication_route": "goal_only",
+            "comp_dispatch_path": "instruction",
+            "comp_intent": "do:open(north)",
+            "comp_kind": "instruction",
+            "comp_relation_focus": "polar"
+          },
+          "production_receipts": [
+            {
+              "coverage": 1.0,
+              "parse_back_mode": "conversation_action_graph",
+              "recoverable": true,
+              "semantic_content": [
+                "agent",
+                "north"
+              ],
+              "semantic_event": "open",
+              "semantic_intent": "act",
+              "status": "released",
+              "withhold_reasons": []
+            }
+          ],
+          "reply_present": true,
+          "trace_present": false,
+          "turn": {
+            "answer_commitment": null,
+            "concerns": [],
+            "current_topic": null,
+            "deliberations": [
+              {
+                "attrs": {
+                  "candidate_source": "discourse_state",
+                  "candidate_trace_complete": 1.0,
+                  "consequence_gain": 1.0,
+                  "epoch": 1.0,
+                  "grounding_floor": 1.0,
+                  "novelty_gain": 1.0,
+                  "residual_cost_gain": 1.0,
+                  "source_candidate_count": 0.0,
+                  "status": "no_candidate"
+                },
+                "candidates": [],
+                "counterfactual_credit": [],
+                "selections": [],
+                "settlements": []
+              },
+              {
+                "attrs": {
+                  "candidate_source": "discourse_state",
+                  "candidate_trace_complete": 1.0,
+                  "consequence_gain": 1.0,
+                  "epoch": 1.0,
+                  "grounding_floor": 1.0,
+                  "novelty_gain": 1.0,
+                  "residual_cost_gain": 1.0,
+                  "source_candidate_count": 0.0,
+                  "status": "no_candidate"
+                },
+                "candidates": [],
+                "counterfactual_credit": [],
+                "selections": [],
+                "settlements": []
+              },
+              {
+                "attrs": {
+                  "candidate_source": "discourse_state",
+                  "candidate_trace_complete": 1.0,
+                  "consequence_gain": 1.0,
+                  "epoch": 1.0,
+                  "grounding_floor": 1.0,
+                  "novelty_gain": 1.0,
+                  "residual_cost_gain": 1.0,
+                  "source_candidate_count": 0.0,
+                  "status": "no_candidate"
+                },
+                "candidates": [],
+                "counterfactual_credit": [],
+                "selections": [],
+                "settlements": []
+              }
+            ],
+            "goals": [
+              {
+                "event_bound": true,
+                "kind": "instruction",
+                "predicate": "open",
+                "source": "conversation",
+                "status": "active"
+              },
+              {
+                "content": "north",
+                "event_bound": true,
+                "kind": "interpreted_instruction",
+                "order": 2,
+                "predicate": "open",
+                "source": "instruction_understanding",
+                "status": "active"
+              },
+              {
+                "event_bound": true,
+                "kind": "instruction",
+                "object": "north",
+                "predicate": "open",
+                "source": "conversation"
+              }
+            ],
+            "intent": {
+              "force": null,
+              "kind": null,
+              "status": null,
+              "topic": null
+            },
+            "mention_referents": [
+              [],
+              [
+                "open",
+                "open"
+              ],
+              [
+                "the"
+              ],
+              [
+                "north"
+              ],
+              []
+            ],
+            "reply_commitment": null,
+            "reply_from": "agent",
+            "reply_message_present": true
+          }
+        },
+        {
+          "cognitive_disposition": "repair",
+          "communication_route": "ask_back",
+          "event_payload_literal_form": "imperative",
+          "event_payload_relation": "standalone",
+          "evidence_schema": "communication_evidence.v1",
+          "explicit_error": false,
+          "id": "unresolved_reference",
+          "interaction_mode": "non_turn",
+          "interaction_relation": "standalone",
+          "interpretation": {
+            "arbitration_basis": "typed_unresolved_action_dependency",
+            "authority_status": "not_applicable",
+            "cognitive_disposition": "repair",
+            "cognitive_goal": "clarify_or_defer",
+            "cognitive_goal_hypothesis": "act_or_answer",
+            "communicative_force": "repair_or_defer",
+            "communicative_force_hypothesis": "request_action_or_account",
+            "evidence_force": "action_request",
+            "evidence_goal": "act_or_clarify",
+            "evidence_schema": "communication_evidence.v1",
+            "grounding_evidence_path": "",
+            "grounding_status": "unresolved",
+            "interaction_mode": "non_turn",
+            "interaction_relation": "standalone",
+            "language_referent_status": "unresolved",
+            "language_repair_focus": "it",
+            "literal_form": "imperative",
+            "relation_focus": "polar",
+            "schema": "communication_interpretation.v1"
+          },
+          "interpretation_schema": "communication_interpretation.v1",
+          "literal_form": "imperative",
+          "message": {
+            "communication_route": "ask_back",
+            "comp_anaphor": 1.0,
+            "comp_dispatch_path": "instruction",
+            "comp_intent": "do:Move(it)",
+            "comp_kind": "instruction",
+            "comp_relation_focus": "polar"
+          },
+          "production_receipts": [
+            {
+              "coverage": 1.0,
+              "parse_back_mode": "conversation_action_graph",
+              "recoverable": true,
+              "semantic_content": [
+                "agent",
+                "it"
+              ],
+              "semantic_event": "repair",
+              "semantic_intent": "request",
+              "status": "released",
+              "withhold_reasons": []
+            }
+          ],
+          "reply_present": true,
+          "trace_present": false,
+          "turn": {
+            "answer_commitment": null,
+            "concerns": [],
+            "current_topic": null,
+            "deliberations": [
+              {
+                "attrs": {
+                  "candidate_source": "discourse_state",
+                  "candidate_trace_complete": 1.0,
+                  "consequence_gain": 1.0,
+                  "epoch": 2.0,
+                  "grounding_floor": 1.0,
+                  "novelty_gain": 1.0,
+                  "residual_cost_gain": 1.0,
+                  "source_candidate_count": 0.0,
+                  "status": "no_candidate"
+                },
+                "candidates": [],
+                "counterfactual_credit": [],
+                "selections": [],
+                "settlements": []
+              },
+              {
+                "attrs": {
+                  "candidate_source": "discourse_state",
+                  "candidate_trace_complete": 1.0,
+                  "consequence_gain": 1.0,
+                  "epoch": 2.0,
+                  "grounding_floor": 1.0,
+                  "novelty_gain": 1.0,
+                  "residual_cost_gain": 1.0,
+                  "source_candidate_count": 0.0,
+                  "status": "no_candidate"
+                },
+                "candidates": [],
+                "counterfactual_credit": [],
+                "selections": [],
+                "settlements": []
+              }
+            ],
+            "goals": [
+              {
+                "event_bound": true,
+                "kind": "instruction",
+                "predicate": "move",
+                "source": "conversation",
+                "status": "active"
+              },
+              {
+                "content": "it",
+                "event_bound": true,
+                "kind": "interpreted_instruction",
+                "order": 2,
+                "predicate": "move",
+                "source": "instruction_understanding",
+                "status": "active"
+              }
+            ],
+            "intent": {
+              "force": null,
+              "kind": null,
+              "status": null,
+              "topic": null
+            },
+            "mention_referents": [
+              [
+                "move",
+                "move"
+              ],
+              [
+                "open",
+                "open",
+                "the",
+                "north",
+                "it"
+              ],
+              [
+                "there"
+              ]
+            ],
+            "reply_commitment": {
+              "expects_response": true,
+              "graph_linked_to_turn": true,
+              "speech_acts": [
+                "clarification"
+              ],
+              "trouble_source": "it"
+            },
+            "reply_from": "agent",
+            "reply_message_present": true
+          }
+        },
+        {
+          "cognitive_disposition": "defer",
+          "communication_route": "defer",
+          "event_payload_literal_form": "fragment",
+          "event_payload_relation": "overlap",
+          "evidence_schema": "communication_evidence.v1",
+          "explicit_error": false,
+          "id": "overlap_signal",
+          "interaction_mode": "non_turn",
+          "interaction_relation": "overlap",
+          "interpretation": {
+            "arbitration_basis": "typed_overlap_partial_event",
+            "authority_status": "not_applicable",
+            "cognitive_disposition": "defer",
+            "cognitive_goal": "clarify_or_defer",
+            "cognitive_goal_hypothesis": "update_common_ground",
+            "communicative_force": "assertion_or_correction",
+            "communicative_force_hypothesis": "assertion_or_report",
+            "evidence_force": "assertion_or_correction",
+            "evidence_goal": "update_common_ground",
+            "evidence_schema": "communication_evidence.v1",
+            "grounding_evidence_path": "",
+            "grounding_status": "unresolved",
+            "interaction_mode": "non_turn",
+            "interaction_relation": "overlap",
+            "literal_form": "fragment",
+            "relation_focus": "polar",
+            "schema": "communication_interpretation.v1"
+          },
+          "interpretation_schema": "communication_interpretation.v1",
+          "literal_form": "fragment",
+          "message": {
+            "adjacency_replied_act": "acknowledgment",
+            "communication_route": "defer",
+            "comp_dispatch_path": "statement",
+            "comp_intent": "assert",
+            "comp_kind": "statement",
+            "comp_relation_focus": "polar"
+          },
+          "production_receipts": [],
+          "reply_present": false,
+          "trace_present": false,
+          "turn": {
+            "answer_commitment": null,
+            "concerns": [],
+            "current_topic": null,
+            "deliberations": [],
+            "goals": [],
+            "intent": {
+              "force": null,
+              "kind": null,
+              "status": null,
+              "topic": null
+            },
+            "mention_referents": [
+              [],
+              [
+                "think"
+              ],
+              [
+                "the"
+              ],
+              []
+            ],
+            "reply_commitment": null,
+            "reply_from": "agent",
+            "reply_message_present": false
+          }
+        },
+        {
+          "cognitive_disposition": null,
+          "communication_route": null,
+          "event_payload_literal_form": "declarative",
+          "event_payload_relation": "response",
+          "evidence_schema": "communication_evidence.v1",
+          "explicit_error": true,
+          "id": "correction",
+          "interaction_mode": "turn_compatible",
+          "interaction_relation": "response",
+          "interpretation": {
+            "arbitration_basis": "declarative_force",
+            "authority_status": "not_applicable",
+            "cognitive_disposition": null,
+            "cognitive_goal": "update_common_ground",
+            "cognitive_goal_hypothesis": "update_common_ground",
+            "communicative_force": "assertion_or_correction",
+            "communicative_force_hypothesis": "assertion_or_report",
+            "evidence_force": "assertion_or_correction",
+            "evidence_goal": "update_common_ground",
+            "evidence_schema": "communication_evidence.v1",
+            "grounding_evidence_path": "",
+            "grounding_status": "unresolved",
+            "interaction_mode": "turn_compatible",
+            "interaction_relation": "response",
+            "literal_form": "declarative",
+            "relation_focus": "polar",
+            "schema": "communication_interpretation.v1"
+          },
+          "interpretation_schema": "communication_interpretation.v1",
+          "literal_form": "declarative",
+          "message": {
+            "adjacency_replied_act": "acknowledgment",
+            "comp_dispatch_path": "statement",
+            "comp_intent": "assert",
+            "comp_kind": "statement",
+            "comp_relation_focus": "polar"
+          },
+          "production_receipts": [],
+          "reply_present": true,
+          "trace_present": false,
+          "turn": {
+            "answer_commitment": null,
+            "concerns": [],
+            "current_topic": null,
+            "deliberations": [],
+            "goals": [],
+            "intent": {
+              "force": null,
+              "kind": null,
+              "status": null,
+              "topic": null
+            },
+            "mention_referents": [
+              [
+                "no"
+              ],
+              [
+                "the"
+              ],
+              [],
+              [],
+              [
+                "closed"
+              ]
+            ],
+            "reply_commitment": null,
+            "reply_from": "adapter",
+            "reply_message_present": true
+          }
+        },
+        {
+          "cognitive_disposition": null,
+          "communication_route": null,
+          "event_payload_literal_form": "social",
+          "event_payload_relation": "turn_compatible",
+          "evidence_schema": "communication_evidence.v1",
+          "explicit_error": false,
+          "id": "social_greeting",
+          "interaction_mode": "turn_compatible",
+          "interaction_relation": "turn_compatible",
+          "interpretation": {
+            "arbitration_basis": "social_act",
+            "authority_status": "not_applicable",
+            "cognitive_disposition": null,
+            "cognitive_goal": "coordinate_socially",
+            "cognitive_goal_hypothesis": "coordinate_socially",
+            "communicative_force": "social_action",
+            "communicative_force_hypothesis": "social_action",
+            "evidence_force": "social_action",
+            "evidence_goal": "coordinate_socially",
+            "evidence_schema": "communication_evidence.v1",
+            "grounding_evidence_path": "CommunicationInterpretation -> selected_graph_faculty",
+            "grounding_status": "candidate_grounded",
+            "interaction_mode": "turn_compatible",
+            "interaction_relation": "turn_compatible",
+            "literal_form": "social",
+            "schema": "communication_interpretation.v1"
+          },
+          "interpretation_schema": "communication_interpretation.v1",
+          "literal_form": "social",
+          "message": {
+            "adjacency_replied_act": "greeting"
+          },
+          "production_receipts": [
+            {
+              "coverage": 1.0,
+              "parse_back_mode": "conversation_social_graph",
+              "recoverable": true,
+              "semantic_content": [
+                "agent",
+                "interlocutor"
+              ],
+              "semantic_event": "greeting",
+              "semantic_intent": "coordinate_socially",
+              "status": "released",
+              "withhold_reasons": []
+            }
+          ],
+          "reply_present": true,
+          "trace_present": false,
+          "turn": {
+            "answer_commitment": null,
+            "concerns": [],
+            "current_topic": null,
+            "deliberations": [],
+            "goals": [],
+            "intent": {
+              "force": null,
+              "kind": null,
+              "status": null,
+              "topic": null
+            },
+            "mention_referents": [
+              [
+                "hello"
+              ]
+            ],
+            "reply_commitment": null,
+            "reply_from": "agent",
+            "reply_message_present": false
+          }
+        },
+        {
+          "cognitive_disposition": "blocked",
+          "communication_route": "honest_no_world",
+          "event_payload_literal_form": "imperative",
+          "event_payload_relation": "turn_compatible",
+          "evidence_schema": "communication_evidence.v1",
+          "explicit_error": false,
+          "id": "unavailable_world",
+          "interaction_mode": "turn_compatible",
+          "interaction_relation": "turn_compatible",
+          "interpretation": {
+            "arbitration_basis": "indirect_request_force",
+            "authority_status": "not_applicable",
+            "cognitive_disposition": "blocked",
+            "cognitive_goal": "answer_or_learn",
+            "cognitive_goal_hypothesis": "undetermined",
+            "communicative_force": "request_information",
+            "communicative_force_hypothesis": "undetermined",
+            "evidence_force": "information_request",
+            "evidence_goal": "answer_or_learn",
+            "evidence_schema": "communication_evidence.v1",
+            "grounding_evidence_path": "",
+            "grounding_status": "unresolved",
+            "interaction_mode": "turn_compatible",
+            "interaction_relation": "turn_compatible",
+            "language_world_dependency": "perceptual_scene",
+            "language_world_support": "missing",
+            "literal_form": "imperative",
+            "schema": "communication_interpretation.v1"
+          },
+          "interpretation_schema": "communication_interpretation.v1",
+          "literal_form": "imperative",
+          "message": {
+            "communication_route": "honest_no_world",
+            "comp_dispatch_path": "honest_no_world",
+            "comp_intent": "honest_no_world",
+            "comp_kind": "instruction"
+          },
+          "production_receipts": [
+            {
+              "coverage": 1.0,
+              "parse_back_mode": "conversation_action_graph",
+              "recoverable": true,
+              "semantic_content": [
+                "agent",
+                "instruction"
+              ],
+              "semantic_event": "describe",
+              "semantic_intent": "act",
+              "status": "released",
+              "withhold_reasons": []
+            }
+          ],
+          "reply_present": true,
+          "trace_present": false,
+          "turn": {
+            "answer_commitment": null,
+            "concerns": [],
+            "current_topic": null,
+            "deliberations": [
+              {
+                "attrs": {
+                  "candidate_source": "discourse_state",
+                  "candidate_trace_complete": 1.0,
+                  "consequence_gain": 1.0,
+                  "epoch": 6.0,
+                  "grounding_floor": 1.0,
+                  "novelty_gain": 1.0,
+                  "residual_cost_gain": 1.0,
+                  "source_candidate_count": 0.0,
+                  "status": "no_candidate"
+                },
+                "candidates": [],
+                "counterfactual_credit": [],
+                "selections": [],
+                "settlements": []
+              }
+            ],
+            "goals": [
+              {
+                "event_bound": true,
+                "kind": "instruction",
+                "object": "",
+                "predicate": "describe",
+                "source": "conversation"
+              }
+            ],
+            "intent": {
+              "force": null,
+              "kind": null,
+              "status": null,
+              "topic": null
+            },
+            "mention_referents": [
+              [
+                "describe",
+                "describe"
+              ],
+              [
+                "the"
+              ],
+              [
+                "object",
+                "object",
+                "object",
+                "object",
+                "object"
+              ],
+              [
+                "behind"
+              ],
+              [
+                "you",
+                "you",
+                "you"
+              ]
+            ],
+            "reply_commitment": null,
+            "reply_from": "agent",
+            "reply_message_present": false
+          }
+        },
+        {
+          "cognitive_disposition": "error",
+          "communication_route": null,
+          "event_payload_literal_form": "fragment",
+          "event_payload_relation": "turn_compatible",
+          "evidence_schema": "communication_evidence.v1",
+          "explicit_error": true,
+          "id": "error_empty",
+          "interaction_mode": "turn_compatible",
+          "interaction_relation": "turn_compatible",
+          "interpretation": {
+            "arbitration_basis": "explicit_failure",
+            "authority_status": "not_applicable",
+            "cognitive_disposition": "error",
+            "cognitive_goal": "error",
+            "cognitive_goal_hypothesis": "update_common_ground",
+            "communicative_force": "repair_or_defer",
+            "communicative_force_hypothesis": "assertion_or_report",
+            "evidence_force": "repair_or_defer",
+            "evidence_goal": "clarify_or_defer",
+            "evidence_schema": "communication_evidence.v1",
+            "grounding_evidence_path": "",
+            "grounding_status": "unresolved",
+            "interaction_mode": "turn_compatible",
+            "interaction_relation": "turn_compatible",
+            "literal_form": "fragment",
+            "relation_focus": "polar",
+            "schema": "communication_interpretation.v1"
+          },
+          "interpretation_schema": "communication_interpretation.v1",
+          "literal_form": "fragment",
+          "message": {
+            "adjacency_replied_act": "acknowledgment",
+            "comp_dispatch_path": "statement",
+            "comp_intent": "assert",
+            "comp_kind": "statement",
+            "comp_relation_focus": "polar"
+          },
+          "production_receipts": [],
+          "reply_present": true,
+          "trace_present": false,
+          "turn": {
+            "answer_commitment": null,
+            "concerns": [],
+            "current_topic": null,
+            "deliberations": [],
+            "goals": [],
+            "intent": {
+              "force": null,
+              "kind": null,
+              "status": null,
+              "topic": null
+            },
+            "mention_referents": [
+              []
+            ],
+            "reply_commitment": null,
+            "reply_from": "agent",
+            "reply_message_present": true
+          }
+        }
+      ],
+      "prewarm_wordnet_completed": false,
+      "prewarm_wordnet_elapsed_ms": 0.0,
+      "prewarm_wordnet_error": null,
+      "prewarm_wordnet_requested": false,
+      "resource_assertions": {
+        "boot_and_event_rss_growth_bounded": false,
+        "conversation_absolute_rss_bounded": false,
+        "conversation_rss_growth_bounded": false,
+        "rss_growth_bounded": true,
+        "rss_measured": true,
+        "steady_state_rss_growth_bounded": true
+      },
+      "rss_after_boot_bytes": 1465171968,
+      "rss_after_bytes": 1542057984,
+      "rss_before_boot_bytes": 26038272,
+      "rss_before_bytes": 1465171968,
+      "rss_growth_bytes": 76886016,
+      "rss_samples": [
+        {
+          "conversation_elapsed_ms": 3084.487232,
+          "conversation_rss_bytes": 1525854208,
+          "conversation_rss_delta_bytes": 60682240,
+          "elapsed_ms": 3085.107715,
+          "graph": {
+            "discourse_events": 1,
+            "edges": 22177,
+            "interpretations": 1,
+            "messages": 7,
+            "nodes": 24881,
+            "turns": 0
+          },
+          "graph_delta": {
+            "discourse_events": 1,
+            "edges": 11089,
+            "interpretations": 1,
+            "messages": 7,
+            "nodes": 127,
+            "turns": 0
+          },
+          "id": "information_question",
+          "new_modules": [
+            "_markupbase",
+            "concurrent",
+            "concurrent.futures",
+            "concurrent.futures._base",
+            "concurrent.futures.thread",
+            "domains.audience",
+            "domains.audience_adaptation",
+            "domains.audience_driven_production",
+            "domains.concept_graph",
+            "domains.conceptualizer",
+            "domains.context_collapse_plug",
+            "domains.context_model",
+            "domains.conversation_action",
+            "domains.conversation_deliberation",
+            "domains.discourse_state",
+            "domains.fetch_dispatch",
+            "domains.frame",
+            "domains.interlocutor_collapse_plug",
+            "domains.interlocutor_model",
+            "domains.language",
+            "domains.seed_registry",
+            "domains.self_organisation_reader",
+            "domains.sense_of_reference",
+            "domains.topic_grounding",
+            "domains.upload_text_read",
+            "domains.wordnet_membership",
+            "html",
+            "html.entities",
+            "html.parser",
+            "substrate.seeds",
+            "zipfile",
+            "zipfile._path",
+            "zipfile._path.glob"
+          ],
+          "observation_elapsed_ms": 0.302642,
+          "observation_new_modules": [],
+          "observation_rss_delta_bytes": 0,
+          "rss_bytes": 1525854208,
+          "rss_delta_bytes": 60682240,
+          "runtime_new_modules": [
+            "_markupbase",
+            "concurrent",
+            "concurrent.futures",
+            "concurrent.futures._base",
+            "concurrent.futures.thread",
+            "domains.audience",
+            "domains.audience_adaptation",
+            "domains.audience_driven_production",
+            "domains.concept_graph",
+            "domains.conceptualizer",
+            "domains.context_collapse_plug",
+            "domains.context_model",
+            "domains.conversation_action",
+            "domains.conversation_deliberation",
+            "domains.discourse_state",
+            "domains.fetch_dispatch",
+            "domains.frame",
+            "domains.interlocutor_collapse_plug",
+            "domains.interlocutor_model",
+            "domains.language",
+            "domains.seed_registry",
+            "domains.self_organisation_reader",
+            "domains.sense_of_reference",
+            "domains.topic_grounding",
+            "domains.upload_text_read",
+            "domains.wordnet_membership",
+            "html",
+            "html.entities",
+            "html.parser",
+            "substrate.seeds",
+            "zipfile",
+            "zipfile._path",
+            "zipfile._path.glob"
+          ]
+        },
+        {
+          "conversation_elapsed_ms": 702.353066,
+          "conversation_rss_bytes": 1529294848,
+          "conversation_rss_delta_bytes": 3440640,
+          "elapsed_ms": 703.04985,
+          "graph": {
+            "discourse_events": 2,
+            "edges": 22283,
+            "interpretations": 2,
+            "messages": 9,
+            "nodes": 24923,
+            "turns": 0
+          },
+          "graph_delta": {
+            "discourse_events": 1,
+            "edges": 106,
+            "interpretations": 1,
+            "messages": 2,
+            "nodes": 42,
+            "turns": 0
+          },
+          "id": "direct_action",
+          "new_modules": [
+            "domains.abs_learned_fusion",
+            "domains.analysis_by_synthesis",
+            "domains.audience_misjudgment",
+            "domains.collapse_model",
+            "domains.commitment_gate",
+            "domains.context_prior_speaker",
+            "domains.dataset_root",
+            "domains.earned_augmentation",
+            "domains.frozen_core",
+            "domains.glyph_motor_world",
+            "domains.imagination",
+            "domains.many_settings_recognizer",
+            "domains.native_fusion",
+            "domains.omniglot_world",
+            "domains.pragmatic_speaker",
+            "domains.production_gate",
+            "domains.proposal_install",
+            "domains.runtime_design",
+            "domains.scattering_feature",
+            "domains.self_extend",
+            "domains.self_extend_rust",
+            "domains.self_modification",
+            "domains.system_model",
+            "domains.trace_segmenter"
+          ],
+          "observation_elapsed_ms": 0.388482,
+          "observation_new_modules": [],
+          "observation_rss_delta_bytes": 0,
+          "rss_bytes": 1529294848,
+          "rss_delta_bytes": 3440640,
+          "runtime_new_modules": [
+            "domains.abs_learned_fusion",
+            "domains.analysis_by_synthesis",
+            "domains.audience_misjudgment",
+            "domains.collapse_model",
+            "domains.commitment_gate",
+            "domains.context_prior_speaker",
+            "domains.dataset_root",
+            "domains.earned_augmentation",
+            "domains.frozen_core",
+            "domains.glyph_motor_world",
+            "domains.imagination",
+            "domains.many_settings_recognizer",
+            "domains.native_fusion",
+            "domains.omniglot_world",
+            "domains.pragmatic_speaker",
+            "domains.production_gate",
+            "domains.proposal_install",
+            "domains.runtime_design",
+            "domains.scattering_feature",
+            "domains.self_extend",
+            "domains.self_extend_rust",
+            "domains.self_modification",
+            "domains.system_model",
+            "domains.trace_segmenter"
+          ]
+        },
+        {
+          "conversation_elapsed_ms": 659.378658,
+          "conversation_rss_bytes": 1531457536,
+          "conversation_rss_delta_bytes": 2162688,
+          "elapsed_ms": 660.051511,
+          "graph": {
+            "discourse_events": 3,
+            "edges": 22385,
+            "interpretations": 3,
+            "messages": 12,
+            "nodes": 24960,
+            "turns": 0
+          },
+          "graph_delta": {
+            "discourse_events": 1,
+            "edges": 102,
+            "interpretations": 1,
+            "messages": 3,
+            "nodes": 37,
+            "turns": 0
+          },
+          "id": "unresolved_reference",
+          "new_modules": [],
+          "observation_elapsed_ms": 0.366762,
+          "observation_new_modules": [],
+          "observation_rss_delta_bytes": 0,
+          "rss_bytes": 1531457536,
+          "rss_delta_bytes": 2162688,
+          "runtime_new_modules": []
+        },
+        {
+          "conversation_elapsed_ms": 579.039288,
+          "conversation_rss_bytes": 1533771776,
+          "conversation_rss_delta_bytes": 2314240,
+          "elapsed_ms": 579.612351,
+          "graph": {
+            "discourse_events": 4,
+            "edges": 22438,
+            "interpretations": 4,
+            "messages": 18,
+            "nodes": 24976,
+            "turns": 0
+          },
+          "graph_delta": {
+            "discourse_events": 1,
+            "edges": 53,
+            "interpretations": 1,
+            "messages": 6,
+            "nodes": 16,
+            "turns": 0
+          },
+          "id": "overlap_signal",
+          "new_modules": [],
+          "observation_elapsed_ms": 0.292722,
+          "observation_new_modules": [],
+          "observation_rss_delta_bytes": 0,
+          "rss_bytes": 1533771776,
+          "rss_delta_bytes": 2314240,
+          "runtime_new_modules": []
+        },
+        {
+          "conversation_elapsed_ms": 908.147461,
+          "conversation_rss_bytes": 1537126400,
+          "conversation_rss_delta_bytes": 3354624,
+          "elapsed_ms": 908.803564,
+          "graph": {
+            "discourse_events": 5,
+            "edges": 22545,
+            "interpretations": 5,
+            "messages": 25,
+            "nodes": 25035,
+            "turns": 0
+          },
+          "graph_delta": {
+            "discourse_events": 1,
+            "edges": 107,
+            "interpretations": 1,
+            "messages": 7,
+            "nodes": 59,
+            "turns": 0
+          },
+          "id": "correction",
+          "new_modules": [],
+          "observation_elapsed_ms": 0.308081,
+          "observation_new_modules": [],
+          "observation_rss_delta_bytes": 0,
+          "rss_bytes": 1537126400,
+          "rss_delta_bytes": 3354624,
+          "runtime_new_modules": []
+        },
+        {
+          "conversation_elapsed_ms": 548.511163,
+          "conversation_rss_bytes": 1538576384,
+          "conversation_rss_delta_bytes": 1449984,
+          "elapsed_ms": 549.202906,
+          "graph": {
+            "discourse_events": 6,
+            "edges": 22591,
+            "interpretations": 6,
+            "messages": 31,
+            "nodes": 25053,
+            "turns": 0
+          },
+          "graph_delta": {
+            "discourse_events": 1,
+            "edges": 46,
+            "interpretations": 1,
+            "messages": 6,
+            "nodes": 18,
+            "turns": 0
+          },
+          "id": "social_greeting",
+          "new_modules": [],
+          "observation_elapsed_ms": 0.371392,
+          "observation_new_modules": [],
+          "observation_rss_delta_bytes": 0,
+          "rss_bytes": 1538576384,
+          "rss_delta_bytes": 1449984,
+          "runtime_new_modules": []
+        },
+        {
+          "conversation_elapsed_ms": 590.057147,
+          "conversation_rss_bytes": 1540448256,
+          "conversation_rss_delta_bytes": 1871872,
+          "elapsed_ms": 590.81671,
+          "graph": {
+            "discourse_events": 7,
+            "edges": 22704,
+            "interpretations": 7,
+            "messages": 32,
+            "nodes": 25093,
+            "turns": 0
+          },
+          "graph_delta": {
+            "discourse_events": 1,
+            "edges": 113,
+            "interpretations": 1,
+            "messages": 1,
+            "nodes": 40,
+            "turns": 0
+          },
+          "id": "unavailable_world",
+          "new_modules": [],
+          "observation_elapsed_ms": 0.460703,
+          "observation_new_modules": [],
+          "observation_rss_delta_bytes": 0,
+          "rss_bytes": 1540448256,
+          "rss_delta_bytes": 1871872,
+          "runtime_new_modules": []
+        },
+        {
+          "conversation_elapsed_ms": 563.577382,
+          "conversation_rss_bytes": 1542057984,
+          "conversation_rss_delta_bytes": 1609728,
+          "elapsed_ms": 564.173284,
+          "graph": {
+            "discourse_events": 8,
+            "edges": 22767,
+            "interpretations": 8,
+            "messages": 39,
+            "nodes": 25123,
+            "turns": 0
+          },
+          "graph_delta": {
+            "discourse_events": 1,
+            "edges": 63,
+            "interpretations": 1,
+            "messages": 7,
+            "nodes": 30,
+            "turns": 0
+          },
+          "id": "error_empty",
+          "new_modules": [],
+          "observation_elapsed_ms": 0.319682,
+          "observation_new_modules": [],
+          "observation_rss_delta_bytes": 0,
+          "rss_bytes": 1542057984,
+          "rss_delta_bytes": 1609728,
+          "runtime_new_modules": []
+        }
+      ],
+      "schema": "phase7-production-communication-envelope.v6",
+      "seed_profile": "full",
+      "selected_seed_ids": [],
+      "selection_complete": null,
+      "selection_unresolved": null,
+      "steady_state_rss_growth_bytes": 16203776,
+      "surface_text_used_as_semantics": false,
+      "turn_boundary_required": false
+    }
+  },
+  "replay_determinism_verified": false,
+  "resource_measurements_independent_processes": false,
+  "schema": "phase7-seed-profile-corpus-parity.v1",
+  "structural_parity": {
+    "conversation_error_count": 0,
+    "conversation_seed_selection_complete": true,
+    "equal": true,
+    "full_error_count": 0,
+    "graph_identity_numbers_compared": false,
+    "matched_event_count": 8,
+    "mismatch_count": 0,
+    "mismatches": [],
+    "surface_text_used_as_semantics": false
+  }
+}

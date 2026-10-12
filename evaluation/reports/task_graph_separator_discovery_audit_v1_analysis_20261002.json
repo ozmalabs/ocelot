@@ -1,0 +1,180 @@
+{
+  "claim_limits": [
+    "two fixed topology families only",
+    "no automatically discovered partition executed during inference",
+    "K4,8 cost proxy from separate audit; no measured conditioned runtime",
+    "K8,8 solve comparison uses externally supplied source/target roles",
+    "no natural-task prevalence or broad scale claim"
+  ],
+  "errors": [],
+  "gates_pass": true,
+  "graphs": {
+    "K4_8": {
+      "edges": 32,
+      "minimum_separator_size": 4,
+      "minimum_separators": [
+        {
+          "components": [
+            [
+              4
+            ],
+            [
+              5
+            ],
+            [
+              6
+            ],
+            [
+              7
+            ],
+            [
+              8
+            ],
+            [
+              9
+            ],
+            [
+              10
+            ],
+            [
+              11
+            ]
+          ],
+          "removed": [
+            0,
+            1,
+            2,
+            3
+          ]
+        }
+      ],
+      "nodes": 12,
+      "role_shore_separators": [
+        [
+          0,
+          1,
+          2,
+          3
+        ]
+      ],
+      "search_median_ms": 5.783646,
+      "search_p95_ms": 5.8764386,
+      "tested_subsets_through_minimum": 794
+    },
+    "K8_8": {
+      "amortization_over_20_cells_ms": 17.828445300000002,
+      "edges": 64,
+      "future_solves_to_amortize_learned": 155.93540142873076,
+      "future_solves_to_amortize_shuffled": 157.34991255859765,
+      "minimum_separator_size": 8,
+      "minimum_separators": [
+        {
+          "components": [
+            [
+              8
+            ],
+            [
+              9
+            ],
+            [
+              10
+            ],
+            [
+              11
+            ],
+            [
+              12
+            ],
+            [
+              13
+            ],
+            [
+              14
+            ],
+            [
+              15
+            ]
+          ],
+          "removed": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7
+          ]
+        },
+        {
+          "components": [
+            [
+              0
+            ],
+            [
+              1
+            ],
+            [
+              2
+            ],
+            [
+              3
+            ],
+            [
+              4
+            ],
+            [
+              5
+            ],
+            [
+              6
+            ],
+            [
+              7
+            ]
+          ],
+          "removed": [
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15
+          ]
+        }
+      ],
+      "nodes": 16,
+      "role_shore_separators": [
+        [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7
+        ],
+        [
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15
+        ]
+      ],
+      "search_median_ms": 356.568906,
+      "search_p95_ms": 378.6761994,
+      "solve_ms_learned": 2.286645,
+      "solve_ms_shuffled": 2.266089,
+      "tested_subsets_through_minimum": 39203
+    }
+  },
+  "interpretation": "Exhaustive graph-only topology search found small separators for these two authored bipartite model-derived families. K8,8 search cost amortizes over repeated weighted inputs; this does not show that such cuts are common or that the exhaustive search is a practical general proposer.",
+  "schema": "TaskGraphSeparatorDiscoveryAuditV1Analysis"
+}

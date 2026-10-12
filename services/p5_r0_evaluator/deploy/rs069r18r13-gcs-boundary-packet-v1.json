@@ -1,0 +1,226 @@
+{
+  "schema": "P5R0RS069R18R13GCSBoundaryPacketV1",
+  "packet_version": 1,
+  "classification": "repository_review_only_non_release",
+  "status": "reviewed_candidate_binding_pending_credential_and_iam",
+  "approval_context": {
+    "master_run": "P5-MASTER-001",
+    "broad_approval_id": "P5-MASTER-001/APPROVAL-011",
+    "operation_id": "ingest_generated_bundle_to_gcs",
+    "operation_order": 4,
+    "child_approval_present": false,
+    "child_approval_id": null,
+    "master_runsheet_modified": false
+  },
+  "operation": {
+    "id": "ingest_generated_bundle_to_gcs",
+    "order": 4,
+    "scope": ["ingest_generated_bundle_to_gcs"],
+    "allowed_actions": ["gcs.create_only_or_exact_generation_match"],
+    "forbidden_actions": ["gcs.list", "gcs.delete", "gcs.overwrite", "credential_generation"],
+    "later_operations_enabled": false,
+    "cloud_operations_performed": [],
+    "mutations_performed": false
+  },
+  "destination": {
+    "project_id": "ocelot-proof",
+    "project_number": "141633828616",
+    "bucket": "p5-evaluator-ocelot-proof-141633828616",
+    "prefix": "p5-r0/operation-4",
+    "run_id": "rs069r18r13-op4-04a98e3e",
+    "namespace_formula": "gs://{bucket}/{prefix}/{run_id}/{object_suffix}",
+    "bucket_project_binding": {
+      "bucket": "p5-evaluator-ocelot-proof-141633828616",
+      "project_id": "ocelot-proof",
+      "observed_match": true
+    },
+    "selected_from_candidate_only": true,
+    "read_only_confirmed": true,
+    "selection_basis": "Existing user-supplied candidate; project, bucket name, and project binding confirmed by absolute SDK read-only describes.",
+    "uniqueness_basis": "run_id is derived from the first eight hex characters of the canonical artifact-index digest and all 11 exact names were independently probed absent.",
+    "visibility": {
+      "default": "private",
+      "uniform_bucket_level_access": true,
+      "public_access_prevention": "inherited",
+      "public_principals_observed": false,
+      "private_truth_object": "private",
+      "worker_public_output": false
+    }
+  },
+  "credential_binding": {
+    "service_account": "p5-evaluator@ocelot-proof.iam.gserviceaccount.com",
+    "binding": "injected_reviewed_execution_path_only",
+    "token_source": "signed-environment STS token exchanged through IAM Credentials generateAccessToken for the exact capability service account",
+    "local_credential_material": false,
+    "credential_created": false,
+    "credential_injected": false,
+    "status": "missing_reviewed_execution_credential",
+    "missing_facts": [
+      "exact reviewed signed-environment WIF principal/attestation binding",
+      "short-lived execution token injected by the reviewed execution path",
+      "roles/iam.serviceAccountTokenCreator grant for that exact principal"
+    ],
+    "prohibited": ["service-account key creation", "credential export", "ADC discovery by the operation handler", "direct provider-principal GCS access"]
+  },
+  "current_state": {
+    "project": {
+      "project_id": "ocelot-proof",
+      "project_number": "141633828616",
+      "lifecycle_state": "ACTIVE"
+    },
+    "bucket": {
+      "name": "p5-evaluator-ocelot-proof-141633828616",
+      "project_id": "ocelot-proof",
+      "location": "US-CENTRAL1",
+      "location_type": "region",
+      "default_storage_class": "STANDARD",
+      "uniform_bucket_level_access": true,
+      "public_access_prevention": "inherited",
+      "bucket_generation": "1789552861595243632",
+      "metageneration": 72,
+      "soft_delete_retention_seconds": 604800
+    },
+    "service_account": {
+      "email": "p5-evaluator@ocelot-proof.iam.gserviceaccount.com",
+      "project_id": "ocelot-proof",
+      "unique_id": "107880936272403811527",
+      "display_name": "P5 evaluator control plane"
+    },
+    "iam": {
+      "bucket_capability_account_roles": ["roles/storage.objectAdmin"],
+      "bucket_wif_roles": ["roles/storage.objectUser"],
+      "bucket_wif_condition": "resource.name.startsWith('projects/_/buckets/p5-evaluator-ocelot-proof-141633828616/objects/v3/')",
+      "bucket_wif_principal": "principalSet://iam.googleapis.com/projects/141633828616/locations/global/workloadIdentityPools/p5-cs-pool/attribute.image_digest/sha256:0a42a061ac593c7dd4e21e90fab7b8bb62d1836666e5507549fb4194b18dcca7",
+      "service_account_roles": ["roles/iam.workloadIdentityUser"],
+      "service_account_wif_principal": "principalSet://iam.googleapis.com/projects/141633828616/locations/global/workloadIdentityPools/p5-cs-pool/attribute.image_digest/sha256:0a42a061ac593c7dd4e21e90fab7b8bb62d1836666e5507549fb4194b18dcca7",
+      "project_roles": ["roles/cloudkms.signerVerifier"],
+      "operation4_narrow_grant_observed": false,
+      "public_principals_observed": false,
+      "credential_binding_observed": false,
+      "interpretation": "The candidate resources exist, but current bucket access is broader than operation-4 least privilege and the observed WIF/image binding is not promoted as the exact reviewed execution credential."
+    }
+  },
+  "desired_iam": {
+    "status": "desired_not_applied",
+    "apply_performed": false,
+    "cloud_operations": [],
+    "bucket_writer": {
+      "role_definition": "projects/ocelot-proof/roles/p5R0Operation4BundleWriterV1",
+      "principal": "serviceAccount:p5-evaluator@ocelot-proof.iam.gserviceaccount.com",
+      "permissions": ["storage.objects.create", "storage.objects.get"],
+      "condition": {
+        "title": "p5_r0_r18r13_op4_exact_run",
+        "expression": "resource.name.startsWith('projects/_/buckets/p5-evaluator-ocelot-proof-141633828616/objects/p5-r0/operation-4/rs069r18r13-op4-04a98e3e/')"
+      },
+      "purpose": "Create absent objects with generation 0 and GET immediately for byte/digest verification; exact existing generations are read-only no-ops.",
+      "delete": false,
+      "list": false,
+      "overwrite": false,
+      "applied": false
+    },
+    "remove_current_broad_grant": {
+      "principal": "serviceAccount:p5-evaluator@ocelot-proof.iam.gserviceaccount.com",
+      "role": "roles/storage.objectAdmin",
+      "required": true,
+      "applied": false
+    },
+    "token_creator": {
+      "principal": null,
+      "principal_resolution": "Exact signed-environment WIF/attestation principal is required; the currently observed image-digest principal must not be reused without a fresh reviewed binding.",
+      "role": "roles/iam.serviceAccountTokenCreator",
+      "resource": "projects/ocelot-proof/serviceAccounts/p5-evaluator@ocelot-proof.iam.gserviceaccount.com",
+      "applied": false
+    },
+    "public_access": {
+      "allUsers_or_allAuthenticatedUsers": false,
+      "required": "remain absent",
+      "applied": false
+    }
+  },
+  "artifact_binding": {
+    "index_path": "var/p5-r0-diagnostic-inputs/artifact-index.json",
+    "index_schema": "P5R0DiagnosticArtifactIndexV1",
+    "index_digest": "sha256:04a98e3e48685228fd68ea757de276fe1c1a7ce347bd027a2756a48595897768",
+    "request_digest": "sha256:922085ca833426751f89610dc2274d10f82efe758ee3b92e9d6c9441db20292d",
+    "unsigned_lock_digest": "sha256:4fc80599aa0cc99881983cdb1270720de6d5c3f99c47701cf471da409d29a3df",
+    "private_truth": {
+      "object_suffix": "private-truth/case-store.json",
+      "private": true,
+      "worker_public_output": false
+    }
+  },
+  "objects": [
+    {"object_id":"bundle_input_manifest","local_artifact_path":"var/p5-r0-diagnostic-inputs/public/production-bundle-input-manifest.json","object_suffix":"public/production-bundle-input-manifest.json","object_name":"p5-r0/operation-4/rs069r18r13-op4-04a98e3e/public/production-bundle-input-manifest.json","private":false,"artifact_digest":"sha256:21953231da13dfd66c767bb25277460cf36e29ac03ec6b2dba6cb4e611eb6296","file_digest":"sha256:bff9a31e91aae8847c6da471c9064b8d143ab937d8a42bb6101cecb7ea24b8ab","observed":{"status":"absent","probe_http_status":404,"generation":null},"generation_precondition":{"kind":"if_absent_or_exact_generation","expected_generation":0}},
+    {"object_id":"control_commitment","local_artifact_path":"var/p5-r0-diagnostic-inputs/public/control-commitment.json","object_suffix":"public/control-commitment.json","object_name":"p5-r0/operation-4/rs069r18r13-op4-04a98e3e/public/control-commitment.json","private":false,"artifact_digest":"sha256:ac9cefc8910d3cec2053259e5a053c7bdd34ed0e9381fe920a9b4b19878c5f58","file_digest":"sha256:3cd9a8c2257b8cd0b760b569f16e5a5ae9f59aa230f7825b37d20a63548f17fe","observed":{"status":"absent","probe_http_status":404,"generation":null},"generation_precondition":{"kind":"if_absent_or_exact_generation","expected_generation":0}},
+    {"object_id":"evaluator_contract","local_artifact_path":"var/p5-r0-diagnostic-inputs/public/evaluator-contract.json","object_suffix":"public/evaluator-contract.json","object_name":"p5-r0/operation-4/rs069r18r13-op4-04a98e3e/public/evaluator-contract.json","private":false,"artifact_digest":"sha256:26fac134fb8b791ca9c775fce4496e04a983ba49b686c354ed8e9e58388545d8","file_digest":"sha256:b1bcf8780a322295b358cb23cafb280b31268ce17b22f6e40f876980c658324a","observed":{"status":"absent","probe_http_status":404,"generation":null},"generation_precondition":{"kind":"if_absent_or_exact_generation","expected_generation":0}},
+    {"object_id":"lock_signing_request","local_artifact_path":"var/p5-r0-diagnostic-inputs/public/lock-signing-request.json","object_suffix":"public/lock-signing-request.json","object_name":"p5-r0/operation-4/rs069r18r13-op4-04a98e3e/public/lock-signing-request.json","private":false,"artifact_digest":"sha256:922085ca833426751f89610dc2274d10f82efe758ee3b92e9d6c9441db20292d","file_digest":"sha256:0e8d1f306446ba4e62d31f3eaab523430b372671772db0593516a702bee5f45e","observed":{"status":"absent","probe_http_status":404,"generation":null},"generation_precondition":{"kind":"if_absent_or_exact_generation","expected_generation":0}},
+    {"object_id":"manifest","local_artifact_path":"var/p5-r0-diagnostic-inputs/public/manifest.json","object_suffix":"public/manifest.json","object_name":"p5-r0/operation-4/rs069r18r13-op4-04a98e3e/public/manifest.json","private":false,"artifact_digest":"sha256:190fe19fe7f70b181f11f0b375cf6241a2cc2c0c49abbf2b52f8ce8899b2f01a","file_digest":"sha256:78694af8056e5d141546ba15b9e489aa3afe7e05e74653bb94ab0b00cb4794d5","observed":{"status":"absent","probe_http_status":404,"generation":null},"generation_precondition":{"kind":"if_absent_or_exact_generation","expected_generation":0}},
+    {"object_id":"policy","local_artifact_path":"var/p5-r0-diagnostic-inputs/public/policy.json","object_suffix":"public/policy.json","object_name":"p5-r0/operation-4/rs069r18r13-op4-04a98e3e/public/policy.json","private":false,"artifact_digest":"sha256:d5c2ff10446ea6461f834ecfad00f058dd413b9b3f2f3334ad2c4f05be772c30","file_digest":"sha256:d5c2ff10446ea6461f834ecfad00f058dd413b9b3f2f3334ad2c4f05be772c30","observed":{"status":"absent","probe_http_status":404,"generation":null},"generation_precondition":{"kind":"if_absent_or_exact_generation","expected_generation":0}},
+    {"object_id":"private_store","local_artifact_path":"var/p5-r0-diagnostic-inputs/private-truth/case-store.json","object_suffix":"private-truth/case-store.json","object_name":"p5-r0/operation-4/rs069r18r13-op4-04a98e3e/private-truth/case-store.json","private":true,"artifact_digest":"sha256:0ec34adc958b2565aa24599be477c3e6b3488e83df9e8f1811715262ea7b55e1","file_digest":"sha256:3f5ea60328d4bc0cd8dfd4dd86c90de76d70753b39a2fe04561189d49b3c37a7","observed":{"status":"absent","probe_http_status":404,"generation":null},"generation_precondition":{"kind":"if_absent_or_exact_generation","expected_generation":0}},
+    {"object_id":"provenance","local_artifact_path":"var/p5-r0-diagnostic-inputs/public/generator-provenance.json","object_suffix":"public/generator-provenance.json","object_name":"p5-r0/operation-4/rs069r18r13-op4-04a98e3e/public/generator-provenance.json","private":false,"artifact_digest":"sha256:e0b15350c51674059af068e1aa11729cb45bd870aef483a63ede1d4ad603277f","file_digest":"sha256:e0b15350c51674059af068e1aa11729cb45bd870aef483a63ede1d4ad603277f","observed":{"status":"absent","probe_http_status":404,"generation":null},"generation_precondition":{"kind":"if_absent_or_exact_generation","expected_generation":0}},
+    {"object_id":"split","local_artifact_path":"var/p5-r0-diagnostic-inputs/public/split.json","object_suffix":"public/split.json","object_name":"p5-r0/operation-4/rs069r18r13-op4-04a98e3e/public/split.json","private":false,"artifact_digest":"sha256:def0707ed51e7947b5d3360075b474385aafd9011a75398efb397863db8cd125","file_digest":"sha256:a6947d5b134526bd93a11f4d2a6cdf74af0bc0091f48783f3f2f1bfbef99883f","observed":{"status":"absent","probe_http_status":404,"generation":null},"generation_precondition":{"kind":"if_absent_or_exact_generation","expected_generation":0}},
+    {"object_id":"task_set","local_artifact_path":"var/p5-r0-diagnostic-inputs/public/task-set.json","object_suffix":"public/task-set.json","object_name":"p5-r0/operation-4/rs069r18r13-op4-04a98e3e/public/task-set.json","private":false,"artifact_digest":"sha256:725b59168b83b2305e76500774ddca6e0b59185cec3527bf2d6133e657c29aa7","file_digest":"sha256:46351848f1dbb1d81335e8ec6801418b30cd000d765e0544e67233f20c28d915","observed":{"status":"absent","probe_http_status":404,"generation":null},"generation_precondition":{"kind":"if_absent_or_exact_generation","expected_generation":0}},
+    {"object_id":"worker_contract","local_artifact_path":"var/p5-r0-diagnostic-inputs/public/worker-contract.json","object_suffix":"public/worker-contract.json","object_name":"p5-r0/operation-4/rs069r18r13-op4-04a98e3e/public/worker-contract.json","private":false,"artifact_digest":"sha256:ef49d15e32038675ed04266e28eb9079956c2647b00e572e50a6bd3b17ebceb3","file_digest":"sha256:b9aad635ffba2b2e308c8d118ac9eb52ef55043c12004d135c1f2b364933a316","observed":{"status":"absent","probe_http_status":404,"generation":null},"generation_precondition":{"kind":"if_absent_or_exact_generation","expected_generation":0}}
+  ],
+  "read_only_evidence": {
+    "sdk_path": "/home/matt/google-cloud-sdk/bin/gcloud",
+    "sdk_version": "Google Cloud SDK 585.0.0",
+    "all_commands_read_only": true,
+    "cloud_mutation_commands": [],
+    "active_caller": "hrdwrbob@gmail.com",
+    "active_project": "ocelot-proof",
+    "commands": [
+      {"command":"/home/matt/google-cloud-sdk/bin/gcloud projects describe ocelot-proof --format=json","exit":0,"result":"projectId=ocelot-proof, projectNumber=141633828616, lifecycleState=ACTIVE"},
+      {"command":"/home/matt/google-cloud-sdk/bin/gcloud storage buckets describe gs://p5-evaluator-ocelot-proof-141633828616 --format=json --project=ocelot-proof","exit":0,"result":"bucket exists; project binding matches; uniform_bucket_level_access=true; public_access_prevention=inherited; location=US-CENTRAL1"},
+      {"command":"/home/matt/google-cloud-sdk/bin/gcloud iam service-accounts describe p5-evaluator@ocelot-proof.iam.gserviceaccount.com --project=ocelot-proof --format=json","exit":0,"result":"service account exists in ocelot-proof; uniqueId=107880936272403811527"},
+      {"command":"/home/matt/google-cloud-sdk/bin/gcloud iam service-accounts get-iam-policy p5-evaluator@ocelot-proof.iam.gserviceaccount.com --project=ocelot-proof --format=json","exit":0,"result":"roles/iam.workloadIdentityUser observed for one image-digest principal; no serviceAccountTokenCreator observed"},
+      {"command":"/home/matt/google-cloud-sdk/bin/gcloud storage buckets get-iam-policy gs://p5-evaluator-ocelot-proof-141633828616 --format=json","exit":0,"result":"service account has roles/storage.objectAdmin; a separate v3 conditional roles/storage.objectUser binding exists; no public principals observed"},
+      {"command":"/home/matt/google-cloud-sdk/bin/gcloud projects get-iam-policy ocelot-proof --format=json --flatten=bindings[].members --filter=bindings.members:p5-evaluator@ocelot-proof.iam.gserviceaccount.com --format=json(bindings.role,bindings.members)","exit":0,"result":"roles/cloudkms.signerVerifier observed for the capability service account"},
+      {"command":"/home/matt/google-cloud-sdk/bin/gcloud auth list --format=json && /home/matt/google-cloud-sdk/bin/gcloud config list --format=json","exit":0,"result":"active local caller hrdwrbob@gmail.com; configured project ocelot-proof; no credential material inspected or created"},
+      {"command":"/home/matt/google-cloud-sdk/bin/gcloud storage objects describe gs://p5-evaluator-ocelot-proof-141633828616/p5-r0/operation-4/rs069r18r13-op4-04a98e3e/{object_suffix} --format=json","exit":1,"result":"11 exact probes returned 404 not found; no object generation or digest was observed"}
+    ],
+    "object_probes": [
+      {"object_id":"bundle_input_manifest","object_name":"p5-r0/operation-4/rs069r18r13-op4-04a98e3e/public/production-bundle-input-manifest.json","command":"/home/matt/google-cloud-sdk/bin/gcloud storage objects describe gs://p5-evaluator-ocelot-proof-141633828616/p5-r0/operation-4/rs069r18r13-op4-04a98e3e/public/production-bundle-input-manifest.json --format=json","exit":1,"http_status":404,"generation":null},
+      {"object_id":"control_commitment","object_name":"p5-r0/operation-4/rs069r18r13-op4-04a98e3e/public/control-commitment.json","command":"/home/matt/google-cloud-sdk/bin/gcloud storage objects describe gs://p5-evaluator-ocelot-proof-141633828616/p5-r0/operation-4/rs069r18r13-op4-04a98e3e/public/control-commitment.json --format=json","exit":1,"http_status":404,"generation":null},
+      {"object_id":"evaluator_contract","object_name":"p5-r0/operation-4/rs069r18r13-op4-04a98e3e/public/evaluator-contract.json","command":"/home/matt/google-cloud-sdk/bin/gcloud storage objects describe gs://p5-evaluator-ocelot-proof-141633828616/p5-r0/operation-4/rs069r18r13-op4-04a98e3e/public/evaluator-contract.json --format=json","exit":1,"http_status":404,"generation":null},
+      {"object_id":"lock_signing_request","object_name":"p5-r0/operation-4/rs069r18r13-op4-04a98e3e/public/lock-signing-request.json","command":"/home/matt/google-cloud-sdk/bin/gcloud storage objects describe gs://p5-evaluator-ocelot-proof-141633828616/p5-r0/operation-4/rs069r18r13-op4-04a98e3e/public/lock-signing-request.json --format=json","exit":1,"http_status":404,"generation":null},
+      {"object_id":"manifest","object_name":"p5-r0/operation-4/rs069r18r13-op4-04a98e3e/public/manifest.json","command":"/home/matt/google-cloud-sdk/bin/gcloud storage objects describe gs://p5-evaluator-ocelot-proof-141633828616/p5-r0/operation-4/rs069r18r13-op4-04a98e3e/public/manifest.json --format=json","exit":1,"http_status":404,"generation":null},
+      {"object_id":"policy","object_name":"p5-r0/operation-4/rs069r18r13-op4-04a98e3e/public/policy.json","command":"/home/matt/google-cloud-sdk/bin/gcloud storage objects describe gs://p5-evaluator-ocelot-proof-141633828616/p5-r0/operation-4/rs069r18r13-op4-04a98e3e/public/policy.json --format=json","exit":1,"http_status":404,"generation":null},
+      {"object_id":"private_store","object_name":"p5-r0/operation-4/rs069r18r13-op4-04a98e3e/private-truth/case-store.json","command":"/home/matt/google-cloud-sdk/bin/gcloud storage objects describe gs://p5-evaluator-ocelot-proof-141633828616/p5-r0/operation-4/rs069r18r13-op4-04a98e3e/private-truth/case-store.json --format=json","exit":1,"http_status":404,"generation":null},
+      {"object_id":"provenance","object_name":"p5-r0/operation-4/rs069r18r13-op4-04a98e3e/public/generator-provenance.json","command":"/home/matt/google-cloud-sdk/bin/gcloud storage objects describe gs://p5-evaluator-ocelot-proof-141633828616/p5-r0/operation-4/rs069r18r13-op4-04a98e3e/public/generator-provenance.json --format=json","exit":1,"http_status":404,"generation":null},
+      {"object_id":"split","object_name":"p5-r0/operation-4/rs069r18r13-op4-04a98e3e/public/split.json","command":"/home/matt/google-cloud-sdk/bin/gcloud storage objects describe gs://p5-evaluator-ocelot-proof-141633828616/p5-r0/operation-4/rs069r18r13-op4-04a98e3e/public/split.json --format=json","exit":1,"http_status":404,"generation":null},
+      {"object_id":"task_set","object_name":"p5-r0/operation-4/rs069r18r13-op4-04a98e3e/public/task-set.json","command":"/home/matt/google-cloud-sdk/bin/gcloud storage objects describe gs://p5-evaluator-ocelot-proof-141633828616/p5-r0/operation-4/rs069r18r13-op4-04a98e3e/public/task-set.json --format=json","exit":1,"http_status":404,"generation":null},
+      {"object_id":"worker_contract","object_name":"p5-r0/operation-4/rs069r18r13-op4-04a98e3e/public/worker-contract.json","command":"/home/matt/google-cloud-sdk/bin/gcloud storage objects describe gs://p5-evaluator-ocelot-proof-141633828616/p5-r0/operation-4/rs069r18r13-op4-04a98e3e/public/worker-contract.json --format=json","exit":1,"http_status":404,"generation":null}
+    ],
+    "object_probe_count": 11,
+    "object_probe_404_count": 11,
+    "object_probe_other_results": [],
+    "missing_permission_or_credential_facts": [
+      "Current metadata inspection does not prove that the future injected capability token can create or get objects.",
+      "No exact reviewed signed-environment WIF principal for this packet was supplied.",
+      "No serviceAccountTokenCreator grant for that exact principal was observed.",
+      "Current roles/storage.objectAdmin is broader than the desired operation-4 grant and is not accepted as least-privilege evidence.",
+      "No service-account key, token, ADC export, or other local credential material was created or inspected."
+    ]
+  },
+  "apply_plan": {
+    "status": "conditional_not_executed",
+    "one_operation_id": "ingest_generated_bundle_to_gcs",
+    "preconditions": [
+      "separate reviewed IaC change applies and re-observes the narrow IAM proposal",
+      "exact signed-environment WIF principal and short-lived token are injected; no key file is created",
+      "fresh read-only probes confirm the same bucket/project, private visibility, and all 11 expected generations",
+      "new exact child approval for APPROVAL-011 is present and packet digests are unchanged"
+    ],
+    "steps": [
+      "invoke only the reviewed operation-4 adapter with the injected capability token",
+      "GET each exact object name without listing; require 404 -> generation 0 or exact observed positive generation",
+      "create only absent objects with ifGenerationMatch=0 and verify bytes/digest by GET",
+      "append the dedicated operation-4 ledger and stop; keep all later operations disabled"
+    ],
+    "forbidden": ["gcloud direct mutation", "credential generation or key creation", "object listing", "object deletion", "overwrite", "downstream operation enablement"],
+    "execution_evidence": {"upload_performed":false,"ledger_event":false,"remote_generations":null,"remote_digests":null},
+    "required_authenticated_receipt": {"project_id":"ocelot-proof","bucket":"p5-evaluator-ocelot-proof-141633828616","capability_service_account":"p5-evaluator@ocelot-proof.iam.gserviceaccount.com","per_object_fields":["bucket","project_id","object_name","generation","remote_checksum","private_visibility"],"must_be_verified_before_success":true}
+  },
+  "packet_digest": "sha256:a8c313f6e5b775b4ba48a8e8ff4cc5e2561c560930c4e89ec2e9666fb509c447"
+}

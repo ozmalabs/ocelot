@@ -1,0 +1,74 @@
+{
+  "schema": "LiveTaskAnchorProvisionalAnnotationsV1",
+  "packet": "live_conversation_task_anchor_review_packet_v1_20261004.json",
+  "packet_sha256": "a3e944a9da7517203d79b8c4ea3179764907a89773ad6f18fcca1e3c9c84c3aa",
+  "annotator": "Codex single-pass reviewer",
+  "annotation_status": "provisional; not independent ground truth; requires external review",
+  "guideline": "Request-specific means caused by or needed to represent this request, including a misinterpretation. Task alignment is separately judged against the prompt meaning. Generic response scaffolding with no task-specific evidence is uncertain.",
+  "cases": [
+    {
+      "case_id": "case_046cffb88e",
+      "labels": [
+        {"node": "M01", "scope": "request_specific", "task_alignment": "aligned", "rationale": "This is the inbound request itself."},
+        {"node": "E01", "scope": "request_specific", "task_alignment": "aligned", "rationale": "The question event directly represents the inbound request."},
+        {"node": "G01", "scope": "uncertain", "task_alignment": "uncertain", "rationale": "The generic communicate goal may be shared response scaffolding; the graph does not connect it to a task-specific answer goal."}
+      ]
+    },
+    {
+      "case_id": "case_102c382370",
+      "labels": [
+        {"node": "M01", "scope": "request_specific", "task_alignment": "aligned", "rationale": "This is the inbound request itself."},
+        {"node": "E01", "scope": "request_specific", "task_alignment": "aligned", "rationale": "The statement event directly represents the inbound request."},
+        {"node": "G01", "scope": "uncertain", "task_alignment": "uncertain", "rationale": "The generic communicate goal may be shared response scaffolding; no clarification-specific goal is connected."}
+      ]
+    },
+    {
+      "case_id": "case_7c2c529576",
+      "labels": [
+        {"node": "M01", "scope": "request_specific", "task_alignment": "aligned", "rationale": "This is the inbound request itself."},
+        {"node": "E01", "scope": "request_specific", "task_alignment": "aligned", "rationale": "The instruction event directly represents the inbound request."},
+        {"node": "G01", "scope": "uncertain", "task_alignment": "uncertain", "rationale": "The generic communicate goal may be shared response scaffolding; no comparison or concern-authoring goal is connected."}
+      ]
+    },
+    {
+      "case_id": "case_b68e17166d",
+      "labels": [
+        {"node": "M01", "scope": "request_specific", "task_alignment": "aligned", "rationale": "This is the inbound request itself."},
+        {"node": "E01", "scope": "request_specific", "task_alignment": "aligned", "rationale": "The instruction event directly represents the inbound request."},
+        {"node": "E02", "scope": "request_specific", "task_alignment": "aligned", "rationale": "Selection is downstream of interpreting this request."},
+        {"node": "E03", "scope": "request_specific", "task_alignment": "aligned", "rationale": "Execution is downstream of interpreting this request."},
+        {"node": "E04", "scope": "request_specific", "task_alignment": "aligned", "rationale": "The action result is downstream of interpreting this request."},
+        {"node": "G01", "scope": "request_specific", "task_alignment": "aligned", "rationale": "The report_self goal directly comprehends the request to report the system's organization."},
+        {"node": "G02", "scope": "uncertain", "task_alignment": "uncertain", "rationale": "The generic communicate goal may be shared response scaffolding."},
+        {"node": "ND5B01", "scope": "shared_or_background", "task_alignment": "not_applicable", "rationale": "The interlocutor is a shared speaker entity, not task-local content."}
+      ]
+    },
+    {
+      "case_id": "case_cd9046d665",
+      "labels": [
+        {"node": "M01", "scope": "request_specific", "task_alignment": "aligned", "rationale": "This is the inbound request itself."},
+        {"node": "E01", "scope": "request_specific", "task_alignment": "aligned", "rationale": "The instruction event directly represents the inbound request."},
+        {"node": "E02", "scope": "request_specific", "task_alignment": "misaligned_interpretation", "rationale": "The event is on the path to a report_self response that does not answer the scene-description request."},
+        {"node": "E03", "scope": "request_specific", "task_alignment": "misaligned_interpretation", "rationale": "The event is on the path to a report_self response that does not answer the scene-description request."},
+        {"node": "E04", "scope": "request_specific", "task_alignment": "misaligned_interpretation", "rationale": "The event is on the path to a report_self response that does not answer the scene-description request."},
+        {"node": "G01", "scope": "request_specific", "task_alignment": "aligned", "rationale": "The describe_scene goal is the task expressed by the prompt, though it is not the directly comprehended goal."},
+        {"node": "G02", "scope": "request_specific", "task_alignment": "aligned", "rationale": "The utterance goal is linked through a scene percept and supports describing the scene."},
+        {"node": "G03", "scope": "request_specific", "task_alignment": "aligned", "rationale": "The utterance goal is linked through a scene percept and supports describing the scene."},
+        {"node": "G04", "scope": "request_specific", "task_alignment": "aligned", "rationale": "The utterance goal is linked through a scene percept and supports describing the scene."},
+        {"node": "G05", "scope": "request_specific", "task_alignment": "misaligned_interpretation", "rationale": "It directly comprehends the prompt but substitutes a self-report task for the requested scene description."},
+        {"node": "G06", "scope": "uncertain", "task_alignment": "uncertain", "rationale": "The generic communicate goal may be shared response scaffolding."},
+        {"node": "N47701", "scope": "request_specific", "task_alignment": "aligned", "rationale": "The Scene node is the target of the requested visual description."},
+        {"node": "NC1201", "scope": "request_specific", "task_alignment": "aligned", "rationale": "This Percept represents one of the scene elements to be described."},
+        {"node": "NC1202", "scope": "request_specific", "task_alignment": "aligned", "rationale": "This Percept represents one of the scene elements to be described."},
+        {"node": "NC1203", "scope": "request_specific", "task_alignment": "aligned", "rationale": "This Percept represents one of the scene elements to be described."},
+        {"node": "ND5B01", "scope": "shared_or_background", "task_alignment": "not_applicable", "rationale": "The interlocutor is a shared speaker entity, not task-local content."}
+      ]
+    }
+  ],
+  "limitations": [
+    "The packet was only recently generated and reviewed by the same agent that designed the reachability diagnostic, so these annotations are not independent of the analysis process.",
+    "Only five authored prompts are represented; three have no connected task-specific Goal in the selected slice.",
+    "Uncertainty is retained rather than forcing labels for generic communicate goals.",
+    "A second reviewer and the held-back replicate remain necessary before scoring any candidate policy as validated."
+  ]
+}

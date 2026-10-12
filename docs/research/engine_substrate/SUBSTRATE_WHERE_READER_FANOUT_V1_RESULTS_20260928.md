@@ -1,0 +1,9 @@
+# Where-reader deletion fan-out v1 results
+
+**Evidence grade:** 36 source-locked fresh worker processes; all 10 runner gates and 7 independent analysis checks pass across 12 cells, three workers per cell.
+
+The panel crosses graph match count N=32/128, reader rules R=1/4/16, and two typed read families: outgoing `Edges` from the matched root and `InNeighbours` of each matched slot. For both, full rescan and sound incremental arms open every slot and produce identical graph snapshots. The unsound cursor falsifier opens zero slots across all cells, confirming non-vacuous invalidation coverage for both Term families.
+
+Sound incremental candidate work is exactly `N × R`: 32/128 for one reader, 128/512 for four, and 512/2,048 for sixteen. Reader enumerations equal R. Doubling N doubles candidate work; multiplying R by four multiplies work by four. At N=128, R=16, median settlement is 0.828 ms for the outgoing `Edges` family and 0.805 ms for `InNeighbours`. This is an explicit linear rescan envelope for where flips on stable match edges; it does not demonstrate incremental candidate savings. The unsound arm's zero candidate work is incorrect and must not be treated as a performance baseline.
+
+Results are synthetic and limited to these two `Count` reader forms, one deleted edge type, and at most 16 rules. They do not establish natural-task reader counts or soundness for all Term operators. See the [preregistration](SUBSTRATE_WHERE_READER_FANOUT_V1_PREREG_20260928.md), [runner](../../../scripts/substrate_where_reader_fanout_v1.py), [raw capture](../../../evaluation/reports/substrate_where_reader_fanout_v1_20260928.json), [analysis](../../../evaluation/reports/substrate_where_reader_fanout_v1_analysis_20260928.json), and [source lock](../../../evaluation/substrate_capability/where_reader_fanout_v1_lock_20260928.json).

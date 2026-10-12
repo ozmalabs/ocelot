@@ -1,0 +1,88 @@
+{
+  "binary": {
+    "path": "/home/matt/ozmadev/ocelot/runners/dsl/target/release/typed_graph_cow_probe",
+    "sha256": "sha256:36653e0ded16ff8f0bca048d97b6f60ea46216bfafc7e767bff4a70be77c890d"
+  },
+  "host": {
+    "machine": "x86_64",
+    "platform": "Linux-6.8.0-142-generic-x86_64-with-glibc2.39"
+  },
+  "implementation_status": "actual TypedGraph node/edge slabs use CowPagedVec; adjacency, indexes, and other substrate state remain eager copies",
+  "protocol": {
+    "fixture": "TypedGraph with one node type, a directed path, and empty attrs",
+    "measured_repeats": 25,
+    "scope_limits": [
+      "one simple topology",
+      "index and Substrate state still copied",
+      "no RSS/allocations/accounting"
+    ],
+    "semantic_gate": "eager/shared clones agree on counts, node-type query, changed value; either changed branch leaves the primary unchanged",
+    "sizes": [
+      771,
+      1771,
+      10771,
+      50771
+    ],
+    "sparse_write": "clone then set one node attr; includes clone, excludes base build",
+    "statistics": "median per-operation microseconds"
+  },
+  "rows": [
+    {
+      "eager_clone_us": 83.61,
+      "eager_clone_write_us": 84.19099999999999,
+      "edges": 770,
+      "exact_query_and_branch_isolation": true,
+      "nodes": 771,
+      "repeats": 25,
+      "shared_slab_clone_us": 29.490000000000002,
+      "shared_slab_clone_write_us": 35.44
+    },
+    {
+      "eager_clone_us": 192.90099999999998,
+      "eager_clone_write_us": 193.46200000000002,
+      "edges": 1770,
+      "exact_query_and_branch_isolation": true,
+      "nodes": 1771,
+      "repeats": 25,
+      "shared_slab_clone_us": 69.67,
+      "shared_slab_clone_write_us": 117.211
+    },
+    {
+      "eager_clone_us": 1400.24,
+      "eager_clone_write_us": 1679.812,
+      "edges": 10770,
+      "exact_query_and_branch_isolation": true,
+      "nodes": 10771,
+      "repeats": 25,
+      "shared_slab_clone_us": 465.023,
+      "shared_slab_clone_write_us": 1202.4589999999998
+    },
+    {
+      "eager_clone_us": 8084.529,
+      "eager_clone_write_us": 7753.727,
+      "edges": 50770,
+      "exact_query_and_branch_isolation": true,
+      "nodes": 50771,
+      "repeats": 25,
+      "shared_slab_clone_us": 2440.168,
+      "shared_slab_clone_write_us": 6145.865000000001
+    }
+  ],
+  "runner": {
+    "path": "/home/matt/ozmadev/ocelot/evaluation/substrate_capability/typed_graph_cow_probe_v1.py",
+    "sha256": "sha256:167b1a1bd9f418a3d80f9e354d037c8c3c33df67a112c6382031dd17dd7b331b"
+  },
+  "schema": "TypedGraphCowProbeV1",
+  "sources": {
+    "runners/dsl/Cargo.lock": "sha256:409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+    "runners/dsl/Cargo.toml": "sha256:c4d8ffff2241352a5150b5a9937dbb8010e958b6f115235b7daeae716c1a9332",
+    "runners/dsl/src/bin/typed_graph_cow_probe.rs": "sha256:24900a5cb423c11bd343b3a2da3db244cf32c6e62bdd954190b3f0a6b3d7c1c4",
+    "runners/dsl/src/cow_paged_vec.rs": "sha256:562f2a07c495110c5a5e796505e0ccb3c84513bae198ca59e8ee4884c118ebbf",
+    "runners/dsl/src/graph.rs": "sha256:fc40423371bafbe19b1ab617affb475e90c88669ad92d54cbbe3d80325227031",
+    "runners/dsl/src/lib.rs": "sha256:5ebe65e3e335079b607779a2c49583149b2d87733f8da935926bbbc53bfbff45"
+  },
+  "toolchain": {
+    "cargo": "cargo 1.87.0 (Homebrew)",
+    "rustc": "rustc 1.87.0 (17067e9ac 2025-05-09) (Homebrew)"
+  }
+}

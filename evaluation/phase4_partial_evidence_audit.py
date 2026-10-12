@@ -10,6 +10,8 @@ from __future__ import annotations
 from collections.abc import Iterable, Mapping
 from typing import Any
 
+from evaluation.phase4_substrate_tuple_audit import APPROVED_SOURCE_TYPES
+
 
 PHASE4_DIMENSIONS = (
     "grounding", "expected_value", "residual_cost", "consequence", "novelty"
@@ -36,16 +38,20 @@ def _record(source: Mapping[str, Any]) -> dict[str, Any]:
     present = [key for key in PHASE4_DIMENSIONS if key in attrs]
     missing = [key for key in PHASE4_DIMENSIONS if key not in attrs]
     complete = not missing
+    source_type = str(source.get("source_type", "unknown"))
+    authorized = source_type in APPROVED_SOURCE_TYPES
+    eligible = complete and authorized
     return {
         "source_id": _source_id(source.get("source_id", "")),
-        "source_type": str(source.get("source_type", "unknown")),
+        "source_type": source_type,
         "faculty": str(source.get("faculty", "unspecified")),
         "dimensions_present": present,
         "dimensions_missing": missing,
         "complete_tuple": complete,
-        "promotion_eligible": complete,
+        "promotion_eligible": eligible,
         "promotion_reason": (
             "complete_existing_tuple"
+            if eligible else "unapproved_source_type"
             if complete else "missing_phase4_dimensions"
         ),
     }
@@ -62,6 +68,7 @@ def audit_partial_evidence(sources: Iterable[Mapping[str, Any]]) -> dict[str, An
     records.sort(key=lambda row: (row["source_type"], row["source_id"],
                                   row["faculty"]))
     complete = [row for row in records if row["complete_tuple"]]
+    eligible = [row for row in records if row["promotion_eligible"]]
     return {
         "schema": "phase4_partial_evidence_audit.v1",
         "required_dimensions": list(PHASE4_DIMENSIONS),
@@ -69,7 +76,7 @@ def audit_partial_evidence(sources: Iterable[Mapping[str, Any]]) -> dict[str, An
         "complete_tuple_count": len(complete),
         # This module is an observation boundary only.  Eligibility is reported
         # separately; no candidate is created or promoted here.
-        "promotion_eligible_count": len(complete),
+        "promotion_eligible_count": len(eligible),
         "promotion_count": 0,
         "records": records,
         "replay_deterministic": True,
@@ -88,27 +95,27 @@ def _graph_sources(agent, event) -> list[dict[str, Any]]:
         "evidence_for_event", "for_event",
     )
     bridge_nodes: set[Any] = {event}
-    for node in substrate.nodes():
-        if node in bridge_nodes or not substrate.has_node(node):
-            continue
-        linked = False
-        for relation in event_links:
-            try:
-                linked = node in inner.neighbours(event, relation) or event in inner.neighbours(node, relation)
-            except Exception:
-                linked = False
-            if linked:
-                break
-        if not linked:
-            continue
-        bridge_nodes.add(node)
+    # Read the exact incoming/outgoing adjacency sets rather than scanning
+    # every graph node and testing four relations in both directions for each
+    # event. This preserves the explicit-link boundary while making discovery
+    # proportional to the event's actual degree.
+    for relation in event_links:
+        try:
+            bridge_nodes.update(inner.neighbours(event, relation))
+        except Exception:
+            pass
+        try:
+            bridge_nodes.update(inner.in_neighbours(event, relation))
+        except Exception:
+            pass
 
     # Follow only explicit provenance edges from the event/manifold bridge.
     # This is a graph read, not a search for a convenient combination of
     # dimensions: each returned node remains the owner of its own attrs.
     evidence_relations = (
         "has_goal_evidence", "has_repair_evidence", "has_stance_evidence",
-        "has_residual_evidence", "proposes_candidate", "derived_from_evidence",
+        "has_residual_evidence", "has_partial_evidence",
+        "proposes_candidate", "derived_from_evidence",
     )
     direct_nodes = bridge_nodes - {event}
     provenance_bridges = set()

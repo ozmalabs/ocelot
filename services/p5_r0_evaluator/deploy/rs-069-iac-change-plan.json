@@ -1,0 +1,533 @@
+{
+  "schema": "P5R0RS069IaCChangePlanV1",
+  "classification": "repository_definition_only",
+  "status": "blocked_pending_master_approval",
+  "master_run": "P5-MASTER-001",
+  "runsheet_item": "RS-069",
+  "objective": "Define the next signed-environment execution as an ordered, review-only, rerunnable desired state. The generated diagnostic bundle may run only inside signed Confidential Space after self-custodied authority binding; this plan never claims an independent evaluator.",
+  "canonical_digest": {
+    "algorithm": "sha256",
+    "encoding": "canonical-json",
+    "implementation": "evaluation.p0a.canonical.digest"
+  },
+  "authority_contract": {
+    "custody": "self_custodied",
+    "authority_mode": "self_custodied_diagnostic",
+    "signed_environment": "Confidential Space",
+    "independent_evaluator_required": false,
+    "independent_evaluator_claim": false,
+    "external_authority_required": true,
+    "approval_source": "master_approval_and_verified_confidential_space_attestation",
+    "production_promotion_allowed": false
+  },
+  "source_bindings": {
+    "native_definition": "services/p5_r0_evaluator/deploy/p5-r0-native-deployment.json",
+    "bundle_definition": "services/p5_r0_evaluator/deploy/p5-r0-production-bundle.json",
+    "execution_request": "services/p5_r0_evaluator/deploy/p5-r0-signed-environment-execution-request.json",
+    "wip_policy_template": "services/p5_r0_evaluator/deploy/wip-provider-policy.cel.tmpl",
+    "authority_contract": "services/p5_r0_evaluator/deploy/p5-r0-authority-binding-contract.json",
+    "kms_contract": "services/p5_r0_evaluator/deploy/p5-r0-kms-lock-signing-contract.json",
+    "cloud_run_manifest": "services/p5_r0_evaluator/deploy/cloud-run.yaml",
+    "operation_1_approval_request": "services/p5_r0_evaluator/deploy/rs-069r6-operation-1-approval-request.json",
+    "deployment_renderer": "services/p5_r0_evaluator/deployments.py",
+    "native_validator": "services/p5_r0_evaluator/deploy/definition.py",
+    "artifact_index": "var/p5-r0-diagnostic-inputs/artifact-index.json"
+  },
+  "read_only_inventory": {
+    "classification": "read_only_local_inventory_non_production",
+    "production_claim": false,
+    "cloud_operations": [],
+    "generated_bundle": {
+      "root": "var/p5-r0-diagnostic-inputs",
+      "artifact_index_digest": "sha256:04a98e3e48685228fd68ea757de276fe1c1a7ce347bd027a2756a48595897768",
+      "manifest_digest": "sha256:190fe19fe7f70b181f11f0b375cf6241a2cc2c0c49abbf2b52f8ce8899b2f01a",
+      "private_store_digest": "sha256:0ec34adc958b2565aa24599be477c3e6b3488e83df9e8f1811715262ea7b55e1",
+      "task_set_digest": "sha256:725b59168b83b2305e76500774ddca6e0b59185cec3527bf2d6133e657c29aa7",
+      "control_commitment_digest": "sha256:ac9cefc8910d3cec2053259e5a053c7bdd34ed0e9381fe920a9b4b19878c5f58",
+      "unsigned_lock_digest": "sha256:4fc80599aa0cc99881983cdb1270720de6d5c3f99c47701cf471da409d29a3df"
+    },
+    "local_closure_observations": [
+      {
+        "source": "var/p5-r0-v3-local-preflight-audit/closure-status.json",
+        "classification": "workspace_only_preflight",
+        "image_digest": "sha256:3efba6b011fc810f378b6f4f9d4b73c03654d4c1f2f465930981b86654aaea50",
+        "runtime_digest": null,
+        "seccomp_digest": "sha256:cc374cf23846ce1f62f4dc807a8e2b8673c783c6f56cb475467621035d281e6c",
+        "closure_digest": "sha256:84c964c594a06f671357222a9c3bed470d9718424af61f8e8ad05f5b3a4bb383",
+        "usable_as_production_input": false
+      },
+      {
+        "source": "var/p5-r0-v3-complete-local/closure-status.json",
+        "classification": "workspace_only_preflight",
+        "image_digest": "sha256:cceda04a7eda8d71ab0d2bbbbcf5de6df5723e06c9d822b1132f6367c660ad53",
+        "runtime_digest": "sha256:bd8ad7e7798edd5a857476c33bbef463b8b60ca2db43d7feb77698a703060c84",
+        "seccomp_digest": "sha256:cc374cf23846ce1f62f4dc807a8e2b8673c783c6f56cb475467621035d281e6c",
+        "closure_digest": "sha256:f1c334f7d98fe4ac5097d23a9010fa7026226643fb67d0b8a9cd66970bf71a4b",
+        "usable_as_production_input": false
+      }
+    ]
+  },
+  "unknown_value_policy": {
+    "allowed_unresolved_values": [null, "REQUIRED_INPUT:*"],
+    "prohibited_fabrication": ["production identifiers", "attested claims", "authority signatures", "GCS generations", "Cloud Run revisions", "supervisor evidence", "task results"],
+    "local_observation_rule": "A local digest may be recorded only under read_only_inventory and must not satisfy a production input.",
+    "secret_rule": "No credentials, tokens, private keys, truth, or signed assertions may be stored in this plan."
+  },
+  "operations": [
+    {
+      "id": "bind_candidate_image_digest",
+      "order": 1,
+      "depends_on": [],
+      "desired_state_operation": "Bind the exact candidate Confidential Space image reference to one immutable sha256 digest in the existing p5-cs repository and propagate that digest to the WIP condition, authority claim contract, Cloud Run manifest, metadata, and execution request.",
+      "exact_required_inputs": [
+        {"name": "image_reference", "value": null, "source": "REQUIRED_INPUT:reviewed artifact-registry image reference", "format": "registry/repository/image@sha256:digest", "secret": false},
+        {"name": "candidate_image_digest", "value": null, "source": "REQUIRED_INPUT:registry digest resolved by reviewed image provenance", "format": "sha256:64 lowercase hex", "secret": false},
+        {"name": "image_provenance_digest", "value": null, "source": "REQUIRED_INPUT:reviewed build/provenance commitment", "format": "sha256:64 lowercase hex", "secret": false},
+        {"name": "target_project_id", "value": null, "source": "REQUIRED_INPUT:reviewed target project", "format": "GCP project ID", "secret": false},
+        {"name": "target_region", "value": null, "source": "REQUIRED_INPUT:reviewed Artifact Registry and Cloud Run region", "format": "GCP region", "secret": false},
+        {"name": "target_repository", "value": "p5-cs", "source": "RS-069R5 read-only observation: existing approved Artifact Registry repository", "format": "Artifact Registry repository", "secret": false}
+      ],
+      "preconditions": ["RS-040 native definition and RS-060 bundle validate in blocked mode without drift.", "The candidate repository is exactly the read-only-observed existing us-east1/p5-cs repository; the nonexistent us-east1/p5 repository is rejected.", "Candidate digest is obtained from the reviewed registry/provenance record, never inferred from a tag or local image.", "candidate_image_digest is not equal to either workspace-only local closure observation unless independently reviewed as the production artifact.", "Master approval for the new RS-069R6 operation-1 request is present; the failed RS-069 attempt approval is not reusable."],
+      "expected_postconditions": ["Every downstream desired-state reference uses the same exact candidate_image_digest.", "A tag-only image reference, mutable tag, or digest mismatch is rejected.", "No registry, image, VM, or deployment mutation is performed by this plan."],
+      "immutable_digests": [
+        {"name": "generated_artifact_index", "value": "sha256:04a98e3e48685228fd68ea757de276fe1c1a7ce347bd027a2756a48595897768", "source": "read_only_inventory.generated_bundle.artifact_index_digest", "classification": "diagnostic_input"},
+        {"name": "candidate_image_digest", "value": null, "source": "REQUIRED_INPUT:reviewed candidate image digest", "classification": "production_input"},
+        {"name": "target_project_digest", "value": null, "source": "operation.bind_candidate_image_digest.exact_required_inputs.target_project_id", "classification": "production_input"}
+      ],
+      "approval_gate": "APPROVAL_REQUIRED:master approves a new RS-069R6 operation-1 request for the exact p5-cs repository, candidate digest, and provenance; the failed APPROVAL-001 attempt is not reusable; no approval means no-op.",
+      "stop_conditions": ["Missing, malformed, mutable, or conflicting image digest.", "Digest is present only in local preflight inventory with no reviewed production provenance.", "Any attempt to push, pull, retag, create, or replace an image."],
+      "rollback_conditions": ["If downstream rendering observes a different image digest, discard the proposed render and restore the prior unmodified definition.", "If an approved IaC apply later creates a mismatched revision, halt execution and roll back through the approved IaC workflow; do not repair by direct mutation."],
+      "rerunnable": {"idempotency_key": "rs-069/bind-candidate-image-digest/{candidate_image_digest}", "existing_match": "no-op when the reviewed desired binding and digest already match", "drift": "fail closed on any existing mismatch", "writes": "none until separately approved"},
+      "mutation_boundary": {"mode": "review_only_no_execution", "apply_interface": "approved IaC workflow only", "commands": [], "direct_cloud_mutations": false}
+    },
+    {
+      "id": "correct_wip_provider_claim_mapping",
+      "order": 2,
+      "depends_on": ["bind_candidate_image_digest"],
+      "desired_state_operation": "Replace the observed incomplete WIP/provider mapping with the closed mapping and condition required by the attested token contract; keep token audience distinct from the provider resource.",
+      "exact_required_inputs": [
+        {"name": "wip_provider_resource", "value": null, "source": "REQUIRED_INPUT:canonical reviewed WIP provider resource", "format": "//iam.googleapis.com/projects/{number}/locations/global/workloadIdentityPools/{pool}/providers/{provider}", "secret": false},
+        {"name": "wip_token_audience", "value": "https://sts.googleapis.com", "source": "services/p5_r0_evaluator/deploy/rs-068-authority-binding-request.json", "format": "HTTPS audience", "secret": false},
+        {"name": "claim_paths", "value": {"audience": "aud", "nonce": "eat_nonce", "issued_at": "iat", "expires_at": "exp", "issuer": "iss", "subject": "sub", "image_digest": "submods.container.image_digest", "project_number": "submods.gce.project_number", "project_id": "submods.gce.project_id", "zone": "submods.gce.zone", "debug_state": "dbgstat", "tee": "swname", "hardware_model": "hwmodel", "secure_boot": "secboot", "workload": "submods.container.env.P5R0_EXPECTED_WORKLOAD", "smoke": "submods.container.env.P5R0_CONFIDENTIAL_SPACE_SMOKE"}, "source": "RS-068 claim contract", "format": "closed claim-path map", "secret": false},
+        {"name": "attested_project_zone_and_image", "value": null, "source": "REQUIRED_INPUT:claims from one real token issued by the exact candidate image", "format": "reviewed claim record", "secret": false}
+      ],
+      "preconditions": ["Exact provider resource and audience are separately identified; provider is never used as the token audience.", "Candidate image digest from operation 1 is available and appears in the condition.", "The RS-068 observed mapping omission is reviewed; no existing provider mutation is assumed.", "Master/security approval is present."],
+      "expected_postconditions": ["Mapping includes google.subject plus image, project ID/number, zone, debug state, TEE, hardware model, secure boot, workload, and smoke attributes.", "Condition binds issuer, audience, image digest, project, zone, debug-disabled, Confidential Space TEE, hardware model, secure boot, evaluator workload, smoke=false, and the attested subject prefix.", "Rendered policy is closed and contains no REPLACE_, PROJECT_, POOL, PROVIDER, LOCATION, VERSION, or REQUIRED_INPUT marker."],
+      "immutable_digests": [
+        {"name": "wip_policy_template_digest", "value": null, "source": "REQUIRED_INPUT:reviewed source verification digest for wip-provider-policy.cel.tmpl", "classification": "source_binding"},
+        {"name": "candidate_image_digest", "value": null, "source": "operation.bind_candidate_image_digest", "classification": "production_input"},
+        {"name": "provider_resource_digest", "value": null, "source": "operation.correct_wip_provider_claim_mapping.exact_required_inputs.wip_provider_resource", "classification": "production_input"},
+        {"name": "sts_audience_digest", "value": "sha256:bea837e48bc096387db88f6ec11441669756e8877fdac28f86fb86d2ef3be89c", "source": "operation.correct_wip_provider_claim_mapping.exact_required_inputs.wip_token_audience", "classification": "production_input"},
+        {"name": "zone_digest", "value": null, "source": "operation.correct_wip_provider_claim_mapping.exact_required_inputs.attested_project_zone_and_image", "classification": "production_input"},
+        {"name": "claim_paths_digest", "value": "sha256:c74680dc29fd2d16b74c4e8e9e918b98bc9ad3fe0aba2f7cacd730ea2f31f092", "source": "operation.correct_wip_provider_claim_mapping.exact_required_inputs.claim_paths", "classification": "source_binding"}
+      ],
+      "approval_gate": "APPROVAL_REQUIRED:security/master approves the exact provider, mapping, condition, and claim-path record; no approval means no-op.",
+      "stop_conditions": ["Provider resource is noncanonical, missing, or confused with the token audience.", "Any required claim path or condition term is absent, unknown, or derived from a local test token.", "Any direct IAM/WIP API call is proposed by the plan."],
+      "rollback_conditions": ["If rendered mapping or condition differs from the approved contract, discard the render and retain the prior policy definition.", "If an applied provider state cannot be proven to match the approved fingerprint, stop and revert through approved IaC state; never broaden the condition to recover."],
+      "rerunnable": {"idempotency_key": "rs-069/wip-claim-mapping/{wip_provider_resource}/{candidate_image_digest}", "existing_match": "no-op when provider desired state fingerprint matches", "drift": "fail closed on mismatch or unknown remote state", "writes": "none until separately approved"},
+      "mutation_boundary": {"mode": "review_only_no_execution", "apply_interface": "approved IaC workflow only", "commands": [], "direct_cloud_mutations": false}
+    },
+    {
+      "id": "bind_self_custodied_authority_and_kms",
+      "order": 3,
+      "depends_on": ["correct_wip_provider_claim_mapping"],
+      "desired_state_operation": "Bind the self-custodied authority metadata to one reviewed Ed25519 KMS key version and prepare, but do not execute, the exact unsigned-lock signing request.",
+      "exact_required_inputs": [
+        {"name": "authority_id", "value": null, "source": "REQUIRED_INPUT:reviewed self-custodied authority ID", "format": "closed P5R0PublicAuthorityV4 authority ID", "secret": false},
+        {"name": "key_id", "value": null, "source": "REQUIRED_INPUT:reviewed evaluator key ID", "format": "authority key ID", "secret": false},
+        {"name": "kms_key_version", "value": null, "source": "REQUIRED_INPUT:reviewed evaluator KMS EC_SIGN_ED25519 key version", "format": "projects/.../cryptoKeyVersions/{positive integer}", "secret": false},
+        {"name": "public_key", "value": null, "source": "REQUIRED_INPUT:reviewed 32-byte Ed25519 public key", "format": "canonical base64url", "secret": false},
+        {"name": "public_key_digest", "value": null, "source": "REQUIRED_INPUT:sha256 of canonical public-key representation", "format": "sha256:64 lowercase hex", "secret": false},
+        {"name": "authority_transport_binding", "value": null, "source": "REQUIRED_INPUT:approved provider/audience/attestation transport binding", "format": "P5R0AuthorityTransportV1", "secret": false}
+      ],
+      "preconditions": ["Unsigned lock request digest is exactly sha256:4fc80599aa0cc99881983cdb1270720de6d5c3f99c47701cf471da409d29a3df.", "Authority and KMS public key digest agree; private key material is absent.", "The binding is self-custodied and diagnostic/non-release; no independent evaluator is required or claimed.", "Confidential Space approval is absent at plan time and must be supplied separately before any signing boundary."],
+      "expected_postconditions": ["Authority binding record is closed and binds authority ID, key ID, key version, public-key digest, purpose, and binding digest.", "The exact unsigned lock request remains unchanged until a separately approved signed-environment operation.", "No KMS public-key read, signing call, signature, authority promotion, or release lock is performed by this plan."],
+      "immutable_digests": [
+        {"name": "unsigned_lock_digest", "value": "sha256:4fc80599aa0cc99881983cdb1270720de6d5c3f99c47701cf471da409d29a3df", "source": "var/p5-r0-diagnostic-inputs/public/lock-signing-request.json", "classification": "diagnostic_input"},
+        {"name": "lock_request_digest", "value": "sha256:922085ca833426751f89610dc2274d10f82efe758ee3b92e9d6c9441db20292d", "source": "var/p5-r0-diagnostic-inputs/public/lock-signing-request.json", "classification": "diagnostic_input"},
+        {"name": "kms_key_version", "value": null, "source": "REQUIRED_INPUT:reviewed KMS key version", "classification": "production_input"},
+        {"name": "authority_binding_digest", "value": null, "source": "REQUIRED_INPUT:canonical authority/KMS binding digest", "classification": "production_input"}
+      ],
+      "approval_gate": "APPROVAL_REQUIRED:master approves self-custodied authority/KMS binding and separately approves any future Confidential Space signing request; no approval means no-op.",
+      "stop_conditions": ["Key version is not a single EC_SIGN_ED25519 version, public key does not match, or private key material appears.", "Unsigned lock or request digest changes.", "Any independent evaluator authority, local signature, or production promotion is introduced."],
+      "rollback_conditions": ["If binding digest or public-key verification fails, discard the binding proposal and restore null/unresolved fields.", "If signing is ever approved but response verification fails, retain the unsigned request, reject the response, and do not promote or retry with a different key."],
+      "rerunnable": {"idempotency_key": "rs-069/authority-kms/{unsigned_lock_digest}/{authority_binding_digest}", "existing_match": "no-op when exact binding and unsigned request match", "drift": "fail closed on any key, authority, or lock drift", "writes": "none until separately approved"},
+      "mutation_boundary": {"mode": "review_only_no_execution", "apply_interface": "approved signed-environment workflow only", "commands": [], "direct_cloud_mutations": false}
+    },
+    {
+      "id": "ingest_generated_bundle_to_gcs",
+      "order": 4,
+      "depends_on": ["bind_self_custodied_authority_and_kms"],
+      "desired_state_operation": "Declare create-only, generation-checked GCS objects for the generated diagnostic bundle, preserving the private case store as private and keeping object upload unapplied.",
+      "exact_required_inputs": [
+        {"name": "bucket", "value": null, "source": "REQUIRED_INPUT:reviewed private GCS bucket", "format": "GCS bucket name", "secret": false},
+        {"name": "prefix", "value": null, "source": "REQUIRED_INPUT:reviewed run prefix below the approved bucket", "format": "relative object prefix", "secret": false},
+        {"name": "run_id", "value": null, "source": "REQUIRED_INPUT:approved unique run ID", "format": "canonical run identifier", "secret": false},
+        {"name": "artifact_index", "value": "var/p5-r0-diagnostic-inputs/artifact-index.json", "source": "read_only_inventory.generated_bundle", "format": "canonical P5R0DiagnosticArtifactIndexV1", "secret": false},
+        {"name": "object_generation_preconditions", "value": "create-only-or-exact-generation-match", "source": "services/p5_r0_evaluator/deploy/confidential-space-lock.md", "format": "generation-checked object contract", "secret": false}
+      ],
+      "preconditions": ["Artifact index and all 11 listed artifacts reproduce exactly from the committed generator; private store remains outside public worker output.", "Bucket and prefix are reviewed, private, and within the capability boundary; no list/delete/bucket-admin capability is assumed.", "For every object, destination absent is acceptable; an existing object is acceptable only when exact digest and approved generation state match.", "Master approval for durable ingestion is present."],
+      "expected_postconditions": ["The desired object set contains exactly the generated artifact index entries under the approved bucket/prefix/run namespace.", "Public objects retain their recorded digests; private-truth/case-store.json is private and never exposed to the worker.", "Any later apply is create-only or generation-checked and rerunnable; this plan itself performs no upload."],
+      "immutable_digests": [
+        {"name": "artifact_index_digest", "value": "sha256:04a98e3e48685228fd68ea757de276fe1c1a7ce347bd027a2756a48595897768", "source": "var/p5-r0-diagnostic-inputs/artifact-index.json", "classification": "diagnostic_input"},
+        {"name": "manifest_digest", "value": "sha256:190fe19fe7f70b181f11f0b375cf6241a2cc2c0c49abbf2b52f8ce8899b2f01a", "source": "artifact index", "classification": "diagnostic_input"},
+        {"name": "private_store_digest", "value": "sha256:0ec34adc958b2565aa24599be477c3e6b3488e83df9e8f1811715262ea7b55e1", "source": "artifact index; private", "classification": "diagnostic_input"},
+        {"name": "task_set_digest", "value": "sha256:725b59168b83b2305e76500774ddca6e0b59185cec3527bf2d6133e657c29aa7", "source": "artifact index", "classification": "diagnostic_input"},
+        {"name": "bucket_prefix", "value": null, "source": "REQUIRED_INPUT:approved GCS destination", "classification": "production_input"}
+      ],
+      "approval_gate": "APPROVAL_REQUIRED:master approves bucket, prefix, private-truth handling, and create-only ingestion; no approval means no-op.",
+      "stop_conditions": ["Bucket/prefix is missing, public, outside the reviewed project, or cannot guarantee create-only/generation checks.", "Any object digest differs, an object would be overwritten without exact generation precondition, or private truth would be public.", "Any GCS upload, delete, list, or credential operation is attempted by local validation."],
+      "rollback_conditions": ["Before apply, discard the proposed object plan on any digest/path mismatch.", "After an approved apply, quarantine or remove only resources explicitly owned by the approved IaC state; preserve required evidence and use generation checks. Unknown ownership or generation is a hard stop, not a delete authorization."],
+      "rerunnable": {"idempotency_key": "rs-069/gcs-bundle/{run_id}/{artifact_index_digest}", "existing_match": "no-op when every object digest and generation precondition matches", "drift": "fail closed on any object/path/visibility mismatch", "writes": "none until separately approved"},
+      "mutation_boundary": {"mode": "review_only_no_execution", "apply_interface": "approved IaC workflow only", "commands": [], "direct_cloud_mutations": false}
+    },
+    {
+      "id": "configure_cloud_run_and_confidential_space",
+      "order": 5,
+      "depends_on": ["ingest_generated_bundle_to_gcs"],
+      "desired_state_operation": "Render the existing deployment policy and Cloud Run/Confidential Space desired state with immutable image/runtime/closure commitments, internal ingress, and locked attestation capability boundaries.",
+      "exact_required_inputs": [
+        {"name": "service_name", "value": "p5-v3-evaluator", "source": "services/p5_r0_evaluator/deploy/cloud-run.yaml", "format": "Cloud Run service name", "secret": false},
+        {"name": "project_id", "value": null, "source": "REQUIRED_INPUT:reviewed target project", "format": "GCP project ID", "secret": false},
+        {"name": "project_number", "value": null, "source": "REQUIRED_INPUT:reviewed target project number", "format": "numeric project number", "secret": false},
+        {"name": "region", "value": null, "source": "REQUIRED_INPUT:reviewed region", "format": "GCP region", "secret": false},
+        {"name": "target_repository", "value": "p5-cs", "source": "RS-069R5 read-only observation: existing approved Artifact Registry repository", "format": "Artifact Registry repository", "secret": false},
+        {"name": "zone", "value": null, "source": "REQUIRED_INPUT:reviewed Confidential Space zone", "format": "GCP zone", "secret": false},
+        {"name": "candidate_image_digest", "value": null, "source": "operation.bind_candidate_image_digest", "format": "sha256:64 lowercase hex", "secret": false},
+        {"name": "runtime_digest", "value": null, "source": "REQUIRED_INPUT:reviewed crun runtime digest", "format": "sha256:64 lowercase hex", "secret": false},
+        {"name": "resource_profile_digest", "value": null, "source": "REQUIRED_INPUT:reviewed resource profile digest", "format": "sha256:64 lowercase hex", "secret": false},
+        {"name": "seccomp_and_closure_digests", "value": null, "source": "REQUIRED_INPUT:reviewed seccomp, syscall, host, argv, and closure digests", "format": "closed digest map", "secret": false},
+        {"name": "authority_and_wip_bindings", "value": null, "source": "operations 2 and 3", "format": "reviewed binding records", "secret": false}
+      ],
+      "preconditions": ["Operations 1-4 have approved, mutually consistent desired inputs.", "Existing renderer is services.p5_r0_evaluator.deployments.render_deployment and local preflight_deployment passes with the complete reviewed policy.", "Cloud Run remains internal ingress, gen2, maxScale=1, concurrency=1, timeout=30, immutable image, and capability service account is exact/reviewed.", "Confidential Space configuration contains no secrets and remains locked until attestation, STS/provider exchange, and bounded capability construction succeed."],
+      "expected_postconditions": ["Local renderer emits metadata, CEL, VM, and Containerfile artifacts with identical digest bindings and no unresolved markers.", "Desired Cloud Run state uses internal ingress and immutable image; desired Confidential Space state uses SEV, approved zone, network none, pull never, read-only/drop-all closure, and fixed resource profile.", "No Cloud Run deploy, VM create, IAM change, image push, credential generation, KMS, GCS, FreeTSA, or task execution occurs."],
+      "immutable_digests": [
+        {"name": "native_definition_digest", "value": null, "source": "REQUIRED_INPUT:source verification digest for p5-r0-native-deployment.json", "classification": "source_binding"},
+        {"name": "renderer_digest", "value": null, "source": "REQUIRED_INPUT:source verification digest for deployments.py", "classification": "source_binding"},
+        {"name": "candidate_image_digest", "value": null, "source": "operation.bind_candidate_image_digest", "classification": "production_input"},
+        {"name": "project_digest", "value": null, "source": "operation.configure_cloud_run_and_confidential_space.exact_required_inputs.project_id", "classification": "production_input"},
+        {"name": "zone_digest", "value": null, "source": "operation.configure_cloud_run_and_confidential_space.exact_required_inputs.zone", "classification": "production_input"},
+        {"name": "capability_grants_digest", "value": null, "source": "REQUIRED_INPUT:approved Confidential Space capability grants", "classification": "production_input"},
+        {"name": "runtime_digest", "value": null, "source": "REQUIRED_INPUT:reviewed runtime digest", "classification": "production_input"},
+        {"name": "closure_digest", "value": null, "source": "REQUIRED_INPUT:reviewed native closure digest", "classification": "production_input"}
+      ],
+      "approval_gate": "APPROVAL_REQUIRED:master approves rendered desired state and separately authorizes the approved IaC workflow; no approval means no-op.",
+      "stop_conditions": ["Any unresolved marker, mutable image, digest mismatch, public ingress, expanded capability, unexpected region/zone, or renderer drift.", "Any request to apply Cloud Run, create a VM, alter IAM, or access credentials outside the approved IaC workflow.", "Confidential Space startup cannot prove exact claims, provider, image, project, zone, debug-disabled, TEE, secure boot, hardware, and workload."],
+      "rollback_conditions": ["Before apply, discard rendered artifacts and restore unresolved desired-state inputs on any preflight failure.", "After approved apply, restore the last approved revision/state only through approved IaC with immutable revision and generation checks; halt if prior state is not known."],
+      "rerunnable": {"idempotency_key": "rs-069/runtime/{service_name}/{candidate_image_digest}/{closure_digest}", "existing_match": "no-op when rendered desired state and revision fingerprint match", "drift": "fail closed on remote drift or unknown revision", "writes": "local render only; cloud apply requires separate approval"},
+      "mutation_boundary": {"mode": "review_only_no_execution", "apply_interface": "approved IaC workflow only", "commands": [], "direct_cloud_mutations": false}
+    },
+    {
+      "id": "prepare_supervisor_and_run_request",
+      "order": 6,
+      "depends_on": ["configure_cloud_run_and_confidential_space"],
+      "desired_state_operation": "Prepare one idempotent supervisor/run request bound to the exact diagnostic inputs, signed-environment approval, runtime commitments, and self-custodied authority; do not submit tasks or execute the run.",
+      "exact_required_inputs": [
+        {"name": "run_id", "value": null, "source": "REQUIRED_INPUT:approved unique run ID", "format": "canonical run identifier", "secret": false},
+        {"name": "supervisor_id_and_policy", "value": null, "source": "REQUIRED_INPUT:approved supervisor identity and RS050 policy", "format": "closed supervisor contract", "secret": false},
+        {"name": "signed_environment_approval", "value": null, "source": "REQUIRED_INPUT:verified Confidential Space approval record; never locally authored", "format": "P5R0ConfidentialSpaceApprovalV1", "secret": false},
+        {"name": "signed_lock_or_approved_signing_response", "value": null, "source": "REQUIRED_INPUT:approved response to exact unsigned lock request", "format": "P5R0KMSLockSigningResponseV1", "secret": false},
+        {"name": "task_release_authorization", "value": null, "source": "REQUIRED_INPUT:master-approved task release; absent in this plan", "format": "reviewed authorization record", "secret": false},
+        {"name": "runtime_commitments", "value": null, "source": "operations 1 and 5", "format": "immutable digest map", "secret": false}
+      ],
+      "preconditions": ["All prior desired-state operations are approved and their exact fingerprints are available.", "Supervisor contract validates independently and can fail closed on timeout, descendants, invalid receipts, resource exhaustion, and rollback impasse.", "Self-custodied authority is the only authority claim; no independent evaluator claim, timing certification, or positive result claim is enabled.", "Task release and execution approval are not present in the checked-in plan."],
+      "expected_postconditions": ["A canonical request can be rendered locally with a stable idempotency key and exact input digests.", "Request is blocked until separate master approval and verified Confidential Space approval; no task, supervisor, or worker is invoked.", "Any future evidence remains diagnostic and must state what was and was not observed."],
+      "immutable_digests": [
+        {"name": "artifact_index_digest", "value": "sha256:04a98e3e48685228fd68ea757de276fe1c1a7ce347bd027a2756a48595897768", "source": "read_only_inventory.generated_bundle", "classification": "diagnostic_input"},
+        {"name": "unsigned_lock_digest", "value": "sha256:4fc80599aa0cc99881983cdb1270720de6d5c3f99c47701cf471da409d29a3df", "source": "read_only_inventory.generated_bundle", "classification": "diagnostic_input"},
+        {"name": "supervisor_contract_digest", "value": null, "source": "REQUIRED_INPUT:approved RS050 supervisor contract digest", "classification": "production_input"},
+        {"name": "attestation_evidence_digest", "value": null, "source": "operation.prepare_supervisor_and_run_request.exact_required_inputs.signed_environment_approval", "classification": "production_input"},
+        {"name": "run_request_digest", "value": null, "source": "REQUIRED_INPUT:canonical local run request digest", "classification": "derived_after_approval"}
+      ],
+      "approval_gate": "APPROVAL_REQUIRED:master separately approves run request and task release; signed-environment attestation must be independently verified; no approval means no-op.",
+      "stop_conditions": ["Missing or locally authored approval, signature, supervisor identity, task release, or runtime commitment.", "Any request to execute a task, invoke the supervisor, call an external timing provider, or fabricate evidence.", "Any result would imply independent evaluator authority or a production claim."],
+      "rollback_conditions": ["Before submission, discard the request on any digest or approval mismatch.", "After an approved run, supervisor timeout/invalid receipt/rollback impasse requires fail-closed termination and approved cleanup; never retry with altered inputs."],
+      "rerunnable": {"idempotency_key": "rs-069/run/{run_id}/{artifact_index_digest}/{unsigned_lock_digest}", "existing_match": "no-op/replay exact canonical request only; conflicting reuse fails", "drift": "fail closed on any request, approval, or runtime drift", "writes": "none until separately approved"},
+      "mutation_boundary": {"mode": "review_only_no_execution", "apply_interface": "approved signed-environment run workflow only", "commands": [], "direct_cloud_mutations": false}
+    },
+    {
+      "id": "cleanup_or_rollback",
+      "order": 7,
+      "depends_on": ["prepare_supervisor_and_run_request"],
+      "desired_state_operation": "Define an ownership- and generation-checked cleanup/rollback path for the proposed revision, VM/run namespace, and temporary state; preserve required diagnostic evidence and never broaden deletion authority.",
+      "exact_required_inputs": [
+        {"name": "owned_resource_inventory", "value": null, "source": "REQUIRED_INPUT:approved post-apply resource inventory with owner and generation", "format": "closed resource fingerprint map", "secret": false},
+        {"name": "prior_approved_state", "value": null, "source": "REQUIRED_INPUT:prior IaC state/revision fingerprint", "format": "immutable desired-state fingerprint", "secret": false},
+        {"name": "run_id", "value": null, "source": "REQUIRED_INPUT:approved run ID", "format": "canonical run identifier", "secret": false},
+        {"name": "retention_and_evidence_policy", "value": null, "source": "REQUIRED_INPUT:master-approved diagnostic retention policy", "format": "closed retention policy", "secret": false}
+      ],
+      "preconditions": ["Cleanup is invoked only after an explicit abort, terminal run, failed precondition, or approved rollback decision.", "Every resource is proven owned by this plan and matches the approved generation/fingerprint; unknown resources are never touched.", "Required diagnostic evidence and private-truth retention rules are known before cleanup; no delete is inferred from absence.", "A prior approved state exists before rollback; otherwise stop without mutation."],
+      "expected_postconditions": ["Failed or superseded resources are disabled/restored/retained according to approved IaC state, with no dangling evaluator capability or public ingress.", "Private truth remains private; required diagnostic records remain retained or are disposed only under explicit approved policy.", "Cleanup is repeatable: already-clean state is a no-op, drift or unknown ownership is a hard stop, and no direct cloud command is embedded."],
+      "immutable_digests": [
+        {"name": "approved_plan_fingerprint", "value": null, "source": "REQUIRED_INPUT:approved RS-069 desired-state fingerprint", "classification": "production_input"},
+        {"name": "prior_state_fingerprint", "value": null, "source": "REQUIRED_INPUT:prior approved IaC state fingerprint", "classification": "production_input"},
+        {"name": "run_request_digest", "value": null, "source": "operation.prepare_supervisor_and_run_request", "classification": "derived_after_approval"}
+      ],
+      "approval_gate": "APPROVAL_REQUIRED:master approves cleanup/rollback scope and retention; no approval means no-op.",
+      "stop_conditions": ["Ownership, generation, prior state, retention, or rollback target is unknown.", "Cleanup would touch resources outside the approved run namespace or delete required evidence.", "Any direct delete/rollback API or gcloud mutation is proposed by local validation."],
+      "rollback_conditions": ["If cleanup cannot prove exact ownership and generation, do nothing and escalate to master.", "If rollback target is unavailable or differs from the approved prior fingerprint, leave resources locked/disabled and report an impasse."],
+      "rerunnable": {"idempotency_key": "rs-069/cleanup/{run_id}/{approved_plan_fingerprint}", "existing_match": "no-op when owned desired cleanup state already matches", "drift": "fail closed on unknown ownership/generation", "writes": "none until separately approved"},
+      "mutation_boundary": {"mode": "review_only_no_execution", "apply_interface": "approved IaC workflow only", "commands": [], "direct_cloud_mutations": false}
+    }
+  ],
+  "operation_records": [
+    {
+      "schema": "P5R0RS069OperationRecordV1",
+      "operation_id": "bind_candidate_image_digest",
+      "dependency_ids": [],
+      "input_digest_map": {
+        "generated_artifact_index": "sha256:04a98e3e48685228fd68ea757de276fe1c1a7ce347bd027a2756a48595897768",
+        "candidate_image_digest": null,
+        "target_project_digest": null
+      },
+      "preconditions": {"dependencies_satisfied": false, "inputs_resolved": false, "approval_present": false, "remote_state_verified": false},
+      "postconditions": {"desired_state_match": false, "rendered": false, "mutation_performed": false},
+      "approval_record_ref": null,
+      "approval_record_digest": null,
+      "idempotency_key": "rs-069/bind-candidate-image-digest/{candidate_image_digest}",
+      "drift_policy": "fail_closed",
+      "rollback_policy": "no_mutation_without_approval",
+      "enabled": false,
+      "commands": [],
+      "resource_state": {
+        "addresses": ["rs069.image_binding"],
+        "ownership": "rs-069",
+        "desired_attributes": {"image_reference": null, "image_digest": null, "status": "blocked"},
+        "observed_fingerprints": {},
+        "state_backend": {"kind": "repository_only", "location": null, "lock_required": true},
+        "change_policy": {"create": "create_only", "update": "generation_checked", "delete": "forbidden"}
+      }
+    },
+    {
+      "schema": "P5R0RS069OperationRecordV1",
+      "operation_id": "correct_wip_provider_claim_mapping",
+      "dependency_ids": ["bind_candidate_image_digest"],
+      "input_digest_map": {"wip_policy_template_digest": null, "candidate_image_digest": null, "provider_resource_digest": null, "sts_audience_digest": "sha256:bea837e48bc096387db88f6ec11441669756e8877fdac28f86fb86d2ef3be89c", "zone_digest": null, "claim_paths_digest": "sha256:c74680dc29fd2d16b74c4e8e9e918b98bc9ad3fe0aba2f7cacd730ea2f31f092"},
+      "preconditions": {"dependencies_satisfied": false, "inputs_resolved": false, "approval_present": false, "remote_state_verified": false},
+      "postconditions": {"desired_state_match": false, "rendered": false, "mutation_performed": false},
+      "approval_record_ref": null,
+      "approval_record_digest": null,
+      "idempotency_key": "rs-069/wip-claim-mapping/{wip_provider_resource}/{candidate_image_digest}",
+      "drift_policy": "fail_closed",
+      "rollback_policy": "no_mutation_without_approval",
+      "enabled": false,
+      "commands": [],
+      "resource_state": {
+        "addresses": ["rs069.wip_provider_claim_mapping"],
+        "ownership": "rs-069",
+        "desired_attributes": {"provider_resource": null, "token_audience": "https://sts.googleapis.com", "condition_digest": null, "status": "blocked"},
+        "observed_fingerprints": {},
+        "state_backend": {"kind": "repository_only", "location": null, "lock_required": true},
+        "change_policy": {"create": "create_only", "update": "generation_checked", "delete": "forbidden"}
+      }
+    },
+    {
+      "schema": "P5R0RS069OperationRecordV1",
+      "operation_id": "bind_self_custodied_authority_and_kms",
+      "dependency_ids": ["correct_wip_provider_claim_mapping"],
+      "input_digest_map": {
+        "unsigned_lock_digest": "sha256:4fc80599aa0cc99881983cdb1270720de6d5c3f99c47701cf471da409d29a3df",
+        "lock_request_digest": "sha256:922085ca833426751f89610dc2274d10f82efe758ee3b92e9d6c9441db20292d",
+        "kms_key_version": null,
+        "authority_binding_digest": null
+      },
+      "preconditions": {"dependencies_satisfied": false, "inputs_resolved": false, "approval_present": false, "remote_state_verified": false},
+      "postconditions": {"desired_state_match": false, "rendered": false, "mutation_performed": false},
+      "approval_record_ref": null,
+      "approval_record_digest": null,
+      "idempotency_key": "rs-069/authority-kms/{unsigned_lock_digest}/{authority_binding_digest}",
+      "drift_policy": "fail_closed",
+      "rollback_policy": "no_mutation_without_approval",
+      "enabled": false,
+      "commands": [],
+      "resource_state": {
+        "addresses": ["rs069.self_custodied_authority_binding", "rs069.unsigned_lock_request"],
+        "ownership": "rs-069",
+        "desired_attributes": {"authority_id": null, "kms_key_version": null, "unsigned_lock_digest": "sha256:4fc80599aa0cc99881983cdb1270720de6d5c3f99c47701cf471da409d29a3df", "signature": null, "status": "blocked"},
+        "observed_fingerprints": {},
+        "state_backend": {"kind": "repository_only", "location": null, "lock_required": true},
+        "change_policy": {"create": "create_only", "update": "generation_checked", "delete": "forbidden"}
+      }
+    },
+    {
+      "schema": "P5R0RS069OperationRecordV1",
+      "operation_id": "ingest_generated_bundle_to_gcs",
+      "dependency_ids": ["bind_self_custodied_authority_and_kms"],
+      "input_digest_map": {
+        "artifact_index_digest": "sha256:04a98e3e48685228fd68ea757de276fe1c1a7ce347bd027a2756a48595897768",
+        "manifest_digest": "sha256:190fe19fe7f70b181f11f0b375cf6241a2cc2c0c49abbf2b52f8ce8899b2f01a",
+        "private_store_digest": "sha256:0ec34adc958b2565aa24599be477c3e6b3488e83df9e8f1811715262ea7b55e1",
+        "task_set_digest": "sha256:725b59168b83b2305e76500774ddca6e0b59185cec3527bf2d6133e657c29aa7",
+        "bucket_prefix": null
+      },
+      "preconditions": {"dependencies_satisfied": false, "inputs_resolved": false, "approval_present": false, "remote_state_verified": false},
+      "postconditions": {"desired_state_match": false, "rendered": false, "mutation_performed": false},
+      "approval_record_ref": null,
+      "approval_record_digest": null,
+      "idempotency_key": "rs-069/gcs-bundle/{run_id}/{artifact_index_digest}",
+      "drift_policy": "fail_closed",
+      "rollback_policy": "no_mutation_without_approval",
+      "enabled": false,
+      "commands": [],
+      "resource_state": {
+        "addresses": ["rs069.gcs_object_set"],
+        "ownership": "rs-069",
+        "desired_attributes": {"bucket": null, "prefix": null, "object_count": 11, "visibility_policy": "private_truth_private", "upload_state": "not_uploaded"},
+        "observed_fingerprints": {},
+        "state_backend": {"kind": "repository_only", "location": null, "lock_required": true},
+        "change_policy": {"create": "create_only", "update": "generation_checked", "delete": "forbidden"}
+      }
+    },
+    {
+      "schema": "P5R0RS069OperationRecordV1",
+      "operation_id": "configure_cloud_run_and_confidential_space",
+      "dependency_ids": ["ingest_generated_bundle_to_gcs"],
+      "input_digest_map": {"native_definition_digest": null, "renderer_digest": null, "candidate_image_digest": null, "project_digest": null, "zone_digest": null, "capability_grants_digest": null, "runtime_digest": null, "closure_digest": null},
+      "preconditions": {"dependencies_satisfied": false, "inputs_resolved": false, "approval_present": false, "remote_state_verified": false},
+      "postconditions": {"desired_state_match": false, "rendered": false, "mutation_performed": false},
+      "approval_record_ref": null,
+      "approval_record_digest": null,
+      "idempotency_key": "rs-069/runtime/{service_name}/{candidate_image_digest}/{closure_digest}",
+      "drift_policy": "fail_closed",
+      "rollback_policy": "no_mutation_without_approval",
+      "enabled": false,
+      "commands": [],
+      "resource_state": {
+        "addresses": ["rs069.cloud_run_service", "rs069.confidential_space_runtime"],
+        "ownership": "rs-069",
+        "desired_attributes": {"service_name": "p5-v3-evaluator", "image_digest": null, "ingress": "internal", "network": "none", "status": "blocked"},
+        "observed_fingerprints": {},
+        "state_backend": {"kind": "repository_only", "location": null, "lock_required": true},
+        "change_policy": {"create": "create_only", "update": "generation_checked", "delete": "forbidden"}
+      }
+    },
+    {
+      "schema": "P5R0RS069OperationRecordV1",
+      "operation_id": "prepare_supervisor_and_run_request",
+      "dependency_ids": ["configure_cloud_run_and_confidential_space"],
+      "input_digest_map": {"artifact_index_digest": "sha256:04a98e3e48685228fd68ea757de276fe1c1a7ce347bd027a2756a48595897768", "unsigned_lock_digest": "sha256:4fc80599aa0cc99881983cdb1270720de6d5c3f99c47701cf471da409d29a3df", "supervisor_contract_digest": null, "attestation_evidence_digest": null, "run_request_digest": null},
+      "preconditions": {"dependencies_satisfied": false, "inputs_resolved": false, "approval_present": false, "remote_state_verified": false},
+      "postconditions": {"desired_state_match": false, "rendered": false, "mutation_performed": false},
+      "approval_record_ref": null,
+      "approval_record_digest": null,
+      "idempotency_key": "rs-069/run/{run_id}/{artifact_index_digest}/{unsigned_lock_digest}",
+      "drift_policy": "fail_closed",
+      "rollback_policy": "no_mutation_without_approval",
+      "enabled": false,
+      "commands": [],
+      "resource_state": {
+        "addresses": ["rs069.supervisor_run_request"],
+        "ownership": "rs-069",
+        "desired_attributes": {"run_id": null, "task_release": null, "submission_state": "not_submitted", "status": "blocked"},
+        "observed_fingerprints": {},
+        "state_backend": {"kind": "repository_only", "location": null, "lock_required": true},
+        "change_policy": {"create": "create_only", "update": "generation_checked", "delete": "forbidden"}
+      }
+    },
+    {
+      "schema": "P5R0RS069OperationRecordV1",
+      "operation_id": "cleanup_or_rollback",
+      "dependency_ids": ["prepare_supervisor_and_run_request"],
+      "input_digest_map": {"approved_plan_fingerprint": null, "prior_state_fingerprint": null, "run_request_digest": null},
+      "preconditions": {"dependencies_satisfied": false, "inputs_resolved": false, "approval_present": false, "remote_state_verified": false},
+      "postconditions": {"desired_state_match": false, "rendered": false, "mutation_performed": false},
+      "approval_record_ref": null,
+      "approval_record_digest": null,
+      "idempotency_key": "rs-069/cleanup/{run_id}/{approved_plan_fingerprint}",
+      "drift_policy": "fail_closed",
+      "rollback_policy": "no_mutation_without_approval",
+      "enabled": false,
+      "commands": [],
+      "resource_state": {
+        "addresses": ["rs069.cleanup_scope"],
+        "ownership": "rs-069",
+        "desired_attributes": {"owned_only": true, "prior_state_fingerprint": null, "status": "blocked"},
+        "observed_fingerprints": {},
+        "state_backend": {"kind": "repository_only", "location": null, "lock_required": true},
+        "change_policy": {"create": "create_only", "update": "generation_checked", "delete": "forbidden"}
+      }
+    }
+  ],
+  "approval_gate_records": [
+    {"schema":"P5R0RS069ApprovalGateV1","operation_id":"bind_candidate_image_digest","plan_digest":"sha256:914091d6a8cb46a10853e1daea929d140acd413dc0f31ce8db7c496fae4db96a","input_digest_map":{"generated_artifact_index":"sha256:04a98e3e48685228fd68ea757de276fe1c1a7ce347bd027a2756a48595897768","candidate_image_digest":null,"target_project_digest":null},"approval_record_ref":null,"approval_record_digest":null,"master_approved":false,"user_approved":false,"approved":false,"enabled":false},
+    {"schema":"P5R0RS069ApprovalGateV1","operation_id":"correct_wip_provider_claim_mapping","plan_digest":"sha256:914091d6a8cb46a10853e1daea929d140acd413dc0f31ce8db7c496fae4db96a","input_digest_map":{"wip_policy_template_digest":null,"candidate_image_digest":null,"provider_resource_digest":null,"sts_audience_digest":"sha256:bea837e48bc096387db88f6ec11441669756e8877fdac28f86fb86d2ef3be89c","zone_digest":null,"claim_paths_digest":"sha256:c74680dc29fd2d16b74c4e8e9e918b98bc9ad3fe0aba2f7cacd730ea2f31f092"},"approval_record_ref":null,"approval_record_digest":null,"master_approved":false,"user_approved":false,"approved":false,"enabled":false},
+    {"schema":"P5R0RS069ApprovalGateV1","operation_id":"bind_self_custodied_authority_and_kms","plan_digest":"sha256:914091d6a8cb46a10853e1daea929d140acd413dc0f31ce8db7c496fae4db96a","input_digest_map":{"unsigned_lock_digest":"sha256:4fc80599aa0cc99881983cdb1270720de6d5c3f99c47701cf471da409d29a3df","lock_request_digest":"sha256:922085ca833426751f89610dc2274d10f82efe758ee3b92e9d6c9441db20292d","kms_key_version":null,"authority_binding_digest":null},"approval_record_ref":null,"approval_record_digest":null,"master_approved":false,"user_approved":false,"approved":false,"enabled":false},
+    {"schema":"P5R0RS069ApprovalGateV1","operation_id":"ingest_generated_bundle_to_gcs","plan_digest":"sha256:914091d6a8cb46a10853e1daea929d140acd413dc0f31ce8db7c496fae4db96a","input_digest_map":{"artifact_index_digest":"sha256:04a98e3e48685228fd68ea757de276fe1c1a7ce347bd027a2756a48595897768","manifest_digest":"sha256:190fe19fe7f70b181f11f0b375cf6241a2cc2c0c49abbf2b52f8ce8899b2f01a","private_store_digest":"sha256:0ec34adc958b2565aa24599be477c3e6b3488e83df9e8f1811715262ea7b55e1","task_set_digest":"sha256:725b59168b83b2305e76500774ddca6e0b59185cec3527bf2d6133e657c29aa7","bucket_prefix":null},"approval_record_ref":null,"approval_record_digest":null,"master_approved":false,"user_approved":false,"approved":false,"enabled":false},
+    {"schema":"P5R0RS069ApprovalGateV1","operation_id":"configure_cloud_run_and_confidential_space","plan_digest":"sha256:914091d6a8cb46a10853e1daea929d140acd413dc0f31ce8db7c496fae4db96a","input_digest_map":{"native_definition_digest":null,"renderer_digest":null,"candidate_image_digest":null,"project_digest":null,"zone_digest":null,"capability_grants_digest":null,"runtime_digest":null,"closure_digest":null},"approval_record_ref":null,"approval_record_digest":null,"master_approved":false,"user_approved":false,"approved":false,"enabled":false},
+    {"schema":"P5R0RS069ApprovalGateV1","operation_id":"prepare_supervisor_and_run_request","plan_digest":"sha256:914091d6a8cb46a10853e1daea929d140acd413dc0f31ce8db7c496fae4db96a","input_digest_map":{"artifact_index_digest":"sha256:04a98e3e48685228fd68ea757de276fe1c1a7ce347bd027a2756a48595897768","unsigned_lock_digest":"sha256:4fc80599aa0cc99881983cdb1270720de6d5c3f99c47701cf471da409d29a3df","supervisor_contract_digest":null,"attestation_evidence_digest":null,"run_request_digest":null},"approval_record_ref":null,"approval_record_digest":null,"master_approved":false,"user_approved":false,"approved":false,"enabled":false},
+    {"schema":"P5R0RS069ApprovalGateV1","operation_id":"cleanup_or_rollback","plan_digest":"sha256:914091d6a8cb46a10853e1daea929d140acd413dc0f31ce8db7c496fae4db96a","input_digest_map":{"approved_plan_fingerprint":null,"prior_state_fingerprint":null,"run_request_digest":null},"approval_record_ref":null,"approval_record_digest":null,"master_approved":false,"user_approved":false,"approved":false,"enabled":false}
+  ],
+  "gcs_object_records": [
+    {"schema":"P5R0RS069GCSObjectRecordV1","object_id":"bundle_input_manifest","local_artifact_path":"var/p5-r0-diagnostic-inputs/public/production-bundle-input-manifest.json","object_suffix":"public/production-bundle-input-manifest.json","private":false,"artifact_digest":"sha256:21953231da13dfd66c767bb25277460cf36e29ac03ec6b2dba6cb4e611eb6296","file_digest":"sha256:bff9a31e91aae8847c6da471c9064b8d143ab937d8a42bb6101cecb7ea24b8ab","destination":{"bucket":null,"prefix":null,"run_id":null},"ownership":"rs-069","mode":"create_only_or_exact_generation_match","generation_precondition":{"kind":"if_absent_or_exact_generation","expected_generation":null},"upload_state":"not_uploaded","upload_performed":false},
+    {"schema":"P5R0RS069GCSObjectRecordV1","object_id":"control_commitment","local_artifact_path":"var/p5-r0-diagnostic-inputs/public/control-commitment.json","object_suffix":"public/control-commitment.json","private":false,"artifact_digest":"sha256:ac9cefc8910d3cec2053259e5a053c7bdd34ed0e9381fe920a9b4b19878c5f58","file_digest":"sha256:3cd9a8c2257b8cd0b760b569f16e5a5ae9f59aa230f7825b37d20a63548f17fe","destination":{"bucket":null,"prefix":null,"run_id":null},"ownership":"rs-069","mode":"create_only_or_exact_generation_match","generation_precondition":{"kind":"if_absent_or_exact_generation","expected_generation":null},"upload_state":"not_uploaded","upload_performed":false},
+    {"schema":"P5R0RS069GCSObjectRecordV1","object_id":"evaluator_contract","local_artifact_path":"var/p5-r0-diagnostic-inputs/public/evaluator-contract.json","object_suffix":"public/evaluator-contract.json","private":false,"artifact_digest":"sha256:26fac134fb8b791ca9c775fce4496e04a983ba49b686c354ed8e9e58388545d8","file_digest":"sha256:b1bcf8780a322295b358cb23cafb280b31268ce17b22f6e40f876980c658324a","destination":{"bucket":null,"prefix":null,"run_id":null},"ownership":"rs-069","mode":"create_only_or_exact_generation_match","generation_precondition":{"kind":"if_absent_or_exact_generation","expected_generation":null},"upload_state":"not_uploaded","upload_performed":false},
+    {"schema":"P5R0RS069GCSObjectRecordV1","object_id":"lock_signing_request","local_artifact_path":"var/p5-r0-diagnostic-inputs/public/lock-signing-request.json","object_suffix":"public/lock-signing-request.json","private":false,"artifact_digest":"sha256:922085ca833426751f89610dc2274d10f82efe758ee3b92e9d6c9441db20292d","file_digest":"sha256:0e8d1f306446ba4e62d31f3eaab523430b372671772db0593516a702bee5f45e","destination":{"bucket":null,"prefix":null,"run_id":null},"ownership":"rs-069","mode":"create_only_or_exact_generation_match","generation_precondition":{"kind":"if_absent_or_exact_generation","expected_generation":null},"upload_state":"not_uploaded","upload_performed":false},
+    {"schema":"P5R0RS069GCSObjectRecordV1","object_id":"manifest","local_artifact_path":"var/p5-r0-diagnostic-inputs/public/manifest.json","object_suffix":"public/manifest.json","private":false,"artifact_digest":"sha256:190fe19fe7f70b181f11f0b375cf6241a2cc2c0c49abbf2b52f8ce8899b2f01a","file_digest":"sha256:78694af8056e5d141546ba15b9e489aa3afe7e05e74653bb94ab0b00cb4794d5","destination":{"bucket":null,"prefix":null,"run_id":null},"ownership":"rs-069","mode":"create_only_or_exact_generation_match","generation_precondition":{"kind":"if_absent_or_exact_generation","expected_generation":null},"upload_state":"not_uploaded","upload_performed":false},
+    {"schema":"P5R0RS069GCSObjectRecordV1","object_id":"policy","local_artifact_path":"var/p5-r0-diagnostic-inputs/public/policy.json","object_suffix":"public/policy.json","private":false,"artifact_digest":"sha256:d5c2ff10446ea6461f834ecfad00f058dd413b9b3f2f3334ad2c4f05be772c30","file_digest":"sha256:d5c2ff10446ea6461f834ecfad00f058dd413b9b3f2f3334ad2c4f05be772c30","destination":{"bucket":null,"prefix":null,"run_id":null},"ownership":"rs-069","mode":"create_only_or_exact_generation_match","generation_precondition":{"kind":"if_absent_or_exact_generation","expected_generation":null},"upload_state":"not_uploaded","upload_performed":false},
+    {"schema":"P5R0RS069GCSObjectRecordV1","object_id":"private_store","local_artifact_path":"var/p5-r0-diagnostic-inputs/private-truth/case-store.json","object_suffix":"private-truth/case-store.json","private":true,"artifact_digest":"sha256:0ec34adc958b2565aa24599be477c3e6b3488e83df9e8f1811715262ea7b55e1","file_digest":"sha256:3f5ea60328d4bc0cd8dfd4dd86c90de76d70753b39a2fe04561189d49b3c37a7","destination":{"bucket":null,"prefix":null,"run_id":null},"ownership":"rs-069","mode":"create_only_or_exact_generation_match","generation_precondition":{"kind":"if_absent_or_exact_generation","expected_generation":null},"upload_state":"not_uploaded","upload_performed":false},
+    {"schema":"P5R0RS069GCSObjectRecordV1","object_id":"provenance","local_artifact_path":"var/p5-r0-diagnostic-inputs/public/generator-provenance.json","object_suffix":"public/generator-provenance.json","private":false,"artifact_digest":"sha256:e0b15350c51674059af068e1aa11729cb45bd870aef483a63ede1d4ad603277f","file_digest":"sha256:e0b15350c51674059af068e1aa11729cb45bd870aef483a63ede1d4ad603277f","destination":{"bucket":null,"prefix":null,"run_id":null},"ownership":"rs-069","mode":"create_only_or_exact_generation_match","generation_precondition":{"kind":"if_absent_or_exact_generation","expected_generation":null},"upload_state":"not_uploaded","upload_performed":false},
+    {"schema":"P5R0RS069GCSObjectRecordV1","object_id":"split","local_artifact_path":"var/p5-r0-diagnostic-inputs/public/split.json","object_suffix":"public/split.json","private":false,"artifact_digest":"sha256:def0707ed51e7947b5d3360075b474385aafd9011a75398efb397863db8cd125","file_digest":"sha256:a6947d5b134526bd93a11f4d2a6cdf74af0bc0091f48783f3f2f1bfbef99883f","destination":{"bucket":null,"prefix":null,"run_id":null},"ownership":"rs-069","mode":"create_only_or_exact_generation_match","generation_precondition":{"kind":"if_absent_or_exact_generation","expected_generation":null},"upload_state":"not_uploaded","upload_performed":false},
+    {"schema":"P5R0RS069GCSObjectRecordV1","object_id":"task_set","local_artifact_path":"var/p5-r0-diagnostic-inputs/public/task-set.json","object_suffix":"public/task-set.json","private":false,"artifact_digest":"sha256:725b59168b83b2305e76500774ddca6e0b59185cec3527bf2d6133e657c29aa7","file_digest":"sha256:46351848f1dbb1d81335e8ec6801418b30cd000d765e0544e67233f20c28d915","destination":{"bucket":null,"prefix":null,"run_id":null},"ownership":"rs-069","mode":"create_only_or_exact_generation_match","generation_precondition":{"kind":"if_absent_or_exact_generation","expected_generation":null},"upload_state":"not_uploaded","upload_performed":false},
+    {"schema":"P5R0RS069GCSObjectRecordV1","object_id":"worker_contract","local_artifact_path":"var/p5-r0-diagnostic-inputs/public/worker-contract.json","object_suffix":"public/worker-contract.json","private":false,"artifact_digest":"sha256:ef49d15e32038675ed04266e28eb9079956c2647b00e572e50a6bd3b17ebceb3","file_digest":"sha256:b9aad635ffba2b2e308c8d118ac9eb52ef55043c12004d135c1f2b364933a316","destination":{"bucket":null,"prefix":null,"run_id":null},"ownership":"rs-069","mode":"create_only_or_exact_generation_match","generation_precondition":{"kind":"if_absent_or_exact_generation","expected_generation":null},"upload_state":"not_uploaded","upload_performed":false}
+  ],
+  "confidential_space_activation": {
+    "schema": "P5R0RS069ConfidentialSpaceActivationV1",
+    "operation_id": "configure_cloud_run_and_confidential_space",
+    "state": "blocked",
+    "approved": false,
+    "enabled": false,
+    "transition_order": ["blocked", "approved", "attestation_verified", "capabilities_activated"],
+    "transitions": [
+      {"from":"blocked","to":"approved","enabled":false},
+      {"from":"approved","to":"attestation_verified","enabled":false},
+      {"from":"attestation_verified","to":"capabilities_activated","enabled":false},
+      {"from":"blocked","to":"failed_closed","enabled":false},
+      {"from":"approved","to":"failed_closed","enabled":false},
+      {"from":"attestation_verified","to":"failed_closed","enabled":false}
+    ],
+    "digest_bindings": {"artifact_index_digest":"sha256:04a98e3e48685228fd68ea757de276fe1c1a7ce347bd027a2756a48595897768","candidate_image_digest":null,"provider_resource_digest":null,"sts_audience_digest":"sha256:bea837e48bc096387db88f6ec11441669756e8877fdac28f86fb86d2ef3be89c","project_digest":null,"zone_digest":null,"claim_paths_digest":"sha256:c74680dc29fd2d16b74c4e8e9e918b98bc9ad3fe0aba2f7cacd730ea2f31f092","attestation_evidence_digest":null,"capability_grants_digest":null},
+    "equality_bindings": {"candidate_image_digest":["bind_candidate_image_digest.candidate_image_digest","correct_wip_provider_claim_mapping.candidate_image_digest","configure_cloud_run_and_confidential_space.candidate_image_digest"],"provider_resource_digest":["correct_wip_provider_claim_mapping.provider_resource_digest"],"sts_audience_digest":["correct_wip_provider_claim_mapping.sts_audience_digest"],"project_digest":["bind_candidate_image_digest.target_project_digest","configure_cloud_run_and_confidential_space.project_digest"],"zone_digest":["correct_wip_provider_claim_mapping.zone_digest","configure_cloud_run_and_confidential_space.zone_digest"],"claim_paths_digest":["correct_wip_provider_claim_mapping.claim_paths_digest"],"attestation_evidence_digest":["prepare_supervisor_and_run_request.attestation_evidence_digest"],"capability_grants_digest":["configure_cloud_run_and_confidential_space.capability_grants_digest"]},
+    "attestation": {"present":false,"verified":false,"evidence_ref":null,"evidence_digest":null},
+    "capabilities": {"activated":false,"grants":[],"grant_digest":null}
+  },
+  "global_preconditions": {
+    "repository_root": "/home/matt/ozmadev/ocelot",
+    "pwd_verified": true,
+    "existing_definitions_unchanged": true,
+    "artifact_index_digest_verified": true,
+    "unsigned_lock_digest_verified": true,
+    "reviewed_production_inputs": false,
+    "master_approval": false,
+    "confidential_space_approval": false,
+    "cloud_operations_performed": false,
+    "signed_evidence_created": false,
+    "task_execution_performed": false
+  },
+  "rerun_contract": {
+    "ordering": "operations execute only in ascending order after dependencies are approved",
+    "idempotency": "each operation has a stable key derived from immutable inputs",
+    "drift": "unknown or conflicting state fails closed; matching desired state is a no-op",
+    "approval": "all mutation-capable transitions are disabled until explicit master approval",
+    "state": "desired state is declarative and can be re-rendered without cloud reads or writes",
+    "rollback": "rollback is a desired-state proposal through the same approved IaC workflow, not an imperative local command"
+  },
+  "apply_plan": {
+    "mode": "review_only_no_execution",
+    "commands": [],
+    "approval_required": true,
+    "mutations_performed": false,
+    "direct_gcloud_mutations": false,
+    "forbidden_operations": ["gcloud mutation", "KMS signing", "GCS upload", "GCS delete", "Cloud Run deploy", "VM creation", "IAM alteration", "WIP/provider mutation", "image push", "credential generation", "FreeTSA call", "supervisor invocation", "task execution", "evidence fabrication"],
+    "approved_apply_interface": "REQUIRED_INPUT:separately approved infrastructure-as-code workflow"
+  },
+  "local_validation": {
+    "module": "services.p5_r0_evaluator.deploy.rs069_change_plan",
+    "commands": [
+      "PYTHONPATH=. python3 -m services.p5_r0_evaluator.deploy.rs069_change_plan validate",
+      "PYTHONPATH=. pytest services/p5_r0_evaluator/tests/test_rs069_change_plan.py -q",
+      "python3 -m py_compile services/p5_r0_evaluator/deploy/rs069_change_plan.py"
+    ],
+    "must_prove": ["closed schema", "exact operation order and dependency closure", "all operation mutation boundaries are no-op until approval", "rerunnable idempotency and drift rules", "self-custodied authority with no independent evaluator claim", "known diagnostic digests match the read-only artifact index", "no executable direct gcloud/cloud mutation is embedded"]
+  },
+  "claim_boundary": "RS-069 repository desired-state plan only; no production deployment, image binding, WIP/IAM mutation, authority creation, KMS signature, GCS ingestion, Confidential Space activation, supervisor execution, task result, independent evaluator claim, or production evidence exists."
+}

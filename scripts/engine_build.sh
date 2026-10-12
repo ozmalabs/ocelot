@@ -27,6 +27,19 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 
+# A Python-runtime-only measurement may need the cdylib but none of the Rust
+# probe executables. Keep the same safe install and provenance steps while
+# allowing that narrower build target; default behavior remains the full tree.
+BUILD_ARGS=()
+if [ "${1:-}" = "--lib-only" ]; then
+  BUILD_ARGS+=(--lib)
+  shift
+fi
+if [ "$#" -gt 0 ]; then
+  echo "usage: scripts/engine_build.sh [--lib-only]" >&2
+  exit 2
+fi
+
 # WHICH PYTHON — resolved HERE, before the build, and fatal if absent.
 #
 # The build-record step at the bottom used to invoke a bare `python`, which is
@@ -59,7 +72,7 @@ echo "== build-record interpreter: $PY ($($PY -V 2>&1))"
 cd "$ROOT/runners/dsl" || exit 1
 
 echo "== building this tree's engine: $(pwd)"
-cargo build --release
+cargo build --release "${BUILD_ARGS[@]}"
 
 # --remove-destination: unlink first, THEN copy. Never write through a
 # symlink into another tree.

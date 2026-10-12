@@ -48,15 +48,11 @@ MDL selects a sufficient account by minimising `L(M) + L(D|M)`, a model descript
 
 **Boundary.** This is not an identity `C_aud = L(M) + L(D|M)`. It requires a declared descriptive-to-realised grammar map and remains frame-, boundary-, and substrate-relative. MDL does not establish an observed cost decline, a physical floor, a total social cost, a grammar step, `G(R0)`, or a transition outcome. Its agreement with the GE account is a consistency condition, not independent empirical evidence.
 
-### P1 — Cost-floor pressure is an empirical hypothesis
+### P1 — Distinct cost comparisons
 
-**Premise.** Repeated measurements on a stable outcome scale show
+**Definition.** A decline in `F_i` on a stable outcome and allocation boundary is cost-floor compression. A configuration's gap `C_aud,i(q) − F_i` measures its distance from the observed envelope. The gap can shrink with no decline in `F_i`, and `F_i` can decline while a configuration's gap grows.
 
-`C_aud,i(q) − F_(u,o,i) ↓ 0`.
-
-**Consequence.** The named task configuration experiences cost-floor pressure under the declared boundary.
-
-**Boundary.** The premise does not show that a sector, economy, or civilisation shares this pressure, or that the lower envelope will remain stable after volume, regulation, energy use, or task mix changes.
+**Boundary.** Neither trajectory is evidence for the other. Changes in volume, quality, regulation, energy use, or task mix require harmonisation. Component inference tariffs are partial ledger observations and do not establish a fully audited floor.
 
 ### D3 — Backlog convention
 

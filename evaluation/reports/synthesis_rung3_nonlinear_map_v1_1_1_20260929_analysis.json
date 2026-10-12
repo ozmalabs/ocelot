@@ -1,0 +1,100 @@
+{
+  "accepted": 15,
+  "accepted_with_exact_holdout_transfer": 10,
+  "case_results": {
+    "absolute_shear": {
+      "accepted": 0,
+      "enumerate_ok": 0,
+      "enumerate_reached": 5,
+      "enumerator_ops": [
+        "Plus,Times,Minus,Div,Min,Max,Abs,Neg,Gt,Lt,Eq,IfThenElse,Len,SumList,MaxList,MinList,MaxLenOver,MinLenOver,First,LastElem,JoinList,FilterList,MapList,TupleOf,ProdList,ConcatList,ArgMaxLenOver,IndexedMap,Sort"
+      ],
+      "exact_holdout_transfer": 0,
+      "gapped": 5,
+      "max_peak_rss_bytes": 79282176,
+      "max_wall_ms": 1628.117457,
+      "median_cpu_ms": 1610.565634,
+      "median_wall_ms": 1609.385861,
+      "min_wall_ms": 1604.721666,
+      "n": 5,
+      "programs": []
+    },
+    "hinge_shear": {
+      "accepted": 5,
+      "enumerate_ok": 5,
+      "enumerate_reached": 5,
+      "enumerator_ops": [
+        "Plus,Times,Minus,Div,Min,Max,Abs,Neg,Gt,Lt,Eq,IfThenElse,Len,SumList,MaxList,MinList,MaxLenOver,MinLenOver,First,LastElem,JoinList,FilterList,MapList,TupleOf,ProdList,ConcatList,ArgMaxLenOver,IndexedMap,Sort"
+      ],
+      "exact_holdout_transfer": 0,
+      "gapped": 0,
+      "max_peak_rss_bytes": 62668800,
+      "max_wall_ms": 1226.960154,
+      "median_cpu_ms": 1207.380485,
+      "median_wall_ms": 1205.949983,
+      "min_wall_ms": 1195.868195,
+      "n": 5,
+      "programs": [
+        "{\"type\": \"ProgSeq\", \"stmts\": [{\"type\": \"ProgDefFnParam\", \"name\": \"c\", \"default\": null}, {\"type\": \"ProgDefFnParam\", \"name\": \"r\", \"default\": null}, {\"type\": \"ProgReturn\", \"value\": {\"items\": [{\"items\": [{\"name\": \"r\", \"type\": \"Var\"}, {\"a\": {\"name\": \"c\", \"type\": \"Var\"}, \"b\": {\"type\": \"Lit\", \"value\": 1}, \"type\": \"Gt\"}], \"type\": \"Plus\"}, {\"name\": \"c\", \"type\": \"Var\"}], \"type\": \"Vec\"}}]}"
+      ]
+    },
+    "linear": {
+      "accepted": 5,
+      "enumerate_ok": 5,
+      "enumerate_reached": 5,
+      "enumerator_ops": [
+        "Plus,Times,Minus,Div,Min,Max,Abs,Neg,Gt,Lt,Eq,IfThenElse,Len,SumList,MaxList,MinList,MaxLenOver,MinLenOver,First,LastElem,JoinList,FilterList,MapList,TupleOf,ProdList,ConcatList,ArgMaxLenOver,IndexedMap,Sort"
+      ],
+      "exact_holdout_transfer": 5,
+      "gapped": 0,
+      "max_peak_rss_bytes": 62214144,
+      "max_wall_ms": 1220.204297,
+      "median_cpu_ms": 1217.242668,
+      "median_wall_ms": 1215.896115,
+      "min_wall_ms": 1203.698306,
+      "n": 5,
+      "programs": [
+        "{\"type\": \"ProgSeq\", \"stmts\": [{\"type\": \"ProgDefFnParam\", \"name\": \"c\", \"default\": null}, {\"type\": \"ProgDefFnParam\", \"name\": \"r\", \"default\": null}, {\"type\": \"ProgReturn\", \"value\": {\"items\": [{\"items\": [{\"name\": \"r\", \"type\": \"Var\"}, {\"name\": \"c\", \"type\": \"Var\"}], \"type\": \"Plus\"}, {\"items\": [{\"name\": \"c\", \"type\": \"Var\"}, {\"name\": \"c\", \"type\": \"Var\"}], \"type\": \"Plus\"}], \"type\": \"Vec\"}}]}"
+      ]
+    },
+    "quadratic_shear": {
+      "accepted": 5,
+      "enumerate_ok": 5,
+      "enumerate_reached": 5,
+      "enumerator_ops": [
+        "Plus,Times,Minus,Div,Min,Max,Abs,Neg,Gt,Lt,Eq,IfThenElse,Len,SumList,MaxList,MinList,MaxLenOver,MinLenOver,First,LastElem,JoinList,FilterList,MapList,TupleOf,ProdList,ConcatList,ArgMaxLenOver,IndexedMap,Sort"
+      ],
+      "exact_holdout_transfer": 5,
+      "gapped": 0,
+      "max_peak_rss_bytes": 62996480,
+      "max_wall_ms": 1252.82271,
+      "median_cpu_ms": 1232.507922,
+      "median_wall_ms": 1234.952717,
+      "min_wall_ms": 1215.439083,
+      "n": 5,
+      "programs": [
+        "{\"type\": \"ProgSeq\", \"stmts\": [{\"type\": \"ProgDefFnParam\", \"name\": \"c\", \"default\": null}, {\"type\": \"ProgDefFnParam\", \"name\": \"r\", \"default\": null}, {\"type\": \"ProgReturn\", \"value\": {\"items\": [{\"items\": [{\"name\": \"r\", \"type\": \"Var\"}, {\"items\": [{\"name\": \"c\", \"type\": \"Var\"}, {\"name\": \"c\", \"type\": \"Var\"}], \"type\": \"Times\"}], \"type\": \"Plus\"}, {\"name\": \"c\", \"type\": \"Var\"}], \"type\": \"Vec\"}}]}"
+      ]
+    }
+  },
+  "checks": {
+    "all_workers_source_native_stable": true,
+    "all_workers_terminal": true,
+    "complete_unique_20_worker_matrix": true,
+    "current_sources_and_native_match_lock": true,
+    "every_accepted_program_reflected_and_exact_on_holdout": false,
+    "every_case_reached_rung3": true,
+    "footer_source_native_stable": true,
+    "linear_positive_control_accepts_and_transfers": true,
+    "no_worker_failures": true,
+    "one_header_footer_and_locked_schedule": true
+  },
+  "integrity_pass": false,
+  "interpretation": "Measures the shipped program-synthesis adapter/rule route through Rung 3 and graph-reflected ProgEval on six locked holdout points. It does not establish general dimension induction, learned grammar choice, mint/adoption, natural-task prevalence, or scaling.",
+  "lock_sha256": "ccf8a1fb57e216f0bc2a823ad77487cbc6b47a27ad1d0b5676f0579be6bb65c5",
+  "passed_checks": 9,
+  "raw_sha256": "ce5b2157df23a9c8aa22a2907b15e7913a4677900f5ba8fe28b0f45bfdc1025f",
+  "run_id": "synthesis_rung3_nonlinear_map_v1_1_1_20260929",
+  "total_checks": 10,
+  "worker_failures": []
+}

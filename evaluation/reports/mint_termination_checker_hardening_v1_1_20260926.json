@@ -1,0 +1,675 @@
+{
+  "checker": {
+    "expected_outcomes": {
+      "computed_key": false,
+      "duplicate_initial_edge_fact": false,
+      "duplicate_initial_node_id": false,
+      "edge_endpoint_missing_from_node_inventory": false,
+      "edge_type_is_not_binding": false,
+      "invalid_initial_edges_null": false,
+      "invalid_initial_edges_object": false,
+      "invalid_rule_specs_object": false,
+      "invalid_rule_specs_string": false,
+      "isolated_initial_node_counted": true,
+      "preexisting_edge_attribute_replacement": false,
+      "recursive_finite_key": true,
+      "recursive_fresh_node": false,
+      "replacement_effect": false,
+      "unsupported_condition_clause": false
+    },
+    "fixture_count": 15,
+    "fixtures": {
+      "fixtures": {
+        "computed_key": {
+          "accepted": false,
+          "bound_basis": null,
+          "edge_type_count": null,
+          "fragment": "monotone_finite_key_insertions_v0",
+          "initial_edge_fact_count": 1,
+          "initial_node_count": 2,
+          "initial_node_ids": [
+            "n0",
+            "n1"
+          ],
+          "not_claimed": [
+            "weak acyclicity",
+            "arbitrary computed keys",
+            "constructed fresh values",
+            "deletion or replacement effects",
+            "hard CPU/wall-time bound",
+            "polynomial matching cost per firing"
+          ],
+          "possible_edge_fact_count_upper_bound": null,
+          "possible_node_count_upper_bound": null,
+          "progress_steps_upper_bound": null,
+          "reasons": [
+            "rule[0].effects[0]: dedup attrs must contain only finite scalar JSON literals"
+          ],
+          "unique_mint_signatures": null
+        },
+        "duplicate_initial_edge_fact": {
+          "accepted": false,
+          "bound_basis": null,
+          "edge_type_count": null,
+          "fragment": "monotone_finite_key_insertions_v0",
+          "initial_edge_fact_count": 1,
+          "initial_node_count": 2,
+          "initial_node_ids": [
+            "n0",
+            "n1"
+          ],
+          "not_claimed": [
+            "weak acyclicity",
+            "arbitrary computed keys",
+            "constructed fresh values",
+            "deletion or replacement effects",
+            "hard CPU/wall-time bound",
+            "polynomial matching cost per firing"
+          ],
+          "possible_edge_fact_count_upper_bound": null,
+          "possible_node_count_upper_bound": null,
+          "progress_steps_upper_bound": null,
+          "reasons": [
+            "initial_edges[1]: duplicate edge fact; provide one canonical initial fact"
+          ],
+          "unique_mint_signatures": null
+        },
+        "duplicate_initial_node_id": {
+          "accepted": false,
+          "bound_basis": null,
+          "edge_type_count": null,
+          "fragment": "monotone_finite_key_insertions_v0",
+          "initial_edge_fact_count": 0,
+          "initial_node_count": 1,
+          "initial_node_ids": [
+            "n0"
+          ],
+          "not_claimed": [
+            "weak acyclicity",
+            "arbitrary computed keys",
+            "constructed fresh values",
+            "deletion or replacement effects",
+            "hard CPU/wall-time bound",
+            "polynomial matching cost per firing"
+          ],
+          "possible_edge_fact_count_upper_bound": null,
+          "possible_node_count_upper_bound": null,
+          "progress_steps_upper_bound": null,
+          "reasons": [
+            "initial_node_ids: duplicate node IDs"
+          ],
+          "unique_mint_signatures": null
+        },
+        "edge_endpoint_missing_from_node_inventory": {
+          "accepted": false,
+          "bound_basis": null,
+          "edge_type_count": null,
+          "fragment": "monotone_finite_key_insertions_v0",
+          "initial_edge_fact_count": 1,
+          "initial_node_count": 1,
+          "initial_node_ids": [
+            "n0"
+          ],
+          "not_claimed": [
+            "weak acyclicity",
+            "arbitrary computed keys",
+            "constructed fresh values",
+            "deletion or replacement effects",
+            "hard CPU/wall-time bound",
+            "polynomial matching cost per firing"
+          ],
+          "possible_edge_fact_count_upper_bound": null,
+          "possible_node_count_upper_bound": null,
+          "progress_steps_upper_bound": null,
+          "reasons": [
+            "initial_edges: endpoint IDs must all occur in initial_node_ids"
+          ],
+          "unique_mint_signatures": null
+        },
+        "edge_type_is_not_binding": {
+          "accepted": false,
+          "bound_basis": null,
+          "edge_type_count": null,
+          "fragment": "monotone_finite_key_insertions_v0",
+          "initial_edge_fact_count": 1,
+          "initial_node_count": 2,
+          "initial_node_ids": [
+            "n0",
+            "n1"
+          ],
+          "not_claimed": [
+            "weak acyclicity",
+            "arbitrary computed keys",
+            "constructed fresh values",
+            "deletion or replacement effects",
+            "hard CPU/wall-time bound",
+            "polynomial matching cost per firing"
+          ],
+          "possible_edge_fact_count_upper_bound": null,
+          "possible_node_count_upper_bound": null,
+          "progress_steps_upper_bound": null,
+          "reasons": [
+            "rule[0].effects[0]: edge endpoints must be bound by the match or an earlier mint effect"
+          ],
+          "unique_mint_signatures": null
+        },
+        "invalid_initial_edges_null": {
+          "accepted": false,
+          "bound_basis": null,
+          "edge_type_count": null,
+          "fragment": "monotone_finite_key_insertions_v0",
+          "initial_edge_fact_count": 0,
+          "initial_node_count": 1,
+          "initial_node_ids": [
+            "n0"
+          ],
+          "not_claimed": [
+            "weak acyclicity",
+            "arbitrary computed keys",
+            "constructed fresh values",
+            "deletion or replacement effects",
+            "hard CPU/wall-time bound",
+            "polynomial matching cost per firing"
+          ],
+          "possible_edge_fact_count_upper_bound": null,
+          "possible_node_count_upper_bound": null,
+          "progress_steps_upper_bound": null,
+          "reasons": [
+            "initial_edges: expected a complete list of edge facts"
+          ],
+          "unique_mint_signatures": null
+        },
+        "invalid_initial_edges_object": {
+          "accepted": false,
+          "bound_basis": null,
+          "edge_type_count": null,
+          "fragment": "monotone_finite_key_insertions_v0",
+          "initial_edge_fact_count": 0,
+          "initial_node_count": 1,
+          "initial_node_ids": [
+            "n0"
+          ],
+          "not_claimed": [
+            "weak acyclicity",
+            "arbitrary computed keys",
+            "constructed fresh values",
+            "deletion or replacement effects",
+            "hard CPU/wall-time bound",
+            "polynomial matching cost per firing"
+          ],
+          "possible_edge_fact_count_upper_bound": null,
+          "possible_node_count_upper_bound": null,
+          "progress_steps_upper_bound": null,
+          "reasons": [
+            "initial_edges: expected a complete list of edge facts"
+          ],
+          "unique_mint_signatures": null
+        },
+        "invalid_rule_specs_object": {
+          "accepted": false,
+          "bound_basis": null,
+          "edge_type_count": null,
+          "fragment": "monotone_finite_key_insertions_v0",
+          "initial_edge_fact_count": 0,
+          "initial_node_count": 1,
+          "initial_node_ids": [
+            "n0"
+          ],
+          "not_claimed": [
+            "weak acyclicity",
+            "arbitrary computed keys",
+            "constructed fresh values",
+            "deletion or replacement effects",
+            "hard CPU/wall-time bound",
+            "polynomial matching cost per firing"
+          ],
+          "possible_edge_fact_count_upper_bound": null,
+          "possible_node_count_upper_bound": null,
+          "progress_steps_upper_bound": null,
+          "reasons": [
+            "rule_specs: expected a list of rule objects"
+          ],
+          "unique_mint_signatures": null
+        },
+        "invalid_rule_specs_string": {
+          "accepted": false,
+          "bound_basis": null,
+          "edge_type_count": null,
+          "fragment": "monotone_finite_key_insertions_v0",
+          "initial_edge_fact_count": 0,
+          "initial_node_count": 1,
+          "initial_node_ids": [
+            "n0"
+          ],
+          "not_claimed": [
+            "weak acyclicity",
+            "arbitrary computed keys",
+            "constructed fresh values",
+            "deletion or replacement effects",
+            "hard CPU/wall-time bound",
+            "polynomial matching cost per firing"
+          ],
+          "possible_edge_fact_count_upper_bound": null,
+          "possible_node_count_upper_bound": null,
+          "progress_steps_upper_bound": null,
+          "reasons": [
+            "rule_specs: expected a list of rule objects"
+          ],
+          "unique_mint_signatures": null
+        },
+        "isolated_initial_node_counted": {
+          "accepted": true,
+          "bound_basis": "Each AddNodeIfAbsent with one fixed literal type/key signature can insert at most one node; empty-attribute AddEdge can insert only one directed triple per endpoint pair and edge type. Positive matching and insertion-only effects preserve a finite graph universe. The bound is a coarse O((N+R)^2 E) upper bound on progressing firings, for fixed rules.",
+          "edge_type_count": 1,
+          "fragment": "monotone_finite_key_insertions_v0",
+          "initial_edge_fact_count": 1,
+          "initial_node_count": 3,
+          "initial_node_ids": [
+            "isolated",
+            "n0",
+            "n1"
+          ],
+          "not_claimed": [
+            "weak acyclicity",
+            "arbitrary computed keys",
+            "constructed fresh values",
+            "deletion or replacement effects",
+            "hard CPU/wall-time bound",
+            "polynomial matching cost per firing"
+          ],
+          "possible_edge_fact_count_upper_bound": 16,
+          "possible_node_count_upper_bound": 4,
+          "progress_steps_upper_bound": 16,
+          "reasons": [],
+          "unique_mint_signatures": 1
+        },
+        "preexisting_edge_attribute_replacement": {
+          "accepted": false,
+          "bound_basis": null,
+          "edge_type_count": null,
+          "fragment": "monotone_finite_key_insertions_v0",
+          "initial_edge_fact_count": 1,
+          "initial_node_count": 2,
+          "initial_node_ids": [
+            "n0",
+            "n1"
+          ],
+          "not_claimed": [
+            "weak acyclicity",
+            "arbitrary computed keys",
+            "constructed fresh values",
+            "deletion or replacement effects",
+            "hard CPU/wall-time bound",
+            "polynomial matching cost per firing"
+          ],
+          "possible_edge_fact_count_upper_bound": null,
+          "possible_node_count_upper_bound": null,
+          "progress_steps_upper_bound": null,
+          "reasons": [
+            "rule[0].effects[0]: AddEdge may replace attributes on a pre-existing edge of this type; outside insertion-only fragment"
+          ],
+          "unique_mint_signatures": null
+        },
+        "recursive_finite_key": {
+          "accepted": true,
+          "bound_basis": "Each AddNodeIfAbsent with one fixed literal type/key signature can insert at most one node; empty-attribute AddEdge can insert only one directed triple per endpoint pair and edge type. Positive matching and insertion-only effects preserve a finite graph universe. The bound is a coarse O((N+R)^2 E) upper bound on progressing firings, for fixed rules.",
+          "edge_type_count": 1,
+          "fragment": "monotone_finite_key_insertions_v0",
+          "initial_edge_fact_count": 1,
+          "initial_node_count": 2,
+          "initial_node_ids": [
+            "n0",
+            "n1"
+          ],
+          "not_claimed": [
+            "weak acyclicity",
+            "arbitrary computed keys",
+            "constructed fresh values",
+            "deletion or replacement effects",
+            "hard CPU/wall-time bound",
+            "polynomial matching cost per firing"
+          ],
+          "possible_edge_fact_count_upper_bound": 9,
+          "possible_node_count_upper_bound": 3,
+          "progress_steps_upper_bound": 9,
+          "reasons": [],
+          "unique_mint_signatures": 1
+        },
+        "recursive_fresh_node": {
+          "accepted": false,
+          "bound_basis": null,
+          "edge_type_count": null,
+          "fragment": "monotone_finite_key_insertions_v0",
+          "initial_edge_fact_count": 1,
+          "initial_node_count": 2,
+          "initial_node_ids": [
+            "n0",
+            "n1"
+          ],
+          "not_claimed": [
+            "weak acyclicity",
+            "arbitrary computed keys",
+            "constructed fresh values",
+            "deletion or replacement effects",
+            "hard CPU/wall-time bound",
+            "polynomial matching cost per firing"
+          ],
+          "possible_edge_fact_count_upper_bound": null,
+          "possible_node_count_upper_bound": null,
+          "progress_steps_upper_bound": null,
+          "reasons": [
+            "rule[0].effects[0]: effect 'add_node' is outside the insertion-only finite-key fragment",
+            "rule[0].effects[1]: edge endpoints must be bound by the match or an earlier mint effect"
+          ],
+          "unique_mint_signatures": null
+        },
+        "replacement_effect": {
+          "accepted": false,
+          "bound_basis": null,
+          "edge_type_count": null,
+          "fragment": "monotone_finite_key_insertions_v0",
+          "initial_edge_fact_count": 1,
+          "initial_node_count": 2,
+          "initial_node_ids": [
+            "n0",
+            "n1"
+          ],
+          "not_claimed": [
+            "weak acyclicity",
+            "arbitrary computed keys",
+            "constructed fresh values",
+            "deletion or replacement effects",
+            "hard CPU/wall-time bound",
+            "polynomial matching cost per firing"
+          ],
+          "possible_edge_fact_count_upper_bound": null,
+          "possible_node_count_upper_bound": null,
+          "progress_steps_upper_bound": null,
+          "reasons": [
+            "rule[0].effects[0]: effect 'set_attr' is outside the insertion-only finite-key fragment"
+          ],
+          "unique_mint_signatures": null
+        },
+        "unsupported_condition_clause": {
+          "accepted": false,
+          "bound_basis": null,
+          "edge_type_count": null,
+          "fragment": "monotone_finite_key_insertions_v0",
+          "initial_edge_fact_count": 1,
+          "initial_node_count": 2,
+          "initial_node_ids": [
+            "n0",
+            "n1"
+          ],
+          "not_claimed": [
+            "weak acyclicity",
+            "arbitrary computed keys",
+            "constructed fresh values",
+            "deletion or replacement effects",
+            "hard CPU/wall-time bound",
+            "polynomial matching cost per firing"
+          ],
+          "possible_edge_fact_count_upper_bound": null,
+          "possible_node_count_upper_bound": null,
+          "progress_steps_upper_bound": null,
+          "reasons": [
+            "rule[0]: unsupported rule fields; only name, match, and effects are admitted"
+          ],
+          "unique_mint_signatures": null
+        }
+      }
+    },
+    "gate": true
+  },
+  "exit_status": 0,
+  "lock_sha256": "d709f42b1135b64a6c9ef4943d41df722e8c32e7765b9372a275d495267f7c7f",
+  "locked_inputs": {
+    "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+    "native_extension_sha256": "7cced460b3bf06b78688e73dcd524aa6dc78b63cc04e619846d00962644cc951",
+    "sha256": {
+      "docs/research/engine_substrate/SUBSTRATE_FINITE_KEY_CHECKER_HARDENING_V1_1_PROTOCOL_20260926.md": "fdba0f2298f279824d0ec911011b452d19be38a7c47a8cfd8b6eed395d154611",
+      "runners/dsl/python/substrate_rs/_native.build.json": "5f2be0340aff964b896e73c69a9a697e25f4f2273d24d3b997653139b9aa036b",
+      "runners/dsl/src/py.rs": "11c82c44174c05385050e75cd85a8ad4979b12e8f70e23308f37a42b1b6fcb4d",
+      "runners/dsl/src/rewrite.rs": "4b7aa6ada5d555357795b94277dbac46c16cd39ab67ad666e1acfb8db463839c",
+      "runners/dsl/src/substrate.rs": "cfd2d8aebe01be73780a326334ec011b42a144dfe175883a0216e86ef4531c19",
+      "scripts/analyze_mint_termination_checker_hardening_v1_1.py": "cf02309b04767c0f4bc5fb30e712c52813549be9b857504ae51ecb5292a18b3a",
+      "scripts/analyze_mint_termination_fragment.py": "4ede1431dd0283b77a68e10255c4ed5d0cd0ae3d9a79a131d2bfa9ceeca1cf8a",
+      "scripts/substrate_run_manifest.py": "924ce1d320c8373f0e27edbc8ba43b6e17fcf6aeb4b6b2a3e8f36f76ea8cb33b",
+      "scripts/verify_mint_termination_checker_hardening_v1_1.py": "0ef9a81ecd409aa2179a558aed3404c0bd45dcf20cf11f732908ce7f25f50ed9"
+    }
+  },
+  "native": {
+    "access": {
+      "reads": [
+        "edge:link",
+        "type:Witness"
+      ],
+      "reads_any": false,
+      "term_edge_reads": [],
+      "writes": [
+        "attr:tag",
+        "edge:link",
+        "type:Witness"
+      ],
+      "writes_any": false
+    },
+    "edge_count": 3,
+    "empty_report": {
+      "budget_overshoot": 0,
+      "cycle_detection_enabled": false,
+      "passes_completed": 1,
+      "progress_steps": 0,
+      "requested_progress_budget": 100,
+      "status": "fixed_point"
+    },
+    "expected_access": {
+      "reads": [
+        "edge:link",
+        "type:Witness"
+      ],
+      "reads_any": false,
+      "term_edge_reads": [],
+      "writes": [
+        "attr:tag",
+        "edge:link",
+        "type:Witness"
+      ],
+      "writes_any": false
+    },
+    "expected_edges_present": true,
+    "gate": true,
+    "graph": {
+      "edges": [
+        {
+          "attrs": {},
+          "src": 0,
+          "tgt": 1,
+          "type": "link"
+        },
+        {
+          "attrs": {},
+          "src": 1,
+          "tgt": 2,
+          "type": "link"
+        },
+        {
+          "attrs": {},
+          "src": 2,
+          "tgt": 2,
+          "type": "link"
+        }
+      ],
+      "next_id": 3,
+      "nodes": [
+        {
+          "attrs": {},
+          "id": 0,
+          "type": "Seed"
+        },
+        {
+          "attrs": {},
+          "id": 1,
+          "type": "Seed"
+        },
+        {
+          "attrs": {
+            "tag": "shared"
+          },
+          "id": 2,
+          "type": "Witness"
+        }
+      ]
+    },
+    "node_count": 3,
+    "rule_index": 0,
+    "triggered_report": {
+      "budget_overshoot": 0,
+      "cycle_detection_enabled": false,
+      "passes_completed": 3,
+      "progress_steps": 2,
+      "requested_progress_budget": 100,
+      "status": "fixed_point"
+    }
+  },
+  "post_run_inputs": {
+    "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+    "native_extension_sha256": "7cced460b3bf06b78688e73dcd524aa6dc78b63cc04e619846d00962644cc951",
+    "sha256": {
+      "docs/research/engine_substrate/SUBSTRATE_FINITE_KEY_CHECKER_HARDENING_V1_1_PROTOCOL_20260926.md": "fdba0f2298f279824d0ec911011b452d19be38a7c47a8cfd8b6eed395d154611",
+      "runners/dsl/python/substrate_rs/_native.build.json": "5f2be0340aff964b896e73c69a9a697e25f4f2273d24d3b997653139b9aa036b",
+      "runners/dsl/src/py.rs": "11c82c44174c05385050e75cd85a8ad4979b12e8f70e23308f37a42b1b6fcb4d",
+      "runners/dsl/src/rewrite.rs": "4b7aa6ada5d555357795b94277dbac46c16cd39ab67ad666e1acfb8db463839c",
+      "runners/dsl/src/substrate.rs": "cfd2d8aebe01be73780a326334ec011b42a144dfe175883a0216e86ef4531c19",
+      "scripts/analyze_mint_termination_checker_hardening_v1_1.py": "cf02309b04767c0f4bc5fb30e712c52813549be9b857504ae51ecb5292a18b3a",
+      "scripts/analyze_mint_termination_fragment.py": "4ede1431dd0283b77a68e10255c4ed5d0cd0ae3d9a79a131d2bfa9ceeca1cf8a",
+      "scripts/substrate_run_manifest.py": "924ce1d320c8373f0e27edbc8ba43b6e17fcf6aeb4b6b2a3e8f36f76ea8cb33b",
+      "scripts/verify_mint_termination_checker_hardening_v1_1.py": "0ef9a81ecd409aa2179a558aed3404c0bd45dcf20cf11f732908ce7f25f50ed9"
+    }
+  },
+  "run_id": "mint-termination-checker-hardening-v1-1-20260926",
+  "run_manifest": {
+    "captured_utc": "2026-09-26T11:39:44.334446+00:00",
+    "engine": {
+      "build_is_stale": false,
+      "native_build_manifest_sha256": "5f2be0340aff964b896e73c69a9a697e25f4f2273d24d3b997653139b9aa036b",
+      "native_extension_path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+      "native_extension_sha256": "7cced460b3bf06b78688e73dcd524aa6dc78b63cc04e619846d00962644cc951",
+      "rust_source_fingerprint": "7527d122cd5772c2b89d6eb169f4f2e1f6ce6f0be18ad1ca6d90e739435aea97"
+    },
+    "execution": {
+      "argv": [
+        "/home/linuxbrew/.linuxbrew/opt/python@3.13/bin/python3.13",
+        "scripts/verify_mint_termination_checker_hardening_v1_1.py"
+      ],
+      "child_processes": [],
+      "command_display": "/home/linuxbrew/.linuxbrew/opt/python@3.13/bin/python3.13 scripts/verify_mint_termination_checker_hardening_v1_1.py",
+      "python_executable": "/home/linuxbrew/.linuxbrew/opt/python@3.13/bin/python3.13",
+      "python_version": "3.13.5 (main, Jun 11 2025, 15:36:57) [GCC 11.4.0]",
+      "relevant_environment": {
+        "PYTHONPATH": "runners/dsl/python:."
+      }
+    },
+    "exit_status": 0,
+    "explicit_inputs": {
+      "docs/research/engine_substrate/SUBSTRATE_FINITE_KEY_CHECKER_HARDENING_V1_1_PROTOCOL_20260926.md": {
+        "exists": true,
+        "group": "protocol",
+        "sha256": "fdba0f2298f279824d0ec911011b452d19be38a7c47a8cfd8b6eed395d154611"
+      },
+      "evaluation/substrate_capability/mint_termination_checker_hardening_v1_1_lock_20260926.json": {
+        "exists": true,
+        "group": "protocol",
+        "sha256": "d709f42b1135b64a6c9ef4943d41df722e8c32e7765b9372a275d495267f7c7f"
+      },
+      "runners/dsl/Cargo.lock": {
+        "exists": true,
+        "group": "build_inputs",
+        "sha256": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9"
+      },
+      "runners/dsl/Cargo.toml": {
+        "exists": true,
+        "group": "build_inputs",
+        "sha256": "c4d8ffff2241352a5150b5a9937dbb8010e958b6f115235b7daeae716c1a9332"
+      },
+      "runners/dsl/python/substrate_rs/_native.build.json": {
+        "exists": true,
+        "group": "source",
+        "sha256": "5f2be0340aff964b896e73c69a9a697e25f4f2273d24d3b997653139b9aa036b"
+      },
+      "runners/dsl/src/py.rs": {
+        "exists": true,
+        "group": "source",
+        "sha256": "11c82c44174c05385050e75cd85a8ad4979b12e8f70e23308f37a42b1b6fcb4d"
+      },
+      "runners/dsl/src/rewrite.rs": {
+        "exists": true,
+        "group": "source",
+        "sha256": "4b7aa6ada5d555357795b94277dbac46c16cd39ab67ad666e1acfb8db463839c"
+      },
+      "runners/dsl/src/substrate.rs": {
+        "exists": true,
+        "group": "source",
+        "sha256": "cfd2d8aebe01be73780a326334ec011b42a144dfe175883a0216e86ef4531c19"
+      },
+      "scripts/analyze_mint_termination_checker_hardening_v1_1.py": {
+        "exists": true,
+        "group": "analysis",
+        "sha256": "cf02309b04767c0f4bc5fb30e712c52813549be9b857504ae51ecb5292a18b3a"
+      },
+      "scripts/analyze_mint_termination_fragment.py": {
+        "exists": true,
+        "group": "source",
+        "sha256": "4ede1431dd0283b77a68e10255c4ed5d0cd0ae3d9a79a131d2bfa9ceeca1cf8a"
+      },
+      "scripts/substrate_run_manifest.py": {
+        "exists": true,
+        "group": "manifest_capture",
+        "sha256": "924ce1d320c8373f0e27edbc8ba43b6e17fcf6aeb4b6b2a3e8f36f76ea8cb33b"
+      },
+      "scripts/verify_mint_termination_checker_hardening_v1_1.py": {
+        "exists": true,
+        "group": "runner",
+        "sha256": "0ef9a81ecd409aa2179a558aed3404c0bd45dcf20cf11f732908ce7f25f50ed9"
+      }
+    },
+    "hardware": {
+      "cpu_model": "AMD Ryzen 9 5900X 12-Core Processor",
+      "logical_cpu_count": 24,
+      "machine": "x86_64",
+      "memory_total_bytes": 67342565376,
+      "platform": "Linux-6.8.0-142-generic-x86_64-with-glibc2.39",
+      "system": "Linux",
+      "workspace_filesystem_free_bytes": 32303951872,
+      "workspace_filesystem_total_bytes": 982627737600
+    },
+    "manifest_schema": "substrate-run-manifest-v1",
+    "repository": {
+      "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+      "dirty_workspace": {
+        "scope_note": "Unrelated untracked artifact contents are not recursively hashed; benchmark-relevant files are content-hashed in explicit_inputs.",
+        "status_porcelain_sha256": "d61c8442dc5d740f013820ae688d8cf229cc5ee48184e7118820bc7235f130a7",
+        "status_record_count": 3224,
+        "tracked_dirty_content_index_sha256": "45c16ae16c5d68a9450a50af7329217f93bc34728caffd2d9d48db13eb568403",
+        "tracked_dirty_file_count": 121,
+        "untracked_path_count": 3103,
+        "untracked_path_inventory_sha256": "ac6d8866022b993446a307e3ed4a2a2b03f656e2a090e91f86529082fd3f89d9"
+      },
+      "root": "/home/matt/ozmadev/ocelot"
+    },
+    "run_end_utc": "2026-09-26T11:39:44.334455+00:00",
+    "run_id": "mint-termination-checker-hardening-v1-1-20260926",
+    "run_started_utc": "2026-09-26T11:39:44.288423+00:00",
+    "stdout_stderr_capture": {
+      "bytes": 50,
+      "path": "evaluation/run_logs/mint-termination-checker-hardening-v1-1-20260926.stdout_stderr.log",
+      "scope": "parent-process stdout/stderr before the final structured summary print",
+      "sha256": "1df9b939340615a2658be104279667b01b820fd16294e51608aff8ac39f9b782"
+    },
+    "stdout_stderr_note": null,
+    "toolchain": {
+      "cargo": "cargo 1.87.0 (Homebrew)",
+      "rustc": "rustc 1.87.0 (17067e9ac 2025-05-09) (Homebrew)"
+    }
+  },
+  "schema_version": 1
+}

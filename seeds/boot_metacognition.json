@@ -1,6 +1,6 @@
 {
   "id": "boot_metacognition",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "depends_on": ["gap_awareness"],
   "capability_keys": ["boot_metacognition", "self_monitoring"],
   "description": "Graph-native metacognition over boot evidence. The host loader only translates Rust load outcomes into a BootCycle and exceptional BootSeedAnomaly observations. These rules—not Python—decide whether the completed boot is healthy or compromised, file a standard SelfConcern, and retain every anomaly as evidence. The decision is categorical and contains no floating-point threshold or magic number.",
@@ -11,12 +11,17 @@
     {
       "name": "assess_compromised_boot",
       "match": [
-        ["agent", "observed_boot", "cycle"],
-        ["cycle", "has_seed_anomaly", "anomaly"]
+        ["agent", "observed_boot", "cycle"]
       ],
       "where": {
         "type": "And",
         "items": [
+          {
+            "type": "Exists",
+            "source": {"type": "Neighbours", "node": {"type": "Var", "name": "cycle"}, "edge_type": "has_seed_anomaly", "any_type": false},
+            "var_name": "anomaly",
+            "predicate": {"type": "Lit", "value": true}
+          },
           {
             "type": "Eq",
             "a": {"type": "Attr", "node": {"type": "Var", "name": "cycle"}, "key": "status"},
@@ -71,12 +76,17 @@
       "name": "reuse_boot_integrity_concern",
       "match": [
         ["agent", "observed_boot", "cycle"],
-        ["cycle", "has_seed_anomaly", "anomaly"],
         ["agent", "has_self_concern", "concern"]
       ],
       "where": {
         "type": "And",
         "items": [
+          {
+            "type": "Exists",
+            "source": {"type": "Neighbours", "node": {"type": "Var", "name": "cycle"}, "edge_type": "has_seed_anomaly", "any_type": false},
+            "var_name": "anomaly",
+            "predicate": {"type": "Lit", "value": true}
+          },
           {
             "type": "Eq",
             "a": {"type": "Attr", "node": {"type": "Var", "name": "cycle"}, "key": "status"},

@@ -1,0 +1,3 @@
+# LS20 decision ambiguity/noise v2.2 analysis amendment
+
+The v2.1 correction correctly distinguishes all six parameterized operators, but its completeness gate expected 16 blocks. The registered design has eight station-by-noise conditions and four seed blocks per condition, hence 32 blocks. The captured operator counts show 32 complete blocks, each containing all six operators 3 or 4 times. This v2.2 analysis wrapper corrects only the expected block count and recomputes the combined gate from the locked v2.1 report plus the raw block-count artifact. It preserves both earlier analysis outputs and locks this amendment, wrapper, v2.1 analysis and audit lock, execution lock, and raw capture. No task outcomes or worker inputs changed.

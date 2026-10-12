@@ -1,0 +1,619 @@
+{
+ "id": "self_promotion",
+ "version": "1.2.0",
+ "depends_on": [
+  "gap_awareness"
+ ],
+ "description": "SELF-PROMOTION (tranche 20, at the user's direction: 'the agent should be able to do its own promotion'). Until now a self-filed SelfConcern became a StandingConcern, and so reached the experiment pipeline, only when a HUMAN asked: a steer turn, whose steer_promote_concern rule set promote_requested, or the UI. This seed lets the agent request its own promotion. `self_promote_noted_concern` marks promote_requested=1.0 on the OLDEST noted SelfConcern whose kind is in SelfPromotionPolicy.eligible_kinds. It does so only when the loop is idle: no StandingConcern pending, no Experiment requested or running without a verdict, no other promotion requested, and no retry requested. Each concern is self-promoted at most once (self_promote_attempted), and the policy's own budget caps the total (promoted_count < max_promotions). The daemon's existing steer hook (jabberwock_daemon._steer_tick, scheduled by cognitive_scheduler whenever a promotion is requested) performs the promotion, exactly as for a human steer. The graph decides; Python executes. Safety is unchanged downstream: every self-change still passes the dispatched replay judge, the adoption safety veto (adoption_safety), the provenance denylist, and improvement_integrity (tranche 19: the loop cannot change its own machinery, and this rule names SelfConcern, so it is itself protected).",
+ "nodes": [
+  {
+   "local_id": 0,
+   "type": "SelfPromotionPolicy",
+   "attrs": {
+    "name": "self_promotion",
+    "enabled": 1,
+    "eligible_kinds": [
+     "instruction",
+     "comprehension",
+     "unanswered"
+    ],
+    "max_promotions": 1000,
+    "promoted_count": 0,
+    "description": "Agent-held policy: which of its own concern kinds it may promote without a human, and how many in total. v1.1.0 default: kinds whose promotion takes the CONVERSATION replay pipeline with an exact judge. Excluded after the tranche-20 v1 run: 'self_improvement' (its ARC bundle mints a world-game Experiment that cannot dispatch when no world is attached; measured: it held the loop busy for the rest of the stream) and 'performance' (its judge compares wall-clock mean turn latency without a quantised grain, so a variant can be 'supported' by timing noise; measured: it adopted an ablation of reply_held_capability, a rule that never fired in the replay). Knowledge gaps stay on the comprehend-first learning path. v1.2.0 (tranche 22): 'unanswered' -- the agent's own recurring unanswered turn class (seeds/unanswered_gap.json), judged by the production-path conversation replay."
+   }
+  }
+ ],
+ "edges": [
+  {
+   "src": {
+    "role": "agent_root"
+   },
+   "type": "has_self_promotion_policy",
+   "tgt": {
+    "local": 0
+   },
+   "attrs": {}
+  }
+ ],
+ "productions": [],
+ "rules": [
+  {
+   "name": "self_promote_noted_concern",
+   "comment": "The agent requests promotion of its own oldest eligible noted concern when its improvement loop is idle, once per concern, within the policy budget (seeds/self_promotion.json). The steer hook performs it, as for a human steer.",
+   "match": [
+    [
+     "ag",
+     "has_self_promotion_policy",
+     "pol"
+    ],
+    [
+     "ag",
+     "has_self_concern",
+     "sc"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "pol"
+       },
+       "key": "enabled"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "pol"
+         },
+         "key": "promoted_count"
+        },
+        "b": {
+         "type": "Lit",
+         "value": null
+        }
+       },
+       "then": {
+        "type": "Lit",
+        "value": 0
+       },
+       "other": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "pol"
+        },
+        "key": "promoted_count"
+       }
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "pol"
+       },
+       "key": "max_promotions"
+      }
+     },
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "sc"
+         },
+         "key": "status"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "noted"
+        }
+       },
+       {
+        "type": "In",
+        "member": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "sc"
+         },
+         "key": "kind"
+        },
+        "container": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "pol"
+         },
+         "key": "eligible_kinds"
+        }
+       },
+       {
+        "type": "Not",
+        "arg": {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "sc"
+          },
+          "key": "self_promote_attempted"
+         },
+         "b": {
+          "type": "Lit",
+          "value": 1
+         }
+        }
+       },
+       {
+        "type": "Not",
+        "arg": {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "sc"
+          },
+          "key": "promote_requested"
+         },
+         "b": {
+          "type": "Lit",
+          "value": 1.0
+         }
+        }
+       }
+      ]
+     },
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Count",
+         "source": {
+          "type": "Filter",
+          "source": {
+           "type": "NodesOfType",
+           "node_type": "StandingConcern"
+          },
+          "var_name": "st",
+          "predicate": {
+           "type": "And",
+           "items": [
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "st"
+              },
+              "key": "source"
+             },
+             "b": {
+              "type": "Lit",
+              "value": "conversation_promoted"
+             }
+            },
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "st"
+              },
+              "key": "status"
+             },
+             "b": {
+              "type": "Lit",
+              "value": "pending"
+             }
+            }
+           ]
+          }
+         }
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Count",
+         "source": {
+          "type": "Filter",
+          "source": {
+           "type": "NodesOfType",
+           "node_type": "Experiment"
+          },
+          "var_name": "e",
+          "predicate": {
+           "type": "And",
+           "items": [
+            {
+             "type": "In",
+             "member": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "e"
+              },
+              "key": "status"
+             },
+             "container": {
+              "type": "Lit",
+              "value": [
+               "requested",
+               "running"
+              ]
+             }
+            },
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "e"
+              },
+              "key": "outcome"
+             },
+             "b": {
+              "type": "Lit",
+              "value": null
+             }
+            },
+            {
+             "type": "Exists",
+             "source": {
+              "type": "Filter",
+              "source": {
+               "type": "NodesOfType",
+               "node_type": "StandingConcern"
+              },
+              "var_name": "st2",
+              "predicate": {
+               "type": "And",
+               "items": [
+                {
+                 "type": "Eq",
+                 "a": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "st2"
+                  },
+                  "key": "source"
+                 },
+                 "b": {
+                  "type": "Lit",
+                  "value": "conversation_promoted"
+                 }
+                },
+                {
+                 "type": "Eq",
+                 "a": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "st2"
+                  },
+                  "key": "name"
+                 },
+                 "b": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "e"
+                  },
+                  "key": "axis_tag"
+                 }
+                }
+               ]
+              }
+             },
+             "var_name": "st3",
+             "predicate": {
+              "type": "Lit",
+              "value": true
+             }
+            }
+           ]
+          }
+         }
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Count",
+         "source": {
+          "type": "Filter",
+          "source": {
+           "type": "NodesOfType",
+           "node_type": "SelfConcern"
+          },
+          "var_name": "q",
+          "predicate": {
+           "type": "And",
+           "items": [
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "q"
+              },
+              "key": "promote_requested"
+             },
+             "b": {
+              "type": "Lit",
+              "value": 1.0
+             }
+            },
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "q"
+              },
+              "key": "status"
+             },
+             "b": {
+              "type": "Lit",
+              "value": "noted"
+             }
+            }
+           ]
+          }
+         }
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Count",
+         "source": {
+          "type": "Filter",
+          "source": {
+           "type": "NodesOfType",
+           "node_type": "SelfConcern"
+          },
+          "var_name": "r",
+          "predicate": {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "r"
+            },
+            "key": "retry_requested"
+           },
+           "b": {
+            "type": "Lit",
+            "value": 1
+           }
+          }
+         }
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0
+        }
+       }
+      ]
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Var",
+       "name": "sc"
+      },
+      "b": {
+       "type": "Argmin",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "SelfConcern"
+        },
+        "var_name": "y",
+        "predicate": {
+         "type": "And",
+         "items": [
+          {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "y"
+            },
+            "key": "status"
+           },
+           "b": {
+            "type": "Lit",
+            "value": "noted"
+           }
+          },
+          {
+           "type": "In",
+           "member": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "y"
+            },
+            "key": "kind"
+           },
+           "container": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "pol"
+            },
+            "key": "eligible_kinds"
+           }
+          },
+          {
+           "type": "Not",
+           "arg": {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "y"
+             },
+             "key": "self_promote_attempted"
+            },
+            "b": {
+             "type": "Lit",
+             "value": 1
+            }
+           }
+          },
+          {
+           "type": "Not",
+           "arg": {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "y"
+             },
+             "key": "promote_requested"
+            },
+            "b": {
+             "type": "Lit",
+             "value": 1.0
+            }
+           }
+          }
+         ]
+        }
+       },
+       "var_name": "y",
+       "value": {
+        "type": "Var",
+        "name": "y"
+       },
+       "default": null
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "sc",
+     "promote_requested",
+     1.0
+    ],
+    [
+     "set_attr",
+     "sc",
+     "self_promote_attempted",
+     1
+    ],
+    [
+     "set_attr",
+     "sc",
+     "promoted_by",
+     "self"
+    ],
+    [
+     "add_edge",
+     "sc",
+     "promote_requested_by",
+     "pol"
+    ],
+    [
+     "set_attr",
+     "pol",
+     "promoted_count",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "IfThenElse",
+         "cond": {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "pol"
+           },
+           "key": "promoted_count"
+          },
+          "b": {
+           "type": "Lit",
+           "value": null
+          }
+         },
+         "then": {
+          "type": "Lit",
+          "value": 0
+         },
+         "other": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "pol"
+          },
+          "key": "promoted_count"
+         }
+        },
+        {
+         "type": "Lit",
+         "value": 1
+        }
+       ]
+      }
+     }
+    ]
+   ]
+  }
+ ]
+}

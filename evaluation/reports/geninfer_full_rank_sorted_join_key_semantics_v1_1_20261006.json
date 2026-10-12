@@ -1,0 +1,528 @@
+{
+  "captured_utc": "2026-10-05T23:35:38Z",
+  "expected_features": {
+    "nested": [
+      "geninfer_full_rank_matrix_solver"
+    ],
+    "sorted": [
+      "geninfer_full_rank_matrix_solver",
+      "geninfer_full_rank_sorted_identity_join"
+    ]
+  },
+  "host": "Linux-6.8.0-142-generic-x86_64-with-glibc2.39",
+  "inputs": {
+    "docs/research/engine_substrate/GENINFER_FULL_RANK_SORTED_JOIN_KEY_SEMANTICS_V1_1_PREREG_20261006.md": "22334c862ac1b3e8f7b740bcdf9503bbba4159849b5f28aefb7a374c5f290404",
+    "evaluation/substrate_capability/geninfer_full_rank_sorted_join_key_semantics_v1_1.py": "ed9e2f91e956db81076466767c2ce0d6ab6ec892971f025b6334db8f63eff9ab",
+    "evaluation/substrate_capability/geninfer_full_rank_sorted_join_scale_v2_3.py": "070f1086a86bb1f9152c0b392e725bd177844339ddf78640687cd2d17419a944",
+    "runners/dsl/Cargo.lock": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+    "runners/dsl/Cargo.toml": "fd90e84456777fc198f9ddbee64f8f9a6f4f780253e4734c1f59c95933cefe3a",
+    "runners/dsl/src/shape_decode.rs": "74562f13dde371e64a8c1ee6011d787d3a59d6c78e30d8fea8ff298936e9264f",
+    "runners/dsl/src/value.rs": "a345550c27549a36d5168449a04d8f0a7ff43beb31149e74463881108db9be26"
+  },
+  "lock_sha256": "52e2ad9ae30d74f855c4bc01e12711c99463b6124862828b7cc60b539edc1ca5",
+  "parity_gate": "passed",
+  "scenarios": [
+    "mixed_numeric",
+    "float_keys",
+    "bool_int",
+    "compound_keys",
+    "duplicate_ids",
+    "missing_ids"
+  ],
+  "schema": "GenInferFullRankSortedJoinKeySemanticsV1_1",
+  "worker_count": 12,
+  "workers": [
+    {
+      "native_sha256": "b0d20e9a3feb36b4a1e8d5c11815f972291746c92d566496fd2949f11899fc76",
+      "phases": {
+        "heldout": {
+          "covered_by": "heldout_base",
+          "receipts": [
+            {
+              "base": "heldout_base",
+              "dim": "latent:genlin_[1,1,0,0,1,1,1,0,1]",
+              "dims": [
+                2,
+                4
+              ],
+              "generator": "genlin_[1,1,0,0,1,1,1,0,1]",
+              "generators": [
+                "genlin_[1,1,0,0,1,1,1,0,1]"
+              ],
+              "k": 1,
+              "ks": [
+                1
+              ],
+              "source": "dim_infer",
+              "transforms": [
+                {
+                  "delta": 2,
+                  "dim": 2,
+                  "kind": "shift"
+                },
+                {
+                  "delta": 2,
+                  "dim": 4,
+                  "kind": "shift"
+                }
+              ]
+            }
+          ],
+          "status": "recognized_transformed"
+        },
+        "train": {
+          "covered_by": "training_base",
+          "receipts": [
+            {
+              "base": "training_base",
+              "dim": "latent:genlin_[1,1,0,0,1,1,1,0,1]",
+              "dims": [],
+              "generator": "genlin_[1,1,0,0,1,1,1,0,1]",
+              "generators": [
+                "genlin_[1,1,0,0,1,1,1,0,1]"
+              ],
+              "k": 1,
+              "ks": [
+                1
+              ],
+              "source": "dim_infer",
+              "transforms": []
+            }
+          ],
+          "status": "recognized_transformed"
+        }
+      },
+      "scenario": "mixed_numeric",
+      "source_stable": true,
+      "variant": "nested"
+    },
+    {
+      "native_sha256": "a881cd6d65c0a69208e553aeda44582b7102e5e22bf710add277bd012b7d33a2",
+      "phases": {
+        "heldout": {
+          "covered_by": "heldout_base",
+          "receipts": [
+            {
+              "base": "heldout_base",
+              "dim": "latent:genlin_[1,1,0,0,1,1,1,0,1]",
+              "dims": [
+                2,
+                4
+              ],
+              "generator": "genlin_[1,1,0,0,1,1,1,0,1]",
+              "generators": [
+                "genlin_[1,1,0,0,1,1,1,0,1]"
+              ],
+              "k": 1,
+              "ks": [
+                1
+              ],
+              "source": "dim_infer",
+              "transforms": [
+                {
+                  "delta": 2,
+                  "dim": 2,
+                  "kind": "shift"
+                },
+                {
+                  "delta": 2,
+                  "dim": 4,
+                  "kind": "shift"
+                }
+              ]
+            }
+          ],
+          "status": "recognized_transformed"
+        },
+        "train": {
+          "covered_by": "training_base",
+          "receipts": [
+            {
+              "base": "training_base",
+              "dim": "latent:genlin_[1,1,0,0,1,1,1,0,1]",
+              "dims": [],
+              "generator": "genlin_[1,1,0,0,1,1,1,0,1]",
+              "generators": [
+                "genlin_[1,1,0,0,1,1,1,0,1]"
+              ],
+              "k": 1,
+              "ks": [
+                1
+              ],
+              "source": "dim_infer",
+              "transforms": []
+            }
+          ],
+          "status": "recognized_transformed"
+        }
+      },
+      "scenario": "mixed_numeric",
+      "source_stable": true,
+      "variant": "sorted"
+    },
+    {
+      "native_sha256": "b0d20e9a3feb36b4a1e8d5c11815f972291746c92d566496fd2949f11899fc76",
+      "phases": {
+        "heldout": {
+          "covered_by": "heldout_base",
+          "receipts": [
+            {
+              "base": "heldout_base",
+              "dim": "latent:genlin_[1,1,0,0,1,1,1,0,1]",
+              "dims": [
+                2,
+                4
+              ],
+              "generator": "genlin_[1,1,0,0,1,1,1,0,1]",
+              "generators": [
+                "genlin_[1,1,0,0,1,1,1,0,1]"
+              ],
+              "k": 1,
+              "ks": [
+                1
+              ],
+              "source": "dim_infer",
+              "transforms": [
+                {
+                  "delta": 2,
+                  "dim": 2,
+                  "kind": "shift"
+                },
+                {
+                  "delta": 2,
+                  "dim": 4,
+                  "kind": "shift"
+                }
+              ]
+            }
+          ],
+          "status": "recognized_transformed"
+        },
+        "train": {
+          "covered_by": "training_base",
+          "receipts": [
+            {
+              "base": "training_base",
+              "dim": "latent:genlin_[1,1,0,0,1,1,1,0,1]",
+              "dims": [],
+              "generator": "genlin_[1,1,0,0,1,1,1,0,1]",
+              "generators": [
+                "genlin_[1,1,0,0,1,1,1,0,1]"
+              ],
+              "k": 1,
+              "ks": [
+                1
+              ],
+              "source": "dim_infer",
+              "transforms": []
+            }
+          ],
+          "status": "recognized_transformed"
+        }
+      },
+      "scenario": "float_keys",
+      "source_stable": true,
+      "variant": "nested"
+    },
+    {
+      "native_sha256": "a881cd6d65c0a69208e553aeda44582b7102e5e22bf710add277bd012b7d33a2",
+      "phases": {
+        "heldout": {
+          "covered_by": "heldout_base",
+          "receipts": [
+            {
+              "base": "heldout_base",
+              "dim": "latent:genlin_[1,1,0,0,1,1,1,0,1]",
+              "dims": [
+                2,
+                4
+              ],
+              "generator": "genlin_[1,1,0,0,1,1,1,0,1]",
+              "generators": [
+                "genlin_[1,1,0,0,1,1,1,0,1]"
+              ],
+              "k": 1,
+              "ks": [
+                1
+              ],
+              "source": "dim_infer",
+              "transforms": [
+                {
+                  "delta": 2,
+                  "dim": 2,
+                  "kind": "shift"
+                },
+                {
+                  "delta": 2,
+                  "dim": 4,
+                  "kind": "shift"
+                }
+              ]
+            }
+          ],
+          "status": "recognized_transformed"
+        },
+        "train": {
+          "covered_by": "training_base",
+          "receipts": [
+            {
+              "base": "training_base",
+              "dim": "latent:genlin_[1,1,0,0,1,1,1,0,1]",
+              "dims": [],
+              "generator": "genlin_[1,1,0,0,1,1,1,0,1]",
+              "generators": [
+                "genlin_[1,1,0,0,1,1,1,0,1]"
+              ],
+              "k": 1,
+              "ks": [
+                1
+              ],
+              "source": "dim_infer",
+              "transforms": []
+            }
+          ],
+          "status": "recognized_transformed"
+        }
+      },
+      "scenario": "float_keys",
+      "source_stable": true,
+      "variant": "sorted"
+    },
+    {
+      "native_sha256": "b0d20e9a3feb36b4a1e8d5c11815f972291746c92d566496fd2949f11899fc76",
+      "phases": {
+        "heldout": {
+          "covered_by": "heldout_base",
+          "receipts": [
+            {
+              "base": "heldout_base",
+              "dim": "latent:genlin_[1,1,0,0,1,1,1,0,1]",
+              "dims": [
+                2,
+                4
+              ],
+              "generator": "genlin_[1,1,0,0,1,1,1,0,1]",
+              "generators": [
+                "genlin_[1,1,0,0,1,1,1,0,1]"
+              ],
+              "k": 1,
+              "ks": [
+                1
+              ],
+              "source": "dim_infer",
+              "transforms": [
+                {
+                  "delta": 2,
+                  "dim": 2,
+                  "kind": "shift"
+                },
+                {
+                  "delta": 2,
+                  "dim": 4,
+                  "kind": "shift"
+                }
+              ]
+            }
+          ],
+          "status": "recognized_transformed"
+        },
+        "train": {
+          "covered_by": "training_base",
+          "receipts": [
+            {
+              "base": "training_base",
+              "dim": "latent:genlin_[1,1,0,0,1,1,1,0,1]",
+              "dims": [],
+              "generator": "genlin_[1,1,0,0,1,1,1,0,1]",
+              "generators": [
+                "genlin_[1,1,0,0,1,1,1,0,1]"
+              ],
+              "k": 1,
+              "ks": [
+                1
+              ],
+              "source": "dim_infer",
+              "transforms": []
+            }
+          ],
+          "status": "recognized_transformed"
+        }
+      },
+      "scenario": "bool_int",
+      "source_stable": true,
+      "variant": "nested"
+    },
+    {
+      "native_sha256": "a881cd6d65c0a69208e553aeda44582b7102e5e22bf710add277bd012b7d33a2",
+      "phases": {
+        "heldout": {
+          "covered_by": "heldout_base",
+          "receipts": [
+            {
+              "base": "heldout_base",
+              "dim": "latent:genlin_[1,1,0,0,1,1,1,0,1]",
+              "dims": [
+                2,
+                4
+              ],
+              "generator": "genlin_[1,1,0,0,1,1,1,0,1]",
+              "generators": [
+                "genlin_[1,1,0,0,1,1,1,0,1]"
+              ],
+              "k": 1,
+              "ks": [
+                1
+              ],
+              "source": "dim_infer",
+              "transforms": [
+                {
+                  "delta": 2,
+                  "dim": 2,
+                  "kind": "shift"
+                },
+                {
+                  "delta": 2,
+                  "dim": 4,
+                  "kind": "shift"
+                }
+              ]
+            }
+          ],
+          "status": "recognized_transformed"
+        },
+        "train": {
+          "covered_by": "training_base",
+          "receipts": [
+            {
+              "base": "training_base",
+              "dim": "latent:genlin_[1,1,0,0,1,1,1,0,1]",
+              "dims": [],
+              "generator": "genlin_[1,1,0,0,1,1,1,0,1]",
+              "generators": [
+                "genlin_[1,1,0,0,1,1,1,0,1]"
+              ],
+              "k": 1,
+              "ks": [
+                1
+              ],
+              "source": "dim_infer",
+              "transforms": []
+            }
+          ],
+          "status": "recognized_transformed"
+        }
+      },
+      "scenario": "bool_int",
+      "source_stable": true,
+      "variant": "sorted"
+    },
+    {
+      "native_sha256": "b0d20e9a3feb36b4a1e8d5c11815f972291746c92d566496fd2949f11899fc76",
+      "phases": {
+        "heldout": {
+          "covered_by": null,
+          "receipts": [],
+          "status": "minted"
+        },
+        "train": {
+          "covered_by": null,
+          "receipts": [],
+          "status": "minted"
+        }
+      },
+      "scenario": "compound_keys",
+      "source_stable": true,
+      "variant": "nested"
+    },
+    {
+      "native_sha256": "a881cd6d65c0a69208e553aeda44582b7102e5e22bf710add277bd012b7d33a2",
+      "phases": {
+        "heldout": {
+          "covered_by": null,
+          "receipts": [],
+          "status": "minted"
+        },
+        "train": {
+          "covered_by": null,
+          "receipts": [],
+          "status": "minted"
+        }
+      },
+      "scenario": "compound_keys",
+      "source_stable": true,
+      "variant": "sorted"
+    },
+    {
+      "native_sha256": "b0d20e9a3feb36b4a1e8d5c11815f972291746c92d566496fd2949f11899fc76",
+      "phases": {
+        "heldout": {
+          "covered_by": null,
+          "receipts": [],
+          "status": "minted"
+        },
+        "train": {
+          "covered_by": null,
+          "receipts": [],
+          "status": "minted"
+        }
+      },
+      "scenario": "duplicate_ids",
+      "source_stable": true,
+      "variant": "nested"
+    },
+    {
+      "native_sha256": "a881cd6d65c0a69208e553aeda44582b7102e5e22bf710add277bd012b7d33a2",
+      "phases": {
+        "heldout": {
+          "covered_by": null,
+          "receipts": [],
+          "status": "minted"
+        },
+        "train": {
+          "covered_by": null,
+          "receipts": [],
+          "status": "minted"
+        }
+      },
+      "scenario": "duplicate_ids",
+      "source_stable": true,
+      "variant": "sorted"
+    },
+    {
+      "native_sha256": "b0d20e9a3feb36b4a1e8d5c11815f972291746c92d566496fd2949f11899fc76",
+      "phases": {
+        "heldout": {
+          "covered_by": null,
+          "receipts": [],
+          "status": "minted"
+        },
+        "train": {
+          "covered_by": null,
+          "receipts": [],
+          "status": "minted"
+        }
+      },
+      "scenario": "missing_ids",
+      "source_stable": true,
+      "variant": "nested"
+    },
+    {
+      "native_sha256": "a881cd6d65c0a69208e553aeda44582b7102e5e22bf710add277bd012b7d33a2",
+      "phases": {
+        "heldout": {
+          "covered_by": null,
+          "receipts": [],
+          "status": "minted"
+        },
+        "train": {
+          "covered_by": null,
+          "receipts": [],
+          "status": "minted"
+        }
+      },
+      "scenario": "missing_ids",
+      "source_stable": true,
+      "variant": "sorted"
+    }
+  ]
+}

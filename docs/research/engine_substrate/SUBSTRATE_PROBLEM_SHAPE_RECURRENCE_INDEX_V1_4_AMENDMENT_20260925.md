@@ -1,0 +1,3 @@
+# V1.4 amendment: matched observation timing
+
+All six V1.3 semantic cells passed. This amendment adds a treatment observation wall/CPU interval that starts before observation creation and ends after closure and native receipt creation, matching the baseline `observe_measure` interval. Index maintenance and native closure continue to be reported separately. The rule variant, task sequence, seed/build inputs, semantic acceptance checks, and locked baseline do not change. The six-cell sweep is rerun so the final raw artifact carries comparable timings. These remain single-run exploratory measurements, not a speed claim or confirmation.

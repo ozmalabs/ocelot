@@ -1,0 +1,65 @@
+{
+  "checks": {
+    "event_full_parity": true,
+    "event_settled": true,
+    "full_fixed_points": true,
+    "full_per_rule_rows_present": true,
+    "global_work_counters_nonzero": true,
+    "integrity": {
+      "base_protocol": true,
+      "base_runner": true,
+      "graph_rs": true,
+      "native": true,
+      "protocol": true,
+      "py_rs": true,
+      "rewrite_rs": true,
+      "runner": true,
+      "scale_audit_rs": true,
+      "substrate_rs": true
+    },
+    "pairs": 30,
+    "scoped_per_rule_rows_absent": true
+  },
+  "confirmed_instrumentation_gap": true,
+  "finding": "Global candidate and Term counters record scoped work, but the scoped rule runner emits no per-rule rows; full closure emits them. Per-rule attribution is therefore unavailable for the scoped arm on this build.",
+  "integrity": {
+    "base_protocol": true,
+    "base_runner": true,
+    "graph_rs": true,
+    "native": true,
+    "protocol": true,
+    "py_rs": true,
+    "rewrite_rs": true,
+    "runner": true,
+    "scale_audit_rs": true,
+    "substrate_rs": true
+  },
+  "protocol_id": "SUBSTRATE_FRAME_TOPOLOGY_COST_ATTRIBUTION_PREREG_20260926",
+  "semantic_attribution_run_valid": true,
+  "topology_summaries": [
+    {
+      "full_per_rule_nonempty_phases": 20,
+      "median_full_candidates": 16256,
+      "median_scoped_candidates": 32514,
+      "pairs": 10,
+      "scoped_per_rule_nonempty_phases": 0,
+      "topology": "chain"
+    },
+    {
+      "full_per_rule_nonempty_phases": 20,
+      "median_full_candidates": 1778,
+      "median_scoped_candidates": 32514,
+      "pairs": 10,
+      "scoped_per_rule_nonempty_phases": 0,
+      "topology": "binary_tree"
+    },
+    {
+      "full_per_rule_nonempty_phases": 20,
+      "median_full_candidates": 508,
+      "median_scoped_candidates": 32514,
+      "pairs": 10,
+      "scoped_per_rule_nonempty_phases": 0,
+      "topology": "star"
+    }
+  ]
+}

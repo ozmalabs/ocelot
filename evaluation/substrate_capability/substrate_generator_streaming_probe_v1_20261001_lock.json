@@ -1,0 +1,86 @@
+{
+  "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+  "design": {
+    "arm_order": "randomized within each paired worker",
+    "arms": [
+      "eager",
+      "streaming"
+    ],
+    "constants": [
+      0,
+      1,
+      2,
+      -1
+    ],
+    "max_sizes": {
+      "euler": [
+        3,
+        4,
+        5,
+        6
+      ],
+      "square": [
+        2,
+        3,
+        4,
+        5
+      ],
+      "triangular": [
+        5,
+        6,
+        7,
+        8
+      ]
+    },
+    "ops": [
+      "Plus",
+      "Times",
+      "Minus",
+      "Div"
+    ],
+    "peak_memory_measure": "tracemalloc peak Python allocations during synthesis",
+    "probe_counts": [
+      0,
+      1,
+      3,
+      6,
+      10
+    ],
+    "repetitions": 2,
+    "seed": 20261001,
+    "solution_limit": 10000,
+    "tasks": [
+      "triangular",
+      "square",
+      "euler"
+    ]
+  },
+  "engine_provenance": {
+    "ambiguous": false,
+    "engine_source_fingerprint": "4dce7f6a8524f29e9bba16b7da1709480089f0bf7d958063a1d67caa777fd5f4",
+    "engine_tree": "/home/matt/ozmadev/ocelot",
+    "mtime": 1790776652.3021295,
+    "native_path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+    "other_resolvable": [],
+    "sha256": "2abd06875ea09bd1e931346250ae9d06858d2b521ec8973bf511853c6c0425d2",
+    "short": "2abd06875ea0",
+    "source_fingerprint": "4dce7f6a8524f29e9bba16b7da1709480089f0bf7d958063a1d67caa777fd5f4",
+    "source_match": "own",
+    "stale_rust": [],
+    "this_tree": "/home/matt/ozmadev/ocelot"
+  },
+  "native_build_manifest_sha256": "sha256:8f935b014617e3a275280b5dc453083ee875acb3389381a4f29ebedbfa057036",
+  "native_extension": {
+    "path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+    "sha256": "sha256:2abd06875ea09bd1e931346250ae9d06858d2b521ec8973bf511853c6c0425d2"
+  },
+  "rust_source_fingerprint": "4dce7f6a8524f29e9bba16b7da1709480089f0bf7d958063a1d67caa777fd5f4",
+  "schema_version": 1,
+  "sources": {
+    "docs/research/engine_substrate/SUBSTRATE_GENERATOR_STREAMING_PROBE_V1_PREREG_20261001.md": "sha256:724de8d79267fd8ddf361bac4130d2406da5867eb65499291f89849a20bea27f",
+    "domains/engine_provenance.py": "sha256:a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+    "domains/generator.py": "sha256:c80b06458695dcdf897d41eb9cfd3193b1d907e5fb548ff2dc843af2cdedee5f",
+    "scripts/substrate_generated_pool_cegis_comparison_v1.py": "sha256:af3cfe0a6c802fcfa8079b080694f250f200e7e05dfbbacd0f70ea737f5d0d7d",
+    "scripts/substrate_generator_streaming_probe_v1.py": "sha256:9148be8b3fd6e37f77662eb5ec423415898a231cb97a7c316e189abab50214fb"
+  }
+}

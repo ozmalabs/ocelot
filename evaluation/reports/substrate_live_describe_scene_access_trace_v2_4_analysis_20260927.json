@@ -1,0 +1,106 @@
+{
+  "all_checks_pass": true,
+  "checks": {
+    "all_workers_joined_without_errors": true,
+    "exact_semantic_parity_within_pairs": true,
+    "locked_sources_stable": true,
+    "schedule_and_request_lifecycle": true,
+    "six_distinct_workers_three_pairs": true,
+    "trace_event_totals_reconcile": true,
+    "trace_intervals_complete_and_no_drops": true,
+    "untraced_arms_have_no_access_events": true
+  },
+  "classification": "valid_single_fixture_access_capture",
+  "locality_claim_boundary": "Selected native access events and graph cut metrics cover this authored scene fixture only. Request lifecycle projections have induced-width upper bound 2 but expose 18\u201320 external nodes across 32\u201335 boundary incidences. These structural cuts do not prove dynamic computation factorizes across boundaries or that natural tasks have this distribution.",
+  "per_request_metrics": {
+    "request-A": {
+      "boundary_incidence_counts": [
+        35,
+        35,
+        35
+      ],
+      "owned_induced_width_upper_bounds": [
+        2,
+        2,
+        2
+      ],
+      "owned_node_counts": [
+        7,
+        7,
+        7
+      ],
+      "public_surface_matches_graph_outbound": [
+        false,
+        false,
+        false
+      ],
+      "trace_event_counts": [
+        1140892,
+        1140892,
+        1140892
+      ],
+      "unique_external_boundary_node_counts": [
+        20,
+        20,
+        20
+      ]
+    },
+    "request-B": {
+      "boundary_incidence_counts": [
+        32,
+        32,
+        32
+      ],
+      "owned_induced_width_upper_bounds": [
+        2,
+        2,
+        2
+      ],
+      "owned_node_counts": [
+        6,
+        6,
+        6
+      ],
+      "public_surface_matches_graph_outbound": [
+        false,
+        false,
+        false
+      ],
+      "trace_event_counts": [
+        997848,
+        997848,
+        997848
+      ],
+      "unique_external_boundary_node_counts": [
+        18,
+        18,
+        18
+      ]
+    }
+  },
+  "public_graph_output_alignment": {
+    "all_traced_requests_match": false,
+    "interpretation": "Public replies describe the scene and request Goals resolve, but the captured unsuppressed graph outbound Message does not match the public surface; request B has no matching outbound Message. Treat output-channel alignment as a separate capability gap."
+  },
+  "run_id": "substrate-live-describe-scene-access-trace-v2-4-independent-analysis-20260927",
+  "schema_version": 1,
+  "shared_scene_input": {
+    "boundary_incidence_counts": [
+      5,
+      5,
+      5
+    ],
+    "induced_width_upper_bounds": [
+      1,
+      1,
+      1
+    ],
+    "node_counts": [
+      4,
+      4,
+      4
+    ]
+  },
+  "source_raw": "evaluation/reports/substrate_live_describe_scene_access_trace_v2_4_workers_raw_20260927.json",
+  "timing_claim_boundary": "Do not interpret v2.4 timings as uninstrumented commodity-CPU cost: the full driver enables per-rule audit around producer callbacks and performs graph readback. The paired timings are retained only as instrumentation-context data."
+}

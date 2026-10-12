@@ -766,9 +766,16 @@ def test_verified_system_two_success_teaches_attached_small_net():
     assert agent.s.node(net)["attrs"]["surprise"] > 0
 
 
-def test_dual_process_seed_is_part_of_minimal_core():
-    from substrate.boot_core import CORE_SEEDS
+def test_dual_process_seed_is_available_but_not_required_by_minimal_core():
+    """Available, not required: the seed is registered, loadable, frozen when
+    present, and NOT part of the minimal core (2026-10-06)."""
+    from substrate.boot_core import CORE_SEEDS, OPTIONAL_CORE_SEEDS, boot_core, load_seeds_into
     from substrate.boot_all import _FROZEN_SEED_IDS
 
-    assert "dual_process_core" in CORE_SEEDS
+    assert "dual_process_core" not in CORE_SEEDS
+    assert "dual_process_core" in OPTIONAL_CORE_SEEDS
     assert "dual_process_core" in _FROZEN_SEED_IDS
+    s, ag = boot_core()
+    assert not list(s.nodes("DualProcessPolicy"))
+    load_seeds_into(s, ag, ["dual_process_core"])
+    assert list(s.nodes("DualProcessPolicy"))

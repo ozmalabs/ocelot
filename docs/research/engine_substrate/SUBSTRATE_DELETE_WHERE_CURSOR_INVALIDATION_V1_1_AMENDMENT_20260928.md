@@ -1,0 +1,5 @@
+# Node-deletion where-reader cursor invalidation v1.1 amendment
+
+The initial replay is retained as `substrate_delete_where_cursor_invalidation_v1_initial_failed_gate_20260928.json`. Full rescan and sound incremental arms both opened all N slots and matched exactly. The unsound edge-type-invalidation arm also opened all N slots, contrary to the preregistered falsifier expectation.
+
+Source inspection explains why the falsifier is masked on this mutation route: `remove_node` also calls the generic `mark_node_mutation` fallback in default dirty mode, which clears cursors for all rules with a `where` clause. The edge-type-specific unsound switch does not disable that independent, conservative invalidation. V1.1 therefore changes the gate to require all three arms to refresh and match, and reports candidate rescans as the cost of this fallback. This amendment does not claim the edge-type invalidator alone is correct; isolating it requires an edge-only deletion fixture or a narrowly scoped ablation of node-mutation fallback.

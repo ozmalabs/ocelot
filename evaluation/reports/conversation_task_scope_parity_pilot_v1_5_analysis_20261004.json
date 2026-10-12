@@ -1,0 +1,404 @@
+{
+  "analysis_script_sha256": "6bb512efbe92e86ce322bac5fecbc51a2059c5b2994fe16dd6f5999eae1977a3",
+  "capture_sha256": "e66dec19cb8706b0f76ebcbf9e98808e4d9db1922f9654a6c13502329aed7f7a",
+  "checks": {
+    "independent_analysis_pass": true
+  },
+  "claim_boundary": "Exact-state comparison of monolithic closure with globally reswept task-specific Microtheory scopes on authored 2/4/8-goal cases and a four-frame common-ground stress case. Scope nodes and ownership edges are symmetric measurement annotations. Scheduler/work rows quantify executed closure work; they do not prove complete graph dependencies, learned frames, factorization, speedup, or natural-task prevalence.",
+  "errors": [],
+  "gates_pass": true,
+  "paired_cases": [
+    {
+      "case_id": "common_ground_stress",
+      "checkpoint_count": 10,
+      "final_equal": true,
+      "replicate": 0,
+      "requested_goal_count": null,
+      "scoped_calls": 92
+    },
+    {
+      "case_id": "concurrent_goals",
+      "checkpoint_count": 8,
+      "final_equal": true,
+      "replicate": 0,
+      "requested_goal_count": 2,
+      "scoped_calls": 42
+    },
+    {
+      "case_id": "concurrent_goals",
+      "checkpoint_count": 16,
+      "final_equal": true,
+      "replicate": 0,
+      "requested_goal_count": 4,
+      "scoped_calls": 164
+    },
+    {
+      "case_id": "concurrent_goals",
+      "checkpoint_count": 32,
+      "final_equal": true,
+      "replicate": 0,
+      "requested_goal_count": 8,
+      "scoped_calls": 648
+    },
+    {
+      "case_id": "common_ground_stress",
+      "checkpoint_count": 10,
+      "final_equal": true,
+      "replicate": 1,
+      "requested_goal_count": null,
+      "scoped_calls": 92
+    },
+    {
+      "case_id": "concurrent_goals",
+      "checkpoint_count": 8,
+      "final_equal": true,
+      "replicate": 1,
+      "requested_goal_count": 2,
+      "scoped_calls": 42
+    },
+    {
+      "case_id": "concurrent_goals",
+      "checkpoint_count": 16,
+      "final_equal": true,
+      "replicate": 1,
+      "requested_goal_count": 4,
+      "scoped_calls": 164
+    },
+    {
+      "case_id": "concurrent_goals",
+      "checkpoint_count": 32,
+      "final_equal": true,
+      "replicate": 1,
+      "requested_goal_count": 8,
+      "scoped_calls": 648
+    },
+    {
+      "case_id": "common_ground_stress",
+      "checkpoint_count": 10,
+      "final_equal": true,
+      "replicate": 2,
+      "requested_goal_count": null,
+      "scoped_calls": 92
+    },
+    {
+      "case_id": "concurrent_goals",
+      "checkpoint_count": 8,
+      "final_equal": true,
+      "replicate": 2,
+      "requested_goal_count": 2,
+      "scoped_calls": 42
+    },
+    {
+      "case_id": "concurrent_goals",
+      "checkpoint_count": 16,
+      "final_equal": true,
+      "replicate": 2,
+      "requested_goal_count": 4,
+      "scoped_calls": 164
+    },
+    {
+      "case_id": "concurrent_goals",
+      "checkpoint_count": 32,
+      "final_equal": true,
+      "replicate": 2,
+      "requested_goal_count": 8,
+      "scoped_calls": 648
+    }
+  ],
+  "schema": "ConversationTaskScopeParityPilotV1_5Analysis",
+  "summary": {
+    "checkpoint_pairs": 198,
+    "final_state_matches": 12,
+    "operation_work_by_case_and_mode": [
+      {
+        "candidate_pairs": 417,
+        "case_id": "common_ground_stress",
+        "checkpoint_count": 30,
+        "mode": "monolithic",
+        "operation_count": 10,
+        "requested_goal_count": null,
+        "rule_attributed_work_units": 0,
+        "rule_uid_zero_work_units": 702,
+        "term_evaluations": 1308,
+        "work_kinds": [
+          "operation_kind",
+          "scheduler_dirty_vector_slots",
+          "scheduler_external_poll_slots",
+          "scheduler_fixedpoint_probe_slots",
+          "scheduler_pass",
+          "scheduler_selected_rules"
+        ],
+        "work_rows": 180,
+        "work_units": 702,
+        "work_units_by_kind": {
+          "operation_kind": 30,
+          "scheduler_dirty_vector_slots": 192,
+          "scheduler_external_poll_slots": 192,
+          "scheduler_fixedpoint_probe_slots": 48,
+          "scheduler_pass": 48,
+          "scheduler_selected_rules": 192
+        },
+        "work_units_by_scope": {
+          "104586393756936": 234,
+          "106336962184456": 234,
+          "98082814862600": 234
+        }
+      },
+      {
+        "candidate_pairs": 2289,
+        "case_id": "common_ground_stress",
+        "checkpoint_count": 30,
+        "mode": "partition_sweep",
+        "operation_count": 92,
+        "requested_goal_count": null,
+        "rule_attributed_work_units": 0,
+        "rule_uid_zero_work_units": 1836,
+        "term_evaluations": 8067,
+        "work_kinds": [
+          "operation_kind",
+          "scoped_binding_apply_attempt",
+          "scoped_binding_in_scope",
+          "scoped_binding_matched",
+          "scoped_binding_out_of_scope",
+          "scoped_progressing_rule",
+          "scoped_rule_attempt",
+          "scoped_scheduler_pass"
+        ],
+        "work_rows": 1782,
+        "work_units": 1836,
+        "work_units_by_kind": {
+          "operation_kind": 276,
+          "scoped_binding_apply_attempt": 18,
+          "scoped_binding_in_scope": 18,
+          "scoped_binding_matched": 45,
+          "scoped_binding_out_of_scope": 27,
+          "scoped_progressing_rule": 18,
+          "scoped_rule_attempt": 1140,
+          "scoped_scheduler_pass": 294
+        },
+        "work_units_by_scope": {
+          "104586392776264": 612,
+          "106336961203784": 612,
+          "98082813881928": 612
+        }
+      },
+      {
+        "candidate_pairs": 357,
+        "case_id": "concurrent_goals",
+        "checkpoint_count": 24,
+        "mode": "monolithic",
+        "operation_count": 8,
+        "requested_goal_count": 2,
+        "rule_attributed_work_units": 0,
+        "rule_uid_zero_work_units": 612,
+        "term_evaluations": 1212,
+        "work_kinds": [
+          "operation_kind",
+          "scheduler_dirty_vector_slots",
+          "scheduler_external_poll_slots",
+          "scheduler_fixedpoint_probe_slots",
+          "scheduler_pass",
+          "scheduler_selected_rules"
+        ],
+        "work_rows": 144,
+        "work_units": 612,
+        "work_units_by_kind": {
+          "operation_kind": 24,
+          "scheduler_dirty_vector_slots": 168,
+          "scheduler_external_poll_slots": 168,
+          "scheduler_fixedpoint_probe_slots": 42,
+          "scheduler_pass": 42,
+          "scheduler_selected_rules": 168
+        },
+        "work_units_by_scope": {
+          "104586393126792": 204,
+          "106336961554312": 204,
+          "98082814232456": 204
+        }
+      },
+      {
+        "candidate_pairs": 1107,
+        "case_id": "concurrent_goals",
+        "checkpoint_count": 24,
+        "mode": "partition_sweep",
+        "operation_count": 42,
+        "requested_goal_count": 2,
+        "rule_attributed_work_units": 0,
+        "rule_uid_zero_work_units": 900,
+        "term_evaluations": 4041,
+        "work_kinds": [
+          "operation_kind",
+          "scoped_binding_apply_attempt",
+          "scoped_binding_in_scope",
+          "scoped_binding_matched",
+          "scoped_binding_out_of_scope",
+          "scoped_progressing_rule",
+          "scoped_rule_attempt",
+          "scoped_scheduler_pass"
+        ],
+        "work_rows": 846,
+        "work_units": 900,
+        "work_units_by_kind": {
+          "operation_kind": 126,
+          "scoped_binding_apply_attempt": 18,
+          "scoped_binding_in_scope": 18,
+          "scoped_binding_matched": 27,
+          "scoped_binding_out_of_scope": 9,
+          "scoped_progressing_rule": 18,
+          "scoped_rule_attempt": 540,
+          "scoped_scheduler_pass": 144
+        },
+        "work_units_by_scope": {
+          "104586392685448": 300,
+          "106336961112968": 300,
+          "98082813791112": 300
+        }
+      },
+      {
+        "candidate_pairs": 1158,
+        "case_id": "concurrent_goals",
+        "checkpoint_count": 48,
+        "mode": "monolithic",
+        "operation_count": 16,
+        "requested_goal_count": 4,
+        "rule_attributed_work_units": 0,
+        "rule_uid_zero_work_units": 1224,
+        "term_evaluations": 3480,
+        "work_kinds": [
+          "operation_kind",
+          "scheduler_dirty_vector_slots",
+          "scheduler_external_poll_slots",
+          "scheduler_fixedpoint_probe_slots",
+          "scheduler_pass",
+          "scheduler_selected_rules"
+        ],
+        "work_rows": 288,
+        "work_units": 1224,
+        "work_units_by_kind": {
+          "operation_kind": 48,
+          "scheduler_dirty_vector_slots": 336,
+          "scheduler_external_poll_slots": 336,
+          "scheduler_fixedpoint_probe_slots": 84,
+          "scheduler_pass": 84,
+          "scheduler_selected_rules": 336
+        },
+        "work_units_by_scope": {
+          "104586392752936": 408,
+          "106336961180456": 408,
+          "98082813858600": 408
+        }
+      },
+      {
+        "candidate_pairs": 6750,
+        "case_id": "concurrent_goals",
+        "checkpoint_count": 48,
+        "mode": "partition_sweep",
+        "operation_count": 164,
+        "requested_goal_count": 4,
+        "rule_attributed_work_units": 0,
+        "rule_uid_zero_work_units": 3312,
+        "term_evaluations": 23526,
+        "work_kinds": [
+          "operation_kind",
+          "scoped_binding_apply_attempt",
+          "scoped_binding_in_scope",
+          "scoped_binding_matched",
+          "scoped_binding_out_of_scope",
+          "scoped_progressing_rule",
+          "scoped_rule_attempt",
+          "scoped_scheduler_pass"
+        ],
+        "work_rows": 3204,
+        "work_units": 3312,
+        "work_units_by_kind": {
+          "operation_kind": 492,
+          "scoped_binding_apply_attempt": 36,
+          "scoped_binding_in_scope": 36,
+          "scoped_binding_matched": 90,
+          "scoped_binding_out_of_scope": 54,
+          "scoped_progressing_rule": 36,
+          "scoped_rule_attempt": 2040,
+          "scoped_scheduler_pass": 528
+        },
+        "work_units_by_scope": {
+          "104586393290216": 1104,
+          "106336961717736": 1104,
+          "98082814395880": 1104
+        }
+      },
+      {
+        "candidate_pairs": 4092,
+        "case_id": "concurrent_goals",
+        "checkpoint_count": 96,
+        "mode": "monolithic",
+        "operation_count": 32,
+        "requested_goal_count": 8,
+        "rule_attributed_work_units": 0,
+        "rule_uid_zero_work_units": 2448,
+        "term_evaluations": 11184,
+        "work_kinds": [
+          "operation_kind",
+          "scheduler_dirty_vector_slots",
+          "scheduler_external_poll_slots",
+          "scheduler_fixedpoint_probe_slots",
+          "scheduler_pass",
+          "scheduler_selected_rules"
+        ],
+        "work_rows": 576,
+        "work_units": 2448,
+        "work_units_by_kind": {
+          "operation_kind": 96,
+          "scheduler_dirty_vector_slots": 672,
+          "scheduler_external_poll_slots": 672,
+          "scheduler_fixedpoint_probe_slots": 168,
+          "scheduler_pass": 168,
+          "scheduler_selected_rules": 672
+        },
+        "work_units_by_scope": {
+          "104586393756936": 816,
+          "106336962184456": 816,
+          "98082814862600": 816
+        }
+      },
+      {
+        "candidate_pairs": 46140,
+        "case_id": "concurrent_goals",
+        "checkpoint_count": 96,
+        "mode": "partition_sweep",
+        "operation_count": 648,
+        "requested_goal_count": 8,
+        "rule_attributed_work_units": 0,
+        "rule_uid_zero_work_units": 12672,
+        "term_evaluations": 156444,
+        "work_kinds": [
+          "operation_kind",
+          "scoped_binding_apply_attempt",
+          "scoped_binding_in_scope",
+          "scoped_binding_matched",
+          "scoped_binding_out_of_scope",
+          "scoped_progressing_rule",
+          "scoped_rule_attempt",
+          "scoped_scheduler_pass"
+        ],
+        "work_rows": 12456,
+        "work_units": 12672,
+        "work_units_by_kind": {
+          "operation_kind": 1944,
+          "scoped_binding_apply_attempt": 72,
+          "scoped_binding_in_scope": 72,
+          "scoped_binding_matched": 324,
+          "scoped_binding_out_of_scope": 252,
+          "scoped_progressing_rule": 72,
+          "scoped_rule_attempt": 7920,
+          "scoped_scheduler_pass": 2016
+        },
+        "work_units_by_scope": {
+          "104586393383224": 4224,
+          "106336961810744": 4224,
+          "98082814488888": 4224
+        }
+      }
+    ],
+    "paired_case_count": 12
+  }
+}

@@ -83,6 +83,13 @@ class _LAAdapter(WorldAdapter):
             agent = s.add_node("Agent", {})
         self.agent = agent
         self._master_state = None
+        # Serialized WorldAdapter methods (register_reflex_response, ...) take
+        # the adapter's re-entrant transaction lock; this facade skips
+        # WorldAdapter.__init__, so mint it here (the _QDAdapter precedent,
+        # question_driver.py). Without it every shadow read of a chat turn
+        # raised AttributeError and was swallowed as shadow_error=1.0.
+        import threading as _threading
+        self._conversation_lock = _threading.RLock()
         # THE FLOW IDENTITY (Wave 1A, the stale-Source fix). One `run_reading_
         # flow` call = one flow; `flow` is set to THIS call's own `Source` node
         # id right after it is minted, and threaded (as the pre-existing `unit`

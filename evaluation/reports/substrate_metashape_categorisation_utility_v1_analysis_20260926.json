@@ -1,0 +1,28 @@
+{
+  "admitted": false,
+  "gates": {
+    "20_queries_captured": true,
+    "gold_vector_matches_protocol": false,
+    "persistence_guard_active": true,
+    "query_does_not_mutate_graph": true,
+    "source_lock_matches": true
+  },
+  "interpretation": "V1 is inadmissible for capability scoring because its runner labels the MotionRule positive and extra-field cases as abstentions, contrary to the locked protocol which assigns spatial_dynamics. The raw decisions are preserved; no accuracy conclusion should be drawn from v1.",
+  "next_step": "Correct the gold-label encoding in a separately locked v1.1 run; do not alter or overwrite v1.",
+  "oracle_mismatches": [
+    {
+      "expected_protocol": "spatial_dynamics",
+      "family": "MotionRuleProbe",
+      "query_kind": "positive",
+      "runner_gold": null
+    },
+    {
+      "expected_protocol": "spatial_dynamics",
+      "family": "MotionRuleProbe",
+      "query_kind": "extra_field",
+      "runner_gold": null
+    }
+  ],
+  "run_id": "substrate-metashape-categorisation-utility-v1-20260926",
+  "schema_version": 1
+}

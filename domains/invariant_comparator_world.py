@@ -278,7 +278,7 @@ class InvComparatorWorld:
         self.native = rf._native_eval2(self.s)
         # `shape_decode_loop` supplies the `observed` edge type this seed's
         # rules match on; declared as a depends_on in the manifest.
-        rf._ensure_shape_decode_loop(self.s, self.native, self.ag)
+        rf._ensure_vision_grain_policy(self.s, self.native, self.ag)
         self.native.load_seed_manifest(
             manifest_for("vision_invariant_comparator") if manifest is None
             else manifest, self.ag)

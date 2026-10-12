@@ -1,0 +1,2774 @@
+{
+  "locked_inputs": {
+    "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+    "files": {
+      "docs/research/engine_substrate/SUBSTRATE_LIVE_SCHEDULER_WORK_TRACE_V2_PREREG_20260928.md": "2e1466434812eb3a3f5bf7caf6c776410ded522c6c510f7711715f591c8b24f9",
+      "domains/conversation_action.py": "fe71c4ec7e8300c2b2ff5592dd50871429f5901cae411a56007d0651abfc00e2",
+      "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+      "runners/dsl/Cargo.toml": "c4d8ffff2241352a5150b5a9937dbb8010e958b6f115235b7daeae716c1a9332",
+      "runners/dsl/python/substrate_rs/__init__.py": "6ec0316afae414329e36d3f121fc56b556e7315f17b93aab911ca09a29726694",
+      "runners/dsl/src/access_trace.rs": "4c1d208a7eb2c209b1b5d8b73cf1715b08a79f840a390be854e77ed0f4587bfd",
+      "runners/dsl/src/py.rs": "9c82fb77caf8a74817f8b0164c9700525bf77749812acc956a66cfdc65ca8351",
+      "runners/dsl/src/rewrite.rs": "58cea7eaa595c804f4f0265c4003231105011dc2493bea8ca30dea6bb6246c34",
+      "runners/dsl/src/scale_audit.rs": "a5d98039cde2c1947f8def56bde39bc2e7141e9faf7c6233dd1e8a86a3da849b",
+      "runners/dsl/src/substrate.rs": "0b917dde51d9088ca25ac236152415511cb169000fbe4dec36b679679bfc6981",
+      "scripts/analyze_live_scheduler_work_trace_v2.py": "1b5f33115b8ccacd46435259439528aeac4510410fdf9c2c55f754b1bed7511e",
+      "scripts/substrate_live_scheduler_work_trace_v2.py": "f3efcd1085d374f7a9e28b7106bdb0003730fbda7f30b874af2099a32ebc9c76",
+      "substrate/boot_all.py": "2bdf46f19228e1d85dbdcf12383116ceeb72aab0efe7ddd0cc6a51d23b45d220",
+      "substrate/world_adapter.py": "f044887310bee56683f8f81a2d291662b14b5f5db76aaa75a6592f8aa029d650"
+    },
+    "native_path": "/tmp/ocelot-v2-wheel/substrate_rs/_native.abi3.so",
+    "native_sha256": "7fb60186bd7d64af2204dcc30431b6079574cd45a6047ad3238ce78c1f4dc051",
+    "platform": "Linux-6.8.0-142-generic-x86_64-with-glibc2.39",
+    "python": "3.13.5 (main, Jun 11 2025, 15:36:57) [GCC 11.4.0]",
+    "rust_source_fingerprint": "129bb0ec66ae8b29885d08a2894aba4e5b068f693df1b9079d0e837a86ee02b0",
+    "wheel_path": "/tmp/ocelot-maturin-v2/substrate_rs-0.1.0-cp39-abi3-manylinux_2_35_x86_64.whl",
+    "wheel_sha256": "dd4ca324d5e3d0dc7ff876e27c4bb02b788878d4f2dccdcfa65860f5ac8e95e0"
+  },
+  "post_run_inputs": {
+    "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+    "files": {
+      "docs/research/engine_substrate/SUBSTRATE_LIVE_SCHEDULER_WORK_TRACE_V2_PREREG_20260928.md": "2e1466434812eb3a3f5bf7caf6c776410ded522c6c510f7711715f591c8b24f9",
+      "domains/conversation_action.py": "fe71c4ec7e8300c2b2ff5592dd50871429f5901cae411a56007d0651abfc00e2",
+      "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+      "runners/dsl/Cargo.toml": "c4d8ffff2241352a5150b5a9937dbb8010e958b6f115235b7daeae716c1a9332",
+      "runners/dsl/python/substrate_rs/__init__.py": "6ec0316afae414329e36d3f121fc56b556e7315f17b93aab911ca09a29726694",
+      "runners/dsl/src/access_trace.rs": "4c1d208a7eb2c209b1b5d8b73cf1715b08a79f840a390be854e77ed0f4587bfd",
+      "runners/dsl/src/py.rs": "9c82fb77caf8a74817f8b0164c9700525bf77749812acc956a66cfdc65ca8351",
+      "runners/dsl/src/rewrite.rs": "58cea7eaa595c804f4f0265c4003231105011dc2493bea8ca30dea6bb6246c34",
+      "runners/dsl/src/scale_audit.rs": "a5d98039cde2c1947f8def56bde39bc2e7141e9faf7c6233dd1e8a86a3da849b",
+      "runners/dsl/src/substrate.rs": "0b917dde51d9088ca25ac236152415511cb169000fbe4dec36b679679bfc6981",
+      "scripts/analyze_live_scheduler_work_trace_v2.py": "1b5f33115b8ccacd46435259439528aeac4510410fdf9c2c55f754b1bed7511e",
+      "scripts/substrate_live_scheduler_work_trace_v2.py": "f3efcd1085d374f7a9e28b7106bdb0003730fbda7f30b874af2099a32ebc9c76",
+      "substrate/boot_all.py": "2bdf46f19228e1d85dbdcf12383116ceeb72aab0efe7ddd0cc6a51d23b45d220",
+      "substrate/world_adapter.py": "f044887310bee56683f8f81a2d291662b14b5f5db76aaa75a6592f8aa029d650"
+    },
+    "native_path": "/tmp/ocelot-v2-wheel/substrate_rs/_native.abi3.so",
+    "native_sha256": "7fb60186bd7d64af2204dcc30431b6079574cd45a6047ad3238ce78c1f4dc051",
+    "platform": "Linux-6.8.0-142-generic-x86_64-with-glibc2.39",
+    "python": "3.13.5 (main, Jun 11 2025, 15:36:57) [GCC 11.4.0]",
+    "rust_source_fingerprint": "129bb0ec66ae8b29885d08a2894aba4e5b068f693df1b9079d0e837a86ee02b0",
+    "wheel_path": "/tmp/ocelot-maturin-v2/substrate_rs-0.1.0-cp39-abi3-manylinux_2_35_x86_64.whl",
+    "wheel_sha256": "dd4ca324d5e3d0dc7ff876e27c4bb02b788878d4f2dccdcfa65860f5ac8e95e0"
+  },
+  "run_id": "live-scheduler-work-trace-v2-20260928",
+  "runs": [
+    {
+      "after": {
+        "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+        "files": {
+          "docs/research/engine_substrate/SUBSTRATE_LIVE_SCHEDULER_WORK_TRACE_V2_PREREG_20260928.md": "2e1466434812eb3a3f5bf7caf6c776410ded522c6c510f7711715f591c8b24f9",
+          "domains/conversation_action.py": "fe71c4ec7e8300c2b2ff5592dd50871429f5901cae411a56007d0651abfc00e2",
+          "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+          "runners/dsl/Cargo.toml": "c4d8ffff2241352a5150b5a9937dbb8010e958b6f115235b7daeae716c1a9332",
+          "runners/dsl/python/substrate_rs/__init__.py": "6ec0316afae414329e36d3f121fc56b556e7315f17b93aab911ca09a29726694",
+          "runners/dsl/src/access_trace.rs": "4c1d208a7eb2c209b1b5d8b73cf1715b08a79f840a390be854e77ed0f4587bfd",
+          "runners/dsl/src/py.rs": "9c82fb77caf8a74817f8b0164c9700525bf77749812acc956a66cfdc65ca8351",
+          "runners/dsl/src/rewrite.rs": "58cea7eaa595c804f4f0265c4003231105011dc2493bea8ca30dea6bb6246c34",
+          "runners/dsl/src/scale_audit.rs": "a5d98039cde2c1947f8def56bde39bc2e7141e9faf7c6233dd1e8a86a3da849b",
+          "runners/dsl/src/substrate.rs": "0b917dde51d9088ca25ac236152415511cb169000fbe4dec36b679679bfc6981",
+          "scripts/analyze_live_scheduler_work_trace_v2.py": "1b5f33115b8ccacd46435259439528aeac4510410fdf9c2c55f754b1bed7511e",
+          "scripts/substrate_live_scheduler_work_trace_v2.py": "f3efcd1085d374f7a9e28b7106bdb0003730fbda7f30b874af2099a32ebc9c76",
+          "substrate/boot_all.py": "2bdf46f19228e1d85dbdcf12383116ceeb72aab0efe7ddd0cc6a51d23b45d220",
+          "substrate/world_adapter.py": "f044887310bee56683f8f81a2d291662b14b5f5db76aaa75a6592f8aa029d650"
+        },
+        "native_path": "/tmp/ocelot-v2-wheel/substrate_rs/_native.abi3.so",
+        "native_sha256": "7fb60186bd7d64af2204dcc30431b6079574cd45a6047ad3238ce78c1f4dc051",
+        "platform": "Linux-6.8.0-142-generic-x86_64-with-glibc2.39",
+        "python": "3.13.5 (main, Jun 11 2025, 15:36:57) [GCC 11.4.0]",
+        "rust_source_fingerprint": "129bb0ec66ae8b29885d08a2894aba4e5b068f693df1b9079d0e837a86ee02b0",
+        "wheel_path": "/tmp/ocelot-maturin-v2/substrate_rs-0.1.0-cp39-abi3-manylinux_2_35_x86_64.whl",
+        "wheel_sha256": "dd4ca324d5e3d0dc7ff876e27c4bb02b788878d4f2dccdcfa65860f5ac8e95e0"
+      },
+      "before": {
+        "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+        "files": {
+          "docs/research/engine_substrate/SUBSTRATE_LIVE_SCHEDULER_WORK_TRACE_V2_PREREG_20260928.md": "2e1466434812eb3a3f5bf7caf6c776410ded522c6c510f7711715f591c8b24f9",
+          "domains/conversation_action.py": "fe71c4ec7e8300c2b2ff5592dd50871429f5901cae411a56007d0651abfc00e2",
+          "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+          "runners/dsl/Cargo.toml": "c4d8ffff2241352a5150b5a9937dbb8010e958b6f115235b7daeae716c1a9332",
+          "runners/dsl/python/substrate_rs/__init__.py": "6ec0316afae414329e36d3f121fc56b556e7315f17b93aab911ca09a29726694",
+          "runners/dsl/src/access_trace.rs": "4c1d208a7eb2c209b1b5d8b73cf1715b08a79f840a390be854e77ed0f4587bfd",
+          "runners/dsl/src/py.rs": "9c82fb77caf8a74817f8b0164c9700525bf77749812acc956a66cfdc65ca8351",
+          "runners/dsl/src/rewrite.rs": "58cea7eaa595c804f4f0265c4003231105011dc2493bea8ca30dea6bb6246c34",
+          "runners/dsl/src/scale_audit.rs": "a5d98039cde2c1947f8def56bde39bc2e7141e9faf7c6233dd1e8a86a3da849b",
+          "runners/dsl/src/substrate.rs": "0b917dde51d9088ca25ac236152415511cb169000fbe4dec36b679679bfc6981",
+          "scripts/analyze_live_scheduler_work_trace_v2.py": "1b5f33115b8ccacd46435259439528aeac4510410fdf9c2c55f754b1bed7511e",
+          "scripts/substrate_live_scheduler_work_trace_v2.py": "f3efcd1085d374f7a9e28b7106bdb0003730fbda7f30b874af2099a32ebc9c76",
+          "substrate/boot_all.py": "2bdf46f19228e1d85dbdcf12383116ceeb72aab0efe7ddd0cc6a51d23b45d220",
+          "substrate/world_adapter.py": "f044887310bee56683f8f81a2d291662b14b5f5db76aaa75a6592f8aa029d650"
+        },
+        "native_path": "/tmp/ocelot-v2-wheel/substrate_rs/_native.abi3.so",
+        "native_sha256": "7fb60186bd7d64af2204dcc30431b6079574cd45a6047ad3238ce78c1f4dc051",
+        "platform": "Linux-6.8.0-142-generic-x86_64-with-glibc2.39",
+        "python": "3.13.5 (main, Jun 11 2025, 15:36:57) [GCC 11.4.0]",
+        "rust_source_fingerprint": "129bb0ec66ae8b29885d08a2894aba4e5b068f693df1b9079d0e837a86ee02b0",
+        "wheel_path": "/tmp/ocelot-maturin-v2/substrate_rs-0.1.0-cp39-abi3-manylinux_2_35_x86_64.whl",
+        "wheel_sha256": "dd4ca324d5e3d0dc7ff876e27c4bb02b788878d4f2dccdcfa65860f5ac8e95e0"
+      },
+      "edge_count": 11695,
+      "node_count": 25175,
+      "pid": 11,
+      "replicate": 0,
+      "reply": "I see the grey thing stays, the yellow counter, and the blue thing moves.",
+      "scale_counters": {
+        "apply_probe_rollbacks": 644,
+        "bindings_cloned": 733,
+        "cand_enum": 964788,
+        "cand_enum_apply_once": 569,
+        "cand_enum_first": 673944,
+        "cand_enum_hinted": 7,
+        "cand_enum_local": 6342,
+        "cand_enum_repeat": 290844,
+        "cand_enum_scan": 958439,
+        "cand_reject_bound": 6,
+        "cand_tested": 964650,
+        "cand_tested_unattributed": 419,
+        "deferred_queue:fb_samples:drain_batches": 16,
+        "deferred_queue:fb_samples:drain_ns": 480,
+        "dim_infer_arg_calls": 5,
+        "dim_infer_arg_distinct_ordered": 5,
+        "dim_infer_arg_distinct_unordered": 5,
+        "epochs": 67,
+        "epochs_apply_once": 45,
+        "ffi_calls": 61441,
+        "ffi_items": 61441,
+        "ffi_pyobjects": 397084,
+        "graph_writes": 644,
+        "leaf_visits": 749,
+        "pushdown_evals": 10982,
+        "pushdown_prunes": 5520,
+        "rule_effect_attr_set_attempts": 418,
+        "rule_effect_edge_deletes": 1,
+        "rule_effect_edge_insert_attempts": 230,
+        "rule_effect_node_delete_attempts": 52,
+        "rule_effect_node_inserts": 41,
+        "rule_effect_replace_edge_deletes": 0,
+        "rule_effect_replace_edge_insert_attempts": 0,
+        "rule_enumerations": 54138,
+        "rule_enumerations_repeat": 10996,
+        "scheduler_dirty_vector_slots": 87187,
+        "scheduler_external_poll_slots": 87187,
+        "scheduler_fixedpoint_probe_slots": 1174,
+        "scheduler_passes": 39,
+        "scheduler_plan_ns": 549072,
+        "scheduler_selected_rules": 54093,
+        "scoped_full_fallback_rule_matches": 0,
+        "scoped_local_rule_matches": 0,
+        "scoped_mt_seeded_rule_matches": 0,
+        "term_eval:Abs": 107495,
+        "term_eval:And": 130933,
+        "term_eval:AntiUnify": 2045,
+        "term_eval:Argmax": 36,
+        "term_eval:Argmin": 36,
+        "term_eval:Attr": 1124977,
+        "term_eval:Count": 2547,
+        "term_eval:DimInfer": 10,
+        "term_eval:Eq": 983542,
+        "term_eval:EvalSubgraph": 4,
+        "term_eval:Exists": 1948,
+        "term_eval:Filter": 1137,
+        "term_eval:FixedCount": 2045,
+        "term_eval:Gt": 1170,
+        "term_eval:Gte": 12836,
+        "term_eval:Holds": 768,
+        "term_eval:IfThenElse": 20,
+        "term_eval:In": 1182,
+        "term_eval:InNeighbours": 1411,
+        "term_eval:IndexAt": 14,
+        "term_eval:Lit": 1090527,
+        "term_eval:Lt": 107947,
+        "term_eval:Lte": 21,
+        "term_eval:MapList": 5,
+        "term_eval:MaxOver": 258,
+        "term_eval:Minus": 18,
+        "term_eval:Neighbours": 2226,
+        "term_eval:NodesOfType": 662,
+        "term_eval:NodesWhere": 468,
+        "term_eval:Not": 115301,
+        "term_eval:Or": 588,
+        "term_eval:Pick": 468,
+        "term_eval:Plus": 143,
+        "term_eval:SetT": 2045,
+        "term_eval:ShapeDecode": 15,
+        "term_eval:StringConcat": 243,
+        "term_eval:TextShape": 18,
+        "term_eval:Times": 17,
+        "term_eval:TransformDecode": 10,
+        "term_eval:TypeOf": 1545,
+        "term_eval:Var": 1131310,
+        "term_evals_total": 4827991,
+        "term_evals_unattributed": 2461,
+        "term_unit:Exists": 3007,
+        "term_unit:NodesOfType": 17886,
+        "term_unit:ShapeDecode": 63116,
+        "term_unit:TransformDecode": 39,
+        "term_units_total": 84048,
+        "term_units_unattributed": 0,
+        "var_collisions": 89,
+        "where_evals": 965000,
+        "where_evals_first": 674313,
+        "where_evals_repeat": 290687,
+        "where_rejects": 952731
+      },
+      "scoped_scale_counters": {
+        "scheduler_dirty_vector_slots": 87179,
+        "scheduler_external_poll_slots": 87179,
+        "scheduler_fixedpoint_probe_slots": 1172,
+        "scheduler_passes": 37,
+        "scheduler_selected_rules": 54085
+      },
+      "semantic_graph_sha256": "0a2c36288e68046acad1e3227b0954f17e0b4e93a82b074637211be0211bda3b",
+      "work_dropped": 0,
+      "work_rows": [
+        [
+          1,
+          0,
+          "scheduler_pass",
+          null,
+          1
+        ],
+        [
+          1,
+          0,
+          "scheduler_external_poll_slots",
+          null,
+          2340
+        ],
+        [
+          1,
+          0,
+          "scheduler_fixedpoint_probe_slots",
+          null,
+          1
+        ],
+        [
+          1,
+          0,
+          "scheduler_dirty_vector_slots",
+          null,
+          2340
+        ],
+        [
+          1,
+          0,
+          "scheduler_selected_rules",
+          null,
+          2323
+        ],
+        [
+          2,
+          0,
+          "scheduler_pass",
+          null,
+          2
+        ],
+        [
+          2,
+          0,
+          "scheduler_external_poll_slots",
+          null,
+          4692
+        ],
+        [
+          2,
+          0,
+          "scheduler_fixedpoint_probe_slots",
+          null,
+          11
+        ],
+        [
+          2,
+          0,
+          "scheduler_dirty_vector_slots",
+          null,
+          4692
+        ],
+        [
+          2,
+          0,
+          "scheduler_selected_rules",
+          null,
+          3195
+        ],
+        [
+          3,
+          0,
+          "scheduler_pass",
+          null,
+          1
+        ],
+        [
+          3,
+          0,
+          "scheduler_external_poll_slots",
+          null,
+          2346
+        ],
+        [
+          3,
+          0,
+          "scheduler_fixedpoint_probe_slots",
+          null,
+          12
+        ],
+        [
+          3,
+          0,
+          "scheduler_dirty_vector_slots",
+          null,
+          2346
+        ],
+        [
+          3,
+          0,
+          "scheduler_selected_rules",
+          null,
+          827
+        ],
+        [
+          4,
+          0,
+          "scheduler_pass",
+          null,
+          2
+        ],
+        [
+          4,
+          0,
+          "scheduler_external_poll_slots",
+          null,
+          4694
+        ],
+        [
+          4,
+          0,
+          "scheduler_fixedpoint_probe_slots",
+          null,
+          11
+        ],
+        [
+          4,
+          0,
+          "scheduler_dirty_vector_slots",
+          null,
+          4694
+        ],
+        [
+          4,
+          0,
+          "scheduler_selected_rules",
+          null,
+          3173
+        ],
+        [
+          5,
+          0,
+          "scheduler_pass",
+          null,
+          1
+        ],
+        [
+          5,
+          0,
+          "scheduler_external_poll_slots",
+          null,
+          2347
+        ],
+        [
+          5,
+          0,
+          "scheduler_fixedpoint_probe_slots",
+          null,
+          12
+        ],
+        [
+          5,
+          0,
+          "scheduler_dirty_vector_slots",
+          null,
+          2347
+        ],
+        [
+          5,
+          0,
+          "scheduler_selected_rules",
+          null,
+          827
+        ],
+        [
+          6,
+          0,
+          "scheduler_pass",
+          null,
+          2
+        ],
+        [
+          6,
+          0,
+          "scheduler_external_poll_slots",
+          null,
+          4696
+        ],
+        [
+          6,
+          0,
+          "scheduler_fixedpoint_probe_slots",
+          null,
+          11
+        ],
+        [
+          6,
+          0,
+          "scheduler_dirty_vector_slots",
+          null,
+          4696
+        ],
+        [
+          6,
+          0,
+          "scheduler_selected_rules",
+          null,
+          3174
+        ],
+        [
+          7,
+          0,
+          "scheduler_pass",
+          null,
+          1
+        ],
+        [
+          7,
+          0,
+          "scheduler_external_poll_slots",
+          null,
+          2348
+        ],
+        [
+          7,
+          0,
+          "scheduler_fixedpoint_probe_slots",
+          null,
+          12
+        ],
+        [
+          7,
+          0,
+          "scheduler_dirty_vector_slots",
+          null,
+          2348
+        ],
+        [
+          7,
+          0,
+          "scheduler_selected_rules",
+          null,
+          827
+        ],
+        [
+          8,
+          0,
+          "scheduler_pass",
+          null,
+          2
+        ],
+        [
+          8,
+          0,
+          "scheduler_external_poll_slots",
+          null,
+          4700
+        ],
+        [
+          8,
+          0,
+          "scheduler_fixedpoint_probe_slots",
+          null,
+          11
+        ],
+        [
+          8,
+          0,
+          "scheduler_dirty_vector_slots",
+          null,
+          4700
+        ],
+        [
+          8,
+          0,
+          "scheduler_selected_rules",
+          null,
+          3176
+        ],
+        [
+          9,
+          0,
+          "scheduler_pass",
+          null,
+          1
+        ],
+        [
+          9,
+          0,
+          "scheduler_external_poll_slots",
+          null,
+          2350
+        ],
+        [
+          9,
+          0,
+          "scheduler_fixedpoint_probe_slots",
+          null,
+          12
+        ],
+        [
+          9,
+          0,
+          "scheduler_dirty_vector_slots",
+          null,
+          2350
+        ],
+        [
+          9,
+          0,
+          "scheduler_selected_rules",
+          null,
+          827
+        ],
+        [
+          10,
+          0,
+          "scheduler_pass",
+          null,
+          3
+        ],
+        [
+          10,
+          0,
+          "scheduler_external_poll_slots",
+          null,
+          7074
+        ],
+        [
+          10,
+          0,
+          "scheduler_fixedpoint_probe_slots",
+          null,
+          417
+        ],
+        [
+          10,
+          0,
+          "scheduler_dirty_vector_slots",
+          null,
+          7074
+        ],
+        [
+          10,
+          0,
+          "scheduler_selected_rules",
+          null,
+          3001
+        ],
+        [
+          11,
+          0,
+          "scheduler_pass",
+          null,
+          2
+        ],
+        [
+          11,
+          0,
+          "scheduler_external_poll_slots",
+          null,
+          4716
+        ],
+        [
+          11,
+          0,
+          "scheduler_fixedpoint_probe_slots",
+          null,
+          12
+        ],
+        [
+          11,
+          0,
+          "scheduler_dirty_vector_slots",
+          null,
+          4716
+        ],
+        [
+          11,
+          0,
+          "scheduler_selected_rules",
+          null,
+          3165
+        ],
+        [
+          12,
+          0,
+          "scheduler_pass",
+          null,
+          2
+        ],
+        [
+          12,
+          0,
+          "scheduler_external_poll_slots",
+          null,
+          4716
+        ],
+        [
+          12,
+          0,
+          "scheduler_fixedpoint_probe_slots",
+          null,
+          12
+        ],
+        [
+          12,
+          0,
+          "scheduler_dirty_vector_slots",
+          null,
+          4716
+        ],
+        [
+          12,
+          0,
+          "scheduler_selected_rules",
+          null,
+          3165
+        ],
+        [
+          13,
+          0,
+          "scheduler_pass",
+          null,
+          2
+        ],
+        [
+          13,
+          0,
+          "scheduler_external_poll_slots",
+          null,
+          4716
+        ],
+        [
+          13,
+          0,
+          "scheduler_fixedpoint_probe_slots",
+          null,
+          12
+        ],
+        [
+          13,
+          0,
+          "scheduler_dirty_vector_slots",
+          null,
+          4716
+        ],
+        [
+          13,
+          0,
+          "scheduler_selected_rules",
+          null,
+          3172
+        ],
+        [
+          14,
+          0,
+          "scheduler_pass",
+          null,
+          2
+        ],
+        [
+          14,
+          0,
+          "scheduler_external_poll_slots",
+          null,
+          4716
+        ],
+        [
+          14,
+          0,
+          "scheduler_fixedpoint_probe_slots",
+          null,
+          11
+        ],
+        [
+          14,
+          0,
+          "scheduler_dirty_vector_slots",
+          null,
+          4716
+        ],
+        [
+          14,
+          0,
+          "scheduler_selected_rules",
+          null,
+          3184
+        ],
+        [
+          15,
+          0,
+          "scheduler_pass",
+          null,
+          2
+        ],
+        [
+          15,
+          0,
+          "scheduler_external_poll_slots",
+          null,
+          4726
+        ],
+        [
+          15,
+          0,
+          "scheduler_fixedpoint_probe_slots",
+          null,
+          12
+        ],
+        [
+          15,
+          0,
+          "scheduler_dirty_vector_slots",
+          null,
+          4726
+        ],
+        [
+          15,
+          0,
+          "scheduler_selected_rules",
+          null,
+          3173
+        ],
+        [
+          16,
+          0,
+          "scheduler_pass",
+          null,
+          2
+        ],
+        [
+          16,
+          0,
+          "scheduler_external_poll_slots",
+          null,
+          4726
+        ],
+        [
+          16,
+          0,
+          "scheduler_fixedpoint_probe_slots",
+          null,
+          12
+        ],
+        [
+          16,
+          0,
+          "scheduler_dirty_vector_slots",
+          null,
+          4726
+        ],
+        [
+          16,
+          0,
+          "scheduler_selected_rules",
+          null,
+          3169
+        ],
+        [
+          17,
+          0,
+          "scheduler_pass",
+          null,
+          2
+        ],
+        [
+          17,
+          0,
+          "scheduler_external_poll_slots",
+          null,
+          4728
+        ],
+        [
+          17,
+          0,
+          "scheduler_fixedpoint_probe_slots",
+          null,
+          283
+        ],
+        [
+          17,
+          0,
+          "scheduler_dirty_vector_slots",
+          null,
+          4728
+        ],
+        [
+          17,
+          0,
+          "scheduler_selected_rules",
+          null,
+          2508
+        ],
+        [
+          18,
+          0,
+          "scheduler_pass",
+          null,
+          1
+        ],
+        [
+          18,
+          0,
+          "scheduler_external_poll_slots",
+          null,
+          2364
+        ],
+        [
+          18,
+          0,
+          "scheduler_fixedpoint_probe_slots",
+          null,
+          1
+        ],
+        [
+          18,
+          0,
+          "scheduler_dirty_vector_slots",
+          null,
+          2364
+        ],
+        [
+          18,
+          0,
+          "scheduler_selected_rules",
+          null,
+          2347
+        ],
+        [
+          19,
+          0,
+          "scheduler_pass",
+          null,
+          2
+        ],
+        [
+          19,
+          0,
+          "scheduler_external_poll_slots",
+          null,
+          4728
+        ],
+        [
+          19,
+          0,
+          "scheduler_fixedpoint_probe_slots",
+          null,
+          12
+        ],
+        [
+          19,
+          0,
+          "scheduler_dirty_vector_slots",
+          null,
+          4728
+        ],
+        [
+          19,
+          0,
+          "scheduler_selected_rules",
+          null,
+          3174
+        ],
+        [
+          20,
+          0,
+          "scheduler_pass",
+          null,
+          2
+        ],
+        [
+          20,
+          0,
+          "scheduler_external_poll_slots",
+          null,
+          4728
+        ],
+        [
+          20,
+          0,
+          "scheduler_fixedpoint_probe_slots",
+          null,
+          12
+        ],
+        [
+          20,
+          0,
+          "scheduler_dirty_vector_slots",
+          null,
+          4728
+        ],
+        [
+          20,
+          0,
+          "scheduler_selected_rules",
+          null,
+          3170
+        ],
+        [
+          21,
+          0,
+          "scheduler_pass",
+          null,
+          2
+        ],
+        [
+          21,
+          0,
+          "scheduler_external_poll_slots",
+          null,
+          4728
+        ],
+        [
+          21,
+          0,
+          "scheduler_fixedpoint_probe_slots",
+          null,
+          283
+        ],
+        [
+          21,
+          0,
+          "scheduler_dirty_vector_slots",
+          null,
+          4728
+        ],
+        [
+          21,
+          0,
+          "scheduler_selected_rules",
+          null,
+          2508
+        ]
+      ]
+    },
+    {
+      "after": {
+        "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+        "files": {
+          "docs/research/engine_substrate/SUBSTRATE_LIVE_SCHEDULER_WORK_TRACE_V2_PREREG_20260928.md": "2e1466434812eb3a3f5bf7caf6c776410ded522c6c510f7711715f591c8b24f9",
+          "domains/conversation_action.py": "fe71c4ec7e8300c2b2ff5592dd50871429f5901cae411a56007d0651abfc00e2",
+          "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+          "runners/dsl/Cargo.toml": "c4d8ffff2241352a5150b5a9937dbb8010e958b6f115235b7daeae716c1a9332",
+          "runners/dsl/python/substrate_rs/__init__.py": "6ec0316afae414329e36d3f121fc56b556e7315f17b93aab911ca09a29726694",
+          "runners/dsl/src/access_trace.rs": "4c1d208a7eb2c209b1b5d8b73cf1715b08a79f840a390be854e77ed0f4587bfd",
+          "runners/dsl/src/py.rs": "9c82fb77caf8a74817f8b0164c9700525bf77749812acc956a66cfdc65ca8351",
+          "runners/dsl/src/rewrite.rs": "58cea7eaa595c804f4f0265c4003231105011dc2493bea8ca30dea6bb6246c34",
+          "runners/dsl/src/scale_audit.rs": "a5d98039cde2c1947f8def56bde39bc2e7141e9faf7c6233dd1e8a86a3da849b",
+          "runners/dsl/src/substrate.rs": "0b917dde51d9088ca25ac236152415511cb169000fbe4dec36b679679bfc6981",
+          "scripts/analyze_live_scheduler_work_trace_v2.py": "1b5f33115b8ccacd46435259439528aeac4510410fdf9c2c55f754b1bed7511e",
+          "scripts/substrate_live_scheduler_work_trace_v2.py": "f3efcd1085d374f7a9e28b7106bdb0003730fbda7f30b874af2099a32ebc9c76",
+          "substrate/boot_all.py": "2bdf46f19228e1d85dbdcf12383116ceeb72aab0efe7ddd0cc6a51d23b45d220",
+          "substrate/world_adapter.py": "f044887310bee56683f8f81a2d291662b14b5f5db76aaa75a6592f8aa029d650"
+        },
+        "native_path": "/tmp/ocelot-v2-wheel/substrate_rs/_native.abi3.so",
+        "native_sha256": "7fb60186bd7d64af2204dcc30431b6079574cd45a6047ad3238ce78c1f4dc051",
+        "platform": "Linux-6.8.0-142-generic-x86_64-with-glibc2.39",
+        "python": "3.13.5 (main, Jun 11 2025, 15:36:57) [GCC 11.4.0]",
+        "rust_source_fingerprint": "129bb0ec66ae8b29885d08a2894aba4e5b068f693df1b9079d0e837a86ee02b0",
+        "wheel_path": "/tmp/ocelot-maturin-v2/substrate_rs-0.1.0-cp39-abi3-manylinux_2_35_x86_64.whl",
+        "wheel_sha256": "dd4ca324d5e3d0dc7ff876e27c4bb02b788878d4f2dccdcfa65860f5ac8e95e0"
+      },
+      "before": {
+        "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+        "files": {
+          "docs/research/engine_substrate/SUBSTRATE_LIVE_SCHEDULER_WORK_TRACE_V2_PREREG_20260928.md": "2e1466434812eb3a3f5bf7caf6c776410ded522c6c510f7711715f591c8b24f9",
+          "domains/conversation_action.py": "fe71c4ec7e8300c2b2ff5592dd50871429f5901cae411a56007d0651abfc00e2",
+          "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+          "runners/dsl/Cargo.toml": "c4d8ffff2241352a5150b5a9937dbb8010e958b6f115235b7daeae716c1a9332",
+          "runners/dsl/python/substrate_rs/__init__.py": "6ec0316afae414329e36d3f121fc56b556e7315f17b93aab911ca09a29726694",
+          "runners/dsl/src/access_trace.rs": "4c1d208a7eb2c209b1b5d8b73cf1715b08a79f840a390be854e77ed0f4587bfd",
+          "runners/dsl/src/py.rs": "9c82fb77caf8a74817f8b0164c9700525bf77749812acc956a66cfdc65ca8351",
+          "runners/dsl/src/rewrite.rs": "58cea7eaa595c804f4f0265c4003231105011dc2493bea8ca30dea6bb6246c34",
+          "runners/dsl/src/scale_audit.rs": "a5d98039cde2c1947f8def56bde39bc2e7141e9faf7c6233dd1e8a86a3da849b",
+          "runners/dsl/src/substrate.rs": "0b917dde51d9088ca25ac236152415511cb169000fbe4dec36b679679bfc6981",
+          "scripts/analyze_live_scheduler_work_trace_v2.py": "1b5f33115b8ccacd46435259439528aeac4510410fdf9c2c55f754b1bed7511e",
+          "scripts/substrate_live_scheduler_work_trace_v2.py": "f3efcd1085d374f7a9e28b7106bdb0003730fbda7f30b874af2099a32ebc9c76",
+          "substrate/boot_all.py": "2bdf46f19228e1d85dbdcf12383116ceeb72aab0efe7ddd0cc6a51d23b45d220",
+          "substrate/world_adapter.py": "f044887310bee56683f8f81a2d291662b14b5f5db76aaa75a6592f8aa029d650"
+        },
+        "native_path": "/tmp/ocelot-v2-wheel/substrate_rs/_native.abi3.so",
+        "native_sha256": "7fb60186bd7d64af2204dcc30431b6079574cd45a6047ad3238ce78c1f4dc051",
+        "platform": "Linux-6.8.0-142-generic-x86_64-with-glibc2.39",
+        "python": "3.13.5 (main, Jun 11 2025, 15:36:57) [GCC 11.4.0]",
+        "rust_source_fingerprint": "129bb0ec66ae8b29885d08a2894aba4e5b068f693df1b9079d0e837a86ee02b0",
+        "wheel_path": "/tmp/ocelot-maturin-v2/substrate_rs-0.1.0-cp39-abi3-manylinux_2_35_x86_64.whl",
+        "wheel_sha256": "dd4ca324d5e3d0dc7ff876e27c4bb02b788878d4f2dccdcfa65860f5ac8e95e0"
+      },
+      "edge_count": 11695,
+      "node_count": 25175,
+      "pid": 5504,
+      "replicate": 1,
+      "reply": "I see the grey thing stays, the yellow counter, and the blue thing moves.",
+      "scale_counters": {
+        "apply_probe_rollbacks": 644,
+        "bindings_cloned": 733,
+        "cand_enum": 964788,
+        "cand_enum_apply_once": 569,
+        "cand_enum_first": 673944,
+        "cand_enum_hinted": 7,
+        "cand_enum_local": 6342,
+        "cand_enum_repeat": 290844,
+        "cand_enum_scan": 958439,
+        "cand_reject_bound": 6,
+        "cand_tested": 964650,
+        "cand_tested_unattributed": 419,
+        "deferred_queue:fb_samples:drain_batches": 16,
+        "deferred_queue:fb_samples:drain_ns": 480,
+        "dim_infer_arg_calls": 5,
+        "dim_infer_arg_distinct_ordered": 5,
+        "dim_infer_arg_distinct_unordered": 5,
+        "epochs": 67,
+        "epochs_apply_once": 45,
+        "ffi_calls": 61441,
+        "ffi_items": 61441,
+        "ffi_pyobjects": 397084,
+        "graph_writes": 644,
+        "leaf_visits": 749,
+        "pushdown_evals": 10982,
+        "pushdown_prunes": 5520,
+        "rule_effect_attr_set_attempts": 418,
+        "rule_effect_edge_deletes": 1,
+        "rule_effect_edge_insert_attempts": 230,
+        "rule_effect_node_delete_attempts": 52,
+        "rule_effect_node_inserts": 41,
+        "rule_effect_replace_edge_deletes": 0,
+        "rule_effect_replace_edge_insert_attempts": 0,
+        "rule_enumerations": 54138,
+        "rule_enumerations_repeat": 10996,
+        "scheduler_dirty_vector_slots": 87187,
+        "scheduler_external_poll_slots": 87187,
+        "scheduler_fixedpoint_probe_slots": 1174,
+        "scheduler_passes": 39,
+        "scheduler_plan_ns": 544383,
+        "scheduler_selected_rules": 54093,
+        "scoped_full_fallback_rule_matches": 0,
+        "scoped_local_rule_matches": 0,
+        "scoped_mt_seeded_rule_matches": 0,
+        "term_eval:Abs": 107495,
+        "term_eval:And": 130933,
+        "term_eval:AntiUnify": 2045,
+        "term_eval:Argmax": 36,
+        "term_eval:Argmin": 36,
+        "term_eval:Attr": 1124977,
+        "term_eval:Count": 2547,
+        "term_eval:DimInfer": 10,
+        "term_eval:Eq": 983542,
+        "term_eval:EvalSubgraph": 4,
+        "term_eval:Exists": 1948,
+        "term_eval:Filter": 1137,
+        "term_eval:FixedCount": 2045,
+        "term_eval:Gt": 1170,
+        "term_eval:Gte": 12836,
+        "term_eval:Holds": 768,
+        "term_eval:IfThenElse": 20,
+        "term_eval:In": 1182,
+        "term_eval:InNeighbours": 1411,
+        "term_eval:IndexAt": 14,
+        "term_eval:Lit": 1090527,
+        "term_eval:Lt": 107947,
+        "term_eval:Lte": 21,
+        "term_eval:MapList": 5,
+        "term_eval:MaxOver": 258,
+        "term_eval:Minus": 18,
+        "term_eval:Neighbours": 2226,
+        "term_eval:NodesOfType": 662,
+        "term_eval:NodesWhere": 468,
+        "term_eval:Not": 115301,
+        "term_eval:Or": 588,
+        "term_eval:Pick": 468,
+        "term_eval:Plus": 143,
+        "term_eval:SetT": 2045,
+        "term_eval:ShapeDecode": 15,
+        "term_eval:StringConcat": 243,
+        "term_eval:TextShape": 18,
+        "term_eval:Times": 17,
+        "term_eval:TransformDecode": 10,
+        "term_eval:TypeOf": 1545,
+        "term_eval:Var": 1131310,
+        "term_evals_total": 4827991,
+        "term_evals_unattributed": 2461,
+        "term_unit:Exists": 3007,
+        "term_unit:NodesOfType": 17886,
+        "term_unit:ShapeDecode": 63116,
+        "term_unit:TransformDecode": 39,
+        "term_units_total": 84048,
+        "term_units_unattributed": 0,
+        "var_collisions": 89,
+        "where_evals": 965000,
+        "where_evals_first": 674313,
+        "where_evals_repeat": 290687,
+        "where_rejects": 952731
+      },
+      "scoped_scale_counters": {
+        "scheduler_dirty_vector_slots": 87179,
+        "scheduler_external_poll_slots": 87179,
+        "scheduler_fixedpoint_probe_slots": 1172,
+        "scheduler_passes": 37,
+        "scheduler_selected_rules": 54085
+      },
+      "semantic_graph_sha256": "0a2c36288e68046acad1e3227b0954f17e0b4e93a82b074637211be0211bda3b",
+      "work_dropped": 0,
+      "work_rows": [
+        [
+          1,
+          0,
+          "scheduler_pass",
+          null,
+          1
+        ],
+        [
+          1,
+          0,
+          "scheduler_external_poll_slots",
+          null,
+          2340
+        ],
+        [
+          1,
+          0,
+          "scheduler_fixedpoint_probe_slots",
+          null,
+          1
+        ],
+        [
+          1,
+          0,
+          "scheduler_dirty_vector_slots",
+          null,
+          2340
+        ],
+        [
+          1,
+          0,
+          "scheduler_selected_rules",
+          null,
+          2323
+        ],
+        [
+          2,
+          0,
+          "scheduler_pass",
+          null,
+          2
+        ],
+        [
+          2,
+          0,
+          "scheduler_external_poll_slots",
+          null,
+          4692
+        ],
+        [
+          2,
+          0,
+          "scheduler_fixedpoint_probe_slots",
+          null,
+          11
+        ],
+        [
+          2,
+          0,
+          "scheduler_dirty_vector_slots",
+          null,
+          4692
+        ],
+        [
+          2,
+          0,
+          "scheduler_selected_rules",
+          null,
+          3195
+        ],
+        [
+          3,
+          0,
+          "scheduler_pass",
+          null,
+          1
+        ],
+        [
+          3,
+          0,
+          "scheduler_external_poll_slots",
+          null,
+          2346
+        ],
+        [
+          3,
+          0,
+          "scheduler_fixedpoint_probe_slots",
+          null,
+          12
+        ],
+        [
+          3,
+          0,
+          "scheduler_dirty_vector_slots",
+          null,
+          2346
+        ],
+        [
+          3,
+          0,
+          "scheduler_selected_rules",
+          null,
+          827
+        ],
+        [
+          4,
+          0,
+          "scheduler_pass",
+          null,
+          2
+        ],
+        [
+          4,
+          0,
+          "scheduler_external_poll_slots",
+          null,
+          4694
+        ],
+        [
+          4,
+          0,
+          "scheduler_fixedpoint_probe_slots",
+          null,
+          11
+        ],
+        [
+          4,
+          0,
+          "scheduler_dirty_vector_slots",
+          null,
+          4694
+        ],
+        [
+          4,
+          0,
+          "scheduler_selected_rules",
+          null,
+          3173
+        ],
+        [
+          5,
+          0,
+          "scheduler_pass",
+          null,
+          1
+        ],
+        [
+          5,
+          0,
+          "scheduler_external_poll_slots",
+          null,
+          2347
+        ],
+        [
+          5,
+          0,
+          "scheduler_fixedpoint_probe_slots",
+          null,
+          12
+        ],
+        [
+          5,
+          0,
+          "scheduler_dirty_vector_slots",
+          null,
+          2347
+        ],
+        [
+          5,
+          0,
+          "scheduler_selected_rules",
+          null,
+          827
+        ],
+        [
+          6,
+          0,
+          "scheduler_pass",
+          null,
+          2
+        ],
+        [
+          6,
+          0,
+          "scheduler_external_poll_slots",
+          null,
+          4696
+        ],
+        [
+          6,
+          0,
+          "scheduler_fixedpoint_probe_slots",
+          null,
+          11
+        ],
+        [
+          6,
+          0,
+          "scheduler_dirty_vector_slots",
+          null,
+          4696
+        ],
+        [
+          6,
+          0,
+          "scheduler_selected_rules",
+          null,
+          3174
+        ],
+        [
+          7,
+          0,
+          "scheduler_pass",
+          null,
+          1
+        ],
+        [
+          7,
+          0,
+          "scheduler_external_poll_slots",
+          null,
+          2348
+        ],
+        [
+          7,
+          0,
+          "scheduler_fixedpoint_probe_slots",
+          null,
+          12
+        ],
+        [
+          7,
+          0,
+          "scheduler_dirty_vector_slots",
+          null,
+          2348
+        ],
+        [
+          7,
+          0,
+          "scheduler_selected_rules",
+          null,
+          827
+        ],
+        [
+          8,
+          0,
+          "scheduler_pass",
+          null,
+          2
+        ],
+        [
+          8,
+          0,
+          "scheduler_external_poll_slots",
+          null,
+          4700
+        ],
+        [
+          8,
+          0,
+          "scheduler_fixedpoint_probe_slots",
+          null,
+          11
+        ],
+        [
+          8,
+          0,
+          "scheduler_dirty_vector_slots",
+          null,
+          4700
+        ],
+        [
+          8,
+          0,
+          "scheduler_selected_rules",
+          null,
+          3176
+        ],
+        [
+          9,
+          0,
+          "scheduler_pass",
+          null,
+          1
+        ],
+        [
+          9,
+          0,
+          "scheduler_external_poll_slots",
+          null,
+          2350
+        ],
+        [
+          9,
+          0,
+          "scheduler_fixedpoint_probe_slots",
+          null,
+          12
+        ],
+        [
+          9,
+          0,
+          "scheduler_dirty_vector_slots",
+          null,
+          2350
+        ],
+        [
+          9,
+          0,
+          "scheduler_selected_rules",
+          null,
+          827
+        ],
+        [
+          10,
+          0,
+          "scheduler_pass",
+          null,
+          3
+        ],
+        [
+          10,
+          0,
+          "scheduler_external_poll_slots",
+          null,
+          7074
+        ],
+        [
+          10,
+          0,
+          "scheduler_fixedpoint_probe_slots",
+          null,
+          417
+        ],
+        [
+          10,
+          0,
+          "scheduler_dirty_vector_slots",
+          null,
+          7074
+        ],
+        [
+          10,
+          0,
+          "scheduler_selected_rules",
+          null,
+          3001
+        ],
+        [
+          11,
+          0,
+          "scheduler_pass",
+          null,
+          2
+        ],
+        [
+          11,
+          0,
+          "scheduler_external_poll_slots",
+          null,
+          4716
+        ],
+        [
+          11,
+          0,
+          "scheduler_fixedpoint_probe_slots",
+          null,
+          12
+        ],
+        [
+          11,
+          0,
+          "scheduler_dirty_vector_slots",
+          null,
+          4716
+        ],
+        [
+          11,
+          0,
+          "scheduler_selected_rules",
+          null,
+          3165
+        ],
+        [
+          12,
+          0,
+          "scheduler_pass",
+          null,
+          2
+        ],
+        [
+          12,
+          0,
+          "scheduler_external_poll_slots",
+          null,
+          4716
+        ],
+        [
+          12,
+          0,
+          "scheduler_fixedpoint_probe_slots",
+          null,
+          12
+        ],
+        [
+          12,
+          0,
+          "scheduler_dirty_vector_slots",
+          null,
+          4716
+        ],
+        [
+          12,
+          0,
+          "scheduler_selected_rules",
+          null,
+          3165
+        ],
+        [
+          13,
+          0,
+          "scheduler_pass",
+          null,
+          2
+        ],
+        [
+          13,
+          0,
+          "scheduler_external_poll_slots",
+          null,
+          4716
+        ],
+        [
+          13,
+          0,
+          "scheduler_fixedpoint_probe_slots",
+          null,
+          12
+        ],
+        [
+          13,
+          0,
+          "scheduler_dirty_vector_slots",
+          null,
+          4716
+        ],
+        [
+          13,
+          0,
+          "scheduler_selected_rules",
+          null,
+          3172
+        ],
+        [
+          14,
+          0,
+          "scheduler_pass",
+          null,
+          2
+        ],
+        [
+          14,
+          0,
+          "scheduler_external_poll_slots",
+          null,
+          4716
+        ],
+        [
+          14,
+          0,
+          "scheduler_fixedpoint_probe_slots",
+          null,
+          11
+        ],
+        [
+          14,
+          0,
+          "scheduler_dirty_vector_slots",
+          null,
+          4716
+        ],
+        [
+          14,
+          0,
+          "scheduler_selected_rules",
+          null,
+          3184
+        ],
+        [
+          15,
+          0,
+          "scheduler_pass",
+          null,
+          2
+        ],
+        [
+          15,
+          0,
+          "scheduler_external_poll_slots",
+          null,
+          4726
+        ],
+        [
+          15,
+          0,
+          "scheduler_fixedpoint_probe_slots",
+          null,
+          12
+        ],
+        [
+          15,
+          0,
+          "scheduler_dirty_vector_slots",
+          null,
+          4726
+        ],
+        [
+          15,
+          0,
+          "scheduler_selected_rules",
+          null,
+          3173
+        ],
+        [
+          16,
+          0,
+          "scheduler_pass",
+          null,
+          2
+        ],
+        [
+          16,
+          0,
+          "scheduler_external_poll_slots",
+          null,
+          4726
+        ],
+        [
+          16,
+          0,
+          "scheduler_fixedpoint_probe_slots",
+          null,
+          12
+        ],
+        [
+          16,
+          0,
+          "scheduler_dirty_vector_slots",
+          null,
+          4726
+        ],
+        [
+          16,
+          0,
+          "scheduler_selected_rules",
+          null,
+          3169
+        ],
+        [
+          17,
+          0,
+          "scheduler_pass",
+          null,
+          2
+        ],
+        [
+          17,
+          0,
+          "scheduler_external_poll_slots",
+          null,
+          4728
+        ],
+        [
+          17,
+          0,
+          "scheduler_fixedpoint_probe_slots",
+          null,
+          283
+        ],
+        [
+          17,
+          0,
+          "scheduler_dirty_vector_slots",
+          null,
+          4728
+        ],
+        [
+          17,
+          0,
+          "scheduler_selected_rules",
+          null,
+          2508
+        ],
+        [
+          18,
+          0,
+          "scheduler_pass",
+          null,
+          1
+        ],
+        [
+          18,
+          0,
+          "scheduler_external_poll_slots",
+          null,
+          2364
+        ],
+        [
+          18,
+          0,
+          "scheduler_fixedpoint_probe_slots",
+          null,
+          1
+        ],
+        [
+          18,
+          0,
+          "scheduler_dirty_vector_slots",
+          null,
+          2364
+        ],
+        [
+          18,
+          0,
+          "scheduler_selected_rules",
+          null,
+          2347
+        ],
+        [
+          19,
+          0,
+          "scheduler_pass",
+          null,
+          2
+        ],
+        [
+          19,
+          0,
+          "scheduler_external_poll_slots",
+          null,
+          4728
+        ],
+        [
+          19,
+          0,
+          "scheduler_fixedpoint_probe_slots",
+          null,
+          12
+        ],
+        [
+          19,
+          0,
+          "scheduler_dirty_vector_slots",
+          null,
+          4728
+        ],
+        [
+          19,
+          0,
+          "scheduler_selected_rules",
+          null,
+          3174
+        ],
+        [
+          20,
+          0,
+          "scheduler_pass",
+          null,
+          2
+        ],
+        [
+          20,
+          0,
+          "scheduler_external_poll_slots",
+          null,
+          4728
+        ],
+        [
+          20,
+          0,
+          "scheduler_fixedpoint_probe_slots",
+          null,
+          12
+        ],
+        [
+          20,
+          0,
+          "scheduler_dirty_vector_slots",
+          null,
+          4728
+        ],
+        [
+          20,
+          0,
+          "scheduler_selected_rules",
+          null,
+          3170
+        ],
+        [
+          21,
+          0,
+          "scheduler_pass",
+          null,
+          2
+        ],
+        [
+          21,
+          0,
+          "scheduler_external_poll_slots",
+          null,
+          4728
+        ],
+        [
+          21,
+          0,
+          "scheduler_fixedpoint_probe_slots",
+          null,
+          283
+        ],
+        [
+          21,
+          0,
+          "scheduler_dirty_vector_slots",
+          null,
+          4728
+        ],
+        [
+          21,
+          0,
+          "scheduler_selected_rules",
+          null,
+          2508
+        ]
+      ]
+    },
+    {
+      "after": {
+        "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+        "files": {
+          "docs/research/engine_substrate/SUBSTRATE_LIVE_SCHEDULER_WORK_TRACE_V2_PREREG_20260928.md": "2e1466434812eb3a3f5bf7caf6c776410ded522c6c510f7711715f591c8b24f9",
+          "domains/conversation_action.py": "fe71c4ec7e8300c2b2ff5592dd50871429f5901cae411a56007d0651abfc00e2",
+          "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+          "runners/dsl/Cargo.toml": "c4d8ffff2241352a5150b5a9937dbb8010e958b6f115235b7daeae716c1a9332",
+          "runners/dsl/python/substrate_rs/__init__.py": "6ec0316afae414329e36d3f121fc56b556e7315f17b93aab911ca09a29726694",
+          "runners/dsl/src/access_trace.rs": "4c1d208a7eb2c209b1b5d8b73cf1715b08a79f840a390be854e77ed0f4587bfd",
+          "runners/dsl/src/py.rs": "9c82fb77caf8a74817f8b0164c9700525bf77749812acc956a66cfdc65ca8351",
+          "runners/dsl/src/rewrite.rs": "58cea7eaa595c804f4f0265c4003231105011dc2493bea8ca30dea6bb6246c34",
+          "runners/dsl/src/scale_audit.rs": "a5d98039cde2c1947f8def56bde39bc2e7141e9faf7c6233dd1e8a86a3da849b",
+          "runners/dsl/src/substrate.rs": "0b917dde51d9088ca25ac236152415511cb169000fbe4dec36b679679bfc6981",
+          "scripts/analyze_live_scheduler_work_trace_v2.py": "1b5f33115b8ccacd46435259439528aeac4510410fdf9c2c55f754b1bed7511e",
+          "scripts/substrate_live_scheduler_work_trace_v2.py": "f3efcd1085d374f7a9e28b7106bdb0003730fbda7f30b874af2099a32ebc9c76",
+          "substrate/boot_all.py": "2bdf46f19228e1d85dbdcf12383116ceeb72aab0efe7ddd0cc6a51d23b45d220",
+          "substrate/world_adapter.py": "f044887310bee56683f8f81a2d291662b14b5f5db76aaa75a6592f8aa029d650"
+        },
+        "native_path": "/tmp/ocelot-v2-wheel/substrate_rs/_native.abi3.so",
+        "native_sha256": "7fb60186bd7d64af2204dcc30431b6079574cd45a6047ad3238ce78c1f4dc051",
+        "platform": "Linux-6.8.0-142-generic-x86_64-with-glibc2.39",
+        "python": "3.13.5 (main, Jun 11 2025, 15:36:57) [GCC 11.4.0]",
+        "rust_source_fingerprint": "129bb0ec66ae8b29885d08a2894aba4e5b068f693df1b9079d0e837a86ee02b0",
+        "wheel_path": "/tmp/ocelot-maturin-v2/substrate_rs-0.1.0-cp39-abi3-manylinux_2_35_x86_64.whl",
+        "wheel_sha256": "dd4ca324d5e3d0dc7ff876e27c4bb02b788878d4f2dccdcfa65860f5ac8e95e0"
+      },
+      "before": {
+        "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+        "files": {
+          "docs/research/engine_substrate/SUBSTRATE_LIVE_SCHEDULER_WORK_TRACE_V2_PREREG_20260928.md": "2e1466434812eb3a3f5bf7caf6c776410ded522c6c510f7711715f591c8b24f9",
+          "domains/conversation_action.py": "fe71c4ec7e8300c2b2ff5592dd50871429f5901cae411a56007d0651abfc00e2",
+          "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+          "runners/dsl/Cargo.toml": "c4d8ffff2241352a5150b5a9937dbb8010e958b6f115235b7daeae716c1a9332",
+          "runners/dsl/python/substrate_rs/__init__.py": "6ec0316afae414329e36d3f121fc56b556e7315f17b93aab911ca09a29726694",
+          "runners/dsl/src/access_trace.rs": "4c1d208a7eb2c209b1b5d8b73cf1715b08a79f840a390be854e77ed0f4587bfd",
+          "runners/dsl/src/py.rs": "9c82fb77caf8a74817f8b0164c9700525bf77749812acc956a66cfdc65ca8351",
+          "runners/dsl/src/rewrite.rs": "58cea7eaa595c804f4f0265c4003231105011dc2493bea8ca30dea6bb6246c34",
+          "runners/dsl/src/scale_audit.rs": "a5d98039cde2c1947f8def56bde39bc2e7141e9faf7c6233dd1e8a86a3da849b",
+          "runners/dsl/src/substrate.rs": "0b917dde51d9088ca25ac236152415511cb169000fbe4dec36b679679bfc6981",
+          "scripts/analyze_live_scheduler_work_trace_v2.py": "1b5f33115b8ccacd46435259439528aeac4510410fdf9c2c55f754b1bed7511e",
+          "scripts/substrate_live_scheduler_work_trace_v2.py": "f3efcd1085d374f7a9e28b7106bdb0003730fbda7f30b874af2099a32ebc9c76",
+          "substrate/boot_all.py": "2bdf46f19228e1d85dbdcf12383116ceeb72aab0efe7ddd0cc6a51d23b45d220",
+          "substrate/world_adapter.py": "f044887310bee56683f8f81a2d291662b14b5f5db76aaa75a6592f8aa029d650"
+        },
+        "native_path": "/tmp/ocelot-v2-wheel/substrate_rs/_native.abi3.so",
+        "native_sha256": "7fb60186bd7d64af2204dcc30431b6079574cd45a6047ad3238ce78c1f4dc051",
+        "platform": "Linux-6.8.0-142-generic-x86_64-with-glibc2.39",
+        "python": "3.13.5 (main, Jun 11 2025, 15:36:57) [GCC 11.4.0]",
+        "rust_source_fingerprint": "129bb0ec66ae8b29885d08a2894aba4e5b068f693df1b9079d0e837a86ee02b0",
+        "wheel_path": "/tmp/ocelot-maturin-v2/substrate_rs-0.1.0-cp39-abi3-manylinux_2_35_x86_64.whl",
+        "wheel_sha256": "dd4ca324d5e3d0dc7ff876e27c4bb02b788878d4f2dccdcfa65860f5ac8e95e0"
+      },
+      "edge_count": 11695,
+      "node_count": 25175,
+      "pid": 10997,
+      "replicate": 2,
+      "reply": "I see the grey thing stays, the yellow counter, and the blue thing moves.",
+      "scale_counters": {
+        "apply_probe_rollbacks": 644,
+        "bindings_cloned": 733,
+        "cand_enum": 964788,
+        "cand_enum_apply_once": 569,
+        "cand_enum_first": 673944,
+        "cand_enum_hinted": 7,
+        "cand_enum_local": 6342,
+        "cand_enum_repeat": 290844,
+        "cand_enum_scan": 958439,
+        "cand_reject_bound": 6,
+        "cand_tested": 964650,
+        "cand_tested_unattributed": 419,
+        "deferred_queue:fb_samples:drain_batches": 16,
+        "deferred_queue:fb_samples:drain_ns": 490,
+        "dim_infer_arg_calls": 5,
+        "dim_infer_arg_distinct_ordered": 5,
+        "dim_infer_arg_distinct_unordered": 5,
+        "epochs": 67,
+        "epochs_apply_once": 45,
+        "ffi_calls": 61441,
+        "ffi_items": 61441,
+        "ffi_pyobjects": 397084,
+        "graph_writes": 644,
+        "leaf_visits": 749,
+        "pushdown_evals": 10982,
+        "pushdown_prunes": 5520,
+        "rule_effect_attr_set_attempts": 418,
+        "rule_effect_edge_deletes": 1,
+        "rule_effect_edge_insert_attempts": 230,
+        "rule_effect_node_delete_attempts": 52,
+        "rule_effect_node_inserts": 41,
+        "rule_effect_replace_edge_deletes": 0,
+        "rule_effect_replace_edge_insert_attempts": 0,
+        "rule_enumerations": 54138,
+        "rule_enumerations_repeat": 10996,
+        "scheduler_dirty_vector_slots": 87187,
+        "scheduler_external_poll_slots": 87187,
+        "scheduler_fixedpoint_probe_slots": 1174,
+        "scheduler_passes": 39,
+        "scheduler_plan_ns": 539401,
+        "scheduler_selected_rules": 54093,
+        "scoped_full_fallback_rule_matches": 0,
+        "scoped_local_rule_matches": 0,
+        "scoped_mt_seeded_rule_matches": 0,
+        "term_eval:Abs": 107495,
+        "term_eval:And": 130933,
+        "term_eval:AntiUnify": 2045,
+        "term_eval:Argmax": 36,
+        "term_eval:Argmin": 36,
+        "term_eval:Attr": 1124977,
+        "term_eval:Count": 2547,
+        "term_eval:DimInfer": 10,
+        "term_eval:Eq": 983542,
+        "term_eval:EvalSubgraph": 4,
+        "term_eval:Exists": 1948,
+        "term_eval:Filter": 1137,
+        "term_eval:FixedCount": 2045,
+        "term_eval:Gt": 1170,
+        "term_eval:Gte": 12836,
+        "term_eval:Holds": 768,
+        "term_eval:IfThenElse": 20,
+        "term_eval:In": 1182,
+        "term_eval:InNeighbours": 1411,
+        "term_eval:IndexAt": 14,
+        "term_eval:Lit": 1090527,
+        "term_eval:Lt": 107947,
+        "term_eval:Lte": 21,
+        "term_eval:MapList": 5,
+        "term_eval:MaxOver": 258,
+        "term_eval:Minus": 18,
+        "term_eval:Neighbours": 2226,
+        "term_eval:NodesOfType": 662,
+        "term_eval:NodesWhere": 468,
+        "term_eval:Not": 115301,
+        "term_eval:Or": 588,
+        "term_eval:Pick": 468,
+        "term_eval:Plus": 143,
+        "term_eval:SetT": 2045,
+        "term_eval:ShapeDecode": 15,
+        "term_eval:StringConcat": 243,
+        "term_eval:TextShape": 18,
+        "term_eval:Times": 17,
+        "term_eval:TransformDecode": 10,
+        "term_eval:TypeOf": 1545,
+        "term_eval:Var": 1131310,
+        "term_evals_total": 4827991,
+        "term_evals_unattributed": 2461,
+        "term_unit:Exists": 3007,
+        "term_unit:NodesOfType": 17886,
+        "term_unit:ShapeDecode": 63116,
+        "term_unit:TransformDecode": 39,
+        "term_units_total": 84048,
+        "term_units_unattributed": 0,
+        "var_collisions": 89,
+        "where_evals": 965000,
+        "where_evals_first": 674313,
+        "where_evals_repeat": 290687,
+        "where_rejects": 952731
+      },
+      "scoped_scale_counters": {
+        "scheduler_dirty_vector_slots": 87179,
+        "scheduler_external_poll_slots": 87179,
+        "scheduler_fixedpoint_probe_slots": 1172,
+        "scheduler_passes": 37,
+        "scheduler_selected_rules": 54085
+      },
+      "semantic_graph_sha256": "0a2c36288e68046acad1e3227b0954f17e0b4e93a82b074637211be0211bda3b",
+      "work_dropped": 0,
+      "work_rows": [
+        [
+          1,
+          0,
+          "scheduler_pass",
+          null,
+          1
+        ],
+        [
+          1,
+          0,
+          "scheduler_external_poll_slots",
+          null,
+          2340
+        ],
+        [
+          1,
+          0,
+          "scheduler_fixedpoint_probe_slots",
+          null,
+          1
+        ],
+        [
+          1,
+          0,
+          "scheduler_dirty_vector_slots",
+          null,
+          2340
+        ],
+        [
+          1,
+          0,
+          "scheduler_selected_rules",
+          null,
+          2323
+        ],
+        [
+          2,
+          0,
+          "scheduler_pass",
+          null,
+          2
+        ],
+        [
+          2,
+          0,
+          "scheduler_external_poll_slots",
+          null,
+          4692
+        ],
+        [
+          2,
+          0,
+          "scheduler_fixedpoint_probe_slots",
+          null,
+          11
+        ],
+        [
+          2,
+          0,
+          "scheduler_dirty_vector_slots",
+          null,
+          4692
+        ],
+        [
+          2,
+          0,
+          "scheduler_selected_rules",
+          null,
+          3195
+        ],
+        [
+          3,
+          0,
+          "scheduler_pass",
+          null,
+          1
+        ],
+        [
+          3,
+          0,
+          "scheduler_external_poll_slots",
+          null,
+          2346
+        ],
+        [
+          3,
+          0,
+          "scheduler_fixedpoint_probe_slots",
+          null,
+          12
+        ],
+        [
+          3,
+          0,
+          "scheduler_dirty_vector_slots",
+          null,
+          2346
+        ],
+        [
+          3,
+          0,
+          "scheduler_selected_rules",
+          null,
+          827
+        ],
+        [
+          4,
+          0,
+          "scheduler_pass",
+          null,
+          2
+        ],
+        [
+          4,
+          0,
+          "scheduler_external_poll_slots",
+          null,
+          4694
+        ],
+        [
+          4,
+          0,
+          "scheduler_fixedpoint_probe_slots",
+          null,
+          11
+        ],
+        [
+          4,
+          0,
+          "scheduler_dirty_vector_slots",
+          null,
+          4694
+        ],
+        [
+          4,
+          0,
+          "scheduler_selected_rules",
+          null,
+          3173
+        ],
+        [
+          5,
+          0,
+          "scheduler_pass",
+          null,
+          1
+        ],
+        [
+          5,
+          0,
+          "scheduler_external_poll_slots",
+          null,
+          2347
+        ],
+        [
+          5,
+          0,
+          "scheduler_fixedpoint_probe_slots",
+          null,
+          12
+        ],
+        [
+          5,
+          0,
+          "scheduler_dirty_vector_slots",
+          null,
+          2347
+        ],
+        [
+          5,
+          0,
+          "scheduler_selected_rules",
+          null,
+          827
+        ],
+        [
+          6,
+          0,
+          "scheduler_pass",
+          null,
+          2
+        ],
+        [
+          6,
+          0,
+          "scheduler_external_poll_slots",
+          null,
+          4696
+        ],
+        [
+          6,
+          0,
+          "scheduler_fixedpoint_probe_slots",
+          null,
+          11
+        ],
+        [
+          6,
+          0,
+          "scheduler_dirty_vector_slots",
+          null,
+          4696
+        ],
+        [
+          6,
+          0,
+          "scheduler_selected_rules",
+          null,
+          3174
+        ],
+        [
+          7,
+          0,
+          "scheduler_pass",
+          null,
+          1
+        ],
+        [
+          7,
+          0,
+          "scheduler_external_poll_slots",
+          null,
+          2348
+        ],
+        [
+          7,
+          0,
+          "scheduler_fixedpoint_probe_slots",
+          null,
+          12
+        ],
+        [
+          7,
+          0,
+          "scheduler_dirty_vector_slots",
+          null,
+          2348
+        ],
+        [
+          7,
+          0,
+          "scheduler_selected_rules",
+          null,
+          827
+        ],
+        [
+          8,
+          0,
+          "scheduler_pass",
+          null,
+          2
+        ],
+        [
+          8,
+          0,
+          "scheduler_external_poll_slots",
+          null,
+          4700
+        ],
+        [
+          8,
+          0,
+          "scheduler_fixedpoint_probe_slots",
+          null,
+          11
+        ],
+        [
+          8,
+          0,
+          "scheduler_dirty_vector_slots",
+          null,
+          4700
+        ],
+        [
+          8,
+          0,
+          "scheduler_selected_rules",
+          null,
+          3176
+        ],
+        [
+          9,
+          0,
+          "scheduler_pass",
+          null,
+          1
+        ],
+        [
+          9,
+          0,
+          "scheduler_external_poll_slots",
+          null,
+          2350
+        ],
+        [
+          9,
+          0,
+          "scheduler_fixedpoint_probe_slots",
+          null,
+          12
+        ],
+        [
+          9,
+          0,
+          "scheduler_dirty_vector_slots",
+          null,
+          2350
+        ],
+        [
+          9,
+          0,
+          "scheduler_selected_rules",
+          null,
+          827
+        ],
+        [
+          10,
+          0,
+          "scheduler_pass",
+          null,
+          3
+        ],
+        [
+          10,
+          0,
+          "scheduler_external_poll_slots",
+          null,
+          7074
+        ],
+        [
+          10,
+          0,
+          "scheduler_fixedpoint_probe_slots",
+          null,
+          417
+        ],
+        [
+          10,
+          0,
+          "scheduler_dirty_vector_slots",
+          null,
+          7074
+        ],
+        [
+          10,
+          0,
+          "scheduler_selected_rules",
+          null,
+          3001
+        ],
+        [
+          11,
+          0,
+          "scheduler_pass",
+          null,
+          2
+        ],
+        [
+          11,
+          0,
+          "scheduler_external_poll_slots",
+          null,
+          4716
+        ],
+        [
+          11,
+          0,
+          "scheduler_fixedpoint_probe_slots",
+          null,
+          12
+        ],
+        [
+          11,
+          0,
+          "scheduler_dirty_vector_slots",
+          null,
+          4716
+        ],
+        [
+          11,
+          0,
+          "scheduler_selected_rules",
+          null,
+          3165
+        ],
+        [
+          12,
+          0,
+          "scheduler_pass",
+          null,
+          2
+        ],
+        [
+          12,
+          0,
+          "scheduler_external_poll_slots",
+          null,
+          4716
+        ],
+        [
+          12,
+          0,
+          "scheduler_fixedpoint_probe_slots",
+          null,
+          12
+        ],
+        [
+          12,
+          0,
+          "scheduler_dirty_vector_slots",
+          null,
+          4716
+        ],
+        [
+          12,
+          0,
+          "scheduler_selected_rules",
+          null,
+          3165
+        ],
+        [
+          13,
+          0,
+          "scheduler_pass",
+          null,
+          2
+        ],
+        [
+          13,
+          0,
+          "scheduler_external_poll_slots",
+          null,
+          4716
+        ],
+        [
+          13,
+          0,
+          "scheduler_fixedpoint_probe_slots",
+          null,
+          12
+        ],
+        [
+          13,
+          0,
+          "scheduler_dirty_vector_slots",
+          null,
+          4716
+        ],
+        [
+          13,
+          0,
+          "scheduler_selected_rules",
+          null,
+          3172
+        ],
+        [
+          14,
+          0,
+          "scheduler_pass",
+          null,
+          2
+        ],
+        [
+          14,
+          0,
+          "scheduler_external_poll_slots",
+          null,
+          4716
+        ],
+        [
+          14,
+          0,
+          "scheduler_fixedpoint_probe_slots",
+          null,
+          11
+        ],
+        [
+          14,
+          0,
+          "scheduler_dirty_vector_slots",
+          null,
+          4716
+        ],
+        [
+          14,
+          0,
+          "scheduler_selected_rules",
+          null,
+          3184
+        ],
+        [
+          15,
+          0,
+          "scheduler_pass",
+          null,
+          2
+        ],
+        [
+          15,
+          0,
+          "scheduler_external_poll_slots",
+          null,
+          4726
+        ],
+        [
+          15,
+          0,
+          "scheduler_fixedpoint_probe_slots",
+          null,
+          12
+        ],
+        [
+          15,
+          0,
+          "scheduler_dirty_vector_slots",
+          null,
+          4726
+        ],
+        [
+          15,
+          0,
+          "scheduler_selected_rules",
+          null,
+          3173
+        ],
+        [
+          16,
+          0,
+          "scheduler_pass",
+          null,
+          2
+        ],
+        [
+          16,
+          0,
+          "scheduler_external_poll_slots",
+          null,
+          4726
+        ],
+        [
+          16,
+          0,
+          "scheduler_fixedpoint_probe_slots",
+          null,
+          12
+        ],
+        [
+          16,
+          0,
+          "scheduler_dirty_vector_slots",
+          null,
+          4726
+        ],
+        [
+          16,
+          0,
+          "scheduler_selected_rules",
+          null,
+          3169
+        ],
+        [
+          17,
+          0,
+          "scheduler_pass",
+          null,
+          2
+        ],
+        [
+          17,
+          0,
+          "scheduler_external_poll_slots",
+          null,
+          4728
+        ],
+        [
+          17,
+          0,
+          "scheduler_fixedpoint_probe_slots",
+          null,
+          283
+        ],
+        [
+          17,
+          0,
+          "scheduler_dirty_vector_slots",
+          null,
+          4728
+        ],
+        [
+          17,
+          0,
+          "scheduler_selected_rules",
+          null,
+          2508
+        ],
+        [
+          18,
+          0,
+          "scheduler_pass",
+          null,
+          1
+        ],
+        [
+          18,
+          0,
+          "scheduler_external_poll_slots",
+          null,
+          2364
+        ],
+        [
+          18,
+          0,
+          "scheduler_fixedpoint_probe_slots",
+          null,
+          1
+        ],
+        [
+          18,
+          0,
+          "scheduler_dirty_vector_slots",
+          null,
+          2364
+        ],
+        [
+          18,
+          0,
+          "scheduler_selected_rules",
+          null,
+          2347
+        ],
+        [
+          19,
+          0,
+          "scheduler_pass",
+          null,
+          2
+        ],
+        [
+          19,
+          0,
+          "scheduler_external_poll_slots",
+          null,
+          4728
+        ],
+        [
+          19,
+          0,
+          "scheduler_fixedpoint_probe_slots",
+          null,
+          12
+        ],
+        [
+          19,
+          0,
+          "scheduler_dirty_vector_slots",
+          null,
+          4728
+        ],
+        [
+          19,
+          0,
+          "scheduler_selected_rules",
+          null,
+          3174
+        ],
+        [
+          20,
+          0,
+          "scheduler_pass",
+          null,
+          2
+        ],
+        [
+          20,
+          0,
+          "scheduler_external_poll_slots",
+          null,
+          4728
+        ],
+        [
+          20,
+          0,
+          "scheduler_fixedpoint_probe_slots",
+          null,
+          12
+        ],
+        [
+          20,
+          0,
+          "scheduler_dirty_vector_slots",
+          null,
+          4728
+        ],
+        [
+          20,
+          0,
+          "scheduler_selected_rules",
+          null,
+          3170
+        ],
+        [
+          21,
+          0,
+          "scheduler_pass",
+          null,
+          2
+        ],
+        [
+          21,
+          0,
+          "scheduler_external_poll_slots",
+          null,
+          4728
+        ],
+        [
+          21,
+          0,
+          "scheduler_fixedpoint_probe_slots",
+          null,
+          283
+        ],
+        [
+          21,
+          0,
+          "scheduler_dirty_vector_slots",
+          null,
+          4728
+        ],
+        [
+          21,
+          0,
+          "scheduler_selected_rules",
+          null,
+          2508
+        ]
+      ]
+    }
+  ],
+  "schema_version": 2,
+  "started_utc": "2026-09-28T02:07:30.116972+00:00"
+}

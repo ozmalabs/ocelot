@@ -1,0 +1,261 @@
+{
+  "checks": {
+    "all_five_contenders_wait_then_enter": true,
+    "all_operations_and_threads_clean": true,
+    "conversation_reply_and_lifecycle": true,
+    "facades_share_lock_identity": true,
+    "normalized_shape_repeats": true,
+    "sources_stable": true,
+    "three_distinct_processes": true
+  },
+  "claim_boundary": "Five adapter graph-handle/public API calls, including a second facade around the same native substrate, contend with one live conversation. Raw handles retained before wrapping and external native callers remain outside this test.",
+  "environment": {
+    "platform": "Linux-6.8.0-142-generic-x86_64-with-glibc2.39",
+    "python": "3.13.5 (main, Jun 11 2025, 15:36:57) [GCC 11.4.0]"
+  },
+  "lock_sha256": "7268fcdbc3d4c8175b018d8a9e9859486d2e0cc2e0aceb9be1972dff2f187e7a",
+  "locked_inputs": {
+    "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+    "native_build_manifest_sha256": "2d10ff9cc7f9832d91d1603c74dd0a0e0c4c5d3080a618a33575e9d5400ae871",
+    "native_extension_sha256": "f5543ca015278bad6c65506a0d7d9acb85b33252e7121cdda1a56df63e8ad27b",
+    "protocol_sha256": "76e6432185301932a09d6ebdf0fc8a0993e560f39b5b0d69295bc1959821ae34",
+    "runner_sha256": "f74cb363604f03efef1864ca92b6405e3b4cf2facc267892ea558995bf6a9b7c",
+    "source_sha256": {
+      "boot_all": "cb3645106e9f3cd056b900f507e5f4dbea36849d0568189545c73de698713d27",
+      "conversation_action": "f580ec11415d91bb54e86a8d33cefd216b31c6a9b8531815ef717070a37165c6",
+      "discourse_seed": "0dc367275203b8abcfd0be63b3c0dbe0308de50e25bd869c3ac2c88f622c8823",
+      "native_py": "034e606b055938e952fd5ff42cda66c563a37ca89a50761b62f6662282499ca9",
+      "world_adapter": "4fae3c3e7e8658617db602c1f17278ea21ebfd81724bf91a2fe43ee4606f0fe6"
+    }
+  },
+  "post_run_inputs": {
+    "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+    "native_build_manifest_sha256": "2d10ff9cc7f9832d91d1603c74dd0a0e0c4c5d3080a618a33575e9d5400ae871",
+    "native_extension_sha256": "f5543ca015278bad6c65506a0d7d9acb85b33252e7121cdda1a56df63e8ad27b",
+    "protocol_sha256": "76e6432185301932a09d6ebdf0fc8a0993e560f39b5b0d69295bc1959821ae34",
+    "runner_sha256": "f74cb363604f03efef1864ca92b6405e3b4cf2facc267892ea558995bf6a9b7c",
+    "source_sha256": {
+      "boot_all": "cb3645106e9f3cd056b900f507e5f4dbea36849d0568189545c73de698713d27",
+      "conversation_action": "f580ec11415d91bb54e86a8d33cefd216b31c6a9b8531815ef717070a37165c6",
+      "discourse_seed": "0dc367275203b8abcfd0be63b3c0dbe0308de50e25bd869c3ac2c88f622c8823",
+      "native_py": "034e606b055938e952fd5ff42cda66c563a37ca89a50761b62f6662282499ca9",
+      "world_adapter": "4fae3c3e7e8658617db602c1f17278ea21ebfd81724bf91a2fe43ee4606f0fe6"
+    }
+  },
+  "run_id": "substrate-shared-native-facade-serialization-v1-20260926",
+  "runs": [
+    {
+      "attempted": {
+        "race-adapter_tick": true,
+        "race-inner_node": true,
+        "race-s_inner_node": true,
+        "race-s_node": true,
+        "race-second_facade_node": true
+      },
+      "conversation_reply": "I see the grey thing stays, the yellow counter, and the blue thing moves.",
+      "entered": {
+        "race-adapter_tick": true,
+        "race-inner_node": true,
+        "race-s_inner_node": true,
+        "race-s_node": true,
+        "race-second_facade_node": true
+      },
+      "errors": [],
+      "event_kinds": [
+        "instruction",
+        "selection",
+        "execution",
+        "action_result"
+      ],
+      "event_order_gate": true,
+      "identity_gate": true,
+      "joined": true,
+      "lifecycle_gate": true,
+      "operation_set_complete": true,
+      "operations": {
+        "adapter_tick": 0,
+        "inner_node": "Agent",
+        "s_inner_node": "Agent",
+        "s_node": "Agent",
+        "second_facade_node": "Agent"
+      },
+      "pause_gate": true,
+      "pid": 7,
+      "replicate": 1,
+      "reply_parity": true,
+      "second_facade_initial_shared_lock": true,
+      "worker_finished_inputs": {
+        "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+        "native_build_manifest_sha256": "2d10ff9cc7f9832d91d1603c74dd0a0e0c4c5d3080a618a33575e9d5400ae871",
+        "native_extension_sha256": "f5543ca015278bad6c65506a0d7d9acb85b33252e7121cdda1a56df63e8ad27b",
+        "protocol_sha256": "76e6432185301932a09d6ebdf0fc8a0993e560f39b5b0d69295bc1959821ae34",
+        "runner_sha256": "f74cb363604f03efef1864ca92b6405e3b4cf2facc267892ea558995bf6a9b7c",
+        "source_sha256": {
+          "boot_all": "cb3645106e9f3cd056b900f507e5f4dbea36849d0568189545c73de698713d27",
+          "conversation_action": "f580ec11415d91bb54e86a8d33cefd216b31c6a9b8531815ef717070a37165c6",
+          "discourse_seed": "0dc367275203b8abcfd0be63b3c0dbe0308de50e25bd869c3ac2c88f622c8823",
+          "native_py": "034e606b055938e952fd5ff42cda66c563a37ca89a50761b62f6662282499ca9",
+          "world_adapter": "4fae3c3e7e8658617db602c1f17278ea21ebfd81724bf91a2fe43ee4606f0fe6"
+        }
+      },
+      "worker_started_inputs": {
+        "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+        "native_build_manifest_sha256": "2d10ff9cc7f9832d91d1603c74dd0a0e0c4c5d3080a618a33575e9d5400ae871",
+        "native_extension_sha256": "f5543ca015278bad6c65506a0d7d9acb85b33252e7121cdda1a56df63e8ad27b",
+        "protocol_sha256": "76e6432185301932a09d6ebdf0fc8a0993e560f39b5b0d69295bc1959821ae34",
+        "runner_sha256": "f74cb363604f03efef1864ca92b6405e3b4cf2facc267892ea558995bf6a9b7c",
+        "source_sha256": {
+          "boot_all": "cb3645106e9f3cd056b900f507e5f4dbea36849d0568189545c73de698713d27",
+          "conversation_action": "f580ec11415d91bb54e86a8d33cefd216b31c6a9b8531815ef717070a37165c6",
+          "discourse_seed": "0dc367275203b8abcfd0be63b3c0dbe0308de50e25bd869c3ac2c88f622c8823",
+          "native_py": "034e606b055938e952fd5ff42cda66c563a37ca89a50761b62f6662282499ca9",
+          "world_adapter": "4fae3c3e7e8658617db602c1f17278ea21ebfd81724bf91a2fe43ee4606f0fe6"
+        }
+      }
+    },
+    {
+      "attempted": {
+        "race-adapter_tick": true,
+        "race-inner_node": true,
+        "race-s_inner_node": true,
+        "race-s_node": true,
+        "race-second_facade_node": true
+      },
+      "conversation_reply": "I see the grey thing stays, the yellow counter, and the blue thing moves.",
+      "entered": {
+        "race-adapter_tick": true,
+        "race-inner_node": true,
+        "race-s_inner_node": true,
+        "race-s_node": true,
+        "race-second_facade_node": true
+      },
+      "errors": [],
+      "event_kinds": [
+        "instruction",
+        "selection",
+        "execution",
+        "action_result"
+      ],
+      "event_order_gate": true,
+      "identity_gate": true,
+      "joined": true,
+      "lifecycle_gate": true,
+      "operation_set_complete": true,
+      "operations": {
+        "adapter_tick": 0,
+        "inner_node": "Agent",
+        "s_inner_node": "Agent",
+        "s_node": "Agent",
+        "second_facade_node": "Agent"
+      },
+      "pause_gate": true,
+      "pid": 5503,
+      "replicate": 2,
+      "reply_parity": true,
+      "second_facade_initial_shared_lock": true,
+      "worker_finished_inputs": {
+        "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+        "native_build_manifest_sha256": "2d10ff9cc7f9832d91d1603c74dd0a0e0c4c5d3080a618a33575e9d5400ae871",
+        "native_extension_sha256": "f5543ca015278bad6c65506a0d7d9acb85b33252e7121cdda1a56df63e8ad27b",
+        "protocol_sha256": "76e6432185301932a09d6ebdf0fc8a0993e560f39b5b0d69295bc1959821ae34",
+        "runner_sha256": "f74cb363604f03efef1864ca92b6405e3b4cf2facc267892ea558995bf6a9b7c",
+        "source_sha256": {
+          "boot_all": "cb3645106e9f3cd056b900f507e5f4dbea36849d0568189545c73de698713d27",
+          "conversation_action": "f580ec11415d91bb54e86a8d33cefd216b31c6a9b8531815ef717070a37165c6",
+          "discourse_seed": "0dc367275203b8abcfd0be63b3c0dbe0308de50e25bd869c3ac2c88f622c8823",
+          "native_py": "034e606b055938e952fd5ff42cda66c563a37ca89a50761b62f6662282499ca9",
+          "world_adapter": "4fae3c3e7e8658617db602c1f17278ea21ebfd81724bf91a2fe43ee4606f0fe6"
+        }
+      },
+      "worker_started_inputs": {
+        "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+        "native_build_manifest_sha256": "2d10ff9cc7f9832d91d1603c74dd0a0e0c4c5d3080a618a33575e9d5400ae871",
+        "native_extension_sha256": "f5543ca015278bad6c65506a0d7d9acb85b33252e7121cdda1a56df63e8ad27b",
+        "protocol_sha256": "76e6432185301932a09d6ebdf0fc8a0993e560f39b5b0d69295bc1959821ae34",
+        "runner_sha256": "f74cb363604f03efef1864ca92b6405e3b4cf2facc267892ea558995bf6a9b7c",
+        "source_sha256": {
+          "boot_all": "cb3645106e9f3cd056b900f507e5f4dbea36849d0568189545c73de698713d27",
+          "conversation_action": "f580ec11415d91bb54e86a8d33cefd216b31c6a9b8531815ef717070a37165c6",
+          "discourse_seed": "0dc367275203b8abcfd0be63b3c0dbe0308de50e25bd869c3ac2c88f622c8823",
+          "native_py": "034e606b055938e952fd5ff42cda66c563a37ca89a50761b62f6662282499ca9",
+          "world_adapter": "4fae3c3e7e8658617db602c1f17278ea21ebfd81724bf91a2fe43ee4606f0fe6"
+        }
+      }
+    },
+    {
+      "attempted": {
+        "race-adapter_tick": true,
+        "race-inner_node": true,
+        "race-s_inner_node": true,
+        "race-s_node": true,
+        "race-second_facade_node": true
+      },
+      "conversation_reply": "I see the grey thing stays, the yellow counter, and the blue thing moves.",
+      "entered": {
+        "race-adapter_tick": true,
+        "race-inner_node": true,
+        "race-s_inner_node": true,
+        "race-s_node": true,
+        "race-second_facade_node": true
+      },
+      "errors": [],
+      "event_kinds": [
+        "instruction",
+        "selection",
+        "execution",
+        "action_result"
+      ],
+      "event_order_gate": true,
+      "identity_gate": true,
+      "joined": true,
+      "lifecycle_gate": true,
+      "operation_set_complete": true,
+      "operations": {
+        "adapter_tick": 0,
+        "inner_node": "Agent",
+        "s_inner_node": "Agent",
+        "s_node": "Agent",
+        "second_facade_node": "Agent"
+      },
+      "pause_gate": true,
+      "pid": 10999,
+      "replicate": 0,
+      "reply_parity": true,
+      "second_facade_initial_shared_lock": true,
+      "worker_finished_inputs": {
+        "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+        "native_build_manifest_sha256": "2d10ff9cc7f9832d91d1603c74dd0a0e0c4c5d3080a618a33575e9d5400ae871",
+        "native_extension_sha256": "f5543ca015278bad6c65506a0d7d9acb85b33252e7121cdda1a56df63e8ad27b",
+        "protocol_sha256": "76e6432185301932a09d6ebdf0fc8a0993e560f39b5b0d69295bc1959821ae34",
+        "runner_sha256": "f74cb363604f03efef1864ca92b6405e3b4cf2facc267892ea558995bf6a9b7c",
+        "source_sha256": {
+          "boot_all": "cb3645106e9f3cd056b900f507e5f4dbea36849d0568189545c73de698713d27",
+          "conversation_action": "f580ec11415d91bb54e86a8d33cefd216b31c6a9b8531815ef717070a37165c6",
+          "discourse_seed": "0dc367275203b8abcfd0be63b3c0dbe0308de50e25bd869c3ac2c88f622c8823",
+          "native_py": "034e606b055938e952fd5ff42cda66c563a37ca89a50761b62f6662282499ca9",
+          "world_adapter": "4fae3c3e7e8658617db602c1f17278ea21ebfd81724bf91a2fe43ee4606f0fe6"
+        }
+      },
+      "worker_started_inputs": {
+        "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+        "native_build_manifest_sha256": "2d10ff9cc7f9832d91d1603c74dd0a0e0c4c5d3080a618a33575e9d5400ae871",
+        "native_extension_sha256": "f5543ca015278bad6c65506a0d7d9acb85b33252e7121cdda1a56df63e8ad27b",
+        "protocol_sha256": "76e6432185301932a09d6ebdf0fc8a0993e560f39b5b0d69295bc1959821ae34",
+        "runner_sha256": "f74cb363604f03efef1864ca92b6405e3b4cf2facc267892ea558995bf6a9b7c",
+        "source_sha256": {
+          "boot_all": "cb3645106e9f3cd056b900f507e5f4dbea36849d0568189545c73de698713d27",
+          "conversation_action": "f580ec11415d91bb54e86a8d33cefd216b31c6a9b8531815ef717070a37165c6",
+          "discourse_seed": "0dc367275203b8abcfd0be63b3c0dbe0308de50e25bd869c3ac2c88f622c8823",
+          "native_py": "034e606b055938e952fd5ff42cda66c563a37ca89a50761b62f6662282499ca9",
+          "world_adapter": "4fae3c3e7e8658617db602c1f17278ea21ebfd81724bf91a2fe43ee4606f0fe6"
+        }
+      }
+    }
+  ],
+  "schedule": [
+    1,
+    2,
+    0
+  ],
+  "schema_version": 1
+}

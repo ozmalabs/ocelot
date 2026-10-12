@@ -1,0 +1,872 @@
+{
+  "all_integrity_checks_pass": true,
+  "checks": {
+    "expected_reply_each_worker": true,
+    "original_scale_counter_parity_gate_passed": false,
+    "per_worker_trace_integrity": true,
+    "replicates_0_1_2": true,
+    "three_fresh_processes": true,
+    "three_workers": true,
+    "top_level_source_lock_stable": true,
+    "worker_source_lock_stable": true,
+    "workers_match_aggregate_work": true,
+    "workers_match_operation_work": true,
+    "workers_match_queue_scope_diagnostics": true,
+    "workers_match_reply": true,
+    "workers_match_scheduler_scope_diagnostics": true
+  },
+  "claim_boundary": "One authored live dialogue route. Operation work reproduces across workers, but process-global scale counters do not reconcile to graph-scope work rows; this is an attribution gap, not parity evidence.",
+  "original_scale_counter_parity_gate_passed": false,
+  "schema_version": 1,
+  "worker_profiles": [
+    {
+      "aggregate_work": {
+        "scheduler_dirty_vector_slots:None": 87179,
+        "scheduler_external_poll_slots:None": 87179,
+        "scheduler_fixedpoint_probe_slots:None": 1172,
+        "scheduler_pass:None": 37,
+        "scheduler_selected_rules:None": 54085
+      },
+      "checks": {
+        "at_least_one_operation": true,
+        "work_rows_valid": true,
+        "work_trace_no_drops": true
+      },
+      "graph_digest_is_canonical": false,
+      "operation_count": 21,
+      "operation_work": {
+        "1": {
+          "scheduler_dirty_vector_slots:None": 2340,
+          "scheduler_external_poll_slots:None": 2340,
+          "scheduler_fixedpoint_probe_slots:None": 1,
+          "scheduler_pass:None": 1,
+          "scheduler_selected_rules:None": 2323
+        },
+        "10": {
+          "scheduler_dirty_vector_slots:None": 7074,
+          "scheduler_external_poll_slots:None": 7074,
+          "scheduler_fixedpoint_probe_slots:None": 417,
+          "scheduler_pass:None": 3,
+          "scheduler_selected_rules:None": 3001
+        },
+        "11": {
+          "scheduler_dirty_vector_slots:None": 4716,
+          "scheduler_external_poll_slots:None": 4716,
+          "scheduler_fixedpoint_probe_slots:None": 12,
+          "scheduler_pass:None": 2,
+          "scheduler_selected_rules:None": 3165
+        },
+        "12": {
+          "scheduler_dirty_vector_slots:None": 4716,
+          "scheduler_external_poll_slots:None": 4716,
+          "scheduler_fixedpoint_probe_slots:None": 12,
+          "scheduler_pass:None": 2,
+          "scheduler_selected_rules:None": 3165
+        },
+        "13": {
+          "scheduler_dirty_vector_slots:None": 4716,
+          "scheduler_external_poll_slots:None": 4716,
+          "scheduler_fixedpoint_probe_slots:None": 12,
+          "scheduler_pass:None": 2,
+          "scheduler_selected_rules:None": 3172
+        },
+        "14": {
+          "scheduler_dirty_vector_slots:None": 4716,
+          "scheduler_external_poll_slots:None": 4716,
+          "scheduler_fixedpoint_probe_slots:None": 11,
+          "scheduler_pass:None": 2,
+          "scheduler_selected_rules:None": 3184
+        },
+        "15": {
+          "scheduler_dirty_vector_slots:None": 4726,
+          "scheduler_external_poll_slots:None": 4726,
+          "scheduler_fixedpoint_probe_slots:None": 12,
+          "scheduler_pass:None": 2,
+          "scheduler_selected_rules:None": 3173
+        },
+        "16": {
+          "scheduler_dirty_vector_slots:None": 4726,
+          "scheduler_external_poll_slots:None": 4726,
+          "scheduler_fixedpoint_probe_slots:None": 12,
+          "scheduler_pass:None": 2,
+          "scheduler_selected_rules:None": 3169
+        },
+        "17": {
+          "scheduler_dirty_vector_slots:None": 4728,
+          "scheduler_external_poll_slots:None": 4728,
+          "scheduler_fixedpoint_probe_slots:None": 283,
+          "scheduler_pass:None": 2,
+          "scheduler_selected_rules:None": 2508
+        },
+        "18": {
+          "scheduler_dirty_vector_slots:None": 2364,
+          "scheduler_external_poll_slots:None": 2364,
+          "scheduler_fixedpoint_probe_slots:None": 1,
+          "scheduler_pass:None": 1,
+          "scheduler_selected_rules:None": 2347
+        },
+        "19": {
+          "scheduler_dirty_vector_slots:None": 4728,
+          "scheduler_external_poll_slots:None": 4728,
+          "scheduler_fixedpoint_probe_slots:None": 12,
+          "scheduler_pass:None": 2,
+          "scheduler_selected_rules:None": 3174
+        },
+        "2": {
+          "scheduler_dirty_vector_slots:None": 4692,
+          "scheduler_external_poll_slots:None": 4692,
+          "scheduler_fixedpoint_probe_slots:None": 11,
+          "scheduler_pass:None": 2,
+          "scheduler_selected_rules:None": 3195
+        },
+        "20": {
+          "scheduler_dirty_vector_slots:None": 4728,
+          "scheduler_external_poll_slots:None": 4728,
+          "scheduler_fixedpoint_probe_slots:None": 12,
+          "scheduler_pass:None": 2,
+          "scheduler_selected_rules:None": 3170
+        },
+        "21": {
+          "scheduler_dirty_vector_slots:None": 4728,
+          "scheduler_external_poll_slots:None": 4728,
+          "scheduler_fixedpoint_probe_slots:None": 283,
+          "scheduler_pass:None": 2,
+          "scheduler_selected_rules:None": 2508
+        },
+        "3": {
+          "scheduler_dirty_vector_slots:None": 2346,
+          "scheduler_external_poll_slots:None": 2346,
+          "scheduler_fixedpoint_probe_slots:None": 12,
+          "scheduler_pass:None": 1,
+          "scheduler_selected_rules:None": 827
+        },
+        "4": {
+          "scheduler_dirty_vector_slots:None": 4694,
+          "scheduler_external_poll_slots:None": 4694,
+          "scheduler_fixedpoint_probe_slots:None": 11,
+          "scheduler_pass:None": 2,
+          "scheduler_selected_rules:None": 3173
+        },
+        "5": {
+          "scheduler_dirty_vector_slots:None": 2347,
+          "scheduler_external_poll_slots:None": 2347,
+          "scheduler_fixedpoint_probe_slots:None": 12,
+          "scheduler_pass:None": 1,
+          "scheduler_selected_rules:None": 827
+        },
+        "6": {
+          "scheduler_dirty_vector_slots:None": 4696,
+          "scheduler_external_poll_slots:None": 4696,
+          "scheduler_fixedpoint_probe_slots:None": 11,
+          "scheduler_pass:None": 2,
+          "scheduler_selected_rules:None": 3174
+        },
+        "7": {
+          "scheduler_dirty_vector_slots:None": 2348,
+          "scheduler_external_poll_slots:None": 2348,
+          "scheduler_fixedpoint_probe_slots:None": 12,
+          "scheduler_pass:None": 1,
+          "scheduler_selected_rules:None": 827
+        },
+        "8": {
+          "scheduler_dirty_vector_slots:None": 4700,
+          "scheduler_external_poll_slots:None": 4700,
+          "scheduler_fixedpoint_probe_slots:None": 11,
+          "scheduler_pass:None": 2,
+          "scheduler_selected_rules:None": 3176
+        },
+        "9": {
+          "scheduler_dirty_vector_slots:None": 2350,
+          "scheduler_external_poll_slots:None": 2350,
+          "scheduler_fixedpoint_probe_slots:None": 12,
+          "scheduler_pass:None": 1,
+          "scheduler_selected_rules:None": 827
+        }
+      },
+      "pid": 9,
+      "queue_scope_diagnostics": {
+        "fb_samples": {
+          "drain_batches": {
+            "global_minus_scoped_trace": 16,
+            "process_global_scale_units": 16,
+            "trace_scope_units": 0
+          },
+          "drained_items": {
+            "global_minus_scoped_trace": 0,
+            "process_global_scale_units": 0,
+            "trace_scope_units": 0
+          },
+          "enqueued_items": {
+            "global_minus_scoped_trace": 0,
+            "process_global_scale_units": 0,
+            "trace_scope_units": 0
+          }
+        },
+        "net_collapses": {
+          "drain_batches": {
+            "global_minus_scoped_trace": 0,
+            "process_global_scale_units": 0,
+            "trace_scope_units": 0
+          },
+          "drained_items": {
+            "global_minus_scoped_trace": 0,
+            "process_global_scale_units": 0,
+            "trace_scope_units": 0
+          },
+          "enqueued_items": {
+            "global_minus_scoped_trace": 0,
+            "process_global_scale_units": 0,
+            "trace_scope_units": 0
+          }
+        },
+        "rule_edits": {
+          "drain_batches": {
+            "global_minus_scoped_trace": 0,
+            "process_global_scale_units": 0,
+            "trace_scope_units": 0
+          },
+          "drained_items": {
+            "global_minus_scoped_trace": 0,
+            "process_global_scale_units": 0,
+            "trace_scope_units": 0
+          },
+          "enqueued_items": {
+            "global_minus_scoped_trace": 0,
+            "process_global_scale_units": 0,
+            "trace_scope_units": 0
+          }
+        },
+        "rule_patches": {
+          "drain_batches": {
+            "global_minus_scoped_trace": 0,
+            "process_global_scale_units": 0,
+            "trace_scope_units": 0
+          },
+          "drained_items": {
+            "global_minus_scoped_trace": 0,
+            "process_global_scale_units": 0,
+            "trace_scope_units": 0
+          },
+          "enqueued_items": {
+            "global_minus_scoped_trace": 0,
+            "process_global_scale_units": 0,
+            "trace_scope_units": 0
+          }
+        },
+        "track_identity": {
+          "drain_batches": {
+            "global_minus_scoped_trace": 0,
+            "process_global_scale_units": 0,
+            "trace_scope_units": 0
+          },
+          "drained_items": {
+            "global_minus_scoped_trace": 0,
+            "process_global_scale_units": 0,
+            "trace_scope_units": 0
+          },
+          "enqueued_items": {
+            "global_minus_scoped_trace": 0,
+            "process_global_scale_units": 0,
+            "trace_scope_units": 0
+          }
+        }
+      },
+      "replicate": 0,
+      "reply": "I see the grey thing stays, the yellow counter, and the blue thing moves.",
+      "reported_graph_digest": "a398cd4fc64b9f7f6105220254465b6791782ae93f23c43795b2000c49e2476e",
+      "scheduler_scope_diagnostics": {
+        "scheduler_dirty_vector_slots": {
+          "global_minus_scoped_trace": 8,
+          "process_global_scale_units": 87187,
+          "trace_scope_units": 87179
+        },
+        "scheduler_external_poll_slots": {
+          "global_minus_scoped_trace": 8,
+          "process_global_scale_units": 87187,
+          "trace_scope_units": 87179
+        },
+        "scheduler_fixedpoint_probe_slots": {
+          "global_minus_scoped_trace": 2,
+          "process_global_scale_units": 1174,
+          "trace_scope_units": 1172
+        },
+        "scheduler_pass": {
+          "global_minus_scoped_trace": 2,
+          "process_global_scale_units": 39,
+          "trace_scope_units": 37
+        },
+        "scheduler_selected_rules": {
+          "global_minus_scoped_trace": 8,
+          "process_global_scale_units": 54093,
+          "trace_scope_units": 54085
+        }
+      }
+    },
+    {
+      "aggregate_work": {
+        "scheduler_dirty_vector_slots:None": 87179,
+        "scheduler_external_poll_slots:None": 87179,
+        "scheduler_fixedpoint_probe_slots:None": 1172,
+        "scheduler_pass:None": 37,
+        "scheduler_selected_rules:None": 54085
+      },
+      "checks": {
+        "at_least_one_operation": true,
+        "work_rows_valid": true,
+        "work_trace_no_drops": true
+      },
+      "graph_digest_is_canonical": false,
+      "operation_count": 21,
+      "operation_work": {
+        "1": {
+          "scheduler_dirty_vector_slots:None": 2340,
+          "scheduler_external_poll_slots:None": 2340,
+          "scheduler_fixedpoint_probe_slots:None": 1,
+          "scheduler_pass:None": 1,
+          "scheduler_selected_rules:None": 2323
+        },
+        "10": {
+          "scheduler_dirty_vector_slots:None": 7074,
+          "scheduler_external_poll_slots:None": 7074,
+          "scheduler_fixedpoint_probe_slots:None": 417,
+          "scheduler_pass:None": 3,
+          "scheduler_selected_rules:None": 3001
+        },
+        "11": {
+          "scheduler_dirty_vector_slots:None": 4716,
+          "scheduler_external_poll_slots:None": 4716,
+          "scheduler_fixedpoint_probe_slots:None": 12,
+          "scheduler_pass:None": 2,
+          "scheduler_selected_rules:None": 3165
+        },
+        "12": {
+          "scheduler_dirty_vector_slots:None": 4716,
+          "scheduler_external_poll_slots:None": 4716,
+          "scheduler_fixedpoint_probe_slots:None": 12,
+          "scheduler_pass:None": 2,
+          "scheduler_selected_rules:None": 3165
+        },
+        "13": {
+          "scheduler_dirty_vector_slots:None": 4716,
+          "scheduler_external_poll_slots:None": 4716,
+          "scheduler_fixedpoint_probe_slots:None": 12,
+          "scheduler_pass:None": 2,
+          "scheduler_selected_rules:None": 3172
+        },
+        "14": {
+          "scheduler_dirty_vector_slots:None": 4716,
+          "scheduler_external_poll_slots:None": 4716,
+          "scheduler_fixedpoint_probe_slots:None": 11,
+          "scheduler_pass:None": 2,
+          "scheduler_selected_rules:None": 3184
+        },
+        "15": {
+          "scheduler_dirty_vector_slots:None": 4726,
+          "scheduler_external_poll_slots:None": 4726,
+          "scheduler_fixedpoint_probe_slots:None": 12,
+          "scheduler_pass:None": 2,
+          "scheduler_selected_rules:None": 3173
+        },
+        "16": {
+          "scheduler_dirty_vector_slots:None": 4726,
+          "scheduler_external_poll_slots:None": 4726,
+          "scheduler_fixedpoint_probe_slots:None": 12,
+          "scheduler_pass:None": 2,
+          "scheduler_selected_rules:None": 3169
+        },
+        "17": {
+          "scheduler_dirty_vector_slots:None": 4728,
+          "scheduler_external_poll_slots:None": 4728,
+          "scheduler_fixedpoint_probe_slots:None": 283,
+          "scheduler_pass:None": 2,
+          "scheduler_selected_rules:None": 2508
+        },
+        "18": {
+          "scheduler_dirty_vector_slots:None": 2364,
+          "scheduler_external_poll_slots:None": 2364,
+          "scheduler_fixedpoint_probe_slots:None": 1,
+          "scheduler_pass:None": 1,
+          "scheduler_selected_rules:None": 2347
+        },
+        "19": {
+          "scheduler_dirty_vector_slots:None": 4728,
+          "scheduler_external_poll_slots:None": 4728,
+          "scheduler_fixedpoint_probe_slots:None": 12,
+          "scheduler_pass:None": 2,
+          "scheduler_selected_rules:None": 3174
+        },
+        "2": {
+          "scheduler_dirty_vector_slots:None": 4692,
+          "scheduler_external_poll_slots:None": 4692,
+          "scheduler_fixedpoint_probe_slots:None": 11,
+          "scheduler_pass:None": 2,
+          "scheduler_selected_rules:None": 3195
+        },
+        "20": {
+          "scheduler_dirty_vector_slots:None": 4728,
+          "scheduler_external_poll_slots:None": 4728,
+          "scheduler_fixedpoint_probe_slots:None": 12,
+          "scheduler_pass:None": 2,
+          "scheduler_selected_rules:None": 3170
+        },
+        "21": {
+          "scheduler_dirty_vector_slots:None": 4728,
+          "scheduler_external_poll_slots:None": 4728,
+          "scheduler_fixedpoint_probe_slots:None": 283,
+          "scheduler_pass:None": 2,
+          "scheduler_selected_rules:None": 2508
+        },
+        "3": {
+          "scheduler_dirty_vector_slots:None": 2346,
+          "scheduler_external_poll_slots:None": 2346,
+          "scheduler_fixedpoint_probe_slots:None": 12,
+          "scheduler_pass:None": 1,
+          "scheduler_selected_rules:None": 827
+        },
+        "4": {
+          "scheduler_dirty_vector_slots:None": 4694,
+          "scheduler_external_poll_slots:None": 4694,
+          "scheduler_fixedpoint_probe_slots:None": 11,
+          "scheduler_pass:None": 2,
+          "scheduler_selected_rules:None": 3173
+        },
+        "5": {
+          "scheduler_dirty_vector_slots:None": 2347,
+          "scheduler_external_poll_slots:None": 2347,
+          "scheduler_fixedpoint_probe_slots:None": 12,
+          "scheduler_pass:None": 1,
+          "scheduler_selected_rules:None": 827
+        },
+        "6": {
+          "scheduler_dirty_vector_slots:None": 4696,
+          "scheduler_external_poll_slots:None": 4696,
+          "scheduler_fixedpoint_probe_slots:None": 11,
+          "scheduler_pass:None": 2,
+          "scheduler_selected_rules:None": 3174
+        },
+        "7": {
+          "scheduler_dirty_vector_slots:None": 2348,
+          "scheduler_external_poll_slots:None": 2348,
+          "scheduler_fixedpoint_probe_slots:None": 12,
+          "scheduler_pass:None": 1,
+          "scheduler_selected_rules:None": 827
+        },
+        "8": {
+          "scheduler_dirty_vector_slots:None": 4700,
+          "scheduler_external_poll_slots:None": 4700,
+          "scheduler_fixedpoint_probe_slots:None": 11,
+          "scheduler_pass:None": 2,
+          "scheduler_selected_rules:None": 3176
+        },
+        "9": {
+          "scheduler_dirty_vector_slots:None": 2350,
+          "scheduler_external_poll_slots:None": 2350,
+          "scheduler_fixedpoint_probe_slots:None": 12,
+          "scheduler_pass:None": 1,
+          "scheduler_selected_rules:None": 827
+        }
+      },
+      "pid": 5502,
+      "queue_scope_diagnostics": {
+        "fb_samples": {
+          "drain_batches": {
+            "global_minus_scoped_trace": 16,
+            "process_global_scale_units": 16,
+            "trace_scope_units": 0
+          },
+          "drained_items": {
+            "global_minus_scoped_trace": 0,
+            "process_global_scale_units": 0,
+            "trace_scope_units": 0
+          },
+          "enqueued_items": {
+            "global_minus_scoped_trace": 0,
+            "process_global_scale_units": 0,
+            "trace_scope_units": 0
+          }
+        },
+        "net_collapses": {
+          "drain_batches": {
+            "global_minus_scoped_trace": 0,
+            "process_global_scale_units": 0,
+            "trace_scope_units": 0
+          },
+          "drained_items": {
+            "global_minus_scoped_trace": 0,
+            "process_global_scale_units": 0,
+            "trace_scope_units": 0
+          },
+          "enqueued_items": {
+            "global_minus_scoped_trace": 0,
+            "process_global_scale_units": 0,
+            "trace_scope_units": 0
+          }
+        },
+        "rule_edits": {
+          "drain_batches": {
+            "global_minus_scoped_trace": 0,
+            "process_global_scale_units": 0,
+            "trace_scope_units": 0
+          },
+          "drained_items": {
+            "global_minus_scoped_trace": 0,
+            "process_global_scale_units": 0,
+            "trace_scope_units": 0
+          },
+          "enqueued_items": {
+            "global_minus_scoped_trace": 0,
+            "process_global_scale_units": 0,
+            "trace_scope_units": 0
+          }
+        },
+        "rule_patches": {
+          "drain_batches": {
+            "global_minus_scoped_trace": 0,
+            "process_global_scale_units": 0,
+            "trace_scope_units": 0
+          },
+          "drained_items": {
+            "global_minus_scoped_trace": 0,
+            "process_global_scale_units": 0,
+            "trace_scope_units": 0
+          },
+          "enqueued_items": {
+            "global_minus_scoped_trace": 0,
+            "process_global_scale_units": 0,
+            "trace_scope_units": 0
+          }
+        },
+        "track_identity": {
+          "drain_batches": {
+            "global_minus_scoped_trace": 0,
+            "process_global_scale_units": 0,
+            "trace_scope_units": 0
+          },
+          "drained_items": {
+            "global_minus_scoped_trace": 0,
+            "process_global_scale_units": 0,
+            "trace_scope_units": 0
+          },
+          "enqueued_items": {
+            "global_minus_scoped_trace": 0,
+            "process_global_scale_units": 0,
+            "trace_scope_units": 0
+          }
+        }
+      },
+      "replicate": 1,
+      "reply": "I see the grey thing stays, the yellow counter, and the blue thing moves.",
+      "reported_graph_digest": "a398cd4fc64b9f7f6105220254465b6791782ae93f23c43795b2000c49e2476e",
+      "scheduler_scope_diagnostics": {
+        "scheduler_dirty_vector_slots": {
+          "global_minus_scoped_trace": 8,
+          "process_global_scale_units": 87187,
+          "trace_scope_units": 87179
+        },
+        "scheduler_external_poll_slots": {
+          "global_minus_scoped_trace": 8,
+          "process_global_scale_units": 87187,
+          "trace_scope_units": 87179
+        },
+        "scheduler_fixedpoint_probe_slots": {
+          "global_minus_scoped_trace": 2,
+          "process_global_scale_units": 1174,
+          "trace_scope_units": 1172
+        },
+        "scheduler_pass": {
+          "global_minus_scoped_trace": 2,
+          "process_global_scale_units": 39,
+          "trace_scope_units": 37
+        },
+        "scheduler_selected_rules": {
+          "global_minus_scoped_trace": 8,
+          "process_global_scale_units": 54093,
+          "trace_scope_units": 54085
+        }
+      }
+    },
+    {
+      "aggregate_work": {
+        "scheduler_dirty_vector_slots:None": 87179,
+        "scheduler_external_poll_slots:None": 87179,
+        "scheduler_fixedpoint_probe_slots:None": 1172,
+        "scheduler_pass:None": 37,
+        "scheduler_selected_rules:None": 54085
+      },
+      "checks": {
+        "at_least_one_operation": true,
+        "work_rows_valid": true,
+        "work_trace_no_drops": true
+      },
+      "graph_digest_is_canonical": false,
+      "operation_count": 21,
+      "operation_work": {
+        "1": {
+          "scheduler_dirty_vector_slots:None": 2340,
+          "scheduler_external_poll_slots:None": 2340,
+          "scheduler_fixedpoint_probe_slots:None": 1,
+          "scheduler_pass:None": 1,
+          "scheduler_selected_rules:None": 2323
+        },
+        "10": {
+          "scheduler_dirty_vector_slots:None": 7074,
+          "scheduler_external_poll_slots:None": 7074,
+          "scheduler_fixedpoint_probe_slots:None": 417,
+          "scheduler_pass:None": 3,
+          "scheduler_selected_rules:None": 3001
+        },
+        "11": {
+          "scheduler_dirty_vector_slots:None": 4716,
+          "scheduler_external_poll_slots:None": 4716,
+          "scheduler_fixedpoint_probe_slots:None": 12,
+          "scheduler_pass:None": 2,
+          "scheduler_selected_rules:None": 3165
+        },
+        "12": {
+          "scheduler_dirty_vector_slots:None": 4716,
+          "scheduler_external_poll_slots:None": 4716,
+          "scheduler_fixedpoint_probe_slots:None": 12,
+          "scheduler_pass:None": 2,
+          "scheduler_selected_rules:None": 3165
+        },
+        "13": {
+          "scheduler_dirty_vector_slots:None": 4716,
+          "scheduler_external_poll_slots:None": 4716,
+          "scheduler_fixedpoint_probe_slots:None": 12,
+          "scheduler_pass:None": 2,
+          "scheduler_selected_rules:None": 3172
+        },
+        "14": {
+          "scheduler_dirty_vector_slots:None": 4716,
+          "scheduler_external_poll_slots:None": 4716,
+          "scheduler_fixedpoint_probe_slots:None": 11,
+          "scheduler_pass:None": 2,
+          "scheduler_selected_rules:None": 3184
+        },
+        "15": {
+          "scheduler_dirty_vector_slots:None": 4726,
+          "scheduler_external_poll_slots:None": 4726,
+          "scheduler_fixedpoint_probe_slots:None": 12,
+          "scheduler_pass:None": 2,
+          "scheduler_selected_rules:None": 3173
+        },
+        "16": {
+          "scheduler_dirty_vector_slots:None": 4726,
+          "scheduler_external_poll_slots:None": 4726,
+          "scheduler_fixedpoint_probe_slots:None": 12,
+          "scheduler_pass:None": 2,
+          "scheduler_selected_rules:None": 3169
+        },
+        "17": {
+          "scheduler_dirty_vector_slots:None": 4728,
+          "scheduler_external_poll_slots:None": 4728,
+          "scheduler_fixedpoint_probe_slots:None": 283,
+          "scheduler_pass:None": 2,
+          "scheduler_selected_rules:None": 2508
+        },
+        "18": {
+          "scheduler_dirty_vector_slots:None": 2364,
+          "scheduler_external_poll_slots:None": 2364,
+          "scheduler_fixedpoint_probe_slots:None": 1,
+          "scheduler_pass:None": 1,
+          "scheduler_selected_rules:None": 2347
+        },
+        "19": {
+          "scheduler_dirty_vector_slots:None": 4728,
+          "scheduler_external_poll_slots:None": 4728,
+          "scheduler_fixedpoint_probe_slots:None": 12,
+          "scheduler_pass:None": 2,
+          "scheduler_selected_rules:None": 3174
+        },
+        "2": {
+          "scheduler_dirty_vector_slots:None": 4692,
+          "scheduler_external_poll_slots:None": 4692,
+          "scheduler_fixedpoint_probe_slots:None": 11,
+          "scheduler_pass:None": 2,
+          "scheduler_selected_rules:None": 3195
+        },
+        "20": {
+          "scheduler_dirty_vector_slots:None": 4728,
+          "scheduler_external_poll_slots:None": 4728,
+          "scheduler_fixedpoint_probe_slots:None": 12,
+          "scheduler_pass:None": 2,
+          "scheduler_selected_rules:None": 3170
+        },
+        "21": {
+          "scheduler_dirty_vector_slots:None": 4728,
+          "scheduler_external_poll_slots:None": 4728,
+          "scheduler_fixedpoint_probe_slots:None": 283,
+          "scheduler_pass:None": 2,
+          "scheduler_selected_rules:None": 2508
+        },
+        "3": {
+          "scheduler_dirty_vector_slots:None": 2346,
+          "scheduler_external_poll_slots:None": 2346,
+          "scheduler_fixedpoint_probe_slots:None": 12,
+          "scheduler_pass:None": 1,
+          "scheduler_selected_rules:None": 827
+        },
+        "4": {
+          "scheduler_dirty_vector_slots:None": 4694,
+          "scheduler_external_poll_slots:None": 4694,
+          "scheduler_fixedpoint_probe_slots:None": 11,
+          "scheduler_pass:None": 2,
+          "scheduler_selected_rules:None": 3173
+        },
+        "5": {
+          "scheduler_dirty_vector_slots:None": 2347,
+          "scheduler_external_poll_slots:None": 2347,
+          "scheduler_fixedpoint_probe_slots:None": 12,
+          "scheduler_pass:None": 1,
+          "scheduler_selected_rules:None": 827
+        },
+        "6": {
+          "scheduler_dirty_vector_slots:None": 4696,
+          "scheduler_external_poll_slots:None": 4696,
+          "scheduler_fixedpoint_probe_slots:None": 11,
+          "scheduler_pass:None": 2,
+          "scheduler_selected_rules:None": 3174
+        },
+        "7": {
+          "scheduler_dirty_vector_slots:None": 2348,
+          "scheduler_external_poll_slots:None": 2348,
+          "scheduler_fixedpoint_probe_slots:None": 12,
+          "scheduler_pass:None": 1,
+          "scheduler_selected_rules:None": 827
+        },
+        "8": {
+          "scheduler_dirty_vector_slots:None": 4700,
+          "scheduler_external_poll_slots:None": 4700,
+          "scheduler_fixedpoint_probe_slots:None": 11,
+          "scheduler_pass:None": 2,
+          "scheduler_selected_rules:None": 3176
+        },
+        "9": {
+          "scheduler_dirty_vector_slots:None": 2350,
+          "scheduler_external_poll_slots:None": 2350,
+          "scheduler_fixedpoint_probe_slots:None": 12,
+          "scheduler_pass:None": 1,
+          "scheduler_selected_rules:None": 827
+        }
+      },
+      "pid": 10995,
+      "queue_scope_diagnostics": {
+        "fb_samples": {
+          "drain_batches": {
+            "global_minus_scoped_trace": 16,
+            "process_global_scale_units": 16,
+            "trace_scope_units": 0
+          },
+          "drained_items": {
+            "global_minus_scoped_trace": 0,
+            "process_global_scale_units": 0,
+            "trace_scope_units": 0
+          },
+          "enqueued_items": {
+            "global_minus_scoped_trace": 0,
+            "process_global_scale_units": 0,
+            "trace_scope_units": 0
+          }
+        },
+        "net_collapses": {
+          "drain_batches": {
+            "global_minus_scoped_trace": 0,
+            "process_global_scale_units": 0,
+            "trace_scope_units": 0
+          },
+          "drained_items": {
+            "global_minus_scoped_trace": 0,
+            "process_global_scale_units": 0,
+            "trace_scope_units": 0
+          },
+          "enqueued_items": {
+            "global_minus_scoped_trace": 0,
+            "process_global_scale_units": 0,
+            "trace_scope_units": 0
+          }
+        },
+        "rule_edits": {
+          "drain_batches": {
+            "global_minus_scoped_trace": 0,
+            "process_global_scale_units": 0,
+            "trace_scope_units": 0
+          },
+          "drained_items": {
+            "global_minus_scoped_trace": 0,
+            "process_global_scale_units": 0,
+            "trace_scope_units": 0
+          },
+          "enqueued_items": {
+            "global_minus_scoped_trace": 0,
+            "process_global_scale_units": 0,
+            "trace_scope_units": 0
+          }
+        },
+        "rule_patches": {
+          "drain_batches": {
+            "global_minus_scoped_trace": 0,
+            "process_global_scale_units": 0,
+            "trace_scope_units": 0
+          },
+          "drained_items": {
+            "global_minus_scoped_trace": 0,
+            "process_global_scale_units": 0,
+            "trace_scope_units": 0
+          },
+          "enqueued_items": {
+            "global_minus_scoped_trace": 0,
+            "process_global_scale_units": 0,
+            "trace_scope_units": 0
+          }
+        },
+        "track_identity": {
+          "drain_batches": {
+            "global_minus_scoped_trace": 0,
+            "process_global_scale_units": 0,
+            "trace_scope_units": 0
+          },
+          "drained_items": {
+            "global_minus_scoped_trace": 0,
+            "process_global_scale_units": 0,
+            "trace_scope_units": 0
+          },
+          "enqueued_items": {
+            "global_minus_scoped_trace": 0,
+            "process_global_scale_units": 0,
+            "trace_scope_units": 0
+          }
+        }
+      },
+      "replicate": 2,
+      "reply": "I see the grey thing stays, the yellow counter, and the blue thing moves.",
+      "reported_graph_digest": "e7414191b67f8570fc539ea1a48ec42ce815ebc29e49b119582f17f00564985c",
+      "scheduler_scope_diagnostics": {
+        "scheduler_dirty_vector_slots": {
+          "global_minus_scoped_trace": 8,
+          "process_global_scale_units": 87187,
+          "trace_scope_units": 87179
+        },
+        "scheduler_external_poll_slots": {
+          "global_minus_scoped_trace": 8,
+          "process_global_scale_units": 87187,
+          "trace_scope_units": 87179
+        },
+        "scheduler_fixedpoint_probe_slots": {
+          "global_minus_scoped_trace": 2,
+          "process_global_scale_units": 1174,
+          "trace_scope_units": 1172
+        },
+        "scheduler_pass": {
+          "global_minus_scoped_trace": 2,
+          "process_global_scale_units": 39,
+          "trace_scope_units": 37
+        },
+        "scheduler_selected_rules": {
+          "global_minus_scoped_trace": 8,
+          "process_global_scale_units": 54093,
+          "trace_scope_units": 54085
+        }
+      }
+    }
+  ]
+}

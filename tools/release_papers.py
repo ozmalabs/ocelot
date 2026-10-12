@@ -50,13 +50,15 @@ CLEARED = ["00_is",
            "02_seldon_manifolds_theory_referenced",
            "02a_seldon_manifolds_psychological_grounding",
            "02b_seldon_manifolds_social_and_psychological_application",
+           "02c_seldon_manifolds_decision_making",
            "03_law_of_narrative_momentum_theory_referenced",
            "04_narrativium_theory_referenced",
            "05_frames_relation_and_the_empty_limit",
            "06_assessing_an_account_of_this_kind",
            "07_causal_attitude_networks_on_the_substrate",
            "08_certified_answers_as_an_audit",
-           "10_applied_graphic_equalisation"]
+           "10_applied_graphic_equalisation",
+           "11_relational_information_ethics"]
 # This is a deliberately fail-closed allowlist. The excluded adaptation theory
 # and implementation papers (09 and 09a), together with the constructive
 # realisation (A1), relate to autonomous-control capability or executable
@@ -65,6 +67,16 @@ CLEARED = ["00_is",
 
 # Phrases that set out the excluded document's contents rather than naming it.
 FORBIDDEN = ["proposal closure", "execution semantics", "reference execution"]
+
+# Additional build inputs explicitly included in cleared papers. These are
+# copied only into the temporary HTML build tree; raw inputs are not emitted
+# as website assets. Paths are relative to papers/ and preserve LaTeX's
+# ../derivations/... references from each isolated paper directory.
+HTML_INPUTS = {
+    "11_relational_information_ethics": [
+        "derivations/11_relational_information_ethics_finite.py",
+    ],
+}
 
 READING_ORDER = """Graphic Equalisation --- what is claimed, and where (%(draft)s)
 
@@ -205,7 +217,7 @@ def paper_meta(src):
     title, subtitle = "", ""
     if m:
         raw = m.group(1)
-        parts = re.split(r"\\\\\s*\\large\s*", raw, maxsplit=1)
+        parts = re.split(r"\\\\(?:\s*\[[^\]]*\])?\s*\\large\s*", raw, maxsplit=1)
         title = detex(parts[0])
         subtitle = detex(parts[1]) if len(parts) > 1 else ""
     m = ABSTRACT_RE.search(src)
@@ -582,6 +594,15 @@ def build_html(names, root, workdir):
         if not os.path.isdir(figures_dst):
             shutil.copytree(figures_src, figures_dst)
 
+    for name in names:
+        for relative in HTML_INPUTS.get(name, []):
+            source = os.path.join(root, "papers", relative)
+            if not os.path.isfile(source):
+                fail("%s HTML build input is missing: %s" % (name, relative))
+            destination = os.path.join(workdir, relative)
+            os.makedirs(os.path.dirname(destination), exist_ok=True)
+            shutil.copy2(source, destination)
+
     produced = {}
     # Authoritative resolved reference numbers, and a stem->slug map (slug==name
     # here) so cross-references can link to the target paper's page.
@@ -868,6 +889,8 @@ PAPER_FAMILIES = [
     ("10", "Applied Graphic Equalisation",
      "The account applied to one frame to make a separate point, rather than bridged to a "
      "field: the geopolitical and civilisational future."),
+    ("11", "Relational Information Accounting",
+     "Whole-system consequences and agent valuations, including ethics and moral injury."),
 ]
 _FAMILY_ORDER = [p for p, _, _ in PAPER_FAMILIES]
 _FAMILY_META = {p: (t, d) for p, t, d in PAPER_FAMILIES}
@@ -911,6 +934,7 @@ KIND_OVERRIDE = {
     # Filename contains "application" but this is a bridge to a field (four
     # classical experiments put to the substrate), so it is a grounding.
     "02b_seldon_manifolds_social_and_psychological_application": "grounding",
+    "11_relational_information_ethics": "theory",
 }
 
 # Human-readable label for each kind badge.

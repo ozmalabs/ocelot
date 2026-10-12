@@ -1,0 +1,40 @@
+{
+  "schema": "phase7-daemon-oneshot-resource.v1",
+  "measurement": "GNU time maximum resident set for the actual daemon CLI in --once mode with Python optimization level 2",
+  "date": "2026-09-28",
+  "seed_profile": "conversation",
+  "fresh_boot": true,
+  "seed_selection_complete": true,
+  "selected_seed_count": 74,
+  "graph_nodes_after_daemon_boot": 2095,
+  "shadow_read_enabled": false,
+  "network_listeners_enabled": false,
+  "host_actions_dispatched": false,
+  "checkpoint_written": true,
+  "strict_seed_profile_checkpoints": true,
+  "python_optimization_level": 2,
+  "allocator_environment": {
+    "PYTHONOPTIMIZE": "2",
+    "PYTHONMALLOC": "malloc",
+    "MALLOC_ARENA_MAX": "1",
+    "MALLOC_TRIM_THRESHOLD_": "32768"
+  },
+  "elapsed_wall_seconds": 2.14,
+  "maximum_rss_kib": 107672,
+  "maximum_rss_bytes": 110256128,
+  "rss_limit_bytes": 104857600,
+  "rss_limit_exceeded_bytes": 5398528,
+  "resource_gate_passed": false,
+  "reference_unoptimized_run": {
+    "report": "phase7_daemon_oneshot_20260928_conversation_shadow_off_v1.json",
+    "maximum_rss_kib": 106980,
+    "maximum_rss_bytes": 109547520,
+    "note": "Earlier same-date actual daemon run; not a paired repeat experiment."
+  },
+  "command_template": "env PYTHONPATH=runners/dsl/python:. PYTHONOPTIMIZE=2 PYTHONMALLOC=malloc MALLOC_ARENA_MAX=1 MALLOC_TRIM_THRESHOLD_=32768 /usr/bin/time -v python3 scripts/jabberwock_daemon.py --once --no-http --socket '' --no-attach-libraries --no-llm --seeds conversation --strict-seed-profile-checkpoints --ckpt-dir <fresh-temp-dir>/checkpoints --runs-dir <fresh-temp-dir>/runs",
+  "notes": [
+    "Actual fresh daemon boot completed successfully and selected all 74 connected seeds.",
+    "Python optimization level 2 strips docstrings/assertions but did not meet the RSS cap; this single run is insufficient to claim a repeatable regression against the reference.",
+    "No cognition, full-turn completion, comparative, or service-profile migration gate is closed by this measurement."
+  ]
+}

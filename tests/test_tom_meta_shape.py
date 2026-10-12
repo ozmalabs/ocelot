@@ -111,7 +111,7 @@ def test_no_prior_seed_was_edited():
         out = subprocess.run(
             ["git", "status", "--porcelain",
              "seeds/meta_shape_growth.json", "seeds/shape_vocabulary.json",
-             "seeds/character_tom.json"],
+             "domain_data/character_tom.json"],
             capture_output=True, text=True, timeout=10, cwd=".",
         )
     except Exception:

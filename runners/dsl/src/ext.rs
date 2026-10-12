@@ -99,6 +99,7 @@ pub struct Counters {
     /// not `P0` — `A`'s absence polarity is also the correct one, since
     /// an unset attr is equal to nothing.
     pub numeric_op_non_numeric_operand: u64,
+
 }
 
 impl Counters {

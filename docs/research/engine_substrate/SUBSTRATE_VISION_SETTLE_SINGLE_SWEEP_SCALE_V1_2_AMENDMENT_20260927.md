@@ -1,0 +1,3 @@
+# Vision settling single-sweep scale v1.2 trace amendment
+
+V1.2 retains the v1.1 size cap, source-stability gate, one-batch design, and exclusion of elapsed `_ns` audit fields from integer-counter equality. It narrows the confirmatory matrix to n_side 3, 8, and 10 to bound trace cost. The default-off native access trace is enabled only around the measured application and is summarized as counts by access kind and resource. It adds independent checks of concrete `Neighbours` edge visits and type-index item reads. No timing result is taken with tracing enabled; audit-disabled timings remain a separate arm.

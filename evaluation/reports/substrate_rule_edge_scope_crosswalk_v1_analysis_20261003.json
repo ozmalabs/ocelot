@@ -1,0 +1,162 @@
+{
+  "errors": [],
+  "gates_pass": true,
+  "generated_utc": "2026-10-03T01:46:48Z",
+  "input_sha256": {
+    "evaluation/reports/substrate_connected_conversation_access_trace_panel_v1_3_1_analysis_20261003.json": "c6c8bcbc6b76cae17f451bbf09c2149ce366e5d213ac0d55f24912ba77a551be",
+    "evaluation/reports/substrate_connected_conversation_access_trace_panel_v1_3_20261003.json": "27004e3e028afcbad991227f9dfea3fe9c8298ea6ce371b1655eeca2da7c188b",
+    "evaluation/reports/substrate_typed_frame_interaction_census_v1_20261003.json": "79155241fc0ac1134609aee778ec5202a1d820b96b4c6c6c364ff47407365978",
+    "evaluation/reports/substrate_typed_frame_interaction_census_v1_analysis_20261003.json": "6eb4d372402ef026fe85f85ad91bdab4d2ee82535a03c19339980edef5816f49",
+    "evaluation/substrate_capability/analyze_substrate_rule_edge_scope_crosswalk_v1.py": "6d75d08a63e54c5b31a44eebbfce067c825b39347c68117fb263395870a1d7de",
+    "evaluation/substrate_capability/substrate_connected_conversation_access_trace_panel_v1_3.py": "443bcb8e19ec8e2da573a97fe6f245ac71fd0dbd04dddce79edb25385d7cc101",
+    "evaluation/substrate_capability/substrate_connected_conversation_access_trace_panel_v1_3_lock_20261003.json": "c7ebdfd61ce59c69c1ace164ce3f2df8c48d890a1bc1c8f74a895ad0b3d5b777",
+    "seeds/communication_intent_arbitration.json": "23f35ca85bc2f69c2ab1bb9028203a6d64b2b2fbefb8f97ff32af6b3e33f46c6",
+    "seeds/communication_reported_content_recall.json": "78a168c5f2f94e8ad437e6fd3dc70c99c991f44e07598c4352eb1a8e412890f4",
+    "seeds/conversation_discourse_state.json": "3a40119b448c63c96efee5fed3007c307a59e6b0f57c034813e0e620370d30bd"
+  },
+  "schema": "SubstrateRuleEdgeScopeCrosswalkV1Analysis",
+  "summary": {
+    "captured_cross_frame_edges_by_type": {
+      "follows_event": 90
+    },
+    "observed_access_owner_relation": {
+      "one_endpoint_shared_or_unowned": 5520,
+      "same_frame": 720
+    },
+    "predecessor_rules_absent_from_dynamic_panel": [
+      "carry_scoped_action_target_across_topicless_event",
+      "ground_definite_correction_from_scoped_action_target",
+      "answer_from_immediately_preceding_reported_relation"
+    ],
+    "runtime_access_multiplicity_by_edge_resource": {
+      "for_goal": 288,
+      "has_active_goal": 240,
+      "has_closed_goal": 96,
+      "has_event": 144,
+      "originated_in": 144,
+      "transitioned_by": 288
+    },
+    "runtime_follows_event_access_multiplicity": 0,
+    "seed_rules_that_match_follows_event": [
+      {
+        "follows_event_match": [
+          [
+            "event",
+            "follows_event",
+            "prior_event"
+          ]
+        ],
+        "index_hints": [
+          {
+            "for_var": "prior_event",
+            "node_type": "DiscourseEvent",
+            "this_key": "event_index",
+            "via_key": "predecessor_event_index",
+            "via_var": "event"
+          }
+        ],
+        "match_edge_count": 8,
+        "name": "carry_scoped_action_target_across_topicless_event",
+        "scope_anchor_type": null,
+        "scope_anchor_var": null,
+        "seed": "seeds/communication_intent_arbitration.json"
+      },
+      {
+        "follows_event_match": [
+          [
+            "current_event",
+            "follows_event",
+            "prior_event"
+          ]
+        ],
+        "index_hints": [
+          {
+            "for_var": "prior_i",
+            "node_type": "CommunicationInterpretation",
+            "this_key": "language_action_target_head",
+            "via_key": "language_referential_head",
+            "via_var": "i"
+          },
+          {
+            "for_var": "prior_event",
+            "node_type": "DiscourseEvent",
+            "this_key": "event_index",
+            "via_key": "predecessor_event_index",
+            "via_var": "current_event"
+          }
+        ],
+        "match_edge_count": 9,
+        "name": "ground_definite_correction_from_scoped_action_target",
+        "scope_anchor_type": null,
+        "scope_anchor_var": null,
+        "seed": "seeds/communication_intent_arbitration.json"
+      },
+      {
+        "follows_event_match": [
+          [
+            "current_event",
+            "follows_event",
+            "source_event"
+          ]
+        ],
+        "index_hints": [],
+        "match_edge_count": 9,
+        "name": "answer_from_immediately_preceding_reported_relation",
+        "scope_anchor_type": null,
+        "scope_anchor_var": null,
+        "seed": "seeds/communication_reported_content_recall.json"
+      }
+    ],
+    "selected_rule_edge_reads": {
+      "discourse_goal_execute": [
+        "for_goal",
+        "has_active_goal",
+        "has_event",
+        "originated_in",
+        "transitioned_by"
+      ],
+      "discourse_goal_fail": [
+        "for_goal",
+        "has_active_goal",
+        "has_closed_goal",
+        "has_event",
+        "originated_in",
+        "transitioned_by"
+      ],
+      "discourse_goal_resolve": [
+        "for_goal",
+        "has_active_goal",
+        "has_closed_goal",
+        "has_event",
+        "originated_in",
+        "transitioned_by"
+      ],
+      "discourse_goal_select": [
+        "for_goal",
+        "has_active_goal",
+        "has_event",
+        "originated_in",
+        "transitioned_by"
+      ]
+    },
+    "selected_runtime_rule_names": [
+      "discourse_goal_execute",
+      "discourse_goal_fail",
+      "discourse_goal_resolve",
+      "discourse_goal_select"
+    ],
+    "trace_cases": 12,
+    "trace_runner_loads_only_discourse_state_seed": true,
+    "typed_census_cross_frame_relation_counts": {
+      "bigville_dynamic_link": {
+        "causal_influence": 7758
+      },
+      "connected_conversation": {
+        "follows_event": 90
+      },
+      "discourse_connected_task": {
+        "follows_event": 6
+      }
+    }
+  }
+}

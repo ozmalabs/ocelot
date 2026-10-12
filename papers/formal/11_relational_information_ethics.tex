@@ -1,0 +1,2526 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern,amsmath,amssymb,amsthm,mathtools,booktabs,enumitem,microtype}
+\usepackage[margin=1in]{geometry}
+\usepackage{natbib}
+\usepackage{xr-hyper}
+\usepackage{hyperref}
+\usepackage{fancyhdr,listings}
+\hypersetup{pdftitle={Relational Information Accounting},
+ pdfauthor={Matthew Parslow},
+ pdfsubject={Whole-system informational consequences, ethics, and moral injury},
+ pdfkeywords={information ethics, reachability, empowerment, compression}}
+\externaldocument[GE-]{01_law_of_graphic_equalisation_theory_referenced}
+\externaldocument[MI-]{01b_graphic_equalisation_mind_and_self_grounding}
+\externaldocument[SM-]{02_seldon_manifolds_theory_referenced}
+\externaldocument[NA-]{04_narrativium_theory_referenced}
+\externaldocument[PS-]{02b_seldon_manifolds_social_and_psychological_application}
+\newtheorem{definition}{Definition}[section]
+\newtheorem{proposition}[definition]{Proposition}
+\newtheorem{hypothesis}[definition]{Hypothesis}
+\theoremstyle{remark}
+\newtheorem{remark}[definition]{Remark}
+\newcommand{\R}{\mathcal R}
+\newcommand{\C}{\mathcal C}
+\newcommand{\I}{\mathcal I}
+\newcommand{\Lost}{\operatorname{Lost}}
+\newcommand{\Gained}{\operatorname{Gained}}
+\newcommand{\NULL}{\mathsf{undefined}}
+\DeclareMathOperator{\supp}{supp}
+\DeclareMathOperator*{\argmin}{arg\,min}
+\lstset{language=Python,basicstyle=\ttfamily\footnotesize,breaklines=true,
+ columns=fullflexible,keepspaces=true,showstringspaces=false,frame=single}
+\title{Relational Information Accounting\\[5pt]
+\large Ethics as an accounting frame for whole-system consequences and reachable futures}
+\author{Matthew Parslow\\Independent Researcher}
+\date{\textbf{Draft \texorpdfstring{\textemdash}{---}\ \PaperDraft}\\[2pt]\PaperDisplayDate\ \texorpdfstring{\textbullet}{\textperiodcentered}\ document revision \PaperRevision}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small Relational Information Accounting}
+\fancyfoot[L]{\small\textsc{\PaperDraft\,r\PaperRevision}}
+\fancyfoot[R]{\thepage}
+\setlength{\headheight}{14pt}
+\input{paper_metadata.tex}
+\begin{document}
+\maketitle
+\begin{center}
+\fbox{\begin{minipage}{0.92\textwidth}\small
+\textbf{DRAFT --- \PaperDraft\ r\PaperRevision} (\PaperDisplayDate).
+Circulated for comment. The structural results are conditional on the stated
+comparison and grounding assumptions. The biological compression interpretation
+is a hypothesis.
+\end{minipage}}
+\end{center}
+
+\begin{abstract}
+Actions change the reachable futures and enabling conditions of the systems
+they affect. This paper derives a calculable whole-system account of those
+informational consequences. Ethics becomes an accounting frame for consequences
+that narrower descriptions of an action leave outside their account. An action removes or introduces reachable
+capabilities, changes the resources required for continuation, and imposes
+effects along its course. These consequences occur in affected relations
+whether anyone recognises them or assigns them value. Measurement describes
+them; decision weights determine how a system responds to them.
+
+Starting from relational existence, admissible transformation, consequential
+distinction, and grounded expenditure, the paper derives separate loss, gain,
+resource, and path accounts. No additional biological, sentience, preference,
+or observer-recognition requirement determines eligibility. The construction
+retains affected identities through termination and does not assume a common
+unit across agents. It provides finite calculation functions, proves
+independence from passive evaluative observation and from decision weights,
+and recovers a channel-capacity expression for deterministic controllable
+futures. Worked cases include protective restriction, restoration, and the
+contrast between disposable game encounters and persistent companions. The
+account also includes consequences borne by actors and witnesses, providing a
+structural interpretation of moral injury through damaged self-relations, trust,
+and continuing participation. It also quantifies a conditional implied decision
+conversion and the separate consequences of making that conversion explicit.
+
+A further hypothesis interprets human and animal ethical behaviour as compressed
+expressions of this informational principle. Exact and approximate conditions
+for preserving decisions under compression are given without claiming to recover
+a neural implementation. The contribution is an implementable consequence
+account and its derivation, situated against information ethics, empowerment,
+and reachability-based impact measures; it does not impose a universal ordering
+of the resulting decisions.
+\end{abstract}
+
+\section{Consequences before decisions}\label{sec:introduction}
+
+A protective intervention can restrict one person's freedom of action while
+restoring another's. Both effects occur. Whether the intervention is justified
+depends on how those effects are weighed. A theory that records only the chosen
+justification loses the restriction; a theory that records only the restriction
+loses the protection. A whole-system account must hold both, together with
+consequences for the actor, witnesses, and the relations that enable later
+coordination. Ethics brings otherwise omitted consequences into view and studies how agents
+respond to them through their relative priorities.
+
+The foundational proposition of this paper is:
+\begin{quote}
+An action changes the reachable futures and enabling conditions of affected
+systems; those changes are accountable across the relations in which they occur.
+\end{quote}
+Here \emph{reachable futures} includes the conditions, resources, and continuing
+relations through which a future is available. Destroying a capability, making
+its exercise more costly, and temporarily closing it are different changes.
+They require different entries even when the final state looks the same.
+
+The resulting lens separates three things. A consequence \emph{occurs} through
+an interaction. A measurement \emph{represents} that consequence under explicit
+comparison conditions. A decision \emph{evaluates} the account using weights,
+priorities, or constraints. An unobserved loss remains a loss. Assigning it zero
+decision weight does not restore what was removed.
+
+\begin{center}
+\begin{tabular}{@{}p{0.17\textwidth}p{0.43\textwidth}p{0.31\textwidth}@{}}
+\toprule
+Layer & Determining relation & Role of evaluation \\
+\midrule
+Occurrence & Actual transformation of capabilities and resource conditions & No recognition required \\
+Measurement & Baseline, boundary, identity, horizon, distinction and unit & Specifies the account being taken \\
+Decision & Rule applied to the measured or estimated account & Supplies relative weights and priorities \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+The proposal locates informational cost in the first layer. The second supplies
+functions for calculating it. The third allows differences in ethical decisions
+without changing the consequences already accounted for. An actor's preferences
+can causally change what the actor does; once the compared actions are fixed,
+changing an evaluator's preferences changes their ranking rather than their
+consequence records.
+
+The foundational object is whole-system accounting. The proposed reason for an
+ethical frame is an accounting deficit: a narrower description holds the actor's
+objective, immediate output, or direct expenditure while leaving other
+consequences outside its account. The omitted effects appear as \emph{extra}
+ethical considerations because the narrower frame has not included their
+bearers, relations, or continuing costs.
+
+Under the relational ontology, those effects are already changes in the system.
+A recipient's lost future, an actor's damaged self-relations, a witness's altered
+trust, and an institution's impaired coordination all have a place in the same
+informational machinery. They require no separate ethical substance or an
+observer's assignment of value to become consequences. Ethics therefore becomes
+an \emph{accounting frame}: it directs attention to effects and incidence that
+an incomplete operational account leaves out. Relative weights determine how
+an agent responds to the resulting account.
+
+This is the paper's structural explanation of the need to study ethics. Ethical
+language and practice can make hidden costs legible and compress sensitivity to
+them. Studying those practices exposes which consequences a system tracks,
+which it omits, and how its priorities govern a response. The claim concerns the
+function of the ethical frame in this ontology; a chronology of the emergence
+of moral language is a separate empirical question.
+
+Here \emph{whole-system} means seeking causal coverage across affected relations,
+including the acting system and its internal and social organisation. A finite
+account still declares its boundary and unresolved effects. The phrase does not
+certify that every remote consequence has been discovered, and it does not
+license a single sum over incompatible units or overlapping bearers.
+
+An ethical justification cannot make an incurred cost disappear. An action can
+be chosen because it protects others while still damaging its actor's trust,
+self-relations, or continuing participation. Moral injury is therefore a
+substantive case for the framework: costs can arise within the system that acts,
+in a witness, and in the institutions that connect them. The relevant injury
+is a change of organisation and continuation, beyond an external judgement that
+an action was good or bad.
+
+Three contributions follow. First, the paper derives an attributed cost account
+without an observer conferring value on its bearers, including actors and
+witnesses as affected systems. Second, it supplies actual
+finite functions for computing the account. Third, it proposes that ethical
+behaviour can express the underlying principle through compression, without
+conscious ethical reasoning or literal execution of these functions. The first
+two stand independently of recovery of a biological mechanism.
+
+\section{What the informational foundations supply}\label{sec:foundations}
+
+The derivation needs structures that can be affected, transformations that can
+affect them, and distinctions that specify what changes. The preceding papers
+supply these objects. This section states the dependencies so that an apparent
+derivation cannot conceal a moral premise in its inputs.
+
+\subsection{Existence, representation, and affected frames}
+
+Paper 00 treats existence as standing in relation
+\citep{parslow00relation}. A biological organism, a
+computation, a simulation, and an imagined structure differ in the relations
+they instantiate and the changes they can sustain. The framework gives them
+no rank in degree of reality. Being a representation describes a relation
+between structures; it does not make the representing structure unreal.
+
+Consequences nevertheless belong to the relations actually instantiated. An
+imagined injury instantiates changes in the imagining system and its
+representations. It does not thereby instantiate every bodily consequence of
+the injury represented. A simulated agent can possess persistent capabilities
+and relationships within its environment; a painted depiction can lack them.
+Their accounts differ because their continuation structures differ.
+
+An \emph{affected frame} is a structure whose capabilities, expenditure, or
+continuing relations change under the comparison. ``Agent'' is used broadly for
+such a continuing organisation, without requiring a human body, linguistic
+self-report, or deliberative preference. Where agency or individuality is
+uncertain, record the candidate partition and its alternatives. Temporal
+information provides approaches to individuality across scales
+\citep{krakauer2020individuality}; it does not supply a moral rank.
+
+The affected frame is also distinct from an observer taking an account. A tree,
+an unmonitored program, and a collective can each be affected without a further
+system recognising that effect. If a dimension is instantiated in the affected
+relation, an observer is unnecessary for its occurrence. If the dimension is
+absent, a label applied by an observer cannot create it.
+
+\subsection{Transformation, capability, and expenditure}
+
+Graphic Equalisation supplies admissible transitions and grounding-dependent
+costs \citep{parslow01equalisation}. Paper 01's well-formedness requirement
+(Definition~\ref{GE-def:well-formed}) requires quantities to have a frame and
+comparison conditions. Its expenditure account
+(Proposition~\ref{GE-prop:economics}) concerns changes and their implementation;
+it does not identify every expenditure with a decrease of capability.
+
+Seldon Manifolds supplies sets of reachable continuations
+\citep{parslow02manifolds}. A goal-filtered
+acceptable manifold (Paper 02, Definition~\ref{SM-def:acceptable}) is a further
+construction. The present cost account uses reachable continuations before
+filtering them by a preferred goal. A frame with no represented preference can
+still lose a continuation.
+
+Narrativium supplies a measure of consequentially reachable deformation
+\citep{parslow04narrativium}
+(Paper 04, Definitions~\ref{NA-def:reachable-deformation}
+and~\ref{NA-def:narrativium}). Its distinction between measurement and
+expenditure is retained. Its restriction on sums across frames
+(Proposition~\ref{NA-prop:no-sum}) prevents adding unlike quantities merely
+because both have been called costs.
+
+These are inherited informational dependencies. The construction below adds
+accounting definitions and a particular finite realisation. It does not infer
+an ethical prohibition from a positive expenditure, nor derive all the
+underlying relational machinery from Shannon's communication theory alone.
+
+\subsection{The derivation boundary}
+
+The argument has the following dependency order:
+\begin{enumerate}[leftmargin=*]
+\item An instantiated relational organisation has admissible continuations.
+\item An action changes the transition relation or the state from which those
+continuations are available, including the resources required to obtain them.
+\item Comparing action and baseline identifies removed and introduced
+continuations, and changed expenditure, for each affected relation.
+\item These differences constitute the informational consequence account.
+\item Ethics is an accounting frame that brings omitted effects and their
+bearers into the comparison. Agents respond through represented information,
+compressed dispositions, and relative priorities. A decision rule evaluates
+the account; its judgement does not constitute the recorded changes.
+\end{enumerate}
+Steps 1--4 supply the whole-system construction. Step 5 locates ethics as an
+accounting frame within that construction and introduces the hypothesis
+connecting behaviour with the account.
+Nothing in this chain requires a morally approved species, a sentience threshold,
+a represented preference, or an observer's award of value. Grounding an actual
+quantity is still necessary; an unknown quantity is not a known zero.
+
+\section{The comparison contract}\label{sec:contract}
+
+Cost relative to an action requires a specified alternative. Removing a bridge
+has different consequences compared with leaving it open, replacing it, or
+closing it before a collapse. A baseline answers which comparison is being
+made. It does not decree which comparison must govern every decision.
+
+\begin{definition}[Comparison contract]\label{def:contract}
+A contract $\theta$ specifies:
+\begin{enumerate}[leftmargin=*]
+\item the compared action $a$ and baseline $b$, including subsequent policies;
+\item the causal boundary and affected identities $\I_\theta$, with continuity
+conditions across both branches;
+\item a horizon and observation times or intervals;
+\item each frame's consequential outcome space $\Omega_i$, an aligned outcome
+map, and a nonnegative measure $\mu_i$ where defined;
+\item resource dimensions, units, payers and attribution rules;
+\item model uncertainty and conditions under which the account is complete.
+\end{enumerate}
+\end{definition}
+
+A contract represents the relations being compared. It does not bring their
+changes into existence. Moving a measurement boundary changes what an account
+contains; it does not undo a consequence outside that boundary. Claims of
+completeness therefore require a causal argument, rather than merely a short
+list of preferred recipients.
+
+\subsection{Consequential distinctions}
+
+Two descriptions count as the same outcome when the declared grounding identifies
+them with the same relevant continuing capability. Renaming an option cannot
+create an additional option. Conversely, two equally numerous outcome sets need
+not offer the same capabilities. A chance to leave, a chance to work, and a
+chance to obtain food are not interchangeable because each set has three members.
+
+The outcome quotient specifies the resolution of an account. Its justification
+must be inspectable in the affected dynamics. A numerical outcome mass can express
+a grounded amount of an available capability or a sampling convention. A mass
+chosen because a decision-maker likes one outcome more than another is an
+evaluation weight and belongs in the decision rule. Calling it $\mu_i$ would
+hide valuation inside the calculation.
+
+A measure can therefore be objective within its declared grounding without
+being the unique measure of every consequence. The full set changes retain
+identities that a scalar summary loses. A coarse account that merges a relevant
+distinction is incomplete at that finer resolution; its zero does not establish
+that no cost occurred.
+
+\subsection{Identity, time, and attribution}
+
+Use the union of affected identities across branches. The loss of a frame cannot
+remove that frame from the population being compared. A created successor is
+matched to the baseline frame only where the continuity conditions establish
+that match. Similar appearance, a copied name, or a new numerical identifier
+is insufficient by itself.
+
+For shared resources, separate physical expenditure from its attribution. A
+single shared bill can be represented once with links to all affected frames.
+Allocating that bill among payers requires either grounded incidence or an
+explicit allocation convention. Summing the full bill once for every claimant
+manufactures expenditure. Collective and member accounts can coexist, but their
+entries do not become disjoint by being listed separately.
+
+
+The affected population includes the actor whenever its action changes its own
+organisation or continuations. It also includes witnesses, dependants, and
+institutions where the action changes their enabling relations. Direct bodily
+impact does not exhaust causal incidence. A memory, expectation, permission, or
+trust relation can change later admissibility and expenditure, and therefore
+belongs in the model where that effect is grounded. A represented judgement
+inside an affected system is a causal state; it is different from the passive
+external evaluation excluded in Proposition~\ref{prop:observer}.
+
+Horizon and path are likewise distinct. A restored system can have the same
+terminal capabilities while having undergone an interval of restriction.
+The comparison must state whether it takes a terminal account, an account along
+a course, or both. No undisclosed preference for the present over the future is
+introduced by the time index.
+
+\section{Deriving the cost functions}\label{sec:derivation}
+
+The account starts with what remains possible. Expenditure and time enter as
+additional typed dimensions because neither is recoverable from a final option
+count alone.
+
+\subsection{Reachable futures and their changes}
+
+Let $S_x$ be the state space for branch $x\in\{a,b\}$ and let $T_x$ be its
+admissible transition relation. Let $s_x$ be the post-intervention starting state.
+For frame $i$, the map $\pi_i$ assigns aligned consequential outcomes to states;
+$\bot$ means that the state instantiates no continuing outcome for that frame.
+For a fixed-step horizon $h$ define
+\begin{equation}\label{eq:reachable}
+\R_i(x;h)=\{\pi_i(s):s_x\xrightarrow[T_x]{h}s,\ \pi_i(s)\ne\bot\}.
+\end{equation}
+A horizon of \emph{up to} $h$ steps uses the union over $0\leq t\leq h$ instead.
+These answer different questions. Terminal persistence must be encoded if an
+exact-step account is intended to include terminated world states.
+
+Resources that constrain feasibility belong in the state or admissibility
+relation: for example $(s,\beta,t)$ can carry remaining budget $\beta$ and time
+$t$. Otherwise a traversal can count an option that its bearer cannot afford.
+An institution's permission and a system's physical capacity can likewise be
+separate state components when either changes the actual reachable set.
+
+\begin{definition}[Lost and gained futures]\label{def:loss}
+For aligned outcome spaces under one contract, define
+\begin{align}
+\Lost_i(a\mid b)&=\R_i(b)\setminus\R_i(a),&
+L_i(a\mid b)&=\mu_i(\Lost_i(a\mid b)),\label{eq:loss}\\
+\Gained_i(a\mid b)&=\R_i(a)\setminus\R_i(b),&
+G_i(a\mid b)&=\mu_i(\Gained_i(a\mid b)).\label{eq:gain}
+\end{align}
+If $\mu_i$ is unavailable, retain the sets and mark their numerical measures
+undefined. For finite distinct outcomes, counting measure is a calculable
+specialisation.
+\end{definition}
+
+The functions follow directly from the two reachable sets. They require no
+preference ordering on their members. The pair $(L_i,G_i)$ is retained rather
+than cancelled: an action can close an exit and open an unrelated opportunity.
+When finite measures exist,
+\begin{equation}\label{eq:net}
+\mu_i(\R_i(a))-\mu_i(\R_i(b))=G_i-L_i.
+\end{equation}
+The difference is a net capability summary. It omits which futures were replaced.
+
+\subsection{The information-theoretic quantity}
+
+Counting consequentially distinct futures connects the construction to
+information theory. In a deterministic control channel, let $U$ denote legal
+inputs and $Y=f(U)$ their consequential outputs. Empowerment is the channel
+capacity
+\begin{equation}\label{eq:empowerment}
+E=\max_{p(U)}I(U;Y),
+\end{equation}
+introduced as an agent-centred measure of potential control by
+\citet{klyubin2005empowerment}. Its units are bits when logarithms have base two.
+
+\begin{proposition}[Finite deterministic capacity]\label{prop:capacity}
+If a deterministic channel has $m\geq1$ distinct outputs and each is attainable
+by a legal input, then $E=\log_2m$.
+\end{proposition}
+\begin{proof}
+Determinism gives $H(Y\mid U)=0$, so $I(U;Y)=H(Y)\leq\log_2m$. Choose one input
+for each output and assign these $m$ inputs equal probability. The outputs are
+then uniform and the upper bound is attained.
+\end{proof}
+
+Thus a nested restriction from $m_b$ to $m_a\geq1$ controllable outcomes removes
+\begin{equation}\label{eq:bitloss}
+\Delta E=\log_2m_b-\log_2m_a=\log_2(m_b/m_a)
+\end{equation}
+bits of attainable distinction. This recovers a known capacity expression; it
+makes the informational content of the finite loss concrete. For non-nested
+sets, capacity difference alone conceals replacements. For stochastic systems,
+possible outcomes and controllable outcomes differ: an uncontrollable lottery
+can have many reachable results without high channel capacity. Use the actual
+channel when measuring empowerment, and reachability when measuring possibility.
+
+No channel with zero attainable outputs is assigned $\log_2 0$. Extinction is
+recorded through lost continuations and identity, while its capacity entry is
+undefined. A deterministic one-output channel has zero bits of control; removing
+its sole continuing outcome can still produce a nonzero set loss. Capacity is
+one dimension of the account, rather than a complete measure of existence.
+
+Shannon uncertainty alone is also insufficient. A string of random bits does
+not acquire ethical priority through its entropy. Relevant information here is
+the organisation of consequential continuations and their enabling relations.
+Communication theory supplies the capacity calculation
+\citep{shannon1948communication}; the relational grounding supplies what the
+channel connects and whom its alteration affects.
+
+\subsection{Resource burdens and access prices}
+
+Let $q_{ir}(x)$ be branch $x$'s actual or predicted expenditure borne by frame
+$i$ in grounded resource dimension $r$. The incremental burden is
+\begin{equation}\label{eq:resource}
+K_{ir}(a\mid b)=q_{ir}(a)-q_{ir}(b).
+\end{equation}
+This is signed: a negative entry records saved expenditure. Energy, time,
+attention, computational work, and access payments require their own instantiated
+units and incidence. A grounding that supports joules does not automatically
+support a quantitative measure of attention.
+
+An \emph{access price} is different. If $p_{ir}(y\mid x)$ is the least expenditure
+required for frame $i$ to attain outcome $y$ from branch $x$, a change in that
+price can burden the frame before it attempts the outcome. Retain the price
+profile over aligned outcomes where it is defined. A feasible set can remain
+unchanged while all its members become more expensive. Expenditure in
+Eq.~\eqref{eq:resource} is what was paid; an access-price change is what would
+have to be paid. The two must not be silently substituted.
+
+The substrate does not imply a universal exchange rate between these resource
+entries and lost capabilities. Its information-erasure discussion also does not
+license charging a fixed Landauer cost for every logical or relational change.
+Logical irreversibility and physical implementation conditions must be supplied
+before such a bound is used.
+
+\subsection{Effects along the course and restoration}
+
+For aligned comparison times $t$, calculate
+\begin{equation}\label{eq:path}
+L_i(t;a\mid b)=\mu_i\bigl(\R_i(b;t)\setminus\R_i(a;t)\bigr).
+\end{equation}
+Here $\R_i(x;t)$ describes capabilities from the state reached at $t$, under the
+same declared continuation horizon. These sets are conditional on a realised or
+specified course; uncertain courses require a profile or distribution of
+accounts. They are not automatically the unconditional terminal set in
+Eq.~\eqref{eq:reachable}.
+
+The matching gain profile is
+\begin{equation}\label{eq:path-gain}
+G_i(t;a\mid b)=\mu_i\bigl(\R_i(a;t)\setminus\R_i(b;t)\bigr).
+\end{equation}
+A capability made available only temporarily can disappear from a terminal
+snapshot while remaining a gain along the course. Retain both profiles without
+cancelling unrelated losses and gains.
+
+Retain loss and gain profiles as the primary path account. Where a clock and an
+integration measure $\nu$ are grounded, define exposure
+\begin{equation}\label{eq:exposure}
+D_i(a\mid b)=\int L_i(t;a\mid b)\,d\nu(t).
+\end{equation}
+For piecewise constant intervals of duration $\Delta t_k$, this is
+$\sum_k\Delta t_k L_i(t_k;a\mid b)$. Its units are capability units multiplied
+by clock units. It is not another terminal loss in the same units.
+Similarly, where the same clock is grounded, gain exposure is
+$D_i^+(a\mid b)=\int G_i(t;a\mid b)\,d\nu(t)$. It has the corresponding
+capability-time units and remains separate from loss exposure.
+
+Exact restoration at $T$ can give $L_i(T)=0$ while $D_i>0$ and expenditure is
+positive. Paper 02b's deprivation-and-restoration example
+(Remark~\ref{PS-rem:ethics}) motivates this distinction. An imposed arousal
+variable is not sufficient evidence of experienced suffering; the structural
+point is that a terminal snapshot can omit an intervening restriction.
+
+This historical account does not posit an invisible historical force acting
+on a restored state. It compares the courses that occurred. It also does not
+require that a recipient retain a memory of the restriction. An external record
+makes the account recoverable; it does not constitute the past transformation.
+
+\subsection{Repair feasibility}
+
+Define a restoration condition $B_i$ on continuing capabilities and relations.
+Let $\mathcal P_i$ be the admissible repair paths from the post-action state to a
+state satisfying $B_i$. For one grounded resource unit, define
+\begin{equation}\label{eq:repair}
+\rho_i(a\mid b)=\inf_{p\in\mathcal P_i}q_i(p),\qquad
+\inf\varnothing=+\infty.
+\end{equation}
+A finite nonnegative-cost graph permits a minimum-cost path calculation. With
+multiple incompatible units, retain the feasible resource vectors or their
+Pareto frontier; a scalar shortest path requires a declared conversion.
+
+A repair estimate is a prospective liability. It is not expenditure already
+incurred, and restoring a terminal capability does not reverse prior exposure.
+If repair is carried out, its actual expenditure belongs to the repaired
+branch's resource record. Adding the estimate again would charge the same
+repair twice.
+
+\subsection{The complete account and its finite realisation}
+
+\begin{definition}[Informational consequence account]\label{def:account}
+For a contract $\theta$, the account is the typed family
+\begin{equation}\label{eq:account}
+\C_\theta(a\mid b)=
+\left\{\begin{aligned}
+ &\bigl(\Lost_i,\Gained_i,L_i,G_i,(K_{ir})_r,(L_i(t))_t,(G_i(t))_t,\\
+ &\qquad(p_{ir}(\cdot\mid a),p_{ir}(\cdot\mid b))_r,\rho_i\bigr)
+ \end{aligned}:i\in\I_\theta\right\},
+\end{equation}
+together with identity, shared incidence, grounded stochastic-transition or
+control-channel records where applicable, and uncertainty records.
+Support sets do not determine outcome probabilities or control reliability:
+changes in those records require their own aligned comparison and are not
+represented by a zero set difference. A component
+is included only where its dimension is instantiated; numerical absence is
+marked undefined. Informational cost denotes the losses and burdens in this
+account; gains and savings are retained alongside them. An ethical accounting frame
+selects and examines consequences and incidence; decision rules evaluate the
+account without redefining the occurrence of its entries. A frame that leaves
+a consequence out does not make that consequence absent from the system.
+\end{definition}
+
+This is a family of actual functions, not a single untyped score. Appendix
+\ref{app:functions} prints a finite Python realisation. Its graph traversal
+computes Eq.~\eqref{eq:reachable}; outcome comparison computes
+Eqs.~\eqref{eq:loss}--\eqref{eq:gain}; resource comparison computes
+Eq.~\eqref{eq:resource}; interval accounting computes
+Eq.~\eqref{eq:exposure} and the matching gain exposure; and nonnegative
+shortest-path search computes
+Eq.~\eqref{eq:repair}. A final function evaluates explicitly supplied features
+and weights after the consequence calculation.
+
+The implementation accepts measured graphs and outcome maps. It does not
+pretend to infer a complete causal world from raw observations. Frame identity,
+remaining budget, and clock conditions belong in the supplied state model when
+they affect admissibility. A missing frame key means a \emph{known} empty
+continuation set; a missing measured quantity must not be passed as an empty set.
+The same restriction applies to resource entries omitted as known zero.
+
+For finite graphs, stepwise reachability visits at most all supplied edges at
+each of $h$ steps, giving an $O((h+1)(|V|+|E|))$ bound including materialisation, before
+outcome processing.
+Hash-based set comparison is linear in the represented outcome sets in the
+usual expected case. Repair search uses Dijkstra's algorithm with nonnegative
+scalar edge costs. Augmenting states with budgets or enumerating long courses
+can greatly increase the graph: calculable does not mean cheap at every scale.
+
+Finite adjacency iterables are materialised so that repeated visits preserve
+the supplied transition relation. The numerical implementation uses finite
+arithmetic: out-of-range computed masses, exposures, scores, or explored
+repair-path costs raise an error. They are not reported as measured infinite
+burdens or as evidence that repair is impossible.
+
+The functions realise the finite support, resource, path, and repair
+specialisation. Access-price profiles use repair
+search separately for each target outcome; path accounts across uncertain
+courses require those courses to be supplied. A stochastic channel requires
+channel-capacity machinery beyond the deterministic function. These extensions
+change the measurement implementation, without introducing a moral eligibility
+condition.
+
+\section{What follows from the construction}\label{sec:results}
+
+The construction earns its main claims under explicit conditions. In particular,
+observer independence concerns whether the consequence occurs; it is stronger
+than leaving a weight variable out of a formula.
+
+\begin{proposition}[Independence from passive evaluation]\label{prop:observer}
+Fix the actual affected transition relations, including any recorded stochastic
+laws or control channels, starting states, expenditures,
+and continuity conditions. Add, remove, or change an evaluator whose observation
+and judgement do not causally alter those relations. The removed and introduced
+continuations and incurred expenditures are unchanged. Where the measurement
+contract is also held fixed, $\C_\theta(a\mid b)$ is unchanged.
+\end{proposition}
+\begin{proof}
+Occurrence is determined by the affected starting states and admissible
+transitions. By hypothesis these inputs and the expenditure records do not
+change with evaluation. Hence the sets of admissible paths do not change,
+their aligned outcome images do not change, and their set differences do not
+change. The resource differences and course profiles likewise retain their
+inputs. No report or judgement is an argument of these operations.
+\end{proof}
+
+A closed exit remains closed without a witness. That is the causal content of
+the proposition. An evaluator who opens the exit, imposes a restriction, or
+pays for an option is an additional actor; the causal comparison has changed.
+An evaluator who uses a coarser outcome map changes their account's resolution.
+Neither case makes recognition the source of the earlier cost.
+
+\begin{proposition}[Independence from decision weights]\label{prop:weights}
+For fixed $\theta$, $a$ and $b$, replacing an evaluation rule $V_w$ by $V_{w'}$
+does not change $\C_\theta(a\mid b)$.
+\end{proposition}
+\begin{proof}
+The account uses transition, outcome, expenditure and comparison inputs.
+Decision weights occur only in the subsequent evaluation map
+$V_w:\C_\theta\mapsto\text{decision score or ordering}$. Replacing that map
+leaves its argument fixed.
+\end{proof}
+
+\begin{proposition}[Representation invariance]\label{prop:representation}
+Suppose two groundings are related by bijections preserving affected identity,
+starting states, admissible transitions, consequential outcome identity,
+resource incidence, units and numerical expenditures, time alignment, outcome
+measures, access-price profiles, and any recorded stochastic laws or control
+channels. For the repair component, also preserve
+admissible repair transitions, their numerical edge costs, and restoration
+predicates. Their
+consequence accounts agree under those bijections.
+\end{proposition}
+\begin{proof}
+A transition-preserving bijection carries each admissible path to an admissible
+path of the same declared length. Its aligned outcome bijection therefore
+carries reachable sets to reachable sets and commutes with set difference.
+Measure preservation gives equal losses and gains. Resource and time
+preservation give equal burdens and profiles. Repair paths correspond with
+equal expenditure and restoration conditions, so their infima agree.
+\end{proof}
+
+This states what substrate independence buys: the procedure and its results
+survive changes of representation that preserve the relevant structure. Two
+embodiments with different resource demands or continuations need not have equal
+accounts merely because both are called agents. A simulation label cannot by
+itself discount an isomorphic consequence.
+
+\begin{proposition}[Termination remains in the account]\label{prop:termination}
+If an affected identity has a nonempty baseline reachable set and no continuing
+action outcomes, its lost set equals the baseline set. Its loss remains in the
+account even if the post-action population omits that identity.
+\end{proposition}
+\begin{proof}
+The comparison population is the union across branches. For that identity,
+$\R_i(a)=\varnothing$, so
+$\Lost_i=\R_i(b)\setminus\varnothing=\R_i(b)$. The account is indexed by the
+comparison population rather than by the surviving census.
+\end{proof}
+
+A copy contributes a continuation of the original only where the continuity
+conditions support it. The framework thus makes replacement a question about
+actual retained relations. It cannot erase a loss through renaming its bearer.
+
+\section{Decisions and relative weightings}\label{sec:decisions}
+
+A derived cost does not force one action in every conflict. Protecting a recipient
+can require restricting an attacker; preserving a system can require spending
+resources that would otherwise remain available elsewhere. The account exposes
+what each choice changes. A decision rule makes its priorities inspectable.
+
+For numerical components in a declared evaluation space, one example is
+\begin{equation}\label{eq:decision}
+V_w(a\mid b)=\sum_i\alpha_iL_i-\sum_i\beta_iG_i
+ +\sum_{i,r}\gamma_{ir}K_{ir}+\sum_i\delta_iD_i-\sum_i\eta_iD_i^+,
+\end{equation}
+with an action selected by minimising $V_w$ among feasible alternatives.
+Weights express relative priorities and any chosen conversions. When an outcome
+identity matters independently of its count, replace the corresponding scalar
+by an outcome-level feature vector. Lexicographic rules and constraints can
+also evaluate the same account. A hard constraint is a decision condition;
+it is not evidence that the excluded action had no measurable consequences.
+
+Resources, capability counts and capability-time exposure cannot be added as
+physical quantities without conversion. Equation~\eqref{eq:decision} is a
+declared evaluation function. A conversion grounded in a common physical
+quantity differs from a stipulated priority between unlike quantities, as
+Paper 04 explains (Remark~\ref{NA-rem:kappa-kinds}). Both can be used if their
+status is stated. Neither silently changes the underlying quantities.
+
+\begin{proposition}[Conditional dominance]\label{prop:dominance}
+In a common declared feature space, let losses, burdens and exposure have
+positive signs, and gains negative signs. If $z_j(a)\leq z_j(a')$ for every
+feature $j$, then $w\cdot z(a)\leq w\cdot z(a')$ for every nonnegative $w$.
+The inequality is strict if a strictly smaller feature receives positive weight.
+\end{proposition}
+\begin{proof}
+Each term $w_j(z_j(a')-z_j(a))$ is nonnegative. Their sum has the stated sign,
+and is positive under the strictness condition.
+\end{proof}
+
+This is agreement within a class of evaluators, not a proof that every possible
+agent must use nonnegative weights. For a declared admissible weight set $W$,
+robust preference for $a$ over $a'$ means
+$\sup_{w\in W}w\cdot(z(a)-z(a'))\leq0$. If the inequality fails, the disagreement
+can concern weights even when every evaluator accepts the measured account.
+
+Consent has a place in both layers. It can causally change coordination,
+permission, enforcement cost, and actual reachability. It can also receive
+weight in a decision. It does not erase a remaining restriction by changing
+its name. Similarly, inability to protest does not remove a bearer from the
+account. Paper 01 already distinguishes occurrence of harm from its recognition
+(Remark~\ref{GE-rem:admissible-sign}); this construction makes the distinction
+explicit in the calculation.
+
+\section{Worked cases}\label{sec:cases}
+
+\subsection{Protection with a calculable restriction}\label{sec:protection}
+
+Let frame $A$ have six baseline outcomes $\{1,2,3,4,5,6\}$ and frame $B$ one
+baseline outcome $\{x\}$. A restriction leaves $A$ with $\{1,2,3\}$ and gives
+$B$ the outcomes $\{x,y,z,u\}$. Under counting measure,
+\[
+L_A=3,\quad G_A=0,\quad L_B=0,\quad G_B=3.
+\]
+Suppose the action also imposes one resource unit on $B$, while the baseline
+imposes none. Then $K_{B,r}=1$. A declared decision score is
+\begin{equation}\label{eq:example}
+V_w=3\alpha_A+\gamma_{B,r}-3\beta_B.
+\end{equation}
+For $(\alpha_A,\gamma_{B,r},\beta_B)=(1,1,2)$ the score is $-2$; for
+$(2,1,1)$ it is $4$. The baseline has score zero in both accounts. The two
+evaluators choose differently while agreeing on every measured consequence.
+
+The appendix computes these values by set comparison, rather than defining
+loss as a preference. For deterministic controllable channels, $A$ loses one
+bit of capacity, $\log_2(6/3)=1$, while $B$ gains two bits,
+$\log_2(4/1)=2$. Counts and bits are alternative summaries with explicit units;
+neither is added to the other as though it were another independent loss.
+
+Equal counts can conceal a different case. Replacing $\{1,2,3\}$ with
+$\{4,5,6\}$ leaves capacity and cardinality unchanged while recording three
+lost and three gained outcomes. A rule that uses only net count ignores that
+substitution. The fuller account makes the omission visible.
+
+\subsection{Short-term options and continuing viability}
+
+An action can open many immediate options by exhausting a budget required for
+later continuation. A short horizon registers expansion; a longer horizon
+registers contraction. This is a change of comparison question, not an
+inconsistency in the set operations. Include remaining resources in the state
+and publish the horizon profile when short and long accounts differ.
+
+The same applies to delegation and automation. A recipient can gain access to
+an outcome while becoming dependent on a provider whose withdrawal closes it.
+The continuation graph contains that dependency. Counting only the currently
+available menu omits the provider relation and the cost of maintaining access.
+
+\subsection{Restoration without cancellation}
+
+Suppose the baseline maintains four capabilities through three unit-length
+intervals. The action permits only one through the first two intervals and
+restores all four in the third. The loss profile is $(3,3,0)$, terminal loss is
+zero, and exposure is $D=6$ capability-time units. If the restoration consumes
+two resource units, that expenditure is a separate entry.
+
+Conversely, an action can temporarily add one capability to the same baseline
+through the first two intervals, then return to the original four. Its gain
+profile is $(1,1,0)$ and gain exposure is $D^+=2$ capability-time units, despite
+zero terminal gain. The function \texttt{gain\_profile} calculates this matching
+course account.
+
+The account establishes temporary restriction, exposure and expenditure. Whether
+these quantities correspond to pain, distress, or another experienced effect
+requires a grounding for that effect. A conscious preference to remember the
+restriction is unnecessary for recording the structural loss. Byte-identical
+restoration does not make the two courses identical.
+
+\subsection{Termination and replacement}
+
+A frame with baseline continuations $\{r,s,t\}$ is terminated in the action
+branch. Its continuing outcome set is empty and its loss is three. A newly
+created frame with three outcomes does not cancel the loss by cardinality.
+If a repair or transfer preserves the original's identified relations, the
+continuity contract can establish which outcomes remain available. The account
+then changes because retained structure has changed, rather than because a
+new entity was announced as equivalent.
+
+The same rule applies to biological and computational cases. Their expenditures
+and continuity relations can differ substantially. No category supplies a
+blanket exemption or a universal equality of numerical costs.
+
+\subsection{Disposable encounters and persistent companions}\label{sec:games}
+
+Games offer a particularly clear comparison because their continuing relations
+can be inspected in the program. A player can treat the loss of one companion
+as more consequential than the removal of a thousand encounter enemies. The
+framework distinguishes two mechanisms: the underlying structures can lose
+different futures, and a player can weight their recorded losses differently.
+The first mechanism exists before the second.
+
+Consider a finite game with an encounter character $e$. In both branches the
+encounter ends and the character has no persistent state, later action, social
+relation, or continuing world role. Let the comparison concern the state after
+that boundary. The baseline resolves the encounter without the depicted killing;
+the action resolves it with the depicted killing. If no continuing outcome of
+$e$ is instantiated in either branch, then
+\begin{equation}\label{eq:npc}
+\R_e(b)=\R_e(a)=\varnothing,\qquad L_e=G_e=0.
+\end{equation}
+The zero concerns actual absent continuing futures. It is not a low weight
+assigned to a rich persisting agent. If the wider world, player state, and
+resource expenditure also agree, those account entries agree as well.
+
+Now let a companion $c$ have three distinct reachable continuing outcomes: a
+later joint action, an ongoing exchange, and a persistent world response.
+Specify $\R_c(b)=\{r_1,r_2,r_3\}$ and $\R_c(a)=\varnothing$ under an outcome
+map that distinguishes these possible continuations. Then
+$\Lost_c=\{r_1,r_2,r_3\}$ and $L_c=3$ under counting measure. This toy count
+concerns distinct outcomes, rather than counting three concurrent features of
+one outcome as if they were separate channel outputs.
+Effects on a player and other characters belong to their corresponding accounts.
+They need not first judge the death meaningful for those continuations to be
+removed. Player valuation explains an additional part of the resulting response.
+
+Equation~\eqref{eq:npc} requires its stated boundary. An encounter character can
+have intermediate options, a restriction interval, or effects on another agent.
+If killing it early removes those options, its path account can be positive even
+when its terminal continuing account is zero. If it learns, persists, or sustains
+relations outside the encounter, its future set is different. ``Designed to be
+killed'' is therefore evidence about a role, not a mathematical proof of zero
+cost. The code and actual continuation relations settle the case.
+
+Likewise, a depiction can carry substantial consequences in a player's
+relationships, retained game history, or other instantiated structures even if
+the target has no persistent organisation. A represented life story can become
+part of such a structure. The account follows the relations that exist rather
+than granting or removing consequences through the adjective ``fictional.''
+
+A thousand characters satisfying Eq.~\eqref{eq:npc} do not create a thousand
+lost continuing lives merely because the depicted acts share the label killing.
+In a common game-world account with identical continuing outcomes, the loss
+remains zero. Positive intermediate or resource entries, where present, remain
+positive; aggregation requires their common units and incidence. This explains
+how the informational cost of a disposable encounter can be nearly trivial while a
+companion's loss is substantial.
+
+The 1990s video-game controversy supplies historical context. The US Senate's
+activity report documents the 1993 and 1994 hearings on violent game content
+\citep{senate1995activities}. A content label identifies what is depicted. The
+present theory asks which actual futures, relations, and resources the depicted
+act removes. The two classifications need not coincide. Research on game-related
+guilt and moral disengagement addresses players' responses to such framing
+\citep{hartmannvorderer2010disengagement}; that response is a measurement or
+valuation phenomenon, not proof of the target's underlying continuation account.
+
+\section{Moral injury as a whole-system consequence}\label{sec:moral-injury}
+
+Moral injury shows why an account confined to an action's external recipient
+is incomplete. The apparent extra ethical cost is an omitted internal or
+relational cost of the system. An actor can alter their own continuing organisation by doing
+something, being unable to prevent it, or receiving information about it.
+Witnesses and institutional relations can also bear persistent consequences.
+The resulting costs need not disappear when the action receives a favourable
+ethical judgement.
+
+Litz and colleagues describe lasting consequences following events that violate
+deeply held moral expectations, including perpetration, failure to prevent, and
+witnessing \citep{litz2009moralinjury}. Shay emphasises high-stakes betrayal by
+legitimate authority and impaired trust \citep{shay2014moralinjury}. These accounts
+supply the phenomenon to explain. The present framework proposes an
+informational interpretation of its changes, rather than substituting a
+capability count for a clinical construct.
+
+\subsection{Self-relations and trust are enabling structure}
+
+A person's expectations about themselves and others can enable continuations:
+accepting help, cooperating, making commitments, exercising a role, or relying
+on an institution. These possibilities depend on actual embodied, cognitive,
+and social organisation. If an event changes that organisation, it can close
+continuations or increase the effort needed to sustain them. The account uses
+the same loss, access-price, expenditure, and path functions already defined.
+No extra moral-injury eligibility rule is needed to record the change.
+
+Unchanged support sets do not establish unchanged reliability or burden. Where
+trust changes the probability of successful cooperation while leaving it possible,
+retain the grounded transition probabilities or control channel alongside the
+support account. Where an experienced or physiological burden is instantiated,
+its own grounded dimension is required. The finite set functions alone do not
+certify the absence of those effects.
+
+This is the proposed mechanism at the structural level. The event changes
+retained information and enabling relations; those changes alter subsequent
+admissibility and costs. A self-model or expectation matters because of what it
+causally enables or restricts. Mere disagreement between two reported beliefs
+does not establish that a capability was lost. Conversely, a damaged relation
+can matter even when its bearer cannot articulate an ethical explanation.
+
+Internal moral commitments can enter this causal process without becoming
+externally imposed accounting axioms. They are part of the organisation of the
+particular system being studied. A commitment violated by an event can change
+that system's future behaviour, relations, and expenditure. Another system with
+different commitments can undergo different changes. The functions remain the
+same while their grounded inputs differ.
+
+\subsection{A chosen action can retain an internal bill}
+
+Extend the protective example of Section~\ref{sec:protection} with an actor $P$.
+Let its baseline continuing outcomes be
+$\R_P(b)=\{u,v,w\}$ and its post-action outcomes be $\R_P(a)=\{u\}$, where the
+outcome map distinguishes grounded continuations involving cooperation and
+participation. If the action also imposes two additional resource units on $P$,
+then $L_P=2$ and $K_{P,r}=2$. These are illustrative consequences of the specified
+model, not numerical findings about a person.
+
+The original protective account remains: $L_A=3$, $G_B=3$ and $K_{B,r}=1$.
+The expanded decision score includes
+\[
+V_w=3\alpha_A+\gamma_{B,r}-3\beta_B
+       +2\alpha_P+2\gamma_{P,r}.
+\]
+For weights that place sufficient priority on protection, this action can
+still be selected. Its selection does not cancel the actor's loss. The full
+account explains how an action regarded as necessary or justified can carry a
+persistent cost for the system that performed it. Establishing moral injury in
+a particular person requires evidence about the event, the affected organisation,
+and its consequences; the toy account supplies no diagnosis.
+
+The same reasoning covers a witness whose continuing trust is damaged, or a
+person unable to prevent an event. Attribution asks what actually changed and
+through which relations. It does not require the affected person to have caused
+the original external injury. An institution's practical ability to coordinate
+can likewise change when trust relations are damaged. Individual and collective
+entries must retain their overlap rather than be indiscriminately added.
+
+\subsection{The trolley switch: external consequences and operator state}
+
+The trolley problem makes this separation explicit. Thomson's treatment already
+compares the trolley driver and a bystander at the switch, including their
+responsibilities and discomfort \citep{thomson1985trolley}. The present account
+uses the established dilemma to calculate separately attributed consequences.
+
+Fix $a$ as operating the switch and $b$ as leaving it unchanged, with the usual
+stipulated external outcomes: $a$ saves five people and kills one who would
+survive under $b$. For each saved person $k$, retain the grounded gain
+$G_k(a\mid b)$; for the person killed, retain $L_6(a\mid b)$. The headcount
+specifies neither the lost continuations nor a universal exchange rate between
+these persons. Their identified futures, external resource changes, witnesses,
+and institutional effects belong in the external account under its declared
+boundary.
+
+Let $x_P$ describe the operator's initial organisation, including commitments,
+self-model, experience, knowledge, and enabling relations. Write the operator's
+attributed component as
+\begin{equation}\label{eq:trolley-operator}
+\C_{\theta,P}(a\mid b;x_P).
+\end{equation}
+This is calculated with the same functions, using the operator's branch-specific
+continuations, expenditures, path profiles, and repair conditions. It is not a
+casualty count converted into guilt. Operating the switch can change one
+operator's continuing self-relations or impose substantial expenditure, while
+another operator undergoes different changes under the same external outcome.
+Declining to act can likewise impose an internal burden; the baseline is not
+presumed free of consequences.
+
+For a finite illustration, fix the same external branches and give two possible
+operator states the baseline outcome set $\{u,v,w\}$. In state $x_P$, switching
+leaves $\{u\}$ and adds two resource units, yielding $L_P=2$ and $K_{P,r}=2$.
+In state $x'_P$, switching leaves $\{u,v,w\}$ with unchanged expenditure,
+yielding $L_P=0$ and $K_{P,r}=0$ in these dimensions. Other dimensions remain
+to be checked. These are specified toy inputs, not measured psychological
+values. They demonstrate that operator cost is calculable and state-dependent
+while the fixed external losses and gains remain the same.
+
+The separation is one of attribution, not causal isolation: what the operator
+knows or believes about the external event can change their internal transition.
+Nevertheless, the external impact alone does not determine the operator's cost.
+Their feeling of justification cannot erase another person's loss, and their
+internal burden cannot be inferred solely from the number saved or killed.
+A decision can therefore favour switching while retaining a substantial
+operator cost. Relative priorities decide how these separate entries enter the
+choice; no single preferred answer to the dilemma follows from accounting alone.
+
+\subsection{Psychopathic traits and differences in ethical aperture}
+
+The same separation permits an account of differences associated with
+psychopathic traits. Aperture retains its inherited meaning: the input gate
+and its represented dimensions, resolution, and extent (Paper 01,
+Definition~\ref{GE-def:aperture}; Paper 02, Remark~\ref{SM-rem:aperture}).
+An \emph{ethical aperture} is the application of that structure to
+ethically relevant distinctions and their fit to acceptable future shapes
+(Paper 02, Remark~\ref{SM-rem:aperture-shape}). It is a shape, rather than one
+quantity of ethical sensitivity. Different frames can represent different
+bearers, kinds of consequence, degrees of distinction, and horizons. An ethical
+cost dimension absent from a frame is undefined there, rather than present
+with value or weight zero. This is absence to that frame, not absence of the
+affected relation from the world.
+
+The shape of what remains acceptable adds the flexibility described by this
+application. Let $\widehat{\mathcal S}_j(x)$ be actor $j$'s represented feasible
+continuations from state $x$. Where the actor holds an operative ethical
+acceptability predicate $\Gamma_{E,j}$, define
+\begin{equation}\label{eq:ethical-region}
+\mathcal E_j(x)=\{y\in\widehat{\mathcal S}_j(x):
+                    \Gamma_{E,j}(y\mid x)\}.
+\end{equation}
+This is a conditional filter on the represented manifold. It is distinct from
+the input aperture that determines which distinctions can enter that manifold,
+and from the subsequent weights ordering its members. It is not a moral
+eligibility gate in the consequence account.
+
+Holding the represented manifold fixed, more permissive ethical conditions can
+admit more future shapes; readily revised or context-dependent boundaries can
+make the operative ethics flexible. An actor may instead retain only a few
+such conditions, or no effective ethical restriction over the compared domain.
+In that last case the ethical filter excludes nothing there: effectively
+$\mathcal E_j(x)=\widehat{\mathcal S}_j(x)$. This does not require an ethical
+predicate to be explicitly represented when none is operative, nor make physical,
+resource, or other nonethical constraints disappear. Comparative ethical
+priorities can also remain weak or strong within the admitted region. Few
+constraints, low weights, and absent dimensions are different possible structures.
+
+Under the inherited fit/adaptive-resolution hypothesis (Paper 02,
+Hypothesis~\ref{SM-hyp:adaptive-resolution}), an already acceptable continuation
+can attract little further ethical scrutiny: it passes with room at the represented grain.
+A continuation near a held boundary can instead attract refinement or pressure
+to reshape the acceptable region. What lies outside a represented dimension or
+horizon never reaches that fit comparison. These structural possibilities and predictions alone do not establish a
+globally wider aperture or a generally more flexible person; comparisons must
+state the dimensions, horizons, and held conditions. The application uses
+specified trait profiles under matched conditions; psychopathy or sociopathy
+labels alone do not supply these inputs.
+
+On this hypothesis, the patterns grouped under psychopathy can be described as
+a characteristic family of ethical-aperture shapes and acceptable-region
+boundaries. Membership in that family is an empirical question, assessed through
+represented distinctions and held constraints across situations. The hypothesis
+does not identify every such profile with one identical shape.
+
+The proposed definition is intrinsic: its defining properties are the person's
+operative distinctions, acceptability boundaries, and their dynamics within
+that person's actual relational organisation. They exist whether or not an
+observer identifies them or applies a diagnostic label. Intrinsic does not
+mean independent of context: learning, social coupling, and current conditions
+can constitute or change that organisation. A report or classification describes
+the structure under a measurement contract; it does not confer the structure.
+
+Practical recovery is an inverse problem. Similar observed choices can arise
+from different apertures, acceptable regions, weights, beliefs, or constraints,
+and a self-description need not identify the operative profile. Matched
+comparisons may narrow the compatible family without recovering one unique
+shape, as in the conditional reconstruction of Eq.~\eqref{eq:revealed-self}.
+The distinction between a defined structure and uncertain access to it is
+therefore retained: uncertainty about the profile belongs in the measurement,
+without making the defining properties dependent on an observer's judgement.
+
+A general account of psychological differences would be a separate programme.
+Many clinical categories are operationalised through symptoms, distress, or
+impairment; NIMH's RDoC framework instead investigates underlying functional
+dimensions and mechanisms that can account for symptoms \citep{nimhrdoc}.
+This is close prior work for the proposed direction. In the present proposal,
+felt difficulty is a modelled assessment of an operative state or transition.
+The intrinsic definitional object is the operative organisation, independently
+of whether its model assesses that organisation as difficult or problematic.
+Such assessments can provide evidence and causally change subsequent conduct;
+they need not identify the underlying profile. The relevant distinction is
+between diagnostic recognition criteria and a defining account of operative
+organisation. The present paper
+uses ethical-aperture differences to illustrate consequence accounting. It does
+not develop a general psychological classification or establish that its
+structural profile replaces a clinical diagnosis.
+
+The actual consequence account remains distinct from this aperture. A victim's
+lost continuation does not become smaller because an actor represents it poorly
+or gives it little weight. Conversely, reduced self-censure, aversion, or
+identity conflict can be a real difference in the actor's own consequences,
+where grounded in their organisation. This is a difference in attributed cost,
+in addition to any difference in its evaluation. It connects directly to the
+state-dependent operator account in Eq.~\eqref{eq:trolley-operator}.
+
+For a conditional representation, let $o_j$ be the information available to
+actor $j$ and $Q_j$ its processing into admitted features. The represented
+features are $\widehat z_j=Q_j(o_j)$, and a stated linear decision model applies
+$w_j\cdot\widehat z_j$. Different input apertures or $Q_j$ can produce different admitted accounts
+from the same available information. Different ethical-region predicates can
+admit different continuations within a common represented manifold; different
+$w_j$ can produce different choices within the same admitted region. Different actual actor states can also
+produce different internal burdens. These are separately investigable routes.
+A difference in behaviour alone does not identify which route changed, nor
+demonstrate that every difference is a fixed weighting. Attention, learning,
+impulsivity, and policy stability can require additional state or decision terms.
+
+Relevant research distinguishes abstract judgement from hypothetical choice.
+In a study of 102 students, Tassy and colleagues found that elevated psychopathic
+traits predicted more sacrificial, outcome-favouring answers to hypothetical
+choice questions, without the corresponding association for acceptability
+judgements \citep{tassy2013choice}. The result concerns self-report traits and
+imagined choices, not enacted harm. Hauser and colleagues studied 60 male
+offenders and found distinct associations by psychopathy facet and
+emotion-processing condition \citep{hauser2021subcomponents}. Conditions also
+used different dilemmas and were not randomised, limiting causal attribution
+to emotion processing. These findings support separating
+explicit judgement, processing, and choice, while qualifying a uniform profile.
+They do not recover the framework's aperture geometry, acceptability predicates,
+or weights, and do not establish absent ethics, zero empathy, or zero internal
+cost for every person with elevated traits.
+
+Under this interpretation, differences in ethical application are differences
+within the informational and decision machinery already specified. The account
+can register the actor's smaller or different internal burden alongside unchanged
+external loss. It does not require an extra category of existence or an eligibility
+exception for those affected. This is an explanatory application of the framework,
+with its empirical mechanisms still to be identified under matched conditions.
+
+\subsection{Recognition can cause further cost without creating the original cost}
+
+Observer independence does not require every consequence to precede awareness.
+An external recipient's lost future can exist before anyone knows about it.
+Later learning about the event can transform an actor or witness, creating
+additional costs in that system. The information received is then part of the
+causal transition, rather than a passive observer conferring ethical value.
+Proposition~\ref{prop:observer} holds for the fixed causal case; changing what
+information reaches a system changes that case.
+
+A false belief can therefore have real consequences for its bearer even when
+the supposed external event did not occur. Record the represented event's
+causal effects in the bearer and distinguish them from the uninstantiated
+external injury. Conversely, an external loss is not removed because no actor
+feels guilt. Guilt is not an accounting instrument that certifies or nullifies
+all other costs.
+
+Repair has the same separation. Restoring an external recipient's capability
+does not automatically restore the actor's self-relations, a witness's trust,
+or institutional coordination. Each requires its own grounded restoration
+condition and feasible repair paths. Nor does later repair cancel the intervening
+path account. Whole-system accounting makes these different bills visible in
+one typed family while keeping their incidence and units distinct.
+
+\section{Operative valuation and a self-model that rejects it}\label{sec:numeric}
+
+Consider a self whose decisions already implement a numerical valuation or its
+functional equivalent, while its self-model rejects the explicit account of that
+valuation as uncomfortable. It can hold that a human life cannot have a value
+assigned while its operative choices still make trade-offs involving lives.
+Writing an actual number exposes the valuation to the self-model. The distinction
+is between what the self carries and what its model of itself admits.
+
+Paper 01b supplies this distinction: the self-model is a proper, incomplete
+part of the self, and its realisation account distinguishes changed modelling
+from newly occurring facts (Section~\ref{MI-sec:selfmodel},
+Remark~\ref{MI-rem:realisation}). An operative valuation need not be stored as
+a literal numeral. It can be realised through relative weightings, thresholds,
+or an action ordering. The present hypothesis concerns a valuation already
+operative in those relations. Explicit acknowledgement need not create it.
+
+The closest prior work includes taboo trade-offs, sacred values, and motivated
+reasoning. Fiske and Tetlock examine why some explicit exchanges are offensive
+in themselves \citep{fisketetlock1997taboo}. Tetlock and colleagues studied
+responses to monetising protected values \citep{tetlock2000unthinkable}, and later
+work discusses shadow prices under scarcity \citep{tetlock2017sacred}. Kunda's
+account describes motivation shaping access to and evaluation of beliefs
+\citep{kunda1990motivated}. These supply relevant mechanisms and observations.
+The specific explanation proposed here is that discomfort can protect a
+self-model from admitting an already operative valuation. Discomfort alone is
+not proof that this explanation applies in a particular case.
+
+\subsection{Models of an agent have no automatic accuracy hierarchy}
+
+Can another person know an agent better than the agent knows themselves? For
+specified aspects of the agent, the answer can be yes. Paper 01b's self-model
+account distinguishes access mode from accuracy: the self-model is a proper,
+incomplete part of the self, while an external model has its own access,
+resolution, and modelling investment (Proposition~\ref{MI-prop:selfmodel} and
+its subsequent discussion). Neither position alone establishes greater accuracy.
+
+Impaired self-awareness supplies a concrete case. Cocchini and colleagues
+documented unawareness of motor impairment after left-hemisphere brain damage,
+using neurological assessment, self-assessment, and caregiver ratings
+\citep{cocchini2009anosognosia}. Observed impairment can conflict with the
+person's account of their own ability. The study also illustrates that the
+assessment method affects what can be recovered: language-dependent interviews
+and a less language-dependent instrument identified different levels of
+unawareness. This concerns particular impairments and assessments, without
+making disability itself a general loss of self-knowledge.
+
+Self-modelling and modelling other agents are closely related capabilities.
+Both construct selective representations and can use shared skills in
+distinction, inference, prediction, and calibration. Their embedding differs:
+a self-model is an operative part of the organisation it models, so revising it
+can change its own target's subsequent dispositions and continuations. An
+external model has its own access and affects the target through whatever
+coupling is instantiated. Skill in one can support skill in the other, while
+their different access and embedding prevent accuracy in one from guaranteeing
+accuracy in the other.
+
+Domain expertise provides a further illustration. A master may recognise a
+junior's likely move, mistake, or response from a familiar configuration before
+the junior can predict or articulate it. The master's learned structure can
+resolve domain distinctions and continuation patterns that the junior's
+self-model does not yet hold. The comparison concerns predictive accuracy
+within that domain under matched information and conditions, assessed against
+the junior's subsequent actions. It need not imply broader access to the
+junior's experience or greater accuracy about the whole person. This is an
+illustration of how modelling skill can affect comparative accuracy, rather
+than a new empirical result of this paper.
+
+Every model of an agent is therefore examined through its own aperture and
+calibration, including the agent's self-model, another person's model, and an
+institution's model. Aperture specifies represented dimensions, resolution,
+and horizon; accuracy concerns agreement with grounded observations or
+predictions under declared comparison conditions. A model with broader coverage
+can be poorly calibrated, while a narrower one can be accurate within its
+scope. Models can also be accurate on different aspects without one being
+uniformly better. Accuracy comparisons require aligned target properties,
+conditions, and a stated criterion.
+
+For ethical inquiry, self-report is evidence about a model of the operative
+self, rather than a definition of the self's actual capabilities or dispositions.
+External models can improve that account where their comparative accuracy is
+grounded. They can also omit or misrepresent it. This preserves the intrinsic
+definitional object while allowing variable access to it, and explains why
+recovering an operative ethical profile can require comparisons among several
+models instead of accepting one vantage as definitive.
+
+\subsection{Recovering the operative self from choices}
+
+A fundamental epistemic problem of ethical inquiry is the relation between the
+self and its self-model. The working hypothesis is that much ethical inquiry
+attempts to reconstruct the self's operative dispositions from revealed choices,
+and to calibrate its self-description against that evidence. Here ``recovering
+the self'' means recovering aspects of its consequential organisation; finite
+observations need not identify the entire self or a unique internal mechanism.
+The self-model is itself active within that organisation: its commitments can
+change later choices, rather than merely report an otherwise fixed actor.
+
+Revealed-preference theory supplies an established method for inferring
+comparisons from choices. Samuelson's original construction compares a selected
+bundle with an alternative that was affordable under the same conditions
+\citep{samuelson1938behaviour}. The present application compares inferred operative
+dispositions with the actor's admitted self-description. It does not require a
+literal numerical representation inside the actor.
+
+For a conditional linear example, let observation $k$ record the selected action
+$a_k$, the alternatives $A_k$ actually available and known to the actor, and
+aligned feature vectors $z_k(a)$ under the actor's outcome beliefs. Let $W_0$
+be a declared family of candidate weights, with units and any normalisation
+specified. For informative weight reconstruction, exclude the zero vector,
+which otherwise makes every action tie, and declare a scale convention if a
+unique numerical magnitude is sought: positive rescaling preserves these
+choice inequalities. Assume that one stable weight vector minimises the score
+in all recorded comparisons, allowing ties. The compatible operative models are
+\begin{equation}\label{eq:revealed-self}
+W_{\mathrm{op}}=
+\{w\in W_0:\ w\cdot z_k(a_k)\leq w\cdot z_k(a)
+\quad\text{for every }k\text{ and }a\in A_k\}.
+\end{equation}
+On a finite candidate family this is an implementable filter using
+\texttt{evaluate}. Equation~\eqref{eq:shadow} below is its one-conversion case.
+Additional comparisons can shrink the compatible family while the model and
+conditions remain fixed. An empty family rejects the stated candidate family
+or choice assumptions; several surviving models leave the reconstruction
+underdetermined. A stochastic or changing policy requires a correspondingly
+different inference model.
+
+Feasibility, knowledge, coercion, outcome beliefs, and context matter to this
+inference. An unavailable alternative supplies no rejected-choice evidence.
+Features inferred from an actor's beliefs need not equal the measured actual
+consequences: both belong in the account with their distinction retained.
+Revealed preferences help reconstruct how the actor responds; the affected
+systems' losses do not depend on that reconstruction. Nor does discovering an
+operative disposition establish that it ought to be retained. Inquiry can
+calibrate the self-model, revise the operative disposition, or change the
+conditions of action. These are distinct interventions with calculable effects.
+
+\subsection{Energy-state management and deformation of decision fields}
+
+Within the proposed ontology, the foregoing processes concern states and
+transitions in an $n$-dimensional relational manifold. Relevant dimensions can
+include resources, enabling relations, affective burdens, self-model commitments,
+social sanctions, and the continuations available to affected frames. Paper 02
+supplies the operational manifold, local transition costs, and deformability of
+the fields over it (Definitions~\ref{SM-def:seldon}, \ref{SM-def:contours}, and
+\ref{SM-def:deformability}). The self and its model are part of the same evolving
+organisation, so changing the model is itself a transition in that manifold.
+It can also deform the decision field governing subsequent transitions.
+
+For a conditional scalar decision model, write
+\begin{equation}\label{eq:model-field}
+\Phi_M(a\mid x)=w_M\cdot\widehat z_M(a\mid x),
+\end{equation}
+where $x$ is the current joint state, $\widehat z_M$ records the action features
+admitted by the model, and $w_M$ supplies declared conversions into the score's
+unit. Under a stated minimising policy, reducing an action's score relative to
+its alternatives can change which transition is selected. A change in represented
+loss, self-censure, anticipated social sanctions, or expected benefit can all
+change this ordering. Energy and resource quantities retain their grounded units;
+a single scalar decision field exists only after its conversions are specified.
+Capacity loss remains a separately typed consequence even where energy is spent
+to produce or prevent it.
+
+This supplies a common geometry for apparently different ethical moves.
+Admitting an uncomfortable valuation can require a costly self-model transition.
+Keeping the valuation unadmitted can preserve an existing organisation while
+constraining later modelling. A forced comparison can make that organisation
+incompatible with the requested commitment. Reclassifying an affected group
+can lower the represented cost of harming its members. Each is a possible way
+of changing states or transition prices in the manifold. The claim that organisms
+implement these moves through compressed regulation is the paper's explanatory
+hypothesis, rather than a recovered neural energy model.
+
+The two continuations ``act under the current model'' and ``change the model,
+then act'' must therefore both be accounted for. The second includes the price
+of changing the field: propaganda, social coordination, and internal revision
+need not be free. Once a category rule is operative, it may apply across many
+individuals without a separate confrontation with each person's relations.
+Whether that makes the complete course cheaper for a particular actor requires
+the declared account. Making a subsequent action cheap in a decision field does
+not imply that its affected frames lose fewer futures.
+
+\subsection{Play as an elicitation of otherwise unspoken comparisons}
+
+Games such as ``fuck, marry, kill'' and ``would you rather'' provide familiar
+illustrations of deliberately eliciting comparisons. The first assigns three
+people to sharply different imagined relations; the second requests a choice
+between specified alternatives. The first compares assignments of relations,
+which need not give one total ranking of the people across those relations. A participant can discover an ordering they
+had never made explicit, or encounter a comparison that their self-description
+resists acknowledging. The proposed mechanism is a forced local collapse of
+self-model ambiguity: answering commits the participant to a comparison that
+could previously remain open. In this series' terms, collapse resolves a
+particular distinction under a constraint; it need not destroy the self or
+settle every aspect of its model. The game makes continued noncommitment
+incompatible with supplying the requested answer.
+
+Let $D_M$ be the descriptions the self-model leaves open before the question,
+and let $D(q)$ be those compatible with an answer $q$ under its literal reading.
+A self-model that admits the answer as evidence restricts its open descriptions
+to $D_M\cap D(q)$. A proper nonempty subset records a local resolution of
+ambiguity. An empty intersection exposes a conflict requiring revision of the
+prior description or of the admitted meaning of the answer. The forced answer
+creates a commitment to confront; psychological admission of that commitment
+remains a further event. A participant can refuse, joke, or reject the answer's
+application to themselves. Those responses locate where the attempted collapse
+was resisted, rather than proving that the implied self-description was admitted.
+
+An ordering is already a functional equivalent of valuation for those
+alternatives, although it need not identify a cardinal number or a stable ranking
+in other contexts. The mechanism hypothesis is that playful forced choice can
+make an operative comparison explicit and pressure the self-model to resolve
+its account of that comparison.
+
+These are hypothetical elicited preferences. An answer is an actual choice of
+what to say in the game, with possible social and self-modelling consequences;
+it is not an observed performance of the imagined actions. Humour, audience,
+provocation, refusal, and the imposed options can shape the answer. The examples
+therefore illustrate a method of confronting the self-model with comparisons,
+without independently validating the proposed psychological mechanism. A study
+would distinguish answers, admission as self-description, and consequential
+choices under matched conditions. The game itself can also change the actor,
+so later answers need not simply uncover a valuation unchanged by elicitation.
+
+\subsection{Refusing a possible action versus judging it unlikely}
+
+Statements of surprise in crime programmes provide another illustration:
+``I cannot imagine someone like that doing this.'' The proposed interpretation
+is that some such responses express refusal to admit a reachable action into a
+model of oneself or another person, rather than a prior estimate that the action
+had low probability. The observed statement alone does not identify that
+mechanism. Surprise can also reflect a reasonable low-probability estimate,
+lack of relevant knowledge, or the social expression of condemnation.
+
+The formal distinction concerns the model's represented possibilities. Let
+$\widehat R_M$ be the action continuations admitted by a self-model or a model
+of another actor, and let $R_\theta$ be the independently grounded reachable
+continuations under the declared conditions. A particular harmful continuation
+$h\in R_\theta\setminus\widehat R_M$ is a model omission. If $h\in\widehat R_M$
+and the model assigns it a small probability, it is instead a represented but
+unlikely event. If no probability has been assigned, omission is not a measured
+probability of zero. The difference is between which alternatives the model
+admits and how it distributes expectation among admitted alternatives.
+Establishing that an omission is motivated requires evidence beyond establishing
+the omission itself.
+
+A model of ``people like us'' can support a person's own self-description.
+Evidence that an apparently ordinary person performed a harmful action can
+therefore require revision both of the model of that person and of the observer's
+account of their own possible conduct. The protective-self-model hypothesis
+developed here predicts that some resistance occurs at this admission step;
+compression alone does not require resistance to updating. Recognition makes a previously
+excluded continuation available to modelling; it need not make that continuation
+more reachable in the original event. Recognition can nevertheless change the
+observer's later actions and relationships, whose consequences belong in the
+whole-system account.
+
+Bandura's account of moral disengagement is relevant prior work: it describes
+self-regulation and mechanisms for preserving a moral self-description while
+performing harmful actions, including justification, displacement of
+responsibility, and minimisation of harm \citep{bandura2002disengagement}.
+This supports examining interacting personal and social conditions rather than
+assuming a moral identity fixes conduct across circumstances. It does not
+establish that every individual can perform every crime, or diagnose why a
+particular viewer expresses surprise. The claim needed here is narrower:
+self-description alone cannot exclude a continuation whose feasibility has
+been independently grounded. Reachability is conditional on actual capability,
+access, resources, and circumstances. Possibility also does not establish a high
+probability, willingness, or a uniform propensity across people.
+
+\subsection{Dehumanisation and exclusion from the represented account}
+
+Two changes of the decision field should be distinguished. An actor can retain
+an entity's represented losses and regard violence against it as deserved or
+justified, giving the action sufficient favourable significance in the evaluation.
+Alternatively, the actor can lower the represented standing of the entity so
+that harming it contributes little loss to the decision field. The proposed
+interpretation of the genocidal reclassification move concerns this second
+route: reducing the represented cost of harming members of a category, without
+requiring a separate judgement that each deserves punishment. The routes can
+coexist in the same actor or institution.
+
+An actor who regards killing a person as costly can reclassify a group
+as non-persons, pests, or threats, and thereby remove or attenuate the losses
+admitted by their own decision model. Group classification can apply that
+exclusion across many individuals without confronting each person's continuing
+relations. The proposed mechanism concerns a reduction in represented loss and
+in restraints on action; it does not reduce the affected person's informational
+loss merely by changing a label.
+
+For an illustrative binary exclusion rule, let $e_{i,M}\in\{0,1\}$ specify whether
+an actor's model admits an affected frame's loss entry. For a fixed finite grounded
+loss $L_i$, its represented entry would be
+\begin{equation}\label{eq:category-exclusion}
+\widehat L_{i,M}=e_{i,M}L_i.
+\end{equation}
+Changing $e_{i,M}$ from one to zero erases that entry from the actor's represented
+account while leaving $L_i$ fixed. This describes a gate in the actor's model;
+it is not an eligibility rule of the present framework. Partial attenuation,
+changed weights, and reinterpreted outcome beliefs provide other ways of
+changing an operative evaluation. The person whose future is destroyed remains
+an affected frame in the whole-system account regardless of the perpetrator's
+category assignment.
+
+Kelman's account of sanctioned massacres is particularly close to this
+interpretation: it examines authorisation, routinisation, and dehumanisation
+as processes weakening restraints on violence against groups that have not
+themselves engaged in hostile actions \citep{kelman1973violence}. Landry and
+colleagues' analysis of Nazi propaganda found decreasing attribution of mental
+experience to Jews before the Holocaust, consistent with disengagement of moral
+concern \citep{landry2022propaganda}. The latter measures propaganda language,
+not the distribution of individual perpetrators' decision mechanisms; its
+observational findings and missing archival data do not establish causal
+sufficiency or a majority prevalence. The predominance of the proposed route
+across perpetrators remains an empirical question.
+
+Bandura identifies dehumanisation and victim blaming among mechanisms for
+selective moral disengagement \citep{bandura2002disengagement}. The proposed
+informational reading is that reclassification can permit a moral self-model to
+remain compatible with harmful action by excluding consequences or changing
+their interpretation. Dehumanisation is not a necessary explanation for every
+atrocity. Rai and colleagues distinguish instrumental violence from violence
+perceived by its perpetrators as morally justified; their experiments found
+increased willingness for instrumental harm under dehumanising descriptions,
+without the same increase for morally motivated harm
+\citep{rai2017dehumanization}. These studies concern attitudes and vignette
+responses, not a complete causal demonstration of genocide. A perpetrator can
+recognise a victim's humanity and still construe harming that victim as deserved.
+Both exclusion and justification can be analysed as changes to the model or its
+evaluation, with their actual consequences retained.
+
+The reclassification process also has consequences of its own. It can reduce
+real self-censure or social sanctions for perpetrators, while propaganda,
+isolation, institutional exclusion, and organised violence change victims' and
+witnesses' actual enabling relations and futures. These effects must be counted
+where grounded. The framework therefore permits an actor's burden to fall while
+another frame's loss rises. A saving in one attributed dimension does not erase
+a loss in another. Relabelling with victims' capabilities and continuations
+held fixed does not change their grounded loss. Effects of that relabelling on
+actors, institutions, or other affected frames can still change the whole-system
+account, even when the victims' measured loss remains fixed.
+
+\subsection{Research support for context-sensitive ethical application}
+
+The proposed mechanism has relevant experimental and historical support.
+These findings support context-sensitive choices and changes in admitted
+consequences; their interpretation through the present account remains a
+hypothesis. They do not independently establish a population distribution of
+intrinsic moral character or identify the brain's implementation.
+
+Dana and colleagues experimentally reduced transparency between choices and
+recipients' outcomes in a binary dictator game. Generosity fell when actors
+could leave consequences uncertain, even though a fair outcome remained
+available \citep{dana2007wiggle}. This is relevant to preserving a favourable
+self-description while relaxing practical constraints on selfish action.
+
+Vu and colleagues' meta-analysis covered 6,531 participants and 56 treatment
+effects. It reported approximately 40\% avoiding easily obtainable information
+about consequences for others, and a 15.6-percentage-point reduction in altruistic
+behaviour when the opportunity for ignorance was available
+\citep{vu2023ignorance}. The result supports information avoidance as a mechanism
+for changing conduct. Avoiding new outcome information does not, by itself,
+demonstrate refusal to acknowledge an already operative valuation; those are
+distinct evidential claims.
+
+In genocide research, Luft's analysis of interviews with 31 Hutu documents
+behavioural crossing between killing, desistance, and saving during the 1994
+Rwandan genocide \citep{luft2015dynamic}. This supports a dynamic account of
+conduct rather than fixed actor categories. The qualitative sample does not
+estimate a universal proportion of ambivalent people.
+
+Luft's later analysis examines selected first-time killers whose initial
+cognitive and emotional difficulty diminished as killing became routine and
+victims became socially meaningless \citep{luft2023career}. The study triangulates
+retrospective perpetrator accounts with reports and survivor/rescuer testimony.
+It closely matches lowered represented relevance, while qualifying causal order:
+in the examined trajectories, dehumanisation followed participation and
+habituation. The change need not involve conscious reclassification or explicit
+self-talk. This supports possible feedback from action into subsequent decision
+fields, without proving that every perpetrator follows that trajectory.
+
+The lack of explicit acknowledgement matters to the self-model hypothesis.
+Where an actor's admitted standards condemn a change in conduct, consciously
+admitting that change as their own disposition would require revising a
+favourable self-description: ``I am becoming someone who does this.'' Implicit
+habituation can instead change operative responses and represented relevance
+while that description remains uncorrected. In the proposed account, this can
+avoid the additional burden of confronting a conflict between conduct and
+admitted identity. The actual self changes; its model need not admit the change
+as becoming a worse person. Bandura's account supplies closely related prior
+work on harmful conduct alongside preserved moral self-description
+\citep{bandura2002disengagement}. Conscious reinterpretation can also preserve
+that description by presenting the conduct as justified. Thus consciousness
+alone does not entail self-condemnation. The specific prediction concerns
+acknowledgement of deterioration under the actor's own retained standards.
+Lack of explicit acknowledgement of that deterioration need not mean lack of
+awareness of the acts or their consequences. Whether avoiding this confrontation
+helps sustain a particular trajectory requires evidence beyond habituation
+alone.
+
+Asch's conformity experiments supply adjacent evidence that social conditions
+change responses while leaving substantial individual resistance
+\citep{asch1956independence}. Their task concerns perceptual judgements, not
+ethical choice. Asch also reports a non-normal distribution of observed error
+counts. Those counts neither establish nor refute a normal distribution of
+latent ethical margins; the quantities and tasks differ.
+
+Together these findings give the framework empirically supported phenomena to
+explain: information-conditioned prosocial action, changing social relevance,
+behavioural switching, and pressure alongside resistance. They support
+susceptibility to changes in a decision landscape. They do not uniquely identify
+the self-model mechanism, demonstrate calibrated low margins for a majority,
+or validate the Gaussian assumption below. A direct assessment would measure
+choices and available alternatives under matched interventions, distinguish
+changes in information from changes in classification, and estimate the
+margin distribution instead of presupposing its shape. Habituation requires a
+changing-state model; the static common-shift calculation is one conditional
+slice of that wider process.
+
+\subsection{A population model of ambivalence and shifted thresholds}
+
+The proposed population hypothesis is that most people are ambivalent in their
+application of ethical constraints, rather than committed to destructive conduct.
+In the present geometry, a change in classification can therefore move ordinary
+actors across a decision threshold by lowering represented loss. This hypothesis
+concerns the population's response to the account. The derivation of occurring
+consequences does not depend on how the population is distributed.
+
+For a calculable conditional model, fix one harmful action $h$ and a comparison
+action $b$ under stated conditions. For actor $j$, define the converted decision
+margin
+\begin{equation}\label{eq:population-margin}
+m_j=\Phi_{M_j}(h\mid x_j)-\Phi_{M_j}(b\mid x_j).
+\end{equation}
+Positive $m_j$ favours the comparison action under the assumed minimising policy;
+negative $m_j$ favours $h$. Use a common calibrated score unit and first let the
+margin distribution have any continuous cumulative distribution function $F$.
+A classification intervention reducing margins by a common $\delta\geq0$ gives
+$m'_j=m_j-\delta$ and hence
+\begin{equation}\label{eq:population-general}
+\Pr(m'_j<0)=F(\delta).
+\end{equation}
+The newly crossing fraction is $F(\delta)-F(0)$. Continuity removes tie mass;
+a distribution with atoms requires an explicit tie rule and the corresponding
+one-sided probabilities. The threshold-shift mechanism therefore does not
+require a normal distribution.
+
+For the proposed normal case, assume $m_j\sim\mathcal N(\mu,\sigma^2)$,
+$\sigma>0$, and write $F_{\mathrm N}$ for the standard normal cumulative
+distribution function. This is a distribution of conditional decision margins,
+not a numerical measure of goodness or evil. Normality remains a modelling
+assumption rather than an empirical result established by the cited studies.
+The conditional proportion selecting $h$ is
+\begin{equation}\label{eq:population-response}
+p_h(\delta)=\Pr(m_j<\delta)
+=F_{\mathrm N}\!\left(\frac{\delta-\mu}{\sigma}\right).
+\end{equation}
+Thus $\mu>0$ gives a baseline in which fewer than half select $h$, while a shift
+$\delta>\mu$ makes the same action favoured by more than half in the conditional
+model. The actors need not acquire a new commitment to cruelty: their represented
+comparison has changed. When $\mu>0$, the admissible shift $\delta=\mu$
+gives a predicted fraction of one half, and sensitivity to an additional common
+shift is greatest there. The calculation
+holds the available actions and other margin components fixed; coercion,
+heterogeneous shifts, changed opportunities, or social feedback require those
+features to be modelled separately. Only actors with $0<m_j<\delta$ newly
+cross the threshold in this direction; their fraction is
+$p_h(\delta)-p_h(0)$. Actors already favouring $h$ contribute to the resulting
+fraction but have not been recruited by this shift.
+
+To make ``ambivalent majority'' inspectable, declare a margin width
+$\varepsilon>0$ and use $|m_j|\leq\varepsilon$ as a proxy for choices readily
+changed by a shift of comparable size. Its population fraction is
+\begin{equation}\label{eq:population-ambivalence}
+p_{\mathrm{near}}=
+F_{\mathrm N}\!\left(\frac{\varepsilon-\mu}{\sigma}\right)
+-F_{\mathrm N}\!\left(\frac{-\varepsilon-\mu}{\sigma}\right).
+\end{equation}
+The proposed majority condition is $p_{\mathrm{near}}>1/2$. It is a condition on
+$\mu$, $\sigma$, and a substantively justified width, rather than a consequence
+of normality alone. A small net margin may also arise from strong opposing
+commitments; identifying psychological ambivalence requires further evidence.
+These quantities describe possible participation under matched conditions,
+without inferring universal criminal capability or intrinsic moral character.
+The reference function \texttt{normal\_response} calculates the conditional
+fractions from declared parameters; it does not fit or validate them.
+
+Granovetter's threshold models are direct prior art for aggregate changes arising
+from distributions of individual decision thresholds
+\citep{granovetter1978threshold}. His actors' thresholds depend on others'
+participation, whereas the calculation here holds the common shift exogenous.
+The informational contribution proposed here connects a classification-induced
+shift to the losses omitted from the actor's model, while retaining those losses
+in the whole-system account. A majority participating in the resulting action
+would not, by itself, establish either the assumed normal distribution or a
+majority that originally desired its consequences. In this mechanism, actors
+who actively deform the field can change the choices of a broad population
+with small margins, without each influenced actor acquiring an independent
+commitment to the destructive outcome.
+
+\subsection{Three different quantities}
+
+First, there is the consequence account of the proposed action: which continuing
+lives, relations, capabilities, and resources it changes. Second, there is the operative
+valuation: how the self actually weighs or orders losses and burdens. Its
+self-model can admit, omit, or reject a representation of that valuation. Third,
+there is the consequence account of requiring the representation to become
+explicit. The life affected by the action, the number written by the actor,
+and the actor changed by writing it occupy different places in the account.
+
+A number can express a grounded quantity, a decision conversion, or an estimate
+with uncertainty. The label ``the value of a human life'' does not specify which
+of these it represents. The present framework derives an affected person's
+consequence account under a contract; a monetary conversion of that account is
+an additional declared evaluation. This distinction gives the written number
+an inspectable meaning without making a universal scalar an untyped property
+of every life.
+
+A self-model's declaration of pricelessness leaves several possibilities open:
+a genuine decision constraint, an unresolved conversion, a socially maintained
+commitment, or a compression used alongside finite practical choices. A declaration
+alone does not identify which one holds. Neither does every finite resource
+choice identify a stable hidden price: the inference requires a decision model.
+
+\subsection{Quantifying an implied conversion}
+
+For a simple conditional model, let an intervention avoid $d>0$ units of a
+declared loss measure and require $c\geq0$ additional resource units. Let its
+score difference from the baseline be $c-\lambda d$, where $\lambda\geq0$ converts
+loss units into those resource units. With other effects held fixed, accepting
+the intervention implies $\lambda\geq c/d$ and rejecting it implies
+$\lambda\leq c/d$, allowing equality at a tie. Several choices therefore imply
+\begin{equation}\label{eq:shadow}
+\max_{\mathrm{accepted}}c/d\ \leq\lambda\leq\
+\min_{\mathrm{rejected}}c/d.
+\end{equation}
+An empty accepted set gives no positive lower bound; an empty rejected set
+gives no finite upper bound. Inconsistent bounds reject this fixed scalar
+model. The inference concerns the declared loss unit and these choices; it is
+not a recovered intrinsic price of a particular person.
+
+For example, acceptance at three resource units per avoided loss unit and
+rejection at five give $3\leq\lambda\leq5$. Writing $\lambda=4$ proposes a specific
+conversion compatible with those choices. It does not establish that four is
+the operative value; the choices identify an interval. A self-model can reject
+every finite member of the interval while the operative choices still delimit it. The writing does not alter the
+original recipient's already fixed consequences. It can alter the writer's
+organisation, their future choices, and the relations in which the written
+comparison is available. A policy constraint or nonlinear rule need not admit
+the scalar inference at all. The reference function \texttt{shadow\_price\_bounds}
+implements the finite interval calculation, including inconsistent inputs.
+
+\subsection{Quantifying what the self-model will not admit}
+
+Choose a declared finite grid $H$ of candidate conversions. Let
+$\Lambda_{\mathrm{op}}\subseteq H$ contain the values compatible with the operative
+choices under the stated decision model. Let $A_M\subseteq H$ contain the values
+the self-model explicitly admits as descriptions of that same operative
+valuation, under matched conditions. Asking whether a number describes the
+self's choices differs from asking whether the person endorses it as an ideal.
+
+For nonempty $\Lambda_{\mathrm{op}}$, define
+\begin{align}
+E_M&=\Lambda_{\mathrm{op}}\setminus A_M,\label{eq:model-exclusion}\\
+g_M&=\mathbf{1}\{\Lambda_{\mathrm{op}}\cap A_M=\varnothing\},\label{eq:model-gap}\\
+f_M&=\frac{|E_M|}{|\Lambda_{\mathrm{op}}|}.\label{eq:model-fraction}
+\end{align}
+The excluded set preserves which candidates are rejected. The indicator records
+complete incompatibility within the declared grid; the fraction is a uniform
+candidate-count summary of rejection. It is not a measure of discomfort's
+intensity, nor a moral weighting of candidate values. Refining or resampling
+the grid changes this summary's contract.
+
+For $H=\{3,4,5\}$ and operative bounds $3\leq\lambda\leq5$, rejection of all three
+as possible descriptions gives $E_M=H$, $g_M=1$, and $f_M=1$. The operation need
+not introduce new external facts. It forces the self-model to confront the
+valuation its own choices already constrain. If no candidate matches the choices,
+the grid or decision model has failed; the gap is undefined, not evidence that
+the self-model rejects a recovered valuation. If some candidates have not been
+probed, their admission status remains unknown. The reference function
+\texttt{valuation\_gap} implements the finite comparison for fully classified
+candidates.
+
+This is an operational quantification of the proposed distinction. It locates
+a mismatch between operative valuation and admitted self-description without
+identifying a unique brain variable. Explaining the mismatch specifically by
+discomfort requires independent evidence of aversion or avoidance, with audience,
+incentives, misunderstanding, and changed decision conditions distinguished.
+The cost of sustaining or resolving the mismatch is a further consequence
+account, rather than another name for the indicator.
+
+\subsection{Quantifying confrontation and acknowledgement}
+
+Let $e_0$ be the condition in which operative valuation remains unadmitted by
+the self-model and $e_v$ the condition in which the actor confronts or writes
+an explicit candidate number $v$. Hold the compared external options, resource facts, and outcome beliefs
+fixed where the experiment permits. Apply the existing functions to
+\begin{equation}\label{eq:numeric-account}
+\C^{\mathrm{number}}_\theta(v)=\C_\theta(e_v\mid e_0).
+\end{equation}
+The condition $e_v$ means confrontation or expression, not demonstrated
+admission. Someone can write a number while still rejecting it as a description
+of themselves. Acknowledgement requires a further observed change in $A_M$ or
+other grounded evidence of changed self-modelling. For a verified admission
+condition $e_{\mathrm{admit}}$, take the additional comparison
+$\C_\theta(e_{\mathrm{admit}}\mid e_0)$; writing alone does not establish it.
+
+This account records changes in the actor's and other affected frames' futures,
+access prices, expenditure, and course profiles. It can contain gained capability
+through clearer planning as well as lost trust or increased burden. No assumption
+of injury is built into the comparison.
+
+Private reading, private writing, and publication are distinct conditions.
+Publication adds audiences and institutional consequences; requiring authorship
+can add responsibility or commitment. If the explicit condition also supplies
+new facts, changes incentives, or changes the audience, its account includes
+those effects. It cannot then be described as a pure effect of numerical format.
+
+As an additional behavioural dimension, for aligned action distributions under
+matched circumstances $x$, define
+\begin{equation}\label{eq:policy-distance}
+B(v;x)=\tfrac12\sum_u|\pi(u\mid x,e_v)-\pi(u\mid x,e_0)|.
+\end{equation}
+This total-variation distance lies between zero and one and measures changed
+action probabilities. It is neither a moral weight nor a universal depth-of-knowledge
+score. Equal action distributions can coexist with changed self-relations,
+expenditure, or effects in another context. The function \texttt{policy\_distance}
+computes a floating-point approximation with normalisation tolerance
+$10^{-12}$; the exact bound applies to exactly normalised distributions.
+The existing functions compute
+Eq.~\eqref{eq:numeric-account} from the grounded branch models.
+
+In this example, ``knowing'' versus ``\emph{knowing}'' distinguishes carrying an
+operative valuation from admitting it into the self-model. The gap can already
+exist before a number is written. Acknowledgement changes the modelling; because
+the self-model is part of the self, that change can also alter later action,
+self-relations, and expenditure. It need not change the historical consequences
+whose valuation was previously denied.
+
+Moral injury is one possible consequence when confronting or revising this
+self-description damages enabling self-relations or trust. Acknowledgement can
+also improve calibration and make hidden costs accountable. The operative
+valuation, its rejection, and the cost of admitting or maintaining the rejection
+are separate objects within the whole-system account.
+
+\section{Compression and ethical behaviour}\label{sec:compression}
+
+A calculable principle need not be explicitly calculated whenever a system acts.
+Organisms coordinate, avoid damage, and help others before acquiring a theory of
+ethics. The informational account proposes an underlying structure that can be
+compressed into affect, habits, expectations, and social practices.
+
+\begin{hypothesis}[Ethical behaviour as compression]\label{hyp:compression}
+A substantial part of human and animal ethical behaviour expresses compressed
+sensitivity to changes in affected capabilities, enabling relations, and burdens.
+The expression depends on available information, learned compression, and
+relative decision weightings. It need not represent a formal consequence account
+or reproduce the functions printed in this paper.
+\end{hypothesis}
+
+Four objects must remain distinct: the actual consequence account $\C$, the
+information available to the actor, a compressed representation of that
+information, and the actor's decision weights. A poor report can hide a real
+cost. A coarse compression can merge different costs. Different weights can
+produce different responses to the same represented costs. These are different
+explanations and admit different corrections.
+
+\subsection{What compression can preserve}
+
+Let $z$ be a finite consequence feature vector and let $Q(z)$ be a compressed
+record. For a fixed decision map $d$, exact preservation requires the decision
+to be recoverable from that record.
+
+\begin{proposition}[Exact decision preservation]\label{prop:compression}
+There exists a map $g$ with $d=g\circ Q$ if and only if $d$ is constant on every
+fibre of $Q$: whenever $Q(z)=Q(z')$, then $d(z)=d(z')$.
+\end{proposition}
+\begin{proof}
+If $d=g\circ Q$, equal compressed records give equal decisions. Conversely,
+if $d$ is constant on each fibre, define $g(q)$ as the common decision of the
+vectors mapping to $q$. The condition makes this definition well-defined on
+the image of $Q$.
+\end{proof}
+
+For a concrete finite example, suppose a system compares actions using
+Eq.~\eqref{eq:example} with weights $(1,1,2)$. Compression to the single feature
+$Q(z)=L_A+K_{B,r}-2G_B$ preserves its score and all score-based choices, although
+it discards the separate effects. That compression does not generally preserve
+choices after the weights change. Preserving a decision is weaker than preserving
+the full cost account.
+
+Approximate compression also has a precise boundary. Let $\widehat z(a)$ be a
+reconstructed feature vector and suppose
+$|w\cdot\widehat z(a)-w\cdot z(a)|\leq\epsilon$ for every feasible action.
+If $\widehat a$ minimises the reconstructed score and $a^*$ the actual score,
+then
+\begin{equation}\label{eq:regret}
+w\cdot z(\widehat a)-w\cdot z(a^*)\leq2\epsilon.
+\end{equation}
+Indeed, the actual score of $\widehat a$ is at most its reconstructed score plus
+$\epsilon$; minimisation bounds that reconstructed score by the one at $a^*$;
+and reconstruction contributes at most a further $\epsilon$. If component errors
+satisfy $|\widehat z_j-z_j|\leq e_j$, one admissible bound is
+$\epsilon=\sum_j|w_j|e_j$.
+
+These results demonstrate how a principle can be expressed through compressed
+records, and what such expression loses. They do not establish that brains use
+this particular feature vector, compressor, or minimisation rule. The hypothesis
+concerns the informational principle expressed through behaviour, with neural
+implementation left open.
+
+\subsection{Evidence for ethical behaviour without explicit theory}
+
+Haidt's social intuitionist account places moral judgement partly before explicit
+reasoning \citep{haidt2001intuition}. Instrumental helping in young children and
+chimpanzees \citep{warnekentomasello2006helping}, and rats avoiding an action that
+harms a neighbour \citep{hernandezlallement2020harm}, show behaviours that do not
+require an articulated ethical theory. Their evidential role is to support the
+possibility of ethical action preceding ethical explanation.
+
+The informational hypothesis adds a proposed organising principle for such
+behaviour. Helping can restore another's action possibilities; avoidance can
+prevent an imposed burden; reciprocity can preserve enabling relations. The
+studies do not directly measure the full continuation account. Their behaviour
+can also be explained through learning, affect, affiliation, and reward
+expectation. Distinguishing explanations requires predictions about changed
+actual futures, changed information, and changed weights.
+
+Computational moral-choice research already fits relative sensitivities to
+outcomes. Studies of harms to oneself and others
+\citep{crockett2014harm} and of different moral strategies
+\citep{vanbaar2019moralstrategies} demonstrate implementable decision models.
+The contribution here is not the invention of weighted moral computation. It
+is a cost account derived before those weights, together with a compression
+interpretation of the resulting behaviour.
+
+Animal paradigms also require care about which variable changes. Reward
+attainability can explain responses attributed to inequity in dogs
+\citep{mcgetrick2023attainability}. This is relevant to the present framework:
+an experiment that changes attainable outcomes must distinguish that change
+from a changed comparison weight. Behaviour alone does not identify which
+account or priority an animal uses.
+
+\subsection{Graded treatment of entities}
+
+Human moral consideration often varies with perceived organisation, agency,
+experience, persistent relationships, and similarity. Mind-perception research
+relates attribution of agency and experience to different aspects of moral
+judgement \citep{gray2007mindperception}. Empathy and compassion across species
+also vary with evolutionary divergence \citep{miralles2019empathy}. These findings
+are compatible with coarse proxies for informational organisation, but they do
+not directly measure information-defined cost.
+
+The hypothesis explains such proxies as compression: visible similarity,
+familiarity, responsiveness, and continuity can make another's future structure
+easier to represent. The proxy can be informative, biased, or misleading. A
+familiar agent with few affected continuations and an unfamiliar agent with many
+can reverse the ranking suggested by appearance. The account remains tied to
+the actual relations while the actor's representation can fail to track them.
+
+Food choices illustrate the distinction. People can give different priorities
+to ending an animal's continuing organisation, producing milk or eggs, harming
+plants, and preserving their own nutrition or cultural practices. Vegetarianism
+and veganism therefore need not express identical weights or identical causal
+accounts. A YouGov survey reported more self-identified vegetarians than vegans
+in Great Britain and the United States, with different margins
+\citep{nguyen2024dietarytrends}. This is contextual evidence, not a universal
+ordering of diets or a measurement of the animals' informational cost.
+
+The proposed trend is greater consideration for entities represented as bearing
+richer consequential organisation and relationships. It is not a rule that
+humans consistently maximise that quantity, a claim that food practices are
+uniform, or a hierarchy of reality. Its empirical test must separate perceived
+structure, actual affected futures, and competing weights. The game case makes
+that separation unusually inspectable because the underlying continuation model
+can be available.
+
+\section{Relation to earlier work}\label{sec:related}
+
+The ingredients have substantial predecessors. The comparison concerns what
+each theory takes as given and what it calculates, rather than a claim that
+information has only now entered ethics.
+
+\subsection{Information ethics and cybernetics}
+
+Floridi's information ethics extends ethical consideration beyond a human-centred
+population \citep{floridi1999informationethics}. Floridi and Sanders connect evil
+to impoverishment of informational structure and state duties concerning entropy
+\citep{floridisanders1999entropy}. Their entropy is not simply raw Shannon
+uncertainty. The close overlap is an informational, broadly ontological basis
+for ethical consideration. The present proposal develops attributed continuation
+and expenditure functions while placing priorities in a subsequent decision
+rule; it does not import a duty to maximise every entity's informational state.
+
+Von Foerster connects ethics with increasing available choices
+\citep{vonfoerster2003ethics}. Ashby's variety supplies an established relation
+between available distinctions and regulation \citep{ashby1956cybernetics}.
+The present derivation calculates which options and enabling conditions change.
+A choice-increasing imperative would be a further evaluation rule over that
+account. Causal entropic forces likewise demonstrate dynamics organised around
+future path entropy \citep{wissnergrossfreer2013causal}; the adopted maximisation
+principle is not by itself a cross-agent cost allocation.
+
+\subsection{Empowerment and reachability-based impact}
+
+Empowerment gives an operational information-theoretic measure of control.
+Salge and Polani explicitly use human, robot and transfer empowerment in a
+proposal for robotic ethics, including weights and human priority
+\citep{salgepolani2017laws}. This is a close and implementable predecessor.
+The present account retains attributed losses, gains, expenditures and courses
+without imposing a human-serving mission as a condition of its calculation.
+
+Relative reachability compares side effects against a baseline
+\citep{krakovna2018reachability}. Attainable utility preservation measures changes
+in capacities to optimise auxiliary rewards \citep{turner2020}. Both precede
+this paper's use of future capability as an impact measure. Their baseline and
+proxy concerns apply here: a convenient baseline can conceal a burden, and a
+proxy can conceal substitution. Retaining outcome identity, recipient incidence,
+and path effects exposes those omissions; it does not make every finite model
+complete.
+
+Kolchinsky and Wolpert derive semantic information through correlations causally
+necessary for maintaining a system's existence
+\citep{kolchinskywolpert2018semantic}. Their viability criterion connects
+informational significance to dynamics across living and nonliving systems.
+This paper instead compares affected continuations and enabling expenditures
+under declared contracts. Sen's capability approach also centres what an agent
+can actually do \citep{sen1980equality}; its evaluative account supplies another
+important point of comparison without being the source of the finite set
+derivation.
+
+\subsection{Relation to the ethics already present in this series}
+
+The earlier papers already contain parts of the account. Paper 01 locates
+expenditure and attributed harm in affected frames. Paper 01b's communication
+analysis distinguishes structural influence from goal-relative beneficiary
+comparison. Its requirement for represented preferences concerns the latter
+comparison; it is not an eligibility condition for the capability losses here.
+Paper 02's reversibility preference
+(Proposition~\ref{SM-prop:reversibility}) is conditional on valuing the retained
+optionality. The current paper preserves that condition as a decision claim.
+
+Paper 02b makes restoration without cancellation of an intervening course
+explicit. Paper 04 supplies consequential measure and prohibits an ungrounded
+sum across frames. Paper 09 limits an institutional application rather than
+claiming a complete ethics; Papers 10 and 10a apply named objectives and
+priorities to particular futures. Those priorities can specialise the present
+decision layer. They are not thereby derived as universal weights.
+
+Paper 11 assembles these distinctions into a consequence account with explicit
+functions, proves its conditional invariances, and adds the biological
+compression hypothesis. Its novelty claim rests on this arrangement and the
+work it does. Neither information ethics nor implementable moral models begin
+with this paper.
+
+\section{An application to AI alignment}\label{sec:alignment}
+
+Alignment is an adjacent application. Instruction-following systems trained
+with human feedback use judgements to shape a reward or training objective
+\citep{ouyang2022feedback}. Constitutional AI uses stated principles to guide
+feedback and revisions \citep{bai2022constitutional}. In these representative
+approaches, feedback or principles enter the training criterion. They do not
+by themselves supply the independently attributed cost construction developed
+here.
+
+A system could instead maintain a consequence account across candidate actions,
+estimate uncertainty, and expose the effects before its deployment weights
+select a policy. Human priorities, legal constraints, or institutional rules
+could then be explicit decision conditions. Changing those conditions would not
+rewrite the measured closure of another frame's options.
+
+This application does not characterise all alignment research as preference
+fitting: empowerment, relative reachability and attainable utility preservation
+already overlap with the present machinery. Nor does a better account solve
+causal modelling, boundary choice, deceptive reporting, or conflicting goals.
+It offers a basis on which those conflicts and omissions can be made inspectable.
+An agent instructed to minimise a coarse reported cost can still exploit what
+the report leaves out.
+
+\section{Scope, challenges, and conclusion}\label{sec:conclusion}
+
+The paper's central result is an implementable whole-system account of
+informational consequences whose occurrence does not require evaluative
+recognition. Its strongest claim is that a bearer
+need not first be approved as morally eligible: where the relevant consequence
+is instantiated, it is available to the accounting procedure. Its strongest
+boundary is that measurement still requires a grounding. The account can be
+wrong without the consequence waiting for a correct observer.
+
+Four challenges specify where the theory can fail or require revision.
+\begin{enumerate}[leftmargin=*]
+\item \textbf{Grounding and completeness.} A validated consequence that the
+proposed continuation, resource, and path construction cannot represent would
+expose a missing dimension. An outcome quotient that merges it would expose an
+inadequate resolution, rather than establish zero cost.
+\item \textbf{Attribution and continuity.} A population or resource partition
+that loses an affected recipient, falsely identifies a replacement, or charges
+a shared expense twice invalidates that account. Nested collective accounts
+require explicit overlap treatment.
+\item \textbf{Mathematical invariance.} Failure of the stated invariances under
+their actual hypotheses would invalidate a structural result. Altering the
+causal relations or measurement contract falls outside those hypotheses and
+must be reported as a changed comparison.
+\item \textbf{Compression adequacy.} The biological hypothesis would lose
+explanatory value if changes in represented capabilities, enabling relations
+and burdens systematically failed to predict behaviour after competing
+information and priorities were controlled. Compression and weight specifications must be fixed across the cases used to
+test a prediction. Arbitrarily refitting them for every observation is not an
+informative confirmation.
+\end{enumerate}
+
+The proposed account of the ethical frame and the biological interpretation
+remain open to challenge.
+A rival explanation can dispute how closely moral dispositions track these
+consequences or identify additional causal organisation the account omits.
+Those are claims about coverage and explanation, rather than requirements that
+an observer confer value before a restriction or expenditure can occur. Moral
+injury sharpens this boundary: external benefit and internal damage can coexist,
+and a favourable decision score cannot certify the absence of either.
+
+The derivation supplies separate functions for lost and gained futures,
+incremental burdens, loss and gain time profiles, and repair. A deterministic specialisation
+connects available distinctions to information capacity. Decisions then apply
+relative weights. Compression can preserve or approximate those decisions under
+stated conditions, providing a viable bridge to ethical behaviour before explicit
+ethical reasoning. Recovering the precise operations of a brain is not required
+for that bridge or for the account's use.
+
+A future removed from an affected relation is removed whether it is seen,
+reported, or valued. That is the proposed lens shift. Whole-system accounting begins
+from what changed and who bears it, including the actor and the relations that
+sustain its continuations. Ethics becomes an accounting frame
+for consequences that narrower accounts exclude. The ontology supplies their
+place in the system; studying ethics exposes omissions and the compressed
+responses to them. The value placed on responding is a further operation.
+
+\appendix
+\section{Finite reference functions}\label{app:functions}
+
+The following standard-library Python functions implement the finite
+specialisation. Graph edges encode admissibility; outcomes encode consequential
+identity. A budget-limited graph must carry its remaining budget in states.
+The reference functions do not discover the causal model, infer a moral
+population, or replace unknown inputs with zero.
+
+For the protection case in Section~\ref{sec:protection}, the calls are:
+\begin{lstlisting}
+b = {"A": {1, 2, 3, 4, 5, 6}, "B": {"x"}}
+a = {"A": {1, 2, 3}, "B": {"x", "y", "z", "u"}}
+record = consequence_account(b, a, {}, {("B", "resource"): 1})
+z = {"A_loss": record["frames"]["A"]["loss"],
+     "B_burden": record["resources"][("B", "resource")],
+     "B_gain": -record["frames"]["B"]["gain"]}
+w = {"A_loss": 1, "B_burden": 1, "B_gain": 2}
+# record: A loss 3; B gain 3; B resource difference 1.
+# evaluate(z, w) = -2, as obtained in the text.
+\end{lstlisting}
+For the operative-valuation example of Section~\ref{sec:numeric}, the finite
+calls are:
+\begin{lstlisting}
+bounds = shadow_price_bounds([(1, 3, True), (1, 5, False)])
+# Bounds: lower 3, upper 5, consistent True.
+candidates = {3, 4, 5}  # Declared finite grid inside those bounds.
+gap = valuation_gap(candidates, set())
+# Known rejection of every candidate: incompatible True,
+# rejection_fraction 1.0, excluded {3, 4, 5}.
+# These numbers measure model compatibility, not discomfort intensity.
+\end{lstlisting}
+These displayed results follow by direct substitution in the defined functions.
+The appendix supplies a reference implementation, not a reported software
+benchmark or a biological implementation.
+
+\lstinputlisting{../derivations/11_relational_information_ethics_finite.py}
+
+% Bibliography rendered with plainnat from the source .bib in derivations/.
+\begin{thebibliography}{52}
+\providecommand{\natexlab}[1]{#1}
+\providecommand{\url}[1]{\texttt{#1}}
+\expandafter\ifx\csname urlstyle\endcsname\relax
+  \providecommand{\doi}[1]{doi: #1}\else
+  \providecommand{\doi}{doi: \begingroup \urlstyle{rm}\Url}\fi
+
+\bibitem[Asch(1956)]{asch1956independence}
+Solomon~E. Asch.
+\newblock Studies of independence and conformity: I. A minority of one against
+a unanimous majority.
+\newblock \emph{Psychological Monographs: General and Applied}, 70(9):1--70, 1956.
+\newblock \doi{10.1037/h0093718}.
+\newblock URL \url{https://doi.org/10.1037/h0093718}.
+
+\bibitem[Ashby(1956)]{ashby1956cybernetics}
+W.~Ross Ashby.
+\newblock \emph{An Introduction to Cybernetics}.
+\newblock Chapman and Hall, London, 1956.
+\newblock URL \url{https://ashby.info/Ashby-Introduction-to-Cybernetics.pdf}.
+
+\bibitem[Bai et~al.(2022)]{bai2022constitutional}
+Yuntao Bai et~al.
+\newblock Constitutional {AI}: Harmlessness from {AI} feedback, 2022.
+\newblock URL \url{https://arxiv.org/abs/2212.08073}.
+
+\bibitem[Bandura(2002)]{bandura2002disengagement}
+Albert Bandura.
+\newblock Selective moral disengagement in the exercise of moral agency.
+\newblock \emph{Journal of Moral Education}, 31(2):101--119, 2002.
+\newblock \doi{10.1080/0305724022014322}.
+\newblock URL \url{https://doi.org/10.1080/0305724022014322}.
+
+\bibitem[Cocchini et~al.(2009)Cocchini, Beschin, Cameron, Fotopoulou, and Della Sala]{cocchini2009anosognosia}
+Gianna Cocchini, Nicoletta Beschin, Annette Cameron, Aikaterini Fotopoulou, and Sergio Della Sala.
+\newblock Anosognosia for motor impairment following left brain damage.
+\newblock \emph{Neuropsychology}, 23(2):223--230, 2009.
+\newblock \doi{10.1037/a0014266}.
+\newblock URL \url{https://doi.org/10.1037/a0014266}.
+
+\bibitem[Crockett et~al.(2014)]{crockett2014harm}
+Molly~J. Crockett et~al.
+\newblock Harm to others outweighs harm to self in moral decision making.
+\newblock \emph{Proceedings of the National Academy of Sciences}, 111\penalty0
+  (48):\penalty0 17320--17325, 2014.
+\newblock \doi{10.1073/pnas.1408988111}.
+\newblock URL \url{https://pubmed.ncbi.nlm.nih.gov/25404350/}.
+
+\bibitem[Dana et~al.(2007)]{dana2007wiggle}
+Jason Dana, Roberto~A. Weber, and Jason~Xi Kuang.
+\newblock Exploiting moral wiggle room: Experiments demonstrating an illusory
+preference for fairness.
+\newblock \emph{Economic Theory}, 33(1):67--80, 2007.
+\newblock \doi{10.1007/s00199-006-0153-z}.
+\newblock URL \url{https://doi.org/10.1007/s00199-006-0153-z}.
+
+\bibitem[Fiske and Tetlock(1997)]{fisketetlock1997taboo}
+Alan Page Fiske and Philip~E. Tetlock.
+\newblock Taboo trade-offs: Reactions to transactions that transgress the spheres of justice.
+\newblock \emph{Political Psychology}, 18(2):255--297, 1997.
+\newblock \doi{10.1111/0162-895X.00058}.
+\newblock URL \url{https://doi.org/10.1111/0162-895X.00058}.
+
+\bibitem[Floridi and Sanders(1999)]{floridisanders1999entropy}
+Luciano Floridi and J.~W. Sanders.
+\newblock Entropy as evil in information ethics.
+\newblock Etica e Politica, author text hosted by the University of Trieste,
+  1999.
+\newblock URL \url{https://sites.units.it/etica/1999_2/floridi/index.html}.
+
+\bibitem[Floridi(1999)]{floridi1999informationethics}
+Luciano Floridi.
+\newblock Information ethics: On the philosophical foundation of computer
+  ethics.
+\newblock \emph{Ethics and Information Technology}, 1, 1999.
+\newblock \doi{10.1023/A:1010018611096}.
+\newblock URL \url{https://link.springer.com/article/10.1023/A:1010018611096}.
+
+\bibitem[Granovetter(1978)]{granovetter1978threshold}
+Mark Granovetter.
+\newblock Threshold models of collective behavior.
+\newblock \emph{American Journal of Sociology}, 83(6):1420--1443, 1978.
+\newblock \doi{10.1086/226707}.
+\newblock URL \url{https://doi.org/10.1086/226707}.
+
+\bibitem[Gray et~al.(2007)Gray, Gray, and Wegner]{gray2007mindperception}
+Heather~M. Gray, Kurt Gray, and Daniel~M. Wegner.
+\newblock Dimensions of mind perception.
+\newblock \emph{Science}, 315\penalty0 (5812):\penalty0 619, 2007.
+\newblock \doi{10.1126/science.1134475}.
+\newblock URL \url{https://doi.org/10.1126/science.1134475}.
+
+\bibitem[Haidt(2001)]{haidt2001intuition}
+Jonathan Haidt.
+\newblock The emotional dog and its rational tail: A social intuitionist
+  approach to moral judgment.
+\newblock \emph{Psychological Review}, 108\penalty0 (4):\penalty0 814--834,
+  2001.
+\newblock \doi{10.1037/0033-295X.108.4.814}.
+\newblock URL \url{https://pubmed.ncbi.nlm.nih.gov/11699120/}.
+
+\bibitem[Hartmann and Vorderer(2010)]{hartmannvorderer2010disengagement}
+Tilo Hartmann and Peter Vorderer.
+\newblock It's okay to shoot a character: Moral disengagement in violent video
+  games.
+\newblock \emph{Journal of Communication}, 60\penalty0 (1):\penalty0 94--119,
+  2010.
+\newblock \doi{10.1111/j.1460-2466.2009.01459.x}.
+\newblock URL
+  \url{https://research.vu.nl/en/publications/its-okay-to-shoot-a-character-moral-disengagement-in-violent-vide/}.
+
+\bibitem[Hauser et~al.(2021)Hauser, Neumann, Marshall, and Mokros]{hauser2021subcomponents}
+Nicole~Claire Hauser, Craig~S. Neumann, Julia Marshall, and Andreas Mokros.
+\newblock Rational, emotional, or both? Subcomponents of psychopathy predict opposing moral decisions.
+\newblock \emph{Behavioral Sciences \& the Law}, 39(5):541--566, 2021.
+\newblock \doi{10.1002/bsl.2547}.
+\newblock URL \url{https://doi.org/10.1002/bsl.2547}.
+
+\bibitem[Hernandez-Lallement et~al.(2020)Hernandez-Lallement, Attah, Soyman,
+  Pinhal, Gazzola, and Keysers]{hernandezlallement2020harm}
+Julen Hernandez-Lallement, Augustine~Triumph Attah, Efe Soyman, Cindy~M.
+  Pinhal, Valeria Gazzola, and Christian Keysers.
+\newblock Harm to others acts as a negative reinforcer in rats.
+\newblock \emph{Current Biology}, 30:\penalty0 949--961.e7, 2020.
+\newblock \doi{10.1016/j.cub.2020.01.017}.
+\newblock URL
+  \url{https://pure.knaw.nl/portal/nl/publications/harm-to-others-acts-as-a-negative-reinforcer-in-rats/}.
+
+\bibitem[Kelman(1973)]{kelman1973violence}
+Herbert~C. Kelman.
+\newblock Violence without moral restraint: Reflections on the dehumanization
+of victims and victimizers.
+\newblock \emph{Journal of Social Issues}, 29(4):25--61, 1973.
+\newblock \doi{10.1111/j.1540-4560.1973.tb00102.x}.
+\newblock URL \url{https://doi.org/10.1111/j.1540-4560.1973.tb00102.x}.
+
+\bibitem[Klyubin et~al.(2005)Klyubin, Polani, and
+  Nehaniv]{klyubin2005empowerment}
+Alexander~S. Klyubin, Daniel Polani, and Chrystopher~L. Nehaniv.
+\newblock Empowerment: A universal agent-centric measure of control.
+\newblock In \emph{2005 IEEE Congress on Evolutionary Computation}, pages
+  128--135, 2005.
+\newblock \doi{10.1109/CEC.2005.1554676}.
+\newblock URL \url{https://uhra.herts.ac.uk/id/eprint/282/1/901241.pdf}.
+
+\bibitem[Kolchinsky and Wolpert(2018)]{kolchinskywolpert2018semantic}
+Artemy Kolchinsky and David~H. Wolpert.
+\newblock Semantic information, autonomous agency, and nonequilibrium
+  statistical physics.
+\newblock \emph{Interface Focus}, 8:\penalty0 20180041, 2018.
+\newblock URL \url{https://arxiv.org/abs/1806.08053}.
+
+\bibitem[Krakauer et~al.(2020)Krakauer, Bertschinger, Olbrich, Flack, and
+  Ay]{krakauer2020individuality}
+David Krakauer, Nils Bertschinger, Eckehard Olbrich, Jessica~C. Flack, and
+  Nihat Ay.
+\newblock The information theory of individuality.
+\newblock \emph{Theory in Biosciences}, 139:\penalty0 209--223, 2020.
+\newblock \doi{10.1007/s12064-020-00313-7}.
+\newblock URL \url{https://doi.org/10.1007/s12064-020-00313-7}.
+
+\bibitem[Krakovna et~al.(2018)Krakovna, Orseau, Kumar, Martic, and
+  Legg]{krakovna2018reachability}
+Victoria Krakovna, Laurent Orseau, Ramana Kumar, Miljan Martic, and Shane Legg.
+\newblock Penalizing side effects using stepwise relative reachability, 2018.
+\newblock URL \url{https://arxiv.org/abs/1806.01186}.
+\newblock First submitted 2018; revised version 2, 2019.
+
+\bibitem[Kunda(1990)]{kunda1990motivated}
+Ziva Kunda.
+\newblock The case for motivated reasoning.
+\newblock \emph{Psychological Bulletin}, 108(3):480--498, 1990.
+\newblock \doi{10.1037/0033-2909.108.3.480}.
+\newblock URL \url{https://doi.org/10.1037/0033-2909.108.3.480}.
+
+\bibitem[Landry et~al.(2022)]{landry2022propaganda}
+Alexander~P. Landry, Ram~I. Orr, and Kayla Mere.
+\newblock Dehumanization and mass violence: A study of mental state language
+in Nazi propaganda (1927--1945).
+\newblock \emph{PLOS ONE}, 17(11):e0274957, 2022.
+\newblock \doi{10.1371/journal.pone.0274957}.
+\newblock URL \url{https://pmc.ncbi.nlm.nih.gov/articles/PMC9645591/}.
+
+\bibitem[Litz et~al.(2009)]{litz2009moralinjury}
+Brett~T. Litz, Nathan Stein, Eileen Delaney, Leslie Lebowitz, William~P. Nash,
+Caroline Silva, and Shira Maguen.
+\newblock Moral injury and moral repair in war veterans: A preliminary model
+and intervention strategy.
+\newblock \emph{Clinical Psychology Review}, 29(8):695--706, 2009.
+\newblock \doi{10.1016/j.cpr.2009.07.003}.
+\newblock URL \url{https://doi.org/10.1016/j.cpr.2009.07.003}.
+
+\bibitem[Luft(2015)]{luft2015dynamic}
+Aliza Luft.
+\newblock Toward a dynamic theory of action at the micro level of genocide:
+Killing, desistance, and saving in 1994 Rwanda.
+\newblock \emph{Sociological Theory}, 33(2):148--172, 2015.
+\newblock \doi{10.1177/0735275115587721}.
+\newblock URL \url{https://doi.org/10.1177/0735275115587721}.
+
+\bibitem[Luft(2023)]{luft2023career}
+Aliza Luft.
+\newblock The moral career of the genocide perpetrator: Cognition, emotions,
+and dehumanization as a consequence, not a cause, of violence.
+\newblock \emph{Sociological Theory}, 41(4):324--351, 2023.
+\newblock \doi{10.1177/07352751231203716}.
+\newblock URL \url{https://doi.org/10.1177/07352751231203716}.
+
+\bibitem[McGetrick et~al.(2023)McGetrick, Peters, Korath, Feitsch, Siegmann,
+  and Range]{mcgetrick2023attainability}
+Jim McGetrick, Hugo Peters, Anna D.~J. Korath, Romana Feitsch, Susanne
+  Siegmann, and Friederike Range.
+\newblock Perceived reward attainability may underlie dogs' responses in
+  inequity paradigms.
+\newblock \emph{Scientific Reports}, 13:\penalty0 12066, 2023.
+\newblock \doi{10.1038/s41598-023-38836-w}.
+\newblock URL \url{https://www.nature.com/articles/s41598-023-38836-w}.
+
+\bibitem[Miralles et~al.(2019)Miralles, Raymond, and
+  Lecointre]{miralles2019empathy}
+Aur{\'e}lien Miralles, Michel Raymond, and Guillaume Lecointre.
+\newblock Empathy and compassion toward other species decrease with
+  evolutionary divergence time.
+\newblock \emph{Scientific Reports}, 9:\penalty0 19555, 2019.
+\newblock \doi{10.1038/s41598-019-56006-9}.
+\newblock URL \url{https://doi.org/10.1038/s41598-019-56006-9}.
+
+\bibitem[{National Institute of Mental Health}(n.d.)]{nimhrdoc}
+{National Institute of Mental Health}.
+\newblock About RDoC.
+\newblock Institutional research-framework description, n.d.
+\newblock URL \url{https://www.nimh.nih.gov/research/research-funded-by-nimh/rdoc/about-rdoc}.
+\newblock Accessed 11 October 2026.
+
+\bibitem[Nguyen(2024)]{nguyen2024dietarytrends}
+Hoang Nguyen.
+\newblock Market insights into people's food choices in the us and great
+  britain.
+\newblock YouGov, 2024.
+\newblock URL \url{https://yougov.com/articles/48355-us-uk-dietary-trends}.
+\newblock Published 17 January 2024; survey report, not a peer-reviewed
+  article.
+
+\bibitem[Ouyang et~al.(2022)]{ouyang2022feedback}
+Long Ouyang et~al.
+\newblock Training language models to follow instructions with human feedback,
+  2022.
+\newblock URL \url{https://arxiv.org/abs/2203.02155}.
+
+\bibitem[Parslow(2026{\natexlab{a}})]{parslow00relation}
+Matthew Parslow.
+\newblock Is: Relation without time, cause, or rule.
+\newblock Paper 00, manuscript in this series, 2026{\natexlab{a}}.
+
+\bibitem[Parslow(2026{\natexlab{b}})]{parslow01equalisation}
+Matthew Parslow.
+\newblock The law of graphic equalisation---theory: Minimal recursive dynamics,
+  collapse, frame-relative identity, and residual.
+\newblock Paper 01, manuscript in this series, 2026{\natexlab{b}}.
+
+\bibitem[Parslow(2026{\natexlab{c}})]{parslow02manifolds}
+Matthew Parslow.
+\newblock Seldon manifolds---theory: The geometry of reachable futures.
+\newblock Paper 02, manuscript in this series, 2026{\natexlab{c}}.
+
+\bibitem[Parslow(2026{\natexlab{d}})]{parslow04narrativium}
+Matthew Parslow.
+\newblock Narrativium---theory: Frame-relative capacity for consequential
+  deformation.
+\newblock Paper 04, manuscript in this series, 2026{\natexlab{d}}.
+
+\bibitem[Rai et~al.(2017)]{rai2017dehumanization}
+Tage~S. Rai, Piercarlo Valdesolo, and Jesse Graham.
+\newblock Dehumanization increases instrumental violence, but not moral violence.
+\newblock \emph{Proceedings of the National Academy of Sciences},
+114(32):8511--8516, 2017.
+\newblock \doi{10.1073/pnas.1705238114}.
+\newblock URL \url{https://pmc.ncbi.nlm.nih.gov/articles/PMC5559031/}.
+
+\bibitem[Salge and Polani(2017)]{salgepolani2017laws}
+Christoph Salge and Daniel Polani.
+\newblock Empowerment as replacement for the three laws of robotics.
+\newblock \emph{Frontiers in Robotics and AI}, 4:\penalty0 25, 2017.
+\newblock \doi{10.3389/frobt.2017.00025}.
+\newblock URL
+  \url{https://www.frontiersin.org/journals/robotics-and-ai/articles/10.3389/frobt.2017.00025/full}.
+
+\bibitem[Samuelson(1938)]{samuelson1938behaviour}
+Paul~A. Samuelson.
+\newblock A note on the pure theory of consumer's behaviour.
+\newblock \emph{Economica}, 5(17):61--71, 1938.
+\newblock \doi{10.2307/2548836}.
+\newblock URL \url{https://www.jstor.org/stable/2548836}.
+
+\bibitem[Sen(1980)]{sen1980equality}
+Amartya Sen.
+\newblock Equality of what?
+\newblock In \emph{Tanner Lectures on Human Values}, volume~1. Cambridge
+  University Press, 1980.
+\newblock URL
+  \url{https://tannerlectures.org/wp-content/uploads/2024/07/sen80.pdf}.
+\newblock Lecture delivered at Stanford University, 22 May 1979.
+
+\bibitem[Shannon(1948)]{shannon1948communication}
+Claude~E. Shannon.
+\newblock A mathematical theory of communication.
+\newblock \emph{Bell System Technical Journal}, 27:\penalty0 379--423,
+  623--656, 1948.
+\newblock URL
+  \url{https://www.cs.yale.edu/homes/yry/readings/general/shannon1948.pdf}.
+
+\bibitem[Shay(2014)]{shay2014moralinjury}
+Jonathan Shay.
+\newblock Moral injury.
+\newblock \emph{Psychoanalytic Psychology}, 31(2):182--191, 2014.
+\newblock \doi{10.1037/a0036090}.
+\newblock URL \url{https://doi.org/10.1037/a0036090}.
+
+\bibitem[Tassy et~al.(2013)Tassy, Deruelle, Mancini, Leistedt, and Wicker]{tassy2013choice}
+S\'{e}bastien Tassy, Christine Deruelle, Julien Mancini, Samuel Leistedt, and Bruno Wicker.
+\newblock High levels of psychopathic traits alters moral choice but not moral judgment.
+\newblock \emph{Frontiers in Human Neuroscience}, 7:229, 2013.
+\newblock \doi{10.3389/fnhum.2013.00229}.
+\newblock URL \url{https://doi.org/10.3389/fnhum.2013.00229}.
+
+\bibitem[Tetlock et~al.(2000)Tetlock, Kristel, Elson, Green, and Lerner]{tetlock2000unthinkable}
+Philip~E. Tetlock, Orie~V. Kristel, S.~Beth Elson, Melanie~C. Green, and Jennifer~S. Lerner.
+\newblock The psychology of the unthinkable: Taboo trade-offs, forbidden base rates, and heretical counterfactuals.
+\newblock \emph{Journal of Personality and Social Psychology}, 78(5):853--870, 2000.
+\newblock \doi{10.1037/0022-3514.78.5.853}.
+\newblock URL \url{https://doi.org/10.1037/0022-3514.78.5.853}.
+
+\bibitem[Tetlock et~al.(2017)Tetlock, Mellers, and Scoblic]{tetlock2017sacred}
+Philip~E. Tetlock, Barbara~A. Mellers, and J.~Peter Scoblic.
+\newblock Sacred versus pseudo-sacred values: How people cope with taboo trade-offs.
+\newblock \emph{American Economic Review}, 107(5):96--99, 2017.
+\newblock \doi{10.1257/aer.p20171110}.
+\newblock URL \url{https://doi.org/10.1257/aer.p20171110}.
+
+\bibitem[Thomson(1985)]{thomson1985trolley}
+Judith~Jarvis Thomson.
+\newblock The trolley problem.
+\newblock \emph{The Yale Law Journal}, 94(6):1395--1415, 1985.
+\newblock \doi{10.2307/796133}.
+\newblock URL \url{https://www.jstor.org/stable/796133}.
+
+\bibitem[Turner et~al.(2020)Turner, Hadfield-Menell, and Tadepalli]{turner2020}
+Alexander~Matt Turner, Dylan Hadfield-Menell, and Prasad Tadepalli.
+\newblock Conservative agency via attainable utility preservation.
+\newblock In \emph{Proceedings of the AAAI/ACM Conference on AI, Ethics, and
+  Society}, 2020.
+\newblock \doi{10.1145/3375627.3375851}.
+\newblock URL \url{https://arxiv.org/abs/1902.09725}.
+
+\bibitem[{United States Senate Committee on Governmental
+  Affairs}(1995)]{senate1995activities}
+{United States Senate Committee on Governmental Affairs}.
+\newblock Activities of the committee on governmental affairs.
+\newblock Technical Report S. Rept. 104-27, United States Senate, 1995.
+\newblock URL
+  \url{https://www.govinfo.gov/content/pkg/CRPT-104srpt27/html/CRPT-104srpt27.htm}.
+\newblock Includes reports of the 1993 and 1994 video-game hearings.
+
+\bibitem[van Baar et~al.(2019)van Baar, Chang, and
+  Sanfey]{vanbaar2019moralstrategies}
+Jeroen~M. van Baar, Luke~J. Chang, and Alan~G. Sanfey.
+\newblock The computational and neural substrates of moral strategies in social
+  decision-making.
+\newblock \emph{Nature Communications}, 10:\penalty0 1483, 2019.
+\newblock \doi{10.1038/s41467-019-09161-6}.
+\newblock URL \url{https://www.nature.com/articles/s41467-019-09161-6}.
+
+\bibitem[von Foerster(2003)]{vonfoerster2003ethics}
+Heinz von Foerster.
+\newblock Ethics and second-order cybernetics.
+\newblock In \emph{Understanding Understanding: Essays on Cybernetics and
+  Cognition}. Springer, 2003.
+\newblock URL \url{https://link.springer.com/book/10.1007/b97451}.
+\newblock Archived primary text:
+  \url{https://pangaro.com/hciiseminar2019/Heinz_von_Foerster-Ethics_and_Second-order_Cybernetics.pdf}.
+
+\bibitem[Vu et~al.(2023)]{vu2023ignorance}
+Linh Vu, Ivan Soraperra, Margarita Leib, Jo{\"e}l van~der Weele, and Shaul Shalvi.
+\newblock Ignorance by choice: A meta-analytic review of the underlying motives
+of willful ignorance and its consequences.
+\newblock \emph{Psychological Bulletin}, 149(9--10):611--635, 2023.
+\newblock \doi{10.1037/bul0000398}.
+\newblock URL \url{https://doi.org/10.1037/bul0000398}.
+
+\bibitem[Warneken and Tomasello(2006)]{warnekentomasello2006helping}
+Felix Warneken and Michael Tomasello.
+\newblock Altruistic helping in human infants and young chimpanzees.
+\newblock \emph{Science}, 311\penalty0 (5765):\penalty0 1301--1303, 2006.
+\newblock \doi{10.1126/science.1121448}.
+\newblock URL \url{https://pubmed.ncbi.nlm.nih.gov/16513986/}.
+
+\bibitem[Wissner-Gross and Freer(2013)]{wissnergrossfreer2013causal}
+A.~D. Wissner-Gross and C.~E. Freer.
+\newblock Causal entropic forces.
+\newblock \emph{Physical Review Letters}, 110:\penalty0 168702, 2013.
+\newblock \doi{10.1103/PhysRevLett.110.168702}.
+\newblock URL \url{https://alexwg.org/publications/PhysRevLett_110-168702.pdf}.
+
+\end{thebibliography}
+\end{document}

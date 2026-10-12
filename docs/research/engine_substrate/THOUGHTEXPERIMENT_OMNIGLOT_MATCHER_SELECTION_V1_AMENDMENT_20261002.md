@@ -1,0 +1,5 @@
+# Omniglot matcher selection v1 — capture amendment
+
+The first v1 capture is retained as a diagnostic pilot. The preregistered analyzer initially treated PID reuse across sequential training and scoring subprocesses as a source-integrity failure; the post-capture v1.2 analysis corrects that check and finds 12/12 criteria pass. A subsequent protocol audit found two measurement-boundary gaps: the orders process loaded held-out trajectories before freezing the selected matcher, and the capture did not time snapshot fork or held-out feature preparation separately. The result still shows the same matcher winning on held-out alphabets, but it does not satisfy the preregistered sealing and cost-accounting requirements.
+
+The confirmatory v1.1 run generates only background-split specs and features during training. It reconstructs evaluation-split specs after the order file is frozen, records held-out feature preparation and snapshot-fork time, and is captured under new versioned source/native/data hashes. The v1 pilot artifacts remain unchanged.

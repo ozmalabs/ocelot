@@ -1,0 +1,77 @@
+{
+  "admitted": false,
+  "counts": {
+    "families": 4,
+    "negative_residual_pass": 1,
+    "negative_target_refusal_pass": 1,
+    "positive_target_transfer_pass": 3,
+    "training_mint_pass": 3
+  },
+  "families": [
+    {
+      "item_type": "FrameBindingProbe",
+      "minted_shape": "ms_count_interface_is_a_role",
+      "negative_covered_by": null,
+      "negative_refused_by_target_shape": true,
+      "negative_residual": true,
+      "negative_status": "residual",
+      "positive_covered_by": "ms_count_interface_is_a_role",
+      "positive_status": "recognized",
+      "positive_uses_target_shape": true,
+      "training_minted_support_two": true
+    },
+    {
+      "item_type": "GoalTraceProbe",
+      "minted_shape": "ms_channel_is_a_phase_terminal",
+      "negative_covered_by": "ms_channel_is_a_phase_terminal",
+      "negative_refused_by_target_shape": false,
+      "negative_residual": false,
+      "negative_status": "recognized_prior",
+      "positive_covered_by": "ms_channel_is_a_phase_terminal",
+      "positive_status": "recognized",
+      "positive_uses_target_shape": true,
+      "training_minted_support_two": true
+    },
+    {
+      "item_type": "MotionRuleProbe",
+      "minted_shape": null,
+      "negative_covered_by": "spatial_dynamics",
+      "negative_refused_by_target_shape": false,
+      "negative_residual": false,
+      "negative_status": "recognized_prior",
+      "positive_covered_by": "spatial_dynamics",
+      "positive_status": "recognized_prior",
+      "positive_uses_target_shape": false,
+      "training_minted_support_two": false
+    },
+    {
+      "item_type": "ResourceTransferProbe",
+      "minted_shape": "ms_is_a_source_status_target",
+      "negative_covered_by": "ms_is_a_source_status_target",
+      "negative_refused_by_target_shape": false,
+      "negative_residual": false,
+      "negative_status": "recognized_prior",
+      "positive_covered_by": "ms_is_a_source_status_target",
+      "positive_status": "recognized",
+      "positive_uses_target_shape": true,
+      "training_minted_support_two": true
+    }
+  ],
+  "gates": {
+    "all_four_negative_controls_refused_by_target_shape": false,
+    "all_four_negative_controls_remain_residual": false,
+    "all_four_positive_holdouts_use_target_shape": false,
+    "all_four_training_schemas_mint_support_two_shapes": false,
+    "dependency_closure_loads_cleanly": true,
+    "persistence_guard_active": true,
+    "source_and_protocol_lock_match": true
+  },
+  "interpretation": "This panel does not pass its preregistered generalization gates. Only three of four families mint a new support-2 shape; only three positive holdouts are covered by their intended minted shapes. Only one of four negative controls is left residual and refused by its target pattern. One family is absorbed by a preexisting spatial_dynamics pattern, and two minted schemas cover their fixed-field negative despite the changed field. These are exact structural matcher outcomes on authored probes, not estimates of semantic false-positive frequency.",
+  "limitations": [
+    "Single process and four authored schemas.",
+    "The \u201cnegative\u201d labels mark designed fixed-field mismatches; semantic task truth is not independently established.",
+    "No independent process replication yet."
+  ],
+  "run_id": "substrate-metashape-multischema-transfer-panel-v1-20260926",
+  "schema_version": 1
+}

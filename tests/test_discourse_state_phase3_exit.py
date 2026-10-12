@@ -89,11 +89,12 @@ def test_phase3_native_rules_execute_mixed_act_goal_lifecycle():
                           addressee=agent.agent, expectation="action")
     goal = open_goal(agent, state, kind="act_or_clarify", origin_event=origin)
     record_event(agent, state, kind="selection", speaker=agent.agent,
-                 addressee=addressee)
+                 addressee=addressee, goal=goal)
     record_event(agent, state, kind="execution", speaker=agent.agent,
-                 addressee=addressee)
+                 addressee=addressee, goal=goal)
     result = record_event(agent, state, kind="action_result",
-                          speaker=agent.agent, addressee=addressee)
+                          speaker=agent.agent, addressee=addressee,
+                          goal=goal)
 
     steps = agent.inner.run_rules(max_steps=20)
     attrs = agent.s.node(goal)["attrs"]

@@ -9,57 +9,213 @@
   "rules": [
     {
       "name": "discourse_goal_select",
-      "comment": "Native lifecycle transition: a later selection event moves a proposed goal to selected.",
+      "comment": "Native lifecycle transition: a later selection event moves a proposed goal to selected. Transition is suppressed unless this event has exactly one for_goal owner.",
       "match_type": "Goal",
-      "match": [
-        ["state", "has_active_goal", "goal"],
-        ["goal", "originated_in", "origin"],
-        ["state", "has_event", "event"]
-      ],
-      "where": {
-        "type": "And",
-        "items": [
-          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "goal"}, "key": "lifecycle_status"}, "b": {"type": "Lit", "value": "proposed"}},
-          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "event"}, "key": "kind"}, "b": {"type": "Lit", "value": "selection"}},
-          {"type": "Gt", "a": {"type": "Attr", "node": {"type": "Var", "name": "event"}, "key": "event_index"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "origin"}, "key": "event_index"}}
-        ]
-      },
+      "match": [["state","has_active_goal","goal"],["goal","originated_in","origin"],["state","has_event","event"],["event","for_goal","goal"]],
+      "where": {"type":"And","items":[{"type":"Eq","a":{"type":"Attr","node":{"type":"Var","name":"goal"},"key":"lifecycle_status"},"b":{"type":"Lit","value":"proposed"}},{"type":"Eq","a":{"type":"Attr","node":{"type":"Var","name":"event"},"key":"kind"},"b":{"type":"Lit","value":"selection"}},{"type":"Gt","a":{"type":"Attr","node":{"type":"Var","name":"event"},"key":"event_index"},"b":{"type":"Attr","node":{"type":"Var","name":"origin"},"key":"event_index"}},{"type":"Not","arg":{"type":"Exists","source":{"type":"Neighbours","node":{"type":"Var","name":"event"},"edge_type":"for_goal","any_type":false},"var_name":"other_goal","predicate":{"type":"Not","arg":{"type":"Eq","a":{"type":"Var","name":"other_goal"},"b":{"type":"Var","name":"goal"}}}}}]},
       "effects": [
         ["set_attr", "goal", "lifecycle_status", "selected"],
         ["set_attr", "goal", "status", "selected"],
         ["set_attr", "goal", "last_transition_event", {"__term__": {"type": "Var", "name": "event"}}],
         ["add_edge", "goal", "transitioned_by", "event"]
-      ]
+      ],
+      "scope_anchor_var": "goal",
+      "scope_anchor_type": "Goal",
+      "scope_anchor_owner_var": "event",
+      "scope_anchor_owner_type": "Event",
+      "scope_anchor_owner_edge": "for_goal"
     },
     {
       "name": "discourse_goal_execute",
-      "comment": "Native lifecycle transition: an execution event moves a selected goal to executing.",
+      "comment": "Native lifecycle transition: an execution event moves a selected goal to executing. Transition is suppressed unless this event has exactly one for_goal owner.",
       "match_type": "Goal",
-      "match": [["state", "has_active_goal", "goal"], ["goal", "originated_in", "origin"], ["state", "has_event", "event"]],
-      "where": {
-        "type": "And",
-        "items": [
-          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "goal"}, "key": "lifecycle_status"}, "b": {"type": "Lit", "value": "selected"}},
-          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "event"}, "key": "kind"}, "b": {"type": "Lit", "value": "execution"}},
-          {"type": "Gt", "a": {"type": "Attr", "node": {"type": "Var", "name": "event"}, "key": "event_index"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "origin"}, "key": "event_index"}}
-        ]
-      },
-      "effects": [["set_attr", "goal", "lifecycle_status", "executing"], ["set_attr", "goal", "status", "executing"], ["set_attr", "goal", "last_transition_event", {"__term__": {"type": "Var", "name": "event"}}], ["add_edge", "goal", "transitioned_by", "event"]]
+      "match": [["state","has_active_goal","goal"],["goal","originated_in","origin"],["state","has_event","event"],["event","for_goal","goal"]],
+      "where": {"type":"And","items":[{"type":"Eq","a":{"type":"Attr","node":{"type":"Var","name":"goal"},"key":"lifecycle_status"},"b":{"type":"Lit","value":"selected"}},{"type":"Eq","a":{"type":"Attr","node":{"type":"Var","name":"event"},"key":"kind"},"b":{"type":"Lit","value":"execution"}},{"type":"Gt","a":{"type":"Attr","node":{"type":"Var","name":"event"},"key":"event_index"},"b":{"type":"Attr","node":{"type":"Var","name":"origin"},"key":"event_index"}},{"type":"Not","arg":{"type":"Exists","source":{"type":"Neighbours","node":{"type":"Var","name":"event"},"edge_type":"for_goal","any_type":false},"var_name":"other_goal","predicate":{"type":"Not","arg":{"type":"Eq","a":{"type":"Var","name":"other_goal"},"b":{"type":"Var","name":"goal"}}}}}]},
+      "effects": [["set_attr", "goal", "lifecycle_status", "executing"], ["set_attr", "goal", "status", "executing"], ["set_attr", "goal", "last_transition_event", {"__term__": {"type": "Var", "name": "event"}}], ["add_edge", "goal", "transitioned_by", "event"]],
+      "scope_anchor_var": "goal",
+      "scope_anchor_type": "Goal",
+      "scope_anchor_owner_var": "event",
+      "scope_anchor_owner_type": "Event",
+      "scope_anchor_owner_edge": "for_goal"
     },
     {
       "name": "discourse_goal_resolve",
-      "comment": "Native lifecycle transition: a result event resolves an executing goal and records closure.",
+      "comment": "Native lifecycle transition: a result event resolves an executing goal and records closure. Transition is suppressed unless this event has exactly one for_goal owner.",
       "match_type": "Goal",
-      "match": [["state", "has_active_goal", "goal"], ["goal", "originated_in", "origin"], ["state", "has_event", "event"]],
-      "where": {
-        "type": "And",
-        "items": [
-          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "goal"}, "key": "lifecycle_status"}, "b": {"type": "Lit", "value": "executing"}},
-          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "event"}, "key": "kind"}, "b": {"type": "Lit", "value": "action_result"}},
-          {"type": "Gt", "a": {"type": "Attr", "node": {"type": "Var", "name": "event"}, "key": "event_index"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "origin"}, "key": "event_index"}}
-        ]
-      },
-      "effects": [["set_attr", "goal", "lifecycle_status", "resolved"], ["set_attr", "goal", "status", "resolved"], ["set_attr", "goal", "outcome", "native_event_result"], ["set_attr", "goal", "last_transition_event", {"__term__": {"type": "Var", "name": "event"}}], ["add_edge", "goal", "transitioned_by", "event"], ["add_edge", "state", "has_closed_goal", "goal"]]
+      "match": [["state","has_active_goal","goal"],["goal","originated_in","origin"],["state","has_event","event"],["event","for_goal","goal"]],
+      "where": {"type":"And","items":[{"type":"Eq","a":{"type":"Attr","node":{"type":"Var","name":"goal"},"key":"lifecycle_status"},"b":{"type":"Lit","value":"executing"}},{"type":"Eq","a":{"type":"Attr","node":{"type":"Var","name":"event"},"key":"kind"},"b":{"type":"Lit","value":"action_result"}},{"type":"Gt","a":{"type":"Attr","node":{"type":"Var","name":"event"},"key":"event_index"},"b":{"type":"Attr","node":{"type":"Var","name":"origin"},"key":"event_index"}},{"type":"Not","arg":{"type":"Exists","source":{"type":"Neighbours","node":{"type":"Var","name":"event"},"edge_type":"for_goal","any_type":false},"var_name":"other_goal","predicate":{"type":"Not","arg":{"type":"Eq","a":{"type":"Var","name":"other_goal"},"b":{"type":"Var","name":"goal"}}}}}]},
+      "effects": [["set_attr","goal","lifecycle_status","resolved"],["set_attr","goal","status","resolved"],["set_attr","goal","outcome","native_event_result"],["set_attr","goal","last_transition_event",{"__term__":{"type":"Var","name":"event"}}],["add_edge","goal","transitioned_by","event"],["add_edge","state","has_closed_goal","goal"],["del_edge","state","has_active_goal","goal"]],
+      "scope_anchor_var": "goal",
+      "scope_anchor_type": "Goal",
+      "scope_anchor_owner_var": "event",
+      "scope_anchor_owner_type": "Event",
+      "scope_anchor_owner_edge": "for_goal"
     }
+  ,
+{
+  "name": "discourse_goal_fail",
+  "comment": "Native lifecycle transition: an identity-bound failure blocks an executing goal and closes it with provenance. Transition is suppressed unless this event has exactly one for_goal owner.",
+  "match_type": "Goal",
+  "match": [
+    [
+      "state",
+      "has_active_goal",
+      "goal"
+    ],
+    [
+      "goal",
+      "originated_in",
+      "origin"
+    ],
+    [
+      "state",
+      "has_event",
+      "event"
+    ],
+    [
+      "event",
+      "for_goal",
+      "goal"
+    ]
+  ],
+  "where": {
+    "type": "And",
+    "items": [
+      {
+        "type": "Eq",
+        "a": {
+          "type": "Attr",
+          "node": {
+            "type": "Var",
+            "name": "goal"
+          },
+          "key": "lifecycle_status"
+        },
+        "b": {
+          "type": "Lit",
+          "value": "executing"
+        }
+      },
+      {
+        "type": "Eq",
+        "a": {
+          "type": "Attr",
+          "node": {
+            "type": "Var",
+            "name": "event"
+          },
+          "key": "kind"
+        },
+        "b": {
+          "type": "Lit",
+          "value": "action_failure"
+        }
+      },
+      {
+        "type": "Gt",
+        "a": {
+          "type": "Attr",
+          "node": {
+            "type": "Var",
+            "name": "event"
+          },
+          "key": "event_index"
+        },
+        "b": {
+          "type": "Attr",
+          "node": {
+            "type": "Var",
+            "name": "origin"
+          },
+          "key": "event_index"
+        }
+      },
+      {
+        "type": "Not",
+        "arg": {
+          "type": "Exists",
+          "source": {
+            "type": "Neighbours",
+            "node": {
+              "type": "Var",
+              "name": "event"
+            },
+            "edge_type": "for_goal",
+            "any_type": false
+          },
+          "var_name": "other_goal",
+          "predicate": {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Var",
+                "name": "other_goal"
+              },
+              "b": {
+                "type": "Var",
+                "name": "goal"
+              }
+            }
+          }
+        }
+      }
+    ]
+  },
+  "effects": [
+    [
+      "set_attr",
+      "goal",
+      "lifecycle_status",
+      "blocked"
+    ],
+    [
+      "set_attr",
+      "goal",
+      "status",
+      "blocked"
+    ],
+    [
+      "set_attr",
+      "goal",
+      "outcome",
+      "action_failed"
+    ],
+    [
+      "set_attr",
+      "goal",
+      "last_transition_event",
+      {
+        "__term__": {
+          "type": "Var",
+          "name": "event"
+        }
+      }
+    ],
+    [
+      "add_edge",
+      "goal",
+      "transitioned_by",
+      "event"
+    ],
+    [
+      "add_edge",
+      "state",
+      "has_closed_goal",
+      "goal"
+    ],
+    [
+      "del_edge",
+      "state",
+      "has_active_goal",
+      "goal"
+    ]
+  ],
+  "scope_anchor_var": "goal",
+  "scope_anchor_type": "Goal",
+  "scope_anchor_owner_var": "event",
+  "scope_anchor_owner_type": "Event",
+  "scope_anchor_owner_edge": "for_goal"
+}
   ]
 }

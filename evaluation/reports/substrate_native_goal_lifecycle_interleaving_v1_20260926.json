@@ -1,0 +1,811 @@
+{
+  "checks": {
+    "ambiguous_owner_rejected": false,
+    "capture_valid": true,
+    "interleaved_explicit_owner_oracle": true,
+    "missing_owner_rejected": true
+  },
+  "claim_boundary": "Explicit owner identity is measured under interleaved native lifecycle events. Missing and ambiguous owner semantics are separate. Not thread concurrency or production scheduler evidence.",
+  "environment": {
+    "platform": "Linux-6.8.0-142-generic-x86_64-with-glibc2.39",
+    "python": "3.13.5 (main, Jun 11 2025, 15:36:57) [GCC 11.4.0]"
+  },
+  "lock_sha256": "9b46abec587172ae0b5854faaa433d602775ca8d88a8d3424d1dc8959dfaf1ef",
+  "locked_inputs": {
+    "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+    "native_build_manifest_sha256": "2d10ff9cc7f9832d91d1603c74dd0a0e0c4c5d3080a618a33575e9d5400ae871",
+    "native_extension_sha256": "f5543ca015278bad6c65506a0d7d9acb85b33252e7121cdda1a56df63e8ad27b",
+    "protocol_sha256": "45238ddfc3a53c70a87d7651e53196ffc793d3cd9935112fdc56eb32c329d001",
+    "runner_sha256": "80f7bd2b51f05c1d35740abddb396d2d30b9c128d9ceba0d8664dd73d6f67918",
+    "source_sha256": {
+      "boot_all": "cb3645106e9f3cd056b900f507e5f4dbea36849d0568189545c73de698713d27",
+      "discourse_seed": "d12d5510ff282cfdd6a6edda763abc4e2dce970b8f9f83c45db5dbeea71afe9a",
+      "discourse_state": "774686588b3d9c979be330d55d739561caa4cba97b5b8f5bf082c4eed54bb05e",
+      "world_adapter": "c820e2d706f3632ff2c19ed8a64ecc1a9170584b07efda5460316118bbe69c25"
+    }
+  },
+  "post_run_inputs": {
+    "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+    "native_build_manifest_sha256": "2d10ff9cc7f9832d91d1603c74dd0a0e0c4c5d3080a618a33575e9d5400ae871",
+    "native_extension_sha256": "f5543ca015278bad6c65506a0d7d9acb85b33252e7121cdda1a56df63e8ad27b",
+    "protocol_sha256": "45238ddfc3a53c70a87d7651e53196ffc793d3cd9935112fdc56eb32c329d001",
+    "runner_sha256": "80f7bd2b51f05c1d35740abddb396d2d30b9c128d9ceba0d8664dd73d6f67918",
+    "source_sha256": {
+      "boot_all": "cb3645106e9f3cd056b900f507e5f4dbea36849d0568189545c73de698713d27",
+      "discourse_seed": "d12d5510ff282cfdd6a6edda763abc4e2dce970b8f9f83c45db5dbeea71afe9a",
+      "discourse_state": "774686588b3d9c979be330d55d739561caa4cba97b5b8f5bf082c4eed54bb05e",
+      "world_adapter": "c820e2d706f3632ff2c19ed8a64ecc1a9170584b07efda5460316118bbe69c25"
+    }
+  },
+  "run_id": "substrate-native-goal-lifecycle-interleaving-v1-20260926",
+  "runs": [
+    {
+      "ambiguous_owner": {
+        "for_goal_ids": [
+          24880,
+          24881
+        ],
+        "goals": [
+          {
+            "active": true,
+            "closed": false,
+            "goal_id": 24880,
+            "status": "selected",
+            "transition_kinds": [
+              "selection"
+            ]
+          },
+          {
+            "active": true,
+            "closed": false,
+            "goal_id": 24881,
+            "status": "selected",
+            "transition_kinds": [
+              "selection"
+            ]
+          }
+        ]
+      },
+      "checkpoints": [
+        {
+          "event_id": 24809,
+          "for_goal_ids": [
+            24807
+          ],
+          "goals": [
+            {
+              "active": true,
+              "closed": false,
+              "goal_id": 24807,
+              "status": "selected",
+              "transition_kinds": [
+                "selection"
+              ]
+            },
+            {
+              "active": true,
+              "closed": false,
+              "goal_id": 24808,
+              "status": "proposed",
+              "transition_kinds": []
+            }
+          ],
+          "kind": "selection",
+          "owner_goal_id": 24807
+        },
+        {
+          "event_id": 24859,
+          "for_goal_ids": [
+            24808
+          ],
+          "goals": [
+            {
+              "active": true,
+              "closed": false,
+              "goal_id": 24807,
+              "status": "selected",
+              "transition_kinds": [
+                "selection"
+              ]
+            },
+            {
+              "active": true,
+              "closed": false,
+              "goal_id": 24808,
+              "status": "selected",
+              "transition_kinds": [
+                "selection"
+              ]
+            }
+          ],
+          "kind": "selection",
+          "owner_goal_id": 24808
+        },
+        {
+          "event_id": 24860,
+          "for_goal_ids": [
+            24808
+          ],
+          "goals": [
+            {
+              "active": true,
+              "closed": false,
+              "goal_id": 24807,
+              "status": "selected",
+              "transition_kinds": [
+                "selection"
+              ]
+            },
+            {
+              "active": true,
+              "closed": false,
+              "goal_id": 24808,
+              "status": "executing",
+              "transition_kinds": [
+                "selection",
+                "execution"
+              ]
+            }
+          ],
+          "kind": "execution",
+          "owner_goal_id": 24808
+        },
+        {
+          "event_id": 24861,
+          "for_goal_ids": [
+            24807
+          ],
+          "goals": [
+            {
+              "active": true,
+              "closed": false,
+              "goal_id": 24807,
+              "status": "executing",
+              "transition_kinds": [
+                "selection",
+                "execution"
+              ]
+            },
+            {
+              "active": true,
+              "closed": false,
+              "goal_id": 24808,
+              "status": "executing",
+              "transition_kinds": [
+                "selection",
+                "execution"
+              ]
+            }
+          ],
+          "kind": "execution",
+          "owner_goal_id": 24807
+        },
+        {
+          "event_id": 24862,
+          "for_goal_ids": [
+            24807
+          ],
+          "goals": [
+            {
+              "active": false,
+              "closed": true,
+              "goal_id": 24807,
+              "status": "resolved",
+              "transition_kinds": [
+                "selection",
+                "execution",
+                "action_result"
+              ]
+            },
+            {
+              "active": true,
+              "closed": false,
+              "goal_id": 24808,
+              "status": "executing",
+              "transition_kinds": [
+                "selection",
+                "execution"
+              ]
+            }
+          ],
+          "kind": "action_result",
+          "owner_goal_id": 24807
+        },
+        {
+          "event_id": 24863,
+          "for_goal_ids": [
+            24808
+          ],
+          "goals": [
+            {
+              "active": false,
+              "closed": true,
+              "goal_id": 24807,
+              "status": "resolved",
+              "transition_kinds": [
+                "selection",
+                "execution",
+                "action_result"
+              ]
+            },
+            {
+              "active": false,
+              "closed": true,
+              "goal_id": 24808,
+              "status": "resolved",
+              "transition_kinds": [
+                "selection",
+                "execution",
+                "action_result"
+              ]
+            }
+          ],
+          "kind": "action_result",
+          "owner_goal_id": 24808
+        }
+      ],
+      "missing_owner": {
+        "for_goal_ids": [],
+        "goals": [
+          {
+            "active": true,
+            "closed": false,
+            "goal_id": 24870,
+            "status": "proposed",
+            "transition_kinds": []
+          },
+          {
+            "active": true,
+            "closed": false,
+            "goal_id": 24871,
+            "status": "proposed",
+            "transition_kinds": []
+          }
+        ]
+      },
+      "pid": 7,
+      "positive_identity_gate": true,
+      "replicate": 1,
+      "worker_finished_inputs": {
+        "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+        "native_build_manifest_sha256": "2d10ff9cc7f9832d91d1603c74dd0a0e0c4c5d3080a618a33575e9d5400ae871",
+        "native_extension_sha256": "f5543ca015278bad6c65506a0d7d9acb85b33252e7121cdda1a56df63e8ad27b",
+        "protocol_sha256": "45238ddfc3a53c70a87d7651e53196ffc793d3cd9935112fdc56eb32c329d001",
+        "runner_sha256": "80f7bd2b51f05c1d35740abddb396d2d30b9c128d9ceba0d8664dd73d6f67918",
+        "source_sha256": {
+          "boot_all": "cb3645106e9f3cd056b900f507e5f4dbea36849d0568189545c73de698713d27",
+          "discourse_seed": "d12d5510ff282cfdd6a6edda763abc4e2dce970b8f9f83c45db5dbeea71afe9a",
+          "discourse_state": "774686588b3d9c979be330d55d739561caa4cba97b5b8f5bf082c4eed54bb05e",
+          "world_adapter": "c820e2d706f3632ff2c19ed8a64ecc1a9170584b07efda5460316118bbe69c25"
+        }
+      },
+      "worker_started_inputs": {
+        "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+        "native_build_manifest_sha256": "2d10ff9cc7f9832d91d1603c74dd0a0e0c4c5d3080a618a33575e9d5400ae871",
+        "native_extension_sha256": "f5543ca015278bad6c65506a0d7d9acb85b33252e7121cdda1a56df63e8ad27b",
+        "protocol_sha256": "45238ddfc3a53c70a87d7651e53196ffc793d3cd9935112fdc56eb32c329d001",
+        "runner_sha256": "80f7bd2b51f05c1d35740abddb396d2d30b9c128d9ceba0d8664dd73d6f67918",
+        "source_sha256": {
+          "boot_all": "cb3645106e9f3cd056b900f507e5f4dbea36849d0568189545c73de698713d27",
+          "discourse_seed": "d12d5510ff282cfdd6a6edda763abc4e2dce970b8f9f83c45db5dbeea71afe9a",
+          "discourse_state": "774686588b3d9c979be330d55d739561caa4cba97b5b8f5bf082c4eed54bb05e",
+          "world_adapter": "c820e2d706f3632ff2c19ed8a64ecc1a9170584b07efda5460316118bbe69c25"
+        }
+      }
+    },
+    {
+      "ambiguous_owner": {
+        "for_goal_ids": [
+          24880,
+          24881
+        ],
+        "goals": [
+          {
+            "active": true,
+            "closed": false,
+            "goal_id": 24880,
+            "status": "selected",
+            "transition_kinds": [
+              "selection"
+            ]
+          },
+          {
+            "active": true,
+            "closed": false,
+            "goal_id": 24881,
+            "status": "selected",
+            "transition_kinds": [
+              "selection"
+            ]
+          }
+        ]
+      },
+      "checkpoints": [
+        {
+          "event_id": 24809,
+          "for_goal_ids": [
+            24807
+          ],
+          "goals": [
+            {
+              "active": true,
+              "closed": false,
+              "goal_id": 24807,
+              "status": "selected",
+              "transition_kinds": [
+                "selection"
+              ]
+            },
+            {
+              "active": true,
+              "closed": false,
+              "goal_id": 24808,
+              "status": "proposed",
+              "transition_kinds": []
+            }
+          ],
+          "kind": "selection",
+          "owner_goal_id": 24807
+        },
+        {
+          "event_id": 24859,
+          "for_goal_ids": [
+            24808
+          ],
+          "goals": [
+            {
+              "active": true,
+              "closed": false,
+              "goal_id": 24807,
+              "status": "selected",
+              "transition_kinds": [
+                "selection"
+              ]
+            },
+            {
+              "active": true,
+              "closed": false,
+              "goal_id": 24808,
+              "status": "selected",
+              "transition_kinds": [
+                "selection"
+              ]
+            }
+          ],
+          "kind": "selection",
+          "owner_goal_id": 24808
+        },
+        {
+          "event_id": 24860,
+          "for_goal_ids": [
+            24808
+          ],
+          "goals": [
+            {
+              "active": true,
+              "closed": false,
+              "goal_id": 24807,
+              "status": "selected",
+              "transition_kinds": [
+                "selection"
+              ]
+            },
+            {
+              "active": true,
+              "closed": false,
+              "goal_id": 24808,
+              "status": "executing",
+              "transition_kinds": [
+                "selection",
+                "execution"
+              ]
+            }
+          ],
+          "kind": "execution",
+          "owner_goal_id": 24808
+        },
+        {
+          "event_id": 24861,
+          "for_goal_ids": [
+            24807
+          ],
+          "goals": [
+            {
+              "active": true,
+              "closed": false,
+              "goal_id": 24807,
+              "status": "executing",
+              "transition_kinds": [
+                "selection",
+                "execution"
+              ]
+            },
+            {
+              "active": true,
+              "closed": false,
+              "goal_id": 24808,
+              "status": "executing",
+              "transition_kinds": [
+                "selection",
+                "execution"
+              ]
+            }
+          ],
+          "kind": "execution",
+          "owner_goal_id": 24807
+        },
+        {
+          "event_id": 24862,
+          "for_goal_ids": [
+            24807
+          ],
+          "goals": [
+            {
+              "active": false,
+              "closed": true,
+              "goal_id": 24807,
+              "status": "resolved",
+              "transition_kinds": [
+                "selection",
+                "execution",
+                "action_result"
+              ]
+            },
+            {
+              "active": true,
+              "closed": false,
+              "goal_id": 24808,
+              "status": "executing",
+              "transition_kinds": [
+                "selection",
+                "execution"
+              ]
+            }
+          ],
+          "kind": "action_result",
+          "owner_goal_id": 24807
+        },
+        {
+          "event_id": 24863,
+          "for_goal_ids": [
+            24808
+          ],
+          "goals": [
+            {
+              "active": false,
+              "closed": true,
+              "goal_id": 24807,
+              "status": "resolved",
+              "transition_kinds": [
+                "selection",
+                "execution",
+                "action_result"
+              ]
+            },
+            {
+              "active": false,
+              "closed": true,
+              "goal_id": 24808,
+              "status": "resolved",
+              "transition_kinds": [
+                "selection",
+                "execution",
+                "action_result"
+              ]
+            }
+          ],
+          "kind": "action_result",
+          "owner_goal_id": 24808
+        }
+      ],
+      "missing_owner": {
+        "for_goal_ids": [],
+        "goals": [
+          {
+            "active": true,
+            "closed": false,
+            "goal_id": 24870,
+            "status": "proposed",
+            "transition_kinds": []
+          },
+          {
+            "active": true,
+            "closed": false,
+            "goal_id": 24871,
+            "status": "proposed",
+            "transition_kinds": []
+          }
+        ]
+      },
+      "pid": 2345,
+      "positive_identity_gate": true,
+      "replicate": 2,
+      "worker_finished_inputs": {
+        "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+        "native_build_manifest_sha256": "2d10ff9cc7f9832d91d1603c74dd0a0e0c4c5d3080a618a33575e9d5400ae871",
+        "native_extension_sha256": "f5543ca015278bad6c65506a0d7d9acb85b33252e7121cdda1a56df63e8ad27b",
+        "protocol_sha256": "45238ddfc3a53c70a87d7651e53196ffc793d3cd9935112fdc56eb32c329d001",
+        "runner_sha256": "80f7bd2b51f05c1d35740abddb396d2d30b9c128d9ceba0d8664dd73d6f67918",
+        "source_sha256": {
+          "boot_all": "cb3645106e9f3cd056b900f507e5f4dbea36849d0568189545c73de698713d27",
+          "discourse_seed": "d12d5510ff282cfdd6a6edda763abc4e2dce970b8f9f83c45db5dbeea71afe9a",
+          "discourse_state": "774686588b3d9c979be330d55d739561caa4cba97b5b8f5bf082c4eed54bb05e",
+          "world_adapter": "c820e2d706f3632ff2c19ed8a64ecc1a9170584b07efda5460316118bbe69c25"
+        }
+      },
+      "worker_started_inputs": {
+        "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+        "native_build_manifest_sha256": "2d10ff9cc7f9832d91d1603c74dd0a0e0c4c5d3080a618a33575e9d5400ae871",
+        "native_extension_sha256": "f5543ca015278bad6c65506a0d7d9acb85b33252e7121cdda1a56df63e8ad27b",
+        "protocol_sha256": "45238ddfc3a53c70a87d7651e53196ffc793d3cd9935112fdc56eb32c329d001",
+        "runner_sha256": "80f7bd2b51f05c1d35740abddb396d2d30b9c128d9ceba0d8664dd73d6f67918",
+        "source_sha256": {
+          "boot_all": "cb3645106e9f3cd056b900f507e5f4dbea36849d0568189545c73de698713d27",
+          "discourse_seed": "d12d5510ff282cfdd6a6edda763abc4e2dce970b8f9f83c45db5dbeea71afe9a",
+          "discourse_state": "774686588b3d9c979be330d55d739561caa4cba97b5b8f5bf082c4eed54bb05e",
+          "world_adapter": "c820e2d706f3632ff2c19ed8a64ecc1a9170584b07efda5460316118bbe69c25"
+        }
+      }
+    },
+    {
+      "ambiguous_owner": {
+        "for_goal_ids": [
+          24880,
+          24881
+        ],
+        "goals": [
+          {
+            "active": true,
+            "closed": false,
+            "goal_id": 24880,
+            "status": "selected",
+            "transition_kinds": [
+              "selection"
+            ]
+          },
+          {
+            "active": true,
+            "closed": false,
+            "goal_id": 24881,
+            "status": "selected",
+            "transition_kinds": [
+              "selection"
+            ]
+          }
+        ]
+      },
+      "checkpoints": [
+        {
+          "event_id": 24809,
+          "for_goal_ids": [
+            24807
+          ],
+          "goals": [
+            {
+              "active": true,
+              "closed": false,
+              "goal_id": 24807,
+              "status": "selected",
+              "transition_kinds": [
+                "selection"
+              ]
+            },
+            {
+              "active": true,
+              "closed": false,
+              "goal_id": 24808,
+              "status": "proposed",
+              "transition_kinds": []
+            }
+          ],
+          "kind": "selection",
+          "owner_goal_id": 24807
+        },
+        {
+          "event_id": 24859,
+          "for_goal_ids": [
+            24808
+          ],
+          "goals": [
+            {
+              "active": true,
+              "closed": false,
+              "goal_id": 24807,
+              "status": "selected",
+              "transition_kinds": [
+                "selection"
+              ]
+            },
+            {
+              "active": true,
+              "closed": false,
+              "goal_id": 24808,
+              "status": "selected",
+              "transition_kinds": [
+                "selection"
+              ]
+            }
+          ],
+          "kind": "selection",
+          "owner_goal_id": 24808
+        },
+        {
+          "event_id": 24860,
+          "for_goal_ids": [
+            24808
+          ],
+          "goals": [
+            {
+              "active": true,
+              "closed": false,
+              "goal_id": 24807,
+              "status": "selected",
+              "transition_kinds": [
+                "selection"
+              ]
+            },
+            {
+              "active": true,
+              "closed": false,
+              "goal_id": 24808,
+              "status": "executing",
+              "transition_kinds": [
+                "selection",
+                "execution"
+              ]
+            }
+          ],
+          "kind": "execution",
+          "owner_goal_id": 24808
+        },
+        {
+          "event_id": 24861,
+          "for_goal_ids": [
+            24807
+          ],
+          "goals": [
+            {
+              "active": true,
+              "closed": false,
+              "goal_id": 24807,
+              "status": "executing",
+              "transition_kinds": [
+                "selection",
+                "execution"
+              ]
+            },
+            {
+              "active": true,
+              "closed": false,
+              "goal_id": 24808,
+              "status": "executing",
+              "transition_kinds": [
+                "selection",
+                "execution"
+              ]
+            }
+          ],
+          "kind": "execution",
+          "owner_goal_id": 24807
+        },
+        {
+          "event_id": 24862,
+          "for_goal_ids": [
+            24807
+          ],
+          "goals": [
+            {
+              "active": false,
+              "closed": true,
+              "goal_id": 24807,
+              "status": "resolved",
+              "transition_kinds": [
+                "selection",
+                "execution",
+                "action_result"
+              ]
+            },
+            {
+              "active": true,
+              "closed": false,
+              "goal_id": 24808,
+              "status": "executing",
+              "transition_kinds": [
+                "selection",
+                "execution"
+              ]
+            }
+          ],
+          "kind": "action_result",
+          "owner_goal_id": 24807
+        },
+        {
+          "event_id": 24863,
+          "for_goal_ids": [
+            24808
+          ],
+          "goals": [
+            {
+              "active": false,
+              "closed": true,
+              "goal_id": 24807,
+              "status": "resolved",
+              "transition_kinds": [
+                "selection",
+                "execution",
+                "action_result"
+              ]
+            },
+            {
+              "active": false,
+              "closed": true,
+              "goal_id": 24808,
+              "status": "resolved",
+              "transition_kinds": [
+                "selection",
+                "execution",
+                "action_result"
+              ]
+            }
+          ],
+          "kind": "action_result",
+          "owner_goal_id": 24808
+        }
+      ],
+      "missing_owner": {
+        "for_goal_ids": [],
+        "goals": [
+          {
+            "active": true,
+            "closed": false,
+            "goal_id": 24870,
+            "status": "proposed",
+            "transition_kinds": []
+          },
+          {
+            "active": true,
+            "closed": false,
+            "goal_id": 24871,
+            "status": "proposed",
+            "transition_kinds": []
+          }
+        ]
+      },
+      "pid": 4683,
+      "positive_identity_gate": true,
+      "replicate": 0,
+      "worker_finished_inputs": {
+        "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+        "native_build_manifest_sha256": "2d10ff9cc7f9832d91d1603c74dd0a0e0c4c5d3080a618a33575e9d5400ae871",
+        "native_extension_sha256": "f5543ca015278bad6c65506a0d7d9acb85b33252e7121cdda1a56df63e8ad27b",
+        "protocol_sha256": "45238ddfc3a53c70a87d7651e53196ffc793d3cd9935112fdc56eb32c329d001",
+        "runner_sha256": "80f7bd2b51f05c1d35740abddb396d2d30b9c128d9ceba0d8664dd73d6f67918",
+        "source_sha256": {
+          "boot_all": "cb3645106e9f3cd056b900f507e5f4dbea36849d0568189545c73de698713d27",
+          "discourse_seed": "d12d5510ff282cfdd6a6edda763abc4e2dce970b8f9f83c45db5dbeea71afe9a",
+          "discourse_state": "774686588b3d9c979be330d55d739561caa4cba97b5b8f5bf082c4eed54bb05e",
+          "world_adapter": "c820e2d706f3632ff2c19ed8a64ecc1a9170584b07efda5460316118bbe69c25"
+        }
+      },
+      "worker_started_inputs": {
+        "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+        "native_build_manifest_sha256": "2d10ff9cc7f9832d91d1603c74dd0a0e0c4c5d3080a618a33575e9d5400ae871",
+        "native_extension_sha256": "f5543ca015278bad6c65506a0d7d9acb85b33252e7121cdda1a56df63e8ad27b",
+        "protocol_sha256": "45238ddfc3a53c70a87d7651e53196ffc793d3cd9935112fdc56eb32c329d001",
+        "runner_sha256": "80f7bd2b51f05c1d35740abddb396d2d30b9c128d9ceba0d8664dd73d6f67918",
+        "source_sha256": {
+          "boot_all": "cb3645106e9f3cd056b900f507e5f4dbea36849d0568189545c73de698713d27",
+          "discourse_seed": "d12d5510ff282cfdd6a6edda763abc4e2dce970b8f9f83c45db5dbeea71afe9a",
+          "discourse_state": "774686588b3d9c979be330d55d739561caa4cba97b5b8f5bf082c4eed54bb05e",
+          "world_adapter": "c820e2d706f3632ff2c19ed8a64ecc1a9170584b07efda5460316118bbe69c25"
+        }
+      }
+    }
+  ],
+  "schedule": [
+    1,
+    2,
+    0
+  ],
+  "schema_version": 1
+}

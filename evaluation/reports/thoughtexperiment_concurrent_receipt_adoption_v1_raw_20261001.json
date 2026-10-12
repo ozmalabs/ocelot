@@ -1,0 +1,2063 @@
+{
+  "captured_utc": "2026-10-01T06:48:55Z",
+  "engine_fingerprint": "4036d3738ccc0e1f0fa3a6ef00ab3e271c1205921ca074a3f02334919a46d6ee",
+  "gates": {
+    "all_branches_isolated": true,
+    "all_full_graph_oracles": true,
+    "all_receipts_nonempty": true,
+    "exactly_one_accept_per_race": true,
+    "ninety_submissions": true,
+    "stable_source_build": true,
+    "thirty_races": true,
+    "three_fresh_workers": true,
+    "two_stale_rejections_per_race": true
+  },
+  "host": {
+    "machine": "x86_64",
+    "platform": "Linux-6.8.0-142-generic-x86_64-with-glibc2.39",
+    "python": "3.13.5"
+  },
+  "protocol": {
+    "contenders_per_race": 3,
+    "contention": "barrier-synchronized threads; same expected revision",
+    "races_per_worker": 10,
+    "workers": 3
+  },
+  "schema": "ThoughtexperimentConcurrentReceiptAdoptionV1",
+  "workers": [
+    {
+      "fingerprint_after": {
+        "docs/research/engine_substrate/THOUGHTEXPERIMENT_CONCURRENT_RECEIPT_ADOPTION_V1_PREREG_20261001.md": "04804219de9b5883fcf0a39e566232d591e5cedbe774bfa689fc30abee6b9b42",
+        "evaluation/substrate_capability/thoughtexperiment_concurrent_receipt_adoption_v1.py": "cb76acd7e5bcc0154e3d28b17c4a12fd39d7c02578537320bc668e414355b648",
+        "native_binary": "b9f398c75ceb12a5d519235efb6b3ec403d1b153a576aad6def528c2d48a7617",
+        "runners/dsl/python/substrate_rs/__init__.py": "16afa0fa0a9cf12eb306ecad98ccda27ca059f5e1cfbaffd899ee4cb74ebb3c1",
+        "runners/dsl/python/substrate_rs/_native.build.json": "1134ae2221afebe9dc3dfd10390942162817d59d01e9c2eb85819268102cf13e",
+        "runners/dsl/src/graph.rs": "9744fec2e0c5091f2036081ffc615b1c7dd00ba2a5995af1294efb0b5aa5a28c",
+        "runners/dsl/src/persist.rs": "066d026451c97e1032c30054a3a4c556d386f23db2304630a4625c5bf81306cf",
+        "runners/dsl/src/py.rs": "201adbebde67c80bce80de6622095472bcb58e83a2b4df50f9b314bc9000a1de",
+        "runners/dsl/src/substrate.rs": "bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3"
+      },
+      "fingerprint_before": {
+        "docs/research/engine_substrate/THOUGHTEXPERIMENT_CONCURRENT_RECEIPT_ADOPTION_V1_PREREG_20261001.md": "04804219de9b5883fcf0a39e566232d591e5cedbe774bfa689fc30abee6b9b42",
+        "evaluation/substrate_capability/thoughtexperiment_concurrent_receipt_adoption_v1.py": "cb76acd7e5bcc0154e3d28b17c4a12fd39d7c02578537320bc668e414355b648",
+        "native_binary": "b9f398c75ceb12a5d519235efb6b3ec403d1b153a576aad6def528c2d48a7617",
+        "runners/dsl/python/substrate_rs/__init__.py": "16afa0fa0a9cf12eb306ecad98ccda27ca059f5e1cfbaffd899ee4cb74ebb3c1",
+        "runners/dsl/python/substrate_rs/_native.build.json": "1134ae2221afebe9dc3dfd10390942162817d59d01e9c2eb85819268102cf13e",
+        "runners/dsl/src/graph.rs": "9744fec2e0c5091f2036081ffc615b1c7dd00ba2a5995af1294efb0b5aa5a28c",
+        "runners/dsl/src/persist.rs": "066d026451c97e1032c30054a3a4c556d386f23db2304630a4625c5bf81306cf",
+        "runners/dsl/src/py.rs": "201adbebde67c80bce80de6622095472bcb58e83a2b4df50f9b314bc9000a1de",
+        "runners/dsl/src/substrate.rs": "bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3"
+      },
+      "pid": 3,
+      "races": [
+        {
+          "accepted_count": 1,
+          "branch_isolation": true,
+          "final_graph": {
+            "edges": [],
+            "nodes": [
+              {
+                "attrs": {
+                  "ordinal": 0,
+                  "stable": true
+                },
+                "id": 0,
+                "type": "CandidateTarget"
+              },
+              {
+                "attrs": {
+                  "ordinal": 1,
+                  "stable": true
+                },
+                "id": 1,
+                "type": "CandidateTarget"
+              },
+              {
+                "attrs": {
+                  "experiment_value": "race-0-candidate-2",
+                  "ordinal": 2,
+                  "stable": true
+                },
+                "id": 2,
+                "type": "CandidateTarget"
+              }
+            ]
+          },
+          "oracle_parity": true,
+          "outcomes": [
+            {
+              "accepted": false,
+              "contender": 0,
+              "elapsed_ns": 130001,
+              "error": "RuntimeError: stale experiment revision: expected (3, 0, 0), current (4, 0, 0)"
+            },
+            {
+              "accepted": false,
+              "contender": 1,
+              "elapsed_ns": 119621,
+              "error": "RuntimeError: stale experiment revision: expected (3, 0, 0), current (4, 0, 0)"
+            },
+            {
+              "accepted": true,
+              "contender": 2,
+              "elapsed_ns": 230991,
+              "error": null
+            }
+          ],
+          "race_elapsed_ns": 1370139,
+          "race_index": 0,
+          "receipts_nonempty": true,
+          "revision": [
+            3,
+            0,
+            0
+          ],
+          "stale_rejection_count": 2,
+          "winner": 2
+        },
+        {
+          "accepted_count": 1,
+          "branch_isolation": true,
+          "final_graph": {
+            "edges": [],
+            "nodes": [
+              {
+                "attrs": {
+                  "ordinal": 0,
+                  "stable": true
+                },
+                "id": 0,
+                "type": "CandidateTarget"
+              },
+              {
+                "attrs": {
+                  "ordinal": 1,
+                  "stable": true
+                },
+                "id": 1,
+                "type": "CandidateTarget"
+              },
+              {
+                "attrs": {
+                  "experiment_value": "race-1-candidate-2",
+                  "ordinal": 2,
+                  "stable": true
+                },
+                "id": 2,
+                "type": "CandidateTarget"
+              }
+            ]
+          },
+          "oracle_parity": true,
+          "outcomes": [
+            {
+              "accepted": false,
+              "contender": 0,
+              "elapsed_ns": 170991,
+              "error": "RuntimeError: stale experiment revision: expected (3, 0, 0), current (4, 0, 0)"
+            },
+            {
+              "accepted": false,
+              "contender": 1,
+              "elapsed_ns": 133481,
+              "error": "RuntimeError: stale experiment revision: expected (3, 0, 0), current (4, 0, 0)"
+            },
+            {
+              "accepted": true,
+              "contender": 2,
+              "elapsed_ns": 137001,
+              "error": null
+            }
+          ],
+          "race_elapsed_ns": 1294818,
+          "race_index": 1,
+          "receipts_nonempty": true,
+          "revision": [
+            3,
+            0,
+            0
+          ],
+          "stale_rejection_count": 2,
+          "winner": 2
+        },
+        {
+          "accepted_count": 1,
+          "branch_isolation": true,
+          "final_graph": {
+            "edges": [],
+            "nodes": [
+              {
+                "attrs": {
+                  "ordinal": 0,
+                  "stable": true
+                },
+                "id": 0,
+                "type": "CandidateTarget"
+              },
+              {
+                "attrs": {
+                  "ordinal": 1,
+                  "stable": true
+                },
+                "id": 1,
+                "type": "CandidateTarget"
+              },
+              {
+                "attrs": {
+                  "experiment_value": "race-2-candidate-2",
+                  "ordinal": 2,
+                  "stable": true
+                },
+                "id": 2,
+                "type": "CandidateTarget"
+              }
+            ]
+          },
+          "oracle_parity": true,
+          "outcomes": [
+            {
+              "accepted": false,
+              "contender": 0,
+              "elapsed_ns": 159341,
+              "error": "RuntimeError: stale experiment revision: expected (3, 0, 0), current (4, 0, 0)"
+            },
+            {
+              "accepted": false,
+              "contender": 1,
+              "elapsed_ns": 130831,
+              "error": "RuntimeError: stale experiment revision: expected (3, 0, 0), current (4, 0, 0)"
+            },
+            {
+              "accepted": true,
+              "contender": 2,
+              "elapsed_ns": 161411,
+              "error": null
+            }
+          ],
+          "race_elapsed_ns": 1788791,
+          "race_index": 2,
+          "receipts_nonempty": true,
+          "revision": [
+            3,
+            0,
+            0
+          ],
+          "stale_rejection_count": 2,
+          "winner": 2
+        },
+        {
+          "accepted_count": 1,
+          "branch_isolation": true,
+          "final_graph": {
+            "edges": [],
+            "nodes": [
+              {
+                "attrs": {
+                  "ordinal": 0,
+                  "stable": true
+                },
+                "id": 0,
+                "type": "CandidateTarget"
+              },
+              {
+                "attrs": {
+                  "ordinal": 1,
+                  "stable": true
+                },
+                "id": 1,
+                "type": "CandidateTarget"
+              },
+              {
+                "attrs": {
+                  "experiment_value": "race-3-candidate-2",
+                  "ordinal": 2,
+                  "stable": true
+                },
+                "id": 2,
+                "type": "CandidateTarget"
+              }
+            ]
+          },
+          "oracle_parity": true,
+          "outcomes": [
+            {
+              "accepted": false,
+              "contender": 0,
+              "elapsed_ns": 152361,
+              "error": "RuntimeError: stale experiment revision: expected (3, 0, 0), current (4, 0, 0)"
+            },
+            {
+              "accepted": false,
+              "contender": 1,
+              "elapsed_ns": 113451,
+              "error": "RuntimeError: stale experiment revision: expected (3, 0, 0), current (4, 0, 0)"
+            },
+            {
+              "accepted": true,
+              "contender": 2,
+              "elapsed_ns": 208621,
+              "error": null
+            }
+          ],
+          "race_elapsed_ns": 3728462,
+          "race_index": 3,
+          "receipts_nonempty": true,
+          "revision": [
+            3,
+            0,
+            0
+          ],
+          "stale_rejection_count": 2,
+          "winner": 2
+        },
+        {
+          "accepted_count": 1,
+          "branch_isolation": true,
+          "final_graph": {
+            "edges": [],
+            "nodes": [
+              {
+                "attrs": {
+                  "ordinal": 0,
+                  "stable": true
+                },
+                "id": 0,
+                "type": "CandidateTarget"
+              },
+              {
+                "attrs": {
+                  "ordinal": 1,
+                  "stable": true
+                },
+                "id": 1,
+                "type": "CandidateTarget"
+              },
+              {
+                "attrs": {
+                  "experiment_value": "race-4-candidate-2",
+                  "ordinal": 2,
+                  "stable": true
+                },
+                "id": 2,
+                "type": "CandidateTarget"
+              }
+            ]
+          },
+          "oracle_parity": true,
+          "outcomes": [
+            {
+              "accepted": false,
+              "contender": 0,
+              "elapsed_ns": 154211,
+              "error": "RuntimeError: stale experiment revision: expected (3, 0, 0), current (4, 0, 0)"
+            },
+            {
+              "accepted": false,
+              "contender": 1,
+              "elapsed_ns": 128651,
+              "error": "RuntimeError: stale experiment revision: expected (3, 0, 0), current (4, 0, 0)"
+            },
+            {
+              "accepted": true,
+              "contender": 2,
+              "elapsed_ns": 171391,
+              "error": null
+            }
+          ],
+          "race_elapsed_ns": 1527569,
+          "race_index": 4,
+          "receipts_nonempty": true,
+          "revision": [
+            3,
+            0,
+            0
+          ],
+          "stale_rejection_count": 2,
+          "winner": 2
+        },
+        {
+          "accepted_count": 1,
+          "branch_isolation": true,
+          "final_graph": {
+            "edges": [],
+            "nodes": [
+              {
+                "attrs": {
+                  "ordinal": 0,
+                  "stable": true
+                },
+                "id": 0,
+                "type": "CandidateTarget"
+              },
+              {
+                "attrs": {
+                  "ordinal": 1,
+                  "stable": true
+                },
+                "id": 1,
+                "type": "CandidateTarget"
+              },
+              {
+                "attrs": {
+                  "experiment_value": "race-5-candidate-2",
+                  "ordinal": 2,
+                  "stable": true
+                },
+                "id": 2,
+                "type": "CandidateTarget"
+              }
+            ]
+          },
+          "oracle_parity": true,
+          "outcomes": [
+            {
+              "accepted": false,
+              "contender": 0,
+              "elapsed_ns": 148411,
+              "error": "RuntimeError: stale experiment revision: expected (3, 0, 0), current (4, 0, 0)"
+            },
+            {
+              "accepted": false,
+              "contender": 1,
+              "elapsed_ns": 310641,
+              "error": "RuntimeError: stale experiment revision: expected (3, 0, 0), current (4, 0, 0)"
+            },
+            {
+              "accepted": true,
+              "contender": 2,
+              "elapsed_ns": 145201,
+              "error": null
+            }
+          ],
+          "race_elapsed_ns": 1284178,
+          "race_index": 5,
+          "receipts_nonempty": true,
+          "revision": [
+            3,
+            0,
+            0
+          ],
+          "stale_rejection_count": 2,
+          "winner": 2
+        },
+        {
+          "accepted_count": 1,
+          "branch_isolation": true,
+          "final_graph": {
+            "edges": [],
+            "nodes": [
+              {
+                "attrs": {
+                  "ordinal": 0,
+                  "stable": true
+                },
+                "id": 0,
+                "type": "CandidateTarget"
+              },
+              {
+                "attrs": {
+                  "ordinal": 1,
+                  "stable": true
+                },
+                "id": 1,
+                "type": "CandidateTarget"
+              },
+              {
+                "attrs": {
+                  "experiment_value": "race-6-candidate-2",
+                  "ordinal": 2,
+                  "stable": true
+                },
+                "id": 2,
+                "type": "CandidateTarget"
+              }
+            ]
+          },
+          "oracle_parity": true,
+          "outcomes": [
+            {
+              "accepted": false,
+              "contender": 0,
+              "elapsed_ns": 95971,
+              "error": "RuntimeError: stale experiment revision: expected (3, 0, 0), current (4, 0, 0)"
+            },
+            {
+              "accepted": false,
+              "contender": 1,
+              "elapsed_ns": 96580,
+              "error": "RuntimeError: stale experiment revision: expected (3, 0, 0), current (4, 0, 0)"
+            },
+            {
+              "accepted": true,
+              "contender": 2,
+              "elapsed_ns": 118881,
+              "error": null
+            }
+          ],
+          "race_elapsed_ns": 790625,
+          "race_index": 6,
+          "receipts_nonempty": true,
+          "revision": [
+            3,
+            0,
+            0
+          ],
+          "stale_rejection_count": 2,
+          "winner": 2
+        },
+        {
+          "accepted_count": 1,
+          "branch_isolation": true,
+          "final_graph": {
+            "edges": [],
+            "nodes": [
+              {
+                "attrs": {
+                  "ordinal": 0,
+                  "stable": true
+                },
+                "id": 0,
+                "type": "CandidateTarget"
+              },
+              {
+                "attrs": {
+                  "ordinal": 1,
+                  "stable": true
+                },
+                "id": 1,
+                "type": "CandidateTarget"
+              },
+              {
+                "attrs": {
+                  "experiment_value": "race-7-candidate-2",
+                  "ordinal": 2,
+                  "stable": true
+                },
+                "id": 2,
+                "type": "CandidateTarget"
+              }
+            ]
+          },
+          "oracle_parity": true,
+          "outcomes": [
+            {
+              "accepted": false,
+              "contender": 0,
+              "elapsed_ns": 145941,
+              "error": "RuntimeError: stale experiment revision: expected (3, 0, 0), current (4, 0, 0)"
+            },
+            {
+              "accepted": false,
+              "contender": 1,
+              "elapsed_ns": 142101,
+              "error": "RuntimeError: stale experiment revision: expected (3, 0, 0), current (4, 0, 0)"
+            },
+            {
+              "accepted": true,
+              "contender": 2,
+              "elapsed_ns": 113780,
+              "error": null
+            }
+          ],
+          "race_elapsed_ns": 2417585,
+          "race_index": 7,
+          "receipts_nonempty": true,
+          "revision": [
+            3,
+            0,
+            0
+          ],
+          "stale_rejection_count": 2,
+          "winner": 2
+        },
+        {
+          "accepted_count": 1,
+          "branch_isolation": true,
+          "final_graph": {
+            "edges": [],
+            "nodes": [
+              {
+                "attrs": {
+                  "ordinal": 0,
+                  "stable": true
+                },
+                "id": 0,
+                "type": "CandidateTarget"
+              },
+              {
+                "attrs": {
+                  "ordinal": 1,
+                  "stable": true
+                },
+                "id": 1,
+                "type": "CandidateTarget"
+              },
+              {
+                "attrs": {
+                  "experiment_value": "race-8-candidate-2",
+                  "ordinal": 2,
+                  "stable": true
+                },
+                "id": 2,
+                "type": "CandidateTarget"
+              }
+            ]
+          },
+          "oracle_parity": true,
+          "outcomes": [
+            {
+              "accepted": false,
+              "contender": 0,
+              "elapsed_ns": 121610,
+              "error": "RuntimeError: stale experiment revision: expected (3, 0, 0), current (4, 0, 0)"
+            },
+            {
+              "accepted": false,
+              "contender": 1,
+              "elapsed_ns": 107061,
+              "error": "RuntimeError: stale experiment revision: expected (3, 0, 0), current (4, 0, 0)"
+            },
+            {
+              "accepted": true,
+              "contender": 2,
+              "elapsed_ns": 135170,
+              "error": null
+            }
+          ],
+          "race_elapsed_ns": 950305,
+          "race_index": 8,
+          "receipts_nonempty": true,
+          "revision": [
+            3,
+            0,
+            0
+          ],
+          "stale_rejection_count": 2,
+          "winner": 2
+        },
+        {
+          "accepted_count": 1,
+          "branch_isolation": true,
+          "final_graph": {
+            "edges": [],
+            "nodes": [
+              {
+                "attrs": {
+                  "ordinal": 0,
+                  "stable": true
+                },
+                "id": 0,
+                "type": "CandidateTarget"
+              },
+              {
+                "attrs": {
+                  "ordinal": 1,
+                  "stable": true
+                },
+                "id": 1,
+                "type": "CandidateTarget"
+              },
+              {
+                "attrs": {
+                  "experiment_value": "race-9-candidate-2",
+                  "ordinal": 2,
+                  "stable": true
+                },
+                "id": 2,
+                "type": "CandidateTarget"
+              }
+            ]
+          },
+          "oracle_parity": true,
+          "outcomes": [
+            {
+              "accepted": false,
+              "contender": 0,
+              "elapsed_ns": 103730,
+              "error": "RuntimeError: stale experiment revision: expected (3, 0, 0), current (4, 0, 0)"
+            },
+            {
+              "accepted": false,
+              "contender": 1,
+              "elapsed_ns": 123500,
+              "error": "RuntimeError: stale experiment revision: expected (3, 0, 0), current (4, 0, 0)"
+            },
+            {
+              "accepted": true,
+              "contender": 2,
+              "elapsed_ns": 148771,
+              "error": null
+            }
+          ],
+          "race_elapsed_ns": 1050946,
+          "race_index": 9,
+          "receipts_nonempty": true,
+          "revision": [
+            3,
+            0,
+            0
+          ],
+          "stale_rejection_count": 2,
+          "winner": 2
+        }
+      ],
+      "source_build_stable": true
+    },
+    {
+      "fingerprint_after": {
+        "docs/research/engine_substrate/THOUGHTEXPERIMENT_CONCURRENT_RECEIPT_ADOPTION_V1_PREREG_20261001.md": "04804219de9b5883fcf0a39e566232d591e5cedbe774bfa689fc30abee6b9b42",
+        "evaluation/substrate_capability/thoughtexperiment_concurrent_receipt_adoption_v1.py": "cb76acd7e5bcc0154e3d28b17c4a12fd39d7c02578537320bc668e414355b648",
+        "native_binary": "b9f398c75ceb12a5d519235efb6b3ec403d1b153a576aad6def528c2d48a7617",
+        "runners/dsl/python/substrate_rs/__init__.py": "16afa0fa0a9cf12eb306ecad98ccda27ca059f5e1cfbaffd899ee4cb74ebb3c1",
+        "runners/dsl/python/substrate_rs/_native.build.json": "1134ae2221afebe9dc3dfd10390942162817d59d01e9c2eb85819268102cf13e",
+        "runners/dsl/src/graph.rs": "9744fec2e0c5091f2036081ffc615b1c7dd00ba2a5995af1294efb0b5aa5a28c",
+        "runners/dsl/src/persist.rs": "066d026451c97e1032c30054a3a4c556d386f23db2304630a4625c5bf81306cf",
+        "runners/dsl/src/py.rs": "201adbebde67c80bce80de6622095472bcb58e83a2b4df50f9b314bc9000a1de",
+        "runners/dsl/src/substrate.rs": "bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3"
+      },
+      "fingerprint_before": {
+        "docs/research/engine_substrate/THOUGHTEXPERIMENT_CONCURRENT_RECEIPT_ADOPTION_V1_PREREG_20261001.md": "04804219de9b5883fcf0a39e566232d591e5cedbe774bfa689fc30abee6b9b42",
+        "evaluation/substrate_capability/thoughtexperiment_concurrent_receipt_adoption_v1.py": "cb76acd7e5bcc0154e3d28b17c4a12fd39d7c02578537320bc668e414355b648",
+        "native_binary": "b9f398c75ceb12a5d519235efb6b3ec403d1b153a576aad6def528c2d48a7617",
+        "runners/dsl/python/substrate_rs/__init__.py": "16afa0fa0a9cf12eb306ecad98ccda27ca059f5e1cfbaffd899ee4cb74ebb3c1",
+        "runners/dsl/python/substrate_rs/_native.build.json": "1134ae2221afebe9dc3dfd10390942162817d59d01e9c2eb85819268102cf13e",
+        "runners/dsl/src/graph.rs": "9744fec2e0c5091f2036081ffc615b1c7dd00ba2a5995af1294efb0b5aa5a28c",
+        "runners/dsl/src/persist.rs": "066d026451c97e1032c30054a3a4c556d386f23db2304630a4625c5bf81306cf",
+        "runners/dsl/src/py.rs": "201adbebde67c80bce80de6622095472bcb58e83a2b4df50f9b314bc9000a1de",
+        "runners/dsl/src/substrate.rs": "bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3"
+      },
+      "pid": 64,
+      "races": [
+        {
+          "accepted_count": 1,
+          "branch_isolation": true,
+          "final_graph": {
+            "edges": [],
+            "nodes": [
+              {
+                "attrs": {
+                  "ordinal": 0,
+                  "stable": true
+                },
+                "id": 0,
+                "type": "CandidateTarget"
+              },
+              {
+                "attrs": {
+                  "ordinal": 1,
+                  "stable": true
+                },
+                "id": 1,
+                "type": "CandidateTarget"
+              },
+              {
+                "attrs": {
+                  "experiment_value": "race-0-candidate-2",
+                  "ordinal": 2,
+                  "stable": true
+                },
+                "id": 2,
+                "type": "CandidateTarget"
+              }
+            ]
+          },
+          "oracle_parity": true,
+          "outcomes": [
+            {
+              "accepted": false,
+              "contender": 0,
+              "elapsed_ns": 87390,
+              "error": "RuntimeError: stale experiment revision: expected (3, 0, 0), current (4, 0, 0)"
+            },
+            {
+              "accepted": false,
+              "contender": 1,
+              "elapsed_ns": 97670,
+              "error": "RuntimeError: stale experiment revision: expected (3, 0, 0), current (4, 0, 0)"
+            },
+            {
+              "accepted": true,
+              "contender": 2,
+              "elapsed_ns": 159181,
+              "error": null
+            }
+          ],
+          "race_elapsed_ns": 1000196,
+          "race_index": 0,
+          "receipts_nonempty": true,
+          "revision": [
+            3,
+            0,
+            0
+          ],
+          "stale_rejection_count": 2,
+          "winner": 2
+        },
+        {
+          "accepted_count": 1,
+          "branch_isolation": true,
+          "final_graph": {
+            "edges": [],
+            "nodes": [
+              {
+                "attrs": {
+                  "ordinal": 0,
+                  "stable": true
+                },
+                "id": 0,
+                "type": "CandidateTarget"
+              },
+              {
+                "attrs": {
+                  "ordinal": 1,
+                  "stable": true
+                },
+                "id": 1,
+                "type": "CandidateTarget"
+              },
+              {
+                "attrs": {
+                  "experiment_value": "race-1-candidate-2",
+                  "ordinal": 2,
+                  "stable": true
+                },
+                "id": 2,
+                "type": "CandidateTarget"
+              }
+            ]
+          },
+          "oracle_parity": true,
+          "outcomes": [
+            {
+              "accepted": false,
+              "contender": 0,
+              "elapsed_ns": 113751,
+              "error": "RuntimeError: stale experiment revision: expected (3, 0, 0), current (4, 0, 0)"
+            },
+            {
+              "accepted": false,
+              "contender": 1,
+              "elapsed_ns": 128721,
+              "error": "RuntimeError: stale experiment revision: expected (3, 0, 0), current (4, 0, 0)"
+            },
+            {
+              "accepted": true,
+              "contender": 2,
+              "elapsed_ns": 194181,
+              "error": null
+            }
+          ],
+          "race_elapsed_ns": 1084317,
+          "race_index": 1,
+          "receipts_nonempty": true,
+          "revision": [
+            3,
+            0,
+            0
+          ],
+          "stale_rejection_count": 2,
+          "winner": 2
+        },
+        {
+          "accepted_count": 1,
+          "branch_isolation": true,
+          "final_graph": {
+            "edges": [],
+            "nodes": [
+              {
+                "attrs": {
+                  "ordinal": 0,
+                  "stable": true
+                },
+                "id": 0,
+                "type": "CandidateTarget"
+              },
+              {
+                "attrs": {
+                  "ordinal": 1,
+                  "stable": true
+                },
+                "id": 1,
+                "type": "CandidateTarget"
+              },
+              {
+                "attrs": {
+                  "experiment_value": "race-2-candidate-2",
+                  "ordinal": 2,
+                  "stable": true
+                },
+                "id": 2,
+                "type": "CandidateTarget"
+              }
+            ]
+          },
+          "oracle_parity": true,
+          "outcomes": [
+            {
+              "accepted": false,
+              "contender": 0,
+              "elapsed_ns": 108390,
+              "error": "RuntimeError: stale experiment revision: expected (3, 0, 0), current (4, 0, 0)"
+            },
+            {
+              "accepted": false,
+              "contender": 1,
+              "elapsed_ns": 113901,
+              "error": "RuntimeError: stale experiment revision: expected (3, 0, 0), current (4, 0, 0)"
+            },
+            {
+              "accepted": true,
+              "contender": 2,
+              "elapsed_ns": 104650,
+              "error": null
+            }
+          ],
+          "race_elapsed_ns": 787355,
+          "race_index": 2,
+          "receipts_nonempty": true,
+          "revision": [
+            3,
+            0,
+            0
+          ],
+          "stale_rejection_count": 2,
+          "winner": 2
+        },
+        {
+          "accepted_count": 1,
+          "branch_isolation": true,
+          "final_graph": {
+            "edges": [],
+            "nodes": [
+              {
+                "attrs": {
+                  "ordinal": 0,
+                  "stable": true
+                },
+                "id": 0,
+                "type": "CandidateTarget"
+              },
+              {
+                "attrs": {
+                  "ordinal": 1,
+                  "stable": true
+                },
+                "id": 1,
+                "type": "CandidateTarget"
+              },
+              {
+                "attrs": {
+                  "experiment_value": "race-3-candidate-2",
+                  "ordinal": 2,
+                  "stable": true
+                },
+                "id": 2,
+                "type": "CandidateTarget"
+              }
+            ]
+          },
+          "oracle_parity": true,
+          "outcomes": [
+            {
+              "accepted": false,
+              "contender": 0,
+              "elapsed_ns": 104951,
+              "error": "RuntimeError: stale experiment revision: expected (3, 0, 0), current (4, 0, 0)"
+            },
+            {
+              "accepted": false,
+              "contender": 1,
+              "elapsed_ns": 117841,
+              "error": "RuntimeError: stale experiment revision: expected (3, 0, 0), current (4, 0, 0)"
+            },
+            {
+              "accepted": true,
+              "contender": 2,
+              "elapsed_ns": 119241,
+              "error": null
+            }
+          ],
+          "race_elapsed_ns": 1150977,
+          "race_index": 3,
+          "receipts_nonempty": true,
+          "revision": [
+            3,
+            0,
+            0
+          ],
+          "stale_rejection_count": 2,
+          "winner": 2
+        },
+        {
+          "accepted_count": 1,
+          "branch_isolation": true,
+          "final_graph": {
+            "edges": [],
+            "nodes": [
+              {
+                "attrs": {
+                  "ordinal": 0,
+                  "stable": true
+                },
+                "id": 0,
+                "type": "CandidateTarget"
+              },
+              {
+                "attrs": {
+                  "ordinal": 1,
+                  "stable": true
+                },
+                "id": 1,
+                "type": "CandidateTarget"
+              },
+              {
+                "attrs": {
+                  "experiment_value": "race-4-candidate-2",
+                  "ordinal": 2,
+                  "stable": true
+                },
+                "id": 2,
+                "type": "CandidateTarget"
+              }
+            ]
+          },
+          "oracle_parity": true,
+          "outcomes": [
+            {
+              "accepted": false,
+              "contender": 0,
+              "elapsed_ns": 103491,
+              "error": "RuntimeError: stale experiment revision: expected (3, 0, 0), current (4, 0, 0)"
+            },
+            {
+              "accepted": false,
+              "contender": 1,
+              "elapsed_ns": 115040,
+              "error": "RuntimeError: stale experiment revision: expected (3, 0, 0), current (4, 0, 0)"
+            },
+            {
+              "accepted": true,
+              "contender": 2,
+              "elapsed_ns": 115961,
+              "error": null
+            }
+          ],
+          "race_elapsed_ns": 869045,
+          "race_index": 4,
+          "receipts_nonempty": true,
+          "revision": [
+            3,
+            0,
+            0
+          ],
+          "stale_rejection_count": 2,
+          "winner": 2
+        },
+        {
+          "accepted_count": 1,
+          "branch_isolation": true,
+          "final_graph": {
+            "edges": [],
+            "nodes": [
+              {
+                "attrs": {
+                  "ordinal": 0,
+                  "stable": true
+                },
+                "id": 0,
+                "type": "CandidateTarget"
+              },
+              {
+                "attrs": {
+                  "ordinal": 1,
+                  "stable": true
+                },
+                "id": 1,
+                "type": "CandidateTarget"
+              },
+              {
+                "attrs": {
+                  "experiment_value": "race-5-candidate-2",
+                  "ordinal": 2,
+                  "stable": true
+                },
+                "id": 2,
+                "type": "CandidateTarget"
+              }
+            ]
+          },
+          "oracle_parity": true,
+          "outcomes": [
+            {
+              "accepted": false,
+              "contender": 0,
+              "elapsed_ns": 100380,
+              "error": "RuntimeError: stale experiment revision: expected (3, 0, 0), current (4, 0, 0)"
+            },
+            {
+              "accepted": false,
+              "contender": 1,
+              "elapsed_ns": 103471,
+              "error": "RuntimeError: stale experiment revision: expected (3, 0, 0), current (4, 0, 0)"
+            },
+            {
+              "accepted": true,
+              "contender": 2,
+              "elapsed_ns": 149181,
+              "error": null
+            }
+          ],
+          "race_elapsed_ns": 890515,
+          "race_index": 5,
+          "receipts_nonempty": true,
+          "revision": [
+            3,
+            0,
+            0
+          ],
+          "stale_rejection_count": 2,
+          "winner": 2
+        },
+        {
+          "accepted_count": 1,
+          "branch_isolation": true,
+          "final_graph": {
+            "edges": [],
+            "nodes": [
+              {
+                "attrs": {
+                  "ordinal": 0,
+                  "stable": true
+                },
+                "id": 0,
+                "type": "CandidateTarget"
+              },
+              {
+                "attrs": {
+                  "ordinal": 1,
+                  "stable": true
+                },
+                "id": 1,
+                "type": "CandidateTarget"
+              },
+              {
+                "attrs": {
+                  "experiment_value": "race-6-candidate-2",
+                  "ordinal": 2,
+                  "stable": true
+                },
+                "id": 2,
+                "type": "CandidateTarget"
+              }
+            ]
+          },
+          "oracle_parity": true,
+          "outcomes": [
+            {
+              "accepted": false,
+              "contender": 0,
+              "elapsed_ns": 78881,
+              "error": "RuntimeError: stale experiment revision: expected (3, 0, 0), current (4, 0, 0)"
+            },
+            {
+              "accepted": false,
+              "contender": 1,
+              "elapsed_ns": 111520,
+              "error": "RuntimeError: stale experiment revision: expected (3, 0, 0), current (4, 0, 0)"
+            },
+            {
+              "accepted": true,
+              "contender": 2,
+              "elapsed_ns": 97811,
+              "error": null
+            }
+          ],
+          "race_elapsed_ns": 716684,
+          "race_index": 6,
+          "receipts_nonempty": true,
+          "revision": [
+            3,
+            0,
+            0
+          ],
+          "stale_rejection_count": 2,
+          "winner": 2
+        },
+        {
+          "accepted_count": 1,
+          "branch_isolation": true,
+          "final_graph": {
+            "edges": [],
+            "nodes": [
+              {
+                "attrs": {
+                  "ordinal": 0,
+                  "stable": true
+                },
+                "id": 0,
+                "type": "CandidateTarget"
+              },
+              {
+                "attrs": {
+                  "ordinal": 1,
+                  "stable": true
+                },
+                "id": 1,
+                "type": "CandidateTarget"
+              },
+              {
+                "attrs": {
+                  "experiment_value": "race-7-candidate-2",
+                  "ordinal": 2,
+                  "stable": true
+                },
+                "id": 2,
+                "type": "CandidateTarget"
+              }
+            ]
+          },
+          "oracle_parity": true,
+          "outcomes": [
+            {
+              "accepted": false,
+              "contender": 0,
+              "elapsed_ns": 84391,
+              "error": "RuntimeError: stale experiment revision: expected (3, 0, 0), current (4, 0, 0)"
+            },
+            {
+              "accepted": false,
+              "contender": 1,
+              "elapsed_ns": 80841,
+              "error": "RuntimeError: stale experiment revision: expected (3, 0, 0), current (4, 0, 0)"
+            },
+            {
+              "accepted": true,
+              "contender": 2,
+              "elapsed_ns": 84680,
+              "error": null
+            }
+          ],
+          "race_elapsed_ns": 590503,
+          "race_index": 7,
+          "receipts_nonempty": true,
+          "revision": [
+            3,
+            0,
+            0
+          ],
+          "stale_rejection_count": 2,
+          "winner": 2
+        },
+        {
+          "accepted_count": 1,
+          "branch_isolation": true,
+          "final_graph": {
+            "edges": [],
+            "nodes": [
+              {
+                "attrs": {
+                  "ordinal": 0,
+                  "stable": true
+                },
+                "id": 0,
+                "type": "CandidateTarget"
+              },
+              {
+                "attrs": {
+                  "ordinal": 1,
+                  "stable": true
+                },
+                "id": 1,
+                "type": "CandidateTarget"
+              },
+              {
+                "attrs": {
+                  "experiment_value": "race-8-candidate-2",
+                  "ordinal": 2,
+                  "stable": true
+                },
+                "id": 2,
+                "type": "CandidateTarget"
+              }
+            ]
+          },
+          "oracle_parity": true,
+          "outcomes": [
+            {
+              "accepted": false,
+              "contender": 0,
+              "elapsed_ns": 96281,
+              "error": "RuntimeError: stale experiment revision: expected (3, 0, 0), current (4, 0, 0)"
+            },
+            {
+              "accepted": false,
+              "contender": 1,
+              "elapsed_ns": 96250,
+              "error": "RuntimeError: stale experiment revision: expected (3, 0, 0), current (4, 0, 0)"
+            },
+            {
+              "accepted": true,
+              "contender": 2,
+              "elapsed_ns": 112961,
+              "error": null
+            }
+          ],
+          "race_elapsed_ns": 766875,
+          "race_index": 8,
+          "receipts_nonempty": true,
+          "revision": [
+            3,
+            0,
+            0
+          ],
+          "stale_rejection_count": 2,
+          "winner": 2
+        },
+        {
+          "accepted_count": 1,
+          "branch_isolation": true,
+          "final_graph": {
+            "edges": [],
+            "nodes": [
+              {
+                "attrs": {
+                  "ordinal": 0,
+                  "stable": true
+                },
+                "id": 0,
+                "type": "CandidateTarget"
+              },
+              {
+                "attrs": {
+                  "ordinal": 1,
+                  "stable": true
+                },
+                "id": 1,
+                "type": "CandidateTarget"
+              },
+              {
+                "attrs": {
+                  "experiment_value": "race-9-candidate-2",
+                  "ordinal": 2,
+                  "stable": true
+                },
+                "id": 2,
+                "type": "CandidateTarget"
+              }
+            ]
+          },
+          "oracle_parity": true,
+          "outcomes": [
+            {
+              "accepted": false,
+              "contender": 0,
+              "elapsed_ns": 98380,
+              "error": "RuntimeError: stale experiment revision: expected (3, 0, 0), current (4, 0, 0)"
+            },
+            {
+              "accepted": false,
+              "contender": 1,
+              "elapsed_ns": 135000,
+              "error": "RuntimeError: stale experiment revision: expected (3, 0, 0), current (4, 0, 0)"
+            },
+            {
+              "accepted": true,
+              "contender": 2,
+              "elapsed_ns": 95711,
+              "error": null
+            }
+          ],
+          "race_elapsed_ns": 885245,
+          "race_index": 9,
+          "receipts_nonempty": true,
+          "revision": [
+            3,
+            0,
+            0
+          ],
+          "stale_rejection_count": 2,
+          "winner": 2
+        }
+      ],
+      "source_build_stable": true
+    },
+    {
+      "fingerprint_after": {
+        "docs/research/engine_substrate/THOUGHTEXPERIMENT_CONCURRENT_RECEIPT_ADOPTION_V1_PREREG_20261001.md": "04804219de9b5883fcf0a39e566232d591e5cedbe774bfa689fc30abee6b9b42",
+        "evaluation/substrate_capability/thoughtexperiment_concurrent_receipt_adoption_v1.py": "cb76acd7e5bcc0154e3d28b17c4a12fd39d7c02578537320bc668e414355b648",
+        "native_binary": "b9f398c75ceb12a5d519235efb6b3ec403d1b153a576aad6def528c2d48a7617",
+        "runners/dsl/python/substrate_rs/__init__.py": "16afa0fa0a9cf12eb306ecad98ccda27ca059f5e1cfbaffd899ee4cb74ebb3c1",
+        "runners/dsl/python/substrate_rs/_native.build.json": "1134ae2221afebe9dc3dfd10390942162817d59d01e9c2eb85819268102cf13e",
+        "runners/dsl/src/graph.rs": "9744fec2e0c5091f2036081ffc615b1c7dd00ba2a5995af1294efb0b5aa5a28c",
+        "runners/dsl/src/persist.rs": "066d026451c97e1032c30054a3a4c556d386f23db2304630a4625c5bf81306cf",
+        "runners/dsl/src/py.rs": "201adbebde67c80bce80de6622095472bcb58e83a2b4df50f9b314bc9000a1de",
+        "runners/dsl/src/substrate.rs": "bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3"
+      },
+      "fingerprint_before": {
+        "docs/research/engine_substrate/THOUGHTEXPERIMENT_CONCURRENT_RECEIPT_ADOPTION_V1_PREREG_20261001.md": "04804219de9b5883fcf0a39e566232d591e5cedbe774bfa689fc30abee6b9b42",
+        "evaluation/substrate_capability/thoughtexperiment_concurrent_receipt_adoption_v1.py": "cb76acd7e5bcc0154e3d28b17c4a12fd39d7c02578537320bc668e414355b648",
+        "native_binary": "b9f398c75ceb12a5d519235efb6b3ec403d1b153a576aad6def528c2d48a7617",
+        "runners/dsl/python/substrate_rs/__init__.py": "16afa0fa0a9cf12eb306ecad98ccda27ca059f5e1cfbaffd899ee4cb74ebb3c1",
+        "runners/dsl/python/substrate_rs/_native.build.json": "1134ae2221afebe9dc3dfd10390942162817d59d01e9c2eb85819268102cf13e",
+        "runners/dsl/src/graph.rs": "9744fec2e0c5091f2036081ffc615b1c7dd00ba2a5995af1294efb0b5aa5a28c",
+        "runners/dsl/src/persist.rs": "066d026451c97e1032c30054a3a4c556d386f23db2304630a4625c5bf81306cf",
+        "runners/dsl/src/py.rs": "201adbebde67c80bce80de6622095472bcb58e83a2b4df50f9b314bc9000a1de",
+        "runners/dsl/src/substrate.rs": "bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3"
+      },
+      "pid": 125,
+      "races": [
+        {
+          "accepted_count": 1,
+          "branch_isolation": true,
+          "final_graph": {
+            "edges": [],
+            "nodes": [
+              {
+                "attrs": {
+                  "ordinal": 0,
+                  "stable": true
+                },
+                "id": 0,
+                "type": "CandidateTarget"
+              },
+              {
+                "attrs": {
+                  "ordinal": 1,
+                  "stable": true
+                },
+                "id": 1,
+                "type": "CandidateTarget"
+              },
+              {
+                "attrs": {
+                  "experiment_value": "race-0-candidate-2",
+                  "ordinal": 2,
+                  "stable": true
+                },
+                "id": 2,
+                "type": "CandidateTarget"
+              }
+            ]
+          },
+          "oracle_parity": true,
+          "outcomes": [
+            {
+              "accepted": false,
+              "contender": 0,
+              "elapsed_ns": 114530,
+              "error": "RuntimeError: stale experiment revision: expected (3, 0, 0), current (4, 0, 0)"
+            },
+            {
+              "accepted": false,
+              "contender": 1,
+              "elapsed_ns": 100870,
+              "error": "RuntimeError: stale experiment revision: expected (3, 0, 0), current (4, 0, 0)"
+            },
+            {
+              "accepted": true,
+              "contender": 2,
+              "elapsed_ns": 211611,
+              "error": null
+            }
+          ],
+          "race_elapsed_ns": 1373658,
+          "race_index": 0,
+          "receipts_nonempty": true,
+          "revision": [
+            3,
+            0,
+            0
+          ],
+          "stale_rejection_count": 2,
+          "winner": 2
+        },
+        {
+          "accepted_count": 1,
+          "branch_isolation": true,
+          "final_graph": {
+            "edges": [],
+            "nodes": [
+              {
+                "attrs": {
+                  "ordinal": 0,
+                  "stable": true
+                },
+                "id": 0,
+                "type": "CandidateTarget"
+              },
+              {
+                "attrs": {
+                  "ordinal": 1,
+                  "stable": true
+                },
+                "id": 1,
+                "type": "CandidateTarget"
+              },
+              {
+                "attrs": {
+                  "experiment_value": "race-1-candidate-2",
+                  "ordinal": 2,
+                  "stable": true
+                },
+                "id": 2,
+                "type": "CandidateTarget"
+              }
+            ]
+          },
+          "oracle_parity": true,
+          "outcomes": [
+            {
+              "accepted": false,
+              "contender": 0,
+              "elapsed_ns": 85420,
+              "error": "RuntimeError: stale experiment revision: expected (3, 0, 0), current (4, 0, 0)"
+            },
+            {
+              "accepted": false,
+              "contender": 1,
+              "elapsed_ns": 97130,
+              "error": "RuntimeError: stale experiment revision: expected (3, 0, 0), current (4, 0, 0)"
+            },
+            {
+              "accepted": true,
+              "contender": 2,
+              "elapsed_ns": 101211,
+              "error": null
+            }
+          ],
+          "race_elapsed_ns": 849405,
+          "race_index": 1,
+          "receipts_nonempty": true,
+          "revision": [
+            3,
+            0,
+            0
+          ],
+          "stale_rejection_count": 2,
+          "winner": 2
+        },
+        {
+          "accepted_count": 1,
+          "branch_isolation": true,
+          "final_graph": {
+            "edges": [],
+            "nodes": [
+              {
+                "attrs": {
+                  "ordinal": 0,
+                  "stable": true
+                },
+                "id": 0,
+                "type": "CandidateTarget"
+              },
+              {
+                "attrs": {
+                  "ordinal": 1,
+                  "stable": true
+                },
+                "id": 1,
+                "type": "CandidateTarget"
+              },
+              {
+                "attrs": {
+                  "experiment_value": "race-2-candidate-2",
+                  "ordinal": 2,
+                  "stable": true
+                },
+                "id": 2,
+                "type": "CandidateTarget"
+              }
+            ]
+          },
+          "oracle_parity": true,
+          "outcomes": [
+            {
+              "accepted": false,
+              "contender": 0,
+              "elapsed_ns": 81081,
+              "error": "RuntimeError: stale experiment revision: expected (3, 0, 0), current (4, 0, 0)"
+            },
+            {
+              "accepted": false,
+              "contender": 1,
+              "elapsed_ns": 96341,
+              "error": "RuntimeError: stale experiment revision: expected (3, 0, 0), current (4, 0, 0)"
+            },
+            {
+              "accepted": true,
+              "contender": 2,
+              "elapsed_ns": 108321,
+              "error": null
+            }
+          ],
+          "race_elapsed_ns": 814234,
+          "race_index": 2,
+          "receipts_nonempty": true,
+          "revision": [
+            3,
+            0,
+            0
+          ],
+          "stale_rejection_count": 2,
+          "winner": 2
+        },
+        {
+          "accepted_count": 1,
+          "branch_isolation": true,
+          "final_graph": {
+            "edges": [],
+            "nodes": [
+              {
+                "attrs": {
+                  "ordinal": 0,
+                  "stable": true
+                },
+                "id": 0,
+                "type": "CandidateTarget"
+              },
+              {
+                "attrs": {
+                  "ordinal": 1,
+                  "stable": true
+                },
+                "id": 1,
+                "type": "CandidateTarget"
+              },
+              {
+                "attrs": {
+                  "experiment_value": "race-3-candidate-2",
+                  "ordinal": 2,
+                  "stable": true
+                },
+                "id": 2,
+                "type": "CandidateTarget"
+              }
+            ]
+          },
+          "oracle_parity": true,
+          "outcomes": [
+            {
+              "accepted": false,
+              "contender": 0,
+              "elapsed_ns": 102201,
+              "error": "RuntimeError: stale experiment revision: expected (3, 0, 0), current (4, 0, 0)"
+            },
+            {
+              "accepted": false,
+              "contender": 1,
+              "elapsed_ns": 130881,
+              "error": "RuntimeError: stale experiment revision: expected (3, 0, 0), current (4, 0, 0)"
+            },
+            {
+              "accepted": true,
+              "contender": 2,
+              "elapsed_ns": 119901,
+              "error": null
+            }
+          ],
+          "race_elapsed_ns": 1234718,
+          "race_index": 3,
+          "receipts_nonempty": true,
+          "revision": [
+            3,
+            0,
+            0
+          ],
+          "stale_rejection_count": 2,
+          "winner": 2
+        },
+        {
+          "accepted_count": 1,
+          "branch_isolation": true,
+          "final_graph": {
+            "edges": [],
+            "nodes": [
+              {
+                "attrs": {
+                  "ordinal": 0,
+                  "stable": true
+                },
+                "id": 0,
+                "type": "CandidateTarget"
+              },
+              {
+                "attrs": {
+                  "ordinal": 1,
+                  "stable": true
+                },
+                "id": 1,
+                "type": "CandidateTarget"
+              },
+              {
+                "attrs": {
+                  "experiment_value": "race-4-candidate-2",
+                  "ordinal": 2,
+                  "stable": true
+                },
+                "id": 2,
+                "type": "CandidateTarget"
+              }
+            ]
+          },
+          "oracle_parity": true,
+          "outcomes": [
+            {
+              "accepted": false,
+              "contender": 0,
+              "elapsed_ns": 85771,
+              "error": "RuntimeError: stale experiment revision: expected (3, 0, 0), current (4, 0, 0)"
+            },
+            {
+              "accepted": false,
+              "contender": 1,
+              "elapsed_ns": 109041,
+              "error": "RuntimeError: stale experiment revision: expected (3, 0, 0), current (4, 0, 0)"
+            },
+            {
+              "accepted": true,
+              "contender": 2,
+              "elapsed_ns": 104190,
+              "error": null
+            }
+          ],
+          "race_elapsed_ns": 923956,
+          "race_index": 4,
+          "receipts_nonempty": true,
+          "revision": [
+            3,
+            0,
+            0
+          ],
+          "stale_rejection_count": 2,
+          "winner": 2
+        },
+        {
+          "accepted_count": 1,
+          "branch_isolation": true,
+          "final_graph": {
+            "edges": [],
+            "nodes": [
+              {
+                "attrs": {
+                  "ordinal": 0,
+                  "stable": true
+                },
+                "id": 0,
+                "type": "CandidateTarget"
+              },
+              {
+                "attrs": {
+                  "ordinal": 1,
+                  "stable": true
+                },
+                "id": 1,
+                "type": "CandidateTarget"
+              },
+              {
+                "attrs": {
+                  "experiment_value": "race-5-candidate-2",
+                  "ordinal": 2,
+                  "stable": true
+                },
+                "id": 2,
+                "type": "CandidateTarget"
+              }
+            ]
+          },
+          "oracle_parity": true,
+          "outcomes": [
+            {
+              "accepted": false,
+              "contender": 0,
+              "elapsed_ns": 114611,
+              "error": "RuntimeError: stale experiment revision: expected (3, 0, 0), current (4, 0, 0)"
+            },
+            {
+              "accepted": false,
+              "contender": 1,
+              "elapsed_ns": 126101,
+              "error": "RuntimeError: stale experiment revision: expected (3, 0, 0), current (4, 0, 0)"
+            },
+            {
+              "accepted": true,
+              "contender": 2,
+              "elapsed_ns": 140371,
+              "error": null
+            }
+          ],
+          "race_elapsed_ns": 952596,
+          "race_index": 5,
+          "receipts_nonempty": true,
+          "revision": [
+            3,
+            0,
+            0
+          ],
+          "stale_rejection_count": 2,
+          "winner": 2
+        },
+        {
+          "accepted_count": 1,
+          "branch_isolation": true,
+          "final_graph": {
+            "edges": [],
+            "nodes": [
+              {
+                "attrs": {
+                  "ordinal": 0,
+                  "stable": true
+                },
+                "id": 0,
+                "type": "CandidateTarget"
+              },
+              {
+                "attrs": {
+                  "ordinal": 1,
+                  "stable": true
+                },
+                "id": 1,
+                "type": "CandidateTarget"
+              },
+              {
+                "attrs": {
+                  "experiment_value": "race-6-candidate-2",
+                  "ordinal": 2,
+                  "stable": true
+                },
+                "id": 2,
+                "type": "CandidateTarget"
+              }
+            ]
+          },
+          "oracle_parity": true,
+          "outcomes": [
+            {
+              "accepted": false,
+              "contender": 0,
+              "elapsed_ns": 139720,
+              "error": "RuntimeError: stale experiment revision: expected (3, 0, 0), current (4, 0, 0)"
+            },
+            {
+              "accepted": false,
+              "contender": 1,
+              "elapsed_ns": 85220,
+              "error": "RuntimeError: stale experiment revision: expected (3, 0, 0), current (4, 0, 0)"
+            },
+            {
+              "accepted": true,
+              "contender": 2,
+              "elapsed_ns": 117471,
+              "error": null
+            }
+          ],
+          "race_elapsed_ns": 823525,
+          "race_index": 6,
+          "receipts_nonempty": true,
+          "revision": [
+            3,
+            0,
+            0
+          ],
+          "stale_rejection_count": 2,
+          "winner": 2
+        },
+        {
+          "accepted_count": 1,
+          "branch_isolation": true,
+          "final_graph": {
+            "edges": [],
+            "nodes": [
+              {
+                "attrs": {
+                  "ordinal": 0,
+                  "stable": true
+                },
+                "id": 0,
+                "type": "CandidateTarget"
+              },
+              {
+                "attrs": {
+                  "ordinal": 1,
+                  "stable": true
+                },
+                "id": 1,
+                "type": "CandidateTarget"
+              },
+              {
+                "attrs": {
+                  "experiment_value": "race-7-candidate-2",
+                  "ordinal": 2,
+                  "stable": true
+                },
+                "id": 2,
+                "type": "CandidateTarget"
+              }
+            ]
+          },
+          "oracle_parity": true,
+          "outcomes": [
+            {
+              "accepted": false,
+              "contender": 0,
+              "elapsed_ns": 99921,
+              "error": "RuntimeError: stale experiment revision: expected (3, 0, 0), current (4, 0, 0)"
+            },
+            {
+              "accepted": false,
+              "contender": 1,
+              "elapsed_ns": 97950,
+              "error": "RuntimeError: stale experiment revision: expected (3, 0, 0), current (4, 0, 0)"
+            },
+            {
+              "accepted": true,
+              "contender": 2,
+              "elapsed_ns": 115071,
+              "error": null
+            }
+          ],
+          "race_elapsed_ns": 716544,
+          "race_index": 7,
+          "receipts_nonempty": true,
+          "revision": [
+            3,
+            0,
+            0
+          ],
+          "stale_rejection_count": 2,
+          "winner": 2
+        },
+        {
+          "accepted_count": 1,
+          "branch_isolation": true,
+          "final_graph": {
+            "edges": [],
+            "nodes": [
+              {
+                "attrs": {
+                  "ordinal": 0,
+                  "stable": true
+                },
+                "id": 0,
+                "type": "CandidateTarget"
+              },
+              {
+                "attrs": {
+                  "ordinal": 1,
+                  "stable": true
+                },
+                "id": 1,
+                "type": "CandidateTarget"
+              },
+              {
+                "attrs": {
+                  "experiment_value": "race-8-candidate-2",
+                  "ordinal": 2,
+                  "stable": true
+                },
+                "id": 2,
+                "type": "CandidateTarget"
+              }
+            ]
+          },
+          "oracle_parity": true,
+          "outcomes": [
+            {
+              "accepted": false,
+              "contender": 0,
+              "elapsed_ns": 78611,
+              "error": "RuntimeError: stale experiment revision: expected (3, 0, 0), current (4, 0, 0)"
+            },
+            {
+              "accepted": false,
+              "contender": 1,
+              "elapsed_ns": 89760,
+              "error": "RuntimeError: stale experiment revision: expected (3, 0, 0), current (4, 0, 0)"
+            },
+            {
+              "accepted": true,
+              "contender": 2,
+              "elapsed_ns": 106930,
+              "error": null
+            }
+          ],
+          "race_elapsed_ns": 745264,
+          "race_index": 8,
+          "receipts_nonempty": true,
+          "revision": [
+            3,
+            0,
+            0
+          ],
+          "stale_rejection_count": 2,
+          "winner": 2
+        },
+        {
+          "accepted_count": 1,
+          "branch_isolation": true,
+          "final_graph": {
+            "edges": [],
+            "nodes": [
+              {
+                "attrs": {
+                  "ordinal": 0,
+                  "stable": true
+                },
+                "id": 0,
+                "type": "CandidateTarget"
+              },
+              {
+                "attrs": {
+                  "ordinal": 1,
+                  "stable": true
+                },
+                "id": 1,
+                "type": "CandidateTarget"
+              },
+              {
+                "attrs": {
+                  "experiment_value": "race-9-candidate-2",
+                  "ordinal": 2,
+                  "stable": true
+                },
+                "id": 2,
+                "type": "CandidateTarget"
+              }
+            ]
+          },
+          "oracle_parity": true,
+          "outcomes": [
+            {
+              "accepted": false,
+              "contender": 0,
+              "elapsed_ns": 86130,
+              "error": "RuntimeError: stale experiment revision: expected (3, 0, 0), current (4, 0, 0)"
+            },
+            {
+              "accepted": false,
+              "contender": 1,
+              "elapsed_ns": 82940,
+              "error": "RuntimeError: stale experiment revision: expected (3, 0, 0), current (4, 0, 0)"
+            },
+            {
+              "accepted": true,
+              "contender": 2,
+              "elapsed_ns": 94941,
+              "error": null
+            }
+          ],
+          "race_elapsed_ns": 720974,
+          "race_index": 9,
+          "receipts_nonempty": true,
+          "revision": [
+            3,
+            0,
+            0
+          ],
+          "stale_rejection_count": 2,
+          "winner": 2
+        }
+      ],
+      "source_build_stable": true
+    }
+  ]
+}

@@ -1,0 +1,214 @@
+{
+  "analyzer_sha256": "59999cc599f89f2191cdd59b75c606200f127e2d46a8aebd9b74c9a68f6fd5e2",
+  "capture_sha256": "87d4c46cadbb3b57b01b2ef05e77eec488a37f4e2c977fdcf34a0fdaf09e9b60",
+  "checks": {
+    "all_three_conditions_have_three_replicates": true,
+    "exact_outputs_and_scope_membership": true,
+    "fresh_worker_processes": true,
+    "helper_work_rule_attributed": true,
+    "scoped_codebook_work_is_lower_than_global": true,
+    "source_stable_and_no_trace_drops": true,
+    "typed_population_scan_is_not_reduced_by_scope": true,
+    "work_counts_reproduce_within_condition": true
+  },
+  "claim_limit": "Authored two-frame GenInfer fixtures only. The production scoped loader still enumerates the full typed population before filtering; the comparison does not discover safe scopes or establish natural-task prevalence.",
+  "errors": [],
+  "lock_sha256": "7bfe5418fc5a20ecebb4ad4e08215c8e29c6e598be5feab2823372e3b490a368",
+  "passed": true,
+  "schema": "GenInferScopedPopulationTraceV1Analysis",
+  "scoped_vs_global": {
+    "helper_codebook_part_parsed": {
+      "explicit_global": 8,
+      "frame_scoped": 4,
+      "unscoped_global": 76
+    },
+    "helper_codebook_population_node": {
+      "explicit_global": 76,
+      "frame_scoped": 76,
+      "unscoped_global": 76
+    },
+    "helper_node_attribute_examined": {
+      "explicit_global": 56,
+      "frame_scoped": 28,
+      "unscoped_global": 320
+    },
+    "helper_search_candidate": {
+      "explicit_global": 19200,
+      "frame_scoped": 9600,
+      "unscoped_global": 19200
+    }
+  },
+  "summary": {
+    "explicit_global": {
+      "distinct_worker_pids": 3,
+      "median_cpu_ns": 40927981,
+      "median_wall_ns": 40915009,
+      "median_work_by_kind": {
+        "dynamic_helper_invocation": 4,
+        "helper_codebook_part_parsed": 8,
+        "helper_codebook_population_node": 76,
+        "helper_node_attribute_examined": 56,
+        "helper_search_candidate": 19200
+      },
+      "per_replicate": [
+        {
+          "geninfer_work": {
+            "dynamic_helper_invocation": 4,
+            "helper_codebook_part_parsed": 8,
+            "helper_codebook_population_node": 76,
+            "helper_node_attribute_examined": 56,
+            "helper_search_candidate": 19200
+          },
+          "replicate": 0,
+          "rule_uid": [
+            142,
+            147
+          ]
+        },
+        {
+          "geninfer_work": {
+            "dynamic_helper_invocation": 4,
+            "helper_codebook_part_parsed": 8,
+            "helper_codebook_population_node": 76,
+            "helper_node_attribute_examined": 56,
+            "helper_search_candidate": 19200
+          },
+          "replicate": 1,
+          "rule_uid": [
+            142,
+            147
+          ]
+        },
+        {
+          "geninfer_work": {
+            "dynamic_helper_invocation": 4,
+            "helper_codebook_part_parsed": 8,
+            "helper_codebook_population_node": 76,
+            "helper_node_attribute_examined": 56,
+            "helper_search_candidate": 19200
+          },
+          "replicate": 2,
+          "rule_uid": [
+            142,
+            147
+          ]
+        }
+      ],
+      "replicates": 3
+    },
+    "frame_scoped": {
+      "distinct_worker_pids": 3,
+      "median_cpu_ns": 30536359,
+      "median_wall_ns": 30594061,
+      "median_work_by_kind": {
+        "dynamic_helper_invocation": 4,
+        "helper_codebook_part_parsed": 4,
+        "helper_codebook_population_node": 76,
+        "helper_node_attribute_examined": 28,
+        "helper_search_candidate": 9600
+      },
+      "per_replicate": [
+        {
+          "geninfer_work": {
+            "dynamic_helper_invocation": 4,
+            "helper_codebook_part_parsed": 4,
+            "helper_codebook_population_node": 76,
+            "helper_node_attribute_examined": 28,
+            "helper_search_candidate": 9600
+          },
+          "replicate": 0,
+          "rule_uid": [
+            142,
+            147
+          ]
+        },
+        {
+          "geninfer_work": {
+            "dynamic_helper_invocation": 4,
+            "helper_codebook_part_parsed": 4,
+            "helper_codebook_population_node": 76,
+            "helper_node_attribute_examined": 28,
+            "helper_search_candidate": 9600
+          },
+          "replicate": 1,
+          "rule_uid": [
+            142,
+            147
+          ]
+        },
+        {
+          "geninfer_work": {
+            "dynamic_helper_invocation": 4,
+            "helper_codebook_part_parsed": 4,
+            "helper_codebook_population_node": 76,
+            "helper_node_attribute_examined": 28,
+            "helper_search_candidate": 9600
+          },
+          "replicate": 2,
+          "rule_uid": [
+            142,
+            147
+          ]
+        }
+      ],
+      "replicates": 3
+    },
+    "unscoped_global": {
+      "distinct_worker_pids": 3,
+      "median_cpu_ns": 36446970,
+      "median_wall_ns": 36436113,
+      "median_work_by_kind": {
+        "dynamic_helper_invocation": 4,
+        "helper_codebook_part_parsed": 76,
+        "helper_codebook_population_node": 76,
+        "helper_node_attribute_examined": 320,
+        "helper_search_candidate": 19200
+      },
+      "per_replicate": [
+        {
+          "geninfer_work": {
+            "dynamic_helper_invocation": 4,
+            "helper_codebook_part_parsed": 76,
+            "helper_codebook_population_node": 76,
+            "helper_node_attribute_examined": 320,
+            "helper_search_candidate": 19200
+          },
+          "replicate": 0,
+          "rule_uid": [
+            142,
+            147
+          ]
+        },
+        {
+          "geninfer_work": {
+            "dynamic_helper_invocation": 4,
+            "helper_codebook_part_parsed": 76,
+            "helper_codebook_population_node": 76,
+            "helper_node_attribute_examined": 320,
+            "helper_search_candidate": 19200
+          },
+          "replicate": 1,
+          "rule_uid": [
+            142,
+            147
+          ]
+        },
+        {
+          "geninfer_work": {
+            "dynamic_helper_invocation": 4,
+            "helper_codebook_part_parsed": 76,
+            "helper_codebook_population_node": 76,
+            "helper_node_attribute_examined": 320,
+            "helper_search_candidate": 19200
+          },
+          "replicate": 2,
+          "rule_uid": [
+            142,
+            147
+          ]
+        }
+      ],
+      "replicates": 3
+    }
+  }
+}

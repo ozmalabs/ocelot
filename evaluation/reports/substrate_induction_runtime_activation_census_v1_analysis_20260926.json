@@ -1,0 +1,42 @@
+{
+  "admitted": true,
+  "gates": {
+    "all_three_arms_present": true,
+    "conversation_profile_loaded_without_failures": true,
+    "conversation_profile_loads_shape_loop_but_not_meta_growth": true,
+    "default_core_omits_shape_growth_seeds": true,
+    "explicit_growth_path_mints_one_shape": true,
+    "explicit_growth_path_processes_teaching": true,
+    "learner_flags_absent_in_clean_profiles": true,
+    "source_hashes_present": true,
+    "teaching_is_residual_inert_without_growth_rules": true
+  },
+  "interpretation": "The current default WorldAdapter core does not install either shape_decode_loop or meta_shape_growth. The selected conversation profile installs shape_decode_loop but not meta_shape_growth; the two normal teach() observations remain pending. Explicitly selecting meta_shape_growth and its dependency installs the Rung-4 symbolic growth path; the same teach() surface produces residual then recognition with one minted MetaShape. This is activation evidence on these boot/teaching fixtures, not a population estimate or evidence of default autonomous learning.",
+  "limitations": [
+    "One process and one selected conversation-profile build.",
+    "The explicit-growth examples are authored and intentionally repeated.",
+    "This does not prove every call site or alternate boot profile has the same activation state."
+  ],
+  "observed": {
+    "conversation_profile_loaded": 70,
+    "conversation_profile_seed_count": 70,
+    "default_core_seed_count": 17,
+    "minted_growth_shape": [
+      "ms_is_a_slot_a_slot_b"
+    ],
+    "teach_status_conversation_profile": [
+      "pending",
+      "pending"
+    ],
+    "teach_status_default_core": [
+      "pending",
+      "pending"
+    ],
+    "teach_status_explicit_growth": [
+      "residual",
+      "recognized"
+    ]
+  },
+  "run_id": "substrate-induction-runtime-activation-census-v1-20260926",
+  "schema_version": 1
+}

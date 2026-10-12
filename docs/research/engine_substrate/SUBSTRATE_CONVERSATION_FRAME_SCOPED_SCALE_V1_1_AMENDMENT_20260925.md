@@ -1,0 +1,5 @@
+# Conversation frame-scoped scale v1.1 amendment
+
+The locked v1 run completed all 24 workers and all task-specific outcome/fixed-point checks. Every full/scoped paired normalized projection matched. The coordinator nevertheless marked the gate false because it required progress applications to be equal across schedules. That is not a semantic invariant: scoped closure may apply a different count of rule progress while reaching the same state. The v1 protocol required task/state parity and complete counter reporting, not counter equality. The v1 lock and raw report are preserved unchanged.
+
+The v1 summary also labeled `term_units_total` as the Term cost metric, but that field is zero for this rule family. The populated and audited metric is `term_evals_total` (with per-rule `term_evaluations` retained separately). Candidate enumeration remains the global `cand_enum` metric. The v1.1 runner changes only the acceptance predicate and summary metric selection; worker inputs, sizes, replicates, arms, sources, and task criteria remain fixed. It reruns the same 24 fresh-process workers under a new lock.

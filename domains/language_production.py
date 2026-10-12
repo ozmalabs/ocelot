@@ -464,6 +464,12 @@ class LanguageProduction:
             # optional {role -> adjective-concept} modifiers, realized before the role's noun (see
             # morphophonological_encoding). Empty by default, so production is unchanged without them.
             "adjectives": frame.get("adjectives") or {},
+            # A contextual one-slot answer (e.g. an opaque selected name)
+            # is an NP fragment, not a full clause. Its language grammar must
+            # not add a subject determiner or a dangling Japanese/Chinese
+            # subject particle. Absent by default to preserve clause output.
+            "answer_fragment": (
+                bool(frame.get("answer_fragment")) and len(slots) == 1),
             # Optional semantic category for a filled role.  This lets a
             # copular complement be realized as an adjective without adding
             # a determiner ("the weather is clear").  Ordinary noun roles
@@ -502,6 +508,7 @@ class LanguageProduction:
         fws = _grounded_function_words(self.world, language)
         adjectives = surface_structure.get("adjectives") or {}
         role_kinds = surface_structure.get("role_kinds") or {}
+        answer_fragment = bool(surface_structure.get("answer_fragment"))
         inflect = surface_structure.get("inflect") or {}
         adj_features = surface_structure.get("adjective_features") or {}
         tense = surface_structure.get("tense")
@@ -528,7 +535,9 @@ class LanguageProduction:
                 "realized": surface is not None,
             }
             is_wh = isinstance(concept, str) and concept in ("?WHO", "?WHAT")
-            is_proper = isinstance(concept, str) and concept[:1].isupper()
+            is_proper = (answer_fragment or
+                         (isinstance(concept, str)
+                          and concept[:1].isupper()))
             is_noun_role = ((role in ("agent", "patient", "location")
                              or role in preprole.FINE_ROLES)
                             and role_kinds.get(role) != "adjective")
@@ -553,7 +562,8 @@ class LanguageProduction:
                               "realized": adj_surface is not None})
             words.append(content)
             for fw in self._particles_after_slot(
-                    fws, role, language, is_wh, is_noun_role):
+                    fws, role, language, is_wh, is_noun_role,
+                    answer_fragment=answer_fragment):
                 words.append(fw)
         return {"words": words}
 
@@ -598,12 +608,15 @@ class LanguageProduction:
 
     def _particles_after_slot(self, fws: list[dict[str, Any]], role: str,
                               language: str, is_wh: bool,
-                              is_noun_role: bool) -> list[dict[str, Any]]:
+                              is_noun_role: bool, *,
+                              answer_fragment: bool = False
+                              ) -> list[dict[str, Any]]:
         """Particles emitted AFTER a content noun (ja/zh: the case particle
         for the role — が agent, を patient, に location). Reads the grounded
         FunctionWord whose grammatical_role == role and attaches == follows."""
         out: list[dict[str, Any]] = []
-        if not is_noun_role or language not in ("ja", "zh"):
+        if (not is_noun_role or answer_fragment
+                or language not in ("ja", "zh")):
             return out
         part = _pick_function_word(fws, function="particle", role=role)
         if part is not None and part.get("attaches") == "follows":
@@ -614,7 +627,8 @@ class LanguageProduction:
     # ----- stage 4: articulation ------------------------------------------
 
     def articulation(self, language: str, mood: str,
-                     phonological: dict[str, Any]) -> dict[str, Any]:
+                     phonological: dict[str, Any], *,
+                     answer_fragment: bool = False) -> dict[str, Any]:
         """Join the phonological words into the surface string and apply the
         mood's surface marking (declarative -> '.'; interrogative -> '?';
         imperative -> '!'; CJK fullwidth equivalents). Output overt_speech
@@ -628,7 +642,8 @@ class LanguageProduction:
         for w in phonological["words"]:
             s = w.get("surface", "")
             c = w.get("concept")
-            if (language not in _NO_SPACE and isinstance(c, str)
+            if (not answer_fragment and language not in _NO_SPACE
+                    and isinstance(c, str)
                     and c[:1].isupper() and not c.startswith("?") and s):
                 # Proper-noun capitalisation. A MULTI-WORD proper surface (a named
                 # entity re-exposed as one lexical item, "justice department")
@@ -646,7 +661,8 @@ class LanguageProduction:
         # comprehension parser lowercases on the way in, so this does not
         # affect the round-trip).
         sep = "" if language in _NO_SPACE else " "
-        if language not in _NO_SPACE and tokens:
+        if (not answer_fragment and language not in _NO_SPACE
+                and tokens):
             tokens = [tokens[0][:1].upper() + tokens[0][1:]] + tokens[1:]
         body = sep.join(tokens)
         script = "cjk" if language in _NO_SPACE else "latin"
@@ -699,8 +715,9 @@ class LanguageProduction:
         surface_structure = self.grammatical_encoding(language, preverbal)
         phonological = self.morphophonological_encoding(
             language, surface_structure)
-        articulated = self.articulation(language, preverbal["mood"],
-                                        phonological)
+        articulated = self.articulation(
+            language, preverbal["mood"], phonological,
+            answer_fragment=bool(goal.get("answer_fragment")))
         monitor = self.self_monitor(language, articulated["overt_speech"],
                                     preverbal)
 
@@ -757,8 +774,10 @@ class LanguageProduction:
                     w2["realized"] = True
                     tried.append(f"{w['role']}:{w['surface']}->{candidates[0]}")
             new_words.append(w2)
-        articulated = self.articulation(language, preverbal["mood"],
-                                        {"words": new_words})
+        articulated = self.articulation(
+            language, preverbal["mood"], {"words": new_words},
+            answer_fragment=bool(preverbal["frame"].get(
+                "answer_fragment")))
         monitor2 = self.self_monitor(language, articulated["overt_speech"],
                                      preverbal)
         return {

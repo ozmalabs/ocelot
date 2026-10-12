@@ -1,0 +1,820 @@
+{
+  "checks": {
+    "all_semantic_controls_pass": false,
+    "event_identity_shape_repeats": true,
+    "production_route_identity_and_lifecycle": false,
+    "source_stable_through_workers_and_controls": true,
+    "three_distinct_fresh_pids": true
+  },
+  "claim_boundary": "One live held self-report route now emits Goal-bound lifecycle events and native identity-constrained transitions. Five controls test owner link, omission, swapped link, duplicate result, and faculty failure. This does not generalize to other action routes, external effects, or scale.",
+  "control_checks": {
+    "correct_link_selects_only_owner": true,
+    "duplicate_result_is_idempotent": false,
+    "faculty_failure_blocks_with_identity": false,
+    "omitted_link_selects_no_goal": true,
+    "swapped_link_follows_explicit_edge": true
+  },
+  "controls": {
+    "correct_link": {
+      "event_goal_ids": [
+        251
+      ],
+      "expected": [
+        "selected",
+        "proposed"
+      ],
+      "statuses": [
+        "selected",
+        "proposed"
+      ]
+    },
+    "duplicate_result": {
+      "active": true,
+      "closed": false,
+      "expected_status": "resolved",
+      "expected_transition_kinds": [
+        "selection",
+        "execution",
+        "action_result"
+      ],
+      "result_event_count": 2,
+      "status": "executing",
+      "transition_kinds": [
+        "selection",
+        "execution"
+      ]
+    },
+    "faculty_failure": {
+      "active": true,
+      "closed": false,
+      "event_kinds": [
+        "instruction",
+        "selection",
+        "execution",
+        "action_failure"
+      ],
+      "goal_status": "executing",
+      "goal_transition_kinds": [
+        "selection",
+        "execution"
+      ],
+      "reply_observed": null,
+      "route": null
+    },
+    "omitted_link": {
+      "event_goal_ids": [],
+      "expected": [
+        "proposed",
+        "proposed"
+      ],
+      "statuses": [
+        "proposed",
+        "proposed"
+      ]
+    },
+    "swapped_link": {
+      "declared_target": 251,
+      "event_goal_ids": [
+        252
+      ],
+      "expected": [
+        "proposed",
+        "selected"
+      ],
+      "goal_ids": [
+        251,
+        252
+      ],
+      "statuses": [
+        "proposed",
+        "selected"
+      ]
+    }
+  },
+  "environment": {
+    "platform": "Linux-6.8.0-142-generic-x86_64-with-glibc2.39",
+    "python": "3.13.5 (main, Jun 11 2025, 15:36:57) [GCC 11.4.0]"
+  },
+  "lock_sha256": "89b6fcb072efacb8824fc1bbd583355aa1ae2955a29b3ad4284b7e70a3fe6e5f",
+  "locked_inputs": {
+    "amendment_sha256": "a16096729b045d472a74a8b6c6bcb46276681e91dea2b1077c26bad17ccb4e2b",
+    "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+    "native_build_manifest_sha256": "2d10ff9cc7f9832d91d1603c74dd0a0e0c4c5d3080a618a33575e9d5400ae871",
+    "native_extension_sha256": "f5543ca015278bad6c65506a0d7d9acb85b33252e7121cdda1a56df63e8ad27b",
+    "protocol_sha256": "915558ed4a1a553cb0422690a4a08a76d370f807b3484a2bc967752a9faf90c2",
+    "runner_sha256": "e50f6fa3ec39c164f5e8ac5ac5865f6a7b0f9fde955a8eee42461796acd54676",
+    "source_sha256": {
+      "boot_all": "cb3645106e9f3cd056b900f507e5f4dbea36849d0568189545c73de698713d27",
+      "conversation_action": "bd442d5d896b390196df7e627f5c9c940fdd76bf4283079c9165744397a4e070",
+      "discourse_seed": "058fe4eaedc493bc0dc958e4e92a1ae54618924a5617db16de79aca9de6374b3",
+      "discourse_state": "774686588b3d9c979be330d55d739561caa4cba97b5b8f5bf082c4eed54bb05e",
+      "reflective_faculty": "75995b1b7a2d94ecb4e86f31c56a46e0ff76a041dfbb7ea2c64acf238d4eab85",
+      "world_adapter": "898e7062827a2dd641d5700813fe6673d045e44168516943e20f6bcb65f0fd8e"
+    }
+  },
+  "post_run_inputs": {
+    "amendment_sha256": "a16096729b045d472a74a8b6c6bcb46276681e91dea2b1077c26bad17ccb4e2b",
+    "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+    "native_build_manifest_sha256": "2d10ff9cc7f9832d91d1603c74dd0a0e0c4c5d3080a618a33575e9d5400ae871",
+    "native_extension_sha256": "f5543ca015278bad6c65506a0d7d9acb85b33252e7121cdda1a56df63e8ad27b",
+    "protocol_sha256": "915558ed4a1a553cb0422690a4a08a76d370f807b3484a2bc967752a9faf90c2",
+    "runner_sha256": "e50f6fa3ec39c164f5e8ac5ac5865f6a7b0f9fde955a8eee42461796acd54676",
+    "source_sha256": {
+      "boot_all": "cb3645106e9f3cd056b900f507e5f4dbea36849d0568189545c73de698713d27",
+      "conversation_action": "bd442d5d896b390196df7e627f5c9c940fdd76bf4283079c9165744397a4e070",
+      "discourse_seed": "058fe4eaedc493bc0dc958e4e92a1ae54618924a5617db16de79aca9de6374b3",
+      "discourse_state": "774686588b3d9c979be330d55d739561caa4cba97b5b8f5bf082c4eed54bb05e",
+      "reflective_faculty": "75995b1b7a2d94ecb4e86f31c56a46e0ff76a041dfbb7ea2c64acf238d4eab85",
+      "world_adapter": "898e7062827a2dd641d5700813fe6673d045e44168516943e20f6bcb65f0fd8e"
+    }
+  },
+  "run_id": "substrate-live-self-report-lifecycle-identity-integration-v1_1-20260926",
+  "runs": [
+    {
+      "boot_ns": 12436135400,
+      "distinct_identity": true,
+      "event_counts": {
+        "action_failure": 0,
+        "action_result": 2,
+        "execution": 2,
+        "instruction": 2,
+        "selection": 2
+      },
+      "pid": 4,
+      "positive_lifecycle_gate": false,
+      "replicate": 1,
+      "same_recipient": true,
+      "turn_ns_median": 2086652676.0,
+      "turn_ns_total": 4173305352,
+      "turns": [
+        {
+          "elapsed_ns": 3396171865,
+          "goal": {
+            "active": true,
+            "attrs": {
+              "kind": "report_self",
+              "last_transition_event": "#24900",
+              "lifecycle_status": "executing",
+              "object": "organisation",
+              "origin_turn_id": 24833,
+              "predicate": "report",
+              "self_target": "self_organisation",
+              "source": "conversation",
+              "status": "executing"
+            },
+            "closed": false,
+            "goal_id": 24896,
+            "status": "executing",
+            "transition_event_ids": [
+              24897,
+              24900
+            ],
+            "transition_event_indices": [
+              1,
+              2
+            ],
+            "transition_kinds": [
+              "selection",
+              "execution"
+            ],
+            "transition_links_all_bound": true
+          },
+          "goal_count": 1,
+          "goal_origin_matches": true,
+          "lifecycle_events": [
+            {
+              "event_index": 1,
+              "for_goal_ids": [
+                24896
+              ],
+              "id": 24897,
+              "kind": "selection",
+              "payload": {
+                "action_route": "self_report",
+                "faculty_target": "self_organisation",
+                "predicate": "report"
+              }
+            },
+            {
+              "event_index": 2,
+              "for_goal_ids": [
+                24896
+              ],
+              "id": 24900,
+              "kind": "execution",
+              "payload": {
+                "action_route": "self_report",
+                "faculty_target": "self_organisation",
+                "predicate": "report"
+              }
+            },
+            {
+              "event_index": 3,
+              "for_goal_ids": [
+                24896
+              ],
+              "id": 24904,
+              "kind": "action_result",
+              "payload": {
+                "action_route": "self_report",
+                "faculty_target": "self_organisation",
+                "outcome": "faculty_returned",
+                "predicate": "report"
+              }
+            }
+          ],
+          "message_id": 24833,
+          "origin_event_id": 24842,
+          "origin_event_separate": true,
+          "recipient_ids": [
+            0
+          ],
+          "reply_mentions_organisation": true,
+          "reply_nonempty": true,
+          "route": "self_report",
+          "turn": 0
+        },
+        {
+          "elapsed_ns": 777133487,
+          "goal": {
+            "active": true,
+            "attrs": {
+              "kind": "report_self",
+              "last_transition_event": "#24937",
+              "lifecycle_status": "executing",
+              "object": "organisation",
+              "origin_turn_id": 24924,
+              "predicate": "report",
+              "self_target": "self_organisation",
+              "source": "conversation",
+              "status": "executing"
+            },
+            "closed": false,
+            "goal_id": 24934,
+            "status": "executing",
+            "transition_event_ids": [
+              24935,
+              24937
+            ],
+            "transition_event_indices": [
+              5,
+              6
+            ],
+            "transition_kinds": [
+              "selection",
+              "execution"
+            ],
+            "transition_links_all_bound": true
+          },
+          "goal_count": 1,
+          "goal_origin_matches": true,
+          "lifecycle_events": [
+            {
+              "event_index": 5,
+              "for_goal_ids": [
+                24934
+              ],
+              "id": 24935,
+              "kind": "selection",
+              "payload": {
+                "action_route": "self_report",
+                "faculty_target": "self_organisation",
+                "predicate": "report"
+              }
+            },
+            {
+              "event_index": 6,
+              "for_goal_ids": [
+                24934
+              ],
+              "id": 24937,
+              "kind": "execution",
+              "payload": {
+                "action_route": "self_report",
+                "faculty_target": "self_organisation",
+                "predicate": "report"
+              }
+            },
+            {
+              "event_index": 7,
+              "for_goal_ids": [
+                24934
+              ],
+              "id": 24938,
+              "kind": "action_result",
+              "payload": {
+                "action_route": "self_report",
+                "faculty_target": "self_organisation",
+                "outcome": "faculty_returned",
+                "predicate": "report"
+              }
+            }
+          ],
+          "message_id": 24924,
+          "origin_event_id": 24929,
+          "origin_event_separate": true,
+          "recipient_ids": [
+            0
+          ],
+          "reply_mentions_organisation": true,
+          "reply_nonempty": true,
+          "route": "self_report",
+          "turn": 1
+        }
+      ],
+      "worker_finished_inputs": {
+        "amendment_sha256": "a16096729b045d472a74a8b6c6bcb46276681e91dea2b1077c26bad17ccb4e2b",
+        "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+        "native_build_manifest_sha256": "2d10ff9cc7f9832d91d1603c74dd0a0e0c4c5d3080a618a33575e9d5400ae871",
+        "native_extension_sha256": "f5543ca015278bad6c65506a0d7d9acb85b33252e7121cdda1a56df63e8ad27b",
+        "protocol_sha256": "915558ed4a1a553cb0422690a4a08a76d370f807b3484a2bc967752a9faf90c2",
+        "runner_sha256": "e50f6fa3ec39c164f5e8ac5ac5865f6a7b0f9fde955a8eee42461796acd54676",
+        "source_sha256": {
+          "boot_all": "cb3645106e9f3cd056b900f507e5f4dbea36849d0568189545c73de698713d27",
+          "conversation_action": "bd442d5d896b390196df7e627f5c9c940fdd76bf4283079c9165744397a4e070",
+          "discourse_seed": "058fe4eaedc493bc0dc958e4e92a1ae54618924a5617db16de79aca9de6374b3",
+          "discourse_state": "774686588b3d9c979be330d55d739561caa4cba97b5b8f5bf082c4eed54bb05e",
+          "reflective_faculty": "75995b1b7a2d94ecb4e86f31c56a46e0ff76a041dfbb7ea2c64acf238d4eab85",
+          "world_adapter": "898e7062827a2dd641d5700813fe6673d045e44168516943e20f6bcb65f0fd8e"
+        }
+      },
+      "worker_started_inputs": {
+        "amendment_sha256": "a16096729b045d472a74a8b6c6bcb46276681e91dea2b1077c26bad17ccb4e2b",
+        "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+        "native_build_manifest_sha256": "2d10ff9cc7f9832d91d1603c74dd0a0e0c4c5d3080a618a33575e9d5400ae871",
+        "native_extension_sha256": "f5543ca015278bad6c65506a0d7d9acb85b33252e7121cdda1a56df63e8ad27b",
+        "protocol_sha256": "915558ed4a1a553cb0422690a4a08a76d370f807b3484a2bc967752a9faf90c2",
+        "runner_sha256": "e50f6fa3ec39c164f5e8ac5ac5865f6a7b0f9fde955a8eee42461796acd54676",
+        "source_sha256": {
+          "boot_all": "cb3645106e9f3cd056b900f507e5f4dbea36849d0568189545c73de698713d27",
+          "conversation_action": "bd442d5d896b390196df7e627f5c9c940fdd76bf4283079c9165744397a4e070",
+          "discourse_seed": "058fe4eaedc493bc0dc958e4e92a1ae54618924a5617db16de79aca9de6374b3",
+          "discourse_state": "774686588b3d9c979be330d55d739561caa4cba97b5b8f5bf082c4eed54bb05e",
+          "reflective_faculty": "75995b1b7a2d94ecb4e86f31c56a46e0ff76a041dfbb7ea2c64acf238d4eab85",
+          "world_adapter": "898e7062827a2dd641d5700813fe6673d045e44168516943e20f6bcb65f0fd8e"
+        }
+      }
+    },
+    {
+      "boot_ns": 12400319144,
+      "distinct_identity": true,
+      "event_counts": {
+        "action_failure": 0,
+        "action_result": 2,
+        "execution": 2,
+        "instruction": 2,
+        "selection": 2
+      },
+      "pid": 2614,
+      "positive_lifecycle_gate": false,
+      "replicate": 2,
+      "same_recipient": true,
+      "turn_ns_median": 2102614569.5,
+      "turn_ns_total": 4205229139,
+      "turns": [
+        {
+          "elapsed_ns": 3396581839,
+          "goal": {
+            "active": true,
+            "attrs": {
+              "kind": "report_self",
+              "last_transition_event": "#24900",
+              "lifecycle_status": "executing",
+              "object": "organisation",
+              "origin_turn_id": 24833,
+              "predicate": "report",
+              "self_target": "self_organisation",
+              "source": "conversation",
+              "status": "executing"
+            },
+            "closed": false,
+            "goal_id": 24896,
+            "status": "executing",
+            "transition_event_ids": [
+              24897,
+              24900
+            ],
+            "transition_event_indices": [
+              1,
+              2
+            ],
+            "transition_kinds": [
+              "selection",
+              "execution"
+            ],
+            "transition_links_all_bound": true
+          },
+          "goal_count": 1,
+          "goal_origin_matches": true,
+          "lifecycle_events": [
+            {
+              "event_index": 1,
+              "for_goal_ids": [
+                24896
+              ],
+              "id": 24897,
+              "kind": "selection",
+              "payload": {
+                "action_route": "self_report",
+                "faculty_target": "self_organisation",
+                "predicate": "report"
+              }
+            },
+            {
+              "event_index": 2,
+              "for_goal_ids": [
+                24896
+              ],
+              "id": 24900,
+              "kind": "execution",
+              "payload": {
+                "action_route": "self_report",
+                "faculty_target": "self_organisation",
+                "predicate": "report"
+              }
+            },
+            {
+              "event_index": 3,
+              "for_goal_ids": [
+                24896
+              ],
+              "id": 24904,
+              "kind": "action_result",
+              "payload": {
+                "action_route": "self_report",
+                "faculty_target": "self_organisation",
+                "outcome": "faculty_returned",
+                "predicate": "report"
+              }
+            }
+          ],
+          "message_id": 24833,
+          "origin_event_id": 24842,
+          "origin_event_separate": true,
+          "recipient_ids": [
+            0
+          ],
+          "reply_mentions_organisation": true,
+          "reply_nonempty": true,
+          "route": "self_report",
+          "turn": 0
+        },
+        {
+          "elapsed_ns": 808647300,
+          "goal": {
+            "active": true,
+            "attrs": {
+              "kind": "report_self",
+              "last_transition_event": "#24937",
+              "lifecycle_status": "executing",
+              "object": "organisation",
+              "origin_turn_id": 24924,
+              "predicate": "report",
+              "self_target": "self_organisation",
+              "source": "conversation",
+              "status": "executing"
+            },
+            "closed": false,
+            "goal_id": 24934,
+            "status": "executing",
+            "transition_event_ids": [
+              24935,
+              24937
+            ],
+            "transition_event_indices": [
+              5,
+              6
+            ],
+            "transition_kinds": [
+              "selection",
+              "execution"
+            ],
+            "transition_links_all_bound": true
+          },
+          "goal_count": 1,
+          "goal_origin_matches": true,
+          "lifecycle_events": [
+            {
+              "event_index": 5,
+              "for_goal_ids": [
+                24934
+              ],
+              "id": 24935,
+              "kind": "selection",
+              "payload": {
+                "action_route": "self_report",
+                "faculty_target": "self_organisation",
+                "predicate": "report"
+              }
+            },
+            {
+              "event_index": 6,
+              "for_goal_ids": [
+                24934
+              ],
+              "id": 24937,
+              "kind": "execution",
+              "payload": {
+                "action_route": "self_report",
+                "faculty_target": "self_organisation",
+                "predicate": "report"
+              }
+            },
+            {
+              "event_index": 7,
+              "for_goal_ids": [
+                24934
+              ],
+              "id": 24938,
+              "kind": "action_result",
+              "payload": {
+                "action_route": "self_report",
+                "faculty_target": "self_organisation",
+                "outcome": "faculty_returned",
+                "predicate": "report"
+              }
+            }
+          ],
+          "message_id": 24924,
+          "origin_event_id": 24929,
+          "origin_event_separate": true,
+          "recipient_ids": [
+            0
+          ],
+          "reply_mentions_organisation": true,
+          "reply_nonempty": true,
+          "route": "self_report",
+          "turn": 1
+        }
+      ],
+      "worker_finished_inputs": {
+        "amendment_sha256": "a16096729b045d472a74a8b6c6bcb46276681e91dea2b1077c26bad17ccb4e2b",
+        "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+        "native_build_manifest_sha256": "2d10ff9cc7f9832d91d1603c74dd0a0e0c4c5d3080a618a33575e9d5400ae871",
+        "native_extension_sha256": "f5543ca015278bad6c65506a0d7d9acb85b33252e7121cdda1a56df63e8ad27b",
+        "protocol_sha256": "915558ed4a1a553cb0422690a4a08a76d370f807b3484a2bc967752a9faf90c2",
+        "runner_sha256": "e50f6fa3ec39c164f5e8ac5ac5865f6a7b0f9fde955a8eee42461796acd54676",
+        "source_sha256": {
+          "boot_all": "cb3645106e9f3cd056b900f507e5f4dbea36849d0568189545c73de698713d27",
+          "conversation_action": "bd442d5d896b390196df7e627f5c9c940fdd76bf4283079c9165744397a4e070",
+          "discourse_seed": "058fe4eaedc493bc0dc958e4e92a1ae54618924a5617db16de79aca9de6374b3",
+          "discourse_state": "774686588b3d9c979be330d55d739561caa4cba97b5b8f5bf082c4eed54bb05e",
+          "reflective_faculty": "75995b1b7a2d94ecb4e86f31c56a46e0ff76a041dfbb7ea2c64acf238d4eab85",
+          "world_adapter": "898e7062827a2dd641d5700813fe6673d045e44168516943e20f6bcb65f0fd8e"
+        }
+      },
+      "worker_started_inputs": {
+        "amendment_sha256": "a16096729b045d472a74a8b6c6bcb46276681e91dea2b1077c26bad17ccb4e2b",
+        "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+        "native_build_manifest_sha256": "2d10ff9cc7f9832d91d1603c74dd0a0e0c4c5d3080a618a33575e9d5400ae871",
+        "native_extension_sha256": "f5543ca015278bad6c65506a0d7d9acb85b33252e7121cdda1a56df63e8ad27b",
+        "protocol_sha256": "915558ed4a1a553cb0422690a4a08a76d370f807b3484a2bc967752a9faf90c2",
+        "runner_sha256": "e50f6fa3ec39c164f5e8ac5ac5865f6a7b0f9fde955a8eee42461796acd54676",
+        "source_sha256": {
+          "boot_all": "cb3645106e9f3cd056b900f507e5f4dbea36849d0568189545c73de698713d27",
+          "conversation_action": "bd442d5d896b390196df7e627f5c9c940fdd76bf4283079c9165744397a4e070",
+          "discourse_seed": "058fe4eaedc493bc0dc958e4e92a1ae54618924a5617db16de79aca9de6374b3",
+          "discourse_state": "774686588b3d9c979be330d55d739561caa4cba97b5b8f5bf082c4eed54bb05e",
+          "reflective_faculty": "75995b1b7a2d94ecb4e86f31c56a46e0ff76a041dfbb7ea2c64acf238d4eab85",
+          "world_adapter": "898e7062827a2dd641d5700813fe6673d045e44168516943e20f6bcb65f0fd8e"
+        }
+      }
+    },
+    {
+      "boot_ns": 12518372823,
+      "distinct_identity": true,
+      "event_counts": {
+        "action_failure": 0,
+        "action_result": 2,
+        "execution": 2,
+        "instruction": 2,
+        "selection": 2
+      },
+      "pid": 5224,
+      "positive_lifecycle_gate": false,
+      "replicate": 0,
+      "same_recipient": true,
+      "turn_ns_median": 2110867441.0,
+      "turn_ns_total": 4221734882,
+      "turns": [
+        {
+          "elapsed_ns": 3455528397,
+          "goal": {
+            "active": true,
+            "attrs": {
+              "kind": "report_self",
+              "last_transition_event": "#24900",
+              "lifecycle_status": "executing",
+              "object": "organisation",
+              "origin_turn_id": 24833,
+              "predicate": "report",
+              "self_target": "self_organisation",
+              "source": "conversation",
+              "status": "executing"
+            },
+            "closed": false,
+            "goal_id": 24896,
+            "status": "executing",
+            "transition_event_ids": [
+              24897,
+              24900
+            ],
+            "transition_event_indices": [
+              1,
+              2
+            ],
+            "transition_kinds": [
+              "selection",
+              "execution"
+            ],
+            "transition_links_all_bound": true
+          },
+          "goal_count": 1,
+          "goal_origin_matches": true,
+          "lifecycle_events": [
+            {
+              "event_index": 1,
+              "for_goal_ids": [
+                24896
+              ],
+              "id": 24897,
+              "kind": "selection",
+              "payload": {
+                "action_route": "self_report",
+                "faculty_target": "self_organisation",
+                "predicate": "report"
+              }
+            },
+            {
+              "event_index": 2,
+              "for_goal_ids": [
+                24896
+              ],
+              "id": 24900,
+              "kind": "execution",
+              "payload": {
+                "action_route": "self_report",
+                "faculty_target": "self_organisation",
+                "predicate": "report"
+              }
+            },
+            {
+              "event_index": 3,
+              "for_goal_ids": [
+                24896
+              ],
+              "id": 24904,
+              "kind": "action_result",
+              "payload": {
+                "action_route": "self_report",
+                "faculty_target": "self_organisation",
+                "outcome": "faculty_returned",
+                "predicate": "report"
+              }
+            }
+          ],
+          "message_id": 24833,
+          "origin_event_id": 24842,
+          "origin_event_separate": true,
+          "recipient_ids": [
+            0
+          ],
+          "reply_mentions_organisation": true,
+          "reply_nonempty": true,
+          "route": "self_report",
+          "turn": 0
+        },
+        {
+          "elapsed_ns": 766206485,
+          "goal": {
+            "active": true,
+            "attrs": {
+              "kind": "report_self",
+              "last_transition_event": "#24937",
+              "lifecycle_status": "executing",
+              "object": "organisation",
+              "origin_turn_id": 24924,
+              "predicate": "report",
+              "self_target": "self_organisation",
+              "source": "conversation",
+              "status": "executing"
+            },
+            "closed": false,
+            "goal_id": 24934,
+            "status": "executing",
+            "transition_event_ids": [
+              24935,
+              24937
+            ],
+            "transition_event_indices": [
+              5,
+              6
+            ],
+            "transition_kinds": [
+              "selection",
+              "execution"
+            ],
+            "transition_links_all_bound": true
+          },
+          "goal_count": 1,
+          "goal_origin_matches": true,
+          "lifecycle_events": [
+            {
+              "event_index": 5,
+              "for_goal_ids": [
+                24934
+              ],
+              "id": 24935,
+              "kind": "selection",
+              "payload": {
+                "action_route": "self_report",
+                "faculty_target": "self_organisation",
+                "predicate": "report"
+              }
+            },
+            {
+              "event_index": 6,
+              "for_goal_ids": [
+                24934
+              ],
+              "id": 24937,
+              "kind": "execution",
+              "payload": {
+                "action_route": "self_report",
+                "faculty_target": "self_organisation",
+                "predicate": "report"
+              }
+            },
+            {
+              "event_index": 7,
+              "for_goal_ids": [
+                24934
+              ],
+              "id": 24938,
+              "kind": "action_result",
+              "payload": {
+                "action_route": "self_report",
+                "faculty_target": "self_organisation",
+                "outcome": "faculty_returned",
+                "predicate": "report"
+              }
+            }
+          ],
+          "message_id": 24924,
+          "origin_event_id": 24929,
+          "origin_event_separate": true,
+          "recipient_ids": [
+            0
+          ],
+          "reply_mentions_organisation": true,
+          "reply_nonempty": true,
+          "route": "self_report",
+          "turn": 1
+        }
+      ],
+      "worker_finished_inputs": {
+        "amendment_sha256": "a16096729b045d472a74a8b6c6bcb46276681e91dea2b1077c26bad17ccb4e2b",
+        "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+        "native_build_manifest_sha256": "2d10ff9cc7f9832d91d1603c74dd0a0e0c4c5d3080a618a33575e9d5400ae871",
+        "native_extension_sha256": "f5543ca015278bad6c65506a0d7d9acb85b33252e7121cdda1a56df63e8ad27b",
+        "protocol_sha256": "915558ed4a1a553cb0422690a4a08a76d370f807b3484a2bc967752a9faf90c2",
+        "runner_sha256": "e50f6fa3ec39c164f5e8ac5ac5865f6a7b0f9fde955a8eee42461796acd54676",
+        "source_sha256": {
+          "boot_all": "cb3645106e9f3cd056b900f507e5f4dbea36849d0568189545c73de698713d27",
+          "conversation_action": "bd442d5d896b390196df7e627f5c9c940fdd76bf4283079c9165744397a4e070",
+          "discourse_seed": "058fe4eaedc493bc0dc958e4e92a1ae54618924a5617db16de79aca9de6374b3",
+          "discourse_state": "774686588b3d9c979be330d55d739561caa4cba97b5b8f5bf082c4eed54bb05e",
+          "reflective_faculty": "75995b1b7a2d94ecb4e86f31c56a46e0ff76a041dfbb7ea2c64acf238d4eab85",
+          "world_adapter": "898e7062827a2dd641d5700813fe6673d045e44168516943e20f6bcb65f0fd8e"
+        }
+      },
+      "worker_started_inputs": {
+        "amendment_sha256": "a16096729b045d472a74a8b6c6bcb46276681e91dea2b1077c26bad17ccb4e2b",
+        "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+        "native_build_manifest_sha256": "2d10ff9cc7f9832d91d1603c74dd0a0e0c4c5d3080a618a33575e9d5400ae871",
+        "native_extension_sha256": "f5543ca015278bad6c65506a0d7d9acb85b33252e7121cdda1a56df63e8ad27b",
+        "protocol_sha256": "915558ed4a1a553cb0422690a4a08a76d370f807b3484a2bc967752a9faf90c2",
+        "runner_sha256": "e50f6fa3ec39c164f5e8ac5ac5865f6a7b0f9fde955a8eee42461796acd54676",
+        "source_sha256": {
+          "boot_all": "cb3645106e9f3cd056b900f507e5f4dbea36849d0568189545c73de698713d27",
+          "conversation_action": "bd442d5d896b390196df7e627f5c9c940fdd76bf4283079c9165744397a4e070",
+          "discourse_seed": "058fe4eaedc493bc0dc958e4e92a1ae54618924a5617db16de79aca9de6374b3",
+          "discourse_state": "774686588b3d9c979be330d55d739561caa4cba97b5b8f5bf082c4eed54bb05e",
+          "reflective_faculty": "75995b1b7a2d94ecb4e86f31c56a46e0ff76a041dfbb7ea2c64acf238d4eab85",
+          "world_adapter": "898e7062827a2dd641d5700813fe6673d045e44168516943e20f6bcb65f0fd8e"
+        }
+      }
+    }
+  ],
+  "schedule": [
+    1,
+    2,
+    0
+  ],
+  "schema_version": 1,
+  "summary": {
+    "boot_ns_median": 12436135400,
+    "replicates": 3,
+    "turn_ns_median": 2102614569.5
+  }
+}

@@ -129,6 +129,15 @@ def test_induce_concern_parity():
     expected_uncovered = json.loads(json.dumps(expected["uncovered"]))
     result_uncovered["result"].pop("axis_id", None)
     expected_uncovered["result"].pop("axis_id", None)
+    # shape_decode_loop v1.10.0 (RECURSIVE_SELF_IMPROVEMENT_PLAN WP1) ADDS mint
+    # provenance (`minted_*`) to every sd-loop mint. Additive by design: every
+    # pre-existing attr must still match the fixture byte-for-byte, and the
+    # provenance must be present and record what the mint was formed from.
+    axis = result_uncovered.get("minted_capability_axis_attrs") or {}
+    provenance = {k: axis.pop(k) for k in list(axis) if k.startswith("minted_")}
+    assert set(provenance) == {"minted_aperture", "minted_grain", "minted_dim_types",
+                               "minted_from_signature", "minted_epoch"}, provenance
+    assert provenance["minted_from_signature"], "a mint records the residual it was formed from"
     assert result_uncovered == expected_uncovered
 
 

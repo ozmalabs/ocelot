@@ -213,13 +213,35 @@ def _spectral_spectrum(native, term: dict, freq: int, n_samples: int) -> list[fl
 # 'no_construction' residual) — distinct from a world-I/O gap (a genuine forever-wall).
 _SPECTRAL_KEYS = {"spectral", "spectrum", "fourier", "frequency", "dft", "fft",
                   "amplitude", "magnitude"}
+_SPECTRAL_VALUE_NAMES = {"spectral value"}
+_SPECTRAL_VALUE_INPUTS = {"signal", "time signal", "sampled signal", "time series"}
+_SPECTRAL_VALUE_OUTPUTS = {
+    "spectrum", "magnitude spectrum", "log magnitude spectrum", "spectral values"}
+
+
+def _declared_io_names(value) -> set[str]:
+    """Normalize declared gap port names for construction-signature checking."""
+    values = value if isinstance(value, (list, tuple, set)) else [value]
+    return {" ".join(str(x).strip().lower().replace("_", " ").split())
+            for x in values if x is not None and str(x).strip()}
 
 
 def _select_construction(gap_at: dict, obs: list):
     """Which held Term-construction (if any) composes the gap's operation. Reads the
-    gap's own words + observation predicates — a mechanical keyword match over the
-    construction registry, NOT a decision about the primitive's content (the gate +
-    verifier decide whether the construction is CORRECT)."""
+    gap's requested primitive, declared ports, and observation predicates against the
+    construction registry. A keyword resemblance cannot override an incompatible
+    operation name or input/output signature."""
+    requested = gap_at.get("needed_primitive")
+    if requested is not None:
+        requested_name = " ".join(str(requested).strip().lower().replace("_", " ").split())
+        if requested_name not in _SPECTRAL_VALUE_NAMES:
+            return None
+    inputs = _declared_io_names(gap_at.get("inputs"))
+    outputs = _declared_io_names(gap_at.get("outputs"))
+    if inputs and not inputs <= _SPECTRAL_VALUE_INPUTS:
+        return None
+    if outputs and not outputs <= _SPECTRAL_VALUE_OUTPUTS:
+        return None
     text = " ".join(str(x) for x in (
         gap_at.get("needed_primitive", ""), gap_at.get("operation", ""),
         gap_at.get("faculty", ""), gap_at.get("name", ""))).lower()

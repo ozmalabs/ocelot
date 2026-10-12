@@ -1,0 +1,5 @@
+# Anaphora order estimator v1.1 amendment (2026-09-29)
+
+The first v1 runner completed 72 workers but is excluded from confirmatory analysis. Its request encoder applied source-clause indices to the loaded rule's current `match` array. Four or fewer installed order classes appeared in the exact cells rather than the eight registered classes, so it did not satisfy the planned exact-order coverage. Preserve its raw capture and logs as `anaphora_order_estimator_v1_harness_attempt1_*`; do not interpret its predicted orders or timing.
+
+V1.1 changes only the request encoder: each preregistered index now selects the corresponding literal triple from the frozen source-clause tuple. It retains the same task inputs, context sizes, budgets, estimator, arms, gates, and claim boundary. The expected requested-to-installed order map is checked against the prior v1.2 all-permutation current-source capture in every exact arm. V1.1 uses a new runner, analyzer, lock, raw data, run ID, and log namespace. Any order-map mismatch fails analysis and invalidates the result.

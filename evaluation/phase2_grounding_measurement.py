@@ -20,6 +20,7 @@ GROUNDING_CATEGORIES = (
     "graph_referent",
     "held_topic_or_relation",
     "resolved_discourse_reference",
+    "attributed_source_utterance",
     "declared_graph_path_unverified",
     "declared_discourse_state_unverified",
     "surface_or_uncertainty_only",
@@ -31,7 +32,15 @@ SOURCE_STATUS_TO_LABEL = {
     "candidate_grounded": "referent",
     "supported": "referent",
     "unresolved_reference": "coreference",
-    "unresolved": "coreference",
+    # Generic unresolved means that no referent path was established; it
+    # does not prove the interpretation was an anaphoric/coreference attempt.
+    # Reserve coreference for the explicit unresolved_reference status.
+    "unresolved": "unknown",
+    # Permission/authorization is tracked in its own interpretation field.
+    # When the runtime grounding status is authority_missing, no referent
+    # path was established, so the four-way referent metric must not award
+    # grounding; classify that grounding observation as unknown.
+    "authority_missing": "unknown",
     "unknown": "unknown",
     "unavailable_world": "unknown",
     "search_failed": "unknown",
@@ -77,6 +86,14 @@ def grounding_cognitive_category(
     """
     status = observation.get("grounding_status")
     path = str(observation.get("grounding_evidence_path") or "")
+    reported_path = str(
+        observation.get("reported_content_evidence_path") or "")
+    if (reported_path.startswith("ReportedContentEvidence:")
+            and "from_source_event DiscourseEvent:" in reported_path
+            and "represents_message Message:" in reported_path
+            and "epistemic_status=attributed_source_utterance"
+            in reported_path):
+        return "attributed_source_utterance"
     if "selected_graph_faculty" in path:
         return "selected_graph_faculty"
     # An action can be grounded by a substantive Concept node even when it is
@@ -89,7 +106,8 @@ def grounding_cognitive_category(
         return "held_topic_or_relation"
     if ("resolved_referent" in path
             or "ReferenceResolutionEvidence" in path
-            or "CurrentTopic.name + DiscourseReferent.concept" in path):
+            or ("DiscourseState -> prior DiscourseEvent.topic" in path
+                and "same speaker/addressee scope" in path)):
         return "resolved_discourse_reference"
     expected = expected_grounding_label(event)
     if expected != "referent":
@@ -169,6 +187,8 @@ def measure_grounding(
             "cognitive_category": category,
             "runtime_evidence_path": str(
                 observation.get("grounding_evidence_path") or ""),
+            "runtime_attributed_source_path": str(
+                observation.get("reported_content_evidence_path") or ""),
         })
 
     expected_counts = Counter(row["expected_grounding_label"] for row in rows)
@@ -199,7 +219,9 @@ def measure_grounding(
                 and row["observed_grounding_label"] == "referent"
                 for row in selected),
             "runtime_evidence_verified": sum(
-                bool(row["runtime_evidence_path"]) for row in selected),
+                bool(row["runtime_evidence_path"]
+                     or row["runtime_attributed_source_path"])
+                for row in selected),
         }
     return {
         "schema": "phase2_grounding_precision_recall.v1",
@@ -207,7 +229,7 @@ def measure_grounding(
         "labels": list(GROUNDING_LABELS),
         "label_definition": {
             "referent": "grounded or partially grounded referent evidence",
-            "coreference": "unresolved or unresolved-reference evidence",
+            "coreference": "explicit unresolved-reference evidence",
             "unknown": "unknown referent or unavailable world",
             "contradiction": "explicitly contradicted grounding",
         },

@@ -135,25 +135,48 @@ _VERDICT_COND = {"type": "And", "items": [
 ]}
 
 
-def _ensure_gate_rule(sub):
+def _ensure_gate_rule(sub, native):
     """Install the verdict gate as a graph-resident Rule ONCE (idempotent by
     id). The Rule matches every `Claim -has_control-> ControlProbe` join and
     writes the Rust-computed gate booleans + `verdict` onto the Claim. The
     DECISION lives in this term-tree, fired by tick() — not in Python."""
+    rule_node = None
     for r in sub.nodes("Rule"):
         if sub.node(r)["attrs"].get("id") == _GATE_RULE_ID:
-            return r
-    return sub.add_node("Rule", {
-        "id": _GATE_RULE_ID,
-        "match": [["claim", "has_control", "probe"]],
-        "where": None,
-        "effect": [
-            ["set_attr", "claim", "g_discriminates", {"__term__": _ite(_DISCRIMINATES, 1.0, 0.0)}],
-            ["set_attr", "claim", "g_no_regression", {"__term__": _ite(_bool("claim", "no_regression"), 1.0, 0.0)}],
-            ["set_attr", "claim", "g_grounded", {"__term__": _ite(_bool("claim", "grounded"), 1.0, 0.0)}],
-            ["set_attr", "claim", "verdict", {"__term__": _ite(_VERDICT_COND, 1.0, 0.0)}],
-        ],
-    })
+            rule_node = r
+            break
+    if rule_node is None:
+        rule_node = sub.add_node("Rule", {
+            "id": _GATE_RULE_ID,
+            "match": [["claim", "has_control", "probe"]],
+            "where": None,
+            "effect": [
+                ["set_attr", "claim", "g_discriminates", {"__term__": _ite(_DISCRIMINATES, 1.0, 0.0)}],
+                ["set_attr", "claim", "g_no_regression", {"__term__": _ite(_bool("claim", "no_regression"), 1.0, 0.0)}],
+                ["set_attr", "claim", "g_grounded", {"__term__": _ite(_bool("claim", "grounded"), 1.0, 0.0)}],
+                ["set_attr", "claim", "verdict", {"__term__": _ite(_VERDICT_COND, 1.0, 0.0)}],
+            ],
+        })
+
+    # A graph-resident Rule is not automatically part of the native rewrite
+    # vector. Register the verdict rule explicitly, translating the graph
+    # schema's singular `effect` field to add_rule's `effects` argument. Without
+    # this bridge, WorldAdapter.tick() has no gate to execute and the missing
+    # g_* attrs read back as false even when the measured controls all pass.
+    registered = any(
+        row.get("name") == _GATE_RULE_ID
+        for row in native.export_rules()
+        if isinstance(row, dict)
+    )
+    if not registered:
+        attrs = sub.node(rule_node)["attrs"]
+        native.add_rule({
+            "name": _GATE_RULE_ID,
+            "match": attrs.get("match", []),
+            "where": attrs.get("where"),
+            "effects": attrs.get("effect", []),
+        })
+    return rule_node
 
 
 # ---------------------------------------------------------------------------
@@ -201,7 +224,7 @@ def verify_claim(agent, claim: Claim) -> dict[str, Any]:
     sub.set_attr(claim_node, "grounded", grounded)
 
     # 3. GATE — the Rust rule ANDs the three gates and writes `verdict`.
-    _ensure_gate_rule(sub)
+    _ensure_gate_rule(sub, native)
     sub.tick()
 
     at = sub.node(claim_node)["attrs"]

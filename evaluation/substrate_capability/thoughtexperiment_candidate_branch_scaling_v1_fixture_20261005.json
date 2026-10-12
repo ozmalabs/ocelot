@@ -1,0 +1,12 @@
+{
+  "schema": "ThoughtexperimentCandidateBranchScalingV1Fixture",
+  "node_counts": [0, 1024, 8192, 32768],
+  "replications_per_arm": 5,
+  "decoy_topology": "one directed path of typed ScaleDecoy nodes; task rules do not mention this type or edge",
+  "case": {
+    "case_id": "numeric_threshold",
+    "live_where": {"type": "Gte", "a": {"type": "Attr", "node": {"type": "Var", "name": "x"}, "key": "signal"}, "b": {"type": "Lit", "value": 0}},
+    "candidate_where": {"type": "Gte", "a": {"type": "Attr", "node": {"type": "Var", "name": "x"}, "key": "signal"}, "b": {"type": "Lit", "value": 1}},
+    "input": {"signal": 0, "expected_live": true, "expected_candidate": false}
+  }
+}

@@ -31,7 +31,10 @@ pub enum CyclePlan {
     /// Graph-decided tasks, bounded native workers, deterministic fold.
     AreaParallel,
     /// Settle the authored hard-real-time sheet first.  Only an explicit
-    /// graph-minted SystemTwoEscalation admits the remaining rule population.
+    /// graph-minted SystemTwoEscalation admits labelled soft/background rule
+    /// areas.  Rules with NO `latency_class` and NO `area` (legacy, unlabelled)
+    /// are neither System 1 nor System 2: they settle with `StructRulesOnly`
+    /// semantics in the budget left after both (see `run_unlabelled_legacy`).
     DualProcess,
 }
 
@@ -541,6 +544,61 @@ fn run_scoped_system_two(
     progressed
 }
 
+/// True for a rule that carries NO scheduling label: neither `latency_class`
+/// nor `area` was authored (both parse to `Sym::default()`, see
+/// `py.rs::parse_rule_json`).  Such a rule predates the dual-process sheets
+/// and belongs to neither System 1 (`hard_realtime`) nor any System-2 area.
+fn is_unlabelled_legacy_rule(rule: &crate::rewrite::RewriteRule) -> bool {
+    rule.latency_class == Sym::default() && rule.area == Sym::default()
+}
+
+/// LEGACY (UNLABELLED) SETTLEMENT INSIDE THE DUAL-PROCESS CYCLE.
+///
+/// `CyclePlan::Default` selects `DualProcess` whenever the graph holds an
+/// enabled `DualProcessPolicy`, and `dual_process_core` is a core seed, so
+/// every default boot takes this plan.  Before this pass existed, a rule
+/// with no `latency_class` and no `area` matched neither the hard sheet nor
+/// any admitted System-2 area mask and was STARVED -- not deferred: no
+/// escalation could ever name its (empty) area.  The intended contract is
+/// the one stated for the policy-free path and the module header: legacy
+/// rules keep their historical unrestricted settlement.  So unlabelled rules
+/// settle to fixpoint here with exactly `StructRulesOnly` semantics,
+/// restricted to the unlabelled population and bounded by whatever budget
+/// System 1 and System 2 left.  Labelled soft/background rules stay masked
+/// (System-2 gating unchanged) and hard rules stay masked (they already had
+/// first claim this cycle; anything they now need is dirty for the next).
+///
+/// When no active unlabelled rule exists the pass is skipped entirely -- no
+/// `run_rules` call, no counter reset, no trace event -- so a fully labelled
+/// sheet is byte-identical to the pre-fix plan.
+fn run_unlabelled_legacy(
+    substrate: &mut Substrate,
+    max_steps: usize,
+    detect_cycles: bool,
+) -> Option<usize> {
+    if !substrate
+        .rules
+        .iter()
+        .any(|rule| rule.active && is_unlabelled_legacy_rule(rule))
+    {
+        return None;
+    }
+    if max_steps == 0 {
+        return Some(0);
+    }
+    let active_before: Vec<bool> = substrate.rules.iter().map(|rule| rule.active).collect();
+    for rule in &mut substrate.rules {
+        if rule.active && !is_unlabelled_legacy_rule(rule) {
+            rule.active = false;
+        }
+    }
+    let progressed = substrate.run_rules_opts(max_steps, detect_cycles);
+    for (rule, active) in substrate.rules.iter_mut().zip(active_before) {
+        rule.active = active;
+    }
+    Some(progressed)
+}
+
 /// ORDER 0 FIRES BEFORE ANYTHING ELSE, ON EVERY PLAN.
 ///
 /// A reflex is involuntary: it cannot be conditional on which cycle plan the
@@ -852,6 +910,22 @@ fn execute_plan(
                 };
                 push_trace(&mut report, substrate, phase, commits, trace);
             }
+            // LEGACY UNLABELLED SETTLEMENT (see `run_unlabelled_legacy`).
+            // Order within the cycle: System 1 (hard sheet) -> trajectory
+            // feedback -> scoped System 2 (+ hard motor fold) -> unlabelled
+            // legacy rules in the leftover budget.  Hard rules keep first
+            // claim; labelled soft/background rules remain System-2 gated.
+            let legacy_budget = max_steps.saturating_sub(report.steps);
+            if let Some(legacy) = run_unlabelled_legacy(substrate, legacy_budget, detect_cycles) {
+                report.steps = report.steps.saturating_add(legacy);
+                push_trace(
+                    &mut report,
+                    substrate,
+                    "legacy_unlabelled_settle",
+                    legacy,
+                    trace,
+                );
+            }
             // The cursor is graph-visible scheduler state.  It advances only
             // when a real bounded turn exists: a hard turn leaves an extant
             // continuation owed, while a System-2 turn yields the next one to
@@ -1053,6 +1127,131 @@ mod tests {
         let phases: Vec<_> = report.trace.iter().map(|event| event.phase).collect();
         assert_eq!(phases[0], "system_one_settle");
         assert_eq!(phases[1], "trajectory_quantized_feedback");
+    }
+
+    fn enable_dual_process(substrate: &mut Substrate) {
+        let policy_type = substrate.interner.intern("DualProcessPolicy");
+        let enabled = substrate.interner.intern("enabled");
+        let mut attrs = rustc_hash::FxHashMap::default();
+        attrs.insert(enabled, Value::Int(1));
+        substrate.add_node(policy_type, attrs);
+    }
+
+    /// One probe node + one rule setting `ran = 1` on it.  `schedule` is
+    /// merged into the rule JSON (e.g. `{"latency_class": "soft_realtime",
+    /// "area": "planning"}`); an empty object authors an UNLABELLED rule.
+    fn add_probe_rule(substrate: &mut Substrate, name: &str, schedule: serde_json::Value) -> NodeID {
+        let probe_type = substrate.interner.intern("CycleProbe");
+        let root_type = substrate.interner.intern("CycleProbeRoot");
+        let ran = substrate.interner.intern("ran");
+        let mut attrs = rustc_hash::FxHashMap::default();
+        attrs.insert(ran, Value::Int(0));
+        let probe = substrate.add_node(probe_type, attrs);
+        let root = substrate.add_node(root_type, rustc_hash::FxHashMap::default());
+        let edge = format!("has_probe_{name}");
+        add_edge(substrate, root, &edge, probe);
+        let mut rule = serde_json::json!({
+            "name": name,
+            "match": [["root", edge, "probe"]],
+            "where": {"type": "Eq",
+                      "a": {"type": "Attr", "node": {"type": "Var", "name": "probe"}, "key": "ran"},
+                      "b": {"type": "Lit", "value": 0}},
+            "effects": [["set_attr", "probe", "ran", 1]],
+        });
+        if let (Some(obj), Some(extra)) = (rule.as_object_mut(), schedule.as_object()) {
+            for (k, v) in extra {
+                obj.insert(k.clone(), v.clone());
+            }
+        }
+        let parsed = crate::py::parse_rule_json_pub(&rule, &mut substrate.terms, &mut substrate.interner)
+            .expect("probe rule parses");
+        substrate.add_rule(parsed);
+        probe
+    }
+
+    fn probe_ran(substrate: &mut Substrate, probe: NodeID) -> Option<Value> {
+        let ran = substrate.interner.intern("ran");
+        substrate.graph.node(probe).attrs.get(&ran).cloned()
+    }
+
+    #[test]
+    fn dual_process_default_settles_unlabelled_legacy_rules() {
+        // Regression: docs/research/engine_substrate/dual-process-starves-unlabelled-rules.md
+        let mut substrate = fresh();
+        enable_dual_process(&mut substrate);
+        let legacy = add_probe_rule(&mut substrate, "legacy_probe", serde_json::json!({}));
+        let report = execute(&mut substrate, CyclePlan::Default, 100, false, true, 1);
+        assert_eq!(probe_ran(&mut substrate, legacy), Some(Value::Int(1)));
+        assert!(report.steps > 0);
+        let phases: Vec<_> = report.trace.iter().map(|event| event.phase).collect();
+        assert_eq!(phases[0], "system_one_settle");
+        assert_eq!(phases.last(), Some(&"legacy_unlabelled_settle"));
+    }
+
+    #[test]
+    fn unlabelled_settlement_keeps_labelled_soft_rules_system_two_gated() {
+        let mut substrate = fresh();
+        enable_dual_process(&mut substrate);
+        let legacy = add_probe_rule(&mut substrate, "legacy_probe", serde_json::json!({}));
+        let soft = add_probe_rule(
+            &mut substrate,
+            "soft_probe",
+            serde_json::json!({"latency_class": "soft_realtime", "area": "planning"}),
+        );
+        // Labelled latency but no area, and area but no latency: neither is
+        // "unlabelled", so neither is opened by the legacy pass.
+        let soft_no_area = add_probe_rule(
+            &mut substrate,
+            "soft_no_area_probe",
+            serde_json::json!({"latency_class": "soft_realtime"}),
+        );
+        let area_no_latency = add_probe_rule(
+            &mut substrate,
+            "area_no_latency_probe",
+            serde_json::json!({"area": "planning"}),
+        );
+        execute(&mut substrate, CyclePlan::Default, 100, false, false, 1);
+        assert_eq!(probe_ran(&mut substrate, legacy), Some(Value::Int(1)));
+        assert_eq!(probe_ran(&mut substrate, soft), Some(Value::Int(0)));
+        assert_eq!(probe_ran(&mut substrate, soft_no_area), Some(Value::Int(0)));
+        assert_eq!(probe_ran(&mut substrate, area_no_latency), Some(Value::Int(0)));
+        // The gated rules were deferred, not discarded: masks were restored.
+        assert!(substrate.rules.iter().all(|rule| rule.active));
+    }
+
+    #[test]
+    fn unlabelled_settlement_runs_only_in_leftover_budget_after_hard_sheet() {
+        let mut substrate = fresh();
+        enable_dual_process(&mut substrate);
+        let hard = add_probe_rule(
+            &mut substrate,
+            "hard_probe",
+            serde_json::json!({"latency_class": "hard_realtime", "area": "motor"}),
+        );
+        let legacy = add_probe_rule(&mut substrate, "legacy_probe", serde_json::json!({}));
+        // One step: the hard sheet has first claim and consumes it.
+        execute(&mut substrate, CyclePlan::Default, 1, false, false, 1);
+        assert_eq!(probe_ran(&mut substrate, hard), Some(Value::Int(1)));
+        assert_eq!(probe_ran(&mut substrate, legacy), Some(Value::Int(0)));
+        // Its dirty bit survived; the next bounded cycle settles it.
+        execute(&mut substrate, CyclePlan::Default, 1, false, false, 1);
+        assert_eq!(probe_ran(&mut substrate, legacy), Some(Value::Int(1)));
+    }
+
+    #[test]
+    fn fully_labelled_dual_process_sheet_emits_no_legacy_phase() {
+        let mut substrate = fresh();
+        enable_dual_process(&mut substrate);
+        add_probe_rule(
+            &mut substrate,
+            "hard_probe",
+            serde_json::json!({"latency_class": "hard_realtime", "area": "motor"}),
+        );
+        let report = execute(&mut substrate, CyclePlan::Default, 100, false, true, 1);
+        assert!(report
+            .trace
+            .iter()
+            .all(|event| event.phase != "legacy_unlabelled_settle"));
     }
 
     #[test]

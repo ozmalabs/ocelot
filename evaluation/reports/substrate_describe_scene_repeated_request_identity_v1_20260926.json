@@ -1,0 +1,616 @@
+{
+  "checks": {
+    "identity_gate_passes_all_workers": false,
+    "observed_graph_shape_repeats": false,
+    "source_stable_workers_and_postrun": true,
+    "three_distinct_fresh_pids": true,
+    "two_nonempty_replies_per_worker": true
+  },
+  "claim_boundary": "Three fresh full-seed workers capture repeated sequential attached-scene describe requests. Identity-gate failure is a bounded route finding; no concurrent-safety or general action-route claim.",
+  "environment": {
+    "platform": "Linux-6.8.0-142-generic-x86_64-with-glibc2.39",
+    "python": "3.13.5 (main, Jun 11 2025, 15:36:57) [GCC 11.4.0]"
+  },
+  "lock_sha256": "bf3263efc75885a0e00f77364b29e3840156fa9d10ffb1dc806cf1a75c087984",
+  "locked_inputs": {
+    "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+    "native_build_manifest_sha256": "2d10ff9cc7f9832d91d1603c74dd0a0e0c4c5d3080a618a33575e9d5400ae871",
+    "native_extension_sha256": "f5543ca015278bad6c65506a0d7d9acb85b33252e7121cdda1a56df63e8ad27b",
+    "protocol_sha256": "4cf5f2452b248ddae0c4ef63de82f314edf2bd87ca342d4c99541daf90ac685c",
+    "runner_sha256": "d78e7998470512680f23ece0e86634bdfa5e82e32a91806cef08474c13d3ab22",
+    "source_sha256": {
+      "arc_self_report": "71fd85818b8adf0b4ff357dd756b38d8d37f92de059aba5cb4b53ae47dc2b63f",
+      "boot_all": "cb3645106e9f3cd056b900f507e5f4dbea36849d0568189545c73de698713d27",
+      "conversation_action": "bd442d5d896b390196df7e627f5c9c940fdd76bf4283079c9165744397a4e070",
+      "discourse_seed": "d12d5510ff282cfdd6a6edda763abc4e2dce970b8f9f83c45db5dbeea71afe9a",
+      "discourse_state": "774686588b3d9c979be330d55d739561caa4cba97b5b8f5bf082c4eed54bb05e",
+      "reflective_faculty": "75995b1b7a2d94ecb4e86f31c56a46e0ff76a041dfbb7ea2c64acf238d4eab85",
+      "world_adapter": "2bd39507965f755cac89a876d587be74c51cfb6ee373a2ad2a7a4b8fa64c9e9b"
+    }
+  },
+  "post_run_inputs": {
+    "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+    "native_build_manifest_sha256": "2d10ff9cc7f9832d91d1603c74dd0a0e0c4c5d3080a618a33575e9d5400ae871",
+    "native_extension_sha256": "f5543ca015278bad6c65506a0d7d9acb85b33252e7121cdda1a56df63e8ad27b",
+    "protocol_sha256": "4cf5f2452b248ddae0c4ef63de82f314edf2bd87ca342d4c99541daf90ac685c",
+    "runner_sha256": "d78e7998470512680f23ece0e86634bdfa5e82e32a91806cef08474c13d3ab22",
+    "source_sha256": {
+      "arc_self_report": "71fd85818b8adf0b4ff357dd756b38d8d37f92de059aba5cb4b53ae47dc2b63f",
+      "boot_all": "cb3645106e9f3cd056b900f507e5f4dbea36849d0568189545c73de698713d27",
+      "conversation_action": "bd442d5d896b390196df7e627f5c9c940fdd76bf4283079c9165744397a4e070",
+      "discourse_seed": "d12d5510ff282cfdd6a6edda763abc4e2dce970b8f9f83c45db5dbeea71afe9a",
+      "discourse_state": "774686588b3d9c979be330d55d739561caa4cba97b5b8f5bf082c4eed54bb05e",
+      "reflective_faculty": "75995b1b7a2d94ecb4e86f31c56a46e0ff76a041dfbb7ea2c64acf238d4eab85",
+      "world_adapter": "2bd39507965f755cac89a876d587be74c51cfb6ee373a2ad2a7a4b8fa64c9e9b"
+    }
+  },
+  "run_id": "substrate-describe-scene-repeated-request-identity-v1-20260926",
+  "runs": [
+    {
+      "boot_ns": 11794623260,
+      "both_replies_nonempty": true,
+      "distinct_parent_identity": false,
+      "each_goal_owns_only_its_request": false,
+      "pid": 6,
+      "replicate": 1,
+      "turns": [
+        {
+          "elapsed_ns": 13244196574,
+          "lifecycle_event_count": 0,
+          "matching_goal_ids": [
+            25049
+          ],
+          "matching_goals": [
+            {
+              "attrs": {
+                "kind": "describe_scene",
+                "origin_turn_id": 24888
+              },
+              "comprehended_message_ids": [
+                24888
+              ],
+              "described_scene_ids": [
+                24800
+              ],
+              "id": 25049,
+              "is_scene_parent": true,
+              "origin_event_ids": [],
+              "subgoal_ids": [
+                25050,
+                25051,
+                25052
+              ]
+            }
+          ],
+          "message_id": 24888,
+          "new_goal_ids": [
+            25049,
+            25050,
+            25051,
+            25052,
+            25061,
+            25074
+          ],
+          "origin_event_id": 24898,
+          "origin_event_kind": "instruction",
+          "reply": "I see the grey thing stays, the yellow counter, and the blue thing moves.",
+          "reply_nonempty": true,
+          "route": "describe_scene",
+          "scene_parent_ids": [
+            25049
+          ],
+          "scene_parents": [
+            {
+              "attrs": {
+                "kind": "describe_scene",
+                "origin_turn_id": 24888
+              },
+              "comprehended_message_ids": [
+                24888
+              ],
+              "described_scene_ids": [
+                24800
+              ],
+              "id": 25049,
+              "is_scene_parent": true,
+              "origin_event_ids": [],
+              "subgoal_ids": [
+                25050,
+                25051,
+                25052
+              ]
+            }
+          ],
+          "state_event_kinds": [
+            "instruction"
+          ],
+          "turn": 0
+        },
+        {
+          "elapsed_ns": 769058426,
+          "lifecycle_event_count": 0,
+          "matching_goal_ids": [
+            25049
+          ],
+          "matching_goals": [
+            {
+              "attrs": {
+                "kind": "describe_scene",
+                "origin_turn_id": 24888
+              },
+              "comprehended_message_ids": [
+                24888,
+                25086
+              ],
+              "described_scene_ids": [
+                24800
+              ],
+              "id": 25049,
+              "is_scene_parent": true,
+              "origin_event_ids": [],
+              "subgoal_ids": [
+                25050,
+                25051,
+                25052
+              ]
+            }
+          ],
+          "message_id": 25086,
+          "new_goal_ids": [
+            25102,
+            25116
+          ],
+          "origin_event_id": 25092,
+          "origin_event_kind": "instruction",
+          "reply": "I see the grey thing stays, the yellow counter, and the blue thing moves.",
+          "reply_nonempty": true,
+          "route": "describe_scene",
+          "scene_parent_ids": [
+            25049
+          ],
+          "scene_parents": [
+            {
+              "attrs": {
+                "kind": "describe_scene",
+                "origin_turn_id": 24888
+              },
+              "comprehended_message_ids": [
+                24888,
+                25086
+              ],
+              "described_scene_ids": [
+                24800
+              ],
+              "id": 25049,
+              "is_scene_parent": true,
+              "origin_event_ids": [],
+              "subgoal_ids": [
+                25050,
+                25051,
+                25052
+              ]
+            }
+          ],
+          "state_event_kinds": [
+            "instruction",
+            "instruction"
+          ],
+          "turn": 1
+        }
+      ],
+      "worker_finished_inputs": {
+        "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+        "native_build_manifest_sha256": "2d10ff9cc7f9832d91d1603c74dd0a0e0c4c5d3080a618a33575e9d5400ae871",
+        "native_extension_sha256": "f5543ca015278bad6c65506a0d7d9acb85b33252e7121cdda1a56df63e8ad27b",
+        "protocol_sha256": "4cf5f2452b248ddae0c4ef63de82f314edf2bd87ca342d4c99541daf90ac685c",
+        "runner_sha256": "d78e7998470512680f23ece0e86634bdfa5e82e32a91806cef08474c13d3ab22",
+        "source_sha256": {
+          "arc_self_report": "71fd85818b8adf0b4ff357dd756b38d8d37f92de059aba5cb4b53ae47dc2b63f",
+          "boot_all": "cb3645106e9f3cd056b900f507e5f4dbea36849d0568189545c73de698713d27",
+          "conversation_action": "bd442d5d896b390196df7e627f5c9c940fdd76bf4283079c9165744397a4e070",
+          "discourse_seed": "d12d5510ff282cfdd6a6edda763abc4e2dce970b8f9f83c45db5dbeea71afe9a",
+          "discourse_state": "774686588b3d9c979be330d55d739561caa4cba97b5b8f5bf082c4eed54bb05e",
+          "reflective_faculty": "75995b1b7a2d94ecb4e86f31c56a46e0ff76a041dfbb7ea2c64acf238d4eab85",
+          "world_adapter": "2bd39507965f755cac89a876d587be74c51cfb6ee373a2ad2a7a4b8fa64c9e9b"
+        }
+      },
+      "worker_started_inputs": {
+        "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+        "native_build_manifest_sha256": "2d10ff9cc7f9832d91d1603c74dd0a0e0c4c5d3080a618a33575e9d5400ae871",
+        "native_extension_sha256": "f5543ca015278bad6c65506a0d7d9acb85b33252e7121cdda1a56df63e8ad27b",
+        "protocol_sha256": "4cf5f2452b248ddae0c4ef63de82f314edf2bd87ca342d4c99541daf90ac685c",
+        "runner_sha256": "d78e7998470512680f23ece0e86634bdfa5e82e32a91806cef08474c13d3ab22",
+        "source_sha256": {
+          "arc_self_report": "71fd85818b8adf0b4ff357dd756b38d8d37f92de059aba5cb4b53ae47dc2b63f",
+          "boot_all": "cb3645106e9f3cd056b900f507e5f4dbea36849d0568189545c73de698713d27",
+          "conversation_action": "bd442d5d896b390196df7e627f5c9c940fdd76bf4283079c9165744397a4e070",
+          "discourse_seed": "d12d5510ff282cfdd6a6edda763abc4e2dce970b8f9f83c45db5dbeea71afe9a",
+          "discourse_state": "774686588b3d9c979be330d55d739561caa4cba97b5b8f5bf082c4eed54bb05e",
+          "reflective_faculty": "75995b1b7a2d94ecb4e86f31c56a46e0ff76a041dfbb7ea2c64acf238d4eab85",
+          "world_adapter": "2bd39507965f755cac89a876d587be74c51cfb6ee373a2ad2a7a4b8fa64c9e9b"
+        }
+      }
+    },
+    {
+      "boot_ns": 11812216612,
+      "both_replies_nonempty": true,
+      "distinct_parent_identity": false,
+      "each_goal_owns_only_its_request": false,
+      "pid": 5831,
+      "replicate": 2,
+      "turns": [
+        {
+          "elapsed_ns": 13153101251,
+          "lifecycle_event_count": 0,
+          "matching_goal_ids": [
+            25049
+          ],
+          "matching_goals": [
+            {
+              "attrs": {
+                "kind": "describe_scene",
+                "origin_turn_id": 24888
+              },
+              "comprehended_message_ids": [
+                24888
+              ],
+              "described_scene_ids": [
+                24800
+              ],
+              "id": 25049,
+              "is_scene_parent": true,
+              "origin_event_ids": [],
+              "subgoal_ids": [
+                25050,
+                25051,
+                25052
+              ]
+            }
+          ],
+          "message_id": 24888,
+          "new_goal_ids": [
+            25049,
+            25050,
+            25051,
+            25052,
+            25061,
+            25074
+          ],
+          "origin_event_id": 24898,
+          "origin_event_kind": "instruction",
+          "reply": "I see the grey thing stays, the yellow counter, and the blue thing moves.",
+          "reply_nonempty": true,
+          "route": "describe_scene",
+          "scene_parent_ids": [
+            25049
+          ],
+          "scene_parents": [
+            {
+              "attrs": {
+                "kind": "describe_scene",
+                "origin_turn_id": 24888
+              },
+              "comprehended_message_ids": [
+                24888
+              ],
+              "described_scene_ids": [
+                24800
+              ],
+              "id": 25049,
+              "is_scene_parent": true,
+              "origin_event_ids": [],
+              "subgoal_ids": [
+                25050,
+                25051,
+                25052
+              ]
+            }
+          ],
+          "state_event_kinds": [
+            "instruction"
+          ],
+          "turn": 0
+        },
+        {
+          "elapsed_ns": 755938874,
+          "lifecycle_event_count": 0,
+          "matching_goal_ids": [
+            25049
+          ],
+          "matching_goals": [
+            {
+              "attrs": {
+                "kind": "describe_scene",
+                "origin_turn_id": 24888
+              },
+              "comprehended_message_ids": [
+                24888,
+                25086
+              ],
+              "described_scene_ids": [
+                24800
+              ],
+              "id": 25049,
+              "is_scene_parent": true,
+              "origin_event_ids": [],
+              "subgoal_ids": [
+                25050,
+                25051,
+                25052
+              ]
+            }
+          ],
+          "message_id": 25086,
+          "new_goal_ids": [
+            25102,
+            25116
+          ],
+          "origin_event_id": 25092,
+          "origin_event_kind": "instruction",
+          "reply": "I see the grey thing stays, the yellow counter, and the blue thing moves.",
+          "reply_nonempty": true,
+          "route": "describe_scene",
+          "scene_parent_ids": [
+            25049
+          ],
+          "scene_parents": [
+            {
+              "attrs": {
+                "kind": "describe_scene",
+                "origin_turn_id": 24888
+              },
+              "comprehended_message_ids": [
+                24888,
+                25086
+              ],
+              "described_scene_ids": [
+                24800
+              ],
+              "id": 25049,
+              "is_scene_parent": true,
+              "origin_event_ids": [],
+              "subgoal_ids": [
+                25050,
+                25051,
+                25052
+              ]
+            }
+          ],
+          "state_event_kinds": [
+            "instruction",
+            "instruction"
+          ],
+          "turn": 1
+        }
+      ],
+      "worker_finished_inputs": {
+        "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+        "native_build_manifest_sha256": "2d10ff9cc7f9832d91d1603c74dd0a0e0c4c5d3080a618a33575e9d5400ae871",
+        "native_extension_sha256": "f5543ca015278bad6c65506a0d7d9acb85b33252e7121cdda1a56df63e8ad27b",
+        "protocol_sha256": "4cf5f2452b248ddae0c4ef63de82f314edf2bd87ca342d4c99541daf90ac685c",
+        "runner_sha256": "d78e7998470512680f23ece0e86634bdfa5e82e32a91806cef08474c13d3ab22",
+        "source_sha256": {
+          "arc_self_report": "71fd85818b8adf0b4ff357dd756b38d8d37f92de059aba5cb4b53ae47dc2b63f",
+          "boot_all": "cb3645106e9f3cd056b900f507e5f4dbea36849d0568189545c73de698713d27",
+          "conversation_action": "bd442d5d896b390196df7e627f5c9c940fdd76bf4283079c9165744397a4e070",
+          "discourse_seed": "d12d5510ff282cfdd6a6edda763abc4e2dce970b8f9f83c45db5dbeea71afe9a",
+          "discourse_state": "774686588b3d9c979be330d55d739561caa4cba97b5b8f5bf082c4eed54bb05e",
+          "reflective_faculty": "75995b1b7a2d94ecb4e86f31c56a46e0ff76a041dfbb7ea2c64acf238d4eab85",
+          "world_adapter": "2bd39507965f755cac89a876d587be74c51cfb6ee373a2ad2a7a4b8fa64c9e9b"
+        }
+      },
+      "worker_started_inputs": {
+        "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+        "native_build_manifest_sha256": "2d10ff9cc7f9832d91d1603c74dd0a0e0c4c5d3080a618a33575e9d5400ae871",
+        "native_extension_sha256": "f5543ca015278bad6c65506a0d7d9acb85b33252e7121cdda1a56df63e8ad27b",
+        "protocol_sha256": "4cf5f2452b248ddae0c4ef63de82f314edf2bd87ca342d4c99541daf90ac685c",
+        "runner_sha256": "d78e7998470512680f23ece0e86634bdfa5e82e32a91806cef08474c13d3ab22",
+        "source_sha256": {
+          "arc_self_report": "71fd85818b8adf0b4ff357dd756b38d8d37f92de059aba5cb4b53ae47dc2b63f",
+          "boot_all": "cb3645106e9f3cd056b900f507e5f4dbea36849d0568189545c73de698713d27",
+          "conversation_action": "bd442d5d896b390196df7e627f5c9c940fdd76bf4283079c9165744397a4e070",
+          "discourse_seed": "d12d5510ff282cfdd6a6edda763abc4e2dce970b8f9f83c45db5dbeea71afe9a",
+          "discourse_state": "774686588b3d9c979be330d55d739561caa4cba97b5b8f5bf082c4eed54bb05e",
+          "reflective_faculty": "75995b1b7a2d94ecb4e86f31c56a46e0ff76a041dfbb7ea2c64acf238d4eab85",
+          "world_adapter": "2bd39507965f755cac89a876d587be74c51cfb6ee373a2ad2a7a4b8fa64c9e9b"
+        }
+      }
+    },
+    {
+      "boot_ns": 11807817044,
+      "both_replies_nonempty": true,
+      "distinct_parent_identity": false,
+      "each_goal_owns_only_its_request": false,
+      "pid": 11656,
+      "replicate": 0,
+      "turns": [
+        {
+          "elapsed_ns": 13289954254,
+          "lifecycle_event_count": 0,
+          "matching_goal_ids": [
+            25049
+          ],
+          "matching_goals": [
+            {
+              "attrs": {
+                "kind": "describe_scene",
+                "origin_turn_id": 24888
+              },
+              "comprehended_message_ids": [
+                24888
+              ],
+              "described_scene_ids": [
+                24800
+              ],
+              "id": 25049,
+              "is_scene_parent": true,
+              "origin_event_ids": [],
+              "subgoal_ids": [
+                25050,
+                25051,
+                25052
+              ]
+            }
+          ],
+          "message_id": 24888,
+          "new_goal_ids": [
+            25049,
+            25050,
+            25051,
+            25052,
+            25061,
+            25074
+          ],
+          "origin_event_id": 24898,
+          "origin_event_kind": "instruction",
+          "reply": "I see the grey thing stays, the yellow counter, and the blue thing moves.",
+          "reply_nonempty": true,
+          "route": "describe_scene",
+          "scene_parent_ids": [
+            25049
+          ],
+          "scene_parents": [
+            {
+              "attrs": {
+                "kind": "describe_scene",
+                "origin_turn_id": 24888
+              },
+              "comprehended_message_ids": [
+                24888
+              ],
+              "described_scene_ids": [
+                24800
+              ],
+              "id": 25049,
+              "is_scene_parent": true,
+              "origin_event_ids": [],
+              "subgoal_ids": [
+                25050,
+                25051,
+                25052
+              ]
+            }
+          ],
+          "state_event_kinds": [
+            "instruction"
+          ],
+          "turn": 0
+        },
+        {
+          "elapsed_ns": 776520065,
+          "lifecycle_event_count": 0,
+          "matching_goal_ids": [
+            25049
+          ],
+          "matching_goals": [
+            {
+              "attrs": {
+                "kind": "describe_scene",
+                "origin_turn_id": 24888
+              },
+              "comprehended_message_ids": [
+                24888,
+                25086
+              ],
+              "described_scene_ids": [
+                24800
+              ],
+              "id": 25049,
+              "is_scene_parent": true,
+              "origin_event_ids": [],
+              "subgoal_ids": [
+                25050,
+                25051,
+                25052
+              ]
+            }
+          ],
+          "message_id": 25086,
+          "new_goal_ids": [
+            25102,
+            25116
+          ],
+          "origin_event_id": 25092,
+          "origin_event_kind": "instruction",
+          "reply": "I see the grey thing stays, the yellow counter, and the blue thing moves.",
+          "reply_nonempty": true,
+          "route": "describe_scene",
+          "scene_parent_ids": [
+            25049
+          ],
+          "scene_parents": [
+            {
+              "attrs": {
+                "kind": "describe_scene",
+                "origin_turn_id": 24888
+              },
+              "comprehended_message_ids": [
+                24888,
+                25086
+              ],
+              "described_scene_ids": [
+                24800
+              ],
+              "id": 25049,
+              "is_scene_parent": true,
+              "origin_event_ids": [],
+              "subgoal_ids": [
+                25050,
+                25051,
+                25052
+              ]
+            }
+          ],
+          "state_event_kinds": [
+            "instruction",
+            "instruction"
+          ],
+          "turn": 1
+        }
+      ],
+      "worker_finished_inputs": {
+        "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+        "native_build_manifest_sha256": "2d10ff9cc7f9832d91d1603c74dd0a0e0c4c5d3080a618a33575e9d5400ae871",
+        "native_extension_sha256": "f5543ca015278bad6c65506a0d7d9acb85b33252e7121cdda1a56df63e8ad27b",
+        "protocol_sha256": "4cf5f2452b248ddae0c4ef63de82f314edf2bd87ca342d4c99541daf90ac685c",
+        "runner_sha256": "d78e7998470512680f23ece0e86634bdfa5e82e32a91806cef08474c13d3ab22",
+        "source_sha256": {
+          "arc_self_report": "71fd85818b8adf0b4ff357dd756b38d8d37f92de059aba5cb4b53ae47dc2b63f",
+          "boot_all": "cb3645106e9f3cd056b900f507e5f4dbea36849d0568189545c73de698713d27",
+          "conversation_action": "bd442d5d896b390196df7e627f5c9c940fdd76bf4283079c9165744397a4e070",
+          "discourse_seed": "d12d5510ff282cfdd6a6edda763abc4e2dce970b8f9f83c45db5dbeea71afe9a",
+          "discourse_state": "774686588b3d9c979be330d55d739561caa4cba97b5b8f5bf082c4eed54bb05e",
+          "reflective_faculty": "75995b1b7a2d94ecb4e86f31c56a46e0ff76a041dfbb7ea2c64acf238d4eab85",
+          "world_adapter": "2bd39507965f755cac89a876d587be74c51cfb6ee373a2ad2a7a4b8fa64c9e9b"
+        }
+      },
+      "worker_started_inputs": {
+        "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+        "native_build_manifest_sha256": "2d10ff9cc7f9832d91d1603c74dd0a0e0c4c5d3080a618a33575e9d5400ae871",
+        "native_extension_sha256": "f5543ca015278bad6c65506a0d7d9acb85b33252e7121cdda1a56df63e8ad27b",
+        "protocol_sha256": "4cf5f2452b248ddae0c4ef63de82f314edf2bd87ca342d4c99541daf90ac685c",
+        "runner_sha256": "d78e7998470512680f23ece0e86634bdfa5e82e32a91806cef08474c13d3ab22",
+        "source_sha256": {
+          "arc_self_report": "71fd85818b8adf0b4ff357dd756b38d8d37f92de059aba5cb4b53ae47dc2b63f",
+          "boot_all": "cb3645106e9f3cd056b900f507e5f4dbea36849d0568189545c73de698713d27",
+          "conversation_action": "bd442d5d896b390196df7e627f5c9c940fdd76bf4283079c9165744397a4e070",
+          "discourse_seed": "d12d5510ff282cfdd6a6edda763abc4e2dce970b8f9f83c45db5dbeea71afe9a",
+          "discourse_state": "774686588b3d9c979be330d55d739561caa4cba97b5b8f5bf082c4eed54bb05e",
+          "reflective_faculty": "75995b1b7a2d94ecb4e86f31c56a46e0ff76a041dfbb7ea2c64acf238d4eab85",
+          "world_adapter": "2bd39507965f755cac89a876d587be74c51cfb6ee373a2ad2a7a4b8fa64c9e9b"
+        }
+      }
+    }
+  ],
+  "schedule": [
+    1,
+    2,
+    0
+  ],
+  "schema_version": 1,
+  "summary": {
+    "boot_ns_median": 11807817044,
+    "replicates": 3,
+    "turn_ns_median": 6964810658.0
+  }
+}

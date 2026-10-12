@@ -1,0 +1,594 @@
+{
+  "checks": {
+    "B_completed_while_A_blocked": true,
+    "all_threads_joined_without_errors": false,
+    "baseline_reply_parity": false,
+    "event_order_and_identity": true,
+    "normalized_shape_repeats": true,
+    "source_stable_workers_and_postrun": true,
+    "three_distinct_processes": true
+  },
+  "claim_boundary": "Two live threads on one WorldAdapter overlap with B completing while A waits after selection; ownership and terminal lifecycle are measured. This is controlled route-specific concurrency, not arbitrary adapter/thread safety.",
+  "environment": {
+    "platform": "Linux-6.8.0-142-generic-x86_64-with-glibc2.39",
+    "python": "3.13.5 (main, Jun 11 2025, 15:36:57) [GCC 11.4.0]"
+  },
+  "lock_sha256": "13c88c5280f28e3df8436f23653f1c0f86c1343a1211789dbb7c56eaf7c31ccd",
+  "locked_inputs": {
+    "amendment_sha256": "a4955fe5c3240b8081c57cc1f3736c0f12a6f02058bcd55665e773e40526a3f2",
+    "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+    "native_build_manifest_sha256": "2d10ff9cc7f9832d91d1603c74dd0a0e0c4c5d3080a618a33575e9d5400ae871",
+    "native_extension_sha256": "f5543ca015278bad6c65506a0d7d9acb85b33252e7121cdda1a56df63e8ad27b",
+    "protocol_sha256": "a084aacb585a3a48e9bf83d055b07c0e0bc895105f2a44d9ee8350c2fb69dc6c",
+    "runner_sha256": "ebeb0ed8cfd3286c250a00b1a09df00470aa0952d83d78a4a41679abbeaaf53b",
+    "source_sha256": {
+      "arc_self_report": "798ef87c9a0ef8bd25e139fbf992428f000b8e95c4ace900f8491ec8931f1fc0",
+      "boot_all": "cb3645106e9f3cd056b900f507e5f4dbea36849d0568189545c73de698713d27",
+      "conversation_action": "f580ec11415d91bb54e86a8d33cefd216b31c6a9b8531815ef717070a37165c6",
+      "discourse_seed": "0dc367275203b8abcfd0be63b3c0dbe0308de50e25bd869c3ac2c88f622c8823",
+      "discourse_state": "774686588b3d9c979be330d55d739561caa4cba97b5b8f5bf082c4eed54bb05e",
+      "native_py": "034e606b055938e952fd5ff42cda66c563a37ca89a50761b62f6662282499ca9",
+      "reflective_faculty": "498ea851a851dfc80d96f48c1d0444ac249c91ff7eea4056df20f17db00d1284",
+      "world_adapter": "c820e2d706f3632ff2c19ed8a64ecc1a9170584b07efda5460316118bbe69c25"
+    }
+  },
+  "post_run_inputs": {
+    "amendment_sha256": "a4955fe5c3240b8081c57cc1f3736c0f12a6f02058bcd55665e773e40526a3f2",
+    "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+    "native_build_manifest_sha256": "2d10ff9cc7f9832d91d1603c74dd0a0e0c4c5d3080a618a33575e9d5400ae871",
+    "native_extension_sha256": "f5543ca015278bad6c65506a0d7d9acb85b33252e7121cdda1a56df63e8ad27b",
+    "protocol_sha256": "a084aacb585a3a48e9bf83d055b07c0e0bc895105f2a44d9ee8350c2fb69dc6c",
+    "runner_sha256": "ebeb0ed8cfd3286c250a00b1a09df00470aa0952d83d78a4a41679abbeaaf53b",
+    "source_sha256": {
+      "arc_self_report": "798ef87c9a0ef8bd25e139fbf992428f000b8e95c4ace900f8491ec8931f1fc0",
+      "boot_all": "cb3645106e9f3cd056b900f507e5f4dbea36849d0568189545c73de698713d27",
+      "conversation_action": "f580ec11415d91bb54e86a8d33cefd216b31c6a9b8531815ef717070a37165c6",
+      "discourse_seed": "0dc367275203b8abcfd0be63b3c0dbe0308de50e25bd869c3ac2c88f622c8823",
+      "discourse_state": "774686588b3d9c979be330d55d739561caa4cba97b5b8f5bf082c4eed54bb05e",
+      "native_py": "034e606b055938e952fd5ff42cda66c563a37ca89a50761b62f6662282499ca9",
+      "reflective_faculty": "498ea851a851dfc80d96f48c1d0444ac249c91ff7eea4056df20f17db00d1284",
+      "world_adapter": "c820e2d706f3632ff2c19ed8a64ecc1a9170584b07efda5460316118bbe69c25"
+    }
+  },
+  "run_id": "substrate-live-describe-scene-threaded-interleaving-v1_1-20260926",
+  "runs": [
+    {
+      "a_pause": {
+        "active": true,
+        "child_count": 3,
+        "closed": false,
+        "goal_id": 25049,
+        "message_ids": [
+          24889
+        ],
+        "origin_ids": [
+          24899
+        ],
+        "status": "selected",
+        "transition_event_ids": [
+          25057
+        ],
+        "transition_kinds": [
+          "selection"
+        ]
+      },
+      "b_completed_while_a_blocked": true,
+      "boot_ns": 12272480434,
+      "errors": [
+        {
+          "message": "Already mutably borrowed",
+          "thread": "B",
+          "traceback": "Traceback (most recent call last):\n  File \"/home/matt/ozmadev/ocelot/scripts/substrate_live_describe_scene_threaded_interleaving_v1_1.py\", line 46, in call\n    try:replies[label]=a.converse(\"describe what you see\",speech_act=\"instruction\",speaker=\"alice\")\n                       ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/matt/ozmadev/ocelot/substrate/world_adapter.py\", line 73, in wrapped\n    return method(self, *args, **kwargs)\n  File \"/home/matt/ozmadev/ocelot/substrate/world_adapter.py\", line 8082, in converse\n    interpretation_id = self.s.node(mid)[\"attrs\"].get(\n                        ~~~~~~~~~~~^^^^^\n  File \"/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/__init__.py\", line 765, in node\n    return self._inner.node(nid)\n           ~~~~~~~~~~~~~~~~^^^^^\nRuntimeError: Already mutably borrowed\n",
+          "type": "RuntimeError"
+        }
+      ],
+      "event_order_gate": true,
+      "event_rows": [
+        {
+          "for_goal_ids": [],
+          "kind": "instruction"
+        },
+        {
+          "for_goal_ids": [
+            25049
+          ],
+          "kind": "selection"
+        },
+        {
+          "for_goal_ids": [],
+          "kind": "instruction"
+        },
+        {
+          "for_goal_ids": [
+            25074
+          ],
+          "kind": "selection"
+        },
+        {
+          "for_goal_ids": [
+            25074
+          ],
+          "kind": "execution"
+        },
+        {
+          "for_goal_ids": [
+            25074
+          ],
+          "kind": "action_result"
+        },
+        {
+          "for_goal_ids": [
+            25049
+          ],
+          "kind": "execution"
+        },
+        {
+          "for_goal_ids": [
+            25049
+          ],
+          "kind": "action_result"
+        }
+      ],
+      "final": {
+        "a": [
+          {
+            "active": false,
+            "child_count": 3,
+            "closed": true,
+            "goal_id": 25049,
+            "message_ids": [
+              24889
+            ],
+            "origin_ids": [
+              24899
+            ],
+            "status": "resolved",
+            "transition_event_ids": [
+              25057,
+              25081,
+              25082
+            ],
+            "transition_kinds": [
+              "selection",
+              "execution",
+              "action_result"
+            ]
+          }
+        ],
+        "b": [
+          {
+            "active": false,
+            "child_count": 3,
+            "closed": true,
+            "goal_id": 25074,
+            "message_ids": [
+              25059
+            ],
+            "origin_ids": [
+              25065
+            ],
+            "status": "resolved",
+            "transition_event_ids": [
+              25078,
+              25079,
+              25080
+            ],
+            "transition_kinds": [
+              "selection",
+              "execution",
+              "action_result"
+            ]
+          }
+        ]
+      },
+      "identity_gate": true,
+      "lifecycle_gate": true,
+      "pause_gate": true,
+      "pid": 4,
+      "replicate": 1,
+      "replies": {
+        "A": "I see the grey thing stays, the yellow counter, and the blue thing moves."
+      },
+      "reply_parity": false,
+      "threads_joined": true,
+      "worker_finished_inputs": {
+        "amendment_sha256": "a4955fe5c3240b8081c57cc1f3736c0f12a6f02058bcd55665e773e40526a3f2",
+        "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+        "native_build_manifest_sha256": "2d10ff9cc7f9832d91d1603c74dd0a0e0c4c5d3080a618a33575e9d5400ae871",
+        "native_extension_sha256": "f5543ca015278bad6c65506a0d7d9acb85b33252e7121cdda1a56df63e8ad27b",
+        "protocol_sha256": "a084aacb585a3a48e9bf83d055b07c0e0bc895105f2a44d9ee8350c2fb69dc6c",
+        "runner_sha256": "ebeb0ed8cfd3286c250a00b1a09df00470aa0952d83d78a4a41679abbeaaf53b",
+        "source_sha256": {
+          "arc_self_report": "798ef87c9a0ef8bd25e139fbf992428f000b8e95c4ace900f8491ec8931f1fc0",
+          "boot_all": "cb3645106e9f3cd056b900f507e5f4dbea36849d0568189545c73de698713d27",
+          "conversation_action": "f580ec11415d91bb54e86a8d33cefd216b31c6a9b8531815ef717070a37165c6",
+          "discourse_seed": "0dc367275203b8abcfd0be63b3c0dbe0308de50e25bd869c3ac2c88f622c8823",
+          "discourse_state": "774686588b3d9c979be330d55d739561caa4cba97b5b8f5bf082c4eed54bb05e",
+          "native_py": "034e606b055938e952fd5ff42cda66c563a37ca89a50761b62f6662282499ca9",
+          "reflective_faculty": "498ea851a851dfc80d96f48c1d0444ac249c91ff7eea4056df20f17db00d1284",
+          "world_adapter": "c820e2d706f3632ff2c19ed8a64ecc1a9170584b07efda5460316118bbe69c25"
+        }
+      },
+      "worker_started_inputs": {
+        "amendment_sha256": "a4955fe5c3240b8081c57cc1f3736c0f12a6f02058bcd55665e773e40526a3f2",
+        "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+        "native_build_manifest_sha256": "2d10ff9cc7f9832d91d1603c74dd0a0e0c4c5d3080a618a33575e9d5400ae871",
+        "native_extension_sha256": "f5543ca015278bad6c65506a0d7d9acb85b33252e7121cdda1a56df63e8ad27b",
+        "protocol_sha256": "a084aacb585a3a48e9bf83d055b07c0e0bc895105f2a44d9ee8350c2fb69dc6c",
+        "runner_sha256": "ebeb0ed8cfd3286c250a00b1a09df00470aa0952d83d78a4a41679abbeaaf53b",
+        "source_sha256": {
+          "arc_self_report": "798ef87c9a0ef8bd25e139fbf992428f000b8e95c4ace900f8491ec8931f1fc0",
+          "boot_all": "cb3645106e9f3cd056b900f507e5f4dbea36849d0568189545c73de698713d27",
+          "conversation_action": "f580ec11415d91bb54e86a8d33cefd216b31c6a9b8531815ef717070a37165c6",
+          "discourse_seed": "0dc367275203b8abcfd0be63b3c0dbe0308de50e25bd869c3ac2c88f622c8823",
+          "discourse_state": "774686588b3d9c979be330d55d739561caa4cba97b5b8f5bf082c4eed54bb05e",
+          "native_py": "034e606b055938e952fd5ff42cda66c563a37ca89a50761b62f6662282499ca9",
+          "reflective_faculty": "498ea851a851dfc80d96f48c1d0444ac249c91ff7eea4056df20f17db00d1284",
+          "world_adapter": "c820e2d706f3632ff2c19ed8a64ecc1a9170584b07efda5460316118bbe69c25"
+        }
+      }
+    },
+    {
+      "a_pause": {
+        "active": true,
+        "child_count": 3,
+        "closed": false,
+        "goal_id": 25049,
+        "message_ids": [
+          24889
+        ],
+        "origin_ids": [
+          24899
+        ],
+        "status": "selected",
+        "transition_event_ids": [
+          25057
+        ],
+        "transition_kinds": [
+          "selection"
+        ]
+      },
+      "b_completed_while_a_blocked": true,
+      "boot_ns": 12209145473,
+      "errors": [
+        {
+          "message": "Already mutably borrowed",
+          "thread": "B",
+          "traceback": "Traceback (most recent call last):\n  File \"/home/matt/ozmadev/ocelot/scripts/substrate_live_describe_scene_threaded_interleaving_v1_1.py\", line 46, in call\n    try:replies[label]=a.converse(\"describe what you see\",speech_act=\"instruction\",speaker=\"alice\")\n                       ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/matt/ozmadev/ocelot/substrate/world_adapter.py\", line 73, in wrapped\n    return method(self, *args, **kwargs)\n  File \"/home/matt/ozmadev/ocelot/substrate/world_adapter.py\", line 8082, in converse\n    interpretation_id = self.s.node(mid)[\"attrs\"].get(\n                        ~~~~~~~~~~~^^^^^\n  File \"/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/__init__.py\", line 765, in node\n    return self._inner.node(nid)\n           ~~~~~~~~~~~~~~~~^^^^^\nRuntimeError: Already mutably borrowed\n",
+          "type": "RuntimeError"
+        }
+      ],
+      "event_order_gate": true,
+      "event_rows": [
+        {
+          "for_goal_ids": [],
+          "kind": "instruction"
+        },
+        {
+          "for_goal_ids": [
+            25049
+          ],
+          "kind": "selection"
+        },
+        {
+          "for_goal_ids": [],
+          "kind": "instruction"
+        },
+        {
+          "for_goal_ids": [
+            25074
+          ],
+          "kind": "selection"
+        },
+        {
+          "for_goal_ids": [
+            25074
+          ],
+          "kind": "execution"
+        },
+        {
+          "for_goal_ids": [
+            25074
+          ],
+          "kind": "action_result"
+        },
+        {
+          "for_goal_ids": [
+            25049
+          ],
+          "kind": "execution"
+        },
+        {
+          "for_goal_ids": [
+            25049
+          ],
+          "kind": "action_result"
+        }
+      ],
+      "final": {
+        "a": [
+          {
+            "active": false,
+            "child_count": 3,
+            "closed": true,
+            "goal_id": 25049,
+            "message_ids": [
+              24889
+            ],
+            "origin_ids": [
+              24899
+            ],
+            "status": "resolved",
+            "transition_event_ids": [
+              25057,
+              25081,
+              25082
+            ],
+            "transition_kinds": [
+              "selection",
+              "execution",
+              "action_result"
+            ]
+          }
+        ],
+        "b": [
+          {
+            "active": false,
+            "child_count": 3,
+            "closed": true,
+            "goal_id": 25074,
+            "message_ids": [
+              25059
+            ],
+            "origin_ids": [
+              25065
+            ],
+            "status": "resolved",
+            "transition_event_ids": [
+              25078,
+              25079,
+              25080
+            ],
+            "transition_kinds": [
+              "selection",
+              "execution",
+              "action_result"
+            ]
+          }
+        ]
+      },
+      "identity_gate": true,
+      "lifecycle_gate": true,
+      "pause_gate": true,
+      "pid": 5648,
+      "replicate": 2,
+      "replies": {
+        "A": "I see the grey thing stays, the yellow counter, and the blue thing moves."
+      },
+      "reply_parity": false,
+      "threads_joined": true,
+      "worker_finished_inputs": {
+        "amendment_sha256": "a4955fe5c3240b8081c57cc1f3736c0f12a6f02058bcd55665e773e40526a3f2",
+        "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+        "native_build_manifest_sha256": "2d10ff9cc7f9832d91d1603c74dd0a0e0c4c5d3080a618a33575e9d5400ae871",
+        "native_extension_sha256": "f5543ca015278bad6c65506a0d7d9acb85b33252e7121cdda1a56df63e8ad27b",
+        "protocol_sha256": "a084aacb585a3a48e9bf83d055b07c0e0bc895105f2a44d9ee8350c2fb69dc6c",
+        "runner_sha256": "ebeb0ed8cfd3286c250a00b1a09df00470aa0952d83d78a4a41679abbeaaf53b",
+        "source_sha256": {
+          "arc_self_report": "798ef87c9a0ef8bd25e139fbf992428f000b8e95c4ace900f8491ec8931f1fc0",
+          "boot_all": "cb3645106e9f3cd056b900f507e5f4dbea36849d0568189545c73de698713d27",
+          "conversation_action": "f580ec11415d91bb54e86a8d33cefd216b31c6a9b8531815ef717070a37165c6",
+          "discourse_seed": "0dc367275203b8abcfd0be63b3c0dbe0308de50e25bd869c3ac2c88f622c8823",
+          "discourse_state": "774686588b3d9c979be330d55d739561caa4cba97b5b8f5bf082c4eed54bb05e",
+          "native_py": "034e606b055938e952fd5ff42cda66c563a37ca89a50761b62f6662282499ca9",
+          "reflective_faculty": "498ea851a851dfc80d96f48c1d0444ac249c91ff7eea4056df20f17db00d1284",
+          "world_adapter": "c820e2d706f3632ff2c19ed8a64ecc1a9170584b07efda5460316118bbe69c25"
+        }
+      },
+      "worker_started_inputs": {
+        "amendment_sha256": "a4955fe5c3240b8081c57cc1f3736c0f12a6f02058bcd55665e773e40526a3f2",
+        "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+        "native_build_manifest_sha256": "2d10ff9cc7f9832d91d1603c74dd0a0e0c4c5d3080a618a33575e9d5400ae871",
+        "native_extension_sha256": "f5543ca015278bad6c65506a0d7d9acb85b33252e7121cdda1a56df63e8ad27b",
+        "protocol_sha256": "a084aacb585a3a48e9bf83d055b07c0e0bc895105f2a44d9ee8350c2fb69dc6c",
+        "runner_sha256": "ebeb0ed8cfd3286c250a00b1a09df00470aa0952d83d78a4a41679abbeaaf53b",
+        "source_sha256": {
+          "arc_self_report": "798ef87c9a0ef8bd25e139fbf992428f000b8e95c4ace900f8491ec8931f1fc0",
+          "boot_all": "cb3645106e9f3cd056b900f507e5f4dbea36849d0568189545c73de698713d27",
+          "conversation_action": "f580ec11415d91bb54e86a8d33cefd216b31c6a9b8531815ef717070a37165c6",
+          "discourse_seed": "0dc367275203b8abcfd0be63b3c0dbe0308de50e25bd869c3ac2c88f622c8823",
+          "discourse_state": "774686588b3d9c979be330d55d739561caa4cba97b5b8f5bf082c4eed54bb05e",
+          "native_py": "034e606b055938e952fd5ff42cda66c563a37ca89a50761b62f6662282499ca9",
+          "reflective_faculty": "498ea851a851dfc80d96f48c1d0444ac249c91ff7eea4056df20f17db00d1284",
+          "world_adapter": "c820e2d706f3632ff2c19ed8a64ecc1a9170584b07efda5460316118bbe69c25"
+        }
+      }
+    },
+    {
+      "a_pause": {
+        "active": true,
+        "child_count": 3,
+        "closed": false,
+        "goal_id": 25049,
+        "message_ids": [
+          24889
+        ],
+        "origin_ids": [
+          24899
+        ],
+        "status": "selected",
+        "transition_event_ids": [
+          25057
+        ],
+        "transition_kinds": [
+          "selection"
+        ]
+      },
+      "b_completed_while_a_blocked": true,
+      "boot_ns": 11981178992,
+      "errors": [
+        {
+          "message": "Already mutably borrowed",
+          "thread": "B",
+          "traceback": "Traceback (most recent call last):\n  File \"/home/matt/ozmadev/ocelot/scripts/substrate_live_describe_scene_threaded_interleaving_v1_1.py\", line 46, in call\n    try:replies[label]=a.converse(\"describe what you see\",speech_act=\"instruction\",speaker=\"alice\")\n                       ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/matt/ozmadev/ocelot/substrate/world_adapter.py\", line 73, in wrapped\n    return method(self, *args, **kwargs)\n  File \"/home/matt/ozmadev/ocelot/substrate/world_adapter.py\", line 8082, in converse\n    interpretation_id = self.s.node(mid)[\"attrs\"].get(\n                        ~~~~~~~~~~~^^^^^\n  File \"/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/__init__.py\", line 765, in node\n    return self._inner.node(nid)\n           ~~~~~~~~~~~~~~~~^^^^^\nRuntimeError: Already mutably borrowed\n",
+          "type": "RuntimeError"
+        }
+      ],
+      "event_order_gate": true,
+      "event_rows": [
+        {
+          "for_goal_ids": [],
+          "kind": "instruction"
+        },
+        {
+          "for_goal_ids": [
+            25049
+          ],
+          "kind": "selection"
+        },
+        {
+          "for_goal_ids": [],
+          "kind": "instruction"
+        },
+        {
+          "for_goal_ids": [
+            25074
+          ],
+          "kind": "selection"
+        },
+        {
+          "for_goal_ids": [
+            25074
+          ],
+          "kind": "execution"
+        },
+        {
+          "for_goal_ids": [
+            25074
+          ],
+          "kind": "action_result"
+        },
+        {
+          "for_goal_ids": [
+            25049
+          ],
+          "kind": "execution"
+        },
+        {
+          "for_goal_ids": [
+            25049
+          ],
+          "kind": "action_result"
+        }
+      ],
+      "final": {
+        "a": [
+          {
+            "active": false,
+            "child_count": 3,
+            "closed": true,
+            "goal_id": 25049,
+            "message_ids": [
+              24889
+            ],
+            "origin_ids": [
+              24899
+            ],
+            "status": "resolved",
+            "transition_event_ids": [
+              25057,
+              25081,
+              25082
+            ],
+            "transition_kinds": [
+              "selection",
+              "execution",
+              "action_result"
+            ]
+          }
+        ],
+        "b": [
+          {
+            "active": false,
+            "child_count": 3,
+            "closed": true,
+            "goal_id": 25074,
+            "message_ids": [
+              25059
+            ],
+            "origin_ids": [
+              25065
+            ],
+            "status": "resolved",
+            "transition_event_ids": [
+              25078,
+              25079,
+              25080
+            ],
+            "transition_kinds": [
+              "selection",
+              "execution",
+              "action_result"
+            ]
+          }
+        ]
+      },
+      "identity_gate": true,
+      "lifecycle_gate": true,
+      "pause_gate": true,
+      "pid": 11292,
+      "replicate": 0,
+      "replies": {
+        "A": "I see the grey thing stays, the yellow counter, and the blue thing moves."
+      },
+      "reply_parity": false,
+      "threads_joined": true,
+      "worker_finished_inputs": {
+        "amendment_sha256": "a4955fe5c3240b8081c57cc1f3736c0f12a6f02058bcd55665e773e40526a3f2",
+        "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+        "native_build_manifest_sha256": "2d10ff9cc7f9832d91d1603c74dd0a0e0c4c5d3080a618a33575e9d5400ae871",
+        "native_extension_sha256": "f5543ca015278bad6c65506a0d7d9acb85b33252e7121cdda1a56df63e8ad27b",
+        "protocol_sha256": "a084aacb585a3a48e9bf83d055b07c0e0bc895105f2a44d9ee8350c2fb69dc6c",
+        "runner_sha256": "ebeb0ed8cfd3286c250a00b1a09df00470aa0952d83d78a4a41679abbeaaf53b",
+        "source_sha256": {
+          "arc_self_report": "798ef87c9a0ef8bd25e139fbf992428f000b8e95c4ace900f8491ec8931f1fc0",
+          "boot_all": "cb3645106e9f3cd056b900f507e5f4dbea36849d0568189545c73de698713d27",
+          "conversation_action": "f580ec11415d91bb54e86a8d33cefd216b31c6a9b8531815ef717070a37165c6",
+          "discourse_seed": "0dc367275203b8abcfd0be63b3c0dbe0308de50e25bd869c3ac2c88f622c8823",
+          "discourse_state": "774686588b3d9c979be330d55d739561caa4cba97b5b8f5bf082c4eed54bb05e",
+          "native_py": "034e606b055938e952fd5ff42cda66c563a37ca89a50761b62f6662282499ca9",
+          "reflective_faculty": "498ea851a851dfc80d96f48c1d0444ac249c91ff7eea4056df20f17db00d1284",
+          "world_adapter": "c820e2d706f3632ff2c19ed8a64ecc1a9170584b07efda5460316118bbe69c25"
+        }
+      },
+      "worker_started_inputs": {
+        "amendment_sha256": "a4955fe5c3240b8081c57cc1f3736c0f12a6f02058bcd55665e773e40526a3f2",
+        "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+        "native_build_manifest_sha256": "2d10ff9cc7f9832d91d1603c74dd0a0e0c4c5d3080a618a33575e9d5400ae871",
+        "native_extension_sha256": "f5543ca015278bad6c65506a0d7d9acb85b33252e7121cdda1a56df63e8ad27b",
+        "protocol_sha256": "a084aacb585a3a48e9bf83d055b07c0e0bc895105f2a44d9ee8350c2fb69dc6c",
+        "runner_sha256": "ebeb0ed8cfd3286c250a00b1a09df00470aa0952d83d78a4a41679abbeaaf53b",
+        "source_sha256": {
+          "arc_self_report": "798ef87c9a0ef8bd25e139fbf992428f000b8e95c4ace900f8491ec8931f1fc0",
+          "boot_all": "cb3645106e9f3cd056b900f507e5f4dbea36849d0568189545c73de698713d27",
+          "conversation_action": "f580ec11415d91bb54e86a8d33cefd216b31c6a9b8531815ef717070a37165c6",
+          "discourse_seed": "0dc367275203b8abcfd0be63b3c0dbe0308de50e25bd869c3ac2c88f622c8823",
+          "discourse_state": "774686588b3d9c979be330d55d739561caa4cba97b5b8f5bf082c4eed54bb05e",
+          "native_py": "034e606b055938e952fd5ff42cda66c563a37ca89a50761b62f6662282499ca9",
+          "reflective_faculty": "498ea851a851dfc80d96f48c1d0444ac249c91ff7eea4056df20f17db00d1284",
+          "world_adapter": "c820e2d706f3632ff2c19ed8a64ecc1a9170584b07efda5460316118bbe69c25"
+        }
+      }
+    }
+  ],
+  "schedule": [
+    1,
+    2,
+    0
+  ],
+  "schema_version": 1,
+  "summary": {
+    "boot_ns_median": 12209145473,
+    "replicates": 3
+  }
+}

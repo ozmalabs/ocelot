@@ -1,8 +1,8 @@
 {
   "id": "conversation_honest_floor",
-  "version": "1.2.0",
+  "version": "1.4.0",
   "depends_on": ["conversation_reply"],
-  "description": "Graph-native honest floor when no other rule minted a text-bearing reply for a turn that expects one. The adapter never authors prose — this rule speaks the agent's honest minimum. v1.2.0 (blind-spot closure R6): a THIRD deferral guard, mirroring the existing answer_topic/answer_attachment ones, defers whenever a Goal{kind:answer_interlocutor_meta} exists for this message (seeds/first_person_routing.json::route_first_person_question_to_interlocutor) — a bare first-person question the graph routed to the interlocutor reader must not also get the bare floor reply.",
+  "description": "Graph-native honest floor when no other rule minted a text-bearing reply for a turn that expects one. The adapter never authors prose — this rule speaks the agent's honest minimum. v1.2.0 (blind-spot closure R6): a THIRD deferral guard, mirroring the existing answer_topic/answer_attachment ones, defers whenever a Goal{kind:answer_interlocutor_meta} exists for this message (seeds/first_person_routing.json::route_first_person_question_to_interlocutor) — a bare first-person question the graph routed to the interlocutor reader must not also get the bare floor reply. v1.3.0: expected but textless acknowledgment and grant acts no longer suppress the honest floor; without a text-bearing completion, release remains an explicit diagnostic error. v1.4.0: mark that graph-owned diagnostic as terminal_outcome=explicit_error so async transports can close the turn without counting it as a released answer.",
   "nodes": [],
   "edges": [],
   "productions": [],
@@ -24,12 +24,18 @@
               {"type": "Or", "items": [
                 {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "out"}, "key": "text"}, "b": {"type": "Lit", "value": null}}},
                 {"type": "Exists", "source": {"type": "Neighbours", "node": {"type": "Var", "name": "out"}, "edge_type": "has_speech_act"}, "var_name": "sa",
-                  "predicate": {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "sa"}, "key": "name"}, "b": {"type": "Lit", "value": "answer"}}}}
+                  "predicate": {"type": "And", "items": [
+                    {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "sa"}, "key": "name"}, "b": {"type": "Lit", "value": "answer"}}},
+                    {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "sa"}, "key": "name"}, "b": {"type": "Lit", "value": "acknowledgment"}}},
+                    {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "sa"}, "key": "name"}, "b": {"type": "Lit", "value": "grant"}}}
+                  ]}}
               ]}
             ]}}},
           {"type": "Not", "arg": {"type": "And", "items": [
             {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "adjacency_replied_act"}, "b": {"type": "Lit", "value": null}}},
-            {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "adjacency_replied_act"}, "b": {"type": "Lit", "value": "answer"}}}
+            {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "adjacency_replied_act"}, "b": {"type": "Lit", "value": "answer"}}},
+            {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "adjacency_replied_act"}, "b": {"type": "Lit", "value": "acknowledgment"}}},
+            {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "adjacency_replied_act"}, "b": {"type": "Lit", "value": "grant"}}}
           ]}},
           {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "honest_floor_replied"}, "b": {"type": "Lit", "value": 1.0}}},
           {"type": "Not", "arg": {"type": "Exists", "source": {"type": "Filter",
@@ -66,6 +72,7 @@
         ["add_node", "reply", "Message", {
           "from": "agent",
           "floor": 1.0,
+          "terminal_outcome": "explicit_error",
           "text": {"__term__": {"type": "Lit", "value": "ERROR: no communicative response could be generated."}}
         }],
         ["add_edge", "reply", "responds_to", "m"],

@@ -1,11 +1,13 @@
 # papers/ — the formal record
 
-`formal/` holds 27 formal documents: LaTeX preprints with theorem environments,
+`formal/` holds 28 formal documents: LaTeX preprints with theorem environments,
 proofs, and falsifiability sections. They are the **citable artefacts**, and
 they do not disappear when the book is written: each book chapter carries a
 pointer of the form *the formal statement is Paper N §M*, and the chapter drafts
 by subtraction from them. `01s` is the generated formal statement associated
 with the long Paper 01.
+
+The [review_fab51 response](REVIEW_FAB51_RESPONSE.md) records the October 2026 corrections, independent checks, and remaining research obligations.
 
 ## Writing standard
 
@@ -43,9 +45,7 @@ paper can fail. In the **groundings** it licenses positive results and is a
 commitment that can fail; 04 already locates its exposure in its own falsifier.
 Guard here, commitment there.
 
-**A third tier** sits between postulate and consequence: four hypotheses,
-including the Law of Graphic Equalisation itself, plus the near-uniqueness of
-the cheap cut. Bets, neither assumed nor derived.
+**A third tier** sits between postulate and consequence: four hypotheses, including the near-uniqueness of the cheap cut. The Law of Graphic Equalisation is a recurrence schema organising its transition definitions, rather than an additional empirical hypothesis.
 
 **How to read the count.** These reductions are re-descriptions — *X is a
 special case of Y* — and the criterion licensing them applies to anything the
@@ -85,8 +85,9 @@ than in the paper.
 | `formal/08_certified_answers_as_an_audit.tex` | Certified Answers as an Audit |
 | `formal/09_adaptability.tex` | Adaptability |
 | `formal/09a_adaptability_implementation.tex` | Adaptability — Implementation |
-| `formal/10_applied_graphic_equalisation.tex` | Applied Graphic Equalisation |
+| `formal/10_applied_graphic_equalisation.tex` | Geopolitical and Civilisational Future Application of Graphic Equalisation — The Account Applied to One Frame |
 | `formal/10a_red_queen_race_civilisational_rate_of_change_llms_biological_timescales_anthropocene_transition.tex` | Cost-Floor Compression, the AI Wedge, and Civilisational Transition — A Conditional GE Assessment |
+| `formal/11_relational_information_ethics.tex` | Relational Information Accounting — Whole-System Consequences, Ethics, and Moral Injury |
 | `formal/A1_constructive_graphic_equalisation_implementation_referenced.tex` | A Constructive Realisation of Graphic Equalisation |
 
 `01s` is **generated**, never hand-edited: edit `01s.spec` and the long paper,

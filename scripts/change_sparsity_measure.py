@@ -23,7 +23,7 @@ dead is VISIBLY dead (§1.1: a dead arm scores a perfect floor off a guarded
 division, and is indistinguishable from a good one).
 
 Python here is a world adapter: it builds frames, ticks, and reads attrs back.
-Every DECISION (what counts as a change) is a rule in `seeds/vision_change.json`.
+Every DECISION (what counts as a change) is a rule in `domain_data/vision_change.json`.
 """
 from __future__ import annotations
 

@@ -1,0 +1,2205 @@
+{
+  "engine_build_record": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.build.json",
+  "engine_fingerprint": "4036d3738ccc0e1f0fa3a6ef00ab3e271c1205921ca074a3f02334919a46d6ee",
+  "host": {
+    "machine": "x86_64",
+    "platform": "Linux-6.8.0-142-generic-x86_64-with-glibc2.39"
+  },
+  "protocol": {
+    "backends": [
+      "eager",
+      "shared_records",
+      "shared_graph_pages"
+    ],
+    "fixture": "same thoughtexperiment positive/negative fixture; candidate/rule objects retained but not executed",
+    "isolation": "one fresh Python/native process per backend \u00d7 size \u00d7 iteration; measure smaps_rollup before fork, while branch lives, after one branch-local node insertion, and after branch drop plus GC",
+    "measured_repeats": 3,
+    "memory_metrics": "Linux current RSS/PSS and private/shared clean/dirty pages; these include Python, engine, fixture, branch, and loaded runtime state",
+    "scope_limits": [
+      "smaps_rollup current state, not kernel peak RSS",
+      "single synthetic substrate family",
+      "does not run inference or candidate prediction",
+      "post-drop pages may remain in allocator arenas",
+      "one host"
+    ],
+    "seed": 20261001,
+    "semantic_gate": "branch adds one node without changing primary graph/rule revisions/counts; source-compatible fixture across backends",
+    "sizes_added_nodes": [
+      100000,
+      200000
+    ],
+    "warmups": 0
+  },
+  "rows": [
+    {
+      "after_drop_bytes": {
+        "Private_Clean": 2588672,
+        "Private_Dirty": 64815104,
+        "Pss": 72669184,
+        "Pss_Anon": 64815104,
+        "Pss_File": 7854080,
+        "Pss_Shmem": 0,
+        "Rss": 80531456,
+        "Shared_Clean": 13127680,
+        "Shared_Dirty": 0,
+        "Swap": 0
+      },
+      "after_fork_bytes": {
+        "Private_Clean": 2588672,
+        "Private_Dirty": 64815104,
+        "Pss": 72669184,
+        "Pss_Anon": 64815104,
+        "Pss_File": 7854080,
+        "Pss_Shmem": 0,
+        "Rss": 80531456,
+        "Shared_Clean": 13127680,
+        "Shared_Dirty": 0,
+        "Swap": 0
+      },
+      "after_write_bytes": {
+        "Private_Clean": 2588672,
+        "Private_Dirty": 64815104,
+        "Pss": 72669184,
+        "Pss_Anon": 64815104,
+        "Pss_File": 7854080,
+        "Pss_Shmem": 0,
+        "Rss": 80531456,
+        "Shared_Clean": 13127680,
+        "Shared_Dirty": 0,
+        "Swap": 0
+      },
+      "backend": "shared_graph_pages",
+      "baseline_bytes": {
+        "Private_Clean": 2588672,
+        "Private_Dirty": 64487424,
+        "Pss": 72341504,
+        "Pss_Anon": 64487424,
+        "Pss_File": 7854080,
+        "Pss_Shmem": 0,
+        "Rss": 80203776,
+        "Shared_Clean": 13127680,
+        "Shared_Dirty": 0,
+        "Swap": 0
+      },
+      "baseline_counts": [
+        100771,
+        100743
+      ],
+      "branch_counts_after_write": [
+        100772,
+        100743
+      ],
+      "branch_counts_before_write": [
+        100771,
+        100743
+      ],
+      "branch_write_isolated": true,
+      "fork_delta_bytes": {
+        "Private_Clean": 0,
+        "Private_Dirty": 327680,
+        "Pss": 327680,
+        "Pss_Anon": 327680,
+        "Pss_File": 0,
+        "Pss_Shmem": 0,
+        "Rss": 327680,
+        "Shared_Clean": 0,
+        "Shared_Dirty": 0,
+        "Swap": 0
+      },
+      "iteration": 0,
+      "post_drop_delta_bytes": {
+        "Private_Clean": 0,
+        "Private_Dirty": 327680,
+        "Pss": 327680,
+        "Pss_Anon": 327680,
+        "Pss_File": 0,
+        "Pss_Shmem": 0,
+        "Rss": 327680,
+        "Shared_Clean": 0,
+        "Shared_Dirty": 0,
+        "Swap": 0
+      },
+      "primary_unchanged_after_branch_write": true,
+      "size_added_nodes": 100000,
+      "write_delta_bytes": {
+        "Private_Clean": 0,
+        "Private_Dirty": 0,
+        "Pss": 0,
+        "Pss_Anon": 0,
+        "Pss_File": 0,
+        "Pss_Shmem": 0,
+        "Rss": 0,
+        "Shared_Clean": 0,
+        "Shared_Dirty": 0,
+        "Swap": 0
+      }
+    },
+    {
+      "after_drop_bytes": {
+        "Private_Clean": 2588672,
+        "Private_Dirty": 75972608,
+        "Pss": 83828736,
+        "Pss_Anon": 75972608,
+        "Pss_File": 7856128,
+        "Pss_Shmem": 0,
+        "Rss": 91688960,
+        "Shared_Clean": 13127680,
+        "Shared_Dirty": 0,
+        "Swap": 0
+      },
+      "after_fork_bytes": {
+        "Private_Clean": 2588672,
+        "Private_Dirty": 75943936,
+        "Pss": 83800064,
+        "Pss_Anon": 75943936,
+        "Pss_File": 7856128,
+        "Pss_Shmem": 0,
+        "Rss": 91660288,
+        "Shared_Clean": 13127680,
+        "Shared_Dirty": 0,
+        "Swap": 0
+      },
+      "after_write_bytes": {
+        "Private_Clean": 2588672,
+        "Private_Dirty": 75972608,
+        "Pss": 83828736,
+        "Pss_Anon": 75972608,
+        "Pss_File": 7856128,
+        "Pss_Shmem": 0,
+        "Rss": 91688960,
+        "Shared_Clean": 13127680,
+        "Shared_Dirty": 0,
+        "Swap": 0
+      },
+      "backend": "shared_records",
+      "baseline_bytes": {
+        "Private_Clean": 2588672,
+        "Private_Dirty": 64475136,
+        "Pss": 72331264,
+        "Pss_Anon": 64475136,
+        "Pss_File": 7856128,
+        "Pss_Shmem": 0,
+        "Rss": 80191488,
+        "Shared_Clean": 13127680,
+        "Shared_Dirty": 0,
+        "Swap": 0
+      },
+      "baseline_counts": [
+        100771,
+        100743
+      ],
+      "branch_counts_after_write": [
+        100772,
+        100743
+      ],
+      "branch_counts_before_write": [
+        100771,
+        100743
+      ],
+      "branch_write_isolated": true,
+      "fork_delta_bytes": {
+        "Private_Clean": 0,
+        "Private_Dirty": 11468800,
+        "Pss": 11468800,
+        "Pss_Anon": 11468800,
+        "Pss_File": 0,
+        "Pss_Shmem": 0,
+        "Rss": 11468800,
+        "Shared_Clean": 0,
+        "Shared_Dirty": 0,
+        "Swap": 0
+      },
+      "iteration": 0,
+      "post_drop_delta_bytes": {
+        "Private_Clean": 0,
+        "Private_Dirty": 11497472,
+        "Pss": 11497472,
+        "Pss_Anon": 11497472,
+        "Pss_File": 0,
+        "Pss_Shmem": 0,
+        "Rss": 11497472,
+        "Shared_Clean": 0,
+        "Shared_Dirty": 0,
+        "Swap": 0
+      },
+      "primary_unchanged_after_branch_write": true,
+      "size_added_nodes": 100000,
+      "write_delta_bytes": {
+        "Private_Clean": 0,
+        "Private_Dirty": 28672,
+        "Pss": 28672,
+        "Pss_Anon": 28672,
+        "Pss_File": 0,
+        "Pss_Shmem": 0,
+        "Rss": 28672,
+        "Shared_Clean": 0,
+        "Shared_Dirty": 0,
+        "Swap": 0
+      }
+    },
+    {
+      "after_drop_bytes": {
+        "Private_Clean": 2588672,
+        "Private_Dirty": 92270592,
+        "Pss": 100125696,
+        "Pss_Anon": 92270592,
+        "Pss_File": 7855104,
+        "Pss_Shmem": 0,
+        "Rss": 107986944,
+        "Shared_Clean": 13127680,
+        "Shared_Dirty": 0,
+        "Swap": 0
+      },
+      "after_fork_bytes": {
+        "Private_Clean": 2588672,
+        "Private_Dirty": 92237824,
+        "Pss": 100092928,
+        "Pss_Anon": 92237824,
+        "Pss_File": 7855104,
+        "Pss_Shmem": 0,
+        "Rss": 107954176,
+        "Shared_Clean": 13127680,
+        "Shared_Dirty": 0,
+        "Swap": 0
+      },
+      "after_write_bytes": {
+        "Private_Clean": 2588672,
+        "Private_Dirty": 92270592,
+        "Pss": 100125696,
+        "Pss_Anon": 92270592,
+        "Pss_File": 7855104,
+        "Pss_Shmem": 0,
+        "Rss": 107986944,
+        "Shared_Clean": 13127680,
+        "Shared_Dirty": 0,
+        "Swap": 0
+      },
+      "backend": "eager",
+      "baseline_bytes": {
+        "Private_Clean": 2588672,
+        "Private_Dirty": 64475136,
+        "Pss": 72331264,
+        "Pss_Anon": 64475136,
+        "Pss_File": 7856128,
+        "Pss_Shmem": 0,
+        "Rss": 80191488,
+        "Shared_Clean": 13127680,
+        "Shared_Dirty": 0,
+        "Swap": 0
+      },
+      "baseline_counts": [
+        100771,
+        100743
+      ],
+      "branch_counts_after_write": [
+        100772,
+        100743
+      ],
+      "branch_counts_before_write": [
+        100771,
+        100743
+      ],
+      "branch_write_isolated": true,
+      "fork_delta_bytes": {
+        "Private_Clean": 0,
+        "Private_Dirty": 27762688,
+        "Pss": 27761664,
+        "Pss_Anon": 27762688,
+        "Pss_File": -1024,
+        "Pss_Shmem": 0,
+        "Rss": 27762688,
+        "Shared_Clean": 0,
+        "Shared_Dirty": 0,
+        "Swap": 0
+      },
+      "iteration": 0,
+      "post_drop_delta_bytes": {
+        "Private_Clean": 0,
+        "Private_Dirty": 27795456,
+        "Pss": 27794432,
+        "Pss_Anon": 27795456,
+        "Pss_File": -1024,
+        "Pss_Shmem": 0,
+        "Rss": 27795456,
+        "Shared_Clean": 0,
+        "Shared_Dirty": 0,
+        "Swap": 0
+      },
+      "primary_unchanged_after_branch_write": true,
+      "size_added_nodes": 100000,
+      "write_delta_bytes": {
+        "Private_Clean": 0,
+        "Private_Dirty": 32768,
+        "Pss": 32768,
+        "Pss_Anon": 32768,
+        "Pss_File": 0,
+        "Pss_Shmem": 0,
+        "Rss": 32768,
+        "Shared_Clean": 0,
+        "Shared_Dirty": 0,
+        "Swap": 0
+      }
+    },
+    {
+      "after_drop_bytes": {
+        "Private_Clean": 2588672,
+        "Private_Dirty": 92270592,
+        "Pss": 100126720,
+        "Pss_Anon": 92270592,
+        "Pss_File": 7856128,
+        "Pss_Shmem": 0,
+        "Rss": 107986944,
+        "Shared_Clean": 13127680,
+        "Shared_Dirty": 0,
+        "Swap": 0
+      },
+      "after_fork_bytes": {
+        "Private_Clean": 2588672,
+        "Private_Dirty": 92237824,
+        "Pss": 100093952,
+        "Pss_Anon": 92237824,
+        "Pss_File": 7856128,
+        "Pss_Shmem": 0,
+        "Rss": 107954176,
+        "Shared_Clean": 13127680,
+        "Shared_Dirty": 0,
+        "Swap": 0
+      },
+      "after_write_bytes": {
+        "Private_Clean": 2588672,
+        "Private_Dirty": 92270592,
+        "Pss": 100126720,
+        "Pss_Anon": 92270592,
+        "Pss_File": 7856128,
+        "Pss_Shmem": 0,
+        "Rss": 107986944,
+        "Shared_Clean": 13127680,
+        "Shared_Dirty": 0,
+        "Swap": 0
+      },
+      "backend": "eager",
+      "baseline_bytes": {
+        "Private_Clean": 2588672,
+        "Private_Dirty": 64475136,
+        "Pss": 72331264,
+        "Pss_Anon": 64475136,
+        "Pss_File": 7856128,
+        "Pss_Shmem": 0,
+        "Rss": 80191488,
+        "Shared_Clean": 13127680,
+        "Shared_Dirty": 0,
+        "Swap": 0
+      },
+      "baseline_counts": [
+        100771,
+        100743
+      ],
+      "branch_counts_after_write": [
+        100772,
+        100743
+      ],
+      "branch_counts_before_write": [
+        100771,
+        100743
+      ],
+      "branch_write_isolated": true,
+      "fork_delta_bytes": {
+        "Private_Clean": 0,
+        "Private_Dirty": 27762688,
+        "Pss": 27762688,
+        "Pss_Anon": 27762688,
+        "Pss_File": 0,
+        "Pss_Shmem": 0,
+        "Rss": 27762688,
+        "Shared_Clean": 0,
+        "Shared_Dirty": 0,
+        "Swap": 0
+      },
+      "iteration": 1,
+      "post_drop_delta_bytes": {
+        "Private_Clean": 0,
+        "Private_Dirty": 27795456,
+        "Pss": 27795456,
+        "Pss_Anon": 27795456,
+        "Pss_File": 0,
+        "Pss_Shmem": 0,
+        "Rss": 27795456,
+        "Shared_Clean": 0,
+        "Shared_Dirty": 0,
+        "Swap": 0
+      },
+      "primary_unchanged_after_branch_write": true,
+      "size_added_nodes": 100000,
+      "write_delta_bytes": {
+        "Private_Clean": 0,
+        "Private_Dirty": 32768,
+        "Pss": 32768,
+        "Pss_Anon": 32768,
+        "Pss_File": 0,
+        "Pss_Shmem": 0,
+        "Rss": 32768,
+        "Shared_Clean": 0,
+        "Shared_Dirty": 0,
+        "Swap": 0
+      }
+    },
+    {
+      "after_drop_bytes": {
+        "Private_Clean": 2572288,
+        "Private_Dirty": 63770624,
+        "Pss": 71605248,
+        "Pss_Anon": 63770624,
+        "Pss_File": 7834624,
+        "Pss_Shmem": 0,
+        "Rss": 79458304,
+        "Shared_Clean": 13115392,
+        "Shared_Dirty": 0,
+        "Swap": 0
+      },
+      "after_fork_bytes": {
+        "Private_Clean": 2572288,
+        "Private_Dirty": 63770624,
+        "Pss": 71605248,
+        "Pss_Anon": 63770624,
+        "Pss_File": 7834624,
+        "Pss_Shmem": 0,
+        "Rss": 79458304,
+        "Shared_Clean": 13115392,
+        "Shared_Dirty": 0,
+        "Swap": 0
+      },
+      "after_write_bytes": {
+        "Private_Clean": 2572288,
+        "Private_Dirty": 63770624,
+        "Pss": 71605248,
+        "Pss_Anon": 63770624,
+        "Pss_File": 7834624,
+        "Pss_Shmem": 0,
+        "Rss": 79458304,
+        "Shared_Clean": 13115392,
+        "Shared_Dirty": 0,
+        "Swap": 0
+      },
+      "backend": "shared_graph_pages",
+      "baseline_bytes": {
+        "Private_Clean": 2572288,
+        "Private_Dirty": 63442944,
+        "Pss": 71277568,
+        "Pss_Anon": 63442944,
+        "Pss_File": 7834624,
+        "Pss_Shmem": 0,
+        "Rss": 79130624,
+        "Shared_Clean": 13115392,
+        "Shared_Dirty": 0,
+        "Swap": 0
+      },
+      "baseline_counts": [
+        100771,
+        100743
+      ],
+      "branch_counts_after_write": [
+        100772,
+        100743
+      ],
+      "branch_counts_before_write": [
+        100771,
+        100743
+      ],
+      "branch_write_isolated": true,
+      "fork_delta_bytes": {
+        "Private_Clean": 0,
+        "Private_Dirty": 327680,
+        "Pss": 327680,
+        "Pss_Anon": 327680,
+        "Pss_File": 0,
+        "Pss_Shmem": 0,
+        "Rss": 327680,
+        "Shared_Clean": 0,
+        "Shared_Dirty": 0,
+        "Swap": 0
+      },
+      "iteration": 1,
+      "post_drop_delta_bytes": {
+        "Private_Clean": 0,
+        "Private_Dirty": 327680,
+        "Pss": 327680,
+        "Pss_Anon": 327680,
+        "Pss_File": 0,
+        "Pss_Shmem": 0,
+        "Rss": 327680,
+        "Shared_Clean": 0,
+        "Shared_Dirty": 0,
+        "Swap": 0
+      },
+      "primary_unchanged_after_branch_write": true,
+      "size_added_nodes": 100000,
+      "write_delta_bytes": {
+        "Private_Clean": 0,
+        "Private_Dirty": 0,
+        "Pss": 0,
+        "Pss_Anon": 0,
+        "Pss_File": 0,
+        "Pss_Shmem": 0,
+        "Rss": 0,
+        "Shared_Clean": 0,
+        "Shared_Dirty": 0,
+        "Swap": 0
+      }
+    },
+    {
+      "after_drop_bytes": {
+        "Private_Clean": 2572288,
+        "Private_Dirty": 74940416,
+        "Pss": 82770944,
+        "Pss_Anon": 74940416,
+        "Pss_File": 7830528,
+        "Pss_Shmem": 0,
+        "Rss": 90615808,
+        "Shared_Clean": 13103104,
+        "Shared_Dirty": 0,
+        "Swap": 0
+      },
+      "after_fork_bytes": {
+        "Private_Clean": 2572288,
+        "Private_Dirty": 74911744,
+        "Pss": 82742272,
+        "Pss_Anon": 74911744,
+        "Pss_File": 7830528,
+        "Pss_Shmem": 0,
+        "Rss": 90587136,
+        "Shared_Clean": 13103104,
+        "Shared_Dirty": 0,
+        "Swap": 0
+      },
+      "after_write_bytes": {
+        "Private_Clean": 2572288,
+        "Private_Dirty": 74940416,
+        "Pss": 82770944,
+        "Pss_Anon": 74940416,
+        "Pss_File": 7830528,
+        "Pss_Shmem": 0,
+        "Rss": 90615808,
+        "Shared_Clean": 13103104,
+        "Shared_Dirty": 0,
+        "Swap": 0
+      },
+      "backend": "shared_records",
+      "baseline_bytes": {
+        "Private_Clean": 2572288,
+        "Private_Dirty": 63442944,
+        "Pss": 71273472,
+        "Pss_Anon": 63442944,
+        "Pss_File": 7830528,
+        "Pss_Shmem": 0,
+        "Rss": 79118336,
+        "Shared_Clean": 13103104,
+        "Shared_Dirty": 0,
+        "Swap": 0
+      },
+      "baseline_counts": [
+        100771,
+        100743
+      ],
+      "branch_counts_after_write": [
+        100772,
+        100743
+      ],
+      "branch_counts_before_write": [
+        100771,
+        100743
+      ],
+      "branch_write_isolated": true,
+      "fork_delta_bytes": {
+        "Private_Clean": 0,
+        "Private_Dirty": 11468800,
+        "Pss": 11468800,
+        "Pss_Anon": 11468800,
+        "Pss_File": 0,
+        "Pss_Shmem": 0,
+        "Rss": 11468800,
+        "Shared_Clean": 0,
+        "Shared_Dirty": 0,
+        "Swap": 0
+      },
+      "iteration": 1,
+      "post_drop_delta_bytes": {
+        "Private_Clean": 0,
+        "Private_Dirty": 11497472,
+        "Pss": 11497472,
+        "Pss_Anon": 11497472,
+        "Pss_File": 0,
+        "Pss_Shmem": 0,
+        "Rss": 11497472,
+        "Shared_Clean": 0,
+        "Shared_Dirty": 0,
+        "Swap": 0
+      },
+      "primary_unchanged_after_branch_write": true,
+      "size_added_nodes": 100000,
+      "write_delta_bytes": {
+        "Private_Clean": 0,
+        "Private_Dirty": 28672,
+        "Pss": 28672,
+        "Pss_Anon": 28672,
+        "Pss_File": 0,
+        "Pss_Shmem": 0,
+        "Rss": 28672,
+        "Shared_Clean": 0,
+        "Shared_Dirty": 0,
+        "Swap": 0
+      }
+    },
+    {
+      "after_drop_bytes": {
+        "Private_Clean": 2572288,
+        "Private_Dirty": 74919936,
+        "Pss": 82751488,
+        "Pss_Anon": 74919936,
+        "Pss_File": 7831552,
+        "Pss_Shmem": 0,
+        "Rss": 90599424,
+        "Shared_Clean": 13107200,
+        "Shared_Dirty": 0,
+        "Swap": 0
+      },
+      "after_fork_bytes": {
+        "Private_Clean": 2572288,
+        "Private_Dirty": 74891264,
+        "Pss": 82722816,
+        "Pss_Anon": 74891264,
+        "Pss_File": 7831552,
+        "Pss_Shmem": 0,
+        "Rss": 90570752,
+        "Shared_Clean": 13107200,
+        "Shared_Dirty": 0,
+        "Swap": 0
+      },
+      "after_write_bytes": {
+        "Private_Clean": 2572288,
+        "Private_Dirty": 74919936,
+        "Pss": 82751488,
+        "Pss_Anon": 74919936,
+        "Pss_File": 7831552,
+        "Pss_Shmem": 0,
+        "Rss": 90599424,
+        "Shared_Clean": 13107200,
+        "Shared_Dirty": 0,
+        "Swap": 0
+      },
+      "backend": "shared_records",
+      "baseline_bytes": {
+        "Private_Clean": 2572288,
+        "Private_Dirty": 63422464,
+        "Pss": 71254016,
+        "Pss_Anon": 63422464,
+        "Pss_File": 7831552,
+        "Pss_Shmem": 0,
+        "Rss": 79101952,
+        "Shared_Clean": 13107200,
+        "Shared_Dirty": 0,
+        "Swap": 0
+      },
+      "baseline_counts": [
+        100771,
+        100743
+      ],
+      "branch_counts_after_write": [
+        100772,
+        100743
+      ],
+      "branch_counts_before_write": [
+        100771,
+        100743
+      ],
+      "branch_write_isolated": true,
+      "fork_delta_bytes": {
+        "Private_Clean": 0,
+        "Private_Dirty": 11468800,
+        "Pss": 11468800,
+        "Pss_Anon": 11468800,
+        "Pss_File": 0,
+        "Pss_Shmem": 0,
+        "Rss": 11468800,
+        "Shared_Clean": 0,
+        "Shared_Dirty": 0,
+        "Swap": 0
+      },
+      "iteration": 2,
+      "post_drop_delta_bytes": {
+        "Private_Clean": 0,
+        "Private_Dirty": 11497472,
+        "Pss": 11497472,
+        "Pss_Anon": 11497472,
+        "Pss_File": 0,
+        "Pss_Shmem": 0,
+        "Rss": 11497472,
+        "Shared_Clean": 0,
+        "Shared_Dirty": 0,
+        "Swap": 0
+      },
+      "primary_unchanged_after_branch_write": true,
+      "size_added_nodes": 100000,
+      "write_delta_bytes": {
+        "Private_Clean": 0,
+        "Private_Dirty": 28672,
+        "Pss": 28672,
+        "Pss_Anon": 28672,
+        "Pss_File": 0,
+        "Pss_Shmem": 0,
+        "Rss": 28672,
+        "Shared_Clean": 0,
+        "Shared_Dirty": 0,
+        "Swap": 0
+      }
+    },
+    {
+      "after_drop_bytes": {
+        "Private_Clean": 2588672,
+        "Private_Dirty": 64823296,
+        "Pss": 72679424,
+        "Pss_Anon": 64823296,
+        "Pss_File": 7856128,
+        "Pss_Shmem": 0,
+        "Rss": 80539648,
+        "Shared_Clean": 13127680,
+        "Shared_Dirty": 0,
+        "Swap": 0
+      },
+      "after_fork_bytes": {
+        "Private_Clean": 2588672,
+        "Private_Dirty": 64823296,
+        "Pss": 72679424,
+        "Pss_Anon": 64823296,
+        "Pss_File": 7856128,
+        "Pss_Shmem": 0,
+        "Rss": 80539648,
+        "Shared_Clean": 13127680,
+        "Shared_Dirty": 0,
+        "Swap": 0
+      },
+      "after_write_bytes": {
+        "Private_Clean": 2588672,
+        "Private_Dirty": 64823296,
+        "Pss": 72679424,
+        "Pss_Anon": 64823296,
+        "Pss_File": 7856128,
+        "Pss_Shmem": 0,
+        "Rss": 80539648,
+        "Shared_Clean": 13127680,
+        "Shared_Dirty": 0,
+        "Swap": 0
+      },
+      "backend": "shared_graph_pages",
+      "baseline_bytes": {
+        "Private_Clean": 2588672,
+        "Private_Dirty": 64495616,
+        "Pss": 72351744,
+        "Pss_Anon": 64495616,
+        "Pss_File": 7856128,
+        "Pss_Shmem": 0,
+        "Rss": 80211968,
+        "Shared_Clean": 13127680,
+        "Shared_Dirty": 0,
+        "Swap": 0
+      },
+      "baseline_counts": [
+        100771,
+        100743
+      ],
+      "branch_counts_after_write": [
+        100772,
+        100743
+      ],
+      "branch_counts_before_write": [
+        100771,
+        100743
+      ],
+      "branch_write_isolated": true,
+      "fork_delta_bytes": {
+        "Private_Clean": 0,
+        "Private_Dirty": 327680,
+        "Pss": 327680,
+        "Pss_Anon": 327680,
+        "Pss_File": 0,
+        "Pss_Shmem": 0,
+        "Rss": 327680,
+        "Shared_Clean": 0,
+        "Shared_Dirty": 0,
+        "Swap": 0
+      },
+      "iteration": 2,
+      "post_drop_delta_bytes": {
+        "Private_Clean": 0,
+        "Private_Dirty": 327680,
+        "Pss": 327680,
+        "Pss_Anon": 327680,
+        "Pss_File": 0,
+        "Pss_Shmem": 0,
+        "Rss": 327680,
+        "Shared_Clean": 0,
+        "Shared_Dirty": 0,
+        "Swap": 0
+      },
+      "primary_unchanged_after_branch_write": true,
+      "size_added_nodes": 100000,
+      "write_delta_bytes": {
+        "Private_Clean": 0,
+        "Private_Dirty": 0,
+        "Pss": 0,
+        "Pss_Anon": 0,
+        "Pss_File": 0,
+        "Pss_Shmem": 0,
+        "Rss": 0,
+        "Shared_Clean": 0,
+        "Shared_Dirty": 0,
+        "Swap": 0
+      }
+    },
+    {
+      "after_drop_bytes": {
+        "Private_Clean": 2584576,
+        "Private_Dirty": 91222016,
+        "Pss": 99072000,
+        "Pss_Anon": 91222016,
+        "Pss_File": 7849984,
+        "Pss_Shmem": 0,
+        "Rss": 106930176,
+        "Shared_Clean": 13123584,
+        "Shared_Dirty": 0,
+        "Swap": 0
+      },
+      "after_fork_bytes": {
+        "Private_Clean": 2584576,
+        "Private_Dirty": 91189248,
+        "Pss": 99039232,
+        "Pss_Anon": 91189248,
+        "Pss_File": 7849984,
+        "Pss_Shmem": 0,
+        "Rss": 106897408,
+        "Shared_Clean": 13123584,
+        "Shared_Dirty": 0,
+        "Swap": 0
+      },
+      "after_write_bytes": {
+        "Private_Clean": 2584576,
+        "Private_Dirty": 91222016,
+        "Pss": 99072000,
+        "Pss_Anon": 91222016,
+        "Pss_File": 7849984,
+        "Pss_Shmem": 0,
+        "Rss": 106930176,
+        "Shared_Clean": 13123584,
+        "Shared_Dirty": 0,
+        "Swap": 0
+      },
+      "backend": "eager",
+      "baseline_bytes": {
+        "Private_Clean": 2584576,
+        "Private_Dirty": 63434752,
+        "Pss": 71284736,
+        "Pss_Anon": 63434752,
+        "Pss_File": 7849984,
+        "Pss_Shmem": 0,
+        "Rss": 79142912,
+        "Shared_Clean": 13123584,
+        "Shared_Dirty": 0,
+        "Swap": 0
+      },
+      "baseline_counts": [
+        100771,
+        100743
+      ],
+      "branch_counts_after_write": [
+        100772,
+        100743
+      ],
+      "branch_counts_before_write": [
+        100771,
+        100743
+      ],
+      "branch_write_isolated": true,
+      "fork_delta_bytes": {
+        "Private_Clean": 0,
+        "Private_Dirty": 27754496,
+        "Pss": 27754496,
+        "Pss_Anon": 27754496,
+        "Pss_File": 0,
+        "Pss_Shmem": 0,
+        "Rss": 27754496,
+        "Shared_Clean": 0,
+        "Shared_Dirty": 0,
+        "Swap": 0
+      },
+      "iteration": 2,
+      "post_drop_delta_bytes": {
+        "Private_Clean": 0,
+        "Private_Dirty": 27787264,
+        "Pss": 27787264,
+        "Pss_Anon": 27787264,
+        "Pss_File": 0,
+        "Pss_Shmem": 0,
+        "Rss": 27787264,
+        "Shared_Clean": 0,
+        "Shared_Dirty": 0,
+        "Swap": 0
+      },
+      "primary_unchanged_after_branch_write": true,
+      "size_added_nodes": 100000,
+      "write_delta_bytes": {
+        "Private_Clean": 0,
+        "Private_Dirty": 32768,
+        "Pss": 32768,
+        "Pss_Anon": 32768,
+        "Pss_File": 0,
+        "Pss_Shmem": 0,
+        "Rss": 32768,
+        "Shared_Clean": 0,
+        "Shared_Dirty": 0,
+        "Swap": 0
+      }
+    },
+    {
+      "after_drop_bytes": {
+        "Private_Clean": 2572288,
+        "Private_Dirty": 123314176,
+        "Pss": 131145728,
+        "Pss_Anon": 123314176,
+        "Pss_File": 7831552,
+        "Pss_Shmem": 0,
+        "Rss": 138989568,
+        "Shared_Clean": 13103104,
+        "Shared_Dirty": 0,
+        "Swap": 0
+      },
+      "after_fork_bytes": {
+        "Private_Clean": 2572288,
+        "Private_Dirty": 123285504,
+        "Pss": 131117056,
+        "Pss_Anon": 123285504,
+        "Pss_File": 7831552,
+        "Pss_Shmem": 0,
+        "Rss": 138960896,
+        "Shared_Clean": 13103104,
+        "Shared_Dirty": 0,
+        "Swap": 0
+      },
+      "after_write_bytes": {
+        "Private_Clean": 2572288,
+        "Private_Dirty": 123314176,
+        "Pss": 131145728,
+        "Pss_Anon": 123314176,
+        "Pss_File": 7831552,
+        "Pss_Shmem": 0,
+        "Rss": 138989568,
+        "Shared_Clean": 13103104,
+        "Shared_Dirty": 0,
+        "Swap": 0
+      },
+      "backend": "shared_records",
+      "baseline_bytes": {
+        "Private_Clean": 2572288,
+        "Private_Dirty": 95731712,
+        "Pss": 103563264,
+        "Pss_Anon": 95731712,
+        "Pss_File": 7831552,
+        "Pss_Shmem": 0,
+        "Rss": 111407104,
+        "Shared_Clean": 13103104,
+        "Shared_Dirty": 0,
+        "Swap": 0
+      },
+      "baseline_counts": [
+        200771,
+        200743
+      ],
+      "branch_counts_after_write": [
+        200772,
+        200743
+      ],
+      "branch_counts_before_write": [
+        200771,
+        200743
+      ],
+      "branch_write_isolated": true,
+      "fork_delta_bytes": {
+        "Private_Clean": 0,
+        "Private_Dirty": 27553792,
+        "Pss": 27553792,
+        "Pss_Anon": 27553792,
+        "Pss_File": 0,
+        "Pss_Shmem": 0,
+        "Rss": 27553792,
+        "Shared_Clean": 0,
+        "Shared_Dirty": 0,
+        "Swap": 0
+      },
+      "iteration": 0,
+      "post_drop_delta_bytes": {
+        "Private_Clean": 0,
+        "Private_Dirty": 27582464,
+        "Pss": 27582464,
+        "Pss_Anon": 27582464,
+        "Pss_File": 0,
+        "Pss_Shmem": 0,
+        "Rss": 27582464,
+        "Shared_Clean": 0,
+        "Shared_Dirty": 0,
+        "Swap": 0
+      },
+      "primary_unchanged_after_branch_write": true,
+      "size_added_nodes": 200000,
+      "write_delta_bytes": {
+        "Private_Clean": 0,
+        "Private_Dirty": 28672,
+        "Pss": 28672,
+        "Pss_Anon": 28672,
+        "Pss_File": 0,
+        "Pss_Shmem": 0,
+        "Rss": 28672,
+        "Shared_Clean": 0,
+        "Shared_Dirty": 0,
+        "Swap": 0
+      }
+    },
+    {
+      "after_drop_bytes": {
+        "Private_Clean": 2523136,
+        "Private_Dirty": 97624064,
+        "Pss": 105446400,
+        "Pss_Anon": 97624064,
+        "Pss_File": 7822336,
+        "Pss_Shmem": 0,
+        "Rss": 113340416,
+        "Shared_Clean": 13193216,
+        "Shared_Dirty": 0,
+        "Swap": 0
+      },
+      "after_fork_bytes": {
+        "Private_Clean": 2523136,
+        "Private_Dirty": 97624064,
+        "Pss": 105446400,
+        "Pss_Anon": 97624064,
+        "Pss_File": 7822336,
+        "Pss_Shmem": 0,
+        "Rss": 113340416,
+        "Shared_Clean": 13193216,
+        "Shared_Dirty": 0,
+        "Swap": 0
+      },
+      "after_write_bytes": {
+        "Private_Clean": 2523136,
+        "Private_Dirty": 97624064,
+        "Pss": 105446400,
+        "Pss_Anon": 97624064,
+        "Pss_File": 7822336,
+        "Pss_Shmem": 0,
+        "Rss": 113340416,
+        "Shared_Clean": 13193216,
+        "Shared_Dirty": 0,
+        "Swap": 0
+      },
+      "backend": "shared_graph_pages",
+      "baseline_bytes": {
+        "Private_Clean": 2523136,
+        "Private_Dirty": 95805440,
+        "Pss": 103627776,
+        "Pss_Anon": 95805440,
+        "Pss_File": 7822336,
+        "Pss_Shmem": 0,
+        "Rss": 111521792,
+        "Shared_Clean": 13193216,
+        "Shared_Dirty": 0,
+        "Swap": 0
+      },
+      "baseline_counts": [
+        200771,
+        200743
+      ],
+      "branch_counts_after_write": [
+        200772,
+        200743
+      ],
+      "branch_counts_before_write": [
+        200771,
+        200743
+      ],
+      "branch_write_isolated": true,
+      "fork_delta_bytes": {
+        "Private_Clean": 0,
+        "Private_Dirty": 1818624,
+        "Pss": 1818624,
+        "Pss_Anon": 1818624,
+        "Pss_File": 0,
+        "Pss_Shmem": 0,
+        "Rss": 1818624,
+        "Shared_Clean": 0,
+        "Shared_Dirty": 0,
+        "Swap": 0
+      },
+      "iteration": 0,
+      "post_drop_delta_bytes": {
+        "Private_Clean": 0,
+        "Private_Dirty": 1818624,
+        "Pss": 1818624,
+        "Pss_Anon": 1818624,
+        "Pss_File": 0,
+        "Pss_Shmem": 0,
+        "Rss": 1818624,
+        "Shared_Clean": 0,
+        "Shared_Dirty": 0,
+        "Swap": 0
+      },
+      "primary_unchanged_after_branch_write": true,
+      "size_added_nodes": 200000,
+      "write_delta_bytes": {
+        "Private_Clean": 0,
+        "Private_Dirty": 0,
+        "Pss": 0,
+        "Pss_Anon": 0,
+        "Pss_File": 0,
+        "Pss_Shmem": 0,
+        "Rss": 0,
+        "Shared_Clean": 0,
+        "Shared_Dirty": 0,
+        "Swap": 0
+      }
+    },
+    {
+      "after_drop_bytes": {
+        "Private_Clean": 2514944,
+        "Private_Dirty": 155828224,
+        "Pss": 163640320,
+        "Pss_Anon": 155828224,
+        "Pss_File": 7812096,
+        "Pss_Shmem": 0,
+        "Rss": 171532288,
+        "Shared_Clean": 13189120,
+        "Shared_Dirty": 0,
+        "Swap": 0
+      },
+      "after_fork_bytes": {
+        "Private_Clean": 2514944,
+        "Private_Dirty": 155799552,
+        "Pss": 163611648,
+        "Pss_Anon": 155799552,
+        "Pss_File": 7812096,
+        "Pss_Shmem": 0,
+        "Rss": 171503616,
+        "Shared_Clean": 13189120,
+        "Shared_Dirty": 0,
+        "Swap": 0
+      },
+      "after_write_bytes": {
+        "Private_Clean": 2514944,
+        "Private_Dirty": 155828224,
+        "Pss": 163640320,
+        "Pss_Anon": 155828224,
+        "Pss_File": 7812096,
+        "Pss_Shmem": 0,
+        "Rss": 171532288,
+        "Shared_Clean": 13189120,
+        "Shared_Dirty": 0,
+        "Swap": 0
+      },
+      "backend": "eager",
+      "baseline_bytes": {
+        "Private_Clean": 2514944,
+        "Private_Dirty": 95707136,
+        "Pss": 103519232,
+        "Pss_Anon": 95707136,
+        "Pss_File": 7812096,
+        "Pss_Shmem": 0,
+        "Rss": 111411200,
+        "Shared_Clean": 13189120,
+        "Shared_Dirty": 0,
+        "Swap": 0
+      },
+      "baseline_counts": [
+        200771,
+        200743
+      ],
+      "branch_counts_after_write": [
+        200772,
+        200743
+      ],
+      "branch_counts_before_write": [
+        200771,
+        200743
+      ],
+      "branch_write_isolated": true,
+      "fork_delta_bytes": {
+        "Private_Clean": 0,
+        "Private_Dirty": 60092416,
+        "Pss": 60092416,
+        "Pss_Anon": 60092416,
+        "Pss_File": 0,
+        "Pss_Shmem": 0,
+        "Rss": 60092416,
+        "Shared_Clean": 0,
+        "Shared_Dirty": 0,
+        "Swap": 0
+      },
+      "iteration": 0,
+      "post_drop_delta_bytes": {
+        "Private_Clean": 0,
+        "Private_Dirty": 60121088,
+        "Pss": 60121088,
+        "Pss_Anon": 60121088,
+        "Pss_File": 0,
+        "Pss_Shmem": 0,
+        "Rss": 60121088,
+        "Shared_Clean": 0,
+        "Shared_Dirty": 0,
+        "Swap": 0
+      },
+      "primary_unchanged_after_branch_write": true,
+      "size_added_nodes": 200000,
+      "write_delta_bytes": {
+        "Private_Clean": 0,
+        "Private_Dirty": 28672,
+        "Pss": 28672,
+        "Pss_Anon": 28672,
+        "Pss_File": 0,
+        "Pss_Shmem": 0,
+        "Rss": 28672,
+        "Shared_Clean": 0,
+        "Shared_Dirty": 0,
+        "Swap": 0
+      }
+    },
+    {
+      "after_drop_bytes": {
+        "Private_Clean": 2519040,
+        "Private_Dirty": 124399616,
+        "Pss": 132204544,
+        "Pss_Anon": 124399616,
+        "Pss_File": 7804928,
+        "Pss_Shmem": 0,
+        "Rss": 140017664,
+        "Shared_Clean": 13099008,
+        "Shared_Dirty": 0,
+        "Swap": 0
+      },
+      "after_fork_bytes": {
+        "Private_Clean": 2519040,
+        "Private_Dirty": 124370944,
+        "Pss": 132175872,
+        "Pss_Anon": 124370944,
+        "Pss_File": 7804928,
+        "Pss_Shmem": 0,
+        "Rss": 139988992,
+        "Shared_Clean": 13099008,
+        "Shared_Dirty": 0,
+        "Swap": 0
+      },
+      "after_write_bytes": {
+        "Private_Clean": 2519040,
+        "Private_Dirty": 124399616,
+        "Pss": 132204544,
+        "Pss_Anon": 124399616,
+        "Pss_File": 7804928,
+        "Pss_Shmem": 0,
+        "Rss": 140017664,
+        "Shared_Clean": 13099008,
+        "Shared_Dirty": 0,
+        "Swap": 0
+      },
+      "backend": "shared_records",
+      "baseline_bytes": {
+        "Private_Clean": 2519040,
+        "Private_Dirty": 96817152,
+        "Pss": 104622080,
+        "Pss_Anon": 96817152,
+        "Pss_File": 7804928,
+        "Pss_Shmem": 0,
+        "Rss": 112435200,
+        "Shared_Clean": 13099008,
+        "Shared_Dirty": 0,
+        "Swap": 0
+      },
+      "baseline_counts": [
+        200771,
+        200743
+      ],
+      "branch_counts_after_write": [
+        200772,
+        200743
+      ],
+      "branch_counts_before_write": [
+        200771,
+        200743
+      ],
+      "branch_write_isolated": true,
+      "fork_delta_bytes": {
+        "Private_Clean": 0,
+        "Private_Dirty": 27553792,
+        "Pss": 27553792,
+        "Pss_Anon": 27553792,
+        "Pss_File": 0,
+        "Pss_Shmem": 0,
+        "Rss": 27553792,
+        "Shared_Clean": 0,
+        "Shared_Dirty": 0,
+        "Swap": 0
+      },
+      "iteration": 1,
+      "post_drop_delta_bytes": {
+        "Private_Clean": 0,
+        "Private_Dirty": 27582464,
+        "Pss": 27582464,
+        "Pss_Anon": 27582464,
+        "Pss_File": 0,
+        "Pss_Shmem": 0,
+        "Rss": 27582464,
+        "Shared_Clean": 0,
+        "Shared_Dirty": 0,
+        "Swap": 0
+      },
+      "primary_unchanged_after_branch_write": true,
+      "size_added_nodes": 200000,
+      "write_delta_bytes": {
+        "Private_Clean": 0,
+        "Private_Dirty": 28672,
+        "Pss": 28672,
+        "Pss_Anon": 28672,
+        "Pss_File": 0,
+        "Pss_Shmem": 0,
+        "Rss": 28672,
+        "Shared_Clean": 0,
+        "Shared_Dirty": 0,
+        "Swap": 0
+      }
+    },
+    {
+      "after_drop_bytes": {
+        "Private_Clean": 2510848,
+        "Private_Dirty": 155910144,
+        "Pss": 163696640,
+        "Pss_Anon": 155910144,
+        "Pss_File": 7786496,
+        "Pss_Shmem": 0,
+        "Rss": 171466752,
+        "Shared_Clean": 13045760,
+        "Shared_Dirty": 0,
+        "Swap": 0
+      },
+      "after_fork_bytes": {
+        "Private_Clean": 2510848,
+        "Private_Dirty": 155881472,
+        "Pss": 163667968,
+        "Pss_Anon": 155881472,
+        "Pss_File": 7786496,
+        "Pss_Shmem": 0,
+        "Rss": 171438080,
+        "Shared_Clean": 13045760,
+        "Shared_Dirty": 0,
+        "Swap": 0
+      },
+      "after_write_bytes": {
+        "Private_Clean": 2510848,
+        "Private_Dirty": 155910144,
+        "Pss": 163696640,
+        "Pss_Anon": 155910144,
+        "Pss_File": 7786496,
+        "Pss_Shmem": 0,
+        "Rss": 171466752,
+        "Shared_Clean": 13045760,
+        "Shared_Dirty": 0,
+        "Swap": 0
+      },
+      "backend": "eager",
+      "baseline_bytes": {
+        "Private_Clean": 2510848,
+        "Private_Dirty": 95789056,
+        "Pss": 103575552,
+        "Pss_Anon": 95789056,
+        "Pss_File": 7786496,
+        "Pss_Shmem": 0,
+        "Rss": 111345664,
+        "Shared_Clean": 13045760,
+        "Shared_Dirty": 0,
+        "Swap": 0
+      },
+      "baseline_counts": [
+        200771,
+        200743
+      ],
+      "branch_counts_after_write": [
+        200772,
+        200743
+      ],
+      "branch_counts_before_write": [
+        200771,
+        200743
+      ],
+      "branch_write_isolated": true,
+      "fork_delta_bytes": {
+        "Private_Clean": 0,
+        "Private_Dirty": 60092416,
+        "Pss": 60092416,
+        "Pss_Anon": 60092416,
+        "Pss_File": 0,
+        "Pss_Shmem": 0,
+        "Rss": 60092416,
+        "Shared_Clean": 0,
+        "Shared_Dirty": 0,
+        "Swap": 0
+      },
+      "iteration": 1,
+      "post_drop_delta_bytes": {
+        "Private_Clean": 0,
+        "Private_Dirty": 60121088,
+        "Pss": 60121088,
+        "Pss_Anon": 60121088,
+        "Pss_File": 0,
+        "Pss_Shmem": 0,
+        "Rss": 60121088,
+        "Shared_Clean": 0,
+        "Shared_Dirty": 0,
+        "Swap": 0
+      },
+      "primary_unchanged_after_branch_write": true,
+      "size_added_nodes": 200000,
+      "write_delta_bytes": {
+        "Private_Clean": 0,
+        "Private_Dirty": 28672,
+        "Pss": 28672,
+        "Pss_Anon": 28672,
+        "Pss_File": 0,
+        "Pss_Shmem": 0,
+        "Rss": 28672,
+        "Shared_Clean": 0,
+        "Shared_Dirty": 0,
+        "Swap": 0
+      }
+    },
+    {
+      "after_drop_bytes": {
+        "Private_Clean": 2519040,
+        "Private_Dirty": 98615296,
+        "Pss": 106427392,
+        "Pss_Anon": 98615296,
+        "Pss_File": 7812096,
+        "Pss_Shmem": 0,
+        "Rss": 114257920,
+        "Shared_Clean": 13123584,
+        "Shared_Dirty": 0,
+        "Swap": 0
+      },
+      "after_fork_bytes": {
+        "Private_Clean": 2519040,
+        "Private_Dirty": 98615296,
+        "Pss": 106427392,
+        "Pss_Anon": 98615296,
+        "Pss_File": 7812096,
+        "Pss_Shmem": 0,
+        "Rss": 114257920,
+        "Shared_Clean": 13123584,
+        "Shared_Dirty": 0,
+        "Swap": 0
+      },
+      "after_write_bytes": {
+        "Private_Clean": 2519040,
+        "Private_Dirty": 98615296,
+        "Pss": 106427392,
+        "Pss_Anon": 98615296,
+        "Pss_File": 7812096,
+        "Pss_Shmem": 0,
+        "Rss": 114257920,
+        "Shared_Clean": 13123584,
+        "Shared_Dirty": 0,
+        "Swap": 0
+      },
+      "backend": "shared_graph_pages",
+      "baseline_bytes": {
+        "Private_Clean": 2519040,
+        "Private_Dirty": 96796672,
+        "Pss": 104608768,
+        "Pss_Anon": 96796672,
+        "Pss_File": 7812096,
+        "Pss_Shmem": 0,
+        "Rss": 112439296,
+        "Shared_Clean": 13123584,
+        "Shared_Dirty": 0,
+        "Swap": 0
+      },
+      "baseline_counts": [
+        200771,
+        200743
+      ],
+      "branch_counts_after_write": [
+        200772,
+        200743
+      ],
+      "branch_counts_before_write": [
+        200771,
+        200743
+      ],
+      "branch_write_isolated": true,
+      "fork_delta_bytes": {
+        "Private_Clean": 0,
+        "Private_Dirty": 1818624,
+        "Pss": 1818624,
+        "Pss_Anon": 1818624,
+        "Pss_File": 0,
+        "Pss_Shmem": 0,
+        "Rss": 1818624,
+        "Shared_Clean": 0,
+        "Shared_Dirty": 0,
+        "Swap": 0
+      },
+      "iteration": 1,
+      "post_drop_delta_bytes": {
+        "Private_Clean": 0,
+        "Private_Dirty": 1818624,
+        "Pss": 1818624,
+        "Pss_Anon": 1818624,
+        "Pss_File": 0,
+        "Pss_Shmem": 0,
+        "Rss": 1818624,
+        "Shared_Clean": 0,
+        "Shared_Dirty": 0,
+        "Swap": 0
+      },
+      "primary_unchanged_after_branch_write": true,
+      "size_added_nodes": 200000,
+      "write_delta_bytes": {
+        "Private_Clean": 0,
+        "Private_Dirty": 0,
+        "Pss": 0,
+        "Pss_Anon": 0,
+        "Pss_File": 0,
+        "Pss_Shmem": 0,
+        "Rss": 0,
+        "Shared_Clean": 0,
+        "Shared_Dirty": 0,
+        "Swap": 0
+      }
+    },
+    {
+      "after_drop_bytes": {
+        "Private_Clean": 2514944,
+        "Private_Dirty": 124395520,
+        "Pss": 132193280,
+        "Pss_Anon": 124395520,
+        "Pss_File": 7797760,
+        "Pss_Shmem": 0,
+        "Rss": 140001280,
+        "Shared_Clean": 13090816,
+        "Shared_Dirty": 0,
+        "Swap": 0
+      },
+      "after_fork_bytes": {
+        "Private_Clean": 2514944,
+        "Private_Dirty": 124366848,
+        "Pss": 132164608,
+        "Pss_Anon": 124366848,
+        "Pss_File": 7797760,
+        "Pss_Shmem": 0,
+        "Rss": 139972608,
+        "Shared_Clean": 13090816,
+        "Shared_Dirty": 0,
+        "Swap": 0
+      },
+      "after_write_bytes": {
+        "Private_Clean": 2514944,
+        "Private_Dirty": 124395520,
+        "Pss": 132193280,
+        "Pss_Anon": 124395520,
+        "Pss_File": 7797760,
+        "Pss_Shmem": 0,
+        "Rss": 140001280,
+        "Shared_Clean": 13090816,
+        "Shared_Dirty": 0,
+        "Swap": 0
+      },
+      "backend": "shared_records",
+      "baseline_bytes": {
+        "Private_Clean": 2514944,
+        "Private_Dirty": 96813056,
+        "Pss": 104610816,
+        "Pss_Anon": 96813056,
+        "Pss_File": 7797760,
+        "Pss_Shmem": 0,
+        "Rss": 112418816,
+        "Shared_Clean": 13090816,
+        "Shared_Dirty": 0,
+        "Swap": 0
+      },
+      "baseline_counts": [
+        200771,
+        200743
+      ],
+      "branch_counts_after_write": [
+        200772,
+        200743
+      ],
+      "branch_counts_before_write": [
+        200771,
+        200743
+      ],
+      "branch_write_isolated": true,
+      "fork_delta_bytes": {
+        "Private_Clean": 0,
+        "Private_Dirty": 27553792,
+        "Pss": 27553792,
+        "Pss_Anon": 27553792,
+        "Pss_File": 0,
+        "Pss_Shmem": 0,
+        "Rss": 27553792,
+        "Shared_Clean": 0,
+        "Shared_Dirty": 0,
+        "Swap": 0
+      },
+      "iteration": 2,
+      "post_drop_delta_bytes": {
+        "Private_Clean": 0,
+        "Private_Dirty": 27582464,
+        "Pss": 27582464,
+        "Pss_Anon": 27582464,
+        "Pss_File": 0,
+        "Pss_Shmem": 0,
+        "Rss": 27582464,
+        "Shared_Clean": 0,
+        "Shared_Dirty": 0,
+        "Swap": 0
+      },
+      "primary_unchanged_after_branch_write": true,
+      "size_added_nodes": 200000,
+      "write_delta_bytes": {
+        "Private_Clean": 0,
+        "Private_Dirty": 28672,
+        "Pss": 28672,
+        "Pss_Anon": 28672,
+        "Pss_File": 0,
+        "Pss_Shmem": 0,
+        "Rss": 28672,
+        "Shared_Clean": 0,
+        "Shared_Dirty": 0,
+        "Swap": 0
+      }
+    },
+    {
+      "after_drop_bytes": {
+        "Private_Clean": 2514944,
+        "Private_Dirty": 97554432,
+        "Pss": 105359360,
+        "Pss_Anon": 97554432,
+        "Pss_File": 7804928,
+        "Pss_Shmem": 0,
+        "Rss": 113233920,
+        "Shared_Clean": 13164544,
+        "Shared_Dirty": 0,
+        "Swap": 0
+      },
+      "after_fork_bytes": {
+        "Private_Clean": 2514944,
+        "Private_Dirty": 97554432,
+        "Pss": 105359360,
+        "Pss_Anon": 97554432,
+        "Pss_File": 7804928,
+        "Pss_Shmem": 0,
+        "Rss": 113233920,
+        "Shared_Clean": 13164544,
+        "Shared_Dirty": 0,
+        "Swap": 0
+      },
+      "after_write_bytes": {
+        "Private_Clean": 2514944,
+        "Private_Dirty": 97554432,
+        "Pss": 105359360,
+        "Pss_Anon": 97554432,
+        "Pss_File": 7804928,
+        "Pss_Shmem": 0,
+        "Rss": 113233920,
+        "Shared_Clean": 13164544,
+        "Shared_Dirty": 0,
+        "Swap": 0
+      },
+      "backend": "shared_graph_pages",
+      "baseline_bytes": {
+        "Private_Clean": 2514944,
+        "Private_Dirty": 95735808,
+        "Pss": 103540736,
+        "Pss_Anon": 95735808,
+        "Pss_File": 7804928,
+        "Pss_Shmem": 0,
+        "Rss": 111415296,
+        "Shared_Clean": 13164544,
+        "Shared_Dirty": 0,
+        "Swap": 0
+      },
+      "baseline_counts": [
+        200771,
+        200743
+      ],
+      "branch_counts_after_write": [
+        200772,
+        200743
+      ],
+      "branch_counts_before_write": [
+        200771,
+        200743
+      ],
+      "branch_write_isolated": true,
+      "fork_delta_bytes": {
+        "Private_Clean": 0,
+        "Private_Dirty": 1818624,
+        "Pss": 1818624,
+        "Pss_Anon": 1818624,
+        "Pss_File": 0,
+        "Pss_Shmem": 0,
+        "Rss": 1818624,
+        "Shared_Clean": 0,
+        "Shared_Dirty": 0,
+        "Swap": 0
+      },
+      "iteration": 2,
+      "post_drop_delta_bytes": {
+        "Private_Clean": 0,
+        "Private_Dirty": 1818624,
+        "Pss": 1818624,
+        "Pss_Anon": 1818624,
+        "Pss_File": 0,
+        "Pss_Shmem": 0,
+        "Rss": 1818624,
+        "Shared_Clean": 0,
+        "Shared_Dirty": 0,
+        "Swap": 0
+      },
+      "primary_unchanged_after_branch_write": true,
+      "size_added_nodes": 200000,
+      "write_delta_bytes": {
+        "Private_Clean": 0,
+        "Private_Dirty": 0,
+        "Pss": 0,
+        "Pss_Anon": 0,
+        "Pss_File": 0,
+        "Pss_Shmem": 0,
+        "Rss": 0,
+        "Shared_Clean": 0,
+        "Shared_Dirty": 0,
+        "Swap": 0
+      }
+    },
+    {
+      "after_drop_bytes": {
+        "Private_Clean": 2506752,
+        "Private_Dirty": 155844608,
+        "Pss": 163627008,
+        "Pss_Anon": 155844608,
+        "Pss_File": 7782400,
+        "Pss_Shmem": 0,
+        "Rss": 171376640,
+        "Shared_Clean": 13025280,
+        "Shared_Dirty": 0,
+        "Swap": 0
+      },
+      "after_fork_bytes": {
+        "Private_Clean": 2506752,
+        "Private_Dirty": 155815936,
+        "Pss": 163598336,
+        "Pss_Anon": 155815936,
+        "Pss_File": 7782400,
+        "Pss_Shmem": 0,
+        "Rss": 171347968,
+        "Shared_Clean": 13025280,
+        "Shared_Dirty": 0,
+        "Swap": 0
+      },
+      "after_write_bytes": {
+        "Private_Clean": 2506752,
+        "Private_Dirty": 155844608,
+        "Pss": 163627008,
+        "Pss_Anon": 155844608,
+        "Pss_File": 7782400,
+        "Pss_Shmem": 0,
+        "Rss": 171376640,
+        "Shared_Clean": 13025280,
+        "Shared_Dirty": 0,
+        "Swap": 0
+      },
+      "backend": "eager",
+      "baseline_bytes": {
+        "Private_Clean": 2506752,
+        "Private_Dirty": 95723520,
+        "Pss": 103505920,
+        "Pss_Anon": 95723520,
+        "Pss_File": 7782400,
+        "Pss_Shmem": 0,
+        "Rss": 111255552,
+        "Shared_Clean": 13025280,
+        "Shared_Dirty": 0,
+        "Swap": 0
+      },
+      "baseline_counts": [
+        200771,
+        200743
+      ],
+      "branch_counts_after_write": [
+        200772,
+        200743
+      ],
+      "branch_counts_before_write": [
+        200771,
+        200743
+      ],
+      "branch_write_isolated": true,
+      "fork_delta_bytes": {
+        "Private_Clean": 0,
+        "Private_Dirty": 60092416,
+        "Pss": 60092416,
+        "Pss_Anon": 60092416,
+        "Pss_File": 0,
+        "Pss_Shmem": 0,
+        "Rss": 60092416,
+        "Shared_Clean": 0,
+        "Shared_Dirty": 0,
+        "Swap": 0
+      },
+      "iteration": 2,
+      "post_drop_delta_bytes": {
+        "Private_Clean": 0,
+        "Private_Dirty": 60121088,
+        "Pss": 60121088,
+        "Pss_Anon": 60121088,
+        "Pss_File": 0,
+        "Pss_Shmem": 0,
+        "Rss": 60121088,
+        "Shared_Clean": 0,
+        "Shared_Dirty": 0,
+        "Swap": 0
+      },
+      "primary_unchanged_after_branch_write": true,
+      "size_added_nodes": 200000,
+      "write_delta_bytes": {
+        "Private_Clean": 0,
+        "Private_Dirty": 28672,
+        "Pss": 28672,
+        "Pss_Anon": 28672,
+        "Pss_File": 0,
+        "Pss_Shmem": 0,
+        "Rss": 28672,
+        "Shared_Clean": 0,
+        "Shared_Dirty": 0,
+        "Swap": 0
+      }
+    }
+  ],
+  "runner": {
+    "path": "/home/matt/ozmadev/ocelot/evaluation/substrate_capability/thoughtexperiment_full_substrate_pss_v1.py",
+    "sha256": "sha256:ba8e62c0d315dbdc22dd00132fab2f5592b90e9491b789ac36ce70e57244a5df"
+  },
+  "schedule": [
+    {
+      "backend": "shared_graph_pages",
+      "iteration": 0,
+      "size": 100000
+    },
+    {
+      "backend": "shared_records",
+      "iteration": 0,
+      "size": 100000
+    },
+    {
+      "backend": "eager",
+      "iteration": 0,
+      "size": 100000
+    },
+    {
+      "backend": "eager",
+      "iteration": 1,
+      "size": 100000
+    },
+    {
+      "backend": "shared_graph_pages",
+      "iteration": 1,
+      "size": 100000
+    },
+    {
+      "backend": "shared_records",
+      "iteration": 1,
+      "size": 100000
+    },
+    {
+      "backend": "shared_records",
+      "iteration": 2,
+      "size": 100000
+    },
+    {
+      "backend": "shared_graph_pages",
+      "iteration": 2,
+      "size": 100000
+    },
+    {
+      "backend": "eager",
+      "iteration": 2,
+      "size": 100000
+    },
+    {
+      "backend": "shared_records",
+      "iteration": 0,
+      "size": 200000
+    },
+    {
+      "backend": "shared_graph_pages",
+      "iteration": 0,
+      "size": 200000
+    },
+    {
+      "backend": "eager",
+      "iteration": 0,
+      "size": 200000
+    },
+    {
+      "backend": "shared_records",
+      "iteration": 1,
+      "size": 200000
+    },
+    {
+      "backend": "eager",
+      "iteration": 1,
+      "size": 200000
+    },
+    {
+      "backend": "shared_graph_pages",
+      "iteration": 1,
+      "size": 200000
+    },
+    {
+      "backend": "shared_records",
+      "iteration": 2,
+      "size": 200000
+    },
+    {
+      "backend": "shared_graph_pages",
+      "iteration": 2,
+      "size": 200000
+    },
+    {
+      "backend": "eager",
+      "iteration": 2,
+      "size": 200000
+    }
+  ],
+  "schema": "ThoughtexperimentFullSubstratePssV1",
+  "sources": {
+    "domains/collapse_model.py": "sha256:97aaa5c26e6cb3f2682f6d9ee7aa9f0fbbc622e27063b1947edab26fa0ef4ea7",
+    "domains/engine_provenance.py": "sha256:a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+    "domains/imagination.py": "sha256:d6effe8eb0a6de2a7697be0f80b6787d2c00278654e9fe69e8aeb8b598956219",
+    "domains/reflective_faculty.py": "sha256:8f530a8c8754949216b71b473c4769fa5d351d01d6055127943c009d06763d05",
+    "domains/self_correction.py": "sha256:682c4fda4d18bf2e7655988c6ef8e52dc6ab7bae143851d804c122a0dbeb8a2d",
+    "evaluation/substrate_capability/thoughtexperiment_full_substrate_pss_v1.py": "sha256:ba8e62c0d315dbdc22dd00132fab2f5592b90e9491b789ac36ce70e57244a5df",
+    "evaluation/substrate_capability/thoughtexperiment_self_correction_copy_comparison_v1.py": "sha256:399cff2b650a131bcf4076d0e0a70f26c081c93aec6ea8a4686183b874ec56fc",
+    "runners/dsl/python/substrate_rs/__init__.py": "sha256:16afa0fa0a9cf12eb306ecad98ccda27ca059f5e1cfbaffd899ee4cb74ebb3c1",
+    "runners/dsl/src/checker.rs": "sha256:eb46f2f884f468b90d1b79ec2d160812f0c166ac78245fb3b23a4a22b3fa2ff7",
+    "runners/dsl/src/cow_paged_vec.rs": "sha256:4b180c6aeb3cf9ee4391e65ba3aa50110b255da5697a909b46e7f4ec852939e4",
+    "runners/dsl/src/grammar.rs": "sha256:aaf6f571bf8e8761584c7473d3fe3130c5a6e395bff7f2b63f1cdcf6046b73f6",
+    "runners/dsl/src/graph.rs": "sha256:9744fec2e0c5091f2036081ffc615b1c7dd00ba2a5995af1294efb0b5aa5a28c",
+    "runners/dsl/src/persist.rs": "sha256:066d026451c97e1032c30054a3a4c556d386f23db2304630a4625c5bf81306cf",
+    "runners/dsl/src/py.rs": "sha256:201adbebde67c80bce80de6622095472bcb58e83a2b4df50f9b314bc9000a1de",
+    "runners/dsl/src/substrate.rs": "sha256:bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+    "runners/dsl/src/term.rs": "sha256:5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+    "substrate/boot_core.py": "sha256:9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb"
+  },
+  "summaries": [
+    {
+      "all_parent_and_branch_isolation_checks_pass": true,
+      "backend": "eager",
+      "measured_repeats": 3,
+      "median_fork_delta_bytes": {
+        "Private_Clean": 0,
+        "Private_Dirty": 27762688,
+        "Pss": 27761664,
+        "Rss": 27762688,
+        "Shared_Clean": 0,
+        "Shared_Dirty": 0,
+        "Swap": 0
+      },
+      "median_post_drop_delta_bytes": {
+        "Private_Clean": 0,
+        "Private_Dirty": 27795456,
+        "Pss": 27794432,
+        "Rss": 27795456,
+        "Shared_Clean": 0,
+        "Shared_Dirty": 0,
+        "Swap": 0
+      },
+      "median_write_delta_bytes": {
+        "Private_Clean": 0,
+        "Private_Dirty": 32768,
+        "Pss": 32768,
+        "Rss": 32768,
+        "Shared_Clean": 0,
+        "Shared_Dirty": 0,
+        "Swap": 0
+      },
+      "size_added_nodes": 100000
+    },
+    {
+      "all_parent_and_branch_isolation_checks_pass": true,
+      "backend": "shared_records",
+      "measured_repeats": 3,
+      "median_fork_delta_bytes": {
+        "Private_Clean": 0,
+        "Private_Dirty": 11468800,
+        "Pss": 11468800,
+        "Rss": 11468800,
+        "Shared_Clean": 0,
+        "Shared_Dirty": 0,
+        "Swap": 0
+      },
+      "median_post_drop_delta_bytes": {
+        "Private_Clean": 0,
+        "Private_Dirty": 11497472,
+        "Pss": 11497472,
+        "Rss": 11497472,
+        "Shared_Clean": 0,
+        "Shared_Dirty": 0,
+        "Swap": 0
+      },
+      "median_write_delta_bytes": {
+        "Private_Clean": 0,
+        "Private_Dirty": 28672,
+        "Pss": 28672,
+        "Rss": 28672,
+        "Shared_Clean": 0,
+        "Shared_Dirty": 0,
+        "Swap": 0
+      },
+      "size_added_nodes": 100000
+    },
+    {
+      "all_parent_and_branch_isolation_checks_pass": true,
+      "backend": "shared_graph_pages",
+      "measured_repeats": 3,
+      "median_fork_delta_bytes": {
+        "Private_Clean": 0,
+        "Private_Dirty": 327680,
+        "Pss": 327680,
+        "Rss": 327680,
+        "Shared_Clean": 0,
+        "Shared_Dirty": 0,
+        "Swap": 0
+      },
+      "median_post_drop_delta_bytes": {
+        "Private_Clean": 0,
+        "Private_Dirty": 327680,
+        "Pss": 327680,
+        "Rss": 327680,
+        "Shared_Clean": 0,
+        "Shared_Dirty": 0,
+        "Swap": 0
+      },
+      "median_write_delta_bytes": {
+        "Private_Clean": 0,
+        "Private_Dirty": 0,
+        "Pss": 0,
+        "Rss": 0,
+        "Shared_Clean": 0,
+        "Shared_Dirty": 0,
+        "Swap": 0
+      },
+      "size_added_nodes": 100000
+    },
+    {
+      "all_parent_and_branch_isolation_checks_pass": true,
+      "backend": "eager",
+      "measured_repeats": 3,
+      "median_fork_delta_bytes": {
+        "Private_Clean": 0,
+        "Private_Dirty": 60092416,
+        "Pss": 60092416,
+        "Rss": 60092416,
+        "Shared_Clean": 0,
+        "Shared_Dirty": 0,
+        "Swap": 0
+      },
+      "median_post_drop_delta_bytes": {
+        "Private_Clean": 0,
+        "Private_Dirty": 60121088,
+        "Pss": 60121088,
+        "Rss": 60121088,
+        "Shared_Clean": 0,
+        "Shared_Dirty": 0,
+        "Swap": 0
+      },
+      "median_write_delta_bytes": {
+        "Private_Clean": 0,
+        "Private_Dirty": 28672,
+        "Pss": 28672,
+        "Rss": 28672,
+        "Shared_Clean": 0,
+        "Shared_Dirty": 0,
+        "Swap": 0
+      },
+      "size_added_nodes": 200000
+    },
+    {
+      "all_parent_and_branch_isolation_checks_pass": true,
+      "backend": "shared_records",
+      "measured_repeats": 3,
+      "median_fork_delta_bytes": {
+        "Private_Clean": 0,
+        "Private_Dirty": 27553792,
+        "Pss": 27553792,
+        "Rss": 27553792,
+        "Shared_Clean": 0,
+        "Shared_Dirty": 0,
+        "Swap": 0
+      },
+      "median_post_drop_delta_bytes": {
+        "Private_Clean": 0,
+        "Private_Dirty": 27582464,
+        "Pss": 27582464,
+        "Rss": 27582464,
+        "Shared_Clean": 0,
+        "Shared_Dirty": 0,
+        "Swap": 0
+      },
+      "median_write_delta_bytes": {
+        "Private_Clean": 0,
+        "Private_Dirty": 28672,
+        "Pss": 28672,
+        "Rss": 28672,
+        "Shared_Clean": 0,
+        "Shared_Dirty": 0,
+        "Swap": 0
+      },
+      "size_added_nodes": 200000
+    },
+    {
+      "all_parent_and_branch_isolation_checks_pass": true,
+      "backend": "shared_graph_pages",
+      "measured_repeats": 3,
+      "median_fork_delta_bytes": {
+        "Private_Clean": 0,
+        "Private_Dirty": 1818624,
+        "Pss": 1818624,
+        "Rss": 1818624,
+        "Shared_Clean": 0,
+        "Shared_Dirty": 0,
+        "Swap": 0
+      },
+      "median_post_drop_delta_bytes": {
+        "Private_Clean": 0,
+        "Private_Dirty": 1818624,
+        "Pss": 1818624,
+        "Rss": 1818624,
+        "Shared_Clean": 0,
+        "Shared_Dirty": 0,
+        "Swap": 0
+      },
+      "median_write_delta_bytes": {
+        "Private_Clean": 0,
+        "Private_Dirty": 0,
+        "Pss": 0,
+        "Rss": 0,
+        "Shared_Clean": 0,
+        "Shared_Dirty": 0,
+        "Swap": 0
+      },
+      "size_added_nodes": 200000
+    }
+  ]
+}

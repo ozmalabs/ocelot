@@ -1,0 +1,212 @@
+{
+  "all_cases_pass": true,
+  "cases": [
+    {
+      "base_node_count": 0,
+      "case": "unshared",
+      "cleanup_after_owner_removal": null,
+      "final_node_count": 0,
+      "held_subgraph_roundtrip_stable": true,
+      "held_subgraph_survives": true,
+      "owner_edge_targets_after_cleanup": [],
+      "passed": true,
+      "post_cleanup_term_node_ids": [],
+      "pre_cleanup_node_count": 4,
+      "protected_ids": [],
+      "removed_ids": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "returns_to_baseline": true,
+      "term_node_ids": [
+        0,
+        1,
+        2,
+        3
+      ]
+    },
+    {
+      "base_node_count": 0,
+      "case": "shared_subtree",
+      "cleanup_after_owner_removal": {
+        "protected_node_ids": [],
+        "removed_node_ids": [
+          1,
+          2
+        ]
+      },
+      "final_node_count": 0,
+      "held_subgraph_roundtrip_stable": true,
+      "held_subgraph_survives": true,
+      "owner_edge_targets_after_cleanup": [
+        2
+      ],
+      "passed": true,
+      "post_cleanup_term_node_ids": [
+        1,
+        2
+      ],
+      "pre_cleanup_node_count": 5,
+      "protected_ids": [
+        1,
+        2
+      ],
+      "removed_ids": [
+        0,
+        3
+      ],
+      "returns_to_baseline": true,
+      "term_node_ids": [
+        0,
+        1,
+        2,
+        3
+      ]
+    },
+    {
+      "base_node_count": 0,
+      "case": "shared_leaf",
+      "cleanup_after_owner_removal": {
+        "protected_node_ids": [],
+        "removed_node_ids": [
+          1
+        ]
+      },
+      "final_node_count": 0,
+      "held_subgraph_roundtrip_stable": true,
+      "held_subgraph_survives": true,
+      "owner_edge_targets_after_cleanup": [
+        1
+      ],
+      "passed": true,
+      "post_cleanup_term_node_ids": [
+        1
+      ],
+      "pre_cleanup_node_count": 5,
+      "protected_ids": [
+        1
+      ],
+      "removed_ids": [
+        0,
+        2,
+        3
+      ],
+      "returns_to_baseline": true,
+      "term_node_ids": [
+        0,
+        1,
+        2,
+        3
+      ]
+    },
+    {
+      "base_node_count": 0,
+      "case": "shared_root",
+      "cleanup_after_owner_removal": {
+        "protected_node_ids": [],
+        "removed_node_ids": [
+          0,
+          1,
+          2,
+          3
+        ]
+      },
+      "final_node_count": 0,
+      "held_subgraph_roundtrip_stable": true,
+      "held_subgraph_survives": true,
+      "owner_edge_targets_after_cleanup": [
+        3
+      ],
+      "passed": true,
+      "post_cleanup_term_node_ids": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "pre_cleanup_node_count": 5,
+      "protected_ids": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "removed_ids": [],
+      "returns_to_baseline": true,
+      "term_node_ids": [
+        0,
+        1,
+        2,
+        3
+      ]
+    },
+    {
+      "case": "cyclic_child",
+      "expected_error": "term_subgraph_child_cycle",
+      "graph_unchanged": true,
+      "node_count": 4,
+      "observed_error": "term_subgraph_child_cycle",
+      "passed": true
+    },
+    {
+      "case": "non_term_child",
+      "expected_error": "term_subgraph_child_not_term",
+      "graph_unchanged": true,
+      "node_count": 5,
+      "observed_error": "term_subgraph_child_not_term",
+      "passed": true
+    },
+    {
+      "case": "non_term_root",
+      "expected_error": "term_subgraph_root_not_term",
+      "graph_unchanged": true,
+      "node_count": 1,
+      "observed_error": "term_subgraph_root_not_term",
+      "passed": true
+    },
+    {
+      "case": "missing_root",
+      "expected_error": "term_subgraph_root_missing",
+      "graph_unchanged": true,
+      "node_count": 0,
+      "observed_error": "term_subgraph_root_missing",
+      "passed": true
+    }
+  ],
+  "claim_boundary": "local native API probe; no concurrency/arena compaction proof",
+  "environment": {
+    "native_path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+    "native_sha256": "f887275c545582e7ee7a398c8798ab73d3e64ed7aec852bfddc7416686170bca",
+    "platform": "Linux-6.8.0-142-generic-x86_64-with-glibc2.39",
+    "python": "3.13.5 (main, Jun 11 2025, 15:36:57) [GCC 11.4.0]"
+  },
+  "provenance": {
+    "build_record_sha256": "dbfcab9225c63945f02685f881db0655e5e884927952cdca3d458f0ba1901420",
+    "git_head": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+    "lock_sha256": "0a8185c71b0b685d5ffcb4e4085b30488531d8fea0e1ae624e25f2153b012823",
+    "native_sha256": "f887275c545582e7ee7a398c8798ab73d3e64ed7aec852bfddc7416686170bca",
+    "preregistration_sha256": "ce48992229320051781af12421551ca85a8d3f6610ad641e6a0f3d70253f9ac1",
+    "runner_sha256": "08c49344e865082a05eafc1c73684b7e2915c3436ef288a1ac4b130e7a7a0827"
+  },
+  "run_id": "term-subgraph-native-cleanup-20260925-v1",
+  "schema_version": 1,
+  "term": {
+    "items": [
+      {
+        "type": "Lit",
+        "value": "left"
+      },
+      {
+        "seq": {
+          "name": "x",
+          "type": "Var"
+        },
+        "type": "Reverse"
+      }
+    ],
+    "type": "Cat"
+  },
+  "wall_ns": 1049157
+}

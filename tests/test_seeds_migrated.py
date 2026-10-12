@@ -173,6 +173,11 @@ def test_rust_loader_works_without_root_node():
     assert summary["edges"] == 1
     assert summary["productions"] == 1
     assert summary["id"] == "transcoding_demo"
+    local_node_ids = summary["local_node_ids"]
+    assert set(local_node_ids) == {0, 1}
+    assert set(local_node_ids.values()) == {
+        node.value for node in sub.nodes("VideoStream")
+    }
 
 
 def test_rust_loader_rejects_agent_role_when_root_missing():

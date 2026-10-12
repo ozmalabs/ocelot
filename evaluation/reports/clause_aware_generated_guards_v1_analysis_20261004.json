@@ -1,0 +1,203 @@
+{
+  "cells": [
+    {
+      "cells": {
+        "clause_aware": {
+          "decision": "accept_behavior_class",
+          "false_holdout": false,
+          "labels": 1,
+          "native_evaluations": 192,
+          "survivors": [
+            "identity_eq"
+          ],
+          "underlying": "accept_behavior_class",
+          "unsupported_branches": 0
+        },
+        "pairwise": {
+          "decision": "accept_behavior_class",
+          "false_holdout": false,
+          "labels": 1,
+          "native_evaluations": 189,
+          "survivors": [
+            "identity_eq"
+          ],
+          "underlying": "accept_behavior_class",
+          "unsupported_branches": 0
+        }
+      },
+      "expected_unsupported": false,
+      "panel": "interval_arity_2",
+      "proposals": 1,
+      "unsupported": 0
+    },
+    {
+      "cells": {
+        "clause_aware": {
+          "decision": "accept_behavior_class",
+          "false_holdout": false,
+          "labels": 1,
+          "native_evaluations": 240,
+          "survivors": [
+            "identity_eq"
+          ],
+          "underlying": "accept_behavior_class",
+          "unsupported_branches": 0
+        },
+        "pairwise": {
+          "decision": "accept_behavior_class",
+          "false_holdout": true,
+          "labels": 0,
+          "native_evaluations": 308,
+          "survivors": [
+            "identity_eq",
+            "false_interval_arity_3"
+          ],
+          "underlying": "accept_behavior_class",
+          "unsupported_branches": 0
+        }
+      },
+      "expected_unsupported": false,
+      "panel": "interval_arity_3",
+      "proposals": 1,
+      "unsupported": 0
+    },
+    {
+      "cells": {
+        "clause_aware": {
+          "decision": "accept_behavior_class",
+          "false_holdout": false,
+          "labels": 1,
+          "native_evaluations": 450,
+          "survivors": [
+            "identity_eq"
+          ],
+          "underlying": "accept_behavior_class",
+          "unsupported_branches": 0
+        },
+        "pairwise": {
+          "decision": "accept_behavior_class",
+          "false_holdout": true,
+          "labels": 0,
+          "native_evaluations": 588,
+          "survivors": [
+            "identity_eq",
+            "false_interval_arity_4"
+          ],
+          "underlying": "accept_behavior_class",
+          "unsupported_branches": 0
+        }
+      },
+      "expected_unsupported": false,
+      "panel": "interval_arity_4",
+      "proposals": 1,
+      "unsupported": 0
+    },
+    {
+      "cells": {
+        "clause_aware": {
+          "decision": "accept_behavior_class",
+          "false_holdout": false,
+          "labels": 1,
+          "native_evaluations": 450,
+          "survivors": [
+            "identity_eq"
+          ],
+          "underlying": "accept_behavior_class",
+          "unsupported_branches": 0
+        },
+        "pairwise": {
+          "decision": "accept_behavior_class",
+          "false_holdout": false,
+          "labels": 1,
+          "native_evaluations": 447,
+          "survivors": [
+            "identity_eq"
+          ],
+          "underlying": "accept_behavior_class",
+          "unsupported_branches": 0
+        }
+      },
+      "expected_unsupported": false,
+      "panel": "nested_interval_disjunction",
+      "proposals": 1,
+      "unsupported": 0
+    },
+    {
+      "cells": {
+        "clause_aware": {
+          "decision": "request_help",
+          "false_holdout": true,
+          "labels": 0,
+          "native_evaluations": 212,
+          "survivors": [
+            "identity_eq",
+            "false_unsupported_plus_equality"
+          ],
+          "underlying": "accept_behavior_class",
+          "unsupported_branches": 1
+        },
+        "pairwise": {
+          "decision": "accept_behavior_class",
+          "false_holdout": true,
+          "labels": 0,
+          "native_evaluations": 212,
+          "survivors": [
+            "identity_eq",
+            "false_unsupported_plus_equality"
+          ],
+          "underlying": "accept_behavior_class",
+          "unsupported_branches": 1
+        }
+      },
+      "expected_unsupported": true,
+      "panel": "unsupported_plus_equality",
+      "proposals": 0,
+      "unsupported": 1
+    },
+    {
+      "cells": {
+        "clause_aware": {
+          "decision": "request_help",
+          "false_holdout": true,
+          "labels": 0,
+          "native_evaluations": 212,
+          "survivors": [
+            "identity_eq",
+            "false_unsupported_times_equality"
+          ],
+          "underlying": "accept_behavior_class",
+          "unsupported_branches": 1
+        },
+        "pairwise": {
+          "decision": "accept_behavior_class",
+          "false_holdout": true,
+          "labels": 0,
+          "native_evaluations": 212,
+          "survivors": [
+            "identity_eq",
+            "false_unsupported_times_equality"
+          ],
+          "underlying": "accept_behavior_class",
+          "unsupported_branches": 1
+        }
+      },
+      "expected_unsupported": true,
+      "panel": "unsupported_times_equality",
+      "proposals": 0,
+      "unsupported": 1
+    }
+  ],
+  "checks": {
+    "clause_proposal_and_disjointness_replay": true,
+    "lock_and_source_replay": true,
+    "no_false_acceptance_on_holdout": true,
+    "selector_and_holdout_replay": true,
+    "six_generated_panels": true,
+    "supported_guards_resolve": true,
+    "unsupported_guards_abstain": true
+  },
+  "claim_boundary": "Six harness-generated guard panels show transfer across selected interval forms and conservative help on unsupported arithmetic. They do not estimate prevalence, prove arbitrary-Term coverage, or show autonomous substrate acquisition of the proposal method.",
+  "errors": [],
+  "passed": true,
+  "schema": "ClauseAwareGeneratedGuardsV1Analysis"
+}

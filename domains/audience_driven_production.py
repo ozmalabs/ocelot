@@ -87,17 +87,8 @@ from __future__ import annotations
 
 from typing import Any, Optional
 
-import numpy as _np
-from substrate_rs import Substrate
-
 import domains.audience as aud
-import domains.system_model as sysm
-import domains.pragmatic_speaker as PS
-import domains.many_settings_recognizer as MS
 from domains import language as lang
-from domains.audience_misjudgment import _norm_range   # reused verbatim (range-normalise cost)
-
-Pred = MS._Pred          # the SAME evaluable-Term wrapper every choose_encoding caller reuses.
 
 DEFAULT_LAMBDA = 0.35     # production-vs-decoding trade weight (fixed; same order as the arc's
 #                           established LAMBDA constants -- 0.3 (grounding_repair_gate/referential_
@@ -132,6 +123,11 @@ def audience_model(agent, interlocutor: dict) -> dict:
     if not interlocutor.get("observed"):
         return {"grounded": False, "id": aid, "known": frozenset(), "system_model": None,
                 "graph": None, "party": None, "scene": None}
+
+    # The ordinary unobserved-audience path must not load the foreign-system
+    # model stack. Keep it behind the evidence gate: only an actually observed
+    # audience may construct a grounded model.
+    import domains.system_model as sysm
 
     known = [str(c) for c in interlocutor.get("known_concepts", [])]
     g = aud.new_graph()
@@ -206,6 +202,8 @@ def _spectrum(residual_new: set, credited_known: set, n_rungs: int):
     documented in the module docstring."""
     known_sorted = sorted(credited_known)
     n_known = len(known_sorted)
+    import numpy as _np
+
     ts = _np.linspace(0.0, 1.0, max(2, n_rungs))
     rungs = []
     for t in ts:
@@ -268,8 +266,17 @@ def select_utterance(agent, meaning, audience: dict, lexicon: list[dict], *,
         recs.append((len(recovered) / len(all_concepts)) if all_concepts else 1.0)
         costs.append(float(len(text.split())) if text else 0.0)
 
+    # These modules include the native pragmatic-choice machinery and its
+    # handwriting/listener dependencies. They are needed only when the
+    # audience has positive grounding evidence; the ungrounded explicit path
+    # above deliberately performs no argmax or imported model work.
+    from substrate_rs import Substrate
+    import domains.pragmatic_speaker as PS
+    import domains.many_settings_recognizer as MS
+    from domains.audience_misjudgment import _norm_range
+
     cost_n = _norm_range(costs).tolist()
-    _, idx = PS.choose_encoding(Substrate, Pred, ts, recs, cost_n, lam)
+    _, idx = PS.choose_encoding(Substrate, MS._Pred, ts, recs, cost_n, lam)
 
     return {
         "utterance": rendered[idx], "terseness": ts[idx], "grounded_used": True,

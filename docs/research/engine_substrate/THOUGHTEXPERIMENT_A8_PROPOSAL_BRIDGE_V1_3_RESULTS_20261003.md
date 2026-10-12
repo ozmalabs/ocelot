@@ -1,0 +1,15 @@
+# Thoughtexperiment A8 proposal bridge v1.3 results (2026-10-03)
+
+## Outcome
+
+The corrected runner completed its fresh four-worker staged capture. Its analyzer reports all seven aggregate checks true: sources stayed locked, scores bind to the frozen order capture, all four workers completed, the prompted graph proposal passed the held-out oracle in all four workers, host reference candidates include both useful and failing variants, the no-cue graph composer abstained in all four workers, and the cost ledger reconciles.
+
+The overall analyzer still reports four errors: the graph proposal digest did not exactly match the host `flip_comparison` candidate in any worker. The protocol allowed normalization of the generated rule name only. Inspection of the captured rule objects found additional differences in `content_hash`, `revision`, and `rule_uid`; every other rule field was equal. Do not count this as an exact reference-candidate match. The graph proposal nevertheless passed both held-out directions in 4/4 workers, as did the host `flip_comparison` candidate. The host default order also found a successful candidate first in all four workers.
+
+The graph composer chose `flip_comparison` for `hop_descend_gradient` with the prompt cue and abstained with the common cue alone. Median measured end-to-end prompted cost was 133.20 ms, versus 77.51 ms for host default-order selection including the shared task setup. The graph route did not win on measured cost in this fixture. The median exhaustive host audit cost was 153.04 ms, which is a diagnostic full-reference cost rather than the operational default policy.
+
+Artifacts: [protocol](THOUGHTEXPERIMENT_A8_PROPOSAL_BRIDGE_V1_PREREG_20261002.md), [v1.3 correction amendment](THOUGHTEXPERIMENT_A8_PROPOSAL_BRIDGE_V1_3_AMENDMENT_20261003.md), [runner](../../../evaluation/substrate_capability/thoughtexperiment_a8_proposal_bridge_v1_3.py), [analyzer](../../../evaluation/substrate_capability/analyze_thoughtexperiment_a8_proposal_bridge_v1_3.py), [source lock](../../../evaluation/substrate_capability/thoughtexperiment_a8_proposal_bridge_v1_3_lock_20261003.json), [frozen proposal orders](../../../evaluation/reports/thoughtexperiment_a8_proposal_bridge_v1_3_orders_20261003.json), [held-out scores](../../../evaluation/reports/thoughtexperiment_a8_proposal_bridge_v1_3_scores_20261003.json), and [analysis](../../../evaluation/reports/thoughtexperiment_a8_proposal_bridge_v1_3_analysis_20261003.json).
+
+## Interpretation
+
+This supports a bounded transfer of responsibility: with a residual cue and a held EditOp vocabulary, the graph route can compose a useful rule variant and the branch evaluator can validate it on held-out outcomes. It does not pass the stricter identity prediction, is slower than the host default policy here, and retains hand-authored task cues, an operator vocabulary, host feature extraction, and Python materialization. This is not open-ended or autonomous self-improvement. Preserve the digest failure; any relaxed semantic-identity criterion needs a new declared protocol and a new capture.

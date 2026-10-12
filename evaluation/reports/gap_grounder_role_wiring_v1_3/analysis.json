@@ -1,0 +1,5453 @@
+{
+  "accepted_same_term_for_different_declared_io": true,
+  "arm_count": 2,
+  "call_count": 16,
+  "candidate_key_same_for_B_C": true,
+  "capture_sha256": "ab3b375c9b66debaba02ce3e72fa51c80ba7bd3cd60c36ab27684c2e95984f4d",
+  "claim_boundary": "One authored forward/inverse-like spectral pair. Identical operation heads do not encode role wiring; a passing forward-tone peak-bin gate is not an inverse-task oracle or a natural-rate estimate.",
+  "comparisons": {
+    "faculty": {
+      "B_then_C_second": {
+        "accepted": true,
+        "axis_delta": 0,
+        "case": "C",
+        "codebook_epoch": 0.0,
+        "concern_key": "gap_shared_family",
+        "construction": "spectral_value",
+        "gap_attrs": {
+          "example": "recover the signal from its magnitude spectrum",
+          "faculty": "shared_family",
+          "inputs": [
+            "magnitude_spectrum"
+          ],
+          "n_samples": 32,
+          "needed_primitive": "recover_signal",
+          "observation": [
+            [
+              "spectral_value",
+              "magnitude_spectrum",
+              "recovered_signal"
+            ],
+            [
+              "log_scale",
+              "recovered_signal",
+              "magnitude_spectrum"
+            ]
+          ],
+          "outputs": [
+            "recovered_signal"
+          ],
+          "status": "perceived",
+          "test_frequencies": [
+            3,
+            7,
+            11
+          ]
+        },
+        "held_primitive_delta": 1,
+        "native_steps": 5,
+        "observation_key": [
+          "gap_shared_family"
+        ],
+        "observation_signature": [
+          [
+            "spectral_value",
+            "magnitude_spectrum",
+            "recovered_signal"
+          ],
+          [
+            "log_scale",
+            "recovered_signal",
+            "magnitude_spectrum"
+          ]
+        ],
+        "observation_status": "recognized_duplicate",
+        "operation": "spectral log-magnitude X[k]=log(|\u03a3_n x[n]\u00b7e^{-i2\u03c0kn/N}|) \u2014 amplitudes over a frequency axis, log-scaled",
+        "outcome": "built_primitive",
+        "primitive_name": "recover_signal",
+        "primitive_request_delta": 0,
+        "term_tree": {
+          "arg": {
+            "items": [
+              {
+                "arg": {
+                  "items": [
+                    {
+                      "a": {
+                        "source": {
+                          "name": "sig",
+                          "type": "Var"
+                        },
+                        "type": "Sum",
+                        "value": {
+                          "items": [
+                            {
+                              "index": 1,
+                              "items": {
+                                "name": "p",
+                                "type": "Var"
+                              },
+                              "type": "Nth"
+                            },
+                            {
+                              "arg": {
+                                "a": {
+                                  "items": [
+                                    {
+                                      "type": "Lit",
+                                      "value": 6.283185307179586
+                                    },
+                                    {
+                                      "name": "k",
+                                      "type": "Var"
+                                    },
+                                    {
+                                      "index": 0,
+                                      "items": {
+                                        "name": "p",
+                                        "type": "Var"
+                                      },
+                                      "type": "Nth"
+                                    }
+                                  ],
+                                  "type": "Times"
+                                },
+                                "b": {
+                                  "name": "N",
+                                  "type": "Var"
+                                },
+                                "type": "Div"
+                              },
+                              "type": "Cos"
+                            }
+                          ],
+                          "type": "Times"
+                        },
+                        "var_name": "p"
+                      },
+                      "b": {
+                        "type": "Lit",
+                        "value": 2.0
+                      },
+                      "type": "Pow"
+                    },
+                    {
+                      "a": {
+                        "source": {
+                          "name": "sig",
+                          "type": "Var"
+                        },
+                        "type": "Sum",
+                        "value": {
+                          "items": [
+                            {
+                              "index": 1,
+                              "items": {
+                                "name": "p",
+                                "type": "Var"
+                              },
+                              "type": "Nth"
+                            },
+                            {
+                              "arg": {
+                                "a": {
+                                  "items": [
+                                    {
+                                      "type": "Lit",
+                                      "value": 6.283185307179586
+                                    },
+                                    {
+                                      "name": "k",
+                                      "type": "Var"
+                                    },
+                                    {
+                                      "index": 0,
+                                      "items": {
+                                        "name": "p",
+                                        "type": "Var"
+                                      },
+                                      "type": "Nth"
+                                    }
+                                  ],
+                                  "type": "Times"
+                                },
+                                "b": {
+                                  "name": "N",
+                                  "type": "Var"
+                                },
+                                "type": "Div"
+                              },
+                              "type": "Sin"
+                            }
+                          ],
+                          "type": "Times"
+                        },
+                        "var_name": "p"
+                      },
+                      "b": {
+                        "type": "Lit",
+                        "value": 2.0
+                      },
+                      "type": "Pow"
+                    }
+                  ],
+                  "type": "Plus"
+                },
+                "type": "Sqrt"
+              },
+              {
+                "type": "Lit",
+                "value": 1e-09
+              }
+            ],
+            "type": "Plus"
+          },
+          "type": "Log"
+        },
+        "verification_accepted": true,
+        "verification_gates": {
+          "discriminates": true,
+          "grounded": true,
+          "no_regression": true,
+          "real_pass": true,
+          "twin_pass": false,
+          "verdict": 1.0
+        },
+        "verification_reason": "ACCEPTED: control discriminates (mechanism survives 3 held-out case(s); the known-fake twin FAILS it), no regression, grounded in ['SensorAnchor']."
+      },
+      "C_then_B_second": {
+        "accepted": true,
+        "axis_delta": 0,
+        "case": "B",
+        "codebook_epoch": 0.0,
+        "concern_key": "gap_shared_family",
+        "construction": "spectral_value",
+        "gap_attrs": {
+          "example": "per-bin log magnitude",
+          "faculty": "shared_family",
+          "inputs": [
+            "signal"
+          ],
+          "n_samples": 32,
+          "needed_primitive": "spectral_value",
+          "observation": [
+            [
+              "spectral_value",
+              "signal",
+              "magnitude"
+            ],
+            [
+              "log_scale",
+              "magnitude",
+              "value"
+            ]
+          ],
+          "outputs": [
+            "spectrum"
+          ],
+          "status": "perceived",
+          "test_frequencies": [
+            3,
+            7,
+            11
+          ]
+        },
+        "held_primitive_delta": 1,
+        "native_steps": 5,
+        "observation_key": [
+          "gap_shared_family"
+        ],
+        "observation_signature": [
+          [
+            "spectral_value",
+            "signal",
+            "magnitude"
+          ],
+          [
+            "log_scale",
+            "magnitude",
+            "value"
+          ]
+        ],
+        "observation_status": "recognized_duplicate",
+        "operation": "spectral log-magnitude X[k]=log(|\u03a3_n x[n]\u00b7e^{-i2\u03c0kn/N}|) \u2014 amplitudes over a frequency axis, log-scaled",
+        "outcome": "built_primitive",
+        "primitive_name": "spectral_value",
+        "primitive_request_delta": 0,
+        "term_tree": {
+          "arg": {
+            "items": [
+              {
+                "arg": {
+                  "items": [
+                    {
+                      "a": {
+                        "source": {
+                          "name": "sig",
+                          "type": "Var"
+                        },
+                        "type": "Sum",
+                        "value": {
+                          "items": [
+                            {
+                              "index": 1,
+                              "items": {
+                                "name": "p",
+                                "type": "Var"
+                              },
+                              "type": "Nth"
+                            },
+                            {
+                              "arg": {
+                                "a": {
+                                  "items": [
+                                    {
+                                      "type": "Lit",
+                                      "value": 6.283185307179586
+                                    },
+                                    {
+                                      "name": "k",
+                                      "type": "Var"
+                                    },
+                                    {
+                                      "index": 0,
+                                      "items": {
+                                        "name": "p",
+                                        "type": "Var"
+                                      },
+                                      "type": "Nth"
+                                    }
+                                  ],
+                                  "type": "Times"
+                                },
+                                "b": {
+                                  "name": "N",
+                                  "type": "Var"
+                                },
+                                "type": "Div"
+                              },
+                              "type": "Cos"
+                            }
+                          ],
+                          "type": "Times"
+                        },
+                        "var_name": "p"
+                      },
+                      "b": {
+                        "type": "Lit",
+                        "value": 2.0
+                      },
+                      "type": "Pow"
+                    },
+                    {
+                      "a": {
+                        "source": {
+                          "name": "sig",
+                          "type": "Var"
+                        },
+                        "type": "Sum",
+                        "value": {
+                          "items": [
+                            {
+                              "index": 1,
+                              "items": {
+                                "name": "p",
+                                "type": "Var"
+                              },
+                              "type": "Nth"
+                            },
+                            {
+                              "arg": {
+                                "a": {
+                                  "items": [
+                                    {
+                                      "type": "Lit",
+                                      "value": 6.283185307179586
+                                    },
+                                    {
+                                      "name": "k",
+                                      "type": "Var"
+                                    },
+                                    {
+                                      "index": 0,
+                                      "items": {
+                                        "name": "p",
+                                        "type": "Var"
+                                      },
+                                      "type": "Nth"
+                                    }
+                                  ],
+                                  "type": "Times"
+                                },
+                                "b": {
+                                  "name": "N",
+                                  "type": "Var"
+                                },
+                                "type": "Div"
+                              },
+                              "type": "Sin"
+                            }
+                          ],
+                          "type": "Times"
+                        },
+                        "var_name": "p"
+                      },
+                      "b": {
+                        "type": "Lit",
+                        "value": 2.0
+                      },
+                      "type": "Pow"
+                    }
+                  ],
+                  "type": "Plus"
+                },
+                "type": "Sqrt"
+              },
+              {
+                "type": "Lit",
+                "value": 1e-09
+              }
+            ],
+            "type": "Plus"
+          },
+          "type": "Log"
+        },
+        "verification_accepted": true,
+        "verification_gates": {
+          "discriminates": true,
+          "grounded": true,
+          "no_regression": true,
+          "real_pass": true,
+          "twin_pass": false,
+          "verdict": 1.0
+        },
+        "verification_reason": "ACCEPTED: control discriminates (mechanism survives 3 held-out case(s); the known-fake twin FAILS it), no regression, grounded in ['SensorAnchor']."
+      },
+      "isolated_B": {
+        "accepted": true,
+        "axis_delta": 2,
+        "case": "B",
+        "codebook_epoch": 0.0,
+        "concern_key": "gap_shared_family",
+        "construction": "spectral_value",
+        "gap_attrs": {
+          "example": "per-bin log magnitude",
+          "faculty": "shared_family",
+          "inputs": [
+            "signal"
+          ],
+          "n_samples": 32,
+          "needed_primitive": "spectral_value",
+          "observation": [
+            [
+              "spectral_value",
+              "signal",
+              "magnitude"
+            ],
+            [
+              "log_scale",
+              "magnitude",
+              "value"
+            ]
+          ],
+          "outputs": [
+            "spectrum"
+          ],
+          "status": "perceived",
+          "test_frequencies": [
+            3,
+            7,
+            11
+          ]
+        },
+        "held_primitive_delta": 1,
+        "native_steps": 5,
+        "observation_key": [
+          "gap_shared_family"
+        ],
+        "observation_signature": [
+          [
+            "spectral_value",
+            "signal",
+            "magnitude"
+          ],
+          [
+            "log_scale",
+            "magnitude",
+            "value"
+          ]
+        ],
+        "observation_status": "minted",
+        "operation": "spectral log-magnitude X[k]=log(|\u03a3_n x[n]\u00b7e^{-i2\u03c0kn/N}|) \u2014 amplitudes over a frequency axis, log-scaled",
+        "outcome": "built_primitive",
+        "primitive_name": "spectral_value",
+        "primitive_request_delta": 0,
+        "term_tree": {
+          "arg": {
+            "items": [
+              {
+                "arg": {
+                  "items": [
+                    {
+                      "a": {
+                        "source": {
+                          "name": "sig",
+                          "type": "Var"
+                        },
+                        "type": "Sum",
+                        "value": {
+                          "items": [
+                            {
+                              "index": 1,
+                              "items": {
+                                "name": "p",
+                                "type": "Var"
+                              },
+                              "type": "Nth"
+                            },
+                            {
+                              "arg": {
+                                "a": {
+                                  "items": [
+                                    {
+                                      "type": "Lit",
+                                      "value": 6.283185307179586
+                                    },
+                                    {
+                                      "name": "k",
+                                      "type": "Var"
+                                    },
+                                    {
+                                      "index": 0,
+                                      "items": {
+                                        "name": "p",
+                                        "type": "Var"
+                                      },
+                                      "type": "Nth"
+                                    }
+                                  ],
+                                  "type": "Times"
+                                },
+                                "b": {
+                                  "name": "N",
+                                  "type": "Var"
+                                },
+                                "type": "Div"
+                              },
+                              "type": "Cos"
+                            }
+                          ],
+                          "type": "Times"
+                        },
+                        "var_name": "p"
+                      },
+                      "b": {
+                        "type": "Lit",
+                        "value": 2.0
+                      },
+                      "type": "Pow"
+                    },
+                    {
+                      "a": {
+                        "source": {
+                          "name": "sig",
+                          "type": "Var"
+                        },
+                        "type": "Sum",
+                        "value": {
+                          "items": [
+                            {
+                              "index": 1,
+                              "items": {
+                                "name": "p",
+                                "type": "Var"
+                              },
+                              "type": "Nth"
+                            },
+                            {
+                              "arg": {
+                                "a": {
+                                  "items": [
+                                    {
+                                      "type": "Lit",
+                                      "value": 6.283185307179586
+                                    },
+                                    {
+                                      "name": "k",
+                                      "type": "Var"
+                                    },
+                                    {
+                                      "index": 0,
+                                      "items": {
+                                        "name": "p",
+                                        "type": "Var"
+                                      },
+                                      "type": "Nth"
+                                    }
+                                  ],
+                                  "type": "Times"
+                                },
+                                "b": {
+                                  "name": "N",
+                                  "type": "Var"
+                                },
+                                "type": "Div"
+                              },
+                              "type": "Sin"
+                            }
+                          ],
+                          "type": "Times"
+                        },
+                        "var_name": "p"
+                      },
+                      "b": {
+                        "type": "Lit",
+                        "value": 2.0
+                      },
+                      "type": "Pow"
+                    }
+                  ],
+                  "type": "Plus"
+                },
+                "type": "Sqrt"
+              },
+              {
+                "type": "Lit",
+                "value": 1e-09
+              }
+            ],
+            "type": "Plus"
+          },
+          "type": "Log"
+        },
+        "verification_accepted": true,
+        "verification_gates": {
+          "discriminates": true,
+          "grounded": true,
+          "no_regression": true,
+          "real_pass": true,
+          "twin_pass": false,
+          "verdict": 1.0
+        },
+        "verification_reason": "ACCEPTED: control discriminates (mechanism survives 3 held-out case(s); the known-fake twin FAILS it), no regression, grounded in ['SensorAnchor']."
+      },
+      "isolated_C": {
+        "accepted": true,
+        "axis_delta": 2,
+        "case": "C",
+        "codebook_epoch": 0.0,
+        "concern_key": "gap_shared_family",
+        "construction": "spectral_value",
+        "gap_attrs": {
+          "example": "recover the signal from its magnitude spectrum",
+          "faculty": "shared_family",
+          "inputs": [
+            "magnitude_spectrum"
+          ],
+          "n_samples": 32,
+          "needed_primitive": "recover_signal",
+          "observation": [
+            [
+              "spectral_value",
+              "magnitude_spectrum",
+              "recovered_signal"
+            ],
+            [
+              "log_scale",
+              "recovered_signal",
+              "magnitude_spectrum"
+            ]
+          ],
+          "outputs": [
+            "recovered_signal"
+          ],
+          "status": "perceived",
+          "test_frequencies": [
+            3,
+            7,
+            11
+          ]
+        },
+        "held_primitive_delta": 1,
+        "native_steps": 5,
+        "observation_key": [
+          "gap_shared_family"
+        ],
+        "observation_signature": [
+          [
+            "spectral_value",
+            "magnitude_spectrum",
+            "recovered_signal"
+          ],
+          [
+            "log_scale",
+            "recovered_signal",
+            "magnitude_spectrum"
+          ]
+        ],
+        "observation_status": "minted",
+        "operation": "spectral log-magnitude X[k]=log(|\u03a3_n x[n]\u00b7e^{-i2\u03c0kn/N}|) \u2014 amplitudes over a frequency axis, log-scaled",
+        "outcome": "built_primitive",
+        "primitive_name": "recover_signal",
+        "primitive_request_delta": 0,
+        "term_tree": {
+          "arg": {
+            "items": [
+              {
+                "arg": {
+                  "items": [
+                    {
+                      "a": {
+                        "source": {
+                          "name": "sig",
+                          "type": "Var"
+                        },
+                        "type": "Sum",
+                        "value": {
+                          "items": [
+                            {
+                              "index": 1,
+                              "items": {
+                                "name": "p",
+                                "type": "Var"
+                              },
+                              "type": "Nth"
+                            },
+                            {
+                              "arg": {
+                                "a": {
+                                  "items": [
+                                    {
+                                      "type": "Lit",
+                                      "value": 6.283185307179586
+                                    },
+                                    {
+                                      "name": "k",
+                                      "type": "Var"
+                                    },
+                                    {
+                                      "index": 0,
+                                      "items": {
+                                        "name": "p",
+                                        "type": "Var"
+                                      },
+                                      "type": "Nth"
+                                    }
+                                  ],
+                                  "type": "Times"
+                                },
+                                "b": {
+                                  "name": "N",
+                                  "type": "Var"
+                                },
+                                "type": "Div"
+                              },
+                              "type": "Cos"
+                            }
+                          ],
+                          "type": "Times"
+                        },
+                        "var_name": "p"
+                      },
+                      "b": {
+                        "type": "Lit",
+                        "value": 2.0
+                      },
+                      "type": "Pow"
+                    },
+                    {
+                      "a": {
+                        "source": {
+                          "name": "sig",
+                          "type": "Var"
+                        },
+                        "type": "Sum",
+                        "value": {
+                          "items": [
+                            {
+                              "index": 1,
+                              "items": {
+                                "name": "p",
+                                "type": "Var"
+                              },
+                              "type": "Nth"
+                            },
+                            {
+                              "arg": {
+                                "a": {
+                                  "items": [
+                                    {
+                                      "type": "Lit",
+                                      "value": 6.283185307179586
+                                    },
+                                    {
+                                      "name": "k",
+                                      "type": "Var"
+                                    },
+                                    {
+                                      "index": 0,
+                                      "items": {
+                                        "name": "p",
+                                        "type": "Var"
+                                      },
+                                      "type": "Nth"
+                                    }
+                                  ],
+                                  "type": "Times"
+                                },
+                                "b": {
+                                  "name": "N",
+                                  "type": "Var"
+                                },
+                                "type": "Div"
+                              },
+                              "type": "Sin"
+                            }
+                          ],
+                          "type": "Times"
+                        },
+                        "var_name": "p"
+                      },
+                      "b": {
+                        "type": "Lit",
+                        "value": 2.0
+                      },
+                      "type": "Pow"
+                    }
+                  ],
+                  "type": "Plus"
+                },
+                "type": "Sqrt"
+              },
+              {
+                "type": "Lit",
+                "value": 1e-09
+              }
+            ],
+            "type": "Plus"
+          },
+          "type": "Log"
+        },
+        "verification_accepted": true,
+        "verification_gates": {
+          "discriminates": true,
+          "grounded": true,
+          "no_regression": true,
+          "real_pass": true,
+          "twin_pass": false,
+          "verdict": 1.0
+        },
+        "verification_reason": "ACCEPTED: control discriminates (mechanism survives 3 held-out case(s); the known-fake twin FAILS it), no regression, grounded in ['SensorAnchor']."
+      },
+      "repeat_B_second": {
+        "accepted": true,
+        "axis_delta": 0,
+        "case": "B",
+        "codebook_epoch": 0.0,
+        "concern_key": "gap_shared_family",
+        "construction": "spectral_value",
+        "gap_attrs": {
+          "example": "per-bin log magnitude",
+          "faculty": "shared_family",
+          "inputs": [
+            "signal"
+          ],
+          "n_samples": 32,
+          "needed_primitive": "spectral_value",
+          "observation": [
+            [
+              "spectral_value",
+              "signal",
+              "magnitude"
+            ],
+            [
+              "log_scale",
+              "magnitude",
+              "value"
+            ]
+          ],
+          "outputs": [
+            "spectrum"
+          ],
+          "status": "perceived",
+          "test_frequencies": [
+            3,
+            7,
+            11
+          ]
+        },
+        "held_primitive_delta": 0,
+        "native_steps": 5,
+        "observation_key": [
+          "gap_shared_family"
+        ],
+        "observation_signature": [
+          [
+            "spectral_value",
+            "signal",
+            "magnitude"
+          ],
+          [
+            "log_scale",
+            "magnitude",
+            "value"
+          ]
+        ],
+        "observation_status": "recognized_duplicate",
+        "operation": "spectral log-magnitude X[k]=log(|\u03a3_n x[n]\u00b7e^{-i2\u03c0kn/N}|) \u2014 amplitudes over a frequency axis, log-scaled",
+        "outcome": "built_primitive",
+        "primitive_name": "spectral_value",
+        "primitive_request_delta": 0,
+        "term_tree": {
+          "arg": {
+            "items": [
+              {
+                "arg": {
+                  "items": [
+                    {
+                      "a": {
+                        "source": {
+                          "name": "sig",
+                          "type": "Var"
+                        },
+                        "type": "Sum",
+                        "value": {
+                          "items": [
+                            {
+                              "index": 1,
+                              "items": {
+                                "name": "p",
+                                "type": "Var"
+                              },
+                              "type": "Nth"
+                            },
+                            {
+                              "arg": {
+                                "a": {
+                                  "items": [
+                                    {
+                                      "type": "Lit",
+                                      "value": 6.283185307179586
+                                    },
+                                    {
+                                      "name": "k",
+                                      "type": "Var"
+                                    },
+                                    {
+                                      "index": 0,
+                                      "items": {
+                                        "name": "p",
+                                        "type": "Var"
+                                      },
+                                      "type": "Nth"
+                                    }
+                                  ],
+                                  "type": "Times"
+                                },
+                                "b": {
+                                  "name": "N",
+                                  "type": "Var"
+                                },
+                                "type": "Div"
+                              },
+                              "type": "Cos"
+                            }
+                          ],
+                          "type": "Times"
+                        },
+                        "var_name": "p"
+                      },
+                      "b": {
+                        "type": "Lit",
+                        "value": 2.0
+                      },
+                      "type": "Pow"
+                    },
+                    {
+                      "a": {
+                        "source": {
+                          "name": "sig",
+                          "type": "Var"
+                        },
+                        "type": "Sum",
+                        "value": {
+                          "items": [
+                            {
+                              "index": 1,
+                              "items": {
+                                "name": "p",
+                                "type": "Var"
+                              },
+                              "type": "Nth"
+                            },
+                            {
+                              "arg": {
+                                "a": {
+                                  "items": [
+                                    {
+                                      "type": "Lit",
+                                      "value": 6.283185307179586
+                                    },
+                                    {
+                                      "name": "k",
+                                      "type": "Var"
+                                    },
+                                    {
+                                      "index": 0,
+                                      "items": {
+                                        "name": "p",
+                                        "type": "Var"
+                                      },
+                                      "type": "Nth"
+                                    }
+                                  ],
+                                  "type": "Times"
+                                },
+                                "b": {
+                                  "name": "N",
+                                  "type": "Var"
+                                },
+                                "type": "Div"
+                              },
+                              "type": "Sin"
+                            }
+                          ],
+                          "type": "Times"
+                        },
+                        "var_name": "p"
+                      },
+                      "b": {
+                        "type": "Lit",
+                        "value": 2.0
+                      },
+                      "type": "Pow"
+                    }
+                  ],
+                  "type": "Plus"
+                },
+                "type": "Sqrt"
+              },
+              {
+                "type": "Lit",
+                "value": 1e-09
+              }
+            ],
+            "type": "Plus"
+          },
+          "type": "Log"
+        },
+        "verification_accepted": true,
+        "verification_gates": {
+          "discriminates": true,
+          "grounded": true,
+          "no_regression": true,
+          "real_pass": true,
+          "twin_pass": false,
+          "verdict": 1.0
+        },
+        "verification_reason": "ACCEPTED: control discriminates (mechanism survives 3 held-out case(s); the known-fake twin FAILS it), no regression, grounded in ['SensorAnchor']."
+      }
+    },
+    "faculty_plus_operations": {
+      "B_then_C_second": {
+        "accepted": true,
+        "axis_delta": 0,
+        "case": "C",
+        "codebook_epoch": 0.0,
+        "concern_key": "gap_shared_family__ops_log%5fscale_spectral%5fvalue",
+        "construction": "spectral_value",
+        "gap_attrs": {
+          "example": "recover the signal from its magnitude spectrum",
+          "faculty": "shared_family",
+          "inputs": [
+            "magnitude_spectrum"
+          ],
+          "n_samples": 32,
+          "needed_primitive": "recover_signal",
+          "observation": [
+            [
+              "spectral_value",
+              "magnitude_spectrum",
+              "recovered_signal"
+            ],
+            [
+              "log_scale",
+              "recovered_signal",
+              "magnitude_spectrum"
+            ]
+          ],
+          "outputs": [
+            "recovered_signal"
+          ],
+          "status": "perceived",
+          "test_frequencies": [
+            3,
+            7,
+            11
+          ]
+        },
+        "held_primitive_delta": 1,
+        "native_steps": 5,
+        "observation_key": [
+          "gap_shared_family__ops_log%5fscale_spectral%5fvalue"
+        ],
+        "observation_signature": [
+          [
+            "spectral_value",
+            "magnitude_spectrum",
+            "recovered_signal"
+          ],
+          [
+            "log_scale",
+            "recovered_signal",
+            "magnitude_spectrum"
+          ]
+        ],
+        "observation_status": "recognized_duplicate",
+        "operation": "spectral log-magnitude X[k]=log(|\u03a3_n x[n]\u00b7e^{-i2\u03c0kn/N}|) \u2014 amplitudes over a frequency axis, log-scaled",
+        "outcome": "built_primitive",
+        "primitive_name": "recover_signal",
+        "primitive_request_delta": 0,
+        "term_tree": {
+          "arg": {
+            "items": [
+              {
+                "arg": {
+                  "items": [
+                    {
+                      "a": {
+                        "source": {
+                          "name": "sig",
+                          "type": "Var"
+                        },
+                        "type": "Sum",
+                        "value": {
+                          "items": [
+                            {
+                              "index": 1,
+                              "items": {
+                                "name": "p",
+                                "type": "Var"
+                              },
+                              "type": "Nth"
+                            },
+                            {
+                              "arg": {
+                                "a": {
+                                  "items": [
+                                    {
+                                      "type": "Lit",
+                                      "value": 6.283185307179586
+                                    },
+                                    {
+                                      "name": "k",
+                                      "type": "Var"
+                                    },
+                                    {
+                                      "index": 0,
+                                      "items": {
+                                        "name": "p",
+                                        "type": "Var"
+                                      },
+                                      "type": "Nth"
+                                    }
+                                  ],
+                                  "type": "Times"
+                                },
+                                "b": {
+                                  "name": "N",
+                                  "type": "Var"
+                                },
+                                "type": "Div"
+                              },
+                              "type": "Cos"
+                            }
+                          ],
+                          "type": "Times"
+                        },
+                        "var_name": "p"
+                      },
+                      "b": {
+                        "type": "Lit",
+                        "value": 2.0
+                      },
+                      "type": "Pow"
+                    },
+                    {
+                      "a": {
+                        "source": {
+                          "name": "sig",
+                          "type": "Var"
+                        },
+                        "type": "Sum",
+                        "value": {
+                          "items": [
+                            {
+                              "index": 1,
+                              "items": {
+                                "name": "p",
+                                "type": "Var"
+                              },
+                              "type": "Nth"
+                            },
+                            {
+                              "arg": {
+                                "a": {
+                                  "items": [
+                                    {
+                                      "type": "Lit",
+                                      "value": 6.283185307179586
+                                    },
+                                    {
+                                      "name": "k",
+                                      "type": "Var"
+                                    },
+                                    {
+                                      "index": 0,
+                                      "items": {
+                                        "name": "p",
+                                        "type": "Var"
+                                      },
+                                      "type": "Nth"
+                                    }
+                                  ],
+                                  "type": "Times"
+                                },
+                                "b": {
+                                  "name": "N",
+                                  "type": "Var"
+                                },
+                                "type": "Div"
+                              },
+                              "type": "Sin"
+                            }
+                          ],
+                          "type": "Times"
+                        },
+                        "var_name": "p"
+                      },
+                      "b": {
+                        "type": "Lit",
+                        "value": 2.0
+                      },
+                      "type": "Pow"
+                    }
+                  ],
+                  "type": "Plus"
+                },
+                "type": "Sqrt"
+              },
+              {
+                "type": "Lit",
+                "value": 1e-09
+              }
+            ],
+            "type": "Plus"
+          },
+          "type": "Log"
+        },
+        "verification_accepted": true,
+        "verification_gates": {
+          "discriminates": true,
+          "grounded": true,
+          "no_regression": true,
+          "real_pass": true,
+          "twin_pass": false,
+          "verdict": 1.0
+        },
+        "verification_reason": "ACCEPTED: control discriminates (mechanism survives 3 held-out case(s); the known-fake twin FAILS it), no regression, grounded in ['SensorAnchor']."
+      },
+      "C_then_B_second": {
+        "accepted": true,
+        "axis_delta": 0,
+        "case": "B",
+        "codebook_epoch": 0.0,
+        "concern_key": "gap_shared_family__ops_log%5fscale_spectral%5fvalue",
+        "construction": "spectral_value",
+        "gap_attrs": {
+          "example": "per-bin log magnitude",
+          "faculty": "shared_family",
+          "inputs": [
+            "signal"
+          ],
+          "n_samples": 32,
+          "needed_primitive": "spectral_value",
+          "observation": [
+            [
+              "spectral_value",
+              "signal",
+              "magnitude"
+            ],
+            [
+              "log_scale",
+              "magnitude",
+              "value"
+            ]
+          ],
+          "outputs": [
+            "spectrum"
+          ],
+          "status": "perceived",
+          "test_frequencies": [
+            3,
+            7,
+            11
+          ]
+        },
+        "held_primitive_delta": 1,
+        "native_steps": 5,
+        "observation_key": [
+          "gap_shared_family__ops_log%5fscale_spectral%5fvalue"
+        ],
+        "observation_signature": [
+          [
+            "spectral_value",
+            "signal",
+            "magnitude"
+          ],
+          [
+            "log_scale",
+            "magnitude",
+            "value"
+          ]
+        ],
+        "observation_status": "recognized_duplicate",
+        "operation": "spectral log-magnitude X[k]=log(|\u03a3_n x[n]\u00b7e^{-i2\u03c0kn/N}|) \u2014 amplitudes over a frequency axis, log-scaled",
+        "outcome": "built_primitive",
+        "primitive_name": "spectral_value",
+        "primitive_request_delta": 0,
+        "term_tree": {
+          "arg": {
+            "items": [
+              {
+                "arg": {
+                  "items": [
+                    {
+                      "a": {
+                        "source": {
+                          "name": "sig",
+                          "type": "Var"
+                        },
+                        "type": "Sum",
+                        "value": {
+                          "items": [
+                            {
+                              "index": 1,
+                              "items": {
+                                "name": "p",
+                                "type": "Var"
+                              },
+                              "type": "Nth"
+                            },
+                            {
+                              "arg": {
+                                "a": {
+                                  "items": [
+                                    {
+                                      "type": "Lit",
+                                      "value": 6.283185307179586
+                                    },
+                                    {
+                                      "name": "k",
+                                      "type": "Var"
+                                    },
+                                    {
+                                      "index": 0,
+                                      "items": {
+                                        "name": "p",
+                                        "type": "Var"
+                                      },
+                                      "type": "Nth"
+                                    }
+                                  ],
+                                  "type": "Times"
+                                },
+                                "b": {
+                                  "name": "N",
+                                  "type": "Var"
+                                },
+                                "type": "Div"
+                              },
+                              "type": "Cos"
+                            }
+                          ],
+                          "type": "Times"
+                        },
+                        "var_name": "p"
+                      },
+                      "b": {
+                        "type": "Lit",
+                        "value": 2.0
+                      },
+                      "type": "Pow"
+                    },
+                    {
+                      "a": {
+                        "source": {
+                          "name": "sig",
+                          "type": "Var"
+                        },
+                        "type": "Sum",
+                        "value": {
+                          "items": [
+                            {
+                              "index": 1,
+                              "items": {
+                                "name": "p",
+                                "type": "Var"
+                              },
+                              "type": "Nth"
+                            },
+                            {
+                              "arg": {
+                                "a": {
+                                  "items": [
+                                    {
+                                      "type": "Lit",
+                                      "value": 6.283185307179586
+                                    },
+                                    {
+                                      "name": "k",
+                                      "type": "Var"
+                                    },
+                                    {
+                                      "index": 0,
+                                      "items": {
+                                        "name": "p",
+                                        "type": "Var"
+                                      },
+                                      "type": "Nth"
+                                    }
+                                  ],
+                                  "type": "Times"
+                                },
+                                "b": {
+                                  "name": "N",
+                                  "type": "Var"
+                                },
+                                "type": "Div"
+                              },
+                              "type": "Sin"
+                            }
+                          ],
+                          "type": "Times"
+                        },
+                        "var_name": "p"
+                      },
+                      "b": {
+                        "type": "Lit",
+                        "value": 2.0
+                      },
+                      "type": "Pow"
+                    }
+                  ],
+                  "type": "Plus"
+                },
+                "type": "Sqrt"
+              },
+              {
+                "type": "Lit",
+                "value": 1e-09
+              }
+            ],
+            "type": "Plus"
+          },
+          "type": "Log"
+        },
+        "verification_accepted": true,
+        "verification_gates": {
+          "discriminates": true,
+          "grounded": true,
+          "no_regression": true,
+          "real_pass": true,
+          "twin_pass": false,
+          "verdict": 1.0
+        },
+        "verification_reason": "ACCEPTED: control discriminates (mechanism survives 3 held-out case(s); the known-fake twin FAILS it), no regression, grounded in ['SensorAnchor']."
+      },
+      "isolated_B": {
+        "accepted": true,
+        "axis_delta": 2,
+        "case": "B",
+        "codebook_epoch": 0.0,
+        "concern_key": "gap_shared_family__ops_log%5fscale_spectral%5fvalue",
+        "construction": "spectral_value",
+        "gap_attrs": {
+          "example": "per-bin log magnitude",
+          "faculty": "shared_family",
+          "inputs": [
+            "signal"
+          ],
+          "n_samples": 32,
+          "needed_primitive": "spectral_value",
+          "observation": [
+            [
+              "spectral_value",
+              "signal",
+              "magnitude"
+            ],
+            [
+              "log_scale",
+              "magnitude",
+              "value"
+            ]
+          ],
+          "outputs": [
+            "spectrum"
+          ],
+          "status": "perceived",
+          "test_frequencies": [
+            3,
+            7,
+            11
+          ]
+        },
+        "held_primitive_delta": 1,
+        "native_steps": 5,
+        "observation_key": [
+          "gap_shared_family__ops_log%5fscale_spectral%5fvalue"
+        ],
+        "observation_signature": [
+          [
+            "spectral_value",
+            "signal",
+            "magnitude"
+          ],
+          [
+            "log_scale",
+            "magnitude",
+            "value"
+          ]
+        ],
+        "observation_status": "minted",
+        "operation": "spectral log-magnitude X[k]=log(|\u03a3_n x[n]\u00b7e^{-i2\u03c0kn/N}|) \u2014 amplitudes over a frequency axis, log-scaled",
+        "outcome": "built_primitive",
+        "primitive_name": "spectral_value",
+        "primitive_request_delta": 0,
+        "term_tree": {
+          "arg": {
+            "items": [
+              {
+                "arg": {
+                  "items": [
+                    {
+                      "a": {
+                        "source": {
+                          "name": "sig",
+                          "type": "Var"
+                        },
+                        "type": "Sum",
+                        "value": {
+                          "items": [
+                            {
+                              "index": 1,
+                              "items": {
+                                "name": "p",
+                                "type": "Var"
+                              },
+                              "type": "Nth"
+                            },
+                            {
+                              "arg": {
+                                "a": {
+                                  "items": [
+                                    {
+                                      "type": "Lit",
+                                      "value": 6.283185307179586
+                                    },
+                                    {
+                                      "name": "k",
+                                      "type": "Var"
+                                    },
+                                    {
+                                      "index": 0,
+                                      "items": {
+                                        "name": "p",
+                                        "type": "Var"
+                                      },
+                                      "type": "Nth"
+                                    }
+                                  ],
+                                  "type": "Times"
+                                },
+                                "b": {
+                                  "name": "N",
+                                  "type": "Var"
+                                },
+                                "type": "Div"
+                              },
+                              "type": "Cos"
+                            }
+                          ],
+                          "type": "Times"
+                        },
+                        "var_name": "p"
+                      },
+                      "b": {
+                        "type": "Lit",
+                        "value": 2.0
+                      },
+                      "type": "Pow"
+                    },
+                    {
+                      "a": {
+                        "source": {
+                          "name": "sig",
+                          "type": "Var"
+                        },
+                        "type": "Sum",
+                        "value": {
+                          "items": [
+                            {
+                              "index": 1,
+                              "items": {
+                                "name": "p",
+                                "type": "Var"
+                              },
+                              "type": "Nth"
+                            },
+                            {
+                              "arg": {
+                                "a": {
+                                  "items": [
+                                    {
+                                      "type": "Lit",
+                                      "value": 6.283185307179586
+                                    },
+                                    {
+                                      "name": "k",
+                                      "type": "Var"
+                                    },
+                                    {
+                                      "index": 0,
+                                      "items": {
+                                        "name": "p",
+                                        "type": "Var"
+                                      },
+                                      "type": "Nth"
+                                    }
+                                  ],
+                                  "type": "Times"
+                                },
+                                "b": {
+                                  "name": "N",
+                                  "type": "Var"
+                                },
+                                "type": "Div"
+                              },
+                              "type": "Sin"
+                            }
+                          ],
+                          "type": "Times"
+                        },
+                        "var_name": "p"
+                      },
+                      "b": {
+                        "type": "Lit",
+                        "value": 2.0
+                      },
+                      "type": "Pow"
+                    }
+                  ],
+                  "type": "Plus"
+                },
+                "type": "Sqrt"
+              },
+              {
+                "type": "Lit",
+                "value": 1e-09
+              }
+            ],
+            "type": "Plus"
+          },
+          "type": "Log"
+        },
+        "verification_accepted": true,
+        "verification_gates": {
+          "discriminates": true,
+          "grounded": true,
+          "no_regression": true,
+          "real_pass": true,
+          "twin_pass": false,
+          "verdict": 1.0
+        },
+        "verification_reason": "ACCEPTED: control discriminates (mechanism survives 3 held-out case(s); the known-fake twin FAILS it), no regression, grounded in ['SensorAnchor']."
+      },
+      "isolated_C": {
+        "accepted": true,
+        "axis_delta": 2,
+        "case": "C",
+        "codebook_epoch": 0.0,
+        "concern_key": "gap_shared_family__ops_log%5fscale_spectral%5fvalue",
+        "construction": "spectral_value",
+        "gap_attrs": {
+          "example": "recover the signal from its magnitude spectrum",
+          "faculty": "shared_family",
+          "inputs": [
+            "magnitude_spectrum"
+          ],
+          "n_samples": 32,
+          "needed_primitive": "recover_signal",
+          "observation": [
+            [
+              "spectral_value",
+              "magnitude_spectrum",
+              "recovered_signal"
+            ],
+            [
+              "log_scale",
+              "recovered_signal",
+              "magnitude_spectrum"
+            ]
+          ],
+          "outputs": [
+            "recovered_signal"
+          ],
+          "status": "perceived",
+          "test_frequencies": [
+            3,
+            7,
+            11
+          ]
+        },
+        "held_primitive_delta": 1,
+        "native_steps": 5,
+        "observation_key": [
+          "gap_shared_family__ops_log%5fscale_spectral%5fvalue"
+        ],
+        "observation_signature": [
+          [
+            "spectral_value",
+            "magnitude_spectrum",
+            "recovered_signal"
+          ],
+          [
+            "log_scale",
+            "recovered_signal",
+            "magnitude_spectrum"
+          ]
+        ],
+        "observation_status": "minted",
+        "operation": "spectral log-magnitude X[k]=log(|\u03a3_n x[n]\u00b7e^{-i2\u03c0kn/N}|) \u2014 amplitudes over a frequency axis, log-scaled",
+        "outcome": "built_primitive",
+        "primitive_name": "recover_signal",
+        "primitive_request_delta": 0,
+        "term_tree": {
+          "arg": {
+            "items": [
+              {
+                "arg": {
+                  "items": [
+                    {
+                      "a": {
+                        "source": {
+                          "name": "sig",
+                          "type": "Var"
+                        },
+                        "type": "Sum",
+                        "value": {
+                          "items": [
+                            {
+                              "index": 1,
+                              "items": {
+                                "name": "p",
+                                "type": "Var"
+                              },
+                              "type": "Nth"
+                            },
+                            {
+                              "arg": {
+                                "a": {
+                                  "items": [
+                                    {
+                                      "type": "Lit",
+                                      "value": 6.283185307179586
+                                    },
+                                    {
+                                      "name": "k",
+                                      "type": "Var"
+                                    },
+                                    {
+                                      "index": 0,
+                                      "items": {
+                                        "name": "p",
+                                        "type": "Var"
+                                      },
+                                      "type": "Nth"
+                                    }
+                                  ],
+                                  "type": "Times"
+                                },
+                                "b": {
+                                  "name": "N",
+                                  "type": "Var"
+                                },
+                                "type": "Div"
+                              },
+                              "type": "Cos"
+                            }
+                          ],
+                          "type": "Times"
+                        },
+                        "var_name": "p"
+                      },
+                      "b": {
+                        "type": "Lit",
+                        "value": 2.0
+                      },
+                      "type": "Pow"
+                    },
+                    {
+                      "a": {
+                        "source": {
+                          "name": "sig",
+                          "type": "Var"
+                        },
+                        "type": "Sum",
+                        "value": {
+                          "items": [
+                            {
+                              "index": 1,
+                              "items": {
+                                "name": "p",
+                                "type": "Var"
+                              },
+                              "type": "Nth"
+                            },
+                            {
+                              "arg": {
+                                "a": {
+                                  "items": [
+                                    {
+                                      "type": "Lit",
+                                      "value": 6.283185307179586
+                                    },
+                                    {
+                                      "name": "k",
+                                      "type": "Var"
+                                    },
+                                    {
+                                      "index": 0,
+                                      "items": {
+                                        "name": "p",
+                                        "type": "Var"
+                                      },
+                                      "type": "Nth"
+                                    }
+                                  ],
+                                  "type": "Times"
+                                },
+                                "b": {
+                                  "name": "N",
+                                  "type": "Var"
+                                },
+                                "type": "Div"
+                              },
+                              "type": "Sin"
+                            }
+                          ],
+                          "type": "Times"
+                        },
+                        "var_name": "p"
+                      },
+                      "b": {
+                        "type": "Lit",
+                        "value": 2.0
+                      },
+                      "type": "Pow"
+                    }
+                  ],
+                  "type": "Plus"
+                },
+                "type": "Sqrt"
+              },
+              {
+                "type": "Lit",
+                "value": 1e-09
+              }
+            ],
+            "type": "Plus"
+          },
+          "type": "Log"
+        },
+        "verification_accepted": true,
+        "verification_gates": {
+          "discriminates": true,
+          "grounded": true,
+          "no_regression": true,
+          "real_pass": true,
+          "twin_pass": false,
+          "verdict": 1.0
+        },
+        "verification_reason": "ACCEPTED: control discriminates (mechanism survives 3 held-out case(s); the known-fake twin FAILS it), no regression, grounded in ['SensorAnchor']."
+      },
+      "repeat_B_second": {
+        "accepted": true,
+        "axis_delta": 0,
+        "case": "B",
+        "codebook_epoch": 0.0,
+        "concern_key": "gap_shared_family__ops_log%5fscale_spectral%5fvalue",
+        "construction": "spectral_value",
+        "gap_attrs": {
+          "example": "per-bin log magnitude",
+          "faculty": "shared_family",
+          "inputs": [
+            "signal"
+          ],
+          "n_samples": 32,
+          "needed_primitive": "spectral_value",
+          "observation": [
+            [
+              "spectral_value",
+              "signal",
+              "magnitude"
+            ],
+            [
+              "log_scale",
+              "magnitude",
+              "value"
+            ]
+          ],
+          "outputs": [
+            "spectrum"
+          ],
+          "status": "perceived",
+          "test_frequencies": [
+            3,
+            7,
+            11
+          ]
+        },
+        "held_primitive_delta": 0,
+        "native_steps": 5,
+        "observation_key": [
+          "gap_shared_family__ops_log%5fscale_spectral%5fvalue"
+        ],
+        "observation_signature": [
+          [
+            "spectral_value",
+            "signal",
+            "magnitude"
+          ],
+          [
+            "log_scale",
+            "magnitude",
+            "value"
+          ]
+        ],
+        "observation_status": "recognized_duplicate",
+        "operation": "spectral log-magnitude X[k]=log(|\u03a3_n x[n]\u00b7e^{-i2\u03c0kn/N}|) \u2014 amplitudes over a frequency axis, log-scaled",
+        "outcome": "built_primitive",
+        "primitive_name": "spectral_value",
+        "primitive_request_delta": 0,
+        "term_tree": {
+          "arg": {
+            "items": [
+              {
+                "arg": {
+                  "items": [
+                    {
+                      "a": {
+                        "source": {
+                          "name": "sig",
+                          "type": "Var"
+                        },
+                        "type": "Sum",
+                        "value": {
+                          "items": [
+                            {
+                              "index": 1,
+                              "items": {
+                                "name": "p",
+                                "type": "Var"
+                              },
+                              "type": "Nth"
+                            },
+                            {
+                              "arg": {
+                                "a": {
+                                  "items": [
+                                    {
+                                      "type": "Lit",
+                                      "value": 6.283185307179586
+                                    },
+                                    {
+                                      "name": "k",
+                                      "type": "Var"
+                                    },
+                                    {
+                                      "index": 0,
+                                      "items": {
+                                        "name": "p",
+                                        "type": "Var"
+                                      },
+                                      "type": "Nth"
+                                    }
+                                  ],
+                                  "type": "Times"
+                                },
+                                "b": {
+                                  "name": "N",
+                                  "type": "Var"
+                                },
+                                "type": "Div"
+                              },
+                              "type": "Cos"
+                            }
+                          ],
+                          "type": "Times"
+                        },
+                        "var_name": "p"
+                      },
+                      "b": {
+                        "type": "Lit",
+                        "value": 2.0
+                      },
+                      "type": "Pow"
+                    },
+                    {
+                      "a": {
+                        "source": {
+                          "name": "sig",
+                          "type": "Var"
+                        },
+                        "type": "Sum",
+                        "value": {
+                          "items": [
+                            {
+                              "index": 1,
+                              "items": {
+                                "name": "p",
+                                "type": "Var"
+                              },
+                              "type": "Nth"
+                            },
+                            {
+                              "arg": {
+                                "a": {
+                                  "items": [
+                                    {
+                                      "type": "Lit",
+                                      "value": 6.283185307179586
+                                    },
+                                    {
+                                      "name": "k",
+                                      "type": "Var"
+                                    },
+                                    {
+                                      "index": 0,
+                                      "items": {
+                                        "name": "p",
+                                        "type": "Var"
+                                      },
+                                      "type": "Nth"
+                                    }
+                                  ],
+                                  "type": "Times"
+                                },
+                                "b": {
+                                  "name": "N",
+                                  "type": "Var"
+                                },
+                                "type": "Div"
+                              },
+                              "type": "Sin"
+                            }
+                          ],
+                          "type": "Times"
+                        },
+                        "var_name": "p"
+                      },
+                      "b": {
+                        "type": "Lit",
+                        "value": 2.0
+                      },
+                      "type": "Pow"
+                    }
+                  ],
+                  "type": "Plus"
+                },
+                "type": "Sqrt"
+              },
+              {
+                "type": "Lit",
+                "value": 1e-09
+              }
+            ],
+            "type": "Plus"
+          },
+          "type": "Log"
+        },
+        "verification_accepted": true,
+        "verification_gates": {
+          "discriminates": true,
+          "grounded": true,
+          "no_regression": true,
+          "real_pass": true,
+          "twin_pass": false,
+          "verdict": 1.0
+        },
+        "verification_reason": "ACCEPTED: control discriminates (mechanism survives 3 held-out case(s); the known-fake twin FAILS it), no regression, grounded in ['SensorAnchor']."
+      }
+    }
+  },
+  "event_rows": {
+    "faculty:B_then_C": [
+      {
+        "accepted": true,
+        "axis_delta": 2,
+        "case": "B",
+        "codebook_epoch": 0.0,
+        "concern_key": "gap_shared_family",
+        "construction": "spectral_value",
+        "gap_attrs": {
+          "example": "per-bin log magnitude",
+          "faculty": "shared_family",
+          "inputs": [
+            "signal"
+          ],
+          "n_samples": 32,
+          "needed_primitive": "spectral_value",
+          "observation": [
+            [
+              "spectral_value",
+              "signal",
+              "magnitude"
+            ],
+            [
+              "log_scale",
+              "magnitude",
+              "value"
+            ]
+          ],
+          "outputs": [
+            "spectrum"
+          ],
+          "status": "perceived",
+          "test_frequencies": [
+            3,
+            7,
+            11
+          ]
+        },
+        "held_primitive_delta": 1,
+        "native_steps": 5,
+        "observation_key": [
+          "gap_shared_family"
+        ],
+        "observation_signature": [
+          [
+            "spectral_value",
+            "signal",
+            "magnitude"
+          ],
+          [
+            "log_scale",
+            "magnitude",
+            "value"
+          ]
+        ],
+        "observation_status": "minted",
+        "operation": "spectral log-magnitude X[k]=log(|\u03a3_n x[n]\u00b7e^{-i2\u03c0kn/N}|) \u2014 amplitudes over a frequency axis, log-scaled",
+        "outcome": "built_primitive",
+        "primitive_name": "spectral_value",
+        "primitive_request_delta": 0,
+        "term_tree": {
+          "arg": {
+            "items": [
+              {
+                "arg": {
+                  "items": [
+                    {
+                      "a": {
+                        "source": {
+                          "name": "sig",
+                          "type": "Var"
+                        },
+                        "type": "Sum",
+                        "value": {
+                          "items": [
+                            {
+                              "index": 1,
+                              "items": {
+                                "name": "p",
+                                "type": "Var"
+                              },
+                              "type": "Nth"
+                            },
+                            {
+                              "arg": {
+                                "a": {
+                                  "items": [
+                                    {
+                                      "type": "Lit",
+                                      "value": 6.283185307179586
+                                    },
+                                    {
+                                      "name": "k",
+                                      "type": "Var"
+                                    },
+                                    {
+                                      "index": 0,
+                                      "items": {
+                                        "name": "p",
+                                        "type": "Var"
+                                      },
+                                      "type": "Nth"
+                                    }
+                                  ],
+                                  "type": "Times"
+                                },
+                                "b": {
+                                  "name": "N",
+                                  "type": "Var"
+                                },
+                                "type": "Div"
+                              },
+                              "type": "Cos"
+                            }
+                          ],
+                          "type": "Times"
+                        },
+                        "var_name": "p"
+                      },
+                      "b": {
+                        "type": "Lit",
+                        "value": 2.0
+                      },
+                      "type": "Pow"
+                    },
+                    {
+                      "a": {
+                        "source": {
+                          "name": "sig",
+                          "type": "Var"
+                        },
+                        "type": "Sum",
+                        "value": {
+                          "items": [
+                            {
+                              "index": 1,
+                              "items": {
+                                "name": "p",
+                                "type": "Var"
+                              },
+                              "type": "Nth"
+                            },
+                            {
+                              "arg": {
+                                "a": {
+                                  "items": [
+                                    {
+                                      "type": "Lit",
+                                      "value": 6.283185307179586
+                                    },
+                                    {
+                                      "name": "k",
+                                      "type": "Var"
+                                    },
+                                    {
+                                      "index": 0,
+                                      "items": {
+                                        "name": "p",
+                                        "type": "Var"
+                                      },
+                                      "type": "Nth"
+                                    }
+                                  ],
+                                  "type": "Times"
+                                },
+                                "b": {
+                                  "name": "N",
+                                  "type": "Var"
+                                },
+                                "type": "Div"
+                              },
+                              "type": "Sin"
+                            }
+                          ],
+                          "type": "Times"
+                        },
+                        "var_name": "p"
+                      },
+                      "b": {
+                        "type": "Lit",
+                        "value": 2.0
+                      },
+                      "type": "Pow"
+                    }
+                  ],
+                  "type": "Plus"
+                },
+                "type": "Sqrt"
+              },
+              {
+                "type": "Lit",
+                "value": 1e-09
+              }
+            ],
+            "type": "Plus"
+          },
+          "type": "Log"
+        },
+        "verification_accepted": true,
+        "verification_gates": {
+          "discriminates": true,
+          "grounded": true,
+          "no_regression": true,
+          "real_pass": true,
+          "twin_pass": false,
+          "verdict": 1.0
+        },
+        "verification_reason": "ACCEPTED: control discriminates (mechanism survives 3 held-out case(s); the known-fake twin FAILS it), no regression, grounded in ['SensorAnchor']."
+      },
+      {
+        "accepted": true,
+        "axis_delta": 0,
+        "case": "C",
+        "codebook_epoch": 0.0,
+        "concern_key": "gap_shared_family",
+        "construction": "spectral_value",
+        "gap_attrs": {
+          "example": "recover the signal from its magnitude spectrum",
+          "faculty": "shared_family",
+          "inputs": [
+            "magnitude_spectrum"
+          ],
+          "n_samples": 32,
+          "needed_primitive": "recover_signal",
+          "observation": [
+            [
+              "spectral_value",
+              "magnitude_spectrum",
+              "recovered_signal"
+            ],
+            [
+              "log_scale",
+              "recovered_signal",
+              "magnitude_spectrum"
+            ]
+          ],
+          "outputs": [
+            "recovered_signal"
+          ],
+          "status": "perceived",
+          "test_frequencies": [
+            3,
+            7,
+            11
+          ]
+        },
+        "held_primitive_delta": 1,
+        "native_steps": 5,
+        "observation_key": [
+          "gap_shared_family"
+        ],
+        "observation_signature": [
+          [
+            "spectral_value",
+            "magnitude_spectrum",
+            "recovered_signal"
+          ],
+          [
+            "log_scale",
+            "recovered_signal",
+            "magnitude_spectrum"
+          ]
+        ],
+        "observation_status": "recognized_duplicate",
+        "operation": "spectral log-magnitude X[k]=log(|\u03a3_n x[n]\u00b7e^{-i2\u03c0kn/N}|) \u2014 amplitudes over a frequency axis, log-scaled",
+        "outcome": "built_primitive",
+        "primitive_name": "recover_signal",
+        "primitive_request_delta": 0,
+        "term_tree": {
+          "arg": {
+            "items": [
+              {
+                "arg": {
+                  "items": [
+                    {
+                      "a": {
+                        "source": {
+                          "name": "sig",
+                          "type": "Var"
+                        },
+                        "type": "Sum",
+                        "value": {
+                          "items": [
+                            {
+                              "index": 1,
+                              "items": {
+                                "name": "p",
+                                "type": "Var"
+                              },
+                              "type": "Nth"
+                            },
+                            {
+                              "arg": {
+                                "a": {
+                                  "items": [
+                                    {
+                                      "type": "Lit",
+                                      "value": 6.283185307179586
+                                    },
+                                    {
+                                      "name": "k",
+                                      "type": "Var"
+                                    },
+                                    {
+                                      "index": 0,
+                                      "items": {
+                                        "name": "p",
+                                        "type": "Var"
+                                      },
+                                      "type": "Nth"
+                                    }
+                                  ],
+                                  "type": "Times"
+                                },
+                                "b": {
+                                  "name": "N",
+                                  "type": "Var"
+                                },
+                                "type": "Div"
+                              },
+                              "type": "Cos"
+                            }
+                          ],
+                          "type": "Times"
+                        },
+                        "var_name": "p"
+                      },
+                      "b": {
+                        "type": "Lit",
+                        "value": 2.0
+                      },
+                      "type": "Pow"
+                    },
+                    {
+                      "a": {
+                        "source": {
+                          "name": "sig",
+                          "type": "Var"
+                        },
+                        "type": "Sum",
+                        "value": {
+                          "items": [
+                            {
+                              "index": 1,
+                              "items": {
+                                "name": "p",
+                                "type": "Var"
+                              },
+                              "type": "Nth"
+                            },
+                            {
+                              "arg": {
+                                "a": {
+                                  "items": [
+                                    {
+                                      "type": "Lit",
+                                      "value": 6.283185307179586
+                                    },
+                                    {
+                                      "name": "k",
+                                      "type": "Var"
+                                    },
+                                    {
+                                      "index": 0,
+                                      "items": {
+                                        "name": "p",
+                                        "type": "Var"
+                                      },
+                                      "type": "Nth"
+                                    }
+                                  ],
+                                  "type": "Times"
+                                },
+                                "b": {
+                                  "name": "N",
+                                  "type": "Var"
+                                },
+                                "type": "Div"
+                              },
+                              "type": "Sin"
+                            }
+                          ],
+                          "type": "Times"
+                        },
+                        "var_name": "p"
+                      },
+                      "b": {
+                        "type": "Lit",
+                        "value": 2.0
+                      },
+                      "type": "Pow"
+                    }
+                  ],
+                  "type": "Plus"
+                },
+                "type": "Sqrt"
+              },
+              {
+                "type": "Lit",
+                "value": 1e-09
+              }
+            ],
+            "type": "Plus"
+          },
+          "type": "Log"
+        },
+        "verification_accepted": true,
+        "verification_gates": {
+          "discriminates": true,
+          "grounded": true,
+          "no_regression": true,
+          "real_pass": true,
+          "twin_pass": false,
+          "verdict": 1.0
+        },
+        "verification_reason": "ACCEPTED: control discriminates (mechanism survives 3 held-out case(s); the known-fake twin FAILS it), no regression, grounded in ['SensorAnchor']."
+      }
+    ],
+    "faculty:C_then_B": [
+      {
+        "accepted": true,
+        "axis_delta": 2,
+        "case": "C",
+        "codebook_epoch": 0.0,
+        "concern_key": "gap_shared_family",
+        "construction": "spectral_value",
+        "gap_attrs": {
+          "example": "recover the signal from its magnitude spectrum",
+          "faculty": "shared_family",
+          "inputs": [
+            "magnitude_spectrum"
+          ],
+          "n_samples": 32,
+          "needed_primitive": "recover_signal",
+          "observation": [
+            [
+              "spectral_value",
+              "magnitude_spectrum",
+              "recovered_signal"
+            ],
+            [
+              "log_scale",
+              "recovered_signal",
+              "magnitude_spectrum"
+            ]
+          ],
+          "outputs": [
+            "recovered_signal"
+          ],
+          "status": "perceived",
+          "test_frequencies": [
+            3,
+            7,
+            11
+          ]
+        },
+        "held_primitive_delta": 1,
+        "native_steps": 5,
+        "observation_key": [
+          "gap_shared_family"
+        ],
+        "observation_signature": [
+          [
+            "spectral_value",
+            "magnitude_spectrum",
+            "recovered_signal"
+          ],
+          [
+            "log_scale",
+            "recovered_signal",
+            "magnitude_spectrum"
+          ]
+        ],
+        "observation_status": "minted",
+        "operation": "spectral log-magnitude X[k]=log(|\u03a3_n x[n]\u00b7e^{-i2\u03c0kn/N}|) \u2014 amplitudes over a frequency axis, log-scaled",
+        "outcome": "built_primitive",
+        "primitive_name": "recover_signal",
+        "primitive_request_delta": 0,
+        "term_tree": {
+          "arg": {
+            "items": [
+              {
+                "arg": {
+                  "items": [
+                    {
+                      "a": {
+                        "source": {
+                          "name": "sig",
+                          "type": "Var"
+                        },
+                        "type": "Sum",
+                        "value": {
+                          "items": [
+                            {
+                              "index": 1,
+                              "items": {
+                                "name": "p",
+                                "type": "Var"
+                              },
+                              "type": "Nth"
+                            },
+                            {
+                              "arg": {
+                                "a": {
+                                  "items": [
+                                    {
+                                      "type": "Lit",
+                                      "value": 6.283185307179586
+                                    },
+                                    {
+                                      "name": "k",
+                                      "type": "Var"
+                                    },
+                                    {
+                                      "index": 0,
+                                      "items": {
+                                        "name": "p",
+                                        "type": "Var"
+                                      },
+                                      "type": "Nth"
+                                    }
+                                  ],
+                                  "type": "Times"
+                                },
+                                "b": {
+                                  "name": "N",
+                                  "type": "Var"
+                                },
+                                "type": "Div"
+                              },
+                              "type": "Cos"
+                            }
+                          ],
+                          "type": "Times"
+                        },
+                        "var_name": "p"
+                      },
+                      "b": {
+                        "type": "Lit",
+                        "value": 2.0
+                      },
+                      "type": "Pow"
+                    },
+                    {
+                      "a": {
+                        "source": {
+                          "name": "sig",
+                          "type": "Var"
+                        },
+                        "type": "Sum",
+                        "value": {
+                          "items": [
+                            {
+                              "index": 1,
+                              "items": {
+                                "name": "p",
+                                "type": "Var"
+                              },
+                              "type": "Nth"
+                            },
+                            {
+                              "arg": {
+                                "a": {
+                                  "items": [
+                                    {
+                                      "type": "Lit",
+                                      "value": 6.283185307179586
+                                    },
+                                    {
+                                      "name": "k",
+                                      "type": "Var"
+                                    },
+                                    {
+                                      "index": 0,
+                                      "items": {
+                                        "name": "p",
+                                        "type": "Var"
+                                      },
+                                      "type": "Nth"
+                                    }
+                                  ],
+                                  "type": "Times"
+                                },
+                                "b": {
+                                  "name": "N",
+                                  "type": "Var"
+                                },
+                                "type": "Div"
+                              },
+                              "type": "Sin"
+                            }
+                          ],
+                          "type": "Times"
+                        },
+                        "var_name": "p"
+                      },
+                      "b": {
+                        "type": "Lit",
+                        "value": 2.0
+                      },
+                      "type": "Pow"
+                    }
+                  ],
+                  "type": "Plus"
+                },
+                "type": "Sqrt"
+              },
+              {
+                "type": "Lit",
+                "value": 1e-09
+              }
+            ],
+            "type": "Plus"
+          },
+          "type": "Log"
+        },
+        "verification_accepted": true,
+        "verification_gates": {
+          "discriminates": true,
+          "grounded": true,
+          "no_regression": true,
+          "real_pass": true,
+          "twin_pass": false,
+          "verdict": 1.0
+        },
+        "verification_reason": "ACCEPTED: control discriminates (mechanism survives 3 held-out case(s); the known-fake twin FAILS it), no regression, grounded in ['SensorAnchor']."
+      },
+      {
+        "accepted": true,
+        "axis_delta": 0,
+        "case": "B",
+        "codebook_epoch": 0.0,
+        "concern_key": "gap_shared_family",
+        "construction": "spectral_value",
+        "gap_attrs": {
+          "example": "per-bin log magnitude",
+          "faculty": "shared_family",
+          "inputs": [
+            "signal"
+          ],
+          "n_samples": 32,
+          "needed_primitive": "spectral_value",
+          "observation": [
+            [
+              "spectral_value",
+              "signal",
+              "magnitude"
+            ],
+            [
+              "log_scale",
+              "magnitude",
+              "value"
+            ]
+          ],
+          "outputs": [
+            "spectrum"
+          ],
+          "status": "perceived",
+          "test_frequencies": [
+            3,
+            7,
+            11
+          ]
+        },
+        "held_primitive_delta": 1,
+        "native_steps": 5,
+        "observation_key": [
+          "gap_shared_family"
+        ],
+        "observation_signature": [
+          [
+            "spectral_value",
+            "signal",
+            "magnitude"
+          ],
+          [
+            "log_scale",
+            "magnitude",
+            "value"
+          ]
+        ],
+        "observation_status": "recognized_duplicate",
+        "operation": "spectral log-magnitude X[k]=log(|\u03a3_n x[n]\u00b7e^{-i2\u03c0kn/N}|) \u2014 amplitudes over a frequency axis, log-scaled",
+        "outcome": "built_primitive",
+        "primitive_name": "spectral_value",
+        "primitive_request_delta": 0,
+        "term_tree": {
+          "arg": {
+            "items": [
+              {
+                "arg": {
+                  "items": [
+                    {
+                      "a": {
+                        "source": {
+                          "name": "sig",
+                          "type": "Var"
+                        },
+                        "type": "Sum",
+                        "value": {
+                          "items": [
+                            {
+                              "index": 1,
+                              "items": {
+                                "name": "p",
+                                "type": "Var"
+                              },
+                              "type": "Nth"
+                            },
+                            {
+                              "arg": {
+                                "a": {
+                                  "items": [
+                                    {
+                                      "type": "Lit",
+                                      "value": 6.283185307179586
+                                    },
+                                    {
+                                      "name": "k",
+                                      "type": "Var"
+                                    },
+                                    {
+                                      "index": 0,
+                                      "items": {
+                                        "name": "p",
+                                        "type": "Var"
+                                      },
+                                      "type": "Nth"
+                                    }
+                                  ],
+                                  "type": "Times"
+                                },
+                                "b": {
+                                  "name": "N",
+                                  "type": "Var"
+                                },
+                                "type": "Div"
+                              },
+                              "type": "Cos"
+                            }
+                          ],
+                          "type": "Times"
+                        },
+                        "var_name": "p"
+                      },
+                      "b": {
+                        "type": "Lit",
+                        "value": 2.0
+                      },
+                      "type": "Pow"
+                    },
+                    {
+                      "a": {
+                        "source": {
+                          "name": "sig",
+                          "type": "Var"
+                        },
+                        "type": "Sum",
+                        "value": {
+                          "items": [
+                            {
+                              "index": 1,
+                              "items": {
+                                "name": "p",
+                                "type": "Var"
+                              },
+                              "type": "Nth"
+                            },
+                            {
+                              "arg": {
+                                "a": {
+                                  "items": [
+                                    {
+                                      "type": "Lit",
+                                      "value": 6.283185307179586
+                                    },
+                                    {
+                                      "name": "k",
+                                      "type": "Var"
+                                    },
+                                    {
+                                      "index": 0,
+                                      "items": {
+                                        "name": "p",
+                                        "type": "Var"
+                                      },
+                                      "type": "Nth"
+                                    }
+                                  ],
+                                  "type": "Times"
+                                },
+                                "b": {
+                                  "name": "N",
+                                  "type": "Var"
+                                },
+                                "type": "Div"
+                              },
+                              "type": "Sin"
+                            }
+                          ],
+                          "type": "Times"
+                        },
+                        "var_name": "p"
+                      },
+                      "b": {
+                        "type": "Lit",
+                        "value": 2.0
+                      },
+                      "type": "Pow"
+                    }
+                  ],
+                  "type": "Plus"
+                },
+                "type": "Sqrt"
+              },
+              {
+                "type": "Lit",
+                "value": 1e-09
+              }
+            ],
+            "type": "Plus"
+          },
+          "type": "Log"
+        },
+        "verification_accepted": true,
+        "verification_gates": {
+          "discriminates": true,
+          "grounded": true,
+          "no_regression": true,
+          "real_pass": true,
+          "twin_pass": false,
+          "verdict": 1.0
+        },
+        "verification_reason": "ACCEPTED: control discriminates (mechanism survives 3 held-out case(s); the known-fake twin FAILS it), no regression, grounded in ['SensorAnchor']."
+      }
+    ],
+    "faculty:isolated_B": [
+      {
+        "accepted": true,
+        "axis_delta": 2,
+        "case": "B",
+        "codebook_epoch": 0.0,
+        "concern_key": "gap_shared_family",
+        "construction": "spectral_value",
+        "gap_attrs": {
+          "example": "per-bin log magnitude",
+          "faculty": "shared_family",
+          "inputs": [
+            "signal"
+          ],
+          "n_samples": 32,
+          "needed_primitive": "spectral_value",
+          "observation": [
+            [
+              "spectral_value",
+              "signal",
+              "magnitude"
+            ],
+            [
+              "log_scale",
+              "magnitude",
+              "value"
+            ]
+          ],
+          "outputs": [
+            "spectrum"
+          ],
+          "status": "perceived",
+          "test_frequencies": [
+            3,
+            7,
+            11
+          ]
+        },
+        "held_primitive_delta": 1,
+        "native_steps": 5,
+        "observation_key": [
+          "gap_shared_family"
+        ],
+        "observation_signature": [
+          [
+            "spectral_value",
+            "signal",
+            "magnitude"
+          ],
+          [
+            "log_scale",
+            "magnitude",
+            "value"
+          ]
+        ],
+        "observation_status": "minted",
+        "operation": "spectral log-magnitude X[k]=log(|\u03a3_n x[n]\u00b7e^{-i2\u03c0kn/N}|) \u2014 amplitudes over a frequency axis, log-scaled",
+        "outcome": "built_primitive",
+        "primitive_name": "spectral_value",
+        "primitive_request_delta": 0,
+        "term_tree": {
+          "arg": {
+            "items": [
+              {
+                "arg": {
+                  "items": [
+                    {
+                      "a": {
+                        "source": {
+                          "name": "sig",
+                          "type": "Var"
+                        },
+                        "type": "Sum",
+                        "value": {
+                          "items": [
+                            {
+                              "index": 1,
+                              "items": {
+                                "name": "p",
+                                "type": "Var"
+                              },
+                              "type": "Nth"
+                            },
+                            {
+                              "arg": {
+                                "a": {
+                                  "items": [
+                                    {
+                                      "type": "Lit",
+                                      "value": 6.283185307179586
+                                    },
+                                    {
+                                      "name": "k",
+                                      "type": "Var"
+                                    },
+                                    {
+                                      "index": 0,
+                                      "items": {
+                                        "name": "p",
+                                        "type": "Var"
+                                      },
+                                      "type": "Nth"
+                                    }
+                                  ],
+                                  "type": "Times"
+                                },
+                                "b": {
+                                  "name": "N",
+                                  "type": "Var"
+                                },
+                                "type": "Div"
+                              },
+                              "type": "Cos"
+                            }
+                          ],
+                          "type": "Times"
+                        },
+                        "var_name": "p"
+                      },
+                      "b": {
+                        "type": "Lit",
+                        "value": 2.0
+                      },
+                      "type": "Pow"
+                    },
+                    {
+                      "a": {
+                        "source": {
+                          "name": "sig",
+                          "type": "Var"
+                        },
+                        "type": "Sum",
+                        "value": {
+                          "items": [
+                            {
+                              "index": 1,
+                              "items": {
+                                "name": "p",
+                                "type": "Var"
+                              },
+                              "type": "Nth"
+                            },
+                            {
+                              "arg": {
+                                "a": {
+                                  "items": [
+                                    {
+                                      "type": "Lit",
+                                      "value": 6.283185307179586
+                                    },
+                                    {
+                                      "name": "k",
+                                      "type": "Var"
+                                    },
+                                    {
+                                      "index": 0,
+                                      "items": {
+                                        "name": "p",
+                                        "type": "Var"
+                                      },
+                                      "type": "Nth"
+                                    }
+                                  ],
+                                  "type": "Times"
+                                },
+                                "b": {
+                                  "name": "N",
+                                  "type": "Var"
+                                },
+                                "type": "Div"
+                              },
+                              "type": "Sin"
+                            }
+                          ],
+                          "type": "Times"
+                        },
+                        "var_name": "p"
+                      },
+                      "b": {
+                        "type": "Lit",
+                        "value": 2.0
+                      },
+                      "type": "Pow"
+                    }
+                  ],
+                  "type": "Plus"
+                },
+                "type": "Sqrt"
+              },
+              {
+                "type": "Lit",
+                "value": 1e-09
+              }
+            ],
+            "type": "Plus"
+          },
+          "type": "Log"
+        },
+        "verification_accepted": true,
+        "verification_gates": {
+          "discriminates": true,
+          "grounded": true,
+          "no_regression": true,
+          "real_pass": true,
+          "twin_pass": false,
+          "verdict": 1.0
+        },
+        "verification_reason": "ACCEPTED: control discriminates (mechanism survives 3 held-out case(s); the known-fake twin FAILS it), no regression, grounded in ['SensorAnchor']."
+      }
+    ],
+    "faculty:isolated_C": [
+      {
+        "accepted": true,
+        "axis_delta": 2,
+        "case": "C",
+        "codebook_epoch": 0.0,
+        "concern_key": "gap_shared_family",
+        "construction": "spectral_value",
+        "gap_attrs": {
+          "example": "recover the signal from its magnitude spectrum",
+          "faculty": "shared_family",
+          "inputs": [
+            "magnitude_spectrum"
+          ],
+          "n_samples": 32,
+          "needed_primitive": "recover_signal",
+          "observation": [
+            [
+              "spectral_value",
+              "magnitude_spectrum",
+              "recovered_signal"
+            ],
+            [
+              "log_scale",
+              "recovered_signal",
+              "magnitude_spectrum"
+            ]
+          ],
+          "outputs": [
+            "recovered_signal"
+          ],
+          "status": "perceived",
+          "test_frequencies": [
+            3,
+            7,
+            11
+          ]
+        },
+        "held_primitive_delta": 1,
+        "native_steps": 5,
+        "observation_key": [
+          "gap_shared_family"
+        ],
+        "observation_signature": [
+          [
+            "spectral_value",
+            "magnitude_spectrum",
+            "recovered_signal"
+          ],
+          [
+            "log_scale",
+            "recovered_signal",
+            "magnitude_spectrum"
+          ]
+        ],
+        "observation_status": "minted",
+        "operation": "spectral log-magnitude X[k]=log(|\u03a3_n x[n]\u00b7e^{-i2\u03c0kn/N}|) \u2014 amplitudes over a frequency axis, log-scaled",
+        "outcome": "built_primitive",
+        "primitive_name": "recover_signal",
+        "primitive_request_delta": 0,
+        "term_tree": {
+          "arg": {
+            "items": [
+              {
+                "arg": {
+                  "items": [
+                    {
+                      "a": {
+                        "source": {
+                          "name": "sig",
+                          "type": "Var"
+                        },
+                        "type": "Sum",
+                        "value": {
+                          "items": [
+                            {
+                              "index": 1,
+                              "items": {
+                                "name": "p",
+                                "type": "Var"
+                              },
+                              "type": "Nth"
+                            },
+                            {
+                              "arg": {
+                                "a": {
+                                  "items": [
+                                    {
+                                      "type": "Lit",
+                                      "value": 6.283185307179586
+                                    },
+                                    {
+                                      "name": "k",
+                                      "type": "Var"
+                                    },
+                                    {
+                                      "index": 0,
+                                      "items": {
+                                        "name": "p",
+                                        "type": "Var"
+                                      },
+                                      "type": "Nth"
+                                    }
+                                  ],
+                                  "type": "Times"
+                                },
+                                "b": {
+                                  "name": "N",
+                                  "type": "Var"
+                                },
+                                "type": "Div"
+                              },
+                              "type": "Cos"
+                            }
+                          ],
+                          "type": "Times"
+                        },
+                        "var_name": "p"
+                      },
+                      "b": {
+                        "type": "Lit",
+                        "value": 2.0
+                      },
+                      "type": "Pow"
+                    },
+                    {
+                      "a": {
+                        "source": {
+                          "name": "sig",
+                          "type": "Var"
+                        },
+                        "type": "Sum",
+                        "value": {
+                          "items": [
+                            {
+                              "index": 1,
+                              "items": {
+                                "name": "p",
+                                "type": "Var"
+                              },
+                              "type": "Nth"
+                            },
+                            {
+                              "arg": {
+                                "a": {
+                                  "items": [
+                                    {
+                                      "type": "Lit",
+                                      "value": 6.283185307179586
+                                    },
+                                    {
+                                      "name": "k",
+                                      "type": "Var"
+                                    },
+                                    {
+                                      "index": 0,
+                                      "items": {
+                                        "name": "p",
+                                        "type": "Var"
+                                      },
+                                      "type": "Nth"
+                                    }
+                                  ],
+                                  "type": "Times"
+                                },
+                                "b": {
+                                  "name": "N",
+                                  "type": "Var"
+                                },
+                                "type": "Div"
+                              },
+                              "type": "Sin"
+                            }
+                          ],
+                          "type": "Times"
+                        },
+                        "var_name": "p"
+                      },
+                      "b": {
+                        "type": "Lit",
+                        "value": 2.0
+                      },
+                      "type": "Pow"
+                    }
+                  ],
+                  "type": "Plus"
+                },
+                "type": "Sqrt"
+              },
+              {
+                "type": "Lit",
+                "value": 1e-09
+              }
+            ],
+            "type": "Plus"
+          },
+          "type": "Log"
+        },
+        "verification_accepted": true,
+        "verification_gates": {
+          "discriminates": true,
+          "grounded": true,
+          "no_regression": true,
+          "real_pass": true,
+          "twin_pass": false,
+          "verdict": 1.0
+        },
+        "verification_reason": "ACCEPTED: control discriminates (mechanism survives 3 held-out case(s); the known-fake twin FAILS it), no regression, grounded in ['SensorAnchor']."
+      }
+    ],
+    "faculty:repeat_B": [
+      {
+        "accepted": true,
+        "axis_delta": 2,
+        "case": "B",
+        "codebook_epoch": 0.0,
+        "concern_key": "gap_shared_family",
+        "construction": "spectral_value",
+        "gap_attrs": {
+          "example": "per-bin log magnitude",
+          "faculty": "shared_family",
+          "inputs": [
+            "signal"
+          ],
+          "n_samples": 32,
+          "needed_primitive": "spectral_value",
+          "observation": [
+            [
+              "spectral_value",
+              "signal",
+              "magnitude"
+            ],
+            [
+              "log_scale",
+              "magnitude",
+              "value"
+            ]
+          ],
+          "outputs": [
+            "spectrum"
+          ],
+          "status": "perceived",
+          "test_frequencies": [
+            3,
+            7,
+            11
+          ]
+        },
+        "held_primitive_delta": 1,
+        "native_steps": 5,
+        "observation_key": [
+          "gap_shared_family"
+        ],
+        "observation_signature": [
+          [
+            "spectral_value",
+            "signal",
+            "magnitude"
+          ],
+          [
+            "log_scale",
+            "magnitude",
+            "value"
+          ]
+        ],
+        "observation_status": "minted",
+        "operation": "spectral log-magnitude X[k]=log(|\u03a3_n x[n]\u00b7e^{-i2\u03c0kn/N}|) \u2014 amplitudes over a frequency axis, log-scaled",
+        "outcome": "built_primitive",
+        "primitive_name": "spectral_value",
+        "primitive_request_delta": 0,
+        "term_tree": {
+          "arg": {
+            "items": [
+              {
+                "arg": {
+                  "items": [
+                    {
+                      "a": {
+                        "source": {
+                          "name": "sig",
+                          "type": "Var"
+                        },
+                        "type": "Sum",
+                        "value": {
+                          "items": [
+                            {
+                              "index": 1,
+                              "items": {
+                                "name": "p",
+                                "type": "Var"
+                              },
+                              "type": "Nth"
+                            },
+                            {
+                              "arg": {
+                                "a": {
+                                  "items": [
+                                    {
+                                      "type": "Lit",
+                                      "value": 6.283185307179586
+                                    },
+                                    {
+                                      "name": "k",
+                                      "type": "Var"
+                                    },
+                                    {
+                                      "index": 0,
+                                      "items": {
+                                        "name": "p",
+                                        "type": "Var"
+                                      },
+                                      "type": "Nth"
+                                    }
+                                  ],
+                                  "type": "Times"
+                                },
+                                "b": {
+                                  "name": "N",
+                                  "type": "Var"
+                                },
+                                "type": "Div"
+                              },
+                              "type": "Cos"
+                            }
+                          ],
+                          "type": "Times"
+                        },
+                        "var_name": "p"
+                      },
+                      "b": {
+                        "type": "Lit",
+                        "value": 2.0
+                      },
+                      "type": "Pow"
+                    },
+                    {
+                      "a": {
+                        "source": {
+                          "name": "sig",
+                          "type": "Var"
+                        },
+                        "type": "Sum",
+                        "value": {
+                          "items": [
+                            {
+                              "index": 1,
+                              "items": {
+                                "name": "p",
+                                "type": "Var"
+                              },
+                              "type": "Nth"
+                            },
+                            {
+                              "arg": {
+                                "a": {
+                                  "items": [
+                                    {
+                                      "type": "Lit",
+                                      "value": 6.283185307179586
+                                    },
+                                    {
+                                      "name": "k",
+                                      "type": "Var"
+                                    },
+                                    {
+                                      "index": 0,
+                                      "items": {
+                                        "name": "p",
+                                        "type": "Var"
+                                      },
+                                      "type": "Nth"
+                                    }
+                                  ],
+                                  "type": "Times"
+                                },
+                                "b": {
+                                  "name": "N",
+                                  "type": "Var"
+                                },
+                                "type": "Div"
+                              },
+                              "type": "Sin"
+                            }
+                          ],
+                          "type": "Times"
+                        },
+                        "var_name": "p"
+                      },
+                      "b": {
+                        "type": "Lit",
+                        "value": 2.0
+                      },
+                      "type": "Pow"
+                    }
+                  ],
+                  "type": "Plus"
+                },
+                "type": "Sqrt"
+              },
+              {
+                "type": "Lit",
+                "value": 1e-09
+              }
+            ],
+            "type": "Plus"
+          },
+          "type": "Log"
+        },
+        "verification_accepted": true,
+        "verification_gates": {
+          "discriminates": true,
+          "grounded": true,
+          "no_regression": true,
+          "real_pass": true,
+          "twin_pass": false,
+          "verdict": 1.0
+        },
+        "verification_reason": "ACCEPTED: control discriminates (mechanism survives 3 held-out case(s); the known-fake twin FAILS it), no regression, grounded in ['SensorAnchor']."
+      },
+      {
+        "accepted": true,
+        "axis_delta": 0,
+        "case": "B",
+        "codebook_epoch": 0.0,
+        "concern_key": "gap_shared_family",
+        "construction": "spectral_value",
+        "gap_attrs": {
+          "example": "per-bin log magnitude",
+          "faculty": "shared_family",
+          "inputs": [
+            "signal"
+          ],
+          "n_samples": 32,
+          "needed_primitive": "spectral_value",
+          "observation": [
+            [
+              "spectral_value",
+              "signal",
+              "magnitude"
+            ],
+            [
+              "log_scale",
+              "magnitude",
+              "value"
+            ]
+          ],
+          "outputs": [
+            "spectrum"
+          ],
+          "status": "perceived",
+          "test_frequencies": [
+            3,
+            7,
+            11
+          ]
+        },
+        "held_primitive_delta": 0,
+        "native_steps": 5,
+        "observation_key": [
+          "gap_shared_family"
+        ],
+        "observation_signature": [
+          [
+            "spectral_value",
+            "signal",
+            "magnitude"
+          ],
+          [
+            "log_scale",
+            "magnitude",
+            "value"
+          ]
+        ],
+        "observation_status": "recognized_duplicate",
+        "operation": "spectral log-magnitude X[k]=log(|\u03a3_n x[n]\u00b7e^{-i2\u03c0kn/N}|) \u2014 amplitudes over a frequency axis, log-scaled",
+        "outcome": "built_primitive",
+        "primitive_name": "spectral_value",
+        "primitive_request_delta": 0,
+        "term_tree": {
+          "arg": {
+            "items": [
+              {
+                "arg": {
+                  "items": [
+                    {
+                      "a": {
+                        "source": {
+                          "name": "sig",
+                          "type": "Var"
+                        },
+                        "type": "Sum",
+                        "value": {
+                          "items": [
+                            {
+                              "index": 1,
+                              "items": {
+                                "name": "p",
+                                "type": "Var"
+                              },
+                              "type": "Nth"
+                            },
+                            {
+                              "arg": {
+                                "a": {
+                                  "items": [
+                                    {
+                                      "type": "Lit",
+                                      "value": 6.283185307179586
+                                    },
+                                    {
+                                      "name": "k",
+                                      "type": "Var"
+                                    },
+                                    {
+                                      "index": 0,
+                                      "items": {
+                                        "name": "p",
+                                        "type": "Var"
+                                      },
+                                      "type": "Nth"
+                                    }
+                                  ],
+                                  "type": "Times"
+                                },
+                                "b": {
+                                  "name": "N",
+                                  "type": "Var"
+                                },
+                                "type": "Div"
+                              },
+                              "type": "Cos"
+                            }
+                          ],
+                          "type": "Times"
+                        },
+                        "var_name": "p"
+                      },
+                      "b": {
+                        "type": "Lit",
+                        "value": 2.0
+                      },
+                      "type": "Pow"
+                    },
+                    {
+                      "a": {
+                        "source": {
+                          "name": "sig",
+                          "type": "Var"
+                        },
+                        "type": "Sum",
+                        "value": {
+                          "items": [
+                            {
+                              "index": 1,
+                              "items": {
+                                "name": "p",
+                                "type": "Var"
+                              },
+                              "type": "Nth"
+                            },
+                            {
+                              "arg": {
+                                "a": {
+                                  "items": [
+                                    {
+                                      "type": "Lit",
+                                      "value": 6.283185307179586
+                                    },
+                                    {
+                                      "name": "k",
+                                      "type": "Var"
+                                    },
+                                    {
+                                      "index": 0,
+                                      "items": {
+                                        "name": "p",
+                                        "type": "Var"
+                                      },
+                                      "type": "Nth"
+                                    }
+                                  ],
+                                  "type": "Times"
+                                },
+                                "b": {
+                                  "name": "N",
+                                  "type": "Var"
+                                },
+                                "type": "Div"
+                              },
+                              "type": "Sin"
+                            }
+                          ],
+                          "type": "Times"
+                        },
+                        "var_name": "p"
+                      },
+                      "b": {
+                        "type": "Lit",
+                        "value": 2.0
+                      },
+                      "type": "Pow"
+                    }
+                  ],
+                  "type": "Plus"
+                },
+                "type": "Sqrt"
+              },
+              {
+                "type": "Lit",
+                "value": 1e-09
+              }
+            ],
+            "type": "Plus"
+          },
+          "type": "Log"
+        },
+        "verification_accepted": true,
+        "verification_gates": {
+          "discriminates": true,
+          "grounded": true,
+          "no_regression": true,
+          "real_pass": true,
+          "twin_pass": false,
+          "verdict": 1.0
+        },
+        "verification_reason": "ACCEPTED: control discriminates (mechanism survives 3 held-out case(s); the known-fake twin FAILS it), no regression, grounded in ['SensorAnchor']."
+      }
+    ],
+    "faculty_plus_operations:B_then_C": [
+      {
+        "accepted": true,
+        "axis_delta": 2,
+        "case": "B",
+        "codebook_epoch": 0.0,
+        "concern_key": "gap_shared_family__ops_log%5fscale_spectral%5fvalue",
+        "construction": "spectral_value",
+        "gap_attrs": {
+          "example": "per-bin log magnitude",
+          "faculty": "shared_family",
+          "inputs": [
+            "signal"
+          ],
+          "n_samples": 32,
+          "needed_primitive": "spectral_value",
+          "observation": [
+            [
+              "spectral_value",
+              "signal",
+              "magnitude"
+            ],
+            [
+              "log_scale",
+              "magnitude",
+              "value"
+            ]
+          ],
+          "outputs": [
+            "spectrum"
+          ],
+          "status": "perceived",
+          "test_frequencies": [
+            3,
+            7,
+            11
+          ]
+        },
+        "held_primitive_delta": 1,
+        "native_steps": 5,
+        "observation_key": [
+          "gap_shared_family__ops_log%5fscale_spectral%5fvalue"
+        ],
+        "observation_signature": [
+          [
+            "spectral_value",
+            "signal",
+            "magnitude"
+          ],
+          [
+            "log_scale",
+            "magnitude",
+            "value"
+          ]
+        ],
+        "observation_status": "minted",
+        "operation": "spectral log-magnitude X[k]=log(|\u03a3_n x[n]\u00b7e^{-i2\u03c0kn/N}|) \u2014 amplitudes over a frequency axis, log-scaled",
+        "outcome": "built_primitive",
+        "primitive_name": "spectral_value",
+        "primitive_request_delta": 0,
+        "term_tree": {
+          "arg": {
+            "items": [
+              {
+                "arg": {
+                  "items": [
+                    {
+                      "a": {
+                        "source": {
+                          "name": "sig",
+                          "type": "Var"
+                        },
+                        "type": "Sum",
+                        "value": {
+                          "items": [
+                            {
+                              "index": 1,
+                              "items": {
+                                "name": "p",
+                                "type": "Var"
+                              },
+                              "type": "Nth"
+                            },
+                            {
+                              "arg": {
+                                "a": {
+                                  "items": [
+                                    {
+                                      "type": "Lit",
+                                      "value": 6.283185307179586
+                                    },
+                                    {
+                                      "name": "k",
+                                      "type": "Var"
+                                    },
+                                    {
+                                      "index": 0,
+                                      "items": {
+                                        "name": "p",
+                                        "type": "Var"
+                                      },
+                                      "type": "Nth"
+                                    }
+                                  ],
+                                  "type": "Times"
+                                },
+                                "b": {
+                                  "name": "N",
+                                  "type": "Var"
+                                },
+                                "type": "Div"
+                              },
+                              "type": "Cos"
+                            }
+                          ],
+                          "type": "Times"
+                        },
+                        "var_name": "p"
+                      },
+                      "b": {
+                        "type": "Lit",
+                        "value": 2.0
+                      },
+                      "type": "Pow"
+                    },
+                    {
+                      "a": {
+                        "source": {
+                          "name": "sig",
+                          "type": "Var"
+                        },
+                        "type": "Sum",
+                        "value": {
+                          "items": [
+                            {
+                              "index": 1,
+                              "items": {
+                                "name": "p",
+                                "type": "Var"
+                              },
+                              "type": "Nth"
+                            },
+                            {
+                              "arg": {
+                                "a": {
+                                  "items": [
+                                    {
+                                      "type": "Lit",
+                                      "value": 6.283185307179586
+                                    },
+                                    {
+                                      "name": "k",
+                                      "type": "Var"
+                                    },
+                                    {
+                                      "index": 0,
+                                      "items": {
+                                        "name": "p",
+                                        "type": "Var"
+                                      },
+                                      "type": "Nth"
+                                    }
+                                  ],
+                                  "type": "Times"
+                                },
+                                "b": {
+                                  "name": "N",
+                                  "type": "Var"
+                                },
+                                "type": "Div"
+                              },
+                              "type": "Sin"
+                            }
+                          ],
+                          "type": "Times"
+                        },
+                        "var_name": "p"
+                      },
+                      "b": {
+                        "type": "Lit",
+                        "value": 2.0
+                      },
+                      "type": "Pow"
+                    }
+                  ],
+                  "type": "Plus"
+                },
+                "type": "Sqrt"
+              },
+              {
+                "type": "Lit",
+                "value": 1e-09
+              }
+            ],
+            "type": "Plus"
+          },
+          "type": "Log"
+        },
+        "verification_accepted": true,
+        "verification_gates": {
+          "discriminates": true,
+          "grounded": true,
+          "no_regression": true,
+          "real_pass": true,
+          "twin_pass": false,
+          "verdict": 1.0
+        },
+        "verification_reason": "ACCEPTED: control discriminates (mechanism survives 3 held-out case(s); the known-fake twin FAILS it), no regression, grounded in ['SensorAnchor']."
+      },
+      {
+        "accepted": true,
+        "axis_delta": 0,
+        "case": "C",
+        "codebook_epoch": 0.0,
+        "concern_key": "gap_shared_family__ops_log%5fscale_spectral%5fvalue",
+        "construction": "spectral_value",
+        "gap_attrs": {
+          "example": "recover the signal from its magnitude spectrum",
+          "faculty": "shared_family",
+          "inputs": [
+            "magnitude_spectrum"
+          ],
+          "n_samples": 32,
+          "needed_primitive": "recover_signal",
+          "observation": [
+            [
+              "spectral_value",
+              "magnitude_spectrum",
+              "recovered_signal"
+            ],
+            [
+              "log_scale",
+              "recovered_signal",
+              "magnitude_spectrum"
+            ]
+          ],
+          "outputs": [
+            "recovered_signal"
+          ],
+          "status": "perceived",
+          "test_frequencies": [
+            3,
+            7,
+            11
+          ]
+        },
+        "held_primitive_delta": 1,
+        "native_steps": 5,
+        "observation_key": [
+          "gap_shared_family__ops_log%5fscale_spectral%5fvalue"
+        ],
+        "observation_signature": [
+          [
+            "spectral_value",
+            "magnitude_spectrum",
+            "recovered_signal"
+          ],
+          [
+            "log_scale",
+            "recovered_signal",
+            "magnitude_spectrum"
+          ]
+        ],
+        "observation_status": "recognized_duplicate",
+        "operation": "spectral log-magnitude X[k]=log(|\u03a3_n x[n]\u00b7e^{-i2\u03c0kn/N}|) \u2014 amplitudes over a frequency axis, log-scaled",
+        "outcome": "built_primitive",
+        "primitive_name": "recover_signal",
+        "primitive_request_delta": 0,
+        "term_tree": {
+          "arg": {
+            "items": [
+              {
+                "arg": {
+                  "items": [
+                    {
+                      "a": {
+                        "source": {
+                          "name": "sig",
+                          "type": "Var"
+                        },
+                        "type": "Sum",
+                        "value": {
+                          "items": [
+                            {
+                              "index": 1,
+                              "items": {
+                                "name": "p",
+                                "type": "Var"
+                              },
+                              "type": "Nth"
+                            },
+                            {
+                              "arg": {
+                                "a": {
+                                  "items": [
+                                    {
+                                      "type": "Lit",
+                                      "value": 6.283185307179586
+                                    },
+                                    {
+                                      "name": "k",
+                                      "type": "Var"
+                                    },
+                                    {
+                                      "index": 0,
+                                      "items": {
+                                        "name": "p",
+                                        "type": "Var"
+                                      },
+                                      "type": "Nth"
+                                    }
+                                  ],
+                                  "type": "Times"
+                                },
+                                "b": {
+                                  "name": "N",
+                                  "type": "Var"
+                                },
+                                "type": "Div"
+                              },
+                              "type": "Cos"
+                            }
+                          ],
+                          "type": "Times"
+                        },
+                        "var_name": "p"
+                      },
+                      "b": {
+                        "type": "Lit",
+                        "value": 2.0
+                      },
+                      "type": "Pow"
+                    },
+                    {
+                      "a": {
+                        "source": {
+                          "name": "sig",
+                          "type": "Var"
+                        },
+                        "type": "Sum",
+                        "value": {
+                          "items": [
+                            {
+                              "index": 1,
+                              "items": {
+                                "name": "p",
+                                "type": "Var"
+                              },
+                              "type": "Nth"
+                            },
+                            {
+                              "arg": {
+                                "a": {
+                                  "items": [
+                                    {
+                                      "type": "Lit",
+                                      "value": 6.283185307179586
+                                    },
+                                    {
+                                      "name": "k",
+                                      "type": "Var"
+                                    },
+                                    {
+                                      "index": 0,
+                                      "items": {
+                                        "name": "p",
+                                        "type": "Var"
+                                      },
+                                      "type": "Nth"
+                                    }
+                                  ],
+                                  "type": "Times"
+                                },
+                                "b": {
+                                  "name": "N",
+                                  "type": "Var"
+                                },
+                                "type": "Div"
+                              },
+                              "type": "Sin"
+                            }
+                          ],
+                          "type": "Times"
+                        },
+                        "var_name": "p"
+                      },
+                      "b": {
+                        "type": "Lit",
+                        "value": 2.0
+                      },
+                      "type": "Pow"
+                    }
+                  ],
+                  "type": "Plus"
+                },
+                "type": "Sqrt"
+              },
+              {
+                "type": "Lit",
+                "value": 1e-09
+              }
+            ],
+            "type": "Plus"
+          },
+          "type": "Log"
+        },
+        "verification_accepted": true,
+        "verification_gates": {
+          "discriminates": true,
+          "grounded": true,
+          "no_regression": true,
+          "real_pass": true,
+          "twin_pass": false,
+          "verdict": 1.0
+        },
+        "verification_reason": "ACCEPTED: control discriminates (mechanism survives 3 held-out case(s); the known-fake twin FAILS it), no regression, grounded in ['SensorAnchor']."
+      }
+    ],
+    "faculty_plus_operations:C_then_B": [
+      {
+        "accepted": true,
+        "axis_delta": 2,
+        "case": "C",
+        "codebook_epoch": 0.0,
+        "concern_key": "gap_shared_family__ops_log%5fscale_spectral%5fvalue",
+        "construction": "spectral_value",
+        "gap_attrs": {
+          "example": "recover the signal from its magnitude spectrum",
+          "faculty": "shared_family",
+          "inputs": [
+            "magnitude_spectrum"
+          ],
+          "n_samples": 32,
+          "needed_primitive": "recover_signal",
+          "observation": [
+            [
+              "spectral_value",
+              "magnitude_spectrum",
+              "recovered_signal"
+            ],
+            [
+              "log_scale",
+              "recovered_signal",
+              "magnitude_spectrum"
+            ]
+          ],
+          "outputs": [
+            "recovered_signal"
+          ],
+          "status": "perceived",
+          "test_frequencies": [
+            3,
+            7,
+            11
+          ]
+        },
+        "held_primitive_delta": 1,
+        "native_steps": 5,
+        "observation_key": [
+          "gap_shared_family__ops_log%5fscale_spectral%5fvalue"
+        ],
+        "observation_signature": [
+          [
+            "spectral_value",
+            "magnitude_spectrum",
+            "recovered_signal"
+          ],
+          [
+            "log_scale",
+            "recovered_signal",
+            "magnitude_spectrum"
+          ]
+        ],
+        "observation_status": "minted",
+        "operation": "spectral log-magnitude X[k]=log(|\u03a3_n x[n]\u00b7e^{-i2\u03c0kn/N}|) \u2014 amplitudes over a frequency axis, log-scaled",
+        "outcome": "built_primitive",
+        "primitive_name": "recover_signal",
+        "primitive_request_delta": 0,
+        "term_tree": {
+          "arg": {
+            "items": [
+              {
+                "arg": {
+                  "items": [
+                    {
+                      "a": {
+                        "source": {
+                          "name": "sig",
+                          "type": "Var"
+                        },
+                        "type": "Sum",
+                        "value": {
+                          "items": [
+                            {
+                              "index": 1,
+                              "items": {
+                                "name": "p",
+                                "type": "Var"
+                              },
+                              "type": "Nth"
+                            },
+                            {
+                              "arg": {
+                                "a": {
+                                  "items": [
+                                    {
+                                      "type": "Lit",
+                                      "value": 6.283185307179586
+                                    },
+                                    {
+                                      "name": "k",
+                                      "type": "Var"
+                                    },
+                                    {
+                                      "index": 0,
+                                      "items": {
+                                        "name": "p",
+                                        "type": "Var"
+                                      },
+                                      "type": "Nth"
+                                    }
+                                  ],
+                                  "type": "Times"
+                                },
+                                "b": {
+                                  "name": "N",
+                                  "type": "Var"
+                                },
+                                "type": "Div"
+                              },
+                              "type": "Cos"
+                            }
+                          ],
+                          "type": "Times"
+                        },
+                        "var_name": "p"
+                      },
+                      "b": {
+                        "type": "Lit",
+                        "value": 2.0
+                      },
+                      "type": "Pow"
+                    },
+                    {
+                      "a": {
+                        "source": {
+                          "name": "sig",
+                          "type": "Var"
+                        },
+                        "type": "Sum",
+                        "value": {
+                          "items": [
+                            {
+                              "index": 1,
+                              "items": {
+                                "name": "p",
+                                "type": "Var"
+                              },
+                              "type": "Nth"
+                            },
+                            {
+                              "arg": {
+                                "a": {
+                                  "items": [
+                                    {
+                                      "type": "Lit",
+                                      "value": 6.283185307179586
+                                    },
+                                    {
+                                      "name": "k",
+                                      "type": "Var"
+                                    },
+                                    {
+                                      "index": 0,
+                                      "items": {
+                                        "name": "p",
+                                        "type": "Var"
+                                      },
+                                      "type": "Nth"
+                                    }
+                                  ],
+                                  "type": "Times"
+                                },
+                                "b": {
+                                  "name": "N",
+                                  "type": "Var"
+                                },
+                                "type": "Div"
+                              },
+                              "type": "Sin"
+                            }
+                          ],
+                          "type": "Times"
+                        },
+                        "var_name": "p"
+                      },
+                      "b": {
+                        "type": "Lit",
+                        "value": 2.0
+                      },
+                      "type": "Pow"
+                    }
+                  ],
+                  "type": "Plus"
+                },
+                "type": "Sqrt"
+              },
+              {
+                "type": "Lit",
+                "value": 1e-09
+              }
+            ],
+            "type": "Plus"
+          },
+          "type": "Log"
+        },
+        "verification_accepted": true,
+        "verification_gates": {
+          "discriminates": true,
+          "grounded": true,
+          "no_regression": true,
+          "real_pass": true,
+          "twin_pass": false,
+          "verdict": 1.0
+        },
+        "verification_reason": "ACCEPTED: control discriminates (mechanism survives 3 held-out case(s); the known-fake twin FAILS it), no regression, grounded in ['SensorAnchor']."
+      },
+      {
+        "accepted": true,
+        "axis_delta": 0,
+        "case": "B",
+        "codebook_epoch": 0.0,
+        "concern_key": "gap_shared_family__ops_log%5fscale_spectral%5fvalue",
+        "construction": "spectral_value",
+        "gap_attrs": {
+          "example": "per-bin log magnitude",
+          "faculty": "shared_family",
+          "inputs": [
+            "signal"
+          ],
+          "n_samples": 32,
+          "needed_primitive": "spectral_value",
+          "observation": [
+            [
+              "spectral_value",
+              "signal",
+              "magnitude"
+            ],
+            [
+              "log_scale",
+              "magnitude",
+              "value"
+            ]
+          ],
+          "outputs": [
+            "spectrum"
+          ],
+          "status": "perceived",
+          "test_frequencies": [
+            3,
+            7,
+            11
+          ]
+        },
+        "held_primitive_delta": 1,
+        "native_steps": 5,
+        "observation_key": [
+          "gap_shared_family__ops_log%5fscale_spectral%5fvalue"
+        ],
+        "observation_signature": [
+          [
+            "spectral_value",
+            "signal",
+            "magnitude"
+          ],
+          [
+            "log_scale",
+            "magnitude",
+            "value"
+          ]
+        ],
+        "observation_status": "recognized_duplicate",
+        "operation": "spectral log-magnitude X[k]=log(|\u03a3_n x[n]\u00b7e^{-i2\u03c0kn/N}|) \u2014 amplitudes over a frequency axis, log-scaled",
+        "outcome": "built_primitive",
+        "primitive_name": "spectral_value",
+        "primitive_request_delta": 0,
+        "term_tree": {
+          "arg": {
+            "items": [
+              {
+                "arg": {
+                  "items": [
+                    {
+                      "a": {
+                        "source": {
+                          "name": "sig",
+                          "type": "Var"
+                        },
+                        "type": "Sum",
+                        "value": {
+                          "items": [
+                            {
+                              "index": 1,
+                              "items": {
+                                "name": "p",
+                                "type": "Var"
+                              },
+                              "type": "Nth"
+                            },
+                            {
+                              "arg": {
+                                "a": {
+                                  "items": [
+                                    {
+                                      "type": "Lit",
+                                      "value": 6.283185307179586
+                                    },
+                                    {
+                                      "name": "k",
+                                      "type": "Var"
+                                    },
+                                    {
+                                      "index": 0,
+                                      "items": {
+                                        "name": "p",
+                                        "type": "Var"
+                                      },
+                                      "type": "Nth"
+                                    }
+                                  ],
+                                  "type": "Times"
+                                },
+                                "b": {
+                                  "name": "N",
+                                  "type": "Var"
+                                },
+                                "type": "Div"
+                              },
+                              "type": "Cos"
+                            }
+                          ],
+                          "type": "Times"
+                        },
+                        "var_name": "p"
+                      },
+                      "b": {
+                        "type": "Lit",
+                        "value": 2.0
+                      },
+                      "type": "Pow"
+                    },
+                    {
+                      "a": {
+                        "source": {
+                          "name": "sig",
+                          "type": "Var"
+                        },
+                        "type": "Sum",
+                        "value": {
+                          "items": [
+                            {
+                              "index": 1,
+                              "items": {
+                                "name": "p",
+                                "type": "Var"
+                              },
+                              "type": "Nth"
+                            },
+                            {
+                              "arg": {
+                                "a": {
+                                  "items": [
+                                    {
+                                      "type": "Lit",
+                                      "value": 6.283185307179586
+                                    },
+                                    {
+                                      "name": "k",
+                                      "type": "Var"
+                                    },
+                                    {
+                                      "index": 0,
+                                      "items": {
+                                        "name": "p",
+                                        "type": "Var"
+                                      },
+                                      "type": "Nth"
+                                    }
+                                  ],
+                                  "type": "Times"
+                                },
+                                "b": {
+                                  "name": "N",
+                                  "type": "Var"
+                                },
+                                "type": "Div"
+                              },
+                              "type": "Sin"
+                            }
+                          ],
+                          "type": "Times"
+                        },
+                        "var_name": "p"
+                      },
+                      "b": {
+                        "type": "Lit",
+                        "value": 2.0
+                      },
+                      "type": "Pow"
+                    }
+                  ],
+                  "type": "Plus"
+                },
+                "type": "Sqrt"
+              },
+              {
+                "type": "Lit",
+                "value": 1e-09
+              }
+            ],
+            "type": "Plus"
+          },
+          "type": "Log"
+        },
+        "verification_accepted": true,
+        "verification_gates": {
+          "discriminates": true,
+          "grounded": true,
+          "no_regression": true,
+          "real_pass": true,
+          "twin_pass": false,
+          "verdict": 1.0
+        },
+        "verification_reason": "ACCEPTED: control discriminates (mechanism survives 3 held-out case(s); the known-fake twin FAILS it), no regression, grounded in ['SensorAnchor']."
+      }
+    ],
+    "faculty_plus_operations:isolated_B": [
+      {
+        "accepted": true,
+        "axis_delta": 2,
+        "case": "B",
+        "codebook_epoch": 0.0,
+        "concern_key": "gap_shared_family__ops_log%5fscale_spectral%5fvalue",
+        "construction": "spectral_value",
+        "gap_attrs": {
+          "example": "per-bin log magnitude",
+          "faculty": "shared_family",
+          "inputs": [
+            "signal"
+          ],
+          "n_samples": 32,
+          "needed_primitive": "spectral_value",
+          "observation": [
+            [
+              "spectral_value",
+              "signal",
+              "magnitude"
+            ],
+            [
+              "log_scale",
+              "magnitude",
+              "value"
+            ]
+          ],
+          "outputs": [
+            "spectrum"
+          ],
+          "status": "perceived",
+          "test_frequencies": [
+            3,
+            7,
+            11
+          ]
+        },
+        "held_primitive_delta": 1,
+        "native_steps": 5,
+        "observation_key": [
+          "gap_shared_family__ops_log%5fscale_spectral%5fvalue"
+        ],
+        "observation_signature": [
+          [
+            "spectral_value",
+            "signal",
+            "magnitude"
+          ],
+          [
+            "log_scale",
+            "magnitude",
+            "value"
+          ]
+        ],
+        "observation_status": "minted",
+        "operation": "spectral log-magnitude X[k]=log(|\u03a3_n x[n]\u00b7e^{-i2\u03c0kn/N}|) \u2014 amplitudes over a frequency axis, log-scaled",
+        "outcome": "built_primitive",
+        "primitive_name": "spectral_value",
+        "primitive_request_delta": 0,
+        "term_tree": {
+          "arg": {
+            "items": [
+              {
+                "arg": {
+                  "items": [
+                    {
+                      "a": {
+                        "source": {
+                          "name": "sig",
+                          "type": "Var"
+                        },
+                        "type": "Sum",
+                        "value": {
+                          "items": [
+                            {
+                              "index": 1,
+                              "items": {
+                                "name": "p",
+                                "type": "Var"
+                              },
+                              "type": "Nth"
+                            },
+                            {
+                              "arg": {
+                                "a": {
+                                  "items": [
+                                    {
+                                      "type": "Lit",
+                                      "value": 6.283185307179586
+                                    },
+                                    {
+                                      "name": "k",
+                                      "type": "Var"
+                                    },
+                                    {
+                                      "index": 0,
+                                      "items": {
+                                        "name": "p",
+                                        "type": "Var"
+                                      },
+                                      "type": "Nth"
+                                    }
+                                  ],
+                                  "type": "Times"
+                                },
+                                "b": {
+                                  "name": "N",
+                                  "type": "Var"
+                                },
+                                "type": "Div"
+                              },
+                              "type": "Cos"
+                            }
+                          ],
+                          "type": "Times"
+                        },
+                        "var_name": "p"
+                      },
+                      "b": {
+                        "type": "Lit",
+                        "value": 2.0
+                      },
+                      "type": "Pow"
+                    },
+                    {
+                      "a": {
+                        "source": {
+                          "name": "sig",
+                          "type": "Var"
+                        },
+                        "type": "Sum",
+                        "value": {
+                          "items": [
+                            {
+                              "index": 1,
+                              "items": {
+                                "name": "p",
+                                "type": "Var"
+                              },
+                              "type": "Nth"
+                            },
+                            {
+                              "arg": {
+                                "a": {
+                                  "items": [
+                                    {
+                                      "type": "Lit",
+                                      "value": 6.283185307179586
+                                    },
+                                    {
+                                      "name": "k",
+                                      "type": "Var"
+                                    },
+                                    {
+                                      "index": 0,
+                                      "items": {
+                                        "name": "p",
+                                        "type": "Var"
+                                      },
+                                      "type": "Nth"
+                                    }
+                                  ],
+                                  "type": "Times"
+                                },
+                                "b": {
+                                  "name": "N",
+                                  "type": "Var"
+                                },
+                                "type": "Div"
+                              },
+                              "type": "Sin"
+                            }
+                          ],
+                          "type": "Times"
+                        },
+                        "var_name": "p"
+                      },
+                      "b": {
+                        "type": "Lit",
+                        "value": 2.0
+                      },
+                      "type": "Pow"
+                    }
+                  ],
+                  "type": "Plus"
+                },
+                "type": "Sqrt"
+              },
+              {
+                "type": "Lit",
+                "value": 1e-09
+              }
+            ],
+            "type": "Plus"
+          },
+          "type": "Log"
+        },
+        "verification_accepted": true,
+        "verification_gates": {
+          "discriminates": true,
+          "grounded": true,
+          "no_regression": true,
+          "real_pass": true,
+          "twin_pass": false,
+          "verdict": 1.0
+        },
+        "verification_reason": "ACCEPTED: control discriminates (mechanism survives 3 held-out case(s); the known-fake twin FAILS it), no regression, grounded in ['SensorAnchor']."
+      }
+    ],
+    "faculty_plus_operations:isolated_C": [
+      {
+        "accepted": true,
+        "axis_delta": 2,
+        "case": "C",
+        "codebook_epoch": 0.0,
+        "concern_key": "gap_shared_family__ops_log%5fscale_spectral%5fvalue",
+        "construction": "spectral_value",
+        "gap_attrs": {
+          "example": "recover the signal from its magnitude spectrum",
+          "faculty": "shared_family",
+          "inputs": [
+            "magnitude_spectrum"
+          ],
+          "n_samples": 32,
+          "needed_primitive": "recover_signal",
+          "observation": [
+            [
+              "spectral_value",
+              "magnitude_spectrum",
+              "recovered_signal"
+            ],
+            [
+              "log_scale",
+              "recovered_signal",
+              "magnitude_spectrum"
+            ]
+          ],
+          "outputs": [
+            "recovered_signal"
+          ],
+          "status": "perceived",
+          "test_frequencies": [
+            3,
+            7,
+            11
+          ]
+        },
+        "held_primitive_delta": 1,
+        "native_steps": 5,
+        "observation_key": [
+          "gap_shared_family__ops_log%5fscale_spectral%5fvalue"
+        ],
+        "observation_signature": [
+          [
+            "spectral_value",
+            "magnitude_spectrum",
+            "recovered_signal"
+          ],
+          [
+            "log_scale",
+            "recovered_signal",
+            "magnitude_spectrum"
+          ]
+        ],
+        "observation_status": "minted",
+        "operation": "spectral log-magnitude X[k]=log(|\u03a3_n x[n]\u00b7e^{-i2\u03c0kn/N}|) \u2014 amplitudes over a frequency axis, log-scaled",
+        "outcome": "built_primitive",
+        "primitive_name": "recover_signal",
+        "primitive_request_delta": 0,
+        "term_tree": {
+          "arg": {
+            "items": [
+              {
+                "arg": {
+                  "items": [
+                    {
+                      "a": {
+                        "source": {
+                          "name": "sig",
+                          "type": "Var"
+                        },
+                        "type": "Sum",
+                        "value": {
+                          "items": [
+                            {
+                              "index": 1,
+                              "items": {
+                                "name": "p",
+                                "type": "Var"
+                              },
+                              "type": "Nth"
+                            },
+                            {
+                              "arg": {
+                                "a": {
+                                  "items": [
+                                    {
+                                      "type": "Lit",
+                                      "value": 6.283185307179586
+                                    },
+                                    {
+                                      "name": "k",
+                                      "type": "Var"
+                                    },
+                                    {
+                                      "index": 0,
+                                      "items": {
+                                        "name": "p",
+                                        "type": "Var"
+                                      },
+                                      "type": "Nth"
+                                    }
+                                  ],
+                                  "type": "Times"
+                                },
+                                "b": {
+                                  "name": "N",
+                                  "type": "Var"
+                                },
+                                "type": "Div"
+                              },
+                              "type": "Cos"
+                            }
+                          ],
+                          "type": "Times"
+                        },
+                        "var_name": "p"
+                      },
+                      "b": {
+                        "type": "Lit",
+                        "value": 2.0
+                      },
+                      "type": "Pow"
+                    },
+                    {
+                      "a": {
+                        "source": {
+                          "name": "sig",
+                          "type": "Var"
+                        },
+                        "type": "Sum",
+                        "value": {
+                          "items": [
+                            {
+                              "index": 1,
+                              "items": {
+                                "name": "p",
+                                "type": "Var"
+                              },
+                              "type": "Nth"
+                            },
+                            {
+                              "arg": {
+                                "a": {
+                                  "items": [
+                                    {
+                                      "type": "Lit",
+                                      "value": 6.283185307179586
+                                    },
+                                    {
+                                      "name": "k",
+                                      "type": "Var"
+                                    },
+                                    {
+                                      "index": 0,
+                                      "items": {
+                                        "name": "p",
+                                        "type": "Var"
+                                      },
+                                      "type": "Nth"
+                                    }
+                                  ],
+                                  "type": "Times"
+                                },
+                                "b": {
+                                  "name": "N",
+                                  "type": "Var"
+                                },
+                                "type": "Div"
+                              },
+                              "type": "Sin"
+                            }
+                          ],
+                          "type": "Times"
+                        },
+                        "var_name": "p"
+                      },
+                      "b": {
+                        "type": "Lit",
+                        "value": 2.0
+                      },
+                      "type": "Pow"
+                    }
+                  ],
+                  "type": "Plus"
+                },
+                "type": "Sqrt"
+              },
+              {
+                "type": "Lit",
+                "value": 1e-09
+              }
+            ],
+            "type": "Plus"
+          },
+          "type": "Log"
+        },
+        "verification_accepted": true,
+        "verification_gates": {
+          "discriminates": true,
+          "grounded": true,
+          "no_regression": true,
+          "real_pass": true,
+          "twin_pass": false,
+          "verdict": 1.0
+        },
+        "verification_reason": "ACCEPTED: control discriminates (mechanism survives 3 held-out case(s); the known-fake twin FAILS it), no regression, grounded in ['SensorAnchor']."
+      }
+    ],
+    "faculty_plus_operations:repeat_B": [
+      {
+        "accepted": true,
+        "axis_delta": 2,
+        "case": "B",
+        "codebook_epoch": 0.0,
+        "concern_key": "gap_shared_family__ops_log%5fscale_spectral%5fvalue",
+        "construction": "spectral_value",
+        "gap_attrs": {
+          "example": "per-bin log magnitude",
+          "faculty": "shared_family",
+          "inputs": [
+            "signal"
+          ],
+          "n_samples": 32,
+          "needed_primitive": "spectral_value",
+          "observation": [
+            [
+              "spectral_value",
+              "signal",
+              "magnitude"
+            ],
+            [
+              "log_scale",
+              "magnitude",
+              "value"
+            ]
+          ],
+          "outputs": [
+            "spectrum"
+          ],
+          "status": "perceived",
+          "test_frequencies": [
+            3,
+            7,
+            11
+          ]
+        },
+        "held_primitive_delta": 1,
+        "native_steps": 5,
+        "observation_key": [
+          "gap_shared_family__ops_log%5fscale_spectral%5fvalue"
+        ],
+        "observation_signature": [
+          [
+            "spectral_value",
+            "signal",
+            "magnitude"
+          ],
+          [
+            "log_scale",
+            "magnitude",
+            "value"
+          ]
+        ],
+        "observation_status": "minted",
+        "operation": "spectral log-magnitude X[k]=log(|\u03a3_n x[n]\u00b7e^{-i2\u03c0kn/N}|) \u2014 amplitudes over a frequency axis, log-scaled",
+        "outcome": "built_primitive",
+        "primitive_name": "spectral_value",
+        "primitive_request_delta": 0,
+        "term_tree": {
+          "arg": {
+            "items": [
+              {
+                "arg": {
+                  "items": [
+                    {
+                      "a": {
+                        "source": {
+                          "name": "sig",
+                          "type": "Var"
+                        },
+                        "type": "Sum",
+                        "value": {
+                          "items": [
+                            {
+                              "index": 1,
+                              "items": {
+                                "name": "p",
+                                "type": "Var"
+                              },
+                              "type": "Nth"
+                            },
+                            {
+                              "arg": {
+                                "a": {
+                                  "items": [
+                                    {
+                                      "type": "Lit",
+                                      "value": 6.283185307179586
+                                    },
+                                    {
+                                      "name": "k",
+                                      "type": "Var"
+                                    },
+                                    {
+                                      "index": 0,
+                                      "items": {
+                                        "name": "p",
+                                        "type": "Var"
+                                      },
+                                      "type": "Nth"
+                                    }
+                                  ],
+                                  "type": "Times"
+                                },
+                                "b": {
+                                  "name": "N",
+                                  "type": "Var"
+                                },
+                                "type": "Div"
+                              },
+                              "type": "Cos"
+                            }
+                          ],
+                          "type": "Times"
+                        },
+                        "var_name": "p"
+                      },
+                      "b": {
+                        "type": "Lit",
+                        "value": 2.0
+                      },
+                      "type": "Pow"
+                    },
+                    {
+                      "a": {
+                        "source": {
+                          "name": "sig",
+                          "type": "Var"
+                        },
+                        "type": "Sum",
+                        "value": {
+                          "items": [
+                            {
+                              "index": 1,
+                              "items": {
+                                "name": "p",
+                                "type": "Var"
+                              },
+                              "type": "Nth"
+                            },
+                            {
+                              "arg": {
+                                "a": {
+                                  "items": [
+                                    {
+                                      "type": "Lit",
+                                      "value": 6.283185307179586
+                                    },
+                                    {
+                                      "name": "k",
+                                      "type": "Var"
+                                    },
+                                    {
+                                      "index": 0,
+                                      "items": {
+                                        "name": "p",
+                                        "type": "Var"
+                                      },
+                                      "type": "Nth"
+                                    }
+                                  ],
+                                  "type": "Times"
+                                },
+                                "b": {
+                                  "name": "N",
+                                  "type": "Var"
+                                },
+                                "type": "Div"
+                              },
+                              "type": "Sin"
+                            }
+                          ],
+                          "type": "Times"
+                        },
+                        "var_name": "p"
+                      },
+                      "b": {
+                        "type": "Lit",
+                        "value": 2.0
+                      },
+                      "type": "Pow"
+                    }
+                  ],
+                  "type": "Plus"
+                },
+                "type": "Sqrt"
+              },
+              {
+                "type": "Lit",
+                "value": 1e-09
+              }
+            ],
+            "type": "Plus"
+          },
+          "type": "Log"
+        },
+        "verification_accepted": true,
+        "verification_gates": {
+          "discriminates": true,
+          "grounded": true,
+          "no_regression": true,
+          "real_pass": true,
+          "twin_pass": false,
+          "verdict": 1.0
+        },
+        "verification_reason": "ACCEPTED: control discriminates (mechanism survives 3 held-out case(s); the known-fake twin FAILS it), no regression, grounded in ['SensorAnchor']."
+      },
+      {
+        "accepted": true,
+        "axis_delta": 0,
+        "case": "B",
+        "codebook_epoch": 0.0,
+        "concern_key": "gap_shared_family__ops_log%5fscale_spectral%5fvalue",
+        "construction": "spectral_value",
+        "gap_attrs": {
+          "example": "per-bin log magnitude",
+          "faculty": "shared_family",
+          "inputs": [
+            "signal"
+          ],
+          "n_samples": 32,
+          "needed_primitive": "spectral_value",
+          "observation": [
+            [
+              "spectral_value",
+              "signal",
+              "magnitude"
+            ],
+            [
+              "log_scale",
+              "magnitude",
+              "value"
+            ]
+          ],
+          "outputs": [
+            "spectrum"
+          ],
+          "status": "perceived",
+          "test_frequencies": [
+            3,
+            7,
+            11
+          ]
+        },
+        "held_primitive_delta": 0,
+        "native_steps": 5,
+        "observation_key": [
+          "gap_shared_family__ops_log%5fscale_spectral%5fvalue"
+        ],
+        "observation_signature": [
+          [
+            "spectral_value",
+            "signal",
+            "magnitude"
+          ],
+          [
+            "log_scale",
+            "magnitude",
+            "value"
+          ]
+        ],
+        "observation_status": "recognized_duplicate",
+        "operation": "spectral log-magnitude X[k]=log(|\u03a3_n x[n]\u00b7e^{-i2\u03c0kn/N}|) \u2014 amplitudes over a frequency axis, log-scaled",
+        "outcome": "built_primitive",
+        "primitive_name": "spectral_value",
+        "primitive_request_delta": 0,
+        "term_tree": {
+          "arg": {
+            "items": [
+              {
+                "arg": {
+                  "items": [
+                    {
+                      "a": {
+                        "source": {
+                          "name": "sig",
+                          "type": "Var"
+                        },
+                        "type": "Sum",
+                        "value": {
+                          "items": [
+                            {
+                              "index": 1,
+                              "items": {
+                                "name": "p",
+                                "type": "Var"
+                              },
+                              "type": "Nth"
+                            },
+                            {
+                              "arg": {
+                                "a": {
+                                  "items": [
+                                    {
+                                      "type": "Lit",
+                                      "value": 6.283185307179586
+                                    },
+                                    {
+                                      "name": "k",
+                                      "type": "Var"
+                                    },
+                                    {
+                                      "index": 0,
+                                      "items": {
+                                        "name": "p",
+                                        "type": "Var"
+                                      },
+                                      "type": "Nth"
+                                    }
+                                  ],
+                                  "type": "Times"
+                                },
+                                "b": {
+                                  "name": "N",
+                                  "type": "Var"
+                                },
+                                "type": "Div"
+                              },
+                              "type": "Cos"
+                            }
+                          ],
+                          "type": "Times"
+                        },
+                        "var_name": "p"
+                      },
+                      "b": {
+                        "type": "Lit",
+                        "value": 2.0
+                      },
+                      "type": "Pow"
+                    },
+                    {
+                      "a": {
+                        "source": {
+                          "name": "sig",
+                          "type": "Var"
+                        },
+                        "type": "Sum",
+                        "value": {
+                          "items": [
+                            {
+                              "index": 1,
+                              "items": {
+                                "name": "p",
+                                "type": "Var"
+                              },
+                              "type": "Nth"
+                            },
+                            {
+                              "arg": {
+                                "a": {
+                                  "items": [
+                                    {
+                                      "type": "Lit",
+                                      "value": 6.283185307179586
+                                    },
+                                    {
+                                      "name": "k",
+                                      "type": "Var"
+                                    },
+                                    {
+                                      "index": 0,
+                                      "items": {
+                                        "name": "p",
+                                        "type": "Var"
+                                      },
+                                      "type": "Nth"
+                                    }
+                                  ],
+                                  "type": "Times"
+                                },
+                                "b": {
+                                  "name": "N",
+                                  "type": "Var"
+                                },
+                                "type": "Div"
+                              },
+                              "type": "Sin"
+                            }
+                          ],
+                          "type": "Times"
+                        },
+                        "var_name": "p"
+                      },
+                      "b": {
+                        "type": "Lit",
+                        "value": 2.0
+                      },
+                      "type": "Pow"
+                    }
+                  ],
+                  "type": "Plus"
+                },
+                "type": "Sqrt"
+              },
+              {
+                "type": "Lit",
+                "value": 1e-09
+              }
+            ],
+            "type": "Plus"
+          },
+          "type": "Log"
+        },
+        "verification_accepted": true,
+        "verification_gates": {
+          "discriminates": true,
+          "grounded": true,
+          "no_regression": true,
+          "real_pass": true,
+          "twin_pass": false,
+          "verdict": 1.0
+        },
+        "verification_reason": "ACCEPTED: control discriminates (mechanism survives 3 held-out case(s); the known-fake twin FAILS it), no regression, grounded in ['SensorAnchor']."
+      }
+    ]
+  },
+  "fixtures": {
+    "B_C_distinct_full_observation_signatures": true,
+    "B_C_same_predicate_multiset": true,
+    "declared_io_contracts_differ": true
+  },
+  "fresh_graph_count": 10,
+  "isolated_forward_and_inverse_term_trees_equal": true,
+  "pre_post_lock_match": true,
+  "schema_version": 1
+}

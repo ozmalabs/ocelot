@@ -1,0 +1,86 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ocelot.local/evaluation/substrate_capability/instance_record.schema.json",
+  "title": "Substrate Capability Benchmark Instance Record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["run_id", "protocol_version", "condition", "instance_id", "split", "seed", "input_structure", "outcome", "cost", "path", "failure_trace_ref"],
+  "properties": {
+    "run_id": { "type": "string", "minLength": 1 },
+    "protocol_version": { "type": "string", "minLength": 1 },
+    "condition": { "type": "string", "minLength": 1 },
+    "instance_id": { "type": "string", "minLength": 1 },
+    "split": { "enum": ["development", "confirmatory", "replication", "not-applicable"] },
+    "seed": { "type": ["integer", "null"] },
+    "input_structure": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["nodes", "edges", "max_degree", "treewidth_exact", "treewidth_upper_bound", "boundary_width", "hierarchy_depth", "rule_count", "pattern_size", "domain_size", "horizon"],
+      "properties": {
+        "nodes": { "$ref": "#/$defs/nonnegativeOrNull" },
+        "edges": { "$ref": "#/$defs/nonnegativeOrNull" },
+        "max_degree": { "$ref": "#/$defs/nonnegativeOrNull" },
+        "treewidth_exact": { "$ref": "#/$defs/nonnegativeOrNull" },
+        "treewidth_upper_bound": { "$ref": "#/$defs/nonnegativeOrNull" },
+        "treewidth_provenance": { "type": ["string", "null"] },
+        "boundary_width": { "$ref": "#/$defs/nonnegativeOrNull" },
+        "hierarchy_depth": { "$ref": "#/$defs/nonnegativeOrNull" },
+        "rule_count": { "$ref": "#/$defs/nonnegativeOrNull" },
+        "pattern_size": { "$ref": "#/$defs/nonnegativeOrNull" },
+        "domain_size": { "$ref": "#/$defs/nonnegativeOrNull" },
+        "horizon": { "$ref": "#/$defs/nonnegativeOrNull" }
+      }
+    },
+    "outcome": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "quality", "exact", "reason", "ground_truth_ref"],
+      "properties": {
+        "status": { "enum": ["success", "failure", "abstain", "timeout", "progress_budget_reached", "repeated_graph_state", "refusal", "crash", "excluded", "inconclusive"] },
+        "quality": { "type": ["number", "null"] },
+        "exact": { "type": ["boolean", "null"] },
+        "reason": { "type": ["string", "null"] },
+        "ground_truth_ref": { "type": ["string", "null"] }
+      }
+    },
+    "cost": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["wall_time_ns", "cpu_time_ns", "peak_rss_bytes", "allocations", "rule_matches", "rule_firings", "fixpoint_passes", "graph_writes", "nodes_minted", "search_expansions", "solver_iterations"],
+      "properties": {
+        "wall_time_ns": { "$ref": "#/$defs/nonnegativeOrNull" },
+        "cpu_time_ns": { "$ref": "#/$defs/nonnegativeOrNull" },
+        "peak_rss_bytes": { "$ref": "#/$defs/nonnegativeOrNull" },
+        "allocations": { "$ref": "#/$defs/nonnegativeOrNull" },
+        "rule_matches": { "$ref": "#/$defs/nonnegativeOrNull" },
+        "rule_firings": { "$ref": "#/$defs/nonnegativeOrNull" },
+        "fixpoint_passes": { "$ref": "#/$defs/nonnegativeOrNull" },
+        "graph_writes": { "$ref": "#/$defs/nonnegativeOrNull" },
+        "nodes_minted": { "$ref": "#/$defs/nonnegativeOrNull" },
+        "search_expansions": { "$ref": "#/$defs/nonnegativeOrNull" },
+        "solver_iterations": { "$ref": "#/$defs/nonnegativeOrNull" }
+      }
+    },
+    "path": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["native_or_host", "entrypoint", "state_owner", "boundary_crossings"],
+      "properties": {
+        "native_or_host": { "type": "string", "minLength": 1 },
+        "entrypoint": { "type": "string", "minLength": 1 },
+        "state_owner": { "type": ["string", "null"] },
+        "boundary_crossings": { "$ref": "#/$defs/nonnegativeOrNull" }
+      }
+    },
+    "failure_trace_ref": { "type": ["string", "null"] },
+    "pilot_detail": { "type": "object" }
+  },
+  "$defs": {
+    "nonnegativeOrNull": {
+      "oneOf": [
+        { "type": "integer", "minimum": 0 },
+        { "type": "null" }
+      ]
+    }
+  }
+}

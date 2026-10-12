@@ -1,0 +1,87 @@
+{
+  "fixture": "one distinct integer value per node, one declared attribute index",
+  "host": {
+    "machine": "x86_64",
+    "platform": "Linux-6.8.0-142-generic-x86_64-with-glibc2.39"
+  },
+  "locked_inputs": {
+    "binary_sha256": "sha256:41f5fa7a151de75855ee8d175709b04a8d1a08b534bfec9b4870f5d9b3ce1865",
+    "cargo": "cargo 1.87.0 (Homebrew)",
+    "protocol_sha256": "sha256:0335d23838b6d63d07cccab2403699bdc10a538a3b24e28d4675789738c73374",
+    "runner_sha256": "sha256:9f22c5bdefab150c5f08baf22be247059364b28871883f4dfbf5c52c71f353c3",
+    "rustc": "rustc 1.87.0 (17067e9ac 2025-05-09) (Homebrew)",
+    "source_sha256": {
+      "runners/dsl/Cargo.lock": "sha256:409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+      "runners/dsl/Cargo.toml": "sha256:c4d8ffff2241352a5150b5a9937dbb8010e958b6f115235b7daeae716c1a9332",
+      "runners/dsl/src/bin/typed_graph_cow_attr_index_profile_v2.rs": "sha256:d20ebb15c43241e11c12874257d4ee663d0d0f3162e5c633a3b5bff3de9f63c4",
+      "runners/dsl/src/cow_sharded_map.rs": "sha256:8ed28dd06e9afef6093d60a692fc4f7a75ceb6af2dbd27cace43f103cd054de9",
+      "runners/dsl/src/graph.rs": "sha256:575183869e830d5411949382766e62090542b4c1e98068c70be94fd5d287b31e"
+    }
+  },
+  "post_run_inputs": {
+    "binary_sha256": "sha256:41f5fa7a151de75855ee8d175709b04a8d1a08b534bfec9b4870f5d9b3ce1865",
+    "cargo": "cargo 1.87.0 (Homebrew)",
+    "protocol_sha256": "sha256:0335d23838b6d63d07cccab2403699bdc10a538a3b24e28d4675789738c73374",
+    "runner_sha256": "sha256:9f22c5bdefab150c5f08baf22be247059364b28871883f4dfbf5c52c71f353c3",
+    "rustc": "rustc 1.87.0 (17067e9ac 2025-05-09) (Homebrew)",
+    "source_sha256": {
+      "runners/dsl/Cargo.lock": "sha256:409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+      "runners/dsl/Cargo.toml": "sha256:c4d8ffff2241352a5150b5a9937dbb8010e958b6f115235b7daeae716c1a9332",
+      "runners/dsl/src/bin/typed_graph_cow_attr_index_profile_v2.rs": "sha256:d20ebb15c43241e11c12874257d4ee663d0d0f3162e5c633a3b5bff3de9f63c4",
+      "runners/dsl/src/cow_sharded_map.rs": "sha256:8ed28dd06e9afef6093d60a692fc4f7a75ceb6af2dbd27cace43f103cd054de9",
+      "runners/dsl/src/graph.rs": "sha256:575183869e830d5411949382766e62090542b4c1e98068c70be94fd5d287b31e"
+    }
+  },
+  "protocol": {
+    "comparison": "shallow COW clone versus deep clone of all attribute-index/value shards",
+    "limitations": [
+      "index component only",
+      "no branch first-write cost",
+      "no whole-Substrate fork",
+      "no allocator memory measure"
+    ],
+    "nodes": [
+      7164,
+      16384,
+      50771
+    ],
+    "repeats": 51
+  },
+  "rows": [
+    {
+      "attr_index": {
+        "entries": 7164,
+        "median_eager_clone_ns": 529721,
+        "median_shared_fork_ns": 30
+      },
+      "distinct_values": 7164,
+      "nodes": 7164,
+      "queries_exact": true,
+      "repeats": 51
+    },
+    {
+      "attr_index": {
+        "entries": 16384,
+        "median_eager_clone_ns": 1089171,
+        "median_shared_fork_ns": 30
+      },
+      "distinct_values": 16384,
+      "nodes": 16384,
+      "queries_exact": true,
+      "repeats": 51
+    },
+    {
+      "attr_index": {
+        "entries": 50771,
+        "median_eager_clone_ns": 5326016,
+        "median_shared_fork_ns": 40
+      },
+      "distinct_values": 50771,
+      "nodes": 50771,
+      "queries_exact": true,
+      "repeats": 51
+    }
+  ],
+  "schema": "TypedGraphCowAttrIndexProfileV2",
+  "source_stable": true
+}

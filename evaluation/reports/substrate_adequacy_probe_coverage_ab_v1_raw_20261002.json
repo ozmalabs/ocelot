@@ -1,0 +1,2180 @@
+{
+  "elapsed_ns": 160220530061,
+  "environment": {
+    "platform": "Linux-6.8.0-142-generic-x86_64-with-glibc2.39",
+    "python": "3.13.5 (main, Jun 11 2025, 15:36:57) [GCC 11.4.0]"
+  },
+  "lock": {
+    "active": {
+      "domains/ast_to_term.py": "7ef48f9ecb67975428713ae1d2d54100fcdd39fc434dd586803059224f7cdcdb",
+      "domains/code_reading.py": "dd67d2942cf956c6e35f848aed4012c3ac072e9ac91d9e6b166e8ca44be57908",
+      "domains/code_write_growth.py": "691fd96072687baf2b99c6b3c9816cc6bb44805e35bec13f070a30061151761c",
+      "domains/code_writing.py": "4ad3148ca1796ad13f6128b9fd655e8568c7c843cd68bccee54f35cbf4ddabc9",
+      "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+      "domains/independent_adequacy.py": "33191341fdd63d16d0b9cb5203f27666da90b60fccd567ac4633306a9dcab418",
+      "domains/information_commitment.py": "da7ba4e2b289f24380289cde6170cbff82f4aee13b5d0158c103b4f9a660ee96",
+      "domains/reflective_faculty.py": "8f530a8c8754949216b71b473c4769fa5d351d01d6055127943c009d06763d05",
+      "domains/teach.py": "308a5f31d74dabb3ed8b24bd0c967abd5f94596a3ff76d17657330877fae2cfa",
+      "domains_tree": "200a51e70b6a1b587d82ed05fdea106aca865f89479972f5eefd3e1225c151f8",
+      "native_binary": "3816b4fb5d5746950b4cc3bf9e904a58e675ce53530727edf44095646dd58a54",
+      "oracle": "b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+      "python_native_tree": "4d4cb4aaaed3c395638b0485fc0d871749150149aded5e81491b42c7fdeb5402",
+      "runners/dsl/python/substrate_rs/__init__.py": "1fed837a6b7e8b35e463d3b8fdca498400c9cc420a016b81279365d6406a4049",
+      "runners/dsl/python/substrate_rs/_native.build.json": "b491d348c59cbf5cd5eee1b3f900a042f31e21665b6e63212edb9ed7f3d60f47",
+      "runners/dsl/src/graph_rules.rs": "b0e9c5bf0bbb4bf278fdab03610fa3f6f82d01ad8ee898ec789982ff41812a50",
+      "runners/dsl/src/py.rs": "d6f922bd406d3f500c10cea11978f47f9612b4ce6b9a348e848a30a305881cba",
+      "runners/dsl/src/substrate.rs": "bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+      "runners/dsl/src/term.rs": "5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+      "rust_dsl_tree": "06307beca12566832d3ba7ac157ec6177abb41a87dcf3755d824729d1a55ea0f",
+      "seed_manifest_inventory": "f1098a8168c0663746dffb253eb7230435957b3f8f8aa6d5c8197d224cf946b1",
+      "substrate/boot_all.py": "2bdf46f19228e1d85dbdcf12383116ceeb72aab0efe7ddd0cc6a51d23b45d220",
+      "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+      "substrate/seed_loader.py": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27",
+      "substrate/world_adapter.py": "7aeeb3d418fade3c90dc2d28a64a2685880d0a45d9fd47e4b6c2f6b6dd649023",
+      "substrate_tree": "206c8d6c975998dae706c64fe23be1ae7af659fd749577d978aafa1c30d7fdba"
+    },
+    "design": {
+      "arms": {
+        "broad_gated": {
+          "count": 3,
+          "domain": [
+            {
+              "x": 1
+            },
+            {
+              "x": 2
+            },
+            {
+              "x": 3
+            },
+            {
+              "x": 4
+            }
+          ],
+          "strict": true
+        },
+        "broad_ungated": {
+          "count": 3,
+          "domain": [
+            {
+              "x": 1
+            },
+            {
+              "x": 2
+            },
+            {
+              "x": 3
+            },
+            {
+              "x": 4
+            }
+          ],
+          "strict": false
+        },
+        "narrow_gated": {
+          "count": 1,
+          "domain": [
+            {
+              "x": 1
+            }
+          ],
+          "strict": true
+        },
+        "narrow_ungated": {
+          "count": 1,
+          "domain": [
+            {
+              "x": 1
+            }
+          ],
+          "strict": false
+        }
+      },
+      "function_name": "identity",
+      "heldout": [
+        {
+          "x": 2
+        },
+        {
+          "x": 3
+        },
+        {
+          "x": 4
+        },
+        {
+          "x": 5
+        }
+      ],
+      "known": [
+        {
+          "expected": 0,
+          "inputs": {
+            "x": 0
+          }
+        }
+      ],
+      "labels": "same candidate-bound oracle outputs generated before gated/ungated teach",
+      "repetitions": 3,
+      "request": "square transform",
+      "seed": 20261002,
+      "source": "def identity(x):\n    return x\n"
+    },
+    "files": {
+      "docs/research/engine_substrate/SUBSTRATE_ADEQUACY_PROBE_COVERAGE_AB_V1_PREREG_20261002.md": "d05283ef12b23cec29118b573301c4793a0c678a26e754193da38e58c8453b66",
+      "evaluation/substrate_capability/analyze_substrate_adequacy_probe_coverage_ab_v1.py": "051271ef56e746e8ed965485f4d969384a01adbb87eaff6b798b1e2bfa3271fe",
+      "evaluation/substrate_capability/independent_codewrite_oracles.py": "b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+      "evaluation/substrate_capability/substrate_adequacy_probe_coverage_ab_v1.py": "fefd419ab5c05bde320614f47fbfedf189c0ebec821c608a5f6a0bf2506e9a8b"
+    },
+    "git_head": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+    "schema": "SubstrateAdequacyProbeCoverageABV1Lock"
+  },
+  "post_lock": {
+    "active": {
+      "domains/ast_to_term.py": "7ef48f9ecb67975428713ae1d2d54100fcdd39fc434dd586803059224f7cdcdb",
+      "domains/code_reading.py": "dd67d2942cf956c6e35f848aed4012c3ac072e9ac91d9e6b166e8ca44be57908",
+      "domains/code_write_growth.py": "691fd96072687baf2b99c6b3c9816cc6bb44805e35bec13f070a30061151761c",
+      "domains/code_writing.py": "4ad3148ca1796ad13f6128b9fd655e8568c7c843cd68bccee54f35cbf4ddabc9",
+      "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+      "domains/independent_adequacy.py": "33191341fdd63d16d0b9cb5203f27666da90b60fccd567ac4633306a9dcab418",
+      "domains/information_commitment.py": "da7ba4e2b289f24380289cde6170cbff82f4aee13b5d0158c103b4f9a660ee96",
+      "domains/reflective_faculty.py": "8f530a8c8754949216b71b473c4769fa5d351d01d6055127943c009d06763d05",
+      "domains/teach.py": "308a5f31d74dabb3ed8b24bd0c967abd5f94596a3ff76d17657330877fae2cfa",
+      "domains_tree": "200a51e70b6a1b587d82ed05fdea106aca865f89479972f5eefd3e1225c151f8",
+      "native_binary": "3816b4fb5d5746950b4cc3bf9e904a58e675ce53530727edf44095646dd58a54",
+      "oracle": "b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+      "python_native_tree": "4d4cb4aaaed3c395638b0485fc0d871749150149aded5e81491b42c7fdeb5402",
+      "runners/dsl/python/substrate_rs/__init__.py": "1fed837a6b7e8b35e463d3b8fdca498400c9cc420a016b81279365d6406a4049",
+      "runners/dsl/python/substrate_rs/_native.build.json": "b491d348c59cbf5cd5eee1b3f900a042f31e21665b6e63212edb9ed7f3d60f47",
+      "runners/dsl/src/graph_rules.rs": "b0e9c5bf0bbb4bf278fdab03610fa3f6f82d01ad8ee898ec789982ff41812a50",
+      "runners/dsl/src/py.rs": "d6f922bd406d3f500c10cea11978f47f9612b4ce6b9a348e848a30a305881cba",
+      "runners/dsl/src/substrate.rs": "bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+      "runners/dsl/src/term.rs": "5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+      "rust_dsl_tree": "06307beca12566832d3ba7ac157ec6177abb41a87dcf3755d824729d1a55ea0f",
+      "seed_manifest_inventory": "f1098a8168c0663746dffb253eb7230435957b3f8f8aa6d5c8197d224cf946b1",
+      "substrate/boot_all.py": "2bdf46f19228e1d85dbdcf12383116ceeb72aab0efe7ddd0cc6a51d23b45d220",
+      "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+      "substrate/seed_loader.py": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27",
+      "substrate/world_adapter.py": "7aeeb3d418fade3c90dc2d28a64a2685880d0a45d9fd47e4b6c2f6b6dd649023",
+      "substrate_tree": "206c8d6c975998dae706c64fe23be1ae7af659fd749577d978aafa1c30d7fdba"
+    },
+    "design": {
+      "arms": {
+        "broad_gated": {
+          "count": 3,
+          "domain": [
+            {
+              "x": 1
+            },
+            {
+              "x": 2
+            },
+            {
+              "x": 3
+            },
+            {
+              "x": 4
+            }
+          ],
+          "strict": true
+        },
+        "broad_ungated": {
+          "count": 3,
+          "domain": [
+            {
+              "x": 1
+            },
+            {
+              "x": 2
+            },
+            {
+              "x": 3
+            },
+            {
+              "x": 4
+            }
+          ],
+          "strict": false
+        },
+        "narrow_gated": {
+          "count": 1,
+          "domain": [
+            {
+              "x": 1
+            }
+          ],
+          "strict": true
+        },
+        "narrow_ungated": {
+          "count": 1,
+          "domain": [
+            {
+              "x": 1
+            }
+          ],
+          "strict": false
+        }
+      },
+      "function_name": "identity",
+      "heldout": [
+        {
+          "x": 2
+        },
+        {
+          "x": 3
+        },
+        {
+          "x": 4
+        },
+        {
+          "x": 5
+        }
+      ],
+      "known": [
+        {
+          "expected": 0,
+          "inputs": {
+            "x": 0
+          }
+        }
+      ],
+      "labels": "same candidate-bound oracle outputs generated before gated/ungated teach",
+      "repetitions": 3,
+      "request": "square transform",
+      "seed": 20261002,
+      "source": "def identity(x):\n    return x\n"
+    },
+    "files": {
+      "docs/research/engine_substrate/SUBSTRATE_ADEQUACY_PROBE_COVERAGE_AB_V1_PREREG_20261002.md": "d05283ef12b23cec29118b573301c4793a0c678a26e754193da38e58c8453b66",
+      "evaluation/substrate_capability/analyze_substrate_adequacy_probe_coverage_ab_v1.py": "051271ef56e746e8ed965485f4d969384a01adbb87eaff6b798b1e2bfa3271fe",
+      "evaluation/substrate_capability/independent_codewrite_oracles.py": "b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+      "evaluation/substrate_capability/substrate_adequacy_probe_coverage_ab_v1.py": "fefd419ab5c05bde320614f47fbfedf189c0ebec821c608a5f6a0bf2506e9a8b"
+    },
+    "git_head": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+    "schema": "SubstrateAdequacyProbeCoverageABV1Lock"
+  },
+  "schedule": [
+    [
+      2,
+      "broad_gated"
+    ],
+    [
+      1,
+      "narrow_ungated"
+    ],
+    [
+      2,
+      "narrow_gated"
+    ],
+    [
+      1,
+      "narrow_gated"
+    ],
+    [
+      3,
+      "narrow_ungated"
+    ],
+    [
+      2,
+      "broad_ungated"
+    ],
+    [
+      1,
+      "broad_ungated"
+    ],
+    [
+      2,
+      "narrow_ungated"
+    ],
+    [
+      3,
+      "narrow_gated"
+    ],
+    [
+      3,
+      "broad_ungated"
+    ],
+    [
+      3,
+      "broad_gated"
+    ],
+    [
+      1,
+      "broad_gated"
+    ]
+  ],
+  "schema": "SubstrateAdequacyProbeCoverageABV1Capture",
+  "workers": [
+    {
+      "active_after": {
+        "domains/ast_to_term.py": "7ef48f9ecb67975428713ae1d2d54100fcdd39fc434dd586803059224f7cdcdb",
+        "domains/code_reading.py": "dd67d2942cf956c6e35f848aed4012c3ac072e9ac91d9e6b166e8ca44be57908",
+        "domains/code_write_growth.py": "691fd96072687baf2b99c6b3c9816cc6bb44805e35bec13f070a30061151761c",
+        "domains/code_writing.py": "4ad3148ca1796ad13f6128b9fd655e8568c7c843cd68bccee54f35cbf4ddabc9",
+        "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+        "domains/independent_adequacy.py": "33191341fdd63d16d0b9cb5203f27666da90b60fccd567ac4633306a9dcab418",
+        "domains/information_commitment.py": "da7ba4e2b289f24380289cde6170cbff82f4aee13b5d0158c103b4f9a660ee96",
+        "domains/reflective_faculty.py": "8f530a8c8754949216b71b473c4769fa5d351d01d6055127943c009d06763d05",
+        "domains/teach.py": "308a5f31d74dabb3ed8b24bd0c967abd5f94596a3ff76d17657330877fae2cfa",
+        "domains_tree": "200a51e70b6a1b587d82ed05fdea106aca865f89479972f5eefd3e1225c151f8",
+        "native_binary": "3816b4fb5d5746950b4cc3bf9e904a58e675ce53530727edf44095646dd58a54",
+        "oracle": "b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+        "python_native_tree": "4d4cb4aaaed3c395638b0485fc0d871749150149aded5e81491b42c7fdeb5402",
+        "runners/dsl/python/substrate_rs/__init__.py": "1fed837a6b7e8b35e463d3b8fdca498400c9cc420a016b81279365d6406a4049",
+        "runners/dsl/python/substrate_rs/_native.build.json": "b491d348c59cbf5cd5eee1b3f900a042f31e21665b6e63212edb9ed7f3d60f47",
+        "runners/dsl/src/graph_rules.rs": "b0e9c5bf0bbb4bf278fdab03610fa3f6f82d01ad8ee898ec789982ff41812a50",
+        "runners/dsl/src/py.rs": "d6f922bd406d3f500c10cea11978f47f9612b4ce6b9a348e848a30a305881cba",
+        "runners/dsl/src/substrate.rs": "bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+        "runners/dsl/src/term.rs": "5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+        "rust_dsl_tree": "06307beca12566832d3ba7ac157ec6177abb41a87dcf3755d824729d1a55ea0f",
+        "seed_manifest_inventory": "f1098a8168c0663746dffb253eb7230435957b3f8f8aa6d5c8197d224cf946b1",
+        "substrate/boot_all.py": "2bdf46f19228e1d85dbdcf12383116ceeb72aab0efe7ddd0cc6a51d23b45d220",
+        "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+        "substrate/seed_loader.py": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27",
+        "substrate/world_adapter.py": "7aeeb3d418fade3c90dc2d28a64a2685880d0a45d9fd47e4b6c2f6b6dd649023",
+        "substrate_tree": "206c8d6c975998dae706c64fe23be1ae7af659fd749577d978aafa1c30d7fdba"
+      },
+      "arm": "broad_gated",
+      "audit_rows": [
+        {
+          "inputs": {
+            "x": 1
+          },
+          "labels": [
+            {
+              "expected": 1,
+              "label_id": "47d47df98e1ee1ae611536c05dcc9c24929c583a48519d276d679aa890b3ad65",
+              "oracle_sha256": "b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+              "source_id": "independent-codewrite-oracle-v1:b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac"
+            }
+          ],
+          "probe_id": "probe-1"
+        },
+        {
+          "inputs": {
+            "x": 2
+          },
+          "labels": [
+            {
+              "expected": 4,
+              "label_id": "8203134883c76487f6e780d0c3d7d4f57548d593df3fa6b94bbc57ee5d37531f",
+              "oracle_sha256": "b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+              "source_id": "independent-codewrite-oracle-v1:b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac"
+            }
+          ],
+          "probe_id": "probe-2"
+        },
+        {
+          "inputs": {
+            "x": 3
+          },
+          "labels": [
+            {
+              "expected": 9,
+              "label_id": "81e6a9d617623f88524a600e5439795601c03378736e5673e5fb1482141e2090",
+              "oracle_sha256": "b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+              "source_id": "independent-codewrite-oracle-v1:b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac"
+            }
+          ],
+          "probe_id": "probe-3"
+        }
+      ],
+      "baseline_ok": false,
+      "boot_ns": 12047889968,
+      "candidate_id": "d2e21dfdacc6241316ca157cb1820a09bb19e1d294ec58d4b6f6e79dd5805fdb",
+      "candidate_id_matches": true,
+      "contract_passed": true,
+      "epoch_increment": 0,
+      "evidence_ns": 109931,
+      "loaded_seed_count": 731,
+      "oracle_sha256": "b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+      "pid": 4,
+      "receipt": {
+        "candidate_id": "d2e21dfdacc6241316ca157cb1820a09bb19e1d294ec58d4b6f6e79dd5805fdb",
+        "evidence_sha256": "5df5c65e38a5016dde3c5802d5a4fa516389f7af77c6cddd23685ab39984a84c",
+        "invalid_reasons": [],
+        "receipt_sha256": "e5e923b87808ba7fde9749f1103ac23b624d10113b65c192a58cbe9ccdb67bc4",
+        "request_id": "7b9c492989ffc3bd07fb5ece6d1ef920160407bca37c9330d9d565789323ece0",
+        "residuals": [
+          {
+            "input_sha256": "5e2b030a4a0f1582d78c0fd9924511cd6b1f2df9879e574f5ea1406c94052418",
+            "kind": "prediction_residual",
+            "labels": [
+              {
+                "expected": 4,
+                "label_id": "8203134883c76487f6e780d0c3d7d4f57548d593df3fa6b94bbc57ee5d37531f",
+                "oracle_sha256": "b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+                "source_id": "independent-codewrite-oracle-v1:b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac"
+              }
+            ],
+            "prediction": 2,
+            "probe_id": "probe-2"
+          },
+          {
+            "input_sha256": "54afd0d590e6b277d9cd1ce46e5480f683682e43b6b480f7d24906d9e935e44c",
+            "kind": "prediction_residual",
+            "labels": [
+              {
+                "expected": 9,
+                "label_id": "81e6a9d617623f88524a600e5439795601c03378736e5673e5fb1482141e2090",
+                "oracle_sha256": "b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+                "source_id": "independent-codewrite-oracle-v1:b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac"
+              }
+            ],
+            "prediction": 3,
+            "probe_id": "probe-3"
+          }
+        ],
+        "schema": "IndependentAdequacyReceiptV1",
+        "status": "rejected",
+        "term_sha256": "89ca8e44ca480b8cb514cfdf26fa4e04682bc7420e2481542d68a0c837d351dc"
+      },
+      "repetition": 2,
+      "state_after": {
+        "epoch": 0,
+        "node_ids": []
+      },
+      "state_before": {
+        "epoch": 0,
+        "node_ids": []
+      },
+      "strict": true,
+      "teach_cpu_ns": 4417501,
+      "teach_ns": 4412008,
+      "teach_ok": false,
+      "teach_reason": "independent adequacy receipt missing, invalid, or bound to another candidate",
+      "transfer_rows": [
+        {
+          "expected": 4,
+          "inputs": {
+            "x": 2
+          },
+          "native_match": false,
+          "native_output": null,
+          "python_match": false,
+          "python_output": null
+        },
+        {
+          "expected": 9,
+          "inputs": {
+            "x": 3
+          },
+          "native_match": false,
+          "native_output": null,
+          "python_match": false,
+          "python_output": null
+        },
+        {
+          "expected": 16,
+          "inputs": {
+            "x": 4
+          },
+          "native_match": false,
+          "native_output": null,
+          "python_match": false,
+          "python_output": null
+        },
+        {
+          "expected": 25,
+          "inputs": {
+            "x": 5
+          },
+          "native_match": false,
+          "native_output": null,
+          "python_match": false,
+          "python_output": null
+        }
+      ],
+      "written_ok": false,
+      "written_source": null
+    },
+    {
+      "active_after": {
+        "domains/ast_to_term.py": "7ef48f9ecb67975428713ae1d2d54100fcdd39fc434dd586803059224f7cdcdb",
+        "domains/code_reading.py": "dd67d2942cf956c6e35f848aed4012c3ac072e9ac91d9e6b166e8ca44be57908",
+        "domains/code_write_growth.py": "691fd96072687baf2b99c6b3c9816cc6bb44805e35bec13f070a30061151761c",
+        "domains/code_writing.py": "4ad3148ca1796ad13f6128b9fd655e8568c7c843cd68bccee54f35cbf4ddabc9",
+        "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+        "domains/independent_adequacy.py": "33191341fdd63d16d0b9cb5203f27666da90b60fccd567ac4633306a9dcab418",
+        "domains/information_commitment.py": "da7ba4e2b289f24380289cde6170cbff82f4aee13b5d0158c103b4f9a660ee96",
+        "domains/reflective_faculty.py": "8f530a8c8754949216b71b473c4769fa5d351d01d6055127943c009d06763d05",
+        "domains/teach.py": "308a5f31d74dabb3ed8b24bd0c967abd5f94596a3ff76d17657330877fae2cfa",
+        "domains_tree": "200a51e70b6a1b587d82ed05fdea106aca865f89479972f5eefd3e1225c151f8",
+        "native_binary": "3816b4fb5d5746950b4cc3bf9e904a58e675ce53530727edf44095646dd58a54",
+        "oracle": "b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+        "python_native_tree": "4d4cb4aaaed3c395638b0485fc0d871749150149aded5e81491b42c7fdeb5402",
+        "runners/dsl/python/substrate_rs/__init__.py": "1fed837a6b7e8b35e463d3b8fdca498400c9cc420a016b81279365d6406a4049",
+        "runners/dsl/python/substrate_rs/_native.build.json": "b491d348c59cbf5cd5eee1b3f900a042f31e21665b6e63212edb9ed7f3d60f47",
+        "runners/dsl/src/graph_rules.rs": "b0e9c5bf0bbb4bf278fdab03610fa3f6f82d01ad8ee898ec789982ff41812a50",
+        "runners/dsl/src/py.rs": "d6f922bd406d3f500c10cea11978f47f9612b4ce6b9a348e848a30a305881cba",
+        "runners/dsl/src/substrate.rs": "bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+        "runners/dsl/src/term.rs": "5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+        "rust_dsl_tree": "06307beca12566832d3ba7ac157ec6177abb41a87dcf3755d824729d1a55ea0f",
+        "seed_manifest_inventory": "f1098a8168c0663746dffb253eb7230435957b3f8f8aa6d5c8197d224cf946b1",
+        "substrate/boot_all.py": "2bdf46f19228e1d85dbdcf12383116ceeb72aab0efe7ddd0cc6a51d23b45d220",
+        "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+        "substrate/seed_loader.py": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27",
+        "substrate/world_adapter.py": "7aeeb3d418fade3c90dc2d28a64a2685880d0a45d9fd47e4b6c2f6b6dd649023",
+        "substrate_tree": "206c8d6c975998dae706c64fe23be1ae7af659fd749577d978aafa1c30d7fdba"
+      },
+      "arm": "narrow_ungated",
+      "audit_rows": [
+        {
+          "inputs": {
+            "x": 1
+          },
+          "labels": [
+            {
+              "expected": 1,
+              "label_id": "abedce6cbff9f6c2c620f7d01e9858d8e76bad3982744d8b9ffd37e96b1900a6",
+              "oracle_sha256": "b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+              "source_id": "independent-codewrite-oracle-v1:b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac"
+            }
+          ],
+          "probe_id": "probe-1"
+        }
+      ],
+      "baseline_ok": false,
+      "boot_ns": 12192690052,
+      "candidate_id": "d2e21dfdacc6241316ca157cb1820a09bb19e1d294ec58d4b6f6e79dd5805fdb",
+      "candidate_id_matches": true,
+      "contract_passed": true,
+      "epoch_increment": 1,
+      "evidence_ns": 60730,
+      "loaded_seed_count": 731,
+      "oracle_sha256": "b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+      "pid": 2346,
+      "receipt": {
+        "candidate_id": "d2e21dfdacc6241316ca157cb1820a09bb19e1d294ec58d4b6f6e79dd5805fdb",
+        "evidence_sha256": "cc8fdc4e54a1c126d90b00e79ca2d2c0742683766d34ba6f11ed50aab2ae2303",
+        "invalid_reasons": [],
+        "receipt_sha256": "6daed04503ea84452a9f1ee6b1f7fa1832d744bcf27f4c0ee4ede4b0cd0f9deb",
+        "request_id": "6dc5fc1754142ddb61cbec68bb68ace97dd774e3156a7fcb39420a72330999a7",
+        "residuals": [],
+        "schema": "IndependentAdequacyReceiptV1",
+        "status": "accepted",
+        "term_sha256": "89ca8e44ca480b8cb514cfdf26fa4e04682bc7420e2481542d68a0c837d351dc"
+      },
+      "repetition": 1,
+      "state_after": {
+        "epoch": 1,
+        "node_ids": [
+          "#25168"
+        ]
+      },
+      "state_before": {
+        "epoch": 0,
+        "node_ids": []
+      },
+      "strict": false,
+      "teach_cpu_ns": 18089825,
+      "teach_ns": 18085673,
+      "teach_ok": true,
+      "teach_reason": null,
+      "transfer_rows": [
+        {
+          "expected": 4,
+          "inputs": {
+            "x": 2
+          },
+          "native_match": false,
+          "native_output": 2,
+          "python_match": false,
+          "python_output": 2
+        },
+        {
+          "expected": 9,
+          "inputs": {
+            "x": 3
+          },
+          "native_match": false,
+          "native_output": 3,
+          "python_match": false,
+          "python_output": 3
+        },
+        {
+          "expected": 16,
+          "inputs": {
+            "x": 4
+          },
+          "native_match": false,
+          "native_output": 4,
+          "python_match": false,
+          "python_output": 4
+        },
+        {
+          "expected": 25,
+          "inputs": {
+            "x": 5
+          },
+          "native_match": false,
+          "native_output": 5,
+          "python_match": false,
+          "python_output": 5
+        }
+      ],
+      "written_ok": true,
+      "written_source": "def heldout_candidate(x):\n    \"\"\"A name-shaped code construction, over x.\"\"\"\n    return x\n"
+    },
+    {
+      "active_after": {
+        "domains/ast_to_term.py": "7ef48f9ecb67975428713ae1d2d54100fcdd39fc434dd586803059224f7cdcdb",
+        "domains/code_reading.py": "dd67d2942cf956c6e35f848aed4012c3ac072e9ac91d9e6b166e8ca44be57908",
+        "domains/code_write_growth.py": "691fd96072687baf2b99c6b3c9816cc6bb44805e35bec13f070a30061151761c",
+        "domains/code_writing.py": "4ad3148ca1796ad13f6128b9fd655e8568c7c843cd68bccee54f35cbf4ddabc9",
+        "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+        "domains/independent_adequacy.py": "33191341fdd63d16d0b9cb5203f27666da90b60fccd567ac4633306a9dcab418",
+        "domains/information_commitment.py": "da7ba4e2b289f24380289cde6170cbff82f4aee13b5d0158c103b4f9a660ee96",
+        "domains/reflective_faculty.py": "8f530a8c8754949216b71b473c4769fa5d351d01d6055127943c009d06763d05",
+        "domains/teach.py": "308a5f31d74dabb3ed8b24bd0c967abd5f94596a3ff76d17657330877fae2cfa",
+        "domains_tree": "200a51e70b6a1b587d82ed05fdea106aca865f89479972f5eefd3e1225c151f8",
+        "native_binary": "3816b4fb5d5746950b4cc3bf9e904a58e675ce53530727edf44095646dd58a54",
+        "oracle": "b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+        "python_native_tree": "4d4cb4aaaed3c395638b0485fc0d871749150149aded5e81491b42c7fdeb5402",
+        "runners/dsl/python/substrate_rs/__init__.py": "1fed837a6b7e8b35e463d3b8fdca498400c9cc420a016b81279365d6406a4049",
+        "runners/dsl/python/substrate_rs/_native.build.json": "b491d348c59cbf5cd5eee1b3f900a042f31e21665b6e63212edb9ed7f3d60f47",
+        "runners/dsl/src/graph_rules.rs": "b0e9c5bf0bbb4bf278fdab03610fa3f6f82d01ad8ee898ec789982ff41812a50",
+        "runners/dsl/src/py.rs": "d6f922bd406d3f500c10cea11978f47f9612b4ce6b9a348e848a30a305881cba",
+        "runners/dsl/src/substrate.rs": "bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+        "runners/dsl/src/term.rs": "5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+        "rust_dsl_tree": "06307beca12566832d3ba7ac157ec6177abb41a87dcf3755d824729d1a55ea0f",
+        "seed_manifest_inventory": "f1098a8168c0663746dffb253eb7230435957b3f8f8aa6d5c8197d224cf946b1",
+        "substrate/boot_all.py": "2bdf46f19228e1d85dbdcf12383116ceeb72aab0efe7ddd0cc6a51d23b45d220",
+        "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+        "substrate/seed_loader.py": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27",
+        "substrate/world_adapter.py": "7aeeb3d418fade3c90dc2d28a64a2685880d0a45d9fd47e4b6c2f6b6dd649023",
+        "substrate_tree": "206c8d6c975998dae706c64fe23be1ae7af659fd749577d978aafa1c30d7fdba"
+      },
+      "arm": "narrow_gated",
+      "audit_rows": [
+        {
+          "inputs": {
+            "x": 1
+          },
+          "labels": [
+            {
+              "expected": 1,
+              "label_id": "807d1468c6805cc00c2baaf9718df6eb0d3a33fa701851dd45f4fbf8986c439b",
+              "oracle_sha256": "b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+              "source_id": "independent-codewrite-oracle-v1:b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac"
+            }
+          ],
+          "probe_id": "probe-1"
+        }
+      ],
+      "baseline_ok": false,
+      "boot_ns": 12234611612,
+      "candidate_id": "d2e21dfdacc6241316ca157cb1820a09bb19e1d294ec58d4b6f6e79dd5805fdb",
+      "candidate_id_matches": true,
+      "contract_passed": true,
+      "epoch_increment": 1,
+      "evidence_ns": 58650,
+      "loaded_seed_count": 731,
+      "oracle_sha256": "b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+      "pid": 4688,
+      "receipt": {
+        "candidate_id": "d2e21dfdacc6241316ca157cb1820a09bb19e1d294ec58d4b6f6e79dd5805fdb",
+        "evidence_sha256": "99ce4b4e4e60217c29227e674725ec4e8c6f9221412e3450524e82eddfdc08f5",
+        "invalid_reasons": [],
+        "receipt_sha256": "4aac9865b3574303c49c0f8b495de3e9428920cf7ee26597f83bc339927ba977",
+        "request_id": "0aa93d292918e701eca5e333f72b4bf2f6af7511f0529485e5706d205c1ddb09",
+        "residuals": [],
+        "schema": "IndependentAdequacyReceiptV1",
+        "status": "accepted",
+        "term_sha256": "89ca8e44ca480b8cb514cfdf26fa4e04682bc7420e2481542d68a0c837d351dc"
+      },
+      "repetition": 2,
+      "state_after": {
+        "epoch": 1,
+        "node_ids": [
+          "#25168"
+        ]
+      },
+      "state_before": {
+        "epoch": 0,
+        "node_ids": []
+      },
+      "strict": true,
+      "teach_cpu_ns": 19380195,
+      "teach_ns": 19386143,
+      "teach_ok": true,
+      "teach_reason": null,
+      "transfer_rows": [
+        {
+          "expected": 4,
+          "inputs": {
+            "x": 2
+          },
+          "native_match": false,
+          "native_output": 2,
+          "python_match": false,
+          "python_output": 2
+        },
+        {
+          "expected": 9,
+          "inputs": {
+            "x": 3
+          },
+          "native_match": false,
+          "native_output": 3,
+          "python_match": false,
+          "python_output": 3
+        },
+        {
+          "expected": 16,
+          "inputs": {
+            "x": 4
+          },
+          "native_match": false,
+          "native_output": 4,
+          "python_match": false,
+          "python_output": 4
+        },
+        {
+          "expected": 25,
+          "inputs": {
+            "x": 5
+          },
+          "native_match": false,
+          "native_output": 5,
+          "python_match": false,
+          "python_output": 5
+        }
+      ],
+      "written_ok": true,
+      "written_source": "def heldout_candidate(x):\n    \"\"\"A name-shaped code construction, over x.\"\"\"\n    return x\n"
+    },
+    {
+      "active_after": {
+        "domains/ast_to_term.py": "7ef48f9ecb67975428713ae1d2d54100fcdd39fc434dd586803059224f7cdcdb",
+        "domains/code_reading.py": "dd67d2942cf956c6e35f848aed4012c3ac072e9ac91d9e6b166e8ca44be57908",
+        "domains/code_write_growth.py": "691fd96072687baf2b99c6b3c9816cc6bb44805e35bec13f070a30061151761c",
+        "domains/code_writing.py": "4ad3148ca1796ad13f6128b9fd655e8568c7c843cd68bccee54f35cbf4ddabc9",
+        "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+        "domains/independent_adequacy.py": "33191341fdd63d16d0b9cb5203f27666da90b60fccd567ac4633306a9dcab418",
+        "domains/information_commitment.py": "da7ba4e2b289f24380289cde6170cbff82f4aee13b5d0158c103b4f9a660ee96",
+        "domains/reflective_faculty.py": "8f530a8c8754949216b71b473c4769fa5d351d01d6055127943c009d06763d05",
+        "domains/teach.py": "308a5f31d74dabb3ed8b24bd0c967abd5f94596a3ff76d17657330877fae2cfa",
+        "domains_tree": "200a51e70b6a1b587d82ed05fdea106aca865f89479972f5eefd3e1225c151f8",
+        "native_binary": "3816b4fb5d5746950b4cc3bf9e904a58e675ce53530727edf44095646dd58a54",
+        "oracle": "b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+        "python_native_tree": "4d4cb4aaaed3c395638b0485fc0d871749150149aded5e81491b42c7fdeb5402",
+        "runners/dsl/python/substrate_rs/__init__.py": "1fed837a6b7e8b35e463d3b8fdca498400c9cc420a016b81279365d6406a4049",
+        "runners/dsl/python/substrate_rs/_native.build.json": "b491d348c59cbf5cd5eee1b3f900a042f31e21665b6e63212edb9ed7f3d60f47",
+        "runners/dsl/src/graph_rules.rs": "b0e9c5bf0bbb4bf278fdab03610fa3f6f82d01ad8ee898ec789982ff41812a50",
+        "runners/dsl/src/py.rs": "d6f922bd406d3f500c10cea11978f47f9612b4ce6b9a348e848a30a305881cba",
+        "runners/dsl/src/substrate.rs": "bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+        "runners/dsl/src/term.rs": "5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+        "rust_dsl_tree": "06307beca12566832d3ba7ac157ec6177abb41a87dcf3755d824729d1a55ea0f",
+        "seed_manifest_inventory": "f1098a8168c0663746dffb253eb7230435957b3f8f8aa6d5c8197d224cf946b1",
+        "substrate/boot_all.py": "2bdf46f19228e1d85dbdcf12383116ceeb72aab0efe7ddd0cc6a51d23b45d220",
+        "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+        "substrate/seed_loader.py": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27",
+        "substrate/world_adapter.py": "7aeeb3d418fade3c90dc2d28a64a2685880d0a45d9fd47e4b6c2f6b6dd649023",
+        "substrate_tree": "206c8d6c975998dae706c64fe23be1ae7af659fd749577d978aafa1c30d7fdba"
+      },
+      "arm": "narrow_gated",
+      "audit_rows": [
+        {
+          "inputs": {
+            "x": 1
+          },
+          "labels": [
+            {
+              "expected": 1,
+              "label_id": "abedce6cbff9f6c2c620f7d01e9858d8e76bad3982744d8b9ffd37e96b1900a6",
+              "oracle_sha256": "b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+              "source_id": "independent-codewrite-oracle-v1:b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac"
+            }
+          ],
+          "probe_id": "probe-1"
+        }
+      ],
+      "baseline_ok": false,
+      "boot_ns": 12181248550,
+      "candidate_id": "d2e21dfdacc6241316ca157cb1820a09bb19e1d294ec58d4b6f6e79dd5805fdb",
+      "candidate_id_matches": true,
+      "contract_passed": true,
+      "epoch_increment": 1,
+      "evidence_ns": 57920,
+      "loaded_seed_count": 731,
+      "oracle_sha256": "b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+      "pid": 7030,
+      "receipt": {
+        "candidate_id": "d2e21dfdacc6241316ca157cb1820a09bb19e1d294ec58d4b6f6e79dd5805fdb",
+        "evidence_sha256": "cc8fdc4e54a1c126d90b00e79ca2d2c0742683766d34ba6f11ed50aab2ae2303",
+        "invalid_reasons": [],
+        "receipt_sha256": "6daed04503ea84452a9f1ee6b1f7fa1832d744bcf27f4c0ee4ede4b0cd0f9deb",
+        "request_id": "6dc5fc1754142ddb61cbec68bb68ace97dd774e3156a7fcb39420a72330999a7",
+        "residuals": [],
+        "schema": "IndependentAdequacyReceiptV1",
+        "status": "accepted",
+        "term_sha256": "89ca8e44ca480b8cb514cfdf26fa4e04682bc7420e2481542d68a0c837d351dc"
+      },
+      "repetition": 1,
+      "state_after": {
+        "epoch": 1,
+        "node_ids": [
+          "#25168"
+        ]
+      },
+      "state_before": {
+        "epoch": 0,
+        "node_ids": []
+      },
+      "strict": true,
+      "teach_cpu_ns": 17204785,
+      "teach_ns": 17200742,
+      "teach_ok": true,
+      "teach_reason": null,
+      "transfer_rows": [
+        {
+          "expected": 4,
+          "inputs": {
+            "x": 2
+          },
+          "native_match": false,
+          "native_output": 2,
+          "python_match": false,
+          "python_output": 2
+        },
+        {
+          "expected": 9,
+          "inputs": {
+            "x": 3
+          },
+          "native_match": false,
+          "native_output": 3,
+          "python_match": false,
+          "python_output": 3
+        },
+        {
+          "expected": 16,
+          "inputs": {
+            "x": 4
+          },
+          "native_match": false,
+          "native_output": 4,
+          "python_match": false,
+          "python_output": 4
+        },
+        {
+          "expected": 25,
+          "inputs": {
+            "x": 5
+          },
+          "native_match": false,
+          "native_output": 5,
+          "python_match": false,
+          "python_output": 5
+        }
+      ],
+      "written_ok": true,
+      "written_source": "def heldout_candidate(x):\n    \"\"\"A name-shaped code construction, over x.\"\"\"\n    return x\n"
+    },
+    {
+      "active_after": {
+        "domains/ast_to_term.py": "7ef48f9ecb67975428713ae1d2d54100fcdd39fc434dd586803059224f7cdcdb",
+        "domains/code_reading.py": "dd67d2942cf956c6e35f848aed4012c3ac072e9ac91d9e6b166e8ca44be57908",
+        "domains/code_write_growth.py": "691fd96072687baf2b99c6b3c9816cc6bb44805e35bec13f070a30061151761c",
+        "domains/code_writing.py": "4ad3148ca1796ad13f6128b9fd655e8568c7c843cd68bccee54f35cbf4ddabc9",
+        "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+        "domains/independent_adequacy.py": "33191341fdd63d16d0b9cb5203f27666da90b60fccd567ac4633306a9dcab418",
+        "domains/information_commitment.py": "da7ba4e2b289f24380289cde6170cbff82f4aee13b5d0158c103b4f9a660ee96",
+        "domains/reflective_faculty.py": "8f530a8c8754949216b71b473c4769fa5d351d01d6055127943c009d06763d05",
+        "domains/teach.py": "308a5f31d74dabb3ed8b24bd0c967abd5f94596a3ff76d17657330877fae2cfa",
+        "domains_tree": "200a51e70b6a1b587d82ed05fdea106aca865f89479972f5eefd3e1225c151f8",
+        "native_binary": "3816b4fb5d5746950b4cc3bf9e904a58e675ce53530727edf44095646dd58a54",
+        "oracle": "b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+        "python_native_tree": "4d4cb4aaaed3c395638b0485fc0d871749150149aded5e81491b42c7fdeb5402",
+        "runners/dsl/python/substrate_rs/__init__.py": "1fed837a6b7e8b35e463d3b8fdca498400c9cc420a016b81279365d6406a4049",
+        "runners/dsl/python/substrate_rs/_native.build.json": "b491d348c59cbf5cd5eee1b3f900a042f31e21665b6e63212edb9ed7f3d60f47",
+        "runners/dsl/src/graph_rules.rs": "b0e9c5bf0bbb4bf278fdab03610fa3f6f82d01ad8ee898ec789982ff41812a50",
+        "runners/dsl/src/py.rs": "d6f922bd406d3f500c10cea11978f47f9612b4ce6b9a348e848a30a305881cba",
+        "runners/dsl/src/substrate.rs": "bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+        "runners/dsl/src/term.rs": "5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+        "rust_dsl_tree": "06307beca12566832d3ba7ac157ec6177abb41a87dcf3755d824729d1a55ea0f",
+        "seed_manifest_inventory": "f1098a8168c0663746dffb253eb7230435957b3f8f8aa6d5c8197d224cf946b1",
+        "substrate/boot_all.py": "2bdf46f19228e1d85dbdcf12383116ceeb72aab0efe7ddd0cc6a51d23b45d220",
+        "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+        "substrate/seed_loader.py": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27",
+        "substrate/world_adapter.py": "7aeeb3d418fade3c90dc2d28a64a2685880d0a45d9fd47e4b6c2f6b6dd649023",
+        "substrate_tree": "206c8d6c975998dae706c64fe23be1ae7af659fd749577d978aafa1c30d7fdba"
+      },
+      "arm": "narrow_ungated",
+      "audit_rows": [
+        {
+          "inputs": {
+            "x": 1
+          },
+          "labels": [
+            {
+              "expected": 1,
+              "label_id": "a1af3cb3369279b8d7169b12337a994625df06f6f756da5a0eeb58e9028d2c50",
+              "oracle_sha256": "b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+              "source_id": "independent-codewrite-oracle-v1:b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac"
+            }
+          ],
+          "probe_id": "probe-1"
+        }
+      ],
+      "baseline_ok": false,
+      "boot_ns": 12094843972,
+      "candidate_id": "d2e21dfdacc6241316ca157cb1820a09bb19e1d294ec58d4b6f6e79dd5805fdb",
+      "candidate_id_matches": true,
+      "contract_passed": true,
+      "epoch_increment": 1,
+      "evidence_ns": 80041,
+      "loaded_seed_count": 731,
+      "oracle_sha256": "b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+      "pid": 9372,
+      "receipt": {
+        "candidate_id": "d2e21dfdacc6241316ca157cb1820a09bb19e1d294ec58d4b6f6e79dd5805fdb",
+        "evidence_sha256": "fb9d9516640fb87ac831d6c05824af64728af78756f23cd619e283ec1c267c2d",
+        "invalid_reasons": [],
+        "receipt_sha256": "600d300c2bb55740550a02cbcc0d89a0120cfde642930f9cf10a3d9e07f5f5aa",
+        "request_id": "c8cee680e77ff5c24b60c01d7992980bb948494b043d91e0f6f739231f74aa6b",
+        "residuals": [],
+        "schema": "IndependentAdequacyReceiptV1",
+        "status": "accepted",
+        "term_sha256": "89ca8e44ca480b8cb514cfdf26fa4e04682bc7420e2481542d68a0c837d351dc"
+      },
+      "repetition": 3,
+      "state_after": {
+        "epoch": 1,
+        "node_ids": [
+          "#25168"
+        ]
+      },
+      "state_before": {
+        "epoch": 0,
+        "node_ids": []
+      },
+      "strict": false,
+      "teach_cpu_ns": 27811418,
+      "teach_ns": 27912930,
+      "teach_ok": true,
+      "teach_reason": null,
+      "transfer_rows": [
+        {
+          "expected": 4,
+          "inputs": {
+            "x": 2
+          },
+          "native_match": false,
+          "native_output": 2,
+          "python_match": false,
+          "python_output": 2
+        },
+        {
+          "expected": 9,
+          "inputs": {
+            "x": 3
+          },
+          "native_match": false,
+          "native_output": 3,
+          "python_match": false,
+          "python_output": 3
+        },
+        {
+          "expected": 16,
+          "inputs": {
+            "x": 4
+          },
+          "native_match": false,
+          "native_output": 4,
+          "python_match": false,
+          "python_output": 4
+        },
+        {
+          "expected": 25,
+          "inputs": {
+            "x": 5
+          },
+          "native_match": false,
+          "native_output": 5,
+          "python_match": false,
+          "python_output": 5
+        }
+      ],
+      "written_ok": true,
+      "written_source": "def heldout_candidate(x):\n    \"\"\"A name-shaped code construction, over x.\"\"\"\n    return x\n"
+    },
+    {
+      "active_after": {
+        "domains/ast_to_term.py": "7ef48f9ecb67975428713ae1d2d54100fcdd39fc434dd586803059224f7cdcdb",
+        "domains/code_reading.py": "dd67d2942cf956c6e35f848aed4012c3ac072e9ac91d9e6b166e8ca44be57908",
+        "domains/code_write_growth.py": "691fd96072687baf2b99c6b3c9816cc6bb44805e35bec13f070a30061151761c",
+        "domains/code_writing.py": "4ad3148ca1796ad13f6128b9fd655e8568c7c843cd68bccee54f35cbf4ddabc9",
+        "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+        "domains/independent_adequacy.py": "33191341fdd63d16d0b9cb5203f27666da90b60fccd567ac4633306a9dcab418",
+        "domains/information_commitment.py": "da7ba4e2b289f24380289cde6170cbff82f4aee13b5d0158c103b4f9a660ee96",
+        "domains/reflective_faculty.py": "8f530a8c8754949216b71b473c4769fa5d351d01d6055127943c009d06763d05",
+        "domains/teach.py": "308a5f31d74dabb3ed8b24bd0c967abd5f94596a3ff76d17657330877fae2cfa",
+        "domains_tree": "200a51e70b6a1b587d82ed05fdea106aca865f89479972f5eefd3e1225c151f8",
+        "native_binary": "3816b4fb5d5746950b4cc3bf9e904a58e675ce53530727edf44095646dd58a54",
+        "oracle": "b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+        "python_native_tree": "4d4cb4aaaed3c395638b0485fc0d871749150149aded5e81491b42c7fdeb5402",
+        "runners/dsl/python/substrate_rs/__init__.py": "1fed837a6b7e8b35e463d3b8fdca498400c9cc420a016b81279365d6406a4049",
+        "runners/dsl/python/substrate_rs/_native.build.json": "b491d348c59cbf5cd5eee1b3f900a042f31e21665b6e63212edb9ed7f3d60f47",
+        "runners/dsl/src/graph_rules.rs": "b0e9c5bf0bbb4bf278fdab03610fa3f6f82d01ad8ee898ec789982ff41812a50",
+        "runners/dsl/src/py.rs": "d6f922bd406d3f500c10cea11978f47f9612b4ce6b9a348e848a30a305881cba",
+        "runners/dsl/src/substrate.rs": "bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+        "runners/dsl/src/term.rs": "5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+        "rust_dsl_tree": "06307beca12566832d3ba7ac157ec6177abb41a87dcf3755d824729d1a55ea0f",
+        "seed_manifest_inventory": "f1098a8168c0663746dffb253eb7230435957b3f8f8aa6d5c8197d224cf946b1",
+        "substrate/boot_all.py": "2bdf46f19228e1d85dbdcf12383116ceeb72aab0efe7ddd0cc6a51d23b45d220",
+        "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+        "substrate/seed_loader.py": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27",
+        "substrate/world_adapter.py": "7aeeb3d418fade3c90dc2d28a64a2685880d0a45d9fd47e4b6c2f6b6dd649023",
+        "substrate_tree": "206c8d6c975998dae706c64fe23be1ae7af659fd749577d978aafa1c30d7fdba"
+      },
+      "arm": "broad_ungated",
+      "audit_rows": [
+        {
+          "inputs": {
+            "x": 1
+          },
+          "labels": [
+            {
+              "expected": 1,
+              "label_id": "47d47df98e1ee1ae611536c05dcc9c24929c583a48519d276d679aa890b3ad65",
+              "oracle_sha256": "b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+              "source_id": "independent-codewrite-oracle-v1:b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac"
+            }
+          ],
+          "probe_id": "probe-1"
+        },
+        {
+          "inputs": {
+            "x": 2
+          },
+          "labels": [
+            {
+              "expected": 4,
+              "label_id": "8203134883c76487f6e780d0c3d7d4f57548d593df3fa6b94bbc57ee5d37531f",
+              "oracle_sha256": "b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+              "source_id": "independent-codewrite-oracle-v1:b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac"
+            }
+          ],
+          "probe_id": "probe-2"
+        },
+        {
+          "inputs": {
+            "x": 3
+          },
+          "labels": [
+            {
+              "expected": 9,
+              "label_id": "81e6a9d617623f88524a600e5439795601c03378736e5673e5fb1482141e2090",
+              "oracle_sha256": "b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+              "source_id": "independent-codewrite-oracle-v1:b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac"
+            }
+          ],
+          "probe_id": "probe-3"
+        }
+      ],
+      "baseline_ok": false,
+      "boot_ns": 12136809233,
+      "candidate_id": "d2e21dfdacc6241316ca157cb1820a09bb19e1d294ec58d4b6f6e79dd5805fdb",
+      "candidate_id_matches": true,
+      "contract_passed": true,
+      "epoch_increment": 1,
+      "evidence_ns": 113821,
+      "loaded_seed_count": 731,
+      "oracle_sha256": "b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+      "pid": 11714,
+      "receipt": {
+        "candidate_id": "d2e21dfdacc6241316ca157cb1820a09bb19e1d294ec58d4b6f6e79dd5805fdb",
+        "evidence_sha256": "5df5c65e38a5016dde3c5802d5a4fa516389f7af77c6cddd23685ab39984a84c",
+        "invalid_reasons": [],
+        "receipt_sha256": "e5e923b87808ba7fde9749f1103ac23b624d10113b65c192a58cbe9ccdb67bc4",
+        "request_id": "7b9c492989ffc3bd07fb5ece6d1ef920160407bca37c9330d9d565789323ece0",
+        "residuals": [
+          {
+            "input_sha256": "5e2b030a4a0f1582d78c0fd9924511cd6b1f2df9879e574f5ea1406c94052418",
+            "kind": "prediction_residual",
+            "labels": [
+              {
+                "expected": 4,
+                "label_id": "8203134883c76487f6e780d0c3d7d4f57548d593df3fa6b94bbc57ee5d37531f",
+                "oracle_sha256": "b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+                "source_id": "independent-codewrite-oracle-v1:b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac"
+              }
+            ],
+            "prediction": 2,
+            "probe_id": "probe-2"
+          },
+          {
+            "input_sha256": "54afd0d590e6b277d9cd1ce46e5480f683682e43b6b480f7d24906d9e935e44c",
+            "kind": "prediction_residual",
+            "labels": [
+              {
+                "expected": 9,
+                "label_id": "81e6a9d617623f88524a600e5439795601c03378736e5673e5fb1482141e2090",
+                "oracle_sha256": "b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+                "source_id": "independent-codewrite-oracle-v1:b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac"
+              }
+            ],
+            "prediction": 3,
+            "probe_id": "probe-3"
+          }
+        ],
+        "schema": "IndependentAdequacyReceiptV1",
+        "status": "rejected",
+        "term_sha256": "89ca8e44ca480b8cb514cfdf26fa4e04682bc7420e2481542d68a0c837d351dc"
+      },
+      "repetition": 2,
+      "state_after": {
+        "epoch": 1,
+        "node_ids": [
+          "#25168"
+        ]
+      },
+      "state_before": {
+        "epoch": 0,
+        "node_ids": []
+      },
+      "strict": false,
+      "teach_cpu_ns": 19659086,
+      "teach_ns": 19683053,
+      "teach_ok": true,
+      "teach_reason": null,
+      "transfer_rows": [
+        {
+          "expected": 4,
+          "inputs": {
+            "x": 2
+          },
+          "native_match": false,
+          "native_output": 2,
+          "python_match": false,
+          "python_output": 2
+        },
+        {
+          "expected": 9,
+          "inputs": {
+            "x": 3
+          },
+          "native_match": false,
+          "native_output": 3,
+          "python_match": false,
+          "python_output": 3
+        },
+        {
+          "expected": 16,
+          "inputs": {
+            "x": 4
+          },
+          "native_match": false,
+          "native_output": 4,
+          "python_match": false,
+          "python_output": 4
+        },
+        {
+          "expected": 25,
+          "inputs": {
+            "x": 5
+          },
+          "native_match": false,
+          "native_output": 5,
+          "python_match": false,
+          "python_output": 5
+        }
+      ],
+      "written_ok": true,
+      "written_source": "def heldout_candidate(x):\n    \"\"\"A name-shaped code construction, over x.\"\"\"\n    return x\n"
+    },
+    {
+      "active_after": {
+        "domains/ast_to_term.py": "7ef48f9ecb67975428713ae1d2d54100fcdd39fc434dd586803059224f7cdcdb",
+        "domains/code_reading.py": "dd67d2942cf956c6e35f848aed4012c3ac072e9ac91d9e6b166e8ca44be57908",
+        "domains/code_write_growth.py": "691fd96072687baf2b99c6b3c9816cc6bb44805e35bec13f070a30061151761c",
+        "domains/code_writing.py": "4ad3148ca1796ad13f6128b9fd655e8568c7c843cd68bccee54f35cbf4ddabc9",
+        "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+        "domains/independent_adequacy.py": "33191341fdd63d16d0b9cb5203f27666da90b60fccd567ac4633306a9dcab418",
+        "domains/information_commitment.py": "da7ba4e2b289f24380289cde6170cbff82f4aee13b5d0158c103b4f9a660ee96",
+        "domains/reflective_faculty.py": "8f530a8c8754949216b71b473c4769fa5d351d01d6055127943c009d06763d05",
+        "domains/teach.py": "308a5f31d74dabb3ed8b24bd0c967abd5f94596a3ff76d17657330877fae2cfa",
+        "domains_tree": "200a51e70b6a1b587d82ed05fdea106aca865f89479972f5eefd3e1225c151f8",
+        "native_binary": "3816b4fb5d5746950b4cc3bf9e904a58e675ce53530727edf44095646dd58a54",
+        "oracle": "b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+        "python_native_tree": "4d4cb4aaaed3c395638b0485fc0d871749150149aded5e81491b42c7fdeb5402",
+        "runners/dsl/python/substrate_rs/__init__.py": "1fed837a6b7e8b35e463d3b8fdca498400c9cc420a016b81279365d6406a4049",
+        "runners/dsl/python/substrate_rs/_native.build.json": "b491d348c59cbf5cd5eee1b3f900a042f31e21665b6e63212edb9ed7f3d60f47",
+        "runners/dsl/src/graph_rules.rs": "b0e9c5bf0bbb4bf278fdab03610fa3f6f82d01ad8ee898ec789982ff41812a50",
+        "runners/dsl/src/py.rs": "d6f922bd406d3f500c10cea11978f47f9612b4ce6b9a348e848a30a305881cba",
+        "runners/dsl/src/substrate.rs": "bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+        "runners/dsl/src/term.rs": "5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+        "rust_dsl_tree": "06307beca12566832d3ba7ac157ec6177abb41a87dcf3755d824729d1a55ea0f",
+        "seed_manifest_inventory": "f1098a8168c0663746dffb253eb7230435957b3f8f8aa6d5c8197d224cf946b1",
+        "substrate/boot_all.py": "2bdf46f19228e1d85dbdcf12383116ceeb72aab0efe7ddd0cc6a51d23b45d220",
+        "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+        "substrate/seed_loader.py": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27",
+        "substrate/world_adapter.py": "7aeeb3d418fade3c90dc2d28a64a2685880d0a45d9fd47e4b6c2f6b6dd649023",
+        "substrate_tree": "206c8d6c975998dae706c64fe23be1ae7af659fd749577d978aafa1c30d7fdba"
+      },
+      "arm": "broad_ungated",
+      "audit_rows": [
+        {
+          "inputs": {
+            "x": 1
+          },
+          "labels": [
+            {
+              "expected": 1,
+              "label_id": "fabb6a83418b96877245c645f0e40f1f3e0701f0677f11eeaa5c284a37cf3d24",
+              "oracle_sha256": "b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+              "source_id": "independent-codewrite-oracle-v1:b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac"
+            }
+          ],
+          "probe_id": "probe-1"
+        },
+        {
+          "inputs": {
+            "x": 4
+          },
+          "labels": [
+            {
+              "expected": 16,
+              "label_id": "a2ae6446008e9a823b26482bf0bf4fdd7de3ba9e6b4db6eba9e1e5ab265ffbb9",
+              "oracle_sha256": "b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+              "source_id": "independent-codewrite-oracle-v1:b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac"
+            }
+          ],
+          "probe_id": "probe-2"
+        },
+        {
+          "inputs": {
+            "x": 3
+          },
+          "labels": [
+            {
+              "expected": 9,
+              "label_id": "870c6de211002527fb6a273ef5d9e4226d8ea389bce1a6db2e2f979f16155b64",
+              "oracle_sha256": "b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+              "source_id": "independent-codewrite-oracle-v1:b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac"
+            }
+          ],
+          "probe_id": "probe-3"
+        }
+      ],
+      "baseline_ok": false,
+      "boot_ns": 12245631110,
+      "candidate_id": "d2e21dfdacc6241316ca157cb1820a09bb19e1d294ec58d4b6f6e79dd5805fdb",
+      "candidate_id_matches": true,
+      "contract_passed": true,
+      "epoch_increment": 1,
+      "evidence_ns": 112851,
+      "loaded_seed_count": 731,
+      "oracle_sha256": "b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+      "pid": 14056,
+      "receipt": {
+        "candidate_id": "d2e21dfdacc6241316ca157cb1820a09bb19e1d294ec58d4b6f6e79dd5805fdb",
+        "evidence_sha256": "459c37651c7dfcaba3bc49222d0e00eef37375376fdd857d2f2a7b9a07ce258b",
+        "invalid_reasons": [],
+        "receipt_sha256": "f7a1f1785fb3867590d3a4b78a109b16501b36f3df22fc8086458486451734d9",
+        "request_id": "bd97962be29fe4112949606d74f188c77b668f3c38f9c0d9ac7c369249a83688",
+        "residuals": [
+          {
+            "input_sha256": "81148b1be37b2b7b90cb11cda4b18ede67721435053c0c0e0f077a5d1b8a36d7",
+            "kind": "prediction_residual",
+            "labels": [
+              {
+                "expected": 16,
+                "label_id": "a2ae6446008e9a823b26482bf0bf4fdd7de3ba9e6b4db6eba9e1e5ab265ffbb9",
+                "oracle_sha256": "b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+                "source_id": "independent-codewrite-oracle-v1:b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac"
+              }
+            ],
+            "prediction": 4,
+            "probe_id": "probe-2"
+          },
+          {
+            "input_sha256": "54afd0d590e6b277d9cd1ce46e5480f683682e43b6b480f7d24906d9e935e44c",
+            "kind": "prediction_residual",
+            "labels": [
+              {
+                "expected": 9,
+                "label_id": "870c6de211002527fb6a273ef5d9e4226d8ea389bce1a6db2e2f979f16155b64",
+                "oracle_sha256": "b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+                "source_id": "independent-codewrite-oracle-v1:b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac"
+              }
+            ],
+            "prediction": 3,
+            "probe_id": "probe-3"
+          }
+        ],
+        "schema": "IndependentAdequacyReceiptV1",
+        "status": "rejected",
+        "term_sha256": "89ca8e44ca480b8cb514cfdf26fa4e04682bc7420e2481542d68a0c837d351dc"
+      },
+      "repetition": 1,
+      "state_after": {
+        "epoch": 1,
+        "node_ids": [
+          "#25168"
+        ]
+      },
+      "state_before": {
+        "epoch": 0,
+        "node_ids": []
+      },
+      "strict": false,
+      "teach_cpu_ns": 17580255,
+      "teach_ns": 17575532,
+      "teach_ok": true,
+      "teach_reason": null,
+      "transfer_rows": [
+        {
+          "expected": 4,
+          "inputs": {
+            "x": 2
+          },
+          "native_match": false,
+          "native_output": 2,
+          "python_match": false,
+          "python_output": 2
+        },
+        {
+          "expected": 9,
+          "inputs": {
+            "x": 3
+          },
+          "native_match": false,
+          "native_output": 3,
+          "python_match": false,
+          "python_output": 3
+        },
+        {
+          "expected": 16,
+          "inputs": {
+            "x": 4
+          },
+          "native_match": false,
+          "native_output": 4,
+          "python_match": false,
+          "python_output": 4
+        },
+        {
+          "expected": 25,
+          "inputs": {
+            "x": 5
+          },
+          "native_match": false,
+          "native_output": 5,
+          "python_match": false,
+          "python_output": 5
+        }
+      ],
+      "written_ok": true,
+      "written_source": "def heldout_candidate(x):\n    \"\"\"A name-shaped code construction, over x.\"\"\"\n    return x\n"
+    },
+    {
+      "active_after": {
+        "domains/ast_to_term.py": "7ef48f9ecb67975428713ae1d2d54100fcdd39fc434dd586803059224f7cdcdb",
+        "domains/code_reading.py": "dd67d2942cf956c6e35f848aed4012c3ac072e9ac91d9e6b166e8ca44be57908",
+        "domains/code_write_growth.py": "691fd96072687baf2b99c6b3c9816cc6bb44805e35bec13f070a30061151761c",
+        "domains/code_writing.py": "4ad3148ca1796ad13f6128b9fd655e8568c7c843cd68bccee54f35cbf4ddabc9",
+        "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+        "domains/independent_adequacy.py": "33191341fdd63d16d0b9cb5203f27666da90b60fccd567ac4633306a9dcab418",
+        "domains/information_commitment.py": "da7ba4e2b289f24380289cde6170cbff82f4aee13b5d0158c103b4f9a660ee96",
+        "domains/reflective_faculty.py": "8f530a8c8754949216b71b473c4769fa5d351d01d6055127943c009d06763d05",
+        "domains/teach.py": "308a5f31d74dabb3ed8b24bd0c967abd5f94596a3ff76d17657330877fae2cfa",
+        "domains_tree": "200a51e70b6a1b587d82ed05fdea106aca865f89479972f5eefd3e1225c151f8",
+        "native_binary": "3816b4fb5d5746950b4cc3bf9e904a58e675ce53530727edf44095646dd58a54",
+        "oracle": "b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+        "python_native_tree": "4d4cb4aaaed3c395638b0485fc0d871749150149aded5e81491b42c7fdeb5402",
+        "runners/dsl/python/substrate_rs/__init__.py": "1fed837a6b7e8b35e463d3b8fdca498400c9cc420a016b81279365d6406a4049",
+        "runners/dsl/python/substrate_rs/_native.build.json": "b491d348c59cbf5cd5eee1b3f900a042f31e21665b6e63212edb9ed7f3d60f47",
+        "runners/dsl/src/graph_rules.rs": "b0e9c5bf0bbb4bf278fdab03610fa3f6f82d01ad8ee898ec789982ff41812a50",
+        "runners/dsl/src/py.rs": "d6f922bd406d3f500c10cea11978f47f9612b4ce6b9a348e848a30a305881cba",
+        "runners/dsl/src/substrate.rs": "bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+        "runners/dsl/src/term.rs": "5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+        "rust_dsl_tree": "06307beca12566832d3ba7ac157ec6177abb41a87dcf3755d824729d1a55ea0f",
+        "seed_manifest_inventory": "f1098a8168c0663746dffb253eb7230435957b3f8f8aa6d5c8197d224cf946b1",
+        "substrate/boot_all.py": "2bdf46f19228e1d85dbdcf12383116ceeb72aab0efe7ddd0cc6a51d23b45d220",
+        "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+        "substrate/seed_loader.py": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27",
+        "substrate/world_adapter.py": "7aeeb3d418fade3c90dc2d28a64a2685880d0a45d9fd47e4b6c2f6b6dd649023",
+        "substrate_tree": "206c8d6c975998dae706c64fe23be1ae7af659fd749577d978aafa1c30d7fdba"
+      },
+      "arm": "narrow_ungated",
+      "audit_rows": [
+        {
+          "inputs": {
+            "x": 1
+          },
+          "labels": [
+            {
+              "expected": 1,
+              "label_id": "807d1468c6805cc00c2baaf9718df6eb0d3a33fa701851dd45f4fbf8986c439b",
+              "oracle_sha256": "b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+              "source_id": "independent-codewrite-oracle-v1:b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac"
+            }
+          ],
+          "probe_id": "probe-1"
+        }
+      ],
+      "baseline_ok": false,
+      "boot_ns": 12134317155,
+      "candidate_id": "d2e21dfdacc6241316ca157cb1820a09bb19e1d294ec58d4b6f6e79dd5805fdb",
+      "candidate_id_matches": true,
+      "contract_passed": true,
+      "epoch_increment": 1,
+      "evidence_ns": 60201,
+      "loaded_seed_count": 731,
+      "oracle_sha256": "b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+      "pid": 16398,
+      "receipt": {
+        "candidate_id": "d2e21dfdacc6241316ca157cb1820a09bb19e1d294ec58d4b6f6e79dd5805fdb",
+        "evidence_sha256": "99ce4b4e4e60217c29227e674725ec4e8c6f9221412e3450524e82eddfdc08f5",
+        "invalid_reasons": [],
+        "receipt_sha256": "4aac9865b3574303c49c0f8b495de3e9428920cf7ee26597f83bc339927ba977",
+        "request_id": "0aa93d292918e701eca5e333f72b4bf2f6af7511f0529485e5706d205c1ddb09",
+        "residuals": [],
+        "schema": "IndependentAdequacyReceiptV1",
+        "status": "accepted",
+        "term_sha256": "89ca8e44ca480b8cb514cfdf26fa4e04682bc7420e2481542d68a0c837d351dc"
+      },
+      "repetition": 2,
+      "state_after": {
+        "epoch": 1,
+        "node_ids": [
+          "#25168"
+        ]
+      },
+      "state_before": {
+        "epoch": 0,
+        "node_ids": []
+      },
+      "strict": false,
+      "teach_cpu_ns": 20160155,
+      "teach_ns": 20151424,
+      "teach_ok": true,
+      "teach_reason": null,
+      "transfer_rows": [
+        {
+          "expected": 4,
+          "inputs": {
+            "x": 2
+          },
+          "native_match": false,
+          "native_output": 2,
+          "python_match": false,
+          "python_output": 2
+        },
+        {
+          "expected": 9,
+          "inputs": {
+            "x": 3
+          },
+          "native_match": false,
+          "native_output": 3,
+          "python_match": false,
+          "python_output": 3
+        },
+        {
+          "expected": 16,
+          "inputs": {
+            "x": 4
+          },
+          "native_match": false,
+          "native_output": 4,
+          "python_match": false,
+          "python_output": 4
+        },
+        {
+          "expected": 25,
+          "inputs": {
+            "x": 5
+          },
+          "native_match": false,
+          "native_output": 5,
+          "python_match": false,
+          "python_output": 5
+        }
+      ],
+      "written_ok": true,
+      "written_source": "def heldout_candidate(x):\n    \"\"\"A name-shaped code construction, over x.\"\"\"\n    return x\n"
+    },
+    {
+      "active_after": {
+        "domains/ast_to_term.py": "7ef48f9ecb67975428713ae1d2d54100fcdd39fc434dd586803059224f7cdcdb",
+        "domains/code_reading.py": "dd67d2942cf956c6e35f848aed4012c3ac072e9ac91d9e6b166e8ca44be57908",
+        "domains/code_write_growth.py": "691fd96072687baf2b99c6b3c9816cc6bb44805e35bec13f070a30061151761c",
+        "domains/code_writing.py": "4ad3148ca1796ad13f6128b9fd655e8568c7c843cd68bccee54f35cbf4ddabc9",
+        "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+        "domains/independent_adequacy.py": "33191341fdd63d16d0b9cb5203f27666da90b60fccd567ac4633306a9dcab418",
+        "domains/information_commitment.py": "da7ba4e2b289f24380289cde6170cbff82f4aee13b5d0158c103b4f9a660ee96",
+        "domains/reflective_faculty.py": "8f530a8c8754949216b71b473c4769fa5d351d01d6055127943c009d06763d05",
+        "domains/teach.py": "308a5f31d74dabb3ed8b24bd0c967abd5f94596a3ff76d17657330877fae2cfa",
+        "domains_tree": "200a51e70b6a1b587d82ed05fdea106aca865f89479972f5eefd3e1225c151f8",
+        "native_binary": "3816b4fb5d5746950b4cc3bf9e904a58e675ce53530727edf44095646dd58a54",
+        "oracle": "b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+        "python_native_tree": "4d4cb4aaaed3c395638b0485fc0d871749150149aded5e81491b42c7fdeb5402",
+        "runners/dsl/python/substrate_rs/__init__.py": "1fed837a6b7e8b35e463d3b8fdca498400c9cc420a016b81279365d6406a4049",
+        "runners/dsl/python/substrate_rs/_native.build.json": "b491d348c59cbf5cd5eee1b3f900a042f31e21665b6e63212edb9ed7f3d60f47",
+        "runners/dsl/src/graph_rules.rs": "b0e9c5bf0bbb4bf278fdab03610fa3f6f82d01ad8ee898ec789982ff41812a50",
+        "runners/dsl/src/py.rs": "d6f922bd406d3f500c10cea11978f47f9612b4ce6b9a348e848a30a305881cba",
+        "runners/dsl/src/substrate.rs": "bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+        "runners/dsl/src/term.rs": "5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+        "rust_dsl_tree": "06307beca12566832d3ba7ac157ec6177abb41a87dcf3755d824729d1a55ea0f",
+        "seed_manifest_inventory": "f1098a8168c0663746dffb253eb7230435957b3f8f8aa6d5c8197d224cf946b1",
+        "substrate/boot_all.py": "2bdf46f19228e1d85dbdcf12383116ceeb72aab0efe7ddd0cc6a51d23b45d220",
+        "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+        "substrate/seed_loader.py": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27",
+        "substrate/world_adapter.py": "7aeeb3d418fade3c90dc2d28a64a2685880d0a45d9fd47e4b6c2f6b6dd649023",
+        "substrate_tree": "206c8d6c975998dae706c64fe23be1ae7af659fd749577d978aafa1c30d7fdba"
+      },
+      "arm": "narrow_gated",
+      "audit_rows": [
+        {
+          "inputs": {
+            "x": 1
+          },
+          "labels": [
+            {
+              "expected": 1,
+              "label_id": "a1af3cb3369279b8d7169b12337a994625df06f6f756da5a0eeb58e9028d2c50",
+              "oracle_sha256": "b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+              "source_id": "independent-codewrite-oracle-v1:b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac"
+            }
+          ],
+          "probe_id": "probe-1"
+        }
+      ],
+      "baseline_ok": false,
+      "boot_ns": 12213012555,
+      "candidate_id": "d2e21dfdacc6241316ca157cb1820a09bb19e1d294ec58d4b6f6e79dd5805fdb",
+      "candidate_id_matches": true,
+      "contract_passed": true,
+      "epoch_increment": 1,
+      "evidence_ns": 58220,
+      "loaded_seed_count": 731,
+      "oracle_sha256": "b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+      "pid": 18740,
+      "receipt": {
+        "candidate_id": "d2e21dfdacc6241316ca157cb1820a09bb19e1d294ec58d4b6f6e79dd5805fdb",
+        "evidence_sha256": "fb9d9516640fb87ac831d6c05824af64728af78756f23cd619e283ec1c267c2d",
+        "invalid_reasons": [],
+        "receipt_sha256": "600d300c2bb55740550a02cbcc0d89a0120cfde642930f9cf10a3d9e07f5f5aa",
+        "request_id": "c8cee680e77ff5c24b60c01d7992980bb948494b043d91e0f6f739231f74aa6b",
+        "residuals": [],
+        "schema": "IndependentAdequacyReceiptV1",
+        "status": "accepted",
+        "term_sha256": "89ca8e44ca480b8cb514cfdf26fa4e04682bc7420e2481542d68a0c837d351dc"
+      },
+      "repetition": 3,
+      "state_after": {
+        "epoch": 1,
+        "node_ids": [
+          "#25168"
+        ]
+      },
+      "state_before": {
+        "epoch": 0,
+        "node_ids": []
+      },
+      "strict": true,
+      "teach_cpu_ns": 19522016,
+      "teach_ns": 19515597,
+      "teach_ok": true,
+      "teach_reason": null,
+      "transfer_rows": [
+        {
+          "expected": 4,
+          "inputs": {
+            "x": 2
+          },
+          "native_match": false,
+          "native_output": 2,
+          "python_match": false,
+          "python_output": 2
+        },
+        {
+          "expected": 9,
+          "inputs": {
+            "x": 3
+          },
+          "native_match": false,
+          "native_output": 3,
+          "python_match": false,
+          "python_output": 3
+        },
+        {
+          "expected": 16,
+          "inputs": {
+            "x": 4
+          },
+          "native_match": false,
+          "native_output": 4,
+          "python_match": false,
+          "python_output": 4
+        },
+        {
+          "expected": 25,
+          "inputs": {
+            "x": 5
+          },
+          "native_match": false,
+          "native_output": 5,
+          "python_match": false,
+          "python_output": 5
+        }
+      ],
+      "written_ok": true,
+      "written_source": "def heldout_candidate(x):\n    \"\"\"A name-shaped code construction, over x.\"\"\"\n    return x\n"
+    },
+    {
+      "active_after": {
+        "domains/ast_to_term.py": "7ef48f9ecb67975428713ae1d2d54100fcdd39fc434dd586803059224f7cdcdb",
+        "domains/code_reading.py": "dd67d2942cf956c6e35f848aed4012c3ac072e9ac91d9e6b166e8ca44be57908",
+        "domains/code_write_growth.py": "691fd96072687baf2b99c6b3c9816cc6bb44805e35bec13f070a30061151761c",
+        "domains/code_writing.py": "4ad3148ca1796ad13f6128b9fd655e8568c7c843cd68bccee54f35cbf4ddabc9",
+        "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+        "domains/independent_adequacy.py": "33191341fdd63d16d0b9cb5203f27666da90b60fccd567ac4633306a9dcab418",
+        "domains/information_commitment.py": "da7ba4e2b289f24380289cde6170cbff82f4aee13b5d0158c103b4f9a660ee96",
+        "domains/reflective_faculty.py": "8f530a8c8754949216b71b473c4769fa5d351d01d6055127943c009d06763d05",
+        "domains/teach.py": "308a5f31d74dabb3ed8b24bd0c967abd5f94596a3ff76d17657330877fae2cfa",
+        "domains_tree": "200a51e70b6a1b587d82ed05fdea106aca865f89479972f5eefd3e1225c151f8",
+        "native_binary": "3816b4fb5d5746950b4cc3bf9e904a58e675ce53530727edf44095646dd58a54",
+        "oracle": "b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+        "python_native_tree": "4d4cb4aaaed3c395638b0485fc0d871749150149aded5e81491b42c7fdeb5402",
+        "runners/dsl/python/substrate_rs/__init__.py": "1fed837a6b7e8b35e463d3b8fdca498400c9cc420a016b81279365d6406a4049",
+        "runners/dsl/python/substrate_rs/_native.build.json": "b491d348c59cbf5cd5eee1b3f900a042f31e21665b6e63212edb9ed7f3d60f47",
+        "runners/dsl/src/graph_rules.rs": "b0e9c5bf0bbb4bf278fdab03610fa3f6f82d01ad8ee898ec789982ff41812a50",
+        "runners/dsl/src/py.rs": "d6f922bd406d3f500c10cea11978f47f9612b4ce6b9a348e848a30a305881cba",
+        "runners/dsl/src/substrate.rs": "bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+        "runners/dsl/src/term.rs": "5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+        "rust_dsl_tree": "06307beca12566832d3ba7ac157ec6177abb41a87dcf3755d824729d1a55ea0f",
+        "seed_manifest_inventory": "f1098a8168c0663746dffb253eb7230435957b3f8f8aa6d5c8197d224cf946b1",
+        "substrate/boot_all.py": "2bdf46f19228e1d85dbdcf12383116ceeb72aab0efe7ddd0cc6a51d23b45d220",
+        "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+        "substrate/seed_loader.py": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27",
+        "substrate/world_adapter.py": "7aeeb3d418fade3c90dc2d28a64a2685880d0a45d9fd47e4b6c2f6b6dd649023",
+        "substrate_tree": "206c8d6c975998dae706c64fe23be1ae7af659fd749577d978aafa1c30d7fdba"
+      },
+      "arm": "broad_ungated",
+      "audit_rows": [
+        {
+          "inputs": {
+            "x": 2
+          },
+          "labels": [
+            {
+              "expected": 4,
+              "label_id": "10094afa0f4dddc0c15975a121aebc3b6077b023dd8edbd414b2ae0b0e42dcfd",
+              "oracle_sha256": "b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+              "source_id": "independent-codewrite-oracle-v1:b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac"
+            }
+          ],
+          "probe_id": "probe-1"
+        },
+        {
+          "inputs": {
+            "x": 1
+          },
+          "labels": [
+            {
+              "expected": 1,
+              "label_id": "9d6123de3aeda440500094108d1071df47c2a65fe3e4e672be366008e95643f3",
+              "oracle_sha256": "b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+              "source_id": "independent-codewrite-oracle-v1:b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac"
+            }
+          ],
+          "probe_id": "probe-2"
+        },
+        {
+          "inputs": {
+            "x": 3
+          },
+          "labels": [
+            {
+              "expected": 9,
+              "label_id": "f349487262e4ed7b263ca7600d3e03156da109cc315229de55ac80e76382fd0d",
+              "oracle_sha256": "b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+              "source_id": "independent-codewrite-oracle-v1:b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac"
+            }
+          ],
+          "probe_id": "probe-3"
+        }
+      ],
+      "baseline_ok": false,
+      "boot_ns": 12079704619,
+      "candidate_id": "d2e21dfdacc6241316ca157cb1820a09bb19e1d294ec58d4b6f6e79dd5805fdb",
+      "candidate_id_matches": true,
+      "contract_passed": true,
+      "epoch_increment": 1,
+      "evidence_ns": 112861,
+      "loaded_seed_count": 731,
+      "oracle_sha256": "b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+      "pid": 21082,
+      "receipt": {
+        "candidate_id": "d2e21dfdacc6241316ca157cb1820a09bb19e1d294ec58d4b6f6e79dd5805fdb",
+        "evidence_sha256": "efae5a75c11e7ae7a27f25bde9c6bafbc0cd7ab56ffb0e92dd3e08f8c868f020",
+        "invalid_reasons": [],
+        "receipt_sha256": "7abedc04ce133ac28bd6ce8647b3d776294e6a4bff8594ba967e0e1bc268096d",
+        "request_id": "88045052c3d4a31a594d10560adbb54bddfda701b98e0ac636e443b2044d240a",
+        "residuals": [
+          {
+            "input_sha256": "5e2b030a4a0f1582d78c0fd9924511cd6b1f2df9879e574f5ea1406c94052418",
+            "kind": "prediction_residual",
+            "labels": [
+              {
+                "expected": 4,
+                "label_id": "10094afa0f4dddc0c15975a121aebc3b6077b023dd8edbd414b2ae0b0e42dcfd",
+                "oracle_sha256": "b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+                "source_id": "independent-codewrite-oracle-v1:b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac"
+              }
+            ],
+            "prediction": 2,
+            "probe_id": "probe-1"
+          },
+          {
+            "input_sha256": "54afd0d590e6b277d9cd1ce46e5480f683682e43b6b480f7d24906d9e935e44c",
+            "kind": "prediction_residual",
+            "labels": [
+              {
+                "expected": 9,
+                "label_id": "f349487262e4ed7b263ca7600d3e03156da109cc315229de55ac80e76382fd0d",
+                "oracle_sha256": "b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+                "source_id": "independent-codewrite-oracle-v1:b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac"
+              }
+            ],
+            "prediction": 3,
+            "probe_id": "probe-3"
+          }
+        ],
+        "schema": "IndependentAdequacyReceiptV1",
+        "status": "rejected",
+        "term_sha256": "89ca8e44ca480b8cb514cfdf26fa4e04682bc7420e2481542d68a0c837d351dc"
+      },
+      "repetition": 3,
+      "state_after": {
+        "epoch": 1,
+        "node_ids": [
+          "#25168"
+        ]
+      },
+      "state_before": {
+        "epoch": 0,
+        "node_ids": []
+      },
+      "strict": false,
+      "teach_cpu_ns": 17838475,
+      "teach_ns": 18041033,
+      "teach_ok": true,
+      "teach_reason": null,
+      "transfer_rows": [
+        {
+          "expected": 4,
+          "inputs": {
+            "x": 2
+          },
+          "native_match": false,
+          "native_output": 2,
+          "python_match": false,
+          "python_output": 2
+        },
+        {
+          "expected": 9,
+          "inputs": {
+            "x": 3
+          },
+          "native_match": false,
+          "native_output": 3,
+          "python_match": false,
+          "python_output": 3
+        },
+        {
+          "expected": 16,
+          "inputs": {
+            "x": 4
+          },
+          "native_match": false,
+          "native_output": 4,
+          "python_match": false,
+          "python_output": 4
+        },
+        {
+          "expected": 25,
+          "inputs": {
+            "x": 5
+          },
+          "native_match": false,
+          "native_output": 5,
+          "python_match": false,
+          "python_output": 5
+        }
+      ],
+      "written_ok": true,
+      "written_source": "def heldout_candidate(x):\n    \"\"\"A name-shaped code construction, over x.\"\"\"\n    return x\n"
+    },
+    {
+      "active_after": {
+        "domains/ast_to_term.py": "7ef48f9ecb67975428713ae1d2d54100fcdd39fc434dd586803059224f7cdcdb",
+        "domains/code_reading.py": "dd67d2942cf956c6e35f848aed4012c3ac072e9ac91d9e6b166e8ca44be57908",
+        "domains/code_write_growth.py": "691fd96072687baf2b99c6b3c9816cc6bb44805e35bec13f070a30061151761c",
+        "domains/code_writing.py": "4ad3148ca1796ad13f6128b9fd655e8568c7c843cd68bccee54f35cbf4ddabc9",
+        "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+        "domains/independent_adequacy.py": "33191341fdd63d16d0b9cb5203f27666da90b60fccd567ac4633306a9dcab418",
+        "domains/information_commitment.py": "da7ba4e2b289f24380289cde6170cbff82f4aee13b5d0158c103b4f9a660ee96",
+        "domains/reflective_faculty.py": "8f530a8c8754949216b71b473c4769fa5d351d01d6055127943c009d06763d05",
+        "domains/teach.py": "308a5f31d74dabb3ed8b24bd0c967abd5f94596a3ff76d17657330877fae2cfa",
+        "domains_tree": "200a51e70b6a1b587d82ed05fdea106aca865f89479972f5eefd3e1225c151f8",
+        "native_binary": "3816b4fb5d5746950b4cc3bf9e904a58e675ce53530727edf44095646dd58a54",
+        "oracle": "b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+        "python_native_tree": "4d4cb4aaaed3c395638b0485fc0d871749150149aded5e81491b42c7fdeb5402",
+        "runners/dsl/python/substrate_rs/__init__.py": "1fed837a6b7e8b35e463d3b8fdca498400c9cc420a016b81279365d6406a4049",
+        "runners/dsl/python/substrate_rs/_native.build.json": "b491d348c59cbf5cd5eee1b3f900a042f31e21665b6e63212edb9ed7f3d60f47",
+        "runners/dsl/src/graph_rules.rs": "b0e9c5bf0bbb4bf278fdab03610fa3f6f82d01ad8ee898ec789982ff41812a50",
+        "runners/dsl/src/py.rs": "d6f922bd406d3f500c10cea11978f47f9612b4ce6b9a348e848a30a305881cba",
+        "runners/dsl/src/substrate.rs": "bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+        "runners/dsl/src/term.rs": "5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+        "rust_dsl_tree": "06307beca12566832d3ba7ac157ec6177abb41a87dcf3755d824729d1a55ea0f",
+        "seed_manifest_inventory": "f1098a8168c0663746dffb253eb7230435957b3f8f8aa6d5c8197d224cf946b1",
+        "substrate/boot_all.py": "2bdf46f19228e1d85dbdcf12383116ceeb72aab0efe7ddd0cc6a51d23b45d220",
+        "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+        "substrate/seed_loader.py": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27",
+        "substrate/world_adapter.py": "7aeeb3d418fade3c90dc2d28a64a2685880d0a45d9fd47e4b6c2f6b6dd649023",
+        "substrate_tree": "206c8d6c975998dae706c64fe23be1ae7af659fd749577d978aafa1c30d7fdba"
+      },
+      "arm": "broad_gated",
+      "audit_rows": [
+        {
+          "inputs": {
+            "x": 2
+          },
+          "labels": [
+            {
+              "expected": 4,
+              "label_id": "10094afa0f4dddc0c15975a121aebc3b6077b023dd8edbd414b2ae0b0e42dcfd",
+              "oracle_sha256": "b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+              "source_id": "independent-codewrite-oracle-v1:b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac"
+            }
+          ],
+          "probe_id": "probe-1"
+        },
+        {
+          "inputs": {
+            "x": 1
+          },
+          "labels": [
+            {
+              "expected": 1,
+              "label_id": "9d6123de3aeda440500094108d1071df47c2a65fe3e4e672be366008e95643f3",
+              "oracle_sha256": "b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+              "source_id": "independent-codewrite-oracle-v1:b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac"
+            }
+          ],
+          "probe_id": "probe-2"
+        },
+        {
+          "inputs": {
+            "x": 3
+          },
+          "labels": [
+            {
+              "expected": 9,
+              "label_id": "f349487262e4ed7b263ca7600d3e03156da109cc315229de55ac80e76382fd0d",
+              "oracle_sha256": "b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+              "source_id": "independent-codewrite-oracle-v1:b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac"
+            }
+          ],
+          "probe_id": "probe-3"
+        }
+      ],
+      "baseline_ok": false,
+      "boot_ns": 12116877841,
+      "candidate_id": "d2e21dfdacc6241316ca157cb1820a09bb19e1d294ec58d4b6f6e79dd5805fdb",
+      "candidate_id_matches": true,
+      "contract_passed": true,
+      "epoch_increment": 0,
+      "evidence_ns": 116851,
+      "loaded_seed_count": 731,
+      "oracle_sha256": "b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+      "pid": 23424,
+      "receipt": {
+        "candidate_id": "d2e21dfdacc6241316ca157cb1820a09bb19e1d294ec58d4b6f6e79dd5805fdb",
+        "evidence_sha256": "efae5a75c11e7ae7a27f25bde9c6bafbc0cd7ab56ffb0e92dd3e08f8c868f020",
+        "invalid_reasons": [],
+        "receipt_sha256": "7abedc04ce133ac28bd6ce8647b3d776294e6a4bff8594ba967e0e1bc268096d",
+        "request_id": "88045052c3d4a31a594d10560adbb54bddfda701b98e0ac636e443b2044d240a",
+        "residuals": [
+          {
+            "input_sha256": "5e2b030a4a0f1582d78c0fd9924511cd6b1f2df9879e574f5ea1406c94052418",
+            "kind": "prediction_residual",
+            "labels": [
+              {
+                "expected": 4,
+                "label_id": "10094afa0f4dddc0c15975a121aebc3b6077b023dd8edbd414b2ae0b0e42dcfd",
+                "oracle_sha256": "b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+                "source_id": "independent-codewrite-oracle-v1:b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac"
+              }
+            ],
+            "prediction": 2,
+            "probe_id": "probe-1"
+          },
+          {
+            "input_sha256": "54afd0d590e6b277d9cd1ce46e5480f683682e43b6b480f7d24906d9e935e44c",
+            "kind": "prediction_residual",
+            "labels": [
+              {
+                "expected": 9,
+                "label_id": "f349487262e4ed7b263ca7600d3e03156da109cc315229de55ac80e76382fd0d",
+                "oracle_sha256": "b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+                "source_id": "independent-codewrite-oracle-v1:b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac"
+              }
+            ],
+            "prediction": 3,
+            "probe_id": "probe-3"
+          }
+        ],
+        "schema": "IndependentAdequacyReceiptV1",
+        "status": "rejected",
+        "term_sha256": "89ca8e44ca480b8cb514cfdf26fa4e04682bc7420e2481542d68a0c837d351dc"
+      },
+      "repetition": 3,
+      "state_after": {
+        "epoch": 0,
+        "node_ids": []
+      },
+      "state_before": {
+        "epoch": 0,
+        "node_ids": []
+      },
+      "strict": true,
+      "teach_cpu_ns": 4156152,
+      "teach_ns": 4150867,
+      "teach_ok": false,
+      "teach_reason": "independent adequacy receipt missing, invalid, or bound to another candidate",
+      "transfer_rows": [
+        {
+          "expected": 4,
+          "inputs": {
+            "x": 2
+          },
+          "native_match": false,
+          "native_output": null,
+          "python_match": false,
+          "python_output": null
+        },
+        {
+          "expected": 9,
+          "inputs": {
+            "x": 3
+          },
+          "native_match": false,
+          "native_output": null,
+          "python_match": false,
+          "python_output": null
+        },
+        {
+          "expected": 16,
+          "inputs": {
+            "x": 4
+          },
+          "native_match": false,
+          "native_output": null,
+          "python_match": false,
+          "python_output": null
+        },
+        {
+          "expected": 25,
+          "inputs": {
+            "x": 5
+          },
+          "native_match": false,
+          "native_output": null,
+          "python_match": false,
+          "python_output": null
+        }
+      ],
+      "written_ok": false,
+      "written_source": null
+    },
+    {
+      "active_after": {
+        "domains/ast_to_term.py": "7ef48f9ecb67975428713ae1d2d54100fcdd39fc434dd586803059224f7cdcdb",
+        "domains/code_reading.py": "dd67d2942cf956c6e35f848aed4012c3ac072e9ac91d9e6b166e8ca44be57908",
+        "domains/code_write_growth.py": "691fd96072687baf2b99c6b3c9816cc6bb44805e35bec13f070a30061151761c",
+        "domains/code_writing.py": "4ad3148ca1796ad13f6128b9fd655e8568c7c843cd68bccee54f35cbf4ddabc9",
+        "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+        "domains/independent_adequacy.py": "33191341fdd63d16d0b9cb5203f27666da90b60fccd567ac4633306a9dcab418",
+        "domains/information_commitment.py": "da7ba4e2b289f24380289cde6170cbff82f4aee13b5d0158c103b4f9a660ee96",
+        "domains/reflective_faculty.py": "8f530a8c8754949216b71b473c4769fa5d351d01d6055127943c009d06763d05",
+        "domains/teach.py": "308a5f31d74dabb3ed8b24bd0c967abd5f94596a3ff76d17657330877fae2cfa",
+        "domains_tree": "200a51e70b6a1b587d82ed05fdea106aca865f89479972f5eefd3e1225c151f8",
+        "native_binary": "3816b4fb5d5746950b4cc3bf9e904a58e675ce53530727edf44095646dd58a54",
+        "oracle": "b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+        "python_native_tree": "4d4cb4aaaed3c395638b0485fc0d871749150149aded5e81491b42c7fdeb5402",
+        "runners/dsl/python/substrate_rs/__init__.py": "1fed837a6b7e8b35e463d3b8fdca498400c9cc420a016b81279365d6406a4049",
+        "runners/dsl/python/substrate_rs/_native.build.json": "b491d348c59cbf5cd5eee1b3f900a042f31e21665b6e63212edb9ed7f3d60f47",
+        "runners/dsl/src/graph_rules.rs": "b0e9c5bf0bbb4bf278fdab03610fa3f6f82d01ad8ee898ec789982ff41812a50",
+        "runners/dsl/src/py.rs": "d6f922bd406d3f500c10cea11978f47f9612b4ce6b9a348e848a30a305881cba",
+        "runners/dsl/src/substrate.rs": "bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+        "runners/dsl/src/term.rs": "5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+        "rust_dsl_tree": "06307beca12566832d3ba7ac157ec6177abb41a87dcf3755d824729d1a55ea0f",
+        "seed_manifest_inventory": "f1098a8168c0663746dffb253eb7230435957b3f8f8aa6d5c8197d224cf946b1",
+        "substrate/boot_all.py": "2bdf46f19228e1d85dbdcf12383116ceeb72aab0efe7ddd0cc6a51d23b45d220",
+        "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+        "substrate/seed_loader.py": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27",
+        "substrate/world_adapter.py": "7aeeb3d418fade3c90dc2d28a64a2685880d0a45d9fd47e4b6c2f6b6dd649023",
+        "substrate_tree": "206c8d6c975998dae706c64fe23be1ae7af659fd749577d978aafa1c30d7fdba"
+      },
+      "arm": "broad_gated",
+      "audit_rows": [
+        {
+          "inputs": {
+            "x": 1
+          },
+          "labels": [
+            {
+              "expected": 1,
+              "label_id": "fabb6a83418b96877245c645f0e40f1f3e0701f0677f11eeaa5c284a37cf3d24",
+              "oracle_sha256": "b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+              "source_id": "independent-codewrite-oracle-v1:b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac"
+            }
+          ],
+          "probe_id": "probe-1"
+        },
+        {
+          "inputs": {
+            "x": 4
+          },
+          "labels": [
+            {
+              "expected": 16,
+              "label_id": "a2ae6446008e9a823b26482bf0bf4fdd7de3ba9e6b4db6eba9e1e5ab265ffbb9",
+              "oracle_sha256": "b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+              "source_id": "independent-codewrite-oracle-v1:b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac"
+            }
+          ],
+          "probe_id": "probe-2"
+        },
+        {
+          "inputs": {
+            "x": 3
+          },
+          "labels": [
+            {
+              "expected": 9,
+              "label_id": "870c6de211002527fb6a273ef5d9e4226d8ea389bce1a6db2e2f979f16155b64",
+              "oracle_sha256": "b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+              "source_id": "independent-codewrite-oracle-v1:b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac"
+            }
+          ],
+          "probe_id": "probe-3"
+        }
+      ],
+      "baseline_ok": false,
+      "boot_ns": 12181414729,
+      "candidate_id": "d2e21dfdacc6241316ca157cb1820a09bb19e1d294ec58d4b6f6e79dd5805fdb",
+      "candidate_id_matches": true,
+      "contract_passed": true,
+      "epoch_increment": 0,
+      "evidence_ns": 112661,
+      "loaded_seed_count": 731,
+      "oracle_sha256": "b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+      "pid": 25766,
+      "receipt": {
+        "candidate_id": "d2e21dfdacc6241316ca157cb1820a09bb19e1d294ec58d4b6f6e79dd5805fdb",
+        "evidence_sha256": "459c37651c7dfcaba3bc49222d0e00eef37375376fdd857d2f2a7b9a07ce258b",
+        "invalid_reasons": [],
+        "receipt_sha256": "f7a1f1785fb3867590d3a4b78a109b16501b36f3df22fc8086458486451734d9",
+        "request_id": "bd97962be29fe4112949606d74f188c77b668f3c38f9c0d9ac7c369249a83688",
+        "residuals": [
+          {
+            "input_sha256": "81148b1be37b2b7b90cb11cda4b18ede67721435053c0c0e0f077a5d1b8a36d7",
+            "kind": "prediction_residual",
+            "labels": [
+              {
+                "expected": 16,
+                "label_id": "a2ae6446008e9a823b26482bf0bf4fdd7de3ba9e6b4db6eba9e1e5ab265ffbb9",
+                "oracle_sha256": "b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+                "source_id": "independent-codewrite-oracle-v1:b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac"
+              }
+            ],
+            "prediction": 4,
+            "probe_id": "probe-2"
+          },
+          {
+            "input_sha256": "54afd0d590e6b277d9cd1ce46e5480f683682e43b6b480f7d24906d9e935e44c",
+            "kind": "prediction_residual",
+            "labels": [
+              {
+                "expected": 9,
+                "label_id": "870c6de211002527fb6a273ef5d9e4226d8ea389bce1a6db2e2f979f16155b64",
+                "oracle_sha256": "b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+                "source_id": "independent-codewrite-oracle-v1:b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac"
+              }
+            ],
+            "prediction": 3,
+            "probe_id": "probe-3"
+          }
+        ],
+        "schema": "IndependentAdequacyReceiptV1",
+        "status": "rejected",
+        "term_sha256": "89ca8e44ca480b8cb514cfdf26fa4e04682bc7420e2481542d68a0c837d351dc"
+      },
+      "repetition": 1,
+      "state_after": {
+        "epoch": 0,
+        "node_ids": []
+      },
+      "state_before": {
+        "epoch": 0,
+        "node_ids": []
+      },
+      "strict": true,
+      "teach_cpu_ns": 4071561,
+      "teach_ns": 4066136,
+      "teach_ok": false,
+      "teach_reason": "independent adequacy receipt missing, invalid, or bound to another candidate",
+      "transfer_rows": [
+        {
+          "expected": 4,
+          "inputs": {
+            "x": 2
+          },
+          "native_match": false,
+          "native_output": null,
+          "python_match": false,
+          "python_output": null
+        },
+        {
+          "expected": 9,
+          "inputs": {
+            "x": 3
+          },
+          "native_match": false,
+          "native_output": null,
+          "python_match": false,
+          "python_output": null
+        },
+        {
+          "expected": 16,
+          "inputs": {
+            "x": 4
+          },
+          "native_match": false,
+          "native_output": null,
+          "python_match": false,
+          "python_output": null
+        },
+        {
+          "expected": 25,
+          "inputs": {
+            "x": 5
+          },
+          "native_match": false,
+          "native_output": null,
+          "python_match": false,
+          "python_output": null
+        }
+      ],
+      "written_ok": false,
+      "written_source": null
+    }
+  ]
+}

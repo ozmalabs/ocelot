@@ -325,6 +325,11 @@ def _multi_stmt_skeleton_and_kind(em: "ast_to_term.AstTermEmitter", func_root: i
             skeleton = [["ASSIGN"], ["FOR"], [inner], ["RETURN"]]
             kind = "accumulation" if inner == "AUGASSIGN" else "other"
             return skeleton, kind
+    if (len(stmts)==3 and em._attrs(stmts[0]).get("ast_type")=="Assign"
+            and em._attrs(stmts[1]).get("ast_type")=="If"
+            and em._attrs(stmts[2]).get("ast_type")=="Return"
+            and em.is_string_find_branch(func_root)):
+        return [["ASSIGN"],["IF"],["RETURN"]], "string_find_branch"
     if (all(em._attrs(s).get("ast_type") == "Assign" for s in stmts[:-1])
             and em._attrs(stmts[-1]).get("ast_type") == "Return"):
         return [["LET"]], "let_chain"
@@ -549,6 +554,7 @@ def _agreement(code_words: set, comment_words: set) -> dict:
 # --------------------------------------------------------------------------- #
 def _read_one(agent, em: "ast_to_term.AstTermEmitter", froot: int, name: str) -> dict:
     sub, _native, _ag = _resolve(agent)
+    em.prepare_function(froot)
     args = _function_args(em, froot)
     doc = em._attrs(froot).get("docstring")
     out: dict[str, Any] = {"name": name, "args": args, "docstring": doc}
@@ -627,6 +633,8 @@ def _read_one(agent, em: "ast_to_term.AstTermEmitter", froot: int, name: str) ->
                 term_json = em.emit_accumulation(froot)
             elif kind == "branching_return":
                 term_json = em.emit_branching_return(froot)
+            elif kind == "string_find_branch":
+                term_json = em.emit_string_find_branch(froot)
             else:
                 raise ast_to_term.EmitError(
                     f"no Term emitter for this multi-statement shape "
@@ -653,7 +661,9 @@ def _read_one(agent, em: "ast_to_term.AstTermEmitter", froot: int, name: str) ->
 #  PUBLIC ENTRIES
 # --------------------------------------------------------------------------- #
 def read_function(agent, source: str, func_name: Optional[str] = None,
-                  *, range_bind: Optional[dict] = None) -> dict:
+                  *, range_bind: Optional[dict] = None,
+                  input_types: Optional[dict] = None,
+                  input_values: Optional[dict] = None) -> dict:
     """Read ONE function out of `source` (a Python compute-core, or a whole
     file/snippet — `func_name` picks which FunctionDef; `None` = the first).
     Ingest -> skeleton -> decode/mint -> ground -> emit/render -> docstring
@@ -663,7 +673,12 @@ def read_function(agent, source: str, func_name: Optional[str] = None,
     unchanged): concrete int binds threaded to the `AstTermEmitter` for the
     accumulation construction's `range(n)` iterable materialisation --
     `predict_output` passes the call's own args (the SAME concrete-bind
-    status `ast_to_term.py`'s pre-existing Sum-fold machinery already had)."""
+    status `ast_to_term.py`'s pre-existing Sum-fold machinery already had).
+    `input_types` carries only concrete call-value type names; selected
+    emitters use these to refuse a Term when the native operation's domain
+    differs from the source operation's domain. `input_values` carries the
+    actual concrete binds needed to establish safe native signed-i64
+    bitwise evaluation; it is not used to synthesize outputs or teach rules."""
     ensure_codebook(agent)
     sub, _native, _ag = _resolve(agent)
     ast_to_term.open_ast_productions(sub)
@@ -676,7 +691,9 @@ def read_function(agent, source: str, func_name: Optional[str] = None,
     if name not in func_roots:
         return {"note": "function %r not found in source" % name,
                "available": list(func_roots), "construction": None, "what_does": None}
-    em = ast_to_term.AstTermEmitter(sub, held_leaves={}, range_bind=range_bind)
+    em = ast_to_term.AstTermEmitter(sub, held_leaves={}, range_bind=range_bind,
+                                    input_types=input_types, input_values=input_values,
+                                    module_root=rec["root"])
     return _read_one(agent, em, func_roots[name], name)
 
 
@@ -697,7 +714,7 @@ def read_source(agent, source: str) -> dict:
     if not func_roots:
         return {"note": "no function definitions found", "functions": {},
                "primary_function": None, "answer": None}
-    em = ast_to_term.AstTermEmitter(sub, held_leaves={})
+    em = ast_to_term.AstTermEmitter(sub, held_leaves={}, module_root=rec["root"])
     functions = {nm: _read_one(agent, em, nid, nm) for nm, nid in func_roots.items()}
     primary = next(iter(func_roots))
     return {"functions": functions, "primary_function": primary, "answer": primary}
@@ -725,7 +742,9 @@ def predict_output(agent, source: str, func_name: str, args: Optional[dict] = No
     call_args = dict(args or {})
     range_bind = {k: v for k, v in call_args.items()
                  if isinstance(v, int) and not isinstance(v, bool)}
-    reading = read_function(agent, source, func_name, range_bind=range_bind)
+    input_types={k:type(v).__name__ for k,v in call_args.items()}
+    reading = read_function(agent, source, func_name, range_bind=range_bind,
+                            input_types=input_types, input_values=call_args)
     if reading.get("term") is None:
         raise ast_to_term.EmitError(
             reading.get("emit_error") or reading.get("note")

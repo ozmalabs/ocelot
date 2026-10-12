@@ -1,0 +1,21 @@
+{
+  "schema": "ThoughtexperimentShapeDecodingProfilerDiagnosticV1",
+  "date": "2026-10-01",
+  "attempts": [
+    {
+      "mode": "concurrent",
+      "method": "Enable cProfile with per-thread CPU timer in every worker thread",
+      "outcome": "Rejected",
+      "error": "ValueError: Another profiling tool is already active",
+      "use": "Diagnostic only; excluded from confirmatory results"
+    },
+    {
+      "mode": "concurrent",
+      "method": "Enable cProfile in one designated worker while other workers run",
+      "outcome": "Rejected",
+      "reason": "Profile self time substantially exceeded the target thread CPU and included negative C-call self time (-2251.8 ms versus 420.1 ms worker CPU), indicating invalid cross-thread attribution with this timer/profile arrangement.",
+      "use": "Diagnostic only; excluded from confirmatory results"
+    }
+  ],
+  "confirmatory_adjustment": "Profile sequential cells only; concurrent cells retain unprofiled per-thread CPU, wave wall, phase timing, task-oracle, isolation, parity, and source/binary-lock measurements."
+}

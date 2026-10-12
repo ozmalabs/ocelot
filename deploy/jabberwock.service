@@ -14,7 +14,8 @@
 # This gives: start-on-boot, auto-restart on crash (which resumes from the newest
 # valid checkpoint), and a cgroup MemoryMax hard-ceiling — the "guardrail that isn't a
 # cage": the agent perceives compute-pressure *inside*; this is the floor outside, so a
-# runaway tick can't take the box down. Raise it as the resident graph grows.
+# runaway tick can't take the box down. The conversation profile uses a dedicated
+# checkpoint directory so existing full-profile snapshots remain untouched.
 #
 # --no-llm pins the zero-hosted-LLM guarantee per invocation (OZMA_NO_LLM=1:
 # any hosted call raises — see docs/llm_touchpoint_audit.md's graduation
@@ -29,14 +30,19 @@ After=network.target
 Type=simple
 WorkingDirectory=%h/ozma/internal/research/experiments/gamma-substrate
 Environment=PYTHONPATH=%h/ozma/internal/research/experiments/gamma-substrate/runners/dsl/python:%h/ozma/internal/research/experiments/gamma-substrate
-ExecStart=/usr/bin/env python3 scripts/jabberwock_daemon.py --ckpt-dir %h/.jabberwock/checkpoints --interval 60 --tick-hz 20 --keep 10 --seeds full --http-port 8787 --runs-dir %h/.jabberwock/runs --no-llm --world-every 500
+Environment=PYTHONMALLOC=malloc
+Environment=MALLOC_ARENA_MAX=1
+Environment=MALLOC_TRIM_THRESHOLD_=32768
+ExecStart=/usr/bin/env python3 scripts/jabberwock_daemon.py --ckpt-dir %h/.jabberwock/checkpoints-conversation --interval 60 --tick-hz 20 --keep 10 --seeds conversation --strict-seed-profile-checkpoints --http-port 8787 --runs-dir %h/.jabberwock/runs --no-llm --world-every 500
 # graceful: SIGTERM triggers a final checkpoint (handled in-daemon)
 KillSignal=SIGTERM
 TimeoutStopSec=30
 Restart=always
 RestartSec=5
-# guardrail floor (not a cage) — tune to your box + graph size:
-MemoryMax=4G
+# Hard startup guardrail for the connected profile. The 150 MiB evaluation
+# ceiling is separate: local grammar/dictionary attachment currently peaks
+# above it during startup, so do not make the service self-OOM on boot.
+MemoryMax=384M
 # optional: keep it polite on a shared machine
 # CPUWeight=50
 

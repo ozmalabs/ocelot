@@ -8,6 +8,9 @@
 \usepackage{array}
 \usepackage{natbib}
 \usepackage{hyperref}
+\usepackage{xr-hyper}
+\externaldocument[AD-]{09_adaptability}
+\externaldocument[GE-]{01_law_of_graphic_equalisation_theory_referenced}
 \hypersetup{colorlinks=true,linkcolor=blue,citecolor=blue,urlcolor=blue}
 \input{paper_metadata.tex}
 
@@ -108,7 +111,7 @@ explicit aggregation argument; this paper supplies none.
 
 \section{Cost-floor pressure and the ledger}\label{sec:ledger}
 
-\begin{definition}[Audited task cost]
+\begin{definition}[Audited task cost]\label{def:audited-cost}
 For named unit $u$, outcome $o$, task configuration $q$, and interval $i$, let
 \[
  C^{\mathrm{aud}}_{i}(q)=C^{I}_{i}+C^{Q}_{i}+C^{B}_{i}+C^{V}_{i}+C^{G}_{i}+C^{E}_{i}
@@ -121,17 +124,32 @@ time horizon, allocation rule, and uncertainty range. A list API price is at
 most one component of $C^{I}_{i}$.
 \end{definition}
 
-\begin{definition}[Feasible lower envelope and compression]
-Let $F_{u,o,i}$ be the lowest \emph{observed and boundary-harmonised} audited
-cost among feasible configurations that meet the declared outcome, reliability,
-access, and externality conditions. A named configuration experiences
-cost-floor pressure only when repeated measurements establish
-\[
- C^{\mathrm{aud}}_{i}(q)-F_{u,o,i}\downarrow 0
-\]
-on a stable outcome scale. $F$ is an empirical lower envelope, not a universal
-zero cost, a thermodynamic theorem, or a claim that all social costs vanish.
+\begin{definition}[Feasible lower envelope and compression]\label{def:envelope}
+Let $F_{u,o,i}$ be the lowest observed, boundary-harmonised audited cost
+among configurations meeting fixed outcome, reliability, access and
+externality conditions. Envelope compression means $F_{u,o,i+1}<F_{u,o,i}$
+for declared intervals on the same outcome scale; report the rate
+$(F_{u,o,i+1}-F_{u,o,i})/(t_{i+1}-t_i)$.
+The separate gap $C_i^{\rm aud}(q)-F_{u,o,i}$ measures a configuration's
+convergence to the frontier. It can rise when the frontier improves and
+can be zero while all costs rise. Neither quantity is a thermodynamic floor.
 \end{definition}
+The empirical envelope differs from the logical-erasure floor discussed in
+Graphic Equalisation's Remark~\ref{GE-rem:red-queen}. A declining observed
+price does not compress Landauer's thermal bound, nor does it measure total
+civilisational adaptation cost.
+
+For a named partial ledger, take the AI Index's GPT-3.5-level benchmark
+threshold, a million-token inference-price unit, its listed qualifying
+configurations and the November 2022--October 2024 interval. The reported
+price moves from $\$20$ to $\$0.07$ per million tokens \citep{stanford2025}.
+This instantiates an inference-price frontier only: the operator's full
+coordination, embodied, verification, governance and externality costs are
+unmeasured. The price-compression claim fails if a re-audit of the same
+threshold and token unit does not preserve the fall; the full audited-cost
+compression claim is not established by this partial ledger.
+
+
 
 \begin{remark}[Grammar-relative shapes, floors, and MDL]\label{rem:mdl-cost}
 Here a declared outcome $o$ is a shape, or a shape trajectory, rather than an
@@ -238,8 +256,7 @@ The agricultural record illustrates the broader, slower pattern without making
 AI its cause. Agriculture is the clearest historical example of a primary
 activity whose labour requirement and input composition have been transformed:
 in historical series for France, the United Kingdom, Italy, and the Netherlands,
-the majority of the labour force worked in farming after the agricultural
-revolution \citep{owidag2026}. This is country evidence, not a reconstructed
+large agricultural employment shares are documented before industrialisation \citep{owidag2026}. This is country evidence, not a reconstructed
 share for every human population or a single global historical estimate. USDA
 accounting further reports that U.S. farm output nearly tripled from 1948--2023,
 with aggregate inputs changing little; land and labour inputs fell while
@@ -255,7 +272,7 @@ convenience therefore cannot stand as evidence that commerce or transport is
 near a universal floor.
 
 The proposed evidence protocol is task-level. It requires repeated
-performance-normalised cost data; the full audit boundary in Definition~1;
+performance-normalised cost data; the full audit boundary in Definition~\ref{def:audited-cost};
 reliability, appeal, and repair rates; accessibility and distribution; energy,
 water, material, and local infrastructure effects; and a comparison with an
 unchanged or alternative configuration. A named LLM release is admissible only
@@ -355,8 +372,7 @@ singularity, known mechanism, or end of human influence or geology.
 
 Human biology is one constrained and socially mediated timescale among learning,
 care, cohort replacement, organisation, law, infrastructure, and Earth-system
-processes. It is not a collective clock or a biological limit on institutional
-adaptation. Development and skill formation are responsive to social conditions
+processes. This distinguishes the fixed individual-budget premise in \emph{Adaptability}'s Remark~\ref{AD-rem:race} from collective adaptation: partitioning, tools and organisational changes can change the effective bound. Neither a universal institutional rate nor its negation follows from biological development alone. Development and skill formation are responsive to social conditions
 and cumulative investment \citep{nasem2019,heckman2006}; institutions can
 coordinate under specified conditions, and can also fail through fragmented
 authority, missing resources, and illegitimacy \citep{ostrom1990,ipcc2022wgii}.
@@ -379,8 +395,7 @@ transition premise or accelerate a forecast.
 \section{Falsifiers and conclusion}\label{sec:falsifiers}
 
 The cost-floor thesis fails for a named case if: (i) performance-normalised,
-boundary-harmonised audited cost does not decline toward a measured lower
-envelope; (ii) the apparent saving is a transfer to an omitted payer, population,
+boundary-harmonised lower envelope does not decline on the fixed outcome scale; (ii) the apparent saving is a transfer to an omitted payer, population,
 time, or environmental sink; (iii) verified adaptation, access, and repair do
 not improve despite the saving; or (iv) a comparable configuration provides the
 outcome at lower total cost. The economic reorganisation hypothesis fails

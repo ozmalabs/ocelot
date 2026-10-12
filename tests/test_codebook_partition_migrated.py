@@ -42,7 +42,11 @@ _SEEDS = _ROOT / "seeds"
 #  helpers — mechanical seed I/O + the live reading-faculty decode call shape
 # --------------------------------------------------------------------------- #
 def _seed_nodes(name: str) -> list[dict]:
-    with open(_SEEDS / f"{name}.json") as f:
+    # reading_constructions is domain data (domain_data/, tranche 11); the rest are seeds.
+    path = _SEEDS / f"{name}.json"
+    if not path.exists():
+        path = _ROOT / "domain_data" / f"{name}.json"
+    with open(path) as f:
         return [n for n in (json.load(f).get("nodes") or []) if isinstance(n, dict)]
 
 
@@ -255,7 +259,8 @@ def test_staging_signature_types_are_not_decode_pools(seed, staging_type, derive
     # No decode anywhere points at the staging type — in seed rule bodies OR through a
     # Python module constant (the form a seed-only grep misses, e.g.
     # `domains/trope_theme.py:111 _CODEBOOK_TYPE = "ShapeSignatureTrope"`).
-    for p in list(_SEEDS.glob("*.json")) + list((_ROOT / "domains").glob("*.py")):
+    for p in (list(_SEEDS.glob("*.json")) + list((_ROOT / "domain_data").glob("*.json"))
+              + list((_ROOT / "domains").glob("*.py"))):
         text = p.read_text()
         assert f'"codebook_type": "{staging_type}"' not in text, (p, staging_type)
         assert f'CODEBOOK_TYPE = "{staging_type}"' not in text, (

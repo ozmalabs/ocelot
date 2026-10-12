@@ -1,0 +1,106 @@
+{
+  "analysis_amended_after_capture": true,
+  "analyzer_sha256": "d74631337d8dd58cc850d460e946d86a556b24c307b50bbe8a7dce0f1932f3a7",
+  "capture_sha256": "0b1cb765d95a6bd08128759514fa06673134549d72c38d9ce046aec04a00a372",
+  "checks": {
+    "all_corruption_probe_rows_joined": true,
+    "analyzer_source_stable": true,
+    "capture_runner_source_locked": true,
+    "clean_live_readout_matches_v2_1": true,
+    "complete_seed_morphology_pairs": true,
+    "corruption_masks_match_offline": true,
+    "live_acts_match_weight_sums": true,
+    "live_winners_within_exact_max_set": false,
+    "prerequisite_captures_valid": true,
+    "runner_capture_claims_pass": true,
+    "training_schedule_exact": true,
+    "twelve_unique_worker_processes": true,
+    "weights_match_v2_1": true,
+    "weights_unchanged_after_frozen_probes": true,
+    "worker_source_stable": true
+  },
+  "diagnostics": {
+    "native_vs_offline_set_valued_region_disagreements": 32,
+    "native_winner_one_ulp_cases": 7
+  },
+  "groups": [
+    {
+      "condition": "drop_active_25pct",
+      "morphology": "square",
+      "probe_count": 288,
+      "region_correct": 272,
+      "tied_winner_probes": 0
+    },
+    {
+      "condition": "drop_active_50pct",
+      "morphology": "square",
+      "probe_count": 288,
+      "region_correct": 233,
+      "tied_winner_probes": 0
+    },
+    {
+      "condition": "drop_active_75pct",
+      "morphology": "square",
+      "probe_count": 288,
+      "region_correct": 183,
+      "tied_winner_probes": 0
+    },
+    {
+      "condition": "add_background_25pct",
+      "morphology": "square",
+      "probe_count": 288,
+      "region_correct": 285,
+      "tied_winner_probes": 0
+    },
+    {
+      "condition": "add_background_50pct",
+      "morphology": "square",
+      "probe_count": 288,
+      "region_correct": 272,
+      "tied_winner_probes": 0
+    },
+    {
+      "condition": "drop_active_25pct",
+      "morphology": "cross",
+      "probe_count": 288,
+      "region_correct": 205,
+      "tied_winner_probes": 0
+    },
+    {
+      "condition": "drop_active_50pct",
+      "morphology": "cross",
+      "probe_count": 288,
+      "region_correct": 176,
+      "tied_winner_probes": 0
+    },
+    {
+      "condition": "drop_active_75pct",
+      "morphology": "cross",
+      "probe_count": 288,
+      "region_correct": 108,
+      "tied_winner_probes": 0
+    },
+    {
+      "condition": "add_background_25pct",
+      "morphology": "cross",
+      "probe_count": 288,
+      "region_correct": 192,
+      "tied_winner_probes": 0
+    },
+    {
+      "condition": "add_background_50pct",
+      "morphology": "cross",
+      "probe_count": 288,
+      "region_correct": 197,
+      "tied_winner_probes": 0
+    }
+  ],
+  "interpretation_boundary": "Live Rust graph-rule replay of deterministic corruption masks for the frozen v2.1 synthetic retinotopy map. This checks live scheduler/readout parity and does not establish independent robustness, online adaptation, natural-image recognition, or semantic vision.",
+  "lock_sha256": "6450767c28d9546fd22757ddc526f44b26943a7ac9b12bcdd08d56f62cc78068",
+  "locked_analyzer_sha256": "3a64c379418557fe7adbeb190b1d2e6f93057df2e90e09cc1aee8bfbb88fd3d7",
+  "max_activation_absolute_error": 1.1102230246251565e-16,
+  "passed": false,
+  "protocol_sha256": "a7f653d4a43a504f1e3f54c75494e32d27180ffd97ac1b9b20ed8e53ca987353",
+  "run_id": "vision-eye-corruption-live-replay-v1-analysis-20261005",
+  "schema": "VisionEyeCorruptionLiveReplayV1Analysis"
+}

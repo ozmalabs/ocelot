@@ -337,6 +337,21 @@ pub enum RuleKey {
     Edge(Sym),
 }
 
+/// Opt-in ownership contract for scoped matching. Every owned node must be
+/// either an anchor of `anchor_type` or an `owner_type` node with exactly one
+/// outgoing `owner_edge` to an owned anchor. The matcher verifies this graph
+/// shape and verifies that the rule pattern uses the owner/anchor link. If
+/// validation fails, scoped matching falls back to generic matching and the
+/// any-owned-node filter.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct ScopeAnchor {
+    pub anchor_var: Sym,
+    pub anchor_type: Sym,
+    pub owner_var: Sym,
+    pub owner_type: Sym,
+    pub owner_edge: Sym,
+}
+
 /// One rewrite rule. Has a name for diagnostics, a pattern (match
 /// edges + optional where-clause Term), and an ordered effect list.
 #[derive(Clone, Debug, Default)]
@@ -456,6 +471,10 @@ pub struct RewriteRule {
     /// Optional type-indexed driver: enumerate `nodes_of_type(match_type)`
     /// bound to the single match-edge's tgt_var. Falls back to the matcher.
     pub match_type: Option<Sym>,
+    /// Optional, validated scope ownership contract for multi-edge matching.
+    /// Absent metadata preserves generic full matching and any-owned-node
+    /// semantics.
+    pub scope_anchor: Option<ScopeAnchor>,
     /// Tombstone flag — `Substrate::remove_rule` sets this `false` instead
     /// of removing the slot, so `RuleIdx`s handed out by `add_rule` stay
     /// valid (self-modification code and callers may hold one). An
@@ -1701,6 +1720,12 @@ where
         }
     };
     crate::scale_audit::candidates(candidates.len() as u64, cand_path);
+    crate::scale_audit::match_edge_candidates(
+        src_var.0,
+        edge_type.0,
+        tgt_var.0,
+        candidates.len() as u64,
+    );
 
     for (s, t) in candidates {
         crate::scale_audit::cand_tested(i, rule.name.0, rule.match_edges.len());
@@ -1880,7 +1905,14 @@ pub fn apply_rule_full(
     let mut cur_effect: u32 = 0;
     let mut progressed = false;
     let mut pending_concepts: Vec<(Sym, TermIdx)> = Vec::new();
+    let effect_trace_enabled = graph.rule_write_effect_tracking_enabled();
     for (effect_idx, effect) in rule.effects.iter().enumerate() {
+        if effect_trace_enabled {
+            if effect_idx > 0 {
+                graph.finish_rule_write_effect();
+            }
+            graph.begin_rule_write_effect(effect_idx as u32);
+        }
         undo_src.resize(undo.len(), cur_effect);
         cur_effect = effect_idx as u32;
         if let Some(c) = cache.as_deref_mut() {
@@ -2288,6 +2320,7 @@ pub fn apply_rule_full(
                         *extent_key,
                         *identity_key,
                         radius_v.as_f64(),
+                        rule.name,
                     ));
                     crate::scale_audit::deferred_queue_enqueued("track_identity");
                     progressed = true;
@@ -2366,13 +2399,12 @@ pub fn apply_rule_full(
                                 all_match = false;
                                 break;
                             }
+                            found = Some(cand);
+                            break;
                         }
+                        found
                     }
-                    if all_match {
-                        found = Some(cand);
-                        break;
-                    }
-                }
+                };
                 match found {
                     Some(existing) => {
                         // Bind the witness var to the existing node so
@@ -2649,6 +2681,9 @@ pub fn apply_rule_full(
                 // probe path.
             }
         }
+    }
+    if effect_trace_enabled {
+        graph.finish_rule_write_effect();
     }
     // Drain pending concepts into the resolver before returning. We
     // do this here (rather than in the caller) because the borrow on
@@ -3240,6 +3275,22 @@ pub fn run_rules_opts_scoped(
     has_concept: Sym,
     owned: &rustc_hash::FxHashSet<NodeID>,
 ) -> usize {
+    if crate::scale_audit::rule_store_state_snapshot_needed(audit_store_id) {
+        let graph_value = crate::persist::graph_to_value(graph, interner);
+        let rule_values: Vec<serde_json::Value> = rules
+            .iter()
+            .map(|(local_rule_index, rule)| {
+                serde_json::json!({
+                    "local_rule_index": local_rule_index,
+                    "definition": crate::py::rule_to_json(rule, arena, interner),
+                })
+            })
+            .collect();
+        crate::scale_audit::record_rule_store_state_snapshot(
+            audit_store_id,
+            serde_json::json!({"graph": graph_value, "rules": rule_values}),
+        );
+    }
     let mut seen: Option<rustc_hash::FxHashSet<u64>> = if detect_cycles {
         Some(Default::default())
     } else {
@@ -3250,6 +3301,7 @@ pub fn run_rules_opts_scoped(
     }
     let mut steps = 0;
     while steps < max_steps {
+        crate::access_trace::note_work(38, crate::access_trace::NO_ID, 1);
         let mut any_progress = false;
         for (rule_i, rule) in rules.iter().copied() {
             // Keep optional per-rule scale counters attributable on the
@@ -3284,7 +3336,12 @@ pub fn run_rules_opts_scoped(
                         true
                     },
                 );
+                let matched = bindings.len();
+                crate::access_trace::note_work(41, rule_i, matched as u64);
                 bindings.retain(|b| binding_touches_scope(b, owned));
+                let in_scope = bindings.len();
+                crate::access_trace::note_work(42, rule_i, in_scope as u64);
+                crate::access_trace::note_work(43, rule_i, matched.saturating_sub(in_scope) as u64);
                 let mut seen_b: rustc_hash::FxHashSet<smallvec::SmallVec<[(Sym, NodeID); 8]>> =
                     Default::default();
                 let mut progressed_any = false;
@@ -3293,8 +3350,10 @@ pub fn run_rules_opts_scoped(
                         b.iter().map(|(s, n)| (*s, *n)).collect();
                     canon.sort_by_key(|(s, _)| *s);
                     if !seen_b.insert(canon) {
+                        crate::access_trace::note_work(44, rule_i, 1);
                         continue;
                     }
+                    crate::access_trace::note_work(45, rule_i, 1);
                     let outcome = apply_rule_full(
                         rule,
                         &b,
@@ -3311,6 +3370,7 @@ pub fn run_rules_opts_scoped(
                     }
                 }
                 if progressed_any {
+                    crate::access_trace::note_work(40, rule_i, 1);
                     steps += 1;
                     any_progress = true;
                 }
@@ -3339,6 +3399,8 @@ pub fn run_rules_opts_scoped(
                     true
                 },
             );
+            let matched = bindings.len();
+            crate::access_trace::note_work(41, rule_i, matched as u64);
             bindings.retain(|b| binding_touches_scope(b, owned));
             let mut seen_b: rustc_hash::FxHashSet<smallvec::SmallVec<[(Sym, NodeID); 8]>> =
                 Default::default();
@@ -3903,6 +3965,116 @@ mod tests {
         )
         .is_none());
         crate::fallback_trace::reset();
+    }
+
+    #[test]
+    fn per_rule_audit_separates_same_local_rule_across_serial_and_rayon_matchers() {
+        let _guard = crate::scale_audit::exclusive();
+        crate::scale_audit::set_enabled(true);
+        crate::scale_audit::set_per_rule_enabled(true);
+        crate::scale_audit::reset();
+        crate::scale_audit::per_rule_reset();
+
+        let (mut graph, mut interner, arena) = setup_graph();
+        let node_type = interner.intern("Node");
+        let first_edge = interner.intern("first_edge");
+        let second_edge = interner.intern("second_edge");
+        let a_var = interner.intern("a");
+        let b_var = interner.intern("b");
+        let c_var = interner.intern("c");
+        let rule = RewriteRule {
+            name: interner.intern("same_named_rule"),
+            match_edges: vec![
+                MatchEdge { src_var: a_var, edge_type: first_edge, tgt_var: b_var },
+                MatchEdge { src_var: b_var, edge_type: second_edge, tgt_var: c_var },
+            ],
+            batch: true,
+            ..Default::default()
+        };
+        let a = graph.insert_node(node_type, FxHashMap::default());
+        let b = graph.insert_node(node_type, FxHashMap::default());
+        graph.insert_edge(a, first_edge, b, FxHashMap::default()).unwrap();
+        for _ in 0..8 {
+            let c = graph.insert_node(node_type, FxHashMap::default());
+            graph.insert_edge(b, second_edge, c, FxHashMap::default()).unwrap();
+        }
+
+        let stores = [
+            crate::scale_audit::new_rule_audit_store_id(),
+            crate::scale_audit::new_rule_audit_store_id(),
+        ];
+        for store in stores {
+            crate::scale_audit::begin_epoch();
+            crate::scale_audit::begin_rule_enumeration_in_store(store, 0);
+            crate::scale_audit::register_rule_audit_metadata_in_store(
+                store,
+                0,
+                rule.name.0,
+                "same_named_rule",
+                rule.match_edges.len(),
+            );
+            let mut serial_count = 0usize;
+            match_rule_each(&rule, &arena, &graph, &interner, None, None, None, None, |_| {
+                serial_count += 1;
+                true
+            });
+            assert_eq!(serial_count, 8);
+
+            crate::scale_audit::begin_rule_enumeration_in_store(store, 0);
+            crate::scale_audit::register_rule_audit_metadata_in_store(
+                store,
+                0,
+                rule.name.0,
+                "same_named_rule",
+                rule.match_edges.len(),
+            );
+            let parallel = collect_batch_bindings_parallel(
+                &rule,
+                &arena,
+                &graph,
+                &interner,
+                None,
+                None,
+                None,
+                2,
+            )
+            .expect("matching breadth should enter the Rayon path");
+            assert_eq!(parallel.len(), 8);
+        }
+
+        let ids: Vec<u32> = stores
+            .iter()
+            .map(|store| crate::scale_audit::rule_audit_id_for(*store, 0).unwrap())
+            .collect();
+        assert_ne!(ids[0], ids[1]);
+        let global: std::collections::HashMap<String, u64> =
+            crate::scale_audit::snapshot().into_iter().collect();
+        let clauses = crate::scale_audit::match_clause_candidate_snapshot();
+        let per_rule = crate::scale_audit::per_rule_snapshot();
+        for id in ids {
+            let clause_total: u64 = clauses
+                .iter()
+                .filter(|(rule_id, _, _)| *rule_id == id)
+                .map(|(_, _, count)| *count)
+                .sum();
+            let attributed = per_rule
+                .iter()
+                .find(|(rule_id, metric, _)| *rule_id == id && metric == "candidate_tests")
+                .map(|(_, _, count)| *count)
+                .unwrap_or(0);
+            assert!(clause_total > 0);
+            assert_eq!(clause_total, attributed);
+        }
+        let clause_total: u64 = clauses.iter().map(|(_, _, count)| *count).sum();
+        assert_eq!(clause_total, global["cand_tested"] - global["cand_tested_unattributed"]);
+        assert!(crate::scale_audit::rule_audit_metadata_snapshot()
+            .iter()
+            .all(|(_, _, _, arity, ambiguous)| *arity == 2 && !ambiguous));
+
+        crate::scale_audit::set_enabled(false);
+        crate::scale_audit::reset();
+        crate::scale_audit::per_rule_reset();
+        crate::scale_audit::set_per_rule_enabled(false);
     }
 
     #[test]
@@ -5055,9 +5227,10 @@ mod tests {
             1,
             "the coerced name must be queued exactly once"
         );
-        let (name_s, field_s, _term_v) = &g.pending_rule_edits[0];
+        let (name_s, field_s, _term_v, origin) = &g.pending_rule_edits[0];
         assert_eq!(name_s, "prefix_concat_test");
         assert_eq!(field_s, "where");
+        assert_eq!(*origin, rule.name);
     }
 
     #[test]

@@ -1,0 +1,3 @@
+# V1.2 amendment: record checkpoint and rebuild costs
+
+The corrected V1.1 two-arm recovery comparison passes semantic equivalence. This amendment adds wall-clock measurements for `WorldAdapter.save`, `WorldAdapter.load`, and the host-side derived-index rebuild. The checkpoint bytes and RSS are already recorded. The checkpoint point, graph/rule contents, recovery actions, workloads, and semantic gates remain unchanged. The final result is rerun so timing and size all come from the same recovery worker. These one-shot costs are exploratory and include full-adapter state, not an optimized ProblemShape-only checkpoint.

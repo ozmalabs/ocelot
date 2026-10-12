@@ -1,0 +1,5 @@
+# Finite-key closure scale v1.1 amendment — 2026-09-26
+
+The initial v1 54-case capture is retained. Its M=4 cells failed the runner's exact-node oracle because the oracle assumed all four authored JSON signatures mint distinct nodes. Source inspection of `runners/dsl/src/value.rs::PartialEq for Value` confirms native/Python equality deliberately equates `Bool(true)` and `Int(1)`, and `AddNodeIfAbsent` uses that equality when comparing attrs (`rewrite.rs`). The native result therefore correctly deduplicates those two authored keys to one witness. The analyzer counts canonical JSON signatures separately, yielding a safe loose upper bound but not the exact runtime witness count.
+
+V1.1 retains the same N/topology/M matrix, seeded rules, repetitions, and runtime budget. Before each capture, its independent expected-state model now reflects Python's `True == 1` identity for this specific key pair, while it separately verifies that analyzer M remains a syntactic overestimate and its graph-fact/progress bound still covers the actual closure. It also records authored signature count versus runtime-distinct witness count. No raw v1 values are overwritten or pooled.

@@ -1,11 +1,18 @@
 {
   "id": "memory_core",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "depends_on": [],
   "description": "Legacy message-episode capture and retention as graph data. Version 1.1 marks these records as legacy and defers consolidation/forgetting of episodic_working_memory_v1 traces to the executable replay, semantic-support and reconsolidation mechanisms in episodic_working_memory_core.",
   "nodes": [],
   "edges": [],
-  "productions": [],
+  "productions": [
+    {
+      "provenance": "memory_core:episode_message_provenance",
+      "src": {"type": "Episode", "var": "episode"},
+      "edge_type": "recorded_from_message",
+      "tgt": {"type": "Message", "var": "message"}
+    }
+  ],
   "rules": [
     {
       "name": "rule_consolidate_episode",
@@ -215,6 +222,12 @@
           "agent",
           "recorded_episode",
           "ep"
+        ],
+        [
+          "add_edge",
+          "ep",
+          "recorded_from_message",
+          "m"
         ],
         [
           "set_attr",

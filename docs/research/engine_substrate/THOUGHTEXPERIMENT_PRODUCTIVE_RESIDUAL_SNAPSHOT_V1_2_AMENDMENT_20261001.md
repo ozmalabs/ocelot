@@ -1,0 +1,3 @@
+# Productive residual snapshot v1.2 closure amendment
+
+A fixed-point pilot after the initial one-step productive branch showed the intended rule removes its only trigger and that a follow-up `tick_graph_then_struct(1)` makes zero progress. The confirmatory protocol now uses a two-step budget, requires exactly one productive step and `converged=true`, then performs an explicit terminal one-step zero-progress probe after residual capture. This strengthens the closure gate without changing the fixture, residual, backends, sizes, or timing arms. The earlier v1 capture remains historical pilot data; the corrected source-captured panel is the confirmatory result.

@@ -1,0 +1,460 @@
+{
+  "all_checks_pass": true,
+  "audit_class": "static source inventory; not dynamic reachability or proof against reflective invocation",
+  "candidate_observation_or_signature_calls": [],
+  "checks": {
+    "all_python_sources_parse": true,
+    "growth_seed_has_five_observation_rules_and_one_shape_mint_rule": true,
+    "no_nonproducer_production_imports": true
+  },
+  "claim_boundary": "No statically visible production-domain consumer of learned ProblemShape keys was found in the scanned Python source roots. Evaluation harnesses and tests are outside this production scan. A production consumer may still be supplied reflectively or outside the scanned roots; no dynamic call tracing was performed.",
+  "inputs": {
+    "domains/problem_shape.py": "d88f2285362e089a0b1a9e5005bb2aef0b713ec937e5d986b51e502b61d8704b",
+    "seeds/problem_shape_growth.json": "eb32bf403b59dba551b96f4e11bf3b996b2bf7febf73a29acba11dc668093ce7"
+  },
+  "non_producer_problem_shape_imports": [],
+  "parse_errors": [],
+  "problem_shape_imports": [],
+  "problem_shape_seed_rules": [
+    {
+      "effects": [
+        [
+          "set_attr",
+          "obs",
+          "residual",
+          {
+            "__term__": {
+              "beam": 3,
+              "cand_k": 3,
+              "codebook_type": "ProblemShape",
+              "field": "residual",
+              "goal": {
+                "key": "signature",
+                "node": {
+                  "name": "obs",
+                  "type": "Var"
+                },
+                "type": "Attr"
+              },
+              "max_steps": 8,
+              "type": "ShapeDecode",
+              "wild_objects": false
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "obs",
+          "covered_count",
+          {
+            "__term__": {
+              "beam": 3,
+              "cand_k": 3,
+              "codebook_type": "ProblemShape",
+              "field": "covered_count",
+              "goal": {
+                "key": "signature",
+                "node": {
+                  "name": "obs",
+                  "type": "Var"
+                },
+                "type": "Attr"
+              },
+              "max_steps": 8,
+              "type": "ShapeDecode",
+              "wild_objects": false
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "obs",
+          "decoded_epoch",
+          {
+            "__term__": {
+              "key": "problem_codebook_epoch",
+              "node": {
+                "name": "ag",
+                "type": "Var"
+              },
+              "type": "Attr"
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "obs",
+          "status",
+          "decoded"
+        ]
+      ],
+      "match": [
+        [
+          "ag",
+          "observed_problem",
+          "obs"
+        ]
+      ],
+      "match_type": "ProblemShapeObservation",
+      "name": "ps_decode"
+    },
+    {
+      "effects": [
+        [
+          "set_attr",
+          "obs",
+          "status",
+          "recognized"
+        ],
+        [
+          "set_attr",
+          "obs",
+          "covered_by",
+          {
+            "__term__": {
+              "key": "name",
+              "node": {
+                "source": {
+                  "node_type": "ProblemShape",
+                  "type": "NodesOfType"
+                },
+                "type": "Argmax",
+                "value": {
+                  "pattern": {
+                    "type": "AntiUnify",
+                    "values": {
+                      "items": [
+                        {
+                          "key": "signature",
+                          "node": {
+                            "name": "obs",
+                            "type": "Var"
+                          },
+                          "type": "Attr"
+                        },
+                        {
+                          "key": "signature",
+                          "node": {
+                            "name": "sig",
+                            "type": "Var"
+                          },
+                          "type": "Attr"
+                        }
+                      ],
+                      "type": "SetT"
+                    }
+                  },
+                  "type": "FixedCount"
+                },
+                "var_name": "sig"
+              },
+              "type": "Attr"
+            }
+          }
+        ]
+      ],
+      "match": [
+        [
+          "ag",
+          "observed_problem",
+          "obs"
+        ]
+      ],
+      "match_type": "ProblemShapeObservation",
+      "name": "ps_recognize"
+    },
+    {
+      "effects": [
+        [
+          "set_attr",
+          "obs",
+          "status",
+          "residual"
+        ]
+      ],
+      "match": [
+        [
+          "ag",
+          "observed_problem",
+          "obs"
+        ]
+      ],
+      "match_type": "ProblemShapeObservation",
+      "name": "ps_residual"
+    },
+    {
+      "effects": [
+        [
+          "add_node",
+          "ps",
+          "ProblemShape",
+          {
+            "minted": 1.0,
+            "name": {
+              "__term__": {
+                "key": "key",
+                "node": {
+                  "name": "obs",
+                  "type": "Var"
+                },
+                "type": "Attr"
+              }
+            },
+            "signature": {
+              "__term__": {
+                "key": "signature",
+                "node": {
+                  "name": "obs",
+                  "type": "Var"
+                },
+                "type": "Attr"
+              }
+            },
+            "source": "problem_shape_growth",
+            "support": {
+              "__term__": {
+                "source": {
+                  "predicate": {
+                    "a": {
+                      "key": "key",
+                      "node": {
+                        "name": "y",
+                        "type": "Var"
+                      },
+                      "type": "Attr"
+                    },
+                    "b": {
+                      "key": "key",
+                      "node": {
+                        "name": "obs",
+                        "type": "Var"
+                      },
+                      "type": "Attr"
+                    },
+                    "type": "Eq"
+                  },
+                  "source": {
+                    "node_type": "ProblemShapeObservation",
+                    "type": "NodesOfType"
+                  },
+                  "type": "Filter",
+                  "var_name": "y"
+                },
+                "type": "Count"
+              }
+            }
+          }
+        ],
+        [
+          "add_edge",
+          "obs",
+          "minted_problem_shape",
+          "ps"
+        ],
+        [
+          "set_attr",
+          "obs",
+          "status",
+          "minted"
+        ],
+        [
+          "set_attr",
+          "ag",
+          "problem_codebook_epoch",
+          {
+            "__term__": {
+              "items": [
+                {
+                  "key": "problem_codebook_epoch",
+                  "node": {
+                    "name": "ag",
+                    "type": "Var"
+                  },
+                  "type": "Attr"
+                },
+                {
+                  "type": "Lit",
+                  "value": 1
+                }
+              ],
+              "type": "Plus"
+            }
+          }
+        ]
+      ],
+      "match": [
+        [
+          "ag",
+          "observed_problem",
+          "obs"
+        ]
+      ],
+      "match_type": "ProblemShapeObservation",
+      "name": "ps_mint"
+    },
+    {
+      "effects": [
+        [
+          "set_attr",
+          "obs",
+          "status",
+          "pending"
+        ],
+        [
+          "set_attr",
+          "obs",
+          "decoded_epoch",
+          {
+            "__term__": {
+              "key": "problem_codebook_epoch",
+              "node": {
+                "name": "ag",
+                "type": "Var"
+              },
+              "type": "Attr"
+            }
+          }
+        ]
+      ],
+      "match": [
+        [
+          "ag",
+          "observed_problem",
+          "obs"
+        ]
+      ],
+      "match_type": "ProblemShapeObservation",
+      "name": "ps_redecode"
+    }
+  ],
+  "python_files_scanned": 833,
+  "schema_version": 1,
+  "shape_mint_rules": [
+    {
+      "effects": [
+        [
+          "add_node",
+          "ps",
+          "ProblemShape",
+          {
+            "minted": 1.0,
+            "name": {
+              "__term__": {
+                "key": "key",
+                "node": {
+                  "name": "obs",
+                  "type": "Var"
+                },
+                "type": "Attr"
+              }
+            },
+            "signature": {
+              "__term__": {
+                "key": "signature",
+                "node": {
+                  "name": "obs",
+                  "type": "Var"
+                },
+                "type": "Attr"
+              }
+            },
+            "source": "problem_shape_growth",
+            "support": {
+              "__term__": {
+                "source": {
+                  "predicate": {
+                    "a": {
+                      "key": "key",
+                      "node": {
+                        "name": "y",
+                        "type": "Var"
+                      },
+                      "type": "Attr"
+                    },
+                    "b": {
+                      "key": "key",
+                      "node": {
+                        "name": "obs",
+                        "type": "Var"
+                      },
+                      "type": "Attr"
+                    },
+                    "type": "Eq"
+                  },
+                  "source": {
+                    "node_type": "ProblemShapeObservation",
+                    "type": "NodesOfType"
+                  },
+                  "type": "Filter",
+                  "var_name": "y"
+                },
+                "type": "Count"
+              }
+            }
+          }
+        ],
+        [
+          "add_edge",
+          "obs",
+          "minted_problem_shape",
+          "ps"
+        ],
+        [
+          "set_attr",
+          "obs",
+          "status",
+          "minted"
+        ],
+        [
+          "set_attr",
+          "ag",
+          "problem_codebook_epoch",
+          {
+            "__term__": {
+              "items": [
+                {
+                  "key": "problem_codebook_epoch",
+                  "node": {
+                    "name": "ag",
+                    "type": "Var"
+                  },
+                  "type": "Attr"
+                },
+                {
+                  "type": "Lit",
+                  "value": 1
+                }
+              ],
+              "type": "Plus"
+            }
+          }
+        ]
+      ],
+      "match": [
+        [
+          "ag",
+          "observed_problem",
+          "obs"
+        ]
+      ],
+      "match_type": "ProblemShapeObservation",
+      "name": "ps_mint"
+    }
+  ],
+  "typed_literal_hits": [
+    {
+      "path": "domains/analogy_search.py",
+      "tokens": [
+        "observed_problem"
+      ]
+    },
+    {
+      "path": "domains/problem_shape.py",
+      "tokens": [
+        "ProblemShapeObservation",
+        "observed_problem",
+        "problem_codebook_epoch"
+      ]
+    }
+  ]
+}

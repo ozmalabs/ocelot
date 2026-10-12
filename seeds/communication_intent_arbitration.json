@@ -1,6 +1,6 @@
 {
   "id": "communication_intent_arbitration",
-  "version": "1.0.0",
+  "version": "1.4.17",
   "depends_on": ["intent"],
   "capability_keys": ["communication_intent_arbitration"],
   "description": "Phase 1 graph-native force/goal arbitration over language-neutral communication_evidence.v1. The language adapter supplies evidence categories; these rules derive communicative force and cognitive goal without treating grammatical kind, word order, or lexical form as the force. This is a deliberately small evidence policy, not a surface acknowledgement policy.",
@@ -8,6 +8,872 @@
   "edges": [],
   "productions": [],
   "rules": [
+    {
+      "name": "arbitrate_typed_future_action_as_defer",
+      "comment": "A typed temporal condition changes action timing: retain it as deferred, rather than minting an active action commitment.",
+      "match": [["agent", "holds_interpretation", "i"]],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "schema"}, "b": {"type": "Lit", "value": "communication_interpretation.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_schema"}, "b": {"type": "Lit", "value": "communication_evidence.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_force"}, "b": {"type": "Lit", "value": "action_request"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "language_deferred_condition"}, "b": {"type": "Lit", "value": true}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "cognitive_disposition"}, "b": {"type": "Lit", "value": null}}
+      ]},
+      "effects": [
+        ["set_attr", "i", "communicative_force", "request_action"],
+        ["set_attr", "i", "cognitive_disposition", "defer"],
+        ["set_attr", "i", "cognitive_goal", "defer"],
+        ["set_attr", "i", "arbitration_basis", "typed_future_action_condition"]
+      ]
+    },
+    {
+      "name": "arbitrate_continuing_action_as_act",
+      "comment": "A typed action-request interpretation in a continuation can retain its action commitment when no future condition or unresolved referent blocks it. The semantic force, not grammatical clause form, owns the action classification.",
+      "match": [["agent", "holds_interpretation", "i"]],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "schema"}, "b": {"type": "Lit", "value": "communication_interpretation.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_schema"}, "b": {"type": "Lit", "value": "communication_evidence.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_force"}, "b": {"type": "Lit", "value": "action_request"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "interaction_relation"}, "b": {"type": "Lit", "value": "continuation"}},
+        {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "literal_form"}, "b": {"type": "Lit", "value": "fragment"}}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "language_deferred_condition"}, "b": {"type": "Lit", "value": null}},
+        {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "language_referent_status"}, "b": {"type": "Lit", "value": "unresolved"}}},
+        {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "grounding_status"}, "b": {"type": "Lit", "value": "unresolved_reference"}}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "cognitive_disposition"}, "b": {"type": "Lit", "value": null}}
+      ]},
+      "effects": [
+        ["set_attr", "i", "communicative_force", "request_action"],
+        ["set_attr", "i", "cognitive_disposition", "act"],
+        ["set_attr", "i", "cognitive_goal", "act_or_clarify"],
+        ["set_attr", "i", "arbitration_basis", "continuing_action_request"]
+      ]
+    },
+    {
+      "name": "arbitrate_partially_grounded_action_as_act",
+      "comment": "Partial grounding may authorize a staged action commitment when no typed temporal or unresolved dependency controls it.",
+      "match": [["agent", "holds_interpretation", "i"]],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "schema"}, "b": {"type": "Lit", "value": "communication_interpretation.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_schema"}, "b": {"type": "Lit", "value": "communication_evidence.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_force"}, "b": {"type": "Lit", "value": "action_request"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "grounding_status"}, "b": {"type": "Lit", "value": "partially_grounded"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "language_deferred_condition"}, "b": {"type": "Lit", "value": null}},
+        {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "language_referent_status"}, "b": {"type": "Lit", "value": "unresolved"}}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "cognitive_disposition"}, "b": {"type": "Lit", "value": null}}
+      ]},
+      "effects": [
+        ["set_attr", "i", "communicative_force", "request_action"],
+        ["set_attr", "i", "cognitive_disposition", "act"],
+        ["set_attr", "i", "cognitive_goal", "act_or_clarify"],
+        ["set_attr", "i", "arbitration_basis", "partially_grounded_action_request"]
+      ]
+    },
+    {
+      "name": "arbitrate_unbacked_proposition_confirmation_as_repair",
+      "comment": "A typed proposition-confirmation request is not an encyclopedia lookup. Until a conversationally grounded answer is available, ask for grounding rather than treating a lexical search result as confirmation.",
+      "match": [["agent", "holds_interpretation", "i"]],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "schema"}, "b": {"type": "Lit", "value": "communication_interpretation.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_schema"}, "b": {"type": "Lit", "value": "communication_evidence.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "language_confirmation_request"}, "b": {"type": "Lit", "value": "proposition_confirmation"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "relation_support"}, "b": {"type": "Lit", "value": "missing"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "cognitive_disposition"}, "b": {"type": "Lit", "value": null}}
+      ]},
+      "effects": [
+        ["set_attr", "i", "communicative_force", "request_information"],
+        ["set_attr", "i", "cognitive_disposition", "repair"],
+        ["set_attr", "i", "cognitive_goal", "clarify_or_defer"],
+        ["set_attr", "i", "arbitration_basis", "confirmation_lacks_conversational_support"]
+      ]
+    },
+    {
+      "name": "support_anaphoric_polar_relation_from_accepted_proposition",
+      "comment": "A discourse-grounded anaphor can answer a polar relation only when the event-bound answer topic joins an accepted, explicitly evidenced structured proposition on the same predicate and role-labelled arguments. This creates positive relation support before the missing-support repair rule runs.",
+      "match": [
+        ["agent", "holds_interpretation", "i"],
+        ["i", "interprets", "m"],
+        ["agent", "has_goal", "g"],
+        ["g", "comprehends", "m"],
+        ["p", "is_structured_proposition", "p"],
+        ["p", "evidenced_by", "pe"],
+        ["p", "has_argument", "sa"],
+        ["p", "has_argument", "oa"]
+      ],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "schema"}, "b": {"type": "Lit", "value": "communication_interpretation.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_schema"}, "b": {"type": "Lit", "value": "communication_evidence.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_force"}, "b": {"type": "Lit", "value": "information_request"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "relation_focus"}, "b": {"type": "Lit", "value": "polar"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "relation_support"}, "b": {"type": "Lit", "value": "missing"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "anaphor"}, "b": {"type": "Lit", "value": 1}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "parsed_relation_schema"}, "b": {"type": "Lit", "value": "communication_relation_projection.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "parsed_relation_status"}, "b": {"type": "Lit", "value": "selected_parse_unverified"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "parsed_predicate_lemma"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "p"}, "key": "predicate"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "p"}, "key": "schema"}, "b": {"type": "Lit", "value": "structured_proposition.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "p"}, "key": "commitment_status"}, "b": {"type": "Lit", "value": "accepted"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "pe"}, "key": "schema"}, "b": {"type": "Lit", "value": "neutral_proposition_evidence.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "pe"}, "key": "kind"}, "b": {"type": "Lit", "value": "explicit_neutral"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "sa"}, "key": "schema"}, "b": {"type": "Lit", "value": "proposition_argument.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "sa"}, "key": "role"}, "b": {"type": "Lit", "value": "subject"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "oa"}, "key": "schema"}, "b": {"type": "Lit", "value": "proposition_argument.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "oa"}, "key": "role"}, "b": {"type": "Lit", "value": "object"}},
+        {"type": "Or", "items": [
+          {"type": "And", "items": [
+            {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "sa"}, "key": "value"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "parsed_subject"}},
+            {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "oa"}, "key": "value"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "g"}, "key": "concept"}}
+          ]},
+          {"type": "And", "items": [
+            {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "oa"}, "key": "value"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "parsed_object"}},
+            {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "sa"}, "key": "value"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "g"}, "key": "concept"}}
+          ]}
+        ]},
+        {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "polar_relation_support_minted"}, "b": {"type": "Lit", "value": 1}}}
+      ]},
+      "effects": [
+        ["set_attr", "i", "relation_support", "supported"],
+        ["set_attr", "i", "polar_relation_support_minted", 1],
+        ["add_node", "support", "PolarRelationSupportEvidence", {
+          "schema": "polar_relation_support.v1",
+          "status": "supported",
+          "predicate": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "p"}, "key": "predicate"}},
+          "evidence_id": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "pe"}, "key": "evidence_id"}}
+        }],
+        ["add_edge", "support", "supports_relation", "i"],
+        ["add_edge", "support", "based_on_proposition", "p"],
+        ["add_edge", "support", "based_on_evidence", "pe"],
+        ["add_edge", "support", "matched_subject_argument", "sa"],
+        ["add_edge", "support", "matched_object_argument", "oa"]
+      ]
+    },
+    {
+      "name": "support_named_polar_relation_from_accepted_unary_proposition",
+      "comment": "A named-subject polar query can be answered only from an accepted, explicitly evidenced unary proposition whose predicate and subject match the selected parse and same-event answer goal. This does not treat a topic answer or a multi-argument proposition as relation support.",
+      "match": [
+        ["agent", "holds_interpretation", "i"],
+        ["i", "interprets", "m"],
+        ["p", "is_structured_proposition", "p"],
+        ["p", "evidenced_by", "pe"],
+        ["p", "has_argument", "sa"]
+      ],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "schema"}, "b": {"type": "Lit", "value": "communication_interpretation.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_schema"}, "b": {"type": "Lit", "value": "communication_evidence.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_force"}, "b": {"type": "Lit", "value": "information_request"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "relation_focus"}, "b": {"type": "Lit", "value": "polar"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "relation_support"}, "b": {"type": "Lit", "value": "missing"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "anaphor"}, "b": {"type": "Lit", "value": 0}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "parsed_relation_schema"}, "b": {"type": "Lit", "value": "communication_relation_projection.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "parsed_relation_status"}, "b": {"type": "Lit", "value": "selected_parse_unverified"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "parsed_predicate_lemma"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "p"}, "key": "predicate"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "p"}, "key": "schema"}, "b": {"type": "Lit", "value": "structured_proposition.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "p"}, "key": "argument_roles"}, "b": {"type": "Lit", "value": "[\"subject\"]"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "p"}, "key": "commitment_status"}, "b": {"type": "Lit", "value": "accepted"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "pe"}, "key": "schema"}, "b": {"type": "Lit", "value": "neutral_proposition_evidence.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "pe"}, "key": "kind"}, "b": {"type": "Lit", "value": "explicit_neutral"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "sa"}, "key": "schema"}, "b": {"type": "Lit", "value": "proposition_argument.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "sa"}, "key": "role"}, "b": {"type": "Lit", "value": "subject"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "sa"}, "key": "value"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "parsed_subject"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "sa"}, "key": "value"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "comp_know_concept"}},
+        {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "polar_relation_support_minted"}, "b": {"type": "Lit", "value": 1}}}
+      ]},
+      "effects": [
+        ["set_attr", "i", "relation_support", "supported"],
+        ["set_attr", "i", "polar_relation_support_minted", 1],
+        ["add_node", "support", "PolarRelationSupportEvidence", {
+          "schema": "polar_relation_support.v1",
+          "status": "supported",
+          "predicate": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "p"}, "key": "predicate"}},
+          "evidence_id": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "pe"}, "key": "evidence_id"}}
+        }],
+        ["add_edge", "support", "supports_relation", "i"],
+        ["add_edge", "support", "based_on_proposition", "p"],
+        ["add_edge", "support", "based_on_evidence", "pe"],
+        ["add_edge", "support", "matched_subject_argument", "sa"]
+      ]
+    },
+    {
+      "name": "select_affirmative_polar_answer_from_accepted_proposition",
+      "comment": "Native cognition selects yes only when an accepted, explicitly evidenced proposition matches the queried relation and its polarity matches the neutral question-polarity evidence. The plan is semantic; the language faculty realizes its affirmative value.",
+      "match": [
+        ["agent", "holds_interpretation", "i"],
+        ["i", "interprets", "m"],
+        ["support", "supports_relation", "i"],
+        ["support", "based_on_proposition", "p"]
+      ],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "relation_focus"}, "b": {"type": "Lit", "value": "polar"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "question_polarity"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "p"}, "key": "polarity"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "support"}, "key": "schema"}, "b": {"type": "Lit", "value": "polar_relation_support.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "support"}, "key": "status"}, "b": {"type": "Lit", "value": "supported"}},
+        {"type": "Or", "items": [
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "cognitive_disposition"}, "b": {"type": "Lit", "value": null}},
+          {"type": "And", "items": [
+            {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "cognitive_disposition"}, "b": {"type": "Lit", "value": "repair"}},
+            {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "arbitration_basis"}, "b": {"type": "Lit", "value": "missing_polar_relation_support"}}
+          ]}
+        ]},
+        {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "polar_answer_plan_minted"}, "b": {"type": "Lit", "value": 1}}}
+      ]},
+      "effects": [
+        ["set_attr", "i", "cognitive_disposition", "answer"],
+        ["set_attr", "i", "cognitive_goal", "answer_or_learn"],
+        ["set_attr", "i", "communicative_force", "request_information"],
+        ["set_attr", "i", "arbitration_basis", "accepted_proposition_polar_answer"],
+        ["set_attr", "i", "polar_answer_plan_minted", 1],
+        ["add_node", "plan", "PolarAnswerPlan", {
+          "schema": "polar_answer_plan.v1",
+          "status": "selected",
+          "value": "yes",
+          "question_polarity": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "question_polarity"}},
+          "proposition_polarity": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "p"}, "key": "polarity"}}
+        }],
+        ["add_edge", "plan", "answers_question", "m"],
+        ["add_edge", "plan", "based_on_support", "support"],
+        ["add_edge", "plan", "answers_interpretation", "i"],
+        ["add_edge", "i", "has_polar_answer_plan", "plan"]
+      ]
+    },
+    {
+      "name": "select_negative_polar_answer_from_accepted_proposition",
+      "comment": "Native cognition selects no only when an accepted, explicitly evidenced proposition matches the queried relation and its polarity differs from the neutral question-polarity evidence. The plan is semantic; the language faculty realizes its negative value.",
+      "match": [
+        ["agent", "holds_interpretation", "i"],
+        ["i", "interprets", "m"],
+        ["support", "supports_relation", "i"],
+        ["support", "based_on_proposition", "p"]
+      ],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "relation_focus"}, "b": {"type": "Lit", "value": "polar"}},
+        {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "question_polarity"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "p"}, "key": "polarity"}}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "support"}, "key": "schema"}, "b": {"type": "Lit", "value": "polar_relation_support.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "support"}, "key": "status"}, "b": {"type": "Lit", "value": "supported"}},
+        {"type": "Or", "items": [
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "cognitive_disposition"}, "b": {"type": "Lit", "value": null}},
+          {"type": "And", "items": [
+            {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "cognitive_disposition"}, "b": {"type": "Lit", "value": "repair"}},
+            {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "arbitration_basis"}, "b": {"type": "Lit", "value": "missing_polar_relation_support"}}
+          ]}
+        ]},
+        {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "polar_answer_plan_minted"}, "b": {"type": "Lit", "value": 1}}}
+      ]},
+      "effects": [
+        ["set_attr", "i", "cognitive_disposition", "answer"],
+        ["set_attr", "i", "cognitive_goal", "answer_or_learn"],
+        ["set_attr", "i", "communicative_force", "request_information"],
+        ["set_attr", "i", "arbitration_basis", "accepted_proposition_polar_answer"],
+        ["set_attr", "i", "polar_answer_plan_minted", 1],
+        ["add_node", "plan", "PolarAnswerPlan", {
+          "schema": "polar_answer_plan.v1",
+          "status": "selected",
+          "value": "no",
+          "question_polarity": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "question_polarity"}},
+          "proposition_polarity": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "p"}, "key": "polarity"}}
+        }],
+        ["add_edge", "plan", "answers_question", "m"],
+        ["add_edge", "plan", "based_on_support", "support"],
+        ["add_edge", "plan", "answers_interpretation", "i"],
+        ["add_edge", "i", "has_polar_answer_plan", "plan"]
+      ]
+    },
+    {
+      "name": "arbitrate_unbacked_topic_polar_relation_as_repair",
+      "comment": "Topic grounding is not support for a polar relation. When a same-event topic-answer goal has no matching supported proposition, preserve the information request and repair rather than release a topic sentence as a relation answer. Capability and reflective questions without an answer_topic goal remain with their own faculties.",
+      "match": [
+        ["agent", "holds_interpretation", "i"],
+        ["i", "interprets", "m"],
+        ["agent", "has_goal", "g"],
+        ["g", "comprehends", "m"]
+      ],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "schema"}, "b": {"type": "Lit", "value": "communication_interpretation.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_schema"}, "b": {"type": "Lit", "value": "communication_evidence.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_force"}, "b": {"type": "Lit", "value": "information_request"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "g"}, "key": "kind"}, "b": {"type": "Lit", "value": "answer_topic"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "relation_focus"}, "b": {"type": "Lit", "value": "polar"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "relation_support"}, "b": {"type": "Lit", "value": "missing"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "selected_reflective_faculty"}, "b": {"type": "Lit", "value": null}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "cognitive_disposition"}, "b": {"type": "Lit", "value": null}}
+      ]},
+      "effects": [
+        ["set_attr", "i", "communicative_force", "request_information"],
+        ["set_attr", "i", "cognitive_disposition", "repair"],
+        ["set_attr", "i", "cognitive_goal", "clarify_or_defer"],
+        ["set_attr", "i", "arbitration_basis", "missing_polar_relation_support"]
+      ]
+    },
+    {
+      "name": "arbitrate_topic_candidate_without_polar_relation_support_as_repair",
+      "comment": "A topic answer candidate that matches a polar request cannot substitute for proposition-level support of the queried relation.",
+      "match": [
+        ["agent", "holds_interpretation", "i"],
+        ["i", "interprets", "m"],
+        ["agent", "holds_answer", "h"],
+        ["h", "grounded_by", "e"]
+      ],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "schema"}, "b": {"type": "Lit", "value": "communication_interpretation.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_schema"}, "b": {"type": "Lit", "value": "communication_evidence.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_force"}, "b": {"type": "Lit", "value": "information_request"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "relation_focus"}, "b": {"type": "Lit", "value": "polar"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "relation_support"}, "b": {"type": "Lit", "value": "missing"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "selected_reflective_faculty"}, "b": {"type": "Lit", "value": null}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "grounding_status"}, "b": {"type": "Lit", "value": "candidate_grounded"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "cognitive_disposition"}, "b": {"type": "Lit", "value": null}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "comp_know_concept"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "h"}, "key": "topic"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "h"}, "key": "grounding_referent"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "h"}, "key": "topic"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "h"}, "key": "grounding_status"}, "b": {"type": "Lit", "value": "supported"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "e"}, "key": "kind"}, "b": {"type": "Lit", "value": "topic_answer"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "e"}, "key": "referent"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "h"}, "key": "topic"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "e"}, "key": "status"}, "b": {"type": "Lit", "value": "supported"}}
+      ]},
+      "effects": [
+        ["set_attr", "i", "communicative_force", "request_information"],
+        ["set_attr", "i", "cognitive_disposition", "repair"],
+        ["set_attr", "i", "cognitive_goal", "clarify_or_defer"],
+        ["set_attr", "i", "arbitration_basis", "missing_polar_relation_support"]
+      ]
+    },
+    {
+      "name": "clear_lexical_concept_grounding_without_polar_relation_support",
+      "comment": "An exact lexical Concept may identify the topic word but does not ground an unsupported polar proposition. Clear only that lexical-only path after native repair selection; preserve independently supported discourse, HeldAnswer, and proposition evidence paths.",
+      "match": [["agent", "holds_interpretation", "i"]],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "schema"}, "b": {"type": "Lit", "value": "communication_interpretation.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_schema"}, "b": {"type": "Lit", "value": "communication_evidence.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "relation_focus"}, "b": {"type": "Lit", "value": "polar"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "relation_support"}, "b": {"type": "Lit", "value": "missing"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "grounding_status"}, "b": {"type": "Lit", "value": "candidate_grounded"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "grounding_evidence_path"}, "b": {"type": "Lit", "value": "CommunicationInterpretation -> Concept.referent"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "cognitive_disposition"}, "b": {"type": "Lit", "value": "repair"}}
+      ]},
+      "effects": [
+        ["set_attr", "i", "grounding_status", "unresolved"],
+        ["set_attr", "i", "grounding_evidence_path", ""]
+      ]
+    },
+    {
+      "name": "arbitrate_compound_social_polar_question_without_support_as_repair",
+      "comment": "A compound greeting-plus-polar-question preserves both act records while the unsupported question component selects clarification. This narrowly scoped rule does not assert a readiness answer or erase the social co-act.",
+      "match": [
+        ["agent", "holds_interpretation", "i"],
+        ["i", "has_communication_act_evidence", "greeting"],
+        ["i", "has_communication_act_evidence", "question"]
+      ],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "schema"}, "b": {"type": "Lit", "value": "communication_interpretation.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_schema"}, "b": {"type": "Lit", "value": "communication_evidence.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "greeting"}, "key": "act_type"}, "b": {"type": "Lit", "value": "greeting"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "greeting"}, "key": "communicative_force"}, "b": {"type": "Lit", "value": "social_action"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "question"}, "key": "act_type"}, "b": {"type": "Lit", "value": "polar_question"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "question"}, "key": "communicative_force"}, "b": {"type": "Lit", "value": "information_request"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "relation_focus"}, "b": {"type": "Lit", "value": "polar"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "relation_support"}, "b": {"type": "Lit", "value": "missing"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "selected_reflective_faculty"}, "b": {"type": "Lit", "value": null}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "interaction_mode"}, "b": {"type": "Lit", "value": "turn_compatible"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "cognitive_disposition"}, "b": {"type": "Lit", "value": null}}
+      ]},
+      "effects": [
+        ["set_attr", "i", "communicative_force", "request_information"],
+        ["set_attr", "i", "cognitive_disposition", "repair"],
+        ["set_attr", "i", "cognitive_goal", "clarify_or_defer"],
+        ["set_attr", "i", "arbitration_basis", "compound_polar_relation_missing_support"]
+      ]
+    },
+    {
+      "name": "arbitrate_complete_turn_action_request_as_act",
+      "comment": "A complete language-neutral imperative action request may select act only on a turn-compatible event and only when it is not a correction, social coordination, or typed unresolved action reference. Non-turn actions and partial events retain their separate defer/repair rules.",
+      "match": [["agent", "holds_interpretation", "i"]],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "schema"}, "b": {"type": "Lit", "value": "communication_interpretation.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_schema"}, "b": {"type": "Lit", "value": "communication_evidence.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_force"}, "b": {"type": "Lit", "value": "action_request"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "literal_form"}, "b": {"type": "Lit", "value": "imperative"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "dispatch_path"}, "b": {"type": "Lit", "value": "instruction"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "interaction_mode"}, "b": {"type": "Lit", "value": "turn_compatible"}},
+        {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "language_social_act_evidence"}, "b": {"type": "Lit", "value": "addressed_attention_request"}}},
+        {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "language_discourse_relation"}, "b": {"type": "Lit", "value": "correction"}}},
+        {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "language_referent_status"}, "b": {"type": "Lit", "value": "unresolved"}}},
+        {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "grounding_status"}, "b": {"type": "Lit", "value": "unresolved_reference"}}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "cognitive_disposition"}, "b": {"type": "Lit", "value": null}}
+      ]},
+      "effects": [
+        ["set_attr", "i", "communicative_force", "request_action"],
+        ["set_attr", "i", "cognitive_disposition", "act"],
+        ["set_attr", "i", "cognitive_goal", "act_or_clarify"],
+        ["set_attr", "i", "arbitration_basis", "complete_turn_action_request"]
+      ]
+    },
+    {
+      "name": "arbitrate_standalone_grounded_action_request_as_act",
+      "comment": "A standalone event is still an event-bound directive when language-neutral action force, the graph-transported instruction parse, a resolved reference, and grounded action evidence all agree. Grammatical literal-form labels are not required to agree with the selected semantic parse. This selects an action goal only; the separate instruction/world capability gate must still establish whether anything can be performed. Future-conditioned, unresolved, social, correction, and unsupported-world cases remain excluded.",
+      "match": [["agent", "holds_interpretation", "i"]],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "schema"}, "b": {"type": "Lit", "value": "communication_interpretation.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_schema"}, "b": {"type": "Lit", "value": "communication_evidence.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_force"}, "b": {"type": "Lit", "value": "action_request"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "dispatch_path"}, "b": {"type": "Lit", "value": "instruction"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "interaction_mode"}, "b": {"type": "Lit", "value": "non_turn"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "interaction_relation"}, "b": {"type": "Lit", "value": "standalone"}},
+        {"type": "Or", "items": [
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "grounding_status"}, "b": {"type": "Lit", "value": "candidate_grounded"}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "grounding_status"}, "b": {"type": "Lit", "value": "grounded"}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "grounding_status"}, "b": {"type": "Lit", "value": "partially_grounded"}}
+        ]},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "language_deferred_condition"}, "b": {"type": "Lit", "value": null}},
+        {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "language_social_act_evidence"}, "b": {"type": "Lit", "value": "addressed_attention_request"}}},
+        {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "language_discourse_relation"}, "b": {"type": "Lit", "value": "correction"}}},
+        {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "language_referent_status"}, "b": {"type": "Lit", "value": "unresolved"}}},
+        {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "language_world_support"}, "b": {"type": "Lit", "value": "missing"}}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "cognitive_disposition"}, "b": {"type": "Lit", "value": null}}
+      ]},
+      "effects": [
+        ["set_attr", "i", "communicative_force", "request_action"],
+        ["set_attr", "i", "cognitive_disposition", "act"],
+        ["set_attr", "i", "cognitive_goal", "act_or_clarify"],
+        ["set_attr", "i", "arbitration_basis", "standalone_grounded_action_request"]
+      ]
+    },
+    {
+      "name": "arbitrate_missing_world_information_request_as_blocked",
+      "comment": "Unavailable world evidence blocks fulfillment without erasing the language-neutral information-request force or its linked goal.",
+      "match": [["agent", "holds_interpretation", "i"]],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "schema"}, "b": {"type": "Lit", "value": "communication_interpretation.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_schema"}, "b": {"type": "Lit", "value": "communication_evidence.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_force"}, "b": {"type": "Lit", "value": "information_request"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "language_world_support"}, "b": {"type": "Lit", "value": "missing"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "explicit_failure"}, "b": {"type": "Lit", "value": 0}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "cognitive_disposition"}, "b": {"type": "Lit", "value": null}}
+      ]},
+      "effects": [
+        ["set_attr", "i", "communicative_force", "request_information"],
+        ["set_attr", "i", "cognitive_disposition", "blocked"],
+        ["set_attr", "i", "cognitive_goal", "answer_or_learn"],
+        ["set_attr", "i", "arbitration_basis", "missing_world_information_request"]
+      ]
+    },
+    {
+      "name": "arbitrate_missing_world_support_as_blocked",
+      "comment": "A language adapter's explicit missing-world-support evidence is a blocked state, not a clarification repair or an action commitment.",
+      "match": [["agent", "holds_interpretation", "i"]],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "schema"}, "b": {"type": "Lit", "value": "communication_interpretation.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_schema"}, "b": {"type": "Lit", "value": "communication_evidence.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "language_world_support"}, "b": {"type": "Lit", "value": "missing"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "explicit_failure"}, "b": {"type": "Lit", "value": 0}},
+        {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_force"}, "b": {"type": "Lit", "value": "information_request"}}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "cognitive_disposition"}, "b": {"type": "Lit", "value": null}}
+      ]},
+      "effects": [
+        ["set_attr", "i", "cognitive_disposition", "blocked"],
+        ["set_attr", "i", "arbitration_basis", "missing_world_support"]
+      ]
+    },
+    {
+      "name": "arbitrate_turn_compatible_request_without_authority_as_blocked",
+      "comment": "A complete response-slot information request whose typed action frame lacks authority must receive a native blocked disposition; referent grounding alone cannot authorize the requested recommendation or action.",
+      "match": [["agent", "holds_interpretation", "i"]],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "schema"}, "b": {"type": "Lit", "value": "communication_interpretation.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_schema"}, "b": {"type": "Lit", "value": "communication_evidence.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_force"}, "b": {"type": "Lit", "value": "information_request"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "interaction_mode"}, "b": {"type": "Lit", "value": "turn_compatible"}},
+        {"type": "In", "member": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "interaction_relation"}, "container": {"type": "Lit", "value": ["response", "turn_compatible"]}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "authority_status"}, "b": {"type": "Lit", "value": "missing"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "language_deferred_condition"}, "b": {"type": "Lit", "value": null}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "cognitive_disposition"}, "b": {"type": "Lit", "value": null}}
+      ]},
+      "effects": [
+        ["set_attr", "i", "cognitive_disposition", "blocked"],
+        ["set_attr", "i", "cognitive_goal", "blocked"],
+        ["set_attr", "i", "arbitration_basis", "missing_permission_authority"]
+      ]
+    },
+    {
+      "name": "arbitrate_unresolved_anaphoric_reason_request_as_repair",
+      "comment": "A typed causal question with missing causal support remains a repair when its graph-bound topic is an unresolved anaphor; do not substitute a lexical answer about the pronoun candidate.",
+      "match": [["agent", "holds_interpretation", "i"]],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "schema"}, "b": {"type": "Lit", "value": "communication_interpretation.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_schema"}, "b": {"type": "Lit", "value": "communication_evidence.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_force"}, "b": {"type": "Lit", "value": "information_request"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "relation_focus"}, "b": {"type": "Lit", "value": "reason"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "relation_support"}, "b": {"type": "Lit", "value": "missing"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "anaphor"}, "b": {"type": "Lit", "value": 1}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "cognitive_disposition"}, "b": {"type": "Lit", "value": null}}
+      ]},
+      "effects": [
+        ["set_attr", "i", "communicative_force", "request_information"],
+        ["set_attr", "i", "cognitive_disposition", "repair"],
+        ["set_attr", "i", "cognitive_goal", "clarify_or_defer"],
+        ["set_attr", "i", "arbitration_basis", "missing_causal_relation_with_anaphor"]
+      ]
+    },
+    {
+      "name": "arbitrate_reason_request_without_causal_support_as_learning",
+      "comment": "A well-formed typed reason request whose topic is known but causal path is absent selects learning/retrieval, not user repair. Missing answer evidence is not evidence that the user's request needs repair.",
+      "match": [["agent", "holds_interpretation", "i"]],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "schema"}, "b": {"type": "Lit", "value": "communication_interpretation.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_schema"}, "b": {"type": "Lit", "value": "communication_evidence.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_force"}, "b": {"type": "Lit", "value": "information_request"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "relation_focus"}, "b": {"type": "Lit", "value": "reason"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "relation_support"}, "b": {"type": "Lit", "value": "missing"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "anaphor"}, "b": {"type": "Lit", "value": 0}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "cognitive_disposition"}, "b": {"type": "Lit", "value": null}}
+      ]},
+      "effects": [
+        ["set_attr", "i", "communicative_force", "information_request"],
+        ["set_attr", "i", "cognitive_disposition", "learn"],
+        ["set_attr", "i", "cognitive_goal", "answer_or_learn"],
+        ["set_attr", "i", "arbitration_basis", "missing_causal_relation_evidence"]
+      ]
+    },
+    {
+      "name": "arbitrate_unresolved_compound_action_as_action_repair",
+      "comment": "A compound event can preserve its action-request goal while native cognition repairs an unresolved member; the repair disposition prevents partial release, while act_or_clarify retains the selected communicative intent.",
+      "match": [["agent", "holds_interpretation", "i"]],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "schema"}, "b": {"type": "Lit", "value": "communication_interpretation.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_schema"}, "b": {"type": "Lit", "value": "communication_evidence.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_force"}, "b": {"type": "Lit", "value": "action_request"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "language_sequence_relation"}, "b": {"type": "Lit", "value": "sequential"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "language_sequence_status"}, "b": {"type": "Lit", "value": "unresolved_action_head"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "dispatch_path"}, "b": {"type": "Lit", "value": "instruction"}},
+        {"type": "Or", "items": [
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "language_referent_status"}, "b": {"type": "Lit", "value": "unresolved"}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "grounding_status"}, "b": {"type": "Lit", "value": "unresolved_reference"}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "grounding_status"}, "b": {"type": "Lit", "value": "unknown"}}
+        ]},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "cognitive_disposition"}, "b": {"type": "Lit", "value": null}}
+      ]},
+      "effects": [
+        ["set_attr", "i", "communicative_force", "request_action"],
+        ["set_attr", "i", "cognitive_disposition", "repair"],
+        ["set_attr", "i", "cognitive_goal", "act_or_clarify"],
+        ["set_attr", "i", "arbitration_basis", "compound_action_with_unresolved_dependency"]
+      ]
+    },
+    {
+      "name": "arbitrate_typed_unresolved_action_dependency_as_repair",
+      "comment": "Native cognition selects repair when an imperative has a typed unresolved graph/reference dependency. The parse dependency is sufficient evidence; corpus uncertainty annotations are not runtime inputs.",
+      "match": [["agent", "holds_interpretation", "i"]],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "schema"}, "b": {"type": "Lit", "value": "communication_interpretation.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_schema"}, "b": {"type": "Lit", "value": "communication_evidence.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_force"}, "b": {"type": "Lit", "value": "action_request"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "literal_form"}, "b": {"type": "Lit", "value": "imperative"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "dispatch_path"}, "b": {"type": "Lit", "value": "instruction"}},
+        {"type": "Or", "items": [
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "language_referent_status"}, "b": {"type": "Lit", "value": "unresolved"}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "grounding_status"}, "b": {"type": "Lit", "value": "unresolved_reference"}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "grounding_status"}, "b": {"type": "Lit", "value": "unknown"}}
+        ]},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "cognitive_disposition"}, "b": {"type": "Lit", "value": null}}
+      ]},
+      "effects": [
+        ["set_attr", "i", "cognitive_disposition", "repair"],
+        ["set_attr", "i", "cognitive_goal", "clarify_or_defer"],
+        ["set_attr", "i", "arbitration_basis", "typed_unresolved_action_dependency"]
+      ]
+    },
+    {
+      "name": "arbitrate_unresolved_imperative_information_request_as_repair",
+      "comment": "Some imperative constructions are typed as information requests while still carrying an unresolved referent dependency. Preserve the information-request force, but select native repair from the explicit unresolved parse evidence.",
+      "match": [["agent", "holds_interpretation", "i"]],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "schema"}, "b": {"type": "Lit", "value": "communication_interpretation.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_schema"}, "b": {"type": "Lit", "value": "communication_evidence.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_force"}, "b": {"type": "Lit", "value": "information_request"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "communicative_force"}, "b": {"type": "Lit", "value": "request_information"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "literal_form"}, "b": {"type": "Lit", "value": "imperative"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "dispatch_path"}, "b": {"type": "Lit", "value": "instruction"}},
+        {"type": "Or", "items": [
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "language_referent_status"}, "b": {"type": "Lit", "value": "unresolved"}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "grounding_status"}, "b": {"type": "Lit", "value": "unresolved_reference"}}
+        ]},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "cognitive_disposition"}, "b": {"type": "Lit", "value": null}}
+      ]},
+      "effects": [
+        ["set_attr", "i", "cognitive_disposition", "repair"],
+        ["set_attr", "i", "cognitive_goal", "clarify_or_defer"],
+        ["set_attr", "i", "arbitration_basis", "typed_unresolved_action_dependency"]
+      ]
+    },
+    {
+      "name": "defer_unresolved_nonturn_response_action_request",
+      "comment": "An unresolved action request in a non-turn response slot cannot authorize acting on an implicit antecedent. Preserve it as deferred until graph-grounded action context is available; route or reply heuristics cannot create that authority.",
+      "match": [["agent", "holds_interpretation", "i"]],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "schema"}, "b": {"type": "Lit", "value": "communication_interpretation.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_schema"}, "b": {"type": "Lit", "value": "communication_evidence.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_force"}, "b": {"type": "Lit", "value": "action_request"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "dispatch_path"}, "b": {"type": "Lit", "value": "instruction"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "interaction_mode"}, "b": {"type": "Lit", "value": "non_turn"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "interaction_relation"}, "b": {"type": "Lit", "value": "response"}},
+        {"type": "Or", "items": [
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "grounding_status"}, "b": {"type": "Lit", "value": "unresolved"}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "grounding_status"}, "b": {"type": "Lit", "value": "unresolved_reference"}}
+        ]},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "cognitive_disposition"}, "b": {"type": "Lit", "value": null}}
+      ]},
+      "effects": [
+        ["set_attr", "i", "cognitive_disposition", "defer"],
+        ["set_attr", "i", "cognitive_goal", "defer"],
+        ["set_attr", "i", "arbitration_basis", "unresolved_nonturn_response_action"]
+      ]
+    },
+    {
+      "name": "arbitrate_typed_continuation_fragment_as_defer",
+      "comment": "A typed non-turn continuation fragment defers the incomplete event instead of emitting a turn-level repair pair; parser-derived fragment status and stream relation are sufficient evidence.",
+      "match": [["agent", "holds_interpretation", "i"]],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "schema"}, "b": {"type": "Lit", "value": "communication_interpretation.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_schema"}, "b": {"type": "Lit", "value": "communication_evidence.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "interaction_mode"}, "b": {"type": "Lit", "value": "non_turn"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "interaction_relation"}, "b": {"type": "Lit", "value": "continuation"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "literal_form"}, "b": {"type": "Lit", "value": "fragment"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "cognitive_disposition"}, "b": {"type": "Lit", "value": null}}
+      ]},
+      "effects": [
+        ["set_attr", "i", "cognitive_disposition", "defer"],
+        ["set_attr", "i", "cognitive_goal", "clarify_or_defer"],
+        ["set_attr", "i", "arbitration_basis", "typed_continuation_fragment"]
+      ]
+    },
+    {
+      "name": "arbitrate_nonturn_knowledge_deficit_continuation_as_repair",
+      "comment": "A typed knowledge-deficit continuation selects repair cognition even when the non-turn boundary has no response slot; keep disposition selection native and release separately guarded.",
+      "match": [["agent", "holds_interpretation", "i"]],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "schema"}, "b": {"type": "Lit", "value": "communication_interpretation.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_schema"}, "b": {"type": "Lit", "value": "communication_evidence.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "communicative_force"}, "b": {"type": "Lit", "value": "repair_or_defer"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "grounding_status"}, "b": {"type": "Lit", "value": "unresolved"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "language_repair_evidence"}, "b": {"type": "Lit", "value": "knowledge_deficit"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "language_repair_focus"}, "b": {"type": "Lit", "value": "information"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "interaction_mode"}, "b": {"type": "Lit", "value": "non_turn"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "interaction_relation"}, "b": {"type": "Lit", "value": "continuation"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "cognitive_disposition"}, "b": {"type": "Lit", "value": null}}
+      ]},
+      "effects": [
+        ["set_attr", "i", "cognitive_disposition", "repair"],
+        ["set_attr", "i", "cognitive_goal", "clarify_or_defer"],
+        ["set_attr", "i", "arbitration_basis", "nonturn_knowledge_deficit_repair"]
+      ]
+    },
+    {
+      "name": "arbitrate_addressed_attention_request_as_social_act",
+      "comment": "A language adapter's typed polite vocative-attention construction is social coordination, not a world-action commitment; native cognition records the social disposition.",
+      "match": [["agent", "holds_interpretation", "i"]],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "schema"}, "b": {"type": "Lit", "value": "communication_interpretation.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_schema"}, "b": {"type": "Lit", "value": "communication_evidence.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_force"}, "b": {"type": "Lit", "value": "action_request"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "language_social_act_evidence"}, "b": {"type": "Lit", "value": "addressed_attention_request"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "cognitive_disposition"}, "b": {"type": "Lit", "value": null}}
+      ]},
+      "effects": [
+        ["set_attr", "i", "communicative_force", "social_action"],
+        ["set_attr", "i", "cognitive_disposition", "answer"],
+        ["set_attr", "i", "cognitive_goal", "coordinate_socially"],
+        ["set_attr", "i", "arbitration_basis", "addressed_attention_request"]
+      ]
+    },
+    {
+      "name": "arbitrate_corrective_discourse_response_as_defer",
+      "comment": "A typed corrective discourse relation in a response uses its action clause to update common ground rather than execute a world action.",
+      "match": [["agent", "holds_interpretation", "i"]],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "schema"}, "b": {"type": "Lit", "value": "communication_interpretation.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_schema"}, "b": {"type": "Lit", "value": "communication_evidence.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_force"}, "b": {"type": "Lit", "value": "action_request"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "interaction_relation"}, "b": {"type": "Lit", "value": "response"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "language_discourse_relation"}, "b": {"type": "Lit", "value": "correction"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "cognitive_disposition"}, "b": {"type": "Lit", "value": null}}
+      ]},
+      "effects": [
+        ["set_attr", "i", "communicative_force", "assertion_or_correction"],
+        ["set_attr", "i", "cognitive_disposition", "defer"],
+        ["set_attr", "i", "cognitive_goal", "update_common_ground"],
+        ["set_attr", "i", "arbitration_basis", "corrective_discourse_response"]
+      ]
+    },
+    {
+      "name": "arbitrate_declarative_correction_as_defer",
+      "comment": "A language-adapter-typed declarative correction in a response updates common ground without requiring an imperative parse or claiming the correction itself was executed.",
+      "match": [["agent", "holds_interpretation", "i"]],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "schema"}, "b": {"type": "Lit", "value": "communication_interpretation.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_schema"}, "b": {"type": "Lit", "value": "communication_evidence.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_force"}, "b": {"type": "Lit", "value": "assertion_or_correction"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "interaction_relation"}, "b": {"type": "Lit", "value": "response"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "language_discourse_relation"}, "b": {"type": "Lit", "value": "correction"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "cognitive_disposition"}, "b": {"type": "Lit", "value": null}}
+      ]},
+      "effects": [
+        ["set_attr", "i", "communicative_force", "assertion_or_correction"],
+        ["set_attr", "i", "cognitive_disposition", "defer"],
+        ["set_attr", "i", "cognitive_goal", "update_common_ground"],
+        ["set_attr", "i", "arbitration_basis", "corrective_discourse_response"]
+      ]
+    },
+    {
+      "name": "index_grounded_instruction_target_in_discourse_event",
+      "comment": "Native index of a grounded instruction's typed action-target interpretation on its discourse event. Later scoped rules consume this event-local edge instead of joining every event in the discourse history.",
+      "match": [
+        ["agent", "has_discourse_state", "state"],
+        ["state", "has_event", "event"],
+        ["event", "has_interpretation", "i"]
+      ],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "event"}, "key": "kind"}, "b": {"type": "Lit", "value": "instruction"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "event"}, "key": "interaction_mode"}, "b": {"type": "Lit", "value": "turn_compatible"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "schema"}, "b": {"type": "Lit", "value": "communication_interpretation.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "grounding_status"}, "b": {"type": "Lit", "value": "candidate_grounded"}},
+        {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "event"}, "key": "topic"}, "b": {"type": "Lit", "value": null}}},
+        {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "event"}, "key": "topic"}, "b": {"type": "Lit", "value": ""}}},
+        {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "language_action_target_head"}, "b": {"type": "Lit", "value": null}}},
+        {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "language_action_target_head"}, "b": {"type": "Lit", "value": ""}}}
+      ]},
+      "effects": [
+        ["add_edge", "event", "has_scoped_action_target", "i"]
+      ]
+    },
+    {
+      "name": "carry_scoped_action_target_across_topicless_event",
+      "comment": "Carry an indexed grounded action target across a topicless discourse event only when event order and speaker/addressee direction remain continuous. A new topic or action does not inherit the old target.",
+      "match": [
+        ["agent", "has_discourse_state", "state"],
+        ["state", "has_event", "event"],
+        ["event", "follows_event", "prior_event"],
+        ["prior_event", "has_scoped_action_target", "prior_i"],
+        ["event", "from_speaker", "speaker"],
+        ["prior_event", "from_speaker", "speaker"],
+        ["event", "to_addressee", "agent"],
+        ["prior_event", "to_addressee", "agent"]
+      ],
+      "index_hints": [
+        {
+          "for_var": "prior_event",
+          "via_var": "event",
+          "via_key": "predecessor_event_index",
+          "node_type": "DiscourseEvent",
+          "this_key": "event_index"
+        }
+      ],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "event"}, "key": "interaction_mode"}, "b": {"type": "Lit", "value": "non_turn"}},
+        {"type": "Or", "items": [
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "event"}, "key": "topic"}, "b": {"type": "Lit", "value": null}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "event"}, "key": "topic"}, "b": {"type": "Lit", "value": ""}}
+        ]},
+        {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "event"}, "key": "kind"}, "b": {"type": "Lit", "value": "instruction"}}},
+        {"type": "Gt", "a": {"type": "Attr", "node": {"type": "Var", "name": "event"}, "key": "event_index"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "prior_event"}, "key": "event_index"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "prior_i"}, "key": "grounding_status"}, "b": {"type": "Lit", "value": "candidate_grounded"}}
+      ]},
+      "effects": [
+        ["add_edge", "event", "has_scoped_action_target", "prior_i"]
+      ]
+    },
+    {
+      "name": "ground_definite_correction_from_scoped_action_target",
+      "comment": "Native reference grounding: a typed definite subject in a correction is linked only to an earlier grounded instruction target carried on the immediately preceding discourse event with the same parser-provided head and speaker/addressee direction. The rule grounds the referent, not the truth of the corrected proposition.",
+      "match": [
+        ["agent", "has_discourse_state", "state"],
+        ["state", "has_event", "current_event"],
+        ["current_event", "has_interpretation", "i"],
+        ["current_event", "follows_event", "prior_event"],
+        ["prior_event", "has_scoped_action_target", "prior_i"],
+        ["current_event", "from_speaker", "speaker"],
+        ["prior_event", "from_speaker", "speaker"],
+        ["current_event", "to_addressee", "agent"],
+        ["prior_event", "to_addressee", "agent"]
+      ],
+      "index_hints": [
+        {
+          "for_var": "prior_i",
+          "via_var": "i",
+          "via_key": "language_referential_head",
+          "node_type": "CommunicationInterpretation",
+          "this_key": "language_action_target_head"
+        },
+        {
+          "for_var": "prior_event",
+          "via_var": "current_event",
+          "via_key": "predecessor_event_index",
+          "node_type": "DiscourseEvent",
+          "this_key": "event_index"
+        }
+      ],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "schema"}, "b": {"type": "Lit", "value": "communication_interpretation.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "language_definite_nominal_reference"}, "b": {"type": "Lit", "value": 1.0}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "language_discourse_relation"}, "b": {"type": "Lit", "value": "correction"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "interaction_relation"}, "b": {"type": "Lit", "value": "response"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "parsed_subject_pos"}, "b": {"type": "Lit", "value": "noun"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "grounding_status"}, "b": {"type": "Lit", "value": "unresolved"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "grounding_evidence_path"}, "b": {"type": "Lit", "value": ""}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "current_event"}, "key": "interaction_mode"}, "b": {"type": "Lit", "value": "turn_compatible"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "current_event"}, "key": "kind"}, "b": {"type": "Lit", "value": "statement"}},
+        {"type": "Gt", "a": {"type": "Attr", "node": {"type": "Var", "name": "current_event"}, "key": "event_index"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "prior_event"}, "key": "event_index"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "prior_i"}, "key": "schema"}, "b": {"type": "Lit", "value": "communication_interpretation.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "prior_i"}, "key": "grounding_status"}, "b": {"type": "Lit", "value": "candidate_grounded"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "prior_i"}, "key": "language_action_target_head"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "language_referential_head"}}
+      ]},
+      "effects": [
+        ["set_attr", "i", "grounding_status", "candidate_grounded"],
+        ["set_attr", "i", "grounding_evidence_path", "CommunicationInterpretation -> discourse-scoped DiscourseState -> prior grounded DiscourseEvent -> matching action-target head"]
+      ]
+    },
+    {
+      "name": "arbitrate_nonturn_action_as_defer",
+      "comment": "A standalone, sufficiently grounded non-turn action may be retained as a deferred commitment. Continuations and typed future conditions have their own rules.",
+      "match": [["agent", "holds_interpretation", "i"]],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "schema"}, "b": {"type": "Lit", "value": "communication_interpretation.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_schema"}, "b": {"type": "Lit", "value": "communication_evidence.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_force"}, "b": {"type": "Lit", "value": "action_request"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "interaction_mode"}, "b": {"type": "Lit", "value": "non_turn"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "interaction_relation"}, "b": {"type": "Lit", "value": "standalone"}},
+        {"type": "Or", "items": [
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "grounding_status"}, "b": {"type": "Lit", "value": "candidate_grounded"}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "grounding_status"}, "b": {"type": "Lit", "value": "supported"}}
+        ]},
+        {"type": "Or", "items": [
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "cognitive_disposition"}, "b": {"type": "Lit", "value": null}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "cognitive_disposition"}, "b": {"type": "Lit", "value": "repair"}}
+        ]}
+      ]},
+      "effects": [
+        ["set_attr", "i", "cognitive_disposition", "defer"],
+        ["set_attr", "i", "cognitive_goal", "defer"],
+        ["set_attr", "i", "arbitration_basis", "nonturn_action_deferred"]
+      ]
+    },
+    {
+      "name": "arbitrate_uncertain_continuing_common_ground_event_as_repair",
+      "comment": "A non-turn continuation carrying adapter-typed uncertainty about common-ground content requires repair before committing an update; native cognition does not infer correction from surface wording.",
+      "match": [["agent", "holds_interpretation", "i"]],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "schema"}, "b": {"type": "Lit", "value": "communication_interpretation.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_schema"}, "b": {"type": "Lit", "value": "communication_evidence.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_force"}, "b": {"type": "Lit", "value": "assertion_or_correction"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "interaction_mode"}, "b": {"type": "Lit", "value": "non_turn"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "interaction_relation"}, "b": {"type": "Lit", "value": "continuation"}},
+        {"type": "Or", "items": [
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "explicit_uncertainty"}, "b": {"type": "Lit", "value": 1}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "language_modality_evidence"}, "b": {"type": "Lit", "value": "epistemic_possibility"}}
+        ]},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "cognitive_disposition"}, "b": {"type": "Lit", "value": null}}
+      ]},
+      "effects": [
+        ["set_attr", "i", "communicative_force", "assertion_or_correction"],
+        ["set_attr", "i", "cognitive_disposition", "repair"],
+        ["set_attr", "i", "cognitive_goal", "clarify_or_defer"],
+        ["set_attr", "i", "arbitration_basis", "uncertain_continuing_common_ground_event"]
+      ]
+    },
     {
       "name": "arbitrate_explicit_failure_as_error",
       "comment": "An adapter-supplied explicit failure is distinct from ordinary uncertainty. Native cognition records an error disposition before any repair surface can be released; ordinary uncertainty remains eligible for repair or defer.",
@@ -32,7 +898,8 @@
         {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "schema"}, "b": {"type": "Lit", "value": "communication_interpretation.v1"}},
         {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_schema"}, "b": {"type": "Lit", "value": "communication_evidence.v1"}},
         {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_force"}, "b": {"type": "Lit", "value": "information_request"}},
-        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "communicative_force"}, "b": {"type": "Lit", "value": null}}
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "communicative_force"}, "b": {"type": "Lit", "value": null}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "cognitive_disposition"}, "b": {"type": "Lit", "value": null}}
       ]},
       "effects": [
         ["set_attr", "i", "communicative_force", "request_information"],
@@ -47,12 +914,28 @@
         {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "schema"}, "b": {"type": "Lit", "value": "communication_interpretation.v1"}},
         {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_schema"}, "b": {"type": "Lit", "value": "communication_evidence.v1"}},
         {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_force"}, "b": {"type": "Lit", "value": "action_request"}},
-        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "communicative_force"}, "b": {"type": "Lit", "value": null}}
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "communicative_force"}, "b": {"type": "Lit", "value": null}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "cognitive_disposition"}, "b": {"type": "Lit", "value": null}}
       ]},
       "effects": [
         ["set_attr", "i", "communicative_force", "request_action"],
         ["set_attr", "i", "cognitive_goal", "act_or_clarify"],
         ["set_attr", "i", "arbitration_basis", "instruction_force"]
+      ]
+    },
+    {
+      "name": "retain_typed_action_force_after_native_disposition",
+      "comment": "A specific native rule may settle an action request as defer/repair/blocked/etc. Preserve its arbitration basis and selected goal while filling only the still-missing force readback from the original neutral evidence.",
+      "match": [["agent", "holds_interpretation", "i"]],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "schema"}, "b": {"type": "Lit", "value": "communication_interpretation.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_schema"}, "b": {"type": "Lit", "value": "communication_evidence.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_force"}, "b": {"type": "Lit", "value": "action_request"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "communicative_force"}, "b": {"type": "Lit", "value": null}},
+        {"type": "In", "member": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "cognitive_disposition"}, "container": {"type": "Lit", "value": ["act", "answer", "blocked", "defer", "error", "learn", "repair"]}}
+      ]},
+      "effects": [
+        ["set_attr", "i", "communicative_force", "request_action"]
       ]
     },
     {
@@ -62,7 +945,8 @@
         {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "schema"}, "b": {"type": "Lit", "value": "communication_interpretation.v1"}},
         {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_schema"}, "b": {"type": "Lit", "value": "communication_evidence.v1"}},
         {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_force"}, "b": {"type": "Lit", "value": "information_request"}},
-        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "communicative_force"}, "b": {"type": "Lit", "value": null}}
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "communicative_force"}, "b": {"type": "Lit", "value": null}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "cognitive_disposition"}, "b": {"type": "Lit", "value": null}}
       ]},
       "effects": [
         ["set_attr", "i", "communicative_force", "request_information"],
@@ -77,12 +961,70 @@
         {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "schema"}, "b": {"type": "Lit", "value": "communication_interpretation.v1"}},
         {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_schema"}, "b": {"type": "Lit", "value": "communication_evidence.v1"}},
         {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_force"}, "b": {"type": "Lit", "value": "assertion_or_correction"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "language_modality_evidence"}, "b": {"type": "Lit", "value": null}},
         {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "communicative_force"}, "b": {"type": "Lit", "value": null}}
       ]},
       "effects": [
         ["set_attr", "i", "communicative_force", "assertion_or_correction"],
         ["set_attr", "i", "cognitive_goal", "update_common_ground"],
         ["set_attr", "i", "arbitration_basis", "declarative_force"]
+      ]
+    },
+    {
+      "name": "defer_standalone_nonturn_common_ground_update",
+      "comment": "A standalone, adapter-typed assertion/correction event outside a live turn may update modeled common ground, but it does not claim an interlocutor response. Generic declarative force alone is insufficient; the language adapter must supply the neutral statement_act category.",
+      "match": [["agent", "holds_interpretation", "i"]],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "schema"}, "b": {"type": "Lit", "value": "communication_interpretation.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_schema"}, "b": {"type": "Lit", "value": "communication_evidence.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_force"}, "b": {"type": "Lit", "value": "assertion_or_correction"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "language_statement_act"}, "b": {"type": "Lit", "value": "assertion"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "interaction_mode"}, "b": {"type": "Lit", "value": "non_turn"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "interaction_relation"}, "b": {"type": "Lit", "value": "standalone"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "cognitive_disposition"}, "b": {"type": "Lit", "value": null}}
+      ]},
+      "effects": [
+        ["set_attr", "i", "cognitive_disposition", "defer"],
+        ["set_attr", "i", "cognitive_goal", "defer"],
+        ["set_attr", "i", "arbitration_basis", "standalone_nonturn_common_ground"]
+      ]
+    },
+    {
+      "name": "defer_response_assertion_without_proposition_uptake",
+      "comment": "A parsed assertion in response position records a native defer disposition without endorsing or adopting its proposition.",
+      "match": [["agent", "holds_interpretation", "i"]],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "schema"}, "b": {"type": "Lit", "value": "communication_interpretation.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_schema"}, "b": {"type": "Lit", "value": "communication_evidence.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_force"}, "b": {"type": "Lit", "value": "assertion_or_correction"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "language_statement_act"}, "b": {"type": "Lit", "value": "assertion"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "interaction_mode"}, "b": {"type": "Lit", "value": "turn_compatible"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "interaction_relation"}, "b": {"type": "Lit", "value": "response"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "cognitive_disposition"}, "b": {"type": "Lit", "value": null}}
+      ]},
+      "effects": [
+        ["set_attr", "i", "cognitive_disposition", "defer"],
+        ["set_attr", "i", "cognitive_goal", "update_common_ground"],
+        ["set_attr", "i", "arbitration_basis", "response_statement_common_ground"]
+      ]
+    },
+    {
+      "name": "defer_continuation_assertion_without_proposition_uptake",
+      "comment": "A typed assertion carried as a stream continuation is recorded without treating it as an answer or endorsing its proposition. The graph-resident relation and adapter-typed assertion are sufficient; no surface-specific rule is used.",
+      "match": [["agent", "holds_interpretation", "i"]],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "schema"}, "b": {"type": "Lit", "value": "communication_interpretation.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_schema"}, "b": {"type": "Lit", "value": "communication_evidence.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_force"}, "b": {"type": "Lit", "value": "assertion_or_correction"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "language_statement_act"}, "b": {"type": "Lit", "value": "assertion"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "interaction_mode"}, "b": {"type": "Lit", "value": "turn_compatible"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "interaction_relation"}, "b": {"type": "Lit", "value": "continuation"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "cognitive_disposition"}, "b": {"type": "Lit", "value": null}}
+      ]},
+      "effects": [
+        ["set_attr", "i", "cognitive_disposition", "defer"],
+        ["set_attr", "i", "cognitive_goal", "update_common_ground"],
+        ["set_attr", "i", "arbitration_basis", "continuation_statement_common_ground"]
       ]
     },
     {
@@ -102,6 +1044,62 @@
         ["set_attr", "i", "communicative_force", "repair_or_defer"],
         ["set_attr", "i", "cognitive_goal", "clarify_or_defer"],
         ["set_attr", "i", "arbitration_basis", "grounding_failure"]
+      ]
+    },
+    {
+      "name": "arbitrate_event_selection_from_rule_firing_history",
+      "comment": "A turn-bounded RuleFiringHistory ledger is prior-event evidence. For a language-neutral event-specific selection with no event binding, native cognition selects its last progressing rule and records support; the language/reply layer may render only this selected graph evidence.",
+      "match": [
+        ["agent", "holds_interpretation", "i"],
+        ["agent", "has_rule_firing_history", "h"]
+      ],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "schema"}, "b": {"type": "Lit", "value": "communication_interpretation.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_schema"}, "b": {"type": "Lit", "value": "communication_evidence.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_force"}, "b": {"type": "Lit", "value": "repair_or_defer"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "relation_scope"}, "b": {"type": "Lit", "value": "event_specific"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "relation_focus"}, "b": {"type": "Lit", "value": "selection"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "selection_target_kind"}, "b": {"type": "Lit", "value": "rule"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "grounding_status"}, "b": {"type": "Lit", "value": "unresolved"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "interaction_mode"}, "b": {"type": "Lit", "value": "turn_compatible"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "cognitive_disposition"}, "b": {"type": "Lit", "value": null}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "h"}, "key": "schema"}, "b": {"type": "Lit", "value": "rule_firing_history.v1"}},
+        {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "h"}, "key": "last_rule_name"}, "b": {"type": "Lit", "value": null}}}
+      ]},
+      "effects": [
+        ["set_attr", "i", "cognitive_disposition", "answer"],
+        ["set_attr", "i", "cognitive_goal", "answer_or_learn"],
+        ["set_attr", "i", "grounding_status", "supported"],
+        ["set_attr", "i", "arbitration_basis", "grounded_rule_firing_history"],
+        ["set_attr", "i", "selected_rule_name", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "h"}, "key": "last_rule_name"}}],
+        ["add_node", "e", "RuleFiringAnswerEvidence", {
+          "schema": "rule_firing_answer_evidence.v1",
+          "status": "supported",
+          "rule_name": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "h"}, "key": "last_rule_name"}},
+          "source_message_id": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "h"}, "key": "last_inbound_message_id"}}
+        }],
+        ["add_edge", "i", "has_rule_firing_answer_evidence", "e"],
+        ["add_edge", "e", "supported_by", "h"]
+      ]
+    },
+    {
+      "name": "arbitrate_unresolved_event_selection_without_history_as_repair",
+      "comment": "A language-neutral event-specific selection whose temporal binding is unresolved receives repair when no prior-event history supports the requested target. This rule does not depend on a text dispatch path or claim an event-history source exists.",
+      "match": [["agent", "holds_interpretation", "i"]],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "schema"}, "b": {"type": "Lit", "value": "communication_interpretation.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_schema"}, "b": {"type": "Lit", "value": "communication_evidence.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_force"}, "b": {"type": "Lit", "value": "repair_or_defer"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "relation_scope"}, "b": {"type": "Lit", "value": "event_specific"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "relation_focus"}, "b": {"type": "Lit", "value": "selection"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "grounding_status"}, "b": {"type": "Lit", "value": "unresolved"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "interaction_mode"}, "b": {"type": "Lit", "value": "turn_compatible"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "cognitive_disposition"}, "b": {"type": "Lit", "value": null}}
+      ]},
+      "effects": [
+        ["set_attr", "i", "cognitive_disposition", "repair"],
+        ["set_attr", "i", "cognitive_goal", "clarify_or_defer"],
+        ["set_attr", "i", "arbitration_basis", "missing_event_history_support"]
       ]
     },
     {
@@ -155,6 +1153,228 @@
       ]
     },
     {
+      "name": "arbitrate_acknowledgement_as_common_ground_update",
+      "comment": "The language adapter may supply a typed acknowledgement distinct from a greeting/social action. Native cognition records common-ground update and defers the floor; no surface wording is inspected here.",
+      "match": [["agent", "holds_interpretation", "i"]],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "schema"}, "b": {"type": "Lit", "value": "communication_interpretation.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_schema"}, "b": {"type": "Lit", "value": "communication_evidence.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_force"}, "b": {"type": "Lit", "value": "acknowledgement"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "cognitive_disposition"}, "b": {"type": "Lit", "value": null}}
+      ]},
+      "effects": [
+        ["set_attr", "i", "cognitive_disposition", "defer"],
+        ["set_attr", "i", "communicative_force", "acknowledgement"],
+        ["set_attr", "i", "cognitive_goal", "update_common_ground"],
+        ["set_attr", "i", "arbitration_basis", "typed_acknowledgement"]
+      ]
+    },
+    {
+      "name": "arbitrate_inability_response_as_error",
+      "comment": "A semantically typed inability to perform an action in a response position is an explicit failed-action outcome. The rule reads a neutral act kind and graph discourse relation, not lexical negation or language-specific word order.",
+      "match": [["agent", "holds_interpretation", "i"]],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "schema"}, "b": {"type": "Lit", "value": "communication_interpretation.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_schema"}, "b": {"type": "Lit", "value": "communication_evidence.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_force"}, "b": {"type": "Lit", "value": "refusal"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_communicative_act"}, "b": {"type": "Lit", "value": "inability_action"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "interaction_relation"}, "b": {"type": "Lit", "value": "response"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "cognitive_disposition"}, "b": {"type": "Lit", "value": null}}
+      ]},
+      "effects": [
+        ["set_attr", "i", "cognitive_disposition", "error"],
+        ["set_attr", "i", "communicative_force", "refusal"],
+        ["set_attr", "i", "cognitive_goal", "update_common_ground"],
+        ["set_attr", "i", "arbitration_basis", "typed_inability_response"]
+      ]
+    },
+    {
+      "name": "arbitrate_standalone_inability_as_blocked",
+      "comment": "A semantically typed inability to perform an action in a standalone event is blocked rather than a turn-level defer. The rule consumes neutral semantic and discourse evidence only.",
+      "match": [["agent", "holds_interpretation", "i"]],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "schema"}, "b": {"type": "Lit", "value": "communication_interpretation.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_schema"}, "b": {"type": "Lit", "value": "communication_evidence.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_force"}, "b": {"type": "Lit", "value": "refusal"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_communicative_act"}, "b": {"type": "Lit", "value": "inability_action"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "interaction_relation"}, "b": {"type": "Lit", "value": "standalone"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "cognitive_disposition"}, "b": {"type": "Lit", "value": null}}
+      ]},
+      "effects": [
+        ["set_attr", "i", "cognitive_disposition", "blocked"],
+        ["set_attr", "i", "communicative_force", "refusal"],
+        ["set_attr", "i", "cognitive_goal", "update_common_ground"],
+        ["set_attr", "i", "arbitration_basis", "typed_inability_standalone"]
+      ]
+    },
+    {
+      "name": "arbitrate_typed_refusal_as_defer",
+      "comment": "An explicit language-adapter refusal updates common ground and defers the floor. The rule consumes a neutral force category only; it does not inspect a negation token or select a surface reply.",
+      "match": [["agent", "holds_interpretation", "i"]],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "schema"}, "b": {"type": "Lit", "value": "communication_interpretation.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_schema"}, "b": {"type": "Lit", "value": "communication_evidence.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_force"}, "b": {"type": "Lit", "value": "refusal"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "cognitive_disposition"}, "b": {"type": "Lit", "value": null}}
+      ]},
+      "effects": [
+        ["set_attr", "i", "cognitive_disposition", "defer"],
+        ["set_attr", "i", "communicative_force", "refusal"],
+        ["set_attr", "i", "cognitive_goal", "update_common_ground"],
+        ["set_attr", "i", "arbitration_basis", "typed_refusal"]
+      ]
+    },
+    {
+      "name": "block_unavailable_action_in_response",
+      "comment": "A graph-typed action with an explicitly negated availability state in a response slot is blocked. The adapter supplies a neutral availability value; native arbitration combines it with the discourse relation without inspecting a surface pattern.",
+      "match": [["agent", "holds_interpretation", "i"]],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "schema"}, "b": {"type": "Lit", "value": "communication_interpretation.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_schema"}, "b": {"type": "Lit", "value": "communication_evidence.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "language_action_availability"}, "b": {"type": "Lit", "value": "unavailable"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "interaction_mode"}, "b": {"type": "Lit", "value": "turn_compatible"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "interaction_relation"}, "b": {"type": "Lit", "value": "response"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "cognitive_disposition"}, "b": {"type": "Lit", "value": null}}
+      ]},
+      "effects": [
+        ["set_attr", "i", "cognitive_disposition", "blocked"],
+        ["set_attr", "i", "cognitive_goal", "act_or_clarify"],
+        ["set_attr", "i", "arbitration_basis", "unavailable_action_response"]
+      ]
+    },
+    {
+      "name": "arbitrate_typed_nonunderstanding_report_as_repair",
+      "comment": "A neutral adapter report of failed first-person understanding selects clarification/repair. The language adapter supplies the typed act; native cognition owns its disposition and route.",
+      "match": [["agent", "holds_interpretation", "i"]],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "schema"}, "b": {"type": "Lit", "value": "communication_interpretation.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_schema"}, "b": {"type": "Lit", "value": "communication_evidence.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_communicative_act"}, "b": {"type": "Lit", "value": "nonunderstanding_report"}},
+        {"type": "Or", "items": [
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "cognitive_disposition"}, "b": {"type": "Lit", "value": null}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "cognitive_disposition"}, "b": {"type": "Lit", "value": "repair"}}
+        ]},
+        {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "arbitration_basis"}, "b": {"type": "Lit", "value": "typed_nonunderstanding_report"}}}
+      ]},
+      "effects": [
+        ["set_attr", "i", "communicative_force", "repair_or_defer"],
+        ["set_attr", "i", "cognitive_disposition", "repair"],
+        ["set_attr", "i", "cognitive_goal", "clarify_or_defer"],
+        ["set_attr", "i", "arbitration_basis", "typed_nonunderstanding_report"]
+      ]
+    },
+    {
+      "name": "defer_incomplete_ability_offer_without_target",
+      "comment": "A typed ability offer with no action target is a social act but not an acceptance candidate. A non-turn offer remains deferred; it is not converted into a generic social answer.",
+      "match": [["agent", "holds_interpretation", "i"]],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "schema"}, "b": {"type": "Lit", "value": "communication_interpretation.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_schema"}, "b": {"type": "Lit", "value": "communication_evidence.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_force"}, "b": {"type": "Lit", "value": "social_action"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_communicative_act"}, "b": {"type": "Lit", "value": "ability_action_offer"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "offer_target_status"}, "b": {"type": "Lit", "value": "missing"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "interaction_mode"}, "b": {"type": "Lit", "value": "non_turn"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "cognitive_disposition"}, "b": {"type": "Lit", "value": null}}
+      ]},
+      "effects": [
+        ["set_attr", "i", "cognitive_disposition", "defer"],
+        ["set_attr", "i", "communicative_force", "social_action"],
+        ["set_attr", "i", "cognitive_goal", "coordinate_socially"],
+        ["set_attr", "i", "arbitration_basis", "incomplete_ability_offer_deferred"]
+      ]
+    },
+    {
+      "name": "repair_unresolved_ability_offer_target",
+      "comment": "Recognize a first-person ability offer while keeping an unresolved target in repair; target uncertainty cannot authorize acceptance or execution.",
+      "match": [["agent", "holds_interpretation", "i"]],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "schema"}, "b": {"type": "Lit", "value": "communication_interpretation.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_schema"}, "b": {"type": "Lit", "value": "communication_evidence.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_force"}, "b": {"type": "Lit", "value": "social_action"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_communicative_act"}, "b": {"type": "Lit", "value": "ability_action_offer"}},
+        {"type": "Or", "items": [
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "offer_target_status"}, "b": {"type": "Lit", "value": "unresolved"}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "offer_target_status"}, "b": {"type": "Lit", "value": "missing"}}
+        ]},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "interaction_mode"}, "b": {"type": "Lit", "value": "turn_compatible"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "cognitive_disposition"}, "b": {"type": "Lit", "value": null}}
+      ]},
+      "effects": [
+        ["set_attr", "i", "cognitive_disposition", "repair"],
+        ["set_attr", "i", "communicative_force", "social_action"],
+        ["set_attr", "i", "cognitive_goal", "clarify_or_defer"],
+        ["set_attr", "i", "arbitration_basis", "unresolved_ability_offer_target"]
+      ]
+    },
+    {
+      "name": "arbitrate_typed_ability_action_offer_as_social_answer",
+      "comment": "A complete language-adapter offer whose selected target has a graph Concept licenses an acceptance adjacency. This proves lexical target availability only, not an instance or action capability; the reply does not authorize execution or infer success.",
+      "match": [["agent", "holds_interpretation", "i"]],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "schema"}, "b": {"type": "Lit", "value": "communication_interpretation.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_schema"}, "b": {"type": "Lit", "value": "communication_evidence.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_force"}, "b": {"type": "Lit", "value": "social_action"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_communicative_act"}, "b": {"type": "Lit", "value": "ability_action_offer"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "language_communicative_act_evidence"}, "b": {"type": "Lit", "value": "first_person_ability_action_offer"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "offer_target_status"}, "b": {"type": "Lit", "value": "concept_available"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "parsed_relation_schema"}, "b": {"type": "Lit", "value": "communication_relation_projection.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "parsed_relation_status"}, "b": {"type": "Lit", "value": "selected_parse_unverified"}},
+        {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "parsed_object"}, "b": {"type": "Lit", "value": null}}},
+        {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "literal_form"}, "b": {"type": "Lit", "value": "fragment"}}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "cognitive_disposition"}, "b": {"type": "Lit", "value": null}}
+      ]},
+      "effects": [
+        ["set_attr", "i", "cognitive_disposition", "answer"],
+        ["set_attr", "i", "communicative_force", "social_action"],
+        ["set_attr", "i", "cognitive_goal", "coordinate_socially"],
+        ["set_attr", "i", "arbitration_basis", "typed_ability_action_offer"]
+      ]
+    },
+    {
+      "name": "arbitrate_complete_social_act_as_answer",
+      "comment": "A complete, typed social act is a live coordination turn. Partial fragments retain the dedicated defer policy; no surface-word recognition is used here.",
+      "match": [["agent", "holds_interpretation", "i"]],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "schema"}, "b": {"type": "Lit", "value": "communication_interpretation.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_schema"}, "b": {"type": "Lit", "value": "communication_evidence.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_force"}, "b": {"type": "Lit", "value": "social_action"}},
+        {"type": "Or", "items": [
+          {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_communicative_act"}, "b": {"type": "Lit", "value": "ability_action_offer"}}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "offer_target_status"}, "b": {"type": "Lit", "value": "concept_available"}}
+        ]},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "interaction_mode"}, "b": {"type": "Lit", "value": "turn_compatible"}},
+        {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "literal_form"}, "b": {"type": "Lit", "value": "fragment"}}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "cognitive_disposition"}, "b": {"type": "Lit", "value": null}}
+      ]},
+      "effects": [
+        ["set_attr", "i", "cognitive_disposition", "answer"],
+        ["set_attr", "i", "communicative_force", "social_action"],
+        ["set_attr", "i", "cognitive_goal", "coordinate_socially"],
+        ["set_attr", "i", "arbitration_basis", "social_act"]
+      ]
+    },
+    {
+      "name": "arbitrate_standalone_farewell_as_social_answer",
+      "comment": "A language adapter's typed farewell act licenses a social adjacency even when delivered outside a live turn. The rule consumes the neutral act category, not departure wording or a corpus label.",
+      "match": [["agent", "holds_interpretation", "i"]],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "schema"}, "b": {"type": "Lit", "value": "communication_interpretation.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_schema"}, "b": {"type": "Lit", "value": "communication_evidence.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_force"}, "b": {"type": "Lit", "value": "social_action"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "speech_act_input"}, "b": {"type": "Lit", "value": "farewell"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "interaction_mode"}, "b": {"type": "Lit", "value": "non_turn"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "interaction_relation"}, "b": {"type": "Lit", "value": "standalone"}},
+        {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "literal_form"}, "b": {"type": "Lit", "value": "fragment"}}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "cognitive_disposition"}, "b": {"type": "Lit", "value": null}}
+      ]},
+      "effects": [
+        ["set_attr", "i", "cognitive_disposition", "answer"],
+        ["set_attr", "i", "communicative_force", "social_action"],
+        ["set_attr", "i", "cognitive_goal", "coordinate_socially"],
+        ["set_attr", "i", "arbitration_basis", "standalone_social_farewell"]
+      ]
+    },
+    {
       "name": "arbitrate_typed_overlap_fragment_as_defer",
       "comment": "Native cognition consumes an explicitly typed partial overlap event. The disposition is not inferred from a reply or from turn-taking.",
       "match": [["agent", "holds_interpretation", "i"]],
@@ -169,6 +1389,512 @@
         ["set_attr", "i", "cognitive_disposition", "defer"],
         ["set_attr", "i", "cognitive_goal", "clarify_or_defer"],
         ["set_attr", "i", "arbitration_basis", "typed_overlap_partial_event"]
+      ]
+    },
+    {
+      "name": "settle_unresolved_action_repair_basis",
+      "comment": "After generic force arbitration settles language-neutral force, retain the specific rationale whenever the adapter recorded an unresolved action referent; a corpus uncertainty label is not required.",
+      "match": [["agent", "holds_interpretation", "i"]],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "schema"}, "b": {"type": "Lit", "value": "communication_interpretation.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_schema"}, "b": {"type": "Lit", "value": "communication_evidence.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_force"}, "b": {"type": "Lit", "value": "action_request"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "literal_form"}, "b": {"type": "Lit", "value": "imperative"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "dispatch_path"}, "b": {"type": "Lit", "value": "instruction"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "cognitive_disposition"}, "b": {"type": "Lit", "value": "repair"}},
+        {"type": "Or", "items": [
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "language_referent_status"}, "b": {"type": "Lit", "value": "unresolved"}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "grounding_status"}, "b": {"type": "Lit", "value": "unresolved_reference"}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "grounding_status"}, "b": {"type": "Lit", "value": "unknown"}}
+        ]}
+      ]},
+      "effects": [
+        ["set_attr", "i", "arbitration_basis", "typed_unresolved_action_dependency"]
+      ]
+    },
+    {
+      "name": "settle_uncertain_continuation_repair_basis",
+      "comment": "Retain the native uncertainty rationale after generic force arbitration has recorded assertion-or-correction force.",
+      "match": [["agent", "holds_interpretation", "i"]],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "schema"}, "b": {"type": "Lit", "value": "communication_interpretation.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_schema"}, "b": {"type": "Lit", "value": "communication_evidence.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_force"}, "b": {"type": "Lit", "value": "assertion_or_correction"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "interaction_mode"}, "b": {"type": "Lit", "value": "non_turn"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "interaction_relation"}, "b": {"type": "Lit", "value": "continuation"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "explicit_uncertainty"}, "b": {"type": "Lit", "value": 1}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "cognitive_disposition"}, "b": {"type": "Lit", "value": "repair"}}
+      ]},
+      "effects": [
+        ["set_attr", "i", "arbitration_basis", "uncertain_continuing_common_ground_event"]
+      ]
+    },
+    {
+      "name": "arbitrate_exhausted_standalone_topic_request_as_repair",
+      "comment": "After the same-event standalone answer_topic attempt fails to produce verified support, a request transitions from answer/learning to repair so the interlocutor can supply or clarify the missing topic. This is a post-retrieval native transition; it cannot pre-empt supported answers, pending retrieval, permission blocks, or non-standalone discourse.",
+      "match": [
+        ["agent", "holds_interpretation", "i"],
+        ["agent", "has_goal", "g"],
+        ["g", "comprehends", "m"],
+        ["g", "search_request", "sr"]
+      ],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "schema"}, "b": {"type": "Lit", "value": "communication_interpretation.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_force"}, "b": {"type": "Lit", "value": "information_request"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "interaction_mode"}, "b": {"type": "Lit", "value": "non_turn"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "interaction_relation"}, "b": {"type": "Lit", "value": "standalone"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "cognitive_goal"}, "b": {"type": "Lit", "value": "answer_or_learn"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "cognitive_disposition"}, "b": {"type": "Lit", "value": null}},
+        {"type": "Or", "items": [
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "grounding_status"}, "b": {"type": "Lit", "value": "unresolved"}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "grounding_status"}, "b": {"type": "Lit", "value": "unresolved_reference"}}
+        ]},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "g"}, "key": "kind"}, "b": {"type": "Lit", "value": "answer_topic"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "g"}, "key": "outcome"}, "b": {"type": "Lit", "value": "unresolved"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "sr"}, "key": "source"}, "b": {"type": "Lit", "value": "answer_topic"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "sr"}, "key": "query"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "g"}, "key": "concept"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "sr"}, "key": "status"}, "b": {"type": "Lit", "value": "failed"}},
+        {"type": "Or", "items": [
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "sr"}, "key": "epistemic_status"}, "b": {"type": "Lit", "value": "unknown"}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "sr"}, "key": "epistemic_status"}, "b": {"type": "Lit", "value": "search_failed"}}
+        ]}
+      ]},
+      "effects": [
+        ["set_attr", "i", "cognitive_disposition", "repair"],
+        ["set_attr", "i", "cognitive_goal", "clarify_or_defer"],
+        ["set_attr", "i", "arbitration_basis", "failed_standalone_topic_retrieval"]
+      ]
+    },
+    {
+      "name": "arbitrate_unresolved_nonturn_information_request_as_repair",
+      "comment": "An unresolved non-turn information request selects repair when the adapter records explicit uncertainty or an unresolved reference/anaphor; a generic unknown topic remains eligible for answer/learning.",
+      "match": [["agent", "holds_interpretation", "i"]],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "schema"}, "b": {"type": "Lit", "value": "communication_interpretation.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_schema"}, "b": {"type": "Lit", "value": "communication_evidence.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_force"}, "b": {"type": "Lit", "value": "information_request"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "interaction_mode"}, "b": {"type": "Lit", "value": "non_turn"}},
+        {"type": "Or", "items": [
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "explicit_uncertainty"}, "b": {"type": "Lit", "value": 1}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "anaphor"}, "b": {"type": "Lit", "value": 1}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "language_referent_status"}, "b": {"type": "Lit", "value": "unresolved"}}
+        ]},
+        {"type": "Or", "items": [
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "grounding_status"}, "b": {"type": "Lit", "value": "unresolved"}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "grounding_status"}, "b": {"type": "Lit", "value": "unresolved_reference"}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "grounding_status"}, "b": {"type": "Lit", "value": "unknown"}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "language_referent_status"}, "b": {"type": "Lit", "value": "unresolved"}}
+        ]},
+        {"type": "Or", "items": [
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "authority_status"}, "b": {"type": "Lit", "value": "not_applicable"}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "authority_status"}, "b": {"type": "Lit", "value": null}}
+        ]},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "cognitive_disposition"}, "b": {"type": "Lit", "value": null}}
+      ]},
+      "effects": [
+        ["set_attr", "i", "cognitive_disposition", "repair"],
+        ["set_attr", "i", "cognitive_goal", "clarify_or_defer"],
+        ["set_attr", "i", "arbitration_basis", "unresolved_nonturn_information_dependency"]
+      ]
+    },
+    {
+      "name": "arbitrate_unresolved_continuing_information_referent_as_repair",
+      "comment": "An information request in a continuing event with adapter-typed unresolved referent evidence repairs the missing discourse/world link; complete scene-description requests without that unresolved relation remain eligible for their selected faculty.",
+      "match": [["agent", "holds_interpretation", "i"]],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "schema"}, "b": {"type": "Lit", "value": "communication_interpretation.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_schema"}, "b": {"type": "Lit", "value": "communication_evidence.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_force"}, "b": {"type": "Lit", "value": "information_request"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "interaction_relation"}, "b": {"type": "Lit", "value": "continuation"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "language_referent_status"}, "b": {"type": "Lit", "value": "unresolved"}},
+        {"type": "Or", "items": [
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "grounding_status"}, "b": {"type": "Lit", "value": "unresolved"}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "grounding_status"}, "b": {"type": "Lit", "value": "unresolved_reference"}}
+        ]},
+        {"type": "Or", "items": [
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "cognitive_disposition"}, "b": {"type": "Lit", "value": null}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "cognitive_disposition"}, "b": {"type": "Lit", "value": "act"}}
+        ]}
+      ]},
+      "effects": [
+        ["set_attr", "i", "cognitive_disposition", "repair"],
+        ["set_attr", "i", "cognitive_goal", "clarify_or_defer"],
+        ["set_attr", "i", "arbitration_basis", "unresolved_continuing_information_referent"]
+      ]
+    },
+    {
+      "name": "arbitrate_uncertain_turn_information_referent_as_repair",
+      "comment": "In a turn-compatible information request, explicit uncertainty plus adapter-typed unresolved referent evidence requires repair. This does not consume corpus labels because the runtime evaluation boundary excludes those labels.",
+      "match": [["agent", "holds_interpretation", "i"]],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "schema"}, "b": {"type": "Lit", "value": "communication_interpretation.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_schema"}, "b": {"type": "Lit", "value": "communication_evidence.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_force"}, "b": {"type": "Lit", "value": "information_request"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "interaction_mode"}, "b": {"type": "Lit", "value": "turn_compatible"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "explicit_uncertainty"}, "b": {"type": "Lit", "value": 1}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "language_referent_status"}, "b": {"type": "Lit", "value": "unresolved"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "grounding_status"}, "b": {"type": "Lit", "value": "unresolved"}},
+        {"type": "Or", "items": [
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "cognitive_disposition"}, "b": {"type": "Lit", "value": null}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "cognitive_disposition"}, "b": {"type": "Lit", "value": "act"}}
+        ]}
+      ]},
+      "effects": [
+        ["set_attr", "i", "cognitive_disposition", "repair"],
+        ["set_attr", "i", "cognitive_goal", "clarify_or_defer"],
+        ["set_attr", "i", "arbitration_basis", "uncertain_turn_information_referent"]
+      ]
+    },
+    {
+      "name": "arbitrate_unresolved_nonturn_frontier_as_repair",
+      "comment": "A non-turn standalone unresolved communication frontier requires repair. The adapter's typed frontier and unresolved grounding are sufficient; annotation-only uncertainty labels are not runtime evidence. Continuation/overlap fragments are handled by their own defer rules.",
+      "match": [["agent", "holds_interpretation", "i"]],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "schema"}, "b": {"type": "Lit", "value": "communication_interpretation.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_schema"}, "b": {"type": "Lit", "value": "communication_evidence.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_force"}, "b": {"type": "Lit", "value": "repair_or_defer"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "dispatch_path"}, "b": {"type": "Lit", "value": "frontier"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "interaction_mode"}, "b": {"type": "Lit", "value": "non_turn"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "interaction_relation"}, "b": {"type": "Lit", "value": "standalone"}},
+        {"type": "Or", "items": [
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "reflexive"}, "b": {"type": "Lit", "value": 0}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "reflexive"}, "b": {"type": "Lit", "value": null}}
+        ]},
+        {"type": "Or", "items": [
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "grounding_status"}, "b": {"type": "Lit", "value": "unresolved"}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "grounding_status"}, "b": {"type": "Lit", "value": "unknown"}}
+        ]},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "cognitive_disposition"}, "b": {"type": "Lit", "value": null}}
+      ]},
+      "effects": [
+        ["set_attr", "i", "cognitive_disposition", "repair"],
+        ["set_attr", "i", "cognitive_goal", "clarify_or_defer"],
+        ["set_attr", "i", "arbitration_basis", "unresolved_nonturn_frontier"]
+      ]
+    },
+    {
+      "name": "arbitrate_uncertain_repair_response_as_repair",
+      "comment": "A non-turn response that explicitly reports unresolved common-ground understanding is a repair state, not a generic common-ground assertion.",
+      "match": [["agent", "holds_interpretation", "i"]],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "schema"}, "b": {"type": "Lit", "value": "communication_interpretation.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_schema"}, "b": {"type": "Lit", "value": "communication_evidence.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_force"}, "b": {"type": "Lit", "value": "assertion_or_correction"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "interaction_mode"}, "b": {"type": "Lit", "value": "non_turn"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "interaction_relation"}, "b": {"type": "Lit", "value": "response"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "explicit_uncertainty"}, "b": {"type": "Lit", "value": 1}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "grounding_status"}, "b": {"type": "Lit", "value": "unresolved"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "cognitive_disposition"}, "b": {"type": "Lit", "value": null}}
+      ]},
+      "effects": [
+        ["set_attr", "i", "cognitive_disposition", "repair"],
+        ["set_attr", "i", "cognitive_goal", "clarify_or_defer"],
+        ["set_attr", "i", "arbitration_basis", "uncertain_response_common_ground_gap"]
+      ]
+    },
+    {
+      "name": "arbitrate_supported_event_topic_answer",
+      "comment": "A graph-selected answer_topic for this exact message, backed by a supported HeldAnswer and TopicGroundingEvidence, resolves a prior reflexive frontier hypothesis as an information answer. A goal or reply surface alone is insufficient; the native graph evidence chain is required.",
+      "match": [
+        ["agent", "holds_interpretation", "i"],
+        ["i", "interprets", "m"],
+        ["agent", "has_goal", "g"],
+        ["g", "comprehends", "m"],
+        ["agent", "holds_answer", "h"],
+        ["h", "grounded_by", "e"]
+      ],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "schema"}, "b": {"type": "Lit", "value": "communication_interpretation.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_schema"}, "b": {"type": "Lit", "value": "communication_evidence.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_force"}, "b": {"type": "Lit", "value": "repair_or_defer"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "dispatch_path"}, "b": {"type": "Lit", "value": "frontier"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "reflexive"}, "b": {"type": "Lit", "value": 1}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "interaction_mode"}, "b": {"type": "Lit", "value": "non_turn"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "interaction_relation"}, "b": {"type": "Lit", "value": "standalone"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "grounding_status"}, "b": {"type": "Lit", "value": "candidate_grounded"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "cognitive_disposition"}, "b": {"type": "Lit", "value": null}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "g"}, "key": "kind"}, "b": {"type": "Lit", "value": "answer_topic"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "g"}, "key": "status"}, "b": {"type": "Lit", "value": "active"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "g"}, "key": "concept"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "h"}, "key": "topic"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "h"}, "key": "grounding_referent"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "g"}, "key": "concept"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "h"}, "key": "grounding_status"}, "b": {"type": "Lit", "value": "supported"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "e"}, "key": "kind"}, "b": {"type": "Lit", "value": "topic_answer"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "e"}, "key": "referent"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "g"}, "key": "concept"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "e"}, "key": "status"}, "b": {"type": "Lit", "value": "supported"}}
+      ]},
+      "effects": [
+        ["set_attr", "i", "cognitive_disposition", "answer"],
+        ["set_attr", "i", "communicative_force", "request_information"],
+        ["set_attr", "i", "cognitive_goal", "answer_or_learn"],
+        ["set_attr", "i", "arbitration_basis", "supported_event_topic_answer"]
+      ]
+    },
+    {
+      "name": "arbitrate_supported_selected_concept_answer",
+      "comment": "A selected concept on this exact information-request event may be answered only when a matching held answer and explicit topic-grounding evidence are graph-linked. This covers the ordinary selected-concept route without relying on reply text or surface wording.",
+      "match": [
+        ["agent", "holds_interpretation", "i"],
+        ["i", "interprets", "m"],
+        ["agent", "holds_answer", "h"],
+        ["h", "grounded_by", "e"]
+      ],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "schema"}, "b": {"type": "Lit", "value": "communication_interpretation.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_schema"}, "b": {"type": "Lit", "value": "communication_evidence.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_force"}, "b": {"type": "Lit", "value": "information_request"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "grounding_status"}, "b": {"type": "Lit", "value": "candidate_grounded"}},
+        {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "relation_focus"}, "b": {"type": "Lit", "value": "polar"}}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "cognitive_disposition"}, "b": {"type": "Lit", "value": null}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "comp_know_concept"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "h"}, "key": "topic"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "h"}, "key": "grounding_referent"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "h"}, "key": "topic"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "h"}, "key": "grounding_status"}, "b": {"type": "Lit", "value": "supported"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "e"}, "key": "kind"}, "b": {"type": "Lit", "value": "topic_answer"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "e"}, "key": "referent"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "h"}, "key": "topic"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "e"}, "key": "status"}, "b": {"type": "Lit", "value": "supported"}}
+      ]},
+      "effects": [
+        ["set_attr", "i", "cognitive_disposition", "answer"],
+        ["set_attr", "i", "communicative_force", "request_information"],
+        ["set_attr", "i", "cognitive_goal", "answer_or_learn"],
+        ["set_attr", "i", "arbitration_basis", "supported_selected_concept_answer"]
+      ]
+    },
+    {
+      "name": "arbitrate_supported_event_bound_topic_goal_answer",
+      "comment": "A route-selected answer_topic Goal is sufficient to identify the event's topic only when it is linked to that exact message and the same topic has a supported held answer plus explicit topic-grounding evidence. This covers parse paths that preserve comp_topic rather than the legacy comp_know_concept field; it does not infer answer authority from a receipt or reply surface.",
+      "match": [
+        ["agent", "holds_interpretation", "i"],
+        ["i", "interprets", "m"],
+        ["agent", "has_goal", "g"],
+        ["g", "comprehends", "m"],
+        ["agent", "holds_answer", "h"],
+        ["h", "grounded_by", "e"]
+      ],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "schema"}, "b": {"type": "Lit", "value": "communication_interpretation.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_schema"}, "b": {"type": "Lit", "value": "communication_evidence.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_force"}, "b": {"type": "Lit", "value": "information_request"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "grounding_status"}, "b": {"type": "Lit", "value": "candidate_grounded"}},
+        {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "relation_focus"}, "b": {"type": "Lit", "value": "polar"}}},
+        {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "relation_support"}, "b": {"type": "Lit", "value": "missing"}}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "cognitive_disposition"}, "b": {"type": "Lit", "value": null}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "g"}, "key": "kind"}, "b": {"type": "Lit", "value": "answer_topic"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "g"}, "key": "status"}, "b": {"type": "Lit", "value": "active"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "g"}, "key": "concept"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "h"}, "key": "topic"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "h"}, "key": "grounding_referent"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "g"}, "key": "concept"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "h"}, "key": "grounding_status"}, "b": {"type": "Lit", "value": "supported"}},
+        {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "h"}, "key": "grounding_evidence_path"}, "b": {"type": "Lit", "value": null}}},
+        {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "h"}, "key": "grounding_evidence_path"}, "b": {"type": "Lit", "value": ""}}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "e"}, "key": "kind"}, "b": {"type": "Lit", "value": "topic_answer"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "e"}, "key": "referent"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "g"}, "key": "concept"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "e"}, "key": "status"}, "b": {"type": "Lit", "value": "supported"}},
+        {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "e"}, "key": "evidence_path"}, "b": {"type": "Lit", "value": null}}},
+        {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "e"}, "key": "evidence_path"}, "b": {"type": "Lit", "value": ""}}}
+      ]},
+      "effects": [
+        ["set_attr", "i", "cognitive_disposition", "answer"],
+        ["set_attr", "i", "communicative_force", "request_information"],
+        ["set_attr", "i", "cognitive_goal", "answer_or_learn"],
+        ["set_attr", "i", "arbitration_basis", "supported_event_bound_topic_goal_answer"]
+      ]
+    },
+    {
+      "name": "arbitrate_unresolved_nonturn_permission_as_blocked",
+      "comment": "A non-turn standalone information request whose native permission check reports missing authority is blocked; do not confuse request repair with missing authorization.",
+      "match": [["agent", "holds_interpretation", "i"]],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "schema"}, "b": {"type": "Lit", "value": "communication_interpretation.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_schema"}, "b": {"type": "Lit", "value": "communication_evidence.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_force"}, "b": {"type": "Lit", "value": "information_request"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "interaction_mode"}, "b": {"type": "Lit", "value": "non_turn"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "interaction_relation"}, "b": {"type": "Lit", "value": "standalone"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "authority_status"}, "b": {"type": "Lit", "value": "missing"}},
+        {"type": "Or", "items": [
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "cognitive_disposition"}, "b": {"type": "Lit", "value": null}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "cognitive_disposition"}, "b": {"type": "Lit", "value": "repair"}}
+        ]}
+      ]},
+      "effects": [
+        ["set_attr", "i", "cognitive_disposition", "blocked"],
+        ["set_attr", "i", "cognitive_goal", "blocked"],
+        ["set_attr", "i", "arbitration_basis", "missing_permission_authority"]
+      ]
+    },
+    {
+      "name": "arbitrate_turn_compatible_unknown_information_request_as_learning",
+      "comment": "A complete response-compatible information request whose world grounding is unknown, whose reference is not anaphoric, and whose event predicate resolves to a held Concept is a learning request, not an unresolved non-turn repair. Predicate resolution is a structural guard against treating a social readiness question as external learning. This selects retrieval/learning intent only; it does not authorize an answer without graph-supported evidence.",
+      "match": [["agent", "holds_interpretation", "i"], ["i", "interprets", "m"], ["m", "has_mention", "vm"], ["vm", "refers_to", "vc"]],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "schema"}, "b": {"type": "Lit", "value": "communication_interpretation.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_schema"}, "b": {"type": "Lit", "value": "communication_evidence.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_force"}, "b": {"type": "Lit", "value": "information_request"}},
+        {"type": "Eq", "a": {"type": "TypeOf", "node": {"type": "Var", "name": "vc"}}, "b": {"type": "Lit", "value": "Concept"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "vm"}, "key": "text"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "comp_verb"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "literal_form"}, "b": {"type": "Lit", "value": "interrogative"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "interaction_mode"}, "b": {"type": "Lit", "value": "turn_compatible"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "interaction_relation"}, "b": {"type": "Lit", "value": "turn_compatible"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "authority_status"}, "b": {"type": "Lit", "value": "not_applicable"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "anaphor"}, "b": {"type": "Lit", "value": 0}},
+        {"type": "Or", "items": [
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "grounding_status"}, "b": {"type": "Lit", "value": "unresolved"}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "grounding_status"}, "b": {"type": "Lit", "value": "unknown"}}
+        ]},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "cognitive_disposition"}, "b": {"type": "Lit", "value": null}}
+      ]},
+      "effects": [
+        ["set_attr", "i", "communicative_force", "request_information"],
+        ["set_attr", "i", "cognitive_disposition", "learn"],
+        ["set_attr", "i", "cognitive_goal", "answer_or_learn"],
+        ["set_attr", "i", "arbitration_basis", "turn_compatible_unknown_information_request"],
+        ["add_node", "request", "InformationLearningRequest", {
+          "schema": "information_learning_request.v1",
+          "status": "requested",
+          "authority": "none",
+          "source_policy": "unselected",
+          "answer_authority": "none",
+          "grounding_requirement": "supported_source_evidence"
+        }],
+        ["add_edge", "request", "for_event", "m"],
+        ["add_edge", "request", "for_interpretation", "i"],
+        ["add_edge", "request", "about_topic", "vc"]
+      ]
+    },
+    {
+      "name": "arbitrate_unresolved_turn_compatible_information_request_as_repair",
+      "comment": "A complete response-compatible information request with unresolved grounding and no selected disposition remains a native repair. A graph-linked predicate may have already selected a learning request; this fallback never grants answer authority.",
+      "match": [["agent", "holds_interpretation", "i"]],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "schema"}, "b": {"type": "Lit", "value": "communication_interpretation.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_schema"}, "b": {"type": "Lit", "value": "communication_evidence.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_force"}, "b": {"type": "Lit", "value": "information_request"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "literal_form"}, "b": {"type": "Lit", "value": "interrogative"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "interaction_mode"}, "b": {"type": "Lit", "value": "turn_compatible"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "interaction_relation"}, "b": {"type": "Lit", "value": "turn_compatible"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "authority_status"}, "b": {"type": "Lit", "value": "not_applicable"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "anaphor"}, "b": {"type": "Lit", "value": 0}},
+        {"type": "Or", "items": [
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "grounding_status"}, "b": {"type": "Lit", "value": "unresolved"}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "grounding_status"}, "b": {"type": "Lit", "value": "unknown"}}
+        ]},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "cognitive_disposition"}, "b": {"type": "Lit", "value": null}}
+      ]},
+      "effects": [
+        ["set_attr", "i", "communicative_force", "request_information"],
+        ["set_attr", "i", "cognitive_disposition", "repair"],
+        ["set_attr", "i", "cognitive_goal", "clarify_or_defer"],
+        ["set_attr", "i", "arbitration_basis", "unresolved_turn_compatible_information_request"]
+      ]
+    },
+    {
+      "name": "arbitrate_uncertain_selected_response_as_learning_request",
+      "comment": "A graph-typed uncertainty report with a selected information gap in a response slot creates a source-constrained learning request. It requests retrieval only; it does not treat the reported uncertainty or a reply surface as an answer.",
+      "match": [["agent", "holds_interpretation", "i"], ["i", "interprets", "m"], ["m", "has_mention", "vm"], ["vm", "refers_to", "vc"]],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "schema"}, "b": {"type": "Lit", "value": "communication_interpretation.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_schema"}, "b": {"type": "Lit", "value": "communication_evidence.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_force"}, "b": {"type": "Lit", "value": "information_request"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "explicit_uncertainty"}, "b": {"type": "Lit", "value": 1}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "vm"}, "key": "text"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "parsed_object"}},
+        {"type": "Eq", "a": {"type": "TypeOf", "node": {"type": "Var", "name": "vc"}}, "b": {"type": "Lit", "value": "Concept"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "interaction_mode"}, "b": {"type": "Lit", "value": "turn_compatible"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "interaction_relation"}, "b": {"type": "Lit", "value": "response"}},
+        {"type": "Or", "items": [
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "grounding_status"}, "b": {"type": "Lit", "value": "unresolved"}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "grounding_status"}, "b": {"type": "Lit", "value": "unknown"}}
+        ]},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "cognitive_disposition"}, "b": {"type": "Lit", "value": null}}
+      ]},
+      "effects": [
+        ["set_attr", "i", "communicative_force", "request_information"],
+        ["set_attr", "i", "cognitive_disposition", "learn"],
+        ["set_attr", "i", "cognitive_goal", "answer_or_learn"],
+        ["set_attr", "i", "arbitration_basis", "uncertain_selected_information_gap"],
+        ["add_node", "request", "InformationLearningRequest", {
+          "schema": "information_learning_request.v1",
+          "status": "requested",
+          "authority": "none",
+          "source_policy": "unselected",
+          "answer_authority": "none",
+          "grounding_requirement": "supported_source_evidence"
+        }],
+        ["add_edge", "request", "for_event", "m"],
+        ["add_edge", "request", "for_interpretation", "i"],
+        ["add_edge", "request", "about_topic", "vc"]
+      ]
+    },
+    {
+      "name": "arbitrate_supported_self_organisation_answer",
+      "comment": "A language adapter may transport the selected reflective faculty and its graph-backed Microtheory evidence. Native arbitration alone selects answer disposition and the same-event answer Message; adapter prose is not authority.",
+      "match": [
+        ["agent", "holds_interpretation", "i"],
+        ["i", "interprets", "m"],
+        ["i", "has_reflective_answer_evidence", "e"]
+      ],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "schema"}, "b": {"type": "Lit", "value": "communication_interpretation.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_schema"}, "b": {"type": "Lit", "value": "communication_evidence.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_force"}, "b": {"type": "Lit", "value": "information_request"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "selected_reflective_faculty"}, "b": {"type": "Lit", "value": "self_organisation"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "interaction_mode"}, "b": {"type": "Lit", "value": "turn_compatible"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "cognitive_disposition"}, "b": {"type": "Lit", "value": null}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "e"}, "key": "schema"}, "b": {"type": "Lit", "value": "reflective_answer_evidence.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "e"}, "key": "faculty"}, "b": {"type": "Lit", "value": "self_organisation"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "e"}, "key": "status"}, "b": {"type": "Lit", "value": "supported"}},
+        {"type": "Exists", "source": {"type": "Neighbours", "node": {"type": "Var", "name": "e"}, "edge_type": "supported_by", "any_type": false}, "var_name": "mt", "predicate": {"type": "Or", "items": [
+          {"type": "Eq", "a": {"type": "TypeOf", "node": {"type": "Var", "name": "mt"}}, "b": {"type": "Lit", "value": "Microtheory"}},
+          {"type": "And", "items": [
+            {"type": "Eq", "a": {"type": "TypeOf", "node": {"type": "Var", "name": "mt"}}, "b": {"type": "Lit", "value": "Agent"}},
+            {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "mt"}, "key": "microtheory_inventory_schema"}, "b": {"type": "Lit", "value": "seed_microtheory_inventory.v1"}}
+          ]}
+        ]}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "reflective_answer_minted"}, "b": {"type": "Lit", "value": null}}
+      ]},
+      "effects": [
+        ["set_attr", "i", "cognitive_disposition", "answer"],
+        ["set_attr", "i", "communicative_force", "request_information"],
+        ["set_attr", "i", "cognitive_goal", "answer_or_learn"],
+        ["set_attr", "i", "arbitration_basis", "supported_reflective_faculty_answer"],
+        ["set_attr", "m", "reflective_answer_minted", 1],
+        ["add_node", "reply_act", "Concept", {"name": "answer", "description": "answers a graph-supported reflective faculty question"}],
+        ["add_node", "reply", "Message", {"from": "agent", "native_reflective_answer_plan": "self_organisation"}],
+        ["add_edge", "reply", "has_speech_act", "reply_act"],
+        ["add_edge", "reply", "responds_to", "m"],
+        ["add_edge", "agent", "sent", "reply"]
+      ]
+    },
+    {
+      "name": "arbitrate_supported_self_model_rule_answer",
+      "comment": "An exact self-model query is answerable only when its same-event reflective evidence links the exact RuleSummary result set. Native arbitration selects the answer disposition and reply plan.",
+      "match": [
+        ["agent", "holds_interpretation", "i"],
+        ["i", "interprets", "m"],
+        ["i", "has_reflective_answer_evidence", "e"],
+        ["e", "supported_by", "rs"]
+      ],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "TypeOf", "node": {"type": "Var", "name": "rs"}}, "b": {"type": "Lit", "value": "RuleSummary"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "schema"}, "b": {"type": "Lit", "value": "communication_interpretation.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_schema"}, "b": {"type": "Lit", "value": "communication_evidence.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_force"}, "b": {"type": "Lit", "value": "information_request"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "selected_reflective_faculty"}, "b": {"type": "Lit", "value": "self_model_rule"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "interaction_mode"}, "b": {"type": "Lit", "value": "turn_compatible"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "cognitive_disposition"}, "b": {"type": "Lit", "value": null}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "e"}, "key": "schema"}, "b": {"type": "Lit", "value": "reflective_answer_evidence.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "e"}, "key": "faculty"}, "b": {"type": "Lit", "value": "self_model_rule"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "e"}, "key": "status"}, "b": {"type": "Lit", "value": "supported"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "reflective_answer_minted"}, "b": {"type": "Lit", "value": null}}
+      ]},
+      "effects": [
+        ["set_attr", "i", "cognitive_disposition", "answer"],
+        ["set_attr", "i", "communicative_force", "request_information"],
+        ["set_attr", "i", "cognitive_goal", "answer_or_learn"],
+        ["set_attr", "i", "arbitration_basis", "supported_reflective_faculty_answer"],
+        ["set_attr", "m", "reflective_answer_minted", 1],
+        ["add_node", "reply_act", "Concept", {"name": "answer", "description": "answers a graph-supported exact self-model query"}],
+        ["add_node", "reply", "Message", {"from": "agent", "native_reflective_answer_plan": "self_model_rule"}],
+        ["add_edge", "reply", "has_speech_act", "reply_act"],
+        ["add_edge", "reply", "responds_to", "m"],
+        ["add_edge", "agent", "sent", "reply"]
       ]
     }
   ]

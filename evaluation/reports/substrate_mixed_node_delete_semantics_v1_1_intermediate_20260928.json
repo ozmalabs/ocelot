@@ -1,0 +1,953 @@
+{
+  "all_checks_pass": true,
+  "checks": {
+    "counts_and_edge_lookups": true,
+    "exact_expected_post_state": true,
+    "fixture_has_mixed_topology": true,
+    "native_build_fresh": true,
+    "node_hook_only_contract": true,
+    "source_lock_stable": true,
+    "three_fresh_workers": true
+  },
+  "claim_boundary": "Mixed-topology public remove_node semantics on one deterministic attributed fixture; no timing or active-rule invalidation claim.",
+  "locked_inputs": {
+    "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+    "files": {
+      "docs/research/engine_substrate/SUBSTRATE_MIXED_NODE_DELETE_SEMANTICS_V1_1_AMENDMENT_20260928.md": "3dee886c97ccccbdcf8d1a517dec27e7be3c1c04d165404c295e3b2de0d743f9",
+      "docs/research/engine_substrate/SUBSTRATE_MIXED_NODE_DELETE_SEMANTICS_V1_PREREG_20260928.md": "5882422cdf9d1e6c99bdaa41c4f88325dc7477a24023f2a51a7cb5eaae2731d2",
+      "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+      "runners/dsl/Cargo.lock": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+      "runners/dsl/Cargo.toml": "c4d8ffff2241352a5150b5a9937dbb8010e958b6f115235b7daeae716c1a9332",
+      "runners/dsl/python/substrate_rs/__init__.py": "6ec0316afae414329e36d3f121fc56b556e7315f17b93aab911ca09a29726694",
+      "runners/dsl/python/substrate_rs/_native.build.json": "3b27b0e8dfc53d1a4fa67877fa6c78af6565d358d44f3ddcbe94e0d91633f458",
+      "runners/dsl/src/graph.rs": "b3b6a3f851e6212a01d20e811f16971a322509706b8ea042a3988ff921c07bcf",
+      "runners/dsl/src/py.rs": "d1e809b92123105f750cfc38ecfbfbcc6b7567654eeb2c405b827344dccded92",
+      "runners/dsl/src/substrate.rs": "d7bb153d013d459c17f16fa62bc1672e091f89db903df8f2a491d1a1dadc1df5",
+      "scripts/analyze_substrate_mixed_node_delete_semantics_v1.py": "2bcb0d705665eacf78e67ae42e54ea8f95636d1922c1d55a0a71eb4967445adf",
+      "scripts/substrate_mixed_node_delete_semantics_v1.py": "8f8655c2191614a05535b7aae2c63c08a8ca119716c3a6378dbd3771bba4dda4",
+      "scripts/substrate_run_manifest.py": "924ce1d320c8373f0e27edbc8ba43b6e17fcf6aeb4b6b2a3e8f36f76ea8cb33b"
+    },
+    "native_build_stale": [],
+    "native_path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+    "native_sha256": "d041ad40ce4a80a7c826a8337dbd78ad84e2beacee9e496c6112a3938e8af625"
+  },
+  "post_run_inputs": {
+    "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+    "files": {
+      "docs/research/engine_substrate/SUBSTRATE_MIXED_NODE_DELETE_SEMANTICS_V1_1_AMENDMENT_20260928.md": "3dee886c97ccccbdcf8d1a517dec27e7be3c1c04d165404c295e3b2de0d743f9",
+      "docs/research/engine_substrate/SUBSTRATE_MIXED_NODE_DELETE_SEMANTICS_V1_PREREG_20260928.md": "5882422cdf9d1e6c99bdaa41c4f88325dc7477a24023f2a51a7cb5eaae2731d2",
+      "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+      "runners/dsl/Cargo.lock": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+      "runners/dsl/Cargo.toml": "c4d8ffff2241352a5150b5a9937dbb8010e958b6f115235b7daeae716c1a9332",
+      "runners/dsl/python/substrate_rs/__init__.py": "6ec0316afae414329e36d3f121fc56b556e7315f17b93aab911ca09a29726694",
+      "runners/dsl/python/substrate_rs/_native.build.json": "3b27b0e8dfc53d1a4fa67877fa6c78af6565d358d44f3ddcbe94e0d91633f458",
+      "runners/dsl/src/graph.rs": "b3b6a3f851e6212a01d20e811f16971a322509706b8ea042a3988ff921c07bcf",
+      "runners/dsl/src/py.rs": "d1e809b92123105f750cfc38ecfbfbcc6b7567654eeb2c405b827344dccded92",
+      "runners/dsl/src/substrate.rs": "d7bb153d013d459c17f16fa62bc1672e091f89db903df8f2a491d1a1dadc1df5",
+      "scripts/analyze_substrate_mixed_node_delete_semantics_v1.py": "2bcb0d705665eacf78e67ae42e54ea8f95636d1922c1d55a0a71eb4967445adf",
+      "scripts/substrate_mixed_node_delete_semantics_v1.py": "8f8655c2191614a05535b7aae2c63c08a8ca119716c3a6378dbd3771bba4dda4",
+      "scripts/substrate_run_manifest.py": "924ce1d320c8373f0e27edbc8ba43b6e17fcf6aeb4b6b2a3e8f36f76ea8cb33b"
+    },
+    "native_build_stale": [],
+    "native_path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+    "native_sha256": "d041ad40ce4a80a7c826a8337dbd78ad84e2beacee9e496c6112a3938e8af625"
+  },
+  "run_id": "substrate-mixed-node-delete-semantics-v1-1-20260928",
+  "run_manifest": {
+    "captured_utc": "2026-09-27T23:06:52.126384+00:00",
+    "engine": {
+      "build_is_stale": false,
+      "native_build_manifest_sha256": "3b27b0e8dfc53d1a4fa67877fa6c78af6565d358d44f3ddcbe94e0d91633f458",
+      "native_extension_path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+      "native_extension_sha256": "d041ad40ce4a80a7c826a8337dbd78ad84e2beacee9e496c6112a3938e8af625",
+      "rust_source_fingerprint": "1f44576c8c554959163f396f56c17b9b446d29c79e73bee9f1c8ba8f6a00558d"
+    },
+    "execution": {
+      "argv": [
+        "/home/linuxbrew/.linuxbrew/opt/python@3.13/bin/python3.13",
+        "scripts/substrate_mixed_node_delete_semantics_v1.py"
+      ],
+      "child_processes": [],
+      "command_display": "/home/linuxbrew/.linuxbrew/opt/python@3.13/bin/python3.13 scripts/substrate_mixed_node_delete_semantics_v1.py",
+      "python_executable": "/home/linuxbrew/.linuxbrew/opt/python@3.13/bin/python3.13",
+      "python_version": "3.13.5 (main, Jun 11 2025, 15:36:57) [GCC 11.4.0]",
+      "relevant_environment": {}
+    },
+    "exit_status": 0,
+    "explicit_inputs": {
+      "docs/research/engine_substrate/SUBSTRATE_MIXED_NODE_DELETE_SEMANTICS_V1_1_AMENDMENT_20260928.md": {
+        "exists": true,
+        "group": "protocol",
+        "sha256": "3dee886c97ccccbdcf8d1a517dec27e7be3c1c04d165404c295e3b2de0d743f9"
+      },
+      "docs/research/engine_substrate/SUBSTRATE_MIXED_NODE_DELETE_SEMANTICS_V1_PREREG_20260928.md": {
+        "exists": true,
+        "group": "protocol",
+        "sha256": "5882422cdf9d1e6c99bdaa41c4f88325dc7477a24023f2a51a7cb5eaae2731d2"
+      },
+      "domains/engine_provenance.py": {
+        "exists": true,
+        "group": "source",
+        "sha256": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8"
+      },
+      "evaluation/substrate_capability/mixed_node_delete_semantics_v1_1_lock_20260928.json": {
+        "exists": true,
+        "group": "protocol",
+        "sha256": "efd338be341ff29ab110d247e901accf8a6ccb1c77157977c16b7876d07ccca8"
+      },
+      "runners/dsl/Cargo.lock": {
+        "exists": true,
+        "group": "build_inputs",
+        "sha256": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9"
+      },
+      "runners/dsl/Cargo.toml": {
+        "exists": true,
+        "group": "build_inputs",
+        "sha256": "c4d8ffff2241352a5150b5a9937dbb8010e958b6f115235b7daeae716c1a9332"
+      },
+      "runners/dsl/python/substrate_rs/__init__.py": {
+        "exists": true,
+        "group": "source",
+        "sha256": "6ec0316afae414329e36d3f121fc56b556e7315f17b93aab911ca09a29726694"
+      },
+      "runners/dsl/python/substrate_rs/_native.build.json": {
+        "exists": true,
+        "group": "source",
+        "sha256": "3b27b0e8dfc53d1a4fa67877fa6c78af6565d358d44f3ddcbe94e0d91633f458"
+      },
+      "runners/dsl/src/graph.rs": {
+        "exists": true,
+        "group": "source",
+        "sha256": "b3b6a3f851e6212a01d20e811f16971a322509706b8ea042a3988ff921c07bcf"
+      },
+      "runners/dsl/src/py.rs": {
+        "exists": true,
+        "group": "source",
+        "sha256": "d1e809b92123105f750cfc38ecfbfbcc6b7567654eeb2c405b827344dccded92"
+      },
+      "runners/dsl/src/substrate.rs": {
+        "exists": true,
+        "group": "source",
+        "sha256": "d7bb153d013d459c17f16fa62bc1672e091f89db903df8f2a491d1a1dadc1df5"
+      },
+      "scripts/analyze_substrate_mixed_node_delete_semantics_v1.py": {
+        "exists": true,
+        "group": "analysis",
+        "sha256": "2bcb0d705665eacf78e67ae42e54ea8f95636d1922c1d55a0a71eb4967445adf"
+      },
+      "scripts/substrate_mixed_node_delete_semantics_v1.py": {
+        "exists": true,
+        "group": "runner",
+        "sha256": "8f8655c2191614a05535b7aae2c63c08a8ca119716c3a6378dbd3771bba4dda4"
+      },
+      "scripts/substrate_run_manifest.py": {
+        "exists": true,
+        "group": "manifest_capture",
+        "sha256": "924ce1d320c8373f0e27edbc8ba43b6e17fcf6aeb4b6b2a3e8f36f76ea8cb33b"
+      }
+    },
+    "hardware": {
+      "cpu_model": "AMD Ryzen 9 5900X 12-Core Processor",
+      "logical_cpu_count": 24,
+      "machine": "x86_64",
+      "memory_total_bytes": 67342565376,
+      "platform": "Linux-6.8.0-142-generic-x86_64-with-glibc2.39",
+      "system": "Linux",
+      "workspace_filesystem_free_bytes": 8401494016,
+      "workspace_filesystem_total_bytes": 982627737600
+    },
+    "manifest_schema": "substrate-run-manifest-v1",
+    "repository": {
+      "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+      "dirty_workspace": {
+        "scope_note": "Unrelated untracked artifact contents are not recursively hashed; benchmark-relevant files are content-hashed in explicit_inputs.",
+        "status_porcelain_sha256": "05de352348042cd8f5e1dbe4643f5d657d5f0e24810c17472d7421502a532f50",
+        "status_record_count": 5257,
+        "tracked_dirty_content_index_sha256": "36db37c44b42162868fd4ca25faf447365aeb755fdbbdc7dd3f2fc0b89a57d40",
+        "tracked_dirty_file_count": 146,
+        "untracked_path_count": 5111,
+        "untracked_path_inventory_sha256": "738e68708b62a1c7ecb267ed85254a34785dac5f1281c6852a3581aa574ac2d2"
+      },
+      "root": "/home/matt/ozmadev/ocelot"
+    },
+    "run_end_utc": "2026-09-27T23:06:52.126395+00:00",
+    "run_id": "substrate-mixed-node-delete-semantics-v1-1-20260928",
+    "run_started_utc": "2026-09-27T23:06:51.827319+00:00",
+    "stdout_stderr_capture": {
+      "bytes": 0,
+      "path": "evaluation/run_logs/substrate-mixed-node-delete-semantics-v1-1-20260928.stdout_stderr.log",
+      "scope": "parent-process stdout/stderr before the final structured summary print",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "stdout_stderr_note": null,
+    "toolchain": {
+      "cargo": "cargo 1.87.0 (Homebrew)",
+      "rustc": "rustc 1.87.0 (17067e9ac 2025-05-09) (Homebrew)"
+    }
+  },
+  "runs": [
+    {
+      "after": {
+        "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+        "files": {
+          "docs/research/engine_substrate/SUBSTRATE_MIXED_NODE_DELETE_SEMANTICS_V1_1_AMENDMENT_20260928.md": "3dee886c97ccccbdcf8d1a517dec27e7be3c1c04d165404c295e3b2de0d743f9",
+          "docs/research/engine_substrate/SUBSTRATE_MIXED_NODE_DELETE_SEMANTICS_V1_PREREG_20260928.md": "5882422cdf9d1e6c99bdaa41c4f88325dc7477a24023f2a51a7cb5eaae2731d2",
+          "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+          "runners/dsl/Cargo.lock": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+          "runners/dsl/Cargo.toml": "c4d8ffff2241352a5150b5a9937dbb8010e958b6f115235b7daeae716c1a9332",
+          "runners/dsl/python/substrate_rs/__init__.py": "6ec0316afae414329e36d3f121fc56b556e7315f17b93aab911ca09a29726694",
+          "runners/dsl/python/substrate_rs/_native.build.json": "3b27b0e8dfc53d1a4fa67877fa6c78af6565d358d44f3ddcbe94e0d91633f458",
+          "runners/dsl/src/graph.rs": "b3b6a3f851e6212a01d20e811f16971a322509706b8ea042a3988ff921c07bcf",
+          "runners/dsl/src/py.rs": "d1e809b92123105f750cfc38ecfbfbcc6b7567654eeb2c405b827344dccded92",
+          "runners/dsl/src/substrate.rs": "d7bb153d013d459c17f16fa62bc1672e091f89db903df8f2a491d1a1dadc1df5",
+          "scripts/analyze_substrate_mixed_node_delete_semantics_v1.py": "2bcb0d705665eacf78e67ae42e54ea8f95636d1922c1d55a0a71eb4967445adf",
+          "scripts/substrate_mixed_node_delete_semantics_v1.py": "8f8655c2191614a05535b7aae2c63c08a8ca119716c3a6378dbd3771bba4dda4",
+          "scripts/substrate_run_manifest.py": "924ce1d320c8373f0e27edbc8ba43b6e17fcf6aeb4b6b2a3e8f36f76ea8cb33b"
+        },
+        "native_build_stale": [],
+        "native_path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+        "native_sha256": "d041ad40ce4a80a7c826a8337dbd78ad84e2beacee9e496c6112a3938e8af625"
+      },
+      "after_graph": {
+        "edges": [
+          {
+            "attrs": {
+              "weight": 99
+            },
+            "src": 0,
+            "tgt": 3,
+            "type": "unrelated"
+          }
+        ],
+        "next_id": 4,
+        "nodes": [
+          {
+            "attrs": {
+              "keep": "a"
+            },
+            "id": 0,
+            "type": "Outside"
+          },
+          {
+            "attrs": {
+              "keep": "b"
+            },
+            "id": 2,
+            "type": "Outside"
+          },
+          {
+            "attrs": {
+              "keep": "c"
+            },
+            "id": 3,
+            "type": "Outside"
+          }
+        ]
+      },
+      "before": {
+        "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+        "files": {
+          "docs/research/engine_substrate/SUBSTRATE_MIXED_NODE_DELETE_SEMANTICS_V1_1_AMENDMENT_20260928.md": "3dee886c97ccccbdcf8d1a517dec27e7be3c1c04d165404c295e3b2de0d743f9",
+          "docs/research/engine_substrate/SUBSTRATE_MIXED_NODE_DELETE_SEMANTICS_V1_PREREG_20260928.md": "5882422cdf9d1e6c99bdaa41c4f88325dc7477a24023f2a51a7cb5eaae2731d2",
+          "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+          "runners/dsl/Cargo.lock": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+          "runners/dsl/Cargo.toml": "c4d8ffff2241352a5150b5a9937dbb8010e958b6f115235b7daeae716c1a9332",
+          "runners/dsl/python/substrate_rs/__init__.py": "6ec0316afae414329e36d3f121fc56b556e7315f17b93aab911ca09a29726694",
+          "runners/dsl/python/substrate_rs/_native.build.json": "3b27b0e8dfc53d1a4fa67877fa6c78af6565d358d44f3ddcbe94e0d91633f458",
+          "runners/dsl/src/graph.rs": "b3b6a3f851e6212a01d20e811f16971a322509706b8ea042a3988ff921c07bcf",
+          "runners/dsl/src/py.rs": "d1e809b92123105f750cfc38ecfbfbcc6b7567654eeb2c405b827344dccded92",
+          "runners/dsl/src/substrate.rs": "d7bb153d013d459c17f16fa62bc1672e091f89db903df8f2a491d1a1dadc1df5",
+          "scripts/analyze_substrate_mixed_node_delete_semantics_v1.py": "2bcb0d705665eacf78e67ae42e54ea8f95636d1922c1d55a0a71eb4967445adf",
+          "scripts/substrate_mixed_node_delete_semantics_v1.py": "8f8655c2191614a05535b7aae2c63c08a8ca119716c3a6378dbd3771bba4dda4",
+          "scripts/substrate_run_manifest.py": "924ce1d320c8373f0e27edbc8ba43b6e17fcf6aeb4b6b2a3e8f36f76ea8cb33b"
+        },
+        "native_build_stale": [],
+        "native_path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+        "native_sha256": "d041ad40ce4a80a7c826a8337dbd78ad84e2beacee9e496c6112a3938e8af625"
+      },
+      "before_graph": {
+        "edges": [
+          {
+            "attrs": {
+              "weight": 11
+            },
+            "src": 0,
+            "tgt": 1,
+            "type": "incoming_alpha"
+          },
+          {
+            "attrs": {
+              "weight": 12
+            },
+            "src": 2,
+            "tgt": 1,
+            "type": "incoming_beta"
+          },
+          {
+            "attrs": {
+              "weight": 21
+            },
+            "src": 1,
+            "tgt": 0,
+            "type": "outgoing_alpha"
+          },
+          {
+            "attrs": {
+              "weight": 22
+            },
+            "src": 1,
+            "tgt": 2,
+            "type": "outgoing_beta"
+          },
+          {
+            "attrs": {
+              "weight": 23
+            },
+            "src": 1,
+            "tgt": 3,
+            "type": "outgoing_alpha"
+          },
+          {
+            "attrs": {
+              "weight": 31
+            },
+            "src": 1,
+            "tgt": 1,
+            "type": "self_loop"
+          },
+          {
+            "attrs": {
+              "weight": 99
+            },
+            "src": 0,
+            "tgt": 3,
+            "type": "unrelated"
+          }
+        ],
+        "next_id": 4,
+        "nodes": [
+          {
+            "attrs": {
+              "keep": "a"
+            },
+            "id": 0,
+            "type": "Outside"
+          },
+          {
+            "attrs": {
+              "payload": 7
+            },
+            "id": 1,
+            "type": "Doomed"
+          },
+          {
+            "attrs": {
+              "keep": "b"
+            },
+            "id": 2,
+            "type": "Outside"
+          },
+          {
+            "attrs": {
+              "keep": "c"
+            },
+            "id": 3,
+            "type": "Outside"
+          }
+        ]
+      },
+      "edge_count": 1,
+      "edge_events": [],
+      "ids": {
+        "doomed": 1,
+        "type": "Doomed"
+      },
+      "lookups": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        true
+      ],
+      "node_count": 3,
+      "node_events": [
+        [
+          1,
+          "Doomed"
+        ]
+      ],
+      "pid": 7,
+      "removed": true,
+      "replicate": 0,
+      "specs": [
+        [
+          0,
+          "incoming_alpha",
+          1,
+          {
+            "weight": 11
+          }
+        ],
+        [
+          2,
+          "incoming_beta",
+          1,
+          {
+            "weight": 12
+          }
+        ],
+        [
+          1,
+          "outgoing_alpha",
+          0,
+          {
+            "weight": 21
+          }
+        ],
+        [
+          1,
+          "outgoing_beta",
+          2,
+          {
+            "weight": 22
+          }
+        ],
+        [
+          1,
+          "outgoing_alpha",
+          3,
+          {
+            "weight": 23
+          }
+        ],
+        [
+          1,
+          "self_loop",
+          1,
+          {
+            "weight": 31
+          }
+        ],
+        [
+          0,
+          "unrelated",
+          3,
+          {
+            "weight": 99
+          }
+        ]
+      ]
+    },
+    {
+      "after": {
+        "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+        "files": {
+          "docs/research/engine_substrate/SUBSTRATE_MIXED_NODE_DELETE_SEMANTICS_V1_1_AMENDMENT_20260928.md": "3dee886c97ccccbdcf8d1a517dec27e7be3c1c04d165404c295e3b2de0d743f9",
+          "docs/research/engine_substrate/SUBSTRATE_MIXED_NODE_DELETE_SEMANTICS_V1_PREREG_20260928.md": "5882422cdf9d1e6c99bdaa41c4f88325dc7477a24023f2a51a7cb5eaae2731d2",
+          "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+          "runners/dsl/Cargo.lock": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+          "runners/dsl/Cargo.toml": "c4d8ffff2241352a5150b5a9937dbb8010e958b6f115235b7daeae716c1a9332",
+          "runners/dsl/python/substrate_rs/__init__.py": "6ec0316afae414329e36d3f121fc56b556e7315f17b93aab911ca09a29726694",
+          "runners/dsl/python/substrate_rs/_native.build.json": "3b27b0e8dfc53d1a4fa67877fa6c78af6565d358d44f3ddcbe94e0d91633f458",
+          "runners/dsl/src/graph.rs": "b3b6a3f851e6212a01d20e811f16971a322509706b8ea042a3988ff921c07bcf",
+          "runners/dsl/src/py.rs": "d1e809b92123105f750cfc38ecfbfbcc6b7567654eeb2c405b827344dccded92",
+          "runners/dsl/src/substrate.rs": "d7bb153d013d459c17f16fa62bc1672e091f89db903df8f2a491d1a1dadc1df5",
+          "scripts/analyze_substrate_mixed_node_delete_semantics_v1.py": "2bcb0d705665eacf78e67ae42e54ea8f95636d1922c1d55a0a71eb4967445adf",
+          "scripts/substrate_mixed_node_delete_semantics_v1.py": "8f8655c2191614a05535b7aae2c63c08a8ca119716c3a6378dbd3771bba4dda4",
+          "scripts/substrate_run_manifest.py": "924ce1d320c8373f0e27edbc8ba43b6e17fcf6aeb4b6b2a3e8f36f76ea8cb33b"
+        },
+        "native_build_stale": [],
+        "native_path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+        "native_sha256": "d041ad40ce4a80a7c826a8337dbd78ad84e2beacee9e496c6112a3938e8af625"
+      },
+      "after_graph": {
+        "edges": [
+          {
+            "attrs": {
+              "weight": 99
+            },
+            "src": 0,
+            "tgt": 3,
+            "type": "unrelated"
+          }
+        ],
+        "next_id": 4,
+        "nodes": [
+          {
+            "attrs": {
+              "keep": "a"
+            },
+            "id": 0,
+            "type": "Outside"
+          },
+          {
+            "attrs": {
+              "keep": "b"
+            },
+            "id": 2,
+            "type": "Outside"
+          },
+          {
+            "attrs": {
+              "keep": "c"
+            },
+            "id": 3,
+            "type": "Outside"
+          }
+        ]
+      },
+      "before": {
+        "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+        "files": {
+          "docs/research/engine_substrate/SUBSTRATE_MIXED_NODE_DELETE_SEMANTICS_V1_1_AMENDMENT_20260928.md": "3dee886c97ccccbdcf8d1a517dec27e7be3c1c04d165404c295e3b2de0d743f9",
+          "docs/research/engine_substrate/SUBSTRATE_MIXED_NODE_DELETE_SEMANTICS_V1_PREREG_20260928.md": "5882422cdf9d1e6c99bdaa41c4f88325dc7477a24023f2a51a7cb5eaae2731d2",
+          "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+          "runners/dsl/Cargo.lock": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+          "runners/dsl/Cargo.toml": "c4d8ffff2241352a5150b5a9937dbb8010e958b6f115235b7daeae716c1a9332",
+          "runners/dsl/python/substrate_rs/__init__.py": "6ec0316afae414329e36d3f121fc56b556e7315f17b93aab911ca09a29726694",
+          "runners/dsl/python/substrate_rs/_native.build.json": "3b27b0e8dfc53d1a4fa67877fa6c78af6565d358d44f3ddcbe94e0d91633f458",
+          "runners/dsl/src/graph.rs": "b3b6a3f851e6212a01d20e811f16971a322509706b8ea042a3988ff921c07bcf",
+          "runners/dsl/src/py.rs": "d1e809b92123105f750cfc38ecfbfbcc6b7567654eeb2c405b827344dccded92",
+          "runners/dsl/src/substrate.rs": "d7bb153d013d459c17f16fa62bc1672e091f89db903df8f2a491d1a1dadc1df5",
+          "scripts/analyze_substrate_mixed_node_delete_semantics_v1.py": "2bcb0d705665eacf78e67ae42e54ea8f95636d1922c1d55a0a71eb4967445adf",
+          "scripts/substrate_mixed_node_delete_semantics_v1.py": "8f8655c2191614a05535b7aae2c63c08a8ca119716c3a6378dbd3771bba4dda4",
+          "scripts/substrate_run_manifest.py": "924ce1d320c8373f0e27edbc8ba43b6e17fcf6aeb4b6b2a3e8f36f76ea8cb33b"
+        },
+        "native_build_stale": [],
+        "native_path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+        "native_sha256": "d041ad40ce4a80a7c826a8337dbd78ad84e2beacee9e496c6112a3938e8af625"
+      },
+      "before_graph": {
+        "edges": [
+          {
+            "attrs": {
+              "weight": 11
+            },
+            "src": 0,
+            "tgt": 1,
+            "type": "incoming_alpha"
+          },
+          {
+            "attrs": {
+              "weight": 12
+            },
+            "src": 2,
+            "tgt": 1,
+            "type": "incoming_beta"
+          },
+          {
+            "attrs": {
+              "weight": 21
+            },
+            "src": 1,
+            "tgt": 0,
+            "type": "outgoing_alpha"
+          },
+          {
+            "attrs": {
+              "weight": 22
+            },
+            "src": 1,
+            "tgt": 2,
+            "type": "outgoing_beta"
+          },
+          {
+            "attrs": {
+              "weight": 23
+            },
+            "src": 1,
+            "tgt": 3,
+            "type": "outgoing_alpha"
+          },
+          {
+            "attrs": {
+              "weight": 31
+            },
+            "src": 1,
+            "tgt": 1,
+            "type": "self_loop"
+          },
+          {
+            "attrs": {
+              "weight": 99
+            },
+            "src": 0,
+            "tgt": 3,
+            "type": "unrelated"
+          }
+        ],
+        "next_id": 4,
+        "nodes": [
+          {
+            "attrs": {
+              "keep": "a"
+            },
+            "id": 0,
+            "type": "Outside"
+          },
+          {
+            "attrs": {
+              "payload": 7
+            },
+            "id": 1,
+            "type": "Doomed"
+          },
+          {
+            "attrs": {
+              "keep": "b"
+            },
+            "id": 2,
+            "type": "Outside"
+          },
+          {
+            "attrs": {
+              "keep": "c"
+            },
+            "id": 3,
+            "type": "Outside"
+          }
+        ]
+      },
+      "edge_count": 1,
+      "edge_events": [],
+      "ids": {
+        "doomed": 1,
+        "type": "Doomed"
+      },
+      "lookups": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        true
+      ],
+      "node_count": 3,
+      "node_events": [
+        [
+          1,
+          "Doomed"
+        ]
+      ],
+      "pid": 10,
+      "removed": true,
+      "replicate": 1,
+      "specs": [
+        [
+          0,
+          "incoming_alpha",
+          1,
+          {
+            "weight": 11
+          }
+        ],
+        [
+          2,
+          "incoming_beta",
+          1,
+          {
+            "weight": 12
+          }
+        ],
+        [
+          1,
+          "outgoing_alpha",
+          0,
+          {
+            "weight": 21
+          }
+        ],
+        [
+          1,
+          "outgoing_beta",
+          2,
+          {
+            "weight": 22
+          }
+        ],
+        [
+          1,
+          "outgoing_alpha",
+          3,
+          {
+            "weight": 23
+          }
+        ],
+        [
+          1,
+          "self_loop",
+          1,
+          {
+            "weight": 31
+          }
+        ],
+        [
+          0,
+          "unrelated",
+          3,
+          {
+            "weight": 99
+          }
+        ]
+      ]
+    },
+    {
+      "after": {
+        "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+        "files": {
+          "docs/research/engine_substrate/SUBSTRATE_MIXED_NODE_DELETE_SEMANTICS_V1_1_AMENDMENT_20260928.md": "3dee886c97ccccbdcf8d1a517dec27e7be3c1c04d165404c295e3b2de0d743f9",
+          "docs/research/engine_substrate/SUBSTRATE_MIXED_NODE_DELETE_SEMANTICS_V1_PREREG_20260928.md": "5882422cdf9d1e6c99bdaa41c4f88325dc7477a24023f2a51a7cb5eaae2731d2",
+          "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+          "runners/dsl/Cargo.lock": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+          "runners/dsl/Cargo.toml": "c4d8ffff2241352a5150b5a9937dbb8010e958b6f115235b7daeae716c1a9332",
+          "runners/dsl/python/substrate_rs/__init__.py": "6ec0316afae414329e36d3f121fc56b556e7315f17b93aab911ca09a29726694",
+          "runners/dsl/python/substrate_rs/_native.build.json": "3b27b0e8dfc53d1a4fa67877fa6c78af6565d358d44f3ddcbe94e0d91633f458",
+          "runners/dsl/src/graph.rs": "b3b6a3f851e6212a01d20e811f16971a322509706b8ea042a3988ff921c07bcf",
+          "runners/dsl/src/py.rs": "d1e809b92123105f750cfc38ecfbfbcc6b7567654eeb2c405b827344dccded92",
+          "runners/dsl/src/substrate.rs": "d7bb153d013d459c17f16fa62bc1672e091f89db903df8f2a491d1a1dadc1df5",
+          "scripts/analyze_substrate_mixed_node_delete_semantics_v1.py": "2bcb0d705665eacf78e67ae42e54ea8f95636d1922c1d55a0a71eb4967445adf",
+          "scripts/substrate_mixed_node_delete_semantics_v1.py": "8f8655c2191614a05535b7aae2c63c08a8ca119716c3a6378dbd3771bba4dda4",
+          "scripts/substrate_run_manifest.py": "924ce1d320c8373f0e27edbc8ba43b6e17fcf6aeb4b6b2a3e8f36f76ea8cb33b"
+        },
+        "native_build_stale": [],
+        "native_path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+        "native_sha256": "d041ad40ce4a80a7c826a8337dbd78ad84e2beacee9e496c6112a3938e8af625"
+      },
+      "after_graph": {
+        "edges": [
+          {
+            "attrs": {
+              "weight": 99
+            },
+            "src": 0,
+            "tgt": 3,
+            "type": "unrelated"
+          }
+        ],
+        "next_id": 4,
+        "nodes": [
+          {
+            "attrs": {
+              "keep": "a"
+            },
+            "id": 0,
+            "type": "Outside"
+          },
+          {
+            "attrs": {
+              "keep": "b"
+            },
+            "id": 2,
+            "type": "Outside"
+          },
+          {
+            "attrs": {
+              "keep": "c"
+            },
+            "id": 3,
+            "type": "Outside"
+          }
+        ]
+      },
+      "before": {
+        "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+        "files": {
+          "docs/research/engine_substrate/SUBSTRATE_MIXED_NODE_DELETE_SEMANTICS_V1_1_AMENDMENT_20260928.md": "3dee886c97ccccbdcf8d1a517dec27e7be3c1c04d165404c295e3b2de0d743f9",
+          "docs/research/engine_substrate/SUBSTRATE_MIXED_NODE_DELETE_SEMANTICS_V1_PREREG_20260928.md": "5882422cdf9d1e6c99bdaa41c4f88325dc7477a24023f2a51a7cb5eaae2731d2",
+          "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+          "runners/dsl/Cargo.lock": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+          "runners/dsl/Cargo.toml": "c4d8ffff2241352a5150b5a9937dbb8010e958b6f115235b7daeae716c1a9332",
+          "runners/dsl/python/substrate_rs/__init__.py": "6ec0316afae414329e36d3f121fc56b556e7315f17b93aab911ca09a29726694",
+          "runners/dsl/python/substrate_rs/_native.build.json": "3b27b0e8dfc53d1a4fa67877fa6c78af6565d358d44f3ddcbe94e0d91633f458",
+          "runners/dsl/src/graph.rs": "b3b6a3f851e6212a01d20e811f16971a322509706b8ea042a3988ff921c07bcf",
+          "runners/dsl/src/py.rs": "d1e809b92123105f750cfc38ecfbfbcc6b7567654eeb2c405b827344dccded92",
+          "runners/dsl/src/substrate.rs": "d7bb153d013d459c17f16fa62bc1672e091f89db903df8f2a491d1a1dadc1df5",
+          "scripts/analyze_substrate_mixed_node_delete_semantics_v1.py": "2bcb0d705665eacf78e67ae42e54ea8f95636d1922c1d55a0a71eb4967445adf",
+          "scripts/substrate_mixed_node_delete_semantics_v1.py": "8f8655c2191614a05535b7aae2c63c08a8ca119716c3a6378dbd3771bba4dda4",
+          "scripts/substrate_run_manifest.py": "924ce1d320c8373f0e27edbc8ba43b6e17fcf6aeb4b6b2a3e8f36f76ea8cb33b"
+        },
+        "native_build_stale": [],
+        "native_path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+        "native_sha256": "d041ad40ce4a80a7c826a8337dbd78ad84e2beacee9e496c6112a3938e8af625"
+      },
+      "before_graph": {
+        "edges": [
+          {
+            "attrs": {
+              "weight": 11
+            },
+            "src": 0,
+            "tgt": 1,
+            "type": "incoming_alpha"
+          },
+          {
+            "attrs": {
+              "weight": 12
+            },
+            "src": 2,
+            "tgt": 1,
+            "type": "incoming_beta"
+          },
+          {
+            "attrs": {
+              "weight": 21
+            },
+            "src": 1,
+            "tgt": 0,
+            "type": "outgoing_alpha"
+          },
+          {
+            "attrs": {
+              "weight": 22
+            },
+            "src": 1,
+            "tgt": 2,
+            "type": "outgoing_beta"
+          },
+          {
+            "attrs": {
+              "weight": 23
+            },
+            "src": 1,
+            "tgt": 3,
+            "type": "outgoing_alpha"
+          },
+          {
+            "attrs": {
+              "weight": 31
+            },
+            "src": 1,
+            "tgt": 1,
+            "type": "self_loop"
+          },
+          {
+            "attrs": {
+              "weight": 99
+            },
+            "src": 0,
+            "tgt": 3,
+            "type": "unrelated"
+          }
+        ],
+        "next_id": 4,
+        "nodes": [
+          {
+            "attrs": {
+              "keep": "a"
+            },
+            "id": 0,
+            "type": "Outside"
+          },
+          {
+            "attrs": {
+              "payload": 7
+            },
+            "id": 1,
+            "type": "Doomed"
+          },
+          {
+            "attrs": {
+              "keep": "b"
+            },
+            "id": 2,
+            "type": "Outside"
+          },
+          {
+            "attrs": {
+              "keep": "c"
+            },
+            "id": 3,
+            "type": "Outside"
+          }
+        ]
+      },
+      "edge_count": 1,
+      "edge_events": [],
+      "ids": {
+        "doomed": 1,
+        "type": "Doomed"
+      },
+      "lookups": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        true
+      ],
+      "node_count": 3,
+      "node_events": [
+        [
+          1,
+          "Doomed"
+        ]
+      ],
+      "pid": 13,
+      "removed": true,
+      "replicate": 2,
+      "specs": [
+        [
+          0,
+          "incoming_alpha",
+          1,
+          {
+            "weight": 11
+          }
+        ],
+        [
+          2,
+          "incoming_beta",
+          1,
+          {
+            "weight": 12
+          }
+        ],
+        [
+          1,
+          "outgoing_alpha",
+          0,
+          {
+            "weight": 21
+          }
+        ],
+        [
+          1,
+          "outgoing_beta",
+          2,
+          {
+            "weight": 22
+          }
+        ],
+        [
+          1,
+          "outgoing_alpha",
+          3,
+          {
+            "weight": 23
+          }
+        ],
+        [
+          1,
+          "self_loop",
+          1,
+          {
+            "weight": 31
+          }
+        ],
+        [
+          0,
+          "unrelated",
+          3,
+          {
+            "weight": 99
+          }
+        ]
+      ]
+    }
+  ],
+  "schema_version": 1
+}

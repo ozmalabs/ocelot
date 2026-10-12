@@ -1,0 +1,159 @@
+{
+  "audit": "UseTool predicate surface v1",
+  "effect_call_count": 0,
+  "effect_calls_by_tool": {},
+  "interpretation": [
+    "The inventory counts syntactic UseTool nodes in seed rule where/effects fields, not runtime invocation frequency.",
+    "AST migrator expr_term maps nested np.<module>.<function>(...) calls to UseTool; method_to_rule applies it to a no-else if guard via _value(st.test).",
+    "migrate_curious_agent.py is the located caller; this is an opt-in conversion route, not evidence of automatic production generation.",
+    "load_all_seeds documents no-selection as full-corpus boot; selected/profiled boot routes can differ."
+  ],
+  "predicate_call_count": 18,
+  "predicate_calls_by_tool": {
+    "cn_antonym": 1,
+    "cn_contiguity": 2,
+    "derive_opposes": 1,
+    "is_extreme": 1,
+    "is_intensifier_spike": 1,
+    "is_minimizer": 1,
+    "shape_cross_domain": 1,
+    "text_severe": 1,
+    "text_valence": 2,
+    "wikt_antonym": 1,
+    "wikt_idiomatic": 1,
+    "wikt_metonymic": 2,
+    "wn_animate": 1,
+    "wn_antonym": 1,
+    "wn_verb_agentive": 1
+  },
+  "predicate_tools_without_symbolic_handler": [],
+  "registered_symbolic_handlers": [
+    "wn_antonym",
+    "wikt_antonym",
+    "cn_antonym",
+    "derive_opposes",
+    "wn_animate",
+    "wn_verb_agentive",
+    "text_valence",
+    "wikt_metonymic",
+    "cn_contiguity",
+    "shape_cross_domain",
+    "wikt_idiomatic",
+    "is_extreme",
+    "is_minimizer",
+    "is_intensifier_spike",
+    "text_severe"
+  ],
+  "scope": "flat seeds/*.json; source inspection of the known AST-to-rule seam and full-corpus loader",
+  "seed_files_scanned": 828,
+  "seed_rule_rows_with_use_tool": [
+    {
+      "effect_calls": [],
+      "path": "seeds/figure_grounding.json",
+      "rule": "ground_opposes",
+      "seed_id": "figure_grounding",
+      "where_calls": [
+        "wn_antonym",
+        "wikt_antonym",
+        "cn_antonym",
+        "derive_opposes"
+      ]
+    },
+    {
+      "effect_calls": [],
+      "path": "seeds/figure_grounding.json",
+      "rule": "ground_personifies",
+      "seed_id": "figure_grounding",
+      "where_calls": [
+        "wn_animate",
+        "wn_verb_agentive"
+      ]
+    },
+    {
+      "effect_calls": [],
+      "path": "seeds/figure_grounding.json",
+      "rule": "ground_irony",
+      "seed_id": "figure_grounding",
+      "where_calls": [
+        "text_valence",
+        "text_valence"
+      ]
+    },
+    {
+      "effect_calls": [],
+      "path": "seeds/figure_grounding.json",
+      "rule": "ground_contiguity",
+      "seed_id": "figure_grounding",
+      "where_calls": [
+        "wikt_metonymic",
+        "cn_contiguity"
+      ]
+    },
+    {
+      "effect_calls": [],
+      "path": "seeds/figure_grounding.json",
+      "rule": "ground_resemblance",
+      "seed_id": "figure_grounding",
+      "where_calls": [
+        "wikt_metonymic",
+        "cn_contiguity",
+        "shape_cross_domain"
+      ]
+    },
+    {
+      "effect_calls": [],
+      "path": "seeds/figure_grounding.json",
+      "rule": "ground_scalar_violation",
+      "seed_id": "figure_grounding",
+      "where_calls": [
+        "is_extreme"
+      ]
+    },
+    {
+      "effect_calls": [],
+      "path": "seeds/figure_grounding.json",
+      "rule": "ground_understates",
+      "seed_id": "figure_grounding",
+      "where_calls": [
+        "is_minimizer",
+        "text_severe"
+      ]
+    },
+    {
+      "effect_calls": [],
+      "path": "seeds/figure_grounding.json",
+      "rule": "ground_scalar_spike",
+      "seed_id": "figure_grounding",
+      "where_calls": [
+        "is_intensifier_spike"
+      ]
+    },
+    {
+      "effect_calls": [],
+      "path": "seeds/figure_grounding.json",
+      "rule": "ground_noncompositional",
+      "seed_id": "figure_grounding",
+      "where_calls": [
+        "wikt_idiomatic"
+      ]
+    }
+  ],
+  "source_sha256": [
+    {
+      "path": "domains/ast_to_rule.py",
+      "sha256": "5a4558fbe4265c610fc07f874251b1392d3aaa5a20a3cb22e4f635231fc99d6d"
+    },
+    {
+      "path": "scripts/migrate_curious_agent.py",
+      "sha256": "db1a0155a555d91cb6a2d60d9a1ebe6b273f172939503f935f8968d1c4c2126a"
+    },
+    {
+      "path": "substrate/boot_all.py",
+      "sha256": "2bdf46f19228e1d85dbdcf12383116ceeb72aab0efe7ddd0cc6a51d23b45d220"
+    },
+    {
+      "path": "seeds/figure_grounding.json",
+      "sha256": "5fdd2d9a80f660b97b556df036239f18c6627be14e11a80f5c065049f9132aa2"
+    }
+  ]
+}

@@ -22,22 +22,16 @@ THE MECHANISM, end to end:
 
   1. SNAPSHOT   -- `graph_to_dict` (whole graph, or a `focus_nodes` BFS
                    closure) into a brand-new, id-preserving detached
-                   `substrate_rs.Substrate` via `graph_from_dict`. Node ids
+                   `substrate_rs.Substrate` via `graph_from_dict`, then copy
+                   the active native `add_rule` rewrite-rule store. Node ids
                    are shared vocabulary between the live graph and the
                    detached copy, so a conclusion's `detached_id` names the
                    SAME conceptual entity in both -- that is what lets
                    `reground` map an imagined conclusion back onto a live
-                   node by identity. IMPORTANT: `graph_to_dict` /
-                   `graph_from_dict` serialise ONLY the graph (nodes/edges,
-                   e.g. graph-resident `Rule` nodes matched by
-                   `run_graph_rules`) -- never the separate `add_rule`
-                   rewrite-rule store (see tests/test_composer_graph_pilot.py's
-                   module docstring). The agent's real cognition is
-                   graph-resident `Rule` nodes, so it snapshots faithfully;
-                   a caller that installed extra logic only via `add_rule`
-                   on the LIVE substrate would not see it survive into the
-                   detached copy -- install such logic on the detached copy
-                   directly if that shape is ever needed.
+                   node by identity. `graph_to_dict` / `graph_from_dict`
+                   serialise only graph nodes/edges; the native rule store is
+                   copied separately and any candidate delta is applied only
+                   to that detached copy.
   2. CUT GROUNDING -- remove every `grounded_in` edge (the provenance
                    channel `domains/grounding_reach.py` defines) from the
                    DETACHED copy only. This does not delete the anchor nodes
@@ -53,13 +47,12 @@ THE MECHANISM, end to end:
                    `{"nodes": [...], "edges": [...]}` spec into mutations on
                    the detached copy (the counterfactual assumption). Pure
                    ingest, no decision -- see `_inject_hypothesis`.
-  4. RUN THE COLLAPSE -- `tick()` on the detached copy: this runs BOTH rule
-                   stores the substrate has (graph-resident `Rule` nodes via
-                   `run_graph_rules`, AND any `add_rule`-installed rewrite
-                   rules already present on that specific Python object) to
-                   a fixed point. The graph rules ARE the collapse; this
-                   call propagates the hypothesis's consequences, unpinned
-                   by reality.
+  4. RUN THE COLLAPSE -- explicit graph-then-struct execution on the
+                   detached copy: graph-resident `Rule` nodes run first,
+                   followed by the copied native rewrite-rule store. This
+                   avoids the ordinary `tick()` Default plan, which can run
+                   structural rules only and silently skip graph-resident
+                   cognition. The counterfactual consequences stay detached.
 
 `imagine()` returns a `DetachedCollapse` -- the imagined graph state itself
 PLUS what changed (`graph_diff` against the pre-hypothesis snapshot) PLUS a
@@ -85,7 +78,8 @@ frame file).
 from __future__ import annotations
 
 import time
-from dataclasses import dataclass
+import copy
+from dataclasses import dataclass, field
 from typing import Any, Optional
 
 import substrate_rs as srs
@@ -148,6 +142,7 @@ class DetachedCollapse:
     n_conclusions: int
     residual: float
     confidence: float
+    phase_timings_ms: dict = field(default_factory=dict)
 
 
 # ---------------------------------------------------------------------------
@@ -202,6 +197,17 @@ def _snapshot_dict(native, focus_nodes: Optional[list], focus_hops: int) -> dict
     keep = _focus_closure(native, focus_nodes, focus_hops)
     edges = [e for e in full["edges"] if e["src"] in keep and e["tgt"] in keep]
     return {"next_id": full["next_id"], "nodes": full["nodes"], "edges": edges}
+
+
+def _retain_focus_edges(dnative, focus_nodes: Optional[list], focus_hops: int) -> None:
+    """Apply the serializer snapshot's edge aperture to a native deep copy."""
+    if not focus_nodes:
+        return
+    keep = _focus_closure(dnative, focus_nodes, focus_hops)
+    for edge in dnative.graph_to_dict()["edges"]:
+        if edge["src"] not in keep or edge["tgt"] not in keep:
+            dnative.remove_edge(srs.NodeID(edge["src"]), edge["type"],
+                                srs.NodeID(edge["tgt"]))
 
 
 # ---------------------------------------------------------------------------
@@ -273,7 +279,8 @@ def _inject_hypothesis(dnative, hypothesis: Optional[dict]) -> dict:
 
 
 def _install_detached_rewrite_delta(live_native, detached_native,
-                                    rewrite_delta: Optional[dict]) -> dict:
+                                    rewrite_delta: Optional[dict], *,
+                                    copy_live_rules: bool = True) -> dict:
     """Clone the live rewrite store into a detached mind and apply a proposed
     rule/attribute delta there only.
 
@@ -286,15 +293,34 @@ def _install_detached_rewrite_delta(live_native, detached_native,
     removed_names = {str(n) for n in (delta.get("remove_rules") or [])}
     copied = 0
     removed = []
-    for rule in live_native.export_rules():
-        if not isinstance(rule, dict) or not rule.get("active", True):
-            continue
-        name = str(rule.get("name") or "")
-        if name and name in removed_names:
-            removed.append(name)
-            continue
-        detached_native.add_rule(rule)
-        copied += 1
+    if copy_live_rules:
+        for rule in live_native.export_rules():
+            if not isinstance(rule, dict) or not rule.get("active", True):
+                continue
+            name = str(rule.get("name") or "")
+            if name and name in removed_names:
+                removed.append(name)
+                continue
+            detached_native.add_rule(rule)
+            copied += 1
+    else:
+        summarize = getattr(detached_native, "experiment_rule_store_summary", None)
+        if summarize is not None:
+            copied, removed = summarize(sorted(removed_names))
+        else:
+            # Compatibility fallback for a native extension built before the
+            # branch-local summary method was introduced.
+            branch_rules = detached_native.export_rules()
+            copied = sum(bool(rule.get("active", True)) for rule in branch_rules
+                         if isinstance(rule, dict))
+            removals = [
+                idx for idx, rule in enumerate(branch_rules)
+                if isinstance(rule, dict) and rule.get("active", True)
+                and str(rule.get("name") or "") in removed_names
+            ]
+            for idx in reversed(removals):
+                detached_native.remove_rule(idx)
+                removed.append(str(branch_rules[idx].get("name") or ""))
 
     added = []
     for rule in delta.get("add_rules") or []:
@@ -328,19 +354,25 @@ def _install_detached_rewrite_delta(live_native, detached_native,
 # ---------------------------------------------------------------------------
 # durable trace on the LIVE graph
 # ---------------------------------------------------------------------------
-def _mint_conclusion_records(sub, native, imagination_node, conclusions: dict) -> list:
+def _mint_conclusion_records(sub, native, imagination_node, conclusions: dict, *,
+                             assumption_ids: set[int] | None = None,
+                             assumption_edges: set[tuple[int, str, int]] | None = None) -> list:
+    assumption_ids = assumption_ids or set()
+    assumption_edges = assumption_edges or set()
     minted = []
     for n in conclusions.get("nodes_added", []):
+        kind = "assumption_added" if int(n["id"]) in assumption_ids else "node_added"
         cid = sub.add_node(_CONCLUSION_TYPE, {
-            "kind": "node_added", "detached_id": n["id"],
+            "kind": kind, "detached_id": n["id"],
             "node_type": n.get("type"), "attrs": dict(n.get("attrs", {})),
             "status": "pending", "reason": "",
         })
         _add_edge_unchecked(native, imagination_node, "imagined", cid)
         minted.append(cid)
     for n in conclusions.get("nodes_changed", []):
+        kind = "assumption_changed" if int(n["id"]) in assumption_ids else "node_changed"
         cid = sub.add_node(_CONCLUSION_TYPE, {
-            "kind": "node_changed", "detached_id": n["id"],
+            "kind": kind, "detached_id": n["id"],
             "attrs_before": dict(n.get("attrs_before", {})),
             "attrs_after": dict(n.get("attrs_after", {})),
             "status": "pending", "reason": "",
@@ -348,8 +380,57 @@ def _mint_conclusion_records(sub, native, imagination_node, conclusions: dict) -
         _add_edge_unchecked(native, imagination_node, "imagined", cid)
         minted.append(cid)
     for e in conclusions.get("edges_added", []):
+        key = (int(e["src"]), str(e["type"]), int(e["tgt"]))
+        if key in assumption_edges:
+            kind = "assumption_edge_added"
+        elif key[0] in assumption_ids or key[2] in assumption_ids:
+            kind = "conditional_edge_added"
+        else:
+            kind = "edge_added"
         cid = sub.add_node(_CONCLUSION_TYPE, {
-            "kind": "edge_added", "src": e["src"], "edge_type": e["type"], "tgt": e["tgt"],
+            "kind": kind, "src": e["src"], "edge_type": e["type"], "tgt": e["tgt"],
+            "attrs": dict(e.get("attrs", {})),
+            "status": "pending", "reason": "",
+        })
+        _add_edge_unchecked(native, imagination_node, "imagined", cid)
+        minted.append(cid)
+    for e in conclusions.get("edges_changed", []):
+        kind = ("conditional_edge_changed" if int(e["src"]) in assumption_ids
+                or int(e["tgt"]) in assumption_ids else "edge_changed")
+        cid = sub.add_node(_CONCLUSION_TYPE, {
+            "kind": kind, "src": e["src"], "edge_type": e["type"], "tgt": e["tgt"],
+            "attrs_before": dict(e.get("attrs_before", {})),
+            "attrs_after": dict(e.get("attrs_after", {})),
+            "status": "pending", "reason": "",
+        })
+        _add_edge_unchecked(native, imagination_node, "imagined", cid)
+        minted.append(cid)
+    removed_nodes = {int(n["id"]) for n in conclusions.get("nodes_removed_details", [])}
+    for n in conclusions.get("nodes_removed_details", []):
+        incident_edges = [
+            {"src": int(e["src"]), "type": str(e["type"]), "tgt": int(e["tgt"]),
+             "attrs": dict(e.get("attrs", {}))}
+            for e in conclusions.get("edges_removed_details", [])
+            if int(e["src"]) == int(n["id"]) or int(e["tgt"]) == int(n["id"])
+        ]
+        cid = sub.add_node(_CONCLUSION_TYPE, {
+            "kind": "node_removed", "detached_id": n["id"],
+            "node_type_before": n.get("type"),
+            "attrs_before": dict(n.get("attrs", {})),
+            "incident_edges_before": incident_edges,
+            "status": "pending", "reason": "",
+        })
+        _add_edge_unchecked(native, imagination_node, "imagined", cid)
+        minted.append(cid)
+    for e in conclusions.get("edges_removed_details", []):
+        src, tgt = int(e["src"]), int(e["tgt"])
+        # Removing a node already removes every incident edge. Keep one
+        # explicit proposal for that operation instead of duplicating it.
+        if src in removed_nodes or tgt in removed_nodes:
+            continue
+        cid = sub.add_node(_CONCLUSION_TYPE, {
+            "kind": "edge_removed", "src": src, "edge_type": e["type"], "tgt": tgt,
+            "attrs_before": dict(e.get("attrs", {})),
             "status": "pending", "reason": "",
         })
         _add_edge_unchecked(native, imagination_node, "imagined", cid)
@@ -362,7 +443,14 @@ def _mint_conclusion_records(sub, native, imagination_node, conclusions: dict) -
 # ---------------------------------------------------------------------------
 def imagine(agent, *, focus_nodes: Optional[list] = None, hypothesis: Optional[dict] = None,
             steps: int = 100_000, cut_grounding: bool = True, focus_hops: int = 2,
-            rewrite_delta: Optional[dict] = None) -> DetachedCollapse:
+            rewrite_delta: Optional[dict] = None,
+            snapshot_backend: str = "serialization",
+            _force_full_noop_readout: bool = False,
+            _force_full_graph_readout: bool = False,
+            _process_forked: bool = False,
+            _snapshot_handle=None,
+            _measure_phases: bool = False,
+            record_trace: bool = True) -> DetachedCollapse:
     """Run the substrate's OWN collapse (`tick()` -- graph-resident Rules +
     any rewrite rules already installed on the fresh detached object) on a
     DETACHED, id-preserving copy of (a neighbourhood of) the graph, with
@@ -379,18 +467,103 @@ def imagine(agent, *, focus_nodes: Optional[list] = None, hypothesis: Optional[d
     """
     sub, native = _resolve(agent)
     focus_nodes = list(focus_nodes) if focus_nodes else None
+    phase_clock = time.perf_counter_ns if _measure_phases else None
+    phase_started = phase_clock() if phase_clock else 0
 
     # (1) SNAPSHOT
-    snap = _snapshot_dict(native, focus_nodes, focus_hops)
-    detached = srs.Substrate()
-    detached._inner.graph_from_dict(snap)
+    if snapshot_backend == "serialization":
+        snap = _snapshot_dict(native, focus_nodes, focus_hops)
+        detached = srs.Substrate()
+        detached._inner.graph_from_dict(snap)
+    elif snapshot_backend == "native_full_copy":
+        fork = getattr(sub, "fork_full_copy_experiment", None)
+        if fork is None:
+            raise RuntimeError("native full-copy experiment fork is unavailable")
+        detached = fork()
+        _retain_focus_edges(detached._inner, focus_nodes, focus_hops)
+    elif snapshot_backend == "native_full_copy_scoped":
+        fork = getattr(sub, "fork_full_copy_experiment", None)
+        if fork is None:
+            raise RuntimeError("native full-copy experiment fork is unavailable")
+        detached = fork()
+        if focus_nodes:
+            detached.set_experiment_edge_scope([_v(n) for n in focus_nodes], focus_hops)
+    elif snapshot_backend == "native_shared_slab":
+        fork = getattr(sub, "fork_shared_slab_experiment", None)
+        if fork is None:
+            raise RuntimeError("native shared-slab experiment fork is unavailable")
+        detached = fork()
+        _retain_focus_edges(detached._inner, focus_nodes, focus_hops)
+    elif snapshot_backend == "native_shared_slab_scoped":
+        fork = getattr(sub, "fork_shared_slab_experiment", None)
+        if fork is None:
+            raise RuntimeError("native shared-slab experiment fork is unavailable")
+        detached = fork()
+        if focus_nodes:
+            detached.set_experiment_edge_scope([_v(n) for n in focus_nodes], focus_hops)
+    elif snapshot_backend == "native_shared_graph_pages":
+        fork = getattr(sub, "fork_shared_graph_pages_experiment", None)
+        if fork is None:
+            raise RuntimeError("native shared-graph-pages experiment fork is unavailable")
+        detached = fork()
+        _retain_focus_edges(detached._inner, focus_nodes, focus_hops)
+    elif snapshot_backend == "native_shared_graph_pages_scoped":
+        fork = getattr(sub, "fork_shared_graph_pages_experiment", None)
+        if fork is None:
+            raise RuntimeError("native shared-graph-pages experiment fork is unavailable")
+        detached = fork()
+        if focus_nodes:
+            detached.set_experiment_edge_scope([_v(n) for n in focus_nodes], focus_hops)
+    elif snapshot_backend == "native_reusable_snapshot":
+        # A batch may provide one immutable source snapshot to many candidate
+        # consumers. A standalone call captures its own snapshot. The public
+        # backend-neutral snapshot contract keeps this consumer independent of
+        # the underlying graph-page representation.
+        snapshot = _snapshot_handle or sub.snapshot()
+        expected_revision = tuple(native.experiment_graph_rule_revision())
+        if tuple(snapshot.source_revision) != expected_revision:
+            raise RuntimeError(
+                "reusable experiment snapshot revision does not match source substrate")
+        detached = snapshot.fork()
+        if focus_nodes:
+            detached.set_experiment_edge_scope([_v(n) for n in focus_nodes], focus_hops)
+    elif snapshot_backend == "process_in_place":
+        if not _process_forked:
+            raise RuntimeError("process_in_place requires an isolated forked child")
+        # The OS has already made this process a CoW child. Reuse its inherited
+        # native state as the branch rather than taking another eager copy.
+        detached = sub
+        _retain_focus_edges(native, focus_nodes, focus_hops)
+    elif snapshot_backend == "process_in_place_scoped":
+        if not _process_forked:
+            raise RuntimeError("process_in_place_scoped requires an isolated forked child")
+        detached = sub
+        if focus_nodes:
+            detached.set_experiment_edge_scope([_v(n) for n in focus_nodes], focus_hops)
+    else:
+        raise ValueError(f"unknown imagination snapshot backend: {snapshot_backend}")
     dnative = detached._inner
 
     # A normal imagination needs no separate rewrite-store copy.  A
     # self-modification rehearsal does: its hypothesis is specifically about
     # what a changed cognition engine would derive.
-    delta_report = (_install_detached_rewrite_delta(native, dnative, rewrite_delta)
-                    if rewrite_delta is not None else None)
+    # graph_to_dict excludes native rewrite rules, so copy that semantic
+    # state on every detached branch, applying any candidate delta there.
+    # Without this, a detached prediction runs an amputated engine.
+    delta_report = _install_detached_rewrite_delta(
+        native, dnative, rewrite_delta or {},
+        copy_live_rules=(snapshot_backend == "serialization"),
+    )
+    snapshot_setup_ms = ((phase_clock() - phase_started) / 1_000_000
+                         if phase_clock else None)
+
+    # Candidate rehearsal asks for a zero-step, no-hypothesis detached base
+    # before applying its candidate rules. In this exact case there can be no
+    # graph delta: avoid serializing the complete branch twice and diffing two
+    # identical graphs. Keep this guard narrow so grounding cuts, injected
+    # hypotheses, and any executed collapse retain the ordinary readout path.
+    no_op_probe = (steps == 0 and hypothesis is None and not cut_grounding
+                   and not _force_full_noop_readout)
 
     # (2) CUT GROUNDING (detached copy only)
     cut_count = _cut_grounding_edges(dnative) if cut_grounding else 0
@@ -398,40 +571,99 @@ def imagine(agent, *, focus_nodes: Optional[list] = None, hypothesis: Optional[d
     # baseline for "conclusions" = everything new relative to the
     # grounding-cut, pre-hypothesis state (hypothesis injection + whatever
     # the collapse then derives from it).
-    pre_dict = dnative.graph_to_dict()
+    use_delta_journal = not _force_full_graph_readout and not no_op_probe
+    if use_delta_journal:
+        detached.begin_experiment_delta_journal()
+        pre_dict = injected_dict = None
+    else:
+        pre_dict = None if no_op_probe else dnative.graph_to_dict()
 
     # (3) INJECT HYPOTHESIS
-    hyp_map = _inject_hypothesis(dnative, hypothesis)
-    injected_dict = dnative.graph_to_dict()
+    hyp_map = {} if no_op_probe else _inject_hypothesis(dnative, hypothesis)
+    if use_delta_journal:
+        detached.checkpoint_experiment_delta_journal()
+    else:
+        injected_dict = pre_dict if no_op_probe else dnative.graph_to_dict()
+    preparation_ms = ((phase_clock() - phase_started - int(snapshot_setup_ms * 1_000_000)) / 1_000_000
+                      if phase_clock else None)
 
-    # (4) RUN THE COLLAPSE
-    steps_run = detached.tick(steps)
-    post_dict = dnative.graph_to_dict()
-
-    conclusions = srs._native.Substrate.graph_diff(pre_dict, post_dict)
-    derived_only = srs._native.Substrate.graph_diff(injected_dict, post_dict)
+    # (4) RUN THE COLLAPSE. The ordinary native `tick()` uses the substrate's
+    # Default cycle plan, which can be structural-rules-only. An imagination
+    # must explicitly execute graph-resident Rules followed by the native
+    # rewrite-rule store; otherwise graph-authored cognition in the detached
+    # graph is silently skipped and a counterfactual may look like a no-op.
+    tick_graph_then_struct = getattr(dnative, "tick_graph_then_struct", None)
+    if tick_graph_then_struct is None:
+        raise RuntimeError(
+            "detached imagination requires native tick_graph_then_struct support; "
+            "refusing a structural-only counterfactual"
+        )
+    tick_started = phase_clock() if phase_clock else 0
+    steps_run = 0 if no_op_probe else tick_graph_then_struct(steps)
+    collapse_tick_ms = ((phase_clock() - tick_started) / 1_000_000
+                        if phase_clock else None)
+    readout_started = phase_clock() if phase_clock else 0
+    if no_op_probe:
+        empty_diff = {"nodes_added": [], "nodes_changed": [], "nodes_removed": [],
+                      "edges_added": [], "edges_removed": []}
+        conclusions = empty_diff
+        derived_only = empty_diff.copy()
+    elif use_delta_journal:
+        delta = detached.finish_experiment_delta_journal()
+        conclusions = delta["conclusions"]
+        derived_only = delta["derived_only"]
+    else:
+        post_dict = dnative.graph_to_dict()
+        conclusions = srs._native.Substrate.graph_diff(pre_dict, post_dict)
+        derived_only = srs._native.Substrate.graph_diff(injected_dict, post_dict)
     n_conclusions = (len(conclusions["nodes_added"]) + len(conclusions["nodes_changed"])
-                     + len(conclusions["edges_added"]))
+                     + len(conclusions["edges_added"]) + len(conclusions.get("edges_changed", [])))
+    result_readout_ms = ((phase_clock() - readout_started) / 1_000_000
+                         if phase_clock else None)
     converged = steps_run < steps
     residual = 0.0 if converged else 1.0
     confidence = 1.0 - residual
 
-    imagination_node = sub.add_node(_IMAGINATION_TYPE, {
-        "focus": [_v(n) for n in focus_nodes] if focus_nodes else [],
-        "hypothesis_keys": sorted(hyp_map.keys(), key=str),
-        "grounding_cut": bool(cut_grounding),
-        "grounding_cut_count": cut_count,
-        "steps_run": steps_run,
-        "steps_budget": steps,
-        "converged": converged,
-        "n_conclusions": n_conclusions,
-        "status": "explored",
-        "ts": time.time(),
-    })
-    if delta_report is not None:
+    imagination_node = None
+    conclusion_nodes = []
+    trace_started = phase_clock() if phase_clock else 0
+    if record_trace:
+        imagination_node = sub.add_node(_IMAGINATION_TYPE, {
+            "focus": [_v(n) for n in focus_nodes] if focus_nodes else [],
+            "hypothesis_keys": sorted(hyp_map.keys(), key=str),
+            "hypothesis": copy.deepcopy(hypothesis),
+            "grounding_cut": bool(cut_grounding),
+            "grounding_cut_count": cut_count,
+            "steps_run": steps_run,
+            "steps_budget": steps,
+            "converged": converged,
+            "n_conclusions": n_conclusions,
+            "status": "explored",
+            "ts": time.time(),
+        })
         native.set_attr(imagination_node, "rewrite_delta_report", delta_report)
         native.set_attr(imagination_node, "epistemic_scope", "graph_counterfactual")
-    conclusion_nodes = _mint_conclusion_records(sub, native, imagination_node, conclusions)
+        assumption_ids = {_v(nid) for nid in hyp_map.values()}
+        assumption_edges = set()
+        if hypothesis:
+            def endpoint_id(token):
+                if isinstance(token, str) and token in hyp_map:
+                    return _v(hyp_map[token])
+                if hasattr(token, "value"):
+                    return int(token.value)
+                try:
+                    return int(token)
+                except (TypeError, ValueError):
+                    return None
+            for edge in hypothesis.get("edges", []):
+                src_id, tgt_id = endpoint_id(edge.get("src")), endpoint_id(edge.get("tgt"))
+                if src_id is not None and tgt_id is not None:
+                    assumption_edges.add((src_id, str(edge.get("type", "")), tgt_id))
+        conclusion_nodes = _mint_conclusion_records(
+            sub, native, imagination_node, conclusions,
+            assumption_ids=assumption_ids, assumption_edges=assumption_edges)
+    trace_mint_ms = ((phase_clock() - trace_started) / 1_000_000
+                     if phase_clock else None)
 
     return DetachedCollapse(
         detached=detached, imagination_node=imagination_node,
@@ -440,6 +672,13 @@ def imagine(agent, *, focus_nodes: Optional[list] = None, hypothesis: Optional[d
         grounding_cut_count=cut_count, steps_run=steps_run, steps_budget=steps,
         converged=converged, conclusions=conclusions, derived_only=derived_only,
         n_conclusions=n_conclusions, residual=residual, confidence=confidence,
+        phase_timings_ms={
+            "branch_snapshot_and_rule_setup": snapshot_setup_ms,
+            "grounding_and_hypothesis_preparation": preparation_ms,
+            "collapse_tick": collapse_tick_ms,
+            "residual_readout": result_readout_ms,
+            "trace_minting": trace_mint_ms,
+        } if _measure_phases else {},
     )
 
 
@@ -447,18 +686,81 @@ def imagine(agent, *, focus_nodes: Optional[list] = None, hypothesis: Optional[d
 # THE RETURN PATH
 # ---------------------------------------------------------------------------
 def _judge_conclusion(agent, sub, at: dict) -> tuple[bool, str]:
-    """A conclusion SURVIVES unless it is a `node_changed` whose imagined
-    `attrs_after` disagrees, key-for-key, with the CURRENT live value of the
-    SAME node id (shared identity, since the detached copy was snapshotted
-    id-preserving) AND that live node is currently GROUNDED
-    (`grounding_reach` reaches an anchor). Only a grounded live fact can
-    veto a fantasy; a live value that merely differs but is itself
-    ungrounded is unconfirmed, not a contradiction, so it does not discard
-    the conclusion. `node_added` / `edge_added` conclusions describe
-    structure that doesn't exist live at all -- nothing to contradict by
-    identity, so they always survive (a caller wanting a stronger novel-
-    structure check composes one on top; this stays purely mechanical)."""
+    """Reground an imagined conclusion against current live state.
+
+    Node changes are vetoed only by contradictory grounded values. Edge
+    additions and changed-edge attributes use structural identity plus sparse
+    before-images: a missing target or conflicting live write is rejected,
+    while an already-realized outcome is idempotently accepted. Assumption and
+    conditional records remain auditable but are filtered from writeback."""
     kind = at.get("kind")
+    if kind == "edge_added":
+        native = _resolve(agent)[1]
+        src, tgt, edge_type = at.get("src"), at.get("tgt"), at.get("edge_type")
+        if src is None or tgt is None or not edge_type:
+            return False, "added edge has incomplete identity"
+        live_attrs = native.edge_attrs(srs.NodeID(int(src)), str(edge_type), srs.NodeID(int(tgt)))
+        if live_attrs is None:
+            return True, "added edge is still absent from the live graph"
+        if live_attrs == (at.get("attrs") or {}):
+            return True, "added edge outcome is already present live"
+        return False, "edge appeared with conflicting attributes since imagination"
+    if kind == "edge_changed":
+        native = _resolve(agent)[1]
+        src, tgt, edge_type = at.get("src"), at.get("tgt"), at.get("edge_type")
+        if src is None or tgt is None or not edge_type:
+            return False, "changed edge has incomplete identity"
+        live_attrs = native.edge_attrs(srs.NodeID(int(src)), str(edge_type), srs.NodeID(int(tgt)))
+        if live_attrs is None:
+            return False, "changed edge is absent from the live graph"
+        before = at.get("attrs_before") or {}
+        after = at.get("attrs_after") or {}
+        missing = object()
+        keys = set(before) | set(after)
+        matches_before = all(live_attrs.get(k, missing) == before.get(k, missing) for k in keys)
+        matches_after = all(live_attrs.get(k, missing) == after.get(k, missing) for k in keys)
+        if matches_before:
+            return True, "changed edge before-image still matches live graph"
+        if matches_after:
+            return True, "changed edge outcome is already present live"
+        return False, "changed edge conflicts with live attributes since imagination"
+    if kind == "edge_removed":
+        native = _resolve(agent)[1]
+        src, tgt, edge_type = at.get("src"), at.get("tgt"), at.get("edge_type")
+        if src is None or tgt is None or not edge_type:
+            return False, "removed edge has incomplete identity"
+        live_attrs = native.edge_attrs(srs.NodeID(int(src)), str(edge_type), srs.NodeID(int(tgt)))
+        if live_attrs is None:
+            return True, "removed edge is already absent from the live graph"
+        if live_attrs == (at.get("attrs_before") or {}):
+            return True, "removed edge before-image still matches live graph"
+        return False, "removed edge conflicts with live attributes since imagination"
+    if kind == "node_removed":
+        native = _resolve(agent)[1]
+        nid_val = at.get("detached_id")
+        if nid_val is None:
+            return False, "removed node has incomplete identity"
+        nid = srs.NodeID(int(nid_val))
+        if not sub.has_node(nid):
+            return True, "removed node is already absent from the live graph"
+        live = sub.node(nid)
+        if live["type"] != at.get("node_type_before"):
+            return False, "removed node type conflicts with its live before-image"
+        if live["attrs"] != (at.get("attrs_before") or {}):
+            return False, "removed node attrs conflict with its live before-image"
+        expected_edges = {
+            (int(edge["src"]), str(edge["type"]), int(edge["tgt"])):
+                dict(edge.get("attrs") or {})
+            for edge in (at.get("incident_edges_before") or [])
+        }
+        current_edges = {
+            (int(edge["src"]), str(edge["type"]), int(edge["tgt"])):
+                dict(edge.get("attrs") or {})
+            for edge in native.incident_edges(nid)
+        }
+        if current_edges != expected_edges:
+            return False, "removed node incident edges conflict with their live before-image"
+        return True, "removed node before-image still matches live graph"
     if kind != "node_changed":
         return True, "novel structure -- nothing live to contradict by identity"
     nid_val = at.get("detached_id")
@@ -522,7 +824,8 @@ def reground(agent, detached: DetachedCollapse) -> dict:
 def commit_imagination(agent, detached: DetachedCollapse, survivors: list, *,
                         approver: Optional[str] = None, policy: Optional[dict] = None,
                         projections: Optional[dict] = None,
-                        manifold: Optional[dict] = None) -> dict:
+                        manifold: Optional[dict] = None,
+                        _targeted_commit_reads: bool = True) -> dict:
     """Write the given SURVIVOR `ImaginedConclusion` nodes' content into the
     live graph -- the COMMITTING half of the reversible-explore/committing
     split (`domains/commitment_gate.py`). `survivors` is normally
@@ -541,16 +844,33 @@ def commit_imagination(agent, detached: DetachedCollapse, survivors: list, *,
         return {"gate": {"allowed": True, "reason": "no_survivors_noop",
                           "record": None}, "written": []}
 
+    noncommittable = {"assumption_added", "assumption_changed", "assumption_edge_added",
+                      "conditional_edge_added", "conditional_edge_changed"}
+    writeable = [cid for cid in survivors if sub.has_node(cid)
+                 and sub.node(cid)["attrs"].get("kind") not in noncommittable]
+    writeable.sort(key=lambda cid: {"edge_removed": 0, "node_removed": 1}.get(
+        sub.node(cid)["attrs"].get("kind"), 2))
+    if not writeable:
+        return {"gate": {"allowed": True, "reason": "assumptions_remain_uncommitted",
+                          "record": None}, "written": []}
+    for cid in writeable:
+        at = sub.node(cid)["attrs"]
+        if at.get("kind") in {"edge_added", "edge_changed", "edge_removed", "node_removed"}:
+            valid, why = _judge_conclusion(agent, sub, at)
+            if not valid:
+                return {"gate": {"allowed": False, "reason": "stale_conclusion_before_image",
+                                  "detail": why, "record": None}, "written": []}
+
     action = {"kind": _WRITEBACK_KIND,
               "imagination": _v(detached.imagination_node),
-              "n_survivors": len(survivors)}
+              "n_survivors": len(writeable)}
     # Epistemic survival is not a measurement of viable future trajectories.
     # Nonempty writeback therefore requires an explicit manifold shape projection and
     # policy from the caller; otherwise commit_gate fails closed.
     if manifold is not None and projections is not None:
         action["risk"] = {
             "commit": {"name": _WRITEBACK_KIND,
-                        "expected_goal_work": float(len(survivors)),
+                        "expected_goal_work": float(len(writeable)),
                         "projection": projections["commit"]},
             "wait": {"name": "wait", "delay_cost": 0.1,
                       "projection": projections["wait"]},
@@ -563,8 +883,167 @@ def commit_imagination(agent, detached: DetachedCollapse, survivors: list, *,
     if not gate["allowed"]:
         return {"gate": gate, "written": written}
 
+    # Route representable graph mutations through one native staged delta.
+    # The revision is captured before reading the graph used for ID allocation;
+    # any intervening writer makes the native transaction reject the plan.
+    transaction_kinds = {"node_added", "node_changed", "node_removed",
+                         "edge_added", "edge_changed", "edge_removed"}
+    if all(sub.node(cid)["attrs"].get("kind") in transaction_kinds for cid in writeable):
+        try:
+            revision = native.experiment_graph_rule_revision()
+            if _targeted_commit_reads:
+                # These accessors touch only receipt endpoints and preserve
+                # the legacy max-live-ID allocation rule without materializing
+                # every graph node/edge as Python objects.
+                live_nodes = None
+                live_edges = None
+                next_id = int(native.next_live_node_id())
+
+                def live_node(nid):
+                    nid = int(nid)
+                    return native.node(srs.NodeID(nid)) if native.has_node(srs.NodeID(nid)) else None
+
+                def live_edge(key):
+                    src, edge_type, tgt = key
+                    attrs = native.edge_attrs(srs.NodeID(int(src)), str(edge_type), srs.NodeID(int(tgt)))
+                    return None if attrs is None else {"src": int(src), "type": str(edge_type),
+                                                       "tgt": int(tgt), "attrs": dict(attrs)}
+            else:
+                # Differential control retained for source-locked performance
+                # and semantic comparisons.
+                live_graph = native.graph_to_dict()
+                live_nodes = {int(row["id"]): row for row in live_graph["nodes"]}
+                live_edges = {(int(row["src"]), str(row["type"]), int(row["tgt"])): row
+                              for row in live_graph["edges"]}
+
+                def live_node(nid):
+                    return live_nodes.get(int(nid))
+
+                def live_edge(key):
+                    return live_edges.get(key)
+
+                next_id = max(live_nodes, default=-1) + 1
+            records = [(cid, sub.node(cid)["attrs"]) for cid in writeable]
+            added_records = [(cid, at) for cid, at in records if at.get("kind") == "node_added"]
+            id_map = {}
+            nodes_added = []
+            for _, at in added_records:
+                detached_id = int(at["detached_id"])
+                id_map[detached_id] = next_id
+                nodes_added.append({"id": next_id, "type": at.get("node_type") or "ImaginedFact",
+                                    "attrs": dict(at.get("attrs") or {})})
+                next_id += 1
+
+            nodes_changed, nodes_removed, nodes_removed_details = [], [], []
+            edges_added, edges_changed, removed_edges = [], [], {}
+            skipped = set()
+            removed_node_ids = set()
+            for cid, at in records:
+                kind = at.get("kind")
+                if kind == "node_changed":
+                    nid = int(at["detached_id"])
+                    node_before = live_node(nid)
+                    if node_before is None:
+                        skipped.add(cid)
+                        continue
+                    before, after = dict(at.get("attrs_before") or {}), dict(at.get("attrs_after") or {})
+                    if all(node_before["attrs"].get(k) == v for k, v in after.items()) and all(
+                            k in node_before["attrs"] for k in after):
+                        if all(k not in node_before["attrs"] for k in before if k not in after):
+                            skipped.add(cid)
+                            continue
+                    nodes_changed.append({"id": nid, "attrs_before": before, "attrs_after": after})
+                elif kind == "node_removed":
+                    nid = int(at["detached_id"])
+                    if live_node(nid) is None:
+                        skipped.add(cid)
+                        continue
+                    removed_node_ids.add(nid)
+                    nodes_removed.append(nid)
+                    nodes_removed_details.append({"id": nid, "type": at.get("node_type_before"),
+                                                  "attrs": dict(at.get("attrs_before") or {})})
+                    for edge in (at.get("incident_edges_before") or []):
+                        key = (int(edge["src"]), str(edge["type"]), int(edge["tgt"]))
+                        removed_edges[key] = {"src": key[0], "type": key[1], "tgt": key[2],
+                                              "attrs": dict(edge.get("attrs") or {})}
+                elif kind == "edge_removed":
+                    key = (int(at["src"]), str(at["edge_type"]), int(at["tgt"]))
+                    if live_edge(key) is None:
+                        skipped.add(cid)
+                        continue
+                    removed_edges[key] = {"src": key[0], "type": key[1], "tgt": key[2],
+                                          "attrs": dict(at.get("attrs_before") or {})}
+                elif kind == "edge_added":
+                    src0, tgt0 = int(at["src"]), int(at["tgt"])
+                    src, tgt = id_map.get(src0, src0), id_map.get(tgt0, tgt0)
+                    edge_type = str(at["edge_type"])
+                    if src not in id_map.values() and live_node(src) is None:
+                        raise RuntimeError("added edge source is absent from the live graph")
+                    if tgt not in id_map.values() and live_node(tgt) is None:
+                        raise RuntimeError("added edge target is absent from the live graph")
+                    key = (src, edge_type, tgt)
+                    existing = live_edge(key)
+                    attrs = dict(at.get("attrs") or {})
+                    if existing is not None:
+                        if dict(existing.get("attrs") or {}) != attrs:
+                            raise RuntimeError("added edge conflicts with a live edge")
+                        skipped.add(cid)
+                        continue
+                    edges_added.append({"src": src, "type": edge_type, "tgt": tgt,
+                                        "attrs": attrs})
+                elif kind == "edge_changed":
+                    key = (int(at["src"]), str(at["edge_type"]), int(at["tgt"]))
+                    existing = live_edge(key)
+                    if existing is None:
+                        raise RuntimeError("changed edge is absent from the live graph")
+                    before, after = dict(at.get("attrs_before") or {}), dict(at.get("attrs_after") or {})
+                    attrs = dict(existing.get("attrs") or {})
+                    if all(attrs.get(k) == v for k, v in after.items()) and all(
+                            k in attrs for k in after) and all(k not in attrs for k in before if k not in after):
+                        skipped.add(cid)
+                        continue
+                    edges_changed.append({"src": key[0], "type": key[1], "tgt": key[2],
+                                          "attrs_before": before, "attrs_after": after})
+
+            delta = {
+                "nodes_added": nodes_added, "nodes_changed": nodes_changed,
+                "nodes_removed": sorted(nodes_removed),
+                "nodes_removed_details": nodes_removed_details,
+                "edges_added": edges_added, "edges_changed": edges_changed,
+                "edges_removed": [{"src": key[0], "type": key[1], "tgt": key[2]}
+                                  for key in sorted(removed_edges)],
+                "edges_removed_details": [removed_edges[key] for key in sorted(removed_edges)],
+            }
+            native.apply_experiment_graph_delta(revision, delta)
+            written.extend({"kind": "node_added", "node": srs.NodeID(id_map[int(at["detached_id"])])}
+                           for _, at in added_records)
+            written.extend({"kind": at["kind"], "node": srs.NodeID(int(at["detached_id"]))}
+                           for cid, at in records if at.get("kind") == "node_changed" and cid not in skipped)
+            written.extend([{"kind": "edge_added", "edge": (srs.NodeID(int(row["src"])), row["type"],
+                                                                    srs.NodeID(int(row["tgt"]))) }
+                           for row in edges_added])
+            written.extend([{"kind": "edge_changed", "edge": (srs.NodeID(int(row["src"])), row["type"],
+                                                                      srs.NodeID(int(row["tgt"]))) }
+                           for row in edges_changed])
+            written.extend({"kind": "edge_removed", "edge": (srs.NodeID(key[0]), key[1], srs.NodeID(key[2]))}
+                           for key in sorted(removed_edges))
+            written.extend({"kind": "node_removed", "node": srs.NodeID(nid)}
+                           for nid in sorted(removed_node_ids))
+            for cid, _ in records:
+                native.set_attr(cid, "status", "committed")
+            if sub.has_node(detached.imagination_node):
+                native.set_attr(detached.imagination_node, "status", "committed")
+                if gate.get("record") is not None:
+                    _add_edge_unchecked(native, detached.imagination_node, "committed_as", gate["record"])
+            return {"gate": gate, "written": written,
+                    "writeback": {"applied": True, "reason": "committed"}}
+        except RuntimeError as exc:
+            return {"gate": gate, "written": [],
+                    "writeback": {"applied": False, "reason": "graph_batch_conflict",
+                                  "detail": str(exc)}}
+
     remap: dict = {}   # detached-id (int) -> live NodeID, for edge_added endpoint resolution
-    for cid in survivors:
+    for cid in writeable:
         if not sub.has_node(cid):
             continue
         at = sub.node(cid)["attrs"]
@@ -590,8 +1069,38 @@ def commit_imagination(agent, detached: DetachedCollapse, survivors: list, *,
             tgt = remap.get(tgt_v) or (srs.NodeID(tgt_v) if sub.has_node(srs.NodeID(tgt_v)) else None)
             if src is None or tgt is None or et is None:
                 continue
-            _add_edge_unchecked(native, src, et, tgt)
+            _add_edge_unchecked(native, src, et, tgt, at.get("attrs") or {})
             written.append({"kind": kind, "edge": (src, et, tgt)})
+        elif kind == "edge_changed":
+            src_v, tgt_v, et = at.get("src"), at.get("tgt"), at.get("edge_type")
+            if src_v is None or tgt_v is None or not et:
+                continue
+            src, tgt = srs.NodeID(int(src_v)), srs.NodeID(int(tgt_v))
+            current = native.edge_attrs(src, et, tgt)
+            if current is None:
+                continue
+            updated = dict(current)
+            before = at.get("attrs_before") or {}
+            after = at.get("attrs_after") or {}
+            for key in before.keys() - after.keys():
+                updated.pop(key, None)
+            updated.update(after)
+            native.add_edge_unchecked(src, et, tgt, updated)
+            written.append({"kind": kind, "edge": (src, et, tgt)})
+        elif kind == "edge_removed":
+            src_v, tgt_v, et = at.get("src"), at.get("tgt"), at.get("edge_type")
+            if src_v is None or tgt_v is None or not et:
+                continue
+            src, tgt = srs.NodeID(int(src_v)), srs.NodeID(int(tgt_v))
+            if sub.remove_edge(src, et, tgt):
+                written.append({"kind": kind, "edge": (src, et, tgt)})
+        elif kind == "node_removed":
+            nid_val = at.get("detached_id")
+            if nid_val is None:
+                continue
+            nid = srs.NodeID(int(nid_val))
+            if sub.remove_node(nid):
+                written.append({"kind": kind, "node": nid})
         else:
             continue
         native.set_attr(cid, "status", "committed")
@@ -600,7 +1109,8 @@ def commit_imagination(agent, detached: DetachedCollapse, survivors: list, *,
         native.set_attr(detached.imagination_node, "status", "committed")
         if gate.get("record") is not None:
             _add_edge_unchecked(native, detached.imagination_node, "committed_as", gate["record"])
-    return {"gate": gate, "written": written}
+    return {"gate": gate, "written": written,
+            "writeback": {"applied": True, "reason": "committed"}}
 
 
 __all__ = [

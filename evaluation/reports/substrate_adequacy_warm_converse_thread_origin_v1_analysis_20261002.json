@@ -1,0 +1,91 @@
+{
+  "gates": {
+    "json_threads_use_large_stack_guard": true,
+    "openblas_setting_intervention_matches": true,
+    "rayon_setting_observed": true,
+    "schedule_matches_lock": true,
+    "source_and_runtime_fingerprints_stable": true,
+    "successful_thread_creation_records_well_formed": true,
+    "target_markers_and_event_timestamps_valid": true,
+    "task_semantics_and_refusal": true,
+    "tooling_and_probe_binary_hash_match": false,
+    "twelve_unique_fresh_processes": true
+  },
+  "interpretation": "Thread creation call sites are identified; these counts do not measure each worker's later CPU or establish production performance.",
+  "lock_sha256": "769d5b203c87c6dedc72754d4f92280a66e127c69d819712504d528ca614ad2f",
+  "raw_sha256": "d02e73ebae6ce799183ed17f636accf7efb68209957efbfdd5d5f89c36beeb90",
+  "schema": "WarmConverseThreadOriginV1Analysis",
+  "source_files": {
+    "analyzer": "152417990e4a2ca59c365173a70f8de263370e5087b68694e51ac559bab1f3e0",
+    "base_lock_file": "e489d0b38641e9ae06e481954fd09b3091e426dac98aba74c79078164063833e",
+    "base_runner": "1749a20264f392386edc7b2d389815a729813d5b9b956030054f6ce6829b108a",
+    "caller_lock_file": "fedc32215cbadd6cb4e6642e1c56d56c97669c6157d4a186210e180554bf5c7f",
+    "caller_runner": "16458a7a476facd96cee063be5ecc5a35a653d514d6d77f00a04993ca5d10a8b",
+    "compiler": "gcc (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0",
+    "probe_source": "6d49692056a3128310dd795519f7d66829b7b4a32964336fd5b1fbef3a4d41ff",
+    "protocol": "40101edfe68d554c9986b0d3f7ae0fa4d78552cdc7fad6a609cb64a1f12a9626",
+    "runner": "aa067b27b45b45dfb07c3967b43bd4a65f5eb44d3c3915e27af62d1aa150113e"
+  },
+  "summary": {
+    "rayon_default__blas_default": {
+      "json_parse_caller_methods_total": {},
+      "median_openblas_creates": 23,
+      "median_other_creates": 117,
+      "median_process_cpu_ms_instrumented": 1238.940224,
+      "median_substrate_json_parse_creates": 0,
+      "median_total_pthread_creates": 140,
+      "median_wall_ms_instrumented": 146.264795,
+      "n": 3,
+      "stack_bytes_by_category": {
+        "openblas": [
+          0
+        ],
+        "substrate_json_parse": []
+      }
+    },
+    "rayon_default__blas_one": {
+      "json_parse_caller_methods_total": {},
+      "median_openblas_creates": 0,
+      "median_other_creates": 117,
+      "median_process_cpu_ms_instrumented": 124.676592,
+      "median_substrate_json_parse_creates": 0,
+      "median_total_pthread_creates": 117,
+      "median_wall_ms_instrumented": 126.531926,
+      "n": 3,
+      "stack_bytes_by_category": {
+        "openblas": [],
+        "substrate_json_parse": []
+      }
+    },
+    "rayon_one__blas_default": {
+      "json_parse_caller_methods_total": {},
+      "median_openblas_creates": 23,
+      "median_other_creates": 117,
+      "median_process_cpu_ms_instrumented": 1334.77019,
+      "median_substrate_json_parse_creates": 0,
+      "median_total_pthread_creates": 140,
+      "median_wall_ms_instrumented": 153.136531,
+      "n": 3,
+      "stack_bytes_by_category": {
+        "openblas": [
+          0
+        ],
+        "substrate_json_parse": []
+      }
+    },
+    "rayon_one__blas_one": {
+      "json_parse_caller_methods_total": {},
+      "median_openblas_creates": 0,
+      "median_other_creates": 117,
+      "median_process_cpu_ms_instrumented": 109.999261,
+      "median_substrate_json_parse_creates": 0,
+      "median_total_pthread_creates": 117,
+      "median_wall_ms_instrumented": 113.943942,
+      "n": 3,
+      "stack_bytes_by_category": {
+        "openblas": [],
+        "substrate_json_parse": []
+      }
+    }
+  }
+}

@@ -23,7 +23,7 @@ answer; plus the discourse_referent_store + Cb evolution.
 
 HONEST COVERAGE:
   * GROUNDED: animacy/number agreement from the Concept ``category`` attr
-    (seeds/conceptual_categories.json); recency + grammatical-role salience;
+    (domain_data/conceptual_categories.json); recency + grammatical-role salience;
     Cb/centering.
   * COARSE: gender (he vs she). No grounded gender data exists (Mary/John are
     both category=person), so he/she filter to PERSON and are disambiguated by

@@ -1,0 +1,55 @@
+{
+ "id": "induced_belief_codebook",
+ "version": "1.0.0",
+ "depends_on": ["core"],
+ "description": "The decode-through-ToM text arm's TAUGHT DATA + the stance-decode RULE (INDUCED_BELIEF_PREREG.md). Frame-symbol Concepts (the forecast frame: policy_rate_path / term_premium / inflation_target_credibility / balance_sheet + tenors/crosses) and a central-bank speech-act codebook (CBSpeechAct nodes mapping a grounded frame-symbol predication to a target-scoped stance) are TAUGHT data, not rule logic (CLAUDE.md: shape/data is acquisition, rule is execution). The DECISION -- which stance a decoded frame-symbol motion is -- is the seed RULE `ib_decode_stance` (an Eq-join of a FrameReading's decoded (symbol, motion) against a CBSpeechAct codebook entry, minting a StanceReading the adapter marshals into concept_apply_evidence via the UNCHANGED reasoning_can_bridge). NO surface-word cue matching: the codebook is keyed on the FRAME SYMBOL a read_clause grounded and the MOTION it carries, not on hawkish/dovish vocabulary (the level the phase-3 lexicon matched and that the thesis rejects). NO new Concept/belief mechanism: the target-scoped stance Concept is minted by domains/shared_arousal.mint_target_concept exactly as bigville ToM beliefs are.",
+ "microtheory": {
+  "name": "induced_belief_codebook",
+  "description": "the forecast-frame symbol vocabulary + the central-bank speech-act codebook the decode-through-ToM arm reads a central-bank utterance against"
+ },
+ "nodes": [
+  {"local_id": 1, "type": "Concept", "attrs": {"name": "induced_belief_codebook", "description": "sentinel: induced_belief_codebook seed loaded (ensure_seeds idempotency guard)"}}
+ ],
+ "edges": [],
+ "productions": [],
+ "concepts": [],
+ "rules": [
+  {
+   "name": "ib_decode_stance",
+   "comment": "THE DECISION: a decoded FrameReading{symbol, motion, market} whose (symbol, motion) matches a CBSpeechAct codebook entry mints a StanceReading carrying that codebook entry's stance/sign/direction/attr for the market. Eq-join (FrameReading.symbol==CBSpeechAct.symbol AND FrameReading.motion==CBSpeechAct.motion), guarded once per (frame_reading) by Not(Exists already-decoded). No surface-word matching; the codebook is keyed on the grounded frame symbol + its motion, not on cue vocabulary. `direction` is the sign's graph-data band direction (a codebook SIGN_DIRECTION lookup) copied onto the StanceReading so the decode reads the band direction off the graph rather than deciding it with a Python branch.",
+   "match": [
+    ["fr", "is_frame_reading", "fr"],
+    ["cb", "is_cb_speech_act", "cb"]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {"type": "Eq",
+      "a": {"type": "Attr", "node": {"type": "Var", "name": "fr"}, "key": "symbol"},
+      "b": {"type": "Attr", "node": {"type": "Var", "name": "cb"}, "key": "symbol"}},
+     {"type": "Eq",
+      "a": {"type": "Attr", "node": {"type": "Var", "name": "fr"}, "key": "motion"},
+      "b": {"type": "Attr", "node": {"type": "Var", "name": "cb"}, "key": "motion"}},
+     {"type": "Not",
+      "arg": {"type": "Exists",
+              "source": {"type": "Neighbours", "node": {"type": "Var", "name": "fr"}, "edge_type": "decoded_to"},
+              "var_name": "_ex",
+              "predicate": {"type": "Lit", "value": true}}}
+    ]
+   },
+   "effects": [
+    ["add_node", "sr", "StanceReading",
+     {"stance": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "cb"}, "key": "stance"}},
+      "sign": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "cb"}, "key": "sign"}},
+      "direction": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "cb"}, "key": "direction"}},
+      "market": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "fr"}, "key": "market"}},
+      "attr": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "cb"}, "key": "attr"}},
+      "symbol": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "fr"}, "key": "symbol"}},
+      "motion": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "fr"}, "key": "motion"}}}],
+    ["add_edge", "fr", "decoded_to", "sr"],
+    ["add_edge", "sr", "reads_codebook", "cb"]
+   ]
+  }
+ ],
+ "goals": []
+}

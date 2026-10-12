@@ -1,0 +1,1821 @@
+{
+  "binary": {
+    "path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+    "sha256": "sha256:f37d2bb8612939bd84bcf7d55b17bbf76568a194efca8a2d6e611496ba7f3fbd"
+  },
+  "comparison_order": [
+    {
+      "arm": "correct",
+      "backend": "linux_process_cow_scoped",
+      "iteration": 0,
+      "size": 0
+    },
+    {
+      "arm": "wrong",
+      "backend": "native_full_copy",
+      "iteration": 0,
+      "size": 0
+    },
+    {
+      "arm": "correct",
+      "backend": "linux_process_cow",
+      "iteration": 0,
+      "size": 0
+    },
+    {
+      "arm": "wrong",
+      "backend": "native_full_copy_scoped",
+      "iteration": 0,
+      "size": 0
+    },
+    {
+      "arm": "correct",
+      "backend": "native_full_copy_scoped",
+      "iteration": 0,
+      "size": 0
+    },
+    {
+      "arm": "correct",
+      "backend": "serialization",
+      "iteration": 0,
+      "size": 0
+    },
+    {
+      "arm": "wrong",
+      "backend": "linux_process_cow",
+      "iteration": 0,
+      "size": 0
+    },
+    {
+      "arm": "correct",
+      "backend": "native_full_copy",
+      "iteration": 0,
+      "size": 0
+    },
+    {
+      "arm": "wrong",
+      "backend": "linux_process_cow_scoped",
+      "iteration": 0,
+      "size": 0
+    },
+    {
+      "arm": "wrong",
+      "backend": "serialization",
+      "iteration": 0,
+      "size": 0
+    },
+    {
+      "arm": "correct",
+      "backend": "serialization",
+      "iteration": 0,
+      "size": 10000
+    },
+    {
+      "arm": "correct",
+      "backend": "linux_process_cow_scoped",
+      "iteration": 0,
+      "size": 10000
+    },
+    {
+      "arm": "wrong",
+      "backend": "linux_process_cow",
+      "iteration": 0,
+      "size": 10000
+    },
+    {
+      "arm": "correct",
+      "backend": "linux_process_cow",
+      "iteration": 0,
+      "size": 10000
+    },
+    {
+      "arm": "correct",
+      "backend": "native_full_copy",
+      "iteration": 0,
+      "size": 10000
+    },
+    {
+      "arm": "wrong",
+      "backend": "native_full_copy",
+      "iteration": 0,
+      "size": 10000
+    },
+    {
+      "arm": "wrong",
+      "backend": "linux_process_cow_scoped",
+      "iteration": 0,
+      "size": 10000
+    },
+    {
+      "arm": "wrong",
+      "backend": "serialization",
+      "iteration": 0,
+      "size": 10000
+    },
+    {
+      "arm": "correct",
+      "backend": "native_full_copy_scoped",
+      "iteration": 0,
+      "size": 10000
+    },
+    {
+      "arm": "wrong",
+      "backend": "native_full_copy_scoped",
+      "iteration": 0,
+      "size": 10000
+    }
+  ],
+  "comparison_order_design": "one seeded randomized complete block per repeat and graph size; each block contains both candidate arms on process-CoW, serialization, and native-full-copy backends",
+  "comparison_order_seed": 20260930,
+  "copy_controls": [
+    {
+      "candidate_arm": "correct",
+      "max_ms": 775.104535,
+      "median_ms": 775.104535,
+      "min_ms": 775.104535,
+      "outcomes": [
+        {
+          "applied": {
+            "sd_dedup_existing": "sd_dedup_existing_scfix_6ba60f8b",
+            "sd_mint_quantum": "sd_mint_quantum_scfix_6ba60f8b"
+          },
+          "conclusions": {
+            "edges_added": [],
+            "edges_removed": [],
+            "nodes_added": [],
+            "nodes_changed": [],
+            "nodes_removed": []
+          },
+          "converges": true,
+          "derived_only": {
+            "edges_added": [],
+            "edges_removed": [],
+            "nodes_added": [],
+            "nodes_changed": [],
+            "nodes_removed": []
+          },
+          "frontier_growth_after": 0.0,
+          "frontier_growth_before": 3.0,
+          "inert": false,
+          "n_conclusions": 0,
+          "primary_counts_after": [
+            795,
+            772
+          ],
+          "primary_counts_before": [
+            771,
+            744
+          ],
+          "primary_preservation": {
+            "all_added_nodes_are_durable_trace": true,
+            "preexisting_edge_instances_preserved": true,
+            "preexisting_nodes_unchanged": true,
+            "primary_rewrite_rules_unchanged": true,
+            "removed_preexisting_edge_instances": 0,
+            "trace_node_types_added": [
+              "CollapseModel",
+              "Imagination",
+              "Imagination",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion"
+            ]
+          },
+          "primary_rule_count_after": 159,
+          "primary_rule_count_before": 159,
+          "residual_after": 0.375,
+          "residual_before": 0.42857142857142855,
+          "steps_run": 15,
+          "trial_wall_ms": 775.104535
+        }
+      ],
+      "repeats": 1,
+      "snapshot_backend": "serialization",
+      "unrelated_nodes_requested": 0,
+      "warmups": 1
+    },
+    {
+      "candidate_arm": "correct",
+      "max_ms": 395.872196,
+      "median_ms": 395.872196,
+      "min_ms": 395.872196,
+      "outcomes": [
+        {
+          "applied": {
+            "sd_dedup_existing": "sd_dedup_existing_scfix_856c23ab",
+            "sd_mint_quantum": "sd_mint_quantum_scfix_856c23ab"
+          },
+          "conclusions": {
+            "edges_added": [],
+            "edges_removed": [],
+            "nodes_added": [],
+            "nodes_changed": [],
+            "nodes_removed": []
+          },
+          "converges": true,
+          "derived_only": {
+            "edges_added": [],
+            "edges_removed": [],
+            "nodes_added": [],
+            "nodes_changed": [],
+            "nodes_removed": []
+          },
+          "frontier_growth_after": 0.0,
+          "frontier_growth_before": 3.0,
+          "inert": false,
+          "n_conclusions": 0,
+          "primary_counts_after": [
+            795,
+            772
+          ],
+          "primary_counts_before": [
+            771,
+            744
+          ],
+          "primary_preservation": {
+            "all_added_nodes_are_durable_trace": true,
+            "preexisting_edge_instances_preserved": true,
+            "preexisting_nodes_unchanged": true,
+            "primary_rewrite_rules_unchanged": true,
+            "removed_preexisting_edge_instances": 0,
+            "trace_node_types_added": [
+              "CollapseModel",
+              "Imagination",
+              "Imagination",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion"
+            ]
+          },
+          "primary_rule_count_after": 159,
+          "primary_rule_count_before": 159,
+          "residual_after": 0.375,
+          "residual_before": 0.42857142857142855,
+          "steps_run": 15,
+          "trial_wall_ms": 395.872196
+        }
+      ],
+      "repeats": 1,
+      "snapshot_backend": "native_full_copy",
+      "unrelated_nodes_requested": 0,
+      "warmups": 1
+    },
+    {
+      "candidate_arm": "correct",
+      "max_ms": 381.330526,
+      "median_ms": 381.330526,
+      "min_ms": 381.330526,
+      "outcomes": [
+        {
+          "applied": {
+            "sd_dedup_existing": "sd_dedup_existing_scfix_baf896e0",
+            "sd_mint_quantum": "sd_mint_quantum_scfix_baf896e0"
+          },
+          "conclusions": {
+            "edges_added": [],
+            "edges_removed": [],
+            "nodes_added": [],
+            "nodes_changed": [],
+            "nodes_removed": []
+          },
+          "converges": true,
+          "derived_only": {
+            "edges_added": [],
+            "edges_removed": [],
+            "nodes_added": [],
+            "nodes_changed": [],
+            "nodes_removed": []
+          },
+          "frontier_growth_after": 0.0,
+          "frontier_growth_before": 3.0,
+          "inert": false,
+          "n_conclusions": 0,
+          "primary_counts_after": [
+            795,
+            772
+          ],
+          "primary_counts_before": [
+            771,
+            744
+          ],
+          "primary_preservation": {
+            "all_added_nodes_are_durable_trace": true,
+            "preexisting_edge_instances_preserved": true,
+            "preexisting_nodes_unchanged": true,
+            "primary_rewrite_rules_unchanged": true,
+            "removed_preexisting_edge_instances": 0,
+            "trace_node_types_added": [
+              "CollapseModel",
+              "Imagination",
+              "Imagination",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion"
+            ]
+          },
+          "primary_rule_count_after": 159,
+          "primary_rule_count_before": 159,
+          "residual_after": 0.375,
+          "residual_before": 0.42857142857142855,
+          "steps_run": 15,
+          "trial_wall_ms": 381.330526
+        }
+      ],
+      "repeats": 1,
+      "snapshot_backend": "native_full_copy_scoped",
+      "unrelated_nodes_requested": 0,
+      "warmups": 1
+    },
+    {
+      "candidate_arm": "wrong",
+      "max_ms": 799.221207,
+      "median_ms": 799.221207,
+      "min_ms": 799.221207,
+      "outcomes": [
+        {
+          "applied": {
+            "sd_mint_quantum": "sd_mint_quantum_scguard_5e38a6e3"
+          },
+          "conclusions": {
+            "edges_added": [],
+            "edges_removed": [],
+            "nodes_added": [],
+            "nodes_changed": [],
+            "nodes_removed": []
+          },
+          "converges": false,
+          "derived_only": {
+            "edges_added": [],
+            "edges_removed": [],
+            "nodes_added": [],
+            "nodes_changed": [],
+            "nodes_removed": []
+          },
+          "frontier_growth_after": 3.0,
+          "frontier_growth_before": 3.0,
+          "inert": false,
+          "n_conclusions": 0,
+          "primary_counts_after": [
+            795,
+            772
+          ],
+          "primary_counts_before": [
+            771,
+            744
+          ],
+          "primary_preservation": {
+            "all_added_nodes_are_durable_trace": true,
+            "preexisting_edge_instances_preserved": true,
+            "preexisting_nodes_unchanged": true,
+            "primary_rewrite_rules_unchanged": true,
+            "removed_preexisting_edge_instances": 0,
+            "trace_node_types_added": [
+              "CollapseModel",
+              "Imagination",
+              "Imagination",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion"
+            ]
+          },
+          "primary_rule_count_after": 159,
+          "primary_rule_count_before": 159,
+          "residual_after": 0.375,
+          "residual_before": 0.42857142857142855,
+          "steps_run": 12,
+          "trial_wall_ms": 799.221207
+        }
+      ],
+      "repeats": 1,
+      "snapshot_backend": "serialization",
+      "unrelated_nodes_requested": 0,
+      "warmups": 1
+    },
+    {
+      "candidate_arm": "wrong",
+      "max_ms": 330.183899,
+      "median_ms": 330.183899,
+      "min_ms": 330.183899,
+      "outcomes": [
+        {
+          "applied": {
+            "sd_mint_quantum": "sd_mint_quantum_scguard_9d2571f7"
+          },
+          "conclusions": {
+            "edges_added": [],
+            "edges_removed": [],
+            "nodes_added": [],
+            "nodes_changed": [],
+            "nodes_removed": []
+          },
+          "converges": false,
+          "derived_only": {
+            "edges_added": [],
+            "edges_removed": [],
+            "nodes_added": [],
+            "nodes_changed": [],
+            "nodes_removed": []
+          },
+          "frontier_growth_after": 3.0,
+          "frontier_growth_before": 3.0,
+          "inert": false,
+          "n_conclusions": 0,
+          "primary_counts_after": [
+            795,
+            772
+          ],
+          "primary_counts_before": [
+            771,
+            744
+          ],
+          "primary_preservation": {
+            "all_added_nodes_are_durable_trace": true,
+            "preexisting_edge_instances_preserved": true,
+            "preexisting_nodes_unchanged": true,
+            "primary_rewrite_rules_unchanged": true,
+            "removed_preexisting_edge_instances": 0,
+            "trace_node_types_added": [
+              "CollapseModel",
+              "Imagination",
+              "Imagination",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion"
+            ]
+          },
+          "primary_rule_count_after": 159,
+          "primary_rule_count_before": 159,
+          "residual_after": 0.375,
+          "residual_before": 0.42857142857142855,
+          "steps_run": 12,
+          "trial_wall_ms": 330.183899
+        }
+      ],
+      "repeats": 1,
+      "snapshot_backend": "native_full_copy",
+      "unrelated_nodes_requested": 0,
+      "warmups": 1
+    },
+    {
+      "candidate_arm": "wrong",
+      "max_ms": 314.812053,
+      "median_ms": 314.812053,
+      "min_ms": 314.812053,
+      "outcomes": [
+        {
+          "applied": {
+            "sd_mint_quantum": "sd_mint_quantum_scguard_246071f3"
+          },
+          "conclusions": {
+            "edges_added": [],
+            "edges_removed": [],
+            "nodes_added": [],
+            "nodes_changed": [],
+            "nodes_removed": []
+          },
+          "converges": false,
+          "derived_only": {
+            "edges_added": [],
+            "edges_removed": [],
+            "nodes_added": [],
+            "nodes_changed": [],
+            "nodes_removed": []
+          },
+          "frontier_growth_after": 3.0,
+          "frontier_growth_before": 3.0,
+          "inert": false,
+          "n_conclusions": 0,
+          "primary_counts_after": [
+            795,
+            772
+          ],
+          "primary_counts_before": [
+            771,
+            744
+          ],
+          "primary_preservation": {
+            "all_added_nodes_are_durable_trace": true,
+            "preexisting_edge_instances_preserved": true,
+            "preexisting_nodes_unchanged": true,
+            "primary_rewrite_rules_unchanged": true,
+            "removed_preexisting_edge_instances": 0,
+            "trace_node_types_added": [
+              "CollapseModel",
+              "Imagination",
+              "Imagination",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion"
+            ]
+          },
+          "primary_rule_count_after": 159,
+          "primary_rule_count_before": 159,
+          "residual_after": 0.375,
+          "residual_before": 0.42857142857142855,
+          "steps_run": 12,
+          "trial_wall_ms": 314.812053
+        }
+      ],
+      "repeats": 1,
+      "snapshot_backend": "native_full_copy_scoped",
+      "unrelated_nodes_requested": 0,
+      "warmups": 1
+    },
+    {
+      "candidate_arm": "correct",
+      "max_ms": 3299.133801,
+      "median_ms": 3299.133801,
+      "min_ms": 3299.133801,
+      "outcomes": [
+        {
+          "applied": {
+            "sd_dedup_existing": "sd_dedup_existing_scfix_5fcb25e9",
+            "sd_mint_quantum": "sd_mint_quantum_scfix_5fcb25e9"
+          },
+          "conclusions": {
+            "edges_added": [],
+            "edges_removed": [],
+            "nodes_added": [],
+            "nodes_changed": [],
+            "nodes_removed": []
+          },
+          "converges": true,
+          "derived_only": {
+            "edges_added": [],
+            "edges_removed": [],
+            "nodes_added": [],
+            "nodes_changed": [],
+            "nodes_removed": []
+          },
+          "frontier_growth_after": 0.0,
+          "frontier_growth_before": 3.0,
+          "inert": false,
+          "n_conclusions": 0,
+          "primary_counts_after": [
+            10795,
+            10771
+          ],
+          "primary_counts_before": [
+            10771,
+            10743
+          ],
+          "primary_preservation": {
+            "all_added_nodes_are_durable_trace": true,
+            "preexisting_edge_instances_preserved": true,
+            "preexisting_nodes_unchanged": true,
+            "primary_rewrite_rules_unchanged": true,
+            "removed_preexisting_edge_instances": 0,
+            "trace_node_types_added": [
+              "CollapseModel",
+              "Imagination",
+              "Imagination",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion"
+            ]
+          },
+          "primary_rule_count_after": 159,
+          "primary_rule_count_before": 159,
+          "residual_after": 0.375,
+          "residual_before": 0.42857142857142855,
+          "steps_run": 15,
+          "trial_wall_ms": 3299.133801
+        }
+      ],
+      "repeats": 1,
+      "snapshot_backend": "serialization",
+      "unrelated_nodes_requested": 10000,
+      "warmups": 1
+    },
+    {
+      "candidate_arm": "correct",
+      "max_ms": 3058.78494,
+      "median_ms": 3058.78494,
+      "min_ms": 3058.78494,
+      "outcomes": [
+        {
+          "applied": {
+            "sd_dedup_existing": "sd_dedup_existing_scfix_54cc3452",
+            "sd_mint_quantum": "sd_mint_quantum_scfix_54cc3452"
+          },
+          "conclusions": {
+            "edges_added": [],
+            "edges_removed": [],
+            "nodes_added": [],
+            "nodes_changed": [],
+            "nodes_removed": []
+          },
+          "converges": true,
+          "derived_only": {
+            "edges_added": [],
+            "edges_removed": [],
+            "nodes_added": [],
+            "nodes_changed": [],
+            "nodes_removed": []
+          },
+          "frontier_growth_after": 0.0,
+          "frontier_growth_before": 3.0,
+          "inert": false,
+          "n_conclusions": 0,
+          "primary_counts_after": [
+            10795,
+            10771
+          ],
+          "primary_counts_before": [
+            10771,
+            10743
+          ],
+          "primary_preservation": {
+            "all_added_nodes_are_durable_trace": true,
+            "preexisting_edge_instances_preserved": true,
+            "preexisting_nodes_unchanged": true,
+            "primary_rewrite_rules_unchanged": true,
+            "removed_preexisting_edge_instances": 0,
+            "trace_node_types_added": [
+              "CollapseModel",
+              "Imagination",
+              "Imagination",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion"
+            ]
+          },
+          "primary_rule_count_after": 159,
+          "primary_rule_count_before": 159,
+          "residual_after": 0.375,
+          "residual_before": 0.42857142857142855,
+          "steps_run": 15,
+          "trial_wall_ms": 3058.78494
+        }
+      ],
+      "repeats": 1,
+      "snapshot_backend": "native_full_copy",
+      "unrelated_nodes_requested": 10000,
+      "warmups": 1
+    },
+    {
+      "candidate_arm": "correct",
+      "max_ms": 2351.55021,
+      "median_ms": 2351.55021,
+      "min_ms": 2351.55021,
+      "outcomes": [
+        {
+          "applied": {
+            "sd_dedup_existing": "sd_dedup_existing_scfix_8fd5e78d",
+            "sd_mint_quantum": "sd_mint_quantum_scfix_8fd5e78d"
+          },
+          "conclusions": {
+            "edges_added": [],
+            "edges_removed": [],
+            "nodes_added": [],
+            "nodes_changed": [],
+            "nodes_removed": []
+          },
+          "converges": true,
+          "derived_only": {
+            "edges_added": [],
+            "edges_removed": [],
+            "nodes_added": [],
+            "nodes_changed": [],
+            "nodes_removed": []
+          },
+          "frontier_growth_after": 0.0,
+          "frontier_growth_before": 3.0,
+          "inert": false,
+          "n_conclusions": 0,
+          "primary_counts_after": [
+            10795,
+            10771
+          ],
+          "primary_counts_before": [
+            10771,
+            10743
+          ],
+          "primary_preservation": {
+            "all_added_nodes_are_durable_trace": true,
+            "preexisting_edge_instances_preserved": true,
+            "preexisting_nodes_unchanged": true,
+            "primary_rewrite_rules_unchanged": true,
+            "removed_preexisting_edge_instances": 0,
+            "trace_node_types_added": [
+              "CollapseModel",
+              "Imagination",
+              "Imagination",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion"
+            ]
+          },
+          "primary_rule_count_after": 159,
+          "primary_rule_count_before": 159,
+          "residual_after": 0.375,
+          "residual_before": 0.42857142857142855,
+          "steps_run": 15,
+          "trial_wall_ms": 2351.55021
+        }
+      ],
+      "repeats": 1,
+      "snapshot_backend": "native_full_copy_scoped",
+      "unrelated_nodes_requested": 10000,
+      "warmups": 1
+    },
+    {
+      "candidate_arm": "wrong",
+      "max_ms": 3362.931405,
+      "median_ms": 3362.931405,
+      "min_ms": 3362.931405,
+      "outcomes": [
+        {
+          "applied": {
+            "sd_mint_quantum": "sd_mint_quantum_scguard_5d0e595a"
+          },
+          "conclusions": {
+            "edges_added": [],
+            "edges_removed": [],
+            "nodes_added": [],
+            "nodes_changed": [],
+            "nodes_removed": []
+          },
+          "converges": false,
+          "derived_only": {
+            "edges_added": [],
+            "edges_removed": [],
+            "nodes_added": [],
+            "nodes_changed": [],
+            "nodes_removed": []
+          },
+          "frontier_growth_after": 3.0,
+          "frontier_growth_before": 3.0,
+          "inert": false,
+          "n_conclusions": 0,
+          "primary_counts_after": [
+            10795,
+            10771
+          ],
+          "primary_counts_before": [
+            10771,
+            10743
+          ],
+          "primary_preservation": {
+            "all_added_nodes_are_durable_trace": true,
+            "preexisting_edge_instances_preserved": true,
+            "preexisting_nodes_unchanged": true,
+            "primary_rewrite_rules_unchanged": true,
+            "removed_preexisting_edge_instances": 0,
+            "trace_node_types_added": [
+              "CollapseModel",
+              "Imagination",
+              "Imagination",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion"
+            ]
+          },
+          "primary_rule_count_after": 159,
+          "primary_rule_count_before": 159,
+          "residual_after": 0.375,
+          "residual_before": 0.42857142857142855,
+          "steps_run": 12,
+          "trial_wall_ms": 3362.931405
+        }
+      ],
+      "repeats": 1,
+      "snapshot_backend": "serialization",
+      "unrelated_nodes_requested": 10000,
+      "warmups": 1
+    },
+    {
+      "candidate_arm": "wrong",
+      "max_ms": 2722.66036,
+      "median_ms": 2722.66036,
+      "min_ms": 2722.66036,
+      "outcomes": [
+        {
+          "applied": {
+            "sd_mint_quantum": "sd_mint_quantum_scguard_b4ef0074"
+          },
+          "conclusions": {
+            "edges_added": [],
+            "edges_removed": [],
+            "nodes_added": [],
+            "nodes_changed": [],
+            "nodes_removed": []
+          },
+          "converges": false,
+          "derived_only": {
+            "edges_added": [],
+            "edges_removed": [],
+            "nodes_added": [],
+            "nodes_changed": [],
+            "nodes_removed": []
+          },
+          "frontier_growth_after": 3.0,
+          "frontier_growth_before": 3.0,
+          "inert": false,
+          "n_conclusions": 0,
+          "primary_counts_after": [
+            10795,
+            10771
+          ],
+          "primary_counts_before": [
+            10771,
+            10743
+          ],
+          "primary_preservation": {
+            "all_added_nodes_are_durable_trace": true,
+            "preexisting_edge_instances_preserved": true,
+            "preexisting_nodes_unchanged": true,
+            "primary_rewrite_rules_unchanged": true,
+            "removed_preexisting_edge_instances": 0,
+            "trace_node_types_added": [
+              "CollapseModel",
+              "Imagination",
+              "Imagination",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion"
+            ]
+          },
+          "primary_rule_count_after": 159,
+          "primary_rule_count_before": 159,
+          "residual_after": 0.375,
+          "residual_before": 0.42857142857142855,
+          "steps_run": 12,
+          "trial_wall_ms": 2722.66036
+        }
+      ],
+      "repeats": 1,
+      "snapshot_backend": "native_full_copy",
+      "unrelated_nodes_requested": 10000,
+      "warmups": 1
+    },
+    {
+      "candidate_arm": "wrong",
+      "max_ms": 2216.058616,
+      "median_ms": 2216.058616,
+      "min_ms": 2216.058616,
+      "outcomes": [
+        {
+          "applied": {
+            "sd_mint_quantum": "sd_mint_quantum_scguard_0c09af9c"
+          },
+          "conclusions": {
+            "edges_added": [],
+            "edges_removed": [],
+            "nodes_added": [],
+            "nodes_changed": [],
+            "nodes_removed": []
+          },
+          "converges": false,
+          "derived_only": {
+            "edges_added": [],
+            "edges_removed": [],
+            "nodes_added": [],
+            "nodes_changed": [],
+            "nodes_removed": []
+          },
+          "frontier_growth_after": 3.0,
+          "frontier_growth_before": 3.0,
+          "inert": false,
+          "n_conclusions": 0,
+          "primary_counts_after": [
+            10795,
+            10771
+          ],
+          "primary_counts_before": [
+            10771,
+            10743
+          ],
+          "primary_preservation": {
+            "all_added_nodes_are_durable_trace": true,
+            "preexisting_edge_instances_preserved": true,
+            "preexisting_nodes_unchanged": true,
+            "primary_rewrite_rules_unchanged": true,
+            "removed_preexisting_edge_instances": 0,
+            "trace_node_types_added": [
+              "CollapseModel",
+              "Imagination",
+              "Imagination",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion",
+              "ImaginedConclusion"
+            ]
+          },
+          "primary_rule_count_after": 159,
+          "primary_rule_count_before": 159,
+          "residual_after": 0.375,
+          "residual_before": 0.42857142857142855,
+          "steps_run": 12,
+          "trial_wall_ms": 2216.058616
+        }
+      ],
+      "repeats": 1,
+      "snapshot_backend": "native_full_copy_scoped",
+      "unrelated_nodes_requested": 10000,
+      "warmups": 1
+    }
+  ],
+  "host": {
+    "machine": "x86_64",
+    "platform": "Linux-6.8.0-142-generic-x86_64-with-glibc2.39",
+    "process_threads": 1,
+    "python": "3.13.5"
+  },
+  "implementation_status": "Linux_process_fork_page_CoW_child_in_place; residual_pipe_return; deep-copy_and_serialization_controls_available",
+  "protocol": {
+    "fork_eligibility": "Linux only; one process thread; no Python hooks, agent thread, initialized memory faculty, pending graph effects/attribute-write observations, framebuffer handles, or native reads_external rules",
+    "limits": [
+      "one synthetic self-correction fixture family",
+      "single host",
+      "no concurrent branches",
+      "no external OS sandbox; eligibility is a source/runtime effect guard, not security isolation"
+    ],
+    "parent_invariant": "exact canonical graph and native rewrite-rule digests before fork equal digests after child exit and before receipt persistence",
+    "residual_return": "child sends full graph-diff conclusions and derived-only residual over a pipe; parent stores JSON and digest in ThoughtexperimentReceipt without merging branch state"
+  },
+  "results": [
+    {
+      "candidate_arm": "correct",
+      "median_child_private_dirty_delta_kb": 29244,
+      "median_child_wall_ms": 328.076023,
+      "median_fork_child_pipe_wall_ms": 337.412964,
+      "median_model_before_wall_ms": 151.778958,
+      "median_receipt_persist_ms": 0.276692,
+      "median_total_wall_ms": 489.468614,
+      "outcomes": [
+        {
+          "applied": {
+            "sd_dedup_existing": "sd_dedup_existing_scfix_d83d03c7",
+            "sd_mint_quantum": "sd_mint_quantum_scfix_d83d03c7"
+          },
+          "branch_id": "0ac6d6e67b78496596736152abe80aad",
+          "candidate_arm": "correct",
+          "child_peak_rss_kb": 53436,
+          "child_private_dirty_after_kb": 30176,
+          "child_private_dirty_before_kb": 932,
+          "child_wall_ms": 328.076023,
+          "converges": true,
+          "fork_child_pipe_wall_ms": 337.412964,
+          "frontier_growth_after": 0.0,
+          "frontier_growth_before": 3.0,
+          "inert": false,
+          "model_before_converged": false,
+          "model_before_frontier_growth": 3.0,
+          "model_before_residual": 0.42857142857142855,
+          "model_before_wall_ms": 151.778958,
+          "n_conclusions": 0,
+          "parent_graph_and_rules_unchanged_before_receipt": true,
+          "receipt_node_id": 794,
+          "receipt_persist_ms": 0.276692,
+          "residual": {
+            "conclusions": {
+              "edges_added": [],
+              "edges_removed": [],
+              "nodes_added": [],
+              "nodes_changed": [],
+              "nodes_removed": []
+            },
+            "derived_only": {
+              "edges_added": [],
+              "edges_removed": [],
+              "nodes_added": [],
+              "nodes_changed": [],
+              "nodes_removed": []
+            }
+          },
+          "residual_after": 0.375,
+          "residual_before": 0.42857142857142855,
+          "residual_digest": "sha256:6a119c9bbe656e6c9eb2e56eaffe8826b24b8d3c31caa8d21f55547beb585bd2",
+          "steps_run": 15,
+          "total_wall_ms": 489.468614,
+          "unrelated_nodes_requested": 0
+        }
+      ],
+      "repeats": 1,
+      "snapshot_backend": "linux_process_cow",
+      "unrelated_nodes_requested": 0,
+      "warmups": 1
+    },
+    {
+      "candidate_arm": "correct",
+      "median_child_private_dirty_delta_kb": 22844,
+      "median_child_wall_ms": 205.272924,
+      "median_fork_child_pipe_wall_ms": 212.498939,
+      "median_model_before_wall_ms": 158.145257,
+      "median_receipt_persist_ms": 0.290532,
+      "median_total_wall_ms": 370.93472799999995,
+      "outcomes": [
+        {
+          "applied": {
+            "sd_dedup_existing": "sd_dedup_existing_scfix_a8e08343",
+            "sd_mint_quantum": "sd_mint_quantum_scfix_a8e08343"
+          },
+          "branch_id": "1873a69b41974400b75206a464784a14",
+          "candidate_arm": "correct",
+          "child_peak_rss_kb": 53880,
+          "child_private_dirty_after_kb": 23760,
+          "child_private_dirty_before_kb": 916,
+          "child_wall_ms": 205.272924,
+          "converges": true,
+          "fork_child_pipe_wall_ms": 212.498939,
+          "frontier_growth_after": 0.0,
+          "frontier_growth_before": 3.0,
+          "inert": false,
+          "model_before_converged": false,
+          "model_before_frontier_growth": 3.0,
+          "model_before_residual": 0.42857142857142855,
+          "model_before_wall_ms": 158.145257,
+          "n_conclusions": 0,
+          "parent_graph_and_rules_unchanged_before_receipt": true,
+          "receipt_node_id": 794,
+          "receipt_persist_ms": 0.290532,
+          "residual": {
+            "conclusions": {
+              "edges_added": [],
+              "edges_removed": [],
+              "nodes_added": [],
+              "nodes_changed": [],
+              "nodes_removed": []
+            },
+            "derived_only": {
+              "edges_added": [],
+              "edges_removed": [],
+              "nodes_added": [],
+              "nodes_changed": [],
+              "nodes_removed": []
+            }
+          },
+          "residual_after": 0.375,
+          "residual_before": 0.42857142857142855,
+          "residual_digest": "sha256:6a119c9bbe656e6c9eb2e56eaffe8826b24b8d3c31caa8d21f55547beb585bd2",
+          "steps_run": 15,
+          "total_wall_ms": 370.93472799999995,
+          "unrelated_nodes_requested": 0
+        }
+      ],
+      "repeats": 1,
+      "snapshot_backend": "linux_process_cow_scoped",
+      "unrelated_nodes_requested": 0,
+      "warmups": 1
+    },
+    {
+      "candidate_arm": "wrong",
+      "median_child_private_dirty_delta_kb": 22972,
+      "median_child_wall_ms": 284.453872,
+      "median_fork_child_pipe_wall_ms": 295.299364,
+      "median_model_before_wall_ms": 130.380726,
+      "median_receipt_persist_ms": 0.169591,
+      "median_total_wall_ms": 425.8496810000001,
+      "outcomes": [
+        {
+          "applied": {
+            "sd_mint_quantum": "sd_mint_quantum_scguard_2889dd63"
+          },
+          "branch_id": "035c8a6dd43d4038ad5114b226d44555",
+          "candidate_arm": "wrong",
+          "child_peak_rss_kb": 53072,
+          "child_private_dirty_after_kb": 23912,
+          "child_private_dirty_before_kb": 940,
+          "child_wall_ms": 284.453872,
+          "converges": false,
+          "fork_child_pipe_wall_ms": 295.299364,
+          "frontier_growth_after": 3.0,
+          "frontier_growth_before": 3.0,
+          "inert": false,
+          "model_before_converged": false,
+          "model_before_frontier_growth": 3.0,
+          "model_before_residual": 0.42857142857142855,
+          "model_before_wall_ms": 130.380726,
+          "n_conclusions": 0,
+          "parent_graph_and_rules_unchanged_before_receipt": true,
+          "receipt_node_id": 794,
+          "receipt_persist_ms": 0.169591,
+          "residual": {
+            "conclusions": {
+              "edges_added": [],
+              "edges_removed": [],
+              "nodes_added": [],
+              "nodes_changed": [],
+              "nodes_removed": []
+            },
+            "derived_only": {
+              "edges_added": [],
+              "edges_removed": [],
+              "nodes_added": [],
+              "nodes_changed": [],
+              "nodes_removed": []
+            }
+          },
+          "residual_after": 0.375,
+          "residual_before": 0.42857142857142855,
+          "residual_digest": "sha256:6a119c9bbe656e6c9eb2e56eaffe8826b24b8d3c31caa8d21f55547beb585bd2",
+          "steps_run": 12,
+          "total_wall_ms": 425.8496810000001,
+          "unrelated_nodes_requested": 0
+        }
+      ],
+      "repeats": 1,
+      "snapshot_backend": "linux_process_cow",
+      "unrelated_nodes_requested": 0,
+      "warmups": 1
+    },
+    {
+      "candidate_arm": "wrong",
+      "median_child_private_dirty_delta_kb": 21496,
+      "median_child_wall_ms": 236.346868,
+      "median_fork_child_pipe_wall_ms": 247.570453,
+      "median_model_before_wall_ms": 130.722609,
+      "median_receipt_persist_ms": 0.348623,
+      "median_total_wall_ms": 378.64168499999994,
+      "outcomes": [
+        {
+          "applied": {
+            "sd_mint_quantum": "sd_mint_quantum_scguard_12f8d12b"
+          },
+          "branch_id": "c10d3610cbb44f6fa850a5e55f2128f7",
+          "candidate_arm": "wrong",
+          "child_peak_rss_kb": 53840,
+          "child_private_dirty_after_kb": 22424,
+          "child_private_dirty_before_kb": 928,
+          "child_wall_ms": 236.346868,
+          "converges": false,
+          "fork_child_pipe_wall_ms": 247.570453,
+          "frontier_growth_after": 3.0,
+          "frontier_growth_before": 3.0,
+          "inert": false,
+          "model_before_converged": false,
+          "model_before_frontier_growth": 3.0,
+          "model_before_residual": 0.42857142857142855,
+          "model_before_wall_ms": 130.722609,
+          "n_conclusions": 0,
+          "parent_graph_and_rules_unchanged_before_receipt": true,
+          "receipt_node_id": 794,
+          "receipt_persist_ms": 0.348623,
+          "residual": {
+            "conclusions": {
+              "edges_added": [],
+              "edges_removed": [],
+              "nodes_added": [],
+              "nodes_changed": [],
+              "nodes_removed": []
+            },
+            "derived_only": {
+              "edges_added": [],
+              "edges_removed": [],
+              "nodes_added": [],
+              "nodes_changed": [],
+              "nodes_removed": []
+            }
+          },
+          "residual_after": 0.375,
+          "residual_before": 0.42857142857142855,
+          "residual_digest": "sha256:6a119c9bbe656e6c9eb2e56eaffe8826b24b8d3c31caa8d21f55547beb585bd2",
+          "steps_run": 12,
+          "total_wall_ms": 378.64168499999994,
+          "unrelated_nodes_requested": 0
+        }
+      ],
+      "repeats": 1,
+      "snapshot_backend": "linux_process_cow_scoped",
+      "unrelated_nodes_requested": 0,
+      "warmups": 1
+    },
+    {
+      "candidate_arm": "correct",
+      "median_child_private_dirty_delta_kb": 109140,
+      "median_child_wall_ms": 1717.760489,
+      "median_fork_child_pipe_wall_ms": 1745.992232,
+      "median_model_before_wall_ms": 1439.239397,
+      "median_receipt_persist_ms": 0.259492,
+      "median_total_wall_ms": 3185.491121,
+      "outcomes": [
+        {
+          "applied": {
+            "sd_dedup_existing": "sd_dedup_existing_scfix_bf1b25c5",
+            "sd_mint_quantum": "sd_mint_quantum_scfix_bf1b25c5"
+          },
+          "branch_id": "7512ad14249446458ada6b5d6a639362",
+          "candidate_arm": "correct",
+          "child_peak_rss_kb": 143936,
+          "child_private_dirty_after_kb": 110080,
+          "child_private_dirty_before_kb": 940,
+          "child_wall_ms": 1717.760489,
+          "converges": true,
+          "fork_child_pipe_wall_ms": 1745.992232,
+          "frontier_growth_after": 0.0,
+          "frontier_growth_before": 3.0,
+          "inert": false,
+          "model_before_converged": false,
+          "model_before_frontier_growth": 3.0,
+          "model_before_residual": 0.42857142857142855,
+          "model_before_wall_ms": 1439.239397,
+          "n_conclusions": 0,
+          "parent_graph_and_rules_unchanged_before_receipt": true,
+          "receipt_node_id": 10794,
+          "receipt_persist_ms": 0.259492,
+          "residual": {
+            "conclusions": {
+              "edges_added": [],
+              "edges_removed": [],
+              "nodes_added": [],
+              "nodes_changed": [],
+              "nodes_removed": []
+            },
+            "derived_only": {
+              "edges_added": [],
+              "edges_removed": [],
+              "nodes_added": [],
+              "nodes_changed": [],
+              "nodes_removed": []
+            }
+          },
+          "residual_after": 0.375,
+          "residual_before": 0.42857142857142855,
+          "residual_digest": "sha256:6a119c9bbe656e6c9eb2e56eaffe8826b24b8d3c31caa8d21f55547beb585bd2",
+          "steps_run": 15,
+          "total_wall_ms": 3185.491121,
+          "unrelated_nodes_requested": 10000
+        }
+      ],
+      "repeats": 1,
+      "snapshot_backend": "linux_process_cow",
+      "unrelated_nodes_requested": 10000,
+      "warmups": 1
+    },
+    {
+      "candidate_arm": "correct",
+      "median_child_private_dirty_delta_kb": 100172,
+      "median_child_wall_ms": 1230.420342,
+      "median_fork_child_pipe_wall_ms": 1249.765549,
+      "median_model_before_wall_ms": 1235.072259,
+      "median_receipt_persist_ms": 0.312982,
+      "median_total_wall_ms": 2485.15079,
+      "outcomes": [
+        {
+          "applied": {
+            "sd_dedup_existing": "sd_dedup_existing_scfix_587638ef",
+            "sd_mint_quantum": "sd_mint_quantum_scfix_587638ef"
+          },
+          "branch_id": "ddc6b47e1cc54dbc98bde8d8b379ebf6",
+          "candidate_arm": "correct",
+          "child_peak_rss_kb": 142104,
+          "child_private_dirty_after_kb": 101124,
+          "child_private_dirty_before_kb": 952,
+          "child_wall_ms": 1230.420342,
+          "converges": true,
+          "fork_child_pipe_wall_ms": 1249.765549,
+          "frontier_growth_after": 0.0,
+          "frontier_growth_before": 3.0,
+          "inert": false,
+          "model_before_converged": false,
+          "model_before_frontier_growth": 3.0,
+          "model_before_residual": 0.42857142857142855,
+          "model_before_wall_ms": 1235.072259,
+          "n_conclusions": 0,
+          "parent_graph_and_rules_unchanged_before_receipt": true,
+          "receipt_node_id": 10794,
+          "receipt_persist_ms": 0.312982,
+          "residual": {
+            "conclusions": {
+              "edges_added": [],
+              "edges_removed": [],
+              "nodes_added": [],
+              "nodes_changed": [],
+              "nodes_removed": []
+            },
+            "derived_only": {
+              "edges_added": [],
+              "edges_removed": [],
+              "nodes_added": [],
+              "nodes_changed": [],
+              "nodes_removed": []
+            }
+          },
+          "residual_after": 0.375,
+          "residual_before": 0.42857142857142855,
+          "residual_digest": "sha256:6a119c9bbe656e6c9eb2e56eaffe8826b24b8d3c31caa8d21f55547beb585bd2",
+          "steps_run": 15,
+          "total_wall_ms": 2485.15079,
+          "unrelated_nodes_requested": 10000
+        }
+      ],
+      "repeats": 1,
+      "snapshot_backend": "linux_process_cow_scoped",
+      "unrelated_nodes_requested": 10000,
+      "warmups": 1
+    },
+    {
+      "candidate_arm": "wrong",
+      "median_child_private_dirty_delta_kb": 94452,
+      "median_child_wall_ms": 1795.653499,
+      "median_fork_child_pipe_wall_ms": 1819.340338,
+      "median_model_before_wall_ms": 1117.203916,
+      "median_receipt_persist_ms": 0.337532,
+      "median_total_wall_ms": 2936.881786,
+      "outcomes": [
+        {
+          "applied": {
+            "sd_mint_quantum": "sd_mint_quantum_scguard_f06a5a63"
+          },
+          "branch_id": "4c3c2e44bcf34b4d8b33884aed005d35",
+          "candidate_arm": "wrong",
+          "child_peak_rss_kb": 144232,
+          "child_private_dirty_after_kb": 95388,
+          "child_private_dirty_before_kb": 936,
+          "child_wall_ms": 1795.653499,
+          "converges": false,
+          "fork_child_pipe_wall_ms": 1819.340338,
+          "frontier_growth_after": 3.0,
+          "frontier_growth_before": 3.0,
+          "inert": false,
+          "model_before_converged": false,
+          "model_before_frontier_growth": 3.0,
+          "model_before_residual": 0.42857142857142855,
+          "model_before_wall_ms": 1117.203916,
+          "n_conclusions": 0,
+          "parent_graph_and_rules_unchanged_before_receipt": true,
+          "receipt_node_id": 10794,
+          "receipt_persist_ms": 0.337532,
+          "residual": {
+            "conclusions": {
+              "edges_added": [],
+              "edges_removed": [],
+              "nodes_added": [],
+              "nodes_changed": [],
+              "nodes_removed": []
+            },
+            "derived_only": {
+              "edges_added": [],
+              "edges_removed": [],
+              "nodes_added": [],
+              "nodes_changed": [],
+              "nodes_removed": []
+            }
+          },
+          "residual_after": 0.375,
+          "residual_before": 0.42857142857142855,
+          "residual_digest": "sha256:6a119c9bbe656e6c9eb2e56eaffe8826b24b8d3c31caa8d21f55547beb585bd2",
+          "steps_run": 12,
+          "total_wall_ms": 2936.881786,
+          "unrelated_nodes_requested": 10000
+        }
+      ],
+      "repeats": 1,
+      "snapshot_backend": "linux_process_cow",
+      "unrelated_nodes_requested": 10000,
+      "warmups": 1
+    },
+    {
+      "candidate_arm": "wrong",
+      "median_child_private_dirty_delta_kb": 108412,
+      "median_child_wall_ms": 1495.159813,
+      "median_fork_child_pipe_wall_ms": 1517.597092,
+      "median_model_before_wall_ms": 1300.607605,
+      "median_receipt_persist_ms": 0.299262,
+      "median_total_wall_ms": 2818.503959,
+      "outcomes": [
+        {
+          "applied": {
+            "sd_mint_quantum": "sd_mint_quantum_scguard_4a95ff00"
+          },
+          "branch_id": "83cfdb14a0fb46babc7d02e4b2221ecb",
+          "candidate_arm": "wrong",
+          "child_peak_rss_kb": 142932,
+          "child_private_dirty_after_kb": 109352,
+          "child_private_dirty_before_kb": 940,
+          "child_wall_ms": 1495.159813,
+          "converges": false,
+          "fork_child_pipe_wall_ms": 1517.597092,
+          "frontier_growth_after": 3.0,
+          "frontier_growth_before": 3.0,
+          "inert": false,
+          "model_before_converged": false,
+          "model_before_frontier_growth": 3.0,
+          "model_before_residual": 0.42857142857142855,
+          "model_before_wall_ms": 1300.607605,
+          "n_conclusions": 0,
+          "parent_graph_and_rules_unchanged_before_receipt": true,
+          "receipt_node_id": 10794,
+          "receipt_persist_ms": 0.299262,
+          "residual": {
+            "conclusions": {
+              "edges_added": [],
+              "edges_removed": [],
+              "nodes_added": [],
+              "nodes_changed": [],
+              "nodes_removed": []
+            },
+            "derived_only": {
+              "edges_added": [],
+              "edges_removed": [],
+              "nodes_added": [],
+              "nodes_changed": [],
+              "nodes_removed": []
+            }
+          },
+          "residual_after": 0.375,
+          "residual_before": 0.42857142857142855,
+          "residual_digest": "sha256:6a119c9bbe656e6c9eb2e56eaffe8826b24b8d3c31caa8d21f55547beb585bd2",
+          "steps_run": 12,
+          "total_wall_ms": 2818.503959,
+          "unrelated_nodes_requested": 10000
+        }
+      ],
+      "repeats": 1,
+      "snapshot_backend": "linux_process_cow_scoped",
+      "unrelated_nodes_requested": 10000,
+      "warmups": 1
+    }
+  ],
+  "runner": {
+    "path": "/home/matt/ozmadev/ocelot/evaluation/substrate_capability/thoughtexperiment_process_cow_self_correction_v1.py",
+    "sha256": "sha256:4f3185e943199f3ccf3823ccef2cf36a581f3fcc07220986b22e8f9078674283"
+  },
+  "rust_source_fingerprint": "a1c7fd42f311cca659e65db6ddf7986376867dcf3c7d20791b319a7f1f9036dc",
+  "schema": "ThoughtexperimentProcessCowSelfCorrectionV1",
+  "semantic_comparisons": [
+    {
+      "arm": "correct",
+      "control_outcome_gate_passed": true,
+      "exact_prediction_and_residual_parity": true,
+      "expected_control_outcome": "converges",
+      "matched_repeats_per_backend": 1,
+      "parent_graph_and_rule_isolation": true,
+      "size": 0
+    },
+    {
+      "arm": "wrong",
+      "control_outcome_gate_passed": true,
+      "exact_prediction_and_residual_parity": true,
+      "expected_control_outcome": "diverges",
+      "matched_repeats_per_backend": 1,
+      "parent_graph_and_rule_isolation": true,
+      "size": 0
+    },
+    {
+      "arm": "correct",
+      "control_outcome_gate_passed": true,
+      "exact_prediction_and_residual_parity": true,
+      "expected_control_outcome": "converges",
+      "matched_repeats_per_backend": 1,
+      "parent_graph_and_rule_isolation": true,
+      "size": 10000
+    },
+    {
+      "arm": "wrong",
+      "control_outcome_gate_passed": true,
+      "exact_prediction_and_residual_parity": true,
+      "expected_control_outcome": "diverges",
+      "matched_repeats_per_backend": 1,
+      "parent_graph_and_rule_isolation": true,
+      "size": 10000
+    }
+  ],
+  "sources": {
+    "domains/collapse_model.py": "sha256:de735641e318e7c88ff3af351f0296b570988fbb0c9a22c16ed94d93c6edbb7e",
+    "domains/imagination.py": "sha256:9f55c4e774c92ed8bbd36651da57dfc74177234b4a61f054c606a1a0eb03bf71",
+    "domains/reflective_faculty.py": "sha256:2792e5355c2a78cc23790e7a591ba0c0cb0ef2a249743d2b2da57fefadbd4c9f",
+    "domains/self_correction.py": "sha256:bd139c51b486b6e6f3cc3af6ca5754a181da5bc7cbc08b3864761781e3734506",
+    "evaluation/substrate_capability/thoughtexperiment_self_correction_copy_comparison_v1.py": "sha256:9f56a52107b1b4d8808199d12d387335828db89b4d9235bd578bcb5f7cfee1cf",
+    "runners/dsl/python/substrate_rs/__init__.py": "sha256:7315e905672cc80b9ff433c3376d188bfe964aabc57d02fd670944d034d0ce70",
+    "runners/dsl/src/checker.rs": "sha256:eb46f2f884f468b90d1b79ec2d160812f0c166ac78245fb3b23a4a22b3fa2ff7",
+    "runners/dsl/src/cognitive_cycle.rs": "sha256:f8d5890288c4bb4fe36f341411143230166db0e6d7091554a4cbbec6a970e319",
+    "runners/dsl/src/grammar.rs": "sha256:aaf6f571bf8e8761584c7473d3fe3130c5a6e395bff7f2b63f1cdcf6046b73f6",
+    "runners/dsl/src/graph.rs": "sha256:71d6c563cf823315f03eb60a1733df5f52429366f6fd23587f8cea9c024ef9ec",
+    "runners/dsl/src/graph_rules.rs": "sha256:b0e9c5bf0bbb4bf278fdab03610fa3f6f82d01ad8ee898ec789982ff41812a50",
+    "runners/dsl/src/l2_adaptive.rs": "sha256:e04c0a79dd70a36d81210ea3e58c5664487b63e7b459583521b5e63040c2c829",
+    "runners/dsl/src/py.rs": "sha256:d51a54bf6c39e59e48d7b3cfd59de367919a74b57aa93950ac51f42c3d7cab5c",
+    "runners/dsl/src/substrate.rs": "sha256:65ca92f0dea8b5faefbda03762bd3277eef2e544d7d994011a40f76f94b3a930",
+    "runners/dsl/src/sym.rs": "sha256:b54f6af6e456a7095a02eb5b3cab42a73072318bd7e54ed150c787468b170d5f",
+    "runners/dsl/src/term.rs": "sha256:264b838574c1fc1edb3ebb1284d2db84945e95e38e2d3f945e1fdc8a7475758f",
+    "seeds/shape_decode_loop.json": "sha256:3e1783cf566179061250572bbf7bc7bb54cacfafb83f8852008c4618d984a9c6",
+    "substrate/boot_core.py": "sha256:9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+    "tests/test_self_correction.py": "sha256:f7f703ce35cf1b5ee269f960960dafee60c941a1e73d4871c5aeacf506dc7e6d"
+  },
+  "timing_components": {
+    "copy_control_median_ms": "full model-before plus branch rehearsal/readout; fixture construction excluded",
+    "process_cow_child_wall_ms": "child candidate rehearsal through residual assembly, excludes pipe transfer",
+    "process_cow_fork_child_pipe_ms": "fork through child completion and residual transfer; includes branch execution/readout",
+    "process_cow_model_before_ms": "separately reported native full-copy baseline prediction cost",
+    "process_cow_receipt_persist_ms": "primary receipt write, reported separately",
+    "process_cow_total_wall_ms": "sum of model-before, fork-child-pipe, and receipt persistence; fixture construction excluded"
+  },
+  "warmup_order": [
+    {
+      "arm": "correct",
+      "backend": "linux_process_cow",
+      "size": 0
+    },
+    {
+      "arm": "correct",
+      "backend": "linux_process_cow_scoped",
+      "size": 0
+    },
+    {
+      "arm": "correct",
+      "backend": "serialization",
+      "size": 0
+    },
+    {
+      "arm": "correct",
+      "backend": "native_full_copy",
+      "size": 0
+    },
+    {
+      "arm": "correct",
+      "backend": "native_full_copy_scoped",
+      "size": 0
+    },
+    {
+      "arm": "wrong",
+      "backend": "linux_process_cow",
+      "size": 0
+    },
+    {
+      "arm": "wrong",
+      "backend": "linux_process_cow_scoped",
+      "size": 0
+    },
+    {
+      "arm": "wrong",
+      "backend": "serialization",
+      "size": 0
+    },
+    {
+      "arm": "wrong",
+      "backend": "native_full_copy",
+      "size": 0
+    },
+    {
+      "arm": "wrong",
+      "backend": "native_full_copy_scoped",
+      "size": 0
+    },
+    {
+      "arm": "correct",
+      "backend": "linux_process_cow",
+      "size": 10000
+    },
+    {
+      "arm": "correct",
+      "backend": "linux_process_cow_scoped",
+      "size": 10000
+    },
+    {
+      "arm": "correct",
+      "backend": "serialization",
+      "size": 10000
+    },
+    {
+      "arm": "correct",
+      "backend": "native_full_copy",
+      "size": 10000
+    },
+    {
+      "arm": "correct",
+      "backend": "native_full_copy_scoped",
+      "size": 10000
+    },
+    {
+      "arm": "wrong",
+      "backend": "linux_process_cow",
+      "size": 10000
+    },
+    {
+      "arm": "wrong",
+      "backend": "linux_process_cow_scoped",
+      "size": 10000
+    },
+    {
+      "arm": "wrong",
+      "backend": "serialization",
+      "size": 10000
+    },
+    {
+      "arm": "wrong",
+      "backend": "native_full_copy",
+      "size": 10000
+    },
+    {
+      "arm": "wrong",
+      "backend": "native_full_copy_scoped",
+      "size": 10000
+    }
+  ]
+}

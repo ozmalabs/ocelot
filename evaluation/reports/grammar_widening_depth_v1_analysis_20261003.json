@@ -1,0 +1,61 @@
+{
+  "by_task_and_size": {
+    "additive": {
+      "7": {
+        "candidate_count": 24,
+        "exact_candidate_panels": 5,
+        "exact_candidates": 5,
+        "median_cpu_s": 2.202311955,
+        "median_wall_s": 2.20832924,
+        "panels": 5,
+        "timeout_panels": 0
+      },
+      "9": {
+        "candidate_count": 134,
+        "exact_candidate_panels": 5,
+        "exact_candidates": 5,
+        "median_cpu_s": 12.001967991,
+        "median_wall_s": 12.01420859,
+        "panels": 5,
+        "timeout_panels": 5
+      }
+    },
+    "product": {
+      "7": {
+        "candidate_count": 20,
+        "exact_candidate_panels": 5,
+        "exact_candidates": 5,
+        "median_cpu_s": 1.817213492,
+        "median_wall_s": 1.819981992,
+        "panels": 5,
+        "timeout_panels": 0
+      },
+      "9": {
+        "candidate_count": 65,
+        "exact_candidate_panels": 5,
+        "exact_candidates": 5,
+        "median_cpu_s": 11.991200955,
+        "median_wall_s": 12.00625305,
+        "panels": 5,
+        "timeout_panels": 5
+      }
+    }
+  },
+  "checks": {
+    "all_candidate_holdouts_rescored": true,
+    "source_lock_and_capture_binding": true,
+    "ten_locked_panels_replayed": true,
+    "two_grammar_arms_and_fixed_settings": true
+  },
+  "interpretation": "Task-informed primitive widening recovers an exact model only when the bounded search finds it; this does not measure autonomous primitive selection. Compare recovery, timeout, and cost across the frozen panels.",
+  "limits": [
+    "two harness-authored numeric target families",
+    "operator hint is supplied from target task identity",
+    "five frozen panels per family",
+    "finite fractional holdout and one host",
+    "partial search results may occur before timeout"
+  ],
+  "passed": 4,
+  "schema": "GrammarWideningDepthV1Analysis",
+  "total": 4
+}

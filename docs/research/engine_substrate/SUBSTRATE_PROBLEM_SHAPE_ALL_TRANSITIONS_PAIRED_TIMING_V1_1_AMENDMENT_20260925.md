@@ -1,0 +1,3 @@
+# V1.1 amendment: balance paired execution order
+
+The initial three-pair run passed semantics but its fixed-seed randomization yielded candidate-first order in all three pairs. Preserve that run as an unbalanced exploratory sample. To reduce order confounding, this amendment adds six fresh-process pairs with exactly three baseline-first and three candidate-first orders; the six pair orders are shuffled using RNG seed `20260927` before launch. All other arms, timing boundaries, locked workloads/seeds/native build, and semantic gates remain the same. Report the original three pairs separately; do not pool them with the balanced follow-up for the preregistered paired median. This remains a small, single-workload timing study.

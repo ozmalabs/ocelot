@@ -1,0 +1,197 @@
+{
+  "checks": {
+    "all_exact_maps_agree": true,
+    "all_orders_width_one": true,
+    "all_replicates_present": true
+  },
+  "claim_boundary": "Leaf ordering is valid and measured only for forests; path result is not a general replacement for min-fill or evidence about natural graph topology.",
+  "configuration": {
+    "replicates": 2,
+    "sizes": [
+      256,
+      512,
+      1024,
+      2048
+    ]
+  },
+  "environment": {
+    "platform": "Linux-6.8.0-137-generic-x86_64-with-glibc2.39",
+    "processor": "x86_64",
+    "python": "3.13.5"
+  },
+  "run_id": "can-forest-ordering-comparison-20260925-v1",
+  "runs": [
+    {
+      "both_orders_width_one": true,
+      "edges": 255,
+      "exact_energy_gap": 0.0,
+      "nodes": 256,
+      "replicate": 0,
+      "seed": 20519229,
+      "timing_ns": {
+        "forest_leaf_order": 136911,
+        "map_after_leaf_order": 2364295,
+        "map_after_min_fill": 2461676,
+        "min_fill_order": 18197367
+      }
+    },
+    {
+      "both_orders_width_one": true,
+      "edges": 255,
+      "exact_energy_gap": 0.0,
+      "nodes": 256,
+      "replicate": 1,
+      "seed": 20584766,
+      "timing_ns": {
+        "forest_leaf_order": 136001,
+        "map_after_leaf_order": 2459706,
+        "map_after_min_fill": 2456006,
+        "min_fill_order": 17761214
+      }
+    },
+    {
+      "both_orders_width_one": true,
+      "edges": 511,
+      "exact_energy_gap": 0.0,
+      "nodes": 512,
+      "replicate": 0,
+      "seed": 20777533,
+      "timing_ns": {
+        "forest_leaf_order": 303602,
+        "map_after_leaf_order": 4706500,
+        "map_after_min_fill": 5022093,
+        "min_fill_order": 76686514
+      }
+    },
+    {
+      "both_orders_width_one": true,
+      "edges": 511,
+      "exact_energy_gap": 0.0,
+      "nodes": 512,
+      "replicate": 1,
+      "seed": 20843070,
+      "timing_ns": {
+        "forest_leaf_order": 270341,
+        "map_after_leaf_order": 4793221,
+        "map_after_min_fill": 5031632,
+        "min_fill_order": 74709263
+      }
+    },
+    {
+      "both_orders_width_one": true,
+      "edges": 1023,
+      "exact_energy_gap": 0.0,
+      "nodes": 1024,
+      "replicate": 0,
+      "seed": 21294141,
+      "timing_ns": {
+        "forest_leaf_order": 525213,
+        "map_after_leaf_order": 10095265,
+        "map_after_min_fill": 10124786,
+        "min_fill_order": 294566760
+      }
+    },
+    {
+      "both_orders_width_one": true,
+      "edges": 1023,
+      "exact_energy_gap": 0.0,
+      "nodes": 1024,
+      "replicate": 1,
+      "seed": 21359678,
+      "timing_ns": {
+        "forest_leaf_order": 515133,
+        "map_after_leaf_order": 9507851,
+        "map_after_min_fill": 9949755,
+        "min_fill_order": 294449119
+      }
+    },
+    {
+      "both_orders_width_one": true,
+      "edges": 2047,
+      "exact_energy_gap": 0.0,
+      "nodes": 2048,
+      "replicate": 0,
+      "seed": 22327357,
+      "timing_ns": {
+        "forest_leaf_order": 1153447,
+        "map_after_leaf_order": 19970679,
+        "map_after_min_fill": 21413978,
+        "min_fill_order": 1229734102
+      }
+    },
+    {
+      "both_orders_width_one": true,
+      "edges": 2047,
+      "exact_energy_gap": 0.0,
+      "nodes": 2048,
+      "replicate": 1,
+      "seed": 22392894,
+      "timing_ns": {
+        "forest_leaf_order": 1212918,
+        "map_after_leaf_order": 23518772,
+        "map_after_min_fill": 23307340,
+        "min_fill_order": 1388565086
+      }
+    }
+  ],
+  "schema_version": 1,
+  "scope": "paired min-fill and forest leaf-elimination ordering on runtime-extracted binary paths",
+  "source_sha256": {
+    "domains/can_junction_tree.py": "e8d4aa30bfdaced52cda2739f885a56ed50a040b8419cb558b132e5e46206ba7",
+    "domains/graph_treewidth.py": "e945bea9f54b76098edb3b3dcb784ac5a0ce630de43cd63a9fb5b0f416d543e5",
+    "runners/dsl/python/substrate_rs/_native.abi3.so": "fd775294cfcc702d362042b43919272931568ef278c83e6b18f0ea3caab1ee40",
+    "runners/dsl/python/substrate_rs/_native.build.json": "4b92d4307bd88491920d0ccd991e47f5cd7deccecb3daf3b99c4127a67c1c690",
+    "scripts/can_bounded_width_scale.py": "077df95258029a5279919437d0c1df2a5f6afa38b7ad52ba6d5a46cc73242818",
+    "scripts/can_forest_ordering_comparison.py": "8631451c733ca687b280d9a886d60694a2ca3ed167b3875b83d2021cda428368"
+  },
+  "summaries": [
+    {
+      "edges": 255,
+      "median_ns": {
+        "forest_leaf_order": 136456,
+        "map_after_leaf_order": 2412000,
+        "map_after_min_fill": 2458841,
+        "min_fill_order": 17979290
+      },
+      "median_order_speedup": 131.75502166868858,
+      "nodes": 256,
+      "replicates": 2
+    },
+    {
+      "edges": 511,
+      "median_ns": {
+        "forest_leaf_order": 286971,
+        "map_after_leaf_order": 4749860,
+        "map_after_min_fill": 5026862,
+        "min_fill_order": 75697888
+      },
+      "median_order_speedup": 264.4704568293809,
+      "nodes": 512,
+      "replicates": 2
+    },
+    {
+      "edges": 1023,
+      "median_ns": {
+        "forest_leaf_order": 520173,
+        "map_after_leaf_order": 9801558,
+        "map_after_min_fill": 10037270,
+        "min_fill_order": 294507939
+      },
+      "median_order_speedup": 566.2251213456793,
+      "nodes": 1024,
+      "replicates": 2
+    },
+    {
+      "edges": 2047,
+      "median_ns": {
+        "forest_leaf_order": 1183182,
+        "map_after_leaf_order": 21744725,
+        "map_after_min_fill": 22360659,
+        "min_fill_order": 1309149594
+      },
+      "median_order_speedup": 1105.4760102807288,
+      "nodes": 2048,
+      "replicates": 2
+    }
+  ]
+}

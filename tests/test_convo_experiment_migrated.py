@@ -211,37 +211,30 @@ def test_flag_promote_experiment_judge_adopt_closes(agent, tmp_path):
     ra = agent.s.node(runs[0])["attrs"]
     assert ra["status"] == "done"
     assert int(ra["frames"]) == 2, "two recorded turns -> two probes"
-    assert int(ra["score"]) >= 1, "flagged reply changed, no regressions -> positive score"
+    # TRANCHE 4 JUDGE: ablating reply_self_identity changes the flagged reply
+    # into the adapter's fixed ERROR surface. That is a BROKEN fix, not a fix:
+    # it scores -1 and the experiment is refuted, so nothing is adopted.
+    assert int(ra["score"]) <= -1, "a change into the error surface is a broken fix"
+    child = json.load(open(os.path.join(agent.s.node(exp)["attrs"]["run_dir"], "result.json")))
+    assert child["broken_fixes"] == 1 and child["flagged_changed"] == 0, child
     obs = [o for o in agent.inner.neighbours(runs[0], "observed") if agent.s.has_node(o)]
     assert len(obs) == 2 and all(
         agent.s.node(o)["attrs"].get("action") == "reply" for o in obs), \
         "the frame-shaped trace must ingest as RunObservation nodes unchanged"
 
-    # judge: the agent's OWN authored rule (installed by the composer at ground time)
+    # judge: the agent's OWN authored rule reads the run -> refuted, never adopted
     agent.comprehend()
     at = agent.s.node(exp)["attrs"]
-    assert at.get("outcome") == "supported", at
+    assert at.get("outcome") == "refuted", at
     assert at.get("conclusion_ready") is True
-    assert at.get("adopt_ready") is True, \
-        "mark_adopt_ready must accept the ablation delta (act_rule_varied non-empty)"
-
-    # adopt: perform_adoptions folds the winner back into the PARENT (remove-only)
+    assert not at.get("adopt_ready"), at
     rf.close_experiment_loop(agent)
     at = agent.s.node(exp)["attrs"]
-    assert at.get("adopted") is True and not at.get("adopt_denied"), at
-    adoptions = [n for n in agent.s.nodes("Adoption")
-                 if agent.s.node(n)["attrs"].get("rule_removed") == "reply_self_identity"]
-    assert adoptions, "an Adoption record must be minted"
-    aat = agent.s.node(adoptions[0])["attrs"]
-    assert aat.get("rule_added") == "" and json.loads(aat.get("original_rule_json") or "{}"), \
-        "an ablation adoption installs nothing but keeps the original JSON for revert"
+    assert not at.get("adopted"), at
     live = [r.get("name") for r in agent.inner.export_rules() if r.get("active")]
-    assert "reply_self_identity" not in live, "the ablated rule must be tombstoned in the parent"
-
-    # and the parent's own behaviour actually changed
+    assert "reply_self_identity" in live, "a broken fix must not be folded into the parent"
     r = agent.converse("What are you?", speech_act="question")
-    assert (r or "").strip() != "I am Jabberwock.", \
-        "the flagged reply must change in the PARENT after adoption"
+    assert (r or "").strip() == "I am Jabberwock.", "the parent keeps its working reply"
 
 
 # --- MECHANICAL-LEVEL GATES: no-op and regression deltas ----------------------

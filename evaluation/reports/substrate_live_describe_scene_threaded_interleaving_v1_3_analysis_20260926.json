@@ -1,0 +1,165 @@
+{
+  "checks": {
+    "both_baseline_replies_and_joined_threads": true,
+    "lock_blocks_B_while_A_is_paused": true,
+    "normalized_shape_repeats": true,
+    "producer_counter_conservation": true,
+    "producer_work_replicates_exactly": true,
+    "raw_digest_matches_lock": true,
+    "raw_inputs_match_lock": true,
+    "sequential_lifecycle_ownership": true,
+    "six_producer_calls_each": true,
+    "source_stable_workers_and_postrun": true,
+    "three_distinct_workers": true
+  },
+  "finding": "With the WorldAdapter per-instance RLock, B waits while A is paused after selection. The three source-locked workers preserve identity and lifecycle semantics, and the six calls to the production lifecycle event helper have exactly replicated candidate/Term counts with per-rule counter conservation.",
+  "limits": "This is one controlled describe_scene schedule and one adapter entry point. It does not establish safety for arbitrary adapter/native concurrency, other routes, or workload prevalence. Helper elapsed time includes event preparation and native closure, and no unlocked counterfactual is measured.",
+  "lock_sha256": "68a027439f644c5881146f5d3334da9a59617eb9557604662bf37f36c024e827",
+  "producer_work_profiles": [
+    {
+      "by_event_kind": {
+        "action_result": {
+          "calls": 2,
+          "candidate_pairs": 112506,
+          "elapsed_ns": [
+            33985399,
+            47279914
+          ],
+          "term_evaluations": 562140
+        },
+        "execution": {
+          "calls": 2,
+          "candidate_pairs": 112514,
+          "elapsed_ns": [
+            32512270,
+            44232125
+          ],
+          "term_evaluations": 562178
+        },
+        "selection": {
+          "calls": 2,
+          "candidate_pairs": 112502,
+          "elapsed_ns": [
+            33285194,
+            43565559
+          ],
+          "term_evaluations": 562138
+        }
+      },
+      "replicate": 1,
+      "totals": {
+        "candidate_pairs": 337522,
+        "elapsed_ns": 234860461,
+        "term_evaluations": 1686456
+      }
+    },
+    {
+      "by_event_kind": {
+        "action_result": {
+          "calls": 2,
+          "candidate_pairs": 112506,
+          "elapsed_ns": [
+            33641775,
+            46267587
+          ],
+          "term_evaluations": 562140
+        },
+        "execution": {
+          "calls": 2,
+          "candidate_pairs": 112514,
+          "elapsed_ns": [
+            33083982,
+            45242940
+          ],
+          "term_evaluations": 562178
+        },
+        "selection": {
+          "calls": 2,
+          "candidate_pairs": 112502,
+          "elapsed_ns": [
+            32764250,
+            44297974
+          ],
+          "term_evaluations": 562138
+        }
+      },
+      "replicate": 2,
+      "totals": {
+        "candidate_pairs": 337522,
+        "elapsed_ns": 235298508,
+        "term_evaluations": 1686456
+      }
+    },
+    {
+      "by_event_kind": {
+        "action_result": {
+          "calls": 2,
+          "candidate_pairs": 112506,
+          "elapsed_ns": [
+            32376517,
+            46445618
+          ],
+          "term_evaluations": 562140
+        },
+        "execution": {
+          "calls": 2,
+          "candidate_pairs": 112514,
+          "elapsed_ns": [
+            32928681,
+            46310287
+          ],
+          "term_evaluations": 562178
+        },
+        "selection": {
+          "calls": 2,
+          "candidate_pairs": 112502,
+          "elapsed_ns": [
+            32461508,
+            45847133
+          ],
+          "term_evaluations": 562138
+        }
+      },
+      "replicate": 0,
+      "totals": {
+        "candidate_pairs": 337522,
+        "elapsed_ns": 236369744,
+        "term_evaluations": 1686456
+      }
+    }
+  ],
+  "producer_work_summary": {
+    "action_result": {
+      "calls_per_run": 2,
+      "candidate_pairs_per_run": 112506,
+      "elapsed_ns_median": 46267587,
+      "elapsed_ns_range": [
+        32376517,
+        47279914
+      ],
+      "term_evaluations_per_run": 562140
+    },
+    "execution": {
+      "calls_per_run": 2,
+      "candidate_pairs_per_run": 112514,
+      "elapsed_ns_median": 44232125,
+      "elapsed_ns_range": [
+        32512270,
+        46310287
+      ],
+      "term_evaluations_per_run": 562178
+    },
+    "selection": {
+      "calls_per_run": 2,
+      "candidate_pairs_per_run": 112502,
+      "elapsed_ns_median": 43565559,
+      "elapsed_ns_range": [
+        32461508,
+        45847133
+      ],
+      "term_evaluations_per_run": 562138
+    }
+  },
+  "raw_sha256": "ecd67758641c022cefb0d6d076ecfffae283d3b88f05a6ee477725a81faf65ae",
+  "schema_version": 1
+}

@@ -10,7 +10,7 @@ import os
 import pytest
 
 CAN_SEED = "seeds/can_native_reimplementation.json"
-REAPED = "seeds/generated/qwen3_reaped_knowledge.json"
+REAPED = "domain_data/llm_harvest/qwen3_reaped_knowledge.json"
 SOLO_ASSERT_BAR = 0.8
 
 

@@ -1,0 +1,116 @@
+{
+ "concerns": [
+  {
+   "attempts": [
+    {
+     "adopted": true,
+     "child_s": 49.69698762893677,
+     "control_reforms": 6,
+     "direction": "decrease_fires",
+     "k": 0,
+     "knob": "reform_residual_threshold",
+     "new": 3.0,
+     "old": 1.0,
+     "op": "knob_edit",
+     "outcome": "supported",
+     "regressions": 0,
+     "status": "done",
+     "variant_reforms": 4
+    }
+   ],
+   "pipeline": "experiment",
+   "tag": "eager",
+   "text": "you reform list sentences too eagerly, test whether the residual marker threshold is too low",
+   "threshold_after": {
+    "reform_eviction_threshold": 2.0,
+    "reform_pressure_factor": 0.5,
+    "reform_residual_threshold": 3.0,
+    "reform_swallowed_threshold": 0.5
+   },
+   "threshold_before": {
+    "reform_eviction_threshold": 2.0,
+    "reform_pressure_factor": 0.5,
+    "reform_residual_threshold": 1.0,
+    "reform_swallowed_threshold": 0.5
+   }
+  },
+  {
+   "attempts": [
+    {
+     "adopted": true,
+     "child_s": 40.73933959007263,
+     "control_reforms": 4,
+     "direction": "increase_fires",
+     "k": 0,
+     "knob": "reform_residual_threshold",
+     "new": 2.0,
+     "old": 3.0,
+     "op": "knob_edit",
+     "outcome": "supported",
+     "regressions": 0,
+     "status": "done",
+     "variant_reforms": 6
+    }
+   ],
+   "pipeline": "experiment",
+   "tag": "rare",
+   "text": "you reform list sentences too rarely, test whether the residual marker threshold is too high",
+   "threshold_after": {
+    "reform_eviction_threshold": 2.0,
+    "reform_pressure_factor": 0.5,
+    "reform_residual_threshold": 2.0,
+    "reform_swallowed_threshold": 0.5
+   },
+   "threshold_before": {
+    "reform_eviction_threshold": 2.0,
+    "reform_pressure_factor": 0.5,
+    "reform_residual_threshold": 3.0,
+    "reform_swallowed_threshold": 0.5
+   }
+  }
+ ],
+ "corpus": "K1",
+ "corpus_turns": [
+  [
+   "The drawer contains a spoon, a fork and a knife.",
+   "statement"
+  ],
+  [
+   "The basket contains an apple and a pear.",
+   "statement"
+  ],
+  [
+   "The shelf contains a vase, a clock, a lamp, a frame and a candle.",
+   "statement"
+  ],
+  [
+   "The crate contains a hammer, a nail, a screw and a bolt.",
+   "statement"
+  ],
+  [
+   "The garden contains a rose and a tulip.",
+   "statement"
+  ],
+  [
+   "The dog barked at the postman.",
+   "statement"
+  ],
+  [
+   "The sun rose early.",
+   "statement"
+  ],
+  [
+   "The van contains a ladder, a bucket, a mop, a brush, a sponge and a rag.",
+   "statement"
+  ]
+ ],
+ "mode": "grain",
+ "native_sha256": "65561548301e771ed08efe6f933f0788094bea205ce764e8eff6651efa0e3af3",
+ "parent_reforms_on_rehear": 6,
+ "schema": "KnobGrainPromotionV3Part",
+ "summary": {
+  "experiments": 2,
+  "false_adoptions": 0,
+  "supported": 2
+ }
+}

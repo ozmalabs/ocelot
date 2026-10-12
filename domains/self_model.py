@@ -188,38 +188,25 @@ def _find_threshold_lits(node: Any) -> list:
 
 
 # ---------------------------------------------------------------------------
-# SEED INDEX — mechanical name->seed_id map, built by reading every seed
-# manifest's OWN declared rules (native `rules:[{name,...}]`, or an
-# encyclopedic `nodes:[{type:'Rule',attrs:{name}}]` entry) — the SAME two
-# schemas `substrate/boot_all.py`'s `_seed_keywords_text` already reads.
+# SEED INDEX — mechanical name->seed_id map, reusing the boot loader's
+# content-hashed compact pre-pass. This avoids a second full-corpus manifest
+# scan while retaining both native `rules:[{name,...}]` and encyclopedic
+# `nodes:[{type:'Rule',attrs:{name}}]` declarations.
 # ---------------------------------------------------------------------------
-def _build_seed_rule_index(seed_dir: Optional[str] = None) -> dict:
-    sdir = Path(seed_dir) if seed_dir else _SEED_DIR
-    idx: dict = {}
-    paths = sorted(sdir.glob("*.json")) + sorted((sdir / "generated").glob("*.json"))
-    for p in paths:
-        try:
-            d = json.loads(p.read_text())
-        except Exception:
-            continue
-        if not isinstance(d, dict):
-            continue
-        sid = d.get("id") or p.stem
-        for r in (d.get("rules") or []):
-            if isinstance(r, dict) and r.get("name"):
-                idx.setdefault(r["name"], sid)
-        for n in (d.get("nodes") or []):
-            if isinstance(n, dict) and n.get("type") == "Rule":
-                nm = (n.get("attrs") or {}).get("name")
-                if nm:
-                    idx.setdefault(nm, sid)
-    return idx
+def _build_seed_rule_index(seed_dir: Optional[str] = None, *,
+                           validated_index: Optional[dict] = None) -> dict:
+    if validated_index is not None:
+        return validated_index
+    from substrate.boot_all import _read_seed_rule_name_index
+
+    return _read_seed_rule_name_index(str(seed_dir or _SEED_DIR))
 
 
 # ---------------------------------------------------------------------------
 # THE FULL RULE MIRROR
 # ---------------------------------------------------------------------------
-def ensure_rule_provenance(agent, *, seed_dir: Optional[str] = None) -> dict:
+def ensure_rule_provenance(agent, *, seed_dir: Optional[str] = None,
+                           validated_seed_rule_index: Optional[dict] = None) -> dict:
     """Idempotent: mirror EVERY rule in `native.export_rules()` — active or
     not, chosen_action-writer or not — as one graph-resident `RuleSummary`
     {name, active, keywords_text, match_text, reads_text, writes_text,
@@ -265,6 +252,14 @@ def ensure_rule_provenance(agent, *, seed_dir: Optional[str] = None) -> dict:
     (kept as the primary return shape for existing callers); the last two
     break the union down for callers that care which population changed."""
     sub, native = _resolve(agent)
+    # Exact-query indexes are snapshots of RuleSummary attributes.  A
+    # provenance refresh may update an existing summary in place as well as
+    # mint new ones, so invalidate any adapter-local snapshot before touching
+    # the graph.
+    try:
+        setattr(agent, "_rule_summary_lookup_index", None)
+    except Exception:
+        pass
     try:
         rules = native.export_rules()
     except Exception as e:
@@ -294,7 +289,8 @@ def ensure_rule_provenance(agent, *, seed_dir: Optional[str] = None) -> dict:
         key = (nm, int(rank) if isinstance(rank, (int, float)) else 0)
         existing.setdefault(key, (n, at))
 
-    seed_idx = _build_seed_rule_index(seed_dir)
+    seed_idx = _build_seed_rule_index(
+        seed_dir, validated_index=validated_seed_rule_index)
     from collections import Counter
     name_counts = Counter(r.get("name") for r in rules if isinstance(r, dict) and r.get("name"))
     seen_rank: dict = {}
@@ -308,11 +304,20 @@ def ensure_rule_provenance(agent, *, seed_dir: Optional[str] = None) -> dict:
         rank = seen_rank.get(name, 0)
         seen_rank[name] = rank + 1
         ambiguous = name_counts[name] > 1
+        chash = _content_hash(r)
+        key = (name, rank)
+        if key in existing and existing[key][1].get("content_hash") == chash:
+            # The exported body is the cache key for every derived structural
+            # field below. Avoid walking the nested Where/effect trees or
+            # serializing a RuleSummary again when no supported rule edit has
+            # occurred. This keeps refresh idempotent without making the
+            # summary stale: authored changes produce a different hash.
+            unchanged += 1
+            continue
         match_text = _match_text(r.get("match"))
         reads_text = _reads_text(r.get("where"))
         writes_text, written_attrs = _effects_summary(r.get("effects"))
         thresholds = _find_threshold_lits(r.get("effects"))
-        chash = _content_hash(r)
         attrs = {
             "name": name,
             "name_rank": float(rank),
@@ -331,12 +336,8 @@ def ensure_rule_provenance(agent, *, seed_dir: Optional[str] = None) -> dict:
             "rule_json": json.dumps(r),
             "content_hash": chash,
         }
-        key = (name, rank)
         if key in existing:
-            nid, old = existing[key]
-            if old.get("content_hash") == chash:
-                unchanged += 1
-                continue
+            nid, _old = existing[key]
             for k, v in attrs.items():
                 try:
                     sub.set_attr(nid, k, v)
@@ -372,13 +373,17 @@ def ensure_rule_provenance(agent, *, seed_dir: Optional[str] = None) -> dict:
         rank = seen_rank_g.get(rid, 0)
         seen_rank_g[rid] = rank + 1
         ambiguous = name_counts_g[rid] > 1
+        rule_like = {"name": rid, "match": at.get("match"), "where": at.get("where"),
+                     "effects": at.get("effect")}
+        chash = _content_hash(rule_like)
+        key = (rid, rank)
+        if key in existing and existing[key][1].get("content_hash") == chash:
+            graph_unchanged += 1
+            continue
         match_text = _match_text(at.get("match"))
         reads_text = _reads_text(at.get("where"))
         writes_text, written_attrs = _effects_summary(at.get("effect"))
         thresholds = _find_threshold_lits(at.get("effect"))
-        rule_like = {"name": rid, "match": at.get("match"), "where": at.get("where"),
-                     "effects": at.get("effect")}
-        chash = _content_hash(rule_like)
         g_attrs = {
             "name": rid,
             "name_rank": float(rank),
@@ -399,12 +404,8 @@ def ensure_rule_provenance(agent, *, seed_dir: Optional[str] = None) -> dict:
             "graph_resident": 1.0,        # distinguishes a graph-native meta-rule/rule from a
             "graph_node_id": str(nid),    # struct-store one in the shared RuleSummary population
         }
-        key = (rid, rank)
         if key in existing:
-            enid, old = existing[key]
-            if old.get("content_hash") == chash:
-                graph_unchanged += 1
-                continue
+            enid, _old = existing[key]
             for k, v in g_attrs.items():
                 try:
                     sub.set_attr(enid, k, v)
@@ -505,10 +506,13 @@ def ensure_program_provenance(agent) -> dict:
     return {"total": total, "minted": minted, "updated": updated, "unchanged": unchanged}
 
 
-def ensure_self_model(agent, *, seed_dir: Optional[str] = None) -> dict:
+def ensure_self_model(agent, *, seed_dir: Optional[str] = None,
+                      validated_seed_rule_index: Optional[dict] = None) -> dict:
     """Refresh BOTH mirrors (rules + programs). The one call a booted agent
     or a post-add_rule caller needs."""
-    return {"rules": ensure_rule_provenance(agent, seed_dir=seed_dir),
+    return {"rules": ensure_rule_provenance(
+                agent, seed_dir=seed_dir,
+                validated_seed_rule_index=validated_seed_rule_index),
             "programs": ensure_program_provenance(agent)}
 
 
@@ -532,16 +536,71 @@ def _find_rule_summaries(sub, meta_arg: Optional[str]) -> list:
     genuinely ambiguous in the rule store itself, two distinct match/effects
     bodies sharing one name; see `ensure_rule_provenance`'s comment. Ordered
     by `name_rank` so callers report them in a stable, deterministic order."""
-    if not meta_arg:
-        return []
-    guess = _norm_name(meta_arg)
-    kw = meta_arg.strip().lower()
-    hits = []
-    for n in sub.nodes(_RULE_SUMMARY_TYPE):
-        at = sub.node(n)["attrs"]
-        if at.get("name") == guess or (at.get("keywords_text") or "").strip().lower() == kw:
-            hits.append((n, at))
-    hits.sort(key=lambda t: t[1].get("name_rank", 0.0))
+    return _find_rule_summaries_many(sub, [meta_arg]).get(meta_arg, []) if meta_arg else []
+
+
+def _find_rule_summaries_many(sub, meta_args) -> dict:
+    """Resolve multiple exact rule queries in one graph pass.
+
+    This preserves `_find_rule_summaries`' name-or-keywords equality and
+    stable name-rank ordering, while avoiding repeated full RuleSummary scans
+    when a parsed utterance has several candidate gap tokens.
+    """
+    return _find_rule_summaries_many_indexed(
+        sub, meta_args, index=_build_rule_summary_exact_index(sub))
+
+
+def _build_rule_summary_exact_index(sub) -> dict:
+    """Snapshot the two exact lookup fields used by reflexive parsing.
+
+    Retain only node identities, not a duplicate Python attrs dict for every
+    RuleSummary.  Matching remains exact; attributes are read from the graph
+    only for actual hits. Callers that retain the index must invalidate it
+    after a RuleSummary refresh.
+    """
+    by_name = {}
+    by_keywords = {}
+    for node in sub.nodes(_RULE_SUMMARY_TYPE):
+        attrs = sub.node(node)["attrs"]
+        name = attrs.get("name")
+        rank = attrs.get("name_rank", 0.0)
+        if not isinstance(rank, (int, float)):
+            rank = 0.0
+        if name:
+            by_name.setdefault(name, []).append((rank, node))
+        keywords = (attrs.get("keywords_text") or "").strip().lower()
+        if keywords:
+            by_keywords.setdefault(keywords, []).append((rank, node))
+    for rows in (*by_name.values(), *by_keywords.values()):
+        rows.sort(key=lambda row: row[0])
+    return {
+        "name": {key: tuple(node for _rank, node in rows)
+                 for key, rows in by_name.items()},
+        "keywords": {key: tuple(node for _rank, node in rows)
+                     for key, rows in by_keywords.items()},
+    }
+
+
+def _find_rule_summaries_many_indexed(sub, meta_args, *, index) -> dict:
+    """Perform the batched exact query over a prebuilt summary index."""
+    queries = {}
+    for arg in meta_args:
+        if arg:
+            queries[arg] = (_norm_name(arg), arg.strip().lower())
+    if not queries:
+        return {}
+    hits = {arg: [] for arg in queries}
+    by_name = index.get("name", {}) if isinstance(index, dict) else {}
+    by_keywords = index.get("keywords", {}) if isinstance(index, dict) else {}
+    for arg, (guess, kw) in queries.items():
+        seen = set()
+        for node in (*by_name.get(guess, ()),
+                     *by_keywords.get(kw, ())):
+            if node not in seen:
+                hits[arg].append((node, sub.node(node)["attrs"]))
+                seen.add(node)
+    for rows in hits.values():
+        rows.sort(key=lambda t: t[1].get("name_rank", 0.0))
     return hits
 
 

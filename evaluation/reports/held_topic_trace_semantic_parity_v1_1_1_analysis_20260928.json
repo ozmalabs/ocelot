@@ -1,0 +1,5214 @@
+{
+  "all_checks_pass": true,
+  "checks": {
+    "baseline_repeats_across_workers": true,
+    "replicate_0_fixed_schedule": true,
+    "replicate_0_frame_schema_checks": true,
+    "replicate_0_oracle_arm_parity": true,
+    "replicate_0_semantic_parity": true,
+    "replicate_0_trace_checks": true,
+    "replicate_0_worker_lock_stable": true,
+    "replicate_1_fixed_schedule": true,
+    "replicate_1_frame_schema_checks": true,
+    "replicate_1_oracle_arm_parity": true,
+    "replicate_1_semantic_parity": true,
+    "replicate_1_trace_checks": true,
+    "replicate_1_worker_lock_stable": true,
+    "replicate_2_fixed_schedule": true,
+    "replicate_2_frame_schema_checks": true,
+    "replicate_2_oracle_arm_parity": true,
+    "replicate_2_semantic_parity": true,
+    "replicate_2_trace_checks": true,
+    "replicate_2_worker_lock_stable": true,
+    "source_stable_global": true,
+    "three_distinct_pids": true,
+    "three_replicate_ids": true,
+    "three_workers": true,
+    "trace_repeats_across_workers": true
+  },
+  "claim_boundary": "Paired baseline/trace evidence is limited to the fixed seven-query held-topic suite, the locked source/native build, and the measured trace surface.",
+  "input_sha256": "6ccd782643ead4ed5a62544eef4aec2a192db873a4f17fbbbe0ef6817dd3ca10",
+  "run_id": "held-topic-trace-semantic-parity-v1.1-20260928",
+  "schema_version": 1,
+  "trace_capability_oracle_pass": false,
+  "trace_semantic_transparency_pass": true,
+  "worker_analyses": [
+    {
+      "arm_order": [
+        "baseline",
+        "trace"
+      ],
+      "baseline_oracle": {
+        "passed": 9,
+        "queries": [
+          {
+            "expected": "exact supported answer with grounded held evidence and released receipt",
+            "passed": true,
+            "prompt": "What do you know about copper?",
+            "topic": "copper"
+          },
+          {
+            "expected": "exact supported answer with grounded held evidence and released receipt",
+            "passed": true,
+            "prompt": "What do you know about basalt?",
+            "topic": "basalt"
+          },
+          {
+            "expected": "exact supported answer with grounded held evidence and released receipt",
+            "passed": true,
+            "prompt": "What do you know about hexagon?",
+            "topic": "hexagon"
+          },
+          {
+            "expected": "exact supported answer with grounded held evidence and released receipt",
+            "passed": true,
+            "prompt": "What is copper?",
+            "topic": "copper"
+          },
+          {
+            "expected": "exact supported answer with grounded held evidence and released receipt",
+            "passed": false,
+            "prompt": "Can you tell me about copper?",
+            "topic": "copper"
+          },
+          {
+            "expected": "unknown topic remains unresolved without unrelated answer leakage",
+            "passed": true,
+            "prompt": "What do you know about unobtainium?",
+            "topic": "unobtainium"
+          },
+          {
+            "expected": "injected local hit is returned, grounded, and released; stale requests superseded",
+            "passed": true,
+            "prompt": "What do you know about localhitium?",
+            "topic": "localhitium"
+          }
+        ],
+        "teaching": [
+          {
+            "passed": true,
+            "topic": "copper"
+          },
+          {
+            "passed": true,
+            "topic": "basalt"
+          },
+          {
+            "passed": true,
+            "topic": "hexagon"
+          }
+        ],
+        "total": 10
+      },
+      "baseline_signature_sha256": "4f9292068adf473ccdaccb28b964a7544d71618ddab5af47f24f8b8338fe60fd",
+      "pid": 6,
+      "replicate": 0,
+      "trace_analysis": {
+        "calls": [
+          {
+            "access": {
+              "dropped_events": 0,
+              "recorded_weight_conserves": true,
+              "row_count": 0,
+              "static_event_categories": {},
+              "static_mismatch_event_weights": {},
+              "static_rule_uids": 2340,
+              "unresolved_rule_uids": [],
+              "weighted_access_events": 0
+            },
+            "checks": {
+              "access_count_conserves": true,
+              "access_zero_drops": true,
+              "all_access_uids_resolve": true,
+              "global_work_assigned": true,
+              "no_static_mismatch": true,
+              "operation_markers_complete": true,
+              "scope_work_reconciles": true,
+              "work_rows_valid": true,
+              "work_zero_drops": true
+            },
+            "index": 0,
+            "operation": "teaching",
+            "work_reconciliation": {
+              "all_global_work_assigned_to_scopes": true,
+              "all_scope_counters_reconcile": true,
+              "dropped_rows": 0,
+              "every_operation_has_exactly_one_kind_marker": true,
+              "operation_count": 0,
+              "operation_kind_marker_count": 0,
+              "process_global_deltas": {
+                "deferred_queue:fb_samples:drain_batches": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:fb_samples:drained_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:fb_samples:enqueued_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:net_collapses:drain_batches": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:net_collapses:drained_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:net_collapses:enqueued_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_edits:drain_batches": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_edits:drained_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_edits:enqueued_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_patches:drain_batches": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_patches:drained_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_patches:enqueued_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:track_identity:drain_batches": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:track_identity:drained_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:track_identity:enqueued_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "scheduler_dirty_vector_slots": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "scheduler_external_poll_slots": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "scheduler_fixedpoint_probe_slots": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "scheduler_passes": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "scheduler_selected_rules": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                }
+              },
+              "scope_count": 0,
+              "scope_counter_deltas": {},
+              "unknown_work_kinds": {},
+              "valid_rows": true
+            }
+          },
+          {
+            "access": {
+              "dropped_events": 0,
+              "recorded_weight_conserves": true,
+              "row_count": 0,
+              "static_event_categories": {},
+              "static_mismatch_event_weights": {},
+              "static_rule_uids": 2340,
+              "unresolved_rule_uids": [],
+              "weighted_access_events": 0
+            },
+            "checks": {
+              "access_count_conserves": true,
+              "access_zero_drops": true,
+              "all_access_uids_resolve": true,
+              "global_work_assigned": true,
+              "no_static_mismatch": true,
+              "operation_markers_complete": true,
+              "scope_work_reconciles": true,
+              "work_rows_valid": true,
+              "work_zero_drops": true
+            },
+            "index": 1,
+            "operation": "teaching",
+            "work_reconciliation": {
+              "all_global_work_assigned_to_scopes": true,
+              "all_scope_counters_reconcile": true,
+              "dropped_rows": 0,
+              "every_operation_has_exactly_one_kind_marker": true,
+              "operation_count": 0,
+              "operation_kind_marker_count": 0,
+              "process_global_deltas": {
+                "deferred_queue:fb_samples:drain_batches": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:fb_samples:drained_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:fb_samples:enqueued_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:net_collapses:drain_batches": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:net_collapses:drained_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:net_collapses:enqueued_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_edits:drain_batches": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_edits:drained_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_edits:enqueued_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_patches:drain_batches": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_patches:drained_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_patches:enqueued_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:track_identity:drain_batches": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:track_identity:drained_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:track_identity:enqueued_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "scheduler_dirty_vector_slots": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "scheduler_external_poll_slots": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "scheduler_fixedpoint_probe_slots": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "scheduler_passes": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "scheduler_selected_rules": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                }
+              },
+              "scope_count": 0,
+              "scope_counter_deltas": {},
+              "unknown_work_kinds": {},
+              "valid_rows": true
+            }
+          },
+          {
+            "access": {
+              "dropped_events": 0,
+              "recorded_weight_conserves": true,
+              "row_count": 0,
+              "static_event_categories": {},
+              "static_mismatch_event_weights": {},
+              "static_rule_uids": 2340,
+              "unresolved_rule_uids": [],
+              "weighted_access_events": 0
+            },
+            "checks": {
+              "access_count_conserves": true,
+              "access_zero_drops": true,
+              "all_access_uids_resolve": true,
+              "global_work_assigned": true,
+              "no_static_mismatch": true,
+              "operation_markers_complete": true,
+              "scope_work_reconciles": true,
+              "work_rows_valid": true,
+              "work_zero_drops": true
+            },
+            "index": 2,
+            "operation": "teaching",
+            "work_reconciliation": {
+              "all_global_work_assigned_to_scopes": true,
+              "all_scope_counters_reconcile": true,
+              "dropped_rows": 0,
+              "every_operation_has_exactly_one_kind_marker": true,
+              "operation_count": 0,
+              "operation_kind_marker_count": 0,
+              "process_global_deltas": {
+                "deferred_queue:fb_samples:drain_batches": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:fb_samples:drained_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:fb_samples:enqueued_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:net_collapses:drain_batches": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:net_collapses:drained_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:net_collapses:enqueued_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_edits:drain_batches": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_edits:drained_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_edits:enqueued_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_patches:drain_batches": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_patches:drained_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_patches:enqueued_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:track_identity:drain_batches": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:track_identity:drained_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:track_identity:enqueued_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "scheduler_dirty_vector_slots": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "scheduler_external_poll_slots": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "scheduler_fixedpoint_probe_slots": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "scheduler_passes": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "scheduler_selected_rules": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                }
+              },
+              "scope_count": 0,
+              "scope_counter_deltas": {},
+              "unknown_work_kinds": {},
+              "valid_rows": true
+            }
+          },
+          {
+            "access": {
+              "dropped_events": 0,
+              "recorded_weight_conserves": true,
+              "row_count": 57164,
+              "static_event_categories": {
+                "implicit_read_covered_by_static_write": 14,
+                "implicit_read_explicitly_declared": 1,
+                "static_key_match": 265032,
+                "static_read_wildcard": 50044
+              },
+              "static_mismatch_event_weights": {},
+              "static_rule_uids": 2346,
+              "unresolved_rule_uids": [],
+              "weighted_access_events": 315091
+            },
+            "checks": {
+              "access_count_conserves": true,
+              "access_zero_drops": true,
+              "all_access_uids_resolve": true,
+              "global_work_assigned": true,
+              "no_static_mismatch": true,
+              "operation_markers_complete": true,
+              "scope_work_reconciles": true,
+              "work_rows_valid": true,
+              "work_zero_drops": true
+            },
+            "index": 3,
+            "operation": "query",
+            "work_reconciliation": {
+              "all_global_work_assigned_to_scopes": true,
+              "all_scope_counters_reconcile": true,
+              "dropped_rows": 0,
+              "every_operation_has_exactly_one_kind_marker": true,
+              "operation_count": 29,
+              "operation_kind_marker_count": 29,
+              "process_global_deltas": {
+                "deferred_queue:fb_samples:drain_batches": {
+                  "delta": 0,
+                  "global": 7,
+                  "scoped_sum": 7
+                },
+                "deferred_queue:fb_samples:drained_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:fb_samples:enqueued_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:net_collapses:drain_batches": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:net_collapses:drained_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:net_collapses:enqueued_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_edits:drain_batches": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_edits:drained_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_edits:enqueued_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_patches:drain_batches": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_patches:drained_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_patches:enqueued_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:track_identity:drain_batches": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:track_identity:drained_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:track_identity:enqueued_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "scheduler_dirty_vector_slots": {
+                  "delta": 0,
+                  "global": 28120,
+                  "scoped_sum": 28120
+                },
+                "scheduler_external_poll_slots": {
+                  "delta": 0,
+                  "global": 28120,
+                  "scoped_sum": 28120
+                },
+                "scheduler_fixedpoint_probe_slots": {
+                  "delta": 0,
+                  "global": 334,
+                  "scoped_sum": 334
+                },
+                "scheduler_passes": {
+                  "delta": 0,
+                  "global": 14,
+                  "scoped_sum": 14
+                },
+                "scheduler_selected_rules": {
+                  "delta": 0,
+                  "global": 19748,
+                  "scoped_sum": 19748
+                }
+              },
+              "scope_count": 4,
+              "scope_counter_deltas": {
+                "104390590378280:deferred_queue:fb_samples:drain_batches": 0,
+                "104390872785784:scheduler_dirty_vector_slots": 0,
+                "104390872785784:scheduler_external_poll_slots": 0,
+                "104390872785784:scheduler_fixedpoint_probe_slots": 0,
+                "104390872785784:scheduler_passes": 0,
+                "104390872785784:scheduler_selected_rules": 0,
+                "104390920500792:scheduler_dirty_vector_slots": 0,
+                "104390920500792:scheduler_external_poll_slots": 0,
+                "104390920500792:scheduler_fixedpoint_probe_slots": 0,
+                "104390920500792:scheduler_passes": 0,
+                "104390920500792:scheduler_selected_rules": 0
+              },
+              "unknown_work_kinds": {},
+              "valid_rows": true
+            }
+          },
+          {
+            "access": {
+              "dropped_events": 0,
+              "recorded_weight_conserves": true,
+              "row_count": 16120,
+              "static_event_categories": {
+                "implicit_read_covered_by_static_write": 12,
+                "implicit_read_explicitly_declared": 1,
+                "static_key_match": 117212,
+                "static_read_wildcard": 106
+              },
+              "static_mismatch_event_weights": {},
+              "static_rule_uids": 2346,
+              "unresolved_rule_uids": [],
+              "weighted_access_events": 117331
+            },
+            "checks": {
+              "access_count_conserves": true,
+              "access_zero_drops": true,
+              "all_access_uids_resolve": true,
+              "global_work_assigned": true,
+              "no_static_mismatch": true,
+              "operation_markers_complete": true,
+              "scope_work_reconciles": true,
+              "work_rows_valid": true,
+              "work_zero_drops": true
+            },
+            "index": 4,
+            "operation": "query",
+            "work_reconciliation": {
+              "all_global_work_assigned_to_scopes": true,
+              "all_scope_counters_reconcile": true,
+              "dropped_rows": 0,
+              "every_operation_has_exactly_one_kind_marker": true,
+              "operation_count": 39,
+              "operation_kind_marker_count": 39,
+              "process_global_deltas": {
+                "deferred_queue:fb_samples:drain_batches": {
+                  "delta": 0,
+                  "global": 9,
+                  "scoped_sum": 9
+                },
+                "deferred_queue:fb_samples:drained_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:fb_samples:enqueued_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:net_collapses:drain_batches": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:net_collapses:drained_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:net_collapses:enqueued_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_edits:drain_batches": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_edits:drained_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_edits:enqueued_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_patches:drain_batches": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_patches:drained_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_patches:enqueued_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:track_identity:drain_batches": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:track_identity:drained_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:track_identity:enqueued_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "scheduler_dirty_vector_slots": {
+                  "delta": 0,
+                  "global": 23468,
+                  "scoped_sum": 23468
+                },
+                "scheduler_external_poll_slots": {
+                  "delta": 0,
+                  "global": 23468,
+                  "scoped_sum": 23468
+                },
+                "scheduler_fixedpoint_probe_slots": {
+                  "delta": 0,
+                  "global": 323,
+                  "scoped_sum": 323
+                },
+                "scheduler_passes": {
+                  "delta": 0,
+                  "global": 16,
+                  "scoped_sum": 16
+                },
+                "scheduler_selected_rules": {
+                  "delta": 0,
+                  "global": 16591,
+                  "scoped_sum": 16591
+                }
+              },
+              "scope_count": 5,
+              "scope_counter_deltas": {
+                "104390124048552:deferred_queue:fb_samples:drain_batches": 0,
+                "104390127686744:scheduler_passes": 0,
+                "104390145341960:scheduler_passes": 0,
+                "104390564912264:scheduler_dirty_vector_slots": 0,
+                "104390564912264:scheduler_external_poll_slots": 0,
+                "104390564912264:scheduler_fixedpoint_probe_slots": 0,
+                "104390564912264:scheduler_passes": 0,
+                "104390564912264:scheduler_selected_rules": 0,
+                "104390920500792:scheduler_dirty_vector_slots": 0,
+                "104390920500792:scheduler_external_poll_slots": 0,
+                "104390920500792:scheduler_fixedpoint_probe_slots": 0,
+                "104390920500792:scheduler_passes": 0,
+                "104390920500792:scheduler_selected_rules": 0
+              },
+              "unknown_work_kinds": {},
+              "valid_rows": true
+            }
+          },
+          {
+            "access": {
+              "dropped_events": 0,
+              "recorded_weight_conserves": true,
+              "row_count": 16758,
+              "static_event_categories": {
+                "implicit_read_covered_by_static_write": 12,
+                "implicit_read_explicitly_declared": 1,
+                "static_key_match": 124275,
+                "static_read_wildcard": 146
+              },
+              "static_mismatch_event_weights": {},
+              "static_rule_uids": 2346,
+              "unresolved_rule_uids": [],
+              "weighted_access_events": 124434
+            },
+            "checks": {
+              "access_count_conserves": true,
+              "access_zero_drops": true,
+              "all_access_uids_resolve": true,
+              "global_work_assigned": true,
+              "no_static_mismatch": true,
+              "operation_markers_complete": true,
+              "scope_work_reconciles": true,
+              "work_rows_valid": true,
+              "work_zero_drops": true
+            },
+            "index": 5,
+            "operation": "query",
+            "work_reconciliation": {
+              "all_global_work_assigned_to_scopes": true,
+              "all_scope_counters_reconcile": true,
+              "dropped_rows": 0,
+              "every_operation_has_exactly_one_kind_marker": true,
+              "operation_count": 35,
+              "operation_kind_marker_count": 35,
+              "process_global_deltas": {
+                "deferred_queue:fb_samples:drain_batches": {
+                  "delta": 0,
+                  "global": 5,
+                  "scoped_sum": 5
+                },
+                "deferred_queue:fb_samples:drained_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:fb_samples:enqueued_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:net_collapses:drain_batches": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:net_collapses:drained_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:net_collapses:enqueued_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_edits:drain_batches": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_edits:drained_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_edits:enqueued_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_patches:drain_batches": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_patches:drained_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_patches:enqueued_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:track_identity:drain_batches": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:track_identity:drained_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:track_identity:enqueued_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "scheduler_dirty_vector_slots": {
+                  "delta": 0,
+                  "global": 23468,
+                  "scoped_sum": 23468
+                },
+                "scheduler_external_poll_slots": {
+                  "delta": 0,
+                  "global": 23468,
+                  "scoped_sum": 23468
+                },
+                "scheduler_fixedpoint_probe_slots": {
+                  "delta": 0,
+                  "global": 323,
+                  "scoped_sum": 323
+                },
+                "scheduler_passes": {
+                  "delta": 0,
+                  "global": 16,
+                  "scoped_sum": 16
+                },
+                "scheduler_selected_rules": {
+                  "delta": 0,
+                  "global": 16591,
+                  "scoped_sum": 16591
+                }
+              },
+              "scope_count": 5,
+              "scope_counter_deltas": {
+                "104390086700392:scheduler_passes": 0,
+                "104390094347176:scheduler_dirty_vector_slots": 0,
+                "104390094347176:scheduler_external_poll_slots": 0,
+                "104390094347176:scheduler_fixedpoint_probe_slots": 0,
+                "104390094347176:scheduler_passes": 0,
+                "104390094347176:scheduler_selected_rules": 0,
+                "104390124048552:scheduler_passes": 0,
+                "104390564912264:deferred_queue:fb_samples:drain_batches": 0,
+                "104390920500792:scheduler_dirty_vector_slots": 0,
+                "104390920500792:scheduler_external_poll_slots": 0,
+                "104390920500792:scheduler_fixedpoint_probe_slots": 0,
+                "104390920500792:scheduler_passes": 0,
+                "104390920500792:scheduler_selected_rules": 0
+              },
+              "unknown_work_kinds": {},
+              "valid_rows": true
+            }
+          },
+          {
+            "access": {
+              "dropped_events": 0,
+              "recorded_weight_conserves": true,
+              "row_count": 17318,
+              "static_event_categories": {
+                "implicit_read_covered_by_static_write": 12,
+                "implicit_read_explicitly_declared": 1,
+                "static_key_match": 131042,
+                "static_read_wildcard": 150
+              },
+              "static_mismatch_event_weights": {},
+              "static_rule_uids": 2346,
+              "unresolved_rule_uids": [],
+              "weighted_access_events": 131205
+            },
+            "checks": {
+              "access_count_conserves": true,
+              "access_zero_drops": true,
+              "all_access_uids_resolve": true,
+              "global_work_assigned": true,
+              "no_static_mismatch": true,
+              "operation_markers_complete": true,
+              "scope_work_reconciles": true,
+              "work_rows_valid": true,
+              "work_zero_drops": true
+            },
+            "index": 6,
+            "operation": "query",
+            "work_reconciliation": {
+              "all_global_work_assigned_to_scopes": true,
+              "all_scope_counters_reconcile": true,
+              "dropped_rows": 0,
+              "every_operation_has_exactly_one_kind_marker": true,
+              "operation_count": 35,
+              "operation_kind_marker_count": 35,
+              "process_global_deltas": {
+                "deferred_queue:fb_samples:drain_batches": {
+                  "delta": 0,
+                  "global": 5,
+                  "scoped_sum": 5
+                },
+                "deferred_queue:fb_samples:drained_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:fb_samples:enqueued_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:net_collapses:drain_batches": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:net_collapses:drained_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:net_collapses:enqueued_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_edits:drain_batches": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_edits:drained_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_edits:enqueued_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_patches:drain_batches": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_patches:drained_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_patches:enqueued_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:track_identity:drain_batches": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:track_identity:drained_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:track_identity:enqueued_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "scheduler_dirty_vector_slots": {
+                  "delta": 0,
+                  "global": 23468,
+                  "scoped_sum": 23468
+                },
+                "scheduler_external_poll_slots": {
+                  "delta": 0,
+                  "global": 23468,
+                  "scoped_sum": 23468
+                },
+                "scheduler_fixedpoint_probe_slots": {
+                  "delta": 0,
+                  "global": 323,
+                  "scoped_sum": 323
+                },
+                "scheduler_passes": {
+                  "delta": 0,
+                  "global": 16,
+                  "scoped_sum": 16
+                },
+                "scheduler_selected_rules": {
+                  "delta": 0,
+                  "global": 16592,
+                  "scoped_sum": 16592
+                }
+              },
+              "scope_count": 5,
+              "scope_counter_deltas": {
+                "104390087775368:scheduler_passes": 0,
+                "104390108188232:deferred_queue:fb_samples:drain_batches": 0,
+                "104390127686744:scheduler_passes": 0,
+                "104390135148376:scheduler_dirty_vector_slots": 0,
+                "104390135148376:scheduler_external_poll_slots": 0,
+                "104390135148376:scheduler_fixedpoint_probe_slots": 0,
+                "104390135148376:scheduler_passes": 0,
+                "104390135148376:scheduler_selected_rules": 0,
+                "104390920500792:scheduler_dirty_vector_slots": 0,
+                "104390920500792:scheduler_external_poll_slots": 0,
+                "104390920500792:scheduler_fixedpoint_probe_slots": 0,
+                "104390920500792:scheduler_passes": 0,
+                "104390920500792:scheduler_selected_rules": 0
+              },
+              "unknown_work_kinds": {},
+              "valid_rows": true
+            }
+          },
+          {
+            "access": {
+              "dropped_events": 0,
+              "recorded_weight_conserves": true,
+              "row_count": 18014,
+              "static_event_categories": {
+                "implicit_read_covered_by_static_write": 10,
+                "implicit_read_explicitly_declared": 1,
+                "static_key_match": 128042,
+                "static_read_wildcard": 276
+              },
+              "static_mismatch_event_weights": {},
+              "static_rule_uids": 2346,
+              "unresolved_rule_uids": [],
+              "weighted_access_events": 128329
+            },
+            "checks": {
+              "access_count_conserves": true,
+              "access_zero_drops": true,
+              "all_access_uids_resolve": true,
+              "global_work_assigned": true,
+              "no_static_mismatch": true,
+              "operation_markers_complete": true,
+              "scope_work_reconciles": true,
+              "work_rows_valid": true,
+              "work_zero_drops": true
+            },
+            "index": 7,
+            "operation": "query",
+            "work_reconciliation": {
+              "all_global_work_assigned_to_scopes": true,
+              "all_scope_counters_reconcile": true,
+              "dropped_rows": 0,
+              "every_operation_has_exactly_one_kind_marker": true,
+              "operation_count": 43,
+              "operation_kind_marker_count": 43,
+              "process_global_deltas": {
+                "deferred_queue:fb_samples:drain_batches": {
+                  "delta": 0,
+                  "global": 9,
+                  "scoped_sum": 9
+                },
+                "deferred_queue:fb_samples:drained_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:fb_samples:enqueued_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:net_collapses:drain_batches": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:net_collapses:drained_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:net_collapses:enqueued_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_edits:drain_batches": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_edits:drained_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_edits:enqueued_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_patches:drain_batches": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_patches:drained_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_patches:enqueued_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:track_identity:drain_batches": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:track_identity:drained_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:track_identity:enqueued_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "scheduler_dirty_vector_slots": {
+                  "delta": 0,
+                  "global": 25814,
+                  "scoped_sum": 25814
+                },
+                "scheduler_external_poll_slots": {
+                  "delta": 0,
+                  "global": 28160,
+                  "scoped_sum": 28160
+                },
+                "scheduler_fixedpoint_probe_slots": {
+                  "delta": 0,
+                  "global": 2682,
+                  "scoped_sum": 2682
+                },
+                "scheduler_passes": {
+                  "delta": 0,
+                  "global": 18,
+                  "scoped_sum": 18
+                },
+                "scheduler_selected_rules": {
+                  "delta": 0,
+                  "global": 16470,
+                  "scoped_sum": 16470
+                }
+              },
+              "scope_count": 5,
+              "scope_counter_deltas": {
+                "104390087775368:scheduler_passes": 0,
+                "104390088863544:scheduler_dirty_vector_slots": 0,
+                "104390088863544:scheduler_external_poll_slots": 0,
+                "104390088863544:scheduler_fixedpoint_probe_slots": 0,
+                "104390088863544:scheduler_passes": 0,
+                "104390088863544:scheduler_selected_rules": 0,
+                "104390181533640:deferred_queue:fb_samples:drain_batches": 0,
+                "104390185810152:scheduler_passes": 0,
+                "104390920500792:scheduler_dirty_vector_slots": 0,
+                "104390920500792:scheduler_external_poll_slots": 0,
+                "104390920500792:scheduler_fixedpoint_probe_slots": 0,
+                "104390920500792:scheduler_passes": 0,
+                "104390920500792:scheduler_selected_rules": 0
+              },
+              "unknown_work_kinds": {},
+              "valid_rows": true
+            }
+          },
+          {
+            "access": {
+              "dropped_events": 0,
+              "recorded_weight_conserves": true,
+              "row_count": 18783,
+              "static_event_categories": {
+                "implicit_read_covered_by_static_write": 12,
+                "implicit_read_explicitly_declared": 1,
+                "static_key_match": 148580,
+                "static_read_wildcard": 286
+              },
+              "static_mismatch_event_weights": {},
+              "static_rule_uids": 2346,
+              "unresolved_rule_uids": [],
+              "weighted_access_events": 148879
+            },
+            "checks": {
+              "access_count_conserves": true,
+              "access_zero_drops": true,
+              "all_access_uids_resolve": true,
+              "global_work_assigned": true,
+              "no_static_mismatch": true,
+              "operation_markers_complete": true,
+              "scope_work_reconciles": true,
+              "work_rows_valid": true,
+              "work_zero_drops": true
+            },
+            "index": 8,
+            "operation": "query",
+            "work_reconciliation": {
+              "all_global_work_assigned_to_scopes": true,
+              "all_scope_counters_reconcile": true,
+              "dropped_rows": 0,
+              "every_operation_has_exactly_one_kind_marker": true,
+              "operation_count": 40,
+              "operation_kind_marker_count": 40,
+              "process_global_deltas": {
+                "deferred_queue:fb_samples:drain_batches": {
+                  "delta": 0,
+                  "global": 7,
+                  "scoped_sum": 7
+                },
+                "deferred_queue:fb_samples:drained_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:fb_samples:enqueued_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:net_collapses:drain_batches": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:net_collapses:drained_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:net_collapses:enqueued_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_edits:drain_batches": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_edits:drained_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_edits:enqueued_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_patches:drain_batches": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_patches:drained_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_patches:enqueued_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:track_identity:drain_batches": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:track_identity:drained_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:track_identity:enqueued_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "scheduler_dirty_vector_slots": {
+                  "delta": 0,
+                  "global": 23468,
+                  "scoped_sum": 23468
+                },
+                "scheduler_external_poll_slots": {
+                  "delta": 0,
+                  "global": 23468,
+                  "scoped_sum": 23468
+                },
+                "scheduler_fixedpoint_probe_slots": {
+                  "delta": 0,
+                  "global": 323,
+                  "scoped_sum": 323
+                },
+                "scheduler_passes": {
+                  "delta": 0,
+                  "global": 16,
+                  "scoped_sum": 16
+                },
+                "scheduler_selected_rules": {
+                  "delta": 0,
+                  "global": 16591,
+                  "scoped_sum": 16591
+                }
+              },
+              "scope_count": 5,
+              "scope_counter_deltas": {
+                "104390087975464:deferred_queue:fb_samples:drain_batches": 0,
+                "104390155318232:scheduler_passes": 0,
+                "104390175493272:scheduler_dirty_vector_slots": 0,
+                "104390175493272:scheduler_external_poll_slots": 0,
+                "104390175493272:scheduler_fixedpoint_probe_slots": 0,
+                "104390175493272:scheduler_passes": 0,
+                "104390175493272:scheduler_selected_rules": 0,
+                "104390256625896:scheduler_passes": 0,
+                "104390920500792:scheduler_dirty_vector_slots": 0,
+                "104390920500792:scheduler_external_poll_slots": 0,
+                "104390920500792:scheduler_fixedpoint_probe_slots": 0,
+                "104390920500792:scheduler_passes": 0,
+                "104390920500792:scheduler_selected_rules": 0
+              },
+              "unknown_work_kinds": {},
+              "valid_rows": true
+            }
+          },
+          {
+            "access": {
+              "dropped_events": 0,
+              "recorded_weight_conserves": true,
+              "row_count": 19375,
+              "static_event_categories": {
+                "implicit_read_covered_by_static_write": 12,
+                "implicit_read_explicitly_declared": 1,
+                "static_key_match": 158205,
+                "static_read_wildcard": 326
+              },
+              "static_mismatch_event_weights": {},
+              "static_rule_uids": 2346,
+              "unresolved_rule_uids": [],
+              "weighted_access_events": 158544
+            },
+            "checks": {
+              "access_count_conserves": true,
+              "access_zero_drops": true,
+              "all_access_uids_resolve": true,
+              "global_work_assigned": true,
+              "no_static_mismatch": true,
+              "operation_markers_complete": true,
+              "scope_work_reconciles": true,
+              "work_rows_valid": true,
+              "work_zero_drops": true
+            },
+            "index": 9,
+            "operation": "query",
+            "work_reconciliation": {
+              "all_global_work_assigned_to_scopes": true,
+              "all_scope_counters_reconcile": true,
+              "dropped_rows": 0,
+              "every_operation_has_exactly_one_kind_marker": true,
+              "operation_count": 45,
+              "operation_kind_marker_count": 45,
+              "process_global_deltas": {
+                "deferred_queue:fb_samples:drain_batches": {
+                  "delta": 0,
+                  "global": 9,
+                  "scoped_sum": 9
+                },
+                "deferred_queue:fb_samples:drained_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:fb_samples:enqueued_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:net_collapses:drain_batches": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:net_collapses:drained_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:net_collapses:enqueued_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_edits:drain_batches": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_edits:drained_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_edits:enqueued_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_patches:drain_batches": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_patches:drained_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_patches:enqueued_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:track_identity:drain_batches": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:track_identity:drained_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:track_identity:enqueued_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "scheduler_dirty_vector_slots": {
+                  "delta": 0,
+                  "global": 23468,
+                  "scoped_sum": 23468
+                },
+                "scheduler_external_poll_slots": {
+                  "delta": 0,
+                  "global": 23468,
+                  "scoped_sum": 23468
+                },
+                "scheduler_fixedpoint_probe_slots": {
+                  "delta": 0,
+                  "global": 323,
+                  "scoped_sum": 323
+                },
+                "scheduler_passes": {
+                  "delta": 0,
+                  "global": 16,
+                  "scoped_sum": 16
+                },
+                "scheduler_selected_rules": {
+                  "delta": 0,
+                  "global": 16591,
+                  "scoped_sum": 16591
+                }
+              },
+              "scope_count": 5,
+              "scope_counter_deltas": {
+                "104390141389976:scheduler_passes": 0,
+                "104390175469640:deferred_queue:fb_samples:drain_batches": 0,
+                "104390179564504:scheduler_passes": 0,
+                "104390920500792:scheduler_dirty_vector_slots": 0,
+                "104390920500792:scheduler_external_poll_slots": 0,
+                "104390920500792:scheduler_fixedpoint_probe_slots": 0,
+                "104390920500792:scheduler_passes": 0,
+                "104390920500792:scheduler_selected_rules": 0,
+                "104390974381736:scheduler_dirty_vector_slots": 0,
+                "104390974381736:scheduler_external_poll_slots": 0,
+                "104390974381736:scheduler_fixedpoint_probe_slots": 0,
+                "104390974381736:scheduler_passes": 0,
+                "104390974381736:scheduler_selected_rules": 0
+              },
+              "unknown_work_kinds": {},
+              "valid_rows": true
+            }
+          }
+        ],
+        "task_frame_checks": [
+          {
+            "edge_cut_recomputes": true,
+            "external_node_metadata_exact": true,
+            "external_type_counts_match": true,
+            "member_node_metadata_exact": true,
+            "member_type_counts_match": true
+          },
+          {
+            "edge_cut_recomputes": true,
+            "external_node_metadata_exact": true,
+            "external_type_counts_match": true,
+            "member_node_metadata_exact": true,
+            "member_type_counts_match": true
+          },
+          {
+            "edge_cut_recomputes": true,
+            "external_node_metadata_exact": true,
+            "external_type_counts_match": true,
+            "member_node_metadata_exact": true,
+            "member_type_counts_match": true
+          },
+          {
+            "edge_cut_recomputes": true,
+            "external_node_metadata_exact": true,
+            "external_type_counts_match": true,
+            "member_node_metadata_exact": true,
+            "member_type_counts_match": true
+          },
+          {
+            "edge_cut_recomputes": true,
+            "external_node_metadata_exact": true,
+            "external_type_counts_match": true,
+            "member_node_metadata_exact": true,
+            "member_type_counts_match": true
+          },
+          {
+            "edge_cut_recomputes": true,
+            "external_node_metadata_exact": true,
+            "external_type_counts_match": true,
+            "member_node_metadata_exact": true,
+            "member_type_counts_match": true
+          },
+          {
+            "edge_cut_recomputes": true,
+            "external_node_metadata_exact": true,
+            "external_type_counts_match": true,
+            "member_node_metadata_exact": true,
+            "member_type_counts_match": true
+          }
+        ],
+        "weighted_access_events_by_call": [
+          0,
+          0,
+          0,
+          315091,
+          117331,
+          124434,
+          131205,
+          128329,
+          148879,
+          158544
+        ]
+      },
+      "trace_oracle": {
+        "passed": 9,
+        "queries": [
+          {
+            "expected": "exact supported answer with grounded held evidence and released receipt",
+            "passed": true,
+            "prompt": "What do you know about copper?",
+            "topic": "copper"
+          },
+          {
+            "expected": "exact supported answer with grounded held evidence and released receipt",
+            "passed": true,
+            "prompt": "What do you know about basalt?",
+            "topic": "basalt"
+          },
+          {
+            "expected": "exact supported answer with grounded held evidence and released receipt",
+            "passed": true,
+            "prompt": "What do you know about hexagon?",
+            "topic": "hexagon"
+          },
+          {
+            "expected": "exact supported answer with grounded held evidence and released receipt",
+            "passed": true,
+            "prompt": "What is copper?",
+            "topic": "copper"
+          },
+          {
+            "expected": "exact supported answer with grounded held evidence and released receipt",
+            "passed": false,
+            "prompt": "Can you tell me about copper?",
+            "topic": "copper"
+          },
+          {
+            "expected": "unknown topic remains unresolved without unrelated answer leakage",
+            "passed": true,
+            "prompt": "What do you know about unobtainium?",
+            "topic": "unobtainium"
+          },
+          {
+            "expected": "injected local hit is returned, grounded, and released; stale requests superseded",
+            "passed": true,
+            "prompt": "What do you know about localhitium?",
+            "topic": "localhitium"
+          }
+        ],
+        "teaching": [
+          {
+            "passed": true,
+            "topic": "copper"
+          },
+          {
+            "passed": true,
+            "topic": "basalt"
+          },
+          {
+            "passed": true,
+            "topic": "hexagon"
+          }
+        ],
+        "total": 10
+      },
+      "trace_signature_sha256": "4f9292068adf473ccdaccb28b964a7544d71618ddab5af47f24f8b8338fe60fd"
+    },
+    {
+      "arm_order": [
+        "trace",
+        "baseline"
+      ],
+      "baseline_oracle": {
+        "passed": 9,
+        "queries": [
+          {
+            "expected": "exact supported answer with grounded held evidence and released receipt",
+            "passed": true,
+            "prompt": "What do you know about copper?",
+            "topic": "copper"
+          },
+          {
+            "expected": "exact supported answer with grounded held evidence and released receipt",
+            "passed": true,
+            "prompt": "What do you know about basalt?",
+            "topic": "basalt"
+          },
+          {
+            "expected": "exact supported answer with grounded held evidence and released receipt",
+            "passed": true,
+            "prompt": "What do you know about hexagon?",
+            "topic": "hexagon"
+          },
+          {
+            "expected": "exact supported answer with grounded held evidence and released receipt",
+            "passed": true,
+            "prompt": "What is copper?",
+            "topic": "copper"
+          },
+          {
+            "expected": "exact supported answer with grounded held evidence and released receipt",
+            "passed": false,
+            "prompt": "Can you tell me about copper?",
+            "topic": "copper"
+          },
+          {
+            "expected": "unknown topic remains unresolved without unrelated answer leakage",
+            "passed": true,
+            "prompt": "What do you know about unobtainium?",
+            "topic": "unobtainium"
+          },
+          {
+            "expected": "injected local hit is returned, grounded, and released; stale requests superseded",
+            "passed": true,
+            "prompt": "What do you know about localhitium?",
+            "topic": "localhitium"
+          }
+        ],
+        "teaching": [
+          {
+            "passed": true,
+            "topic": "copper"
+          },
+          {
+            "passed": true,
+            "topic": "basalt"
+          },
+          {
+            "passed": true,
+            "topic": "hexagon"
+          }
+        ],
+        "total": 10
+      },
+      "baseline_signature_sha256": "4f9292068adf473ccdaccb28b964a7544d71618ddab5af47f24f8b8338fe60fd",
+      "pid": 7123,
+      "replicate": 1,
+      "trace_analysis": {
+        "calls": [
+          {
+            "access": {
+              "dropped_events": 0,
+              "recorded_weight_conserves": true,
+              "row_count": 0,
+              "static_event_categories": {},
+              "static_mismatch_event_weights": {},
+              "static_rule_uids": 2340,
+              "unresolved_rule_uids": [],
+              "weighted_access_events": 0
+            },
+            "checks": {
+              "access_count_conserves": true,
+              "access_zero_drops": true,
+              "all_access_uids_resolve": true,
+              "global_work_assigned": true,
+              "no_static_mismatch": true,
+              "operation_markers_complete": true,
+              "scope_work_reconciles": true,
+              "work_rows_valid": true,
+              "work_zero_drops": true
+            },
+            "index": 0,
+            "operation": "teaching",
+            "work_reconciliation": {
+              "all_global_work_assigned_to_scopes": true,
+              "all_scope_counters_reconcile": true,
+              "dropped_rows": 0,
+              "every_operation_has_exactly_one_kind_marker": true,
+              "operation_count": 0,
+              "operation_kind_marker_count": 0,
+              "process_global_deltas": {
+                "deferred_queue:fb_samples:drain_batches": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:fb_samples:drained_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:fb_samples:enqueued_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:net_collapses:drain_batches": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:net_collapses:drained_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:net_collapses:enqueued_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_edits:drain_batches": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_edits:drained_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_edits:enqueued_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_patches:drain_batches": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_patches:drained_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_patches:enqueued_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:track_identity:drain_batches": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:track_identity:drained_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:track_identity:enqueued_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "scheduler_dirty_vector_slots": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "scheduler_external_poll_slots": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "scheduler_fixedpoint_probe_slots": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "scheduler_passes": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "scheduler_selected_rules": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                }
+              },
+              "scope_count": 0,
+              "scope_counter_deltas": {},
+              "unknown_work_kinds": {},
+              "valid_rows": true
+            }
+          },
+          {
+            "access": {
+              "dropped_events": 0,
+              "recorded_weight_conserves": true,
+              "row_count": 0,
+              "static_event_categories": {},
+              "static_mismatch_event_weights": {},
+              "static_rule_uids": 2340,
+              "unresolved_rule_uids": [],
+              "weighted_access_events": 0
+            },
+            "checks": {
+              "access_count_conserves": true,
+              "access_zero_drops": true,
+              "all_access_uids_resolve": true,
+              "global_work_assigned": true,
+              "no_static_mismatch": true,
+              "operation_markers_complete": true,
+              "scope_work_reconciles": true,
+              "work_rows_valid": true,
+              "work_zero_drops": true
+            },
+            "index": 1,
+            "operation": "teaching",
+            "work_reconciliation": {
+              "all_global_work_assigned_to_scopes": true,
+              "all_scope_counters_reconcile": true,
+              "dropped_rows": 0,
+              "every_operation_has_exactly_one_kind_marker": true,
+              "operation_count": 0,
+              "operation_kind_marker_count": 0,
+              "process_global_deltas": {
+                "deferred_queue:fb_samples:drain_batches": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:fb_samples:drained_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:fb_samples:enqueued_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:net_collapses:drain_batches": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:net_collapses:drained_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:net_collapses:enqueued_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_edits:drain_batches": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_edits:drained_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_edits:enqueued_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_patches:drain_batches": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_patches:drained_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_patches:enqueued_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:track_identity:drain_batches": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:track_identity:drained_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:track_identity:enqueued_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "scheduler_dirty_vector_slots": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "scheduler_external_poll_slots": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "scheduler_fixedpoint_probe_slots": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "scheduler_passes": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "scheduler_selected_rules": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                }
+              },
+              "scope_count": 0,
+              "scope_counter_deltas": {},
+              "unknown_work_kinds": {},
+              "valid_rows": true
+            }
+          },
+          {
+            "access": {
+              "dropped_events": 0,
+              "recorded_weight_conserves": true,
+              "row_count": 0,
+              "static_event_categories": {},
+              "static_mismatch_event_weights": {},
+              "static_rule_uids": 2340,
+              "unresolved_rule_uids": [],
+              "weighted_access_events": 0
+            },
+            "checks": {
+              "access_count_conserves": true,
+              "access_zero_drops": true,
+              "all_access_uids_resolve": true,
+              "global_work_assigned": true,
+              "no_static_mismatch": true,
+              "operation_markers_complete": true,
+              "scope_work_reconciles": true,
+              "work_rows_valid": true,
+              "work_zero_drops": true
+            },
+            "index": 2,
+            "operation": "teaching",
+            "work_reconciliation": {
+              "all_global_work_assigned_to_scopes": true,
+              "all_scope_counters_reconcile": true,
+              "dropped_rows": 0,
+              "every_operation_has_exactly_one_kind_marker": true,
+              "operation_count": 0,
+              "operation_kind_marker_count": 0,
+              "process_global_deltas": {
+                "deferred_queue:fb_samples:drain_batches": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:fb_samples:drained_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:fb_samples:enqueued_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:net_collapses:drain_batches": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:net_collapses:drained_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:net_collapses:enqueued_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_edits:drain_batches": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_edits:drained_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_edits:enqueued_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_patches:drain_batches": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_patches:drained_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_patches:enqueued_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:track_identity:drain_batches": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:track_identity:drained_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:track_identity:enqueued_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "scheduler_dirty_vector_slots": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "scheduler_external_poll_slots": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "scheduler_fixedpoint_probe_slots": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "scheduler_passes": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "scheduler_selected_rules": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                }
+              },
+              "scope_count": 0,
+              "scope_counter_deltas": {},
+              "unknown_work_kinds": {},
+              "valid_rows": true
+            }
+          },
+          {
+            "access": {
+              "dropped_events": 0,
+              "recorded_weight_conserves": true,
+              "row_count": 57164,
+              "static_event_categories": {
+                "implicit_read_covered_by_static_write": 14,
+                "implicit_read_explicitly_declared": 1,
+                "static_key_match": 265032,
+                "static_read_wildcard": 50044
+              },
+              "static_mismatch_event_weights": {},
+              "static_rule_uids": 2346,
+              "unresolved_rule_uids": [],
+              "weighted_access_events": 315091
+            },
+            "checks": {
+              "access_count_conserves": true,
+              "access_zero_drops": true,
+              "all_access_uids_resolve": true,
+              "global_work_assigned": true,
+              "no_static_mismatch": true,
+              "operation_markers_complete": true,
+              "scope_work_reconciles": true,
+              "work_rows_valid": true,
+              "work_zero_drops": true
+            },
+            "index": 3,
+            "operation": "query",
+            "work_reconciliation": {
+              "all_global_work_assigned_to_scopes": true,
+              "all_scope_counters_reconcile": true,
+              "dropped_rows": 0,
+              "every_operation_has_exactly_one_kind_marker": true,
+              "operation_count": 29,
+              "operation_kind_marker_count": 29,
+              "process_global_deltas": {
+                "deferred_queue:fb_samples:drain_batches": {
+                  "delta": 0,
+                  "global": 7,
+                  "scoped_sum": 7
+                },
+                "deferred_queue:fb_samples:drained_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:fb_samples:enqueued_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:net_collapses:drain_batches": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:net_collapses:drained_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:net_collapses:enqueued_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_edits:drain_batches": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_edits:drained_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_edits:enqueued_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_patches:drain_batches": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_patches:drained_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_patches:enqueued_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:track_identity:drain_batches": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:track_identity:drained_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:track_identity:enqueued_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "scheduler_dirty_vector_slots": {
+                  "delta": 0,
+                  "global": 28120,
+                  "scoped_sum": 28120
+                },
+                "scheduler_external_poll_slots": {
+                  "delta": 0,
+                  "global": 28120,
+                  "scoped_sum": 28120
+                },
+                "scheduler_fixedpoint_probe_slots": {
+                  "delta": 0,
+                  "global": 334,
+                  "scoped_sum": 334
+                },
+                "scheduler_passes": {
+                  "delta": 0,
+                  "global": 14,
+                  "scoped_sum": 14
+                },
+                "scheduler_selected_rules": {
+                  "delta": 0,
+                  "global": 19748,
+                  "scoped_sum": 19748
+                }
+              },
+              "scope_count": 4,
+              "scope_counter_deltas": {
+                "102875109239048:scheduler_dirty_vector_slots": 0,
+                "102875109239048:scheduler_external_poll_slots": 0,
+                "102875109239048:scheduler_fixedpoint_probe_slots": 0,
+                "102875109239048:scheduler_passes": 0,
+                "102875109239048:scheduler_selected_rules": 0,
+                "102875118227288:scheduler_dirty_vector_slots": 0,
+                "102875118227288:scheduler_external_poll_slots": 0,
+                "102875118227288:scheduler_fixedpoint_probe_slots": 0,
+                "102875118227288:scheduler_passes": 0,
+                "102875118227288:scheduler_selected_rules": 0,
+                "102875960636760:deferred_queue:fb_samples:drain_batches": 0
+              },
+              "unknown_work_kinds": {},
+              "valid_rows": true
+            }
+          },
+          {
+            "access": {
+              "dropped_events": 0,
+              "recorded_weight_conserves": true,
+              "row_count": 16120,
+              "static_event_categories": {
+                "implicit_read_covered_by_static_write": 12,
+                "implicit_read_explicitly_declared": 1,
+                "static_key_match": 117212,
+                "static_read_wildcard": 106
+              },
+              "static_mismatch_event_weights": {},
+              "static_rule_uids": 2346,
+              "unresolved_rule_uids": [],
+              "weighted_access_events": 117331
+            },
+            "checks": {
+              "access_count_conserves": true,
+              "access_zero_drops": true,
+              "all_access_uids_resolve": true,
+              "global_work_assigned": true,
+              "no_static_mismatch": true,
+              "operation_markers_complete": true,
+              "scope_work_reconciles": true,
+              "work_rows_valid": true,
+              "work_zero_drops": true
+            },
+            "index": 4,
+            "operation": "query",
+            "work_reconciliation": {
+              "all_global_work_assigned_to_scopes": true,
+              "all_scope_counters_reconcile": true,
+              "dropped_rows": 0,
+              "every_operation_has_exactly_one_kind_marker": true,
+              "operation_count": 39,
+              "operation_kind_marker_count": 39,
+              "process_global_deltas": {
+                "deferred_queue:fb_samples:drain_batches": {
+                  "delta": 0,
+                  "global": 9,
+                  "scoped_sum": 9
+                },
+                "deferred_queue:fb_samples:drained_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:fb_samples:enqueued_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:net_collapses:drain_batches": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:net_collapses:drained_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:net_collapses:enqueued_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_edits:drain_batches": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_edits:drained_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_edits:enqueued_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_patches:drain_batches": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_patches:drained_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_patches:enqueued_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:track_identity:drain_batches": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:track_identity:drained_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:track_identity:enqueued_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "scheduler_dirty_vector_slots": {
+                  "delta": 0,
+                  "global": 23468,
+                  "scoped_sum": 23468
+                },
+                "scheduler_external_poll_slots": {
+                  "delta": 0,
+                  "global": 23468,
+                  "scoped_sum": 23468
+                },
+                "scheduler_fixedpoint_probe_slots": {
+                  "delta": 0,
+                  "global": 323,
+                  "scoped_sum": 323
+                },
+                "scheduler_passes": {
+                  "delta": 0,
+                  "global": 16,
+                  "scoped_sum": 16
+                },
+                "scheduler_selected_rules": {
+                  "delta": 0,
+                  "global": 16591,
+                  "scoped_sum": 16591
+                }
+              },
+              "scope_count": 7,
+              "scope_counter_deltas": {
+                "102875109239048:scheduler_dirty_vector_slots": 0,
+                "102875109239048:scheduler_external_poll_slots": 0,
+                "102875109239048:scheduler_fixedpoint_probe_slots": 0,
+                "102875109239048:scheduler_passes": 0,
+                "102875109239048:scheduler_selected_rules": 0,
+                "102875316429240:scheduler_passes": 0,
+                "102875333022184:scheduler_dirty_vector_slots": 0,
+                "102875333022184:scheduler_external_poll_slots": 0,
+                "102875333022184:scheduler_fixedpoint_probe_slots": 0,
+                "102875333022184:scheduler_passes": 0,
+                "102875333022184:scheduler_selected_rules": 0,
+                "102875550479176:scheduler_passes": 0,
+                "102875555229784:scheduler_passes": 0,
+                "102875960594744:deferred_queue:fb_samples:drain_batches": 0,
+                "102875960594744:scheduler_passes": 0
+              },
+              "unknown_work_kinds": {},
+              "valid_rows": true
+            }
+          },
+          {
+            "access": {
+              "dropped_events": 0,
+              "recorded_weight_conserves": true,
+              "row_count": 16758,
+              "static_event_categories": {
+                "implicit_read_covered_by_static_write": 12,
+                "implicit_read_explicitly_declared": 1,
+                "static_key_match": 124275,
+                "static_read_wildcard": 146
+              },
+              "static_mismatch_event_weights": {},
+              "static_rule_uids": 2346,
+              "unresolved_rule_uids": [],
+              "weighted_access_events": 124434
+            },
+            "checks": {
+              "access_count_conserves": true,
+              "access_zero_drops": true,
+              "all_access_uids_resolve": true,
+              "global_work_assigned": true,
+              "no_static_mismatch": true,
+              "operation_markers_complete": true,
+              "scope_work_reconciles": true,
+              "work_rows_valid": true,
+              "work_zero_drops": true
+            },
+            "index": 5,
+            "operation": "query",
+            "work_reconciliation": {
+              "all_global_work_assigned_to_scopes": true,
+              "all_scope_counters_reconcile": true,
+              "dropped_rows": 0,
+              "every_operation_has_exactly_one_kind_marker": true,
+              "operation_count": 35,
+              "operation_kind_marker_count": 35,
+              "process_global_deltas": {
+                "deferred_queue:fb_samples:drain_batches": {
+                  "delta": 0,
+                  "global": 5,
+                  "scoped_sum": 5
+                },
+                "deferred_queue:fb_samples:drained_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:fb_samples:enqueued_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:net_collapses:drain_batches": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:net_collapses:drained_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:net_collapses:enqueued_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_edits:drain_batches": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_edits:drained_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_edits:enqueued_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_patches:drain_batches": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_patches:drained_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_patches:enqueued_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:track_identity:drain_batches": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:track_identity:drained_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:track_identity:enqueued_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "scheduler_dirty_vector_slots": {
+                  "delta": 0,
+                  "global": 23468,
+                  "scoped_sum": 23468
+                },
+                "scheduler_external_poll_slots": {
+                  "delta": 0,
+                  "global": 23468,
+                  "scoped_sum": 23468
+                },
+                "scheduler_fixedpoint_probe_slots": {
+                  "delta": 0,
+                  "global": 323,
+                  "scoped_sum": 323
+                },
+                "scheduler_passes": {
+                  "delta": 0,
+                  "global": 16,
+                  "scoped_sum": 16
+                },
+                "scheduler_selected_rules": {
+                  "delta": 0,
+                  "global": 16591,
+                  "scoped_sum": 16591
+                }
+              },
+              "scope_count": 8,
+              "scope_counter_deltas": {
+                "102875109239048:scheduler_dirty_vector_slots": 0,
+                "102875109239048:scheduler_external_poll_slots": 0,
+                "102875109239048:scheduler_fixedpoint_probe_slots": 0,
+                "102875109239048:scheduler_passes": 0,
+                "102875109239048:scheduler_selected_rules": 0,
+                "102875291678088:scheduler_dirty_vector_slots": 0,
+                "102875291678088:scheduler_external_poll_slots": 0,
+                "102875291678088:scheduler_fixedpoint_probe_slots": 0,
+                "102875291678088:scheduler_passes": 0,
+                "102875291678088:scheduler_selected_rules": 0,
+                "102875294632296:scheduler_passes": 0,
+                "102875537059880:deferred_queue:fb_samples:drain_batches": 0,
+                "102875587125032:scheduler_passes": 0,
+                "102875589484360:scheduler_passes": 0,
+                "102875920045304:scheduler_passes": 0
+              },
+              "unknown_work_kinds": {},
+              "valid_rows": true
+            }
+          },
+          {
+            "access": {
+              "dropped_events": 0,
+              "recorded_weight_conserves": true,
+              "row_count": 17318,
+              "static_event_categories": {
+                "implicit_read_covered_by_static_write": 12,
+                "implicit_read_explicitly_declared": 1,
+                "static_key_match": 131042,
+                "static_read_wildcard": 150
+              },
+              "static_mismatch_event_weights": {},
+              "static_rule_uids": 2346,
+              "unresolved_rule_uids": [],
+              "weighted_access_events": 131205
+            },
+            "checks": {
+              "access_count_conserves": true,
+              "access_zero_drops": true,
+              "all_access_uids_resolve": true,
+              "global_work_assigned": true,
+              "no_static_mismatch": true,
+              "operation_markers_complete": true,
+              "scope_work_reconciles": true,
+              "work_rows_valid": true,
+              "work_zero_drops": true
+            },
+            "index": 6,
+            "operation": "query",
+            "work_reconciliation": {
+              "all_global_work_assigned_to_scopes": true,
+              "all_scope_counters_reconcile": true,
+              "dropped_rows": 0,
+              "every_operation_has_exactly_one_kind_marker": true,
+              "operation_count": 35,
+              "operation_kind_marker_count": 35,
+              "process_global_deltas": {
+                "deferred_queue:fb_samples:drain_batches": {
+                  "delta": 0,
+                  "global": 5,
+                  "scoped_sum": 5
+                },
+                "deferred_queue:fb_samples:drained_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:fb_samples:enqueued_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:net_collapses:drain_batches": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:net_collapses:drained_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:net_collapses:enqueued_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_edits:drain_batches": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_edits:drained_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_edits:enqueued_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_patches:drain_batches": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_patches:drained_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_patches:enqueued_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:track_identity:drain_batches": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:track_identity:drained_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:track_identity:enqueued_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "scheduler_dirty_vector_slots": {
+                  "delta": 0,
+                  "global": 23468,
+                  "scoped_sum": 23468
+                },
+                "scheduler_external_poll_slots": {
+                  "delta": 0,
+                  "global": 23468,
+                  "scoped_sum": 23468
+                },
+                "scheduler_fixedpoint_probe_slots": {
+                  "delta": 0,
+                  "global": 323,
+                  "scoped_sum": 323
+                },
+                "scheduler_passes": {
+                  "delta": 0,
+                  "global": 16,
+                  "scoped_sum": 16
+                },
+                "scheduler_selected_rules": {
+                  "delta": 0,
+                  "global": 16592,
+                  "scoped_sum": 16592
+                }
+              },
+              "scope_count": 8,
+              "scope_counter_deltas": {
+                "102875109239048:scheduler_dirty_vector_slots": 0,
+                "102875109239048:scheduler_external_poll_slots": 0,
+                "102875109239048:scheduler_fixedpoint_probe_slots": 0,
+                "102875109239048:scheduler_passes": 0,
+                "102875109239048:scheduler_selected_rules": 0,
+                "102875186233320:deferred_queue:fb_samples:drain_batches": 0,
+                "102875291678088:scheduler_dirty_vector_slots": 0,
+                "102875291678088:scheduler_external_poll_slots": 0,
+                "102875291678088:scheduler_fixedpoint_probe_slots": 0,
+                "102875291678088:scheduler_passes": 0,
+                "102875291678088:scheduler_selected_rules": 0,
+                "102875589485864:scheduler_passes": 0,
+                "102875879282488:scheduler_passes": 0,
+                "102875920045304:scheduler_passes": 0,
+                "102875938498088:scheduler_passes": 0
+              },
+              "unknown_work_kinds": {},
+              "valid_rows": true
+            }
+          },
+          {
+            "access": {
+              "dropped_events": 0,
+              "recorded_weight_conserves": true,
+              "row_count": 18014,
+              "static_event_categories": {
+                "implicit_read_covered_by_static_write": 10,
+                "implicit_read_explicitly_declared": 1,
+                "static_key_match": 128042,
+                "static_read_wildcard": 276
+              },
+              "static_mismatch_event_weights": {},
+              "static_rule_uids": 2346,
+              "unresolved_rule_uids": [],
+              "weighted_access_events": 128329
+            },
+            "checks": {
+              "access_count_conserves": true,
+              "access_zero_drops": true,
+              "all_access_uids_resolve": true,
+              "global_work_assigned": true,
+              "no_static_mismatch": true,
+              "operation_markers_complete": true,
+              "scope_work_reconciles": true,
+              "work_rows_valid": true,
+              "work_zero_drops": true
+            },
+            "index": 7,
+            "operation": "query",
+            "work_reconciliation": {
+              "all_global_work_assigned_to_scopes": true,
+              "all_scope_counters_reconcile": true,
+              "dropped_rows": 0,
+              "every_operation_has_exactly_one_kind_marker": true,
+              "operation_count": 43,
+              "operation_kind_marker_count": 43,
+              "process_global_deltas": {
+                "deferred_queue:fb_samples:drain_batches": {
+                  "delta": 0,
+                  "global": 9,
+                  "scoped_sum": 9
+                },
+                "deferred_queue:fb_samples:drained_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:fb_samples:enqueued_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:net_collapses:drain_batches": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:net_collapses:drained_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:net_collapses:enqueued_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_edits:drain_batches": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_edits:drained_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_edits:enqueued_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_patches:drain_batches": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_patches:drained_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_patches:enqueued_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:track_identity:drain_batches": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:track_identity:drained_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:track_identity:enqueued_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "scheduler_dirty_vector_slots": {
+                  "delta": 0,
+                  "global": 25814,
+                  "scoped_sum": 25814
+                },
+                "scheduler_external_poll_slots": {
+                  "delta": 0,
+                  "global": 28160,
+                  "scoped_sum": 28160
+                },
+                "scheduler_fixedpoint_probe_slots": {
+                  "delta": 0,
+                  "global": 2682,
+                  "scoped_sum": 2682
+                },
+                "scheduler_passes": {
+                  "delta": 0,
+                  "global": 18,
+                  "scoped_sum": 18
+                },
+                "scheduler_selected_rules": {
+                  "delta": 0,
+                  "global": 16470,
+                  "scoped_sum": 16470
+                }
+              },
+              "scope_count": 8,
+              "scope_counter_deltas": {
+                "102875109239048:scheduler_dirty_vector_slots": 0,
+                "102875109239048:scheduler_external_poll_slots": 0,
+                "102875109239048:scheduler_fixedpoint_probe_slots": 0,
+                "102875109239048:scheduler_passes": 0,
+                "102875109239048:scheduler_selected_rules": 0,
+                "102875215766296:scheduler_dirty_vector_slots": 0,
+                "102875215766296:scheduler_external_poll_slots": 0,
+                "102875215766296:scheduler_fixedpoint_probe_slots": 0,
+                "102875215766296:scheduler_passes": 0,
+                "102875215766296:scheduler_selected_rules": 0,
+                "102875238619016:scheduler_passes": 0,
+                "102875818085768:scheduler_passes": 0,
+                "102875818086008:deferred_queue:fb_samples:drain_batches": 0,
+                "102875920045304:scheduler_passes": 0,
+                "102875938111368:scheduler_passes": 0
+              },
+              "unknown_work_kinds": {},
+              "valid_rows": true
+            }
+          },
+          {
+            "access": {
+              "dropped_events": 0,
+              "recorded_weight_conserves": true,
+              "row_count": 18783,
+              "static_event_categories": {
+                "implicit_read_covered_by_static_write": 12,
+                "implicit_read_explicitly_declared": 1,
+                "static_key_match": 148580,
+                "static_read_wildcard": 286
+              },
+              "static_mismatch_event_weights": {},
+              "static_rule_uids": 2346,
+              "unresolved_rule_uids": [],
+              "weighted_access_events": 148879
+            },
+            "checks": {
+              "access_count_conserves": true,
+              "access_zero_drops": true,
+              "all_access_uids_resolve": true,
+              "global_work_assigned": true,
+              "no_static_mismatch": true,
+              "operation_markers_complete": true,
+              "scope_work_reconciles": true,
+              "work_rows_valid": true,
+              "work_zero_drops": true
+            },
+            "index": 8,
+            "operation": "query",
+            "work_reconciliation": {
+              "all_global_work_assigned_to_scopes": true,
+              "all_scope_counters_reconcile": true,
+              "dropped_rows": 0,
+              "every_operation_has_exactly_one_kind_marker": true,
+              "operation_count": 40,
+              "operation_kind_marker_count": 40,
+              "process_global_deltas": {
+                "deferred_queue:fb_samples:drain_batches": {
+                  "delta": 0,
+                  "global": 7,
+                  "scoped_sum": 7
+                },
+                "deferred_queue:fb_samples:drained_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:fb_samples:enqueued_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:net_collapses:drain_batches": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:net_collapses:drained_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:net_collapses:enqueued_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_edits:drain_batches": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_edits:drained_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_edits:enqueued_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_patches:drain_batches": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_patches:drained_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_patches:enqueued_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:track_identity:drain_batches": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:track_identity:drained_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:track_identity:enqueued_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "scheduler_dirty_vector_slots": {
+                  "delta": 0,
+                  "global": 23468,
+                  "scoped_sum": 23468
+                },
+                "scheduler_external_poll_slots": {
+                  "delta": 0,
+                  "global": 23468,
+                  "scoped_sum": 23468
+                },
+                "scheduler_fixedpoint_probe_slots": {
+                  "delta": 0,
+                  "global": 323,
+                  "scoped_sum": 323
+                },
+                "scheduler_passes": {
+                  "delta": 0,
+                  "global": 16,
+                  "scoped_sum": 16
+                },
+                "scheduler_selected_rules": {
+                  "delta": 0,
+                  "global": 16591,
+                  "scoped_sum": 16591
+                }
+              },
+              "scope_count": 8,
+              "scope_counter_deltas": {
+                "102875109239048:scheduler_dirty_vector_slots": 0,
+                "102875109239048:scheduler_external_poll_slots": 0,
+                "102875109239048:scheduler_fixedpoint_probe_slots": 0,
+                "102875109239048:scheduler_passes": 0,
+                "102875109239048:scheduler_selected_rules": 0,
+                "102875190802904:deferred_queue:fb_samples:drain_batches": 0,
+                "102875215766296:scheduler_dirty_vector_slots": 0,
+                "102875215766296:scheduler_external_poll_slots": 0,
+                "102875215766296:scheduler_fixedpoint_probe_slots": 0,
+                "102875215766296:scheduler_passes": 0,
+                "102875215766296:scheduler_selected_rules": 0,
+                "102875284256440:scheduler_passes": 0,
+                "102875563356184:scheduler_passes": 0,
+                "102876044196968:scheduler_passes": 0,
+                "102876050365784:scheduler_passes": 0
+              },
+              "unknown_work_kinds": {},
+              "valid_rows": true
+            }
+          },
+          {
+            "access": {
+              "dropped_events": 0,
+              "recorded_weight_conserves": true,
+              "row_count": 19375,
+              "static_event_categories": {
+                "implicit_read_covered_by_static_write": 12,
+                "implicit_read_explicitly_declared": 1,
+                "static_key_match": 158205,
+                "static_read_wildcard": 326
+              },
+              "static_mismatch_event_weights": {},
+              "static_rule_uids": 2346,
+              "unresolved_rule_uids": [],
+              "weighted_access_events": 158544
+            },
+            "checks": {
+              "access_count_conserves": true,
+              "access_zero_drops": true,
+              "all_access_uids_resolve": true,
+              "global_work_assigned": true,
+              "no_static_mismatch": true,
+              "operation_markers_complete": true,
+              "scope_work_reconciles": true,
+              "work_rows_valid": true,
+              "work_zero_drops": true
+            },
+            "index": 9,
+            "operation": "query",
+            "work_reconciliation": {
+              "all_global_work_assigned_to_scopes": true,
+              "all_scope_counters_reconcile": true,
+              "dropped_rows": 0,
+              "every_operation_has_exactly_one_kind_marker": true,
+              "operation_count": 45,
+              "operation_kind_marker_count": 45,
+              "process_global_deltas": {
+                "deferred_queue:fb_samples:drain_batches": {
+                  "delta": 0,
+                  "global": 9,
+                  "scoped_sum": 9
+                },
+                "deferred_queue:fb_samples:drained_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:fb_samples:enqueued_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:net_collapses:drain_batches": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:net_collapses:drained_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:net_collapses:enqueued_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_edits:drain_batches": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_edits:drained_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_edits:enqueued_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_patches:drain_batches": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_patches:drained_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_patches:enqueued_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:track_identity:drain_batches": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:track_identity:drained_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:track_identity:enqueued_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "scheduler_dirty_vector_slots": {
+                  "delta": 0,
+                  "global": 23468,
+                  "scoped_sum": 23468
+                },
+                "scheduler_external_poll_slots": {
+                  "delta": 0,
+                  "global": 23468,
+                  "scoped_sum": 23468
+                },
+                "scheduler_fixedpoint_probe_slots": {
+                  "delta": 0,
+                  "global": 323,
+                  "scoped_sum": 323
+                },
+                "scheduler_passes": {
+                  "delta": 0,
+                  "global": 16,
+                  "scoped_sum": 16
+                },
+                "scheduler_selected_rules": {
+                  "delta": 0,
+                  "global": 16591,
+                  "scoped_sum": 16591
+                }
+              },
+              "scope_count": 7,
+              "scope_counter_deltas": {
+                "102875109239048:scheduler_dirty_vector_slots": 0,
+                "102875109239048:scheduler_external_poll_slots": 0,
+                "102875109239048:scheduler_fixedpoint_probe_slots": 0,
+                "102875109239048:scheduler_passes": 0,
+                "102875109239048:scheduler_selected_rules": 0,
+                "102875118802280:scheduler_passes": 0,
+                "102875190033576:scheduler_dirty_vector_slots": 0,
+                "102875190033576:scheduler_external_poll_slots": 0,
+                "102875190033576:scheduler_fixedpoint_probe_slots": 0,
+                "102875190033576:scheduler_passes": 0,
+                "102875190033576:scheduler_selected_rules": 0,
+                "102875196951768:scheduler_passes": 0,
+                "102875491556712:deferred_queue:fb_samples:drain_batches": 0,
+                "102875589507704:scheduler_passes": 0
+              },
+              "unknown_work_kinds": {},
+              "valid_rows": true
+            }
+          }
+        ],
+        "task_frame_checks": [
+          {
+            "edge_cut_recomputes": true,
+            "external_node_metadata_exact": true,
+            "external_type_counts_match": true,
+            "member_node_metadata_exact": true,
+            "member_type_counts_match": true
+          },
+          {
+            "edge_cut_recomputes": true,
+            "external_node_metadata_exact": true,
+            "external_type_counts_match": true,
+            "member_node_metadata_exact": true,
+            "member_type_counts_match": true
+          },
+          {
+            "edge_cut_recomputes": true,
+            "external_node_metadata_exact": true,
+            "external_type_counts_match": true,
+            "member_node_metadata_exact": true,
+            "member_type_counts_match": true
+          },
+          {
+            "edge_cut_recomputes": true,
+            "external_node_metadata_exact": true,
+            "external_type_counts_match": true,
+            "member_node_metadata_exact": true,
+            "member_type_counts_match": true
+          },
+          {
+            "edge_cut_recomputes": true,
+            "external_node_metadata_exact": true,
+            "external_type_counts_match": true,
+            "member_node_metadata_exact": true,
+            "member_type_counts_match": true
+          },
+          {
+            "edge_cut_recomputes": true,
+            "external_node_metadata_exact": true,
+            "external_type_counts_match": true,
+            "member_node_metadata_exact": true,
+            "member_type_counts_match": true
+          },
+          {
+            "edge_cut_recomputes": true,
+            "external_node_metadata_exact": true,
+            "external_type_counts_match": true,
+            "member_node_metadata_exact": true,
+            "member_type_counts_match": true
+          }
+        ],
+        "weighted_access_events_by_call": [
+          0,
+          0,
+          0,
+          315091,
+          117331,
+          124434,
+          131205,
+          128329,
+          148879,
+          158544
+        ]
+      },
+      "trace_oracle": {
+        "passed": 9,
+        "queries": [
+          {
+            "expected": "exact supported answer with grounded held evidence and released receipt",
+            "passed": true,
+            "prompt": "What do you know about copper?",
+            "topic": "copper"
+          },
+          {
+            "expected": "exact supported answer with grounded held evidence and released receipt",
+            "passed": true,
+            "prompt": "What do you know about basalt?",
+            "topic": "basalt"
+          },
+          {
+            "expected": "exact supported answer with grounded held evidence and released receipt",
+            "passed": true,
+            "prompt": "What do you know about hexagon?",
+            "topic": "hexagon"
+          },
+          {
+            "expected": "exact supported answer with grounded held evidence and released receipt",
+            "passed": true,
+            "prompt": "What is copper?",
+            "topic": "copper"
+          },
+          {
+            "expected": "exact supported answer with grounded held evidence and released receipt",
+            "passed": false,
+            "prompt": "Can you tell me about copper?",
+            "topic": "copper"
+          },
+          {
+            "expected": "unknown topic remains unresolved without unrelated answer leakage",
+            "passed": true,
+            "prompt": "What do you know about unobtainium?",
+            "topic": "unobtainium"
+          },
+          {
+            "expected": "injected local hit is returned, grounded, and released; stale requests superseded",
+            "passed": true,
+            "prompt": "What do you know about localhitium?",
+            "topic": "localhitium"
+          }
+        ],
+        "teaching": [
+          {
+            "passed": true,
+            "topic": "copper"
+          },
+          {
+            "passed": true,
+            "topic": "basalt"
+          },
+          {
+            "passed": true,
+            "topic": "hexagon"
+          }
+        ],
+        "total": 10
+      },
+      "trace_signature_sha256": "4f9292068adf473ccdaccb28b964a7544d71618ddab5af47f24f8b8338fe60fd"
+    },
+    {
+      "arm_order": [
+        "baseline",
+        "trace"
+      ],
+      "baseline_oracle": {
+        "passed": 9,
+        "queries": [
+          {
+            "expected": "exact supported answer with grounded held evidence and released receipt",
+            "passed": true,
+            "prompt": "What do you know about copper?",
+            "topic": "copper"
+          },
+          {
+            "expected": "exact supported answer with grounded held evidence and released receipt",
+            "passed": true,
+            "prompt": "What do you know about basalt?",
+            "topic": "basalt"
+          },
+          {
+            "expected": "exact supported answer with grounded held evidence and released receipt",
+            "passed": true,
+            "prompt": "What do you know about hexagon?",
+            "topic": "hexagon"
+          },
+          {
+            "expected": "exact supported answer with grounded held evidence and released receipt",
+            "passed": true,
+            "prompt": "What is copper?",
+            "topic": "copper"
+          },
+          {
+            "expected": "exact supported answer with grounded held evidence and released receipt",
+            "passed": false,
+            "prompt": "Can you tell me about copper?",
+            "topic": "copper"
+          },
+          {
+            "expected": "unknown topic remains unresolved without unrelated answer leakage",
+            "passed": true,
+            "prompt": "What do you know about unobtainium?",
+            "topic": "unobtainium"
+          },
+          {
+            "expected": "injected local hit is returned, grounded, and released; stale requests superseded",
+            "passed": true,
+            "prompt": "What do you know about localhitium?",
+            "topic": "localhitium"
+          }
+        ],
+        "teaching": [
+          {
+            "passed": true,
+            "topic": "copper"
+          },
+          {
+            "passed": true,
+            "topic": "basalt"
+          },
+          {
+            "passed": true,
+            "topic": "hexagon"
+          }
+        ],
+        "total": 10
+      },
+      "baseline_signature_sha256": "4f9292068adf473ccdaccb28b964a7544d71618ddab5af47f24f8b8338fe60fd",
+      "pid": 14240,
+      "replicate": 2,
+      "trace_analysis": {
+        "calls": [
+          {
+            "access": {
+              "dropped_events": 0,
+              "recorded_weight_conserves": true,
+              "row_count": 0,
+              "static_event_categories": {},
+              "static_mismatch_event_weights": {},
+              "static_rule_uids": 2340,
+              "unresolved_rule_uids": [],
+              "weighted_access_events": 0
+            },
+            "checks": {
+              "access_count_conserves": true,
+              "access_zero_drops": true,
+              "all_access_uids_resolve": true,
+              "global_work_assigned": true,
+              "no_static_mismatch": true,
+              "operation_markers_complete": true,
+              "scope_work_reconciles": true,
+              "work_rows_valid": true,
+              "work_zero_drops": true
+            },
+            "index": 0,
+            "operation": "teaching",
+            "work_reconciliation": {
+              "all_global_work_assigned_to_scopes": true,
+              "all_scope_counters_reconcile": true,
+              "dropped_rows": 0,
+              "every_operation_has_exactly_one_kind_marker": true,
+              "operation_count": 0,
+              "operation_kind_marker_count": 0,
+              "process_global_deltas": {
+                "deferred_queue:fb_samples:drain_batches": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:fb_samples:drained_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:fb_samples:enqueued_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:net_collapses:drain_batches": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:net_collapses:drained_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:net_collapses:enqueued_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_edits:drain_batches": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_edits:drained_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_edits:enqueued_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_patches:drain_batches": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_patches:drained_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_patches:enqueued_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:track_identity:drain_batches": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:track_identity:drained_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:track_identity:enqueued_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "scheduler_dirty_vector_slots": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "scheduler_external_poll_slots": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "scheduler_fixedpoint_probe_slots": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "scheduler_passes": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "scheduler_selected_rules": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                }
+              },
+              "scope_count": 0,
+              "scope_counter_deltas": {},
+              "unknown_work_kinds": {},
+              "valid_rows": true
+            }
+          },
+          {
+            "access": {
+              "dropped_events": 0,
+              "recorded_weight_conserves": true,
+              "row_count": 0,
+              "static_event_categories": {},
+              "static_mismatch_event_weights": {},
+              "static_rule_uids": 2340,
+              "unresolved_rule_uids": [],
+              "weighted_access_events": 0
+            },
+            "checks": {
+              "access_count_conserves": true,
+              "access_zero_drops": true,
+              "all_access_uids_resolve": true,
+              "global_work_assigned": true,
+              "no_static_mismatch": true,
+              "operation_markers_complete": true,
+              "scope_work_reconciles": true,
+              "work_rows_valid": true,
+              "work_zero_drops": true
+            },
+            "index": 1,
+            "operation": "teaching",
+            "work_reconciliation": {
+              "all_global_work_assigned_to_scopes": true,
+              "all_scope_counters_reconcile": true,
+              "dropped_rows": 0,
+              "every_operation_has_exactly_one_kind_marker": true,
+              "operation_count": 0,
+              "operation_kind_marker_count": 0,
+              "process_global_deltas": {
+                "deferred_queue:fb_samples:drain_batches": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:fb_samples:drained_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:fb_samples:enqueued_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:net_collapses:drain_batches": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:net_collapses:drained_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:net_collapses:enqueued_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_edits:drain_batches": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_edits:drained_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_edits:enqueued_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_patches:drain_batches": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_patches:drained_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_patches:enqueued_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:track_identity:drain_batches": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:track_identity:drained_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:track_identity:enqueued_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "scheduler_dirty_vector_slots": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "scheduler_external_poll_slots": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "scheduler_fixedpoint_probe_slots": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "scheduler_passes": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "scheduler_selected_rules": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                }
+              },
+              "scope_count": 0,
+              "scope_counter_deltas": {},
+              "unknown_work_kinds": {},
+              "valid_rows": true
+            }
+          },
+          {
+            "access": {
+              "dropped_events": 0,
+              "recorded_weight_conserves": true,
+              "row_count": 0,
+              "static_event_categories": {},
+              "static_mismatch_event_weights": {},
+              "static_rule_uids": 2340,
+              "unresolved_rule_uids": [],
+              "weighted_access_events": 0
+            },
+            "checks": {
+              "access_count_conserves": true,
+              "access_zero_drops": true,
+              "all_access_uids_resolve": true,
+              "global_work_assigned": true,
+              "no_static_mismatch": true,
+              "operation_markers_complete": true,
+              "scope_work_reconciles": true,
+              "work_rows_valid": true,
+              "work_zero_drops": true
+            },
+            "index": 2,
+            "operation": "teaching",
+            "work_reconciliation": {
+              "all_global_work_assigned_to_scopes": true,
+              "all_scope_counters_reconcile": true,
+              "dropped_rows": 0,
+              "every_operation_has_exactly_one_kind_marker": true,
+              "operation_count": 0,
+              "operation_kind_marker_count": 0,
+              "process_global_deltas": {
+                "deferred_queue:fb_samples:drain_batches": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:fb_samples:drained_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:fb_samples:enqueued_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:net_collapses:drain_batches": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:net_collapses:drained_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:net_collapses:enqueued_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_edits:drain_batches": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_edits:drained_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_edits:enqueued_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_patches:drain_batches": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_patches:drained_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_patches:enqueued_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:track_identity:drain_batches": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:track_identity:drained_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:track_identity:enqueued_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "scheduler_dirty_vector_slots": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "scheduler_external_poll_slots": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "scheduler_fixedpoint_probe_slots": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "scheduler_passes": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "scheduler_selected_rules": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                }
+              },
+              "scope_count": 0,
+              "scope_counter_deltas": {},
+              "unknown_work_kinds": {},
+              "valid_rows": true
+            }
+          },
+          {
+            "access": {
+              "dropped_events": 0,
+              "recorded_weight_conserves": true,
+              "row_count": 57164,
+              "static_event_categories": {
+                "implicit_read_covered_by_static_write": 14,
+                "implicit_read_explicitly_declared": 1,
+                "static_key_match": 265032,
+                "static_read_wildcard": 50044
+              },
+              "static_mismatch_event_weights": {},
+              "static_rule_uids": 2346,
+              "unresolved_rule_uids": [],
+              "weighted_access_events": 315091
+            },
+            "checks": {
+              "access_count_conserves": true,
+              "access_zero_drops": true,
+              "all_access_uids_resolve": true,
+              "global_work_assigned": true,
+              "no_static_mismatch": true,
+              "operation_markers_complete": true,
+              "scope_work_reconciles": true,
+              "work_rows_valid": true,
+              "work_zero_drops": true
+            },
+            "index": 3,
+            "operation": "query",
+            "work_reconciliation": {
+              "all_global_work_assigned_to_scopes": true,
+              "all_scope_counters_reconcile": true,
+              "dropped_rows": 0,
+              "every_operation_has_exactly_one_kind_marker": true,
+              "operation_count": 29,
+              "operation_kind_marker_count": 29,
+              "process_global_deltas": {
+                "deferred_queue:fb_samples:drain_batches": {
+                  "delta": 0,
+                  "global": 7,
+                  "scoped_sum": 7
+                },
+                "deferred_queue:fb_samples:drained_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:fb_samples:enqueued_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:net_collapses:drain_batches": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:net_collapses:drained_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:net_collapses:enqueued_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_edits:drain_batches": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_edits:drained_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_edits:enqueued_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_patches:drain_batches": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_patches:drained_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_patches:enqueued_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:track_identity:drain_batches": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:track_identity:drained_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:track_identity:enqueued_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "scheduler_dirty_vector_slots": {
+                  "delta": 0,
+                  "global": 28120,
+                  "scoped_sum": 28120
+                },
+                "scheduler_external_poll_slots": {
+                  "delta": 0,
+                  "global": 28120,
+                  "scoped_sum": 28120
+                },
+                "scheduler_fixedpoint_probe_slots": {
+                  "delta": 0,
+                  "global": 334,
+                  "scoped_sum": 334
+                },
+                "scheduler_passes": {
+                  "delta": 0,
+                  "global": 14,
+                  "scoped_sum": 14
+                },
+                "scheduler_selected_rules": {
+                  "delta": 0,
+                  "global": 19748,
+                  "scoped_sum": 19748
+                }
+              },
+              "scope_count": 4,
+              "scope_counter_deltas": {
+                "96706948095272:scheduler_dirty_vector_slots": 0,
+                "96706948095272:scheduler_external_poll_slots": 0,
+                "96706948095272:scheduler_fixedpoint_probe_slots": 0,
+                "96706948095272:scheduler_passes": 0,
+                "96706948095272:scheduler_selected_rules": 0,
+                "96707727631752:deferred_queue:fb_samples:drain_batches": 0,
+                "96707975394568:scheduler_dirty_vector_slots": 0,
+                "96707975394568:scheduler_external_poll_slots": 0,
+                "96707975394568:scheduler_fixedpoint_probe_slots": 0,
+                "96707975394568:scheduler_passes": 0,
+                "96707975394568:scheduler_selected_rules": 0
+              },
+              "unknown_work_kinds": {},
+              "valid_rows": true
+            }
+          },
+          {
+            "access": {
+              "dropped_events": 0,
+              "recorded_weight_conserves": true,
+              "row_count": 16120,
+              "static_event_categories": {
+                "implicit_read_covered_by_static_write": 12,
+                "implicit_read_explicitly_declared": 1,
+                "static_key_match": 117212,
+                "static_read_wildcard": 106
+              },
+              "static_mismatch_event_weights": {},
+              "static_rule_uids": 2346,
+              "unresolved_rule_uids": [],
+              "weighted_access_events": 117331
+            },
+            "checks": {
+              "access_count_conserves": true,
+              "access_zero_drops": true,
+              "all_access_uids_resolve": true,
+              "global_work_assigned": true,
+              "no_static_mismatch": true,
+              "operation_markers_complete": true,
+              "scope_work_reconciles": true,
+              "work_rows_valid": true,
+              "work_zero_drops": true
+            },
+            "index": 4,
+            "operation": "query",
+            "work_reconciliation": {
+              "all_global_work_assigned_to_scopes": true,
+              "all_scope_counters_reconcile": true,
+              "dropped_rows": 0,
+              "every_operation_has_exactly_one_kind_marker": true,
+              "operation_count": 39,
+              "operation_kind_marker_count": 39,
+              "process_global_deltas": {
+                "deferred_queue:fb_samples:drain_batches": {
+                  "delta": 0,
+                  "global": 9,
+                  "scoped_sum": 9
+                },
+                "deferred_queue:fb_samples:drained_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:fb_samples:enqueued_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:net_collapses:drain_batches": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:net_collapses:drained_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:net_collapses:enqueued_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_edits:drain_batches": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_edits:drained_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_edits:enqueued_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_patches:drain_batches": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_patches:drained_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_patches:enqueued_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:track_identity:drain_batches": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:track_identity:drained_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:track_identity:enqueued_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "scheduler_dirty_vector_slots": {
+                  "delta": 0,
+                  "global": 23468,
+                  "scoped_sum": 23468
+                },
+                "scheduler_external_poll_slots": {
+                  "delta": 0,
+                  "global": 23468,
+                  "scoped_sum": 23468
+                },
+                "scheduler_fixedpoint_probe_slots": {
+                  "delta": 0,
+                  "global": 323,
+                  "scoped_sum": 323
+                },
+                "scheduler_passes": {
+                  "delta": 0,
+                  "global": 16,
+                  "scoped_sum": 16
+                },
+                "scheduler_selected_rules": {
+                  "delta": 0,
+                  "global": 16591,
+                  "scoped_sum": 16591
+                }
+              },
+              "scope_count": 5,
+              "scope_counter_deltas": {
+                "96706865435784:deferred_queue:fb_samples:drain_batches": 0,
+                "96706885848648:scheduler_passes": 0,
+                "96706948095272:scheduler_dirty_vector_slots": 0,
+                "96706948095272:scheduler_external_poll_slots": 0,
+                "96706948095272:scheduler_fixedpoint_probe_slots": 0,
+                "96706948095272:scheduler_passes": 0,
+                "96706948095272:scheduler_selected_rules": 0,
+                "96706959194056:scheduler_passes": 0,
+                "96707021111816:scheduler_dirty_vector_slots": 0,
+                "96707021111816:scheduler_external_poll_slots": 0,
+                "96707021111816:scheduler_fixedpoint_probe_slots": 0,
+                "96707021111816:scheduler_passes": 0,
+                "96707021111816:scheduler_selected_rules": 0
+              },
+              "unknown_work_kinds": {},
+              "valid_rows": true
+            }
+          },
+          {
+            "access": {
+              "dropped_events": 0,
+              "recorded_weight_conserves": true,
+              "row_count": 16758,
+              "static_event_categories": {
+                "implicit_read_covered_by_static_write": 12,
+                "implicit_read_explicitly_declared": 1,
+                "static_key_match": 124275,
+                "static_read_wildcard": 146
+              },
+              "static_mismatch_event_weights": {},
+              "static_rule_uids": 2346,
+              "unresolved_rule_uids": [],
+              "weighted_access_events": 124434
+            },
+            "checks": {
+              "access_count_conserves": true,
+              "access_zero_drops": true,
+              "all_access_uids_resolve": true,
+              "global_work_assigned": true,
+              "no_static_mismatch": true,
+              "operation_markers_complete": true,
+              "scope_work_reconciles": true,
+              "work_rows_valid": true,
+              "work_zero_drops": true
+            },
+            "index": 5,
+            "operation": "query",
+            "work_reconciliation": {
+              "all_global_work_assigned_to_scopes": true,
+              "all_scope_counters_reconcile": true,
+              "dropped_rows": 0,
+              "every_operation_has_exactly_one_kind_marker": true,
+              "operation_count": 35,
+              "operation_kind_marker_count": 35,
+              "process_global_deltas": {
+                "deferred_queue:fb_samples:drain_batches": {
+                  "delta": 0,
+                  "global": 5,
+                  "scoped_sum": 5
+                },
+                "deferred_queue:fb_samples:drained_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:fb_samples:enqueued_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:net_collapses:drain_batches": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:net_collapses:drained_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:net_collapses:enqueued_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_edits:drain_batches": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_edits:drained_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_edits:enqueued_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_patches:drain_batches": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_patches:drained_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_patches:enqueued_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:track_identity:drain_batches": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:track_identity:drained_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:track_identity:enqueued_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "scheduler_dirty_vector_slots": {
+                  "delta": 0,
+                  "global": 23468,
+                  "scoped_sum": 23468
+                },
+                "scheduler_external_poll_slots": {
+                  "delta": 0,
+                  "global": 23468,
+                  "scoped_sum": 23468
+                },
+                "scheduler_fixedpoint_probe_slots": {
+                  "delta": 0,
+                  "global": 323,
+                  "scoped_sum": 323
+                },
+                "scheduler_passes": {
+                  "delta": 0,
+                  "global": 16,
+                  "scoped_sum": 16
+                },
+                "scheduler_selected_rules": {
+                  "delta": 0,
+                  "global": 16591,
+                  "scoped_sum": 16591
+                }
+              },
+              "scope_count": 5,
+              "scope_counter_deltas": {
+                "96706865435784:scheduler_dirty_vector_slots": 0,
+                "96706865435784:scheduler_external_poll_slots": 0,
+                "96706865435784:scheduler_fixedpoint_probe_slots": 0,
+                "96706865435784:scheduler_passes": 0,
+                "96706865435784:scheduler_selected_rules": 0,
+                "96706901708968:deferred_queue:fb_samples:drain_batches": 0,
+                "96706948095272:scheduler_dirty_vector_slots": 0,
+                "96706948095272:scheduler_external_poll_slots": 0,
+                "96706948095272:scheduler_fixedpoint_probe_slots": 0,
+                "96706948095272:scheduler_passes": 0,
+                "96706948095272:scheduler_selected_rules": 0,
+                "96707021111816:scheduler_passes": 0,
+                "96708016811016:scheduler_passes": 0
+              },
+              "unknown_work_kinds": {},
+              "valid_rows": true
+            }
+          },
+          {
+            "access": {
+              "dropped_events": 0,
+              "recorded_weight_conserves": true,
+              "row_count": 17318,
+              "static_event_categories": {
+                "implicit_read_covered_by_static_write": 12,
+                "implicit_read_explicitly_declared": 1,
+                "static_key_match": 131042,
+                "static_read_wildcard": 150
+              },
+              "static_mismatch_event_weights": {},
+              "static_rule_uids": 2346,
+              "unresolved_rule_uids": [],
+              "weighted_access_events": 131205
+            },
+            "checks": {
+              "access_count_conserves": true,
+              "access_zero_drops": true,
+              "all_access_uids_resolve": true,
+              "global_work_assigned": true,
+              "no_static_mismatch": true,
+              "operation_markers_complete": true,
+              "scope_work_reconciles": true,
+              "work_rows_valid": true,
+              "work_zero_drops": true
+            },
+            "index": 6,
+            "operation": "query",
+            "work_reconciliation": {
+              "all_global_work_assigned_to_scopes": true,
+              "all_scope_counters_reconcile": true,
+              "dropped_rows": 0,
+              "every_operation_has_exactly_one_kind_marker": true,
+              "operation_count": 35,
+              "operation_kind_marker_count": 35,
+              "process_global_deltas": {
+                "deferred_queue:fb_samples:drain_batches": {
+                  "delta": 0,
+                  "global": 5,
+                  "scoped_sum": 5
+                },
+                "deferred_queue:fb_samples:drained_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:fb_samples:enqueued_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:net_collapses:drain_batches": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:net_collapses:drained_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:net_collapses:enqueued_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_edits:drain_batches": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_edits:drained_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_edits:enqueued_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_patches:drain_batches": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_patches:drained_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_patches:enqueued_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:track_identity:drain_batches": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:track_identity:drained_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:track_identity:enqueued_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "scheduler_dirty_vector_slots": {
+                  "delta": 0,
+                  "global": 23468,
+                  "scoped_sum": 23468
+                },
+                "scheduler_external_poll_slots": {
+                  "delta": 0,
+                  "global": 23468,
+                  "scoped_sum": 23468
+                },
+                "scheduler_fixedpoint_probe_slots": {
+                  "delta": 0,
+                  "global": 323,
+                  "scoped_sum": 323
+                },
+                "scheduler_passes": {
+                  "delta": 0,
+                  "global": 16,
+                  "scoped_sum": 16
+                },
+                "scheduler_selected_rules": {
+                  "delta": 0,
+                  "global": 16592,
+                  "scoped_sum": 16592
+                }
+              },
+              "scope_count": 5,
+              "scope_counter_deltas": {
+                "96706864360808:deferred_queue:fb_samples:drain_batches": 0,
+                "96706865435784:scheduler_passes": 0,
+                "96706948095272:scheduler_dirty_vector_slots": 0,
+                "96706948095272:scheduler_external_poll_slots": 0,
+                "96706948095272:scheduler_fixedpoint_probe_slots": 0,
+                "96706948095272:scheduler_passes": 0,
+                "96706948095272:scheduler_selected_rules": 0,
+                "96706963470568:scheduler_dirty_vector_slots": 0,
+                "96706963470568:scheduler_external_poll_slots": 0,
+                "96706963470568:scheduler_fixedpoint_probe_slots": 0,
+                "96706963470568:scheduler_passes": 0,
+                "96706963470568:scheduler_selected_rules": 0,
+                "96708016811016:scheduler_passes": 0
+              },
+              "unknown_work_kinds": {},
+              "valid_rows": true
+            }
+          },
+          {
+            "access": {
+              "dropped_events": 0,
+              "recorded_weight_conserves": true,
+              "row_count": 18014,
+              "static_event_categories": {
+                "implicit_read_covered_by_static_write": 10,
+                "implicit_read_explicitly_declared": 1,
+                "static_key_match": 128042,
+                "static_read_wildcard": 276
+              },
+              "static_mismatch_event_weights": {},
+              "static_rule_uids": 2346,
+              "unresolved_rule_uids": [],
+              "weighted_access_events": 128329
+            },
+            "checks": {
+              "access_count_conserves": true,
+              "access_zero_drops": true,
+              "all_access_uids_resolve": true,
+              "global_work_assigned": true,
+              "no_static_mismatch": true,
+              "operation_markers_complete": true,
+              "scope_work_reconciles": true,
+              "work_rows_valid": true,
+              "work_zero_drops": true
+            },
+            "index": 7,
+            "operation": "query",
+            "work_reconciliation": {
+              "all_global_work_assigned_to_scopes": true,
+              "all_scope_counters_reconcile": true,
+              "dropped_rows": 0,
+              "every_operation_has_exactly_one_kind_marker": true,
+              "operation_count": 43,
+              "operation_kind_marker_count": 43,
+              "process_global_deltas": {
+                "deferred_queue:fb_samples:drain_batches": {
+                  "delta": 0,
+                  "global": 9,
+                  "scoped_sum": 9
+                },
+                "deferred_queue:fb_samples:drained_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:fb_samples:enqueued_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:net_collapses:drain_batches": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:net_collapses:drained_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:net_collapses:enqueued_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_edits:drain_batches": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_edits:drained_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_edits:enqueued_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_patches:drain_batches": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_patches:drained_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_patches:enqueued_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:track_identity:drain_batches": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:track_identity:drained_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:track_identity:enqueued_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "scheduler_dirty_vector_slots": {
+                  "delta": 0,
+                  "global": 25814,
+                  "scoped_sum": 25814
+                },
+                "scheduler_external_poll_slots": {
+                  "delta": 0,
+                  "global": 28160,
+                  "scoped_sum": 28160
+                },
+                "scheduler_fixedpoint_probe_slots": {
+                  "delta": 0,
+                  "global": 2682,
+                  "scoped_sum": 2682
+                },
+                "scheduler_passes": {
+                  "delta": 0,
+                  "global": 18,
+                  "scoped_sum": 18
+                },
+                "scheduler_selected_rules": {
+                  "delta": 0,
+                  "global": 16470,
+                  "scoped_sum": 16470
+                }
+              },
+              "scope_count": 5,
+              "scope_counter_deltas": {
+                "96706905347160:deferred_queue:fb_samples:drain_batches": 0,
+                "96706948095272:scheduler_dirty_vector_slots": 0,
+                "96706948095272:scheduler_external_poll_slots": 0,
+                "96706948095272:scheduler_fixedpoint_probe_slots": 0,
+                "96706948095272:scheduler_passes": 0,
+                "96706948095272:scheduler_selected_rules": 0,
+                "96706959194056:scheduler_passes": 0,
+                "96707021111816:scheduler_passes": 0,
+                "96707868856744:scheduler_dirty_vector_slots": 0,
+                "96707868856744:scheduler_external_poll_slots": 0,
+                "96707868856744:scheduler_fixedpoint_probe_slots": 0,
+                "96707868856744:scheduler_passes": 0,
+                "96707868856744:scheduler_selected_rules": 0
+              },
+              "unknown_work_kinds": {},
+              "valid_rows": true
+            }
+          },
+          {
+            "access": {
+              "dropped_events": 0,
+              "recorded_weight_conserves": true,
+              "row_count": 18783,
+              "static_event_categories": {
+                "implicit_read_covered_by_static_write": 12,
+                "implicit_read_explicitly_declared": 1,
+                "static_key_match": 148580,
+                "static_read_wildcard": 286
+              },
+              "static_mismatch_event_weights": {},
+              "static_rule_uids": 2346,
+              "unresolved_rule_uids": [],
+              "weighted_access_events": 148879
+            },
+            "checks": {
+              "access_count_conserves": true,
+              "access_zero_drops": true,
+              "all_access_uids_resolve": true,
+              "global_work_assigned": true,
+              "no_static_mismatch": true,
+              "operation_markers_complete": true,
+              "scope_work_reconciles": true,
+              "work_rows_valid": true,
+              "work_zero_drops": true
+            },
+            "index": 8,
+            "operation": "query",
+            "work_reconciliation": {
+              "all_global_work_assigned_to_scopes": true,
+              "all_scope_counters_reconcile": true,
+              "dropped_rows": 0,
+              "every_operation_has_exactly_one_kind_marker": true,
+              "operation_count": 40,
+              "operation_kind_marker_count": 40,
+              "process_global_deltas": {
+                "deferred_queue:fb_samples:drain_batches": {
+                  "delta": 0,
+                  "global": 7,
+                  "scoped_sum": 7
+                },
+                "deferred_queue:fb_samples:drained_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:fb_samples:enqueued_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:net_collapses:drain_batches": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:net_collapses:drained_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:net_collapses:enqueued_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_edits:drain_batches": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_edits:drained_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_edits:enqueued_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_patches:drain_batches": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_patches:drained_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_patches:enqueued_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:track_identity:drain_batches": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:track_identity:drained_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:track_identity:enqueued_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "scheduler_dirty_vector_slots": {
+                  "delta": 0,
+                  "global": 23468,
+                  "scoped_sum": 23468
+                },
+                "scheduler_external_poll_slots": {
+                  "delta": 0,
+                  "global": 23468,
+                  "scoped_sum": 23468
+                },
+                "scheduler_fixedpoint_probe_slots": {
+                  "delta": 0,
+                  "global": 323,
+                  "scoped_sum": 323
+                },
+                "scheduler_passes": {
+                  "delta": 0,
+                  "global": 16,
+                  "scoped_sum": 16
+                },
+                "scheduler_selected_rules": {
+                  "delta": 0,
+                  "global": 16591,
+                  "scoped_sum": 16591
+                }
+              },
+              "scope_count": 5,
+              "scope_counter_deltas": {
+                "96706865435784:scheduler_passes": 0,
+                "96706872007592:scheduler_passes": 0,
+                "96706885848648:deferred_queue:fb_samples:drain_batches": 0,
+                "96706948095272:scheduler_dirty_vector_slots": 0,
+                "96706948095272:scheduler_external_poll_slots": 0,
+                "96706948095272:scheduler_fixedpoint_probe_slots": 0,
+                "96706948095272:scheduler_passes": 0,
+                "96706948095272:scheduler_selected_rules": 0,
+                "96708016811016:scheduler_dirty_vector_slots": 0,
+                "96708016811016:scheduler_external_poll_slots": 0,
+                "96708016811016:scheduler_fixedpoint_probe_slots": 0,
+                "96708016811016:scheduler_passes": 0,
+                "96708016811016:scheduler_selected_rules": 0
+              },
+              "unknown_work_kinds": {},
+              "valid_rows": true
+            }
+          },
+          {
+            "access": {
+              "dropped_events": 0,
+              "recorded_weight_conserves": true,
+              "row_count": 19375,
+              "static_event_categories": {
+                "implicit_read_covered_by_static_write": 12,
+                "implicit_read_explicitly_declared": 1,
+                "static_key_match": 158205,
+                "static_read_wildcard": 326
+              },
+              "static_mismatch_event_weights": {},
+              "static_rule_uids": 2346,
+              "unresolved_rule_uids": [],
+              "weighted_access_events": 158544
+            },
+            "checks": {
+              "access_count_conserves": true,
+              "access_zero_drops": true,
+              "all_access_uids_resolve": true,
+              "global_work_assigned": true,
+              "no_static_mismatch": true,
+              "operation_markers_complete": true,
+              "scope_work_reconciles": true,
+              "work_rows_valid": true,
+              "work_zero_drops": true
+            },
+            "index": 9,
+            "operation": "query",
+            "work_reconciliation": {
+              "all_global_work_assigned_to_scopes": true,
+              "all_scope_counters_reconcile": true,
+              "dropped_rows": 0,
+              "every_operation_has_exactly_one_kind_marker": true,
+              "operation_count": 45,
+              "operation_kind_marker_count": 45,
+              "process_global_deltas": {
+                "deferred_queue:fb_samples:drain_batches": {
+                  "delta": 0,
+                  "global": 9,
+                  "scoped_sum": 9
+                },
+                "deferred_queue:fb_samples:drained_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:fb_samples:enqueued_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:net_collapses:drain_batches": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:net_collapses:drained_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:net_collapses:enqueued_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_edits:drain_batches": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_edits:drained_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_edits:enqueued_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_patches:drain_batches": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_patches:drained_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:rule_patches:enqueued_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:track_identity:drain_batches": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:track_identity:drained_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "deferred_queue:track_identity:enqueued_items": {
+                  "delta": 0,
+                  "global": 0,
+                  "scoped_sum": 0
+                },
+                "scheduler_dirty_vector_slots": {
+                  "delta": 0,
+                  "global": 23468,
+                  "scoped_sum": 23468
+                },
+                "scheduler_external_poll_slots": {
+                  "delta": 0,
+                  "global": 23468,
+                  "scoped_sum": 23468
+                },
+                "scheduler_fixedpoint_probe_slots": {
+                  "delta": 0,
+                  "global": 323,
+                  "scoped_sum": 323
+                },
+                "scheduler_passes": {
+                  "delta": 0,
+                  "global": 16,
+                  "scoped_sum": 16
+                },
+                "scheduler_selected_rules": {
+                  "delta": 0,
+                  "global": 16591,
+                  "scoped_sum": 16591
+                }
+              },
+              "scope_count": 5,
+              "scope_counter_deltas": {
+                "96706865435784:scheduler_passes": 0,
+                "96706872007592:deferred_queue:fb_samples:drain_batches": 0,
+                "96706948095272:scheduler_dirty_vector_slots": 0,
+                "96706948095272:scheduler_external_poll_slots": 0,
+                "96706948095272:scheduler_fixedpoint_probe_slots": 0,
+                "96706948095272:scheduler_passes": 0,
+                "96706948095272:scheduler_selected_rules": 0,
+                "96706963470568:scheduler_passes": 0,
+                "96708016811016:scheduler_dirty_vector_slots": 0,
+                "96708016811016:scheduler_external_poll_slots": 0,
+                "96708016811016:scheduler_fixedpoint_probe_slots": 0,
+                "96708016811016:scheduler_passes": 0,
+                "96708016811016:scheduler_selected_rules": 0
+              },
+              "unknown_work_kinds": {},
+              "valid_rows": true
+            }
+          }
+        ],
+        "task_frame_checks": [
+          {
+            "edge_cut_recomputes": true,
+            "external_node_metadata_exact": true,
+            "external_type_counts_match": true,
+            "member_node_metadata_exact": true,
+            "member_type_counts_match": true
+          },
+          {
+            "edge_cut_recomputes": true,
+            "external_node_metadata_exact": true,
+            "external_type_counts_match": true,
+            "member_node_metadata_exact": true,
+            "member_type_counts_match": true
+          },
+          {
+            "edge_cut_recomputes": true,
+            "external_node_metadata_exact": true,
+            "external_type_counts_match": true,
+            "member_node_metadata_exact": true,
+            "member_type_counts_match": true
+          },
+          {
+            "edge_cut_recomputes": true,
+            "external_node_metadata_exact": true,
+            "external_type_counts_match": true,
+            "member_node_metadata_exact": true,
+            "member_type_counts_match": true
+          },
+          {
+            "edge_cut_recomputes": true,
+            "external_node_metadata_exact": true,
+            "external_type_counts_match": true,
+            "member_node_metadata_exact": true,
+            "member_type_counts_match": true
+          },
+          {
+            "edge_cut_recomputes": true,
+            "external_node_metadata_exact": true,
+            "external_type_counts_match": true,
+            "member_node_metadata_exact": true,
+            "member_type_counts_match": true
+          },
+          {
+            "edge_cut_recomputes": true,
+            "external_node_metadata_exact": true,
+            "external_type_counts_match": true,
+            "member_node_metadata_exact": true,
+            "member_type_counts_match": true
+          }
+        ],
+        "weighted_access_events_by_call": [
+          0,
+          0,
+          0,
+          315091,
+          117331,
+          124434,
+          131205,
+          128329,
+          148879,
+          158544
+        ]
+      },
+      "trace_oracle": {
+        "passed": 9,
+        "queries": [
+          {
+            "expected": "exact supported answer with grounded held evidence and released receipt",
+            "passed": true,
+            "prompt": "What do you know about copper?",
+            "topic": "copper"
+          },
+          {
+            "expected": "exact supported answer with grounded held evidence and released receipt",
+            "passed": true,
+            "prompt": "What do you know about basalt?",
+            "topic": "basalt"
+          },
+          {
+            "expected": "exact supported answer with grounded held evidence and released receipt",
+            "passed": true,
+            "prompt": "What do you know about hexagon?",
+            "topic": "hexagon"
+          },
+          {
+            "expected": "exact supported answer with grounded held evidence and released receipt",
+            "passed": true,
+            "prompt": "What is copper?",
+            "topic": "copper"
+          },
+          {
+            "expected": "exact supported answer with grounded held evidence and released receipt",
+            "passed": false,
+            "prompt": "Can you tell me about copper?",
+            "topic": "copper"
+          },
+          {
+            "expected": "unknown topic remains unresolved without unrelated answer leakage",
+            "passed": true,
+            "prompt": "What do you know about unobtainium?",
+            "topic": "unobtainium"
+          },
+          {
+            "expected": "injected local hit is returned, grounded, and released; stale requests superseded",
+            "passed": true,
+            "prompt": "What do you know about localhitium?",
+            "topic": "localhitium"
+          }
+        ],
+        "teaching": [
+          {
+            "passed": true,
+            "topic": "copper"
+          },
+          {
+            "passed": true,
+            "topic": "basalt"
+          },
+          {
+            "passed": true,
+            "topic": "hexagon"
+          }
+        ],
+        "total": 10
+      },
+      "trace_signature_sha256": "4f9292068adf473ccdaccb28b964a7544d71618ddab5af47f24f8b8338fe60fd"
+    }
+  ]
+}

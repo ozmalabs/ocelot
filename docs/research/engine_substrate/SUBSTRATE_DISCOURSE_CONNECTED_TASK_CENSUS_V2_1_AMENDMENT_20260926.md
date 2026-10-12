@@ -1,0 +1,7 @@
+# Connected task census v2.1 amendment
+
+**Amendment before confirmatory capture.** The v2 source-locked run is preserved as a failed semantic control: all ordinary graph/provenance gates passed, but both Goals remained `proposed`. Inspection showed the fixture adapter directly created selection/execution/result events without `for_goal`; current identity-guarded rules correctly ignored them. This is an integration failure in the fixture producer path, not a rule failure.
+
+V2.1 retains the fixture and three-process arms. For only the lifecycle events, the harness creates the inbound Message envelope required by the existing `domains.conversation_action._record_live_goal_event` production helper. The helper creates the goal-linked event and runs native closure. The harness does not add `for_goal` edges itself. It records the helper's audit counters separately from the ordinary per-event `run_rules_report` arm, so producer-triggered closure work is not omitted from cost accounting. The helper-created events must pass the same Goal/event-index oracle as before.
+
+The amendment adds the producer helper as a locked source input and preserves all v2 raw output. All graph/work/cost claims remain limited to one authored fixture and this selected producer route. If the production helper refuses the Message envelope or fails lifecycle identity checks, the v2.1 capture remains a failed result and is not repaired by changing expected outcomes after capture.

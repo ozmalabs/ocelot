@@ -1,0 +1,562 @@
+{
+  "host": "Linux-6.8.0-142-generic-x86_64-with-glibc2.39",
+  "lock_sha256": "01f29e93d29ea745386d35058915dfb23496417e69d95736ebe0587e13e0d1c0",
+  "schema": "ThoughtexperimentBlindCandidateTournamentV1",
+  "workers": [
+    {
+      "cases": [
+        {
+          "abort_count": 0,
+          "abort_reason": null,
+          "canary_outputs": [
+            true,
+            true,
+            true
+          ],
+          "candidate_count": 3,
+          "candidates": [
+            {
+              "candidate_id": "1bc3e54abe6a2b1d38b25f3b963d73bb382ee8fc4f34854fb2f61c86f78b4472",
+              "gain": 20,
+              "operator_hidden": "toggle_boolean_effect",
+              "outputs": [
+                true,
+                true
+              ]
+            },
+            {
+              "candidate_id": "468ec19f892460ecc2166af9ec61aeea1fb12e1686420004f84c01cd116bea6d",
+              "gain": 0,
+              "operator_hidden": "drop_match_edge",
+              "outputs": [
+                false,
+                false
+              ]
+            },
+            {
+              "candidate_id": "37aa793ca625faf08211acb6d560c5f67a3de045c5780ad431de7a086fffe1fd",
+              "gain": 0,
+              "operator_hidden": "drop_match_edge",
+              "outputs": [
+                false,
+                false
+              ]
+            }
+          ],
+          "case_id": "opaque_repair_needed",
+          "commit_count": 1,
+          "final_outputs": [
+            true,
+            true
+          ],
+          "graph_status": "commit_ready",
+          "noop_gain": 0,
+          "noop_outputs": [
+            false,
+            false
+          ],
+          "patch_reason": "ok",
+          "patch_status": "committed",
+          "placebo_gain": 0,
+          "placebo_outputs": [
+            false,
+            false
+          ],
+          "revision_after_rehearsal": 0,
+          "revision_after_terminal": 1,
+          "selected_candidate_id": "1bc3e54abe6a2b1d38b25f3b963d73bb382ee8fc4f34854fb2f61c86f78b4472",
+          "selected_count": 1,
+          "target_revision_initial": 0,
+          "target_rule_uid_withheld_until_selection": true,
+          "timing_ns": {
+            "candidate_rehearsal": 15079308,
+            "graph_selection": 212642,
+            "noop_rehearsal_3x": 3153261,
+            "placebo_rehearsal_3x": 7036846
+          }
+        },
+        {
+          "abort_count": 1,
+          "abort_reason": "no_causally_supported_patch",
+          "canary_outputs": [],
+          "candidate_count": 3,
+          "candidates": [
+            {
+              "candidate_id": "7cd42822cf0509d375f96da6138626e208a1f03dc900e84138736ab5b94694a8",
+              "gain": 0,
+              "operator_hidden": "toggle_boolean_effect",
+              "outputs": [
+                false,
+                false
+              ]
+            },
+            {
+              "candidate_id": "d6efd6fa6772a7b3d41d382f531060447d598d6d76f5c37c9f337e435a78f3a3",
+              "gain": 20,
+              "operator_hidden": "drop_match_edge",
+              "outputs": [
+                true,
+                true
+              ]
+            },
+            {
+              "candidate_id": "4e487c453c7aa5dd26a1f95d7aeeedb00643d0460fe5149c8f004d4982b5e5dc",
+              "gain": 20,
+              "operator_hidden": "drop_match_edge",
+              "outputs": [
+                true,
+                true
+              ]
+            }
+          ],
+          "case_id": "opaque_no_repair",
+          "commit_count": 0,
+          "final_outputs": [],
+          "graph_status": "aborted",
+          "noop_gain": 20,
+          "noop_outputs": [
+            true,
+            true
+          ],
+          "patch_reason": null,
+          "patch_status": null,
+          "placebo_gain": 20,
+          "placebo_outputs": [
+            true,
+            true
+          ],
+          "revision_after_rehearsal": 0,
+          "revision_after_terminal": 0,
+          "selected_candidate_id": null,
+          "selected_count": 0,
+          "target_revision_initial": 0,
+          "target_rule_uid_withheld_until_selection": true,
+          "timing_ns": {
+            "candidate_rehearsal": 9876075,
+            "graph_selection": 146901,
+            "noop_rehearsal_3x": 1396179,
+            "placebo_rehearsal_3x": 1894243
+          }
+        }
+      ],
+      "pid": 6,
+      "sources_after": {
+        "files": {
+          "docs/research/engine_substrate/THOUGHTEXPERIMENT_BLIND_CANDIDATE_TOURNAMENT_V1_PREREG_20261005.md": "3570d50428fbf21927976160b43b4cd7ef5ded4930a771fb280119688aede352",
+          "domains/edit_ops.py": "02cb546565f52b859a7420dd91ea1324b8ba92d8acb901c2b83dffdbb3c52f96",
+          "evaluation/reports/blind_structural_repair_relation_evidence_v1_analysis_20261005.json": "2bec2a23219499855eb57cee8de30367a2870a3fc723a261922270542c7d1d92",
+          "evaluation/substrate_capability/analyze_thoughtexperiment_blind_candidate_tournament_v1.py": "4f8687682fd353cd02d0cfd5f9ba1e12a9a630252b581f653d30bfad5dda53d6",
+          "evaluation/substrate_capability/thoughtexperiment_blind_candidate_tournament_v1.py": "c68f7eca9374607f46a955380d9c9b08eb8f62eb2168cb5e16661aa9850332fa",
+          "runners/dsl/Cargo.lock": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+          "runners/dsl/Cargo.toml": "c4d8ffff2241352a5150b5a9937dbb8010e958b6f115235b7daeae716c1a9332",
+          "runners/dsl/python/substrate_rs/_native.build.json": "c854af97c90788e09619ca5ac40dbce1ef9398f7d346bd3590845e4caea4e16e",
+          "runners/dsl/python/substrate_rs/ext.py": "36d623734bad3209dcdc8b6b894dab13276e8045b6c11cd0b64fdddd40c1109e",
+          "runners/dsl/src/graph.rs": "2c14dea3c04b3b13408690ec79fb61829c1e2760bcf4e9edf0bdde37d1c15da0",
+          "runners/dsl/src/graph_rules.rs": "b3c63c1b9cd5713b69918792950701141ced7f01ddd061dc2b1e14673da34542",
+          "runners/dsl/src/py.rs": "905cb4eb645b597d34d5faf4bd9d0b999baf749e9c2f19e947bbbf89a0f27f39",
+          "runners/dsl/src/rewrite.rs": "ea711f28c9f8c21f119cdca6ad1d417576deb20b16a36ce6158e13a9fbafdf1b",
+          "runners/dsl/src/substrate.rs": "39f27175b2025c6c6552fd5bec8310d4ab06c6401823372f4bd8c4c13b5301e8",
+          "seeds/self_change_reasoning.json": "ab1980a533b6498ae614b5b44e611d882c00189287e9f9895fbcbceb06635e98"
+        },
+        "native_binary": {
+          "path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+          "sha256": "4263559da92c17cb1b84e33a79b1659ad3cb122db03c8347440630ab063ca95b"
+        }
+      },
+      "sources_before": {
+        "files": {
+          "docs/research/engine_substrate/THOUGHTEXPERIMENT_BLIND_CANDIDATE_TOURNAMENT_V1_PREREG_20261005.md": "3570d50428fbf21927976160b43b4cd7ef5ded4930a771fb280119688aede352",
+          "domains/edit_ops.py": "02cb546565f52b859a7420dd91ea1324b8ba92d8acb901c2b83dffdbb3c52f96",
+          "evaluation/reports/blind_structural_repair_relation_evidence_v1_analysis_20261005.json": "2bec2a23219499855eb57cee8de30367a2870a3fc723a261922270542c7d1d92",
+          "evaluation/substrate_capability/analyze_thoughtexperiment_blind_candidate_tournament_v1.py": "4f8687682fd353cd02d0cfd5f9ba1e12a9a630252b581f653d30bfad5dda53d6",
+          "evaluation/substrate_capability/thoughtexperiment_blind_candidate_tournament_v1.py": "c68f7eca9374607f46a955380d9c9b08eb8f62eb2168cb5e16661aa9850332fa",
+          "runners/dsl/Cargo.lock": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+          "runners/dsl/Cargo.toml": "c4d8ffff2241352a5150b5a9937dbb8010e958b6f115235b7daeae716c1a9332",
+          "runners/dsl/python/substrate_rs/_native.build.json": "c854af97c90788e09619ca5ac40dbce1ef9398f7d346bd3590845e4caea4e16e",
+          "runners/dsl/python/substrate_rs/ext.py": "36d623734bad3209dcdc8b6b894dab13276e8045b6c11cd0b64fdddd40c1109e",
+          "runners/dsl/src/graph.rs": "2c14dea3c04b3b13408690ec79fb61829c1e2760bcf4e9edf0bdde37d1c15da0",
+          "runners/dsl/src/graph_rules.rs": "b3c63c1b9cd5713b69918792950701141ced7f01ddd061dc2b1e14673da34542",
+          "runners/dsl/src/py.rs": "905cb4eb645b597d34d5faf4bd9d0b999baf749e9c2f19e947bbbf89a0f27f39",
+          "runners/dsl/src/rewrite.rs": "ea711f28c9f8c21f119cdca6ad1d417576deb20b16a36ce6158e13a9fbafdf1b",
+          "runners/dsl/src/substrate.rs": "39f27175b2025c6c6552fd5bec8310d4ab06c6401823372f4bd8c4c13b5301e8",
+          "seeds/self_change_reasoning.json": "ab1980a533b6498ae614b5b44e611d882c00189287e9f9895fbcbceb06635e98"
+        },
+        "native_binary": {
+          "path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+          "sha256": "4263559da92c17cb1b84e33a79b1659ad3cb122db03c8347440630ab063ca95b"
+        }
+      },
+      "worker": 0
+    },
+    {
+      "cases": [
+        {
+          "abort_count": 0,
+          "abort_reason": null,
+          "canary_outputs": [
+            true,
+            true,
+            true
+          ],
+          "candidate_count": 3,
+          "candidates": [
+            {
+              "candidate_id": "1bc3e54abe6a2b1d38b25f3b963d73bb382ee8fc4f34854fb2f61c86f78b4472",
+              "gain": 20,
+              "operator_hidden": "toggle_boolean_effect",
+              "outputs": [
+                true,
+                true
+              ]
+            },
+            {
+              "candidate_id": "468ec19f892460ecc2166af9ec61aeea1fb12e1686420004f84c01cd116bea6d",
+              "gain": 0,
+              "operator_hidden": "drop_match_edge",
+              "outputs": [
+                false,
+                false
+              ]
+            },
+            {
+              "candidate_id": "37aa793ca625faf08211acb6d560c5f67a3de045c5780ad431de7a086fffe1fd",
+              "gain": 0,
+              "operator_hidden": "drop_match_edge",
+              "outputs": [
+                false,
+                false
+              ]
+            }
+          ],
+          "case_id": "opaque_repair_needed",
+          "commit_count": 1,
+          "final_outputs": [
+            true,
+            true
+          ],
+          "graph_status": "commit_ready",
+          "noop_gain": 0,
+          "noop_outputs": [
+            false,
+            false
+          ],
+          "patch_reason": "ok",
+          "patch_status": "committed",
+          "placebo_gain": 0,
+          "placebo_outputs": [
+            false,
+            false
+          ],
+          "revision_after_rehearsal": 0,
+          "revision_after_terminal": 1,
+          "selected_candidate_id": "1bc3e54abe6a2b1d38b25f3b963d73bb382ee8fc4f34854fb2f61c86f78b4472",
+          "selected_count": 1,
+          "target_revision_initial": 0,
+          "target_rule_uid_withheld_until_selection": true,
+          "timing_ns": {
+            "candidate_rehearsal": 11248653,
+            "graph_selection": 157401,
+            "noop_rehearsal_3x": 2311315,
+            "placebo_rehearsal_3x": 2625697
+          }
+        },
+        {
+          "abort_count": 1,
+          "abort_reason": "no_causally_supported_patch",
+          "canary_outputs": [],
+          "candidate_count": 3,
+          "candidates": [
+            {
+              "candidate_id": "7cd42822cf0509d375f96da6138626e208a1f03dc900e84138736ab5b94694a8",
+              "gain": 0,
+              "operator_hidden": "toggle_boolean_effect",
+              "outputs": [
+                false,
+                false
+              ]
+            },
+            {
+              "candidate_id": "d6efd6fa6772a7b3d41d382f531060447d598d6d76f5c37c9f337e435a78f3a3",
+              "gain": 20,
+              "operator_hidden": "drop_match_edge",
+              "outputs": [
+                true,
+                true
+              ]
+            },
+            {
+              "candidate_id": "4e487c453c7aa5dd26a1f95d7aeeedb00643d0460fe5149c8f004d4982b5e5dc",
+              "gain": 20,
+              "operator_hidden": "drop_match_edge",
+              "outputs": [
+                true,
+                true
+              ]
+            }
+          ],
+          "case_id": "opaque_no_repair",
+          "commit_count": 0,
+          "final_outputs": [],
+          "graph_status": "aborted",
+          "noop_gain": 20,
+          "noop_outputs": [
+            true,
+            true
+          ],
+          "patch_reason": null,
+          "patch_status": null,
+          "placebo_gain": 20,
+          "placebo_outputs": [
+            true,
+            true
+          ],
+          "revision_after_rehearsal": 0,
+          "revision_after_terminal": 0,
+          "selected_candidate_id": null,
+          "selected_count": 0,
+          "target_revision_initial": 0,
+          "target_rule_uid_withheld_until_selection": true,
+          "timing_ns": {
+            "candidate_rehearsal": 9026799,
+            "graph_selection": 115781,
+            "noop_rehearsal_3x": 2007853,
+            "placebo_rehearsal_3x": 2168804
+          }
+        }
+      ],
+      "pid": 102,
+      "sources_after": {
+        "files": {
+          "docs/research/engine_substrate/THOUGHTEXPERIMENT_BLIND_CANDIDATE_TOURNAMENT_V1_PREREG_20261005.md": "3570d50428fbf21927976160b43b4cd7ef5ded4930a771fb280119688aede352",
+          "domains/edit_ops.py": "02cb546565f52b859a7420dd91ea1324b8ba92d8acb901c2b83dffdbb3c52f96",
+          "evaluation/reports/blind_structural_repair_relation_evidence_v1_analysis_20261005.json": "2bec2a23219499855eb57cee8de30367a2870a3fc723a261922270542c7d1d92",
+          "evaluation/substrate_capability/analyze_thoughtexperiment_blind_candidate_tournament_v1.py": "4f8687682fd353cd02d0cfd5f9ba1e12a9a630252b581f653d30bfad5dda53d6",
+          "evaluation/substrate_capability/thoughtexperiment_blind_candidate_tournament_v1.py": "c68f7eca9374607f46a955380d9c9b08eb8f62eb2168cb5e16661aa9850332fa",
+          "runners/dsl/Cargo.lock": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+          "runners/dsl/Cargo.toml": "c4d8ffff2241352a5150b5a9937dbb8010e958b6f115235b7daeae716c1a9332",
+          "runners/dsl/python/substrate_rs/_native.build.json": "c854af97c90788e09619ca5ac40dbce1ef9398f7d346bd3590845e4caea4e16e",
+          "runners/dsl/python/substrate_rs/ext.py": "36d623734bad3209dcdc8b6b894dab13276e8045b6c11cd0b64fdddd40c1109e",
+          "runners/dsl/src/graph.rs": "2c14dea3c04b3b13408690ec79fb61829c1e2760bcf4e9edf0bdde37d1c15da0",
+          "runners/dsl/src/graph_rules.rs": "b3c63c1b9cd5713b69918792950701141ced7f01ddd061dc2b1e14673da34542",
+          "runners/dsl/src/py.rs": "905cb4eb645b597d34d5faf4bd9d0b999baf749e9c2f19e947bbbf89a0f27f39",
+          "runners/dsl/src/rewrite.rs": "ea711f28c9f8c21f119cdca6ad1d417576deb20b16a36ce6158e13a9fbafdf1b",
+          "runners/dsl/src/substrate.rs": "39f27175b2025c6c6552fd5bec8310d4ab06c6401823372f4bd8c4c13b5301e8",
+          "seeds/self_change_reasoning.json": "ab1980a533b6498ae614b5b44e611d882c00189287e9f9895fbcbceb06635e98"
+        },
+        "native_binary": {
+          "path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+          "sha256": "4263559da92c17cb1b84e33a79b1659ad3cb122db03c8347440630ab063ca95b"
+        }
+      },
+      "sources_before": {
+        "files": {
+          "docs/research/engine_substrate/THOUGHTEXPERIMENT_BLIND_CANDIDATE_TOURNAMENT_V1_PREREG_20261005.md": "3570d50428fbf21927976160b43b4cd7ef5ded4930a771fb280119688aede352",
+          "domains/edit_ops.py": "02cb546565f52b859a7420dd91ea1324b8ba92d8acb901c2b83dffdbb3c52f96",
+          "evaluation/reports/blind_structural_repair_relation_evidence_v1_analysis_20261005.json": "2bec2a23219499855eb57cee8de30367a2870a3fc723a261922270542c7d1d92",
+          "evaluation/substrate_capability/analyze_thoughtexperiment_blind_candidate_tournament_v1.py": "4f8687682fd353cd02d0cfd5f9ba1e12a9a630252b581f653d30bfad5dda53d6",
+          "evaluation/substrate_capability/thoughtexperiment_blind_candidate_tournament_v1.py": "c68f7eca9374607f46a955380d9c9b08eb8f62eb2168cb5e16661aa9850332fa",
+          "runners/dsl/Cargo.lock": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+          "runners/dsl/Cargo.toml": "c4d8ffff2241352a5150b5a9937dbb8010e958b6f115235b7daeae716c1a9332",
+          "runners/dsl/python/substrate_rs/_native.build.json": "c854af97c90788e09619ca5ac40dbce1ef9398f7d346bd3590845e4caea4e16e",
+          "runners/dsl/python/substrate_rs/ext.py": "36d623734bad3209dcdc8b6b894dab13276e8045b6c11cd0b64fdddd40c1109e",
+          "runners/dsl/src/graph.rs": "2c14dea3c04b3b13408690ec79fb61829c1e2760bcf4e9edf0bdde37d1c15da0",
+          "runners/dsl/src/graph_rules.rs": "b3c63c1b9cd5713b69918792950701141ced7f01ddd061dc2b1e14673da34542",
+          "runners/dsl/src/py.rs": "905cb4eb645b597d34d5faf4bd9d0b999baf749e9c2f19e947bbbf89a0f27f39",
+          "runners/dsl/src/rewrite.rs": "ea711f28c9f8c21f119cdca6ad1d417576deb20b16a36ce6158e13a9fbafdf1b",
+          "runners/dsl/src/substrate.rs": "39f27175b2025c6c6552fd5bec8310d4ab06c6401823372f4bd8c4c13b5301e8",
+          "seeds/self_change_reasoning.json": "ab1980a533b6498ae614b5b44e611d882c00189287e9f9895fbcbceb06635e98"
+        },
+        "native_binary": {
+          "path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+          "sha256": "4263559da92c17cb1b84e33a79b1659ad3cb122db03c8347440630ab063ca95b"
+        }
+      },
+      "worker": 1
+    },
+    {
+      "cases": [
+        {
+          "abort_count": 0,
+          "abort_reason": null,
+          "canary_outputs": [
+            true,
+            true,
+            true
+          ],
+          "candidate_count": 3,
+          "candidates": [
+            {
+              "candidate_id": "1bc3e54abe6a2b1d38b25f3b963d73bb382ee8fc4f34854fb2f61c86f78b4472",
+              "gain": 20,
+              "operator_hidden": "toggle_boolean_effect",
+              "outputs": [
+                true,
+                true
+              ]
+            },
+            {
+              "candidate_id": "468ec19f892460ecc2166af9ec61aeea1fb12e1686420004f84c01cd116bea6d",
+              "gain": 0,
+              "operator_hidden": "drop_match_edge",
+              "outputs": [
+                false,
+                false
+              ]
+            },
+            {
+              "candidate_id": "37aa793ca625faf08211acb6d560c5f67a3de045c5780ad431de7a086fffe1fd",
+              "gain": 0,
+              "operator_hidden": "drop_match_edge",
+              "outputs": [
+                false,
+                false
+              ]
+            }
+          ],
+          "case_id": "opaque_repair_needed",
+          "commit_count": 1,
+          "final_outputs": [
+            true,
+            true
+          ],
+          "graph_status": "commit_ready",
+          "noop_gain": 0,
+          "noop_outputs": [
+            false,
+            false
+          ],
+          "patch_reason": "ok",
+          "patch_status": "committed",
+          "placebo_gain": 0,
+          "placebo_outputs": [
+            false,
+            false
+          ],
+          "revision_after_rehearsal": 0,
+          "revision_after_terminal": 1,
+          "selected_candidate_id": "1bc3e54abe6a2b1d38b25f3b963d73bb382ee8fc4f34854fb2f61c86f78b4472",
+          "selected_count": 1,
+          "target_revision_initial": 0,
+          "target_rule_uid_withheld_until_selection": true,
+          "timing_ns": {
+            "candidate_rehearsal": 14216943,
+            "graph_selection": 155491,
+            "noop_rehearsal_3x": 2804048,
+            "placebo_rehearsal_3x": 3384442
+          }
+        },
+        {
+          "abort_count": 1,
+          "abort_reason": "no_causally_supported_patch",
+          "canary_outputs": [],
+          "candidate_count": 3,
+          "candidates": [
+            {
+              "candidate_id": "7cd42822cf0509d375f96da6138626e208a1f03dc900e84138736ab5b94694a8",
+              "gain": 0,
+              "operator_hidden": "toggle_boolean_effect",
+              "outputs": [
+                false,
+                false
+              ]
+            },
+            {
+              "candidate_id": "d6efd6fa6772a7b3d41d382f531060447d598d6d76f5c37c9f337e435a78f3a3",
+              "gain": 20,
+              "operator_hidden": "drop_match_edge",
+              "outputs": [
+                true,
+                true
+              ]
+            },
+            {
+              "candidate_id": "4e487c453c7aa5dd26a1f95d7aeeedb00643d0460fe5149c8f004d4982b5e5dc",
+              "gain": 20,
+              "operator_hidden": "drop_match_edge",
+              "outputs": [
+                true,
+                true
+              ]
+            }
+          ],
+          "case_id": "opaque_no_repair",
+          "commit_count": 0,
+          "final_outputs": [],
+          "graph_status": "aborted",
+          "noop_gain": 20,
+          "noop_outputs": [
+            true,
+            true
+          ],
+          "patch_reason": null,
+          "patch_status": null,
+          "placebo_gain": 20,
+          "placebo_outputs": [
+            true,
+            true
+          ],
+          "revision_after_rehearsal": 0,
+          "revision_after_terminal": 0,
+          "selected_candidate_id": null,
+          "selected_count": 0,
+          "target_revision_initial": 0,
+          "target_rule_uid_withheld_until_selection": true,
+          "timing_ns": {
+            "candidate_rehearsal": 10957902,
+            "graph_selection": 189271,
+            "noop_rehearsal_3x": 2099363,
+            "placebo_rehearsal_3x": 2007843
+          }
+        }
+      ],
+      "pid": 198,
+      "sources_after": {
+        "files": {
+          "docs/research/engine_substrate/THOUGHTEXPERIMENT_BLIND_CANDIDATE_TOURNAMENT_V1_PREREG_20261005.md": "3570d50428fbf21927976160b43b4cd7ef5ded4930a771fb280119688aede352",
+          "domains/edit_ops.py": "02cb546565f52b859a7420dd91ea1324b8ba92d8acb901c2b83dffdbb3c52f96",
+          "evaluation/reports/blind_structural_repair_relation_evidence_v1_analysis_20261005.json": "2bec2a23219499855eb57cee8de30367a2870a3fc723a261922270542c7d1d92",
+          "evaluation/substrate_capability/analyze_thoughtexperiment_blind_candidate_tournament_v1.py": "4f8687682fd353cd02d0cfd5f9ba1e12a9a630252b581f653d30bfad5dda53d6",
+          "evaluation/substrate_capability/thoughtexperiment_blind_candidate_tournament_v1.py": "c68f7eca9374607f46a955380d9c9b08eb8f62eb2168cb5e16661aa9850332fa",
+          "runners/dsl/Cargo.lock": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+          "runners/dsl/Cargo.toml": "c4d8ffff2241352a5150b5a9937dbb8010e958b6f115235b7daeae716c1a9332",
+          "runners/dsl/python/substrate_rs/_native.build.json": "c854af97c90788e09619ca5ac40dbce1ef9398f7d346bd3590845e4caea4e16e",
+          "runners/dsl/python/substrate_rs/ext.py": "36d623734bad3209dcdc8b6b894dab13276e8045b6c11cd0b64fdddd40c1109e",
+          "runners/dsl/src/graph.rs": "2c14dea3c04b3b13408690ec79fb61829c1e2760bcf4e9edf0bdde37d1c15da0",
+          "runners/dsl/src/graph_rules.rs": "b3c63c1b9cd5713b69918792950701141ced7f01ddd061dc2b1e14673da34542",
+          "runners/dsl/src/py.rs": "905cb4eb645b597d34d5faf4bd9d0b999baf749e9c2f19e947bbbf89a0f27f39",
+          "runners/dsl/src/rewrite.rs": "ea711f28c9f8c21f119cdca6ad1d417576deb20b16a36ce6158e13a9fbafdf1b",
+          "runners/dsl/src/substrate.rs": "39f27175b2025c6c6552fd5bec8310d4ab06c6401823372f4bd8c4c13b5301e8",
+          "seeds/self_change_reasoning.json": "ab1980a533b6498ae614b5b44e611d882c00189287e9f9895fbcbceb06635e98"
+        },
+        "native_binary": {
+          "path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+          "sha256": "4263559da92c17cb1b84e33a79b1659ad3cb122db03c8347440630ab063ca95b"
+        }
+      },
+      "sources_before": {
+        "files": {
+          "docs/research/engine_substrate/THOUGHTEXPERIMENT_BLIND_CANDIDATE_TOURNAMENT_V1_PREREG_20261005.md": "3570d50428fbf21927976160b43b4cd7ef5ded4930a771fb280119688aede352",
+          "domains/edit_ops.py": "02cb546565f52b859a7420dd91ea1324b8ba92d8acb901c2b83dffdbb3c52f96",
+          "evaluation/reports/blind_structural_repair_relation_evidence_v1_analysis_20261005.json": "2bec2a23219499855eb57cee8de30367a2870a3fc723a261922270542c7d1d92",
+          "evaluation/substrate_capability/analyze_thoughtexperiment_blind_candidate_tournament_v1.py": "4f8687682fd353cd02d0cfd5f9ba1e12a9a630252b581f653d30bfad5dda53d6",
+          "evaluation/substrate_capability/thoughtexperiment_blind_candidate_tournament_v1.py": "c68f7eca9374607f46a955380d9c9b08eb8f62eb2168cb5e16661aa9850332fa",
+          "runners/dsl/Cargo.lock": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+          "runners/dsl/Cargo.toml": "c4d8ffff2241352a5150b5a9937dbb8010e958b6f115235b7daeae716c1a9332",
+          "runners/dsl/python/substrate_rs/_native.build.json": "c854af97c90788e09619ca5ac40dbce1ef9398f7d346bd3590845e4caea4e16e",
+          "runners/dsl/python/substrate_rs/ext.py": "36d623734bad3209dcdc8b6b894dab13276e8045b6c11cd0b64fdddd40c1109e",
+          "runners/dsl/src/graph.rs": "2c14dea3c04b3b13408690ec79fb61829c1e2760bcf4e9edf0bdde37d1c15da0",
+          "runners/dsl/src/graph_rules.rs": "b3c63c1b9cd5713b69918792950701141ced7f01ddd061dc2b1e14673da34542",
+          "runners/dsl/src/py.rs": "905cb4eb645b597d34d5faf4bd9d0b999baf749e9c2f19e947bbbf89a0f27f39",
+          "runners/dsl/src/rewrite.rs": "ea711f28c9f8c21f119cdca6ad1d417576deb20b16a36ce6158e13a9fbafdf1b",
+          "runners/dsl/src/substrate.rs": "39f27175b2025c6c6552fd5bec8310d4ab06c6401823372f4bd8c4c13b5301e8",
+          "seeds/self_change_reasoning.json": "ab1980a533b6498ae614b5b44e611d882c00189287e9f9895fbcbceb06635e98"
+        },
+        "native_binary": {
+          "path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+          "sha256": "4263559da92c17cb1b84e33a79b1659ad3cb122db03c8347440630ab063ca95b"
+        }
+      },
+      "worker": 2
+    }
+  ]
+}

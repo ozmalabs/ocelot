@@ -1,0 +1,102 @@
+{
+  "analysis_revision": "Post-capture amendment: adds exact pairwise semantic outcome projection; capture and pre-run lock unchanged.",
+  "analysis_script_sha256": "2bda67b90e438cb43d5cbb359d1d9f189b9bf8b4ad352e71d5ea049a1323c392",
+  "capture_sha256": "df92e789311a9285631baab5738be0ce0d84896de462049438f075776b91662e",
+  "checks": {
+    "all_six_pairs_complete": true,
+    "both_arms_pass_individual_semantic_gates": true,
+    "exact_pairwise_semantic_outcome_parity": true,
+    "exact_schedule_and_12_rows": true,
+    "instrumentation_only_in_on_arm": true,
+    "no_worker_failures_and_unique_pids": true,
+    "postrun_sources_stable": true,
+    "prelocked_inputs_match_and_recompute": true
+  },
+  "claim_boundary": "One host and one authored 100k-node workload; no general runtime-overhead or scaling claim.",
+  "interpretation": "Three pairs per backend show variable paired timing deltas; medians near zero do not establish zero overhead. The combined clock-wrapper and Python dispatch effect is small relative to multi-second lifecycle here, but the sample is too small to estimate a general overhead factor.",
+  "schema": "ThoughtexperimentFanoutInstrumentationOverheadV1_1Analysis",
+  "summaries": {
+    "full_copy": {
+      "median_instrumented_digest_ms": 792.692463,
+      "median_instrumented_export_ms": 2531.824193,
+      "median_off_ms": 3620.964891,
+      "median_on_ms": 3620.483447,
+      "median_paired_delta_ms": -0.4814440000000104,
+      "median_paired_ratio_on_off": 0.9998670398596803,
+      "paired_delta_range_ms": [
+        -182.28763299999991,
+        221.62796100000014
+      ],
+      "pairs": [
+        {
+          "delta_ms": 221.62796100000014,
+          "off_ms": 3565.703956,
+          "on_canonical_digest_ms": 792.692463,
+          "on_graph_export_ms": 2730.858626,
+          "on_ms": 3787.331917,
+          "ratio_on_off": 1.06215545758561,
+          "replicate": 0
+        },
+        {
+          "delta_ms": -182.28763299999991,
+          "off_ms": 3654.932364,
+          "on_canonical_digest_ms": 757.378497,
+          "on_graph_export_ms": 2464.427722,
+          "on_ms": 3472.644731,
+          "ratio_on_off": 0.9501255796699608,
+          "replicate": 1
+        },
+        {
+          "delta_ms": -0.4814440000000104,
+          "off_ms": 3620.964891,
+          "on_canonical_digest_ms": 829.776483,
+          "on_graph_export_ms": 2531.824193,
+          "on_ms": 3620.483447,
+          "ratio_on_off": 0.9998670398596803,
+          "replicate": 2
+        }
+      ]
+    },
+    "shared_graph_pages": {
+      "median_instrumented_digest_ms": 739.861497,
+      "median_instrumented_export_ms": 2518.37097,
+      "median_off_ms": 3362.321274,
+      "median_on_ms": 3371.602267,
+      "median_paired_delta_ms": -45.82026300000007,
+      "median_paired_ratio_on_off": 0.98637243164289,
+      "paired_delta_range_ms": [
+        -68.86708599999974,
+        208.23852100000022
+      ],
+      "pairs": [
+        {
+          "delta_ms": 208.23852100000022,
+          "off_ms": 3296.602289,
+          "on_canonical_digest_ms": 744.944488,
+          "on_graph_export_ms": 2599.746576,
+          "on_ms": 3504.84081,
+          "ratio_on_off": 1.063167620096256,
+          "replicate": 0
+        },
+        {
+          "delta_ms": -68.86708599999974,
+          "off_ms": 3440.469353,
+          "on_canonical_digest_ms": 714.025974,
+          "on_graph_export_ms": 2518.37097,
+          "on_ms": 3371.602267,
+          "ratio_on_off": 0.9799832293405115,
+          "replicate": 1
+        },
+        {
+          "delta_ms": -45.82026300000007,
+          "off_ms": 3362.321274,
+          "on_canonical_digest_ms": 739.861497,
+          "on_graph_export_ms": 2434.326128,
+          "on_ms": 3316.501011,
+          "ratio_on_off": 0.98637243164289,
+          "replicate": 2
+        }
+      ]
+    }
+  }
+}

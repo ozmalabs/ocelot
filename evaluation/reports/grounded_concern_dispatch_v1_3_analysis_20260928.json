@@ -1,0 +1,95 @@
+{
+  "all_checks_pass": true,
+  "analysis_id": "grounded-concern-dispatch-v1.3-independent-analysis",
+  "analyzer_sha256": "55f57f864374d70c4e5fe9a1de6725a4b4ded71a3bac5f1f2b7ecaec3855db60",
+  "checks": {
+    "complete_capture_no_errors": true,
+    "conditions_match_registered_text": true,
+    "control_stays_goal_only": true,
+    "four_workers_exact_schedule": true,
+    "parent_lock_stable": true,
+    "positive_concern_repeats_exactly": true,
+    "positive_routes_to_grounded_concern": true,
+    "protocol_hash_matches": true,
+    "runner_hash_matches": true,
+    "teacher_free_both_arms": true,
+    "two_workers_per_condition": true,
+    "unique_processes": true,
+    "worker_boot_and_calls_complete": true,
+    "worker_locks_stable": true
+  },
+  "claim_boundary": "Four fresh workers show one teacher-free concern induction/grounding result for a preconstructed compare instruction and one goal-only walk control. Natural-language comprehension is bypassed; this is not a broad learning or task-generalization result.",
+  "lock_sha256": "e17b0ad0059a330d3836156d57245a57fc5e91b27b73dcec54e91e439f37eafb",
+  "outcomes_by_condition": {
+    "grounded_compare": {
+      "concern": [
+        {
+          "grounded": true,
+          "key": "steer_compare_where_the_two_letters_differ_and_judge_the_trial",
+          "minted": true,
+          "path": "experiment_rule",
+          "signature": [
+            [
+              "pairwise",
+              "PARTS"
+            ],
+            [
+              "judge",
+              "TRIAL",
+              "by",
+              "RESULT"
+            ]
+          ]
+        },
+        {
+          "grounded": true,
+          "key": "steer_compare_where_the_two_letters_differ_and_judge_the_trial",
+          "minted": true,
+          "path": "experiment_rule",
+          "signature": [
+            [
+              "pairwise",
+              "PARTS"
+            ],
+            [
+              "judge",
+              "TRIAL",
+              "by",
+              "RESULT"
+            ]
+          ]
+        }
+      ],
+      "median_task_cpu_ms": 2557.976412,
+      "median_task_wall_ms": 2559.0981485,
+      "repeats": 2,
+      "route_counts": {
+        "concern_authored": 2
+      },
+      "rule_deltas": [
+        1,
+        1
+      ],
+      "text": "Compare where the two letters differ and judge the trial on that region."
+    },
+    "non_concern_walk": {
+      "concern": [
+        null,
+        null
+      ],
+      "median_task_cpu_ms": 0.455065,
+      "median_task_wall_ms": 0.4543975,
+      "repeats": 2,
+      "route_counts": {
+        "goal_only": 2
+      },
+      "rule_deltas": [
+        0,
+        0
+      ],
+      "text": "Walk to the door."
+    }
+  },
+  "raw_sha256": "e8dac4deb5388a85424a33f19b0624c06ba42ebc919f820dba5cf9714e257c97",
+  "schema_version": 1
+}

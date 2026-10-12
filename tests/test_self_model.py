@@ -50,6 +50,23 @@ def test_mirror_is_idempotent(agent):
     assert rep2["minted"] == 0 and rep2["updated"] == 0
 
 
+def test_unchanged_mirror_refresh_skips_structural_rule_walks(agent, monkeypatch):
+    # A matching exported-body hash proves that every derived structural field
+    # is unchanged. Refresh must use that proof before traversing large Where
+    # trees or serializing summary strings.
+    def unexpected_walk(*_args, **_kwargs):
+        raise AssertionError("unchanged rule body was structurally re-walked")
+
+    monkeypatch.setattr(sm, "_match_text", unexpected_walk)
+    monkeypatch.setattr(sm, "_reads_text", unexpected_walk)
+    monkeypatch.setattr(sm, "_effects_summary", unexpected_walk)
+    monkeypatch.setattr(sm, "_find_threshold_lits", unexpected_walk)
+    result = sm.ensure_rule_provenance(agent)
+    assert result["minted"] == 0
+    assert result["updated"] == 0
+    assert result["unchanged"] > 0
+
+
 def test_program_mirror_covers_every_program(agent):
     n_programs = len(list(agent.s.nodes("Program")))
     n_summary = len(list(agent.s.nodes("ProgramSummary")))
@@ -78,6 +95,9 @@ def test_ask_which_parts_touch_attr(agent):
 
 
 def test_self_authored_rule_becomes_answerable_after_remirror(agent):
+    # A turn-local query snapshot must not hide rules added by the graph and
+    # mirrored into RuleSummary by the supported refresh path.
+    agent._rule_summary_lookup_index = sm._build_rule_summary_exact_index(agent.s)
     agent.inner.add_rule({
         "name": "test_self_model_authored_rule",
         "match": [["m", "has_concept", "c"]],
@@ -89,6 +109,7 @@ def test_self_authored_rule_becomes_answerable_after_remirror(agent):
     # before re-mirroring, the query is honest about not (yet) knowing it —
     # ensure_rule_provenance is the caller's job to invoke after add_rule.
     sm.ensure_self_model(agent)
+    assert agent._rule_summary_lookup_index is None
     ans = agent.answer_question("what does test_self_model_authored_rule do?")
     assert "test_self_model_authored_attr" in ans
 
@@ -113,6 +134,28 @@ def test_rule_summary_reads_writes_text_mechanical(agent):
     _, at = hits[0]
     assert "chosen_action" in at["writes_text"]
     assert at["from_seed"] == "grid_navigation"
+
+
+def test_batched_exact_rule_lookup_matches_individual_queries(agent):
+    queries = ["hop_descend_gradient", "satisfy_goal", "hop descend gradient",
+               "totally_bogus_rule"]
+    batched = sm._find_rule_summaries_many(agent.s, queries)
+    assert set(batched) == set(queries)
+    for query in queries:
+        assert batched[query] == sm._find_rule_summaries(agent.s, query)
+
+
+def test_cached_exact_rule_lookup_matches_uncached_index(agent):
+    queries = ["hop_descend_gradient", "satisfy_goal", "hop descend gradient",
+               "totally_bogus_rule"]
+    index = sm._build_rule_summary_exact_index(agent.s)
+    assert all(not isinstance(node, dict)
+               for rows in (*index["name"].values(),
+                            *index["keywords"].values())
+               for node in rows)
+    indexed = sm._find_rule_summaries_many_indexed(
+        agent.s, queries, index=index)
+    assert indexed == sm._find_rule_summaries_many(agent.s, queries)
 
 
 def test_existing_self_organisation_question_unaffected(agent):

@@ -1,0 +1,65 @@
+{
+  "aggregate": {
+    "empty_candidate_query_groups": 21,
+    "new_candidate_event_rows": 7731,
+    "new_query_event_rows": 129,
+    "request_count": 6,
+    "workers": 3
+  },
+  "capture_checks": {
+    "access_and_work_traces_have_no_dropped_rows": true,
+    "candidate_rows_agree_with_type_reads": true,
+    "existing_semantic_controls_pass": true,
+    "no_worker_process_failures": true,
+    "semantic_graph_matches_v1_1_and_reproduces": true,
+    "source_lock_stable": true,
+    "task_lifecycle_and_shortfall_reproduce": true,
+    "three_distinct_fresh_pids": true,
+    "two_prompt_schedule_reproduces": true
+  },
+  "checks": {
+    "all_event_rule_uids_resolve_in_operation_manifest": true,
+    "captured_worker_gates_pass": true,
+    "raw_hashes_match_capture_summary": true,
+    "six_request_summaries_present": true
+  },
+  "claim_boundary": "Kinds 34/35 are shared with other typed-population helpers. The capture establishes live emission, empty-result visibility, and candidate cardinality for typed-population paths. Syntax joining is correlational; it does not attribute every row to a NodesOfType AST evaluation or establish complete dependencies.",
+  "inputs": {
+    "capture_summary_sha256": "59822b58ee8a09f2d21beb60a5e2967b660afda480fc189d915fc4d4561df949",
+    "operation_manifest_sha256": "05d984a333a31f12e1ecc8ad4217f412b8f93254dc0c2b616b4acd313bc0e284",
+    "raw_archive_sha256": "a22997e4e7deaeee8cb3e5146b7c7866672819a22691cda5d9d97edc6fa0c59d",
+    "raw_decompressed_sha256": "6d301f6ba791e2cd8a06c73438a1b8be32250e0691a9eb7c970219deb5158f9b"
+  },
+  "rule_syntax_join": {
+    "candidate_event_count_by_rule_class": {
+      "rule_definition_contains_NodesOfType": 37350,
+      "rule_definition_lacks_NodesOfType_syntax": 8646
+    },
+    "candidate_event_rows_by_rule_class": {
+      "rule_definition_contains_NodesOfType": 4023,
+      "rule_definition_lacks_NodesOfType_syntax": 3708
+    },
+    "classification": "whether the exported definition syntax contains NodesOfType; not attribution of a shared event to a specific evaluator site",
+    "empty_query_count_by_rule_class": {
+      "rule_definition_contains_NodesOfType": 297,
+      "rule_definition_lacks_NodesOfType_syntax": 9
+    },
+    "empty_query_rows_by_rule_class": {
+      "rule_definition_contains_NodesOfType": 18,
+      "rule_definition_lacks_NodesOfType_syntax": 3
+    },
+    "query_event_count_by_rule_class": {
+      "rule_definition_contains_NodesOfType": 948,
+      "rule_definition_lacks_NodesOfType_syntax": 36
+    },
+    "query_event_rows_by_rule_class": {
+      "rule_definition_contains_NodesOfType": 114,
+      "rule_definition_lacks_NodesOfType_syntax": 15
+    },
+    "unique_empty_rule_type_groups_by_rule_class": {
+      "rule_definition_contains_NodesOfType": 4,
+      "rule_definition_lacks_NodesOfType_syntax": 1
+    }
+  },
+  "schema_version": 1
+}

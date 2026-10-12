@@ -96,7 +96,7 @@ class CrossFrameWorld:
         self.native = rf._native_eval2(self.s)
         # `shape_decode_loop` supplies the `observed` edge type this seed's
         # rules match on; declared as a depends_on in the manifest.
-        rf._ensure_shape_decode_loop(self.s, self.native, self.ag)
+        rf._ensure_vision_grain_policy(self.s, self.native, self.ag)
         self.native.load_seed_manifest(
             manifest_for("vision_crossframe_identity"), self.ag)
         # §9: the seed ships crossframe=0.0. Arming it is a blind write of a

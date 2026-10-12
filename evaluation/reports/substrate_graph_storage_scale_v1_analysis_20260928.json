@@ -1,0 +1,86 @@
+{
+  "all_checks_pass": true,
+  "analysis_id": "substrate-graph-storage-scale-v1-independent-analysis",
+  "checks": {
+    "all_sampled_reads_pass": true,
+    "all_workers_match_source_lock": true,
+    "exact_size_and_chain_counts": true,
+    "locked_source_files_still_match_checkout": true,
+    "parent_post_snapshot_matches_lock": true,
+    "raw_worker_stderr_empty": true,
+    "runner_checks_all_pass": true,
+    "six_worker_rows": true,
+    "timings_positive": true,
+    "two_replicates_at_each_size": true,
+    "unique_worker_processes": true
+  },
+  "interpretation": "Measurements cover direct Python-to-native graph mutation with empty node attributes and a directed chain only. RSS is process-level; timings include PyO3 calls, interning, and allocator effects. This is not a closure, inference, or natural-workload scale law.",
+  "lock_sha256": "f27719f33be8885d37018c7cac1b6d3082929e4167c02f20ff790572ba957247",
+  "raw_sha256": "e48ff3566af2fa4d28af4769e240a8140ea2f16ee63d6b1bc46466ab6f10e0e2",
+  "schema_version": 1,
+  "size_summaries": [
+    {
+      "edges": 9999,
+      "median_edge_build_cpu_ns": 8007542,
+      "median_edge_build_wall_ns": 8011121,
+      "median_node_build_cpu_ns": 4985037,
+      "median_node_build_wall_ns": 4986458,
+      "median_rss_delta_bytes": 3661824,
+      "median_rss_delta_bytes_per_node": 366,
+      "median_total_build_cpu_ns": 12992579,
+      "median_total_build_wall_ns": 12997579,
+      "nodes": 10000,
+      "peak_rss_bytes_by_worker": [
+        37093376,
+        36818944
+      ],
+      "replicates": 2,
+      "rss_delta_bytes_by_worker": [
+        3661824,
+        3661824
+      ]
+    },
+    {
+      "edges": 99999,
+      "median_edge_build_cpu_ns": 91611464,
+      "median_edge_build_wall_ns": 91674517,
+      "median_node_build_cpu_ns": 48281498,
+      "median_node_build_wall_ns": 48297629,
+      "median_rss_delta_bytes": 26324992,
+      "median_rss_delta_bytes_per_node": 263,
+      "median_total_build_cpu_ns": 139892962,
+      "median_total_build_wall_ns": 139972147,
+      "nodes": 100000,
+      "peak_rss_bytes_by_worker": [
+        60010496,
+        59486208
+      ],
+      "replicates": 2,
+      "rss_delta_bytes_by_worker": [
+        26324992,
+        26324992
+      ]
+    },
+    {
+      "edges": 999999,
+      "median_edge_build_cpu_ns": 958107909,
+      "median_edge_build_wall_ns": 958180486,
+      "median_node_build_cpu_ns": 473708218,
+      "median_node_build_wall_ns": 473755295,
+      "median_rss_delta_bytes": 253706240,
+      "median_rss_delta_bytes_per_node": 253,
+      "median_total_build_cpu_ns": 1431816127,
+      "median_total_build_wall_ns": 1431935781,
+      "nodes": 1000000,
+      "peak_rss_bytes_by_worker": [
+        309813248,
+        310542336
+      ],
+      "replicates": 2,
+      "rss_delta_bytes_by_worker": [
+        253706240,
+        253706240
+      ]
+    }
+  ]
+}

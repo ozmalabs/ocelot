@@ -123,11 +123,38 @@ def ensure_discourse_state(agent, *, conversation_id="default", addressee=None):
 
 def record_event(agent, state, *, kind, speaker=None, addressee=None,
                  topic=None, expectation=None, interaction_mode="event",
-                 payload=None):
-    """Record one event and update only state-local discourse fields."""
+                 payload=None, goal=None):
+    """Record one event and update only state-local discourse fields.
+
+    When ``goal`` is supplied, bind this event explicitly to that Goal. Event
+    order and recipient scope alone are not sufficient task identity.
+    """
     attrs = agent.s.node(state)["attrs"]
+    if goal is not None and (
+            not agent.inner.has_node(goal)
+            or agent.s.node(goal).get("type") != "Goal"):
+        raise ValueError("lifecycle event goal must be a live Goal node")
     index = int(attrs.get("event_index", 0))
-    event = agent.s.add_node("DiscourseEvent", {
+    previous = attrs.get("last_event_id")
+    if previous is not None:
+        state_events = set(agent.inner.neighbours(state, "has_event"))
+        if (not agent.inner.has_node(previous)
+                or previous not in state_events
+                or agent.s.node(previous).get("type") != "DiscourseEvent"):
+            previous = None
+    if previous is None:
+        # Rehydrate the sequence link for a discourse state saved before the
+        # explicit predecessor edge was introduced. Event indices are scoped
+        # to this state, so only its own history is eligible.
+        prior_events = [candidate for candidate in agent.inner.neighbours(
+            state, "has_event") if agent.inner.has_node(candidate)
+            and int(agent.s.node(candidate)["attrs"].get("event_index", -1)) < index]
+        if prior_events:
+            previous = max(
+                prior_events,
+                key=lambda candidate: int(agent.s.node(candidate)["attrs"].get(
+                    "event_index", -1)))
+    event_attrs = {
         "schema": "discourse_event.v1",
         "event_index": index,
         "kind": str(kind),
@@ -135,8 +162,25 @@ def record_event(agent, state, *, kind, speaker=None, addressee=None,
         "topic": topic,
         "expectation": expectation,
         "payload": dict(payload or {}),
-    })
+    }
+    if previous is not None:
+        # A redundant scalar join key lets native history rules probe the
+        # predecessor candidate through the DiscourseEvent event-index
+        # index. The follows_event edge remains the semantic authority and
+        # is still checked by the rule matcher, including deferred closure.
+        predecessor_index = agent.s.node(previous)["attrs"].get("event_index")
+        if predecessor_index is not None:
+            try:
+                event_attrs["predecessor_event_index"] = int(predecessor_index)
+            except (TypeError, ValueError):
+                # Old/custom events without a usable sequence index retain
+                # the original edge-scan path: an absent probe key makes the
+                # IndexJoinHint fall back instead of dropping the edge match.
+                pass
+    event = agent.s.add_node("DiscourseEvent", event_attrs)
     _edge(agent, state, "has_event", event)
+    if previous is not None:
+        _edge(agent, event, "follows_event", previous)
     if speaker is not None:
         _edge(agent, event, "from_speaker", speaker)
     if addressee is not None:
@@ -148,6 +192,8 @@ def record_event(agent, state, *, kind, speaker=None, addressee=None,
         # participant ledger.
         ensure_common_ground(agent, state, addressee=addressee,
                              bind_state=False)
+    if goal is not None:
+        _edge(agent, event, "for_goal", goal)
     delta = (payload or {}).get("common_ground_delta")
     # Claim deltas belong to the event's addressed ledger.  Unaddressed
     # observations use the explicit shared ledger; they do not leak into a
@@ -161,7 +207,7 @@ def record_event(agent, state, *, kind, speaker=None, addressee=None,
         agent.inner.set_attr(ground, "revision",
                              int(agent.s.node(ground)["attrs"].get("revision", 0)) + 1)
         _edge(agent, event, "contributes_to_common_ground", ground)
-    updates = {"event_index": index + 1}
+    updates = {"event_index": index + 1, "last_event_id": event}
     if topic is not None:
         updates["current_topic"] = topic
     if expectation is not None:

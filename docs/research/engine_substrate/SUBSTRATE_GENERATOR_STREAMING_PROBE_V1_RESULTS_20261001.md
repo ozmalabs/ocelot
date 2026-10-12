@@ -1,0 +1,11 @@
+# Candidate-cohort streaming probe v1 (2026-10-01)
+
+## Result
+
+The source-locked paired probe covered 120 task × grammar-size × probe-count × repetition cells. Eager and streaming arms produced exactly the same halt reason, pool size, term count, distinct-signature count, ordered signatures, and held-out target-support count in all 120 pairs. All cells completed at the declared size ceiling; the analyzer verifies current source/native hashes, full paired schedule coverage, and exact semantic parity. See the [raw capture](../../../evaluation/reports/substrate_generator_streaming_probe_v1_20261001_raw.json), [analysis](../../../evaluation/reports/substrate_generator_streaming_probe_v1_20261001_analysis.json), [lock](../../../evaluation/substrate_capability/substrate_generator_streaming_probe_v1_20261001_lock.json), and [protocol](SUBSTRATE_GENERATOR_STREAMING_PROBE_V1_PREREG_20261001.md).
+
+Streaming registers each term as it is constructed, preserving enumeration order and avoiding a temporary list containing the entire same-size candidate cohort. Median eager/streaming wall-time ratio is 1.014 across the paired cells, with substantial small-cell noise; this shows no latency benefit. Median Python-traced peak allocation ratio is 2.59× in favor of streaming. At the largest triangular ceiling, traced peaks are about 2.82 MB eager versus 1.08 MB streaming; at the largest Euler ceiling they are about 3.87–4.04 MB versus 2.03–2.11 MB. `tracemalloc` does not include native Rust allocations, and tracing itself changes absolute timing. These ratios are an allocation signal, not process-RSS or total-memory evidence.
+
+## Interpretation and next gate
+
+The opt-in streaming mode is an exact, lower-temporary-allocation execution path for the measured grammar. It does not solve the combinatorial candidate-growth cost: the number of terms/signatures remains unchanged, and wall time remains essentially unchanged. Keep the eager path available until a production workload shows the memory reduction matters; do not describe streaming as a speedup. If promoted, measure native allocation/RSS, timeout behavior during candidate generation, wider grammars including ternary operators, and realistic synthesis workloads. Any future incremental active learner must additionally show query/held-out benefit under a matched total work budget.

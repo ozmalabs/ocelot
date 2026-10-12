@@ -1,0 +1,8 @@
+#!/usr/bin/env python3
+# `forecast` verb launcher — on PATH, no ENTRYPOINT. Delegates to the CLI in
+# /app/qfb2t2. Accepts both `forecast --panels ...` (command form) and a leading
+# positional `forecast` (ENTRYPOINT form); the CLI's main() strips the latter.
+import sys
+sys.path.insert(0, "/app/qfb2t2")
+from forecast_cli import main
+raise SystemExit(main())

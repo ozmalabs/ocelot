@@ -1,6 +1,6 @@
 {
  "id": "vision_science",
- "version": "1.0.0",
+ "version": "1.1.0",
  "depends_on": [],
  "description": "Things the jabberwock was taught, filed under 'vision_science'. Written by the teach() facility (one node per taught item).",
  "microtheory": {
@@ -14,7 +14,10 @@
    "attrs": {
     "topic": "vision",
     "text": "My vision is a developmental ladder with four rungs, three of them built. Rung 1 (BUILT): retinal waves \u2014 I make spatial structure out of unstructured entropy, spatial correlation 0.195 against 0.000 for the same RNG's raw draw. Rung 2 (BUILT): experience refines that scaffold \u2014 normal 0.402 > dark 0.363 > sutured 0.216, both p<0.0001, pre-registered. Rung 3 (NOT BUILT): direction selectivity \u2014 neither waves nor moving experience develop it; every effect is inside the smallest effect size of interest. Rung 4 (BUILT): an orientation MAP forms from waves alone with no vision at all, mechanism interaction -6.91, p<0.0001, n=70. NOT built: complex cells, V2 and above, objecthood. The honest charge against all of it: every rung that works is Oja plus winner-take-all plus lateral interaction \u2014 a connectionist model my graph is HOSTING. My own core loop (ShapeDecode, mint-on-residual, dynamic quantization) plays no part in any working rung, and the one rung that did use mint-on-residual produced the null.",
-    "source": "vision_science:1.0"
+    "grounding_referent": "vision",
+    "grounding_status": "supported",
+    "grounding_evidence_path": "seed:vision_science:1.1.0 -> HeldAnswer.topic",
+    "source": "vision_science:1.1.0"
    }
   },
   {
@@ -23,7 +26,10 @@
    "attrs": {
     "topic": "retinal waves",
     "text": "Rung 1, BUILT. My adapter supplies unstructured entropy and a clock; the graph makes the structure. The wave program produces spatial correlation 0.195 where the same RNG's raw draw gives 0.000 \u2014 self-generated structure out of entropy, not structure I was handed. seeds/vision_waves.json.",
-    "source": "vision_science:1.0"
+    "grounding_referent": "retinal waves",
+    "grounding_status": "supported",
+    "grounding_evidence_path": "seed:vision_science:1.1.0 -> HeldAnswer.topic",
+    "source": "vision_science:1.1.0"
    }
   },
   {
@@ -32,7 +38,10 @@
    "attrs": {
     "topic": "oja's rule",
     "text": "Oja's rule is the learning rule my visual scaffold runs on, and its attractor is the leading principal component of the TIME-AVERAGED covariance of its input. That single fact both built rung 2 and forbids rung 3. It converges: structure settles at 0.368 with drift falling to 0.107, so a stable scaffold exists to refine \u2014 which is why rung 2 works. But an average has no direction. Natural motion is direction-isotropic on average, and a contraction to the mean of an isotropic distribution IS the mean, so no direction selectivity can develop. The stability that rescued rung 2 from nine transient-measured failures is exactly what forbids rung 3.",
-    "source": "vision_science:1.0"
+    "grounding_referent": "oja's rule",
+    "grounding_status": "supported",
+    "grounding_evidence_path": "seed:vision_science:1.1.0 -> HeldAnswer.topic",
+    "source": "vision_science:1.1.0"
    }
   },
   {
@@ -41,7 +50,10 @@
    "attrs": {
     "topic": "direction selectivity",
     "text": "Rung 3, NOT BUILT, and the failure is diagnosed rather than mysterious. The mechanism itself is proven by a positive control: a delay-line coincidence detector plus Oja goes from DSI 0.111 to 0.351 on a single-direction stimulus, and it converges (drift 1.24 to 0.0115, no NaN). But neither my waves nor moving experience develop direction selectivity. H1a: -0.0035, p=0.09, FAIL. H1b: +0.0096, PASS \u2014 but as an EQUIVALENCE test to the floor, which is a pass for the null. H1c: +0.0114, PASS \u2014 but about half of that is the strobe arm dissolving the innate bias BELOW the floor (strobe minus untrained = -0.0054), the wrong-reason pass the pre-registration predicted and the untrained arm caught. Every effect is at most 2.3% of the dynamic range; two of them are p=0.0001 and none of them is meaningful. Root cause, measured not inferred: Oja's attractor is the leading PC of the time-averaged covariance, and the average has no direction. Honest scope: the experience-dependence of direction is UNTESTED, not refuted \u2014 gaze_walk's drift is isotropic by construction, so the normal arm cannot answer the question.",
-    "source": "vision_science:1.0"
+    "grounding_referent": "direction selectivity",
+    "grounding_status": "supported",
+    "grounding_evidence_path": "seed:vision_science:1.1.0 -> HeldAnswer.topic",
+    "source": "vision_science:1.1.0"
    }
   },
   {
@@ -50,7 +62,10 @@
    "attrs": {
     "topic": "orientation map",
     "text": "Rung 4, BUILT. An orientation map's topography forms from waves ALONE, with no vision: d_on -20.16, and the pre-registered mechanism INTERACTION (lateral, ON minus OFF) -6.91, CI [-7.46, -6.37], p<0.0001, n=70. The lateral interaction is vm_burst_lateral in seeds/vision_maps.json. The reason the test had to be an interaction: the ablated arm is NOT null (-13.25), because retinotopic receptive-field overlap \u2014 ANATOMY MY ADAPTER WIRES, not anything my graph did \u2014 accounts for about 65% of the raw effect. NOT shown: pinwheels or singularities; a 6x6 sheet cannot resolve one. Open ambiguity needing its own pre-registration: lateral also raises selectivity (+0.045) and better-tuned units read out more cleanly (within-arm r=-0.65), so a mean-level readout contribution to the interaction is not excluded.",
-    "source": "vision_science:1.0"
+    "grounding_referent": "orientation map",
+    "grounding_status": "supported",
+    "grounding_evidence_path": "seed:vision_science:1.1.0 -> HeldAnswer.topic",
+    "source": "vision_science:1.1.0"
    }
   },
   {
@@ -59,7 +74,10 @@
    "attrs": {
     "topic": "experience refines",
     "text": "Rung 2, BUILT, on the Oja scaffold with eta=5e-4: normal 0.402 > dark 0.363 > sutured 0.216, both p<0.0001, pre-registered over ten attempts of which nine failed. What it shows is that experience REFINES a stable scaffold. What it does NOT show: Gabors (0.402 against an ideal Gabor's 0.867 \u2014 refined structure, not Gabors), and no map topography was measured. An earlier reading of this result, that 'vision refines', was RETRACTED: what vision mostly does there is halt a decay.",
-    "source": "vision_science:1.0"
+    "grounding_referent": "experience refines",
+    "grounding_status": "supported",
+    "grounding_evidence_path": "seed:vision_science:1.1.0 -> HeldAnswer.topic",
+    "source": "vision_science:1.1.0"
    }
   },
   {
@@ -68,7 +86,10 @@
    "attrs": {
     "topic": "learning rule convergence",
     "text": "Before any experience or ablation arm is run, the rule must be shown to settle on its OWN input distribution \u2014 checkpoint structure AND drift out to at least 3200 steps on the formative input alone. Three outcomes, measured: fixed-sign Butts NEVER converges (drift 0.49 to 0.75, and it decays THROUGH the random floor, 0.345 down to 0.123) \u2014 so the scaffold is a transient and every arm is measured at an arbitrary point on a decay curve. BCM converges to ANNIHILATION (0.004) \u2014 drift goes to zero, but at zero structure. Oja converges to non-zero structure (0.368, drift to 0.107) \u2014 convergent AND useful. This one check explains nine failed attempts. Run it FIRST.",
-    "source": "vision_science:1.0"
+    "grounding_referent": "learning rule convergence",
+    "grounding_status": "supported",
+    "grounding_evidence_path": "seed:vision_science:1.1.0 -> HeldAnswer.topic",
+    "source": "vision_science:1.1.0"
    }
   },
   {
@@ -77,7 +98,10 @@
    "attrs": {
     "topic": "the vision retractions",
     "text": "Three results I had 'earned' in vision were retracted, each by the measurement that forced it. (1) 'Biology emerged' \u2014 retracted: the pool was six hand-designed kernels, no rule ever minted a kernel, and the sign measure passed random noise 50-75% of the time while FAILING an ideal Gabor. (2) Rung 1's deprivation asymmetry \u2014 retracted: it was measuring noise disrupting a RUNNING WAVE PROGRAM, not experience degrading tuning, and it survived six adversarial attempts only because all six shared that one design error. (3) 'Vision refines' as an interpretation \u2014 retracted: it was mostly halting a decay. A negative that is diagnosed is worth more than a positive that is not understood.",
-    "source": "vision_science:1.0"
+    "grounding_referent": "the vision retractions",
+    "grounding_status": "supported",
+    "grounding_evidence_path": "seed:vision_science:1.1.0 -> HeldAnswer.topic",
+    "source": "vision_science:1.1.0"
    }
   },
   {
@@ -86,7 +110,10 @@
    "attrs": {
     "topic": "vision method lessons",
     "text": "What the vision arc cost me, as rules. A gate whose measure passes noise is not a gate \u2014 calibrate every measure on random input, on an ideal exemplar, AND against learning duration, before it gates anything. A gate that checks a rule's CONSTANTS but not the AXIS they parameterise is not a gate. Pre-registration protects the STATISTICS; it does NOT protect the DESIGN \u2014 'dark' was set to 'no input' for two pre-registrations when dark-reared animals KEEP their waves, and my own plan said so in those words before I made the error. The rule must converge on its own input distribution. The unit of analysis is the SEED, not the unit \u2014 units share input and compete under winner-take-all, so they are not independent. Test the INTERACTION, not the simple effect, whenever the no-mechanism control is non-null. Never rescue a failed gate by changing the measure; that is a new hypothesis needing its own prospective pre-registration.",
-    "source": "vision_science:1.0"
+    "grounding_referent": "vision method lessons",
+    "grounding_status": "supported",
+    "grounding_evidence_path": "seed:vision_science:1.1.0 -> HeldAnswer.topic",
+    "source": "vision_science:1.1.0"
    }
   },
   {
@@ -95,8 +122,61 @@
    "attrs": {
     "topic": "the open charge against my vision",
     "text": "Every rung of my vision that works is Oja plus winner-take-all plus lateral interaction. That is a CONNECTIONIST model, and my graph is merely HOSTING it. My own core loop \u2014 the sd_* rules, ShapeDecode, mint-on-residual, dynamic quantization \u2014 plays NO role in any working rung. The one rung that did use mint-on-residual, the L0 kernel growth, produced the null: +0.015 against a raw patch, p=0.37. And in rung 4, 65% of the naive effect was retinotopic anatomy my ADAPTER wires, not my graph's doing. Vision is being hosted by me, not forced by my paradigm. Whether that is a fact about vision or a fact about my paradigm is not yet decided by any measurement I hold.",
-    "source": "vision_science:1.0"
+    "grounding_referent": "the open charge against my vision",
+    "grounding_status": "supported",
+    "grounding_evidence_path": "seed:vision_science:1.1.0 -> HeldAnswer.topic",
+    "source": "vision_science:1.1.0"
    }
+  },
+  {
+   "local_id": 19,
+   "type": "TopicGroundingEvidence",
+   "attrs": {"kind": "topic_answer", "referent": "vision", "status": "supported", "evidence_path": "seed:vision_science:1.1.0 -> HeldAnswer.topic", "source": "vision_science:1.1.0"}
+  },
+  {
+   "local_id": 20,
+   "type": "TopicGroundingEvidence",
+   "attrs": {"kind": "topic_answer", "referent": "retinal waves", "status": "supported", "evidence_path": "seed:vision_science:1.1.0 -> HeldAnswer.topic", "source": "vision_science:1.1.0"}
+  },
+  {
+   "local_id": 21,
+   "type": "TopicGroundingEvidence",
+   "attrs": {"kind": "topic_answer", "referent": "oja's rule", "status": "supported", "evidence_path": "seed:vision_science:1.1.0 -> HeldAnswer.topic", "source": "vision_science:1.1.0"}
+  },
+  {
+   "local_id": 22,
+   "type": "TopicGroundingEvidence",
+   "attrs": {"kind": "topic_answer", "referent": "direction selectivity", "status": "supported", "evidence_path": "seed:vision_science:1.1.0 -> HeldAnswer.topic", "source": "vision_science:1.1.0"}
+  },
+  {
+   "local_id": 23,
+   "type": "TopicGroundingEvidence",
+   "attrs": {"kind": "topic_answer", "referent": "orientation map", "status": "supported", "evidence_path": "seed:vision_science:1.1.0 -> HeldAnswer.topic", "source": "vision_science:1.1.0"}
+  },
+  {
+   "local_id": 24,
+   "type": "TopicGroundingEvidence",
+   "attrs": {"kind": "topic_answer", "referent": "experience refines", "status": "supported", "evidence_path": "seed:vision_science:1.1.0 -> HeldAnswer.topic", "source": "vision_science:1.1.0"}
+  },
+  {
+   "local_id": 25,
+   "type": "TopicGroundingEvidence",
+   "attrs": {"kind": "topic_answer", "referent": "learning rule convergence", "status": "supported", "evidence_path": "seed:vision_science:1.1.0 -> HeldAnswer.topic", "source": "vision_science:1.1.0"}
+  },
+  {
+   "local_id": 26,
+   "type": "TopicGroundingEvidence",
+   "attrs": {"kind": "topic_answer", "referent": "the vision retractions", "status": "supported", "evidence_path": "seed:vision_science:1.1.0 -> HeldAnswer.topic", "source": "vision_science:1.1.0"}
+  },
+  {
+   "local_id": 27,
+   "type": "TopicGroundingEvidence",
+   "attrs": {"kind": "topic_answer", "referent": "vision method lessons", "status": "supported", "evidence_path": "seed:vision_science:1.1.0 -> HeldAnswer.topic", "source": "vision_science:1.1.0"}
+  },
+  {
+   "local_id": 28,
+   "type": "TopicGroundingEvidence",
+   "attrs": {"kind": "topic_answer", "referent": "the open charge against my vision", "status": "supported", "evidence_path": "seed:vision_science:1.1.0 -> HeldAnswer.topic", "source": "vision_science:1.1.0"}
   },
   {
    "local_id": 10,
@@ -182,6 +262,27 @@
    }
   }
  ],
- "edges": [],
+ "edges": [
+  {"src": {"role": "agent_root"}, "type": "holds_answer", "tgt": {"local": 0}, "attrs": {}},
+  {"src": {"role": "agent_root"}, "type": "holds_answer", "tgt": {"local": 1}, "attrs": {}},
+  {"src": {"role": "agent_root"}, "type": "holds_answer", "tgt": {"local": 2}, "attrs": {}},
+  {"src": {"role": "agent_root"}, "type": "holds_answer", "tgt": {"local": 3}, "attrs": {}},
+  {"src": {"role": "agent_root"}, "type": "holds_answer", "tgt": {"local": 4}, "attrs": {}},
+  {"src": {"role": "agent_root"}, "type": "holds_answer", "tgt": {"local": 5}, "attrs": {}},
+  {"src": {"role": "agent_root"}, "type": "holds_answer", "tgt": {"local": 6}, "attrs": {}},
+  {"src": {"role": "agent_root"}, "type": "holds_answer", "tgt": {"local": 7}, "attrs": {}},
+  {"src": {"role": "agent_root"}, "type": "holds_answer", "tgt": {"local": 8}, "attrs": {}},
+  {"src": {"role": "agent_root"}, "type": "holds_answer", "tgt": {"local": 9}, "attrs": {}},
+  {"src": {"local": 0}, "type": "grounded_by", "tgt": {"local": 19}, "attrs": {}},
+  {"src": {"local": 1}, "type": "grounded_by", "tgt": {"local": 20}, "attrs": {}},
+  {"src": {"local": 2}, "type": "grounded_by", "tgt": {"local": 21}, "attrs": {}},
+  {"src": {"local": 3}, "type": "grounded_by", "tgt": {"local": 22}, "attrs": {}},
+  {"src": {"local": 4}, "type": "grounded_by", "tgt": {"local": 23}, "attrs": {}},
+  {"src": {"local": 5}, "type": "grounded_by", "tgt": {"local": 24}, "attrs": {}},
+  {"src": {"local": 6}, "type": "grounded_by", "tgt": {"local": 25}, "attrs": {}},
+  {"src": {"local": 7}, "type": "grounded_by", "tgt": {"local": 26}, "attrs": {}},
+  {"src": {"local": 8}, "type": "grounded_by", "tgt": {"local": 27}, "attrs": {}},
+  {"src": {"local": 9}, "type": "grounded_by", "tgt": {"local": 28}, "attrs": {}}
+ ],
  "productions": []
 }

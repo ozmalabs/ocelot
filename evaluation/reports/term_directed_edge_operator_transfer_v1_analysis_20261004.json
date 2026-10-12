@@ -1,0 +1,78 @@
+{
+  "cells": [
+    {
+      "decision": "accept_behavior_class",
+      "initial_candidates": 3,
+      "labels": 1,
+      "operator_family": "Abs/Times",
+      "panel": "absolute_square_underflow",
+      "policy_evaluations": 216,
+      "policy_wall_ns": 1002046,
+      "prior_behavior_classes": 1,
+      "survivors": [
+        "term_0d775a2495512e5f",
+        "term_a89464b71c175c55"
+      ],
+      "wide_scores": [
+        {
+          "holdout_n": 4096,
+          "id": "term_941c9eb89d3d8ddf",
+          "invalid": 0,
+          "mismatches": 879
+        },
+        {
+          "holdout_n": 4096,
+          "id": "term_0d775a2495512e5f",
+          "invalid": 0,
+          "mismatches": 0
+        },
+        {
+          "holdout_n": 4096,
+          "id": "term_a89464b71c175c55",
+          "invalid": 0,
+          "mismatches": 0
+        }
+      ]
+    },
+    {
+      "decision": "accept_behavior_class",
+      "initial_candidates": 2,
+      "labels": 1,
+      "operator_family": "Div/Eq",
+      "panel": "division_zero_denominator",
+      "policy_evaluations": 63,
+      "policy_wall_ns": 521563,
+      "prior_behavior_classes": 1,
+      "survivors": [
+        "identity_eq"
+      ],
+      "wide_scores": [
+        {
+          "holdout_n": 4096,
+          "id": "identity_eq",
+          "invalid": 0,
+          "mismatches": 0
+        },
+        {
+          "holdout_n": 4096,
+          "id": "quotient_eq",
+          "invalid": 0,
+          "mismatches": 0
+        }
+      ]
+    }
+  ],
+  "checks": {
+    "candidates_fit_training": true,
+    "cost_accounting": true,
+    "selector_and_class_replay": true,
+    "source_and_upstream_binding": true,
+    "task_blind_probe_replay_and_disjointness": true,
+    "two_operator_family_panels": true,
+    "wide_holdout_independent_replay": true
+  },
+  "claim_boundary": "Two authored numeric equality tasks using different Term primitives; finite edge probes and finite holdouts only, no general operator transfer or universal semantic equivalence claim.",
+  "errors": [],
+  "passed": true,
+  "schema": "TermDirectedEdgeOperatorTransferV1Analysis"
+}

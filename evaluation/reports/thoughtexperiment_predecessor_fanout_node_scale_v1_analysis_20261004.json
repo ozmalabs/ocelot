@@ -1,0 +1,148 @@
+{
+  "capture_sha256": "38d5a83f0b28e26a6acf6a6f27d585d338abb348f24af5c687fb22597e6cdcb4",
+  "checks": {
+    "all_candidates_quiescent": true,
+    "expected_node_and_edge_counts": true,
+    "five_exports_and_digests_per_worker": true,
+    "fixed_randomized_18_cell_matrix": true,
+    "no_failures_unique_workers": true,
+    "only_correct_candidate_grounded": true,
+    "phase_export_digest_components_fit_lifecycle": true,
+    "semantic_oracle_isolation_revision_gates": true,
+    "source_lock_matches_and_recomputes": true,
+    "source_stable": true
+  },
+  "claim_boundary": "Three fresh workers per cell, one host, constant 467-edge task structure; no natural task prevalence, edge-density scaling, or general complexity law.",
+  "interpretation": "Descriptive scaling for isolated unrelated nodes in a fixed authored task. Instrumented export/digest times retain the broad on/off overhead uncertainty from the preceding eight-pair control; no corrected cost is claimed.",
+  "schema": "ThoughtexperimentFanoutNodeScaleV1Analysis",
+  "summaries": {
+    "full_copy": {
+      "by_noise_nodes": {
+        "10000": {
+          "median_baseline_pss_mib": 42.5380859375,
+          "median_candidate_forks_ms": 9.654239,
+          "median_canonical_digest_ms": 100.053251,
+          "median_edges": 467,
+          "median_graph_export_ms": 302.540491,
+          "median_lifecycle_ms": 476.115181,
+          "median_named_phases_ms": 19.515271,
+          "median_nodes": 10511,
+          "median_peak_rss_mib": 82.10546875,
+          "median_retained_pss_delta_mib": 0.12890625,
+          "median_unattributed_remainder_ms": 55.580671,
+          "workers": 3
+        },
+        "100000": {
+          "median_baseline_pss_mib": 179.9306640625,
+          "median_candidate_forks_ms": 81.162595,
+          "median_canonical_digest_ms": 757.810071,
+          "median_edges": 467,
+          "median_graph_export_ms": 2785.742269,
+          "median_lifecycle_ms": 3782.759476,
+          "median_named_phases_ms": 102.37774,
+          "median_nodes": 100511,
+          "median_peak_rss_mib": 460.453125,
+          "median_retained_pss_delta_mib": 0.1279296875,
+          "median_unattributed_remainder_ms": 139.325445,
+          "workers": 3
+        },
+        "200000": {
+          "median_baseline_pss_mib": 333.5625,
+          "median_candidate_forks_ms": 159.727751,
+          "median_canonical_digest_ms": 1492.373017,
+          "median_edges": 467,
+          "median_graph_export_ms": 5443.686962,
+          "median_lifecycle_ms": 7379.03877,
+          "median_named_phases_ms": 208.454573,
+          "median_nodes": 200511,
+          "median_peak_rss_mib": 881.078125,
+          "median_retained_pss_delta_mib": 0.12890625,
+          "median_unattributed_remainder_ms": 271.378775,
+          "workers": 3
+        }
+      },
+      "scale_ratios": {
+        "median_candidate_forks_ms": {
+          "100k_to_200k": 1.9679970927494372,
+          "10k_to_100k": 8.406938651508419
+        },
+        "median_canonical_digest_ms": {
+          "100k_to_200k": 1.9693232831158825,
+          "10k_to_100k": 7.5740674433457436
+        },
+        "median_graph_export_ms": {
+          "100k_to_200k": 1.954124407910185,
+          "10k_to_100k": 9.207832841786457
+        },
+        "median_lifecycle_ms": {
+          "100k_to_200k": 1.95070260660686,
+          "10k_to_100k": 7.9450511702965425
+        }
+      }
+    },
+    "shared_graph_pages": {
+      "by_noise_nodes": {
+        "10000": {
+          "median_baseline_pss_mib": 42.5439453125,
+          "median_candidate_forks_ms": 0.586284,
+          "median_canonical_digest_ms": 92.764608,
+          "median_edges": 467,
+          "median_graph_export_ms": 275.998968,
+          "median_lifecycle_ms": 431.39533,
+          "median_named_phases_ms": 6.234684,
+          "median_nodes": 10511,
+          "median_peak_rss_mib": 74.18359375,
+          "median_retained_pss_delta_mib": 0.12890625,
+          "median_unattributed_remainder_ms": 53.001583,
+          "workers": 3
+        },
+        "100000": {
+          "median_baseline_pss_mib": 179.9052734375,
+          "median_candidate_forks_ms": 0.765966,
+          "median_canonical_digest_ms": 779.778463,
+          "median_edges": 467,
+          "median_graph_export_ms": 2709.211287,
+          "median_lifecycle_ms": 3604.049495,
+          "median_named_phases_ms": 7.015511,
+          "median_nodes": 100511,
+          "median_peak_rss_mib": 389.203125,
+          "median_retained_pss_delta_mib": 0.12890625,
+          "median_unattributed_remainder_ms": 143.891274,
+          "workers": 3
+        },
+        "200000": {
+          "median_baseline_pss_mib": 333.5546875,
+          "median_candidate_forks_ms": 0.906626,
+          "median_canonical_digest_ms": 1556.874388,
+          "median_edges": 467,
+          "median_graph_export_ms": 5310.061133,
+          "median_lifecycle_ms": 7132.999855,
+          "median_named_phases_ms": 5.690271,
+          "median_nodes": 200511,
+          "median_peak_rss_mib": 739.71875,
+          "median_retained_pss_delta_mib": 0.12890625,
+          "median_unattributed_remainder_ms": 245.145956,
+          "workers": 3
+        }
+      },
+      "scale_ratios": {
+        "median_candidate_forks_ms": {
+          "100k_to_200k": 1.18363739382688,
+          "10k_to_100k": 1.3064760423276092
+        },
+        "median_canonical_digest_ms": {
+          "100k_to_200k": 1.9965598716465192,
+          "10k_to_100k": 8.405991032700747
+        },
+        "median_graph_export_ms": {
+          "100k_to_200k": 1.9600025876460923,
+          "10k_to_100k": 9.816019627290782
+        },
+        "median_lifecycle_ms": {
+          "100k_to_200k": 1.9791625683542395,
+          "10k_to_100k": 8.354400811432058
+        }
+      }
+    }
+  }
+}

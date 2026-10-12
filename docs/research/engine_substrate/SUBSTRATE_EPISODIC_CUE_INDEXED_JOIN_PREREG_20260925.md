@@ -1,0 +1,19 @@
+# Preregistration: indexed episodic retrieval join
+
+**Question.** Can the existing `IndexJoinHint` matcher path prune a bound-source `recorded_episode` edge using the request's cue key, preserving exact retrieval and update/checkpoint correctness?
+
+**Engine change.** Extend hint candidate generation from both-unbound edges to one-bound-endpoint edges. For bound source/unbound target, query the declared target attribute index and verify each candidate edge using `has_edge`; symmetrically support bound target/unbound source. Preserve ordinary adjacency traversal when no applicable hint/index/probe attr exists. The existing hint-aware match-edge reordering should bind the request before the episode edge. Candidate source audit must report the hinted path.
+
+**Variants.** `baseline` is the checked-in episodic seed. `request_count` removes the global pairwise cue rule and computes response confidence with request-scoped Count(Filter(...)). `request_indexed` additionally replaces ambiguity and Argmax cue filters with indexed NodesWhere terms and adds a retrieval-rule IndexJoinHint for `(episode.cue_key == request.cue_key)`. The hint auto-declares the index at seed-rule installation; checkpoint reader index restoration must occur through normal rule import, with no explicit benchmark call to declare it. The two experimental manifests are isolated; checked-in seed content is not changed.
+
+**Workloads.** Unique exact cues and a single two-event collision, N=6/24/78/192, two fresh writer/checkpoint replicates per cell, fresh uninstrumented and audit readers; 48 cells total. No retries or omitted cells.
+
+**Correctness gates.** Every control/audit reader returns one exact expected event, `recalled`, `not_observed`, confidence 0.85 for unique and 0.5 for collision within 1e-12. Baseline retains the global rule and marks both collision Episodes; both prototype arms omit the pair rule and preserve the original Episode attrs. `request_indexed` must have its cue index active after writing and after checkpoint load, exercise `cand_enum_hinted`, and yield exact identity. A direct matcher test with 128 Episodes must return only the one matching edge, then return none after the indexed cue attribute is changed.
+
+**Measures.** Uninstrumented tick time; global/per-rule candidate pairs and candidate tests; global hinted/local/scan path counts; where and term evaluations; checkpoint size; exact outputs and side effects. Primary comparison is request-indexed vs request-count candidate pairs and retrieval-rule candidates, which should fall from population scale to cue-match scale if the join hint prunes the matcher.
+
+**Claim boundary.** Synthetic exact-key retrieval only, N≤192 and two replicates. This is not evidence for general frame locality, commodity-scale graph performance, concurrent writes, or higher-rung learning tractability. It also does not establish graph-state equivalence because both variants omit the baseline's persistent collision marks.
+
+**Build/test note before lock.** A focused `cargo test --lib` attempt reached link but could not link the Python extension-module symbols into the Rust test executable. `cargo check --tests` passed compilation. The experiment will therefore use the rebuilt release extension and its fresh-process semantic/candidate-path checks as the executable integration evidence; this limitation will be retained in the result report.
+
+**Amendment v2 (before rerun).** The v1 behavioral run passed, but the harness raw-input manifest accidentally hashed `SUBSTRATE_EPISODIC_CUE_NATIVE_INDEX_PREREG_20260925.md` (the prior experiment) instead of this indexed-join preregistration. Retain v1 as development evidence; correct the hashed protocol path and write fresh v2 output under a new lock. No workload, engine, correctness gate, or analysis changed.

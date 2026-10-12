@@ -1,0 +1,141 @@
+{
+  "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+  "design": {
+    "arms": [
+      "candidate",
+      "frozen",
+      "exposure_without_pump"
+    ],
+    "candidate_validation_backends": [
+      "eager",
+      "shared_graph_pages"
+    ],
+    "repetitions": 5,
+    "schedule_seed": 20260930,
+    "tasks": {
+      "clamp_0_5": {
+        "heldout": [
+          -6,
+          -4,
+          -1,
+          2,
+          6,
+          9
+        ],
+        "high": 5,
+        "low": 0,
+        "request": "write a function clamp_value between bounds 0 and 5",
+        "training": [
+          [
+            -2,
+            0
+          ],
+          [
+            0,
+            0
+          ],
+          [
+            1,
+            1
+          ],
+          [
+            4,
+            4
+          ],
+          [
+            5,
+            5
+          ],
+          [
+            7,
+            5
+          ]
+        ]
+      },
+      "clamp_neg2_4": {
+        "heldout": [
+          -8,
+          -3,
+          0,
+          2,
+          6,
+          9
+        ],
+        "high": 4,
+        "low": -2,
+        "request": "write a function clamp_value within limits negative two and 4",
+        "training": [
+          [
+            -5,
+            -2
+          ],
+          [
+            -2,
+            -2
+          ],
+          [
+            -1,
+            -1
+          ],
+          [
+            1,
+            1
+          ],
+          [
+            4,
+            4
+          ],
+          [
+            7,
+            4
+          ]
+        ]
+      }
+    }
+  },
+  "engine_provenance": {
+    "ambiguous": false,
+    "engine_source_fingerprint": "60c0e261013a7aebf60f0034e2b1166c85bfd0e00319884fd71e25890075b878",
+    "engine_tree": "/home/matt/ozmadev/ocelot",
+    "mtime": 1790759358.925161,
+    "native_path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+    "other_resolvable": [],
+    "sha256": "ba8700ec491f903a6effd93440efeed0aee8a5522489fbcb62647ed300c77c7b",
+    "short": "ba8700ec491f",
+    "source_fingerprint": "60c0e261013a7aebf60f0034e2b1166c85bfd0e00319884fd71e25890075b878",
+    "source_match": "own",
+    "stale_rust": [],
+    "this_tree": "/home/matt/ozmadev/ocelot"
+  },
+  "native_build_manifest_sha256": "1e1dfab562310378226ae55d4e42559bb60d7153776e0720094430825eecf22b",
+  "native_extension": {
+    "path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+    "sha256": "ba8700ec491f903a6effd93440efeed0aee8a5522489fbcb62647ed300c77c7b"
+  },
+  "rust_source_fingerprint": "60c0e261013a7aebf60f0034e2b1166c85bfd0e00319884fd71e25890075b878",
+  "schema_version": 1,
+  "source_sha256": {
+    "docs/research/engine_substrate/SUBSTRATE_PROGRAM_IR_CANDIDATE_SNAPSHOT_V1_PREREG_20260930.md": "6b24ef521a8eafc46b4d2e576284a5ed2bb2a83845142aa93f986d06fb728523",
+    "domains/code_writing.py": "4ad3148ca1796ad13f6128b9fd655e8568c7c843cd68bccee54f35cbf4ddabc9",
+    "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+    "domains/prog_retrieval.py": "c726c87171ece5ae722105da74dd5afde66e0d9a02e4138f06df2dfd777e2055",
+    "domains/prog_synthesis.py": "52c01df0e08483b3ad5b35c45da27f92b70805957f068995fbfbd8c57b9cae2b",
+    "runners/dsl/python/substrate_rs/__init__.py": "64bef29808d0432d165441c6a93739dc0ebcad1ca261f8ac0b42abb0e55b5c98",
+    "runners/dsl/python/substrate_rs/_native.build.json": "1e1dfab562310378226ae55d4e42559bb60d7153776e0720094430825eecf22b",
+    "runners/dsl/src/graph.rs": "d3394f6deccffe295942be2a3326efdec4802861a23621823ab2bb613b48cc90",
+    "runners/dsl/src/graph_rules.rs": "b0e9c5bf0bbb4bf278fdab03610fa3f6f82d01ad8ee898ec789982ff41812a50",
+    "runners/dsl/src/persist.rs": "053362c5650c63e592e913e1ac9ccca29d5bdcf55d64a7c9c224cc7b844d4712",
+    "runners/dsl/src/prog_eval.rs": "d419bda3288c534cbc8c35a3bccc29b67171b8297ecf8aeb43a474f77f0e1451",
+    "runners/dsl/src/py.rs": "0873791fc000e7166816d675d80dc28cd367d6fe9459f37e6b0a3c7770d0b0fa",
+    "runners/dsl/src/substrate.rs": "42ea6a928e0d94a82788794c02232ec17aca75d8b1b92649e3a96edb7379edb1",
+    "runners/dsl/src/synth_enumerate.rs": "f3ae5dd0b15f0fef1713fa92ccb563e4b573dd94b626f0bfed58413298ee6203",
+    "runners/dsl/src/term.rs": "264b838574c1fc1edb3ebb1284d2db84945e95e38e2d3f945e1fdc8a7475758f",
+    "scripts/analyze_program_ir_candidate_snapshot_transfer_v1.py": "ad206cb8e0828f48d42b09e5bc4f04500d2232cb434f0f8d7aed4f8fd0cfe7f3",
+    "scripts/program_ir_candidate_snapshot_transfer_v1.py": "4b43b82f7b131c8b6f23a5797e2fd4bf602ab0e905cc70e58531e6670b39f875",
+    "seeds/code_write_request_cues.json": "13e0cbeace3d712a20b2dd7a6abbb9c910b0cbfbac61ce1d978f89a987e8c36d",
+    "seeds/exact_families.json": "19c7e564a8712d173b37c76f0c2a5d3fde3fcdc68993d79d0857fe283587900a",
+    "seeds/program_synthesis.json": "9d657f4409e470626f3bb9adc1236b7c6c59976a7a1b16b38e566813324916bd",
+    "seeds/program_synthesis_grounding.json": "ec68c2e577cc6dc5c87ca1ac9a05b9f11966c9a7147894f216f1eb2cbe25ddea",
+    "seeds/program_synthesis_opgrammar.json": "8e747abefc9c4814a2b7bff1cce73acdef34d765e93dc1855d0a12dfc44042eb"
+  }
+}

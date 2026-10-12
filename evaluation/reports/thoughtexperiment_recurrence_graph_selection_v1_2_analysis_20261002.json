@@ -1,0 +1,55 @@
+{
+  "all_checks_pass": false,
+  "bounded_run_rules_100_cap_counts_by_split_and_candidate": {
+    "heldout": {
+      "add_match_guard(control)": 0,
+      "dedup_identity_fix": 0,
+      "drop_match_edge": 16,
+      "episode_scoped_offer_guard": 0,
+      "swap_term_leaf:capability_key->latest_segment_ordinal": 16,
+      "swap_term_leaf:capability_key->persistence": 16,
+      "swap_term_leaf:capability_key->structural_signature": 16,
+      "swap_term_leaf:latest_segment_ordinal->capability_key": 16
+    },
+    "training": {
+      "add_match_guard(control)": 0,
+      "dedup_identity_fix": 0,
+      "drop_match_edge": 16,
+      "episode_scoped_offer_guard": 0,
+      "swap_term_leaf:capability_key->latest_segment_ordinal": 16,
+      "swap_term_leaf:capability_key->persistence": 16,
+      "swap_term_leaf:capability_key->structural_signature": 16,
+      "swap_term_leaf:latest_segment_ordinal->capability_key": 16
+    }
+  },
+  "checks": {
+    "all_candidate_runs_reach_fixedpoint_within_100": false,
+    "all_winners_are_dedup_identity_fix": true,
+    "alternatives_below_train_max_and_fail_heldouts": true,
+    "candidate_descriptors_identical_across_workers": true,
+    "each_episode_has_two_due_keys": true,
+    "four_complete_workers_and_all_candidates": true,
+    "four_training_episodes_per_candidate_worker": true,
+    "oracle_recomputed_from_offer_counts": true,
+    "order_lock_and_score_chain_valid": true,
+    "orders_contain_training_only": true,
+    "primary_isolation_and_residual_return": true,
+    "selected_candidate_reaches_fixedpoint": true,
+    "selected_proposals_pass_four_heldout_episodes": true,
+    "source_hashes_stable_across_stages": true,
+    "train_heldout_keys_disjoint": true,
+    "unique_graph_term_winner_matches_training_max": true
+  },
+  "cost_summary": {
+    "heldout_candidate_episodes": 128,
+    "mean_candidate_enumeration_ms": 108.94202375,
+    "mean_graph_term_selection_ms": 0.80098025,
+    "mean_heldout_episode_runtime_ms": 116.7932729296875,
+    "mean_training_episode_runtime_ms": 114.75341244921874,
+    "train_candidate_episodes": 128
+  },
+  "sample_unit": "One fresh recurrence episode contains two separately keyed due candidates.",
+  "schema": "RecurrenceGraphSelectionV1_2Analysis",
+  "scope": "Prospective source-locked recurrence candidate selection; losing alternatives that remain active after 100 rule calls are marked as failed within the configured closure cap, not proved nonterminating.",
+  "selection_subgate_passes": true
+}

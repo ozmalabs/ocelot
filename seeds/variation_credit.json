@@ -1,0 +1,764 @@
+{
+ "id": "variation_credit",
+ "version": "1.2.0",
+ "self_load_only": true,
+ "depends_on": [
+  "variation_ops"
+ ],
+ "description": "WP2 emitter: OUTCOME-CREDITED VARIATION POLICY (improve the improver).\n\nRECURSIVE_SELF_IMPROVEMENT_PLAN_20261006.md WP2.\n\n1. Revises `variation_pick` in seeds/variation_ops.json (v1.5.0). The Program\n   reads an OPTIONAL `VariationPolicy` node. With no such node the pick is\n   byte-identical to v1.4.0 (Argmin of raw `priority`). With one:\n     * `exclude_refuted == 1` -- an op whose experiment for THIS concern key was\n       already judged `refuted` is ineligible (first-order: do not retry a\n       family that failed on the same problem);\n     * `use_credit == 1` -- each op's priority is scaled by its outcome history\n       for the concern's KIND: factor = 2*(trials - supports + 1)/(trials + 2)\n       (Laplace-smoothed failure odds; 1 with no history, <1 after supports,\n       >1 after failures). This is the second-order loop: outcomes of earlier\n       improvement attempts change how later improvement attempts are chosen.\n2. Emits seeds/variation_credit.json: the VariationPolicy node and two graph\n   rules that turn judged Experiments into VariationCredit{op, kind, trials,\n   supports} -- trials/supports are DERIVED counts over credited deltas, so\n   concurrent firings cannot race.\n\nCredit attribution needs the experiment's delta to carry `variation_op` and\n`concern_key`; reflective_faculty._compose_experiment_rule stamps both\nmechanically from the Program's verdict.\n",
+ "nodes": [
+  {
+   "local_id": 0,
+   "type": "VariationPolicy",
+   "attrs": {
+    "name": "outcome_credited_variation",
+    "exclude_refuted": 1,
+    "use_credit": 1,
+    "credit_internal_exempt": 1,
+    "exclude_inconclusive": 1
+   }
+  }
+ ],
+ "edges": [],
+ "productions": [
+  {
+   "provenance": "seed:variation_credit:credited_to",
+   "src": {
+    "type": "SeedDelta",
+    "var": "delta"
+   },
+   "edge_type": "credited_to",
+   "tgt": {
+    "type": "VariationCredit",
+    "var": "cr"
+   }
+  }
+ ],
+ "rules": [
+  {
+   "name": "vc_credit_judged_experiment",
+   "comment": "A judged Experiment (outcome supported/refuted/inconclusive, sequenced after the judge by matching its 'analysed' edge -- see self_optimisation's engine note) whose delta names the variation family that produced it is credited, once, to VariationCredit{op, kind} for the concern's SelfConcern kind. The delta records the verdict it was credited with.",
+   "match": [
+    [
+     "exp",
+     "has_delta",
+     "delta"
+    ],
+    [
+     "exp",
+     "analysed",
+     "run"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "delta"
+        },
+        "key": "variation_op"
+       },
+       "b": {
+        "type": "Lit",
+        "value": null
+       }
+      }
+     },
+     {
+      "type": "In",
+      "member": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "exp"
+       },
+       "key": "outcome"
+      },
+      "container": {
+       "type": "Lit",
+       "value": [
+        "supported",
+        "refuted",
+        "inconclusive"
+       ]
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "delta"
+        },
+        "key": "credited"
+       },
+       "b": {
+        "type": "Lit",
+        "value": 1
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node_if_absent",
+     "cr",
+     "VariationCredit",
+     {
+      "op": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "delta"
+        },
+        "key": "variation_op"
+       }
+      },
+      "kind": {
+       "__term__": {
+        "type": "Let",
+        "name": "ck",
+        "value": {
+         "type": "Attr",
+         "key": "kind",
+         "node": {
+          "type": "Argmin",
+          "source": {
+           "type": "Filter",
+           "source": {
+            "type": "NodesOfType",
+            "node_type": "StandingConcern"
+           },
+           "var_name": "sc",
+           "predicate": {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "sc"
+             },
+             "key": "name"
+            },
+            "b": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "delta"
+             },
+             "key": "concern_key"
+            }
+           }
+          },
+          "var_name": "sc",
+          "value": {
+           "type": "Lit",
+           "value": 0
+          },
+          "default": null
+         }
+        },
+        "body": {
+         "type": "IfThenElse",
+         "cond": {
+          "type": "Eq",
+          "a": {
+           "type": "Var",
+           "name": "ck"
+          },
+          "b": {
+           "type": "Lit",
+           "value": null
+          }
+         },
+         "then": {
+          "type": "Lit",
+          "value": ""
+         },
+         "other": {
+          "type": "Var",
+          "name": "ck"
+         }
+        }
+       }
+      }
+     }
+    ],
+    [
+     "add_edge",
+     "delta",
+     "credited_to",
+     "cr"
+    ],
+    [
+     "set_attr",
+     "delta",
+     "credit_seq",
+     {
+      "__term__": {
+       "type": "Count",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "SeedDelta"
+        },
+        "var_name": "q",
+        "predicate": {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "q"
+          },
+          "key": "credited"
+         },
+         "b": {
+          "type": "Lit",
+          "value": 1
+         }
+        }
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "delta",
+     "judged_outcome",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "exp"
+       },
+       "key": "outcome"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "delta",
+     "credited",
+     1
+    ]
+   ]
+  },
+  {
+   "name": "vc_refresh_credit_counts",
+   "comment": "trials/supports are DERIVED from the credited deltas, recomputed when they differ -- idempotent and order-independent.",
+   "match": [
+    [
+     "delta",
+     "credited_to",
+     "cr"
+    ]
+   ],
+   "where": {
+    "type": "Or",
+    "items": [
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "cr"
+        },
+        "key": "trials"
+       },
+       "b": {
+        "type": "Count",
+        "source": {
+         "type": "Let",
+         "name": "win",
+         "value": {
+          "type": "Attr",
+          "key": "window",
+          "node": {
+           "type": "Argmin",
+           "source": {
+            "type": "Filter",
+            "source": {
+             "type": "NodesOfType",
+             "node_type": "VariationPolicy"
+            },
+            "var_name": "wp",
+            "predicate": {
+             "type": "Lit",
+             "value": true
+            }
+           },
+           "var_name": "wp",
+           "value": {
+            "type": "Lit",
+            "value": 0
+           },
+           "default": null
+          }
+         },
+         "body": {
+          "type": "FilterList",
+          "source": {
+           "type": "InNeighbours",
+           "node": {
+            "type": "Var",
+            "name": "cr"
+           },
+           "edge_type": "credited_to"
+          },
+          "var_name": "d",
+          "predicate": {
+           "type": "Or",
+           "items": [
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Var",
+              "name": "win"
+             },
+             "b": {
+              "type": "Lit",
+              "value": null
+             }
+            },
+            {
+             "type": "Lt",
+             "a": {
+              "type": "Count",
+              "source": {
+               "type": "FilterList",
+               "source": {
+                "type": "InNeighbours",
+                "node": {
+                 "type": "Var",
+                 "name": "cr"
+                },
+                "edge_type": "credited_to"
+               },
+               "var_name": "e",
+               "predicate": {
+                "type": "Gt",
+                "a": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "e"
+                 },
+                 "key": "credit_seq"
+                },
+                "b": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "d"
+                 },
+                 "key": "credit_seq"
+                }
+               }
+              }
+             },
+             "b": {
+              "type": "Var",
+              "name": "win"
+             }
+            }
+           ]
+          }
+         }
+        }
+       }
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "cr"
+        },
+        "key": "supports"
+       },
+       "b": {
+        "type": "Count",
+        "source": {
+         "type": "FilterList",
+         "source": {
+          "type": "Let",
+          "name": "win",
+          "value": {
+           "type": "Attr",
+           "key": "window",
+           "node": {
+            "type": "Argmin",
+            "source": {
+             "type": "Filter",
+             "source": {
+              "type": "NodesOfType",
+              "node_type": "VariationPolicy"
+             },
+             "var_name": "wp",
+             "predicate": {
+              "type": "Lit",
+              "value": true
+             }
+            },
+            "var_name": "wp",
+            "value": {
+             "type": "Lit",
+             "value": 0
+            },
+            "default": null
+           }
+          },
+          "body": {
+           "type": "FilterList",
+           "source": {
+            "type": "InNeighbours",
+            "node": {
+             "type": "Var",
+             "name": "cr"
+            },
+            "edge_type": "credited_to"
+           },
+           "var_name": "d",
+           "predicate": {
+            "type": "Or",
+            "items": [
+             {
+              "type": "Eq",
+              "a": {
+               "type": "Var",
+               "name": "win"
+              },
+              "b": {
+               "type": "Lit",
+               "value": null
+              }
+             },
+             {
+              "type": "Lt",
+              "a": {
+               "type": "Count",
+               "source": {
+                "type": "FilterList",
+                "source": {
+                 "type": "InNeighbours",
+                 "node": {
+                  "type": "Var",
+                  "name": "cr"
+                 },
+                 "edge_type": "credited_to"
+                },
+                "var_name": "e",
+                "predicate": {
+                 "type": "Gt",
+                 "a": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "e"
+                  },
+                  "key": "credit_seq"
+                 },
+                 "b": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "d"
+                  },
+                  "key": "credit_seq"
+                 }
+                }
+               }
+              },
+              "b": {
+               "type": "Var",
+               "name": "win"
+              }
+             }
+            ]
+           }
+          }
+         },
+         "var_name": "s",
+         "predicate": {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "s"
+           },
+           "key": "judged_outcome"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "supported"
+          }
+         }
+        }
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "cr",
+     "trials",
+     {
+      "__term__": {
+       "type": "Count",
+       "source": {
+        "type": "Let",
+        "name": "win",
+        "value": {
+         "type": "Attr",
+         "key": "window",
+         "node": {
+          "type": "Argmin",
+          "source": {
+           "type": "Filter",
+           "source": {
+            "type": "NodesOfType",
+            "node_type": "VariationPolicy"
+           },
+           "var_name": "wp",
+           "predicate": {
+            "type": "Lit",
+            "value": true
+           }
+          },
+          "var_name": "wp",
+          "value": {
+           "type": "Lit",
+           "value": 0
+          },
+          "default": null
+         }
+        },
+        "body": {
+         "type": "FilterList",
+         "source": {
+          "type": "InNeighbours",
+          "node": {
+           "type": "Var",
+           "name": "cr"
+          },
+          "edge_type": "credited_to"
+         },
+         "var_name": "d",
+         "predicate": {
+          "type": "Or",
+          "items": [
+           {
+            "type": "Eq",
+            "a": {
+             "type": "Var",
+             "name": "win"
+            },
+            "b": {
+             "type": "Lit",
+             "value": null
+            }
+           },
+           {
+            "type": "Lt",
+            "a": {
+             "type": "Count",
+             "source": {
+              "type": "FilterList",
+              "source": {
+               "type": "InNeighbours",
+               "node": {
+                "type": "Var",
+                "name": "cr"
+               },
+               "edge_type": "credited_to"
+              },
+              "var_name": "e",
+              "predicate": {
+               "type": "Gt",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "e"
+                },
+                "key": "credit_seq"
+               },
+               "b": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "d"
+                },
+                "key": "credit_seq"
+               }
+              }
+             }
+            },
+            "b": {
+             "type": "Var",
+             "name": "win"
+            }
+           }
+          ]
+         }
+        }
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "cr",
+     "supports",
+     {
+      "__term__": {
+       "type": "Count",
+       "source": {
+        "type": "FilterList",
+        "source": {
+         "type": "Let",
+         "name": "win",
+         "value": {
+          "type": "Attr",
+          "key": "window",
+          "node": {
+           "type": "Argmin",
+           "source": {
+            "type": "Filter",
+            "source": {
+             "type": "NodesOfType",
+             "node_type": "VariationPolicy"
+            },
+            "var_name": "wp",
+            "predicate": {
+             "type": "Lit",
+             "value": true
+            }
+           },
+           "var_name": "wp",
+           "value": {
+            "type": "Lit",
+            "value": 0
+           },
+           "default": null
+          }
+         },
+         "body": {
+          "type": "FilterList",
+          "source": {
+           "type": "InNeighbours",
+           "node": {
+            "type": "Var",
+            "name": "cr"
+           },
+           "edge_type": "credited_to"
+          },
+          "var_name": "d",
+          "predicate": {
+           "type": "Or",
+           "items": [
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Var",
+              "name": "win"
+             },
+             "b": {
+              "type": "Lit",
+              "value": null
+             }
+            },
+            {
+             "type": "Lt",
+             "a": {
+              "type": "Count",
+              "source": {
+               "type": "FilterList",
+               "source": {
+                "type": "InNeighbours",
+                "node": {
+                 "type": "Var",
+                 "name": "cr"
+                },
+                "edge_type": "credited_to"
+               },
+               "var_name": "e",
+               "predicate": {
+                "type": "Gt",
+                "a": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "e"
+                 },
+                 "key": "credit_seq"
+                },
+                "b": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "d"
+                 },
+                 "key": "credit_seq"
+                }
+               }
+              }
+             },
+             "b": {
+              "type": "Var",
+              "name": "win"
+             }
+            }
+           ]
+          }
+         }
+        },
+        "var_name": "s",
+        "predicate": {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "s"
+          },
+          "key": "judged_outcome"
+         },
+         "b": {
+          "type": "Lit",
+          "value": "supported"
+         }
+        }
+       }
+      }
+     }
+    ]
+   ]
+  }
+ ]
+}

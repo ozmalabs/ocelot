@@ -23,10 +23,12 @@ WHAT IS MECHANICAL HERE (never a decision):
     not yet attempted, and marking `self_correction_attempted` (idempotent
     bookkeeping -- the SAME "mark attempted, never re-attempt" idiom the
     inline daemon hook this module replaces already used);
-  - measuring each candidate's structural footprint: the JSON-size delta
-    between a candidate's variant rule(s) and the ORIGINAL active rule(s)
-    they would replace -- a real, honest size measurement, not an opinion,
-    handed to the agent's own rank Program as its `cost` field;
+  - measuring each candidate's structural footprint and aggregating typed
+    correction outcomes from the primary graph for the same target/label:
+    successful adopted outcomes and unsuccessful attempts are evidence used
+    by the rank Program, not an independent host choice;
+    the Program's score combines that measured size delta with explicit
+    prior-success and prior-failure counts;
   - evaluating the agent's rank Program (`native.evaluate`, the same raw-
     dict calling convention `domains.reflective_faculty._pick_composer` /
     `_compose_structural_variant` already use for a held Term) and re-
@@ -46,6 +48,7 @@ docstring names)."""
 from __future__ import annotations
 
 import json as _json
+import hashlib as _hashlib
 import uuid as _uuid
 from typing import Any, Optional
 
@@ -110,20 +113,27 @@ def _candidate_cost(native, candidate: dict) -> float:
     return float(total)
 
 
+def _candidate_digest(candidate: dict) -> str:
+    payload = _json.dumps(candidate.get("rules") or {}, sort_keys=True,
+                          separators=(",", ":"), ensure_ascii=False).encode("utf-8")
+    return "sha256:" + _hashlib.sha256(payload).hexdigest()
+
+
 def rank_candidates(agent, native, cands: list) -> list:
     """Re-order `cands` (`domains.self_correction._default_candidates`'s own
     output, unchanged) so the agent's OWN `self_correct_rank_<tag>` Program's
-    pick -- an Argmin over each USABLE candidate's mechanically-measured
-    structural-footprint cost -- is tried FIRST by `intervene_on_divergence`'s
-    existing try-until-converges loop, so that when >= 2 candidates would
-    converge, the cheaper/less-invasive one is adopted. Falls back to `cands`
+    pick -- an Argmin over measured structural cost adjusted by persisted
+    utility outcomes for the same target/label -- is tried FIRST by
+    `intervene_on_divergence`'s existing try-until-converges loop. Falls back to `cands`
     UNCHANGED (never a fabricated preference) when fewer than two candidates
     carry an actual rule bundle (nothing to rank) or the rank Program was
     never composed on this agent (concern not yet grounded).
 
-    Mints one EPHEMERAL `CorrectionCandidate{label, cost, attempt_tag}` node
-    per usable candidate (mechanical -- the candidate ENUMERATION and its
-    cost MEASUREMENT stay exactly as machinery/host-authored) so the agent's
+    Mints one `CorrectionCandidate` node per usable candidate with its cost
+    and mechanically aggregated `prior_successes`/`prior_failures`. These
+    records are inputs to the agent-authored Program; the host does not choose
+    a preferred label. The candidate ENUMERATION stays machinery-authored. The
+    agent's
     rank Program can genuinely Argmin over real graph nodes: `Attr(Var(x),
     key)` only resolves through an actual NodeID, verified empirically to
     silently misbehave (order-dependent tie-breaking, not a real value
@@ -143,9 +153,42 @@ def rank_candidates(agent, native, cands: list) -> list:
     if rank_term is None:
         return cands
     tag = _uuid.uuid4().hex[:12]
+    outcomes: dict[tuple[str, str], list[float]] = {}
+    class_outcomes: dict[str, list[float]] = {}
+    for node in sub.nodes("CorrectionOutcome"):
+        attrs = sub.node(node)["attrs"]
+        key = (str(attrs.get("target_rule", "")), str(attrs.get("candidate_label", "")))
+        stats = outcomes.setdefault(key, [0.0, 0.0])
+        outcome_class = str(attrs.get("outcome_class", ""))
+        class_stats = class_outcomes.setdefault(outcome_class, [0.0, 0.0]) if outcome_class else None
+        if float(attrs.get("task_utility", 0.0) or 0.0) >= 1.0:
+            stats[0] += 1.0
+            if class_stats is not None:
+                class_stats[0] += 1.0
+        else:
+            stats[1] += 1.0
+            if class_stats is not None:
+                class_stats[1] += 1.0
     for c in usable:
+        cost = _candidate_cost(native, c)
+        digest = _candidate_digest(c)
+        target_rule = next(iter(c.get("rules", {})), "")
+        prior_successes, prior_failures = outcomes.get(
+            (str(target_rule), str(c.get("label", ""))), [0.0, 0.0])
+        outcome_class = str(c.get("outcome_class") or "")
+        if outcome_class and outcome_class in class_outcomes:
+            prior_successes, prior_failures = class_outcomes[outcome_class]
+        c["_self_correction_rank_trace"] = {
+            "attempt_tag": tag, "structural_cost": cost,
+            "candidate_digest": digest, "target_rule": target_rule,
+            "outcome_class": outcome_class,
+            "prior_successes": prior_successes, "prior_failures": prior_failures,
+        }
         sub.add_node("CorrectionCandidate", {
-            "label": c["label"], "cost": _candidate_cost(native, c), "attempt_tag": tag,
+            "label": c["label"], "cost": cost, "attempt_tag": tag,
+            "candidate_digest": digest, "target_rule": target_rule,
+            "outcome_class": outcome_class,
+            "prior_successes": prior_successes, "prior_failures": prior_failures,
         })
     try:
         picked = native.evaluate(rank_term, {"tag": tag})
@@ -195,8 +238,89 @@ def scan_and_self_correct(agent) -> list:
             cands = _default_candidates(native, target)
             kwargs["candidates"] = rank_candidates(agent, native, cands)
         result = intervene_on_divergence(agent, **kwargs)
+        model_after = result.get("model_final") or result.get("model_after_candidate")
+        candidate_ranked = any(
+            isinstance(item.get("rank_trace"), dict)
+            for item in result.get("candidates_tried", [])
+        )
+        active_gate = any(
+            isinstance(rule, dict) and rule.get("active", True)
+            and str(rule.get("name", "")).startswith("self_correct_gate_")
+            for rule in native.export_rules()
+        )
+        trace = {
+            "schema": "SelfCorrectionExperienceV1",
+            "source_impasse": getattr(n, "value", n),
+            "target_rule": result.get("target_rule") or target,
+            # Presence of the policy rule is not proof that this specific
+            # correct_ready value was derived from it.
+            "attempt_gate": "graph-policy-present; trigger provenance unverified" if active_gate
+                            else "unverified-caller-flag",
+            "candidate_order": "graph-program" if candidate_ranked else "mechanical-default",
+            "candidate_generator": "host-library",
+            "correct_ready": bool(at.get("correct_ready")),
+            "model_before": _collapse_summary(result.get("model_before") or model_before),
+            "candidates_tested": [x.get("label") for x in result.get("candidates_tried", [])],
+            "candidates_tried": [
+                {
+                    "label": x.get("label"),
+                    "candidate_digest": x.get("candidate_digest"),
+                    "rank_attempt_tag": (x.get("rank_trace") or {}).get("attempt_tag"),
+                    "structural_cost": (x.get("rank_trace") or {}).get("structural_cost"),
+                    "prior_successes": (x.get("rank_trace") or {}).get("prior_successes", 0),
+                    "prior_failures": (x.get("rank_trace") or {}).get("prior_failures", 0),
+                    "inert": bool(x.get("inert")),
+                    "converges": bool(x.get("converges")),
+                    "selected": bool(x.get("selected")),
+                    "model_after": _collapse_summary(x.get("model_after")),
+                }
+                for x in result.get("candidates_tried", [])
+            ],
+            "chosen": result.get("chosen"),
+            "adopted": bool(result.get("adopted")),
+            "escalated": bool(result.get("escalated")),
+            "reason": result.get("reason"),
+            "model_after": _collapse_summary(model_after),
+        }
+        outcome_records = []
+        task_utility = bool(result.get("adopted") and model_after is not None
+                            and bool(getattr(model_after, "converged", False)))
+        for tried in result.get("candidates_tried", []):
+            row = {
+                "target_rule": str(result.get("target_rule") or target or ""),
+                "candidate_label": str(tried.get("label") or ""),
+                "outcome_class": str((tried.get("rank_trace") or {}).get("outcome_class") or ""),
+                "candidate_digest": str(tried.get("candidate_digest") or ""),
+                "converges_in_rehearsal": bool(tried.get("converges")),
+                "selected": bool(tried.get("selected")),
+                "adopted": bool(result.get("adopted") and tried.get("selected")),
+                "task_utility": 1.0 if (task_utility and tried.get("selected")) else 0.0,
+                "rank_attempt_tag": (tried.get("rank_trace") or {}).get("attempt_tag", ""),
+            }
+            outcome_node = sub.add_node("CorrectionOutcome", row)
+            outcome_records.append({"node": getattr(outcome_node, "value", outcome_node), **row})
+        trace["outcome_records"] = outcome_records
+        native.set_attr(n, "self_correction_trace_schema", trace["schema"])
+        native.set_attr(n, "self_correction_trace", _json.dumps(
+            trace, sort_keys=True, separators=(",", ":"), ensure_ascii=False))
         out.append({"impasse": n, "target_rule": target, "result": result})
     return out
+
+
+def _collapse_summary(model) -> Optional[dict]:
+    if model is None:
+        return None
+    fields = ("converged", "residual", "n_fixed", "n_volatile",
+              "frontier_growth_rate", "horizon", "runtime_s",
+              "forward_look_ran", "imagine_steps_run", "counts_trajectory")
+    summary = {name: getattr(model, name) for name in fields
+               if hasattr(model, name)}
+    for name in ("fixed_points", "volatile_frontier"):
+        value = getattr(model, name, None)
+        if isinstance(value, dict):
+            summary[name] = {str(key): len(rows) if isinstance(rows, (list, tuple, set, frozenset)) else rows
+                             for key, rows in value.items()}
+    return summary
 
 
 __all__ = ["scan_and_self_correct", "rank_candidates"]

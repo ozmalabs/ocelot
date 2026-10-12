@@ -42,15 +42,25 @@ CLASSIFICATIONS = (
 # an action request can be accepted, deferred, repaired, or blocked. State is
 # therefore reported separately from receipt-semantic compatibility below.
 _FORCE_INTENTS = {
-    "request_information": frozenset({"inform", "request", "defer"}),
-    "request_action": frozenset({"act", "request"}),
-    "assertion": frozenset({"inform"}),
-    "correction": frozenset({"inform"}),
-    "acknowledgement": frozenset({"inform", "coordinate_socially"}),
-    "offer": frozenset({"inform", "act", "social_action"}),
+    # This bridge describes compatible *response acts*, not a requirement
+    # that the receipt repeat the incoming speech act.  In particular, a
+    # repair request is a valid response to any force when its semantic
+    # content records the item being clarified; a refusal/defer or an
+    # informative gap report can be the appropriate response to a requested
+    # action.  These are receipt ontology values emitted by the producer, not
+    # labels inferred from the surface reply.
+    "request_information": frozenset({"inform", "request", "defer", "act"}),
+    "request_action": frozenset({"act", "request", "inform", "defer"}),
+    "assertion": frozenset({"inform", "request", "acknowledge_receipt_without_endorsement"}),
+    "correction": frozenset({"inform", "update_common_ground", "request"}),
+    "acknowledgement": frozenset({
+        "inform", "coordinate_socially", "acknowledge_receipt_without_endorsement",
+    }),
+    "offer": frozenset({"inform", "act", "social_action", "coordinate_socially", "request",
+                        "acknowledge_receipt_without_endorsement"}),
     "refusal": frozenset({"defer", "request", "act"}),
     "repair": frozenset({"request", "defer"}),
-    "social_action": frozenset({"coordinate_socially", "inform"}),
+    "social_action": frozenset({"coordinate_socially", "inform", "request"}),
 }
 _STATE_INTENTS = {
     "answer": frozenset({"inform", "coordinate_socially"}),

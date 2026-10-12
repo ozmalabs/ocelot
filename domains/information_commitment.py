@@ -19,7 +19,15 @@ def _resolve(agent):
 def _ensure_loaded(agent):
     substrate, native = _resolve(agent)
     try:
-        if "ic_gate_manifold_projection" in {r.get("name") for r in native.export_rules()}:
+        # This check needs one known rule name. Exporting the complete rule
+        # store materializes and JSON-decodes the whole production corpus on
+        # every assessment; the native prefix read returns only this small
+        # family while preserving the same rule-name authority. Keep the full
+        # export fallback for older native bindings.
+        export_prefix = getattr(native, "export_rules_prefix", None)
+        rules = (export_prefix("ic_gate_manifold_projection")
+                 if callable(export_prefix) else native.export_rules())
+        if "ic_gate_manifold_projection" in {r.get("name") for r in rules}:
             return
     except Exception:
         pass

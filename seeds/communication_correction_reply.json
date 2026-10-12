@@ -1,0 +1,38 @@
+{
+  "id": "communication_correction_reply",
+  "version": "1.0.0",
+  "depends_on": ["communication_intent_arbitration", "conversation_reply"],
+  "capability_keys": ["communication_correction_reply"],
+  "description": "Graph-owned receipt for a correction disposition. It acknowledges understanding without claiming that a deferred action was executed.",
+  "nodes": [],
+  "edges": [],
+  "productions": [],
+  "rules": [
+    {
+      "name": "reply_to_natively_selected_correction",
+      "comment": "Mint one correction-receipt adjacency only when native arbitration selected common-ground update for a corrective response. The selected act is realized and gated by production; no action commitment is asserted.",
+      "match": [
+        ["agent", "holds_interpretation", "i"],
+        ["i", "interprets", "m"]
+      ],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "schema"}, "b": {"type": "Lit", "value": "communication_interpretation.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_schema"}, "b": {"type": "Lit", "value": "communication_evidence.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "communicative_force"}, "b": {"type": "Lit", "value": "assertion_or_correction"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "cognitive_disposition"}, "b": {"type": "Lit", "value": "defer"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "cognitive_goal"}, "b": {"type": "Lit", "value": "update_common_ground"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "arbitration_basis"}, "b": {"type": "Lit", "value": "corrective_discourse_response"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "language_discourse_relation"}, "b": {"type": "Lit", "value": "correction"}},
+        {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "correction_reply_minted"}, "b": {"type": "Lit", "value": 1}}}
+      ]},
+      "effects": [
+        ["set_attr", "m", "correction_reply_minted", 1],
+        ["add_node", "reply_act", "Concept", {"name": "correction_receipt", "description": "acknowledges understanding of a correction without claiming execution"}],
+        ["add_node", "reply", "Message", {"from": "agent", "native_correction_reply_plan": "correction_receipt"}],
+        ["add_edge", "reply", "has_speech_act", "reply_act"],
+        ["add_edge", "reply", "responds_to", "m"],
+        ["add_edge", "agent", "sent", "reply"]
+      ]
+    }
+  ]
+}

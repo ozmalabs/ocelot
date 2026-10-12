@@ -1,0 +1,117 @@
+{
+  "all_checks_pass": true,
+  "analysis_id": "native-seed-projection-probe-v1-analysis-20260925",
+  "interpretation_limit": "Exploratory single-host startup intervention; three workers per arm/size; instrumentation retains manifest references and elevates RSS; results localize this PyO3 boundary only.",
+  "lock_sha256": "7f4e8a6b104227576ee3983bea43867c739feed5a04740e6d13220059ba1d61d",
+  "raw_sha256": "6507e88eb3aad8b306f8a587ed67b9e5f3772ee19a6a0ca0e94d3e62760875fc",
+  "schema_version": 1,
+  "sizes": {
+    "512": {
+      "arms": {
+        "control": {
+          "cpu_median_seconds": 15.257254245,
+          "cpu_seconds": [
+            15.54265193,
+            14.878631523,
+            15.257254245
+          ],
+          "input_json_bytes": 151796871,
+          "native_calls": 518,
+          "peak_rss_kib": [
+            2212996,
+            2212032,
+            2212560
+          ],
+          "sent_json_bytes": 151796871,
+          "wall_median_seconds": 14.239032802,
+          "wall_seconds": [
+            14.534008664,
+            13.82581531,
+            14.239032802
+          ]
+        },
+        "projection": {
+          "cpu_median_seconds": 11.847835798,
+          "cpu_seconds": [
+            11.847835798,
+            11.64372825,
+            12.21945487
+          ],
+          "input_json_bytes": 151796871,
+          "native_calls": 518,
+          "peak_rss_kib": [
+            2212788,
+            2212496,
+            2213064
+          ],
+          "sent_json_bytes": 44995405,
+          "wall_median_seconds": 11.040998632,
+          "wall_seconds": [
+            10.838014571,
+            11.040998632,
+            11.335677763
+          ]
+        }
+      },
+      "byte_reduction_fraction": 0.7035814723743548,
+      "cpu_median_reduction_fraction": 0.22346212445907887,
+      "rss_note": "whole-process ru_maxrss; manifest references retained for post-timing byte accounting",
+      "state_parity": true,
+      "wall_median_reduction_fraction": 0.22459630611643844
+    },
+    "737": {
+      "arms": {
+        "control": {
+          "cpu_median_seconds": 15.868330226,
+          "cpu_seconds": [
+            15.133979267,
+            15.868330226,
+            15.883494772
+          ],
+          "input_json_bytes": 157437537,
+          "native_calls": 748,
+          "peak_rss_kib": [
+            2350344,
+            2353784,
+            2353508
+          ],
+          "sent_json_bytes": 157437537,
+          "wall_median_seconds": 14.834211073,
+          "wall_seconds": [
+            14.834211073,
+            14.811787758,
+            14.912316418
+          ]
+        },
+        "projection": {
+          "cpu_median_seconds": 13.000601408,
+          "cpu_seconds": [
+            12.600006317,
+            13.32528038,
+            13.000601408
+          ],
+          "input_json_bytes": 157437537,
+          "native_calls": 748,
+          "peak_rss_kib": [
+            2354120,
+            2353468,
+            2353852
+          ],
+          "sent_json_bytes": 49788760,
+          "wall_median_seconds": 12.012189804,
+          "wall_seconds": [
+            11.852775132,
+            12.328790518,
+            12.012189804
+          ]
+        }
+      },
+      "byte_reduction_fraction": 0.6837554693198737,
+      "cpu_median_reduction_fraction": 0.18072026338986025,
+      "rss_note": "whole-process ru_maxrss; manifest references retained for post-timing byte accounting",
+      "state_parity": true,
+      "wall_median_reduction_fraction": 0.19023736787299794
+    }
+  },
+  "validation_errors": []
+}

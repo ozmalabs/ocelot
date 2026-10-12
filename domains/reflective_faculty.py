@@ -264,25 +264,9 @@ def _run_needed_input(substrate, meta_arg: Optional[str],
 # Sequences held structure; adds no reasoning (the categories ARE the graph).
 # ---------------------------------------------------------------------------
 def _run_self_organisation(substrate, meta_arg: Optional[str]) -> dict[str, Any]:
-    areas = []
-    for m in substrate.nodes("Microtheory"):
-        a = substrate.node(m)["attrs"]
-        nm = a.get("name")
-        if not nm:
-            continue
-        n_concepts = len(list(substrate.neighbours(m, "has_concept")))
-        areas.append({"area": nm, "concepts": n_concepts,
-                      "about": a.get("description", "")})
-    areas.sort(key=lambda d: (-d["concepts"], d["area"]))
-    if not areas:
-        return {"unwired": "no Microtheory areas held on this substrate "
-                "(boot the full agent to read its self-organisation)"}
-    return {"self_categorisation": "microtheory",
-            "areas": [d["area"] for d in areas],
-            "count": len(areas),
-            "detail": areas,
-            "note": ("the agent is organised into these microtheories — its own "
-                     "coherent areas, the categories it actually holds itself in")}
+    from domains.self_organisation_reader import run_self_organisation
+
+    return run_self_organisation(substrate, meta_arg)
 
 
 # ---------------------------------------------------------------------------
@@ -1248,6 +1232,14 @@ def _resolve_agent(agent):
     return sub, native, ag_node
 
 
+def _ensure_vision_grain_policy(sub, native, ag_node):
+    """Vision-route opt-in for the held-generator grain ladder: idempotently
+    load seeds/vision_grain_policy.json (which sets agent.dim_grains via a
+    graph rule unless the agent already has one). Mechanical seed I/O."""
+    _ensure_shape_decode_loop(sub, native, ag_node)
+    _ensure_seed_chain(sub, native, ag_node, ("vision_grain_policy",))
+
+
 def _ensure_shape_decode_loop(sub, native, ag_node):
     """Idempotently load the `shape_decode_loop` seed (+ its declared deps) onto
     `sub`, guarded by a graph-resident `Seed{id}` node OR a `SeedSummary
@@ -1988,8 +1980,9 @@ def _compose_comprehension_rule(agent, keys, rels) -> dict[str, Any]:
                         "that message — except a small closed function-word set — to the Goal via 'wants'. "
                         "The goal's wanted content is read straight from what I was told, not supplied.")}
 
-    # bind the scene ONCE via the message's `about` edge (the instruction is about the current scene),
-    # not by iterating percepts — so exactly one describe-Goal is minted per instruction.
+    # Bind the scene via the message's `about` edge. The message is passed the
+    # actual request-scoped scene view on live turns, so the scene guard is a
+    # per-request fixpoint marker rather than a world-global one.
     rule = {"name": "comprehend_describe_directive_" + tag,
             "match": [["m", "has_mention", "mention"], ["m", "about", "scene"]],
             "where": {"type": "And", "items": [
@@ -1997,6 +1990,7 @@ def _compose_comprehension_rule(agent, keys, rels) -> dict[str, Any]:
                 {"type": "Not", "arg": Exists(Nb(V("scene"), "described_by"), "_i", L(True))}]},
             "effects": [["add_node", "g", "Goal", {"kind": "describe_scene"}],
                         ["add_edge", "g", "describes", "scene"],
+                        ["add_edge", "g", "comprehends", "m"],
                         ["add_edge", "scene", "described_by", "g"]]}
     try:
         idx = agent.inner.add_rule(rule)
@@ -2387,10 +2381,27 @@ def _compose_conceptualize_rule(agent, keys, rels) -> dict[str, Any]:
     rp = {r[0] for r in rels}
     tag = "_".join(str(k) for k in keys)
     rules = []
-    # idempotency guard — a re-ground of the SAME concern key must not re-churn the rule
-    # store (mirrors the graph-meta-rule tier's own composed-guard); mechanical name lookup
-    # via the existing `export_rules()` reader, not a content decision.
-    existing_names = {r.get("name") for r in agent.inner.export_rules() if isinstance(r, dict)}
+    # Idempotency guard — a re-ground of the SAME concern key must not
+    # re-churn the rule store. Query only the five rule-name families this
+    # composer can author; serializing the complete live rule store here makes
+    # first-turn conceptualizer setup proportional to every unrelated faculty
+    # installed in the graph. The selective native export is readback of the
+    # same rule authority, not a second registry.
+    rule_prefixes = (
+        "form_intent_" + tag,
+        "request_message_shape_" + tag,
+        "request_monitor_" + tag,
+        "commit_if_recoverable_" + tag,
+        "revise_if_not_recoverable_" + tag,
+    )
+    selective_export = getattr(agent.inner, "export_rules_prefix", None)
+    if selective_export is None:
+        existing_rules = agent.inner.export_rules()
+    else:
+        existing_rules = [rule for prefix in rule_prefixes
+                          for rule in selective_export(prefix)]
+    existing_names = {r.get("name") for r in existing_rules
+                      if isinstance(r, dict)}
 
     if "form" in rp and ("form_intent_" + tag) not in existing_names:
         rules.append({
@@ -2789,7 +2800,60 @@ def _ensure_acting_rule_provenance(sub, native) -> None:
         have.add(name)
 
 
-def _pick_acting_rule(agent, axis_preds) -> dict:
+def _ensure_general_rule_provenance(sub, native) -> None:
+    """Expose non-action rules as selectable structural-edit targets.
+
+    This is an additive extension to A8's chosen-action provenance path. It
+    mirrors active, non-frozen rules into RuleSummary so the same graph Term
+    can select classifier and other rule families. It records structure; the
+    target choice remains the Argmax in `_pick_acting_rule`.
+    """
+    summaries = {sub.node(n)["attrs"].get("name"): n for n in sub.nodes("RuleSummary")}
+    try:
+        rules = native.export_rules()
+        seed_map = _rule_seed_map(sub)
+        from domains.frozen_core import frozen_seed_ids_closed
+        frozen_ids = frozen_seed_ids_closed()
+    except Exception:
+        return
+    import json as _json
+    from domains import edit_ops as _eo
+    for rule in rules:
+        if not isinstance(rule, dict) or not rule.get("active", True):
+            continue
+        name = rule.get("name")
+        if not name:
+            continue
+        effects = rule.get("effects") or []
+        writes_action = any(isinstance(e, list) and len(e) >= 3 and
+                            e[0] == "set_attr" and e[2] == "chosen_action" for e in effects)
+        if writes_action:
+            continue
+        from_seed = seed_map.get(name, "")
+        try:
+            applicable = _editop_applicable_kinds(rule, _eo)
+            attrs = {
+                "name": name, "keywords_text": name.replace("_", " "),
+                "writes_chosen_action": 0.0, "shift_count": 0.0, "shiftable": 0.0,
+                "rule_json": _json.dumps(rule), "from_seed": from_seed,
+                "skippable": 0.0 if from_seed in frozen_ids else 1.0,
+                **{attr: 1.0 if kind in applicable else 0.0
+                   for kind, attr in _APPLICABLE_ATTR.items()},
+            }
+            existing = summaries.get(name)
+            if existing is None:
+                summaries[name] = sub.add_node("RuleSummary", attrs)
+            else:
+                # Existing summaries can be placeholders installed by a
+                # task adapter. Upgrade those records in place so they become
+                # genuine rule candidates instead of silently hiding a target.
+                for key, value in attrs.items():
+                    sub.set_attr(existing, key, value)
+        except Exception:
+            continue
+
+
+def _pick_acting_rule(agent, axis_preds, *, rule_scope="acting") -> dict:
     """SHARED SELECTION: the agent's own Argmax over `RuleSummary` provenance
     (the SAME StringIndexOf-Sum overlap shape `_compose_experiment_rule`'s
     skip_seeds pick uses over `SeedSummary`) that picks WHICH chosen_action-
@@ -2841,6 +2905,8 @@ def _pick_acting_rule(agent, axis_preds) -> dict:
     of the SAME Term tree, not a second Python-side decision."""
     sub0, native0, _ag0 = _resolve_agent(agent)
     _ensure_acting_rule_provenance(sub0, native0)
+    if rule_scope == "all_mutable_rules":
+        _ensure_general_rule_provenance(sub0, native0)
     from domains import rule_signature as _rsig
     _rsig.ensure_where_signature(sub0)
 
@@ -2866,8 +2932,10 @@ def _pick_acting_rule(agent, axis_preds) -> dict:
         Ite(Gte(StrIdx(Attr(node_t, "keywords_text"), V("w")), L(0)), L(1), L(0)))
     struct_overlap = lambda node_t: Sum(words, "w",
         Ite(Gte(StrIdx(Attr(node_t, "where_signature_json"), V("w")), L(0)), L(1), L(0)))
-    candidates = Filter(NodesOfType("RuleSummary"), "s",
-        And(Eq(Attr(V("s"), "writes_chosen_action"), L(1.0)), Eq(Attr(V("s"), "skippable"), L(1.0))))
+    candidate_filter = Eq(Attr(V("s"), "skippable"), L(1.0))
+    if rule_scope == "acting":
+        candidate_filter = And(Eq(Attr(V("s"), "writes_chosen_action"), L(1.0)), candidate_filter)
+    candidates = Filter(NodesOfType("RuleSummary"), "s", candidate_filter)
     best = Argmax(candidates, "s", overlap(V("s")), None)
     struct_best = Argmax(candidates, "s2", struct_overlap(V("s2")), None)
     struct_fallback = LetT("sbest", struct_best,
@@ -3202,7 +3270,7 @@ def _pick_variation_op(agent, heads, key: str):
         # fully-booted agent already holds it via load_all_seeds; checking the
         # Program first avoids re-loading (and duplicating) the seed's nodes.
         try:
-            _ensure_seed_chain(sub0, native0, ag0, ("variation_ops",))
+            _ensure_seed_chain(sub0, native0, ag0, ("improvement_integrity", "variation_ops"))
         except Exception:
             return None
         prog = _load_program(sub0, "variation_pick")
@@ -3270,7 +3338,11 @@ def _compose_cue_variant(agent, keys, tag: str) -> dict[str, Any]:
     for n in sub0.nodes("StandingConcern"):
         if sub0.node(n)["attrs"].get("name") == key:
             standing = n
-            break
+            # A re-promoted concern leaves its torn-down predecessor (same
+            # name, status 'retired', promoted_to edge removed); the live one
+            # is the one to read provenance from (tranche 5).
+            if sub0.node(n)["attrs"].get("status") != "retired":
+                break
     if standing is None:
         return {"built": False, "wall": ("no StandingConcern carries this capability key — "
                 "a cue-set edit only exists for a promoted concern whose provenance names a verb")}
@@ -3296,7 +3368,7 @@ def _compose_cue_variant(agent, keys, tag: str) -> dict[str, Any]:
     if prog is None:
         # same load-once discipline as _pick_variation_op above
         try:
-            _ensure_seed_chain(sub0, native0, ag0, ("variation_ops",))
+            _ensure_seed_chain(sub0, native0, ag0, ("improvement_integrity", "variation_ops"))
         except Exception:
             pass
         prog = _load_program(sub0, "cue_route_pick")
@@ -3310,7 +3382,12 @@ def _compose_cue_variant(agent, keys, tag: str) -> dict[str, Any]:
         return {"built": False, "wall": (f"the held route pick abstained for {verb!r} — either the "
                 "verb is already routed (nothing to construct) or no pooled route Concept genuinely "
                 "scores against it (honest abstain, not a random route)")}
-    concept = {"type": "Concept", "attrs": {"name": verb, "instruction_route": route}}
+    # Every proposed route is CONTENT-CONDITIONED to non-self objects
+    # (route_object_scope='other', comprehend_instruction v2.4.0): the edit
+    # claims "<verb> the data" without capturing "<verb> yourself", so it
+    # cannot regress a verb's existing self-report use (tranche 7).
+    concept = {"type": "Concept", "attrs": {"name": verb, "instruction_route": route,
+                                            "route_object_scope": "other"}}
     return {"built": True, "concept": concept, "verb": verb, "route": route,
             "how": (f"I read the unrouted verb {verb!r} off my own promoted instruction gap's "
                     f"provenance and my held cue_route_pick Program proposed the {route!r} route "
@@ -3343,6 +3420,205 @@ _KNOB_NODE_TYPES = ("ApertureBudget",)   # the held threshold/knob families this
                                           # agent already holds many rows of.
 
 
+def _knob_gated_signal(native, knob_attr: str):
+    """Tranche 10 (grain-quantised knob steps): find, in the agent's ACTIVE
+    rules, the comparison a held knob gates -- a Gte/Gt whose `b` side
+    reads Attr(.., knob_attr) (possibly scaled inside Times) and whose `a`
+    side is a plain Attr(Var, signal), or the mirrored Lte/Lt. Returns
+    (op_normalised_to_signal_on_left, signal_attr) or None. Pure structural
+    read of the rule data; never a decision."""
+    flip = {"Lte": "Gte", "Lt": "Gt", "Gte": "Lte", "Gt": "Lt"}
+
+    def mentions(t):
+        if isinstance(t, dict):
+            if t.get("type") == "Attr" and t.get("key") == knob_attr:
+                return True
+            return any(mentions(v) for v in t.values())
+        if isinstance(t, list):
+            return any(mentions(v) for v in t)
+        return False
+
+    found = []
+
+    def walk(t):
+        if isinstance(t, dict):
+            op = t.get("type")
+            if op in flip and isinstance(t.get("a"), dict) and isinstance(t.get("b"), dict):
+                a, b = t["a"], t["b"]
+                if a.get("type") == "Attr" and isinstance(a.get("node"), dict) and mentions(b) and not mentions(a):
+                    found.append((op, a["key"]))
+                elif b.get("type") == "Attr" and isinstance(b.get("node"), dict) and mentions(a) and not mentions(b):
+                    found.append((flip[op], b["key"]))
+            for v in t.values():
+                walk(v)
+        elif isinstance(t, list):
+            for v in t:
+                walk(v)
+
+    try:
+        rules = native.export_rules()
+    except Exception:  # noqa: BLE001
+        return None
+    for r in rules:
+        if isinstance(r, dict) and r.get("active", True):
+            walk(r.get("where"))
+    found = sorted(set(found))
+    return found[0] if len(found) == 1 else None
+
+
+def _knob_signal_types(native, sub, knob_attr: str):
+    """Tranche 13: derive WHERE a knob's gated signal lives structurally, not
+    from a held list. Find the active rule whose comparison gates a signal on
+    `knob_attr` (as _knob_gated_signal does), take the signal side's Var, find
+    the rule's own match triple that binds that Var, and return the node
+    types of the nodes that triple's edge actually binds in the graph (exact
+    graph read). [] when not derivable -- the caller then falls back to the
+    held `grain_signal_types` override."""
+    flip = {"Lte", "Lt", "Gte", "Gt"}
+
+    def mentions(t):
+        if isinstance(t, dict):
+            if t.get("type") == "Attr" and t.get("key") == knob_attr:
+                return True
+            return any(mentions(v) for v in t.values())
+        if isinstance(t, list):
+            return any(mentions(v) for v in t)
+        return False
+
+    def signal_vars(t, out):
+        if isinstance(t, dict):
+            if t.get("type") in flip and isinstance(t.get("a"), dict) and isinstance(t.get("b"), dict):
+                for side, other in ((t["a"], t["b"]), (t["b"], t["a"])):
+                    nd = side.get("node") if side.get("type") == "Attr" else None
+                    if isinstance(nd, dict) and nd.get("type") == "Var" and mentions(other) and not mentions(side):
+                        out.add(nd.get("name"))
+            for v in t.values():
+                signal_vars(v, out)
+        elif isinstance(t, list):
+            for v in t:
+                signal_vars(v, out)
+
+    try:
+        rules = native.export_rules()
+    except Exception:  # noqa: BLE001
+        return []
+    types = set()
+    for r in rules:
+        if not (isinstance(r, dict) and r.get("active", True)):
+            continue
+        vs = set()
+        signal_vars(r.get("where"), vs)
+        if not vs:
+            continue
+        for trip in r.get("match") or []:
+            if not (isinstance(trip, (list, tuple)) and len(trip) == 3):
+                continue
+            src, edge, tgt = trip
+            if src not in vs and tgt not in vs:
+                continue
+            # the edge's endpoints in the live graph, on the bound side(s).
+            # Exact full scan (a type is admitted at its first node that has
+            # the edge); measured ~5 s on a full boot, so this path is opt-in.
+            for n in list(sub.nodes()) if hasattr(sub, "nodes") else []:
+                try:
+                    ty = sub.node(n)["type"]
+                    if ty in types:
+                        continue
+                    if (src in vs and list(native.neighbours(n, edge))) or \
+                            (tgt in vs and list(native.in_neighbours(n, edge))):
+                        types.add(ty)
+                except Exception:  # noqa: BLE001
+                    continue
+    return sorted(types)
+
+
+def _frame_quantum(values):
+    """The observed frame's own quantum: the exact GCD (over rationals, read
+    from the floats' exact binary values) of the gaps between distinct
+    observed values. None when fewer than 2 distinct values exist."""
+    from fractions import Fraction
+    from math import gcd
+    vals = sorted({Fraction(v) for v in values})
+    if len(vals) < 2:
+        return None
+    num, den = 0, 1
+    for a, b in zip(vals, vals[1:]):
+        d = b - a
+        num, den = gcd(num * d.denominator, d.numerator * den), den * d.denominator
+        g = gcd(num, den)
+        num, den = num // g, den // g
+    return Fraction(num, den)
+
+
+def _grain_end_step(values, op: str, t: float, direction: str):
+    """Tranche 12 GRAIN-END step: when no interior separating step exists,
+    move the gate ONE QUANTUM past the end of the observed frame (still on
+    the frame's own lattice -- exact, no tolerance): decrease_fires -> fire on
+    none of the observed values; increase_fires -> fire on all of them. Only
+    ever offered as a last resort by the builder, after every candidate
+    knob's interior step has been refused."""
+    q = _frame_quantum(values)
+    if q is None:
+        return None, "fewer than 2 distinct observed values -- no quantum to step by"
+    vals = sorted(set(values))
+    if op not in ("Gte", "Gt"):
+        return None, f"gate operator {op!r} is not a lower bound"
+    fires = (lambda v, th: v >= th) if op == "Gte" else (lambda v, th: v > th)
+    if direction == "decrease_fires":
+        if not any(fires(v, t) for v in vals):
+            return None, "nothing currently fires -- cannot fire less"
+        new_t = float(max(vals) + q) if op == "Gte" else float(max(vals))
+    else:
+        if all(fires(v, t) for v in vals):
+            return None, "everything already fires -- cannot fire more"
+        new_t = float(min(vals)) if op == "Gte" else float(min(vals) - q)
+    return new_t, f"grain-end: observed {vals}, quantum {q}; {op} gate {t} -> {new_t} ({direction})"
+
+
+def _grain_step(values, op: str, t: float, direction: str):
+    """The next threshold ON THE SIGNAL'S OWN GRAIN (the distinct values the
+    gated signal actually took on this agent), never a fixed epsilon:
+    decrease_fires moves the gate just past the lowest currently-firing
+    value; increase_fires moves it onto the highest currently-non-firing
+    value. Exact comparisons only. Returns (new_t, reason) or (None, wall).
+    DEGENERATE GUARD: the new gate must still separate the observed values
+    (>=1 firing and >=1 non-firing) -- a gate that fires on everything or
+    nothing it has seen is no longer a gate."""
+    fires = (lambda v, th: v >= th) if op == "Gte" else (lambda v, th: v > th) if op == "Gt" else None
+    if fires is None:
+        return None, f"gate operator {op!r} on the signal is not a lower bound (only Gte/Gt are stepped)"
+    vals = sorted(set(values))
+    if len(vals) < 2:
+        return None, f"the gated signal took {len(vals)} distinct value(s) -- no grain to step on"
+    on = [v for v in vals if fires(v, t)]
+    off = [v for v in vals if not fires(v, t)]
+    new_t = None
+    if direction == "decrease_fires":
+        if not on:
+            return None, "nothing currently fires -- cannot fire less"
+        v0 = on[0]
+        if op == "Gte":
+            above = [v for v in vals if v > v0]
+            new_t = above[0] if above else None
+        else:
+            new_t = v0
+    else:
+        if not off:
+            return None, "everything already fires -- cannot fire more"
+        v1 = off[-1]
+        if op == "Gte":
+            new_t = v1
+        else:
+            below = [v for v in vals if v < v1]
+            new_t = below[-1] if below else None
+    if new_t is None:
+        return None, "no observed value beyond the boundary -- stepping would leave the grain"
+    if not any(fires(v, new_t) for v in vals) or all(fires(v, new_t) for v in vals):
+        return None, (f"degenerate: threshold {new_t} would fire on all or none of the observed values "
+                      f"{vals} -- no separating step exists on this grain")
+    return float(new_t), f"observed values {vals}; {op} gate {t} -> {new_t} ({direction})"
+
+
 def _compose_knob_variant(agent, keys, tag: str) -> dict[str, Any]:
     """WHICH knob: read the promoted concern's own content words (the same
     StandingConcern <- promoted_to <- SelfConcern provenance lookup
@@ -3369,7 +3645,8 @@ def _compose_knob_variant(agent, keys, tag: str) -> dict[str, Any]:
     for n in sub0.nodes("StandingConcern"):
         if sub0.node(n)["attrs"].get("name") == key:
             standing = n
-            break
+            if sub0.node(n)["attrs"].get("status") != "retired":   # prefer the live re-promotion
+                break
     if standing is None:
         return {"built": False, "wall": ("no StandingConcern carries this capability key — "
                 "a knob edit only exists for a promoted concern")}
@@ -3395,7 +3672,26 @@ def _compose_knob_variant(agent, keys, tag: str) -> dict[str, Any]:
     step = float((op_at or {}).get("knob_step") or 0.1)
     default_register = str((op_at or {}).get("default_key_value") or "conversational")
 
-    best = None       # (overlap, node, attr_key, node_type)
+    # KNOB EXCLUSION (tranche 7, the cue_route_pick exclusion's knob twin):
+    # a knob this concern's own experiments already judged refuted/
+    # inconclusive is not re-proposed, so a retry moves a DIFFERENT knob
+    # (measured: every reform_*_threshold key ties at overlap 2 for "reform
+    # ... threshold" content; the first tie moved a disjunct that was not the
+    # one firing). Pure read of the agent's own Experiment record.
+    tried = set()
+    for e in sub0.nodes("Experiment"):
+        eat = sub0.node(e)["attrs"]
+        if eat.get("axis_tag") != key or eat.get("outcome") not in ("refuted", "inconclusive"):
+            continue
+        try:
+            for d in native0.neighbours(e, "has_delta"):
+                ka = sub0.node(d)["attrs"].get("knob_attr")
+                if ka:
+                    tried.add(str(ka))
+        except Exception:  # noqa: BLE001
+            pass
+    cands = []        # (overlap, node, attr_key, node_type) -- every candidate, ranked below
+    best = None
     for ntype in _KNOB_NODE_TYPES:
         for n in sub0.nodes(ntype):
             at = sub0.node(n)["attrs"]
@@ -3403,6 +3699,8 @@ def _compose_knob_variant(agent, keys, tag: str) -> dict[str, Any]:
                 continue
             for attr_key, val in at.items():
                 if not isinstance(val, (int, float)) or isinstance(val, bool):
+                    continue
+                if attr_key in tried:
                     continue
                 attr_words = [p for p in attr_key.split("_") if p]
                 overlap = sum(1 for w in words if w in attr_words)
@@ -3416,20 +3714,95 @@ def _compose_knob_variant(agent, keys, tag: str) -> dict[str, Any]:
                 # floor, lands here and must NOT hijack an unrelated knob).
                 if overlap < 2:
                     continue
+                cands.append((overlap, n, attr_key, ntype))
                 if best is None or overlap > best[0]:
                     best = (overlap, n, attr_key, ntype)
     if best is None:
         return {"built": False, "wall": (f"no held knob (in {_KNOB_NODE_TYPES!r}, register="
                 f"{default_register!r}) is genuinely named by the content words ({words!r}) — "
                 "fewer than 2 words of any held attr key match; honest abstain, not a random "
-                "pick (a rule-literal threshold outside the held node families lands here)")}
+                "pick (a rule-literal threshold outside the held node families lands here)"
+                + (f"; already tried for this concern: {sorted(tried)!r}" if tried else "")), "tried": sorted(tried)}
     _overlap, target, attr_key, ntype = best
+    # POLARITY (tranche 8): score the content against the agent's held
+    # direction lexicon (rule_literal_edit's direction_lexicon_more/_fewer,
+    # agent-editable data). 'fires too rarely' -> increase_fires -> lower the
+    # threshold; 'too eagerly' -> decrease_fires -> raise it. A tie (incl.
+    # 0-0) keeps the pre-tranche-8 default (+, decrease_fires).
+    lex_more, lex_fewer = set(), set()
+    for n in sub0.nodes("VariationOp"):
+        lat = sub0.node(n)["attrs"]
+        if lat.get("name") in ("knob_edit", "rule_literal_edit"):
+            lex_more |= {str(w).lower() for w in (lat.get("direction_lexicon_more") or [])}
+            lex_fewer |= {str(w).lower() for w in (lat.get("direction_lexicon_fewer") or [])}
+    n_more = sum(1 for w in words if w in lex_more)
+    n_fewer = sum(1 for w in words if w in lex_fewer)
+    direction = "increase_fires" if n_more > n_fewer else "decrease_fires"
     old_value = float(sub0.node(target)["attrs"].get(attr_key))
-    new_value = round(old_value + step, 6)
+    new_value = round(old_value - step, 6) if direction == "increase_fires" else round(old_value + step, 6)
+    # GRAIN-QUANTISED STEP (tranche 10, opt-in VariationOp{knob_edit}.step_mode
+    # == "grain"): step to the next distinct value the gated signal actually
+    # took (on the node types held in `grain_signal_types`), never a fixed
+    # epsilon -- approximation is done exactly by quantisation, not tolerance.
+    grain_note = ""
+    if str((op_at or {}).get("step_mode") or "") == "grain":
+        # The knob candidates are this family's INTERNAL alternatives (tranche
+        # 11): a knob with no separating step on its signal's grain is passed
+        # over for the next-ranked candidate (same Argmax order: overlap, then
+        # first seen), and the family abstains only when none has one.
+        cands.sort(key=lambda c: -c[0])
+        walls = []
+        chosen = None
+        def _sig_types(c_attr):
+            # Tranche 13: structural derivation when grain_signal_source ==
+            # "structural"; otherwise (default) the held grain_signal_types list.
+            if str((op_at or {}).get("grain_signal_source") or "") == "structural":
+                return _knob_signal_types(native0, sub0, c_attr) or list((op_at or {}).get("grain_signal_types") or [])
+            return list((op_at or {}).get("grain_signal_types") or [])
+        for _ov, c_node, c_attr, c_type in cands:
+            c_old = float(sub0.node(c_node)["attrs"].get(c_attr))
+            gs = _knob_gated_signal(native0, c_attr)
+            if gs is None:
+                walls.append(f"{c_attr}: no unique gating comparison in the active rules"); continue
+            g_op, sig = gs
+            vals = []
+            for gt in _sig_types(c_attr):
+                for n in sub0.nodes(str(gt)):
+                    v = sub0.node(n)["attrs"].get(sig)
+                    if isinstance(v, (int, float)) and not isinstance(v, bool):
+                        vals.append(float(v))
+            g_new, why = _grain_step(vals, g_op, c_old, direction)
+            if g_new is None:
+                walls.append(f"{c_attr} (signal {sig!r}): {why}"); continue
+            chosen = (c_node, c_attr, c_type, c_old, g_new, why)
+            break
+        if chosen is None and int((op_at or {}).get("grain_end") or 0) == 1:
+            # LAST RESORT (tranche 12, opt-in grain_end==1): no knob has an
+            # interior separating step; offer the first candidate whose frame
+            # admits a grain-end step (one quantum past the observed frame).
+            for _ov, c_node, c_attr, c_type in cands:
+                gs = _knob_gated_signal(native0, c_attr)
+                if gs is None:
+                    continue
+                g_op, sig = gs
+                vals = [float(sub0.node(n)["attrs"].get(sig)) for gt in _sig_types(c_attr)
+                        for n in sub0.nodes(str(gt))
+                        if isinstance(sub0.node(n)["attrs"].get(sig), (int, float))
+                        and not isinstance(sub0.node(n)["attrs"].get(sig), bool)]
+                c_old = float(sub0.node(c_node)["attrs"].get(c_attr))
+                g_new, why = _grain_end_step(vals, g_op, c_old, direction)
+                if g_new is None:
+                    walls.append(f"{c_attr} grain-end: {why}"); continue
+                chosen = (c_node, c_attr, c_type, c_old, g_new, why)
+                break
+        if chosen is None:
+            return {"built": False, "tried": sorted(tried), "wall": "step_mode=grain: " + "; ".join(walls)}
+        target, attr_key, ntype, old_value, new_value, grain_note = chosen
     item = {"type": ntype, "key_attr": "register", "key_value": default_register,
             "attrs": {attr_key: new_value}}
     return {"built": True, "node_type": ntype, "key_attr": "register", "key_value": default_register,
             "attr": attr_key, "old_value": old_value, "new_value": new_value,
+            "direction": direction, "grain_note": grain_note,
             "set_node_attrs_item": item,
             "how": (f"I read the promoted concern's own content words {words!r} and Argmaxed over the "
                     f"{default_register!r}-register {ntype} row's own attr keys by token overlap: "
@@ -3732,7 +4105,8 @@ def _compose_rule_literal_variant(agent, keys, tag: str) -> dict[str, Any]:
     for n in sub0.nodes("StandingConcern"):
         if sub0.node(n)["attrs"].get("name") == key:
             standing = n
-            break
+            if sub0.node(n)["attrs"].get("status") != "retired":   # prefer the live re-promotion
+                break
     if standing is None:
         return {"built": False, "wall": ("no StandingConcern carries this capability key — "
                 "a rule-literal edit only exists for a promoted concern")}
@@ -3759,11 +4133,38 @@ def _compose_rule_literal_variant(agent, keys, tag: str) -> dict[str, Any]:
 
     import json as _json
     _ensure_where_literal_rule_provenance(sub0, native0)
+    # ADOPTABLE-ONLY + TRIED EXCLUSION (tranche 14). (1) A rule the adoption
+    # gate would deny (_rule_denylisted: unknown provenance, or a seed whose
+    # SeedSummary is not skippable) is not proposed -- measured: the pick chose
+    # the agent's OWN runtime-authored `author_experiment_from_residual_*`
+    # rule (from_seed ''), a variant that could never be adopted, so every
+    # replay of it was waste. (2) A rule this concern's own experiments already
+    # judged refuted/inconclusive under this family is not re-proposed (the
+    # knob_edit exclusion's twin; measured: the same literal was re-proposed
+    # 3 times per concern when exclude_inconclusive is off).
+    adoptable_seeds = {sub0.node(n)["attrs"].get("seed_id") for n in sub0.nodes("SeedSummary")
+                       if sub0.node(n)["attrs"].get("skippable") == 1.0}
+    tried_rules = set()
+    for e in sub0.nodes("Experiment"):
+        eat = sub0.node(e)["attrs"]
+        if eat.get("axis_tag") != key or eat.get("outcome") not in ("refuted", "inconclusive"):
+            continue
+        try:
+            for d in native0.neighbours(e, "has_delta"):
+                dat = sub0.node(d)["attrs"]
+                if dat.get("variation_op") == "rule_literal_edit" and dat.get("act_rule_varied"):
+                    tried_rules.add(str(dat.get("act_rule_varied")))
+        except Exception:  # noqa: BLE001
+            pass
     candidate_rows = []   # [(rule_name, rule_json)] -- the pool, gathered once
     best = None   # (overlap, rule_name, rule_json, cand_index, cand_node)
     for n in sub0.nodes("RuleSummary"):
         at = sub0.node(n)["attrs"]
         if at.get("writes_where_literal") != 1.0 or at.get("skippable") != 1.0:
+            continue
+        if not at.get("from_seed") or at.get("from_seed") not in adoptable_seeds:
+            continue
+        if at.get("name") in tried_rules:
             continue
         try:
             rule_json = _json.loads(at.get("rule_json") or "{}")
@@ -3925,7 +4326,8 @@ def _compose_datum_feedback_rule(agent, keys, tag: str) -> dict[str, Any]:
     for n in sub0.nodes("StandingConcern"):
         if sub0.node(n)["attrs"].get("name") == key:
             standing = n
-            break
+            if sub0.node(n)["attrs"].get("status") != "retired":   # prefer the live re-promotion
+                break
     if standing is None:
         return {"built": False, "wall": ("no StandingConcern carries this capability key — "
                 "a datum-feedback rule only exists for a promoted concern")}
@@ -4069,7 +4471,8 @@ def _compose_shape_mint(agent, keys, tag: str) -> dict[str, Any]:
     for n in sub0.nodes("StandingConcern"):
         if sub0.node(n)["attrs"].get("name") == key:
             standing = n
-            break
+            if sub0.node(n)["attrs"].get("status") != "retired":   # prefer the live re-promotion
+                break
     if standing is None:
         return {"built": False, "wall": ("no StandingConcern carries this capability key — "
                 "a shape mint only exists for a promoted concern")}
@@ -4142,6 +4545,320 @@ def _compose_shape_mint(agent, keys, tag: str) -> dict[str, Any]:
 # Name-keyed registry — the SAME pattern _COMPOSER_REGISTRY uses for
 # `composer_pick`: the held `variation_pick` Program names the op; this is a
 # mechanical lookup on the Term's verdict, not a decision.
+# ---------------------------------------------------------------------------
+# THE DISPOSITION-GENERALISATION FAMILY (tranche 22) -- the reply-side twin of
+# cue_set_edit. Measured on the production path (tranche 21): most natural
+# conversational failures are turns NO held arbitration rule selects a
+# disposition for (plain statements, e.g. "I like to watch movies and TV
+# shows." -> the explicit error floor), while a sibling turn class IS
+# handled -- `defer_response_assertion_without_proposition_uptake` selects a
+# neutral receipt for an assertion in RESPONSE position only.
+#
+# The variant GENERALISES a held (arbitration rule, reply rule) pair to the
+# failing turn's own evidence: the arbitration rule whose where-clause Eq-
+# guards on the interpretation `i` mismatch the failing interpretation on
+# EXACTLY ONE attr (never the schema/force/disposition identity guards) is
+# copied with that guard set to the failing value, under a NEW
+# arbitration_basis; the reply rule(s) keyed on the original basis are
+# copied to key on the new one with the same guard relaxed. Both are
+# ADD-ONLY (nothing removed): the held rules keep firing exactly as before.
+# The generalised arbitration also stamps receipt_selected_by_rule, which the
+# production release predicate accepts as a graph-selected receipt. The
+# dispatched replay (production path) judges it: the flagged unanswered
+# turn must change into a non-error reply, and no other recorded turn may
+# change. Honest abstain when no held pair is one guard away.
+# ---------------------------------------------------------------------------
+_GENERALISE_FIXED_KEYS = frozenset({"schema", "evidence_schema", "evidence_force", "cognitive_disposition"})
+
+
+def _guards_on(where, var):
+    """[(key, value, negated)] for every top-level Eq / Not-Eq guard on Attr(Var(var), key)
+    against a Lit in an And where-clause; None if the clause has any other item."""
+    items = where.get("items") if isinstance(where, dict) and where.get("type") == "And" else [where]
+    out = []
+    for it in items:
+        neg = False
+        node = it
+        if isinstance(node, dict) and node.get("type") == "Not":
+            neg, node = True, node.get("arg")
+        if not (isinstance(node, dict) and node.get("type") == "Eq"):
+            return None
+        a, b = node.get("a") or {}, node.get("b") or {}
+        if not (a.get("type") == "Attr" and (a.get("node") or {}).get("type") == "Var"
+                and b.get("type") == "Lit"):
+            return None
+        if (a.get("node") or {}).get("name") != var:
+            continue        # a guard on another variable (e.g. the message) is kept as is
+        out.append((a.get("key"), b.get("value"), neg))
+    return out
+
+
+def _guard_holds(attrs, key, value, neg):
+    v = attrs.get(key)
+    if value is None:
+        eq = v is None
+    else:
+        eq = v == value
+    return (not eq) if neg else eq
+
+
+def _relax_guard(rule, var, key, new_value):
+    import copy as _copy
+    r = _copy.deepcopy(rule)
+    items = r["where"]["items"] if r["where"].get("type") == "And" else [r["where"]]
+    for it in items:
+        node = it.get("arg") if it.get("type") == "Not" else it
+        a = node.get("a") or {}
+        if node.get("type") == "Eq" and a.get("type") == "Attr" and (a.get("node") or {}).get("name") == var \
+                and a.get("key") == key:
+            node["b"] = {"type": "Lit", "value": new_value}
+    return r
+
+
+def _live_standing_for_key(sub0, key):
+    """The StandingConcern carrying `key` that is still live. A reopened concern
+    (tranche 24) leaves its earlier StandingConcern behind as `retired` under the
+    same name, and that one no longer has the promoted_to edge."""
+    named = [n for n in sub0.nodes("StandingConcern") if sub0.node(n)["attrs"].get("name") == key]
+    live = [n for n in named if sub0.node(n)["attrs"].get("status") != "retired"]
+    return (live or named or [None])[-1]
+
+
+def _compose_disposition_generalise(agent, keys, tag: str) -> dict[str, Any]:
+    import json as _json
+    import re as _re
+    sub0, native0, _ag0 = _resolve_agent(agent)
+    key = str(keys[0]) if keys else ""
+    standing = _live_standing_for_key(sub0, key)
+    if standing is None:
+        return {"built": False, "wall": "no StandingConcern carries this capability key"}
+    msg = None
+    for sc in sub0.nodes("SelfConcern"):
+        try:
+            if standing in native0.neighbours(sc, "promoted_to"):
+                msgs = list(native0.neighbours(sc, "about_message"))
+                msg = msgs[0] if msgs else None
+                break
+        except Exception:  # noqa: BLE001
+            continue
+    if msg is None:
+        return {"built": False, "wall": "the promoting concern names no unanswered turn"}
+    interps = [i for i in native0.in_neighbours(msg, "interprets")
+               if sub0.node(i)["attrs"].get("schema") == "communication_interpretation.v1"]
+    if not interps:
+        return {"built": False, "wall": "the unanswered turn carries no communication interpretation"}
+    fattrs = dict(sub0.node(interps[0])["attrs"])
+    # the failing turn's interpretation as it stood BEFORE arbitration: no disposition yet
+    fattrs["cognitive_disposition"] = None
+    rules = [r for r in native0.export_rules() if isinstance(r, dict) and r.get("active", True)]
+    types = _improvement_protected_types(sub0)
+    adoptable_seeds = {sub0.node(n)["attrs"].get("seed_id") for n in sub0.nodes("SeedSummary")
+                       if sub0.node(n)["attrs"].get("skippable") == 1.0}
+    seed_of = _rule_seed_map(sub0)
+    tried = set()
+    for e in sub0.nodes("Experiment"):
+        eat = sub0.node(e)["attrs"]
+        if eat.get("axis_tag") != key or eat.get("outcome") not in ("refuted", "inconclusive"):
+            continue
+        for d in native0.neighbours(e, "has_delta"):
+            tried.add(str(sub0.node(d)["attrs"].get("generalise_source_rule") or ""))
+    cands = []
+    for r in rules:
+        if r.get("match") != [["agent", "holds_interpretation", "i"]]:
+            continue
+        eff = r.get("effects") or []
+        sets = {e[2]: e[3] for e in eff if isinstance(e, list) and len(e) == 4 and e[0] == "set_attr" and e[1] == "i"}
+        if not sets.get("cognitive_disposition") or not isinstance(sets.get("arbitration_basis"), str):
+            continue
+        if r.get("name") in tried or _rule_names_protected_type(r, types):
+            continue
+        if seed_of.get(r.get("name")) not in adoptable_seeds and not str(r.get("name", "")).endswith("_generalised"):
+            continue
+        guards = _guards_on(r.get("where") or {}, "i")
+        if not guards:
+            continue
+        miss = [(k, v, n) for (k, v, n) in guards if not _guard_holds(fattrs, k, v, n)]
+        if len(miss) != 1 or miss[0][0] in _GENERALISE_FIXED_KEYS or miss[0][2]:
+            continue
+        cands.append((r, miss[0][0], sets))
+
+    def _realisers(basis):
+        out = []
+        for r2 in rules:
+            g2 = _guards_on(r2.get("where") or {}, "i")
+            if g2 and any(k == "arbitration_basis" and v == basis and not n for k, v, n in g2) \
+                    and not _rule_names_protected_type(r2, types) \
+                    and any(isinstance(e, list) and e[:2] == ["add_node", "reply"] for e in (r2.get("effects") or [])):
+                out.append(r2)
+        return out
+    # only a pair the agent can actually SAY something with: the arbitration's
+    # basis must have a held reply rule that mints a reply Message
+    cands = [c for c in cands if _realisers(c[2]["arbitration_basis"])]
+    if not cands:
+        return {"built": False, "wall": ("no held arbitration rule selects a disposition for this turn's evidence "
+                "with exactly one non-identity guard changed -- honest abstain")}
+    cands.sort(key=lambda c: c[0].get("name", ""))
+    src, mkey, sets = cands[0]
+    new_value = fattrs.get(mkey)
+    old_basis = sets["arbitration_basis"]
+    slug = _re.sub(r"[^a-z0-9]+", "_", str(new_value).lower()).strip("_") or "none"
+    new_basis = f"{old_basis}__{mkey}_{slug}"
+    arb = _relax_guard(src, "i", mkey, new_value)
+    arb["name"] = f"{src['name']}__{mkey}_{slug}_generalised"
+    arb["effects"] = [(["set_attr", "i", "arbitration_basis", new_basis]
+                       if isinstance(e, list) and e[:3] == ["set_attr", "i", "arbitration_basis"] else e)
+                      for e in src["effects"]] + [["set_attr", "i", "receipt_selected_by_rule", "neutral_receipt"]]
+    arb.pop("active", None)
+    arb["comment"] = (f"disposition_generalise (tranche 22): {src['name']} with guard i.{mkey} relaxed to "
+                      f"{new_value!r}; basis {new_basis!r}. Adopted only if the production replay supports it.")
+    replies = []
+    for r in _realisers(old_basis):
+        guards = _guards_on(r.get("where") or {}, "i")
+        rr = _relax_guard(r, "i", "arbitration_basis", new_basis)
+        if any(k == mkey for k, _v, _n in guards):
+            rr = _relax_guard(rr, "i", mkey, new_value)
+        rr["name"] = f"{r['name']}__{mkey}_{slug}_generalised"
+        rr.pop("active", None)
+        rr["comment"] = f"disposition_generalise (tranche 22): {r['name']} keyed on basis {new_basis!r}."
+        replies.append(rr)
+    if not replies:
+        return {"built": False, "wall": f"no held reply rule realises basis {old_basis!r} -- nothing to generalise"}
+    existing = {r.get("name") for r in rules}
+    if arb["name"] in existing:
+        return {"built": False, "wall": f"{arb['name']} is already held"}
+    return {"built": True, "rules": [arb] + replies, "source_rule": src["name"], "guard": mkey,
+            "new_value": new_value, "basis": new_basis,
+            "how": (f"The unanswered turn's interpretation differs from {src['name']}'s held guards only on "
+                    f"i.{mkey} ({new_value!r}); I copied it and its {len(replies)} reply rule(s) under basis "
+                    f"{new_basis!r}, add-only, for the production replay to judge.")}
+
+
+# ---------------------------------------------------------------------------
+# THE DEEP-READER CORRECTION FAMILY (tranche 23). The agent runs a shallow
+# reader (comp_kind -> the arbitration) and a deep reader (shadow_speech_act)
+# on every turn; comprehension_health files a `comprehension` concern when the
+# two disagree the SAME way recurrently (e.g. shallow 'instruction', deep
+# 'statement': "I like to play video games too!" -> "I took on the goal to play
+# the video games ..."). Measured on the production path (tranche 21): 29 of
+# 120 natural turns were such spurious goal-takes.
+#
+# The variant lets the deep reader's verdict OVERRIDE the shallow arbitration
+# for exactly that disagreement: (1) the arbitration rule that claimed the
+# concern's turn is REPLACED by a copy guarded "not when the deep reader heard
+# <deep>" (the only change; every other turn arbitrates byte-identically);
+# (2) an ADDED arbitration rule selects the neutral, non-endorsing receipt for
+# turns with that disagreement (graph-stamped receipt_selected_by_rule), and
+# (3) an ADDED reply rule (a copy of the held response-assertion receipt
+# rule's effects) realises it. Judged by the production-path replay; the
+# concern's own disagreement class is the scope (convo_child_run).
+# ---------------------------------------------------------------------------
+def _compose_deep_reader_correct(agent, keys, tag: str) -> dict[str, Any]:
+    import copy as _copy
+    import re as _re
+    sub0, native0, _ag0 = _resolve_agent(agent)
+    key = str(keys[0]) if keys else ""
+    standing = _live_standing_for_key(sub0, key)
+    if standing is None:
+        return {"built": False, "wall": "no StandingConcern carries this capability key"}
+    msg = None
+    for sc in sub0.nodes("SelfConcern"):
+        try:
+            if standing in native0.neighbours(sc, "promoted_to"):
+                msgs = list(native0.neighbours(sc, "about_message"))
+                msg = msgs[0] if msgs else None
+                break
+        except Exception:  # noqa: BLE001
+            continue
+    if msg is None:
+        return {"built": False, "wall": "the promoting concern names no turn"}
+    mat = sub0.node(msg)["attrs"]
+    shallow, deep = mat.get("comp_kind"), mat.get("shadow_speech_act")
+    if not shallow or not deep or shallow == deep:
+        return {"built": False, "wall": "the concern's turn carries no shallow/deep reader disagreement"}
+    interps = [i for i in native0.in_neighbours(msg, "interprets")
+               if sub0.node(i)["attrs"].get("schema") == "communication_interpretation.v1"]
+    if not interps:
+        return {"built": False, "wall": "the turn carries no communication interpretation"}
+    basis = sub0.node(interps[0])["attrs"].get("arbitration_basis")
+    # the concern's own turn also fixes the LITERAL class the correction may
+    # touch: measured in tranche 23, the deep reader also hears "Paint the
+    # fence." as a statement, so a correction keyed on the reader pair alone
+    # turned real imperatives into receipts. Every imperative probed opens
+    # with a content word; 23 of 29 persona misreads open with a function word.
+    first_role = sub0.node(interps[0])["attrs"].get("literal_first_role")
+    if not first_role:
+        return {"built": False, "wall": "the concern's turn carries no literal_first_role to scope the correction"}
+    rules = [r for r in native0.export_rules() if isinstance(r, dict) and r.get("active", True)]
+    types = _improvement_protected_types(sub0)
+    adoptable_seeds = {sub0.node(n)["attrs"].get("seed_id") for n in sub0.nodes("SeedSummary")
+                       if sub0.node(n)["attrs"].get("skippable") == 1.0}
+    seed_of = _rule_seed_map(sub0)
+    arb = next((r for r in rules if r.get("match") == [["agent", "holds_interpretation", "i"]]
+                and ["set_attr", "i", "arbitration_basis", basis] in (r.get("effects") or [])), None)
+    if arb is None:
+        return {"built": False, "wall": f"no held arbitration rule writes the turn's basis {basis!r}"}
+    if _rule_names_protected_type(arb, types) or seed_of.get(arb.get("name")) not in adoptable_seeds:
+        return {"built": False, "wall": f"{arb.get('name')!r} is not an adoptable rule"}
+    held_reply = next((r for r in rules if r.get("name") == "reply_to_deferred_response_assertion"), None)
+    if held_reply is None:
+        return {"built": False, "wall": "no held neutral-receipt reply rule to realise the correction"}
+    slug = _re.sub(r"[^a-z0-9]+", "_", f"{shallow}_as_{deep}_{first_role}").strip("_")
+    heard = lambda: {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "literal_first_role"},
+         "b": {"type": "Lit", "value": first_role}},
+        {"type": "Exists", "source": {"type": "Neighbours", "node": {"type": "Var", "name": "i"},
+                                      "edge_type": "interprets"},
+                     "var_name": "drm", "predicate": {"type": "And", "items": [
+                         {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "drm"}, "key": "comp_kind"},
+                          "b": {"type": "Lit", "value": shallow}},
+                         {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "drm"},
+                                              "key": "shadow_speech_act"}, "b": {"type": "Lit", "value": deep}}]}}]}
+    variant = _copy.deepcopy(arb)
+    variant.pop("active", None)
+    variant["name"] = f"{arb['name']}_deepread_{tag}"
+    variant["where"] = {"type": "And", "items": [variant["where"], {"type": "Not", "arg": heard()}]}
+    variant["comment"] = (f"deep_reader_correct (tranche 23): {arb['name']}, except when the deep reader heard "
+                          f"{deep!r} where the shallow reader classified {shallow!r}.")
+    new_basis = f"deep_reader_{slug}_receipt"
+    receipt_arb = {
+        "name": f"arbitrate_deep_reader_{slug}_receipt_{tag}",
+        "comment": (f"deep_reader_correct (tranche 23): a turn the shallow reader classified {shallow!r} and the "
+                    f"deep reader heard {deep!r} gets the neutral, non-endorsing receipt."),
+        "match": [["agent", "holds_interpretation", "i"]],
+        "where": {"type": "And", "items": [
+            {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "schema"},
+             "b": {"type": "Lit", "value": "communication_interpretation.v1"}},
+            {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "cognitive_disposition"},
+             "b": {"type": "Lit", "value": None}},
+            {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "communicative_force"},
+             "b": {"type": "Lit", "value": None}},
+            heard()]},
+        "effects": [["set_attr", "i", "communicative_force", "assertion_or_correction"],
+                    ["set_attr", "i", "cognitive_disposition", "defer"],
+                    ["set_attr", "i", "cognitive_goal", "update_common_ground"],
+                    ["set_attr", "i", "arbitration_basis", new_basis],
+                    ["set_attr", "i", "receipt_selected_by_rule", "neutral_receipt"]]}
+    flag = f"deep_reader_receipt_minted_{tag}"
+    receipt_reply = {
+        "name": f"reply_deep_reader_{slug}_receipt_{tag}",
+        "comment": "deep_reader_correct (tranche 23): realises the receipt with the held response-assertion receipt's effects.",
+        "match": [["agent", "holds_interpretation", "i"], ["i", "interprets", "m"]],
+        "where": {"type": "And", "items": [
+            {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "arbitration_basis"},
+             "b": {"type": "Lit", "value": new_basis}},
+            {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": flag},
+                                    "b": {"type": "Lit", "value": 1}}}]},
+        "effects": [["set_attr", "m", flag, 1]] + [e for e in _copy.deepcopy(held_reply["effects"])
+                                                     if not (isinstance(e, list) and e[:2] == ["set_attr", "m"])]}
+    if any(r.get("name") in (variant["name"], receipt_arb["name"]) for r in rules):
+        return {"built": False, "wall": "this correction is already held"}
+    return {"built": True, "removed_rule": arb["name"], "rules": [variant, receipt_arb, receipt_reply],
+            "shallow": shallow, "deep": deep, "basis": new_basis,
+            "how": (f"My deep reader heard {deep!r} where {arb['name']} arbitrated {shallow!r} ({basis!r}); I let "
+                    f"the deep reader veto that arbitration for this disagreement and answer with the neutral "
+                    f"receipt, for the production replay to judge.")}
+
+
 _VARIATION_REGISTRY = {
     "cue_set_edit": _compose_cue_variant,
     "reply_ablation": _compose_reply_ablation,
@@ -4149,6 +4866,8 @@ _VARIATION_REGISTRY = {
     "rule_literal_edit": _compose_rule_literal_variant,
     "datum_feedback_rule": _compose_datum_feedback_rule,
     "shape_mint": _compose_shape_mint,
+    "disposition_generalise": _compose_disposition_generalise,
+    "deep_reader_correct": _compose_deep_reader_correct,
     # structural_edit / threshold_shift are registered below, after their
     # builders are defined (module load order), same dict.
 }
@@ -4179,6 +4898,8 @@ _EDIT_OPS = (
      "keywords_text": "drop match edge relax remove constraint pattern broaden fewer"},
     {"kind": "add_match_guard",
      "keywords_text": "guard add constrain restrict narrow extra condition equality"},
+    {"kind": "add_edge_identity_guard",
+     "keywords_text": "edge identity guard once output exists idempotent repeated"},
 )
 
 
@@ -4227,7 +4948,37 @@ def _editop_applicable_kinds(rule_json: dict, eo) -> list:
         out.append("drop_match_edge")
     if match and isinstance(match[0], list) and len(match[0]) >= 1:
         out.append("add_match_guard")
+    if eo.find_edge_identity_sites(rule_json):
+        out.append("add_edge_identity_guard")
     return out
+
+
+def _ensure_edge_identity_sites(sub, rule_name: str, rule_json: dict, eo) -> None:
+    """Expose edge-identity guard sites as graph-selectable EditSite nodes."""
+    import json as _json
+    have = {sub.node(n)["attrs"].get("site_id") for n in sub.nodes("EditSite")}
+    for site in eo.find_edge_identity_sites(rule_json):
+        site_id = _json.dumps([rule_name, site], sort_keys=True, ensure_ascii=False)
+        if site_id in have:
+            continue
+        edge_raw = str(site["edge_type"])
+        edge_label = f"{edge_raw} {edge_raw.replace('_', ' ')}"
+        endpoint_label = str(site["var"])
+        scope_label = str(site.get("other") or "any endpoint")
+        if site.get("scope") == "node_attrs":
+            keys = list(site["identity_keys"])
+            size_label = "pair" if len(keys) == 2 else ("single" if len(keys) == 1 else "all fields")
+            keywords = (f"node attribute identity signature {site['node_type']} "
+                f"fields {' '.join(keys)} {size_label}")
+        else:
+            keywords = f"edge identity guard once output exists {edge_label} {endpoint_label} {scope_label} {site['direction']}"
+        sub.add_node("EditSite", {"site_id": site_id, "target_rule": rule_name,
+            "operator": "add_edge_identity_guard", "direction": site["direction"],
+            "anchor_var": site["var"], "edge_type": site["edge_type"],
+            "other_var": site.get("other"), "scope": site.get("scope", "edge"),
+            "node_var": site.get("node_var"), "node_type": site.get("node_type"),
+            "identity_keys": list(site.get("identity_keys") or []), "keywords_text": keywords})
+        have.add(site_id)
 
 
 # One `applicable_<kind>` RuleSummary attr per `_EDIT_OPS` kind -- the FULL
@@ -4238,6 +4989,27 @@ _APPLICABLE_ATTR = {
     "drop_match_edge": "applicable_drop_match_edge",
     "add_match_guard": "applicable_add_match_guard",
 }
+
+
+def _ensure_edit_sites(sub, rule_name: str, keys_found: list) -> None:
+    """Publish every ordered attribute-key swap as a graph-selectable site."""
+    import json as _json
+    keys = [key for key, _count in keys_found]
+    have = {sub.node(n)["attrs"].get("site_id") for n in sub.nodes("EditSite")}
+    for source in keys:
+        for destination in keys:
+            if source == destination:
+                continue
+            site_id = _json.dumps([rule_name, source, destination], ensure_ascii=False)
+            if site_id in have:
+                continue
+            sub.add_node("EditSite", {
+                "site_id": site_id, "target_rule": rule_name,
+                "operator": "swap_term_leaf", "source_key": source,
+                "destination_key": destination,
+                "keywords_text": f"swap attr from {source} to {destination}",
+            })
+            have.add(site_id)
 
 
 def _ensure_editop_applicability(sub) -> None:
@@ -4295,7 +5067,7 @@ def _ensure_editop_applicability(sub) -> None:
             continue
 
 
-def _compose_structural_variant(agent, keys, tag: str) -> dict[str, Any]:
+def _compose_structural_variant(agent, keys, tag: str, *, rule_scope="acting") -> dict[str, Any]:
     """THE STRUCTURAL TWIN of `_compose_acting_variant`: picks WHICH candidate
     chosen_action-writing rule the axis's residual names (the SAME shared
     `_pick_acting_rule` Argmax), THEN picks WHICH EditOp (flip_comparison /
@@ -4330,12 +5102,16 @@ def _compose_structural_variant(agent, keys, tag: str) -> dict[str, Any]:
     from domains import edit_ops as _eo
     sub0, native0, _ag0 = _resolve_agent(agent)
     axis_preds = []
+    axis_scope = rule_scope
     for n0 in sub0.nodes("CapabilityAxis"):
         at0 = sub0.node(n0)["attrs"]
         if at0.get("induced") and list(at0.get("capability_keys") or []) == [str(k) for k in keys]:
             axis_preds = list(at0.get("residual_predicates") or [])
+            requested_scope = at0.get("structural_rule_scope")
+            if requested_scope in ("acting", "all_mutable_rules"):
+                axis_scope = requested_scope
             break
-    pick = _pick_acting_rule(agent, axis_preds)
+    pick = _pick_acting_rule(agent, axis_preds, rule_scope=axis_scope)
     if pick["picked"] is None or pick["rule_json"] is None:
         return {"built": False, "wall": ("no RuleSummary genuinely overlaps this axis's residual "
                 "predicates (abstained, like the acting-variant pick abstains on no overlap)")}
@@ -4343,6 +5119,8 @@ def _compose_structural_variant(agent, keys, tag: str) -> dict[str, Any]:
     rule_name = pick["name"]
 
     applicable_kinds = _editop_applicable_kinds(rule_json, _eo)
+    if axis_scope != "all_mutable_rules":
+        applicable_kinds = [k for k in applicable_kinds if k != "add_edge_identity_guard"]
     if not applicable_kinds:
         return {"built": False, "wall": (f"no EditOp is structurally applicable to the picked rule "
                 f"{rule_name!r} at all (flip_comparison/swap_term_leaf/drop_match_edge/add_match_guard "
@@ -4354,6 +5132,7 @@ def _compose_structural_variant(agent, keys, tag: str) -> dict[str, Any]:
     L = lambda v: {"type": "Lit", "value": v}
     Attr = lambda nd, k: {"type": "Attr", "node": nd, "key": k}
     Eq = lambda a, b: {"type": "Eq", "a": a, "b": b}
+    And = lambda *xs: {"type": "And", "items": list(xs)}
     Or = lambda *xs: {"type": "Or", "items": list(xs)}
     Gt = lambda a, b: {"type": "Gt", "a": a, "b": b}
     Gte = lambda a, b: {"type": "Gte", "a": a, "b": b}
@@ -4363,6 +5142,7 @@ def _compose_structural_variant(agent, keys, tag: str) -> dict[str, Any]:
                                               "value": val, "default": default}
     NodesOfType = lambda t: {"type": "NodesOfType", "node_type": t}
     Sum = lambda src, var, val: {"type": "Sum", "source": src, "var_name": var, "value": val}
+    Count = lambda src: {"type": "Count", "source": src}
     StrIdx = lambda h, n: {"type": "StringIndexOf", "haystack": h, "needle": n}
     LetT = lambda nm, val, body: {"type": "Let", "name": nm, "value": val, "body": body}
 
@@ -4390,6 +5170,7 @@ def _compose_structural_variant(agent, keys, tag: str) -> dict[str, Any]:
                 "abstained — not a random pick)")}
     kind = sub0.node(op_node)["attrs"].get("kind")
     new_name = rule_name + "_structvariant_" + tag
+    edit_selection_wall = None
 
     if kind == "flip_comparison":
         variant = _eo.apply_flip_comparison(rule_json, new_name)
@@ -4401,9 +5182,29 @@ def _compose_structural_variant(agent, keys, tag: str) -> dict[str, Any]:
         site = None
         n_sites = len(keys_found)
         if len(keys_found) >= 2:
-            old_key, new_key = keys_found[0][0], keys_found[1][0]
-            variant = _eo.apply_swap_term_leaf(rule_json, old_key, new_key, new_name)
-            site = f"Attr key {old_key!r} <-> {new_key!r} (the two most-referenced keys the rule already reads)"
+            if axis_scope == "all_mutable_rules":
+                _ensure_edit_sites(sub0, rule_name, keys_found)
+                site_candidates = Filter(NodesOfType("EditSite"), "s",
+                    And(Eq(Attr(V("s"), "target_rule"), L(rule_name)),
+                        Eq(Attr(V("s"), "operator"), L("swap_term_leaf"))))
+                best_site = Argmax(site_candidates, "s", overlap(V("s")), None)
+                tie_count = Count(Filter(site_candidates, "t",
+                    Eq(overlap(V("t")), overlap(V("best_site")))))
+                unique_site = LetT("best_site", best_site,
+                    Ite(Eq(V("best_site"), L(None)), L(None),
+                        Ite(Gt(overlap(V("best_site")), L(0.0)),
+                            Ite(Eq(tie_count, L(1)), V("best_site"), L(None)), L(None))))
+                try:
+                    site_node = native0.evaluate(unique_site, {})
+                except Exception:
+                    site_node = None
+                attrs = sub0.node(site_node)["attrs"] if site_node is not None and sub0.has_node(site_node) else {}
+                old_key, new_key = attrs.get("source_key"), attrs.get("destination_key")
+            else:
+                old_key, new_key = keys_found[0][0], keys_found[1][0]
+            if old_key is not None and new_key is not None:
+                variant = _eo.apply_swap_term_leaf(rule_json, old_key, new_key, new_name)
+                site = f"Attr key {old_key!r} -> {new_key!r}"
     elif kind == "drop_match_edge":
         variant = _eo.apply_drop_match_edge(rule_json, 0, new_name)
         site = "match[0] (the first edge; the only structurally-valid site when len(match) > 1)"
@@ -4418,10 +5219,43 @@ def _compose_structural_variant(agent, keys, tag: str) -> dict[str, Any]:
             variant = None
             site = None
         n_sites = 1 if match else 0
+    elif kind == "add_edge_identity_guard":
+        sites = _eo.find_edge_identity_sites(rule_json)
+        _ensure_edge_identity_sites(sub0, rule_name, rule_json, _eo)
+        site_candidates = Filter(NodesOfType("EditSite"), "s",
+            And(Eq(Attr(V("s"), "target_rule"), L(rule_name)),
+                Eq(Attr(V("s"), "operator"), L("add_edge_identity_guard"))))
+        best_site = Argmax(site_candidates, "s", overlap(V("s")), None)
+        tie_count = Count(Filter(site_candidates, "t",
+            Eq(overlap(V("t")), overlap(V("best_site")))))
+        unique_site = LetT("best_site", best_site,
+            Ite(Eq(V("best_site"), L(None)), L(None),
+                Ite(Gt(overlap(V("best_site")), L(0.0)),
+                    Ite(Eq(tie_count, L(1)), V("best_site"), L(None)), L(None))))
+        try:
+            site_node = native0.evaluate(unique_site, {})
+        except Exception:
+            site_node = None
+        attrs = sub0.node(site_node)["attrs"] if site_node is not None and sub0.has_node(site_node) else {}
+        if not attrs:
+            edit_selection_wall = (f"no unique positive-scoring EditSite for {kind!r} among "
+                f"{len(sites)} applicable edge sites (tied or no cue overlap); abstained")
+        selected_site = {"direction": attrs.get("direction"), "var": attrs.get("anchor_var"),
+                         "edge_type": attrs.get("edge_type"), "other": attrs.get("other_var"),
+                         "scope": attrs.get("scope", "edge"), "node_var": attrs.get("node_var"),
+                         "node_type": attrs.get("node_type"), "identity_keys": list(attrs.get("identity_keys") or [])}
+        variant = _eo.apply_add_edge_identity_guard(rule_json, selected_site, new_name) if attrs else None
+        site = ((f"{selected_site['direction']} {selected_site['var']} {selected_site['edge_type']} "
+                f"{selected_site['other'] or 'any endpoint'}" if selected_site['scope'] != "node_attrs" else
+                f"{selected_site['direction']} {selected_site['var']} {selected_site['edge_type']} "
+                f"attributes {'+'.join(selected_site['identity_keys'])}") if variant else None)
+        n_sites = len(sites)
     else:
         return {"built": False, "wall": f"unknown EditOp kind {kind!r}"}
 
     if variant is None:
+        if edit_selection_wall:
+            return {"built": False, "wall": edit_selection_wall, "kind": kind, "rule": rule_name}
         return {"built": False, "wall": (f"the picked op {kind!r} is structurally INERT on the picked "
                 f"rule {rule_name!r} (n_sites={n_sites}) — a discovered null for THIS (op, rule) pairing, "
                 "not fabricated"), "kind": kind, "rule": rule_name}
@@ -4435,6 +5269,11 @@ def _compose_structural_variant(agent, keys, tag: str) -> dict[str, Any]:
 
 _VARIATION_REGISTRY["structural_edit"] = _compose_structural_variant
 _VARIATION_REGISTRY["threshold_shift"] = _compose_acting_variant
+
+
+def compose_general_structural_variant(agent, keys, tag: str = "general") -> dict[str, Any]:
+    """Opt-in A8 structural proposal over every non-frozen rule family."""
+    return _compose_structural_variant(agent, keys, tag, rule_scope="all_mutable_rules")
 
 
 def _compose_experiment_rule(agent, keys, rels) -> dict[str, Any]:
@@ -4520,6 +5359,7 @@ def _compose_experiment_rule(agent, keys, rels) -> dict[str, Any]:
     lit_report = None               # ditto — the rule-literal-edit family (WHERE-CLAUSE-VARIATION, 'ruleliteral')
     datum_report = None             # ditto — the datum-feedback-rule family (COMPOSER-CAPABILITY, 'datumfeedback')
     shape_report = None             # ditto — the shape-mint family (COMPOSER-CAPABILITY, 'shapemint')
+    gen_report = None               # ditto — the disposition-generalise family (tranche 22)
     variation_op = None             # the variation_pick Program's verdict (None until 'test' authors a delta)
     conversation = "replay" in rp   # the conversation experiment family (Wave 3)
     # A test only needs a detached process/world when its grounded relations
@@ -4549,6 +5389,31 @@ def _compose_experiment_rule(agent, keys, rels) -> dict[str, Any]:
             # The standing experiment capability consumes a later induced residual;
             # it is not limited to duplicating the bootstrap concern's predicate set.
         ]
+        if conversation:
+            # EXCEPT the conversation-replay family: its delta is CONCERN-SPECIFIC
+            # (it ablates/edits the reply rule picked for THIS concern), so binding
+            # it to another induced axis replays an unrelated hypothesis with this
+            # concern's delta -- the cross-contamination the axis-scoping guard
+            # prevents, and the shape the daemon's _scrub_stale_author_rules /
+            # _cancel_unscoped_experiments still enforce. Restored for this family
+            # only (tranche 3; the 3529fe4d standing-consumer intent is kept for
+            # the others).
+            where_items += [
+                # Membership per key, not list Eq: a rule Lit list round-trips as
+                # a Tuple while the axis attr is a List, and Tuple != List.
+                *[{"type": "In", "member": L(str(k)), "container": Attr(V("axis"), "capability_keys")}
+                  for k in keys],
+                Gt(Sum(Attr(V("axis"), "residual_predicates"), "p",
+                       Ite(Eq(V("p"), L("test")), L(1), L(0))), L(0.0)),
+            ]
+        else:
+            # A standing (non-replay) consumer must not take a CONVERSATION-replay
+            # axis: its hypothesis can only be tested by replaying a conversation,
+            # and taking it (tested_by) starves that concern's own author rule
+            # (measured: standing_self_improvement's ARC rule bound the promoted
+            # reply_fix axis first, so the conversation experiment never minted).
+            where_items.append(Not({"type": "In", "member": L("replay"),
+                                    "container": Attr(V("axis"), "residual_predicates")}))
         hyp_term = Attr(V("axis"), "description")     # the hypothesis IS the axis's own residual description
         game_term = L("")
         if "send" in rp:                    # DISPATCH needs to know WHICH world to send the variant to —
@@ -4708,6 +5573,27 @@ def _compose_experiment_rule(agent, keys, rels) -> dict[str, Any]:
         # agent's own repairable choice, no rule/Python edit.
         variation_op = _pick_variation_op(agent, rp, keys[0] if keys else "")
         variation_builder = _VARIATION_REGISTRY.get(variation_op) if variation_op else None
+        # ABSTAIN RECORD (tranche 11): remember the picked builder's own report so
+        # an honest abstain (built=False) is stamped on the delta below. A graph
+        # rule (seeds/self_optimisation.json close_abstained_variant) then
+        # closes such an experiment as `abstained` before dispatch: no child
+        # replay of an empty delta, no credit charged, and the pick excludes
+        # the family for this concern.
+        _builder_reports = []
+        if variation_builder is not None:
+            _raw_builder = variation_builder
+
+            def variation_builder(*_a, _b=_raw_builder, **_k):
+                _r = _b(*_a, **_k)
+                _builder_reports.append(_r)
+                return _r
+        if variation_op:
+            # Mechanical stamp of the Program's own verdict + the concern key it
+            # was picked for, so graph rules (seeds/variation_credit.json) can
+            # credit the experiment's outcome back to the family that produced
+            # it. Inert unless such a rule is loaded.
+            delta_attrs["variation_op"] = variation_op
+            delta_attrs["concern_key"] = str(keys[0]) if keys else ""
         if variation_op == "cue_set_edit" and variation_builder is not None:
             # THE CUE-SET EDIT — see _compose_cue_variant: the variant ADDS a
             # route Concept for the gap's unrouted verb (add_concepts on the
@@ -4721,6 +5607,7 @@ def _compose_experiment_rule(agent, keys, rels) -> dict[str, Any]:
                 delta_attrs["cue_edit"] = 1.0
                 delta_attrs["cue_concept_added"] = cue_report["verb"]
                 delta_attrs["cue_route"] = cue_report["route"]
+                delta_attrs["cue_route_scope"] = cue_report["concept"]["attrs"].get("route_object_scope") or ""
         elif variation_op == "reply_ablation" and variation_builder is not None:
             # THE CONVERSATION ABLATION — see _compose_reply_ablation (the conversation
             # twin of the gradient/structure variants below, and mutually exclusive with
@@ -4775,6 +5662,7 @@ def _compose_experiment_rule(agent, keys, rels) -> dict[str, Any]:
                 delta_attrs["knob_node_type"] = knob_report["node_type"]
                 delta_attrs["knob_key_attr"] = knob_report["key_attr"]
                 delta_attrs["knob_key_value"] = knob_report["key_value"]
+                delta_attrs["knob_direction"] = knob_report.get("direction") or "decrease_fires"
                 delta_attrs["knob_attr"] = knob_report["attr"]
                 delta_attrs["knob_old_value"] = knob_report["old_value"]
                 delta_attrs["knob_new_value"] = knob_report["new_value"]
@@ -4814,6 +5702,32 @@ def _compose_experiment_rule(agent, keys, rels) -> dict[str, Any]:
                 delta_attrs["datum_feedback_edit"] = 1.0
                 delta_attrs["datum_feedback_datum_attr"] = datum_report["datum_attr"]
                 delta_attrs["datum_feedback_belief_attr"] = datum_report["belief_attr"]
+        elif variation_op == "disposition_generalise" and variation_builder is not None:
+            # THE DISPOSITION-GENERALISATION VARIANT (tranche 22) -- see
+            # _compose_disposition_generalise: ADD-ONLY copies of a held
+            # arbitration rule + its reply rule(s), one guard relaxed to the
+            # unanswered turn's own evidence. `generalise_edit` marks the delta
+            # so perform_adoptions installs a SUPPORTED winner's rules.
+            gen_report = variation_builder(agent, keys, tag)
+            if gen_report.get("built"):
+                add_rules_list.extend(gen_report["rules"])
+                delta_attrs["generalise_edit"] = 1.0
+                delta_attrs["generalise_source_rule"] = gen_report["source_rule"]
+                delta_attrs["generalise_guard"] = gen_report["guard"]
+                delta_attrs["generalise_basis"] = gen_report["basis"]
+        elif variation_op == "deep_reader_correct" and variation_builder is not None:
+            # THE DEEP-READER CORRECTION (tranche 23) -- see _compose_deep_reader_correct:
+            # replace the misreading arbitration rule with a deep-reader-guarded copy
+            # and ADD the receipt arbitration + reply. `deep_reader_edit` marks the
+            # delta so perform_adoptions installs ALL added rules.
+            dr_report = variation_builder(agent, keys, tag)
+            if dr_report.get("built"):
+                add_rules_list.extend(dr_report["rules"])
+                import json as _json2
+                delta_attrs["remove_rules"] = _json2.dumps([dr_report["removed_rule"]])
+                delta_attrs["act_rule_varied"] = dr_report["removed_rule"]
+                delta_attrs["deep_reader_edit"] = 1.0
+                delta_attrs["deep_reader_pair"] = f"{dr_report['shallow']}>{dr_report['deep']}"
         elif variation_op == "shape_mint" and variation_builder is not None:
             # THE SHAPE-MINT VARIANT (COMPOSER-CAPABILITY) — see
             # _compose_shape_mint: constructs a brand-new InterlocutorShape
@@ -4828,6 +5742,14 @@ def _compose_experiment_rule(agent, keys, rels) -> dict[str, Any]:
                 delta_attrs["shape_mint_edit"] = 1.0
                 delta_attrs["shape_mint_name"] = shape_report["name"]
                 delta_attrs["shape_mint_party"] = shape_report["party"]
+        if variation_op and _builder_reports and not _builder_reports[-1].get("built"):
+            delta_attrs["variant_abstained"] = 1.0
+            delta_attrs["abstain_wall"] = str(_builder_reports[-1].get("wall") or "")[:400]
+        elif conversation and not variation_op:
+            # No family is eligible any more for this concern (all excluded):
+            # a conversation replay of an empty delta measures nothing.
+            delta_attrs["variant_abstained"] = 1.0
+            delta_attrs["abstain_wall"] = "no variation family remains eligible for this concern"
         import json as _json
         delta_attrs["add_rules"] = _json.dumps(add_rules_list)
         rules.append({
@@ -4892,7 +5814,8 @@ def _compose_experiment_rule(agent, keys, rels) -> dict[str, Any]:
         # any rule marks).
         if (cue_report is not None and cue_report.get("built")) or (knob_report is not None and knob_report.get("built")) \
                 or (datum_report is not None and datum_report.get("built")) \
-                or (shape_report is not None and shape_report.get("built")):
+                or (shape_report is not None and shape_report.get("built")) \
+                or (gen_report is not None and gen_report.get("built")):
             # CUE-EDIT / KNOB-EDIT / DATUM-FEEDBACK / SHAPE-MINT FAMILIES (Wave 5 /
             # RESIDUAL-CLOSURE / COMPOSER-CAPABILITY): the delta carries NO varied
             # rule — the genuine-variant criterion is the cue concept, the knob
@@ -4912,6 +5835,8 @@ def _compose_experiment_rule(agent, keys, rels) -> dict[str, Any]:
                     Not(Eq(Attr(V("delta"), "datum_feedback_belief_attr"), L(None)))),
                 And(Not(Eq(Attr(V("delta"), "shape_mint_name"), L(""))),
                     Not(Eq(Attr(V("delta"), "shape_mint_name"), L(None)))),
+                And(Not(Eq(Attr(V("delta"), "generalise_basis"), L(""))),
+                    Not(Eq(Attr(V("delta"), "generalise_basis"), L(None)))),
             ]}
             adopt_where = And(
                 Eq(Attr(V("exp"), "outcome"), L("supported")),
@@ -5060,6 +5985,92 @@ def close_experiment_loop(agent) -> list:
 # understand-Drive / boot_all.py's _FROZEN_SEED_IDS: the agent decides WHICH,
 # the host retains a veto over touching foundational/unknown-provenance rules).
 # ---------------------------------------------------------------------------
+def _improvement_protected_types(sub) -> tuple:
+    """The held list of node types whose rules ARE the self-improvement loop
+    (seeds/improvement_integrity.json, a frozen seed). Empty when the seed is
+    not loaded. Mechanical read."""
+    out: set = set()
+    try:
+        for n in sub.nodes("ImprovementIntegrity"):
+            for t in sub.node(n)["attrs"].get("protected_node_types") or []:
+                out.add(str(t))
+    except Exception:  # noqa: BLE001
+        return ()
+    return tuple(sorted(out))
+
+
+def _rule_names_protected_type(rule, types) -> bool:
+    """Structural read: does this rule's JSON (match, where, effects) name a
+    protected node type as a string token? Conservative by construction --
+    any rule that reads or writes the loop's own records or policies."""
+    if not types:
+        return False
+    import json as _json
+    try:
+        s = rule if isinstance(rule, str) else _json.dumps(rule)
+    except Exception:  # noqa: BLE001
+        return True      # unreadable rule: fail closed
+    return any(('"%s"' % t) in s for t in types)
+
+
+_INTEGRITY_CACHE: dict = {}
+
+
+def _ensure_improvement_integrity(sub, native) -> set:
+    """IMPROVEMENT INTEGRITY (tranche 19): stamp every RuleSummary whose rule
+    is loop machinery `improvement_machinery=1.0` and `skippable=0.0`, so no
+    variation family's candidate filter (skippable==1) can pick it. Returns
+    the set of protected rule names. Idempotent; recomputed when the active
+    rule set or the held type list changes."""
+    types = _improvement_protected_types(sub)
+    if not types:
+        return set()
+    try:
+        rules = native.export_rules()
+    except Exception:  # noqa: BLE001
+        return set()
+    key = (id(sub), len(rules), types)
+    names = _INTEGRITY_CACHE.get(key)
+    if names is None:
+        names = {r.get("name") for r in rules
+                 if isinstance(r, dict) and r.get("active", True) and r.get("name")
+                 and _rule_names_protected_type(r, types)}
+        _INTEGRITY_CACHE.clear()
+        _INTEGRITY_CACHE[key] = names
+    for n in sub.nodes("RuleSummary"):
+        at = sub.node(n)["attrs"]
+        if at.get("name") in names:
+            if at.get("improvement_machinery") != 1.0:
+                sub.set_attr(n, "improvement_machinery", 1.0)
+            if at.get("skippable") != 0.0:
+                sub.set_attr(n, "skippable", 0.0)
+    return names
+
+
+def _with_integrity(fn):
+    """Run a RuleSummary provenance mirror, then the integrity stamp, so a
+    summary minted or upgraded by the mirror can never leave a loop-machinery
+    rule marked skippable."""
+    import functools
+
+    @functools.wraps(fn)
+    def wrapped(sub, native, *args, **kwargs):
+        try:
+            return fn(sub, native, *args, **kwargs)
+        finally:
+            try:
+                _ensure_improvement_integrity(sub, native)
+            except Exception:  # noqa: BLE001 -- the denylist re-checks at adoption
+                pass
+    return wrapped
+
+
+_ensure_acting_rule_provenance = _with_integrity(_ensure_acting_rule_provenance)
+_ensure_general_rule_provenance = _with_integrity(_ensure_general_rule_provenance)
+_ensure_reply_rule_provenance = _with_integrity(_ensure_reply_rule_provenance)
+_ensure_where_literal_rule_provenance = _with_integrity(_ensure_where_literal_rule_provenance)
+
+
 def _rule_denylisted(sub, rule_name: str) -> tuple:
     """The ADOPTION DENYLIST veto: DENY (True, reason) unless `rule_name` has a
     known `RuleSummary.from_seed` AND that seed's `SeedSummary.skippable == 1.0`
@@ -5068,13 +6079,22 @@ def _rule_denylisted(sub, rule_name: str) -> tuple:
     re-invented). Unknown provenance (no RuleSummary, or `from_seed == ''` —
     e.g. a dynamically-authored variant rule no loaded seed manifest declares)
     is DENIED, never allowed-by-default: 'if a rule's provenance is unknown,
-    DENY.'"""
+    DENY.'
+
+    IMPROVEMENT INTEGRITY (tranche 19): a rule that is loop machinery (its
+    RuleSummary is stamped improvement_machinery, or its rule JSON names a
+    held protected node type) is DENIED regardless of its seed."""
     from_seed = None
+    types = _improvement_protected_types(sub)
     for n in sub.nodes("RuleSummary"):
         at = sub.node(n)["attrs"]
         if at.get("name") == rule_name:
-            from_seed = at.get("from_seed") or ""
-            break
+            if at.get("improvement_machinery") == 1.0 or (
+                    at.get("rule_json") and _rule_names_protected_type(str(at.get("rule_json")), types)):
+                return True, (f"{rule_name!r} is self-improvement-loop machinery "
+                              "(seeds/improvement_integrity.json) — the loop may not change itself")
+            if from_seed is None:
+                from_seed = at.get("from_seed") or ""
     if not from_seed:
         return True, f"unknown provenance for {rule_name!r} (no RuleSummary.from_seed) — DENY by default"
     for n in sub.nodes("SeedSummary"):
@@ -5136,9 +6156,10 @@ def perform_adoptions(agent) -> list:
         cue_verb = str(da.get("cue_concept_added") or "")
         cue_route = str(da.get("cue_route") or "")
         if da.get("cue_edit") == 1.0 and cue_verb and cue_route:
-            rec = teach(agent, "Concept",
-                        {"name": cue_verb, "instruction_route": cue_route},
-                        category="comprehend_instruction")
+            _cattrs = {"name": cue_verb, "instruction_route": cue_route}
+            if da.get("cue_route_scope"):
+                _cattrs["route_object_scope"] = str(da.get("cue_route_scope"))   # adopt what was tested
+            rec = teach(agent, "Concept", _cattrs, category="comprehend_instruction")
             try:
                 concept_int = int(rec["node"].value)
             except Exception:
@@ -5222,6 +6243,98 @@ def perform_adoptions(agent) -> list:
                         "taught": trec, "saved": trec.get("saved")})
             continue
 
+        # DEEP-READER CORRECTION ADOPTION (tranche 23): replace the misreading
+        # arbitration rule (denylist + integrity gates) and install the added
+        # receipt rules.
+        if da.get("deep_reader_edit") == 1.0 and da.get("act_rule_varied"):
+            removed_name = da.get("act_rule_varied")
+            try:
+                dr_rules = _json.loads(da.get("add_rules") or "[]")
+            except Exception:
+                dr_rules = []
+            denied, reason = _rule_denylisted(sub, removed_name)
+            ptypes = _improvement_protected_types(sub)
+            if not denied and any(_rule_names_protected_type(r, ptypes) for r in dr_rules):
+                denied, reason = True, "an added rule names a self-improvement-loop node type"
+            if denied or not dr_rules:
+                native.set_attr(exp, "adopt_denied", True)
+                out.append({"experiment": str(exp), "denied": True, "reason": reason, "rule": removed_name})
+                continue
+            exported = native.export_rules()
+            idx = next((i for i, r in enumerate(exported) if isinstance(r, dict) and r.get("active", True)
+                        and r.get("name") == removed_name), None)
+            if idx is None:
+                continue
+            original_json = dict(exported[idx])
+            original_json.pop("active", None)
+            native.remove_rule(idx)
+            for r in dr_rules:
+                native.add_rule(r)
+            adoption = sub.add_node("Adoption", {
+                "rule_removed": removed_name, "rule_added": ",".join(r.get("name", "") for r in dr_rules),
+                "deep_reader_pair": da.get("deep_reader_pair") or "",
+                "experiment_id": str(exp), "tick": _time.time(),
+                "original_rule_json": _json.dumps(original_json),
+            })
+            try:
+                native.add_edge_unchecked(exp, "adopted_as", adoption)
+            except Exception:
+                pass
+            native.set_attr(exp, "adopted", True)
+            trec = teach(agent, "TaughtHint",
+                         {"topic": (f"adoption: deep reader overrides {removed_name!r} for "
+                                    f"{da.get('deep_reader_pair')!r} (experiment {exp})"),
+                          "answer": "adopted", "rule_removed": removed_name,
+                          "rule_added": ",".join(r.get("name", "") for r in dr_rules), "experiment_id": str(exp)},
+                         category="experiment_conclusions")
+            out.append({"experiment": str(exp), "adoption": adoption, "rule_removed": removed_name,
+                        "rule_added": ",".join(r.get("name", "") for r in dr_rules),
+                        "taught": trec, "saved": trec.get("saved")})
+            continue
+
+        # DISPOSITION-GENERALISE ADOPTION (tranche 22): install the supported
+        # add-only rule copies into the parent (nothing removed); any rule
+        # naming a loop node type is denied (improvement integrity).
+        if da.get("generalise_edit") == 1.0 and da.get("generalise_basis"):
+            try:
+                gen_rules = _json.loads(da.get("add_rules") or "[]")
+            except Exception:
+                gen_rules = []
+            if not gen_rules:
+                continue
+            ptypes = _improvement_protected_types(sub)
+            if any(_rule_names_protected_type(r, ptypes) for r in gen_rules):
+                native.set_attr(exp, "adopt_denied", True)
+                out.append({"experiment": str(exp), "denied": True,
+                            "reason": "a generalised rule names a self-improvement-loop node type"})
+                continue
+            live = {r.get("name") for r in native.export_rules() if isinstance(r, dict) and r.get("active", True)}
+            added = []
+            for r in gen_rules:
+                if r.get("name") not in live:
+                    native.add_rule(r)
+                    added.append(r.get("name"))
+            adoption = sub.add_node("Adoption", {
+                "rule_removed": "", "rule_added": ",".join(added),
+                "generalise_basis": da.get("generalise_basis"),
+                "generalise_source_rule": da.get("generalise_source_rule") or "",
+                "experiment_id": str(exp), "tick": _time.time(), "original_rule_json": "",
+            })
+            try:
+                native.add_edge_unchecked(exp, "adopted_as", adoption)
+            except Exception:
+                pass
+            native.set_attr(exp, "adopted", True)
+            trec = teach(agent, "TaughtHint",
+                         {"topic": (f"adoption: generalised {da.get('generalise_source_rule')!r} to basis "
+                                    f"{da.get('generalise_basis')!r} (experiment {exp})"),
+                          "answer": "adopted", "rule_removed": "", "rule_added": ",".join(added),
+                          "experiment_id": str(exp)},
+                         category="experiment_conclusions")
+            out.append({"experiment": str(exp), "adoption": adoption, "rule_removed": "",
+                        "rule_added": ",".join(added), "taught": trec, "saved": trec.get("saved")})
+            continue
+
         # DATUM-FEEDBACK ADOPTION (COMPOSER-CAPABILITY — see
         # _compose_datum_feedback_rule): a delta flagged `datum_feedback_edit`
         # carries a genuinely NEW, ADD-ONLY rule (no original to remove) —
@@ -5242,6 +6355,12 @@ def perform_adoptions(agent) -> list:
             if df_rule is None:
                 continue          # nothing to install — stale/empty delta
             df_name = df_rule.get("name", "")
+            if _rule_names_protected_type(df_rule, _improvement_protected_types(sub)):
+                native.set_attr(exp, "adopt_denied", True)
+                out.append({"experiment": str(exp), "denied": True, "rule": df_name,
+                            "reason": "added rule names a self-improvement-loop node type "
+                                      "(seeds/improvement_integrity.json)"})
+                continue
             new_idx = native.add_rule(df_rule)
             adoption = sub.add_node("Adoption", {
                 "rule_removed": "", "rule_added": df_name,
@@ -5333,6 +6452,10 @@ def perform_adoptions(agent) -> list:
             continue
 
         denied, reason = _rule_denylisted(sub, removed_name)
+        if not denied and variant_rule is not None and _rule_names_protected_type(
+                variant_rule, _improvement_protected_types(sub)):
+            denied, reason = True, (f"variant of {removed_name!r} names a self-improvement-loop node "
+                                    "type (seeds/improvement_integrity.json) — the loop may not change itself")
         if denied:
             native.set_attr(exp, "adopt_denied", True)
             out.append({"experiment": str(exp), "denied": True, "reason": reason,
@@ -6115,12 +7238,73 @@ def _compose_memory_faculty(agent, keys, rels) -> dict[str, Any]:
 # says so). The RULES THEMSELVES differ in provenance: authored by a graph
 # Rule node's own effects, not by this file's Python at request time.
 # ---------------------------------------------------------------------------
+def _composer_rule_matches_manifest(actual, expected) -> bool:
+    """Compare an active exported Rule with its source-manifest clauses.
+
+    The native RuleStore normalizes a few effect encodings when a rule has
+    fired (for example tuple wrappers and implicit collection discriminants).
+    Compare both sides after compiling the manifest rule in an isolated,
+    empty native RuleStore. This preserves exact clause ordering and values
+    while comparing the engine's own canonical representation; it does not
+    mutate the live substrate or weaken clause equality.
+    """
+    try:
+        from substrate_rs import _native
+
+        probe = _native.Substrate()
+        probe.add_rule(expected)
+        canonical = next((row for row in probe.export_rules()
+                          if isinstance(row, dict)
+                          and row.get("name") == expected.get("name")
+                          and row.get("active", True)), None)
+        if canonical is None:
+            return False
+        return all(actual.get(key) == canonical.get(key)
+                   for key in ("match", "where", "effects"))
+    except Exception:
+        return False
+
+
 def _ensure_graph_composer_seed(sub, native, ag_node, seed_id: str) -> None:
-    """Idempotently install one composer-graph seed (a single meta-rule Rule
-    node) by id, mirroring `_ensure_seed_chain`'s guard but scoped to one
-    seed at a time (composer routing installs whichever seed the picked
-    branch needs, not the whole chain up front)."""
+    """Load and activate every graph-authored composer meta-rule in a seed.
+
+    Seed loading stores Rule nodes as graph data; it does not register them in
+    the executable rewrite-rule store. Composer dispatch therefore must bridge
+    those stored Rules into the engine before they can match a ComposeRequest.
+    Some composer seeds contain one Rule; others contain independent mint,
+    judge, and adopt Rules. The adapter installs each uniquely named Rule,
+    preserving the seed-authored match, guard, and effects. An already-active
+    same-name Rule is accepted only when those clauses match the manifest;
+    otherwise it fails closed instead of silently running stale composer code.
+    """
+    from substrate.seed_loader import manifest_for
+
     _ensure_seed_chain(sub, native, ag_node, (seed_id,))
+    manifest = manifest_for(seed_id)
+    rule_rows = [row.get("attrs", {}) for row in manifest.get("nodes", [])
+                 if row.get("type") == "Rule" and row.get("attrs", {}).get("id")]
+    names = [str(row["id"]) for row in rule_rows]
+    if not rule_rows or len(names) != len(set(names)):
+        raise ValueError(f"{seed_id}: expected uniquely named graph-authored composer Rules")
+    exported = [row for row in native.export_rules() if isinstance(row, dict)]
+    for rule_attrs in rule_rows:
+        rule_name = str(rule_attrs["id"])
+        effects = rule_attrs.get("effect", rule_attrs.get("effects"))
+        if not isinstance(effects, list):
+            raise ValueError(f"{seed_id}/{rule_name}: composer Rule has no effect list")
+        expected = {"name": rule_name, "match": rule_attrs.get("match", []),
+                    "where": rule_attrs.get("where"), "effects": effects}
+        existing = [row for row in exported
+                    if row.get("name") == rule_name and row.get("active", True)]
+        if len(existing) > 1:
+            raise ValueError(f"{seed_id}/{rule_name}: duplicate active composer Rules")
+        if existing:
+            actual = existing[0]
+            if not _composer_rule_matches_manifest(actual, expected):
+                raise ValueError(f"{seed_id}/{rule_name}: active composer Rule differs from seed manifest")
+            continue
+        native.add_rule(expected)
+        exported.append(expected)
 
 
 def _decode_surface_wire(v):
@@ -6151,9 +7335,10 @@ def _decode_surface_wire(v):
 def _ground_via_graph_meta(agent, seed_id: str, trigger_edge: str, tag: str,
                             extra_attrs: dict, expected_names: list[str],
                             *, max_ticks: int = 10) -> Optional[dict]:
-    """Mechanical I/O: install the named composer-graph seed (idempotent),
-    mint a `ComposeRequest{tag, composed=0.0, **extra_attrs}` trigger edge
-    from the agent, tick the graph until fixed point (or `max_ticks`), then
+    """Mechanical I/O: install and activate the named graph-authored composer
+    Rule (idempotently), mint a `ComposeRequest{tag, composed=0.0,
+    **extra_attrs}` trigger edge from the agent, and run bounded rule closure
+    (up to `max_ticks` applications), then
     read back whether ALL `expected_names` are now live in the struct rule
     store (`native.export_rules()` — populated by the meta-rule's own
     `set_rule_clause(..., "__mint__", ...)` effects, never by a Python
@@ -6173,10 +7358,11 @@ def _ground_via_graph_meta(agent, seed_id: str, trigger_edge: str, tag: str,
     try:
         cr = sub.add_node("ComposeRequest", attrs)
         native.add_edge_unchecked(ag_node, trigger_edge, cr)
-        for _ in range(max_ticks):
-            progressed = sub.tick()
-            if isinstance(progressed, (int, float)) and progressed == 0:
-                break
+        # `tick()` follows the cognitive-cycle plan and does not guarantee
+        # custom meta-rule work. Run bounded rule closure so the authored
+        # composer fires and its `set_rule_clause` effect installs the
+        # generated Rule into the executable store.
+        native.run_rules(max_ticks)
     except Exception:
         return None
     try:
@@ -6510,10 +7696,10 @@ def _route_self_correct_composer(agent, keys, rels, rp: set) -> Optional[dict]:
     try:
         cr = sub0.add_node("ComposeRequest", {"tag": tag, "composed": 0.0})
         native0.add_edge_unchecked(ag0, "wants_self_correct_rule", cr)
-        for _ in range(10):
-            progressed = sub0.tick()
-            if isinstance(progressed, (int, float)) and progressed == 0:
-                break
+        # The composer also materializes its attempt-gate Rule, which is
+        # compiled by the ordinary rule closure after the graph meta-rule
+        # authors the Rule node.
+        native0.run_rules(10)
     except Exception:
         return None
 
@@ -6555,6 +7741,22 @@ def _try_graph_composer(agent, composer_name: str, keys, rels, rp: set) -> Optio
     the Python `_COMPOSER_REGISTRY` builder) — an honest miss, not a wall."""
     tag = "_".join(str(k) for k in keys)
     common = {"grounded": True, "concern": list(keys), "grounded_relations": rels, "served_by": "graph"}
+
+    # The legacy graph Term for `experiment` restricts structural targets to
+    # chosen-action rules. An explicitly scoped general-rule request uses the
+    # ordinary composer registry below; its structural target/operator Argmax
+    # still runs in native Terms, while Python supplies the broader rule
+    # provenance and materializes the selected variant.
+    if composer_name == "experiment":
+        sub0, _native0, _agent0 = _resolve_agent(agent)
+        requested_scope = None
+        for axis in sub0.nodes("CapabilityAxis"):
+            attrs = sub0.node(axis)["attrs"]
+            if attrs.get("induced") and list(attrs.get("capability_keys") or []) == [str(k) for k in keys]:
+                requested_scope = attrs.get("structural_rule_scope")
+                break
+        if requested_scope == "all_mutable_rules":
+            return None
 
     def _single(path, form, seed_id, edge, extra_attrs, name, how):
         r = _ground_via_graph_meta(agent, seed_id, edge, tag, extra_attrs, [name])

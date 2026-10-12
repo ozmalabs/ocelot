@@ -81,7 +81,7 @@ because the abstract's phrasing invites a reading stronger than the position of 
 
 \begin{remark}[The object is described, not proposed --- and millions read one daily]\label{rem:already-in-use}
 \emph{A Seldon manifold is a description of something that exists, and an
-implementable one.} It is not machinery proposed for a frame to adopt, and that the sections below
+implemented one in the finite software grounding described in Section~\ref{sec:implementation}.} It is not machinery proposed for a frame to adopt, and that the sections below
 build it up from the substrate should not be mistaken for a claim that it was invented there.
 
 The simple case is read by millions of people every day. A hurricane forecast cone is a time-indexed
@@ -217,7 +217,7 @@ Let $\mathbf u=(u_t,\ldots,u_{t+h-1})$ denote an admissible intervention sequenc
 G_{j+1}=T(G_j,u_j,b_j).
 \]
 The frame need not know which $\mathbf b$ will be realised. Its uncertainty about that sequence may be represented probabilistically if useful, but probability is an epistemic overlay on the reachable family rather than a primitive of the Graph Law
-(Graphic Equalisation's Hypothesis~\ref{GE-hyp:the-law}). The manifold itself is the deterministic
+(Graphic Equalisation's Schema~\ref{GE-hyp:the-law}). The manifold itself is the deterministic
 family of continuations indexed by the represented interventions and containing conditions; a
 probability model is only one frame's summary of which member it expects to encounter.
 
@@ -452,35 +452,58 @@ A Seldon manifold is a projection over the \emph{undetermined}: it represents co
 The two are frequently conflated under ``uncertainty'' and behave differently under every operation that matters. Undisclosed structure can be obtained --- by observation, by another frame's report, or by inference from surrounding relations. Undetermined structure cannot be obtained by any of those, because there is nothing yet to obtain; it is settled only by collapse. A frame that improves its access reduces the second and leaves the first untouched.
 \end{remark}
 
-\begin{proposition}[The undetermined count vanishes at the present]\label{prop:present-limit}
-The present is inherited, not defined here: by Graphic Equalisation's
-Definition~\ref{GE-def:present} it is the collapse boundary at which every instantiated undetermined dimension relevant to that collapse has been
-determined,
-\[
-\boxed{U_{\Frame}=0.}
-\]
-What is added is the limit in the horizon argument of Definition~\ref{def:unknown-count} above: as the
-projected horizon approaches the present,
-\[
-U_{\Frame}(h)\longrightarrow 0 ,
-\]
-so a Seldon manifold's width in undetermined structure is continuous with that boundary rather than
-meeting it at a discontinuity.
-\end{proposition}
+\begin{remark}[The present is the zero-horizon boundary]\label{prop:present-limit}
+At the represented horizon $h=0$, the present has no not-yet-realised
+continuation to distinguish. A discrete horizon supplies no continuous
+limit: uncertainty at $h=1$ need not be small merely because its value at
+$h=0$ is zero. Any smooth approach requires an additional grounding and
+continuity assumption.
+\end{remark}
 
 Future distance in a Seldon manifold is therefore not merely geometric resolution. The operative quantity is \emph{undetermined} structure --- not what the frame has failed to observe, but what has not yet been settled.
 
 \begin{definition}[Observer-relative determinability]\label{def:determinability}
-Let $D_{\Frame}(h)$ be the fraction, or measure, of determining structure resolved in-frame at horizon $h$, with
+Where a frame supplies a normalised measure, let $D_{\Frame}(h)\in[0,1]$
+describe determining structure actually resolved in-frame at horizon $h$.
+This is distinct from the potential availability of the evidence required to
+identify an outcome. Write $K_{\Frame}(h\mid\mathcal O)\in[0,1]$ for its normalised potential availability
+under declared adequate-observation conditions $\mathcal O$.
+
+In a grounding that supplies continuous narrowing and complete evidence
+availability at collapse, the intended limit is
 \[
-\lim_{h\to0^{+}}D_{\Frame}(h)=1,
+\lim_{h\to0^{+}}K_{\Frame}(h\mid\mathcal O)=1,
 \qquad
-D_{\Frame}(0)=1 .
+K_{\Frame}(0\mid\mathcal O)=1.
 \]
+These are conditional disclosure assumptions of that grounding, not a
+requirement that $D_{\Frame}(0)=1$, nor an unconditional probability that
+some observer knows the outcome. Without an instantiated measure, the
+quantity remains undefined. A discrete horizon supplies no continuous limit
+by itself (Remark~\ref{prop:present-limit}).
 \end{definition}
 
 \begin{remark}[What is changing, and what is not]\label{rem:not-more-deterministic}
-The Graph Law (Hypothesis~\ref{GE-hyp:the-law}) is deterministic throughout, at every horizon. What varies with $h$ is how much determining structure is \emph{resolved in-frame}. It is therefore incorrect to say that the universe becomes more deterministic as the present is approached; determinism is not a quantity that varies. The observer's determinability does.
+The Graph Law (Schema~\ref{GE-hyp:the-law}) is deterministic throughout, at
+every horizon. What can narrow is the represented unresolved future family;
+what can increase is potential disclosure or actual in-frame resolution.
+These are different quantities, and none makes the universe more deterministic.
+
+The intended picture is an open, potentially unbounded family of future
+continuations contracting to the one history realised at collapse. It does
+not assert that every represented family is unbounded at long horizons or
+narrows monotonically: those properties require a declared comparison and
+grounding. Complete causal fixing already supplies one continuation at every
+horizon (Corollary~\ref{cor:singleton}); the narrowing concerns alternatives
+not yet fixed in the represented projection.
+
+As an outcome becomes realised, the possibility of knowing it can approach
+full availability under $\mathcal O$. Realisation does not ensure that the
+evidence reaches a frame, is retained, or is correctly interpreted. Undisclosed
+present structure can remain. A wholly deterministic universe therefore need
+contain no frame, at any grain, that knows its future; neither a suitable
+observer nor its foreknowledge is required by the dynamics. Coarser or finer
+resolution alone does not install that machinery.
 \end{remark}
 
 Consistently with Graphic Equalisation's distinction between \emph{determinable} and \emph{determined} (Proposition~\ref{GE-prop:determinable}), a continuation may be fully determinable from present structure without having been realised. The manifold represents determinable continuations; collapse produces determined ones.
@@ -559,14 +582,21 @@ optional-machinery discipline that governs represented dimensions generally
 them and \emph{Narrativium} supplies the second of them (its
 Definition~\ref{NV-def:narrativium}); the set is illustrative and not closed.
 
-\begin{definition}[Cost field and contours]\label{def:contours}
-Where the frame instantiates the relevant dimension, let $C_{\Frame}$ assign to each continuation in
-$\Seldon_{h,\rho}(\Frame_t)$ the cost, in that frame's terms, of reaching it; where it does not, the
-field is \textnormal{\textsc{null}} there rather than large (Definition~\ref{def:dimension}). Its sublevel sets
-$\{C_{\Frame}\le k\}$ are the within-budget regions and their boundaries the \emph{contours}. A
-\emph{basin} is a region closed under cheapest successors --- every continuation in it has its
-cheapest successors in it --- and minimal with that property, so that leaving one requires paying
-above the cheap flow within it.
+\begin{definition}[Cost field, successors and basins]\label{def:contours}
+Let $Q_\rho(\Seldon)$ be the frame's cells. Put a directed edge $x\to y$
+when the represented transition relation admits such a step. A declared local
+step cost $c_F(x,y)$ prices an edge; $C_F(y)$ is accumulated cost-to-reach
+from the present cell. Undefined costs remain \textsc{null}. Sublevel sets
+$\{C_F\le k\}$ are within-budget regions, but their gradients need not
+select future motion. Default motion is supplied by the transition relation
+and a declared tie rule, not by descent of accumulated cost.
+
+For a finite deterministic cheapest-successor policy $b_F$, an attractor
+$A$ is a minimal nonempty invariant cycle or fixed point. Its basin is
+$B(A)=\{x:b_F^n(x)\in A\text{ for some }n\ge0\}$. A ridge cost is the
+minimum defined local cost of an edge leaving that basin; it is undefined
+if no such edge exists. These definitions require the successor policy;
+a quotient set of histories alone supplies neither a basin nor a ridge.
 \end{definition}
 
 \begin{remark}[Relation to prior work on cost landscapes]\label{rem:contours-prior}
@@ -629,7 +659,7 @@ buys is the representation of two cases a single field cannot carry: an expensiv
 raises capacity, and a cheap one that lowers it.
 
 \begin{definition}[Trap]\label{def:trap}
-For frame $\Frame$, a \emph{trap} is a basin of $C_{\Frame}$ along whose cheap descent $N_{\Frame}$
+For frame $\Frame$, a \emph{trap} is a basin of $C_{\Frame}$ along whose cheap successor path $N_{\Frame}$
 falls below the cost of the ridge --- so that by the time the frame would leave, it can no longer pay
 to. The direction is the descent's, not time's, and the condition is a comparison rather than a
 monotonicity: capacity merely declining is not enough, and capacity declining from a great height may
@@ -637,6 +667,21 @@ never reach the threshold. A basin is a place the cheap path returns to; a trap 
 occupancy erodes the means of leaving it. The comparison is between the two fields and cannot be
 stated within either.
 \end{definition}
+The glider example is a projection of a capture-basin problem: in an
+altitude-and-position state space, leaving the landing-site capture basin
+is already detectable by viability theory. Its lesson is that a frame can
+represent the wrong acceptable region or omit position. It does not prove
+that a fully specified capture basin misses the trap, or that fields are
+required beyond every possible reachable-set representation.
+
+
+A trap comparison requires a declared conversion from the capacity field to
+the ridge-cost currency, or a feasibility predicate stating that the required
+deformation is outside the currently supported class. An integer count of
+reachable effects cannot be compared directly with joules. Without this
+conversion or predicate the trap condition is undefined, not satisfied.
+
+
 
 \begin{corollary}[A trap is where the minimum-intervention antecedent fails]\label{cor:trap-antecedent}
 A trap is the case in which Proposition~\ref{prop:min-intervention}'s antecedent fails: the capacity
@@ -713,7 +758,7 @@ outcome becomes the agents' own cheap path; and because the payments are promise
 profiles that rational players then do not choose, $k$ can be zero --- the deformation is credible
 and never actually paid for \citep{monderer2004}. Shortest-path network interdiction fuses this with
 the cost field directly: cost over a graph of futures, a budgeted adversary altering arc costs, and a
-bilevel max--min selection of the budgeted alteration that most lengthens the evader's cheap descent
+bilevel max--min selection of the budgeted alteration that most lengthens the evader's cheap successor path
 \citep{israeli2002}. Policy teaching modifies an agent's reward function under an incentive budget
 \citep{zhang2009}; performance potentials price a perturbation of a Markov process as a field over
 states \citep{cao1997,cao1998}; agents seeking states of high future capacity combine that field with
@@ -770,7 +815,7 @@ altitude is an expensive one that lowers it.
   \node[align=left,anchor=west] at (3.0,4.3)
     {\footnotesize Below $a^{*}$ no field is reachable.\\[-1pt]\footnotesize Nothing in $C_{\Frame}$ marks the crossing,\\[-1pt]\footnotesize and nothing about being airborne\\[-1pt]\footnotesize has stopped being acceptable.};
 \end{tikzpicture}
-\caption{A one-dimensional manifold. A gliding frame descends its cost field for nothing while its
+\caption{A one-dimensional manifold. A gliding frame follows its default transition for nothing while its
 capacity field falls; the trap is entered at $a^{*}$, where the reach remaining drops below the cost
 of leaving. The acceptable region is respected on both sides of $a^{*}$, so a discipline reading
 acceptability alone has no trigger to fire.}\label{fig:onedim}
@@ -932,18 +977,16 @@ conception of what game is actually being played, which may have very little rel
 actual underlying game'' adds immediately ``although we still assume that the modeler's game
 corresponds to the actual game'' \citep{halpern2014}.
 
-The consequence is a limitation of a result this paper otherwise leans on. Holding a control constant
-while the acceptable region is respected, and acting only where it would cease to be, is Aubin's
-inertia principle, conceded in full in Section~\ref{sec:positioning}. A trap is exactly where that
-discipline fails. Inside one, acceptability is respected throughout, so nothing triggers; meanwhile
-capacity falls below the cost of the ridge, and by the time the region is finally threatened the
-intervention the principle would then call for can no longer be paid for. The failure is invisible to
-a single field, since nothing about the cost landscape has changed --- it is statable only because
-capacity is carried alongside cost. Proposition~\ref{prop:min-intervention} is conditional for the
-same reason, and Corollary~\ref{cor:trap-antecedent} states which condition: minimum intervention is
-minimum \emph{sufficient} intervention, and a positive-cost intervention can dominate no-intervention
-when the no-intervention continuation is a trap lying wholly inside $\Goal$, because there the
-intervention is bought for capacity and not for acceptability.
+The trap example limits a policy that monitors only present acceptability.
+It does not refute viability or capture-basin theory: capacity and the cost of
+future escape can be included in an augmented state and its constraints.
+Proposition~\ref{prop:min-intervention} is conditional on preserving future
+feasibility, and Corollary~\ref{cor:trap-antecedent} states the relevant condition.
+A positive-cost intervention can then preserve capacity while the trajectory
+remains inside $\Goal$. The comparison requires cost and capacity in compatible
+units and a specified successor policy.
+
+
 
 What the commitment costs is stated in Section~\ref{sec:foveation}, and it costs less than it
 appears to. A fixed grain does not by itself restore an observer-free object: it
@@ -990,7 +1033,7 @@ I_{\Frame}(u)=\max\!\left(0,\Much_t-\Much_{t+1}^{(u)}\right).
 Here $0$ is a legitimate value on an existing irreversibility dimension, not absence of the dimension (Definition~\ref{def:dimension}).
 
 The option value of preserving reversible choices under uncertain future information has a long history in economics \citep{arrow1974,henry1974,dixit1994}. The present definition is more primitive: it identifies irreversibility structurally with loss of reachable distinctions. No substrate-level probability distribution is required. If a frame overlays probabilities on unresolved future conditions, an expected irreversibility statistic is an epistemic derived quantity, not part of the deterministic Graph Law
-(Hypothesis~\ref{GE-hyp:the-law}).
+(Schema~\ref{GE-hyp:the-law}).
 
 \begin{proposition}[Reversibility preference]\label{prop:reversibility}
 If two interventions achieve the same represented objective to equivalent tolerance and otherwise differ only in that one preserves a strict superset of potentially valuable future distinctions, any represented valuation assigning non-negative value to retained optionality weakly prefers the more reversible intervention.
@@ -1162,6 +1205,84 @@ manifold as observer machinery ahead of the present.}
 
 This matters for what an explanation is permitted to assume. A theory that located determining structure in earlier temporal states would require arbitrarily deep access to a past that no frame holds. Locating it in containing frames requires only structure that is instantiated now.
 
+\section{Implementation status and scope}\label{sec:implementation}
+
+\paragraph{A constructed software instance.}
+As checked on 12 October 2026, the programme contains an integrated finite software
+grounding of the Seldon construction. Represented candidate continuations, an acceptable
+future tube, a horizon, observer aperture, projection budgets, residuals, retained
+distinctions, and a supplied selection policy are connected in one computational path.
+The construction has therefore progressed beyond a specification from which an
+implementation could be built. This is a report about that grounding, not a claim that
+every field in this paper is implemented in every application. The implementation
+record remains separate from the circulated papers; a reader without access to it may
+decline to credit the report, on the same terms as Graphic Equalisation's account of
+its own implementation.
+
+\paragraph{What is computed.}
+The general projection component accepts finite time-indexed candidate coordinates
+and compares them with represented acceptable coordinates and bounds. It returns
+signed departures, the earliest detected escape, and retention by dimension. A
+dimension may use a symmetric tolerance or a represented direction of acceptable
+change. The requested horizon and the computation budget are distinct: completing
+an audit, finding an escape, and exhausting available computation are different
+outcomes. An aperture mask can leave dimensions unassessed. Departures that were
+assessed and failed are recorded separately from cells that were not assessed;
+unassessed cells do not establish retention. Missing required geometric evidence
+leaves the projection unsupported. This is a finite coordinate grounding, with
+dimensions supplied by the caller, rather than automatic recovery of a world's
+dimensions or its complete reachable family.
+
+For a supplied candidate family, the implementation also constructs deformation
+records and a discrete counting grounding of Narrativium: identical represented
+traces in a dimension contribute once, and retained traces are counted separately
+from the supplied reachable family. These counts are per dimension and are not
+added across unlike units. They are measures over represented candidate traces,
+not a claim to enumerate every admissible intervention. In particular, an audited
+family is only as complete as the candidate generation that supplied it. A selectable
+family is separately computed from established feasibility, represented intervention
+cost, goal ordering among equal-cost candidates, and recorded withholding. Equal
+remaining candidates are preserved as a set. This instantiates one of the policy
+disciplines permitted by the construction; it does not derive a universal chooser
+from the bare reachable set or turn the counting grounding into a universal measure.
+
+\paragraph{Domain integration and adaptive projection.}
+The projection and selection components are connected to graph representations and
+to embodied motor applications. Those applications can generate consequences from
+held models rather than merely accept completed coordinate arrays. The motor
+projection additionally contains sparse temporal anchors, conservative interval
+enclosures, local subdivision of ambiguous intervals, and explicit limits on
+projection and refinement. The inspected interval path supplies first-order
+certification; the design's arbitrary order-$N$ extension is not established by that
+code. The generic coordinate auditor itself remains a finite slice audit. Thus the
+adaptive-resolution machinery has a concrete temporal instance, while unrestricted
+dimension creation, arbitrary-order refinement, and every field of the general
+theory are not demonstrated by this instance.
+
+\paragraph{What has run, and what the run establishes.}
+A retained internal paired flight-control record reports three simulated fault
+episodes of 1,000 steps each in both baseline and treatment arms, all completed.
+The treatment used projected containment in candidate assessment. The recorded
+metrics are mixed: altitude and airspeed tracking improved in their arithmetic
+means, while heading tracking, maximum body rate, and decision latency worsened.
+More importantly for this paper, all 2,697 ordinary post-establishment treatment
+decisions were classified by an earliest escape at horizon one; the remaining
+reported decision was a certified single-action probe. That run demonstrates use
+of the projection gate, but does not demonstrate an extended retained path,
+sparse temporal efficiency, or arbitrary-order projection. Existing verification
+sources cover several of those finer distinctions; their presence is not reported
+here as a fresh successful execution. The present update inspected source and
+retained results and did not rerun the experiment.
+
+\paragraph{Engineering and biological evidence remain distinct.}
+The software grounding establishes a constructed instance with inspectable
+operations. It does not establish the decision-relevant compression hypothesis,
+the empirical descent and basin claims, or a biological implementation of the
+integrated construct. The psychological grounding's statement that the composite
+is not evidenced concerns an integrated \emph{nervous-system} representation, not
+the availability of this software construction. The falsifiability commitments
+below therefore retain their stated scope.
+
 \section{Positioning and novelty}\label{sec:positioning}
 
 The paper's relationship to established work can be summarised as follows.
@@ -1184,13 +1305,10 @@ follow, in increasing order of how badly the substitution misleads.
 The fields are graded where membership is binary, and the grading is not a refinement of the
 membership question but a replacement for it. Surviving structure prices continuations rather than
 removing them, so a continuation whose price exceeds anything a frame can pay remains in the set and
-is excluded by cost, not by admissibility. A reachable set has no way to represent that state of
-affairs, and a construction that only computed extents would be answering a question this account
-holds to be the wrong one.
+is excluded by cost, not by admissibility. An unannotated reachable set does not record the price. Standard constrained or augmented-state reachability can encode it; the present manifold records that annotation explicitly.
 
 The manifold carries where a frame \emph{goes}, not only where it \emph{could}. An extent is
-indifferent between its members; a cost field has a descent direction, so the construction projects
-an uninterrupted trajectory rather than merely bounding one. That is a different kind of prediction
+indifferent between its members; a specified successor policy chooses a path. The accumulated cost-to-reach field alone does not determine a future descent direction. That is a different kind of prediction
 and is what makes basins, lock-in and the horizon expressible at all.
 
 And the manifold prices its own modification. A reachable set is computed for a system taken as
@@ -1285,7 +1403,10 @@ which is the more serious of the two and is still a boundary rather than an anni
 \item \textsc{[detail]}~\textbf{Descent predicts trajectory.} Fails if the continuations a frame actually takes, absent intervention, are not the cheap ones --- if the descent direction of the cost field does not predict where an uninterrupted frame goes.
 \item \textsc{[detail]}~\textbf{Basins and persistence.} Fails if persistence in a region can be exhibited with no corresponding basin, or a basin with no corresponding persistence.
 \item \textsc{[shape]}~\textbf{The two fields come apart.} Fails if expected capacity after an action is always the capacity before it less the cost, so that no expensive continuation ever raises capacity and no cheap one lowers it. This is the condition on which the trap is definable at all.
-\item \textsc{[detail]}~\textbf{Traps defeat inertia.} Fails if no grounding exhibits a region in which acceptability is preserved throughout while the capacity to leave falls below the cost of leaving --- that is, if minimum-sufficient intervention never requires acting from inside an acceptable region.
+\item \textsc{[detail]}~\textbf{Traps require future-feasibility constraints.} Compare a policy
+that monitors present acceptability with one that augments the state by capacity
+and preserves a capture basin. The proposed benefit fails if the former already
+preserves all relevant future feasibility or the augmentation changes no decision.
 \item \textsc{[shape]}~\textbf{The fields are frame-relative in the strong sense.} This is the
 commitment of Section~\ref{sec:claimed}, and the one the neighbouring formalisms decline. Fails if a
 grounding exhibits a field over reachable futures of which two frames' fields are demonstrably coarse
@@ -1344,7 +1465,13 @@ Graphic Equalisation supplies deterministic admissible continuation and collapse
 }
 \]
 
-The distinction between reachable geometry and realised history is essential: the manifold contains counterfactual futures because the frame has not fixed all future interventions and containing conditions, not because the Graph Law (Hypothesis~\ref{GE-hyp:the-law}) is stochastic.
+The distinction between reachable geometry and realised history is essential: the manifold contains counterfactual futures because the frame has not fixed all future interventions and containing conditions, not because the Graph Law (Schema~\ref{GE-hyp:the-law}) is stochastic.
+
+An integrated finite software grounding now implements projection, retention,
+aperture and budget accounting, candidate-family measures, and supplied selection
+(Section~\ref{sec:implementation}). Its existence establishes construction at that
+scope; extended-horizon performance and the broader empirical claims require their
+own evidence.
 
 The future, in this framework, is not primarily a destination. It is a reachable geometry.
 
@@ -1466,7 +1593,7 @@ Herbert Edelsbrunner, David Letscher, and Afra Zomorodian.
 \bibitem[Federal Aviation Administration(2026)]{faa2026pcg}
 Federal Aviation Administration.
 \newblock Pilot/Controller Glossary: airspeed and ground speed.
-\newblock FAA Order JO 7110.65, online glossary, accessed \PaperDisplayDate.
+\newblock FAA Order JO 7110.65, online glossary, accessed 3 September 2026.
 \newblock \url{https://www.faa.gov/air_traffic/publications/atpubs/pcg_html/}.
 \newblock Defines airspeed relative to the surrounding air mass and groundspeed relative to the
 surface of the earth.

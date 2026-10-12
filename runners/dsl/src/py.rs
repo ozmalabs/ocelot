@@ -2869,6 +2869,29 @@ impl PySubstrate {
         crate::scale_audit::enabled()
     }
 
+    /// Current audit gates: `(process_mode, calling_thread_override, per_rule_mode)`.
+    /// Use alongside `scale_audit_enabled()` to localise unexpected recording.
+    #[staticmethod]
+    fn scale_audit_mode_snapshot() -> (bool, bool, bool) {
+        crate::scale_audit::mode_snapshot()
+    }
+
+    /// Enable or disable the low-frequency audit-mode setter transition log.
+    #[staticmethod]
+    fn scale_audit_mode_trace_set_enabled(on: bool) {
+        crate::scale_audit::mode_trace_set_enabled(on)
+    }
+
+    #[staticmethod]
+    fn scale_audit_mode_trace_reset() {
+        crate::scale_audit::mode_trace_reset()
+    }
+
+    #[staticmethod]
+    fn scale_audit_mode_trace_snapshot() -> Vec<String> {
+        crate::scale_audit::mode_trace_snapshot()
+    }
+
     /// DIAGNOSTIC — which distinct `DimInfer` argument-tuple each successive
     /// invocation carried, in call order. One-line handoff.
     #[staticmethod]
@@ -3594,6 +3617,7 @@ impl PySubstrate {
         if let Some(target) = shape_target_copy {
             ctx = ctx.with_shape_target(target);
         }
+        let _host_evaluation_scope = crate::scale_audit::host_evaluation_scope();
         let v = evaluate(terms, idx, &mut env_v, &mut ctx);
         // Release the scratch Terms — concepts/productions live below
         // the snapshot so their TermIdx remain valid.
@@ -4453,6 +4477,9 @@ impl PySubstrate {
             .iter()
             .map(|a| serde_json::json!(name(*a)))
             .collect();
+        let residual_by_area: Vec<J> = report.residual_by_area.iter()
+            .map(|(area, residual)| serde_json::json!({"area": name(*area), "residual": residual}))
+            .collect();
         json_to_pyobj(
             py,
             &serde_json::json!({
@@ -4460,9 +4487,60 @@ impl PySubstrate {
                 "rounds": rounds,
                 "n_rounds": report.rounds.len(),
                 "areas": areas,
+                "residual_by_area": residual_by_area,
                 "hit_max_rounds": report.hit_max_rounds,
             }),
         )
+    }
+
+    /// Settle only selected rule areas and preserve all other dirty rules for
+    /// later continuation. Selected effects may wake rules in any area. The
+    /// report includes the residual count in every active area.
+    #[pyo3(signature = (areas, budget_per_area=0, max_rounds=100_000,
+                        snapshot_round=false))]
+    fn run_rules_settle_selected<'py>(
+        &mut self,
+        py: Python<'py>,
+        areas: Vec<String>,
+        budget_per_area: usize,
+        max_rounds: usize,
+        snapshot_round: bool,
+    ) -> PyResult<Bound<'py, PyAny>> {
+        crate::scale_audit::ffi(1, 0);
+        crate::scale_audit::begin_epoch();
+        let report = {
+            let mut guard = self.inner.lock().expect("substrate mutex poisoned");
+            // `rule_areas()` serializes Sym::default() as "global". Preserve
+            // that round-trip here: interning the label would create a
+            // different Sym and silently select no default-area rules.
+            let selected: Vec<Sym> = areas.iter().map(|area| {
+                if area == "global" { Sym::default() }
+                else { guard.interner.intern(area) }
+            }).collect();
+            guard.run_rules_settle_selected(&selected, budget_per_area, max_rounds, snapshot_round)
+        };
+        let guard = self.inner.lock().expect("substrate mutex poisoned");
+        let name = |s: Sym| -> String {
+            if s == Sym::default() { "global".to_string() }
+            else { guard.interner.resolve(s).to_string() }
+        };
+        let rounds: Vec<J> = report.rounds.iter().map(|round| {
+            let rows: Vec<J> = round.rows.iter().map(|row| serde_json::json!({
+                "area": name(row.area), "dirty": row.dirty, "attempted": row.attempted,
+                "steps": row.steps, "carried": row.carried,
+            })).collect();
+            serde_json::json!({"steps": round.steps, "dirty_areas": round.dirty_areas,
+                               "residual": round.residual, "rows": rows})
+        }).collect();
+        let selected_areas: Vec<J> = report.areas.iter().map(|area| serde_json::json!(name(*area))).collect();
+        let residual_by_area: Vec<J> = report.residual_by_area.iter()
+            .map(|(area, residual)| serde_json::json!({"area": name(*area), "residual": residual}))
+            .collect();
+        json_to_pyobj(py, &serde_json::json!({
+            "steps": report.steps, "rounds": rounds, "n_rounds": report.rounds.len(),
+            "areas": selected_areas, "residual_by_area": residual_by_area,
+            "hit_max_rounds": report.hit_max_rounds,
+        }))
     }
 
     /// Relabel one rule's AREA — scheduling metadata only (no committed code
@@ -4472,7 +4550,8 @@ impl PySubstrate {
     fn set_rule_area(&mut self, rule_name: &str, area: &str) -> bool {
         let mut guard = self.inner.lock().expect("substrate mutex poisoned");
         let n = guard.interner.intern(rule_name);
-        let a = guard.interner.intern(area);
+        let a = if area == "global" { Sym::default() }
+            else { guard.interner.intern(area) };
         guard.set_rule_area(n, a)
     }
 
@@ -4746,6 +4825,578 @@ impl PySubstrate {
             .lock()
             .expect("substrate mutex poisoned")
             .dirty_rule_names()
+    }
+
+    /// Snapshot the mutable scheduler state needed to reproduce rule selection.
+    /// Rule definitions and mutation-protection metadata are carried separately
+    /// by export_rules/import_rules_preserving_match_order.
+    fn rule_scheduler_checkpoint<'py>(&self, py: Python<'py>) -> PyResult<Bound<'py, PyAny>> {
+        let guard = self.inner.lock().expect("substrate mutex poisoned");
+        let cursors: Vec<Vec<J>> = guard
+            .rule_cursors
+            .iter()
+            .map(|row| {
+                let mut entries: Vec<_> = row
+                    .iter()
+                    .map(|(edge, (cursor, version))| {
+                        (
+                            guard.interner.resolve(*edge).to_owned(),
+                            *cursor as u64,
+                            *version,
+                        )
+                    })
+                    .collect();
+                entries.sort_by(|a, b| a.0.cmp(&b.0));
+                entries
+                    .into_iter()
+                    .map(|(edge, cursor, version)| {
+                        J::Array(vec![J::String(edge), J::from(cursor), J::from(version)])
+                    })
+                    .collect()
+            })
+            .collect();
+        let dirty_nodes: Vec<Vec<u32>> = guard
+            .rule_dirty_nodes
+            .iter()
+            .map(|nodes| {
+                let mut ids: Vec<u32> = nodes.iter().map(|node| node.0).collect();
+                ids.sort_unstable();
+                ids
+            })
+            .collect();
+        let shape = guard.active_shape_target.map(|shape| {
+            serde_json::json!({
+                "recursion": shape.recursion.as_str(),
+                "order_n": shape.order_n.0,
+                "abstraction": shape.abstraction.as_str(),
+            })
+        });
+        let attr_write_log: Vec<[J; 2]> = guard
+            .graph
+            .attr_write_log
+            .iter()
+            .map(|(node, key)| {
+                [
+                    J::from(node.0),
+                    J::String(guard.interner.resolve(*key).to_owned()),
+                ]
+            })
+            .collect();
+        let mut edge_delete_versions = guard.graph.edge_delete_versions_by_type_snapshot();
+        edge_delete_versions
+            .sort_by_key(|(edge_type, _)| guard.interner.resolve(*edge_type).to_owned());
+        let edge_delete_versions: Vec<[J; 2]> = edge_delete_versions
+            .into_iter()
+            .map(|(edge_type, version)| {
+                [
+                    J::String(guard.interner.resolve(edge_type).to_owned()),
+                    J::from(version),
+                ]
+            })
+            .collect();
+        let cache_counts = guard.eval_cache.checkpoint_entry_counts();
+        let cache_counts: Vec<usize> = cache_counts.into_iter().collect();
+        let mut neighbour_cache: Vec<_> = guard.eval_cache.neighbours.iter().collect();
+        neighbour_cache.sort_by_key(|((node, edge, is_in), _)| {
+            (node.0, guard.interner.resolve(*edge).to_owned(), *is_in)
+        });
+        let neighbour_cache: Vec<J> = neighbour_cache
+            .into_iter()
+            .map(|((node, edge, is_in), value)| J::Array(vec![
+                J::from(node.0),
+                J::String(guard.interner.resolve(*edge).to_owned()),
+                J::Bool(*is_in),
+                encode_value(value, &guard.interner),
+            ]))
+            .collect();
+        let mut filter_cache: Vec<_> = guard.eval_cache.filter.iter().collect();
+        filter_cache.sort_by_key(|((term, bindings), _)| {
+            (term.0, serde_json::to_string(&bindings.iter().map(|(sym, value)|
+                (guard.interner.resolve(*sym).to_owned(), encode_value(value, &guard.interner)))
+                .collect::<Vec<_>>()).unwrap_or_default())
+        });
+        let filter_cache: Vec<J> = filter_cache.into_iter().map(|((term, bindings), value)| {
+            let bindings: Vec<J> = bindings.iter().map(|(sym, value)| J::Array(vec![
+                J::String(guard.interner.resolve(*sym).to_owned()),
+                encode_value(value, &guard.interner),
+            ])).collect();
+            J::Array(vec![J::from(term.0), J::Array(bindings), encode_value(value, &guard.interner)])
+        }).collect();
+        let mut argmax_cache: Vec<_> = guard.eval_cache.argmax.iter().collect();
+        argmax_cache.sort_by_key(|((term, bindings), _)| {
+            (term.0, serde_json::to_string(&bindings.iter().map(|(sym, value)|
+                (guard.interner.resolve(*sym).to_owned(), encode_value(value, &guard.interner)))
+                .collect::<Vec<_>>()).unwrap_or_default())
+        });
+        let argmax_cache: Vec<J> = argmax_cache.into_iter().map(|((term, bindings), value)| {
+            let bindings: Vec<J> = bindings.iter().map(|(sym, value)| J::Array(vec![
+                J::String(guard.interner.resolve(*sym).to_owned()),
+                encode_value(value, &guard.interner),
+            ])).collect();
+            J::Array(vec![J::from(term.0), J::Array(bindings), encode_value(value, &guard.interner)])
+        }).collect();
+        let mut holds_cache: Vec<_> = guard.eval_cache.holds.iter().collect();
+        holds_cache.sort_by_key(|((concept, node, node2), _)| {
+            (guard.interner.resolve(*concept).to_owned(), node.map(|n| n.0), node2.map(|n| n.0))
+        });
+        let holds_cache: Vec<J> = holds_cache.into_iter().map(|((concept, node, node2), value)| J::Array(vec![
+            J::String(guard.interner.resolve(*concept).to_owned()),
+            node.map(|n| J::from(n.0)).unwrap_or(J::Null),
+            node2.map(|n| J::from(n.0)).unwrap_or(J::Null),
+            encode_value(value, &guard.interner),
+        ])).collect();
+        json_to_pyobj(
+            py,
+            &serde_json::json!({
+                "schema": "RuleSchedulerCheckpointV6",
+                "rule_count": guard.rules.len(),
+                "rule_dirty": guard.rule_dirty,
+                "rule_dirty_nodes": dirty_nodes,
+                "rule_cursors": cursors,
+                "edge_delete_version": guard.edge_delete_version,
+                "any_mutation": guard.any_mutation,
+                "attr_write_log": attr_write_log,
+                "edge_delete_versions_by_type": edge_delete_versions,
+                "eval_cache": {
+                    "entry_counts": cache_counts,
+                    "neighbours": neighbour_cache,
+                    "filter": filter_cache,
+                    "argmax": argmax_cache,
+                    "holds": holds_cache,
+                    "reachable_enabled": guard.eval_cache.reachable_enabled,
+                    "reachable_hits": guard.eval_cache.reachable_hits,
+                    "reachable_misses": guard.eval_cache.reachable_misses,
+                    "reachable_payload_bytes": guard.eval_cache.reachable_payload_bytes,
+                    "reachable_peak_payload_bytes": guard.eval_cache.reachable_peak_payload_bytes,
+                    "reachable_peak_entries": guard.eval_cache.reachable_peak_entries,
+                },
+                "flags": {
+                    "precise_dirty": guard.precise_dirty,
+                    "dirty_telemetry": guard.dirty_telemetry,
+                    "dirty_marks": guard.dirty_marks,
+                    "dirty_overaggressive": guard.dirty_overaggressive,
+                    "binding_projection": guard.binding_projection,
+                    "projection_overaggressive": guard.projection_overaggressive,
+                    "empty_match_proof": guard.empty_match_proof,
+                    "empty_match_proof_unsound": guard.empty_match_proof_unsound,
+                    "empty_match_skips": guard.empty_match_skips,
+                    "incremental_match": guard.incremental_match,
+                    "incremental_match_unsound": guard.incremental_match_unsound,
+                    "predicate_retraction": guard.predicate_retraction,
+                    "predicate_retraction_unsound": guard.predicate_retraction_unsound,
+                    "gamma_residual_capture": guard.gamma_residual_capture,
+                    "gamma_residual_root": guard.gamma_residual_root.map(|n| n.0),
+                    "active_shape_target": shape,
+                }
+            }),
+        )
+    }
+
+    /// Restore the scheduler checkpoint emitted above after graph and exact rule
+    /// import. Validate all dense vectors before mutating scheduler state.
+    fn restore_rule_scheduler_checkpoint(
+        &mut self,
+        py: Python<'_>,
+        checkpoint: &Bound<'_, PyAny>,
+    ) -> PyResult<()> {
+        let json = pyobj_to_json(py, checkpoint)?;
+        let obj = json
+            .as_object()
+            .ok_or_else(|| PyValueError::new_err("scheduler checkpoint must be an object"))?;
+        if obj.get("schema").and_then(J::as_str) != Some("RuleSchedulerCheckpointV6") {
+            return Err(PyValueError::new_err(
+                "unsupported scheduler checkpoint schema",
+            ));
+        }
+        let mut guard = self.inner.lock().expect("substrate mutex poisoned");
+        let count = obj
+            .get("rule_count")
+            .and_then(J::as_u64)
+            .ok_or_else(|| PyValueError::new_err("checkpoint missing rule_count"))?
+            as usize;
+        if count != guard.rules.len() {
+            return Err(PyValueError::new_err(
+                "scheduler checkpoint rule_count mismatch",
+            ));
+        }
+        let dirty = obj
+            .get("rule_dirty")
+            .and_then(J::as_array)
+            .ok_or_else(|| PyValueError::new_err("checkpoint missing rule_dirty"))?;
+        let nodes = obj
+            .get("rule_dirty_nodes")
+            .and_then(J::as_array)
+            .ok_or_else(|| PyValueError::new_err("checkpoint missing rule_dirty_nodes"))?;
+        let cursors = obj
+            .get("rule_cursors")
+            .and_then(J::as_array)
+            .ok_or_else(|| PyValueError::new_err("checkpoint missing rule_cursors"))?;
+        if dirty.len() != count || nodes.len() != count || cursors.len() != count {
+            return Err(PyValueError::new_err(
+                "scheduler checkpoint dense vector length mismatch",
+            ));
+        }
+        let mut parsed_dirty = Vec::with_capacity(count);
+        let mut parsed_nodes = Vec::with_capacity(count);
+        let mut parsed_cursors = Vec::with_capacity(count);
+        for i in 0..count {
+            parsed_dirty.push(
+                dirty[i]
+                    .as_bool()
+                    .ok_or_else(|| PyValueError::new_err("invalid rule_dirty bit"))?,
+            );
+            let node_row = nodes[i]
+                .as_array()
+                .ok_or_else(|| PyValueError::new_err("invalid dirty-node row"))?;
+            let mut node_set = rustc_hash::FxHashSet::default();
+            for node in node_row {
+                let id = node
+                    .as_u64()
+                    .filter(|id| *id <= u32::MAX as u64)
+                    .ok_or_else(|| PyValueError::new_err("invalid dirty node id"))?;
+                node_set.insert(NodeID(id as u32));
+            }
+            parsed_nodes.push(node_set);
+            let cursor_row = cursors[i]
+                .as_array()
+                .ok_or_else(|| PyValueError::new_err("invalid cursor row"))?;
+            let mut cursor_map = FxHashMap::default();
+            for entry in cursor_row {
+                let tuple = entry
+                    .as_array()
+                    .filter(|v| v.len() == 3)
+                    .ok_or_else(|| PyValueError::new_err("invalid cursor entry"))?;
+                let edge_name = tuple[0]
+                    .as_str()
+                    .ok_or_else(|| PyValueError::new_err("invalid cursor edge type"))?;
+                let cursor = tuple[1]
+                    .as_u64()
+                    .filter(|n| *n <= usize::MAX as u64)
+                    .ok_or_else(|| PyValueError::new_err("invalid cursor position"))?
+                    as usize;
+                let version = tuple[2]
+                    .as_u64()
+                    .ok_or_else(|| PyValueError::new_err("invalid cursor delete version"))?;
+                cursor_map.insert(guard.interner.intern(edge_name), (cursor, version));
+            }
+            parsed_cursors.push(cursor_map);
+        }
+        let edge_delete_version = obj
+            .get("edge_delete_version")
+            .and_then(J::as_u64)
+            .ok_or_else(|| PyValueError::new_err("checkpoint missing edge_delete_version"))?;
+        let any_mutation = obj
+            .get("any_mutation")
+            .and_then(J::as_bool)
+            .ok_or_else(|| PyValueError::new_err("checkpoint missing any_mutation"))?;
+        let flags = obj
+            .get("flags")
+            .and_then(J::as_object)
+            .ok_or_else(|| PyValueError::new_err("checkpoint missing flags"))?;
+        let flag = |name: &str| -> PyResult<bool> {
+            flags.get(name).and_then(J::as_bool).ok_or_else(|| {
+                PyValueError::new_err(format!("checkpoint missing boolean flag {name}"))
+            })
+        };
+        let precise_dirty = flag("precise_dirty")?;
+        let dirty_telemetry = flag("dirty_telemetry")?;
+        let dirty_marks_value = flags
+            .get("dirty_marks")
+            .and_then(J::as_array)
+            .filter(|x| x.len() == 9)
+            .ok_or_else(|| PyValueError::new_err("invalid dirty_marks"))?;
+        let mut dirty_marks = [0u64; 9];
+        for (i, value) in dirty_marks_value.iter().enumerate() {
+            dirty_marks[i] = value
+                .as_u64()
+                .ok_or_else(|| PyValueError::new_err("invalid dirty mark value"))?;
+        }
+        let dirty_overaggressive = flag("dirty_overaggressive")?;
+        let binding_projection = flag("binding_projection")?;
+        let projection_overaggressive = flag("projection_overaggressive")?;
+        let empty_match_proof = flag("empty_match_proof")?;
+        let empty_match_proof_unsound = flag("empty_match_proof_unsound")?;
+        let empty_match_skips_json = flags
+            .get("empty_match_skips")
+            .and_then(J::as_array)
+            .filter(|x| {
+                if empty_match_proof {
+                    x.len() == count
+                } else {
+                    x.is_empty() || x.len() == count
+                }
+            })
+            .ok_or_else(|| PyValueError::new_err("invalid empty_match_skips"))?;
+        let mut empty_match_skips = Vec::with_capacity(count);
+        for value in empty_match_skips_json {
+            empty_match_skips.push(
+                value
+                    .as_u64()
+                    .ok_or_else(|| PyValueError::new_err("invalid empty_match_skips value"))?,
+            );
+        }
+        let incremental_match = flag("incremental_match")?;
+        let incremental_match_unsound = flag("incremental_match_unsound")?;
+        let predicate_retraction = flag("predicate_retraction")?;
+        let predicate_retraction_unsound = flag("predicate_retraction_unsound")?;
+        let gamma_residual_capture = flag("gamma_residual_capture")?;
+        let gamma_residual_root = match flags.get("gamma_residual_root") {
+            Some(J::Null) => None,
+            Some(v) => Some(NodeID(
+                v.as_u64()
+                    .filter(|n| *n <= u32::MAX as u64)
+                    .ok_or_else(|| PyValueError::new_err("invalid gamma_residual_root"))?
+                    as u32,
+            )),
+            None => {
+                return Err(PyValueError::new_err(
+                    "checkpoint missing gamma_residual_root",
+                ))
+            }
+        };
+        let active_shape_target = match flags.get("active_shape_target") {
+            Some(J::Null) => None,
+            Some(shape) => {
+                let get_str = |key: &str| {
+                    shape.get(key).and_then(J::as_str).ok_or_else(|| {
+                        PyValueError::new_err(format!("invalid active_shape_target.{key}"))
+                    })
+                };
+                let recursion = crate::shape::RecursionKind::from_str(get_str("recursion")?)
+                    .ok_or_else(|| PyValueError::new_err("invalid active shape recursion"))?;
+                let abstraction = crate::shape::AbstractionKind::from_str(get_str("abstraction")?)
+                    .ok_or_else(|| PyValueError::new_err("invalid active shape abstraction"))?;
+                let order = shape
+                    .get("order_n")
+                    .and_then(J::as_u64)
+                    .filter(|n| *n <= u8::MAX as u64)
+                    .ok_or_else(|| PyValueError::new_err("invalid active shape order_n"))?
+                    as u8;
+                Some(crate::shape::Shape::new(
+                    recursion,
+                    crate::shape::OrderN(order),
+                    abstraction,
+                ))
+            }
+            None => {
+                return Err(PyValueError::new_err(
+                    "checkpoint missing active_shape_target",
+                ))
+            }
+        };
+        let attr_log_json = obj
+            .get("attr_write_log")
+            .and_then(J::as_array)
+            .ok_or_else(|| PyValueError::new_err("checkpoint missing attr_write_log"))?;
+        let mut attr_write_log = Vec::with_capacity(attr_log_json.len());
+        for item in attr_log_json {
+            let pair = item
+                .as_array()
+                .filter(|p| p.len() == 2)
+                .ok_or_else(|| PyValueError::new_err("invalid attr_write_log row"))?;
+            let id = pair[0]
+                .as_u64()
+                .filter(|n| *n <= u32::MAX as u64)
+                .ok_or_else(|| PyValueError::new_err("invalid attr_write_log node"))?;
+            let key = pair[1]
+                .as_str()
+                .ok_or_else(|| PyValueError::new_err("invalid attr_write_log key"))?;
+            attr_write_log.push((NodeID(id as u32), guard.interner.intern(key)));
+        }
+        let edge_versions_json = obj
+            .get("edge_delete_versions_by_type")
+            .and_then(J::as_array)
+            .ok_or_else(|| {
+                PyValueError::new_err("checkpoint missing edge_delete_versions_by_type")
+            })?;
+        let mut edge_versions = Vec::with_capacity(edge_versions_json.len());
+        let mut edge_types_seen = rustc_hash::FxHashSet::default();
+        for item in edge_versions_json {
+            let pair = item
+                .as_array()
+                .filter(|p| p.len() == 2)
+                .ok_or_else(|| PyValueError::new_err("invalid edge deletion version row"))?;
+            let name = pair[0]
+                .as_str()
+                .ok_or_else(|| PyValueError::new_err("invalid edge deletion version type"))?;
+            let version = pair[1]
+                .as_u64()
+                .ok_or_else(|| PyValueError::new_err("invalid edge deletion version"))?;
+            let edge_type = guard.interner.intern(name);
+            if !edge_types_seen.insert(edge_type) {
+                return Err(PyValueError::new_err(
+                    "duplicate edge deletion version type",
+                ));
+            }
+            edge_versions.push((edge_type, version));
+        }
+        let cache = obj
+            .get("eval_cache")
+            .and_then(J::as_object)
+            .ok_or_else(|| PyValueError::new_err("checkpoint missing eval_cache"))?;
+        let cache_counts = cache
+            .get("entry_counts")
+            .and_then(J::as_array)
+            .filter(|x| x.len() == 6)
+            .ok_or_else(|| PyValueError::new_err("invalid eval_cache.entry_counts"))?;
+        let mut parsed_cache_counts = [0u64; 6];
+        for (i, value) in cache_counts.iter().enumerate() {
+            parsed_cache_counts[i] = value
+                .as_u64()
+                .ok_or_else(|| PyValueError::new_err("invalid eval-cache count"))?;
+        }
+        if parsed_cache_counts[0] != 0 || parsed_cache_counts[5] != 0 {
+            return Err(PyValueError::new_err("cannot restore non-empty reachable or SD-operation cache entries"));
+        }
+        let neighbours_json = cache.get("neighbours").and_then(J::as_array)
+            .ok_or_else(|| PyValueError::new_err("checkpoint missing eval_cache.neighbours"))?;
+        if neighbours_json.len() as u64 != parsed_cache_counts[1] {
+            return Err(PyValueError::new_err("eval_cache.neighbours count mismatch"));
+        }
+        let mut restored_neighbours = FxHashMap::default();
+        for row in neighbours_json {
+            let row = row.as_array().filter(|row| row.len() == 4)
+                .ok_or_else(|| PyValueError::new_err("invalid eval_cache.neighbours row"))?;
+            let node = row[0].as_u64().filter(|n| *n <= u32::MAX as u64)
+                .ok_or_else(|| PyValueError::new_err("invalid cached neighbour node"))? as u32;
+            let edge = row[1].as_str().ok_or_else(|| PyValueError::new_err("invalid cached neighbour edge"))?;
+            let is_in = row[2].as_bool().ok_or_else(|| PyValueError::new_err("invalid cached neighbour direction"))?;
+            let value = decode_value(&row[3], &mut guard.interner);
+            restored_neighbours.insert((NodeID(node), guard.interner.intern(edge), is_in), value);
+        }
+        let filter_json = cache.get("filter").and_then(J::as_array)
+            .ok_or_else(|| PyValueError::new_err("checkpoint missing eval_cache.filter"))?;
+        if filter_json.len() as u64 != parsed_cache_counts[2] {
+            return Err(PyValueError::new_err("eval_cache.filter count mismatch"));
+        }
+        let mut restored_filter = FxHashMap::default();
+        for row in filter_json {
+            let row = row.as_array().filter(|row| row.len() == 3)
+                .ok_or_else(|| PyValueError::new_err("invalid eval_cache.filter row"))?;
+            let term = row[0].as_u64().filter(|n| *n <= u32::MAX as u64)
+                .ok_or_else(|| PyValueError::new_err("invalid cached filter term"))? as u32;
+            let bindings_json = row[1].as_array().ok_or_else(|| PyValueError::new_err("invalid cached filter bindings"))?;
+            let mut bindings = SmallVec::new();
+            for binding in bindings_json {
+                let binding = binding.as_array().filter(|binding| binding.len() == 2)
+                    .ok_or_else(|| PyValueError::new_err("invalid cached filter binding"))?;
+                let sym = binding[0].as_str().ok_or_else(|| PyValueError::new_err("invalid cached filter symbol"))?;
+                bindings.push((guard.interner.intern(sym), decode_value(&binding[1], &mut guard.interner)));
+            }
+            let value = decode_value(&row[2], &mut guard.interner);
+            restored_filter.insert((TermIdx(term), bindings), value);
+        }
+        let argmax_json = cache.get("argmax").and_then(J::as_array)
+            .ok_or_else(|| PyValueError::new_err("checkpoint missing eval_cache.argmax"))?;
+        if argmax_json.len() as u64 != parsed_cache_counts[3] {
+            return Err(PyValueError::new_err("eval_cache.argmax count mismatch"));
+        }
+        let mut restored_argmax = FxHashMap::default();
+        for row in argmax_json {
+            let row = row.as_array().filter(|row| row.len() == 3)
+                .ok_or_else(|| PyValueError::new_err("invalid eval_cache.argmax row"))?;
+            let term = row[0].as_u64().filter(|n| *n <= u32::MAX as u64)
+                .ok_or_else(|| PyValueError::new_err("invalid cached argmax term"))? as u32;
+            let bindings_json = row[1].as_array().ok_or_else(|| PyValueError::new_err("invalid cached argmax bindings"))?;
+            let mut bindings = SmallVec::new();
+            for binding in bindings_json {
+                let binding = binding.as_array().filter(|binding| binding.len() == 2)
+                    .ok_or_else(|| PyValueError::new_err("invalid cached argmax binding"))?;
+                let sym_name = binding[0].as_str().ok_or_else(|| PyValueError::new_err("invalid cached argmax symbol"))?;
+                let sym = guard.interner.intern(sym_name);
+                let value = decode_value(&binding[1], &mut guard.interner);
+                bindings.push((sym, value));
+            }
+            let value = decode_value(&row[2], &mut guard.interner);
+            restored_argmax.insert((TermIdx(term), bindings), value);
+        }
+        let holds_json = cache.get("holds").and_then(J::as_array)
+            .ok_or_else(|| PyValueError::new_err("checkpoint missing eval_cache.holds"))?;
+        if holds_json.len() as u64 != parsed_cache_counts[4] {
+            return Err(PyValueError::new_err("eval_cache.holds count mismatch"));
+        }
+        let mut restored_holds = FxHashMap::default();
+        for row in holds_json {
+            let row = row.as_array().filter(|row| row.len() == 4)
+                .ok_or_else(|| PyValueError::new_err("invalid eval_cache.holds row"))?;
+            let concept = row[0].as_str().ok_or_else(|| PyValueError::new_err("invalid cached Holds concept"))?;
+            let parse_node = |value: &J| -> PyResult<Option<NodeID>> {
+                if value.is_null() { return Ok(None); }
+                value.as_u64().filter(|n| *n <= u32::MAX as u64).map(|n| Some(NodeID(n as u32)))
+                    .ok_or_else(|| PyValueError::new_err("invalid cached Holds node"))
+            };
+            let node = parse_node(&row[1])?;
+            let node2 = parse_node(&row[2])?;
+            let value = decode_value(&row[3], &mut guard.interner);
+            restored_holds.insert((guard.interner.intern(concept), node, node2), value);
+        }
+        let reachable_enabled = cache
+            .get("reachable_enabled")
+            .and_then(J::as_bool)
+            .ok_or_else(|| PyValueError::new_err("checkpoint missing reachable_enabled"))?;
+        let reachable_hits = cache
+            .get("reachable_hits")
+            .and_then(J::as_u64)
+            .ok_or_else(|| PyValueError::new_err("checkpoint missing reachable_hits"))?;
+        let reachable_misses = cache
+            .get("reachable_misses")
+            .and_then(J::as_u64)
+            .ok_or_else(|| PyValueError::new_err("checkpoint missing reachable_misses"))?;
+        let reachable_payload_bytes = cache
+            .get("reachable_payload_bytes")
+            .and_then(J::as_u64)
+            .ok_or_else(|| PyValueError::new_err("checkpoint missing reachable_payload_bytes"))?;
+        let reachable_peak_payload_bytes = cache
+            .get("reachable_peak_payload_bytes")
+            .and_then(J::as_u64)
+            .ok_or_else(|| {
+                PyValueError::new_err("checkpoint missing reachable_peak_payload_bytes")
+            })?;
+        let reachable_peak_entries = cache
+            .get("reachable_peak_entries")
+            .and_then(J::as_u64)
+            .ok_or_else(|| PyValueError::new_err("checkpoint missing reachable_peak_entries"))?;
+        if parsed_cache_counts.iter().all(|count| *count == 0) && reachable_payload_bytes != 0 {
+            return Err(PyValueError::new_err(
+                "empty EvalCache has a non-zero retained payload estimate",
+            ));
+        }
+        guard.rule_dirty = parsed_dirty;
+        guard.rule_dirty_nodes = parsed_nodes;
+        guard.rule_cursors = parsed_cursors;
+        guard.edge_delete_version = edge_delete_version;
+        guard
+            .graph
+            .restore_edge_delete_versions_by_type(edge_versions);
+        guard.any_mutation = any_mutation;
+        guard.set_precise_dirty(precise_dirty);
+        guard.set_dirty_telemetry(dirty_telemetry);
+        guard.dirty_marks = dirty_marks;
+        guard.set_dirty_overaggressive(dirty_overaggressive);
+        guard.set_binding_projection(binding_projection);
+        guard.set_projection_overaggressive(projection_overaggressive);
+        guard.set_empty_match_proof(empty_match_proof);
+        guard.set_empty_match_proof_unsound(empty_match_proof_unsound);
+        guard.empty_match_skips = empty_match_skips;
+        guard.set_incremental_match(incremental_match);
+        guard.set_incremental_match_unsound(incremental_match_unsound);
+        guard.set_predicate_retraction(predicate_retraction);
+        guard.set_predicate_retraction_unsound(predicate_retraction_unsound);
+        guard.set_gamma_residual_capture(gamma_residual_capture);
+        guard.set_reachable_cache(reachable_enabled);
+        guard.eval_cache.reachable_hits = reachable_hits;
+        guard.eval_cache.reachable_misses = reachable_misses;
+        guard.eval_cache.neighbours = restored_neighbours;
+        guard.eval_cache.filter = restored_filter;
+        guard.eval_cache.argmax = restored_argmax;
+        guard.eval_cache.holds = restored_holds;
+        guard.eval_cache.reachable_payload_bytes = reachable_payload_bytes;
+        guard.eval_cache.reachable_peak_payload_bytes = reachable_peak_payload_bytes;
+        guard.eval_cache.reachable_peak_entries = reachable_peak_entries;
+        guard.gamma_residual_root = gamma_residual_root;
+        guard.active_shape_target = active_shape_target;
+        guard.graph.attr_write_log = attr_write_log;
+        Ok(())
     }
 
     /// DIAGNOSTIC: mark every rule dirty + invalidate every cursor. Lets a
@@ -5923,9 +6574,7 @@ impl PySubstrate {
         let arr: Vec<J> = inner
             .rules
             .iter()
-            .filter(|rule| {
-                rule.active && inner.interner.resolve(rule.name).starts_with(prefix)
-            })
+            .filter(|rule| rule.active && inner.interner.resolve(rule.name).starts_with(prefix))
             .map(|rule| rule_to_json(rule, &inner.terms, &inner.interner))
             .collect();
         json_to_pyobj(py, &J::Array(arr))
@@ -5986,6 +6635,58 @@ impl PySubstrate {
                 idx.0 as usize, i,
                 "import_rules: index drift from export order"
             );
+            if !active {
+                inner.remove_rule(idx);
+            }
+        }
+        Ok(inner.rules.len())
+    }
+
+    /// Replay an exported rule store without changing either its authored
+    /// match-clause order or mutation-protection metadata. Intended for exact
+    /// runtime-state reconstruction; ordinary loads should use import_rules.
+    fn import_rules_preserving_match_order(
+        &mut self,
+        py: Python<'_>,
+        rules: &Bound<'_, PyAny>,
+    ) -> PyResult<usize> {
+        let mut guard = self.inner.lock().expect("substrate mutex poisoned");
+        let inner = &mut *guard;
+        if !inner.rules.is_empty() {
+            return Err(PyValueError::new_err(
+                "import_rules_preserving_match_order: rule store must be empty",
+            ));
+        }
+        let json = pyobj_to_json(py, rules)?;
+        let arr = json.as_array().ok_or_else(|| {
+            PyValueError::new_err("import_rules_preserving_match_order: expected a list")
+        })?;
+        let terms_before = inner.terms.nodes.len();
+        let symbols_before = inner.interner.len();
+        let mut parsed_rules = Vec::with_capacity(arr.len());
+        for (i, rule_json) in arr.iter().enumerate() {
+            match parse_rule_json(rule_json, &mut inner.terms, &mut inner.interner) {
+                Ok(rule) => parsed_rules.push((
+                    rule,
+                    rule_json.get("active").and_then(J::as_bool).unwrap_or(true),
+                )),
+                Err(err) => {
+                    inner.terms.nodes.truncate(terms_before);
+                    inner.interner.truncate(symbols_before);
+                    return Err(PyValueError::new_err(format!(
+                        "import_rules_preserving_match_order: rule {}: {}",
+                        i, err
+                    )));
+                }
+            }
+        }
+        for (i, (rule, active)) in parsed_rules.into_iter().enumerate() {
+            let idx = inner.add_rule_preserving_match_order(rule);
+            if idx.0 as usize != i {
+                return Err(PyValueError::new_err(
+                    "rule index drift during exact import",
+                ));
+            }
             if !active {
                 inner.remove_rule(idx);
             }
@@ -10504,6 +11205,29 @@ fn parse_rule_json(
         .get("match_type")
         .and_then(|v| v.as_str())
         .map(|s| interner.intern(s));
+    let scope_anchor_keys = [
+        "scope_anchor_var",
+        "scope_anchor_type",
+        "scope_anchor_owner_var",
+        "scope_anchor_owner_type",
+        "scope_anchor_owner_edge",
+    ];
+    let scope_anchor_values: Vec<Option<&str>> = scope_anchor_keys
+        .iter()
+        .map(|key| obj.get(*key).and_then(|value| value.as_str()))
+        .collect();
+    let scope_anchor_present = scope_anchor_values.iter().filter(|v| v.is_some()).count();
+    let scope_anchor = match scope_anchor_present {
+        0 => None,
+        5 => Some(crate::rewrite::ScopeAnchor {
+            anchor_var: interner.intern(scope_anchor_values[0].unwrap()),
+            anchor_type: interner.intern(scope_anchor_values[1].unwrap()),
+            owner_var: interner.intern(scope_anchor_values[2].unwrap()),
+            owner_type: interner.intern(scope_anchor_values[3].unwrap()),
+            owner_edge: interner.intern(scope_anchor_values[4].unwrap()),
+        }),
+        _ => return Err("scope anchor requires all five scope_anchor_* string fields".to_string()),
+    };
 
     // R10 (join-index wave): optional "index_hints" — a list of
     // dynamic {"for_var","via_var","via_key","node_type","this_key"}
@@ -10555,6 +11279,7 @@ fn parse_rule_json(
         effects,
         batch,
         match_type,
+        scope_anchor,
         index_hints,
         ..Default::default()
     })
@@ -10610,6 +11335,13 @@ pub(crate) fn rule_to_json(
         "match_type": match_type_j,
         "active": rule.active,
     });
+    if let Some(anchor) = rule.scope_anchor {
+        out["scope_anchor_var"] = J::String(interner.resolve(anchor.anchor_var).to_string());
+        out["scope_anchor_type"] = J::String(interner.resolve(anchor.anchor_type).to_string());
+        out["scope_anchor_owner_var"] = J::String(interner.resolve(anchor.owner_var).to_string());
+        out["scope_anchor_owner_type"] = J::String(interner.resolve(anchor.owner_type).to_string());
+        out["scope_anchor_owner_edge"] = J::String(interner.resolve(anchor.owner_edge).to_string());
+    }
     // R10: emit "index_hints" ONLY when non-empty — every pre-existing rule
     // (no hints) round-trips byte-identically to the pre-R10 export dialect,
     // which fixture-parity gates (e.g. composer_driver_parity) compare
@@ -13151,6 +13883,24 @@ fn argmin_tie_reset() {
     crate::argmin_tie::reset();
 }
 
+/// `[(selector, value_term, mixed, wins, all_null)]` for every selector site
+/// that saw a None-valued candidate (null-candidate census; observing only).
+#[pyfunction]
+fn argmin_null_sites(py: Python<'_>) -> PyResult<PyObject> {
+    let out = pyo3::types::PyList::empty_bound(py);
+    for (key, mixed, wins, all_null) in crate::argmin_tie::null_sites() {
+        let mut parts = key.splitn(2, '\u{1}');
+        let d = PyDict::new_bound(py);
+        d.set_item("selector", parts.next().unwrap_or(""))?;
+        d.set_item("value_term", parts.next().unwrap_or(""))?;
+        d.set_item("mixed", mixed)?;
+        d.set_item("wins", wins)?;
+        d.set_item("all_null", all_null)?;
+        out.append(d)?;
+    }
+    Ok(out.into())
+}
+
 /// `{firings, ties, empties, refusals, unique_term_firings, mode}`.
 ///
 /// `ties` and `empties` are SEPARATE on purpose: a tie-refusal and an
@@ -13159,12 +13909,17 @@ fn argmin_tie_reset() {
 #[pyfunction]
 fn argmin_tie_stats(py: Python<'_>) -> PyResult<PyObject> {
     let (firings, ties, empties, refusals, unique_term) = crate::argmin_tie::stats();
+    let (null_mixed, null_wins, null_all) = crate::argmin_tie::null_stats();
     let d = PyDict::new_bound(py);
     d.set_item("firings", firings)?;
     d.set_item("ties", ties)?;
     d.set_item("empties", empties)?;
     d.set_item("refusals", refusals)?;
     d.set_item("unique_term_firings", unique_term)?;
+    // null-candidate census (observing only; see argmin_tie.rs)
+    d.set_item("null_mixed", null_mixed)?;
+    d.set_item("null_wins", null_wins)?;
+    d.set_item("null_all", null_all)?;
     d.set_item(
         "mode",
         match crate::argmin_tie::mode() {
@@ -13309,6 +14064,7 @@ pub(crate) fn register(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(argmin_tie_reset, m)?)?;
     m.add_function(wrap_pyfunction!(argmin_tie_stats, m)?)?;
     m.add_function(wrap_pyfunction!(argmin_tie_sites, m)?)?;
+    m.add_function(wrap_pyfunction!(argmin_null_sites, m)?)?;
     m.add_function(wrap_pyfunction!(retinal_layout_sample, m)?)?;
     m.add_function(wrap_pyfunction!(allocentric_retinal_projection, m)?)?;
     m.add_function(wrap_pyfunction!(gammatone_band, m)?)?;

@@ -16,6 +16,9 @@ preserved in domains.memory_shape_faculty / git history as the SPEC.
 """
 from __future__ import annotations
 
+import json
+from pathlib import Path
+
 
 def _feature_vec(rec_attrs: dict, kind: str) -> list[float]:
     """PLUMBING: a small numeric feature vector for a record.  The SHAPE is computed by
@@ -41,6 +44,7 @@ class LongTermMemory:
         # (recall BY SHAPE uses the descent, not this map).
         self._known: set[str] = set()
         self._s = None       # the substrate the faculty lives on (set on first call)
+        self._restore_counts = {"indexed": 0, "skipped": 0, "duplicate_keys": 0}
 
     def _bind(self, s):
         # Bind to the substrate the faculty lives on.  Do NOT call memory_bound here:
@@ -49,6 +53,37 @@ class LongTermMemory:
         if self._s is None:
             self._s = s
             s.memory_set_hot_window(self.hot_window)
+            store = Path(self.dir)
+            seen: set[str] = set()
+            ambiguous: set[str] = set()
+            if store.is_dir():
+                for path in sorted(store.glob("*.json")):
+                    try:
+                        rec = json.loads(path.read_text(encoding="utf-8"))
+                        key = rec["key"]
+                        round_no = int(rec["round"])
+                        attrs = rec["attrs"]
+                        if not isinstance(key, str) or not isinstance(attrs, dict):
+                            raise ValueError("invalid record header")
+                        if key in ambiguous:
+                            continue
+                        if key in seen:
+                            s.memory_unindex_disk_record(key)
+                            self._known.discard(key)
+                            ambiguous.add(key)
+                            self._restore_counts["duplicate_keys"] += 1
+                            self._restore_counts["indexed"] -= 1
+                            continue
+                        s.memory_index_disk_record(
+                            key, str(path), round_no,
+                            _feature_vec(attrs, "category"),
+                            _feature_vec(attrs, "leaf"),
+                        )
+                        seen.add(key)
+                        self._known.add(key)
+                        self._restore_counts["indexed"] += 1
+                    except (OSError, ValueError, TypeError, KeyError):
+                        self._restore_counts["skipped"] += 1
 
     def consolidate(self, s, key: str, node_id, round_no: int, meta: dict | None = None):
         self._bind(s)
@@ -77,10 +112,8 @@ class LongTermMemory:
         return {"cluster_id": cid, "n_paged_in": paged}
 
     def recall(self, s, key: str, round_no: int):
-        # recall by name -> route via shape descent on a neutral query is not name-exact;
-        # for revisit-by-name we simply page the show's cluster by recomputing its shape
-        # from what we know.  Adapter convenience; the SHAPE descent is the real recall.
-        return None
+        self._bind(s)
+        return s.memory_recall_by_key(key, round_no)
 
     def findable(self, key: str) -> bool:
         return key in self._known
@@ -89,4 +122,5 @@ class LongTermMemory:
         clusters = self._s.memory_index_clusters() if self._s is not None else 0
         return {"total_records": len(self._known), "resident_in_ram": None,
                 "on_disk": len(self._known), "disk_bytes": None,
+                "restore": dict(self._restore_counts),
                 "index_clusters": clusters}

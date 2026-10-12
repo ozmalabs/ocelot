@@ -1,0 +1,5570 @@
+{
+  "host": "Linux-6.8.0-142-generic-x86_64-with-glibc2.39",
+  "lock": {
+    "sample_interval_ms": 2.0,
+    "schedule": [
+      [
+        "default",
+        1
+      ],
+      [
+        "one_thread",
+        2
+      ],
+      [
+        "one_thread",
+        3
+      ],
+      [
+        "default",
+        4
+      ],
+      [
+        "default",
+        5
+      ],
+      [
+        "one_thread",
+        6
+      ]
+    ],
+    "schema": "WarmConverseThreadCpuV2Lock",
+    "sources": {
+      "analyzer": "03969c800dbd2a7d462115fd511ad6f72471718c0ae1201a6e567130adf81781",
+      "caller_lock_file": "fedc32215cbadd6cb4e6642e1c56d56c97669c6157d4a186210e180554bf5c7f",
+      "caller_runner": "16458a7a476facd96cee063be5ecc5a35a653d514d6d77f00a04993ca5d10a8b",
+      "caller_runtime_lock": {
+        "active": {
+          "domain_tree": "dd5870b35b92c94818af18b0d8b3ef55aa3eed0bce927417bbde8a4a55bb5f4e",
+          "files": {
+            "domains/adequacy_probe_selection.py": "b8d75708d4e193f16bd071861af08658a907d020281d3c9106a9582c82e8acd9",
+            "domains/adequacy_provider_auth.py": "a5388de538b1af3303babcd0c382a46b3d2819796819be7741b603ca679e4768",
+            "domains/code_reading.py": "dd67d2942cf956c6e35f848aed4012c3ac072e9ac91d9e6b166e8ca44be57908",
+            "domains/code_write_growth.py": "d4a2460f9e41bb8370dc9f352cec2d46ff596d1872e329d7e05d0f33af219079",
+            "domains/independent_adequacy.py": "33191341fdd63d16d0b9cb5203f27666da90b60fccd567ac4633306a9dcab418",
+            "domains/teach.py": "308a5f31d74dabb3ed8b24bd0c967abd5f94596a3ff76d17657330877fae2cfa",
+            "runners/dsl/python/substrate_rs/__init__.py": "4e338797786071822b2e3d919ca1da3a266bda60c3ce0e29e13213a9d37454b4",
+            "runners/dsl/src/graph.rs": "9744fec2e0c5091f2036081ffc615b1c7dd00ba2a5995af1294efb0b5aa5a28c",
+            "runners/dsl/src/py.rs": "6a6da90d425e4f8da7b7626fc8dda39b46b63529a312d482d80e6e2ec4d03fd6",
+            "substrate/boot_all.py": "2bdf46f19228e1d85dbdcf12383116ceeb72aab0efe7ddd0cc6a51d23b45d220",
+            "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+            "substrate/seed_loader.py": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27",
+            "substrate/world_adapter.py": "e5850e4df2ff28d8c941cc3c0d12a840ab230ce627833421a88c3b354f65027c"
+          },
+          "native": "09d0ac3d2b3362f5cdf7d6b1cb5ef21524cf25672916b6928c29da7997fd32c6",
+          "oracle": "b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+          "rust_fingerprint": "7244b6779deed6b3155cabe14118abb01607de1c756c3ea8397e0179edd720e7",
+          "rust_tree": "5430e6fadce25f3812e498030347e1607777a8cc7a1a876f9a3957818aa92805",
+          "substrate_tree": "0fd9dee0bc92c33d541854fce3122826fa1fb21769ab3422aad001b42486bf96"
+        },
+        "design": {
+          "conditions": [
+            "truthful_adoption",
+            "missing_evidence"
+          ],
+          "fixtures": {
+            "clamp": {
+              "domain": [
+                {
+                  "lower": -4,
+                  "upper": 8,
+                  "value": -6
+                },
+                {
+                  "lower": -4,
+                  "upper": 8,
+                  "value": -4
+                },
+                {
+                  "lower": -4,
+                  "upper": 8,
+                  "value": -3
+                },
+                {
+                  "lower": -4,
+                  "upper": 8,
+                  "value": 2
+                },
+                {
+                  "lower": -4,
+                  "upper": 8,
+                  "value": 8
+                },
+                {
+                  "lower": -4,
+                  "upper": 8,
+                  "value": 10
+                },
+                {
+                  "lower": 1,
+                  "upper": 5,
+                  "value": -1
+                },
+                {
+                  "lower": 1,
+                  "upper": 5,
+                  "value": 1
+                },
+                {
+                  "lower": 1,
+                  "upper": 5,
+                  "value": 2
+                },
+                {
+                  "lower": 1,
+                  "upper": 5,
+                  "value": 3
+                },
+                {
+                  "lower": 1,
+                  "upper": 5,
+                  "value": 5
+                },
+                {
+                  "lower": 1,
+                  "upper": 5,
+                  "value": 7
+                },
+                {
+                  "lower": -9,
+                  "upper": -2,
+                  "value": -11
+                },
+                {
+                  "lower": -9,
+                  "upper": -2,
+                  "value": -9
+                },
+                {
+                  "lower": -9,
+                  "upper": -2,
+                  "value": -8
+                },
+                {
+                  "lower": -9,
+                  "upper": -2,
+                  "value": -6
+                },
+                {
+                  "lower": -9,
+                  "upper": -2,
+                  "value": -2
+                },
+                {
+                  "lower": -9,
+                  "upper": -2,
+                  "value": 0
+                }
+              ],
+              "heldout": [
+                {
+                  "lower": -4,
+                  "upper": 8,
+                  "value": -20
+                },
+                {
+                  "lower": -4,
+                  "upper": 8,
+                  "value": -4
+                },
+                {
+                  "lower": -4,
+                  "upper": 8,
+                  "value": -3
+                },
+                {
+                  "lower": -4,
+                  "upper": 8,
+                  "value": 0
+                },
+                {
+                  "lower": -4,
+                  "upper": 8,
+                  "value": 7
+                },
+                {
+                  "lower": -4,
+                  "upper": 8,
+                  "value": 8
+                },
+                {
+                  "lower": -4,
+                  "upper": 8,
+                  "value": 9
+                },
+                {
+                  "lower": -4,
+                  "upper": 8,
+                  "value": 20
+                },
+                {
+                  "lower": -9,
+                  "upper": -2,
+                  "value": -9
+                },
+                {
+                  "lower": -9,
+                  "upper": -2,
+                  "value": -10
+                },
+                {
+                  "lower": -9,
+                  "upper": -2,
+                  "value": -5
+                },
+                {
+                  "lower": -9,
+                  "upper": -2,
+                  "value": -2
+                },
+                {
+                  "lower": -9,
+                  "upper": -2,
+                  "value": 0
+                },
+                {
+                  "lower": -9,
+                  "upper": -2,
+                  "value": 12
+                },
+                {
+                  "lower": 1,
+                  "upper": 5,
+                  "value": 2
+                },
+                {
+                  "lower": 1,
+                  "upper": 5,
+                  "value": 1
+                },
+                {
+                  "lower": 1,
+                  "upper": 5,
+                  "value": 3
+                },
+                {
+                  "lower": 1,
+                  "upper": 5,
+                  "value": 5
+                },
+                {
+                  "lower": 1,
+                  "upper": 5,
+                  "value": 7
+                },
+                {
+                  "lower": 1,
+                  "upper": 5,
+                  "value": -1
+                }
+              ],
+              "known": [
+                {
+                  "expected": -4,
+                  "inputs": {
+                    "lower": -4,
+                    "upper": 8,
+                    "value": -10
+                  }
+                },
+                {
+                  "expected": 0,
+                  "inputs": {
+                    "lower": -4,
+                    "upper": 8,
+                    "value": 0
+                  }
+                },
+                {
+                  "expected": 8,
+                  "inputs": {
+                    "lower": -4,
+                    "upper": 8,
+                    "value": 12
+                  }
+                }
+              ],
+              "name": "clamp_value",
+              "source": "def clamp_value(value, lower, upper):\n    return lower if value < lower else (upper if value > upper else value)\n"
+            },
+            "negative": {
+              "domain": [
+                {
+                  "x": 0
+                },
+                {
+                  "x": 1
+                },
+                {
+                  "x": 2
+                },
+                {
+                  "x": 3
+                },
+                {
+                  "x": 4
+                },
+                {
+                  "x": 5
+                }
+              ],
+              "known": [
+                {
+                  "expected": 1,
+                  "inputs": {
+                    "x": 1
+                  }
+                }
+              ],
+              "name": "identity",
+              "source": "def identity(x):\n    return x\n",
+              "task": "square"
+            },
+            "parity": {
+              "domain": [
+                {
+                  "value": -5
+                },
+                {
+                  "value": -4
+                },
+                {
+                  "value": -3
+                },
+                {
+                  "value": -2
+                },
+                {
+                  "value": -1
+                },
+                {
+                  "value": 0
+                },
+                {
+                  "value": 1
+                },
+                {
+                  "value": 2
+                },
+                {
+                  "value": 3
+                },
+                {
+                  "value": 4
+                },
+                {
+                  "value": 5
+                }
+              ],
+              "heldout": [
+                {
+                  "value": -20
+                },
+                {
+                  "value": -19
+                },
+                {
+                  "value": -18
+                },
+                {
+                  "value": -17
+                },
+                {
+                  "value": -16
+                },
+                {
+                  "value": -15
+                },
+                {
+                  "value": -14
+                },
+                {
+                  "value": -13
+                },
+                {
+                  "value": -12
+                },
+                {
+                  "value": -11
+                },
+                {
+                  "value": -10
+                },
+                {
+                  "value": -9
+                },
+                {
+                  "value": -8
+                },
+                {
+                  "value": -7
+                },
+                {
+                  "value": -6
+                },
+                {
+                  "value": -5
+                },
+                {
+                  "value": -4
+                },
+                {
+                  "value": -3
+                },
+                {
+                  "value": -2
+                },
+                {
+                  "value": -1
+                },
+                {
+                  "value": 0
+                },
+                {
+                  "value": 1
+                },
+                {
+                  "value": 2
+                },
+                {
+                  "value": 3
+                },
+                {
+                  "value": 4
+                },
+                {
+                  "value": 5
+                },
+                {
+                  "value": 6
+                },
+                {
+                  "value": 7
+                },
+                {
+                  "value": 8
+                },
+                {
+                  "value": 9
+                },
+                {
+                  "value": 10
+                },
+                {
+                  "value": 11
+                },
+                {
+                  "value": 12
+                },
+                {
+                  "value": 13
+                },
+                {
+                  "value": 14
+                },
+                {
+                  "value": 15
+                },
+                {
+                  "value": 16
+                },
+                {
+                  "value": 17
+                },
+                {
+                  "value": 18
+                },
+                {
+                  "value": 19
+                },
+                {
+                  "value": 20
+                }
+              ],
+              "known": [
+                {
+                  "expected": true,
+                  "inputs": {
+                    "value": 0
+                  }
+                },
+                {
+                  "expected": false,
+                  "inputs": {
+                    "value": 1
+                  }
+                }
+              ],
+              "name": "parity",
+              "source": "def parity(value):\n    return value % 2 == 0\n"
+            },
+            "square": {
+              "domain": [
+                {
+                  "x": -5
+                },
+                {
+                  "x": -4
+                },
+                {
+                  "x": -3
+                },
+                {
+                  "x": -2
+                },
+                {
+                  "x": -1
+                },
+                {
+                  "x": 0
+                },
+                {
+                  "x": 1
+                },
+                {
+                  "x": 2
+                },
+                {
+                  "x": 3
+                },
+                {
+                  "x": 4
+                },
+                {
+                  "x": 5
+                }
+              ],
+              "heldout": [
+                {
+                  "x": -20
+                },
+                {
+                  "x": -19
+                },
+                {
+                  "x": -18
+                },
+                {
+                  "x": -17
+                },
+                {
+                  "x": -16
+                },
+                {
+                  "x": -15
+                },
+                {
+                  "x": -14
+                },
+                {
+                  "x": -13
+                },
+                {
+                  "x": -12
+                },
+                {
+                  "x": -11
+                },
+                {
+                  "x": -10
+                },
+                {
+                  "x": -9
+                },
+                {
+                  "x": -8
+                },
+                {
+                  "x": -7
+                },
+                {
+                  "x": -6
+                },
+                {
+                  "x": -5
+                },
+                {
+                  "x": -4
+                },
+                {
+                  "x": -3
+                },
+                {
+                  "x": -2
+                },
+                {
+                  "x": -1
+                },
+                {
+                  "x": 0
+                },
+                {
+                  "x": 1
+                },
+                {
+                  "x": 2
+                },
+                {
+                  "x": 3
+                },
+                {
+                  "x": 4
+                },
+                {
+                  "x": 5
+                },
+                {
+                  "x": 6
+                },
+                {
+                  "x": 7
+                },
+                {
+                  "x": 8
+                },
+                {
+                  "x": 9
+                },
+                {
+                  "x": 10
+                },
+                {
+                  "x": 11
+                },
+                {
+                  "x": 12
+                },
+                {
+                  "x": 13
+                },
+                {
+                  "x": 14
+                },
+                {
+                  "x": 15
+                },
+                {
+                  "x": 16
+                },
+                {
+                  "x": 17
+                },
+                {
+                  "x": 18
+                },
+                {
+                  "x": 19
+                },
+                {
+                  "x": 20
+                }
+              ],
+              "known": [
+                {
+                  "expected": 0,
+                  "inputs": {
+                    "x": 0
+                  }
+                }
+              ],
+              "name": "square",
+              "source": "def square(x):\n    return x * x\n"
+            }
+          },
+          "provider": "audit:warmed-route-provider",
+          "repeats": 3,
+          "requests": {
+            "clamp": "Write a function that clamps a value between lower and upper bounds.",
+            "parity": "Write a function that returns the parity of an integer.",
+            "square": "Write a function that squares an integer."
+          },
+          "tasks": [
+            "parity",
+            "clamp",
+            "square"
+          ]
+        },
+        "files": {
+          "docs/research/engine_substrate/SUBSTRATE_ADEQUACY_WARM_CONVERSE_COST_V1_PREREG_20261002.md": "8227de12b80f593ad9540f7597ed7f20ac15e771150d92dccf5266a3ebe2ad68",
+          "evaluation/substrate_capability/analyze_substrate_adequacy_warm_converse_cost_v1.py": "ca3f810b49e8442240e5db40049e415370b994d7ea6c43b1f154d4740ba3a5c5",
+          "evaluation/substrate_capability/independent_codewrite_oracles.py": "b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+          "evaluation/substrate_capability/substrate_adequacy_warm_converse_cost_v1.py": "1749a20264f392386edc7b2d389815a729813d5b9b956030054f6ce6829b108a",
+          "evaluation/substrate_capability/substrate_independent_adequacy_codewrite_transfer_v1.py": "4df60f2b25381a778d4e1b6aa20889a8645d7993d0e8f57054d38179e6db57a5"
+        },
+        "git_head": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+        "schema": "SubstrateAdequacyWarmConverseCostV1Lock"
+      },
+      "protocol": "33817eddafbc40e9d48e72336afc4d56d2a980b46dd2b3cd7a1b3e15d258742c",
+      "runner": "6760bd40af2e3c708600474bccc315bec7b4e55133b83937f3b581d927848117"
+    }
+  },
+  "logical_cpus": 24,
+  "rows": [
+    {
+      "caller_worker": {
+        "caller_cpu": {
+          "caller_thread_cpu_ns": 100585257,
+          "native_tid": 8,
+          "native_tid_after": 8,
+          "other_thread_aggregate_cpu_ns": 1141814722
+        },
+        "observed": {
+          "phase_os_threads": {
+            "after_adapter_init": 1,
+            "after_pool_query_before_target": 25,
+            "after_target_after_pool_query": 48,
+            "after_target_before_pool_query": 48,
+            "after_warm_after_pool_query": 25,
+            "after_warm_before_pool_query": 1,
+            "before_target": 25
+          },
+          "rayon_pool_threads": {
+            "after_target": 24,
+            "after_warm": 24,
+            "before_target": 24
+          }
+        },
+        "worker": {
+          "active_after": {
+            "domain_tree": "dd5870b35b92c94818af18b0d8b3ef55aa3eed0bce927417bbde8a4a55bb5f4e",
+            "files": {
+              "domains/adequacy_probe_selection.py": "b8d75708d4e193f16bd071861af08658a907d020281d3c9106a9582c82e8acd9",
+              "domains/adequacy_provider_auth.py": "a5388de538b1af3303babcd0c382a46b3d2819796819be7741b603ca679e4768",
+              "domains/code_reading.py": "dd67d2942cf956c6e35f848aed4012c3ac072e9ac91d9e6b166e8ca44be57908",
+              "domains/code_write_growth.py": "d4a2460f9e41bb8370dc9f352cec2d46ff596d1872e329d7e05d0f33af219079",
+              "domains/independent_adequacy.py": "33191341fdd63d16d0b9cb5203f27666da90b60fccd567ac4633306a9dcab418",
+              "domains/teach.py": "308a5f31d74dabb3ed8b24bd0c967abd5f94596a3ff76d17657330877fae2cfa",
+              "runners/dsl/python/substrate_rs/__init__.py": "4e338797786071822b2e3d919ca1da3a266bda60c3ce0e29e13213a9d37454b4",
+              "runners/dsl/src/graph.rs": "9744fec2e0c5091f2036081ffc615b1c7dd00ba2a5995af1294efb0b5aa5a28c",
+              "runners/dsl/src/py.rs": "6a6da90d425e4f8da7b7626fc8dda39b46b63529a312d482d80e6e2ec4d03fd6",
+              "substrate/boot_all.py": "2bdf46f19228e1d85dbdcf12383116ceeb72aab0efe7ddd0cc6a51d23b45d220",
+              "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+              "substrate/seed_loader.py": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27",
+              "substrate/world_adapter.py": "e5850e4df2ff28d8c941cc3c0d12a840ab230ce627833421a88c3b354f65027c"
+            },
+            "native": "09d0ac3d2b3362f5cdf7d6b1cb5ef21524cf25672916b6928c29da7997fd32c6",
+            "oracle": "b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+            "rust_fingerprint": "7244b6779deed6b3155cabe14118abb01607de1c756c3ea8397e0179edd720e7",
+            "rust_tree": "5430e6fadce25f3812e498030347e1607777a8cc7a1a876f9a3957818aa92805",
+            "substrate_tree": "0fd9dee0bc92c33d541854fce3122826fa1fb21769ab3422aad001b42486bf96"
+          },
+          "condition": "missing_evidence",
+          "heldout": [
+            {
+              "expected": true,
+              "inputs": {
+                "value": -20
+              },
+              "prediction": true
+            },
+            {
+              "expected": false,
+              "inputs": {
+                "value": -19
+              },
+              "prediction": false
+            },
+            {
+              "expected": true,
+              "inputs": {
+                "value": -18
+              },
+              "prediction": true
+            },
+            {
+              "expected": false,
+              "inputs": {
+                "value": -17
+              },
+              "prediction": false
+            },
+            {
+              "expected": true,
+              "inputs": {
+                "value": -16
+              },
+              "prediction": true
+            },
+            {
+              "expected": false,
+              "inputs": {
+                "value": -15
+              },
+              "prediction": false
+            },
+            {
+              "expected": true,
+              "inputs": {
+                "value": -14
+              },
+              "prediction": true
+            },
+            {
+              "expected": false,
+              "inputs": {
+                "value": -13
+              },
+              "prediction": false
+            },
+            {
+              "expected": true,
+              "inputs": {
+                "value": -12
+              },
+              "prediction": true
+            },
+            {
+              "expected": false,
+              "inputs": {
+                "value": -11
+              },
+              "prediction": false
+            },
+            {
+              "expected": true,
+              "inputs": {
+                "value": -10
+              },
+              "prediction": true
+            },
+            {
+              "expected": false,
+              "inputs": {
+                "value": -9
+              },
+              "prediction": false
+            },
+            {
+              "expected": true,
+              "inputs": {
+                "value": -8
+              },
+              "prediction": true
+            },
+            {
+              "expected": false,
+              "inputs": {
+                "value": -7
+              },
+              "prediction": false
+            },
+            {
+              "expected": true,
+              "inputs": {
+                "value": -6
+              },
+              "prediction": true
+            },
+            {
+              "expected": false,
+              "inputs": {
+                "value": -5
+              },
+              "prediction": false
+            },
+            {
+              "expected": true,
+              "inputs": {
+                "value": -4
+              },
+              "prediction": true
+            },
+            {
+              "expected": false,
+              "inputs": {
+                "value": -3
+              },
+              "prediction": false
+            },
+            {
+              "expected": true,
+              "inputs": {
+                "value": -2
+              },
+              "prediction": true
+            },
+            {
+              "expected": false,
+              "inputs": {
+                "value": -1
+              },
+              "prediction": false
+            },
+            {
+              "expected": true,
+              "inputs": {
+                "value": 0
+              },
+              "prediction": true
+            },
+            {
+              "expected": false,
+              "inputs": {
+                "value": 1
+              },
+              "prediction": false
+            },
+            {
+              "expected": true,
+              "inputs": {
+                "value": 2
+              },
+              "prediction": true
+            },
+            {
+              "expected": false,
+              "inputs": {
+                "value": 3
+              },
+              "prediction": false
+            },
+            {
+              "expected": true,
+              "inputs": {
+                "value": 4
+              },
+              "prediction": true
+            },
+            {
+              "expected": false,
+              "inputs": {
+                "value": 5
+              },
+              "prediction": false
+            },
+            {
+              "expected": true,
+              "inputs": {
+                "value": 6
+              },
+              "prediction": true
+            },
+            {
+              "expected": false,
+              "inputs": {
+                "value": 7
+              },
+              "prediction": false
+            },
+            {
+              "expected": true,
+              "inputs": {
+                "value": 8
+              },
+              "prediction": true
+            },
+            {
+              "expected": false,
+              "inputs": {
+                "value": 9
+              },
+              "prediction": false
+            },
+            {
+              "expected": true,
+              "inputs": {
+                "value": 10
+              },
+              "prediction": true
+            },
+            {
+              "expected": false,
+              "inputs": {
+                "value": 11
+              },
+              "prediction": false
+            },
+            {
+              "expected": true,
+              "inputs": {
+                "value": 12
+              },
+              "prediction": true
+            },
+            {
+              "expected": false,
+              "inputs": {
+                "value": 13
+              },
+              "prediction": false
+            },
+            {
+              "expected": true,
+              "inputs": {
+                "value": 14
+              },
+              "prediction": true
+            },
+            {
+              "expected": false,
+              "inputs": {
+                "value": 15
+              },
+              "prediction": false
+            },
+            {
+              "expected": true,
+              "inputs": {
+                "value": 16
+              },
+              "prediction": true
+            },
+            {
+              "expected": false,
+              "inputs": {
+                "value": 17
+              },
+              "prediction": false
+            },
+            {
+              "expected": true,
+              "inputs": {
+                "value": 18
+              },
+              "prediction": true
+            },
+            {
+              "expected": false,
+              "inputs": {
+                "value": 19
+              },
+              "prediction": false
+            },
+            {
+              "expected": true,
+              "inputs": {
+                "value": 20
+              },
+              "prediction": true
+            }
+          ],
+          "pid": 8,
+          "reply": "I read that function but cannot adopt it without authenticated adequacy evidence.",
+          "shape_delta": 0,
+          "state_after": {
+            "epoch": 0,
+            "shapes": []
+          },
+          "state_before": {
+            "epoch": 0,
+            "shapes": []
+          },
+          "task": "parity",
+          "timing_ns": {
+            "target_cpu": 1242399979,
+            "target_wall": 125389082
+          },
+          "warm_wall_ns": 113728216
+        }
+      },
+      "mode": "default",
+      "rep": 1,
+      "thread_cpu": {
+        "sample_count": 14,
+        "sample_interval_ms": 2.0,
+        "sampled_thread_runtime_sum_ns": 1010857903,
+        "target_interval_ns": 124970668,
+        "threads": [
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 99446507,
+            "starttime_ticks": 59918071,
+            "tid": 8
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 66322678,
+            "starttime_ticks": 59918118,
+            "tid": 258
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 60448046,
+            "starttime_ticks": 59918118,
+            "tid": 256
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 55347725,
+            "starttime_ticks": 59918118,
+            "tid": 271
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 54605655,
+            "starttime_ticks": 59918118,
+            "tid": 260
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 50457655,
+            "starttime_ticks": 59918118,
+            "tid": 268
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 48798635,
+            "starttime_ticks": 59918118,
+            "tid": 264
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 48164504,
+            "starttime_ticks": 59918118,
+            "tid": 266
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 42311721,
+            "starttime_ticks": 59918118,
+            "tid": 259
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 42147463,
+            "starttime_ticks": 59918118,
+            "tid": 265
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 41950652,
+            "starttime_ticks": 59918118,
+            "tid": 267
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 40925822,
+            "starttime_ticks": 59918118,
+            "tid": 272
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 40358431,
+            "starttime_ticks": 59918118,
+            "tid": 262
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 39335290,
+            "starttime_ticks": 59918118,
+            "tid": 257
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 38039201,
+            "starttime_ticks": 59918118,
+            "tid": 269
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 34923089,
+            "starttime_ticks": 59918118,
+            "tid": 278
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 32903780,
+            "starttime_ticks": 59918118,
+            "tid": 274
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 31198949,
+            "starttime_ticks": 59918118,
+            "tid": 261
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 30377320,
+            "starttime_ticks": 59918118,
+            "tid": 270
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 28701667,
+            "starttime_ticks": 59918118,
+            "tid": 273
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 23330097,
+            "starttime_ticks": 59918118,
+            "tid": 276
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 22449446,
+            "starttime_ticks": 59918118,
+            "tid": 277
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 19258396,
+            "starttime_ticks": 59918118,
+            "tid": 263
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 19055174,
+            "starttime_ticks": 59918118,
+            "tid": 275
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 0,
+            "starttime_ticks": 59918113,
+            "tid": 231
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 0,
+            "starttime_ticks": 59918113,
+            "tid": 232
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 0,
+            "starttime_ticks": 59918113,
+            "tid": 233
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 0,
+            "starttime_ticks": 59918113,
+            "tid": 234
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 0,
+            "starttime_ticks": 59918113,
+            "tid": 235
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 0,
+            "starttime_ticks": 59918113,
+            "tid": 236
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 0,
+            "starttime_ticks": 59918113,
+            "tid": 237
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 0,
+            "starttime_ticks": 59918113,
+            "tid": 238
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 0,
+            "starttime_ticks": 59918113,
+            "tid": 239
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 0,
+            "starttime_ticks": 59918113,
+            "tid": 240
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 0,
+            "starttime_ticks": 59918113,
+            "tid": 241
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 0,
+            "starttime_ticks": 59918113,
+            "tid": 242
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 0,
+            "starttime_ticks": 59918113,
+            "tid": 243
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 0,
+            "starttime_ticks": 59918113,
+            "tid": 244
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 0,
+            "starttime_ticks": 59918113,
+            "tid": 245
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 0,
+            "starttime_ticks": 59918113,
+            "tid": 246
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 0,
+            "starttime_ticks": 59918113,
+            "tid": 247
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 0,
+            "starttime_ticks": 59918113,
+            "tid": 248
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 0,
+            "starttime_ticks": 59918113,
+            "tid": 249
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 0,
+            "starttime_ticks": 59918113,
+            "tid": 250
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 0,
+            "starttime_ticks": 59918113,
+            "tid": 251
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 0,
+            "starttime_ticks": 59918113,
+            "tid": 252
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 0,
+            "starttime_ticks": 59918113,
+            "tid": 253
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 0,
+            "starttime_ticks": 59918113,
+            "tid": 254
+          }
+        ],
+        "unique_thread_instances": 48
+      }
+    },
+    {
+      "caller_worker": {
+        "caller_cpu": {
+          "caller_thread_cpu_ns": 110613268,
+          "native_tid": 396,
+          "native_tid_after": 396,
+          "other_thread_aggregate_cpu_ns": 1151181876
+        },
+        "observed": {
+          "phase_os_threads": {
+            "after_adapter_init": 1,
+            "after_pool_query_before_target": 2,
+            "after_target_after_pool_query": 25,
+            "after_target_before_pool_query": 25,
+            "after_warm_after_pool_query": 2,
+            "after_warm_before_pool_query": 1,
+            "before_target": 2
+          },
+          "rayon_pool_threads": {
+            "after_target": 1,
+            "after_warm": 1,
+            "before_target": 1
+          }
+        },
+        "worker": {
+          "active_after": {
+            "domain_tree": "dd5870b35b92c94818af18b0d8b3ef55aa3eed0bce927417bbde8a4a55bb5f4e",
+            "files": {
+              "domains/adequacy_probe_selection.py": "b8d75708d4e193f16bd071861af08658a907d020281d3c9106a9582c82e8acd9",
+              "domains/adequacy_provider_auth.py": "a5388de538b1af3303babcd0c382a46b3d2819796819be7741b603ca679e4768",
+              "domains/code_reading.py": "dd67d2942cf956c6e35f848aed4012c3ac072e9ac91d9e6b166e8ca44be57908",
+              "domains/code_write_growth.py": "d4a2460f9e41bb8370dc9f352cec2d46ff596d1872e329d7e05d0f33af219079",
+              "domains/independent_adequacy.py": "33191341fdd63d16d0b9cb5203f27666da90b60fccd567ac4633306a9dcab418",
+              "domains/teach.py": "308a5f31d74dabb3ed8b24bd0c967abd5f94596a3ff76d17657330877fae2cfa",
+              "runners/dsl/python/substrate_rs/__init__.py": "4e338797786071822b2e3d919ca1da3a266bda60c3ce0e29e13213a9d37454b4",
+              "runners/dsl/src/graph.rs": "9744fec2e0c5091f2036081ffc615b1c7dd00ba2a5995af1294efb0b5aa5a28c",
+              "runners/dsl/src/py.rs": "6a6da90d425e4f8da7b7626fc8dda39b46b63529a312d482d80e6e2ec4d03fd6",
+              "substrate/boot_all.py": "2bdf46f19228e1d85dbdcf12383116ceeb72aab0efe7ddd0cc6a51d23b45d220",
+              "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+              "substrate/seed_loader.py": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27",
+              "substrate/world_adapter.py": "e5850e4df2ff28d8c941cc3c0d12a840ab230ce627833421a88c3b354f65027c"
+            },
+            "native": "09d0ac3d2b3362f5cdf7d6b1cb5ef21524cf25672916b6928c29da7997fd32c6",
+            "oracle": "b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+            "rust_fingerprint": "7244b6779deed6b3155cabe14118abb01607de1c756c3ea8397e0179edd720e7",
+            "rust_tree": "5430e6fadce25f3812e498030347e1607777a8cc7a1a876f9a3957818aa92805",
+            "substrate_tree": "0fd9dee0bc92c33d541854fce3122826fa1fb21769ab3422aad001b42486bf96"
+          },
+          "condition": "missing_evidence",
+          "heldout": [
+            {
+              "expected": true,
+              "inputs": {
+                "value": -20
+              },
+              "prediction": true
+            },
+            {
+              "expected": false,
+              "inputs": {
+                "value": -19
+              },
+              "prediction": false
+            },
+            {
+              "expected": true,
+              "inputs": {
+                "value": -18
+              },
+              "prediction": true
+            },
+            {
+              "expected": false,
+              "inputs": {
+                "value": -17
+              },
+              "prediction": false
+            },
+            {
+              "expected": true,
+              "inputs": {
+                "value": -16
+              },
+              "prediction": true
+            },
+            {
+              "expected": false,
+              "inputs": {
+                "value": -15
+              },
+              "prediction": false
+            },
+            {
+              "expected": true,
+              "inputs": {
+                "value": -14
+              },
+              "prediction": true
+            },
+            {
+              "expected": false,
+              "inputs": {
+                "value": -13
+              },
+              "prediction": false
+            },
+            {
+              "expected": true,
+              "inputs": {
+                "value": -12
+              },
+              "prediction": true
+            },
+            {
+              "expected": false,
+              "inputs": {
+                "value": -11
+              },
+              "prediction": false
+            },
+            {
+              "expected": true,
+              "inputs": {
+                "value": -10
+              },
+              "prediction": true
+            },
+            {
+              "expected": false,
+              "inputs": {
+                "value": -9
+              },
+              "prediction": false
+            },
+            {
+              "expected": true,
+              "inputs": {
+                "value": -8
+              },
+              "prediction": true
+            },
+            {
+              "expected": false,
+              "inputs": {
+                "value": -7
+              },
+              "prediction": false
+            },
+            {
+              "expected": true,
+              "inputs": {
+                "value": -6
+              },
+              "prediction": true
+            },
+            {
+              "expected": false,
+              "inputs": {
+                "value": -5
+              },
+              "prediction": false
+            },
+            {
+              "expected": true,
+              "inputs": {
+                "value": -4
+              },
+              "prediction": true
+            },
+            {
+              "expected": false,
+              "inputs": {
+                "value": -3
+              },
+              "prediction": false
+            },
+            {
+              "expected": true,
+              "inputs": {
+                "value": -2
+              },
+              "prediction": true
+            },
+            {
+              "expected": false,
+              "inputs": {
+                "value": -1
+              },
+              "prediction": false
+            },
+            {
+              "expected": true,
+              "inputs": {
+                "value": 0
+              },
+              "prediction": true
+            },
+            {
+              "expected": false,
+              "inputs": {
+                "value": 1
+              },
+              "prediction": false
+            },
+            {
+              "expected": true,
+              "inputs": {
+                "value": 2
+              },
+              "prediction": true
+            },
+            {
+              "expected": false,
+              "inputs": {
+                "value": 3
+              },
+              "prediction": false
+            },
+            {
+              "expected": true,
+              "inputs": {
+                "value": 4
+              },
+              "prediction": true
+            },
+            {
+              "expected": false,
+              "inputs": {
+                "value": 5
+              },
+              "prediction": false
+            },
+            {
+              "expected": true,
+              "inputs": {
+                "value": 6
+              },
+              "prediction": true
+            },
+            {
+              "expected": false,
+              "inputs": {
+                "value": 7
+              },
+              "prediction": false
+            },
+            {
+              "expected": true,
+              "inputs": {
+                "value": 8
+              },
+              "prediction": true
+            },
+            {
+              "expected": false,
+              "inputs": {
+                "value": 9
+              },
+              "prediction": false
+            },
+            {
+              "expected": true,
+              "inputs": {
+                "value": 10
+              },
+              "prediction": true
+            },
+            {
+              "expected": false,
+              "inputs": {
+                "value": 11
+              },
+              "prediction": false
+            },
+            {
+              "expected": true,
+              "inputs": {
+                "value": 12
+              },
+              "prediction": true
+            },
+            {
+              "expected": false,
+              "inputs": {
+                "value": 13
+              },
+              "prediction": false
+            },
+            {
+              "expected": true,
+              "inputs": {
+                "value": 14
+              },
+              "prediction": true
+            },
+            {
+              "expected": false,
+              "inputs": {
+                "value": 15
+              },
+              "prediction": false
+            },
+            {
+              "expected": true,
+              "inputs": {
+                "value": 16
+              },
+              "prediction": true
+            },
+            {
+              "expected": false,
+              "inputs": {
+                "value": 17
+              },
+              "prediction": false
+            },
+            {
+              "expected": true,
+              "inputs": {
+                "value": 18
+              },
+              "prediction": true
+            },
+            {
+              "expected": false,
+              "inputs": {
+                "value": 19
+              },
+              "prediction": false
+            },
+            {
+              "expected": true,
+              "inputs": {
+                "value": 20
+              },
+              "prediction": true
+            }
+          ],
+          "pid": 396,
+          "reply": "I read that function but cannot adopt it without authenticated adequacy evidence.",
+          "shape_delta": 0,
+          "state_after": {
+            "epoch": 0,
+            "shapes": []
+          },
+          "state_before": {
+            "epoch": 0,
+            "shapes": []
+          },
+          "task": "parity",
+          "timing_ns": {
+            "target_cpu": 1261795144,
+            "target_wall": 136228311
+          },
+          "warm_wall_ns": 130603745
+        }
+      },
+      "mode": "one_thread",
+      "rep": 2,
+      "thread_cpu": {
+        "sample_count": 25,
+        "sample_interval_ms": 2.0,
+        "sampled_thread_runtime_sum_ns": 1171184908,
+        "target_interval_ns": 135872090,
+        "threads": [
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 108544418,
+            "starttime_ticks": 59918158,
+            "tid": 396
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 69833150,
+            "starttime_ticks": 59918208,
+            "tid": 636
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 65995957,
+            "starttime_ticks": 59918208,
+            "tid": 621
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 65430369,
+            "starttime_ticks": 59918208,
+            "tid": 631
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 63455457,
+            "starttime_ticks": 59918208,
+            "tid": 629
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 62728858,
+            "starttime_ticks": 59918208,
+            "tid": 627
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 57118985,
+            "starttime_ticks": 59918208,
+            "tid": 625
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 57045955,
+            "starttime_ticks": 59918208,
+            "tid": 638
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 57009236,
+            "starttime_ticks": 59918209,
+            "tid": 641
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 56331374,
+            "starttime_ticks": 59918208,
+            "tid": 624
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 56080875,
+            "starttime_ticks": 59918209,
+            "tid": 642
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 55868265,
+            "starttime_ticks": 59918208,
+            "tid": 630
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 53917395,
+            "starttime_ticks": 59918209,
+            "tid": 643
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 49579504,
+            "starttime_ticks": 59918209,
+            "tid": 640
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 48460803,
+            "starttime_ticks": 59918208,
+            "tid": 622
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 38872880,
+            "starttime_ticks": 59918208,
+            "tid": 623
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 37897710,
+            "starttime_ticks": 59918208,
+            "tid": 639
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 37602072,
+            "starttime_ticks": 59918208,
+            "tid": 626
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 32540328,
+            "starttime_ticks": 59918208,
+            "tid": 635
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 24435367,
+            "starttime_ticks": 59918208,
+            "tid": 637
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 20991386,
+            "starttime_ticks": 59918208,
+            "tid": 632
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 17686346,
+            "starttime_ticks": 59918208,
+            "tid": 628
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 17089253,
+            "starttime_ticks": 59918208,
+            "tid": 633
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 16668965,
+            "starttime_ticks": 59918208,
+            "tid": 634
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 0,
+            "starttime_ticks": 59918201,
+            "tid": 619
+          }
+        ],
+        "unique_thread_instances": 25
+      }
+    },
+    {
+      "caller_worker": {
+        "caller_cpu": {
+          "caller_thread_cpu_ns": 101094066,
+          "native_tid": 761,
+          "native_tid_after": 761,
+          "other_thread_aggregate_cpu_ns": 1023071616
+        },
+        "observed": {
+          "phase_os_threads": {
+            "after_adapter_init": 1,
+            "after_pool_query_before_target": 2,
+            "after_target_after_pool_query": 25,
+            "after_target_before_pool_query": 25,
+            "after_warm_after_pool_query": 2,
+            "after_warm_before_pool_query": 1,
+            "before_target": 2
+          },
+          "rayon_pool_threads": {
+            "after_target": 1,
+            "after_warm": 1,
+            "before_target": 1
+          }
+        },
+        "worker": {
+          "active_after": {
+            "domain_tree": "dd5870b35b92c94818af18b0d8b3ef55aa3eed0bce927417bbde8a4a55bb5f4e",
+            "files": {
+              "domains/adequacy_probe_selection.py": "b8d75708d4e193f16bd071861af08658a907d020281d3c9106a9582c82e8acd9",
+              "domains/adequacy_provider_auth.py": "a5388de538b1af3303babcd0c382a46b3d2819796819be7741b603ca679e4768",
+              "domains/code_reading.py": "dd67d2942cf956c6e35f848aed4012c3ac072e9ac91d9e6b166e8ca44be57908",
+              "domains/code_write_growth.py": "d4a2460f9e41bb8370dc9f352cec2d46ff596d1872e329d7e05d0f33af219079",
+              "domains/independent_adequacy.py": "33191341fdd63d16d0b9cb5203f27666da90b60fccd567ac4633306a9dcab418",
+              "domains/teach.py": "308a5f31d74dabb3ed8b24bd0c967abd5f94596a3ff76d17657330877fae2cfa",
+              "runners/dsl/python/substrate_rs/__init__.py": "4e338797786071822b2e3d919ca1da3a266bda60c3ce0e29e13213a9d37454b4",
+              "runners/dsl/src/graph.rs": "9744fec2e0c5091f2036081ffc615b1c7dd00ba2a5995af1294efb0b5aa5a28c",
+              "runners/dsl/src/py.rs": "6a6da90d425e4f8da7b7626fc8dda39b46b63529a312d482d80e6e2ec4d03fd6",
+              "substrate/boot_all.py": "2bdf46f19228e1d85dbdcf12383116ceeb72aab0efe7ddd0cc6a51d23b45d220",
+              "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+              "substrate/seed_loader.py": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27",
+              "substrate/world_adapter.py": "e5850e4df2ff28d8c941cc3c0d12a840ab230ce627833421a88c3b354f65027c"
+            },
+            "native": "09d0ac3d2b3362f5cdf7d6b1cb5ef21524cf25672916b6928c29da7997fd32c6",
+            "oracle": "b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+            "rust_fingerprint": "7244b6779deed6b3155cabe14118abb01607de1c756c3ea8397e0179edd720e7",
+            "rust_tree": "5430e6fadce25f3812e498030347e1607777a8cc7a1a876f9a3957818aa92805",
+            "substrate_tree": "0fd9dee0bc92c33d541854fce3122826fa1fb21769ab3422aad001b42486bf96"
+          },
+          "condition": "missing_evidence",
+          "heldout": [
+            {
+              "expected": true,
+              "inputs": {
+                "value": -20
+              },
+              "prediction": true
+            },
+            {
+              "expected": false,
+              "inputs": {
+                "value": -19
+              },
+              "prediction": false
+            },
+            {
+              "expected": true,
+              "inputs": {
+                "value": -18
+              },
+              "prediction": true
+            },
+            {
+              "expected": false,
+              "inputs": {
+                "value": -17
+              },
+              "prediction": false
+            },
+            {
+              "expected": true,
+              "inputs": {
+                "value": -16
+              },
+              "prediction": true
+            },
+            {
+              "expected": false,
+              "inputs": {
+                "value": -15
+              },
+              "prediction": false
+            },
+            {
+              "expected": true,
+              "inputs": {
+                "value": -14
+              },
+              "prediction": true
+            },
+            {
+              "expected": false,
+              "inputs": {
+                "value": -13
+              },
+              "prediction": false
+            },
+            {
+              "expected": true,
+              "inputs": {
+                "value": -12
+              },
+              "prediction": true
+            },
+            {
+              "expected": false,
+              "inputs": {
+                "value": -11
+              },
+              "prediction": false
+            },
+            {
+              "expected": true,
+              "inputs": {
+                "value": -10
+              },
+              "prediction": true
+            },
+            {
+              "expected": false,
+              "inputs": {
+                "value": -9
+              },
+              "prediction": false
+            },
+            {
+              "expected": true,
+              "inputs": {
+                "value": -8
+              },
+              "prediction": true
+            },
+            {
+              "expected": false,
+              "inputs": {
+                "value": -7
+              },
+              "prediction": false
+            },
+            {
+              "expected": true,
+              "inputs": {
+                "value": -6
+              },
+              "prediction": true
+            },
+            {
+              "expected": false,
+              "inputs": {
+                "value": -5
+              },
+              "prediction": false
+            },
+            {
+              "expected": true,
+              "inputs": {
+                "value": -4
+              },
+              "prediction": true
+            },
+            {
+              "expected": false,
+              "inputs": {
+                "value": -3
+              },
+              "prediction": false
+            },
+            {
+              "expected": true,
+              "inputs": {
+                "value": -2
+              },
+              "prediction": true
+            },
+            {
+              "expected": false,
+              "inputs": {
+                "value": -1
+              },
+              "prediction": false
+            },
+            {
+              "expected": true,
+              "inputs": {
+                "value": 0
+              },
+              "prediction": true
+            },
+            {
+              "expected": false,
+              "inputs": {
+                "value": 1
+              },
+              "prediction": false
+            },
+            {
+              "expected": true,
+              "inputs": {
+                "value": 2
+              },
+              "prediction": true
+            },
+            {
+              "expected": false,
+              "inputs": {
+                "value": 3
+              },
+              "prediction": false
+            },
+            {
+              "expected": true,
+              "inputs": {
+                "value": 4
+              },
+              "prediction": true
+            },
+            {
+              "expected": false,
+              "inputs": {
+                "value": 5
+              },
+              "prediction": false
+            },
+            {
+              "expected": true,
+              "inputs": {
+                "value": 6
+              },
+              "prediction": true
+            },
+            {
+              "expected": false,
+              "inputs": {
+                "value": 7
+              },
+              "prediction": false
+            },
+            {
+              "expected": true,
+              "inputs": {
+                "value": 8
+              },
+              "prediction": true
+            },
+            {
+              "expected": false,
+              "inputs": {
+                "value": 9
+              },
+              "prediction": false
+            },
+            {
+              "expected": true,
+              "inputs": {
+                "value": 10
+              },
+              "prediction": true
+            },
+            {
+              "expected": false,
+              "inputs": {
+                "value": 11
+              },
+              "prediction": false
+            },
+            {
+              "expected": true,
+              "inputs": {
+                "value": 12
+              },
+              "prediction": true
+            },
+            {
+              "expected": false,
+              "inputs": {
+                "value": 13
+              },
+              "prediction": false
+            },
+            {
+              "expected": true,
+              "inputs": {
+                "value": 14
+              },
+              "prediction": true
+            },
+            {
+              "expected": false,
+              "inputs": {
+                "value": 15
+              },
+              "prediction": false
+            },
+            {
+              "expected": true,
+              "inputs": {
+                "value": 16
+              },
+              "prediction": true
+            },
+            {
+              "expected": false,
+              "inputs": {
+                "value": 17
+              },
+              "prediction": false
+            },
+            {
+              "expected": true,
+              "inputs": {
+                "value": 18
+              },
+              "prediction": true
+            },
+            {
+              "expected": false,
+              "inputs": {
+                "value": 19
+              },
+              "prediction": false
+            },
+            {
+              "expected": true,
+              "inputs": {
+                "value": 20
+              },
+              "prediction": true
+            }
+          ],
+          "pid": 761,
+          "reply": "I read that function but cannot adopt it without authenticated adequacy evidence.",
+          "shape_delta": 0,
+          "state_after": {
+            "epoch": 0,
+            "shapes": []
+          },
+          "state_before": {
+            "epoch": 0,
+            "shapes": []
+          },
+          "task": "parity",
+          "timing_ns": {
+            "target_cpu": 1124165682,
+            "target_wall": 179045909
+          },
+          "warm_wall_ns": 159997616
+        }
+      },
+      "mode": "one_thread",
+      "rep": 3,
+      "thread_cpu": {
+        "sample_count": 35,
+        "sample_interval_ms": 2.0,
+        "sampled_thread_runtime_sum_ns": 1095926502,
+        "target_interval_ns": 178742328,
+        "threads": [
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 96639764,
+            "starttime_ticks": 59918244,
+            "tid": 761
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 71886320,
+            "starttime_ticks": 59918299,
+            "tid": 999
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 67992488,
+            "starttime_ticks": 59918299,
+            "tid": 988
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 67305728,
+            "starttime_ticks": 59918299,
+            "tid": 987
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 66828969,
+            "starttime_ticks": 59918299,
+            "tid": 1008
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 64949338,
+            "starttime_ticks": 59918299,
+            "tid": 995
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 64090198,
+            "starttime_ticks": 59918299,
+            "tid": 990
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 61753556,
+            "starttime_ticks": 59918299,
+            "tid": 996
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 58361626,
+            "starttime_ticks": 59918299,
+            "tid": 993
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 54991093,
+            "starttime_ticks": 59918299,
+            "tid": 992
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 54541334,
+            "starttime_ticks": 59918299,
+            "tid": 998
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 48693273,
+            "starttime_ticks": 59918299,
+            "tid": 1001
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 43047762,
+            "starttime_ticks": 59918299,
+            "tid": 991
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 42584533,
+            "starttime_ticks": 59918299,
+            "tid": 986
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 38861051,
+            "starttime_ticks": 59918299,
+            "tid": 1004
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 29706998,
+            "starttime_ticks": 59918299,
+            "tid": 997
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 26809407,
+            "starttime_ticks": 59918299,
+            "tid": 1006
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 25206934,
+            "starttime_ticks": 59918299,
+            "tid": 1002
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 22961866,
+            "starttime_ticks": 59918299,
+            "tid": 994
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 21882366,
+            "starttime_ticks": 59918299,
+            "tid": 989
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 20598576,
+            "starttime_ticks": 59918299,
+            "tid": 1007
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 16420225,
+            "starttime_ticks": 59918299,
+            "tid": 1000
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 15886883,
+            "starttime_ticks": 59918299,
+            "tid": 1005
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 13926214,
+            "starttime_ticks": 59918299,
+            "tid": 1003
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 0,
+            "starttime_ticks": 59918293,
+            "tid": 984
+          }
+        ],
+        "unique_thread_instances": 25
+      }
+    },
+    {
+      "caller_worker": {
+        "caller_cpu": {
+          "caller_thread_cpu_ns": 110800807,
+          "native_tid": 1126,
+          "native_tid_after": 1126,
+          "other_thread_aggregate_cpu_ns": 1075476933
+        },
+        "observed": {
+          "phase_os_threads": {
+            "after_adapter_init": 1,
+            "after_pool_query_before_target": 25,
+            "after_target_after_pool_query": 48,
+            "after_target_before_pool_query": 48,
+            "after_warm_after_pool_query": 25,
+            "after_warm_before_pool_query": 1,
+            "before_target": 25
+          },
+          "rayon_pool_threads": {
+            "after_target": 24,
+            "after_warm": 24,
+            "before_target": 24
+          }
+        },
+        "worker": {
+          "active_after": {
+            "domain_tree": "dd5870b35b92c94818af18b0d8b3ef55aa3eed0bce927417bbde8a4a55bb5f4e",
+            "files": {
+              "domains/adequacy_probe_selection.py": "b8d75708d4e193f16bd071861af08658a907d020281d3c9106a9582c82e8acd9",
+              "domains/adequacy_provider_auth.py": "a5388de538b1af3303babcd0c382a46b3d2819796819be7741b603ca679e4768",
+              "domains/code_reading.py": "dd67d2942cf956c6e35f848aed4012c3ac072e9ac91d9e6b166e8ca44be57908",
+              "domains/code_write_growth.py": "d4a2460f9e41bb8370dc9f352cec2d46ff596d1872e329d7e05d0f33af219079",
+              "domains/independent_adequacy.py": "33191341fdd63d16d0b9cb5203f27666da90b60fccd567ac4633306a9dcab418",
+              "domains/teach.py": "308a5f31d74dabb3ed8b24bd0c967abd5f94596a3ff76d17657330877fae2cfa",
+              "runners/dsl/python/substrate_rs/__init__.py": "4e338797786071822b2e3d919ca1da3a266bda60c3ce0e29e13213a9d37454b4",
+              "runners/dsl/src/graph.rs": "9744fec2e0c5091f2036081ffc615b1c7dd00ba2a5995af1294efb0b5aa5a28c",
+              "runners/dsl/src/py.rs": "6a6da90d425e4f8da7b7626fc8dda39b46b63529a312d482d80e6e2ec4d03fd6",
+              "substrate/boot_all.py": "2bdf46f19228e1d85dbdcf12383116ceeb72aab0efe7ddd0cc6a51d23b45d220",
+              "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+              "substrate/seed_loader.py": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27",
+              "substrate/world_adapter.py": "e5850e4df2ff28d8c941cc3c0d12a840ab230ce627833421a88c3b354f65027c"
+            },
+            "native": "09d0ac3d2b3362f5cdf7d6b1cb5ef21524cf25672916b6928c29da7997fd32c6",
+            "oracle": "b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+            "rust_fingerprint": "7244b6779deed6b3155cabe14118abb01607de1c756c3ea8397e0179edd720e7",
+            "rust_tree": "5430e6fadce25f3812e498030347e1607777a8cc7a1a876f9a3957818aa92805",
+            "substrate_tree": "0fd9dee0bc92c33d541854fce3122826fa1fb21769ab3422aad001b42486bf96"
+          },
+          "condition": "missing_evidence",
+          "heldout": [
+            {
+              "expected": true,
+              "inputs": {
+                "value": -20
+              },
+              "prediction": true
+            },
+            {
+              "expected": false,
+              "inputs": {
+                "value": -19
+              },
+              "prediction": false
+            },
+            {
+              "expected": true,
+              "inputs": {
+                "value": -18
+              },
+              "prediction": true
+            },
+            {
+              "expected": false,
+              "inputs": {
+                "value": -17
+              },
+              "prediction": false
+            },
+            {
+              "expected": true,
+              "inputs": {
+                "value": -16
+              },
+              "prediction": true
+            },
+            {
+              "expected": false,
+              "inputs": {
+                "value": -15
+              },
+              "prediction": false
+            },
+            {
+              "expected": true,
+              "inputs": {
+                "value": -14
+              },
+              "prediction": true
+            },
+            {
+              "expected": false,
+              "inputs": {
+                "value": -13
+              },
+              "prediction": false
+            },
+            {
+              "expected": true,
+              "inputs": {
+                "value": -12
+              },
+              "prediction": true
+            },
+            {
+              "expected": false,
+              "inputs": {
+                "value": -11
+              },
+              "prediction": false
+            },
+            {
+              "expected": true,
+              "inputs": {
+                "value": -10
+              },
+              "prediction": true
+            },
+            {
+              "expected": false,
+              "inputs": {
+                "value": -9
+              },
+              "prediction": false
+            },
+            {
+              "expected": true,
+              "inputs": {
+                "value": -8
+              },
+              "prediction": true
+            },
+            {
+              "expected": false,
+              "inputs": {
+                "value": -7
+              },
+              "prediction": false
+            },
+            {
+              "expected": true,
+              "inputs": {
+                "value": -6
+              },
+              "prediction": true
+            },
+            {
+              "expected": false,
+              "inputs": {
+                "value": -5
+              },
+              "prediction": false
+            },
+            {
+              "expected": true,
+              "inputs": {
+                "value": -4
+              },
+              "prediction": true
+            },
+            {
+              "expected": false,
+              "inputs": {
+                "value": -3
+              },
+              "prediction": false
+            },
+            {
+              "expected": true,
+              "inputs": {
+                "value": -2
+              },
+              "prediction": true
+            },
+            {
+              "expected": false,
+              "inputs": {
+                "value": -1
+              },
+              "prediction": false
+            },
+            {
+              "expected": true,
+              "inputs": {
+                "value": 0
+              },
+              "prediction": true
+            },
+            {
+              "expected": false,
+              "inputs": {
+                "value": 1
+              },
+              "prediction": false
+            },
+            {
+              "expected": true,
+              "inputs": {
+                "value": 2
+              },
+              "prediction": true
+            },
+            {
+              "expected": false,
+              "inputs": {
+                "value": 3
+              },
+              "prediction": false
+            },
+            {
+              "expected": true,
+              "inputs": {
+                "value": 4
+              },
+              "prediction": true
+            },
+            {
+              "expected": false,
+              "inputs": {
+                "value": 5
+              },
+              "prediction": false
+            },
+            {
+              "expected": true,
+              "inputs": {
+                "value": 6
+              },
+              "prediction": true
+            },
+            {
+              "expected": false,
+              "inputs": {
+                "value": 7
+              },
+              "prediction": false
+            },
+            {
+              "expected": true,
+              "inputs": {
+                "value": 8
+              },
+              "prediction": true
+            },
+            {
+              "expected": false,
+              "inputs": {
+                "value": 9
+              },
+              "prediction": false
+            },
+            {
+              "expected": true,
+              "inputs": {
+                "value": 10
+              },
+              "prediction": true
+            },
+            {
+              "expected": false,
+              "inputs": {
+                "value": 11
+              },
+              "prediction": false
+            },
+            {
+              "expected": true,
+              "inputs": {
+                "value": 12
+              },
+              "prediction": true
+            },
+            {
+              "expected": false,
+              "inputs": {
+                "value": 13
+              },
+              "prediction": false
+            },
+            {
+              "expected": true,
+              "inputs": {
+                "value": 14
+              },
+              "prediction": true
+            },
+            {
+              "expected": false,
+              "inputs": {
+                "value": 15
+              },
+              "prediction": false
+            },
+            {
+              "expected": true,
+              "inputs": {
+                "value": 16
+              },
+              "prediction": true
+            },
+            {
+              "expected": false,
+              "inputs": {
+                "value": 17
+              },
+              "prediction": false
+            },
+            {
+              "expected": true,
+              "inputs": {
+                "value": 18
+              },
+              "prediction": true
+            },
+            {
+              "expected": false,
+              "inputs": {
+                "value": 19
+              },
+              "prediction": false
+            },
+            {
+              "expected": true,
+              "inputs": {
+                "value": 20
+              },
+              "prediction": true
+            }
+          ],
+          "pid": 1126,
+          "reply": "I read that function but cannot adopt it without authenticated adequacy evidence.",
+          "shape_delta": 0,
+          "state_after": {
+            "epoch": 0,
+            "shapes": []
+          },
+          "state_before": {
+            "epoch": 0,
+            "shapes": []
+          },
+          "task": "parity",
+          "timing_ns": {
+            "target_cpu": 1186277740,
+            "target_wall": 151300789
+          },
+          "warm_wall_ns": 126313688
+        }
+      },
+      "mode": "default",
+      "rep": 4,
+      "thread_cpu": {
+        "sample_count": 18,
+        "sample_interval_ms": 2.0,
+        "sampled_thread_runtime_sum_ns": 1022177481,
+        "target_interval_ns": 150999758,
+        "threads": [
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 109453577,
+            "starttime_ticks": 59918342,
+            "tid": 1126
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 58103614,
+            "starttime_ticks": 59918389,
+            "tid": 1377
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 57487165,
+            "starttime_ticks": 59918389,
+            "tid": 1379
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 57158106,
+            "starttime_ticks": 59918389,
+            "tid": 1388
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 56503084,
+            "starttime_ticks": 59918389,
+            "tid": 1391
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 56140915,
+            "starttime_ticks": 59918389,
+            "tid": 1375
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 55874116,
+            "starttime_ticks": 59918389,
+            "tid": 1386
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 55664466,
+            "starttime_ticks": 59918389,
+            "tid": 1385
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 53971065,
+            "starttime_ticks": 59918389,
+            "tid": 1389
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 51052675,
+            "starttime_ticks": 59918389,
+            "tid": 1383
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 50863902,
+            "starttime_ticks": 59918389,
+            "tid": 1381
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 48918636,
+            "starttime_ticks": 59918389,
+            "tid": 1390
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 42311500,
+            "starttime_ticks": 59918389,
+            "tid": 1376
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 38889909,
+            "starttime_ticks": 59918389,
+            "tid": 1382
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 33398466,
+            "starttime_ticks": 59918389,
+            "tid": 1395
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 29206785,
+            "starttime_ticks": 59918389,
+            "tid": 1396
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 28471158,
+            "starttime_ticks": 59918389,
+            "tid": 1394
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 25299787,
+            "starttime_ticks": 59918389,
+            "tid": 1374
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 24929708,
+            "starttime_ticks": 59918389,
+            "tid": 1393
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 24550927,
+            "starttime_ticks": 59918389,
+            "tid": 1387
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 21091476,
+            "starttime_ticks": 59918389,
+            "tid": 1380
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 15220046,
+            "starttime_ticks": 59918389,
+            "tid": 1378
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 15055293,
+            "starttime_ticks": 59918389,
+            "tid": 1392
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 12561105,
+            "starttime_ticks": 59918389,
+            "tid": 1384
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 0,
+            "starttime_ticks": 59918382,
+            "tid": 1349
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 0,
+            "starttime_ticks": 59918382,
+            "tid": 1350
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 0,
+            "starttime_ticks": 59918382,
+            "tid": 1351
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 0,
+            "starttime_ticks": 59918382,
+            "tid": 1352
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 0,
+            "starttime_ticks": 59918382,
+            "tid": 1353
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 0,
+            "starttime_ticks": 59918382,
+            "tid": 1354
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 0,
+            "starttime_ticks": 59918382,
+            "tid": 1355
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 0,
+            "starttime_ticks": 59918382,
+            "tid": 1356
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 0,
+            "starttime_ticks": 59918382,
+            "tid": 1357
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 0,
+            "starttime_ticks": 59918382,
+            "tid": 1358
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 0,
+            "starttime_ticks": 59918382,
+            "tid": 1359
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 0,
+            "starttime_ticks": 59918382,
+            "tid": 1360
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 0,
+            "starttime_ticks": 59918382,
+            "tid": 1361
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 0,
+            "starttime_ticks": 59918382,
+            "tid": 1362
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 0,
+            "starttime_ticks": 59918382,
+            "tid": 1363
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 0,
+            "starttime_ticks": 59918382,
+            "tid": 1364
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 0,
+            "starttime_ticks": 59918382,
+            "tid": 1365
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 0,
+            "starttime_ticks": 59918382,
+            "tid": 1366
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 0,
+            "starttime_ticks": 59918382,
+            "tid": 1367
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 0,
+            "starttime_ticks": 59918382,
+            "tid": 1368
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 0,
+            "starttime_ticks": 59918382,
+            "tid": 1369
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 0,
+            "starttime_ticks": 59918382,
+            "tid": 1370
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 0,
+            "starttime_ticks": 59918382,
+            "tid": 1371
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 0,
+            "starttime_ticks": 59918382,
+            "tid": 1372
+          }
+        ],
+        "unique_thread_instances": 48
+      }
+    },
+    {
+      "caller_worker": {
+        "caller_cpu": {
+          "caller_thread_cpu_ns": 100828960,
+          "native_tid": 1514,
+          "native_tid_after": 1514,
+          "other_thread_aggregate_cpu_ns": 1194885301
+        },
+        "observed": {
+          "phase_os_threads": {
+            "after_adapter_init": 1,
+            "after_pool_query_before_target": 25,
+            "after_target_after_pool_query": 48,
+            "after_target_before_pool_query": 48,
+            "after_warm_after_pool_query": 25,
+            "after_warm_before_pool_query": 1,
+            "before_target": 25
+          },
+          "rayon_pool_threads": {
+            "after_target": 24,
+            "after_warm": 24,
+            "before_target": 24
+          }
+        },
+        "worker": {
+          "active_after": {
+            "domain_tree": "dd5870b35b92c94818af18b0d8b3ef55aa3eed0bce927417bbde8a4a55bb5f4e",
+            "files": {
+              "domains/adequacy_probe_selection.py": "b8d75708d4e193f16bd071861af08658a907d020281d3c9106a9582c82e8acd9",
+              "domains/adequacy_provider_auth.py": "a5388de538b1af3303babcd0c382a46b3d2819796819be7741b603ca679e4768",
+              "domains/code_reading.py": "dd67d2942cf956c6e35f848aed4012c3ac072e9ac91d9e6b166e8ca44be57908",
+              "domains/code_write_growth.py": "d4a2460f9e41bb8370dc9f352cec2d46ff596d1872e329d7e05d0f33af219079",
+              "domains/independent_adequacy.py": "33191341fdd63d16d0b9cb5203f27666da90b60fccd567ac4633306a9dcab418",
+              "domains/teach.py": "308a5f31d74dabb3ed8b24bd0c967abd5f94596a3ff76d17657330877fae2cfa",
+              "runners/dsl/python/substrate_rs/__init__.py": "4e338797786071822b2e3d919ca1da3a266bda60c3ce0e29e13213a9d37454b4",
+              "runners/dsl/src/graph.rs": "9744fec2e0c5091f2036081ffc615b1c7dd00ba2a5995af1294efb0b5aa5a28c",
+              "runners/dsl/src/py.rs": "6a6da90d425e4f8da7b7626fc8dda39b46b63529a312d482d80e6e2ec4d03fd6",
+              "substrate/boot_all.py": "2bdf46f19228e1d85dbdcf12383116ceeb72aab0efe7ddd0cc6a51d23b45d220",
+              "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+              "substrate/seed_loader.py": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27",
+              "substrate/world_adapter.py": "e5850e4df2ff28d8c941cc3c0d12a840ab230ce627833421a88c3b354f65027c"
+            },
+            "native": "09d0ac3d2b3362f5cdf7d6b1cb5ef21524cf25672916b6928c29da7997fd32c6",
+            "oracle": "b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+            "rust_fingerprint": "7244b6779deed6b3155cabe14118abb01607de1c756c3ea8397e0179edd720e7",
+            "rust_tree": "5430e6fadce25f3812e498030347e1607777a8cc7a1a876f9a3957818aa92805",
+            "substrate_tree": "0fd9dee0bc92c33d541854fce3122826fa1fb21769ab3422aad001b42486bf96"
+          },
+          "condition": "missing_evidence",
+          "heldout": [
+            {
+              "expected": true,
+              "inputs": {
+                "value": -20
+              },
+              "prediction": true
+            },
+            {
+              "expected": false,
+              "inputs": {
+                "value": -19
+              },
+              "prediction": false
+            },
+            {
+              "expected": true,
+              "inputs": {
+                "value": -18
+              },
+              "prediction": true
+            },
+            {
+              "expected": false,
+              "inputs": {
+                "value": -17
+              },
+              "prediction": false
+            },
+            {
+              "expected": true,
+              "inputs": {
+                "value": -16
+              },
+              "prediction": true
+            },
+            {
+              "expected": false,
+              "inputs": {
+                "value": -15
+              },
+              "prediction": false
+            },
+            {
+              "expected": true,
+              "inputs": {
+                "value": -14
+              },
+              "prediction": true
+            },
+            {
+              "expected": false,
+              "inputs": {
+                "value": -13
+              },
+              "prediction": false
+            },
+            {
+              "expected": true,
+              "inputs": {
+                "value": -12
+              },
+              "prediction": true
+            },
+            {
+              "expected": false,
+              "inputs": {
+                "value": -11
+              },
+              "prediction": false
+            },
+            {
+              "expected": true,
+              "inputs": {
+                "value": -10
+              },
+              "prediction": true
+            },
+            {
+              "expected": false,
+              "inputs": {
+                "value": -9
+              },
+              "prediction": false
+            },
+            {
+              "expected": true,
+              "inputs": {
+                "value": -8
+              },
+              "prediction": true
+            },
+            {
+              "expected": false,
+              "inputs": {
+                "value": -7
+              },
+              "prediction": false
+            },
+            {
+              "expected": true,
+              "inputs": {
+                "value": -6
+              },
+              "prediction": true
+            },
+            {
+              "expected": false,
+              "inputs": {
+                "value": -5
+              },
+              "prediction": false
+            },
+            {
+              "expected": true,
+              "inputs": {
+                "value": -4
+              },
+              "prediction": true
+            },
+            {
+              "expected": false,
+              "inputs": {
+                "value": -3
+              },
+              "prediction": false
+            },
+            {
+              "expected": true,
+              "inputs": {
+                "value": -2
+              },
+              "prediction": true
+            },
+            {
+              "expected": false,
+              "inputs": {
+                "value": -1
+              },
+              "prediction": false
+            },
+            {
+              "expected": true,
+              "inputs": {
+                "value": 0
+              },
+              "prediction": true
+            },
+            {
+              "expected": false,
+              "inputs": {
+                "value": 1
+              },
+              "prediction": false
+            },
+            {
+              "expected": true,
+              "inputs": {
+                "value": 2
+              },
+              "prediction": true
+            },
+            {
+              "expected": false,
+              "inputs": {
+                "value": 3
+              },
+              "prediction": false
+            },
+            {
+              "expected": true,
+              "inputs": {
+                "value": 4
+              },
+              "prediction": true
+            },
+            {
+              "expected": false,
+              "inputs": {
+                "value": 5
+              },
+              "prediction": false
+            },
+            {
+              "expected": true,
+              "inputs": {
+                "value": 6
+              },
+              "prediction": true
+            },
+            {
+              "expected": false,
+              "inputs": {
+                "value": 7
+              },
+              "prediction": false
+            },
+            {
+              "expected": true,
+              "inputs": {
+                "value": 8
+              },
+              "prediction": true
+            },
+            {
+              "expected": false,
+              "inputs": {
+                "value": 9
+              },
+              "prediction": false
+            },
+            {
+              "expected": true,
+              "inputs": {
+                "value": 10
+              },
+              "prediction": true
+            },
+            {
+              "expected": false,
+              "inputs": {
+                "value": 11
+              },
+              "prediction": false
+            },
+            {
+              "expected": true,
+              "inputs": {
+                "value": 12
+              },
+              "prediction": true
+            },
+            {
+              "expected": false,
+              "inputs": {
+                "value": 13
+              },
+              "prediction": false
+            },
+            {
+              "expected": true,
+              "inputs": {
+                "value": 14
+              },
+              "prediction": true
+            },
+            {
+              "expected": false,
+              "inputs": {
+                "value": 15
+              },
+              "prediction": false
+            },
+            {
+              "expected": true,
+              "inputs": {
+                "value": 16
+              },
+              "prediction": true
+            },
+            {
+              "expected": false,
+              "inputs": {
+                "value": 17
+              },
+              "prediction": false
+            },
+            {
+              "expected": true,
+              "inputs": {
+                "value": 18
+              },
+              "prediction": true
+            },
+            {
+              "expected": false,
+              "inputs": {
+                "value": 19
+              },
+              "prediction": false
+            },
+            {
+              "expected": true,
+              "inputs": {
+                "value": 20
+              },
+              "prediction": true
+            }
+          ],
+          "pid": 1514,
+          "reply": "I read that function but cannot adopt it without authenticated adequacy evidence.",
+          "shape_delta": 0,
+          "state_after": {
+            "epoch": 0,
+            "shapes": []
+          },
+          "state_before": {
+            "epoch": 0,
+            "shapes": []
+          },
+          "task": "parity",
+          "timing_ns": {
+            "target_cpu": 1295714261,
+            "target_wall": 137101158
+          },
+          "warm_wall_ns": 149142685
+        }
+      },
+      "mode": "default",
+      "rep": 5,
+      "thread_cpu": {
+        "sample_count": 15,
+        "sample_interval_ms": 2.0,
+        "sampled_thread_runtime_sum_ns": 1177627337,
+        "target_interval_ns": 136703165,
+        "threads": [
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 99965100,
+            "starttime_ticks": 59918428,
+            "tid": 1514
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 64829788,
+            "starttime_ticks": 59918480,
+            "tid": 1767
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 64803577,
+            "starttime_ticks": 59918480,
+            "tid": 1773
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 64672578,
+            "starttime_ticks": 59918480,
+            "tid": 1766
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 64649077,
+            "starttime_ticks": 59918480,
+            "tid": 1769
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 62551426,
+            "starttime_ticks": 59918480,
+            "tid": 1775
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 62035136,
+            "starttime_ticks": 59918480,
+            "tid": 1774
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 61365156,
+            "starttime_ticks": 59918480,
+            "tid": 1768
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 60828355,
+            "starttime_ticks": 59918480,
+            "tid": 1772
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 58638594,
+            "starttime_ticks": 59918480,
+            "tid": 1777
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 58630945,
+            "starttime_ticks": 59918480,
+            "tid": 1778
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 57881866,
+            "starttime_ticks": 59918480,
+            "tid": 1779
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 54469104,
+            "starttime_ticks": 59918480,
+            "tid": 1765
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 48953362,
+            "starttime_ticks": 59918480,
+            "tid": 1781
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 41044738,
+            "starttime_ticks": 59918480,
+            "tid": 1780
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 38228491,
+            "starttime_ticks": 59918480,
+            "tid": 1771
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 34206760,
+            "starttime_ticks": 59918480,
+            "tid": 1762
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 32820588,
+            "starttime_ticks": 59918480,
+            "tid": 1764
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 32639299,
+            "starttime_ticks": 59918480,
+            "tid": 1784
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 31117978,
+            "starttime_ticks": 59918480,
+            "tid": 1763
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 30741737,
+            "starttime_ticks": 59918480,
+            "tid": 1776
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 29970947,
+            "starttime_ticks": 59918480,
+            "tid": 1783
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 12765772,
+            "starttime_ticks": 59918480,
+            "tid": 1782
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 9816963,
+            "starttime_ticks": 59918480,
+            "tid": 1770
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 0,
+            "starttime_ticks": 59918473,
+            "tid": 1737
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 0,
+            "starttime_ticks": 59918473,
+            "tid": 1738
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 0,
+            "starttime_ticks": 59918473,
+            "tid": 1739
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 0,
+            "starttime_ticks": 59918473,
+            "tid": 1740
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 0,
+            "starttime_ticks": 59918473,
+            "tid": 1741
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 0,
+            "starttime_ticks": 59918473,
+            "tid": 1742
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 0,
+            "starttime_ticks": 59918473,
+            "tid": 1743
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 0,
+            "starttime_ticks": 59918473,
+            "tid": 1744
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 0,
+            "starttime_ticks": 59918473,
+            "tid": 1745
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 0,
+            "starttime_ticks": 59918473,
+            "tid": 1746
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 0,
+            "starttime_ticks": 59918473,
+            "tid": 1747
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 0,
+            "starttime_ticks": 59918473,
+            "tid": 1748
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 0,
+            "starttime_ticks": 59918473,
+            "tid": 1749
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 0,
+            "starttime_ticks": 59918473,
+            "tid": 1750
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 0,
+            "starttime_ticks": 59918473,
+            "tid": 1751
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 0,
+            "starttime_ticks": 59918473,
+            "tid": 1752
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 0,
+            "starttime_ticks": 59918473,
+            "tid": 1753
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 0,
+            "starttime_ticks": 59918473,
+            "tid": 1754
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 0,
+            "starttime_ticks": 59918473,
+            "tid": 1755
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 0,
+            "starttime_ticks": 59918473,
+            "tid": 1756
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 0,
+            "starttime_ticks": 59918473,
+            "tid": 1757
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 0,
+            "starttime_ticks": 59918474,
+            "tid": 1758
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 0,
+            "starttime_ticks": 59918474,
+            "tid": 1759
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 0,
+            "starttime_ticks": 59918474,
+            "tid": 1760
+          }
+        ],
+        "unique_thread_instances": 48
+      }
+    },
+    {
+      "caller_worker": {
+        "caller_cpu": {
+          "caller_thread_cpu_ns": 102480460,
+          "native_tid": 1902,
+          "native_tid_after": 1902,
+          "other_thread_aggregate_cpu_ns": 1098495303
+        },
+        "observed": {
+          "phase_os_threads": {
+            "after_adapter_init": 1,
+            "after_pool_query_before_target": 2,
+            "after_target_after_pool_query": 25,
+            "after_target_before_pool_query": 25,
+            "after_warm_after_pool_query": 2,
+            "after_warm_before_pool_query": 1,
+            "before_target": 2
+          },
+          "rayon_pool_threads": {
+            "after_target": 1,
+            "after_warm": 1,
+            "before_target": 1
+          }
+        },
+        "worker": {
+          "active_after": {
+            "domain_tree": "dd5870b35b92c94818af18b0d8b3ef55aa3eed0bce927417bbde8a4a55bb5f4e",
+            "files": {
+              "domains/adequacy_probe_selection.py": "b8d75708d4e193f16bd071861af08658a907d020281d3c9106a9582c82e8acd9",
+              "domains/adequacy_provider_auth.py": "a5388de538b1af3303babcd0c382a46b3d2819796819be7741b603ca679e4768",
+              "domains/code_reading.py": "dd67d2942cf956c6e35f848aed4012c3ac072e9ac91d9e6b166e8ca44be57908",
+              "domains/code_write_growth.py": "d4a2460f9e41bb8370dc9f352cec2d46ff596d1872e329d7e05d0f33af219079",
+              "domains/independent_adequacy.py": "33191341fdd63d16d0b9cb5203f27666da90b60fccd567ac4633306a9dcab418",
+              "domains/teach.py": "308a5f31d74dabb3ed8b24bd0c967abd5f94596a3ff76d17657330877fae2cfa",
+              "runners/dsl/python/substrate_rs/__init__.py": "4e338797786071822b2e3d919ca1da3a266bda60c3ce0e29e13213a9d37454b4",
+              "runners/dsl/src/graph.rs": "9744fec2e0c5091f2036081ffc615b1c7dd00ba2a5995af1294efb0b5aa5a28c",
+              "runners/dsl/src/py.rs": "6a6da90d425e4f8da7b7626fc8dda39b46b63529a312d482d80e6e2ec4d03fd6",
+              "substrate/boot_all.py": "2bdf46f19228e1d85dbdcf12383116ceeb72aab0efe7ddd0cc6a51d23b45d220",
+              "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+              "substrate/seed_loader.py": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27",
+              "substrate/world_adapter.py": "e5850e4df2ff28d8c941cc3c0d12a840ab230ce627833421a88c3b354f65027c"
+            },
+            "native": "09d0ac3d2b3362f5cdf7d6b1cb5ef21524cf25672916b6928c29da7997fd32c6",
+            "oracle": "b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+            "rust_fingerprint": "7244b6779deed6b3155cabe14118abb01607de1c756c3ea8397e0179edd720e7",
+            "rust_tree": "5430e6fadce25f3812e498030347e1607777a8cc7a1a876f9a3957818aa92805",
+            "substrate_tree": "0fd9dee0bc92c33d541854fce3122826fa1fb21769ab3422aad001b42486bf96"
+          },
+          "condition": "missing_evidence",
+          "heldout": [
+            {
+              "expected": true,
+              "inputs": {
+                "value": -20
+              },
+              "prediction": true
+            },
+            {
+              "expected": false,
+              "inputs": {
+                "value": -19
+              },
+              "prediction": false
+            },
+            {
+              "expected": true,
+              "inputs": {
+                "value": -18
+              },
+              "prediction": true
+            },
+            {
+              "expected": false,
+              "inputs": {
+                "value": -17
+              },
+              "prediction": false
+            },
+            {
+              "expected": true,
+              "inputs": {
+                "value": -16
+              },
+              "prediction": true
+            },
+            {
+              "expected": false,
+              "inputs": {
+                "value": -15
+              },
+              "prediction": false
+            },
+            {
+              "expected": true,
+              "inputs": {
+                "value": -14
+              },
+              "prediction": true
+            },
+            {
+              "expected": false,
+              "inputs": {
+                "value": -13
+              },
+              "prediction": false
+            },
+            {
+              "expected": true,
+              "inputs": {
+                "value": -12
+              },
+              "prediction": true
+            },
+            {
+              "expected": false,
+              "inputs": {
+                "value": -11
+              },
+              "prediction": false
+            },
+            {
+              "expected": true,
+              "inputs": {
+                "value": -10
+              },
+              "prediction": true
+            },
+            {
+              "expected": false,
+              "inputs": {
+                "value": -9
+              },
+              "prediction": false
+            },
+            {
+              "expected": true,
+              "inputs": {
+                "value": -8
+              },
+              "prediction": true
+            },
+            {
+              "expected": false,
+              "inputs": {
+                "value": -7
+              },
+              "prediction": false
+            },
+            {
+              "expected": true,
+              "inputs": {
+                "value": -6
+              },
+              "prediction": true
+            },
+            {
+              "expected": false,
+              "inputs": {
+                "value": -5
+              },
+              "prediction": false
+            },
+            {
+              "expected": true,
+              "inputs": {
+                "value": -4
+              },
+              "prediction": true
+            },
+            {
+              "expected": false,
+              "inputs": {
+                "value": -3
+              },
+              "prediction": false
+            },
+            {
+              "expected": true,
+              "inputs": {
+                "value": -2
+              },
+              "prediction": true
+            },
+            {
+              "expected": false,
+              "inputs": {
+                "value": -1
+              },
+              "prediction": false
+            },
+            {
+              "expected": true,
+              "inputs": {
+                "value": 0
+              },
+              "prediction": true
+            },
+            {
+              "expected": false,
+              "inputs": {
+                "value": 1
+              },
+              "prediction": false
+            },
+            {
+              "expected": true,
+              "inputs": {
+                "value": 2
+              },
+              "prediction": true
+            },
+            {
+              "expected": false,
+              "inputs": {
+                "value": 3
+              },
+              "prediction": false
+            },
+            {
+              "expected": true,
+              "inputs": {
+                "value": 4
+              },
+              "prediction": true
+            },
+            {
+              "expected": false,
+              "inputs": {
+                "value": 5
+              },
+              "prediction": false
+            },
+            {
+              "expected": true,
+              "inputs": {
+                "value": 6
+              },
+              "prediction": true
+            },
+            {
+              "expected": false,
+              "inputs": {
+                "value": 7
+              },
+              "prediction": false
+            },
+            {
+              "expected": true,
+              "inputs": {
+                "value": 8
+              },
+              "prediction": true
+            },
+            {
+              "expected": false,
+              "inputs": {
+                "value": 9
+              },
+              "prediction": false
+            },
+            {
+              "expected": true,
+              "inputs": {
+                "value": 10
+              },
+              "prediction": true
+            },
+            {
+              "expected": false,
+              "inputs": {
+                "value": 11
+              },
+              "prediction": false
+            },
+            {
+              "expected": true,
+              "inputs": {
+                "value": 12
+              },
+              "prediction": true
+            },
+            {
+              "expected": false,
+              "inputs": {
+                "value": 13
+              },
+              "prediction": false
+            },
+            {
+              "expected": true,
+              "inputs": {
+                "value": 14
+              },
+              "prediction": true
+            },
+            {
+              "expected": false,
+              "inputs": {
+                "value": 15
+              },
+              "prediction": false
+            },
+            {
+              "expected": true,
+              "inputs": {
+                "value": 16
+              },
+              "prediction": true
+            },
+            {
+              "expected": false,
+              "inputs": {
+                "value": 17
+              },
+              "prediction": false
+            },
+            {
+              "expected": true,
+              "inputs": {
+                "value": 18
+              },
+              "prediction": true
+            },
+            {
+              "expected": false,
+              "inputs": {
+                "value": 19
+              },
+              "prediction": false
+            },
+            {
+              "expected": true,
+              "inputs": {
+                "value": 20
+              },
+              "prediction": true
+            }
+          ],
+          "pid": 1902,
+          "reply": "I read that function but cannot adopt it without authenticated adequacy evidence.",
+          "shape_delta": 0,
+          "state_after": {
+            "epoch": 0,
+            "shapes": []
+          },
+          "state_before": {
+            "epoch": 0,
+            "shapes": []
+          },
+          "task": "parity",
+          "timing_ns": {
+            "target_cpu": 1200975763,
+            "target_wall": 122873405
+          },
+          "warm_wall_ns": 135098415
+        }
+      },
+      "mode": "one_thread",
+      "rep": 6,
+      "thread_cpu": {
+        "sample_count": 23,
+        "sample_interval_ms": 2.0,
+        "sampled_thread_runtime_sum_ns": 1116864618,
+        "target_interval_ns": 122490542,
+        "threads": [
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 98797768,
+            "starttime_ticks": 59918522,
+            "tid": 1902
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 69174167,
+            "starttime_ticks": 59918573,
+            "tid": 2148
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 67947028,
+            "starttime_ticks": 59918573,
+            "tid": 2130
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 66655568,
+            "starttime_ticks": 59918573,
+            "tid": 2139
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 61532567,
+            "starttime_ticks": 59918573,
+            "tid": 2133
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 61424834,
+            "starttime_ticks": 59918573,
+            "tid": 2144
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 59652677,
+            "starttime_ticks": 59918573,
+            "tid": 2149
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 57380114,
+            "starttime_ticks": 59918573,
+            "tid": 2135
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 57376826,
+            "starttime_ticks": 59918573,
+            "tid": 2131
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 52560853,
+            "starttime_ticks": 59918573,
+            "tid": 2132
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 42276271,
+            "starttime_ticks": 59918573,
+            "tid": 2128
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 42112389,
+            "starttime_ticks": 59918573,
+            "tid": 2129
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 38490739,
+            "starttime_ticks": 59918573,
+            "tid": 2143
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 35950411,
+            "starttime_ticks": 59918573,
+            "tid": 2137
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 35115600,
+            "starttime_ticks": 59918573,
+            "tid": 2146
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 35055710,
+            "starttime_ticks": 59918573,
+            "tid": 2136
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 34578222,
+            "starttime_ticks": 59918573,
+            "tid": 2147
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 32857489,
+            "starttime_ticks": 59918573,
+            "tid": 2138
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 32088416,
+            "starttime_ticks": 59918573,
+            "tid": 2127
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 31313329,
+            "starttime_ticks": 59918573,
+            "tid": 2142
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 29398608,
+            "starttime_ticks": 59918573,
+            "tid": 2134
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 28430509,
+            "starttime_ticks": 59918573,
+            "tid": 2141
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 24620636,
+            "starttime_ticks": 59918573,
+            "tid": 2140
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 22073887,
+            "starttime_ticks": 59918573,
+            "tid": 2145
+          },
+          {
+            "comm": "python",
+            "sampled_runtime_delta_ns": 0,
+            "starttime_ticks": 59918566,
+            "tid": 2125
+          }
+        ],
+        "unique_thread_instances": 25
+      }
+    }
+  ],
+  "schema": "WarmConverseThreadCpuV2Capture",
+  "source_after": {
+    "analyzer": "03969c800dbd2a7d462115fd511ad6f72471718c0ae1201a6e567130adf81781",
+    "caller_lock_file": "fedc32215cbadd6cb4e6642e1c56d56c97669c6157d4a186210e180554bf5c7f",
+    "caller_runner": "16458a7a476facd96cee063be5ecc5a35a653d514d6d77f00a04993ca5d10a8b",
+    "caller_runtime_lock": {
+      "active": {
+        "domain_tree": "dd5870b35b92c94818af18b0d8b3ef55aa3eed0bce927417bbde8a4a55bb5f4e",
+        "files": {
+          "domains/adequacy_probe_selection.py": "b8d75708d4e193f16bd071861af08658a907d020281d3c9106a9582c82e8acd9",
+          "domains/adequacy_provider_auth.py": "a5388de538b1af3303babcd0c382a46b3d2819796819be7741b603ca679e4768",
+          "domains/code_reading.py": "dd67d2942cf956c6e35f848aed4012c3ac072e9ac91d9e6b166e8ca44be57908",
+          "domains/code_write_growth.py": "d4a2460f9e41bb8370dc9f352cec2d46ff596d1872e329d7e05d0f33af219079",
+          "domains/independent_adequacy.py": "33191341fdd63d16d0b9cb5203f27666da90b60fccd567ac4633306a9dcab418",
+          "domains/teach.py": "308a5f31d74dabb3ed8b24bd0c967abd5f94596a3ff76d17657330877fae2cfa",
+          "runners/dsl/python/substrate_rs/__init__.py": "4e338797786071822b2e3d919ca1da3a266bda60c3ce0e29e13213a9d37454b4",
+          "runners/dsl/src/graph.rs": "9744fec2e0c5091f2036081ffc615b1c7dd00ba2a5995af1294efb0b5aa5a28c",
+          "runners/dsl/src/py.rs": "6a6da90d425e4f8da7b7626fc8dda39b46b63529a312d482d80e6e2ec4d03fd6",
+          "substrate/boot_all.py": "2bdf46f19228e1d85dbdcf12383116ceeb72aab0efe7ddd0cc6a51d23b45d220",
+          "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+          "substrate/seed_loader.py": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27",
+          "substrate/world_adapter.py": "e5850e4df2ff28d8c941cc3c0d12a840ab230ce627833421a88c3b354f65027c"
+        },
+        "native": "09d0ac3d2b3362f5cdf7d6b1cb5ef21524cf25672916b6928c29da7997fd32c6",
+        "oracle": "b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+        "rust_fingerprint": "7244b6779deed6b3155cabe14118abb01607de1c756c3ea8397e0179edd720e7",
+        "rust_tree": "5430e6fadce25f3812e498030347e1607777a8cc7a1a876f9a3957818aa92805",
+        "substrate_tree": "0fd9dee0bc92c33d541854fce3122826fa1fb21769ab3422aad001b42486bf96"
+      },
+      "design": {
+        "conditions": [
+          "truthful_adoption",
+          "missing_evidence"
+        ],
+        "fixtures": {
+          "clamp": {
+            "domain": [
+              {
+                "lower": -4,
+                "upper": 8,
+                "value": -6
+              },
+              {
+                "lower": -4,
+                "upper": 8,
+                "value": -4
+              },
+              {
+                "lower": -4,
+                "upper": 8,
+                "value": -3
+              },
+              {
+                "lower": -4,
+                "upper": 8,
+                "value": 2
+              },
+              {
+                "lower": -4,
+                "upper": 8,
+                "value": 8
+              },
+              {
+                "lower": -4,
+                "upper": 8,
+                "value": 10
+              },
+              {
+                "lower": 1,
+                "upper": 5,
+                "value": -1
+              },
+              {
+                "lower": 1,
+                "upper": 5,
+                "value": 1
+              },
+              {
+                "lower": 1,
+                "upper": 5,
+                "value": 2
+              },
+              {
+                "lower": 1,
+                "upper": 5,
+                "value": 3
+              },
+              {
+                "lower": 1,
+                "upper": 5,
+                "value": 5
+              },
+              {
+                "lower": 1,
+                "upper": 5,
+                "value": 7
+              },
+              {
+                "lower": -9,
+                "upper": -2,
+                "value": -11
+              },
+              {
+                "lower": -9,
+                "upper": -2,
+                "value": -9
+              },
+              {
+                "lower": -9,
+                "upper": -2,
+                "value": -8
+              },
+              {
+                "lower": -9,
+                "upper": -2,
+                "value": -6
+              },
+              {
+                "lower": -9,
+                "upper": -2,
+                "value": -2
+              },
+              {
+                "lower": -9,
+                "upper": -2,
+                "value": 0
+              }
+            ],
+            "heldout": [
+              {
+                "lower": -4,
+                "upper": 8,
+                "value": -20
+              },
+              {
+                "lower": -4,
+                "upper": 8,
+                "value": -4
+              },
+              {
+                "lower": -4,
+                "upper": 8,
+                "value": -3
+              },
+              {
+                "lower": -4,
+                "upper": 8,
+                "value": 0
+              },
+              {
+                "lower": -4,
+                "upper": 8,
+                "value": 7
+              },
+              {
+                "lower": -4,
+                "upper": 8,
+                "value": 8
+              },
+              {
+                "lower": -4,
+                "upper": 8,
+                "value": 9
+              },
+              {
+                "lower": -4,
+                "upper": 8,
+                "value": 20
+              },
+              {
+                "lower": -9,
+                "upper": -2,
+                "value": -9
+              },
+              {
+                "lower": -9,
+                "upper": -2,
+                "value": -10
+              },
+              {
+                "lower": -9,
+                "upper": -2,
+                "value": -5
+              },
+              {
+                "lower": -9,
+                "upper": -2,
+                "value": -2
+              },
+              {
+                "lower": -9,
+                "upper": -2,
+                "value": 0
+              },
+              {
+                "lower": -9,
+                "upper": -2,
+                "value": 12
+              },
+              {
+                "lower": 1,
+                "upper": 5,
+                "value": 2
+              },
+              {
+                "lower": 1,
+                "upper": 5,
+                "value": 1
+              },
+              {
+                "lower": 1,
+                "upper": 5,
+                "value": 3
+              },
+              {
+                "lower": 1,
+                "upper": 5,
+                "value": 5
+              },
+              {
+                "lower": 1,
+                "upper": 5,
+                "value": 7
+              },
+              {
+                "lower": 1,
+                "upper": 5,
+                "value": -1
+              }
+            ],
+            "known": [
+              {
+                "expected": -4,
+                "inputs": {
+                  "lower": -4,
+                  "upper": 8,
+                  "value": -10
+                }
+              },
+              {
+                "expected": 0,
+                "inputs": {
+                  "lower": -4,
+                  "upper": 8,
+                  "value": 0
+                }
+              },
+              {
+                "expected": 8,
+                "inputs": {
+                  "lower": -4,
+                  "upper": 8,
+                  "value": 12
+                }
+              }
+            ],
+            "name": "clamp_value",
+            "source": "def clamp_value(value, lower, upper):\n    return lower if value < lower else (upper if value > upper else value)\n"
+          },
+          "negative": {
+            "domain": [
+              {
+                "x": 0
+              },
+              {
+                "x": 1
+              },
+              {
+                "x": 2
+              },
+              {
+                "x": 3
+              },
+              {
+                "x": 4
+              },
+              {
+                "x": 5
+              }
+            ],
+            "known": [
+              {
+                "expected": 1,
+                "inputs": {
+                  "x": 1
+                }
+              }
+            ],
+            "name": "identity",
+            "source": "def identity(x):\n    return x\n",
+            "task": "square"
+          },
+          "parity": {
+            "domain": [
+              {
+                "value": -5
+              },
+              {
+                "value": -4
+              },
+              {
+                "value": -3
+              },
+              {
+                "value": -2
+              },
+              {
+                "value": -1
+              },
+              {
+                "value": 0
+              },
+              {
+                "value": 1
+              },
+              {
+                "value": 2
+              },
+              {
+                "value": 3
+              },
+              {
+                "value": 4
+              },
+              {
+                "value": 5
+              }
+            ],
+            "heldout": [
+              {
+                "value": -20
+              },
+              {
+                "value": -19
+              },
+              {
+                "value": -18
+              },
+              {
+                "value": -17
+              },
+              {
+                "value": -16
+              },
+              {
+                "value": -15
+              },
+              {
+                "value": -14
+              },
+              {
+                "value": -13
+              },
+              {
+                "value": -12
+              },
+              {
+                "value": -11
+              },
+              {
+                "value": -10
+              },
+              {
+                "value": -9
+              },
+              {
+                "value": -8
+              },
+              {
+                "value": -7
+              },
+              {
+                "value": -6
+              },
+              {
+                "value": -5
+              },
+              {
+                "value": -4
+              },
+              {
+                "value": -3
+              },
+              {
+                "value": -2
+              },
+              {
+                "value": -1
+              },
+              {
+                "value": 0
+              },
+              {
+                "value": 1
+              },
+              {
+                "value": 2
+              },
+              {
+                "value": 3
+              },
+              {
+                "value": 4
+              },
+              {
+                "value": 5
+              },
+              {
+                "value": 6
+              },
+              {
+                "value": 7
+              },
+              {
+                "value": 8
+              },
+              {
+                "value": 9
+              },
+              {
+                "value": 10
+              },
+              {
+                "value": 11
+              },
+              {
+                "value": 12
+              },
+              {
+                "value": 13
+              },
+              {
+                "value": 14
+              },
+              {
+                "value": 15
+              },
+              {
+                "value": 16
+              },
+              {
+                "value": 17
+              },
+              {
+                "value": 18
+              },
+              {
+                "value": 19
+              },
+              {
+                "value": 20
+              }
+            ],
+            "known": [
+              {
+                "expected": true,
+                "inputs": {
+                  "value": 0
+                }
+              },
+              {
+                "expected": false,
+                "inputs": {
+                  "value": 1
+                }
+              }
+            ],
+            "name": "parity",
+            "source": "def parity(value):\n    return value % 2 == 0\n"
+          },
+          "square": {
+            "domain": [
+              {
+                "x": -5
+              },
+              {
+                "x": -4
+              },
+              {
+                "x": -3
+              },
+              {
+                "x": -2
+              },
+              {
+                "x": -1
+              },
+              {
+                "x": 0
+              },
+              {
+                "x": 1
+              },
+              {
+                "x": 2
+              },
+              {
+                "x": 3
+              },
+              {
+                "x": 4
+              },
+              {
+                "x": 5
+              }
+            ],
+            "heldout": [
+              {
+                "x": -20
+              },
+              {
+                "x": -19
+              },
+              {
+                "x": -18
+              },
+              {
+                "x": -17
+              },
+              {
+                "x": -16
+              },
+              {
+                "x": -15
+              },
+              {
+                "x": -14
+              },
+              {
+                "x": -13
+              },
+              {
+                "x": -12
+              },
+              {
+                "x": -11
+              },
+              {
+                "x": -10
+              },
+              {
+                "x": -9
+              },
+              {
+                "x": -8
+              },
+              {
+                "x": -7
+              },
+              {
+                "x": -6
+              },
+              {
+                "x": -5
+              },
+              {
+                "x": -4
+              },
+              {
+                "x": -3
+              },
+              {
+                "x": -2
+              },
+              {
+                "x": -1
+              },
+              {
+                "x": 0
+              },
+              {
+                "x": 1
+              },
+              {
+                "x": 2
+              },
+              {
+                "x": 3
+              },
+              {
+                "x": 4
+              },
+              {
+                "x": 5
+              },
+              {
+                "x": 6
+              },
+              {
+                "x": 7
+              },
+              {
+                "x": 8
+              },
+              {
+                "x": 9
+              },
+              {
+                "x": 10
+              },
+              {
+                "x": 11
+              },
+              {
+                "x": 12
+              },
+              {
+                "x": 13
+              },
+              {
+                "x": 14
+              },
+              {
+                "x": 15
+              },
+              {
+                "x": 16
+              },
+              {
+                "x": 17
+              },
+              {
+                "x": 18
+              },
+              {
+                "x": 19
+              },
+              {
+                "x": 20
+              }
+            ],
+            "known": [
+              {
+                "expected": 0,
+                "inputs": {
+                  "x": 0
+                }
+              }
+            ],
+            "name": "square",
+            "source": "def square(x):\n    return x * x\n"
+          }
+        },
+        "provider": "audit:warmed-route-provider",
+        "repeats": 3,
+        "requests": {
+          "clamp": "Write a function that clamps a value between lower and upper bounds.",
+          "parity": "Write a function that returns the parity of an integer.",
+          "square": "Write a function that squares an integer."
+        },
+        "tasks": [
+          "parity",
+          "clamp",
+          "square"
+        ]
+      },
+      "files": {
+        "docs/research/engine_substrate/SUBSTRATE_ADEQUACY_WARM_CONVERSE_COST_V1_PREREG_20261002.md": "8227de12b80f593ad9540f7597ed7f20ac15e771150d92dccf5266a3ebe2ad68",
+        "evaluation/substrate_capability/analyze_substrate_adequacy_warm_converse_cost_v1.py": "ca3f810b49e8442240e5db40049e415370b994d7ea6c43b1f154d4740ba3a5c5",
+        "evaluation/substrate_capability/independent_codewrite_oracles.py": "b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+        "evaluation/substrate_capability/substrate_adequacy_warm_converse_cost_v1.py": "1749a20264f392386edc7b2d389815a729813d5b9b956030054f6ce6829b108a",
+        "evaluation/substrate_capability/substrate_independent_adequacy_codewrite_transfer_v1.py": "4df60f2b25381a778d4e1b6aa20889a8645d7993d0e8f57054d38179e6db57a5"
+      },
+      "git_head": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+      "schema": "SubstrateAdequacyWarmConverseCostV1Lock"
+    },
+    "protocol": "33817eddafbc40e9d48e72336afc4d56d2a980b46dd2b3cd7a1b3e15d258742c",
+    "runner": "6760bd40af2e3c708600474bccc315bec7b4e55133b83937f3b581d927848117"
+  },
+  "source_before": {
+    "analyzer": "03969c800dbd2a7d462115fd511ad6f72471718c0ae1201a6e567130adf81781",
+    "caller_lock_file": "fedc32215cbadd6cb4e6642e1c56d56c97669c6157d4a186210e180554bf5c7f",
+    "caller_runner": "16458a7a476facd96cee063be5ecc5a35a653d514d6d77f00a04993ca5d10a8b",
+    "caller_runtime_lock": {
+      "active": {
+        "domain_tree": "dd5870b35b92c94818af18b0d8b3ef55aa3eed0bce927417bbde8a4a55bb5f4e",
+        "files": {
+          "domains/adequacy_probe_selection.py": "b8d75708d4e193f16bd071861af08658a907d020281d3c9106a9582c82e8acd9",
+          "domains/adequacy_provider_auth.py": "a5388de538b1af3303babcd0c382a46b3d2819796819be7741b603ca679e4768",
+          "domains/code_reading.py": "dd67d2942cf956c6e35f848aed4012c3ac072e9ac91d9e6b166e8ca44be57908",
+          "domains/code_write_growth.py": "d4a2460f9e41bb8370dc9f352cec2d46ff596d1872e329d7e05d0f33af219079",
+          "domains/independent_adequacy.py": "33191341fdd63d16d0b9cb5203f27666da90b60fccd567ac4633306a9dcab418",
+          "domains/teach.py": "308a5f31d74dabb3ed8b24bd0c967abd5f94596a3ff76d17657330877fae2cfa",
+          "runners/dsl/python/substrate_rs/__init__.py": "4e338797786071822b2e3d919ca1da3a266bda60c3ce0e29e13213a9d37454b4",
+          "runners/dsl/src/graph.rs": "9744fec2e0c5091f2036081ffc615b1c7dd00ba2a5995af1294efb0b5aa5a28c",
+          "runners/dsl/src/py.rs": "6a6da90d425e4f8da7b7626fc8dda39b46b63529a312d482d80e6e2ec4d03fd6",
+          "substrate/boot_all.py": "2bdf46f19228e1d85dbdcf12383116ceeb72aab0efe7ddd0cc6a51d23b45d220",
+          "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+          "substrate/seed_loader.py": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27",
+          "substrate/world_adapter.py": "e5850e4df2ff28d8c941cc3c0d12a840ab230ce627833421a88c3b354f65027c"
+        },
+        "native": "09d0ac3d2b3362f5cdf7d6b1cb5ef21524cf25672916b6928c29da7997fd32c6",
+        "oracle": "b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+        "rust_fingerprint": "7244b6779deed6b3155cabe14118abb01607de1c756c3ea8397e0179edd720e7",
+        "rust_tree": "5430e6fadce25f3812e498030347e1607777a8cc7a1a876f9a3957818aa92805",
+        "substrate_tree": "0fd9dee0bc92c33d541854fce3122826fa1fb21769ab3422aad001b42486bf96"
+      },
+      "design": {
+        "conditions": [
+          "truthful_adoption",
+          "missing_evidence"
+        ],
+        "fixtures": {
+          "clamp": {
+            "domain": [
+              {
+                "lower": -4,
+                "upper": 8,
+                "value": -6
+              },
+              {
+                "lower": -4,
+                "upper": 8,
+                "value": -4
+              },
+              {
+                "lower": -4,
+                "upper": 8,
+                "value": -3
+              },
+              {
+                "lower": -4,
+                "upper": 8,
+                "value": 2
+              },
+              {
+                "lower": -4,
+                "upper": 8,
+                "value": 8
+              },
+              {
+                "lower": -4,
+                "upper": 8,
+                "value": 10
+              },
+              {
+                "lower": 1,
+                "upper": 5,
+                "value": -1
+              },
+              {
+                "lower": 1,
+                "upper": 5,
+                "value": 1
+              },
+              {
+                "lower": 1,
+                "upper": 5,
+                "value": 2
+              },
+              {
+                "lower": 1,
+                "upper": 5,
+                "value": 3
+              },
+              {
+                "lower": 1,
+                "upper": 5,
+                "value": 5
+              },
+              {
+                "lower": 1,
+                "upper": 5,
+                "value": 7
+              },
+              {
+                "lower": -9,
+                "upper": -2,
+                "value": -11
+              },
+              {
+                "lower": -9,
+                "upper": -2,
+                "value": -9
+              },
+              {
+                "lower": -9,
+                "upper": -2,
+                "value": -8
+              },
+              {
+                "lower": -9,
+                "upper": -2,
+                "value": -6
+              },
+              {
+                "lower": -9,
+                "upper": -2,
+                "value": -2
+              },
+              {
+                "lower": -9,
+                "upper": -2,
+                "value": 0
+              }
+            ],
+            "heldout": [
+              {
+                "lower": -4,
+                "upper": 8,
+                "value": -20
+              },
+              {
+                "lower": -4,
+                "upper": 8,
+                "value": -4
+              },
+              {
+                "lower": -4,
+                "upper": 8,
+                "value": -3
+              },
+              {
+                "lower": -4,
+                "upper": 8,
+                "value": 0
+              },
+              {
+                "lower": -4,
+                "upper": 8,
+                "value": 7
+              },
+              {
+                "lower": -4,
+                "upper": 8,
+                "value": 8
+              },
+              {
+                "lower": -4,
+                "upper": 8,
+                "value": 9
+              },
+              {
+                "lower": -4,
+                "upper": 8,
+                "value": 20
+              },
+              {
+                "lower": -9,
+                "upper": -2,
+                "value": -9
+              },
+              {
+                "lower": -9,
+                "upper": -2,
+                "value": -10
+              },
+              {
+                "lower": -9,
+                "upper": -2,
+                "value": -5
+              },
+              {
+                "lower": -9,
+                "upper": -2,
+                "value": -2
+              },
+              {
+                "lower": -9,
+                "upper": -2,
+                "value": 0
+              },
+              {
+                "lower": -9,
+                "upper": -2,
+                "value": 12
+              },
+              {
+                "lower": 1,
+                "upper": 5,
+                "value": 2
+              },
+              {
+                "lower": 1,
+                "upper": 5,
+                "value": 1
+              },
+              {
+                "lower": 1,
+                "upper": 5,
+                "value": 3
+              },
+              {
+                "lower": 1,
+                "upper": 5,
+                "value": 5
+              },
+              {
+                "lower": 1,
+                "upper": 5,
+                "value": 7
+              },
+              {
+                "lower": 1,
+                "upper": 5,
+                "value": -1
+              }
+            ],
+            "known": [
+              {
+                "expected": -4,
+                "inputs": {
+                  "lower": -4,
+                  "upper": 8,
+                  "value": -10
+                }
+              },
+              {
+                "expected": 0,
+                "inputs": {
+                  "lower": -4,
+                  "upper": 8,
+                  "value": 0
+                }
+              },
+              {
+                "expected": 8,
+                "inputs": {
+                  "lower": -4,
+                  "upper": 8,
+                  "value": 12
+                }
+              }
+            ],
+            "name": "clamp_value",
+            "source": "def clamp_value(value, lower, upper):\n    return lower if value < lower else (upper if value > upper else value)\n"
+          },
+          "negative": {
+            "domain": [
+              {
+                "x": 0
+              },
+              {
+                "x": 1
+              },
+              {
+                "x": 2
+              },
+              {
+                "x": 3
+              },
+              {
+                "x": 4
+              },
+              {
+                "x": 5
+              }
+            ],
+            "known": [
+              {
+                "expected": 1,
+                "inputs": {
+                  "x": 1
+                }
+              }
+            ],
+            "name": "identity",
+            "source": "def identity(x):\n    return x\n",
+            "task": "square"
+          },
+          "parity": {
+            "domain": [
+              {
+                "value": -5
+              },
+              {
+                "value": -4
+              },
+              {
+                "value": -3
+              },
+              {
+                "value": -2
+              },
+              {
+                "value": -1
+              },
+              {
+                "value": 0
+              },
+              {
+                "value": 1
+              },
+              {
+                "value": 2
+              },
+              {
+                "value": 3
+              },
+              {
+                "value": 4
+              },
+              {
+                "value": 5
+              }
+            ],
+            "heldout": [
+              {
+                "value": -20
+              },
+              {
+                "value": -19
+              },
+              {
+                "value": -18
+              },
+              {
+                "value": -17
+              },
+              {
+                "value": -16
+              },
+              {
+                "value": -15
+              },
+              {
+                "value": -14
+              },
+              {
+                "value": -13
+              },
+              {
+                "value": -12
+              },
+              {
+                "value": -11
+              },
+              {
+                "value": -10
+              },
+              {
+                "value": -9
+              },
+              {
+                "value": -8
+              },
+              {
+                "value": -7
+              },
+              {
+                "value": -6
+              },
+              {
+                "value": -5
+              },
+              {
+                "value": -4
+              },
+              {
+                "value": -3
+              },
+              {
+                "value": -2
+              },
+              {
+                "value": -1
+              },
+              {
+                "value": 0
+              },
+              {
+                "value": 1
+              },
+              {
+                "value": 2
+              },
+              {
+                "value": 3
+              },
+              {
+                "value": 4
+              },
+              {
+                "value": 5
+              },
+              {
+                "value": 6
+              },
+              {
+                "value": 7
+              },
+              {
+                "value": 8
+              },
+              {
+                "value": 9
+              },
+              {
+                "value": 10
+              },
+              {
+                "value": 11
+              },
+              {
+                "value": 12
+              },
+              {
+                "value": 13
+              },
+              {
+                "value": 14
+              },
+              {
+                "value": 15
+              },
+              {
+                "value": 16
+              },
+              {
+                "value": 17
+              },
+              {
+                "value": 18
+              },
+              {
+                "value": 19
+              },
+              {
+                "value": 20
+              }
+            ],
+            "known": [
+              {
+                "expected": true,
+                "inputs": {
+                  "value": 0
+                }
+              },
+              {
+                "expected": false,
+                "inputs": {
+                  "value": 1
+                }
+              }
+            ],
+            "name": "parity",
+            "source": "def parity(value):\n    return value % 2 == 0\n"
+          },
+          "square": {
+            "domain": [
+              {
+                "x": -5
+              },
+              {
+                "x": -4
+              },
+              {
+                "x": -3
+              },
+              {
+                "x": -2
+              },
+              {
+                "x": -1
+              },
+              {
+                "x": 0
+              },
+              {
+                "x": 1
+              },
+              {
+                "x": 2
+              },
+              {
+                "x": 3
+              },
+              {
+                "x": 4
+              },
+              {
+                "x": 5
+              }
+            ],
+            "heldout": [
+              {
+                "x": -20
+              },
+              {
+                "x": -19
+              },
+              {
+                "x": -18
+              },
+              {
+                "x": -17
+              },
+              {
+                "x": -16
+              },
+              {
+                "x": -15
+              },
+              {
+                "x": -14
+              },
+              {
+                "x": -13
+              },
+              {
+                "x": -12
+              },
+              {
+                "x": -11
+              },
+              {
+                "x": -10
+              },
+              {
+                "x": -9
+              },
+              {
+                "x": -8
+              },
+              {
+                "x": -7
+              },
+              {
+                "x": -6
+              },
+              {
+                "x": -5
+              },
+              {
+                "x": -4
+              },
+              {
+                "x": -3
+              },
+              {
+                "x": -2
+              },
+              {
+                "x": -1
+              },
+              {
+                "x": 0
+              },
+              {
+                "x": 1
+              },
+              {
+                "x": 2
+              },
+              {
+                "x": 3
+              },
+              {
+                "x": 4
+              },
+              {
+                "x": 5
+              },
+              {
+                "x": 6
+              },
+              {
+                "x": 7
+              },
+              {
+                "x": 8
+              },
+              {
+                "x": 9
+              },
+              {
+                "x": 10
+              },
+              {
+                "x": 11
+              },
+              {
+                "x": 12
+              },
+              {
+                "x": 13
+              },
+              {
+                "x": 14
+              },
+              {
+                "x": 15
+              },
+              {
+                "x": 16
+              },
+              {
+                "x": 17
+              },
+              {
+                "x": 18
+              },
+              {
+                "x": 19
+              },
+              {
+                "x": 20
+              }
+            ],
+            "known": [
+              {
+                "expected": 0,
+                "inputs": {
+                  "x": 0
+                }
+              }
+            ],
+            "name": "square",
+            "source": "def square(x):\n    return x * x\n"
+          }
+        },
+        "provider": "audit:warmed-route-provider",
+        "repeats": 3,
+        "requests": {
+          "clamp": "Write a function that clamps a value between lower and upper bounds.",
+          "parity": "Write a function that returns the parity of an integer.",
+          "square": "Write a function that squares an integer."
+        },
+        "tasks": [
+          "parity",
+          "clamp",
+          "square"
+        ]
+      },
+      "files": {
+        "docs/research/engine_substrate/SUBSTRATE_ADEQUACY_WARM_CONVERSE_COST_V1_PREREG_20261002.md": "8227de12b80f593ad9540f7597ed7f20ac15e771150d92dccf5266a3ebe2ad68",
+        "evaluation/substrate_capability/analyze_substrate_adequacy_warm_converse_cost_v1.py": "ca3f810b49e8442240e5db40049e415370b994d7ea6c43b1f154d4740ba3a5c5",
+        "evaluation/substrate_capability/independent_codewrite_oracles.py": "b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+        "evaluation/substrate_capability/substrate_adequacy_warm_converse_cost_v1.py": "1749a20264f392386edc7b2d389815a729813d5b9b956030054f6ce6829b108a",
+        "evaluation/substrate_capability/substrate_independent_adequacy_codewrite_transfer_v1.py": "4df60f2b25381a778d4e1b6aa20889a8645d7993d0e8f57054d38179e6db57a5"
+      },
+      "git_head": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+      "schema": "SubstrateAdequacyWarmConverseCostV1Lock"
+    },
+    "protocol": "33817eddafbc40e9d48e72336afc4d56d2a980b46dd2b3cd7a1b3e15d258742c",
+    "runner": "6760bd40af2e3c708600474bccc315bec7b4e55133b83937f3b581d927848117"
+  },
+  "source_stable": true
+}

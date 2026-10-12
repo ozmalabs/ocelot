@@ -912,11 +912,12 @@ def agent_specify_http_get(substrate=None) -> dict:
                     "front-ends, cup products — and not one of them opens a socket "
                     "or brings bytes back from a remote host. The resource at a URL "
                     "is not DERIVABLE from anything held; it must be FETCHED."),
-        "reduces_to": ("NOT a held op. A HOST network library: urllib.request "
-                       "(or a raw socket speaking HTTP/1.1) — Request(url, UA) -> "
-                       "urlopen(timeout) -> read(). The floor is OUTSIDE the held "
-                       "basis. This is the categorical difference from the math "
-                       "specs, whose floor is the held integer/cup ring."),
+        "reduces_to": ("NOT a held op. A HOST network library: http.client "
+                       "HTTPConnection/HTTPSConnection with bounded keep-alive "
+                       "reuse — Request(url, UA) -> getresponse(timeout) -> read(). "
+                       "The floor is OUTSIDE the held basis. This is the categorical "
+                       "difference from the math specs, whose floor is the held "
+                       "integer/cup ring."),
         "category": ("EXTERNAL-IO world-adapter effector — NOT a composable DSL "
                      "Term and NOT a held tower primitive. The math specs reduce "
                      "to held composition (Rust Term or held ring); http_get "
@@ -963,8 +964,8 @@ def emit_external_io_binding(spec: dict) -> dict:
     PYTHON world-adapter function (CLAUDE.md: Python is the external-I/O layer;
     a Rust DSL Term cannot open a socket — external IO is the adapter's job, not
     the evaluator's). The template emits the GET binding from the spec's method +
-    safety fields: urllib.request with a descriptive UA + timeout, returning
-    {status, length, marker-able text}. Returns {place: source}.
+    safety fields: pooled standard-library HTTP(S) binding with a descriptive
+    UA + timeout, returning {status, length, text, url}. Returns {place: source}.
 
     This emitter EXISTING + producing runnable source is what makes the PoC's
     authoring step succeed (vs outcome c). It mirrors the urllib fetch that
@@ -983,20 +984,15 @@ def emit_external_io_binding(spec: dict) -> dict:
             f"idempotent method); refused method {method!r}")
     ua = "gamma-substrate-agent/0.1 (research; agent-authored world-adapter)"
     binding = (
+        f"from domains.http_transport import http_get as _pooled_http_get\n"
+        f"\n"
         f"def {name}(url, *, timeout=15, user_agent={ua!r}):\n"
         f"    \"\"\"Agent-authored EXTERNAL-IO effector: HTTP {method} url -> the\n"
         f"    resource bytes/text. A world-adapter (CLAUDE.md): Python translates\n"
-        f"    external I/O. GET only (safe, idempotent). Returns\n"
-        f"    {{status, length, text, url}}; raises on network failure (the caller\n"
-        f"    decides — the effector does not fake a fetch).\"\"\"\n"
-        f"    import urllib.request\n"
-        f"    req = urllib.request.Request(url, headers={{'User-Agent': user_agent}},\n"
-        f"                                 method={method!r})\n"
-        f"    with urllib.request.urlopen(req, timeout=timeout) as resp:\n"
-        f"        body = resp.read()\n"
-        f"    text = body.decode('utf-8', 'replace')\n"
-        f"    return {{'status': resp.status, 'length': len(body),\n"
-        f"            'text': text, 'url': url}}\n")
+        f"    external I/O. GET only (safe, idempotent), with bounded keep-alive\n"
+        f"    transport reuse. Returns {{status, length, text, url}}; raises on\n"
+        f"    network failure (the caller decides — no fake fetch).\"\"\"\n"
+        f"    return _pooled_http_get(url, timeout=timeout, user_agent=user_agent)\n")
     return {
         "world_adapter.py (binding)": binding,
         "register": "external_io",

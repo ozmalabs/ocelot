@@ -1,0 +1,167 @@
+{
+  "cells": [
+    {
+      "case": "jit_attr",
+      "expected_kind": "jit_attr_read",
+      "outcome_match": true,
+      "plain": {
+        "compiled_jit_rules": 1,
+        "dropped": 0,
+        "event_count": 0,
+        "events": [],
+        "expected_where_truth": true,
+        "progress": 0,
+        "status": "fixed_point",
+        "terminal_progress": 0,
+        "total_rules": 1,
+        "trace_enabled": false
+      },
+      "traced": {
+        "compiled_jit_rules": 1,
+        "dropped": 0,
+        "event_count": 2,
+        "events": [
+          [
+            1,
+            "pattern_edge",
+            0,
+            "probe_edge",
+            1,
+            1
+          ],
+          [
+            1,
+            "jit_attr_read",
+            0,
+            "flag",
+            null,
+            1
+          ]
+        ],
+        "expected_where_truth": true,
+        "progress": 0,
+        "status": "fixed_point",
+        "terminal_progress": 0,
+        "total_rules": 1,
+        "trace_enabled": true
+      }
+    },
+    {
+      "case": "jit_type",
+      "expected_kind": "jit_type_read",
+      "outcome_match": true,
+      "plain": {
+        "compiled_jit_rules": 1,
+        "dropped": 0,
+        "event_count": 0,
+        "events": [],
+        "expected_where_truth": true,
+        "progress": 0,
+        "status": "fixed_point",
+        "terminal_progress": 0,
+        "total_rules": 1,
+        "trace_enabled": false
+      },
+      "traced": {
+        "compiled_jit_rules": 1,
+        "dropped": 0,
+        "event_count": 2,
+        "events": [
+          [
+            1,
+            "pattern_edge",
+            0,
+            "probe_edge",
+            1,
+            1
+          ],
+          [
+            1,
+            "jit_type_read",
+            1,
+            "Probe",
+            null,
+            1
+          ]
+        ],
+        "expected_where_truth": true,
+        "progress": 0,
+        "status": "fixed_point",
+        "terminal_progress": 0,
+        "total_rules": 1,
+        "trace_enabled": true
+      }
+    },
+    {
+      "case": "jit_neighbour_count",
+      "expected_kind": "term_edge_read",
+      "outcome_match": true,
+      "plain": {
+        "compiled_jit_rules": 1,
+        "dropped": 0,
+        "event_count": 0,
+        "events": [],
+        "expected_where_truth": true,
+        "progress": 0,
+        "status": "fixed_point",
+        "terminal_progress": 0,
+        "total_rules": 1,
+        "trace_enabled": false
+      },
+      "traced": {
+        "compiled_jit_rules": 1,
+        "dropped": 0,
+        "event_count": 2,
+        "events": [
+          [
+            1,
+            "pattern_edge",
+            0,
+            "probe_edge",
+            1,
+            1
+          ],
+          [
+            1,
+            "term_edge_read",
+            0,
+            "probe_edge",
+            1,
+            1
+          ]
+        ],
+        "expected_where_truth": true,
+        "progress": 0,
+        "status": "fixed_point",
+        "terminal_progress": 0,
+        "total_rules": 1,
+        "trace_enabled": true
+      }
+    }
+  ],
+  "checks": {
+    "all_pairs_settle_with_matching_outcomes": true,
+    "each_fixture_compiles_one_jit_rule": true,
+    "no_trace_overflow": true,
+    "plain_arms_emit_nothing": true,
+    "trace_arms_emit_expected_kind": true
+  },
+  "claim_boundary": "Confirms three newly instrumented JIT sites; not representative coverage, performance, or general trace completeness.",
+  "environment": {
+    "platform": "Linux-6.8.0-142-generic-x86_64-with-glibc2.39",
+    "python": "3.13.5 (main, Jun 11 2025, 15:36:57) [GCC 11.4.0]"
+  },
+  "provenance": {
+    "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+    "native_build_manifest_sha256": "a7ef600d64b73c26e26f6befbeda15644f7cc5b3e7948dd834ea2838c464149e",
+    "native_extension_sha256": "24073a9be8433613adb245804a1e4714a07ba9960b6d3fe501942540170c4ed6",
+    "source_sha256": {
+      "runners/dsl/src/access_trace.rs": "69948c99775d9d87640a3626b14d77f9584e2785b8f89c2a9394a0b5c9ec0ba1",
+      "runners/dsl/src/jit.rs": "3aac8ae92aab48acc16e6af2543ee2edd34ef81a1c5bb8aada456701093e0c8d",
+      "scripts/substrate_jit_access_trace_probe_v1.py": "53bd918d452113b5d585aa627eb199d79de374626436211c77ad6c28776408a2"
+    }
+  },
+  "run_id": "substrate-jit-access-trace-probe-v1-20260925",
+  "schema_version": 1,
+  "scope": "three tiny paired fresh-substrate probes of JIT Attr, TypeOf, and fused Count(Neighbours)"
+}

@@ -1,0 +1,69 @@
+{
+  "capture": "evaluation/reports/thoughtexperiment_predecessor_fanout_100k_exploratory_20261003.json",
+  "capture_sha256": "c2b17c52d694c1f9b2d53a439792f377704b92a0cc454ab33969773889a62409",
+  "checks": {
+    "all_rows_at_100k_noise_scale": true,
+    "nonnegative_named_phase_remainder": true,
+    "semantic_and_isolation_checks_pass": true,
+    "six_unique_backend_replicate_rows": true
+  },
+  "interpretation": "The remainder is lifecycle time outside the recorded phase timers. It is not attributed to hashing alone; it may include graph exports, digest checks, readback, allocator sampling, and other validation work.",
+  "reproducibility_limit": "The exploratory capture has no retained matching 100k runner or pre-run source lock; this derived timing audit cannot replay or upgrade it to confirmatory scale evidence.",
+  "schema": "ThoughtexperimentPredecessorFanoutPhaseRemainderV1",
+  "summaries": {
+    "full_copy": {
+      "median_lifecycle_ms": 2516.963522,
+      "median_named_phase_sum_ms": 69.478122,
+      "median_unattributed_fraction": 0.9700094323665394,
+      "median_unattributed_remainder_ms": 2447.4854,
+      "per_worker_ms": [
+        {
+          "lifecycle": 2307.776093,
+          "named_phases": 69.211515,
+          "replicate": 0,
+          "unattributed_remainder": 2238.564578
+        },
+        {
+          "lifecycle": 3027.2858,
+          "named_phases": 93.855599,
+          "replicate": 1,
+          "unattributed_remainder": 2933.430201
+        },
+        {
+          "lifecycle": 2516.963522,
+          "named_phases": 69.478122,
+          "replicate": 2,
+          "unattributed_remainder": 2447.4854
+        }
+      ],
+      "replicates": 3
+    },
+    "shared_graph_pages": {
+      "median_lifecycle_ms": 2369.049013,
+      "median_named_phase_sum_ms": 3.934141,
+      "median_unattributed_fraction": 0.9983300341283399,
+      "median_unattributed_remainder_ms": 2365.092782,
+      "per_worker_ms": [
+        {
+          "lifecycle": 2266.299309,
+          "named_phases": 3.934141,
+          "replicate": 0,
+          "unattributed_remainder": 2262.365168
+        },
+        {
+          "lifecycle": 2369.049013,
+          "named_phases": 3.956231,
+          "replicate": 1,
+          "unattributed_remainder": 2365.092782
+        },
+        {
+          "lifecycle": 2482.381808,
+          "named_phases": 3.150957,
+          "replicate": 2,
+          "unattributed_remainder": 2479.230851
+        }
+      ],
+      "replicates": 3
+    }
+  }
+}

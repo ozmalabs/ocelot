@@ -1,0 +1,221 @@
+{
+  "all_cases_pass": true,
+  "cases": [
+    {
+      "after_owner_removal": null,
+      "baseline_nodes": 0,
+      "case": "unshared",
+      "collector": {
+        "external_reference_seeds": [],
+        "owned_ids": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "protected_ids": [],
+        "removed_ids": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "root_id": 3
+      },
+      "held_id": null,
+      "held_subgraph_roundtrip_stable": true,
+      "held_subgraph_survives": true,
+      "held_subgraph_type": null,
+      "materialized_nodes": 4,
+      "materialized_root_id": 3,
+      "materialized_term_node_ids": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "native_remove_node_control": {
+        "after_nodes": 3,
+        "before_nodes": 4,
+        "held_child_survives": true,
+        "owner_edge_survives": true,
+        "term_nodes_remaining": [
+          0,
+          1,
+          2
+        ]
+      },
+      "owner_edge_survives": true,
+      "post_cleanup_node_count": 0,
+      "retained_types": {},
+      "unowned_term_nodes_left": []
+    },
+    {
+      "after_owner_removal": {
+        "cleanup": {
+          "external_reference_seeds": [],
+          "owned_ids": [
+            1,
+            2
+          ],
+          "protected_ids": [],
+          "removed_ids": [
+            1,
+            2
+          ],
+          "root_id": 2
+        },
+        "final_node_count": 0,
+        "returns_to_baseline": true
+      },
+      "baseline_nodes": 0,
+      "case": "shared_subtree",
+      "collector": {
+        "external_reference_seeds": [
+          2
+        ],
+        "owned_ids": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "protected_ids": [
+          1,
+          2
+        ],
+        "removed_ids": [
+          0,
+          3
+        ],
+        "root_id": 3
+      },
+      "held_id": 2,
+      "held_subgraph_roundtrip_stable": true,
+      "held_subgraph_survives": true,
+      "held_subgraph_type": "Term.Reverse",
+      "materialized_nodes": 4,
+      "materialized_root_id": 3,
+      "materialized_term_node_ids": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "native_remove_node_control": {
+        "after_nodes": 4,
+        "before_nodes": 5,
+        "held_child_survives": true,
+        "owner_edge_survives": true,
+        "term_nodes_remaining": [
+          0,
+          1,
+          2
+        ]
+      },
+      "owner_edge_survives": true,
+      "post_cleanup_node_count": 3,
+      "retained_types": {
+        "1": "Term.Var",
+        "2": "Term.Reverse"
+      },
+      "unowned_term_nodes_left": []
+    },
+    {
+      "after_owner_removal": {
+        "cleanup": {
+          "external_reference_seeds": [],
+          "owned_ids": [
+            1
+          ],
+          "protected_ids": [],
+          "removed_ids": [
+            1
+          ],
+          "root_id": 1
+        },
+        "final_node_count": 0,
+        "returns_to_baseline": true
+      },
+      "baseline_nodes": 0,
+      "case": "shared_leaf",
+      "collector": {
+        "external_reference_seeds": [
+          1
+        ],
+        "owned_ids": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "protected_ids": [
+          1
+        ],
+        "removed_ids": [
+          0,
+          2,
+          3
+        ],
+        "root_id": 3
+      },
+      "held_id": 1,
+      "held_subgraph_roundtrip_stable": true,
+      "held_subgraph_survives": true,
+      "held_subgraph_type": "Term.Var",
+      "materialized_nodes": 4,
+      "materialized_root_id": 3,
+      "materialized_term_node_ids": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "native_remove_node_control": {
+        "after_nodes": 4,
+        "before_nodes": 5,
+        "held_child_survives": true,
+        "owner_edge_survives": true,
+        "term_nodes_remaining": [
+          0,
+          1,
+          2
+        ]
+      },
+      "owner_edge_survives": true,
+      "post_cleanup_node_count": 2,
+      "retained_types": {
+        "1": "Term.Var"
+      },
+      "unowned_term_nodes_left": []
+    }
+  ],
+  "claim_boundary": "host-side prototype only; not a production cleanup API",
+  "provenance": {
+    "dirty_worktree": true,
+    "git_head": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+    "lock_sha256": "1c0dcdbf51ada42a32e0676ecb6565867f731475010ec4d1530e087105c596c8",
+    "native_sha256": "4152737c6f6a88e44632ffb786350c5702529417b5f489d4ab5cc44bef9f20bc",
+    "preregistration_sha256": "434169de52aee72fe090040c7bf20a4d0b8ab7fc5aeca8023bd17b5a9de709c5",
+    "runner_sha256": "5adf47f62f869ad06d331d9a4dac7a19f9a3752d8d30ddb91d3dd9810dfbd6f8"
+  },
+  "run_id": "term-subgraph-ownership-20260925-v1",
+  "schema_version": 1,
+  "term": {
+    "items": [
+      {
+        "type": "Lit",
+        "value": "left"
+      },
+      {
+        "seq": {
+          "name": "x",
+          "type": "Var"
+        },
+        "type": "Reverse"
+      }
+    ],
+    "type": "Cat"
+  },
+  "wall_ns": 1419521
+}

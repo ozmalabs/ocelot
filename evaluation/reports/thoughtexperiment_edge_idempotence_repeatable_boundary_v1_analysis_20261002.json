@@ -1,0 +1,612 @@
+{
+  "aggregate": {
+    "coarse_guard_heldout_reply_counts": [
+      [
+        1,
+        0,
+        0
+      ],
+      [
+        1,
+        0,
+        0
+      ],
+      [
+        1,
+        0,
+        0
+      ],
+      [
+        1,
+        0,
+        0
+      ]
+    ],
+    "coarse_guard_training_reply_counts": [
+      [
+        1,
+        0
+      ],
+      [
+        1,
+        0
+      ],
+      [
+        1,
+        0
+      ],
+      [
+        1,
+        0
+      ]
+    ],
+    "source_heldout_replies": 12,
+    "source_train_replies": 8,
+    "workers": 4
+  },
+  "all_checks_pass": true,
+  "checks": {
+    "both_proposals_fail_training": true,
+    "branch_evidence_and_rule_store_isolation": true,
+    "capture_linkage": true,
+    "composer_target_and_edit_recorded": true,
+    "exact_worker_schedule": true,
+    "generic_candidate_is_coarse_agent_edge_guard": true,
+    "heldout_diagnostic_shows_false_suppression": true,
+    "selector_abstains_on_all_wrong": true,
+    "source_lock_current": true,
+    "source_rule_passes_train_and_heldout": true,
+    "source_stable": true
+  },
+  "rows": [
+    {
+      "baseline_heldout": {
+        "agent_outbound_count": 3,
+        "correct": true,
+        "expected_counts": [
+          1,
+          1,
+          1
+        ],
+        "input_count": 3,
+        "input_ids": [
+          "#482",
+          "#493",
+          "#500"
+        ],
+        "reply_counts_by_input": [
+          1,
+          1,
+          1
+        ],
+        "rule_store_stable_during_sequence": true,
+        "rules_unchanged_during_sequence": true,
+        "sequence_runtime_ns": 623902
+      },
+      "baseline_train": {
+        "agent_outbound_count": 2,
+        "correct": true,
+        "expected_counts": [
+          1,
+          1
+        ],
+        "input_count": 2,
+        "input_ids": [
+          "#482",
+          "#491"
+        ],
+        "reply_counts_by_input": [
+          1,
+          1
+        ],
+        "rule_store_stable_during_sequence": true,
+        "rules_unchanged_during_sequence": true,
+        "sequence_runtime_ns": 627443
+      },
+      "candidate_outcomes": [
+        {
+          "label": "edge_once:agent:sent:any_target",
+          "outcome": {
+            "agent_outbound_count": 1,
+            "correct": false,
+            "expected_counts": [
+              1,
+              1
+            ],
+            "input_count": 2,
+            "input_ids": [
+              "#482",
+              "#491"
+            ],
+            "reply_counts_by_input": [
+              1,
+              0
+            ],
+            "rule_store_stable_during_sequence": true,
+            "rules_unchanged_during_sequence": true,
+            "sequence_runtime_ns": 39808143
+          },
+          "proposal_id": "sha256:d386e0b34b5aaebe377744a2dc48f181bf43783d14ff20dd06a21177df63fa88"
+        },
+        {
+          "label": "composer:add_match_guard",
+          "outcome": {
+            "agent_outbound_count": 0,
+            "correct": false,
+            "expected_counts": [
+              1,
+              1
+            ],
+            "input_count": 2,
+            "input_ids": [
+              "#482",
+              "#488"
+            ],
+            "reply_counts_by_input": [
+              0,
+              0
+            ],
+            "rule_store_stable_during_sequence": true,
+            "rules_unchanged_during_sequence": true,
+            "sequence_runtime_ns": 650133
+          },
+          "proposal_id": "sha256:4978adf6467218503a365c5022985819a0c74d595d143cea04376a30bdeb313d"
+        }
+      ],
+      "composer": {
+        "kind": "add_match_guard",
+        "removed_rule": "reply_to_adjacency_pair",
+        "site": "where += Eq(Attr('m', 'adopted_variant_probe'), True) (a NEW conjunct)"
+      },
+      "decision": {
+        "ok": false,
+        "probe_count": 1,
+        "proposal_count": 2,
+        "reason": "no unique proposal has positive matching evidence"
+      },
+      "generic_heldout_diagnostic": {
+        "agent_outbound_count": 1,
+        "correct": false,
+        "expected_counts": [
+          1,
+          1,
+          1
+        ],
+        "input_count": 3,
+        "input_ids": [
+          "#482",
+          "#493",
+          "#497"
+        ],
+        "reply_counts_by_input": [
+          1,
+          0,
+          0
+        ],
+        "rule_store_stable_during_sequence": true,
+        "rules_unchanged_during_sequence": true,
+        "sequence_runtime_ns": 32170402
+      },
+      "generic_site": [
+        [
+          "agent",
+          "sent",
+          null
+        ]
+      ],
+      "worker": 0
+    },
+    {
+      "baseline_heldout": {
+        "agent_outbound_count": 3,
+        "correct": true,
+        "expected_counts": [
+          1,
+          1,
+          1
+        ],
+        "input_count": 3,
+        "input_ids": [
+          "#482",
+          "#493",
+          "#500"
+        ],
+        "reply_counts_by_input": [
+          1,
+          1,
+          1
+        ],
+        "rule_store_stable_during_sequence": true,
+        "rules_unchanged_during_sequence": true,
+        "sequence_runtime_ns": 639543
+      },
+      "baseline_train": {
+        "agent_outbound_count": 2,
+        "correct": true,
+        "expected_counts": [
+          1,
+          1
+        ],
+        "input_count": 2,
+        "input_ids": [
+          "#482",
+          "#491"
+        ],
+        "reply_counts_by_input": [
+          1,
+          1
+        ],
+        "rule_store_stable_during_sequence": true,
+        "rules_unchanged_during_sequence": true,
+        "sequence_runtime_ns": 631153
+      },
+      "candidate_outcomes": [
+        {
+          "label": "edge_once:agent:sent:any_target",
+          "outcome": {
+            "agent_outbound_count": 1,
+            "correct": false,
+            "expected_counts": [
+              1,
+              1
+            ],
+            "input_count": 2,
+            "input_ids": [
+              "#482",
+              "#491"
+            ],
+            "reply_counts_by_input": [
+              1,
+              0
+            ],
+            "rule_store_stable_during_sequence": true,
+            "rules_unchanged_during_sequence": true,
+            "sequence_runtime_ns": 25148963
+          },
+          "proposal_id": "sha256:d386e0b34b5aaebe377744a2dc48f181bf43783d14ff20dd06a21177df63fa88"
+        },
+        {
+          "label": "composer:add_match_guard",
+          "outcome": {
+            "agent_outbound_count": 0,
+            "correct": false,
+            "expected_counts": [
+              1,
+              1
+            ],
+            "input_count": 2,
+            "input_ids": [
+              "#482",
+              "#488"
+            ],
+            "reply_counts_by_input": [
+              0,
+              0
+            ],
+            "rule_store_stable_during_sequence": true,
+            "rules_unchanged_during_sequence": true,
+            "sequence_runtime_ns": 431392
+          },
+          "proposal_id": "sha256:4978adf6467218503a365c5022985819a0c74d595d143cea04376a30bdeb313d"
+        }
+      ],
+      "composer": {
+        "kind": "add_match_guard",
+        "removed_rule": "reply_to_adjacency_pair",
+        "site": "where += Eq(Attr('m', 'adopted_variant_probe'), True) (a NEW conjunct)"
+      },
+      "decision": {
+        "ok": false,
+        "probe_count": 1,
+        "proposal_count": 2,
+        "reason": "no unique proposal has positive matching evidence"
+      },
+      "generic_heldout_diagnostic": {
+        "agent_outbound_count": 1,
+        "correct": false,
+        "expected_counts": [
+          1,
+          1,
+          1
+        ],
+        "input_count": 3,
+        "input_ids": [
+          "#482",
+          "#493",
+          "#497"
+        ],
+        "reply_counts_by_input": [
+          1,
+          0,
+          0
+        ],
+        "rule_store_stable_during_sequence": true,
+        "rules_unchanged_during_sequence": true,
+        "sequence_runtime_ns": 38354528
+      },
+      "generic_site": [
+        [
+          "agent",
+          "sent",
+          null
+        ]
+      ],
+      "worker": 1
+    },
+    {
+      "baseline_heldout": {
+        "agent_outbound_count": 3,
+        "correct": true,
+        "expected_counts": [
+          1,
+          1,
+          1
+        ],
+        "input_count": 3,
+        "input_ids": [
+          "#482",
+          "#493",
+          "#500"
+        ],
+        "reply_counts_by_input": [
+          1,
+          1,
+          1
+        ],
+        "rule_store_stable_during_sequence": true,
+        "rules_unchanged_during_sequence": true,
+        "sequence_runtime_ns": 967894
+      },
+      "baseline_train": {
+        "agent_outbound_count": 2,
+        "correct": true,
+        "expected_counts": [
+          1,
+          1
+        ],
+        "input_count": 2,
+        "input_ids": [
+          "#482",
+          "#491"
+        ],
+        "reply_counts_by_input": [
+          1,
+          1
+        ],
+        "rule_store_stable_during_sequence": true,
+        "rules_unchanged_during_sequence": true,
+        "sequence_runtime_ns": 461452
+      },
+      "candidate_outcomes": [
+        {
+          "label": "edge_once:agent:sent:any_target",
+          "outcome": {
+            "agent_outbound_count": 1,
+            "correct": false,
+            "expected_counts": [
+              1,
+              1
+            ],
+            "input_count": 2,
+            "input_ids": [
+              "#482",
+              "#491"
+            ],
+            "reply_counts_by_input": [
+              1,
+              0
+            ],
+            "rule_store_stable_during_sequence": true,
+            "rules_unchanged_during_sequence": true,
+            "sequence_runtime_ns": 35901927
+          },
+          "proposal_id": "sha256:d386e0b34b5aaebe377744a2dc48f181bf43783d14ff20dd06a21177df63fa88"
+        },
+        {
+          "label": "composer:add_match_guard",
+          "outcome": {
+            "agent_outbound_count": 0,
+            "correct": false,
+            "expected_counts": [
+              1,
+              1
+            ],
+            "input_count": 2,
+            "input_ids": [
+              "#482",
+              "#488"
+            ],
+            "reply_counts_by_input": [
+              0,
+              0
+            ],
+            "rule_store_stable_during_sequence": true,
+            "rules_unchanged_during_sequence": true,
+            "sequence_runtime_ns": 444762
+          },
+          "proposal_id": "sha256:4978adf6467218503a365c5022985819a0c74d595d143cea04376a30bdeb313d"
+        }
+      ],
+      "composer": {
+        "kind": "add_match_guard",
+        "removed_rule": "reply_to_adjacency_pair",
+        "site": "where += Eq(Attr('m', 'adopted_variant_probe'), True) (a NEW conjunct)"
+      },
+      "decision": {
+        "ok": false,
+        "probe_count": 1,
+        "proposal_count": 2,
+        "reason": "no unique proposal has positive matching evidence"
+      },
+      "generic_heldout_diagnostic": {
+        "agent_outbound_count": 1,
+        "correct": false,
+        "expected_counts": [
+          1,
+          1,
+          1
+        ],
+        "input_count": 3,
+        "input_ids": [
+          "#482",
+          "#493",
+          "#497"
+        ],
+        "reply_counts_by_input": [
+          1,
+          0,
+          0
+        ],
+        "rule_store_stable_during_sequence": true,
+        "rules_unchanged_during_sequence": true,
+        "sequence_runtime_ns": 32857646
+      },
+      "generic_site": [
+        [
+          "agent",
+          "sent",
+          null
+        ]
+      ],
+      "worker": 2
+    },
+    {
+      "baseline_heldout": {
+        "agent_outbound_count": 3,
+        "correct": true,
+        "expected_counts": [
+          1,
+          1,
+          1
+        ],
+        "input_count": 3,
+        "input_ids": [
+          "#482",
+          "#493",
+          "#500"
+        ],
+        "reply_counts_by_input": [
+          1,
+          1,
+          1
+        ],
+        "rule_store_stable_during_sequence": true,
+        "rules_unchanged_during_sequence": true,
+        "sequence_runtime_ns": 1049185
+      },
+      "baseline_train": {
+        "agent_outbound_count": 2,
+        "correct": true,
+        "expected_counts": [
+          1,
+          1
+        ],
+        "input_count": 2,
+        "input_ids": [
+          "#482",
+          "#491"
+        ],
+        "reply_counts_by_input": [
+          1,
+          1
+        ],
+        "rule_store_stable_during_sequence": true,
+        "rules_unchanged_during_sequence": true,
+        "sequence_runtime_ns": 411812
+      },
+      "candidate_outcomes": [
+        {
+          "label": "edge_once:agent:sent:any_target",
+          "outcome": {
+            "agent_outbound_count": 1,
+            "correct": false,
+            "expected_counts": [
+              1,
+              1
+            ],
+            "input_count": 2,
+            "input_ids": [
+              "#482",
+              "#491"
+            ],
+            "reply_counts_by_input": [
+              1,
+              0
+            ],
+            "rule_store_stable_during_sequence": true,
+            "rules_unchanged_during_sequence": true,
+            "sequence_runtime_ns": 30401795
+          },
+          "proposal_id": "sha256:d386e0b34b5aaebe377744a2dc48f181bf43783d14ff20dd06a21177df63fa88"
+        },
+        {
+          "label": "composer:add_match_guard",
+          "outcome": {
+            "agent_outbound_count": 0,
+            "correct": false,
+            "expected_counts": [
+              1,
+              1
+            ],
+            "input_count": 2,
+            "input_ids": [
+              "#482",
+              "#488"
+            ],
+            "reply_counts_by_input": [
+              0,
+              0
+            ],
+            "rule_store_stable_during_sequence": true,
+            "rules_unchanged_during_sequence": true,
+            "sequence_runtime_ns": 421392
+          },
+          "proposal_id": "sha256:4978adf6467218503a365c5022985819a0c74d595d143cea04376a30bdeb313d"
+        }
+      ],
+      "composer": {
+        "kind": "add_match_guard",
+        "removed_rule": "reply_to_adjacency_pair",
+        "site": "where += Eq(Attr('m', 'adopted_variant_probe'), True) (a NEW conjunct)"
+      },
+      "decision": {
+        "ok": false,
+        "probe_count": 1,
+        "proposal_count": 2,
+        "reason": "no unique proposal has positive matching evidence"
+      },
+      "generic_heldout_diagnostic": {
+        "agent_outbound_count": 1,
+        "correct": false,
+        "expected_counts": [
+          1,
+          1,
+          1
+        ],
+        "input_count": 3,
+        "input_ids": [
+          "#482",
+          "#493",
+          "#497"
+        ],
+        "reply_counts_by_input": [
+          1,
+          0,
+          0
+        ],
+        "rule_store_stable_during_sequence": true,
+        "rules_unchanged_during_sequence": true,
+        "sequence_runtime_ns": 31381269
+      },
+      "generic_site": [
+        [
+          "agent",
+          "sent",
+          null
+        ]
+      ],
+      "worker": 3
+    }
+  ],
+  "schema": "ThoughtexperimentRepeatableEdgeBoundaryV1Analysis"
+}

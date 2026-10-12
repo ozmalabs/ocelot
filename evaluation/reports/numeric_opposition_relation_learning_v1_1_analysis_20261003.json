@@ -1,0 +1,144 @@
+{
+  "analysis_note": "This analyzes measured capability. A learned hypothesis can fit training yet fail held-out generalization; such errors are retained as capability outcomes, not measurement-invalidity.",
+  "errors": [],
+  "generalization_gate_pass": false,
+  "input_hashes": {
+    "analyzer_sha256": "8732d85f3836df1437a46b3d7d929957c956d56c6da36d3994fdecf24eff8381",
+    "capture_sha256": "934dbcf753216779a4205453a825d26130f3489c8493027928564fda76cb0c0e",
+    "lock_sha256": "70a9ed3509b36d4b816f32b284b93a78c5712608667f38dc003f25e441fd47a7"
+  },
+  "measurement_integrity_pass": true,
+  "schema": "NumericOppositionRelationLearningV1_1Analysis",
+  "summary": {
+    "exact_heldout_workers": 1,
+    "heldout_cases_per_worker": 1296,
+    "median_cpu_ms": 5.484941,
+    "median_explored_terms": 63,
+    "median_wall_ms": 5.503913,
+    "pooled_fn": 0,
+    "pooled_fp": 720,
+    "pooled_tn": 5580,
+    "pooled_tp": 180,
+    "training_fit_workers": 5,
+    "workers": 5
+  },
+  "workers": [
+    {
+      "cpu_ms": 5.403581,
+      "explored": 63,
+      "heldout": {
+        "exact": false,
+        "fn": 0,
+        "fp": 180,
+        "n": 1296,
+        "negative_n": 1260,
+        "positive_n": 36,
+        "tn": 1080,
+        "tp": 36
+      },
+      "operators": [
+        "Eq",
+        "Neg",
+        "Var"
+      ],
+      "size": 4,
+      "term": "(ax == neg(ex))",
+      "wall_ms": 5.410332,
+      "worker": 0
+    },
+    {
+      "cpu_ms": 5.333931,
+      "explored": 62,
+      "heldout": {
+        "exact": false,
+        "fn": 0,
+        "fp": 180,
+        "n": 1296,
+        "negative_n": 1260,
+        "positive_n": 36,
+        "tn": 1080,
+        "tp": 36
+      },
+      "operators": [
+        "Eq",
+        "Neg",
+        "Var"
+      ],
+      "size": 4,
+      "term": "(ax == neg(ex))",
+      "wall_ms": 5.335121,
+      "worker": 1
+    },
+    {
+      "cpu_ms": 68.053308,
+      "explored": 705,
+      "heldout": {
+        "exact": false,
+        "fn": 0,
+        "fp": 180,
+        "n": 1296,
+        "negative_n": 1260,
+        "positive_n": 36,
+        "tn": 1080,
+        "tp": 36
+      },
+      "operators": [
+        "And",
+        "Eq",
+        "Neg",
+        "Var"
+      ],
+      "size": 6,
+      "term": "(ax and (ax == neg(ex)))",
+      "wall_ms": 68.072771,
+      "worker": 2
+    },
+    {
+      "cpu_ms": 1191.715451,
+      "explored": 9862,
+      "heldout": {
+        "exact": true,
+        "fn": 0,
+        "fp": 0,
+        "n": 1296,
+        "negative_n": 1260,
+        "positive_n": 36,
+        "tn": 1260,
+        "tp": 36
+      },
+      "operators": [
+        "And",
+        "Eq",
+        "Neg",
+        "Var"
+      ],
+      "size": 9,
+      "term": "((ax == neg(ex)) and (ay == neg(ey)))",
+      "wall_ms": 1191.944788,
+      "worker": 3
+    },
+    {
+      "cpu_ms": 5.484941,
+      "explored": 59,
+      "heldout": {
+        "exact": false,
+        "fn": 0,
+        "fp": 180,
+        "n": 1296,
+        "negative_n": 1260,
+        "positive_n": 36,
+        "tn": 1080,
+        "tp": 36
+      },
+      "operators": [
+        "Eq",
+        "Neg",
+        "Var"
+      ],
+      "size": 4,
+      "term": "(ax == neg(ex))",
+      "wall_ms": 5.503913,
+      "worker": 4
+    }
+  ]
+}

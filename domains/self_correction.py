@@ -123,6 +123,7 @@ follow-on task lands.
 from __future__ import annotations
 
 import copy as _copy
+import hashlib as _hashlib
 import json as _json
 import time as _time
 import uuid as _uuid
@@ -135,6 +136,7 @@ from domains.reflective_faculty import _rule_denylisted
 
 _PROPOSAL_TYPE = "SelfCorrectionProposal"
 _ADOPTION_TYPE = "SelfCorrectionAdoption"
+_MAX_DEFAULT_SWAP_VARIANTS = 4
 
 
 # ---------------------------------------------------------------------------
@@ -185,7 +187,17 @@ def _tag() -> str:
 # ---------------------------------------------------------------------------
 def imagine_and_check_convergence(agent, candidate: dict, *, model_before: Optional[CollapseModelResult] = None,
                                    horizon: int = 3, frontier_sample: int = 50,
-                                   focus_hops: int = 1, imagine_steps: int = 2) -> dict:
+                                   focus_hops: int = 1, imagine_steps: int = 2,
+                                   experiment_focus_nodes: Optional[list] = None,
+                                   snapshot_backend: str = "serialization",
+                                   _force_full_noop_readout: bool = False,
+                                   _force_full_graph_readout: bool = False,
+                                   _process_forked: bool = False,
+                                   _prediction_snapshot_backend: Optional[str] = None,
+                                   _snapshot_handle=None,
+                                   _measure_phases: bool = False,
+                                   _native_rule_patch: bool = True,
+                                   record_trace: bool = True) -> dict:
     """Apply `candidate` -- `{"label": str, "rules": {rule_name: variant_rule_
     dict_or_None, ...}}` -- IN TIER-3 IMAGINATION (a detached copy of the
     live graph via `domains.imagination.imagine`) and PREDICT (tier-4,
@@ -215,38 +227,73 @@ def imagine_and_check_convergence(agent, candidate: dict, *, model_before: Optio
     (an `Imagination`/`ImaginedConclusion` trace, the same reversible trace
     `tests/test_imagination.py::test_reversibility_*` already proves). The
     candidate's rule swap touches ONLY the detached copy's own native
-    object -- `agent`'s own rule store (`native.export_rules()`) is read
-    once (to seed the detached copy) and never written."""
+    object -- `imagine()` copies `agent`'s own rule store into the detached
+    substrate; candidate edits never touch the live store."""
     sub, native = _resolve(agent)
+    if snapshot_backend == "process_in_place" and not _process_forked:
+        raise RuntimeError("process_in_place requires an isolated forked child")
     model_before = model_before or predict_collapse(
         agent, horizon=horizon, frontier_sample=frontier_sample,
-        focus_hops=focus_hops, imagine_steps=imagine_steps)
+        focus_hops=focus_hops, imagine_steps=imagine_steps,
+        snapshot_backend=snapshot_backend, _process_forked=_process_forked,
+        _force_full_graph_readout=_force_full_graph_readout,
+        _measure_phases=_measure_phases,
+        record_trace=record_trace)
 
     rules_patch = candidate.get("rules") or {}
     # (1) SNAPSHOT (real graph, real rules, zero collapse steps yet -- a
     # clean, reversible base to intervene on before predicting).
-    dc0 = imagine(agent, hypothesis=None, steps=0, cut_grounding=False)
+    import time
+    phase_started = time.perf_counter_ns() if _measure_phases else 0
+    dc0 = imagine(agent, hypothesis=None, steps=0, cut_grounding=False,
+                  focus_nodes=experiment_focus_nodes, focus_hops=focus_hops,
+                  snapshot_backend=snapshot_backend,
+                  _force_full_noop_readout=_force_full_noop_readout,
+                  _force_full_graph_readout=_force_full_graph_readout,
+                  _process_forked=_process_forked,
+                  _snapshot_handle=_snapshot_handle,
+                  _measure_phases=_measure_phases,
+                  record_trace=record_trace)
+    snapshot_ms = ((time.perf_counter_ns() - phase_started) / 1_000_000
+                   if _measure_phases else None)
     dnative = dc0.detached._inner
-    dnative.import_rules(native.export_rules())
 
     # (2) APPLY THE CANDIDATE -- detached copy only.
     applied: dict = {}
-    for name, variant in rules_patch.items():
-        exported = dnative.export_rules()
-        idx = next((i for i, r in enumerate(exported)
-                    if isinstance(r, dict) and r.get("active", True) and r.get("name") == name), None)
-        if idx is None:
-            continue
-        dnative.remove_rule(idx)
-        if variant is not None:
-            dnative.add_rule(variant)
-        applied[name] = variant.get("name") if isinstance(variant, dict) else None
+    patch_started = time.perf_counter_ns() if _measure_phases else 0
+    if _native_rule_patch:
+        replace_by_name = getattr(dnative, "replace_active_rule_by_name", None)
+        if replace_by_name is None:
+            raise RuntimeError("native active-rule patch support is unavailable; rebuild the Rust engine")
+        for name, variant in rules_patch.items():
+            if replace_by_name(name, variant):
+                applied[name] = variant.get("name") if isinstance(variant, dict) else None
+    else:
+        for name, variant in rules_patch.items():
+            exported = dnative.export_rules()
+            idx = next((i for i, r in enumerate(exported)
+                        if isinstance(r, dict) and r.get("active", True) and r.get("name") == name), None)
+            if idx is None:
+                continue
+            dnative.remove_rule(idx)
+            if variant is not None:
+                dnative.add_rule(variant)
+            applied[name] = variant.get("name") if isinstance(variant, dict) else None
+    candidate_patch_ms = ((time.perf_counter_ns() - patch_started) / 1_000_000
+                          if _measure_phases else None)
 
     # (3) PREDICT on the intervened, detached copy.
+    prediction_started = time.perf_counter_ns() if _measure_phases else 0
     model_after = predict_collapse(dc0.detached, horizon=horizon, frontier_sample=frontier_sample,
-                                    focus_hops=focus_hops, imagine_steps=imagine_steps)
+                                    focus_hops=focus_hops, imagine_steps=imagine_steps,
+                                    snapshot_backend=(_prediction_snapshot_backend or snapshot_backend),
+                                    _force_full_graph_readout=_force_full_graph_readout,
+                                    _process_forked=_process_forked,
+                                    _measure_phases=_measure_phases)
+    model_after_ms = ((time.perf_counter_ns() - prediction_started) / 1_000_000
+                      if _measure_phases else None)
 
-    return {
+    result = {
         "converges": bool(model_after.converged),
         "model_before": model_before,
         "model_after": model_after,
@@ -255,6 +302,95 @@ def imagine_and_check_convergence(agent, candidate: dict, *, model_before: Optio
         "applied": applied,
         "inert": len(applied) == 0,
     }
+    if _measure_phases:
+        result["phase_timings_ms"] = {
+            "branch_snapshot_and_setup": snapshot_ms,
+            "candidate_rule_patch": candidate_patch_ms,
+            "model_after_prediction": model_after_ms,
+            "initial_branch_internal": dc0.phase_timings_ms,
+            "prediction_internal": model_after.phase_timings_ms,
+            "forward_look_branch_internal": model_after.forward_look_phase_records,
+        }
+    return result
+
+
+def imagine_candidate_batch(agent, candidates: list[dict], *,
+                            horizon: int = 3, frontier_sample: int = 50,
+                            focus_hops: int = 1, imagine_steps: int = 2,
+                            snapshot_backend: str = "native_full_copy",
+                            experiment_focus_nodes: Optional[list] = None,
+                            _force_full_graph_readout: bool = False,
+                            _measure_phases: bool = False,
+                            record_trace: bool = True) -> dict:
+    """Evaluate candidates against one fixed primary revision.
+
+    Compute the baseline once, suppress per-candidate primary traces, and
+    reuse that baseline for every branch. A before/after native semantic
+    revision verifies that the primary graph and rule store remained unchanged. This amortizes
+    baseline prediction but does not remove the selected backend's branch
+    copy cost.
+    """
+    import time
+
+    _sub, native = _resolve(agent)
+    revision = getattr(native, "experiment_graph_rule_revision", None)
+    if revision is None:
+        raise RuntimeError(
+            "native graph/rule revision support is unavailable; rebuild the Rust engine")
+
+    def state_revision() -> tuple[int, int, int]:
+        graph_version, gamma_epoch, rule_slots = revision()
+        return int(graph_version), int(gamma_epoch), int(rule_slots)
+
+    baseline_started = time.perf_counter_ns()
+    baseline = predict_collapse(
+        agent, horizon=horizon, frontier_sample=frontier_sample,
+        focus_hops=focus_hops, imagine_steps=imagine_steps,
+        snapshot_backend=snapshot_backend,
+        _force_full_graph_readout=_force_full_graph_readout,
+        _measure_phases=_measure_phases,
+        record_trace=record_trace)
+    baseline_ms = (time.perf_counter_ns() - baseline_started) / 1_000_000
+    revision_started = time.perf_counter_ns()
+    baseline_revision = state_revision()
+    baseline_revision_ms = (time.perf_counter_ns() - revision_started) / 1_000_000
+    reusable_snapshot = None
+    reusable_snapshot_ms = 0.0
+    if snapshot_backend == "native_reusable_snapshot":
+        snapshot_started = time.perf_counter_ns()
+        reusable_snapshot = _sub.snapshot()
+        reusable_snapshot_ms = (time.perf_counter_ns() - snapshot_started) / 1_000_000
+        if tuple(reusable_snapshot.source_revision) != baseline_revision:
+            raise RuntimeError("candidate batch snapshot does not match its fixed source revision")
+    results = []
+    candidate_ms = []
+    for candidate in candidates:
+        candidate_started = time.perf_counter_ns()
+        results.append(imagine_and_check_convergence(
+            agent, candidate, model_before=baseline, horizon=horizon,
+            frontier_sample=frontier_sample, focus_hops=focus_hops,
+            imagine_steps=imagine_steps, snapshot_backend=snapshot_backend,
+            experiment_focus_nodes=experiment_focus_nodes,
+            _force_full_graph_readout=_force_full_graph_readout,
+            _snapshot_handle=reusable_snapshot,
+            _measure_phases=_measure_phases,
+            record_trace=False))
+        candidate_ms.append((time.perf_counter_ns() - candidate_started) / 1_000_000)
+    revision_started = time.perf_counter_ns()
+    final_revision = state_revision()
+    final_revision_ms = (time.perf_counter_ns() - revision_started) / 1_000_000
+    if final_revision != baseline_revision:
+        raise RuntimeError("candidate batch changed the primary graph or native rules")
+    return {"model_before": baseline, "results": results,
+            "primary_graph_and_rules_unchanged_during_batch": True,
+            "candidate_count": len(results),
+            "timing_components_ms": {
+                "baseline_prediction": baseline_ms,
+                "baseline_revision_check": baseline_revision_ms,
+                "reusable_snapshot_capture": reusable_snapshot_ms,
+                "candidate_rehearsals": candidate_ms,
+                "final_revision_check": final_revision_ms,
+            }}
 
 
 # ---------------------------------------------------------------------------
@@ -385,6 +521,82 @@ def _dedup_mirror_fix_candidate(rule: dict, new_name: str) -> Optional[dict]:
     return variant
 
 
+def _recurrence_offer_idempotence_candidate(rule: dict, new_name: str) -> Optional[dict]:
+    """Restore the recurrence ledger's authored one-offer invariant when its
+    `mrl_offer_due_once` rule has lost the negative-existence guard. This is
+    a second task-shaped repair family, scoped by exact rule identity and
+    structural absence of `candidate.has_mint_offer`; it does not rewrite an
+    already guarded rule or guess at other minting semantics."""
+    if rule.get("name") != "mrl_offer_due_once":
+        return None
+    where = rule.get("where")
+    if not isinstance(where, dict) or where.get("type") != "And":
+        return None
+    items = where.get("items")
+    if not isinstance(items, list):
+        return None
+    def is_offer_guard(item: dict) -> bool:
+        arg = item.get("arg") or {}
+        source = arg.get("source") or {}
+        node = source.get("node") or {}
+        return (item.get("type") == "Not" and arg.get("type") == "Exists"
+                and source.get("type") == "Neighbours"
+                and source.get("edge_type") == "has_mint_offer"
+                and node.get("type") == "Var" and node.get("name") == "candidate")
+    if any(isinstance(item, dict) and is_offer_guard(item) for item in items):
+        return None
+    guard = {
+        "type": "Not",
+        "arg": {
+            "type": "Exists",
+            "source": {"type": "Neighbours",
+                       "node": {"type": "Var", "name": "candidate"},
+                       "edge_type": "has_mint_offer"},
+            "var_name": "offer",
+            "predicate": {"type": "Lit", "value": True},
+        },
+    }
+    variant = _copy.deepcopy(rule)
+    variant["name"] = new_name
+    variant.pop("active", None)
+    variant["where"]["items"].append(guard)
+    return variant
+
+
+def _recurrence_episode_scope_guard_candidate(rule: dict, new_name: str) -> Optional[dict]:
+    """A plausible but narrower-cost alternative for recurrence minting:
+    suppress every offer after the first offer in an episode. This is useful
+    as a competing hypothesis, not as a known-good fix when an episode has
+    multiple due candidates; its task utility must be judged by the caller."""
+    if rule.get("name") != "mrl_offer_due_once":
+        return None
+    where = rule.get("where")
+    if not isinstance(where, dict) or where.get("type") != "And":
+        return None
+    items = where.get("items")
+    if not isinstance(items, list):
+        return None
+    def is_guard(item: dict, edge_type: str, var: str) -> bool:
+        arg = item.get("arg") or {}
+        source = arg.get("source") or {}
+        node = source.get("node") or {}
+        return (item.get("type") == "Not" and arg.get("type") == "Exists"
+                and source.get("type") == "Neighbours"
+                and source.get("edge_type") == edge_type
+                and node.get("type") == "Var" and node.get("name") == var)
+    if any(isinstance(item, dict) and is_guard(item,"has_mint_offer","episode") for item in items):
+        return None
+    variant = _copy.deepcopy(rule)
+    variant["name"] = new_name
+    variant.pop("active", None)
+    variant["where"]["items"].append({
+        "type":"Not","arg":{"type":"Exists",
+            "source":{"type":"Neighbours","node":{"type":"Var","name":"episode"},
+                      "edge_type":"has_mint_offer"},
+            "var_name":"offer","predicate":{"type":"Lit","value":True}}})
+    return variant
+
+
 def _find_mirror_rule(native, target_name: str) -> Optional[dict]:
     """Heuristic companion-rule search: the first OTHER active rule whose
     `where` also carries the `_find_identity_eq` shape (a rule keying a
@@ -428,7 +640,22 @@ def _default_candidates(native, target_rule_name: str) -> list:
             mirror_fix = _dedup_mirror_fix_candidate(mirror, f"{mirror['name']}_scfix_{tag}")
             if mirror_fix is not None:
                 bundle[mirror["name"]] = mirror_fix
-        candidates.append({"label": "dedup_identity_fix", "rules": bundle})
+        candidates.append({"label": "dedup_identity_fix",
+                           "outcome_class": "idempotent_mint_guard",
+                           "rules": bundle})
+
+    recurrence_fix = _recurrence_offer_idempotence_candidate(
+        rule, f"{target_rule_name}_scoffer_{tag}")
+    if recurrence_fix is not None:
+        candidates.append({"label": "dedup_identity_fix",
+                           "outcome_class": "idempotent_mint_guard",
+                           "rules": {target_rule_name: recurrence_fix}})
+    episode_guard = _recurrence_episode_scope_guard_candidate(
+        rule, f"{target_rule_name}_scoffer_episode_{tag}")
+    if episode_guard is not None:
+        candidates.append({"label":"episode_scoped_offer_guard",
+                           "outcome_class":"episode_scoped_idempotence",
+                           "rules":{target_rule_name:episode_guard}})
 
     flip = edit_ops.apply_flip_comparison(rule, f"{target_rule_name}_scflip_{tag}")
     if flip is not None:
@@ -444,6 +671,30 @@ def _default_candidates(native, target_rule_name: str) -> list:
         guard = edit_ops.apply_add_match_guard(rule, node_var, "self_correction_probe_never_true", 1,
                                                 f"{target_rule_name}_scguard_{tag}")
         candidates.append({"label": "add_match_guard(control)", "rules": {target_rule_name: guard}})
+
+    # Explore a small deterministic set of substitutions among attribute
+    # keys already read by the effect. Keep the default rehearsal budget
+    # finite; broader pairwise search requires an explicit caller budget.
+    effect_keys = [key for key, _count in edit_ops.find_attr_keys(rule.get("effects"))]
+    n_swaps = 0
+    for old_key in effect_keys:
+        for new_key in effect_keys:
+            if old_key == new_key:
+                continue
+            swap = edit_ops.apply_swap_term_leaf(
+                rule, old_key, new_key,
+                f"{target_rule_name}_scswap_{tag}_{n_swaps}")
+            if swap is None:
+                continue
+            candidates.append({
+                "label": f"swap_term_leaf:{old_key}->{new_key}",
+                "rules": {target_rule_name: swap},
+            })
+            n_swaps += 1
+            if n_swaps >= _MAX_DEFAULT_SWAP_VARIANTS:
+                break
+        if n_swaps >= _MAX_DEFAULT_SWAP_VARIANTS:
+            break
 
     return candidates
 
@@ -617,14 +868,19 @@ def intervene_on_divergence(agent, *, target_rule: Optional[str] = None,
     chosen: Optional[dict] = None
     for cand in cand_list:
         if not cand.get("rules"):
-            tried.append({"label": cand.get("label"), "inert": True, "converges": False})
+            tried.append({"label": cand.get("label"), "candidate_digest": _candidate_digest(cand),
+                          "rank_trace": cand.get("_self_correction_rank_trace"),
+                          "inert": True, "converges": False, "selected": False})
             continue
         check = imagine_and_check_convergence(
             agent, cand, model_before=model_before, horizon=horizon, frontier_sample=frontier_sample,
             focus_hops=focus_hops, imagine_steps=imagine_steps)
-        tried.append({"label": cand.get("label"), "inert": check["inert"], "converges": check["converges"],
-                      "model_after": check["model_after"]})
+        tried.append({"label": cand.get("label"), "candidate_digest": _candidate_digest(cand),
+                      "rank_trace": cand.get("_self_correction_rank_trace"),
+                      "inert": check["inert"], "converges": check["converges"],
+                      "selected": False, "model_after": check["model_after"]})
         if check["converges"] and not check["inert"] and chosen is None:
+            tried[-1]["selected"] = True
             chosen = {"candidate": cand, "check": check}
             break
 
@@ -670,3 +926,9 @@ __all__ = [
     "imagine_and_check_convergence",
     "intervene_on_divergence",
 ]
+
+
+def _candidate_digest(candidate: dict) -> str:
+    payload = _json.dumps(candidate.get("rules") or {}, sort_keys=True,
+                          separators=(",", ":"), ensure_ascii=False).encode("utf-8")
+    return "sha256:" + _hashlib.sha256(payload).hexdigest()
