@@ -1258,12 +1258,7 @@ impl MemoryFaculty {
     /// Exact-key recall after the host adapter has rebuilt disk index entries.
     /// Pages the matched cluster using the same whole-drawer policy as shape
     /// recall, then returns the resident NodeID for the requested key.
-    pub fn recall_by_key(
-        &mut self,
-        s: &mut Substrate,
-        key: &str,
-        round: i64,
-    ) -> Option<NodeID> {
+    pub fn recall_by_key(&mut self, s: &mut Substrate, key: &str, round: i64) -> Option<NodeID> {
         let cid = self
             .index
             .clusters

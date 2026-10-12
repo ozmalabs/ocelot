@@ -55,6 +55,36 @@ use crate::term::{
 };
 use crate::value::{cmp_value, SurfaceKind, Value};
 
+#[cfg(feature = "geninfer_linear_exact_prefilter")]
+thread_local! {
+    static PREFILTER_IDENTITY_VALUE_COMPARISONS: Cell<u64> = const { Cell::new(0) };
+    static PREFILTER_EXACT_ARITHMETIC_CHECKS: Cell<u64> = const { Cell::new(0) };
+}
+
+#[cfg(feature = "geninfer_linear_exact_prefilter")]
+#[derive(Clone)]
+struct PrefilterIdentityKey(Vec<Value>);
+
+#[cfg(feature = "geninfer_linear_exact_prefilter")]
+impl PartialEq for PrefilterIdentityKey {
+    fn eq(&self, other: &Self) -> bool {
+        let mut equal = self.0.len() == other.0.len();
+        for (left, right) in self.0.iter().zip(&other.0) {
+            if crate::scale_audit::enabled() {
+                PREFILTER_IDENTITY_VALUE_COMPARISONS.with(|n| n.set(n.get().saturating_add(1)));
+            }
+            if left != right { equal = false; break; }
+        }
+        equal
+    }
+}
+#[cfg(feature = "geninfer_linear_exact_prefilter")]
+impl Eq for PrefilterIdentityKey {}
+#[cfg(feature = "geninfer_linear_exact_prefilter")]
+impl Hash for PrefilterIdentityKey {
+    fn hash<H: Hasher>(&self, state: &mut H) { self.0.hash(state); }
+}
+
 #[inline]
 fn trace_scanned_node(ctx: &EvalCtx, node: crate::graph::NodeID) {
     crate::access_trace::note_node_type_and_attrs(ctx.graph, node);
@@ -343,8 +373,10 @@ fn load_parts_with_scope(
         ctx.graph.nodes_of_type(codebook_type)
     };
 
-    for nid in ctx.graph.nodes_of_type(codebook_type) {
-        trace_scanned_node(ctx, nid);
+    for nid in population {
+        if !indexed_scope {
+            crate::access_trace::note_helper_work(47, 1);
+        }
         let node = ctx.graph.node(nid);
         if !indexed_scope {
             if let (Some(scope), Some(key)) = (scope_filter, scope_key) {
@@ -653,6 +685,7 @@ fn load_generators(ctx: &EvalCtx, generator_type: Sym) -> Vec<Generator> {
     let mut pending_composites: Vec<(String, Vec<String>, Vec<i64>)> = Vec::new();
 
     for nid in ctx.graph.nodes_of_type(generator_type) {
+        crate::access_trace::note_helper_work(55, 1);
         trace_scanned_node(ctx, nid);
         let node = ctx.graph.node(nid);
         let mut name_val: Option<Value> = None;
@@ -1521,6 +1554,7 @@ fn load_relation_cue_index(ctx: &EvalCtx) -> FxHashMap<Vec<String>, String> {
         return idx;
     };
     for nid in ctx.graph.nodes_of_type(cue_type) {
+        crate::access_trace::note_helper_work(50, 1);
         trace_scanned_node(ctx, nid);
         let node = ctx.graph.node(nid);
         let mut name: Option<String> = None;

@@ -39,6 +39,8 @@ pub enum InadmissibleEdge {
 /// uses Holds-shaped recursion).
 pub struct Substrate {
     pub graph: TypedGraph,
+    /// Process-unique namespace for process-global scale-audit rule IDs.
+    rule_audit_store_id: u64,
     pub(crate) interner: Interner,
     pub(crate) checker: ConsistencyChecker,
     pub(crate) terms: TermArena,
@@ -702,6 +704,15 @@ pub struct RuleGraphDeltaReport {
     /// or roots were touched. These are stable seed IDs, not dependency
     /// connected components; callers may group them into larger frames.
     pub affected_microtheories: Vec<NodeID>,
+    /// Bounded per-invocation mutation targets when requested by the caller.
+    pub rule_write_events: Vec<crate::graph::RuleWriteEvent>,
+    pub rule_write_events_dropped: usize,
+    pub rule_write_snapshots_truncated: usize,
+    pub rule_write_snapshot_bytes_estimated: usize,
+    pub rule_write_snapshot_objects: usize,
+    pub rule_write_effect_snapshot_bytes: usize,
+    pub rule_write_effect_snapshot_objects: usize,
+    pub rule_write_effect_snapshots_truncated: usize,
     /// True only for the full before/after graph-content oracle.
     pub exact_graph_state_diff: bool,
 }
@@ -908,6 +919,30 @@ impl Substrate {
         }
     }
 
+    /// Capture the first complete graph/rule state for this store when the
+    /// expensive process-wide diagnostic is explicitly enabled.
+    fn capture_rule_audit_store_state_if_needed(&self) {
+        if !crate::scale_audit::rule_store_state_snapshot_needed(self.rule_audit_store_id) {
+            return;
+        }
+        let graph = crate::persist::graph_to_value(&self.graph, &self.interner);
+        let rules: Vec<serde_json::Value> = self
+            .rules
+            .iter()
+            .enumerate()
+            .map(|(local_rule_index, rule)| {
+                serde_json::json!({
+                    "local_rule_index": local_rule_index,
+                    "definition": crate::py::rule_to_json(rule, &self.terms, &self.interner),
+                })
+            })
+            .collect();
+        crate::scale_audit::record_rule_store_state_snapshot(
+            self.rule_audit_store_id,
+            serde_json::json!({"graph": graph, "rules": rules}),
+        );
+    }
+
     /// Capture an immutable, reusable base. The backend is selected at capture
     /// time; branch consumers use the same backend-independent `fork` method.
     pub fn snapshot(&self) -> Result<ExperimentSnapshot, &'static str> {
@@ -926,7 +961,12 @@ impl Substrate {
         let source_revision = self.experiment_graph_rule_revision();
         let base = backend.fork(self)?;
         let id = NEXT_SNAPSHOT_ID.fetch_add(1, Ordering::Relaxed);
-        Ok(ExperimentSnapshot { id, source_revision, backend, base })
+        Ok(ExperimentSnapshot {
+            id,
+            source_revision,
+            backend,
+            base,
+        })
     }
 
     /// Build a deep-copy experiment control with isolated mutable execution
@@ -1087,8 +1127,14 @@ impl Substrate {
         attr_names: &[String],
         max_events: usize,
     ) {
-        let rule_names = rule_names.iter().map(|name| self.interner.intern(name)).collect();
-        let attr_keys: Vec<Sym> = attr_names.iter().map(|name| self.interner.intern(name)).collect();
+        let rule_names = rule_names
+            .iter()
+            .map(|name| self.interner.intern(name))
+            .collect();
+        let attr_keys: Vec<Sym> = attr_names
+            .iter()
+            .map(|name| self.interner.intern(name))
+            .collect();
         self.rule_state_trace_events.clear();
         self.rule_state_trace_dropped = 0;
         self.rule_state_trace_config = Some(RuleStateTraceConfig {
@@ -1101,8 +1147,12 @@ impl Substrate {
     }
 
     fn record_rule_state_trace(&mut self, rule_name: Sym, pass_index: usize, progress_step: usize) {
-        let Some(config) = self.rule_state_trace_config.as_ref() else { return; };
-        if !config.rule_names.contains(&rule_name) { return; }
+        let Some(config) = self.rule_state_trace_config.as_ref() else {
+            return;
+        };
+        if !config.rule_names.contains(&rule_name) {
+            return;
+        }
         if self.rule_state_trace_events.len() >= config.max_events {
             self.rule_state_trace_dropped = self.rule_state_trace_dropped.saturating_add(1);
             return;
@@ -1110,19 +1160,27 @@ impl Substrate {
         let node_ids = config.node_ids.clone();
         let attr_keys = config.attr_keys.clone();
         let attr_names = config.attr_names.clone();
-        let values = node_ids.iter().map(|&node_id| {
-            if !self.graph.has_node(node_id) { return vec![None; attr_keys.len()]; }
-            let attrs = &self.graph.node(node_id).attrs;
-            attr_keys.iter().map(|key| match attrs.get(key) {
-                Some(Value::Float(value)) => Some(*value),
-                Some(Value::Int(value)) => Some(*value as f64),
-                Some(Value::Rational(numerator, denominator)) if *denominator != 0 => {
-                    Some(*numerator as f64 / *denominator as f64)
+        let values = node_ids
+            .iter()
+            .map(|&node_id| {
+                if !self.graph.has_node(node_id) {
+                    return vec![None; attr_keys.len()];
                 }
-                Some(Value::Bool(value)) => Some(if *value { 1.0 } else { 0.0 }),
-                _ => None,
-            }).collect::<Vec<_>>()
-        }).collect();
+                let attrs = &self.graph.node(node_id).attrs;
+                attr_keys
+                    .iter()
+                    .map(|key| match attrs.get(key) {
+                        Some(Value::Float(value)) => Some(*value),
+                        Some(Value::Int(value)) => Some(*value as f64),
+                        Some(Value::Rational(numerator, denominator)) if *denominator != 0 => {
+                            Some(*numerator as f64 / *denominator as f64)
+                        }
+                        Some(Value::Bool(value)) => Some(if *value { 1.0 } else { 0.0 }),
+                        _ => None,
+                    })
+                    .collect::<Vec<_>>()
+            })
+            .collect();
         self.rule_state_trace_events.push(RuleStateTraceEvent {
             pass_index,
             progress_step,
@@ -1156,7 +1214,8 @@ impl Substrate {
             detect_cycles,
             false,
             1,
-        ).steps;
+        )
+        .steps;
         self.rule_state_trace_config = None;
         let events = std::mem::take(&mut self.rule_state_trace_events);
         let dropped = std::mem::take(&mut self.rule_state_trace_dropped);
@@ -1473,19 +1532,39 @@ impl Substrate {
     /// the Γ epoch. This deliberately does not claim to fingerprint caches,
     /// telemetry, or other derived execution state.
     pub fn experiment_graph_rule_revision(&self) -> ExperimentRevision {
-        (self.graph.mutation_version(), self.gamma_epoch.current(), self.rules.len())
+        (
+            self.graph.mutation_version(),
+            self.gamma_epoch.current(),
+            self.rules.len(),
+        )
     }
 
     /// Read-only views of semantic stores. Mutation goes through tracked APIs
     /// so experiment revisions remain constant-time without content hashing.
-    pub fn rules(&self) -> &[crate::rewrite::RewriteRule] { &self.rules }
-    pub fn term_arena(&self) -> &TermArena { &self.terms }
-    pub fn concept_resolver(&self) -> &ConceptResolver { &self.concepts }
-    pub fn consistency_checker(&self) -> &ConsistencyChecker { &self.checker }
-    pub fn interner(&self) -> &Interner { &self.interner }
-    pub fn intern_symbol(&mut self, text: &str) -> Sym { self.interner.intern(text) }
-    pub fn resolve_symbol(&self, sym: Sym) -> &str { self.interner.resolve(sym) }
-    pub fn active_shape_target(&self) -> Option<crate::shape::Shape> { self.active_shape_target }
+    pub fn rules(&self) -> &[crate::rewrite::RewriteRule] {
+        &self.rules
+    }
+    pub fn term_arena(&self) -> &TermArena {
+        &self.terms
+    }
+    pub fn concept_resolver(&self) -> &ConceptResolver {
+        &self.concepts
+    }
+    pub fn consistency_checker(&self) -> &ConsistencyChecker {
+        &self.checker
+    }
+    pub fn interner(&self) -> &Interner {
+        &self.interner
+    }
+    pub fn intern_symbol(&mut self, text: &str) -> Sym {
+        self.interner.intern(text)
+    }
+    pub fn resolve_symbol(&self, sym: Sym) -> &str {
+        self.interner.resolve(sym)
+    }
+    pub fn active_shape_target(&self) -> Option<crate::shape::Shape> {
+        self.active_shape_target
+    }
 
     /// Append one Term node through the revision-tracked substrate owner.
     pub fn add_term_node(&mut self, node: crate::term::TermNode) -> TermIdx {
@@ -1519,51 +1598,84 @@ impl Substrate {
     ) -> Result<(), String> {
         let actual = self.experiment_graph_rule_revision();
         if actual != expected_revision {
-            return Err(format!("stale experiment revision: expected {expected_revision:?}, current {actual:?}"));
+            return Err(format!(
+                "stale experiment revision: expected {expected_revision:?}, current {actual:?}"
+            ));
         }
 
         let node_mutated = ["nodes_added", "nodes_removed", "nodes_changed"]
-            .iter().any(|key| delta.get(*key).and_then(serde_json::Value::as_array)
-                .is_some_and(|items| !items.is_empty()));
-        let type_changed = delta.get("nodes_changed").and_then(serde_json::Value::as_array)
+            .iter()
+            .any(|key| {
+                delta
+                    .get(*key)
+                    .and_then(serde_json::Value::as_array)
+                    .is_some_and(|items| !items.is_empty())
+            });
+        let type_changed = delta
+            .get("nodes_changed")
+            .and_then(serde_json::Value::as_array)
             .is_some_and(|items| items.iter().any(|item| item.get("type_after").is_some()));
         let mut deleted_edge_types: Vec<String> = Vec::new();
-        if let Some(removed) = delta.get("edges_removed").and_then(serde_json::Value::as_array) {
-            deleted_edge_types.extend(removed.iter().filter_map(|e|
-                e.get("type").and_then(serde_json::Value::as_str).map(str::to_owned)));
+        if let Some(removed) = delta
+            .get("edges_removed")
+            .and_then(serde_json::Value::as_array)
+        {
+            deleted_edge_types.extend(removed.iter().filter_map(|e| {
+                e.get("type")
+                    .and_then(serde_json::Value::as_str)
+                    .map(str::to_owned)
+            }));
         }
-        if let Some(removed_nodes) = delta.get("nodes_removed").and_then(serde_json::Value::as_array) {
+        if let Some(removed_nodes) = delta
+            .get("nodes_removed")
+            .and_then(serde_json::Value::as_array)
+        {
             for raw in removed_nodes.iter().filter_map(serde_json::Value::as_u64) {
                 if let Ok(raw) = u32::try_from(raw) {
                     let nid = NodeID(raw);
                     if self.graph.has_node(nid) {
-                        for idx in self.graph.out_edges_slice(nid, None).iter()
-                            .chain(self.graph.in_edges_slice(nid, None).iter()) {
-                            let name = self.interner.resolve(self.graph.edge(*idx).edge_type).to_owned();
-                            if !deleted_edge_types.contains(&name) { deleted_edge_types.push(name); }
+                        for idx in self
+                            .graph
+                            .out_edges_slice(nid, None)
+                            .iter()
+                            .chain(self.graph.in_edges_slice(nid, None).iter())
+                        {
+                            let name = self
+                                .interner
+                                .resolve(self.graph.edge(*idx).edge_type)
+                                .to_owned();
+                            if !deleted_edge_types.contains(&name) {
+                                deleted_edge_types.push(name);
+                            }
                         }
                     }
                 }
             }
         }
 
-        let impacts = crate::persist::apply_graph_delta(
-            &mut self.graph, &mut self.interner, delta)?;
-        if node_mutated { self.mark_node_mutation(); }
+        let impacts =
+            crate::persist::apply_graph_delta(&mut self.graph, &mut self.interner, delta)?;
+        if node_mutated {
+            self.mark_node_mutation();
+        }
         if type_changed {
             // A node retype can change the matchability of every existing
             // incident edge, including rules without where-clauses. Force a
             // complete rematch rather than relying on attr-write invalidation.
             for i in 0..self.rule_dirty.len() {
                 self.rule_dirty[i] = true;
-                if i < self.rule_cursors.len() { self.rule_cursors[i].clear(); }
+                if i < self.rule_cursors.len() {
+                    self.rule_cursors[i].clear();
+                }
             }
         }
         for edge_type in impacts {
             self.mark_edge_type_dirty(edge_type);
         }
         if !deleted_edge_types.is_empty() {
-            self.edge_delete_version = self.edge_delete_version.wrapping_add(deleted_edge_types.len() as u64);
+            self.edge_delete_version = self
+                .edge_delete_version
+                .wrapping_add(deleted_edge_types.len() as u64);
             for name in deleted_edge_types {
                 let edge_type = self.interner.intern(&name);
                 self.mark_edge_type_dirty(edge_type);
@@ -2457,9 +2569,7 @@ impl Substrate {
                 .iter()
                 .any(|k| rj.read_set.contains(k) && matches!(k, crate::rewrite::RuleKey::Attr(_)));
             let hits_term_edge = wset.iter().any(|k| match k {
-                crate::rewrite::RuleKey::Edge(edge_type) => {
-                    rj.term_edge_reads.contains(edge_type)
-                }
+                crate::rewrite::RuleKey::Edge(edge_type) => rj.term_edge_reads.contains(edge_type),
                 crate::rewrite::RuleKey::Attr(_) | crate::rewrite::RuleKey::Type(_) => false,
             });
             if rj.reads_any || hits_structural || (hits_attr && has_where) {
@@ -2508,11 +2618,8 @@ impl Substrate {
                     // try_predicate_retraction re-evaluates only the frontier. Everything else
                     // (structural/type/reads_any/ineligible/flag-off) keeps the committed
                     // cursor-clear ⇒ byte-identical on the default path.
-                    let pure_attr_flip = hits_attr
-                        && has_where
-                        && !type_hit
-                        && !rj.reads_any
-                        && !hits_term_edge;
+                    let pure_attr_flip =
+                        hits_attr && has_where && !type_hit && !rj.reads_any && !hits_term_edge;
                     let covered = self.predicate_retraction
                         && pure_attr_flip
                         && self.rule_pred_retract_ok.get(j).copied().unwrap_or(false);
@@ -2773,13 +2880,6 @@ impl Substrate {
         };
         let (ty, keys): (Option<Sym>, smallvec::SmallVec<[Sym; 16]>) =
             if self.precise_dirty && self.graph.has_node(nid) {
-            let n = self.graph.node(nid);
-            (Some(n.type_), n.attrs.iter().map(|(k, _)| *k).collect())
-        } else {
-            (None, smallvec::SmallVec::new())
-        };
-        let (ty, keys): (Option<Sym>, smallvec::SmallVec<[Sym; 16]>) =
-            if self.precise_dirty && self.graph.has_node(nid) {
                 let n = self.graph.node(nid);
                 (Some(n.type_), n.attrs.iter().map(|(k, _)| *k).collect())
             } else {
@@ -2808,10 +2908,7 @@ impl Substrate {
     /// incoming references from outside that tree. Ordinary `remove_node`
     /// remains node-only. Traversal and cycle/type validation complete before
     /// mutation, so malformed child structure fails without partial deletion.
-    pub fn remove_term_subgraph(
-        &mut self,
-        root: NodeID,
-    ) -> Result<TermSubgraphRemoval, String> {
+    pub fn remove_term_subgraph(&mut self, root: NodeID) -> Result<TermSubgraphRemoval, String> {
         const TERM_PREFIX: &str = "Term.";
         const CHILD_PREFIX: &str = "child.";
 
@@ -2854,7 +2951,11 @@ impl Substrate {
             let edge_ids = self.graph.out_edges_slice(nid, None).to_vec();
             for edge_idx in edge_ids.into_iter().rev() {
                 let edge = self.graph.edge(edge_idx);
-                if self.interner.resolve(edge.edge_type).starts_with(CHILD_PREFIX) {
+                if self
+                    .interner
+                    .resolve(edge.edge_type)
+                    .starts_with(CHILD_PREFIX)
+                {
                     if !self.graph.has_node(edge.tgt) || !is_term(self, edge.tgt) {
                         return Err("term_subgraph_child_not_term".to_string());
                     }
@@ -4146,6 +4247,7 @@ impl Substrate {
     /// substrate's pruning path lives here — Cousot abstract domain
     /// admissibility + Ashby variety match at the rule dispatch level.
     pub fn apply_rule_once(&mut self, idx: crate::rewrite::RuleIdx) -> bool {
+        self.capture_rule_audit_store_state_if_needed();
         let work_scope = &self.graph as *const crate::graph::TypedGraph as usize;
         let _work_operation = crate::access_trace::begin_work_operation_kind(work_scope, 2);
         if (idx.0 as usize) >= self.rules.len() || !self.rules[idx.0 as usize].active {
@@ -4157,7 +4259,13 @@ impl Substrate {
         }
         crate::scale_audit::begin_rule_enumeration_in_store(self.rule_audit_store_id, idx.0);
         let rule = self.rules[idx.0 as usize].clone();
-        crate::scale_audit::register_rule_audit_metadata(idx.0, rule.name.0, self.interner.resolve(rule.name), rule.match_edges.len());
+        crate::scale_audit::register_rule_audit_metadata_in_store(
+            self.rule_audit_store_id,
+            idx.0,
+            rule.name.0,
+            self.interner.resolve(rule.name),
+            rule.match_edges.len(),
+        );
         let Some(b) = crate::rewrite::match_rule(
             &rule,
             &self.terms,
@@ -4227,7 +4335,13 @@ impl Substrate {
         }
         crate::scale_audit::begin_rule_enumeration_in_store(self.rule_audit_store_id, idx.0);
         let rule = self.rules[idx.0 as usize].clone();
-        crate::scale_audit::register_rule_audit_metadata(idx.0, rule.name.0, self.interner.resolve(rule.name), rule.match_edges.len());
+        crate::scale_audit::register_rule_audit_metadata_in_store(
+            self.rule_audit_store_id,
+            idx.0,
+            rule.name.0,
+            self.interner.resolve(rule.name),
+            rule.match_edges.len(),
+        );
         // CLEAR ON THE WAY IN AS WELL AS OUT. The fallback path
         // (`apply_rule_once`) passes no cache at all, so it can neither
         // populate nor read one — but `run_rules` / `tick` CAN leave entries
@@ -4458,10 +4572,10 @@ impl Substrate {
                     ..Default::default()
                 };
                 for (e_src, e_tgt) in seeds {
-                    // Rule matching requires distinct bound variables to
-                    // resolve to distinct nodes. Match the full check here,
-                    // before seeding the incremental matcher.
-                    if e_src == e_tgt && drive_me.src_var != drive_me.tgt_var {
+                    // Preserve endpoint identity constraints before seeding:
+                    // a repeated variable requires a self-edge, while two
+                    // distinct variables must bind distinct nodes.
+                    if (drive_me.src_var == drive_me.tgt_var) != (e_src == e_tgt) {
                         continue;
                     }
                     let mut initial: crate::rewrite::Binding = rustc_hash::FxHashMap::default();
@@ -4715,10 +4829,10 @@ impl Substrate {
                     let e = self.graph.edge(edge_idx);
                     (e.src, e.tgt)
                 };
-                // Distinct match variables must bind distinct nodes, as
-                // enforced by the full matcher. Avoid seeding a binding that
-                // the full matcher would immediately reject.
-                if e_src == e_tgt && drive_me.src_var != drive_me.tgt_var {
+                // Preserve endpoint identity constraints before seeding: a
+                // repeated variable requires a self-edge, while distinct
+                // variables must bind distinct nodes.
+                if (drive_me.src_var == drive_me.tgt_var) != (e_src == e_tgt) {
                     continue;
                 }
                 let mut initial: crate::rewrite::Binding = FxHashMap::default();
@@ -4978,12 +5092,6 @@ impl Substrate {
                 started.elapsed().as_nanos().min(u64::MAX as u128) as u64,
             );
         }
-        if let Some(started) = drain_started {
-            crate::scale_audit::deferred_queue_drained(
-                "rule_patches", drained_items,
-                started.elapsed().as_nanos().min(u64::MAX as u128) as u64,
-            );
-        }
     }
 
     /// INTRINSIC SELF-REPAIR: drain + apply the rule-clause rewrites queued by `SetRuleClause`
@@ -4996,7 +5104,17 @@ impl Substrate {
         let drain_started = crate::scale_audit::enabled().then(std::time::Instant::now);
         let pending = std::mem::take(&mut self.graph.pending_rule_edits);
         let drained_items = pending.len();
-        for (name, field, val) in pending {
+        for (queue_index, (name, field, val, origin_rule)) in pending.into_iter().enumerate() {
+            let deferred_effect_origin = self.graph.take_deferred_rule_edit_effect_origin(queue_index);
+            let capture_rule_writes = self.graph.rule_write_attribution_enabled();
+            if capture_rule_writes {
+                self.graph.begin_rule_write_event(origin_rule, true);
+                if let Some((source_rule, source_index)) = deferred_effect_origin {
+                    self.graph.set_current_rule_deferred_effect_origins(&[(source_rule, source_index)]);
+                    self.graph.begin_rule_write_effect(source_index);
+                }
+            }
+            let mut edit_progressed = false;
             // SELF-BUILD: MINT a brand-new live struct rule from a Rule NODE the agent composed (the
             // create-twin of the clause rewrite, riding the SAME pending queue — the jabberwock's choice:
             // one engine, JIT'd + access-derived like every seed rule, not the dormant graph_rules path).
@@ -5139,12 +5257,6 @@ impl Substrate {
                 started.elapsed().as_nanos().min(u64::MAX as u128) as u64,
             );
         }
-        if let Some(started) = drain_started {
-            crate::scale_audit::deferred_queue_drained(
-                "rule_edits", drained_items,
-                started.elapsed().as_nanos().min(u64::MAX as u128) as u64,
-            );
-        }
     }
 
     /// PERCEPTION-AS-ACTION: drain `graph.pending_fb_samples` — the queue
@@ -5165,8 +5277,13 @@ impl Substrate {
         let drain_started = crate::scale_audit::enabled().then(std::time::Instant::now);
         let pending = std::mem::take(&mut self.graph.pending_fb_samples);
         let drained_items = pending.len();
-        for (fb_id, game, grid_w, grid_h) in pending {
-            if let Err(e) = self.fb_sample(fb_id, game, grid_w, grid_h) {
+        for (fb_id, game, grid_w, grid_h, origin_rule) in pending {
+            let capture_rule_writes = self.graph.rule_write_attribution_enabled();
+            if capture_rule_writes {
+                self.graph.begin_rule_write_event(origin_rule, true);
+            }
+            let sampled = self.fb_sample(fb_id, game, grid_w, grid_h);
+            if let Err(e) = &sampled {
                 eprintln!("[perception] rule-queued fb_sample(fb_id={fb_id}) failed: {e}");
             }
             if capture_rule_writes {
@@ -5177,12 +5294,6 @@ impl Substrate {
             crate::scale_audit::deferred_queue_drained(
                 "fb_samples",
                 drained_items,
-                started.elapsed().as_nanos().min(u64::MAX as u128) as u64,
-            );
-        }
-        if let Some(started) = drain_started {
-            crate::scale_audit::deferred_queue_drained(
-                "fb_samples", drained_items,
                 started.elapsed().as_nanos().min(u64::MAX as u128) as u64,
             );
         }
@@ -5243,12 +5354,6 @@ impl Substrate {
                 started.elapsed().as_nanos().min(u64::MAX as u128) as u64,
             );
         }
-        if let Some(started) = drain_started {
-            crate::scale_audit::deferred_queue_drained(
-                "net_collapses", drained_items,
-                started.elapsed().as_nanos().min(u64::MAX as u128) as u64,
-            );
-        }
     }
 
     /// ONE rule attempt, with every piece of the committed bookkeeping that
@@ -5267,9 +5372,18 @@ impl Substrate {
         // This is THE fixpoint that runs the seed-installed rules; the
         // twin hook in `rewrite::run_rules_opts` covers the graph-Rule
         // store, which the vision seeds do not use.
-        crate::scale_audit::begin_rule_enumeration(rule_idx as u32);
+        crate::scale_audit::begin_rule_enumeration_in_store(
+            self.rule_audit_store_id,
+            rule_idx as u32,
+        );
         let audit_rule = &self.rules[rule_idx];
-        crate::scale_audit::register_rule_audit_metadata(rule_idx as u32, audit_rule.name.0, self.interner.resolve(audit_rule.name), audit_rule.match_edges.len());
+        crate::scale_audit::register_rule_audit_metadata_in_store(
+            self.rule_audit_store_id,
+            rule_idx as u32,
+            audit_rule.name.0,
+            self.interner.resolve(audit_rule.name),
+            audit_rule.match_edges.len(),
+        );
         let __cost_t0 = std::time::Instant::now();
         // FALLBACK TRACE: bind the running rule by NAME so defaulted
         // reads and absence-branch firings are attributed to it. Name,
@@ -5507,8 +5621,10 @@ impl Substrate {
                 cursor_frontier_before_apply
                     .entry(me.edge_type)
                     .or_insert_with(|| {
-                        (self.graph.edges_by_type(me.edge_type).len(),
-                         self.cursor_version(me.edge_type))
+                        (
+                            self.graph.edges_by_type(me.edge_type).len(),
+                            self.cursor_version(me.edge_type),
+                        )
                     });
             }
             if self.dbg_traced(rule_idx) {
@@ -6144,7 +6260,9 @@ impl Substrate {
         }
         // Area assignment affects `run_rules_settle` scheduling, so it is a
         // semantic rule-store edit for experiment revision/conflict checks.
-        if changed { self.gamma_epoch.bump(); }
+        if changed {
+            self.gamma_epoch.bump();
+        }
         found
     }
 
@@ -6159,11 +6277,7 @@ impl Substrate {
     /// Structured, additive variant of [`Substrate::run_rules`]. Unlike the
     /// legacy integer result, this distinguishes an observed fixed point, an
     /// opt-in repeated graph state, and a pass-boundary progress-budget exit.
-    pub fn run_rules_report(
-        &mut self,
-        max_steps: usize,
-        detect_cycles: bool,
-    ) -> RuleRunReport {
+    pub fn run_rules_report(&mut self, max_steps: usize, detect_cycles: bool) -> RuleRunReport {
         self.run_rules_opts_report_filtered(max_steps, detect_cycles, None)
     }
 
@@ -6195,10 +6309,10 @@ impl Substrate {
         let rule = self.pending_turn_last_progress_rule.take()?;
         let ledger_type = self.interner.intern("RuleFiringHistory");
         let nodes = self.graph.nodes_of_type(ledger_type);
-        let ledger = nodes.first().copied().unwrap_or_else(|| {
-            self.graph
-                .insert_node(ledger_type, FxHashMap::default())
-        });
+        let ledger = nodes
+            .first()
+            .copied()
+            .unwrap_or_else(|| self.graph.insert_node(ledger_type, FxHashMap::default()));
         let name_key = self.interner.intern("last_rule_name");
         let turn_key = self.interner.intern("last_inbound_message_id");
         let seq_key = self.interner.intern("settlement_sequence");
@@ -6210,16 +6324,10 @@ impl Substrate {
             Some(Value::Int(value)) => value.saturating_add(1),
             _ => 1,
         };
-        self.graph.set_node_attr(
-            ledger,
-            schema_key,
-            Value::Str(schema_value),
-        );
-        self.graph.set_node_attr(
-            ledger,
-            name_key,
-            Value::Str(last_rule_name),
-        );
+        self.graph
+            .set_node_attr(ledger, schema_key, Value::Str(schema_value));
+        self.graph
+            .set_node_attr(ledger, name_key, Value::Str(last_rule_name));
         self.graph
             .set_node_attr(ledger, turn_key, Value::Int(inbound.0 as i64));
         self.graph
@@ -6227,12 +6335,9 @@ impl Substrate {
         if self.graph.has_node(agent) {
             let history_edge = self.interner.intern("has_rule_firing_history");
             if !self.graph.has_edge(agent, history_edge, ledger) {
-                let _ = self.graph.insert_edge(
-                    agent,
-                    history_edge,
-                    ledger,
-                    FxHashMap::default(),
-                );
+                let _ = self
+                    .graph
+                    .insert_edge(agent, history_edge, ledger, FxHashMap::default());
             }
         }
         Some(ledger)
@@ -6247,7 +6352,39 @@ impl Substrate {
         max_steps: usize,
         detect_cycles: bool,
     ) -> RuleGraphDeltaReport {
+        self.run_rules_delta_report_observed(max_steps, detect_cycles, false, false)
+    }
+
+    /// Collect write targets and effect-boundary values. The additional
+    /// retained snapshots are explicit because they can be materially costly.
+    pub fn run_rules_effect_delta_report(
+        &mut self,
+        max_steps: usize,
+        detect_cycles: bool,
+    ) -> RuleGraphDeltaReport {
+        self.run_rules_delta_report_observed(max_steps, detect_cycles, true, false)
+    }
+
+    /// Collect effect-indexed write targets without retaining graph values.
+    pub fn run_rules_effect_target_delta_report(&mut self, max_steps: usize, detect_cycles: bool) -> RuleGraphDeltaReport {
+        self.run_rules_delta_report_observed(max_steps, detect_cycles, false, true)
+    }
+
+    fn run_rules_delta_report_observed(
+        &mut self,
+        max_steps: usize,
+        detect_cycles: bool,
+        include_effect_values: bool,
+        include_effect_targets: bool,
+    ) -> RuleGraphDeltaReport {
         self.graph.begin_mutation_log();
+        if include_effect_values {
+            self.graph.enable_rule_write_effect_attribution();
+        } else if include_effect_targets {
+            self.graph.enable_rule_write_effect_target_attribution();
+        } else {
+            self.graph.enable_rule_write_attribution();
+        }
         let run = self.run_rules_report(max_steps, detect_cycles);
         let log = self.graph.finish_mutation_log();
         let prior_types = log.node_types;
@@ -6270,6 +6407,14 @@ impl Substrate {
             affected_nodes,
             affected_edges,
             affected_microtheories,
+            rule_write_events: log.rule_write_events,
+            rule_write_events_dropped: log.rule_write_events_dropped,
+            rule_write_snapshots_truncated: log.rule_write_snapshots_truncated,
+            rule_write_snapshot_bytes_estimated: log.rule_write_snapshot_bytes,
+            rule_write_snapshot_objects: log.rule_write_snapshot_objects,
+            rule_write_effect_snapshot_bytes: log.rule_write_effect_snapshot_bytes,
+            rule_write_effect_snapshot_objects: log.rule_write_effect_snapshot_objects,
+            rule_write_effect_snapshots_truncated: log.rule_write_effect_snapshots_truncated,
             exact_graph_state_diff: false,
         }
     }
@@ -6381,6 +6526,14 @@ impl Substrate {
             affected_nodes,
             affected_edges: changed_edges,
             affected_microtheories,
+            rule_write_events: Vec::new(),
+            rule_write_events_dropped: 0,
+            rule_write_snapshots_truncated: 0,
+            rule_write_snapshot_bytes_estimated: 0,
+            rule_write_snapshot_objects: 0,
+            rule_write_effect_snapshot_bytes: 0,
+            rule_write_effect_snapshot_objects: 0,
+            rule_write_effect_snapshots_truncated: 0,
             exact_graph_state_diff: true,
         }
     }
@@ -6546,6 +6699,7 @@ impl Substrate {
         detect_cycles: bool,
         latency_filter: Option<Sym>,
     ) -> RuleRunReport {
+        self.capture_rule_audit_store_state_if_needed();
         let work_scope = &self.graph as *const crate::graph::TypedGraph as usize;
         let _work_operation = crate::access_trace::begin_work_operation(work_scope);
         // Per-tick Shape-pruning counters: cleared at run_rules start
@@ -6662,11 +6816,14 @@ impl Substrate {
             };
             if !has_active_dirty {
                 if scheduler_started.is_some() || scheduler_work_trace_on {
-                    let elapsed_ns = scheduler_started.map(|started| {
-                        started.elapsed().as_nanos().min(u64::MAX as u128) as u64
-                    }).unwrap_or(0);
+                    let elapsed_ns = scheduler_started
+                        .map(|started| started.elapsed().as_nanos().min(u64::MAX as u128) as u64)
+                        .unwrap_or(0);
                     crate::scale_audit::scheduler_plan_completed(
-                        self.rules.len(), fixedpoint_probe_slots, 0, 0,
+                        self.rules.len(),
+                        fixedpoint_probe_slots,
+                        0,
+                        0,
                         elapsed_ns,
                     );
                 }
@@ -6708,9 +6865,9 @@ impl Substrate {
                 })
                 .collect();
             if scheduler_started.is_some() || scheduler_work_trace_on {
-                let elapsed_ns = scheduler_started.map(|started| {
-                    started.elapsed().as_nanos().min(u64::MAX as u128) as u64
-                }).unwrap_or(0);
+                let elapsed_ns = scheduler_started
+                    .map(|started| started.elapsed().as_nanos().min(u64::MAX as u128) as u64)
+                    .unwrap_or(0);
                 crate::scale_audit::scheduler_plan_completed(
                     self.rules.len(),
                     fixedpoint_probe_slots,
@@ -6757,7 +6914,6 @@ impl Substrate {
                 if progressed {
                     steps += 1;
                     any_progress = true;
-                    let rule_name = self.rules[rule_idx].name;
                     last_progress_rule = Some(rule_name);
                     self.record_rule_state_trace(rule_name, passes_completed, steps);
                 }
@@ -6892,8 +7048,12 @@ impl Substrate {
         let mut copied_total = 0usize;
         for _ in 0..iterations {
             let cloned_rules: Vec<(u32, crate::rewrite::RewriteRule)> = self
-                .rules.iter().enumerate().filter(|(_, rule)| rule.active)
-                .map(|(index, rule)| (index as u32, rule.clone())).collect();
+                .rules
+                .iter()
+                .enumerate()
+                .filter(|(_, rule)| rule.active)
+                .map(|(index, rule)| (index as u32, rule.clone()))
+                .collect();
             copied_total += cloned_rules.len();
             std::hint::black_box(&cloned_rules);
         }
@@ -6910,6 +7070,7 @@ impl Substrate {
         detect_cycles: bool,
         scope_mt: NodeID,
     ) -> ScopedRuleGraphDeltaReport {
+        self.capture_rule_audit_store_state_if_needed();
         let work_scope = &self.graph as *const crate::graph::TypedGraph as usize;
         let _work_operation = crate::access_trace::begin_work_operation(work_scope);
         self.graph.begin_mutation_log();
@@ -6924,6 +7085,7 @@ impl Substrate {
             .collect();
         let progress_steps = crate::rewrite::run_rules_opts_scoped(
             &rule_refs,
+            self.rule_audit_store_id,
             &mut self.terms,
             &mut self.graph,
             &mut self.interner,
@@ -7679,8 +7841,16 @@ impl Substrate {
         let drain_started = crate::scale_audit::enabled().then(std::time::Instant::now);
         let pending = std::mem::take(&mut self.graph.pending_track_identity);
         let drained_items = pending.len();
-        for (prev_ids, cur_ids, feature_key, category_key, extent_key, identity_key, radius) in
-            pending
+        for (
+            prev_ids,
+            cur_ids,
+            feature_key,
+            category_key,
+            extent_key,
+            identity_key,
+            radius,
+            origin_rule,
+        ) in pending
         {
             let capture_rule_writes = self.graph.rule_write_attribution_enabled();
             if capture_rule_writes {
@@ -7703,12 +7873,6 @@ impl Substrate {
             crate::scale_audit::deferred_queue_drained(
                 "track_identity",
                 drained_items,
-                started.elapsed().as_nanos().min(u64::MAX as u128) as u64,
-            );
-        }
-        if let Some(started) = drain_started {
-            crate::scale_audit::deferred_queue_drained(
-                "track_identity", drained_items,
                 started.elapsed().as_nanos().min(u64::MAX as u128) as u64,
             );
         }

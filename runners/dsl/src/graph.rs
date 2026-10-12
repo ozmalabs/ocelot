@@ -27,8 +27,6 @@ use crate::cow_paged_vec::CowPagedVec;
 use crate::cow_sharded_map::{CowShardKey, CowShardedMap};
 use crate::sym::Sym;
 use crate::value::Value;
-use crate::cow_paged_vec::CowPagedVec;
-use crate::cow_sharded_map::{CowShardKey, CowShardedMap};
 use roaring::RoaringBitmap;
 use rustc_hash::{FxHashMap, FxHashSet};
 use smallvec::SmallVec;
@@ -55,7 +53,24 @@ impl NodeID {
 impl CowShardKey for (NodeID, Sym) {
     #[inline]
     fn cow_shard(&self) -> usize {
-        (self.0.0 as usize).wrapping_mul(0x9E37_79B1) ^ self.1.0 as usize
+        (self.0 .0 as usize).wrapping_mul(0x9E37_79B1) ^ self.1 .0 as usize
+    }
+}
+
+impl CowShardKey for (Sym, Sym) {
+    #[inline]
+    fn cow_shard(&self) -> usize {
+        (self.0 .0 as usize).wrapping_mul(0x9E37_79B1) ^ self.1 .0 as usize
+    }
+}
+
+impl CowShardKey for Value {
+    #[inline]
+    fn cow_shard(&self) -> usize {
+        use std::hash::{Hash, Hasher};
+        let mut hasher = rustc_hash::FxHasher::default();
+        self.hash(&mut hasher);
+        hasher.finish() as usize
     }
 }
 
@@ -72,6 +87,61 @@ pub struct EdgeKey {
     pub src: NodeID,
     pub edge_type: Sym,
     pub tgt: NodeID,
+}
+
+const NO_TYPE_POSITION: u32 = u32::MAX;
+
+/// Order-preserving typed-node population with O(1) removal. Vacant ordered
+/// slots are compacted only after at least 64 tombstones occupy half the
+/// vector, bounding scan overhead while amortizing compaction work.
+#[derive(Clone)]
+struct TypeNodeIndex {
+    ordered: CowPagedVec<Option<NodeID>>,
+    live_len: usize,
+    tombstones: usize,
+}
+
+impl Default for TypeNodeIndex {
+    fn default() -> Self {
+        Self { ordered: CowPagedVec::new(), live_len: 0, tombstones: 0 }
+    }
+}
+
+impl TypeNodeIndex {
+    fn insert(&mut self, node: NodeID) -> u32 {
+        let pos = self.ordered.len() as u32;
+        self.ordered.push(Some(node));
+        self.live_len += 1;
+        pos
+    }
+
+    fn remove(&mut self, pos: u32, node: NodeID) -> Option<Vec<(NodeID, u32)>> {
+        let slot = self.ordered.get_mut(pos as usize)?;
+        if slot.take()? != node { return None; }
+        self.live_len -= 1;
+        self.tombstones += 1;
+        if self.tombstones < 64 || self.tombstones * 2 < self.ordered.len() {
+            return None;
+        }
+        let live: Vec<NodeID> = self.ordered.iter().filter_map(|slot| *slot).collect();
+        let mut compacted = CowPagedVec::new();
+        let mut positions = Vec::with_capacity(live.len());
+        for (pos, node) in live.into_iter().enumerate() {
+            compacted.push(Some(node));
+            positions.push((node, pos as u32));
+        }
+        self.ordered = compacted;
+        self.tombstones = 0;
+        Some(positions)
+    }
+
+    fn nodes(&self) -> Vec<NodeID> {
+        self.ordered.iter().filter_map(|slot| *slot).collect()
+    }
+
+    fn deep_copy(&self) -> Self {
+        Self { ordered: self.ordered.deep_copy(), live_len: self.live_len, tombstones: self.tombstones }
+    }
 }
 
 /// Opt-in set of graph locations touched through TypedGraph mutation APIs.
@@ -93,6 +163,180 @@ pub struct GraphMutationLog {
     pub phase_before_nodes: Option<FxHashMap<NodeID, Option<NodeData>>>,
     pub phase_before_edges: Option<FxHashMap<EdgeKey, Option<Attrs>>>,
     phase_active: bool,
+    /// Enabled only by the explicit rule-delta observer. Records per-rule
+    /// mutation targets without adding work to ordinary graph execution.
+    rule_attribution_enabled: bool,
+    /// Adds intermediate effect-boundary value snapshots to rule events.
+    /// Kept separate because copying these values can be materially costly.
+    rule_effect_attribution_enabled: bool,
+    /// Retains only effect-index to graph-location attribution, without values.
+    rule_effect_target_attribution_enabled: bool,
+    /// Opt-in provenance from a queued ApplyRulePatch node to its source effect.
+    deferred_rule_patch_effect_origins: FxHashMap<NodeID, Vec<(Sym, u32)>>,
+    deferred_rule_patch_effect_origin_objects: usize,
+    /// Opt-in enqueue-effect identity keyed by stable position in the pending
+    /// rule-edit batch; the queue is drained in this same order.
+    deferred_rule_edit_effect_origins: FxHashMap<usize, (Sym, u32)>,
+    current_rule: Option<Sym>,
+    current_rule_origins: Vec<Sym>,
+    current_rule_deferred: bool,
+    current_rule_deferred_effect_origins: Vec<(Sym, u32)>,
+    current_rule_deferred_rule_changes: Vec<RuleClauseMutationSnapshot>,
+    current_rule_nodes: FxHashSet<NodeID>,
+    current_rule_edges: FxHashSet<EdgeKey>,
+    current_rule_before_nodes: FxHashMap<NodeID, Option<NodeData>>,
+    current_rule_before_edges: FxHashMap<EdgeKey, Option<Attrs>>,
+    current_rule_snapshot_bytes: usize,
+    current_rule_values_truncated: bool,
+    current_rule_effect_index: Option<u32>,
+    current_rule_effect_before_nodes: FxHashMap<NodeID, Option<NodeData>>,
+    current_rule_effect_before_edges: FxHashMap<EdgeKey, Option<Attrs>>,
+    current_rule_effect_node_targets: FxHashSet<NodeID>,
+    current_rule_effect_edge_targets: FxHashSet<EdgeKey>,
+    current_rule_effect_target_event_objects: usize,
+    current_rule_effect_snapshot_bytes: usize,
+    current_rule_effect_total_bytes: usize,
+    current_rule_effect_total_objects: usize,
+    current_rule_effect_values_truncated: bool,
+    current_rule_effect_touched: bool,
+    current_rule_effect_snapshots: Vec<RuleEffectWriteSnapshot>,
+    pub rule_write_events: Vec<RuleWriteEvent>,
+    pub rule_write_events_dropped: usize,
+    pub rule_write_snapshots_truncated: usize,
+    pub rule_write_snapshot_bytes: usize,
+    pub rule_write_snapshot_objects: usize,
+    pub rule_write_effect_snapshot_bytes: usize,
+    pub rule_write_effect_snapshot_objects: usize,
+    pub rule_write_effect_snapshots_truncated: usize,
+}
+
+/// Conservative mutation targets observed during one rule invocation. These
+/// are write attempts, so an API that exposes mutable state may report a
+/// target whose final fact is unchanged.
+#[derive(Clone, Debug)]
+pub struct RuleWriteEvent {
+    pub rule_name: Sym,
+    /// All producer rules when a deduplicated deferred operation had more
+    /// than one producer. `rule_name` is the first for legacy consumers.
+    pub origin_rules: Vec<Sym>,
+    pub deferred: bool,
+    /// Source rule/effect pairs for queued work drained into this event.
+    /// More than one pair means the deferred write has convergent causes.
+    pub deferred_effect_origins: Vec<(Sym, u32)>,
+    /// Non-graph rule-table mutations performed during a deferred clause edit.
+    pub deferred_rule_changes: Vec<RuleClauseMutationSnapshot>,
+    pub progressed: bool,
+    pub node_ids: Vec<NodeID>,
+    pub edges: Vec<EdgeKey>,
+    pub node_values: Vec<RuleNodeValueSnapshot>,
+    pub edge_values: Vec<RuleEdgeValueSnapshot>,
+    pub effect_snapshots: Vec<RuleEffectWriteSnapshot>,
+    pub values_truncated: bool,
+}
+
+#[derive(Clone, Debug)]
+pub struct RuleClauseMutationSnapshot {
+    pub target_rule_uid: u64,
+    pub field: Sym,
+    pub previous_revision: u64,
+    pub revision: u64,
+    pub previous_content_hash: u64,
+    pub content_hash: u64,
+    pub committed: bool,
+    pub error_code: Option<String>,
+}
+
+#[derive(Clone, Debug)]
+pub struct RuleEffectWriteSnapshot {
+    pub effect_index: u32,
+    pub node_ids: Vec<NodeID>,
+    pub edges: Vec<EdgeKey>,
+    pub node_values: Vec<RuleNodeValueSnapshot>,
+    pub edge_values: Vec<RuleEdgeValueSnapshot>,
+    pub values_truncated: bool,
+}
+
+#[derive(Clone, Debug)]
+pub struct RuleNodeValueSnapshot {
+    pub node_id: NodeID,
+    pub before: Option<NodeData>,
+    pub after: Option<NodeData>,
+}
+
+#[derive(Clone, Debug)]
+pub struct RuleEdgeValueSnapshot {
+    pub edge: EdgeKey,
+    pub before: Option<Attrs>,
+    pub after: Option<Attrs>,
+}
+
+const MAX_RULE_WRITE_EVENTS: usize = 100_000;
+const MAX_RULE_EVENT_SNAPSHOT_BYTES: usize = 64 * 1024;
+const MAX_RULE_SNAPSHOT_BYTES: usize = 4 * 1024 * 1024;
+const MAX_RULE_EVENT_SNAPSHOT_OBJECTS: usize = 512;
+const MAX_RULE_SNAPSHOT_OBJECTS: usize = 16_384;
+const MAX_RULE_EFFECT_EVENT_SNAPSHOT_BYTES: usize = 64 * 1024;
+const MAX_RULE_EFFECT_SNAPSHOT_BYTES: usize = 4 * 1024 * 1024;
+const MAX_RULE_EFFECT_EVENT_SNAPSHOT_OBJECTS: usize = 512;
+const MAX_RULE_EFFECT_SNAPSHOT_OBJECTS: usize = 16_384;
+
+/// Bounded, allocation-free estimate of the value payload reachable from a
+/// snapshot. Arc-backed collection contents are traversed because retaining
+/// a shallow Arc clone can keep a large payload alive. This is a structural
+/// payload budget, not an encoded JSON size or complete RSS bound.
+#[inline]
+fn add_bounded_payload_bytes(used: &mut usize, additional: usize, limit: usize) -> Option<()> {
+    *used = used.checked_add(additional)?;
+    (*used <= limit).then_some(())
+}
+
+fn bounded_value_payload_bytes(value: &Value, depth: usize, limit: usize) -> Option<usize> {
+    if depth > 128 { return None; }
+    let mut used = 0usize;
+    match value {
+        Value::Tuple(items) | Value::List(items) => {
+            add_bounded_payload_bytes(&mut used, items.len().checked_mul(std::mem::size_of::<Value>())?, limit)?;
+            for child in items.iter() {
+                let child_bytes = bounded_value_payload_bytes(child, depth + 1, limit.saturating_sub(used))?;
+                add_bounded_payload_bytes(&mut used, child_bytes, limit)?;
+            }
+        }
+        Value::Set(items) | Value::FrozenSet(items) => {
+            add_bounded_payload_bytes(&mut used, items.len().checked_mul(std::mem::size_of::<Value>())?, limit)?;
+            for child in items.iter() {
+                let child_bytes = bounded_value_payload_bytes(child, depth + 1, limit.saturating_sub(used))?;
+                add_bounded_payload_bytes(&mut used, child_bytes, limit)?;
+            }
+        }
+        Value::Dict(items) => {
+            add_bounded_payload_bytes(&mut used, items.len().checked_mul(std::mem::size_of::<(Value, Value)>())?, limit)?;
+            for (key, val) in items.iter() {
+                let key_bytes = bounded_value_payload_bytes(key, depth + 1, limit.saturating_sub(used))?;
+                add_bounded_payload_bytes(&mut used, key_bytes, limit)?;
+                let val_bytes = bounded_value_payload_bytes(val, depth + 1, limit.saturating_sub(used))?;
+                add_bounded_payload_bytes(&mut used, val_bytes, limit)?;
+            }
+        }
+        Value::Surface(_, bytes) => add_bounded_payload_bytes(&mut used, bytes.len(), limit)?,
+        _ => {}
+    }
+    Some(used)
+}
+
+fn attrs_snapshot_payload_bytes(attrs: Option<&Attrs>, limit: usize) -> Option<usize> {
+    let Some(attrs) = attrs else { return Some(0); };
+    let mut used = attrs.len().checked_mul(std::mem::size_of::<(Sym, Value)>())?;
+    if used > limit { return None; }
+    for (_, value) in attrs.iter() {
+        let child = bounded_value_payload_bytes(value, 0, limit.saturating_sub(used))?;
+        used = used.checked_add(child)?;
+        if used > limit { return None; }
+    }
+    Some(used)
+}
+
+fn node_snapshot_payload_bytes(node: Option<&NodeData>, limit: usize) -> Option<usize> {
+    attrs_snapshot_payload_bytes(node.map(|node| &node.attrs), limit)
 }
 
 /// Branch-local edge aperture used by thoughtexperiments. The base graph and
@@ -122,9 +366,18 @@ impl EdgeReadScope {
         self.visible_edges.insert(at, idx);
         self.out.entry(edge.src).or_default().push(idx);
         self.in_.entry(edge.tgt).or_default().push(idx);
-        self.out_by_type.entry((edge.src, edge.edge_type)).or_default().push(idx);
-        self.in_by_type.entry((edge.tgt, edge.edge_type)).or_default().push(idx);
-        self.edges_by_type.entry(edge.edge_type).or_default().push(idx);
+        self.out_by_type
+            .entry((edge.src, edge.edge_type))
+            .or_default()
+            .push(idx);
+        self.in_by_type
+            .entry((edge.tgt, edge.edge_type))
+            .or_default()
+            .push(idx);
+        self.edges_by_type
+            .entry(edge.edge_type)
+            .or_default()
+            .push(idx);
     }
 
     fn remove(&mut self, idx: EdgeIdx, edge: EdgeKey) {
@@ -132,9 +385,12 @@ impl EdgeReadScope {
             return;
         }
         self.visible_edges.retain(|item| *item != idx);
-        for bucket in [self.out.get_mut(&edge.src), self.in_.get_mut(&edge.tgt),
-                       self.out_by_type.get_mut(&(edge.src, edge.edge_type)),
-                       self.in_by_type.get_mut(&(edge.tgt, edge.edge_type))] {
+        for bucket in [
+            self.out.get_mut(&edge.src),
+            self.in_.get_mut(&edge.tgt),
+            self.out_by_type.get_mut(&(edge.src, edge.edge_type)),
+            self.in_by_type.get_mut(&(edge.tgt, edge.edge_type)),
+        ] {
             if let Some(bucket) = bucket {
                 bucket.retain(|item| *item != idx);
             }
@@ -481,6 +737,7 @@ impl TypedGraph {
             edge_delete_generation: 0,
             edge_attrs: FxHashMap::default(),
             by_type: FxHashMap::default(),
+            by_type_positions: CowPagedVec::new(),
             out: CowPagedVec::new(),
             in_: CowPagedVec::new(),
             out_by_type: CowShardedMap::default(),
@@ -504,7 +761,8 @@ impl TypedGraph {
     }
 
     /// Eagerly materialize node, edge, and adjacency pages and clone every
-    /// query index. This remains the semantic/performance control branch.
+    /// query index, including attribute-index value bitmaps. This remains the
+    /// semantic/performance control branch.
     pub fn clone_eager(&self) -> Self {
         let mut clone = self.clone();
         clone.nodes = self.nodes.deep_copy();
@@ -513,12 +771,16 @@ impl TypedGraph {
         clone.in_ = self.in_.deep_copy();
         clone.out_by_type = self.out_by_type.deep_copy();
         clone.in_by_type = self.in_by_type.deep_copy();
+        clone.by_type = self.deep_copy_by_type();
+        clone.by_type_positions = self.by_type_positions.deep_copy();
+        clone.attr_indices = self.deep_copy_attr_indices();
         clone
     }
 
     /// Clone the indexes while sharing immutable node/edge slab pages until a
-    /// branch writes. The top-level per-node adjacency pages and all hash
-    /// query indexes are still copied eagerly on this control route.
+    /// branch writes. The top-level per-node adjacency pages are copied;
+    /// attribute-index shards remain COW-shared while other hash query indexes
+    /// are copied eagerly on this control route.
     pub fn clone_sharing_slabs(&self) -> Self {
         let mut clone = self.clone();
         clone.out = self.out.deep_copy();
@@ -528,9 +790,9 @@ impl TypedGraph {
         clone
     }
 
-    /// Share node/edge records, per-node adjacency pages, and the two
-    /// high-cardinality typed-adjacency indexes. Other hash-based query
-    /// indexes and remaining graph state are still eager copies.
+    /// Share node/edge records, per-node adjacency pages, typed-adjacency
+    /// indexes, and attribute-index shards. Other hash-based query indexes and
+    /// remaining graph state are still eager copies.
     pub fn clone_sharing_graph_pages(&self) -> Self {
         self.clone()
     }
@@ -582,25 +844,82 @@ impl TypedGraph {
             }};
         }
 
-        profile!("edge_attrs", self.edge_attrs.len(), self.edge_attrs.clone(), self.edge_attrs.clone());
-        profile!("by_type", self.by_type.values().map(Vec::len).sum(), self.by_type.clone(), self.by_type.clone());
-        profile!("out_by_type", self.out_by_type.values().map(SmallVec::len).sum(), self.out_by_type.clone(), self.out_by_type.deep_copy());
+        profile!(
+            "edge_attrs",
+            self.edge_attrs.len(),
+            self.edge_attrs.clone(),
+            self.edge_attrs.clone()
+        );
+        profile!(
+            "by_type",
+            self.by_type.values().map(|index| index.live_len).sum(),
+            self.by_type.clone(),
+            self.deep_copy_by_type()
+        );
+        profile!(
+            "out_by_type",
+            self.out_by_type.values().map(SmallVec::len).sum(),
+            self.out_by_type.clone(),
+            self.out_by_type.deep_copy()
+        );
         profile!(
             "out_by_type_target_index",
-            self.out_by_type_target_index.values().map(FxHashMap::len).sum(),
+            self.out_by_type_target_index
+                .values()
+                .map(FxHashMap::len)
+                .sum(),
             self.out_by_type_target_index.clone(),
             self.out_by_type_target_index.clone()
         );
-        profile!("in_by_type", self.in_by_type.values().map(SmallVec::len).sum(), self.in_by_type.clone(), self.in_by_type.deep_copy());
-        profile!("edges_by_type", self.edges_by_type.values().map(Vec::len).sum(), self.edges_by_type.clone(), self.edges_by_type.clone());
-        profile!("edge_delete_version_by_type", self.edge_delete_version_by_type.len(), self.edge_delete_version_by_type.clone(), self.edge_delete_version_by_type.clone());
+        profile!(
+            "in_by_type",
+            self.in_by_type.values().map(SmallVec::len).sum(),
+            self.in_by_type.clone(),
+            self.in_by_type.deep_copy()
+        );
+        profile!(
+            "edges_by_type",
+            self.edges_by_type.values().map(Vec::len).sum(),
+            self.edges_by_type.clone(),
+            self.edges_by_type.clone()
+        );
+        profile!(
+            "edge_delete_version_by_type",
+            self.edge_delete_version_by_type.len(),
+            self.edge_delete_version_by_type.clone(),
+            self.edge_delete_version_by_type.clone()
+        );
         profile!(
             "attr_indices",
-            self.attr_indices.values().map(|values| values.values().map(RoaringBitmap::len).sum::<u64>() as usize).sum(),
+            self.attr_indices
+                .values()
+                .map(|values| values.values().map(RoaringBitmap::len).sum::<u64>() as usize)
+                .sum(),
             self.attr_indices.clone(),
-            self.attr_indices.clone()
+            self.deep_copy_attr_indices()
         );
         rows
+    }
+
+    fn deep_copy_attr_indices(
+        &self,
+    ) -> CowShardedMap<(Sym, Sym), CowShardedMap<Value, RoaringBitmap>> {
+        let mut copied = CowShardedMap::default();
+        for (key, values) in self.attr_indices.iter() {
+            let mut copied_values = CowShardedMap::default();
+            for (value, bitmap) in values.iter() {
+                copied_values.insert(value.clone(), bitmap.clone());
+            }
+            copied.insert(*key, copied_values);
+        }
+        copied
+    }
+
+    fn deep_copy_by_type(&self) -> FxHashMap<Sym, TypeNodeIndex> {
+        self.by_type
+            .iter()
+            .map(|(type_, index)| (*type_, index.deep_copy()))
+            .collect()
     }
 
     /// Compare typed-adjacency lookup cost with ordinary FxHashMap lookup.
@@ -617,17 +936,24 @@ impl TypedGraph {
         fn median(samples: &mut [f64]) -> f64 {
             samples.sort_by(f64::total_cmp);
             let n = samples.len();
-            if n % 2 == 0 { (samples[n / 2 - 1] + samples[n / 2]) / 2.0 }
-            else { samples[n / 2] }
+            if n % 2 == 0 {
+                (samples[n / 2 - 1] + samples[n / 2]) / 2.0
+            } else {
+                samples[n / 2]
+            }
         }
         fn measure<F>(keys: &[(NodeID, Sym)], repeats: usize, mut lookup: F) -> (f64, usize)
-        where F: FnMut(&(NodeID, Sym)) -> usize {
+        where
+            F: FnMut(&(NodeID, Sym)) -> usize,
+        {
             let mut samples = Vec::with_capacity(repeats);
             let mut checksum = 0usize;
             for _ in 0..repeats {
                 let started = Instant::now();
                 let mut subtotal = 0usize;
-                for key in keys { subtotal = subtotal.wrapping_add(lookup(key)); }
+                for key in keys {
+                    subtotal = subtotal.wrapping_add(lookup(key));
+                }
                 samples.push(started.elapsed().as_nanos() as f64 / keys.len().max(1) as f64);
                 checksum ^= black_box(subtotal);
             }
@@ -639,16 +965,20 @@ impl TypedGraph {
         let mut rows = Vec::new();
         macro_rules! compare {
             ($name:literal, $sharded:expr) => {{
-                let flat: FxHashMap<(NodeID, Sym), SmallVec<[EdgeIdx; 4]>> =
-                    $sharded.iter().map(|(key, value)| (*key, value.clone())).collect();
+                let flat: FxHashMap<(NodeID, Sym), SmallVec<[EdgeIdx; 4]>> = $sharded
+                    .iter()
+                    .map(|(key, value)| (*key, value.clone()))
+                    .collect();
                 let hits: Vec<(NodeID, Sym)> = flat.keys().copied().collect();
-                let keys: Vec<(NodeID, Sym)> = (0..lookups).map(|i| {
-                    if i % 2 == 0 {
-                        hits[i / 2 % hits.len()]
-                    } else {
-                        (NodeID(u32::MAX.wrapping_sub(i as u32)), Sym(u32::MAX))
-                    }
-                }).collect();
+                let keys: Vec<(NodeID, Sym)> = (0..lookups)
+                    .map(|i| {
+                        if i % 2 == 0 {
+                            hits[i / 2 % hits.len()]
+                        } else {
+                            (NodeID(u32::MAX.wrapping_sub(i as u32)), Sym(u32::MAX))
+                        }
+                    })
+                    .collect();
                 let (sharded_ns, sharded_sum) = measure(&keys, repeats, |key| {
                     $sharded.get(key).map(SmallVec::len).unwrap_or(0)
                 });
@@ -697,13 +1027,36 @@ impl TypedGraph {
             .unwrap_or(0)
     }
 
+    /// Snapshot the per-edge-type deletion epochs used by incremental matcher
+    /// cursors. Names are resolved by the owning Substrate at its persistence
+    /// boundary; this graph layer preserves compact symbols internally.
+    pub fn edge_delete_versions_by_type_snapshot(&self) -> Vec<(Sym, u64)> {
+        self.edge_delete_version_by_type
+            .iter()
+            .map(|(edge_type, version)| (*edge_type, *version))
+            .collect()
+    }
+
+    /// Restore per-edge-type deletion epochs after graph materialization. This
+    /// is runtime index state: the semantic edge set alone cannot reconstruct
+    /// how many deletions occurred before a saved cursor.
+    pub fn restore_edge_delete_versions_by_type(&mut self, versions: Vec<(Sym, u64)>) {
+        self.edge_delete_version_by_type = versions.into_iter().collect();
+    }
+
     /// Global edge-deletion generation, used by algorithms whose ordering
     /// proof depends on the edge freelist never having been used.
-    pub fn edge_delete_generation(&self) -> u64 { self.edge_delete_generation }
+    pub fn edge_delete_generation(&self) -> u64 {
+        self.edge_delete_generation
+    }
 
     pub fn edges_by_type(&self, edge_type: Sym) -> &[EdgeIdx] {
         if let Some(scope) = &self.edge_read_scope {
-            return scope.edges_by_type.get(&edge_type).map(Vec::as_slice).unwrap_or(&[]);
+            return scope
+                .edges_by_type
+                .get(&edge_type)
+                .map(Vec::as_slice)
+                .unwrap_or(&[]);
         }
         self.edges_by_type
             .get(&edge_type)
@@ -887,8 +1240,345 @@ impl TypedGraph {
     /// Begin opt-in write-target collection. Nested collection is a caller
     /// error because each report must have one unambiguous closure boundary.
     pub fn begin_mutation_log(&mut self) {
-        assert!(self.mutation_log.is_none(), "graph mutation log already active");
+        assert!(
+            self.mutation_log.is_none(),
+            "graph mutation log already active"
+        );
         self.mutation_log = Some(GraphMutationLog::default());
+    }
+
+    pub fn enable_rule_write_attribution(&mut self) {
+        let log = self
+            .mutation_log
+            .as_mut()
+            .expect("mutation log must be active");
+        log.rule_attribution_enabled = true;
+    }
+
+    pub fn enable_rule_write_effect_attribution(&mut self) {
+        let log = self.mutation_log.as_mut().expect("mutation log must be active");
+        log.rule_attribution_enabled = true;
+        log.rule_effect_attribution_enabled = true;
+    }
+
+    pub fn enable_rule_write_effect_target_attribution(&mut self) {
+        let log = self.mutation_log.as_mut().expect("mutation log must be active");
+        log.rule_attribution_enabled = true;
+        log.rule_effect_target_attribution_enabled = true;
+    }
+
+    pub fn rule_write_attribution_enabled(&self) -> bool {
+        self.mutation_log
+            .as_ref()
+            .is_some_and(|log| log.rule_attribution_enabled)
+    }
+
+    pub fn rule_write_effect_attribution_enabled(&self) -> bool {
+        self.mutation_log.as_ref().is_some_and(|log| log.rule_effect_attribution_enabled)
+    }
+
+    pub fn rule_write_effect_tracking_enabled(&self) -> bool {
+        self.mutation_log.as_ref().is_some_and(|log| log.rule_effect_attribution_enabled || log.rule_effect_target_attribution_enabled)
+    }
+
+    pub fn record_deferred_rule_patch_effect_origin(&mut self, patch: NodeID, rule: Sym, effect_index: u32) {
+        let Some(log) = self.mutation_log.as_mut().filter(|log| log.rule_effect_attribution_enabled || log.rule_effect_target_attribution_enabled) else { return; };
+        let origins = log.deferred_rule_patch_effect_origins.entry(patch).or_default();
+        let origin = (rule, effect_index);
+        if origins.contains(&origin) { return; }
+        if origins.len() < MAX_RULE_EFFECT_EVENT_SNAPSHOT_OBJECTS
+            && log.deferred_rule_patch_effect_origin_objects < MAX_RULE_EFFECT_SNAPSHOT_OBJECTS {
+            origins.push(origin);
+            log.deferred_rule_patch_effect_origin_objects += 1;
+        } else {
+            log.rule_write_effect_snapshots_truncated = log.rule_write_effect_snapshots_truncated.saturating_add(1);
+        }
+    }
+
+    pub fn take_deferred_rule_patch_effect_origins(&mut self, patch: NodeID) -> Vec<(Sym, u32)> {
+        self.mutation_log.as_mut().and_then(|log| log.deferred_rule_patch_effect_origins.remove(&patch)).unwrap_or_default()
+    }
+
+    pub fn record_deferred_rule_edit_effect_origin(&mut self, queue_index: usize, rule: Sym, effect_index: u32) {
+        let Some(log) = self.mutation_log.as_mut().filter(|log| log.rule_effect_attribution_enabled || log.rule_effect_target_attribution_enabled) else { return; };
+        if log.deferred_rule_edit_effect_origins.contains_key(&queue_index) { return; }
+        if log.deferred_rule_edit_effect_origins.len() < MAX_RULE_EFFECT_SNAPSHOT_OBJECTS {
+            log.deferred_rule_edit_effect_origins.insert(queue_index, (rule, effect_index));
+        } else {
+            log.rule_write_effect_snapshots_truncated = log.rule_write_effect_snapshots_truncated.saturating_add(1);
+        }
+    }
+
+    pub fn take_deferred_rule_edit_effect_origin(&mut self, queue_index: usize) -> Option<(Sym, u32)> {
+        self.mutation_log.as_mut().and_then(|log| log.deferred_rule_edit_effect_origins.remove(&queue_index))
+    }
+
+    pub fn record_current_deferred_rule_change(&mut self, change: RuleClauseMutationSnapshot) {
+        let Some(log) = self.mutation_log.as_mut().filter(|log| log.rule_attribution_enabled && log.current_rule.is_some()) else { return; };
+        if log.current_rule_deferred_rule_changes.len() < MAX_RULE_EFFECT_EVENT_SNAPSHOT_OBJECTS {
+            log.current_rule_deferred_rule_changes.push(change);
+        } else {
+            log.rule_write_effect_snapshots_truncated = log.rule_write_effect_snapshots_truncated.saturating_add(1);
+        }
+    }
+
+    pub fn set_current_rule_deferred_effect_origins(&mut self, origins: &[(Sym, u32)]) {
+        if let Some(log) = self.mutation_log.as_mut().filter(|log| log.rule_attribution_enabled && log.current_rule.is_some()) {
+            log.current_rule_deferred_effect_origins.clear();
+            log.current_rule_deferred_rule_changes.clear();
+            log.current_rule_deferred_effect_origins.extend_from_slice(origins);
+        }
+    }
+
+    pub fn begin_rule_write_event(&mut self, rule_name: Sym, deferred: bool) {
+        self.begin_rule_write_event_origins(&[rule_name], deferred);
+    }
+
+    pub fn begin_rule_write_event_origins(&mut self, origins: &[Sym], deferred: bool) {
+        if let Some(log) = self
+            .mutation_log
+            .as_mut()
+            .filter(|log| log.rule_attribution_enabled)
+        {
+            debug_assert!(log.current_rule.is_none());
+            let Some(&rule_name) = origins.first() else {
+                return;
+            };
+            log.current_rule = Some(rule_name);
+            log.current_rule_origins.clear();
+            log.current_rule_origins.extend_from_slice(origins);
+            log.current_rule_deferred = deferred;
+            log.current_rule_deferred_effect_origins.clear();
+            log.current_rule_nodes.clear();
+            log.current_rule_edges.clear();
+            log.current_rule_before_nodes.clear();
+            log.current_rule_before_edges.clear();
+            log.current_rule_snapshot_bytes = 0;
+            log.current_rule_values_truncated = false;
+            log.current_rule_effect_index = None;
+            log.current_rule_effect_before_nodes.clear();
+            log.current_rule_effect_before_edges.clear();
+            log.current_rule_effect_node_targets.clear();
+            log.current_rule_effect_edge_targets.clear();
+            log.current_rule_effect_target_event_objects = 0;
+            log.current_rule_effect_snapshot_bytes = 0;
+            log.current_rule_effect_total_bytes = 0;
+            log.current_rule_effect_total_objects = 0;
+            log.current_rule_effect_values_truncated = false;
+            log.current_rule_effect_touched = false;
+            log.current_rule_effect_snapshots.clear();
+        }
+    }
+
+    /// Mark the start of one effect within the active rule invocation. Effect
+    /// snapshots are opt-in and independently budgeted from event endpoints.
+    pub fn begin_rule_write_effect(&mut self, effect_index: u32) {
+        if let Some(log) = self.mutation_log.as_mut().filter(|log| log.rule_effect_attribution_enabled || log.rule_effect_target_attribution_enabled) {
+            log.current_rule_effect_index = Some(effect_index);
+            log.current_rule_effect_before_nodes.clear();
+            log.current_rule_effect_before_edges.clear();
+            log.current_rule_effect_node_targets.clear();
+            log.current_rule_effect_edge_targets.clear();
+            log.current_rule_effect_snapshot_bytes = 0;
+            log.current_rule_effect_values_truncated = false;
+            log.current_rule_effect_touched = false;
+        }
+    }
+
+    /// Seal the current effect's before/after values. The rule loop calls
+    /// this at the next effect boundary and after its final effect, including
+    /// paths where an effect arm continues early.
+    pub fn finish_rule_write_effect(&mut self) {
+        let (effect_index, node_targets, edge_targets, before_nodes, before_edges, mut truncated, event_bytes, event_objects, prior_bytes, prior_objects, touched) = {
+            let Some(log) = self.mutation_log.as_mut().filter(|log| log.rule_effect_attribution_enabled || log.rule_effect_target_attribution_enabled) else {
+                return;
+            };
+            let Some(effect_index) = log.current_rule_effect_index.take() else { return; };
+            let touched = log.current_rule_effect_touched;
+            let node_targets = std::mem::take(&mut log.current_rule_effect_node_targets);
+            let edge_targets = std::mem::take(&mut log.current_rule_effect_edge_targets);
+            let before_nodes = std::mem::take(&mut log.current_rule_effect_before_nodes);
+            let before_edges = std::mem::take(&mut log.current_rule_effect_before_edges);
+            let truncated = log.current_rule_effect_values_truncated;
+            (effect_index, node_targets, edge_targets, before_nodes, before_edges, truncated,
+                log.current_rule_effect_total_bytes.saturating_add(log.current_rule_effect_snapshot_bytes),
+                log.current_rule_effect_total_objects, log.rule_write_effect_snapshot_bytes,
+                log.rule_write_effect_snapshot_objects, touched)
+        };
+        if !touched { return; }
+        let target_only = self.mutation_log.as_ref().is_some_and(|log| log.rule_effect_target_attribution_enabled && !log.rule_effect_attribution_enabled);
+        if target_only {
+            let mut node_ids: Vec<NodeID> = node_targets.into_iter().collect();
+            let mut edges: Vec<EdgeKey> = edge_targets.into_iter().collect();
+            node_ids.sort_unstable();
+            edges.sort_unstable_by_key(|edge| (edge.src, edge.edge_type, edge.tgt));
+            if let Some(log) = self.mutation_log.as_mut() {
+                if truncated { log.rule_write_effect_snapshots_truncated = log.rule_write_effect_snapshots_truncated.saturating_add(1); }
+                log.current_rule_effect_snapshots.push(RuleEffectWriteSnapshot { effect_index, node_ids, edges, node_values: Vec::new(), edge_values: Vec::new(), values_truncated: truncated });
+            }
+            return;
+        }
+        let mut node_values = Vec::new();
+        let mut edge_values = Vec::new();
+        let mut retained_bytes = 0usize;
+        let mut retained_objects = 0usize;
+        for (node_id, before) in before_nodes {
+            let after_ref = self.nodes.get(node_id.0 as usize).and_then(Option::as_ref);
+            let pair_limit = MAX_RULE_EFFECT_EVENT_SNAPSHOT_BYTES.saturating_sub(event_bytes.saturating_add(retained_bytes))
+                .min(MAX_RULE_EFFECT_SNAPSHOT_BYTES.saturating_sub(prior_bytes.saturating_add(event_bytes).saturating_add(retained_bytes)));
+            let pair_bytes = node_snapshot_payload_bytes(before.as_ref(), pair_limit)
+                .and_then(|before_bytes| node_snapshot_payload_bytes(after_ref, pair_limit.saturating_sub(before_bytes))
+                    .and_then(|after_bytes| before_bytes.checked_add(after_bytes)));
+            if retained_objects < MAX_RULE_EFFECT_EVENT_SNAPSHOT_OBJECTS
+                && event_objects.saturating_add(retained_objects) < MAX_RULE_EFFECT_EVENT_SNAPSHOT_OBJECTS
+                && prior_objects.saturating_add(event_objects).saturating_add(retained_objects) < MAX_RULE_EFFECT_SNAPSHOT_OBJECTS
+                && pair_bytes.is_some()
+            {
+                retained_bytes += pair_bytes.unwrap();
+                retained_objects += 1;
+                node_values.push(RuleNodeValueSnapshot { node_id, before, after: after_ref.cloned() });
+            } else { truncated = true; }
+        }
+        for (edge, before) in before_edges {
+            let after_ref = self.edge_idx_unscoped(edge.src, edge.edge_type, edge.tgt)
+                .map(|idx| self.edge_attrs(idx));
+            let pair_limit = MAX_RULE_EFFECT_EVENT_SNAPSHOT_BYTES.saturating_sub(event_bytes.saturating_add(retained_bytes))
+                .min(MAX_RULE_EFFECT_SNAPSHOT_BYTES.saturating_sub(prior_bytes.saturating_add(event_bytes).saturating_add(retained_bytes)));
+            let pair_bytes = attrs_snapshot_payload_bytes(before.as_ref(), pair_limit)
+                .and_then(|before_bytes| attrs_snapshot_payload_bytes(after_ref, pair_limit.saturating_sub(before_bytes))
+                    .and_then(|after_bytes| before_bytes.checked_add(after_bytes)));
+            if retained_objects < MAX_RULE_EFFECT_EVENT_SNAPSHOT_OBJECTS
+                && event_objects.saturating_add(retained_objects) < MAX_RULE_EFFECT_EVENT_SNAPSHOT_OBJECTS
+                && prior_objects.saturating_add(event_objects).saturating_add(retained_objects) < MAX_RULE_EFFECT_SNAPSHOT_OBJECTS
+                && pair_bytes.is_some()
+            {
+                retained_bytes += pair_bytes.unwrap();
+                retained_objects += 1;
+                edge_values.push(RuleEdgeValueSnapshot { edge, before, after: after_ref.cloned() });
+            } else { truncated = true; }
+        }
+        node_values.sort_unstable_by_key(|value| value.node_id);
+        edge_values.sort_unstable_by_key(|value| (value.edge.src, value.edge.edge_type, value.edge.tgt));
+        if let Some(log) = self.mutation_log.as_mut().filter(|log| log.rule_effect_attribution_enabled) {
+            log.rule_write_effect_snapshot_bytes = log.rule_write_effect_snapshot_bytes.saturating_add(retained_bytes);
+            log.rule_write_effect_snapshot_objects = log.rule_write_effect_snapshot_objects.saturating_add(retained_objects);
+            log.current_rule_effect_total_bytes = log.current_rule_effect_total_bytes.saturating_add(retained_bytes);
+            log.current_rule_effect_total_objects = log.current_rule_effect_total_objects.saturating_add(retained_objects);
+            if truncated { log.rule_write_effect_snapshots_truncated = log.rule_write_effect_snapshots_truncated.saturating_add(1); }
+            log.current_rule_effect_snapshots.push(RuleEffectWriteSnapshot {
+                effect_index, node_ids: Vec::new(), edges: Vec::new(), node_values, edge_values, values_truncated: truncated,
+            });
+        }
+    }
+
+    pub fn finish_rule_write_event(&mut self, progressed: bool) {
+        let (rule_name, origin_rules, deferred, deferred_effect_origins, deferred_rule_changes, mut node_ids, mut edges, before_nodes, before_edges, mut values_truncated, prior_bytes, prior_objects) = {
+            let Some(log) = self.mutation_log.as_mut().filter(|log| log.rule_attribution_enabled) else {
+                return;
+            };
+            let Some(rule_name) = log.current_rule.take() else {
+                return;
+            };
+            if log.rule_write_events.len() >= MAX_RULE_WRITE_EVENTS {
+                log.rule_write_events_dropped = log.rule_write_events_dropped.saturating_add(1);
+                log.rule_write_snapshots_truncated = log.rule_write_snapshots_truncated.saturating_add(1);
+                return;
+            }
+            let node_ids: Vec<NodeID> = std::mem::take(&mut log.current_rule_nodes).into_iter().collect();
+            let edges: Vec<EdgeKey> = std::mem::take(&mut log.current_rule_edges).into_iter().collect();
+            let before_nodes = std::mem::take(&mut log.current_rule_before_nodes);
+            let before_edges = std::mem::take(&mut log.current_rule_before_edges);
+            let values_truncated = log.current_rule_values_truncated;
+            (rule_name, std::mem::take(&mut log.current_rule_origins), log.current_rule_deferred,
+                std::mem::take(&mut log.current_rule_deferred_effect_origins),
+                std::mem::take(&mut log.current_rule_deferred_rule_changes),
+                node_ids, edges, before_nodes, before_edges, values_truncated,
+                log.rule_write_snapshot_bytes, log.rule_write_snapshot_objects)
+        };
+        node_ids.sort_unstable();
+        edges.sort_unstable_by_key(|key| (key.src, key.edge_type, key.tgt));
+        let mut node_values = Vec::new();
+        let mut edge_values = Vec::new();
+        let mut estimated_event_bytes = 0usize;
+        for (node_id, before) in before_nodes {
+            let after_ref = self.nodes.get(node_id.0 as usize).and_then(Option::as_ref);
+            let pair_limit = MAX_RULE_EVENT_SNAPSHOT_BYTES
+                .saturating_sub(estimated_event_bytes)
+                .min(MAX_RULE_SNAPSHOT_BYTES.saturating_sub(prior_bytes.saturating_add(estimated_event_bytes)));
+            let pair_bytes = node_snapshot_payload_bytes(before.as_ref(), pair_limit)
+                .and_then(|before_bytes| {
+                    node_snapshot_payload_bytes(after_ref, pair_limit.saturating_sub(before_bytes))
+                        .and_then(|after_bytes| before_bytes.checked_add(after_bytes))
+                });
+            let event_objects = node_values.len() + edge_values.len();
+            if event_objects < MAX_RULE_EVENT_SNAPSHOT_OBJECTS
+                && prior_objects.saturating_add(event_objects) < MAX_RULE_SNAPSHOT_OBJECTS
+                && pair_bytes.is_some()
+            {
+                estimated_event_bytes += pair_bytes.unwrap();
+                node_values.push(RuleNodeValueSnapshot {
+                    node_id,
+                    before,
+                    after: after_ref.cloned(),
+                });
+            } else {
+                values_truncated = true;
+            }
+        }
+        for (edge, before) in before_edges {
+            let after_ref = self.edge_idx_unscoped(edge.src, edge.edge_type, edge.tgt)
+                .map(|idx| self.edge_attrs(idx));
+            let pair_limit = MAX_RULE_EVENT_SNAPSHOT_BYTES
+                .saturating_sub(estimated_event_bytes)
+                .min(MAX_RULE_SNAPSHOT_BYTES.saturating_sub(prior_bytes.saturating_add(estimated_event_bytes)));
+            let pair_bytes = attrs_snapshot_payload_bytes(before.as_ref(), pair_limit)
+                .and_then(|before_bytes| {
+                    attrs_snapshot_payload_bytes(after_ref, pair_limit.saturating_sub(before_bytes))
+                        .and_then(|after_bytes| before_bytes.checked_add(after_bytes))
+                });
+            let event_objects = node_values.len() + edge_values.len();
+            if event_objects < MAX_RULE_EVENT_SNAPSHOT_OBJECTS
+                && prior_objects.saturating_add(event_objects) < MAX_RULE_SNAPSHOT_OBJECTS
+                && pair_bytes.is_some()
+            {
+                estimated_event_bytes += pair_bytes.unwrap();
+                edge_values.push(RuleEdgeValueSnapshot {
+                    edge,
+                    before,
+                    after: after_ref.cloned(),
+                });
+            } else {
+                values_truncated = true;
+            }
+        }
+        if let Some(log) = self.mutation_log.as_mut().filter(|log| log.rule_attribution_enabled) {
+            log.rule_write_snapshot_bytes = log.rule_write_snapshot_bytes.saturating_add(estimated_event_bytes);
+            log.rule_write_snapshot_objects = log.rule_write_snapshot_objects.saturating_add(node_values.len() + edge_values.len());
+            if values_truncated {
+                log.rule_write_snapshots_truncated = log.rule_write_snapshots_truncated.saturating_add(1);
+            }
+        }
+        let effect_snapshots = self.mutation_log.as_mut()
+            .filter(|log| log.rule_effect_attribution_enabled || log.rule_effect_target_attribution_enabled)
+            .map(|log| std::mem::take(&mut log.current_rule_effect_snapshots))
+            .unwrap_or_default();
+        let event = RuleWriteEvent {
+            rule_name,
+            origin_rules,
+            deferred,
+            deferred_effect_origins,
+            deferred_rule_changes,
+            progressed,
+            node_ids,
+            edges,
+            node_values,
+            edge_values,
+            effect_snapshots,
+            values_truncated,
+        };
+        if let Some(log) = self.mutation_log.as_mut().filter(|log| log.rule_attribution_enabled) {
+            log.rule_write_events.push(event);
+        }
     }
 
     /// Begin the notification log plus the first-seen state of every touched
@@ -906,7 +1596,10 @@ impl TypedGraph {
     /// Unlike the notification-only logger, this retains only the first state
     /// of touched nodes/edges and scales with the branch write set.
     pub fn begin_experiment_delta_log(&mut self) {
-        assert!(self.mutation_log.is_none(), "graph mutation log already active");
+        assert!(
+            self.mutation_log.is_none(),
+            "graph mutation log already active"
+        );
         self.mutation_log = Some(GraphMutationLog {
             before_nodes: Some(FxHashMap::default()),
             before_edges: Some(FxHashMap::default()),
@@ -916,32 +1609,82 @@ impl TypedGraph {
         });
     }
 
+    /// Begin sparse experiment residual tracking and opt-in per-rule event
+    /// attribution in the same mutation log. Ordinary experiment journals
+    /// remain unchanged unless callers explicitly select this mode.
+    pub fn begin_experiment_delta_log_with_rule_attribution(&mut self) {
+        self.begin_experiment_delta_log();
+        self.enable_rule_write_attribution();
+    }
+
+    /// Begin an experiment residual journal with event endpoints and the more
+    /// expensive per-effect value trace explicitly enabled.
+    pub fn begin_experiment_delta_log_with_rule_effect_attribution(&mut self) {
+        self.begin_experiment_delta_log();
+        self.enable_rule_write_effect_attribution();
+    }
+
     /// Mark the post-hypothesis state as the baseline for `derived_only`.
     /// Existing touched objects are sampled locally; future first writes are
     /// captured by the mutation hooks without a whole-graph traversal.
     pub fn checkpoint_experiment_delta_log(&mut self) {
-        let nodes: Vec<NodeID> = self.mutation_log.as_ref()
+        let nodes: Vec<NodeID> = self
+            .mutation_log
+            .as_ref()
             .and_then(|log| log.before_nodes.as_ref())
             .expect("experiment delta journal is not active")
-            .keys().copied().collect();
-        let edges: Vec<EdgeKey> = self.mutation_log.as_ref()
+            .keys()
+            .copied()
+            .collect();
+        let edges: Vec<EdgeKey> = self
+            .mutation_log
+            .as_ref()
             .and_then(|log| log.before_edges.as_ref())
             .expect("experiment delta journal is not active")
-            .keys().copied().collect();
-        let node_snapshots: Vec<(NodeID, Option<NodeData>)> = nodes.into_iter()
-            .map(|nid| (nid, self.nodes.get(nid.0 as usize)
-                .and_then(Option::as_ref).cloned()))
+            .keys()
+            .copied()
             .collect();
-        let edge_snapshots: Vec<(EdgeKey, Option<Attrs>)> = edges.into_iter()
-            .map(|key| (key, self.edge_idx(key.src, key.edge_type, key.tgt)
-                .map(|idx| self.edge_attrs(idx).clone())))
+        let node_snapshots: Vec<(NodeID, Option<NodeData>)> = nodes
+            .into_iter()
+            .map(|nid| {
+                (
+                    nid,
+                    self.nodes
+                        .get(nid.0 as usize)
+                        .and_then(Option::as_ref)
+                        .cloned(),
+                )
+            })
             .collect();
-        let log = self.mutation_log.as_mut().expect("experiment delta journal is not active");
+        let edge_snapshots: Vec<(EdgeKey, Option<Attrs>)> = edges
+            .into_iter()
+            .map(|key| {
+                (
+                    key,
+                    self.edge_idx(key.src, key.edge_type, key.tgt)
+                        .map(|idx| self.edge_attrs(idx).clone()),
+                )
+            })
+            .collect();
+        let log = self
+            .mutation_log
+            .as_mut()
+            .expect("experiment delta journal is not active");
         assert!(!log.phase_active, "experiment delta checkpoint already set");
-        let phase_nodes = log.phase_before_nodes.as_mut().expect("detailed journal required");
-        for (nid, state) in node_snapshots { phase_nodes.entry(nid).or_insert(state); }
-        let phase_edges = log.phase_before_edges.as_mut().expect("detailed journal required");
-        for (key, state) in edge_snapshots { phase_edges.entry(key).or_insert(state); }
+        let phase_nodes = log
+            .phase_before_nodes
+            .as_mut()
+            .expect("detailed journal required");
+        for (nid, state) in node_snapshots {
+            phase_nodes.entry(nid).or_insert(state);
+        }
+        let phase_edges = log
+            .phase_before_edges
+            .as_mut()
+            .expect("detailed journal required");
+        for (key, state) in edge_snapshots {
+            phase_edges.entry(key).or_insert(state);
+        }
         log.phase_active = true;
     }
 
@@ -960,14 +1703,19 @@ impl TypedGraph {
             self.edge_read_scope = None;
             return self.edge_count();
         }
-        let mut nodes: FxHashSet<NodeID> = focus_nodes.iter().copied()
-            .filter(|nid| self.has_node(*nid)).collect();
+        let mut nodes: FxHashSet<NodeID> = focus_nodes
+            .iter()
+            .copied()
+            .filter(|nid| self.has_node(*nid))
+            .collect();
         let mut frontier: Vec<NodeID> = nodes.iter().copied().collect();
         for _ in 0..hops {
             let mut next = Vec::new();
             for nid in frontier {
-                for idx in self.out_edges_idx(nid, None)
-                    .into_iter().chain(self.in_edges_idx(nid, None))
+                for idx in self
+                    .out_edges_idx(nid, None)
+                    .into_iter()
+                    .chain(self.in_edges_idx(nid, None))
                 {
                     let edge = self.edge(idx);
                     let other = if edge.src == nid { edge.tgt } else { edge.src };
@@ -982,7 +1730,10 @@ impl TypedGraph {
             frontier = next;
         }
 
-        let mut scope = EdgeReadScope { nodes, ..EdgeReadScope::default() };
+        let mut scope = EdgeReadScope {
+            nodes,
+            ..EdgeReadScope::default()
+        };
         let scope_nodes: Vec<NodeID> = scope.nodes.iter().copied().collect();
         for src in scope_nodes {
             for idx in self.out_edges_idx(src, None) {
@@ -1007,16 +1758,27 @@ impl TypedGraph {
                 }
                 let edge = self.edge(idx);
                 scope.in_.entry(tgt).or_default().push(idx);
-                scope.in_by_type.entry((tgt, edge.edge_type)).or_default().push(idx);
+                scope
+                    .in_by_type
+                    .entry((tgt, edge.edge_type))
+                    .or_default()
+                    .push(idx);
             }
         }
 
         // Preserve the substrate's established per-type matching order.
-        let edge_types: FxHashSet<Sym> = scope.visible_edge_set.iter()
-            .map(|idx| self.edge(*idx).edge_type).collect();
+        let edge_types: FxHashSet<Sym> = scope
+            .visible_edge_set
+            .iter()
+            .map(|idx| self.edge(*idx).edge_type)
+            .collect();
         for edge_type in edge_types {
-            let ordered: Vec<EdgeIdx> = self.edges_by_type(edge_type).iter().copied()
-                .filter(|idx| scope.visible_edge_set.contains(idx)).collect();
+            let ordered: Vec<EdgeIdx> = self
+                .edges_by_type(edge_type)
+                .iter()
+                .copied()
+                .filter(|idx| scope.visible_edge_set.contains(idx))
+                .collect();
             if !ordered.is_empty() {
                 scope.edges_by_type.insert(edge_type, ordered);
             }
@@ -1033,16 +1795,90 @@ impl TypedGraph {
     }
 
     fn log_node_mutation(&mut self, nid: NodeID) {
-        let node_type = self
-            .nodes
-            .get(nid.0 as usize)
-            .and_then(|slot| slot.as_ref())
-            .map(|node| node.type_);
-        let needs_before = self.mutation_log.as_ref()
-            .is_some_and(|log| log.before_nodes.is_some() || log.phase_active);
-        let node = needs_before.then(|| self.nodes.get(nid.0 as usize)
-            .and_then(|slot| slot.as_ref()).cloned()).flatten();
+        let node_ref = self.nodes.get(nid.0 as usize).and_then(Option::as_ref);
+        let node_type = node_ref.map(|node| node.type_);
+        // Admit attribution's before-image using a bounded, non-allocating
+        // estimate before cloning NodeData. Other delta observers retain
+        // their existing full before-image contract independently.
+        let (rule_needs_before, rule_admitted, rule_estimate) = self
+            .mutation_log
+            .as_ref()
+            .filter(|log| log.current_rule.is_some())
+            .map(|log| {
+                let needs = !log.current_rule_before_nodes.contains_key(&nid);
+                let objects = log.current_rule_before_nodes.len() + log.current_rule_before_edges.len();
+                let report_bytes = log.rule_write_snapshot_bytes.saturating_add(log.current_rule_snapshot_bytes);
+                let byte_limit = (MAX_RULE_EVENT_SNAPSHOT_BYTES / 2)
+                    .saturating_sub(log.current_rule_snapshot_bytes)
+                    .min((MAX_RULE_SNAPSHOT_BYTES / 2).saturating_sub(report_bytes));
+                let estimate = node_snapshot_payload_bytes(node_ref, byte_limit);
+                let admitted = needs
+                    && objects < MAX_RULE_EVENT_SNAPSHOT_OBJECTS
+                    && log.rule_write_snapshot_objects.saturating_add(objects) < MAX_RULE_SNAPSHOT_OBJECTS
+                    && estimate.is_some();
+                (needs, admitted, estimate.unwrap_or(0))
+            })
+            .unwrap_or((false, false, 0));
+        let (effect_needs_before, effect_admitted, effect_estimate) = self
+            .mutation_log
+            .as_ref()
+            .filter(|log| log.rule_effect_attribution_enabled && log.current_rule_effect_index.is_some())
+            .map(|log| {
+                let needs = !log.current_rule_effect_before_nodes.contains_key(&nid);
+                let objects = log.current_rule_effect_before_nodes.len() + log.current_rule_effect_before_edges.len();
+                let event_bytes = log.current_rule_effect_total_bytes.saturating_add(log.current_rule_effect_snapshot_bytes);
+                let report_bytes = log.rule_write_effect_snapshot_bytes.saturating_add(event_bytes);
+                let byte_limit = (MAX_RULE_EFFECT_EVENT_SNAPSHOT_BYTES / 2)
+                    .saturating_sub(event_bytes)
+                    .min((MAX_RULE_EFFECT_SNAPSHOT_BYTES / 2).saturating_sub(report_bytes));
+                let estimate = node_snapshot_payload_bytes(node_ref, byte_limit);
+                let admitted = needs
+                    && objects < MAX_RULE_EFFECT_EVENT_SNAPSHOT_OBJECTS
+                    && log.current_rule_effect_total_objects.saturating_add(objects) < MAX_RULE_EFFECT_EVENT_SNAPSHOT_OBJECTS
+                    && log.rule_write_effect_snapshot_objects.saturating_add(log.current_rule_effect_total_objects).saturating_add(objects) < MAX_RULE_EFFECT_SNAPSHOT_OBJECTS
+                    && estimate.is_some();
+                (needs, admitted, estimate.unwrap_or(0))
+            })
+            .unwrap_or((false, false, 0));
+        let needs_other_before = self.mutation_log.as_ref().is_some_and(|log| {
+            log.before_nodes.is_some() || log.phase_active
+        });
+        let node = (needs_other_before || rule_admitted || effect_admitted)
+            .then(|| node_ref.cloned())
+            .flatten();
         if let Some(log) = self.mutation_log.as_mut() {
+            if log.current_rule.is_some() {
+                log.current_rule_nodes.insert(nid);
+                if rule_needs_before {
+                    if rule_admitted {
+                        log.current_rule_snapshot_bytes += rule_estimate;
+                        log.current_rule_before_nodes.insert(nid, node.clone());
+                    } else {
+                        log.current_rule_values_truncated = true;
+                    }
+                }
+            }
+            if log.current_rule_effect_index.is_some() {
+                log.current_rule_effect_touched = true;
+                if log.rule_effect_target_attribution_enabled && !log.current_rule_effect_node_targets.contains(&nid) {
+                    let effect_objects = log.current_rule_effect_node_targets.len() + log.current_rule_effect_edge_targets.len();
+                    if effect_objects < MAX_RULE_EFFECT_EVENT_SNAPSHOT_OBJECTS
+                        && log.current_rule_effect_target_event_objects < MAX_RULE_EFFECT_EVENT_SNAPSHOT_OBJECTS
+                        && log.rule_write_effect_snapshot_objects < MAX_RULE_EFFECT_SNAPSHOT_OBJECTS {
+                        log.current_rule_effect_node_targets.insert(nid);
+                        log.current_rule_effect_target_event_objects += 1;
+                        log.rule_write_effect_snapshot_objects += 1;
+                    } else { log.current_rule_effect_values_truncated = true; }
+                }
+                if effect_needs_before {
+                    if effect_admitted {
+                        log.current_rule_effect_snapshot_bytes += effect_estimate;
+                        log.current_rule_effect_before_nodes.insert(nid, node.clone());
+                    } else {
+                        log.current_rule_effect_values_truncated = true;
+                    }
+                }
+            }
             log.changed_nodes.insert(nid);
             if let Some(node_type) = node_type {
                 log.node_types.entry(nid).or_insert(node_type);
@@ -1059,29 +1895,172 @@ impl TypedGraph {
     }
 
     fn log_node_added(&mut self, nid: NodeID) {
-        let node_type = self.nodes.get(nid.0 as usize)
-            .and_then(|slot| slot.as_ref()).map(|node| node.type_);
+        let node_type = self
+            .nodes
+            .get(nid.0 as usize)
+            .and_then(|slot| slot.as_ref())
+            .map(|node| node.type_);
         if let Some(log) = self.mutation_log.as_mut() {
+            if log.current_rule_effect_index.is_some() {
+                log.current_rule_effect_touched = true;
+                if log.rule_effect_target_attribution_enabled && !log.current_rule_effect_node_targets.contains(&nid) {
+                    let effect_objects = log.current_rule_effect_node_targets.len() + log.current_rule_effect_edge_targets.len();
+                    if effect_objects < MAX_RULE_EFFECT_EVENT_SNAPSHOT_OBJECTS
+                        && log.current_rule_effect_target_event_objects < MAX_RULE_EFFECT_EVENT_SNAPSHOT_OBJECTS
+                        && log.rule_write_effect_snapshot_objects < MAX_RULE_EFFECT_SNAPSHOT_OBJECTS {
+                        log.current_rule_effect_node_targets.insert(nid);
+                        log.current_rule_effect_target_event_objects += 1;
+                        log.rule_write_effect_snapshot_objects += 1;
+                    } else { log.current_rule_effect_values_truncated = true; }
+                }
+                if log.rule_effect_attribution_enabled && !log.current_rule_effect_before_nodes.contains_key(&nid) {
+                    let objects = log.current_rule_effect_before_nodes.len() + log.current_rule_effect_before_edges.len();
+                    if objects < MAX_RULE_EFFECT_EVENT_SNAPSHOT_OBJECTS
+                        && log.current_rule_effect_total_objects.saturating_add(objects) < MAX_RULE_EFFECT_EVENT_SNAPSHOT_OBJECTS
+                        && log.rule_write_effect_snapshot_objects.saturating_add(log.current_rule_effect_total_objects).saturating_add(objects) < MAX_RULE_EFFECT_SNAPSHOT_OBJECTS
+                    { log.current_rule_effect_before_nodes.insert(nid, None); }
+                    else { log.current_rule_effect_values_truncated = true; }
+                }
+            }
+            if log.current_rule.is_some() {
+                log.current_rule_nodes.insert(nid);
+                if !log.current_rule_before_nodes.contains_key(&nid) {
+                    let objects = log.current_rule_before_nodes.len() + log.current_rule_before_edges.len();
+                    if objects < MAX_RULE_EVENT_SNAPSHOT_OBJECTS
+                        && log.rule_write_snapshot_objects.saturating_add(objects) < MAX_RULE_SNAPSHOT_OBJECTS
+                    {
+                        log.current_rule_before_nodes.insert(nid, None);
+                    } else {
+                        log.current_rule_values_truncated = true;
+                    }
+                }
+            }
             log.changed_nodes.insert(nid);
-            if let Some(node_type) = node_type { log.node_types.entry(nid).or_insert(node_type); }
-            if let Some(before) = log.before_nodes.as_mut() { before.entry(nid).or_insert(None); }
+            if let Some(node_type) = node_type {
+                log.node_types.entry(nid).or_insert(node_type);
+            }
+            if let Some(before) = log.before_nodes.as_mut() {
+                before.entry(nid).or_insert(None);
+            }
             if log.phase_active {
-                if let Some(phase) = log.phase_before_nodes.as_mut() { phase.entry(nid).or_insert(None); }
+                if let Some(phase) = log.phase_before_nodes.as_mut() {
+                    phase.entry(nid).or_insert(None);
+                }
             }
         }
     }
 
-    fn log_edge_before(&mut self, key: EdgeKey, before_state: Option<Attrs>) {
+    fn log_edge_before(&mut self, key: EdgeKey) {
+        let before_ref = self.edge_idx_unscoped(key.src, key.edge_type, key.tgt)
+            .map(|idx| self.edge_attrs(idx));
+        let (rule_needs_before, rule_admitted, rule_estimate) = self
+            .mutation_log
+            .as_ref()
+            .filter(|log| log.current_rule.is_some())
+            .map(|log| {
+                let needs = !log.current_rule_before_edges.contains_key(&key);
+                let objects = log.current_rule_before_nodes.len() + log.current_rule_before_edges.len();
+                let report_bytes = log.rule_write_snapshot_bytes.saturating_add(log.current_rule_snapshot_bytes);
+                let byte_limit = (MAX_RULE_EVENT_SNAPSHOT_BYTES / 2)
+                    .saturating_sub(log.current_rule_snapshot_bytes)
+                    .min((MAX_RULE_SNAPSHOT_BYTES / 2).saturating_sub(report_bytes));
+                let estimate = attrs_snapshot_payload_bytes(before_ref, byte_limit);
+                let admitted = needs
+                    && objects < MAX_RULE_EVENT_SNAPSHOT_OBJECTS
+                    && log.rule_write_snapshot_objects.saturating_add(objects) < MAX_RULE_SNAPSHOT_OBJECTS
+                    && estimate.is_some();
+                (needs, admitted, estimate.unwrap_or(0))
+            })
+            .unwrap_or((false, false, 0));
+        let (effect_needs_before, effect_admitted, effect_estimate) = self
+            .mutation_log
+            .as_ref()
+            .filter(|log| log.rule_effect_attribution_enabled && log.current_rule_effect_index.is_some())
+            .map(|log| {
+                let needs = !log.current_rule_effect_before_edges.contains_key(&key);
+                let objects = log.current_rule_effect_before_nodes.len() + log.current_rule_effect_before_edges.len();
+                let event_bytes = log.current_rule_effect_total_bytes.saturating_add(log.current_rule_effect_snapshot_bytes);
+                let report_bytes = log.rule_write_effect_snapshot_bytes.saturating_add(event_bytes);
+                let byte_limit = (MAX_RULE_EFFECT_EVENT_SNAPSHOT_BYTES / 2).saturating_sub(event_bytes)
+                    .min((MAX_RULE_EFFECT_SNAPSHOT_BYTES / 2).saturating_sub(report_bytes));
+                let estimate = attrs_snapshot_payload_bytes(before_ref, byte_limit);
+                let admitted = needs && objects < MAX_RULE_EFFECT_EVENT_SNAPSHOT_OBJECTS
+                    && log.current_rule_effect_total_objects.saturating_add(objects) < MAX_RULE_EFFECT_EVENT_SNAPSHOT_OBJECTS
+                    && log.rule_write_effect_snapshot_objects.saturating_add(log.current_rule_effect_total_objects).saturating_add(objects) < MAX_RULE_EFFECT_SNAPSHOT_OBJECTS
+                    && estimate.is_some();
+                (needs, admitted, estimate.unwrap_or(0))
+            })
+            .unwrap_or((false, false, 0));
+        let needs_other_before = self.mutation_log.as_ref().is_some_and(|log| {
+            log.before_edges.is_some() || log.phase_active
+        });
+        let before_state = (needs_other_before || rule_admitted || effect_admitted)
+            .then(|| before_ref.cloned())
+            .flatten();
         if let Some(log) = self.mutation_log.as_mut() {
-            if let Some(before) = log.before_edges.as_mut() { before.entry(key).or_insert_with(|| before_state.clone()); }
+            if log.current_rule_effect_index.is_some() {
+                log.current_rule_effect_touched = true;
+                if log.rule_effect_target_attribution_enabled && !log.current_rule_effect_edge_targets.contains(&key) {
+                    let effect_objects = log.current_rule_effect_node_targets.len() + log.current_rule_effect_edge_targets.len();
+                    if effect_objects < MAX_RULE_EFFECT_EVENT_SNAPSHOT_OBJECTS
+                        && log.current_rule_effect_target_event_objects < MAX_RULE_EFFECT_EVENT_SNAPSHOT_OBJECTS
+                        && log.rule_write_effect_snapshot_objects < MAX_RULE_EFFECT_SNAPSHOT_OBJECTS {
+                        log.current_rule_effect_edge_targets.insert(key);
+                        log.current_rule_effect_target_event_objects += 1;
+                        log.rule_write_effect_snapshot_objects += 1;
+                    } else { log.current_rule_effect_values_truncated = true; }
+                }
+                if effect_needs_before {
+                    if effect_admitted {
+                        log.current_rule_effect_snapshot_bytes += effect_estimate;
+                        log.current_rule_effect_before_edges.insert(key, before_state.clone());
+                    } else { log.current_rule_effect_values_truncated = true; }
+                }
+            }
+            if log.current_rule.is_some() {
+                log.current_rule_edges.insert(key);
+                log.current_rule_nodes.insert(key.src);
+                log.current_rule_nodes.insert(key.tgt);
+                if rule_needs_before {
+                    if rule_admitted {
+                        log.current_rule_snapshot_bytes += rule_estimate;
+                        log.current_rule_before_edges.insert(key, before_state.clone());
+                    } else {
+                        log.current_rule_values_truncated = true;
+                    }
+                }
+            }
+            if let Some(before) = log.before_edges.as_mut() {
+                before.entry(key).or_insert_with(|| before_state.clone());
+            }
             if log.phase_active {
-                if let Some(phase) = log.phase_before_edges.as_mut() { phase.entry(key).or_insert(before_state); }
+                if let Some(phase) = log.phase_before_edges.as_mut() {
+                    phase.entry(key).or_insert(before_state);
+                }
             }
         }
     }
 
     fn log_edge_mutation(&mut self, key: EdgeKey) {
         if let Some(log) = self.mutation_log.as_mut() {
+            if log.current_rule_effect_index.is_some() {
+                log.current_rule_effect_touched = true;
+                if log.rule_effect_target_attribution_enabled && !log.current_rule_effect_edge_targets.contains(&key) {
+                    let effect_objects = log.current_rule_effect_node_targets.len() + log.current_rule_effect_edge_targets.len();
+                    if effect_objects < MAX_RULE_EFFECT_EVENT_SNAPSHOT_OBJECTS
+                        && log.current_rule_effect_target_event_objects < MAX_RULE_EFFECT_EVENT_SNAPSHOT_OBJECTS
+                        && log.rule_write_effect_snapshot_objects < MAX_RULE_EFFECT_SNAPSHOT_OBJECTS {
+                        log.current_rule_effect_edge_targets.insert(key);
+                        log.current_rule_effect_target_event_objects += 1;
+                        log.rule_write_effect_snapshot_objects += 1;
+                    } else { log.current_rule_effect_values_truncated = true; }
+                }
+            }
+            if log.current_rule.is_some() {
+                log.current_rule_edges.insert(key);
+                log.current_rule_nodes.insert(key.src);
+                log.current_rule_nodes.insert(key.tgt);
+            }
             log.changed_edges.insert(key);
             log.changed_nodes.insert(key.src);
             log.changed_nodes.insert(key.tgt);
@@ -1110,9 +2089,12 @@ impl TypedGraph {
     }
 
     pub fn edge(&self, idx: EdgeIdx) -> &EdgeData {
-        assert!(self.edge_read_scope.as_ref()
-            .map_or(true, |scope| scope.visible_edge_set.contains(&idx)),
-            "edge idx is outside the active experiment read scope");
+        assert!(
+            self.edge_read_scope
+                .as_ref()
+                .map_or(true, |scope| scope.visible_edge_set.contains(&idx)),
+            "edge idx is outside the active experiment read scope"
+        );
         self.edges[idx.0 as usize]
             .as_ref()
             .expect("edge idx refers to a freed slot")
@@ -1129,8 +2111,11 @@ impl TypedGraph {
         if let Some(scope) = &self.edge_read_scope {
             let candidates = scope.out_by_type.get(&(src, edge_type))?;
             return candidates.iter().find_map(|idx| {
-                self.edges.get(idx.0 as usize).and_then(Option::as_ref)
-                    .filter(|edge| edge.tgt == tgt).map(|_| *idx)
+                self.edges
+                    .get(idx.0 as usize)
+                    .and_then(Option::as_ref)
+                    .filter(|edge| edge.tgt == tgt)
+                    .map(|_| *idx)
             });
         }
         self.edge_idx_unscoped(src, edge_type, tgt)
@@ -1191,7 +2176,11 @@ impl TypedGraph {
     pub fn out_edges_slice(&self, nid: NodeID, edge_type: Option<Sym>) -> &[EdgeIdx] {
         if let Some(scope) = &self.edge_read_scope {
             return match edge_type {
-                Some(et) => scope.out_by_type.get(&(nid, et)).map(|v| v.as_slice()).unwrap_or(&[]),
+                Some(et) => scope
+                    .out_by_type
+                    .get(&(nid, et))
+                    .map(|v| v.as_slice())
+                    .unwrap_or(&[]),
                 None => scope.out.get(&nid).map(|v| v.as_slice()).unwrap_or(&[]),
             };
         }
@@ -1212,7 +2201,11 @@ impl TypedGraph {
     pub fn in_edges_slice(&self, nid: NodeID, edge_type: Option<Sym>) -> &[EdgeIdx] {
         if let Some(scope) = &self.edge_read_scope {
             return match edge_type {
-                Some(et) => scope.in_by_type.get(&(nid, et)).map(|v| v.as_slice()).unwrap_or(&[]),
+                Some(et) => scope
+                    .in_by_type
+                    .get(&(nid, et))
+                    .map(|v| v.as_slice())
+                    .unwrap_or(&[]),
                 None => scope.in_.get(&nid).map(|v| v.as_slice()).unwrap_or(&[]),
             };
         }
@@ -1296,11 +2289,17 @@ impl TypedGraph {
         if !self.has_node(tgt) {
             return Err(EdgeInsertError::MissingTgt(tgt));
         }
-        let key = EdgeKey { src, edge_type, tgt };
-        if self.mutation_log.as_ref().is_some_and(|log| log.before_edges.is_some()) {
-            let before_state = self.edge_idx(src, edge_type, tgt)
-                .map(|idx| self.edge_attrs(idx).clone());
-            self.log_edge_before(key, before_state);
+        let key = EdgeKey {
+            src,
+            edge_type,
+            tgt,
+        };
+        if self
+            .mutation_log
+            .as_ref()
+            .is_some_and(|log| log.before_edges.is_some() || log.current_rule.is_some())
+        {
+            self.log_edge_before(key);
         }
         self.bump_mutation_version();
         let store_attrs = |idx: EdgeIdx, this: &mut Self, attrs: Attrs| {
@@ -1318,7 +2317,11 @@ impl TypedGraph {
                 tgt,
             });
             store_attrs(existing, self, attrs);
-            self.log_edge_mutation(EdgeKey { src, edge_type, tgt });
+            self.log_edge_mutation(EdgeKey {
+                src,
+                edge_type,
+                tgt,
+            });
             return Ok(existing);
         }
         // An edge hidden by the inherited aperture can be recreated by a
@@ -1327,7 +2330,11 @@ impl TypedGraph {
         if self.edge_read_scope.is_some() {
             if let Some(existing) = self.edge_idx_unscoped(src, edge_type, tgt) {
                 self.bump_mutation_version();
-                self.edges[existing.0 as usize] = Some(EdgeData { src, edge_type, tgt });
+                self.edges[existing.0 as usize] = Some(EdgeData {
+                    src,
+                    edge_type,
+                    tgt,
+                });
                 store_attrs(existing, self, attrs);
                 self.edge_read_scope.as_mut().expect("scope checked")
                     .insert(existing, EdgeKey { src, edge_type, tgt });
@@ -1356,7 +2363,9 @@ impl TypedGraph {
         };
         self.out[src.0 as usize].push(idx);
         self.in_[tgt.0 as usize].push(idx);
-        self.out_by_type.get_or_default_mut((src, edge_type)).push(idx);
+        self.out_by_type
+            .get_or_default_mut((src, edge_type))
+            .push(idx);
         let bucket_key = (src, edge_type);
         let bucket = self
             .out_by_type
@@ -1380,24 +2389,38 @@ impl TypedGraph {
                 .expect("high-degree bucket has target index")
                 .insert(tgt, idx);
         }
-        self.in_by_type.get_or_default_mut((tgt, edge_type)).push(idx);
+        self.in_by_type
+            .get_or_default_mut((tgt, edge_type))
+            .push(idx);
         self.edges_by_type.entry(edge_type).or_default().push(idx);
         if let Some(scope) = self.edge_read_scope.as_mut() {
-            scope.insert(idx, EdgeKey { src, edge_type, tgt });
+            scope.insert(
+                idx,
+                EdgeKey {
+                    src,
+                    edge_type,
+                    tgt,
+                },
+            );
         }
         store_attrs(idx, self, attrs);
-        self.log_edge_mutation(EdgeKey { src, edge_type, tgt });
+        self.log_edge_mutation(EdgeKey {
+            src,
+            edge_type,
+            tgt,
+        });
         Ok(idx)
     }
 
     pub fn delete_edge(&mut self, idx: EdgeIdx) -> Option<EdgeData> {
-        if self.mutation_log.as_ref().is_some_and(|log| log.before_edges.is_some()) {
-          if let Some(data) = self.edges.get(idx.0 as usize).and_then(Option::as_ref) {
-            let visible = self.edge_read_scope.as_ref()
-                .map_or(true, |scope| scope.visible_edge_set.contains(&idx));
-            let before_state = if visible { self.edge_attrs(idx).clone().into() } else { None };
-            self.log_edge_before(data.key(), before_state);
-          }
+        if self
+            .mutation_log
+            .as_ref()
+            .is_some_and(|log| log.before_edges.is_some() || log.current_rule.is_some())
+        {
+            if let Some(data) = self.edges.get(idx.0 as usize).and_then(Option::as_ref) {
+                self.log_edge_before(data.key());
+            }
         }
         let slot = self.edges.get_mut(idx.0 as usize)?;
         let data = slot.take()?;
@@ -1463,13 +2486,14 @@ impl TypedGraph {
             if !visited.insert(idx) {
                 continue;
             }
-            if self.mutation_log.as_ref().is_some_and(|log| log.before_edges.is_some()) {
+            if self
+                .mutation_log
+                .as_ref()
+                .is_some_and(|log| log.before_edges.is_some() || log.current_rule.is_some())
+            {
                 if let Some(data_ref) = self.edges.get(idx.0 as usize).and_then(Option::as_ref) {
                     let key = data_ref.key();
-                    let visible = self.edge_read_scope.as_ref()
-                        .map_or(true, |scope| scope.visible_edge_set.contains(&idx));
-                    let before_state = if visible { self.edge_attrs(idx).clone().into() } else { None };
-                    self.log_edge_before(key, before_state);
+                    self.log_edge_before(key);
                 }
             }
             let Some(data) = self.edges.get_mut(idx.0 as usize).and_then(Option::take) else {
@@ -1500,7 +2524,10 @@ impl TypedGraph {
             out_buckets.insert((edge.src, edge.edge_type));
             in_buckets.insert((edge.tgt, edge.edge_type));
             edge_types.insert(edge.edge_type);
-            if let Some(index) = self.out_by_type_target_index.get_mut(&(edge.src, edge.edge_type)) {
+            if let Some(index) = self
+                .out_by_type_target_index
+                .get_mut(&(edge.src, edge.edge_type))
+            {
                 index.remove(&edge.tgt);
             }
         }
@@ -1563,13 +2590,20 @@ impl TypedGraph {
     /// entry if none exists yet — call `set_edge_attr_clear` after
     /// removing all attrs if you want to free the entry.
     pub fn edge_attrs_mut(&mut self, idx: EdgeIdx) -> &mut Attrs {
-        assert!(self.edge_read_scope.as_ref()
-            .map_or(true, |scope| scope.visible_edge_set.contains(&idx)),
-            "edge idx is outside the active experiment read scope");
+        assert!(
+            self.edge_read_scope
+                .as_ref()
+                .map_or(true, |scope| scope.visible_edge_set.contains(&idx)),
+            "edge idx is outside the active experiment read scope"
+        );
         self.bump_mutation_version();
-        if let Some(edge) = self.edges.get(idx.0 as usize).and_then(|slot| slot.as_ref()) {
+        if let Some(edge) = self
+            .edges
+            .get(idx.0 as usize)
+            .and_then(|slot| slot.as_ref())
+        {
             let key = edge.key();
-            self.log_edge_before(key, Some(self.edge_attrs(idx).clone()));
+            self.log_edge_before(key);
             self.log_edge_mutation(key);
         }
         self.edge_attrs.entry(idx).or_default()
@@ -1688,7 +2722,10 @@ impl TypedGraph {
     /// one greater than the greatest live NodeID (zero for an empty graph).
     /// This scans node slots without serializing attributes or any edges.
     pub fn next_live_node_id(&self) -> u64 {
-        self.iter_nodes().map(|(nid, _)| u64::from(nid.0) + 1).max().unwrap_or(0)
+        self.iter_nodes()
+            .map(|(nid, _)| u64::from(nid.0) + 1)
+            .max()
+            .unwrap_or(0)
     }
 
     pub fn edge_count(&self) -> usize {
@@ -1710,13 +2747,18 @@ impl TypedGraph {
     pub fn iter_edges(&self) -> Box<dyn Iterator<Item = (EdgeIdx, &EdgeData)> + '_> {
         if let Some(scope) = &self.edge_read_scope {
             Box::new(scope.visible_edges.iter().filter_map(|idx| {
-                self.edges.get(idx.0 as usize).and_then(Option::as_ref)
+                self.edges
+                    .get(idx.0 as usize)
+                    .and_then(Option::as_ref)
                     .map(|edge| (*idx, edge))
             }))
         } else {
-            Box::new(self.edges.iter().enumerate().filter_map(|(i, slot)| {
-                slot.as_ref().map(|edge| (EdgeIdx(i as u32), edge))
-            }))
+            Box::new(
+                self.edges
+                    .iter()
+                    .enumerate()
+                    .filter_map(|(i, slot)| slot.as_ref().map(|edge| (EdgeIdx(i as u32), edge))),
+            )
         }
     }
 
@@ -1794,6 +2836,14 @@ impl TypedGraph {
         self.bump_mutation_version();
         let idx = nid.0 as usize;
         let attrs: Attrs = attrs.into();
+        // Restoring a live identity replaces its semantic record. Preserve
+        // that record as the journal's before-image; treating every restore
+        // as an insertion would make a later residual claim the old node was
+        // absent. Fresh or tombstoned identities remain additions.
+        let replacing_live_node = self.nodes.get(idx).is_some_and(|slot| slot.is_some());
+        if replacing_live_node {
+            self.log_node_mutation(nid);
+        }
         // A restored identity may have been deleted earlier in this graph
         // lifetime. Remove it from the reuse stack before making the slot live,
         // otherwise the next insert_node could pop the same ID and overwrite
@@ -1806,23 +2856,20 @@ impl TypedGraph {
             self.in_.push(SmallVec::new());
         }
         if let Some(old) = self.nodes[idx].take() {
-            if let Some(ids) = self.by_type.get_mut(&old.type_) {
-                ids.retain(|existing| *existing != nid);
-            }
+            self.remove_node_from_type(old.type_, nid);
             if !self.attr_indices.is_empty() {
-                self.unindex_node(nid, old.type_);
+                self.unindex_node(nid, old.type_, &old.attrs);
             }
         }
         let attrs_for_index = attrs.clone();
-        self.nodes[idx] = Some(NodeData {
-            type_,
-            attrs,
-        });
-        self.by_type.entry(type_).or_default().push(nid);
+        self.nodes[idx] = Some(NodeData { type_, attrs });
+        self.add_node_to_type(type_, nid);
         if !self.attr_indices.is_empty() {
             self.index_node(nid, type_, &attrs_for_index);
         }
-        self.log_node_added(nid);
+        if !replacing_live_node {
+            self.log_node_added(nid);
+        }
     }
 
     pub fn restore_edge(

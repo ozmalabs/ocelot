@@ -129,6 +129,7 @@ pub fn term_from_subgraph(
     root: NodeID,
     arena: &mut TermArena,
 ) -> Result<TermIdx, ReflectError> {
+    crate::access_trace::note_helper_work(53, 1);
     crate::access_trace::note_node_type_and_attrs(graph, root);
     crate::access_trace::note_out_edges(graph, root, None);
     let node = graph.node(root);

@@ -37,7 +37,9 @@ fn run(collision: bool) {
     let mut binding = Binding::default();
     binding.insert(i.intern("old"), old);
     binding.insert(i.intern("new"), new);
-    let outcome = apply_rule_full(&rule, &binding, &mut terms, &mut g, &mut i, None, None, None, true);
+    let outcome = apply_rule_full(
+        &rule, &binding, &mut terms, &mut g, &mut i, None, None, None, true,
+    );
     assert!(outcome.progressed);
     let dst_idx = g.edge_idx(a, et, new).expect("rewired destination");
     assert_eq!(g.edge_attrs(dst_idx).get(&key), Some(&Value::Int(5)));
@@ -53,7 +55,9 @@ fn run(collision: bool) {
     assert_eq!(g.edge_attrs(a_old).get(&key), Some(&Value::Int(5)));
     assert_eq!(g.edge_attrs(b_old).get(&key), Some(&Value::Int(6)));
     if collision {
-        let a_new = g.edge_idx(a, et, new).expect("original destination restored");
+        let a_new = g
+            .edge_idx(a, et, new)
+            .expect("original destination restored");
         assert_eq!(g.edge_attrs(a_new).get(&key), Some(&Value::Int(99)));
     } else {
         assert!(!g.has_edge(a, et, new));
@@ -63,5 +67,8 @@ fn run(collision: bool) {
 fn main() {
     run(false);
     run(true);
-    println!("{}", r#"{"probe":"replace_value_undo","cases":[{"case":"noncollision_rewrite","rollback_exact":true},{"case":"destination_collision_attr_restore","rollback_exact":true}],"all_exact":true}"#);
+    println!(
+        "{}",
+        r#"{"probe":"replace_value_undo","cases":[{"case":"noncollision_rewrite","rollback_exact":true},{"case":"destination_collision_attr_restore","rollback_exact":true}],"all_exact":true}"#
+    );
 }

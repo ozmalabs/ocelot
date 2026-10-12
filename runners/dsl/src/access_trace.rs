@@ -47,6 +47,10 @@ static ENABLED: AtomicBool = AtomicBool::new(false);
 static ACTIVE_SCOPE: AtomicUsize = AtomicUsize::new(0);
 static WORK_ENABLED: AtomicBool = AtomicBool::new(false);
 static WORK_ALL_SCOPES: AtomicBool = AtomicBool::new(false);
+// Measurement switch for the scoped ShapeDecode parsed-codebook cache. The
+// cache is enabled in production; a fresh-process probe can disable it to run
+// the identical scan reference against the same source and fixture.
+static SHAPE_CODEBOOK_CACHE_ENABLED: AtomicBool = AtomicBool::new(true);
 static DROPPED: AtomicU64 = AtomicU64::new(0);
 static EVENTS: OnceLock<Mutex<BTreeMap<AccessEvent, u64>>> = OnceLock::new();
 static WORK_EVENTS: OnceLock<Mutex<BTreeMap<WorkEvent, u64>>> = OnceLock::new();
@@ -58,6 +62,79 @@ thread_local! {
     static CURRENT_SCOPE: Cell<usize> = const { Cell::new(0) };
     static CURRENT_OPERATION_ID: Cell<u64> = const { Cell::new(0) };
     static CURRENT_OPERATION_SCOPE: Cell<usize> = const { Cell::new(0) };
+    /// Stable helper family currently executing inside a Term evaluation.
+    /// Subjects are declared in `HELPER_*` constants below.
+    static CURRENT_HELPER_SCOPE: Cell<u32> = const { Cell::new(NO_ID) };
+}
+
+pub const HELPER_SHAPE_DECODE: u32 = 1;
+pub const HELPER_TRANSFORM_DECODE: u32 = 2;
+pub const HELPER_DIM_INFER: u32 = 3;
+pub const HELPER_GEN_INFER: u32 = 4;
+pub const HELPER_TIME_INFER: u32 = 5;
+pub const HELPER_DEPTH_INFER: u32 = 6;
+pub const HELPER_BLINK_BRIDGE: u32 = 7;
+pub const HELPER_GAP_ABDUCE: u32 = 8;
+pub const HELPER_GAP_VERIFY: u32 = 9;
+pub const HELPER_PROG_EVAL_DECODE: u32 = 10;
+pub const HELPER_JOIN_RENDER: u32 = 11;
+pub const HELPER_RATIO_INDUCE: u32 = 12;
+pub const HELPER_SUPPORT_INFER: u32 = 13;
+
+/// Attribute helper work to a stable operation family while it runs.
+/// The guard is inert when operation-work tracing is disabled.
+pub struct HelperScopeGuard {
+    previous: u32,
+    active: bool,
+}
+
+impl Drop for HelperScopeGuard {
+    fn drop(&mut self) {
+        if self.active {
+            CURRENT_HELPER_SCOPE.with(|current| current.set(self.previous));
+        }
+    }
+}
+
+pub fn enter_helper_scope(helper: u32) -> HelperScopeGuard {
+    if !WORK_ENABLED.load(Ordering::Relaxed) {
+        return HelperScopeGuard {
+            previous: NO_ID,
+            active: false,
+        };
+    }
+    let previous = CURRENT_HELPER_SCOPE.with(|current| {
+        let previous = current.get();
+        current.set(helper);
+        previous
+    });
+    note_work(46, helper, 1);
+    HelperScopeGuard {
+        previous,
+        active: true,
+    }
+}
+
+#[inline]
+pub fn current_helper_scope() -> u32 {
+    CURRENT_HELPER_SCOPE.with(Cell::get)
+}
+
+#[inline]
+pub fn note_helper_work(kind: u8, amount: u64) {
+    let helper = current_helper_scope();
+    if helper != NO_ID {
+        note_work(kind, helper, amount);
+    }
+}
+
+#[inline]
+pub fn shape_codebook_cache_enabled() -> bool {
+    SHAPE_CODEBOOK_CACHE_ENABLED.load(Ordering::Relaxed)
+}
+
+pub fn set_shape_codebook_cache_enabled(on: bool) {
+    SHAPE_CODEBOOK_CACHE_ENABLED.store(on, Ordering::Relaxed);
 }
 
 fn events() -> &'static Mutex<BTreeMap<AccessEvent, u64>> {
@@ -187,7 +264,9 @@ pub fn current_work_scope() -> usize {
     let operation_id = CURRENT_OPERATION_ID.with(Cell::get);
     let scope = CURRENT_OPERATION_SCOPE.with(Cell::get);
     let all_scopes = WORK_ALL_SCOPES.load(Ordering::Relaxed);
-    if WORK_ENABLED.load(Ordering::Relaxed) && operation_id != 0 && scope != 0
+    if WORK_ENABLED.load(Ordering::Relaxed)
+        && operation_id != 0
+        && scope != 0
         && (all_scopes || scope == ACTIVE_SCOPE.load(Ordering::Relaxed))
     {
         scope
@@ -206,14 +285,25 @@ pub fn note_work(kind: u8, subject: u32, amount: u64) {
     let operation_id = CURRENT_OPERATION_ID.with(Cell::get);
     let scope = CURRENT_OPERATION_SCOPE.with(Cell::get);
     let all_scopes = WORK_ALL_SCOPES.load(Ordering::Relaxed);
-    if operation_id == 0 || scope == 0
+    if operation_id == 0
+        || scope == 0
         || (!all_scopes && scope != ACTIVE_SCOPE.load(Ordering::Relaxed))
     {
         return;
     }
     let rule_scope = CURRENT_SCOPE.with(Cell::get);
-    let rule_uid = if rule_scope == scope { CURRENT_RULE_UID.with(Cell::get) } else { 0 };
-    let event = WorkEvent { scope, operation_id, rule_uid, kind, subject };
+    let rule_uid = if rule_scope == scope {
+        CURRENT_RULE_UID.with(Cell::get)
+    } else {
+        0
+    };
+    let event = WorkEvent {
+        scope,
+        operation_id,
+        rule_uid,
+        kind,
+        subject,
+    };
     if let Ok(mut rows) = work_events().lock() {
         if let Some(count) = rows.get_mut(&event) {
             *count = count.saturating_add(amount);
@@ -230,20 +320,33 @@ pub fn note_work(kind: u8, subject: u32, amount: u64) {
 pub fn work_snapshot(scope: usize) -> (Vec<(WorkEvent, u64)>, u64) {
     let rows = work_events()
         .lock()
-        .map(|map| map.iter().filter(|(event, _)| event.scope == scope).map(|(&event, &count)| (event, count)).collect())
+        .map(|map| {
+            map.iter()
+                .filter(|(event, _)| event.scope == scope)
+                .map(|(&event, &count)| (event, count))
+                .collect()
+        })
         .unwrap_or_default();
     (rows, WORK_DROPPED.load(Ordering::Relaxed))
 }
 
 pub fn work_snapshot_all() -> (Vec<(WorkEvent, u64)>, u64) {
-    let rows = work_events().lock().map(|map| map.iter().map(|(&event, &count)| (event, count)).collect()).unwrap_or_default();
+    let rows = work_events()
+        .lock()
+        .map(|map| map.iter().map(|(&event, &count)| (event, count)).collect())
+        .unwrap_or_default();
     (rows, WORK_DROPPED.load(Ordering::Relaxed))
 }
 
 pub fn snapshot(scope: usize) -> (Vec<(AccessEvent, u64)>, u64) {
     let rows = events()
         .lock()
-        .map(|map| map.iter().filter(|(event, _)| event.scope == scope).map(|(&event, &count)| (event, count)).collect())
+        .map(|map| {
+            map.iter()
+                .filter(|(event, _)| event.scope == scope)
+                .map(|(&event, &count)| (event, count))
+                .collect()
+        })
         .unwrap_or_default();
     (rows, DROPPED.load(Ordering::Relaxed))
 }
@@ -338,6 +441,31 @@ pub fn kind_name(kind: u8) -> &'static str {
         33 => "term_index_query_fallback",
         34 => "term_typed_population_query",
         35 => "term_typed_population_candidate",
+        36 => "term_nodes_of_type_query",
+        37 => "term_nodes_of_type_candidate",
+        38 => "scoped_scheduler_pass",
+        39 => "scoped_rule_attempt",
+        40 => "scoped_progressing_rule",
+        41 => "scoped_binding_matched",
+        42 => "scoped_binding_in_scope",
+        43 => "scoped_binding_out_of_scope",
+        44 => "scoped_binding_duplicate",
+        45 => "scoped_binding_apply_attempt",
+        46 => "dynamic_helper_invocation",
+        47 => "helper_codebook_population_node",
+        48 => "effect_attr_index_query",
+        48 => "helper_node_attribute_examined",
+        49 => "helper_codebook_part_parsed",
+        50 => "helper_relation_cue_population_node",
+        51 => "helper_search_candidate",
+        52 => "helper_candidate_part_scored",
+        53 => "helper_graph_term_node_decoded",
+        54 => "helper_render_rule_candidate",
+        55 => "helper_auxiliary_population_node",
+        56 => "helper_scope_population_index_query",
+        57 => "helper_scope_population_index_member",
+        58 => "helper_codebook_cache_miss",
+        59 => "helper_codebook_cache_hit",
         _ => "unknown",
     }
 }

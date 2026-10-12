@@ -20,19 +20,33 @@ struct Row {
 fn median(mut xs: Vec<f64>) -> f64 {
     xs.sort_by(f64::total_cmp);
     let n = xs.len();
-    if n % 2 == 0 { (xs[n / 2 - 1] + xs[n / 2]) / 2.0 } else { xs[n / 2] }
+    if n % 2 == 0 {
+        (xs[n / 2 - 1] + xs[n / 2]) / 2.0
+    } else {
+        xs[n / 2]
+    }
 }
 
-fn micros(start: Instant) -> f64 { start.elapsed().as_secs_f64() * 1_000_000.0 }
+fn micros(start: Instant) -> f64 {
+    start.elapsed().as_secs_f64() * 1_000_000.0
+}
 
 fn run(nodes: usize, repeats: usize) -> Row {
     let node_type = Sym(1);
     let edge_type = Sym(2);
     let marker = Sym(3);
     let mut base = TypedGraph::new();
-    for _ in 0..nodes { base.insert_node(node_type, Attrs::new()); }
+    for _ in 0..nodes {
+        base.insert_node(node_type, Attrs::new());
+    }
     for i in 0..nodes.saturating_sub(1) {
-        base.insert_edge(NodeID(i as u32), edge_type, NodeID((i + 1) as u32), Attrs::new()).unwrap();
+        base.insert_edge(
+            NodeID(i as u32),
+            edge_type,
+            NodeID((i + 1) as u32),
+            Attrs::new(),
+        )
+        .unwrap();
     }
     let mut eager_clone = Vec::new();
     let mut shared_clone = Vec::new();
@@ -68,17 +82,32 @@ fn run(nodes: usize, repeats: usize) -> Row {
             && shared.node(NodeID(0)).attrs.get(&marker).is_none();
         black_box((&eager, &shared));
     }
-    Row { nodes, edges: nodes.saturating_sub(1), repeats,
-        eager_clone_us: median(eager_clone), shared_slab_clone_us: median(shared_clone),
-        eager_clone_write_us: median(eager_write), shared_slab_clone_write_us: median(shared_write),
-        exact_query_and_branch_isolation: exact }
+    Row {
+        nodes,
+        edges: nodes.saturating_sub(1),
+        repeats,
+        eager_clone_us: median(eager_clone),
+        shared_slab_clone_us: median(shared_clone),
+        eager_clone_write_us: median(eager_write),
+        shared_slab_clone_write_us: median(shared_write),
+        exact_query_and_branch_isolation: exact,
+    }
 }
 
 fn main() {
     let args: Vec<String> = std::env::args().collect();
-    let sizes = args.get(1).map(|s| s.split(',').map(|v| v.parse::<usize>().unwrap()).collect::<Vec<_>>())
+    let sizes = args
+        .get(1)
+        .map(|s| {
+            s.split(',')
+                .map(|v| v.parse::<usize>().unwrap())
+                .collect::<Vec<_>>()
+        })
         .unwrap_or_else(|| vec![771, 1771, 10771, 50771]);
-    let repeats = args.get(2).map(|s| s.parse::<usize>().unwrap()).unwrap_or(25);
+    let repeats = args
+        .get(2)
+        .map(|s| s.parse::<usize>().unwrap())
+        .unwrap_or(25);
     let rows: Vec<_> = sizes.into_iter().map(|n| run(n, repeats)).collect();
     println!("{}", serde_json::to_string(&rows).unwrap());
 }

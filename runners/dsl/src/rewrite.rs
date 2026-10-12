@@ -71,7 +71,7 @@ pub struct IndexJoinHint {
     /// The match-edge variable this hint accelerates (must be the src_var
     /// or tgt_var of exactly one of the rule's match_edges).
     pub for_var: Sym,
-/// Source of the exact value to probe in the declared attribute index.
+    /// Source of the exact value to probe in the declared attribute index.
     pub probe: IndexProbe,
     /// The node type `for_var` ranges over — must match the type the
     /// attr index is declared against.
@@ -350,6 +350,7 @@ pub struct ScopeAnchor {
     pub owner_var: Sym,
     pub owner_type: Sym,
     pub owner_edge: Sym,
+}
 
 thread_local! {
     /// Set only inside `derive_access`'s third walk: `TypeOf` / `AttrByName`
@@ -1813,7 +1814,8 @@ pub fn match_rule_each<F>(
 ) where
     F: FnMut(&Binding) -> bool,
 {
-    let _access_rule = crate::access_trace::enter_rule(rule.uid.0, graph as *const TypedGraph as usize);
+    let _access_rule =
+        crate::access_trace::enter_rule(rule.uid.0, graph as *const TypedGraph as usize);
     let mut binding: Binding = FxHashMap::default();
     extend_each(
         rule,
@@ -1852,7 +1854,8 @@ pub fn match_rule_each_with_initial<F>(
 ) where
     F: FnMut(&Binding) -> bool,
 {
-    let _access_rule = crate::access_trace::enter_rule(rule.uid.0, graph as *const TypedGraph as usize);
+    let _access_rule =
+        crate::access_trace::enter_rule(rule.uid.0, graph as *const TypedGraph as usize);
     let mut binding: Binding = initial.clone();
     extend_each(
         rule,
@@ -2119,23 +2122,19 @@ where
                     .collect(),
             }
         }
-        (Some(s), Some(t))
-            if rule.both_bound_probe
-                && graph.in_edges_slice(t, Some(*edge_type)).len()
-                    < graph.out_edges_slice(s, Some(*edge_type)).len() =>
-        {
-            graph
-                .in_neighbours(t, Some(*edge_type))
-                .into_iter()
-                .filter(|x| *x == s)
-                .map(|x| (x, t))
-                .collect()
+        (Some(s), Some(t)) => {
+            // Both endpoints are already fixed by earlier match clauses.
+            // Enumerating every outgoing neighbor and filtering for `t`
+            // turns a join membership check into O(degree(s)) work for each
+            // partial binding. Use the graph's exact indexed edge lookup;
+            // this returns the same singleton/empty relation without
+            // materializing unrelated neighbors.
+            if graph.has_edge(s, *edge_type, t) {
+                vec![(s, t)]
+            } else {
+                Vec::new()
+            }
         }
-        (Some(s), Some(_)) => graph
-            .neighbours(s, Some(*edge_type))
-            .into_iter()
-            .map(|t| (s, t))
-            .collect(),
         // R10: for a both-unbound edge, an active hint avoids the
         // edge-type scan; index-then-verify keeps correctness independent
         // of the index contents.
@@ -2317,7 +2316,8 @@ pub fn apply_rule_full(
     cache: Option<&mut crate::term::EvalCache>,
     record_undo: bool,
 ) -> ApplyOutcome {
-    let _access_rule = crate::access_trace::enter_rule(rule.uid.0, graph as *const TypedGraph as usize);
+    let _access_rule =
+        crate::access_trace::enter_rule(rule.uid.0, graph as *const TypedGraph as usize);
     // Effect values in one rule firing form one atomic explanatory frame.
     // Keep expensive SD reports across sibling field projections, while
     // clearing traversal memo before every effect so ordinary graph reads see
@@ -2513,7 +2513,11 @@ pub fn apply_rule_full(
                     value_as_str_like(&field_v, interner),
                 ) {
                     (Some(name_s), Some(field_s)) => {
-                        graph.pending_rule_edits.push((name_s, field_s, term_v));
+                        let queue_index = graph.pending_rule_edits.len();
+                        graph.record_deferred_rule_edit_effect_origin(queue_index, rule.name, effect_idx as u32);
+                        graph
+                            .pending_rule_edits
+                            .push((name_s, field_s, term_v, rule.name));
                         crate::scale_audit::deferred_queue_enqueued("rule_edits");
                         progressed = true;
                     }
@@ -2539,8 +2543,17 @@ pub fn apply_rule_full(
                 // Only queue its identity here. The substrate owns the live
                 // rule store and performs the CAS transaction between passes.
                 if let Some(&patch) = b.get(patch_var) {
-                    if !graph.pending_rule_patches.contains(&patch) {
-                        graph.pending_rule_patches.push(patch);
+                    graph.record_deferred_rule_patch_effect_origin(patch, rule.name, effect_idx as u32);
+                    if let Some((_, origins)) = graph
+                        .pending_rule_patches
+                        .iter_mut()
+                        .find(|(node, _)| *node == patch)
+                    {
+                        if !origins.contains(&rule.name) {
+                            origins.push(rule.name);
+                        }
+                    } else {
+                        graph.pending_rule_patches.push((patch, vec![rule.name]));
                         crate::scale_audit::deferred_queue_enqueued("rule_patches");
                     }
                     progressed = true;
@@ -2624,7 +2637,9 @@ pub fn apply_rule_full(
                 let inv = to_vec(&in_v);
                 let tgv = to_vec(&tg_v);
                 if !inv.is_empty() && !tgv.is_empty() && eta_f > 0.0 {
-                    graph.pending_net_collapses.push((rn, inv, tgv, eta_f));
+                    graph
+                        .pending_net_collapses
+                        .push((rn, inv, tgv, eta_f, rule.name));
                     crate::scale_audit::deferred_queue_enqueued("net_collapses");
                     progressed = true;
                 }
@@ -2691,7 +2706,9 @@ pub fn apply_rule_full(
                     _ => None,
                 };
                 if let (Some(fb_id), Some(gw), Some(gh)) = (fb_id, gw, gh) {
-                    graph.pending_fb_samples.push((fb_id, game, gw, gh));
+                    graph
+                        .pending_fb_samples
+                        .push((fb_id, game, gw, gh, rule.name));
                     crate::scale_audit::deferred_queue_enqueued("fb_samples");
                     progressed = true;
                 }
@@ -2824,23 +2841,48 @@ pub fn apply_rule_full(
                     type_.0,
                     crate::access_trace::NO_ID,
                 );
-                // Scan the typed-node index for the first existing node
-                // whose attrs include EVERY (k, v) pair we're about to
-                // insert. Subset semantics: existing nodes may carry
-                // additional attrs the AddNodeIfAbsent author didn't
-                // mention; the author's attrs ARE the dedup key.
-                let mut found: Option<NodeID> = None;
-                for cand in graph.nodes_of_type(*type_) {
-                    crate::access_trace::note(10, cand.0, type_.0, crate::access_trace::NO_ID);
-                    let cand_attrs = &graph.node(cand).attrs;
-                    let mut all_match = true;
-                    for (k, v) in &attr_pairs {
-                        crate::access_trace::note(17, cand.0, k.0, crate::access_trace::NO_ID);
-                        match cand_attrs.get(k) {
-                            Some(existing) if existing == v => {}
-                            _ => {
-                                all_match = false;
-                                break;
+                // Explicit attribute indexes prove a miss or unique witness
+                // without scanning the full type bucket. Multiple witnesses
+                // use the reference scan because NodeID order may differ from
+                // typed-node insertion order after deletion and ID reuse.
+                // Empty keys and partial index coverage retain the scan too.
+                let indexed_candidates = if !attr_pairs.is_empty()
+                    && attr_pairs
+                        .iter()
+                        .all(|(key, _)| graph.has_attr_index(*type_, *key))
+                {
+                    for (key, _) in &attr_pairs {
+                        crate::access_trace::note(
+                            48,
+                            crate::access_trace::NO_ID,
+                            key.0,
+                            crate::access_trace::NO_ID,
+                        );
+                    }
+                    let conditions: Vec<_> = attr_pairs
+                        .iter()
+                        .map(|(key, value)| (*type_, *key, value))
+                        .collect();
+                    graph.intersect_attr_indexes(&conditions)
+                } else {
+                    None
+                };
+                let found = match indexed_candidates {
+                    Some(candidates) if candidates.is_empty() => None,
+                    Some(candidates) if candidates.len() == 1 =>
+                        candidates.iter().next().map(NodeID),
+                    _ => {
+                        // Preserve subset semantics and first-witness order.
+                        let mut found = None;
+                        'candidate_scan: for cand in graph.nodes_of_type(*type_) {
+                            crate::access_trace::note(10, cand.0, type_.0, crate::access_trace::NO_ID);
+                            let cand_attrs = &graph.node(cand).attrs;
+                            for (k, v) in &attr_pairs {
+                                crate::access_trace::note(17, cand.0, k.0, crate::access_trace::NO_ID);
+                                match cand_attrs.get(k) {
+                                    Some(existing) if existing == v => {}
+                                    _ => continue 'candidate_scan,
+                                }
                             }
                             found = Some(cand);
                             break;
@@ -3364,8 +3406,17 @@ pub fn run_rules_opts(
     detect_cycles: bool,
 ) -> usize {
     run_rules_opts_with_audit_ids(
-        rules, None, arena, graph, interner, concepts, framebuffers, cache,
-        where_jits, max_steps, detect_cycles,
+        rules,
+        None,
+        arena,
+        graph,
+        interner,
+        concepts,
+        framebuffers,
+        cache,
+        where_jits,
+        max_steps,
+        detect_cycles,
     )
 }
 
@@ -3385,6 +3436,29 @@ pub fn run_rules_opts_with_audit_ids(
     max_steps: usize,
     detect_cycles: bool,
 ) -> usize {
+    // This free-standing runner owns its rule slice for the duration of this
+    // call. Substrate's persistent runner uses its own store token instead.
+    let audit_store_id = crate::scale_audit::new_rule_audit_store_id();
+    if crate::scale_audit::rule_store_state_snapshot_needed(audit_store_id) {
+        let graph_value = crate::persist::graph_to_value(graph, interner);
+        let rule_values: Vec<serde_json::Value> = rules
+            .iter()
+            .enumerate()
+            .map(|(position, rule)| {
+                let local_rule_index = audit_rule_ids
+                    .and_then(|ids| ids.get(position).copied())
+                    .unwrap_or(position as u32);
+                serde_json::json!({
+                    "local_rule_index": local_rule_index,
+                    "definition": crate::py::rule_to_json(rule, arena, interner),
+                })
+            })
+            .collect();
+        crate::scale_audit::record_rule_store_state_snapshot(
+            audit_store_id,
+            serde_json::json!({"graph": graph_value, "rules": rule_values}),
+        );
+    }
     let mut seen: Option<rustc_hash::FxHashSet<u64>> = if detect_cycles {
         Some(Default::default())
     } else {
@@ -3397,7 +3471,9 @@ pub fn run_rules_opts_with_audit_ids(
     while steps < max_steps {
         let mut any_progress = false;
         for (rule_i, rule) in rules.iter().enumerate() {
-            let audit_rule_i = audit_rule_ids.and_then(|ids| ids.get(rule_i).copied()).unwrap_or(rule_i as u32);
+            let audit_rule_i = audit_rule_ids
+                .and_then(|ids| ids.get(rule_i).copied())
+                .unwrap_or(rule_i as u32);
             let this_jit = where_jits.get(rule_i).copied().unwrap_or(None);
             // slice (b): batch-safe rules apply EVERY binding this pass (no
             // undo probe, no one-per-pass throttle). `continue` (not break)
@@ -3409,9 +3485,16 @@ pub fn run_rules_opts_with_audit_ids(
             // re-derives a binding set the first pass already had (R). That is
             // exactly what the cold path below does — enumerate every binding,
             // apply ONE, `break`, and re-enumerate from scratch.
-            crate::scale_audit::begin_rule_enumeration(audit_rule_i);
-            crate::scale_audit::register_rule_audit_metadata(
-                audit_rule_i, rule.name.0, interner.resolve(rule.name), rule.match_edges.len()
+            crate::scale_audit::begin_rule_enumeration_in_store(
+                audit_store_id,
+                audit_rule_i,
+            );
+            crate::scale_audit::register_rule_audit_metadata_in_store(
+                audit_store_id,
+                audit_rule_i,
+                rule.name.0,
+                interner.resolve(rule.name),
+                rule.match_edges.len(),
             );
             if rule.batch {
                 if batch_apply_rule(
@@ -3563,6 +3646,37 @@ fn canonical_binding_key(binding: &Binding) -> smallvec::SmallVec<[(Sym, NodeID)
     key
 }
 
+/// Reconstruct the recursive candidate-iteration position of a complete
+/// binding. Unlike EdgeIdx values, positions in the live type and adjacency
+/// indexes remain ordered correctly after deletion and slot reuse. This key
+/// permits seeded enumeration to restore the unseeded matcher's nested-loop
+/// order without assuming that slab indices are monotone.
+fn matching_order_key(
+    rule: &RewriteRule,
+    binding: &Binding,
+    graph: &TypedGraph,
+) -> Option<Vec<usize>> {
+    let mut bound: rustc_hash::FxHashSet<Sym> = Default::default();
+    let mut order = Vec::with_capacity(rule.match_edges.len());
+    for edge in &rule.match_edges {
+        if edge.src_var == edge.tgt_var {
+            return None;
+        }
+        let &src = binding.get(&edge.src_var)?;
+        let &tgt = binding.get(&edge.tgt_var)?;
+        let idx = graph.edge_idx(src, edge.edge_type, tgt)?;
+        let candidates = match (bound.contains(&edge.src_var), bound.contains(&edge.tgt_var)) {
+            (true, false) | (true, true) => graph.out_edges_slice(src, Some(edge.edge_type)),
+            (false, true) => graph.in_edges_slice(tgt, Some(edge.edge_type)),
+            (false, false) => graph.edges_by_type(edge.edge_type),
+        };
+        order.push(candidates.iter().position(|candidate| *candidate == idx)?);
+        bound.insert(edge.src_var);
+        bound.insert(edge.tgt_var);
+    }
+    Some(order)
+}
+
 /// Prove the common one-edge Microtheory case has an exact scope driver.
 /// Binding a rule's `has_concept` source to `scope_mt` is equivalent to the
 /// general post-match `touches owned` filter only when no other has_concept
@@ -3600,6 +3714,148 @@ fn scoped_mt_seed(
     Some(seed)
 }
 
+/// Validate the declared Goal/Event ownership contract and return sorted
+/// anchors owned by this scope. The rule's scope is provably equivalent to
+/// `binding_touches_scope` only if every owned node that can occur in a
+/// binding is either the anchor role or the linked owner role. Ambiguous or
+/// unexpected ownership fails closed to the generic matcher.
+fn scoped_anchor_candidates(
+    rule: &RewriteRule,
+    owned: &rustc_hash::FxHashSet<NodeID>,
+    graph: &TypedGraph,
+) -> Option<(crate::rewrite::ScopeAnchor, Vec<NodeID>)> {
+    let anchor = rule.scope_anchor?;
+    if anchor.anchor_var == anchor.owner_var || rule.match_type != Some(anchor.anchor_type) {
+        return None;
+    }
+    let link_count = rule
+        .match_edges
+        .iter()
+        .filter(|edge| {
+            edge.src_var == anchor.owner_var
+                && edge.edge_type == anchor.owner_edge
+                && edge.tgt_var == anchor.anchor_var
+        })
+        .count();
+    if link_count != 1 {
+        return None;
+    }
+    if !rule
+        .match_edges
+        .iter()
+        .any(|edge| edge.src_var == anchor.anchor_var || edge.tgt_var == anchor.anchor_var)
+        || !rule
+            .match_edges
+            .iter()
+            .any(|edge| edge.src_var == anchor.owner_var || edge.tgt_var == anchor.owner_var)
+    {
+        return None;
+    }
+
+    for &node in owned {
+        let node_type = graph.node(node).type_;
+        if node_type == anchor.anchor_type {
+            // An owned anchor must not also be able to occupy another matched
+            // role, or anchor-only enumeration could miss an any-owned match.
+            let edge_types: rustc_hash::FxHashSet<Sym> =
+                rule.match_edges.iter().map(|edge| edge.edge_type).collect();
+            for edge_type in edge_types {
+                if !graph.out_edges_slice(node, Some(edge_type)).is_empty()
+                    && !rule.match_edges.iter().any(|edge| {
+                        edge.edge_type == edge_type && edge.src_var == anchor.anchor_var
+                    })
+                {
+                    return None;
+                }
+                if !graph.in_edges_slice(node, Some(edge_type)).is_empty()
+                    && !rule.match_edges.iter().any(|edge| {
+                        edge.edge_type == edge_type && edge.tgt_var == anchor.anchor_var
+                    })
+                {
+                    return None;
+                }
+            }
+        } else if node_type == anchor.owner_type {
+            // Every owned Event must have exactly one owner edge and that edge
+            // must end at an anchor owned by this same scope.
+            let links = graph.out_edges_slice(node, Some(anchor.owner_edge));
+            if links.len() != 1 {
+                return None;
+            }
+            let goal = graph.edge(links[0]).key().tgt;
+            if !owned.contains(&goal) || graph.node(goal).type_ != anchor.anchor_type {
+                return None;
+            }
+            // Likewise, an owned Event must not be matchable in any role other
+            // than the declared owner variable.
+            let edge_types: rustc_hash::FxHashSet<Sym> =
+                rule.match_edges.iter().map(|edge| edge.edge_type).collect();
+            for edge_type in edge_types {
+                let out_edges = graph.out_edges_slice(node, Some(edge_type));
+                if !out_edges.is_empty() {
+                    let owner_role = rule.match_edges.iter().any(|edge| {
+                        edge.edge_type == edge_type && edge.src_var == anchor.owner_var
+                    });
+                    let anchor_link_role = rule.match_edges.iter().any(|edge| {
+                        edge.edge_type == edge_type
+                            && edge.tgt_var == anchor.anchor_var
+                            && edge.src_var != anchor.owner_var
+                    });
+                    if !owner_role
+                        && (!anchor_link_role
+                            || out_edges.iter().any(|edge| {
+                                let neighbour = graph.edge(*edge).key().tgt;
+                                !owned.contains(&neighbour)
+                                    || graph.node(neighbour).type_ != anchor.anchor_type
+                            }))
+                    {
+                        return None;
+                    }
+                }
+                let in_edges = graph.in_edges_slice(node, Some(edge_type));
+                if !in_edges.is_empty() {
+                    let owner_role = rule.match_edges.iter().any(|edge| {
+                        edge.edge_type == edge_type && edge.tgt_var == anchor.owner_var
+                    });
+                    let anchor_link_role = rule.match_edges.iter().any(|edge| {
+                        edge.edge_type == edge_type
+                            && edge.src_var == anchor.anchor_var
+                            && edge.tgt_var != anchor.owner_var
+                    });
+                    if !owner_role
+                        && (!anchor_link_role
+                            || in_edges.iter().any(|edge| {
+                                let neighbour = graph.edge(*edge).key().src;
+                                !owned.contains(&neighbour)
+                                    || graph.node(neighbour).type_ != anchor.anchor_type
+                            }))
+                    {
+                        return None;
+                    }
+                }
+            }
+        } else {
+            // `mt_owned_nodes` includes the scope root itself. Permit any
+            // other owned node only when none of the rule's pattern edges can
+            // use it in either direction; it then cannot occur in a binding.
+            if rule.match_edges.iter().any(|edge| {
+                !graph.out_edges_slice(node, Some(edge.edge_type)).is_empty()
+                    || !graph.in_edges_slice(node, Some(edge.edge_type)).is_empty()
+            }) {
+                return None;
+            }
+        }
+    }
+
+    let mut anchors: Vec<NodeID> = graph
+        .nodes_of_type(anchor.anchor_type)
+        .into_iter()
+        .filter(|node| owned.contains(node))
+        .collect();
+    anchors.sort_unstable();
+    Some((anchor, anchors))
+}
+
 #[allow(clippy::too_many_arguments)]
 fn match_rule_each_for_scope<F>(
     rule: &RewriteRule,
@@ -3632,56 +3888,136 @@ fn match_rule_each_for_scope<F>(
         return;
     }
 
-    // Exact order-preserving local path for one-edge patterns. EdgeIdx order
-    // equals edges_by_type insertion order only before any deletion/reuse of
-    // this edge type; the monotone global deletion generation makes that precondition
-    // explicit. Gather every match that touches ownership by seeding either
-    // endpoint from the owned set, deduplicate bindings, then restore the
-    // original global edge order before visiting/effect application.
+    // Exact order-preserving local path for one-edge patterns. Gather every
+    // match touching ownership, deduplicate, then restore the live per-type
+    // candidate order before visiting/effect application. The order key uses
+    // current index positions, so deletion and slot reuse remain supported.
     let single_edge = rule.match_edges.first();
-    if let Some(edge) = single_edge.filter(|edge| {
-        rule.match_edges.len() == 1
-            && edge.src_var != edge.tgt_var
-            && graph.edge_delete_generation() == 0
-    }) {
+    if let Some(edge) =
+        single_edge.filter(|edge| rule.match_edges.len() == 1 && edge.src_var != edge.tgt_var)
+    {
         crate::scale_audit::scoped_match_path(crate::scale_audit::ScopedMatchPath::LocalOwnedEdge);
         let mut scope_nodes: Vec<NodeID> = owned.iter().copied().collect();
         scope_nodes.sort_unstable();
-        let mut collected: Vec<(crate::graph::EdgeIdx, Binding)> = Vec::new();
-        let mut seen: rustc_hash::FxHashSet<smallvec::SmallVec<[(Sym, NodeID); 8]>> = Default::default();
+        let mut collected: Vec<(usize, Binding)> = Vec::new();
+        let mut seen: rustc_hash::FxHashSet<smallvec::SmallVec<[(Sym, NodeID); 8]>> =
+            Default::default();
         let mut cache = cache;
         for node in scope_nodes {
             let outgoing = !graph.out_edges_slice(node, Some(edge.edge_type)).is_empty();
             let incoming = !graph.in_edges_slice(node, Some(edge.edge_type)).is_empty();
             for (var, has_candidates) in [(edge.src_var, outgoing), (edge.tgt_var, incoming)] {
-                if !has_candidates { continue; }
+                if !has_candidates {
+                    continue;
+                }
                 let mut initial = Binding::default();
                 initial.insert(var, node);
                 match_rule_each_with_initial(
-                    rule, &initial, arena, graph, interner, concepts, framebuffers,
-                    cache.as_deref_mut(), None, |binding| {
-                        if !binding_touches_scope(binding, owned) { return true; }
+                    rule,
+                    &initial,
+                    arena,
+                    graph,
+                    interner,
+                    concepts,
+                    framebuffers,
+                    cache.as_deref_mut(),
+                    None,
+                    |binding| {
+                        if !binding_touches_scope(binding, owned) {
+                            return true;
+                        }
                         let key = canonical_binding_key(binding);
-                        if !seen.insert(key) { return true; }
-                        let Some(&src) = binding.get(&edge.src_var) else { return true; };
-                        let Some(&tgt) = binding.get(&edge.tgt_var) else { return true; };
-                        if let Some(edge_idx) = graph.edge_idx(src, edge.edge_type, tgt) {
-                            collected.push((edge_idx, binding.clone()));
+                        if !seen.insert(key) {
+                            return true;
+                        }
+                        if let Some(order) =
+                            matching_order_key(rule, binding, graph).and_then(|mut key| key.pop())
+                        {
+                            collected.push((order, binding.clone()));
                         }
                         true
                     },
                 );
             }
         }
-        collected.sort_unstable_by_key(|(edge_idx, _)| *edge_idx);
+        collected.sort_unstable_by_key(|(order, _)| *order);
         for (_, binding) in collected {
-            if !visit(&binding) { break; }
+            if !visit(&binding) {
+                break;
+            }
         }
         return;
     }
 
+    // The explicit owner anchor is used only when the runtime graph satisfies
+    // the complete co-ownership contract. Move anchor-adjacent clauses first
+    // to constrain expansion; sort successful bindings by the original rule
+    // order before applying effects.
+    if rule.match_edges.len() > 1 {
+        if let Some((anchor, anchors)) = scoped_anchor_candidates(rule, owned, graph) {
+            crate::scale_audit::scoped_match_path(
+                crate::scale_audit::ScopedMatchPath::DeclaredAnchor,
+            );
+            let mut indexed_rule = rule.clone();
+            indexed_rule.match_edges.sort_by_key(|edge| {
+                !(edge.src_var == anchor.anchor_var || edge.tgt_var == anchor.anchor_var)
+            });
+            let mut collected: Vec<(Vec<usize>, Binding)> = Vec::new();
+            let mut seen: rustc_hash::FxHashSet<smallvec::SmallVec<[(Sym, NodeID); 8]>> =
+                Default::default();
+            let mut cache = cache;
+            for node in anchors {
+                let mut initial = Binding::default();
+                initial.insert(anchor.anchor_var, node);
+                match_rule_each_with_initial(
+                    &indexed_rule,
+                    &initial,
+                    arena,
+                    graph,
+                    interner,
+                    concepts,
+                    framebuffers,
+                    cache.as_deref_mut(),
+                    None,
+                    |binding| {
+                        let key = canonical_binding_key(binding);
+                        if !seen.insert(key) {
+                            return true;
+                        }
+                        let Some(order) = matching_order_key(rule, binding, graph) else {
+                            return true;
+                        };
+                        collected.push((order, binding.clone()));
+                        true
+                    },
+                );
+            }
+            collected.sort_unstable_by(|a, b| a.0.cmp(&b.0));
+            for (_, binding) in collected {
+                if !visit(&binding) {
+                    break;
+                }
+            }
+            return;
+        } else if rule.scope_anchor.is_some() {
+            crate::scale_audit::scoped_match_path(
+                crate::scale_audit::ScopedMatchPath::AnchorRejected,
+            );
+        }
+    }
+
     crate::scale_audit::scoped_match_path(crate::scale_audit::ScopedMatchPath::FullFallback);
-    match_rule_each(rule, arena, graph, interner, concepts, framebuffers, cache, None, visit);
+    match_rule_each(
+        rule,
+        arena,
+        graph,
+        interner,
+        concepts,
+        framebuffers,
+        cache,
+        None,
+        visit,
+    );
 }
 
 /// SCOPED twin of `run_rules_opts`. Reached ONLY via
@@ -3706,6 +4042,7 @@ fn match_rule_each_for_scope<F>(
 /// feature.
 pub fn run_rules_opts_scoped(
     rules: &[(u32, &RewriteRule)],
+    audit_store_id: u64,
     arena: &mut TermArena,
     graph: &mut TypedGraph,
     interner: &mut Interner,
@@ -3747,13 +4084,18 @@ pub fn run_rules_opts_scoped(
         crate::access_trace::note_work(38, crate::access_trace::NO_ID, 1);
         let mut any_progress = false;
         for (rule_i, rule) in rules.iter().copied() {
+            crate::access_trace::note_work(39, rule_i, 1);
             // Keep optional per-rule scale counters attributable on the
             // scoped path too. `rule_i` is preserved by Substrate as the
             // original stable vector position, including gaps from inactive
             // rules; compacting the active slice here would mislabel audits.
-            crate::scale_audit::begin_rule_enumeration(rule_i);
-            crate::scale_audit::register_rule_audit_metadata(
-                rule_i, rule.name.0, interner.resolve(rule.name), rule.match_edges.len()
+            crate::scale_audit::begin_rule_enumeration_in_store(audit_store_id, rule_i);
+            crate::scale_audit::register_rule_audit_metadata_in_store(
+                audit_store_id,
+                rule_i,
+                rule.name.0,
+                interner.resolve(rule.name),
+                rule.match_edges.len(),
             );
             let scope_seed = scoped_mt_seed(rule, scope_mt, has_concept, graph, owned);
             if rule.batch {
@@ -3845,13 +4187,18 @@ pub fn run_rules_opts_scoped(
             let matched = bindings.len();
             crate::access_trace::note_work(41, rule_i, matched as u64);
             bindings.retain(|b| binding_touches_scope(b, owned));
+            let in_scope = bindings.len();
+            crate::access_trace::note_work(42, rule_i, in_scope as u64);
+            crate::access_trace::note_work(43, rule_i, matched.saturating_sub(in_scope) as u64);
             let mut seen_b: rustc_hash::FxHashSet<smallvec::SmallVec<[(Sym, NodeID); 8]>> =
                 Default::default();
             let mut progressed_any = false;
             for b in bindings {
                 if !seen_b.insert(canonical_binding_key(&b)) {
+                    crate::access_trace::note_work(44, rule_i, 1);
                     continue;
                 }
+                crate::access_trace::note_work(45, rule_i, 1);
                 let outcome = apply_rule_full(
                     rule,
                     &b,
@@ -3873,6 +4220,7 @@ pub fn run_rules_opts_scoped(
                 }
             }
             if progressed_any {
+                crate::access_trace::note_work(40, rule_i, 1);
                 steps += 1;
                 any_progress = true;
                 crate::scale_audit::end_rule_enumeration();
@@ -4864,7 +5212,10 @@ mod tests {
             index_hints: if with_hint {
                 vec![IndexJoinHint {
                     for_var: c_v,
-                    probe: IndexProbe::BoundAttr { via_var: mention_v, via_key: text_key },
+                    probe: IndexProbe::BoundAttr {
+                        via_var: mention_v,
+                        via_key: text_key,
+                    },
                     node_type: i.intern("Concept"),
                     this_key: name_key,
                 }]
@@ -4958,7 +5309,10 @@ mod tests {
         g.declare_attr_index(episode_t, cue_key);
         let hint = IndexJoinHint {
             for_var: episode_v,
-            probe: IndexProbe::BoundAttr { via_var: request_v, via_key: cue_key },
+            probe: IndexProbe::BoundAttr {
+                via_var: request_v,
+                via_key: cue_key,
+            },
             node_type: episode_t,
             this_key: cue_key,
         };
@@ -5006,12 +5360,19 @@ mod tests {
                 attrs.insert(from_key, Value::Str(value));
                 attrs
             });
-            g.insert_edge(agent, received, message, FxHashMap::default()).unwrap();
-            if value == interlocutor { expected = Some(message); }
+            g.insert_edge(agent, received, message, FxHashMap::default())
+                .unwrap();
+            if value == interlocutor {
+                expected = Some(message);
+            }
         }
         g.declare_attr_index(message_t, from_key);
         let rule = RewriteRule {
-            match_edges: vec![MatchEdge { src_var: agent_v, edge_type: received, tgt_var: message_v }],
+            match_edges: vec![MatchEdge {
+                src_var: agent_v,
+                edge_type: received,
+                tgt_var: message_v,
+            }],
             index_hints: vec![IndexJoinHint {
                 for_var: message_v,
                 probe: IndexProbe::LiteralString(interlocutor),
@@ -5025,7 +5386,9 @@ mod tests {
         let candidates = hinted_candidates(&rule, agent_v, received, message_v, &binding, &g)
             .expect("declared literal index enables pruning");
         assert_eq!(candidates.len(), 2);
-        assert!(candidates.iter().all(|(_, m)| g.node(*m).attrs.get(&from_key) == Some(&Value::Str(interlocutor))));
+        assert!(candidates
+            .iter()
+            .all(|(_, m)| g.node(*m).attrs.get(&from_key) == Some(&Value::Str(interlocutor))));
         assert!(candidates.iter().any(|(_, m)| *m == expected.unwrap()));
     }
 
@@ -5122,7 +5485,10 @@ mod tests {
         ];
         let hints = vec![IndexJoinHint {
             for_var: c_v,
-            probe: IndexProbe::BoundAttr { via_var: mention_v, via_key: i.intern("text") },
+            probe: IndexProbe::BoundAttr {
+                via_var: mention_v,
+                via_key: i.intern("text"),
+            },
             node_type: i.intern("Concept"),
             this_key: i.intern("name"),
         }];

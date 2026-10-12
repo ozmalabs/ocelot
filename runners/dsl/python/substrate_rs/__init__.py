@@ -768,6 +768,17 @@ class Substrate:
         """Patch one active rule in an isolated branch without exporting all rules."""
         return self._inner.replace_active_rule_by_name(name, variant)
 
+    def replace_active_rule_by_name_if_revision(
+        self,
+        expected_revision: tuple[int, int, int],
+        name: str,
+        variant: dict[str, Any],
+    ) -> bool:
+        """Atomically replace a rule against the exact validated experiment base."""
+        return self._inner.replace_active_rule_by_name_if_revision(
+            expected_revision, name, variant
+        )
+
     def begin_experiment_delta_journal(self) -> None:
         """Begin sparse graph-delta capture for an isolated experiment."""
         self._inner.begin_experiment_delta_journal()
