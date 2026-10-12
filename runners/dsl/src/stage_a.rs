@@ -315,7 +315,16 @@ fn rule_has_read_write_dependency(rule: &crate::rewrite::RewriteRule) -> bool {
     if rule.reads_any || rule.writes_any {
         return true;
     }
-    rule.write_set.iter().any(|w| rule.read_set.contains(w))
+    // `read_set_strict`, not `read_set`: since 616bd532 (COW fork support) the
+    // full `read_set` also records every effect's OWN write-target look-up (a
+    // `SetAttr`'s key, an `AddEdge`'s type, ...) so that cursor invalidation sees
+    // the dedup read. That look-up only makes re-firing an already-fired binding
+    // a no-op; it is not one binding's write feeding ANOTHER binding's read, so
+    // counted here it made every writing rule self-dependent (Stage A refused all
+    // of them; `a_rule_that_reads_the_key_it_writes_is_refused` failed on the
+    // reads-a-different-key case). The strict set is the where-clause plus the
+    // computed effect arguments -- the Term-tree dependency this test is about.
+    rule.write_set.iter().any(|w| rule.read_set_strict.contains(w))
 }
 
 /// Does this rule's own shape permit two DISTINCT bindings to write the same

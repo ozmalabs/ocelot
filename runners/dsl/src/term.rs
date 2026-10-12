@@ -9855,12 +9855,7 @@ pub fn evaluate(arena: &TermArena, idx: TermIdx, env: &mut Env, ctx: &mut EvalCt
                     .collect();
                 for value in &nodes {
                     if let Value::Node(nid) = value {
-                        crate::access_trace::note(
-                            31,
-                            nid.0,
-                            node_type.0,
-                            crate::access_trace::NO_ID,
-                        );
+                        crate::access_trace::note(31, nid.0, node_type.0, crate::access_trace::NO_ID);
                         crate::access_trace::note(
                             3,
                             nid.0,
@@ -9880,12 +9875,7 @@ pub fn evaluate(arena: &TermArena, idx: TermIdx, env: &mut Env, ctx: &mut EvalCt
                 crate::access_trace::note(2, nid.0, attr_key.0, crate::access_trace::NO_ID);
                 if let Some(node_attr) = ctx.graph.node(nid).attrs.get(attr_key) {
                     if *node_attr == v {
-                        crate::access_trace::note(
-                            31,
-                            nid.0,
-                            node_type.0,
-                            crate::access_trace::NO_ID,
-                        );
+                        crate::access_trace::note(31, nid.0, node_type.0, crate::access_trace::NO_ID);
                         out.push(Value::Node(nid));
                     }
                 }
@@ -9893,21 +9883,16 @@ pub fn evaluate(arena: &TermArena, idx: TermIdx, env: &mut Env, ctx: &mut EvalCt
             Value::make_frozenset(out)
         }
         TermNode::NodesOfType { node_type } => {
-            // Mark the population query itself so empty populations and query
-            // frequency remain visible; then retain a concrete row for every
-            // member, including cache hits and downstream filtering.
-            crate::access_trace::note(
-                36,
-                crate::access_trace::NO_ID,
-                node_type.0,
-                crate::access_trace::NO_ID,
-            );
-            let population = ctx.graph.nodes_of_type(*node_type);
-            let mut nodes = Vec::with_capacity(population.len());
-            for nid in population {
-                crate::access_trace::note(37, nid.0, node_type.0, crate::access_trace::NO_ID);
-                crate::access_trace::note(3, nid.0, node_type.0, crate::access_trace::NO_ID);
-                nodes.push(Value::Node(nid));
+            let nodes: Vec<Value> = ctx
+                .graph
+                .nodes_of_type(*node_type)
+                .into_iter()
+                .map(Value::Node)
+                .collect();
+            for value in &nodes {
+                if let Value::Node(nid) = value {
+                    crate::access_trace::note(3, nid.0, node_type.0, crate::access_trace::NO_ID);
+                }
             }
             // A single NodesOfType invocation can scan and materialize an
             // arbitrarily large population. Count its interior cardinality so
@@ -11749,7 +11734,6 @@ fn render_source_node(
     let mut rule_nid: Option<NodeID> = None;
     crate::access_trace::note_out_edges(ctx.graph, lang_nid, Some(has_rule));
     for r in ctx.graph.neighbours(lang_nid, Some(has_rule)) {
-        crate::access_trace::note_helper_work(54, 1);
         crate::access_trace::note(2, r.0, head_key.0, crate::access_trace::NO_ID);
         if let Some(Value::Str(h)) = ctx.graph.node(r).attrs.get(&head_key) {
             if ctx.interner.resolve(*h) == head.as_str() {

@@ -305,65 +305,37 @@ pub fn graph_experiment_delta(
     fn node_value(nid: NodeID, node: &NodeData, interner: &Interner) -> J {
         let mut attrs = Map::new();
         for (key, value) in &node.attrs {
-            attrs.insert(
-                interner.resolve(*key).to_string(),
-                encode_value(value, interner),
-            );
+            attrs.insert(interner.resolve(*key).to_string(), encode_value(value, interner));
         }
         json!({"id": nid.0, "type": interner.resolve(node.type_), "attrs": J::Object(attrs)})
     }
     let mut node_ids: Vec<NodeID> = before_nodes.keys().copied().collect();
     node_ids.sort_unstable();
-    let before_node_values: Vec<J> = node_ids
-        .iter()
-        .filter_map(|nid| {
-            before_nodes
-                .get(nid)
-                .and_then(Option::as_ref)
-                .map(|node| node_value(*nid, node, interner))
-        })
-        .collect();
-    let after_node_values: Vec<J> = node_ids
-        .iter()
-        .filter_map(|nid| {
-            graph
-                .has_node(*nid)
-                .then(|| node_value(*nid, graph.node(*nid), interner))
-        })
-        .collect();
+    let before_node_values: Vec<J> = node_ids.iter().filter_map(|nid| {
+        before_nodes.get(nid).and_then(Option::as_ref)
+            .map(|node| node_value(*nid, node, interner))
+    }).collect();
+    let after_node_values: Vec<J> = node_ids.iter().filter_map(|nid| {
+        graph.has_node(*nid).then(|| node_value(*nid, graph.node(*nid), interner))
+    }).collect();
 
     let mut edge_keys: Vec<EdgeKey> = before_edges.keys().copied().collect();
     edge_keys.sort_unstable_by_key(|key| (key.src, key.edge_type, key.tgt));
     let edge_value = |key: &EdgeKey, attrs: &Attrs| {
         let mut encoded = Map::new();
         for (name, value) in &attrs.0 {
-            encoded.insert(
-                interner.resolve(*name).to_string(),
-                encode_value(value, interner),
-            );
+            encoded.insert(interner.resolve(*name).to_string(), encode_value(value, interner));
         }
         json!({
             "src": key.src.0, "type": interner.resolve(key.edge_type), "tgt": key.tgt.0,
             "attrs": J::Object(encoded),
         })
     };
-    let before_edge_values: Vec<J> = edge_keys
-        .iter()
-        .filter_map(|key| {
-            before_edges
-                .get(key)
-                .and_then(Option::as_ref)
-                .map(|attrs| edge_value(key, attrs))
-        })
-        .collect();
-    let after_edge_values: Vec<J> = edge_keys
-        .iter()
-        .filter_map(|key| {
-            graph
-                .edge_idx(key.src, key.edge_type, key.tgt)
-                .map(|idx| edge_value(key, graph.edge_attrs(idx)))
-        })
-        .collect();
+    let before_edge_values: Vec<J> = edge_keys.iter().filter_map(|key|
+        before_edges.get(key).and_then(Option::as_ref).map(|attrs| edge_value(key, attrs))).collect();
+    let after_edge_values: Vec<J> = edge_keys.iter().filter_map(|key|
+        graph.edge_idx(key.src, key.edge_type, key.tgt)
+            .map(|idx| edge_value(key, graph.edge_attrs(idx)))).collect();
     let before = json!({"nodes": before_node_values, "edges": before_edge_values});
     let after = json!({"nodes": after_node_values, "edges": after_edge_values});
     graph_diff(&before, &after).expect("journal-generated graph diff is well formed")
@@ -577,17 +549,13 @@ pub fn graph_diff(a: &J, b: &J) -> Result<J, PersistError> {
         .filter(|id| !idx_b.contains_key(id))
         .collect();
     nodes_removed.sort_unstable();
-    let nodes_removed_details: Vec<J> =
-        nodes_removed
-            .iter()
-            .filter_map(|id| {
-                idx_a.get(id).map(|obj| json!({
+    let nodes_removed_details: Vec<J> = nodes_removed.iter().filter_map(|id| {
+        idx_a.get(id).map(|obj| json!({
             "id": id,
             "type": obj.get("type").cloned().unwrap_or(J::Null),
             "attrs": obj.get("attrs").cloned().unwrap_or_else(|| J::Object(empty_map())),
         }))
-            })
-            .collect();
+    }).collect();
     nodes_added.sort_by_key(|(id, _)| *id);
     nodes_changed.sort_by_key(|(id, _)| *id);
 
@@ -638,9 +606,7 @@ pub fn graph_diff(a: &J, b: &J) -> Result<J, PersistError> {
         .collect();
     let mut edges_changed: Vec<((u64, String, u64), J)> = Vec::new();
     for (key, &obj_b) in &set_b {
-        let Some(&obj_a) = set_a.get(key) else {
-            continue;
-        };
+        let Some(&obj_a) = set_a.get(key) else { continue };
         let attrs_a = obj_a.get("attrs").and_then(J::as_object).unwrap_or(&empty);
         let attrs_b = obj_b.get("attrs").and_then(J::as_object).unwrap_or(&empty);
         let mut before = empty_map();
@@ -648,55 +614,36 @@ pub fn graph_diff(a: &J, b: &J) -> Result<J, PersistError> {
         for (name, value_b) in attrs_b {
             match attrs_a.get(name) {
                 Some(value_a) if value_a == value_b => {}
-                Some(value_a) => {
-                    before.insert(name.clone(), value_a.clone());
-                    after.insert(name.clone(), value_b.clone());
-                }
-                None => {
-                    after.insert(name.clone(), value_b.clone());
-                }
+                Some(value_a) => { before.insert(name.clone(), value_a.clone()); after.insert(name.clone(), value_b.clone()); }
+                None => { after.insert(name.clone(), value_b.clone()); }
             }
         }
         for (name, value_a) in attrs_a {
-            if !attrs_b.contains_key(name) {
-                before.insert(name.clone(), value_a.clone());
-            }
+            if !attrs_b.contains_key(name) { before.insert(name.clone(), value_a.clone()); }
         }
         if !before.is_empty() || !after.is_empty() {
-            edges_changed.push((
-                key.clone(),
-                json!({
-                    "src": key.0, "type": key.1, "tgt": key.2,
-                    "attrs_before": before, "attrs_after": after,
-                }),
-            ));
+            edges_changed.push((key.clone(), json!({
+                "src": key.0, "type": key.1, "tgt": key.2,
+                "attrs_before": before, "attrs_after": after,
+            })));
         }
     }
     edges_added.sort();
     edges_removed.sort();
     edges_changed.sort_by(|a, b| a.0.cmp(&b.0));
-    let edges_removed_details: Vec<J> = edges_removed
-        .iter()
-        .map(|(src, ty, tgt)| {
-            let attrs = set_a
-                .get(&(*src, ty.clone(), *tgt))
-                .and_then(|obj| obj.get("attrs"))
-                .cloned()
-                .unwrap_or_else(|| J::Object(empty_map()));
-            json!({ "src": src, "type": ty, "tgt": tgt, "attrs": attrs })
-        })
-        .collect();
+    let edges_removed_details: Vec<J> = edges_removed.iter().map(|(src, ty, tgt)| {
+        let attrs = set_a.get(&(*src, ty.clone(), *tgt))
+            .and_then(|obj| obj.get("attrs")).cloned().unwrap_or_else(|| J::Object(empty_map()));
+        json!({ "src": src, "type": ty, "tgt": tgt, "attrs": attrs })
+    }).collect();
 
     let added_edge_json = |(src, ty, tgt): &(u64, String, u64)| {
-        let attrs = set_b
-            .get(&(*src, ty.clone(), *tgt))
-            .and_then(|obj| obj.get("attrs"))
-            .cloned()
-            .unwrap_or_else(|| J::Object(empty_map()));
+        let attrs = set_b.get(&( *src, ty.clone(), *tgt))
+            .and_then(|obj| obj.get("attrs")).cloned().unwrap_or_else(|| J::Object(empty_map()));
         json!({ "src": src, "type": ty, "tgt": tgt, "attrs": attrs })
     };
-    let removed_edge_json =
-        |(src, ty, tgt): &(u64, String, u64)| json!({ "src": src, "type": ty, "tgt": tgt });
+    let removed_edge_json = |(src, ty, tgt): &(u64, String, u64)|
+        json!({ "src": src, "type": ty, "tgt": tgt });
 
     Ok(json!({
         "nodes_added": nodes_added.into_iter().map(|(_, j)| j).collect::<Vec<J>>(),
@@ -721,37 +668,24 @@ pub fn apply_graph_delta(
     delta: &J,
 ) -> Result<Vec<Sym>, String> {
     fn array<'a>(delta: &'a J, key: &str) -> Result<&'a Vec<J>, String> {
-        delta
-            .get(key)
-            .and_then(J::as_array)
+        delta.get(key).and_then(J::as_array)
             .ok_or_else(|| format!("delta field {key} must be an array"))
     }
     fn node_id(v: &J) -> Result<NodeID, String> {
-        let id = v
-            .as_u64()
-            .ok_or_else(|| "node id must be an unsigned integer".to_string())?;
+        let id = v.as_u64().ok_or_else(|| "node id must be an unsigned integer".to_string())?;
         let id = u32::try_from(id).map_err(|_| "node id exceeds u32 range".to_string())?;
         Ok(NodeID(id))
     }
     fn edge_key(v: &J, interner: &mut Interner) -> Result<EdgeKey, String> {
         let src = node_id(v.get("src").ok_or("edge missing src")?)?;
         let tgt = node_id(v.get("tgt").ok_or("edge missing tgt")?)?;
-        let ty = v
-            .get("type")
-            .and_then(J::as_str)
-            .ok_or("edge missing type")?;
-        Ok(EdgeKey {
-            src,
-            edge_type: interner.intern(ty),
-            tgt,
-        })
+        let ty = v.get("type").and_then(J::as_str).ok_or("edge missing type")?;
+        Ok(EdgeKey { src, edge_type: interner.intern(ty), tgt })
     }
     fn attrs(v: &J, interner: &mut Interner) -> Result<rustc_hash::FxHashMap<Sym, Value>, String> {
         let obj = v.as_object().ok_or("attrs must be an object")?;
-        Ok(obj
-            .iter()
-            .map(|(k, value)| (interner.intern(k), decode_value(value, interner)))
-            .collect())
+        Ok(obj.iter().map(|(k, value)|
+            (interner.intern(k), decode_value(value, interner))).collect())
     }
 
     let mut staged = graph.clone();
@@ -762,91 +696,54 @@ pub fn apply_graph_delta(
     let removed_edges = array(delta, "edges_removed")?;
     let added_edges = array(delta, "edges_added")?;
     let empty_edges = Vec::new();
-    let changed_edges = delta
-        .get("edges_changed")
-        .and_then(J::as_array)
-        .unwrap_or(&empty_edges);
-    let removed_node_details = delta
-        .get("nodes_removed_details")
-        .and_then(J::as_array)
-        .unwrap_or(&empty_edges);
-    let removed_edge_details = delta
-        .get("edges_removed_details")
-        .and_then(J::as_array)
-        .unwrap_or(&empty_edges);
+    let changed_edges = delta.get("edges_changed").and_then(J::as_array).unwrap_or(&empty_edges);
+    let removed_node_details = delta.get("nodes_removed_details").and_then(J::as_array).unwrap_or(&empty_edges);
+    let removed_edge_details = delta.get("edges_removed_details").and_then(J::as_array).unwrap_or(&empty_edges);
     let mut impacts = Vec::new();
 
     // Validate the full receipt against the base before changing the staged copy.
     for value in removed_nodes {
         let id = node_id(value)?;
-        if !staged.has_node(id) {
-            return Err(format!("removed node {} is absent", id.0));
-        }
+        if !staged.has_node(id) { return Err(format!("removed node {} is absent", id.0)); }
     }
     for detail in removed_node_details {
         let id = node_id(detail.get("id").ok_or("removed-node detail missing id")?)?;
         if !removed_nodes.iter().any(|v| node_id(v).ok() == Some(id)) {
             return Err("removed-node detail has no matching nodes_removed entry".into());
         }
-        let expected_type = detail
-            .get("type")
-            .and_then(J::as_str)
+        let expected_type = detail.get("type").and_then(J::as_str)
             .ok_or("removed-node detail missing type")?;
-        let expected_attrs = detail
-            .get("attrs")
-            .and_then(J::as_object)
+        let expected_attrs = detail.get("attrs").and_then(J::as_object)
             .ok_or("removed-node detail attrs must be an object")?;
         let actual_node = staged.node(id);
         if staged_interner.resolve(actual_node.type_) != expected_type {
-            return Err(format!(
-                "before-image type mismatch for removed node {}",
-                id.0
-            ));
+            return Err(format!("before-image type mismatch for removed node {}", id.0));
         }
         let mut actual_attrs = Map::new();
         for (key, value) in &actual_node.attrs {
-            actual_attrs.insert(
-                staged_interner.resolve(*key).to_string(),
-                encode_value(value, &staged_interner),
-            );
+            actual_attrs.insert(staged_interner.resolve(*key).to_string(), encode_value(value, &staged_interner));
         }
         if &actual_attrs != expected_attrs {
-            return Err(format!(
-                "before-image attrs mismatch for removed node {}",
-                id.0
-            ));
+            return Err(format!("before-image attrs mismatch for removed node {}", id.0));
         }
     }
     for value in added_nodes {
         let id = node_id(value.get("id").ok_or("added node missing id")?)?;
-        if staged.has_node(id) {
-            return Err(format!("added node {} already exists", id.0));
-        }
-        if value.get("type").and_then(J::as_str).is_none() {
-            return Err("added node missing type".into());
-        }
-        if value.get("attrs").and_then(J::as_object).is_none() {
-            return Err("added node attrs must be an object".into());
-        }
+        if staged.has_node(id) { return Err(format!("added node {} already exists", id.0)); }
+        if value.get("type").and_then(J::as_str).is_none() { return Err("added node missing type".into()); }
+        if value.get("attrs").and_then(J::as_object).is_none() { return Err("added node attrs must be an object".into()); }
     }
     for value in changed_nodes {
         let id = node_id(value.get("id").ok_or("changed node missing id")?)?;
-        if !staged.has_node(id) {
-            return Err(format!("changed node {} is absent", id.0));
-        }
+        if !staged.has_node(id) { return Err(format!("changed node {} is absent", id.0)); }
         if let Some(before) = value.get("attrs_before") {
             let before = before.as_object().ok_or("attrs_before must be an object")?;
             for (key, expected) in before {
                 let key_sym = staged_interner.intern(key);
-                let actual =
-                    staged.node(id).attrs.get(&key_sym).ok_or_else(|| {
-                        format!("before-image attr {key:?} absent on node {}", id.0)
-                    })?;
+                let actual = staged.node(id).attrs.get(&key_sym)
+                    .ok_or_else(|| format!("before-image attr {key:?} absent on node {}", id.0))?;
                 if encode_value(actual, &staged_interner) != *expected {
-                    return Err(format!(
-                        "before-image mismatch for node {} attr {key:?}",
-                        id.0
-                    ));
+                    return Err(format!("before-image mismatch for node {} attr {key:?}", id.0));
                 }
             }
         }
@@ -865,35 +762,22 @@ pub fn apply_graph_delta(
     for value in removed_edges {
         let key = edge_key(value, &mut staged_interner)?;
         if !staged.has_edge(key.src, key.edge_type, key.tgt) {
-            return Err(format!(
-                "removed edge ({}, {}, {}) is absent",
-                key.src.0,
-                staged_interner.resolve(key.edge_type),
-                key.tgt.0
-            ));
+            return Err(format!("removed edge ({}, {}, {}) is absent", key.src.0,
+                staged_interner.resolve(key.edge_type), key.tgt.0));
         }
     }
     for detail in removed_edge_details {
         let key = edge_key(detail, &mut staged_interner)?;
-        if !removed_edges
-            .iter()
-            .any(|v| edge_key(v, &mut staged_interner).ok() == Some(key))
-        {
+        if !removed_edges.iter().any(|v| edge_key(v, &mut staged_interner).ok() == Some(key)) {
             return Err("removed-edge detail has no matching edges_removed entry".into());
         }
-        let expected_attrs = detail
-            .get("attrs")
-            .and_then(J::as_object)
+        let expected_attrs = detail.get("attrs").and_then(J::as_object)
             .ok_or("removed-edge detail attrs must be an object")?;
-        let idx = staged
-            .edge_idx(key.src, key.edge_type, key.tgt)
+        let idx = staged.edge_idx(key.src, key.edge_type, key.tgt)
             .ok_or("removed edge is absent")?;
         let mut actual_attrs = Map::new();
         for (attr_key, value) in &staged.edge_attrs(idx).0 {
-            actual_attrs.insert(
-                staged_interner.resolve(*attr_key).to_string(),
-                encode_value(value, &staged_interner),
-            );
+            actual_attrs.insert(staged_interner.resolve(*attr_key).to_string(), encode_value(value, &staged_interner));
         }
         if &actual_attrs != expected_attrs {
             return Err("before-image attrs mismatch for removed edge".into());
@@ -904,51 +788,28 @@ pub fn apply_graph_delta(
         if staged.has_edge(key.src, key.edge_type, key.tgt) {
             return Err("added edge already exists".into());
         }
-        let src_removed = removed_nodes
-            .iter()
-            .any(|v| node_id(v).ok() == Some(key.src));
-        let tgt_removed = removed_nodes
-            .iter()
-            .any(|v| node_id(v).ok() == Some(key.tgt));
-        let src_added = added_nodes
-            .iter()
-            .any(|v| node_id(&v["id"]).ok() == Some(key.src));
-        let tgt_added = added_nodes
-            .iter()
-            .any(|v| node_id(&v["id"]).ok() == Some(key.tgt));
-        if (src_removed && !src_added)
-            || (tgt_removed && !tgt_added)
+        let src_removed = removed_nodes.iter().any(|v| node_id(v).ok() == Some(key.src));
+        let tgt_removed = removed_nodes.iter().any(|v| node_id(v).ok() == Some(key.tgt));
+        let src_added = added_nodes.iter().any(|v| node_id(&v["id"]).ok() == Some(key.src));
+        let tgt_added = added_nodes.iter().any(|v| node_id(&v["id"]).ok() == Some(key.tgt));
+        if (src_removed && !src_added) || (tgt_removed && !tgt_added)
             || (!src_added && !staged.has_node(key.src))
-            || (!tgt_added && !staged.has_node(key.tgt))
-        {
+            || (!tgt_added && !staged.has_node(key.tgt)) {
             return Err("added edge endpoint absent after delta".into());
         }
     }
     for value in changed_edges {
         let key = edge_key(value, &mut staged_interner)?;
-        let idx = staged
-            .edge_idx(key.src, key.edge_type, key.tgt)
-            .ok_or_else(|| {
-                format!(
-                    "changed edge ({}, {}, {}) is absent",
-                    key.src.0,
-                    staged_interner.resolve(key.edge_type),
-                    key.tgt.0
-                )
-            })?;
-        let before = value
-            .get("attrs_before")
-            .and_then(J::as_object)
+        let idx = staged.edge_idx(key.src, key.edge_type, key.tgt)
+            .ok_or_else(|| format!("changed edge ({}, {}, {}) is absent", key.src.0,
+                staged_interner.resolve(key.edge_type), key.tgt.0))?;
+        let before = value.get("attrs_before").and_then(J::as_object)
             .ok_or("edge attrs_before must be an object")?;
-        let after = value
-            .get("attrs_after")
-            .and_then(J::as_object)
+        let after = value.get("attrs_after").and_then(J::as_object)
             .ok_or("edge attrs_after must be an object")?;
         for (name, expected) in before {
             let sym = staged_interner.intern(name);
-            let actual = staged
-                .edge_attrs(idx)
-                .get(&sym)
+            let actual = staged.edge_attrs(idx).get(&sym)
                 .ok_or_else(|| format!("before-image edge attr {name:?} absent"))?;
             if encode_value(actual, &staged_interner) != *expected {
                 return Err(format!("before-image mismatch for edge attr {name:?}"));
@@ -965,9 +826,7 @@ pub fn apply_graph_delta(
         staged.delete_edge(staged.edge_idx(key.src, key.edge_type, key.tgt).unwrap());
         impacts.push(key.edge_type);
     }
-    for value in removed_nodes {
-        staged.delete_node(node_id(value)?);
-    }
+    for value in removed_nodes { staged.delete_node(node_id(value)?); }
     for value in added_nodes {
         let id = node_id(&value["id"])?;
         let ty = staged_interner.intern(value["type"].as_str().unwrap());
@@ -1018,11 +877,7 @@ pub fn apply_graph_delta(
             edge_attrs.0.retain(|(attr_key, _)| *attr_key != key);
         }
         for (key, decoded) in decoded_after {
-            if let Some((_, value)) = edge_attrs
-                .0
-                .iter_mut()
-                .find(|(attr_key, _)| *attr_key == key)
-            {
+            if let Some((_, value)) = edge_attrs.0.iter_mut().find(|(attr_key, _)| *attr_key == key) {
                 *value = decoded;
             } else {
                 edge_attrs.0.push((key, decoded));

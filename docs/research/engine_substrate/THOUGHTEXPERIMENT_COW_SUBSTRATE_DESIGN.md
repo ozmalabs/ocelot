@@ -84,7 +84,7 @@ The current `fork_*_experiment` methods are prototype/evaluation entry points, n
 
 ## State and storage policy
 
-Use the current [source-locked state inventory v3](../../../evaluation/reports/thoughtexperiment_state_inventory_v3.json) as the exhaustive field list and refresh it whenever either Rust struct changes. V3 updates the EvalCache policy to selective checkpointing: neighbour/filter/argmax/holds contents are checkpointed, while reachable and SD-operation entries currently fail closed. It also includes the newer branch-local rule-audit store identity field. Earlier versions are retained as historical evidence.
+Use the current [source-locked state inventory](../../../evaluation/reports/thoughtexperiment_state_inventory_v1.json) as the exhaustive field list and refresh it whenever either Rust struct changes.
 
 | State | Branch policy |
 |---|---|
@@ -139,7 +139,7 @@ The matched runner now measures branch/setup, candidate rule patch, model-after 
 
 Next extend sharing to the remaining graph indexes and then rule, interner, and term namespaces, using branch-local updates and append allocation. The high-cardinality typed out/in maps already use shard-level CoW; the other query maps still copy. Keep eager-copy parity gates for reads, order, IDs, deletes, high-degree operations, and sibling writes, while accounting for touched-page bytes, base conversion, and realistic variable-size records. The full-state integration and future-consumer gates above remain required. Current end-to-end evidence is workload-size dependent: direct shared-page batches have no stable advantage at baseline or +1k, but win all five paired blocks at +10k and +50k. This is a scaling result for one synthetic task family and host, not a general speed guarantee. Isolation, a stable consumer contract, and backend compatibility remain independent capability goals.
 
-See the [measurement plan](SUBSTRATE_CAPABILITY_AND_TRACTABILITY_MEASUREMENT_PLAN.md), [overall status](SUBSTRATE_CAPABILITY_AND_TRACTABILITY_OVERALL_STATUS_20260929.md), [state inventory v3 runner](../../../evaluation/substrate_capability/thoughtexperiment_state_inventory_v3.py), [cache coverage audit](SUBSTRATE_EVAL_CACHE_CHECKPOINT_COVERAGE_AUDIT_20261004.md), [native batch capture](../../../evaluation/reports/thoughtexperiment_fixed_revision_six_candidate_batch_v1.json), [process-CoW batch capture](../../../evaluation/reports/thoughtexperiment_fixed_revision_process_cow_batch_v1.json), and [branch creation capture](../../../evaluation/reports/thoughtexperiment_branch_creation_cost_v1.json).
+See the [measurement plan](SUBSTRATE_CAPABILITY_AND_TRACTABILITY_MEASUREMENT_PLAN.md), [overall status](SUBSTRATE_CAPABILITY_AND_TRACTABILITY_OVERALL_STATUS_20260929.md), [state inventory runner](../../../evaluation/substrate_capability/thoughtexperiment_state_inventory_v1.py), [native batch capture](../../../evaluation/reports/thoughtexperiment_fixed_revision_six_candidate_batch_v1.json), [process-CoW batch capture](../../../evaluation/reports/thoughtexperiment_fixed_revision_process_cow_batch_v1.json), and [branch creation capture](../../../evaluation/reports/thoughtexperiment_branch_creation_cost_v1.json).
 
 ### Mutation and nested-branch semantic gate
 

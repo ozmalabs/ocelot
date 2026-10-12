@@ -23,8 +23,8 @@ fn main() {
         let error = parse_rule_json_pub(&malformed, &mut terms, &mut interner)
             .expect_err("malformed suffix must be rejected");
         errors.push(error);
-        every_failure_rolled_back &=
-            terms.len() == initial_terms && interner.len() == initial_symbols;
+        every_failure_rolled_back &= terms.len() == initial_terms
+            && interner.len() == initial_symbols;
     }
     let rolled_back = every_failure_rolled_back
         && terms.len() == initial_terms

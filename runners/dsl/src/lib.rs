@@ -48,6 +48,8 @@
 pub mod access_trace;
 /// Semantic areas plus dependency-derived scheduling components.
 pub mod area_scheduler;
+/// Default-off concrete graph access tracing for bounded measurements.
+pub mod access_trace;
 pub mod argmin_tie;
 /// Bounded code cache with LRU eviction + Arc-based safe concurrent
 /// reclamation. Realises the implementable components of the

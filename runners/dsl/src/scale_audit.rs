@@ -44,8 +44,8 @@
 
 use crate::term_variants::{NUM_TERM_VARIANTS, TERM_VARIANT_NAMES};
 use std::cell::Cell;
+use std::sync::atomic::{AtomicBool, AtomicU64, AtomicU8, Ordering};
 use std::collections::BTreeMap;
-use std::sync::atomic::{AtomicBool, AtomicU32, AtomicU64, AtomicU8, Ordering};
 use std::sync::{Mutex, OnceLock};
 
 const MODE_OFF: u8 = 0;
@@ -54,189 +54,17 @@ const MODE_ON: u8 = 1;
 static MODE: AtomicU8 = AtomicU8::new(MODE_OFF);
 static ENV_READ: OnceLock<()> = OnceLock::new();
 static PER_RULE_MODE: AtomicBool = AtomicBool::new(false);
-static RULE_STORE_STATE_CAPTURE_ENABLED: AtomicBool = AtomicBool::new(false);
-static MODE_TRACE_ENABLED: AtomicBool = AtomicBool::new(false);
-static MODE_TRACE: Mutex<Vec<String>> = Mutex::new(Vec::new());
-static NEXT_AUDIT_STORE_ID: AtomicU64 = AtomicU64::new(1);
-static NEXT_AUDIT_RULE_ID: AtomicU32 = AtomicU32::new(0);
-static NAMESPACED_RULE_IDS: Mutex<BTreeMap<(u64, u32), u32>> = Mutex::new(BTreeMap::new());
-static AUDIT_RULE_IDENTITIES: Mutex<BTreeMap<u32, (u64, u32)>> = Mutex::new(BTreeMap::new());
 static PER_RULE_COUNTS: Mutex<BTreeMap<(u32, &'static str), u64>> = Mutex::new(BTreeMap::new());
-static RULE_AUDIT_METADATA: Mutex<BTreeMap<u32, (u32, String, usize)>> =
-    Mutex::new(BTreeMap::new());
-/// Optional first-closure snapshots keyed by store instance. Each value holds
-/// the graph and complete local rule-slot export observed at that store's first
-/// instrumented execution in the current capture window.
-static RULE_STORE_STATE_SNAPSHOTS: Mutex<BTreeMap<u64, serde_json::Value>> =
-    Mutex::new(BTreeMap::new());
-static AMBIGUOUS_RULE_AUDIT_IDS: Mutex<std::collections::BTreeSet<u32>> =
-    Mutex::new(std::collections::BTreeSet::new());
+static RULE_AUDIT_METADATA: Mutex<BTreeMap<u32, (u32, String, usize)>> = Mutex::new(BTreeMap::new());
+static AMBIGUOUS_RULE_AUDIT_IDS: Mutex<std::collections::BTreeSet<u32>> = Mutex::new(std::collections::BTreeSet::new());
 /// Candidate tests keyed by `(native rule index, match-edge position)`. Kept
 /// separate from the compact static-metric table because clause positions are
 /// dynamic and this readout is only enabled for targeted matcher attribution.
 static MATCH_CLAUSE_CANDIDATES: Mutex<BTreeMap<(u32, usize), u64>> = Mutex::new(BTreeMap::new());
-/// Candidate expansions keyed by stable `(rule, src-var, edge-type, tgt-var)`
-/// identity, so clause reordering does not change attribution.
-static MATCH_EDGE_CANDIDATES: Mutex<BTreeMap<(u32, u32, u32, u32), (u64, u64)>> =
-    Mutex::new(BTreeMap::new());
 const NO_RULE: u32 = u32::MAX;
-
-/// Allocate a process-unique identity for a rule-owning store. Forked
-/// substrates intentionally receive a fresh identity even when their rules
-/// and local indices are copied from the source.
-pub fn new_rule_audit_store_id() -> u64 {
-    NEXT_AUDIT_STORE_ID.fetch_add(1, Ordering::Relaxed)
-}
-
-/// Enable expensive, opt-in graph/rule state capture for matcher stores.
-pub fn set_rule_store_state_capture_enabled(on: bool) {
-    RULE_STORE_STATE_CAPTURE_ENABLED.store(on, Ordering::Relaxed);
-}
-
-pub fn rule_store_state_capture_enabled() -> bool {
-    RULE_STORE_STATE_CAPTURE_ENABLED.load(Ordering::Relaxed)
-}
-
-pub fn reset_rule_store_state_snapshots() {
-    if let Ok(mut snapshots) = RULE_STORE_STATE_SNAPSHOTS.lock() {
-        snapshots.clear();
-    }
-}
-
-pub fn rule_store_state_snapshot_needed(store_id: u64) -> bool {
-    let _ = store_id;
-    rule_store_state_capture_enabled()
-}
-
-/// Save the first graph and accumulate every distinct local rule slot observed
-/// for a live store in this capture window. Scoped matcher calls can expose
-/// disjoint slices of one persistent store, so a single first-call rule table
-/// is not sufficient for identity reconciliation.
-pub fn record_rule_store_state_snapshot(store_id: u64, state: serde_json::Value) {
-    if !rule_store_state_capture_enabled() {
-        return;
-    }
-    if let Ok(mut snapshots) = RULE_STORE_STATE_SNAPSHOTS.lock() {
-        let Some(existing) = snapshots.get_mut(&store_id) else {
-            snapshots.insert(store_id, state);
-            return;
-        };
-        let Some(existing_rules) = existing
-            .get_mut("rules")
-            .and_then(serde_json::Value::as_array_mut)
-        else {
-            return;
-        };
-        let Some(incoming_rules) = state.get("rules").and_then(serde_json::Value::as_array) else {
-            return;
-        };
-        for incoming in incoming_rules {
-            let Some(local_index) = incoming.get("local_rule_index") else {
-                continue;
-            };
-            if let Some(current) = existing_rules
-                .iter_mut()
-                .find(|row| row.get("local_rule_index") == Some(local_index))
-            {
-                let Some(definition) = incoming.get("definition") else {
-                    continue;
-                };
-                if current.get("definition") == Some(definition) {
-                    continue;
-                }
-                let initial = current
-                    .get("definition")
-                    .cloned()
-                    .unwrap_or(serde_json::Value::Null);
-                let observations = current.as_object_mut().map(|object| {
-                    object
-                        .entry("definition_observations")
-                        .or_insert_with(|| serde_json::Value::Array(vec![initial]))
-                });
-                if let Some(serde_json::Value::Array(rows)) = observations {
-                    if !rows.iter().any(|row| row == definition) {
-                        rows.push(definition.clone());
-                    }
-                }
-            } else {
-                existing_rules.push(incoming.clone());
-            }
-        }
-    }
-}
-
-pub fn rule_store_state_snapshots() -> Vec<(u64, String)> {
-    RULE_STORE_STATE_SNAPSHOTS
-        .lock()
-        .map(|rows| {
-            rows.iter()
-                .map(|(&store, state)| (store, state.to_string()))
-                .collect()
-        })
-        .unwrap_or_default()
-}
-
-fn namespaced_rule_id(store_id: u64, local_rule_i: u32) -> u32 {
-    if let Ok(mut ids) = NAMESPACED_RULE_IDS.lock() {
-        if let Some(&id) = ids.get(&(store_id, local_rule_i)) {
-            return id;
-        }
-        let id = NEXT_AUDIT_RULE_ID.fetch_add(1, Ordering::Relaxed);
-        if id != NO_RULE {
-            ids.insert((store_id, local_rule_i), id);
-            if let Ok(mut reverse) = AUDIT_RULE_IDENTITIES.lock() {
-                reverse.insert(id, (store_id, local_rule_i));
-            }
-            return id;
-        }
-    }
-    // Exhaustion or a poisoned lock must not silently alias another rule.
-    NO_RULE
-}
-
-/// Return the process-local audit key for one store-qualified native rule.
-pub fn rule_audit_id_for(store_id: u64, local_rule_i: u32) -> Option<u32> {
-    let id = namespaced_rule_id(store_id, local_rule_i);
-    (id != NO_RULE).then_some(id)
-}
-
-/// Source identity behind an exported audit ID: `(store_instance, local_rule_index)`.
-pub fn rule_audit_identity_snapshot() -> Vec<(u32, u64, u32)> {
-    AUDIT_RULE_IDENTITIES
-        .lock()
-        .map(|rows| {
-            rows.iter()
-                .map(|(&id, &(store, local))| (id, store, local))
-                .collect()
-        })
-        .unwrap_or_default()
-}
-
 thread_local! {
-/// Process-local audit ID currently being enumerated. Valid only inside a
-/// rule attempt; exported identity snapshots map it to store plus local index.
+    /// Rule index currently being enumerated. Valid only inside a rule attempt.
     static CURRENT_RULE: Cell<u32> = const { Cell::new(NO_RULE) };
-    /// Host-requested evaluation has no matcher owner and needs a separate cost
-    /// category from a missing rule context inside matcher execution.
-    static HOST_EVALUATION_DEPTH: Cell<u32> = const { Cell::new(0) };
-}
-
-pub struct HostEvaluationGuard;
-
-impl Drop for HostEvaluationGuard {
-    fn drop(&mut self) {
-        HOST_EVALUATION_DEPTH.with(|depth| depth.set(depth.get().saturating_sub(1)));
-    }
-}
-
-/// Mark a direct host-requested Term evaluation while per-rule tracking is
-/// active. The instrumentation is inert in the default-off path.
-pub fn host_evaluation_scope() -> Option<HostEvaluationGuard> {
-    if !enabled() || !PER_RULE_MODE.load(Ordering::Relaxed) {
-        return None;
-    }
-    HOST_EVALUATION_DEPTH.with(|depth| depth.set(depth.get().saturating_add(1)));
-    Some(HostEvaluationGuard)
 }
 
 #[inline]
@@ -264,49 +92,13 @@ fn per_rule_bump(metric: &'static str, n: u64) {
 /// the ordinary scale audit because the exact per-event map updates add cost.
 pub fn set_per_rule_enabled(on: bool) {
     PER_RULE_MODE.store(on, Ordering::Relaxed);
-    trace_mode_transition("per_rule", on);
-}
-
-fn trace_mode_transition(gate: &str, on: bool) {
-    if !MODE_TRACE_ENABLED.load(Ordering::Relaxed) {
-        return;
-    }
-    if let Ok(mut rows) = MODE_TRACE.lock() {
-        rows.push(format!(
-            "{}:{on}:thread={:?}",
-            gate,
-            std::thread::current().id()
-        ));
-    }
-}
-
-pub fn mode_trace_set_enabled(on: bool) {
-    MODE_TRACE_ENABLED.store(on, Ordering::Relaxed);
-}
-
-pub fn mode_trace_reset() {
-    if let Ok(mut rows) = MODE_TRACE.lock() {
-        rows.clear();
-    }
-}
-
-pub fn mode_trace_snapshot() -> Vec<String> {
-    MODE_TRACE
-        .lock()
-        .map(|rows| rows.clone())
-        .unwrap_or_default()
 }
 
 /// `(rule_index, metric, count)` rows, sorted by rule index and metric.
 pub fn per_rule_snapshot() -> Vec<(u32, String, u64)> {
     PER_RULE_COUNTS
         .lock()
-        .map(|counts| {
-            counts
-                .iter()
-                .map(|(&(rule, metric), &n)| (rule, metric.to_string(), n))
-                .collect()
-        })
+        .map(|counts| counts.iter().map(|(&(rule, metric), &n)| (rule, metric.to_string(), n)).collect())
         .unwrap_or_default()
 }
 
@@ -319,20 +111,11 @@ pub fn per_rule_reset() {
     if let Ok(mut counts) = MATCH_CLAUSE_CANDIDATES.lock() {
         counts.clear();
     }
-    if let Ok(mut counts) = MATCH_EDGE_CANDIDATES.lock() {
-        counts.clear();
-    }
     if let Ok(mut metadata) = RULE_AUDIT_METADATA.lock() {
         metadata.clear();
     }
     if let Ok(mut ambiguous) = AMBIGUOUS_RULE_AUDIT_IDS.lock() {
         ambiguous.clear();
-    }
-    if let Ok(mut ids) = NAMESPACED_RULE_IDS.lock() {
-        ids.clear();
-    }
-    if let Ok(mut identities) = AUDIT_RULE_IDENTITIES.lock() {
-        identities.clear();
     }
 }
 
@@ -340,58 +123,8 @@ pub fn per_rule_reset() {
 pub fn match_clause_candidate_snapshot() -> Vec<(u32, usize, u64)> {
     MATCH_CLAUSE_CANDIDATES
         .lock()
-        .map(|counts| {
-            counts
-                .iter()
-                .map(|(&(rule, clause), &n)| (rule, clause, n))
-                .collect()
-        })
+        .map(|counts| counts.iter().map(|(&(rule, clause), &n)| (rule, clause, n)).collect())
         .unwrap_or_default()
-}
-
-/// `(rule, src-var sym, edge-type sym, tgt-var sym, expansion calls, candidates)`.
-pub fn match_edge_candidate_snapshot() -> Vec<(u32, u32, u32, u32, u64, u64)> {
-    MATCH_EDGE_CANDIDATES
-        .lock()
-        .map(|counts| {
-            counts
-                .iter()
-                .map(|(&(rule, src, edge, tgt), &(calls, candidates))| {
-                    (rule, src, edge, tgt, calls, candidates)
-                })
-                .collect()
-        })
-        .unwrap_or_default()
-}
-
-/// Attribute one `extend_each` candidate-set expansion to its semantic edge.
-/// The edge identity remains stable when an anchor path changes join order.
-#[inline]
-pub fn match_edge_candidates(src: u32, edge: u32, tgt: u32, candidates: u64) {
-    if !enabled() || !PER_RULE_MODE.load(Ordering::Relaxed) {
-        return;
-    }
-    let rule = CURRENT_RULE.with(Cell::get);
-    if rule == NO_RULE {
-        return;
-    }
-    let valid = RULE_AUDIT_METADATA
-        .lock()
-        .ok()
-        .and_then(|metadata| metadata.get(&rule).map(|(_, _, _)| ()))
-        .is_some()
-        && !AMBIGUOUS_RULE_AUDIT_IDS
-            .lock()
-            .map(|ids| ids.contains(&rule))
-            .unwrap_or(true);
-    if !valid {
-        return;
-    }
-    if let Ok(mut counts) = MATCH_EDGE_CANDIDATES.lock() {
-        let row = counts.entry((rule, src, edge, tgt)).or_insert((0, 0));
-        row.0 = row.0.saturating_add(1);
-        row.1 = row.1.saturating_add(candidates);
-    }
 }
 
 // ---------------------------------------------------------------------------
@@ -444,10 +177,9 @@ static CAND_TESTED_UNATTRIBUTED: AtomicU64 = AtomicU64::new(0);
 /// Candidates discarded by the bound-src/bound-tgt equality filter — enumerated
 /// and then thrown away without any substantive test.
 static CAND_REJECT_BOUND: AtomicU64 = AtomicU64::new(0);
-/// Scoped matcher invocations routed through ownership-seeded candidate paths.
+/// Scoped matcher invocations routed through ownership-seeded one-edge
+/// candidate enumeration, versus the exact fallback paths.
 static SCOPED_LOCAL_RULE_MATCHES: AtomicU64 = AtomicU64::new(0);
-static SCOPED_DECLARED_ANCHOR_MATCHES: AtomicU64 = AtomicU64::new(0);
-static SCOPED_ANCHOR_REJECTED: AtomicU64 = AtomicU64::new(0);
 static SCOPED_MT_SEEDED_RULE_MATCHES: AtomicU64 = AtomicU64::new(0);
 static SCOPED_FULL_FALLBACK_RULE_MATCHES: AtomicU64 = AtomicU64::new(0);
 
@@ -525,26 +257,16 @@ fn scoped_work_bump(name: &'static str, count: u64) {
 }
 
 pub fn scoped_work_snapshot(scope: usize) -> Vec<(String, u64)> {
-    SCOPED_WORK_AUDIT
-        .lock()
-        .map(|rows| {
-            rows.iter()
-                .filter(|((row_scope, _), _)| *row_scope == scope)
-                .map(|((_, name), count)| ((*name).to_string(), *count))
-                .collect()
-        })
-        .unwrap_or_default()
+    SCOPED_WORK_AUDIT.lock().map(|rows| {
+        rows.iter().filter(|((row_scope, _), _)| *row_scope == scope)
+            .map(|((_, name), count)| ((*name).to_string(), *count)).collect()
+    }).unwrap_or_default()
 }
 
 pub fn scoped_work_snapshot_all() -> Vec<(usize, String, u64)> {
-    SCOPED_WORK_AUDIT
-        .lock()
-        .map(|rows| {
-            rows.iter()
-                .map(|((scope, name), count)| (*scope, (*name).to_string(), *count))
-                .collect()
-        })
-        .unwrap_or_default()
+    SCOPED_WORK_AUDIT.lock().map(|rows| rows.iter()
+        .map(|((scope, name), count)| (*scope, (*name).to_string(), *count)).collect()
+    ).unwrap_or_default()
 }
 
 /// Record one entered monolithic fixpoint pass when the scale audit is on.
@@ -570,28 +292,18 @@ pub fn scheduler_plan_completed(
     elapsed_ns: u64,
 ) {
     crate::access_trace::note_work(20, crate::access_trace::NO_ID, external_poll_slots as u64);
-    crate::access_trace::note_work(
-        21,
-        crate::access_trace::NO_ID,
-        fixedpoint_probe_slots as u64,
-    );
+    crate::access_trace::note_work(21, crate::access_trace::NO_ID, fixedpoint_probe_slots as u64);
     crate::access_trace::note_work(22, crate::access_trace::NO_ID, dirty_vector_slots as u64);
     crate::access_trace::note_work(23, crate::access_trace::NO_ID, selected_rules as u64);
     scoped_work_bump("scheduler_external_poll_slots", external_poll_slots as u64);
-    scoped_work_bump(
-        "scheduler_fixedpoint_probe_slots",
-        fixedpoint_probe_slots as u64,
-    );
+    scoped_work_bump("scheduler_fixedpoint_probe_slots", fixedpoint_probe_slots as u64);
     scoped_work_bump("scheduler_dirty_vector_slots", dirty_vector_slots as u64);
     scoped_work_bump("scheduler_selected_rules", selected_rules as u64);
     if !enabled() {
         return;
     }
     bump(&SCHEDULER_EXTERNAL_POLL_SLOTS, external_poll_slots as u64);
-    bump(
-        &SCHEDULER_FIXEDPOINT_PROBE_SLOTS,
-        fixedpoint_probe_slots as u64,
-    );
+    bump(&SCHEDULER_FIXEDPOINT_PROBE_SLOTS, fixedpoint_probe_slots as u64);
     bump(&SCHEDULER_DIRTY_VECTOR_SLOTS, dirty_vector_slots as u64);
     bump(&SCHEDULER_SELECTED_RULES, selected_rules as u64);
     bump(&SCHEDULER_PLAN_NS, elapsed_ns);
@@ -648,36 +360,12 @@ pub fn deferred_queue_drained(family: &'static str, items: usize, elapsed_ns: u6
         return;
     }
     let (batches, drained, nanos) = match family {
-        "rule_edits" => (
-            "deferred_queue:rule_edits:drain_batches",
-            "deferred_queue:rule_edits:drained_items",
-            "deferred_queue:rule_edits:drain_ns",
-        ),
-        "rule_patches" => (
-            "deferred_queue:rule_patches:drain_batches",
-            "deferred_queue:rule_patches:drained_items",
-            "deferred_queue:rule_patches:drain_ns",
-        ),
-        "fb_samples" => (
-            "deferred_queue:fb_samples:drain_batches",
-            "deferred_queue:fb_samples:drained_items",
-            "deferred_queue:fb_samples:drain_ns",
-        ),
-        "track_identity" => (
-            "deferred_queue:track_identity:drain_batches",
-            "deferred_queue:track_identity:drained_items",
-            "deferred_queue:track_identity:drain_ns",
-        ),
-        "net_collapses" => (
-            "deferred_queue:net_collapses:drain_batches",
-            "deferred_queue:net_collapses:drained_items",
-            "deferred_queue:net_collapses:drain_ns",
-        ),
-        _ => (
-            "deferred_queue:unknown:drain_batches",
-            "deferred_queue:unknown:drained_items",
-            "deferred_queue:unknown:drain_ns",
-        ),
+        "rule_edits" => ("deferred_queue:rule_edits:drain_batches", "deferred_queue:rule_edits:drained_items", "deferred_queue:rule_edits:drain_ns"),
+        "rule_patches" => ("deferred_queue:rule_patches:drain_batches", "deferred_queue:rule_patches:drained_items", "deferred_queue:rule_patches:drain_ns"),
+        "fb_samples" => ("deferred_queue:fb_samples:drain_batches", "deferred_queue:fb_samples:drained_items", "deferred_queue:fb_samples:drain_ns"),
+        "track_identity" => ("deferred_queue:track_identity:drain_batches", "deferred_queue:track_identity:drained_items", "deferred_queue:track_identity:drain_ns"),
+        "net_collapses" => ("deferred_queue:net_collapses:drain_batches", "deferred_queue:net_collapses:drained_items", "deferred_queue:net_collapses:drain_ns"),
+        _ => ("deferred_queue:unknown:drain_batches", "deferred_queue:unknown:drained_items", "deferred_queue:unknown:drain_ns"),
     };
     scoped_work_bump(batches, 1);
     scoped_work_bump(drained, items as u64);
@@ -738,9 +426,6 @@ static TERM_EVALS: [AtomicU64; NUM_TERM_VARIANTS] =
 /// Term evaluations that could not be assigned to one verified rule identity.
 /// Meaningful when per-rule auditing is enabled; otherwise zero by design.
 static TERM_EVALS_UNATTRIBUTED: AtomicU64 = AtomicU64::new(0);
-static TERM_EVALS_UNATTRIBUTED_HOST_API: AtomicU64 = AtomicU64::new(0);
-static TERM_EVALS_UNATTRIBUTED_NO_RULE: AtomicU64 = AtomicU64::new(0);
-static TERM_EVALS_UNATTRIBUTED_AMBIGUOUS: AtomicU64 = AtomicU64::new(0);
 /// Per-variant interior work units, with site-defined units.
 static TERM_UNITS: [AtomicU64; NUM_TERM_VARIANTS] =
     [const { AtomicU64::new(0) }; NUM_TERM_VARIANTS];
@@ -786,20 +471,13 @@ pub fn term_eval(variant: u16) -> Option<VariantGuard> {
     }
     if PER_RULE_MODE.load(Ordering::Relaxed) {
         let rule = CURRENT_RULE.with(Cell::get);
-        if rule == NO_RULE {
+        let ambiguous = rule == NO_RULE
+            || AMBIGUOUS_RULE_AUDIT_IDS
+                .lock()
+                .map(|ids| ids.contains(&rule))
+                .unwrap_or(true);
+        if ambiguous {
             bump(&TERM_EVALS_UNATTRIBUTED, 1);
-            if HOST_EVALUATION_DEPTH.with(|depth| depth.get() > 0) {
-                bump(&TERM_EVALS_UNATTRIBUTED_HOST_API, 1);
-            } else {
-                bump(&TERM_EVALS_UNATTRIBUTED_NO_RULE, 1);
-            }
-        } else if AMBIGUOUS_RULE_AUDIT_IDS
-            .lock()
-            .map(|ids| ids.contains(&rule))
-            .unwrap_or(true)
-        {
-            bump(&TERM_EVALS_UNATTRIBUTED, 1);
-            bump(&TERM_EVALS_UNATTRIBUTED_AMBIGUOUS, 1);
         }
     }
     per_rule_bump("term_evaluations", 1);
@@ -1309,41 +987,16 @@ pub fn graph_writes(n: u64) {
 
 #[inline]
 pub fn scoped_match_path(path: ScopedMatchPath) {
-    if !enabled() {
-        return;
-    }
+    if !enabled() { return; }
     match path {
-        ScopedMatchPath::LocalOwnedEdge => {
-            bump(&SCOPED_LOCAL_RULE_MATCHES, 1);
-            per_rule_bump("scoped_path_local_owned_edge", 1);
-        }
-        ScopedMatchPath::DeclaredAnchor => {
-            bump(&SCOPED_DECLARED_ANCHOR_MATCHES, 1);
-            per_rule_bump("scoped_path_declared_anchor", 1);
-        }
-        ScopedMatchPath::AnchorRejected => {
-            bump(&SCOPED_ANCHOR_REJECTED, 1);
-            per_rule_bump("scoped_path_anchor_rejected", 1);
-        }
-        ScopedMatchPath::MicrotheorySeed => {
-            bump(&SCOPED_MT_SEEDED_RULE_MATCHES, 1);
-            per_rule_bump("scoped_path_microtheory_seed", 1);
-        }
-        ScopedMatchPath::FullFallback => {
-            bump(&SCOPED_FULL_FALLBACK_RULE_MATCHES, 1);
-            per_rule_bump("scoped_path_full_fallback", 1);
-        }
+        ScopedMatchPath::LocalOwnedEdge => bump(&SCOPED_LOCAL_RULE_MATCHES, 1),
+        ScopedMatchPath::MicrotheorySeed => bump(&SCOPED_MT_SEEDED_RULE_MATCHES, 1),
+        ScopedMatchPath::FullFallback => bump(&SCOPED_FULL_FALLBACK_RULE_MATCHES, 1),
     }
 }
 
 #[derive(Copy, Clone)]
-pub enum ScopedMatchPath {
-    LocalOwnedEdge,
-    DeclaredAnchor,
-    AnchorRejected,
-    MicrotheorySeed,
-    FullFallback,
-}
+pub enum ScopedMatchPath { LocalOwnedEdge, MicrotheorySeed, FullFallback }
 
 #[inline]
 pub fn rule_effect_edge_insert_attempt() {
@@ -1354,46 +1007,22 @@ pub fn rule_effect_edge_insert_attempt() {
 }
 
 #[inline]
-pub fn rule_effect_edge_delete() {
-    if enabled() {
-        bump(&RULE_EFFECT_EDGE_DELETES, 1);
-        per_rule_bump("effect_edge_deletes", 1);
-    }
-}
+pub fn rule_effect_edge_delete() { if enabled() { bump(&RULE_EFFECT_EDGE_DELETES, 1); per_rule_bump("effect_edge_deletes", 1); } }
 #[inline]
-pub fn rule_effect_node_insert() {
-    if enabled() {
-        bump(&RULE_EFFECT_NODE_INSERTS, 1);
-        per_rule_bump("effect_node_inserts", 1);
-    }
-}
+pub fn rule_effect_node_insert() { if enabled() { bump(&RULE_EFFECT_NODE_INSERTS, 1); per_rule_bump("effect_node_inserts", 1); } }
 #[inline]
 pub fn rule_effect_node_delete_attempt() {
-    if enabled() {
-        bump(&RULE_EFFECT_NODE_DELETE_ATTEMPTS, 1);
-        per_rule_bump("effect_node_delete_attempts", 1);
-    }
+    if enabled() { bump(&RULE_EFFECT_NODE_DELETE_ATTEMPTS, 1); per_rule_bump("effect_node_delete_attempts", 1); }
 }
 #[inline]
-pub fn rule_effect_attr_set_attempt() {
-    if enabled() {
-        bump(&RULE_EFFECT_ATTR_SET_ATTEMPTS, 1);
-        per_rule_bump("effect_attr_set_attempts", 1);
-    }
-}
+pub fn rule_effect_attr_set_attempt() { if enabled() { bump(&RULE_EFFECT_ATTR_SET_ATTEMPTS, 1); per_rule_bump("effect_attr_set_attempts", 1); } }
 #[inline]
 pub fn rule_effect_replace_edge_delete() {
-    if enabled() {
-        bump(&RULE_EFFECT_REPLACE_EDGE_DELETES, 1);
-        per_rule_bump("effect_replace_edge_deletes", 1);
-    }
+    if enabled() { bump(&RULE_EFFECT_REPLACE_EDGE_DELETES, 1); per_rule_bump("effect_replace_edge_deletes", 1); }
 }
 #[inline]
 pub fn rule_effect_replace_edge_insert_attempt() {
-    if enabled() {
-        bump(&RULE_EFFECT_REPLACE_EDGE_INSERT_ATTEMPTS, 1);
-        per_rule_bump("effect_replace_edge_insert_attempts", 1);
-    }
+    if enabled() { bump(&RULE_EFFECT_REPLACE_EDGE_INSERT_ATTEMPTS, 1); per_rule_bump("effect_replace_edge_insert_attempts", 1); }
 }
 
 // --- epochs ----------------------------------------------------------------
@@ -1430,15 +1059,6 @@ pub fn begin_rule_enumeration_in_store(store_id: u64, local_rule_i: u32) {
     if !enabled() {
         return;
     }
-    let rule_i = if PER_RULE_MODE.load(Ordering::Relaxed) {
-        namespaced_rule_id(store_id, local_rule_i)
-    } else {
-        local_rule_i
-    };
-    if rule_i == NO_RULE {
-        CURRENT_RULE.with(|current| current.set(NO_RULE));
-        return;
-    }
     CURRENT_RULE.with(|current| current.set(rule_i));
     bump(&RULE_ENUMERATIONS, 1);
     per_rule_bump("rule_enumerations", 1);
@@ -1461,26 +1081,11 @@ pub fn begin_rule_enumeration_in_store(store_id: u64, local_rule_i: u32) {
     CURRENT_IS_REPEAT.store(repeat, Ordering::Relaxed);
 }
 
-/// Register the pattern shape for a rule in the legacy namespace. New owners
-/// should use `register_rule_audit_metadata_in_store` to prevent cross-store
-/// collisions in process-global counters.
+/// Register the stable identity and pattern shape for the active matcher.
+/// Identity is supplied by its owning rule store; callers must namespace IDs
+/// when multiple stores share the process-global audit counters.
 pub fn register_rule_audit_metadata(rule_i: u32, name_sym: u32, name: &str, match_arity: usize) {
-    register_rule_audit_metadata_in_store(0, rule_i, name_sym, name, match_arity);
-}
-
-/// Register matcher metadata under a store-qualified local rule identity.
-pub fn register_rule_audit_metadata_in_store(
-    store_id: u64,
-    local_rule_i: u32,
-    name_sym: u32,
-    name: &str,
-    match_arity: usize,
-) {
-    if !enabled() || !PER_RULE_MODE.load(Ordering::Relaxed) {
-        return;
-    }
-    let rule_i = namespaced_rule_id(store_id, local_rule_i);
-    if rule_i == NO_RULE {
+    if !PER_RULE_MODE.load(Ordering::Relaxed) {
         return;
     }
     if let Ok(mut metadata) = RULE_AUDIT_METADATA.lock() {
@@ -1492,17 +1097,10 @@ pub fn register_rule_audit_metadata_in_store(
                 }
                 let mut invalidated = 0u64;
                 if let Ok(mut clauses) = MATCH_CLAUSE_CANDIDATES.lock() {
-                    let keys: Vec<_> = clauses
-                        .keys()
-                        .filter(|(id, _)| *id == rule_i)
-                        .copied()
-                        .collect();
+                    let keys: Vec<_> = clauses.keys().filter(|(id, _)| *id == rule_i).copied().collect();
                     for key in keys {
                         invalidated = invalidated.saturating_add(clauses.remove(&key).unwrap_or(0));
                     }
-                }
-                if let Ok(mut edges) = MATCH_EDGE_CANDIDATES.lock() {
-                    edges.retain(|(id, _, _, _), _| *id != rule_i);
                 }
                 if let Ok(mut counts) = PER_RULE_COUNTS.lock() {
                     let keys: Vec<_> = counts
@@ -1535,17 +1133,10 @@ pub fn register_rule_audit_metadata_in_store(
 pub fn rule_audit_metadata_snapshot() -> Vec<(u32, u32, String, usize, bool)> {
     RULE_AUDIT_METADATA
         .lock()
-        .map(|rows| {
-            rows.iter()
-                .map(|(&id, (name_sym, name, arity))| {
-                    let ambiguous = AMBIGUOUS_RULE_AUDIT_IDS
-                        .lock()
-                        .map(|set| set.contains(&id))
-                        .unwrap_or(true);
-                    (id, *name_sym, name.clone(), *arity, ambiguous)
-                })
-                .collect()
-        })
+        .map(|rows| rows.iter().map(|(&id, (name_sym, name, arity))| {
+            let ambiguous = AMBIGUOUS_RULE_AUDIT_IDS.lock().map(|set| set.contains(&id)).unwrap_or(true);
+            (id, *name_sym, name.clone(), *arity, ambiguous)
+        }).collect())
         .unwrap_or_default()
 }
 
@@ -1632,21 +1223,12 @@ pub fn cand_tested(match_edge_position: usize, name_sym: u32, match_arity: usize
         bump(&CAND_TESTED, 1);
         if PER_RULE_MODE.load(Ordering::Relaxed) {
             let rule = CURRENT_RULE.with(Cell::get);
-            let registered_identity = RULE_AUDIT_METADATA
-                .lock()
-                .ok()
-                .and_then(|metadata| {
-                    metadata
-                        .get(&rule)
-                        .map(|(expected_name, _, expected_arity)| {
-                            *expected_name == name_sym && *expected_arity == match_arity
-                        })
+            let registered_identity = RULE_AUDIT_METADATA.lock().ok().and_then(|metadata| {
+                metadata.get(&rule).map(|(expected_name, _, expected_arity)| {
+                    *expected_name == name_sym && *expected_arity == match_arity
                 })
-                .unwrap_or(false);
-            let ambiguous = AMBIGUOUS_RULE_AUDIT_IDS
-                .lock()
-                .map(|set| set.contains(&rule))
-                .unwrap_or(true);
+            }).unwrap_or(false);
+            let ambiguous = AMBIGUOUS_RULE_AUDIT_IDS.lock().map(|set| set.contains(&rule)).unwrap_or(true);
             let valid_identity = registered_identity && !ambiguous;
             if rule != NO_RULE && valid_identity && match_edge_position < match_arity {
                 per_rule_bump("candidate_tests", 1);
@@ -1745,13 +1327,8 @@ macro_rules! all_counters {
             cand_tested => CAND_TESTED,
             cand_tested_unattributed => CAND_TESTED_UNATTRIBUTED,
             term_evals_unattributed => TERM_EVALS_UNATTRIBUTED,
-            term_evals_unattributed_host_api => TERM_EVALS_UNATTRIBUTED_HOST_API,
-            term_evals_unattributed_no_rule => TERM_EVALS_UNATTRIBUTED_NO_RULE,
-            term_evals_unattributed_ambiguous => TERM_EVALS_UNATTRIBUTED_AMBIGUOUS,
             cand_reject_bound => CAND_REJECT_BOUND,
             scoped_local_rule_matches => SCOPED_LOCAL_RULE_MATCHES,
-            scoped_declared_anchor_rule_matches => SCOPED_DECLARED_ANCHOR_MATCHES,
-            scoped_anchor_rejected_rule_matches => SCOPED_ANCHOR_REJECTED,
             scoped_mt_seeded_rule_matches => SCOPED_MT_SEEDED_RULE_MATCHES,
             scoped_full_fallback_rule_matches => SCOPED_FULL_FALLBACK_RULE_MATCHES,
             where_evals => WHERE_EVALS,
@@ -1841,89 +1418,6 @@ pub fn snapshot() -> Vec<(String, u64)> {
             ];
             term_rows(&mut v);
             dim_infer_arg_rows(&mut v);
-            v.extend([
-                ("gen_infer_requests".to_string(), GEN_INFER_REQUESTS.load(Ordering::Relaxed)),
-                ("gen_infer_cache_hits".to_string(), GEN_INFER_CACHE_HITS.load(Ordering::Relaxed)),
-                ("gen_infer_kernel_calls".to_string(), GEN_INFER_KERNEL_CALLS.load(Ordering::Relaxed)),
-                ("gen_infer_eligible_bases".to_string(), GEN_INFER_ELIGIBLE_BASES.load(Ordering::Relaxed)),
-                ("gen_infer_matrix_attempts".to_string(), GEN_INFER_MATRIX_ATTEMPTS.load(Ordering::Relaxed)),
-                ("gen_infer_apply_rejects".to_string(), GEN_INFER_APPLY_REJECTS.load(Ordering::Relaxed)),
-                ("gen_infer_candidate_rejects".to_string(), GEN_INFER_CANDIDATE_REJECTS.load(Ordering::Relaxed)),
-                ("gen_infer_residual_rejects".to_string(), GEN_INFER_RESIDUAL_REJECTS.load(Ordering::Relaxed)),
-                ("gen_infer_candidate_survivors".to_string(), GEN_INFER_CANDIDATE_SURVIVORS.load(Ordering::Relaxed)),
-                ("gen_infer_full_rank_bases".to_string(), GEN_INFER_FULL_RANK_BASES.load(Ordering::Relaxed)),
-                ("gen_infer_full_rank_refusals".to_string(), GEN_INFER_FULL_RANK_REFUSALS.load(Ordering::Relaxed)),
-                ("gen_infer_full_rank_attempts".to_string(), GEN_INFER_FULL_RANK_ATTEMPTS.load(Ordering::Relaxed)),
-                ("gen_infer_full_rank_apply_rejects".to_string(), GEN_INFER_FULL_RANK_APPLY_REJECTS.load(Ordering::Relaxed)),
-                ("gen_infer_full_rank_candidate_rejects".to_string(), GEN_INFER_FULL_RANK_CANDIDATE_REJECTS.load(Ordering::Relaxed)),
-                ("gen_infer_full_rank_residual_rejects".to_string(), GEN_INFER_FULL_RANK_RESIDUAL_REJECTS.load(Ordering::Relaxed)),
-                ("gen_infer_full_rank_survivors".to_string(), GEN_INFER_FULL_RANK_SURVIVORS.load(Ordering::Relaxed)),
-                #[cfg(feature = "geninfer_linear_exact_prefilter")]
-                ("gen_infer_prefilter_attempts".to_string(), GEN_INFER_PREFILTER_ATTEMPTS.load(Ordering::Relaxed)),
-                #[cfg(feature = "geninfer_linear_exact_prefilter")]
-                ("gen_infer_prefilter_solved".to_string(), GEN_INFER_PREFILTER_SOLVED.load(Ordering::Relaxed)),
-                #[cfg(feature = "geninfer_linear_exact_prefilter")]
-                ("gen_infer_prefilter_proven_no_fit".to_string(), GEN_INFER_PREFILTER_NO_FIT.load(Ordering::Relaxed)),
-                #[cfg(feature = "geninfer_linear_exact_prefilter")]
-                ("gen_infer_prefilter_fallback".to_string(), GEN_INFER_PREFILTER_FALLBACK.load(Ordering::Relaxed)),
-                #[cfg(feature = "geninfer_linear_exact_prefilter")]
-                ("gen_infer_prefilter_input_relations".to_string(), GEN_INFER_PREFILTER_INPUT_RELATIONS.load(Ordering::Relaxed)),
-                #[cfg(feature = "geninfer_linear_exact_prefilter")]
-                ("gen_infer_prefilter_identity_value_comparisons".to_string(), GEN_INFER_PREFILTER_IDENTITY_VALUE_COMPARISONS.load(Ordering::Relaxed)),
-                #[cfg(feature = "geninfer_linear_exact_prefilter")]
-                ("gen_infer_prefilter_exact_arithmetic_checks".to_string(), GEN_INFER_PREFILTER_EXACT_ARITHMETIC_CHECKS.load(Ordering::Relaxed)),
-                #[cfg(feature = "geninfer_linear_exact_prefilter")]
-                ("gen_infer_row_factorized_attempts".to_string(), GEN_INFER_ROWF_ATTEMPTS.load(Ordering::Relaxed)),
-                #[cfg(feature = "geninfer_linear_exact_prefilter")]
-                ("gen_infer_row_factorized_solved".to_string(), GEN_INFER_ROWF_SOLVED.load(Ordering::Relaxed)),
-                #[cfg(feature = "geninfer_linear_exact_prefilter")]
-                ("gen_infer_row_factorized_no_candidate".to_string(), GEN_INFER_ROWF_NO_CANDIDATE.load(Ordering::Relaxed)),
-                #[cfg(feature = "geninfer_linear_exact_prefilter")]
-                ("gen_infer_row_factorized_fallback".to_string(), GEN_INFER_ROWF_FALLBACK.load(Ordering::Relaxed)),
-                #[cfg(feature = "geninfer_linear_exact_prefilter")]
-                ("gen_infer_row_factorized_row_evaluations".to_string(), GEN_INFER_ROWF_ROW_EVALUATIONS.load(Ordering::Relaxed)),
-                #[cfg(feature = "geninfer_linear_exact_prefilter")]
-                ("gen_infer_correspondence_attempts".to_string(), GEN_INFER_CORR_ATTEMPTS.load(Ordering::Relaxed)),
-                #[cfg(feature = "geninfer_linear_exact_prefilter")]
-                ("gen_infer_correspondence_found".to_string(), GEN_INFER_CORR_FOUND.load(Ordering::Relaxed)),
-                #[cfg(feature = "geninfer_linear_exact_prefilter")]
-                ("gen_infer_correspondence_no_candidate".to_string(), GEN_INFER_CORR_NO_CANDIDATE.load(Ordering::Relaxed)),
-                #[cfg(feature = "geninfer_linear_exact_prefilter")]
-                ("gen_infer_correspondence_fallback".to_string(), GEN_INFER_CORR_FALLBACK.load(Ordering::Relaxed)),
-                #[cfg(feature = "geninfer_linear_exact_prefilter")]
-                ("gen_infer_correspondence_hypotheses".to_string(), GEN_INFER_CORR_HYPOTHESES.load(Ordering::Relaxed)),
-                #[cfg(feature = "geninfer_linear_exact_prefilter")]
-                ("gen_infer_correspondence_validations".to_string(), GEN_INFER_CORR_VALIDATIONS.load(Ordering::Relaxed)),
-                #[cfg(feature = "geninfer_quadratic_map_solver")]
-                ("gen_infer_quadratic_enabled_calls".to_string(), GEN_INFER_QUADRATIC_ENABLED_CALLS.load(Ordering::Relaxed)),
-                #[cfg(feature = "geninfer_quadratic_map_solver")]
-                ("gen_infer_quadratic_attempts".to_string(), GEN_INFER_QUADRATIC_ATTEMPTS.load(Ordering::Relaxed)),
-                #[cfg(feature = "geninfer_quadratic_map_solver")]
-                ("gen_infer_quadratic_validation_rejects".to_string(), GEN_INFER_QUADRATIC_VALIDATION_REJECTS.load(Ordering::Relaxed)),
-                #[cfg(feature = "geninfer_quadratic_map_solver")]
-                ("gen_infer_quadratic_survivors".to_string(), GEN_INFER_QUADRATIC_SURVIVORS.load(Ordering::Relaxed)),
-                #[cfg(feature = "geninfer_full_rank_identity_join_work_audit")]
-                ("gen_infer_full_rank_identity_key_comparisons".to_string(), GEN_INFER_FULL_RANK_IDENTITY_KEY_COMPARISONS.load(Ordering::Relaxed)),
-            ]);
-            if let Ok(bounds) = GEN_INFER_BASES_BY_BOUND.lock() {
-                v.extend(bounds.iter().map(|(bound, count)| (format!("gen_infer_bases_by_bound:{bound}"), *count)));
-            }
-            #[cfg(feature = "geninfer_linear_exact_prefilter")]
-            if let Ok(reasons)=GEN_INFER_PREFILTER_NO_FIT_REASONS.lock() { v.extend(reasons.iter().map(|(r,n)|(format!("gen_infer_prefilter_proven_no_fit_reason:{r}"),*n))); }
-            #[cfg(feature = "geninfer_linear_exact_prefilter")]
-            if let Ok(reasons)=GEN_INFER_PREFILTER_FALLBACK_REASONS.lock() { v.extend(reasons.iter().map(|(r,n)|(format!("gen_infer_prefilter_fallback_reason:{r}"),*n))); }
-            #[cfg(feature = "geninfer_linear_exact_prefilter")]
-            if let Ok(reasons)=GEN_INFER_ROWF_NO_CANDIDATE_REASONS.lock() { v.extend(reasons.iter().map(|(r,n)|(format!("gen_infer_row_factorized_no_candidate_reason:{r}"),*n))); }
-            #[cfg(feature = "geninfer_linear_exact_prefilter")]
-            if let Ok(reasons)=GEN_INFER_ROWF_FALLBACK_REASONS.lock() { v.extend(reasons.iter().map(|(r,n)|(format!("gen_infer_row_factorized_fallback_reason:{r}"),*n))); }
-            #[cfg(feature = "geninfer_linear_exact_prefilter")]
-            if let Ok(reasons)=GEN_INFER_CORR_NO_CANDIDATE_REASONS.lock() { v.extend(reasons.iter().map(|(r,n)|(format!("gen_infer_correspondence_no_candidate_reason:{r}"),*n))); }
-            #[cfg(feature = "geninfer_linear_exact_prefilter")]
-            if let Ok(reasons)=GEN_INFER_CORR_FALLBACK_REASONS.lock() { v.extend(reasons.iter().map(|(r,n)|(format!("gen_infer_correspondence_fallback_reason:{r}"),*n))); }
-            #[cfg(feature = "geninfer_quadratic_map_solver")]
-            if let Ok(refusals) = GEN_INFER_QUADRATIC_REFUSALS.lock() {
-                v.extend(refusals.iter().map(|(reason, count)| (format!("gen_infer_quadratic_refusal:{reason}"), *count)));
-            }
             if let Ok(rows) = DEFERRED_QUEUE_AUDIT.lock() {
                 v.extend(rows.iter().map(|(name, count)| ((*name).to_string(), *count)));
             }

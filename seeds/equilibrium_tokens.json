@@ -1,0 +1,915 @@
+{
+ "depends_on": [
+  "speech_act_classify"
+ ],
+ "description": "Ingest vocabulary: Message/Token/CodeSpan/LinkSpan tokens the adapter mints.",
+ "edges": [],
+ "id": "equilibrium_tokens",
+ "nodes": [],
+ "productions": [
+  {
+   "edge_type": "received",
+   "provenance": "equilibrium_tokens:Agent_received_Message",
+   "src": {
+    "type": "Agent",
+    "var": "a"
+   },
+   "tgt": {
+    "type": "Message",
+    "var": "b"
+   }
+  },
+  {
+   "edge_type": "eq_has_token",
+   "provenance": "equilibrium_tokens:Message_eq_has_token_Token",
+   "src": {
+    "type": "Message",
+    "var": "a"
+   },
+   "tgt": {
+    "type": "Token",
+    "var": "b"
+   }
+  },
+  {
+   "edge_type": "eq_next",
+   "provenance": "equilibrium_tokens:Token_eq_next_Token",
+   "src": {
+    "type": "Token",
+    "var": "a"
+   },
+   "tgt": {
+    "type": "Token",
+    "var": "b"
+   }
+  },
+  {
+   "edge_type": "eq_has_span",
+   "provenance": "equilibrium_tokens:Message_eq_has_span_CodeSpan",
+   "src": {
+    "type": "Message",
+    "var": "a"
+   },
+   "tgt": {
+    "type": "CodeSpan",
+    "var": "b"
+   }
+  },
+  {
+   "edge_type": "eq_has_span",
+   "provenance": "equilibrium_tokens:Message_eq_has_span_LinkSpan",
+   "src": {
+    "type": "Message",
+    "var": "a"
+   },
+   "tgt": {
+    "type": "LinkSpan",
+    "var": "b"
+   }
+  },
+  {
+   "edge_type": "eq_has_cue",
+   "provenance": "equilibrium_tokens:Agent_eq_has_cue_EqCue",
+   "src": {
+    "type": "Agent",
+    "var": "a"
+   },
+   "tgt": {
+    "type": "EqCue",
+    "var": "b"
+   }
+  },
+  {
+   "edge_type": "eq_has_label_status",
+   "provenance": "equilibrium_tokens:Agent_eq_has_label_status_LabelStatus",
+   "src": {
+    "type": "Agent",
+    "var": "a"
+   },
+   "tgt": {
+    "type": "LabelStatus",
+    "var": "b"
+   }
+  },
+  {
+   "edge_type": "eq_neg_next",
+   "provenance": "equilibrium_tokens:Message_eq_neg_next_Token",
+   "src": {
+    "type": "Message",
+    "var": "a"
+   },
+   "tgt": {
+    "type": "Token",
+    "var": "b"
+   }
+  },
+  {
+   "edge_type": "eq_cue_booster_n1",
+   "provenance": "equilibrium_tokens:Agent_eq_cue_booster_n1_EqCue",
+   "src": {
+    "type": "Agent",
+    "var": "a"
+   },
+   "tgt": {
+    "type": "EqCue",
+    "var": "b"
+   }
+  },
+  {
+   "edge_type": "eq_cue_booster_n2",
+   "provenance": "equilibrium_tokens:Agent_eq_cue_booster_n2_EqCue",
+   "src": {
+    "type": "Agent",
+    "var": "a"
+   },
+   "tgt": {
+    "type": "EqCue",
+    "var": "b"
+   }
+  },
+  {
+   "edge_type": "eq_cue_booster_n3",
+   "provenance": "equilibrium_tokens:Agent_eq_cue_booster_n3_EqCue",
+   "src": {
+    "type": "Agent",
+    "var": "a"
+   },
+   "tgt": {
+    "type": "EqCue",
+    "var": "b"
+   }
+  },
+  {
+   "edge_type": "eq_cue_citation_n1",
+   "provenance": "equilibrium_tokens:Agent_eq_cue_citation_n1_EqCue",
+   "src": {
+    "type": "Agent",
+    "var": "a"
+   },
+   "tgt": {
+    "type": "EqCue",
+    "var": "b"
+   }
+  },
+  {
+   "edge_type": "eq_cue_citation_n2",
+   "provenance": "equilibrium_tokens:Agent_eq_cue_citation_n2_EqCue",
+   "src": {
+    "type": "Agent",
+    "var": "a"
+   },
+   "tgt": {
+    "type": "EqCue",
+    "var": "b"
+   }
+  },
+  {
+   "edge_type": "eq_cue_concession_n2",
+   "provenance": "equilibrium_tokens:Agent_eq_cue_concession_n2_EqCue",
+   "src": {
+    "type": "Agent",
+    "var": "a"
+   },
+   "tgt": {
+    "type": "EqCue",
+    "var": "b"
+   }
+  },
+  {
+   "edge_type": "eq_cue_concession_n3",
+   "provenance": "equilibrium_tokens:Agent_eq_cue_concession_n3_EqCue",
+   "src": {
+    "type": "Agent",
+    "var": "a"
+   },
+   "tgt": {
+    "type": "EqCue",
+    "var": "b"
+   }
+  },
+  {
+   "edge_type": "eq_cue_concession_n4",
+   "provenance": "equilibrium_tokens:Agent_eq_cue_concession_n4_EqCue",
+   "src": {
+    "type": "Agent",
+    "var": "a"
+   },
+   "tgt": {
+    "type": "EqCue",
+    "var": "b"
+   }
+  },
+  {
+   "edge_type": "eq_cue_credential_denial_n4",
+   "provenance": "equilibrium_tokens:Agent_eq_cue_credential_denial_n4_EqCue",
+   "src": {
+    "type": "Agent",
+    "var": "a"
+   },
+   "tgt": {
+    "type": "EqCue",
+    "var": "b"
+   }
+  },
+  {
+   "edge_type": "eq_cue_credential_denial_n5",
+   "provenance": "equilibrium_tokens:Agent_eq_cue_credential_denial_n5_EqCue",
+   "src": {
+    "type": "Agent",
+    "var": "a"
+   },
+   "tgt": {
+    "type": "EqCue",
+    "var": "b"
+   }
+  },
+  {
+   "edge_type": "eq_cue_credential_n3",
+   "provenance": "equilibrium_tokens:Agent_eq_cue_credential_n3_EqCue",
+   "src": {
+    "type": "Agent",
+    "var": "a"
+   },
+   "tgt": {
+    "type": "EqCue",
+    "var": "b"
+   }
+  },
+  {
+   "edge_type": "eq_cue_credential_n4",
+   "provenance": "equilibrium_tokens:Agent_eq_cue_credential_n4_EqCue",
+   "src": {
+    "type": "Agent",
+    "var": "a"
+   },
+   "tgt": {
+    "type": "EqCue",
+    "var": "b"
+   }
+  },
+  {
+   "edge_type": "eq_cue_credential_n5",
+   "provenance": "equilibrium_tokens:Agent_eq_cue_credential_n5_EqCue",
+   "src": {
+    "type": "Agent",
+    "var": "a"
+   },
+   "tgt": {
+    "type": "EqCue",
+    "var": "b"
+   }
+  },
+  {
+   "edge_type": "eq_cue_deescalation_n1",
+   "provenance": "equilibrium_tokens:Agent_eq_cue_deescalation_n1_EqCue",
+   "src": {
+    "type": "Agent",
+    "var": "a"
+   },
+   "tgt": {
+    "type": "EqCue",
+    "var": "b"
+   }
+  },
+  {
+   "edge_type": "eq_cue_deescalation_n2",
+   "provenance": "equilibrium_tokens:Agent_eq_cue_deescalation_n2_EqCue",
+   "src": {
+    "type": "Agent",
+    "var": "a"
+   },
+   "tgt": {
+    "type": "EqCue",
+    "var": "b"
+   }
+  },
+  {
+   "edge_type": "eq_cue_deescalation_n3",
+   "provenance": "equilibrium_tokens:Agent_eq_cue_deescalation_n3_EqCue",
+   "src": {
+    "type": "Agent",
+    "var": "a"
+   },
+   "tgt": {
+    "type": "EqCue",
+    "var": "b"
+   }
+  },
+  {
+   "edge_type": "eq_cue_deescalation_n4",
+   "provenance": "equilibrium_tokens:Agent_eq_cue_deescalation_n4_EqCue",
+   "src": {
+    "type": "Agent",
+    "var": "a"
+   },
+   "tgt": {
+    "type": "EqCue",
+    "var": "b"
+   }
+  },
+  {
+   "edge_type": "eq_cue_deescalation_n5",
+   "provenance": "equilibrium_tokens:Agent_eq_cue_deescalation_n5_EqCue",
+   "src": {
+    "type": "Agent",
+    "var": "a"
+   },
+   "tgt": {
+    "type": "EqCue",
+    "var": "b"
+   }
+  },
+  {
+   "edge_type": "eq_cue_deference_n3",
+   "provenance": "equilibrium_tokens:Agent_eq_cue_deference_n3_EqCue",
+   "src": {
+    "type": "Agent",
+    "var": "a"
+   },
+   "tgt": {
+    "type": "EqCue",
+    "var": "b"
+   }
+  },
+  {
+   "edge_type": "eq_cue_deference_n4",
+   "provenance": "equilibrium_tokens:Agent_eq_cue_deference_n4_EqCue",
+   "src": {
+    "type": "Agent",
+    "var": "a"
+   },
+   "tgt": {
+    "type": "EqCue",
+    "var": "b"
+   }
+  },
+  {
+   "edge_type": "eq_cue_disagreement_n1",
+   "provenance": "equilibrium_tokens:Agent_eq_cue_disagreement_n1_EqCue",
+   "src": {
+    "type": "Agent",
+    "var": "a"
+   },
+   "tgt": {
+    "type": "EqCue",
+    "var": "b"
+   }
+  },
+  {
+   "edge_type": "eq_cue_disagreement_n2",
+   "provenance": "equilibrium_tokens:Agent_eq_cue_disagreement_n2_EqCue",
+   "src": {
+    "type": "Agent",
+    "var": "a"
+   },
+   "tgt": {
+    "type": "EqCue",
+    "var": "b"
+   }
+  },
+  {
+   "edge_type": "eq_cue_disagreement_n3",
+   "provenance": "equilibrium_tokens:Agent_eq_cue_disagreement_n3_EqCue",
+   "src": {
+    "type": "Agent",
+    "var": "a"
+   },
+   "tgt": {
+    "type": "EqCue",
+    "var": "b"
+   }
+  },
+  {
+   "edge_type": "eq_cue_disagreement_n4",
+   "provenance": "equilibrium_tokens:Agent_eq_cue_disagreement_n4_EqCue",
+   "src": {
+    "type": "Agent",
+    "var": "a"
+   },
+   "tgt": {
+    "type": "EqCue",
+    "var": "b"
+   }
+  },
+  {
+   "edge_type": "eq_cue_disagreement_n5",
+   "provenance": "equilibrium_tokens:Agent_eq_cue_disagreement_n5_EqCue",
+   "src": {
+    "type": "Agent",
+    "var": "a"
+   },
+   "tgt": {
+    "type": "EqCue",
+    "var": "b"
+   }
+  },
+  {
+   "edge_type": "eq_cue_dismissal_n3",
+   "provenance": "equilibrium_tokens:Agent_eq_cue_dismissal_n3_EqCue",
+   "src": {
+    "type": "Agent",
+    "var": "a"
+   },
+   "tgt": {
+    "type": "EqCue",
+    "var": "b"
+   }
+  },
+  {
+   "edge_type": "eq_cue_dismissal_n4",
+   "provenance": "equilibrium_tokens:Agent_eq_cue_dismissal_n4_EqCue",
+   "src": {
+    "type": "Agent",
+    "var": "a"
+   },
+   "tgt": {
+    "type": "EqCue",
+    "var": "b"
+   }
+  },
+  {
+   "edge_type": "eq_cue_dismissal_n5",
+   "provenance": "equilibrium_tokens:Agent_eq_cue_dismissal_n5_EqCue",
+   "src": {
+    "type": "Agent",
+    "var": "a"
+   },
+   "tgt": {
+    "type": "EqCue",
+    "var": "b"
+   }
+  },
+  {
+   "edge_type": "eq_cue_domain_technical_n1",
+   "provenance": "equilibrium_tokens:Agent_eq_cue_domain_technical_n1_EqCue",
+   "src": {
+    "type": "Agent",
+    "var": "a"
+   },
+   "tgt": {
+    "type": "EqCue",
+    "var": "b"
+   }
+  },
+  {
+   "edge_type": "eq_cue_domain_technical_n2",
+   "provenance": "equilibrium_tokens:Agent_eq_cue_domain_technical_n2_EqCue",
+   "src": {
+    "type": "Agent",
+    "var": "a"
+   },
+   "tgt": {
+    "type": "EqCue",
+    "var": "b"
+   }
+  },
+  {
+   "edge_type": "eq_cue_error_admission_n2",
+   "provenance": "equilibrium_tokens:Agent_eq_cue_error_admission_n2_EqCue",
+   "src": {
+    "type": "Agent",
+    "var": "a"
+   },
+   "tgt": {
+    "type": "EqCue",
+    "var": "b"
+   }
+  },
+  {
+   "edge_type": "eq_cue_error_admission_n3",
+   "provenance": "equilibrium_tokens:Agent_eq_cue_error_admission_n3_EqCue",
+   "src": {
+    "type": "Agent",
+    "var": "a"
+   },
+   "tgt": {
+    "type": "EqCue",
+    "var": "b"
+   }
+  },
+  {
+   "edge_type": "eq_cue_error_admission_n4",
+   "provenance": "equilibrium_tokens:Agent_eq_cue_error_admission_n4_EqCue",
+   "src": {
+    "type": "Agent",
+    "var": "a"
+   },
+   "tgt": {
+    "type": "EqCue",
+    "var": "b"
+   }
+  },
+  {
+   "edge_type": "eq_cue_error_denial_n3",
+   "provenance": "equilibrium_tokens:Agent_eq_cue_error_denial_n3_EqCue",
+   "src": {
+    "type": "Agent",
+    "var": "a"
+   },
+   "tgt": {
+    "type": "EqCue",
+    "var": "b"
+   }
+  },
+  {
+   "edge_type": "eq_cue_error_denial_n4",
+   "provenance": "equilibrium_tokens:Agent_eq_cue_error_denial_n4_EqCue",
+   "src": {
+    "type": "Agent",
+    "var": "a"
+   },
+   "tgt": {
+    "type": "EqCue",
+    "var": "b"
+   }
+  },
+  {
+   "edge_type": "eq_cue_error_denial_n5",
+   "provenance": "equilibrium_tokens:Agent_eq_cue_error_denial_n5_EqCue",
+   "src": {
+    "type": "Agent",
+    "var": "a"
+   },
+   "tgt": {
+    "type": "EqCue",
+    "var": "b"
+   }
+  },
+  {
+   "edge_type": "eq_cue_evidence_request_n2",
+   "provenance": "equilibrium_tokens:Agent_eq_cue_evidence_request_n2_EqCue",
+   "src": {
+    "type": "Agent",
+    "var": "a"
+   },
+   "tgt": {
+    "type": "EqCue",
+    "var": "b"
+   }
+  },
+  {
+   "edge_type": "eq_cue_evidence_request_n3",
+   "provenance": "equilibrium_tokens:Agent_eq_cue_evidence_request_n3_EqCue",
+   "src": {
+    "type": "Agent",
+    "var": "a"
+   },
+   "tgt": {
+    "type": "EqCue",
+    "var": "b"
+   }
+  },
+  {
+   "edge_type": "eq_cue_evidence_request_n4",
+   "provenance": "equilibrium_tokens:Agent_eq_cue_evidence_request_n4_EqCue",
+   "src": {
+    "type": "Agent",
+    "var": "a"
+   },
+   "tgt": {
+    "type": "EqCue",
+    "var": "b"
+   }
+  },
+  {
+   "edge_type": "eq_cue_evidence_request_n5",
+   "provenance": "equilibrium_tokens:Agent_eq_cue_evidence_request_n5_EqCue",
+   "src": {
+    "type": "Agent",
+    "var": "a"
+   },
+   "tgt": {
+    "type": "EqCue",
+    "var": "b"
+   }
+  },
+  {
+   "edge_type": "eq_cue_hostility_n1",
+   "provenance": "equilibrium_tokens:Agent_eq_cue_hostility_n1_EqCue",
+   "src": {
+    "type": "Agent",
+    "var": "a"
+   },
+   "tgt": {
+    "type": "EqCue",
+    "var": "b"
+   }
+  },
+  {
+   "edge_type": "eq_cue_hostility_n2",
+   "provenance": "equilibrium_tokens:Agent_eq_cue_hostility_n2_EqCue",
+   "src": {
+    "type": "Agent",
+    "var": "a"
+   },
+   "tgt": {
+    "type": "EqCue",
+    "var": "b"
+   }
+  },
+  {
+   "edge_type": "eq_cue_hostility_n3",
+   "provenance": "equilibrium_tokens:Agent_eq_cue_hostility_n3_EqCue",
+   "src": {
+    "type": "Agent",
+    "var": "a"
+   },
+   "tgt": {
+    "type": "EqCue",
+    "var": "b"
+   }
+  },
+  {
+   "edge_type": "eq_cue_hostility_n4",
+   "provenance": "equilibrium_tokens:Agent_eq_cue_hostility_n4_EqCue",
+   "src": {
+    "type": "Agent",
+    "var": "a"
+   },
+   "tgt": {
+    "type": "EqCue",
+    "var": "b"
+   }
+  },
+  {
+   "edge_type": "eq_cue_procedural_n2",
+   "provenance": "equilibrium_tokens:Agent_eq_cue_procedural_n2_EqCue",
+   "src": {
+    "type": "Agent",
+    "var": "a"
+   },
+   "tgt": {
+    "type": "EqCue",
+    "var": "b"
+   }
+  },
+  {
+   "edge_type": "eq_cue_procedural_n3",
+   "provenance": "equilibrium_tokens:Agent_eq_cue_procedural_n3_EqCue",
+   "src": {
+    "type": "Agent",
+    "var": "a"
+   },
+   "tgt": {
+    "type": "EqCue",
+    "var": "b"
+   }
+  },
+  {
+   "edge_type": "eq_cue_procedural_n4",
+   "provenance": "equilibrium_tokens:Agent_eq_cue_procedural_n4_EqCue",
+   "src": {
+    "type": "Agent",
+    "var": "a"
+   },
+   "tgt": {
+    "type": "EqCue",
+    "var": "b"
+   }
+  },
+  {
+   "edge_type": "eq_cue_status_claim_n2",
+   "provenance": "equilibrium_tokens:Agent_eq_cue_status_claim_n2_EqCue",
+   "src": {
+    "type": "Agent",
+    "var": "a"
+   },
+   "tgt": {
+    "type": "EqCue",
+    "var": "b"
+   }
+  },
+  {
+   "edge_type": "eq_cue_status_claim_n3",
+   "provenance": "equilibrium_tokens:Agent_eq_cue_status_claim_n3_EqCue",
+   "src": {
+    "type": "Agent",
+    "var": "a"
+   },
+   "tgt": {
+    "type": "EqCue",
+    "var": "b"
+   }
+  },
+  {
+   "edge_type": "eq_cue_status_claim_n4",
+   "provenance": "equilibrium_tokens:Agent_eq_cue_status_claim_n4_EqCue",
+   "src": {
+    "type": "Agent",
+    "var": "a"
+   },
+   "tgt": {
+    "type": "EqCue",
+    "var": "b"
+   }
+  },
+  {
+   "edge_type": "eq_cue_status_claim_n5",
+   "provenance": "equilibrium_tokens:Agent_eq_cue_status_claim_n5_EqCue",
+   "src": {
+    "type": "Agent",
+    "var": "a"
+   },
+   "tgt": {
+    "type": "EqCue",
+    "var": "b"
+   }
+  },
+  {
+   "edge_type": "eq_cue_tribal_n2",
+   "provenance": "equilibrium_tokens:Agent_eq_cue_tribal_n2_EqCue",
+   "src": {
+    "type": "Agent",
+    "var": "a"
+   },
+   "tgt": {
+    "type": "EqCue",
+    "var": "b"
+   }
+  },
+  {
+   "edge_type": "eq_cue_tribal_n3",
+   "provenance": "equilibrium_tokens:Agent_eq_cue_tribal_n3_EqCue",
+   "src": {
+    "type": "Agent",
+    "var": "a"
+   },
+   "tgt": {
+    "type": "EqCue",
+    "var": "b"
+   }
+  },
+  {
+   "edge_type": "eq_cue_withdrawal_n2",
+   "provenance": "equilibrium_tokens:Agent_eq_cue_withdrawal_n2_EqCue",
+   "src": {
+    "type": "Agent",
+    "var": "a"
+   },
+   "tgt": {
+    "type": "EqCue",
+    "var": "b"
+   }
+  },
+  {
+   "edge_type": "eq_cue_withdrawal_n3",
+   "provenance": "equilibrium_tokens:Agent_eq_cue_withdrawal_n3_EqCue",
+   "src": {
+    "type": "Agent",
+    "var": "a"
+   },
+   "tgt": {
+    "type": "EqCue",
+    "var": "b"
+   }
+  },
+  {
+   "edge_type": "eq_cue_withdrawal_n4",
+   "provenance": "equilibrium_tokens:Agent_eq_cue_withdrawal_n4_EqCue",
+   "src": {
+    "type": "Agent",
+    "var": "a"
+   },
+   "tgt": {
+    "type": "EqCue",
+    "var": "b"
+   }
+  },
+  {
+   "edge_type": "eq_hit_deescalation",
+   "provenance": "equilibrium_tokens:Message_eq_hit_deescalation_Token",
+   "src": {
+    "type": "Message",
+    "var": "a"
+   },
+   "tgt": {
+    "type": "Token",
+    "var": "b"
+   }
+  },
+  {
+   "edge_type": "eq_hit_concession",
+   "provenance": "equilibrium_tokens:Message_eq_hit_concession_Token",
+   "src": {
+    "type": "Message",
+    "var": "a"
+   },
+   "tgt": {
+    "type": "Token",
+    "var": "b"
+   }
+  },
+  {
+   "edge_type": "eq_hit_status_claim",
+   "provenance": "equilibrium_tokens:Message_eq_hit_status_claim_Token",
+   "src": {
+    "type": "Message",
+    "var": "a"
+   },
+   "tgt": {
+    "type": "Token",
+    "var": "b"
+   }
+  },
+  {
+   "edge_type": "eq_hit_hostility",
+   "provenance": "equilibrium_tokens:Message_eq_hit_hostility_Token",
+   "src": {
+    "type": "Message",
+    "var": "a"
+   },
+   "tgt": {
+    "type": "Token",
+    "var": "b"
+   }
+  },
+  {
+   "edge_type": "eq_hit_credential",
+   "provenance": "equilibrium_tokens:Message_eq_hit_credential_Token",
+   "src": {
+    "type": "Message",
+    "var": "a"
+   },
+   "tgt": {
+    "type": "Token",
+    "var": "b"
+   }
+  },
+  {
+   "edge_type": "eq_hit_deference",
+   "provenance": "equilibrium_tokens:Message_eq_hit_deference_Token",
+   "src": {
+    "type": "Message",
+    "var": "a"
+   },
+   "tgt": {
+    "type": "Token",
+    "var": "b"
+   }
+  },
+  {
+   "edge_type": "eq_hit_booster",
+   "provenance": "equilibrium_tokens:Message_eq_hit_booster_Token",
+   "src": {
+    "type": "Message",
+    "var": "a"
+   },
+   "tgt": {
+    "type": "Token",
+    "var": "b"
+   }
+  },
+  {
+   "edge_type": "eq_hit_withdrawal",
+   "provenance": "equilibrium_tokens:Message_eq_hit_withdrawal_Token",
+   "src": {
+    "type": "Message",
+    "var": "a"
+   },
+   "tgt": {
+    "type": "Token",
+    "var": "b"
+   }
+  },
+  {
+   "edge_type": "eq_hit_disagreement",
+   "provenance": "equilibrium_tokens:Message_eq_hit_disagreement_Token",
+   "src": {
+    "type": "Message",
+    "var": "a"
+   },
+   "tgt": {
+    "type": "Token",
+    "var": "b"
+   }
+  },
+  {
+   "edge_type": "eq_hit_error_admission",
+   "provenance": "equilibrium_tokens:Message_eq_hit_error_admission_Token",
+   "src": {
+    "type": "Message",
+    "var": "a"
+   },
+   "tgt": {
+    "type": "Token",
+    "var": "b"
+   }
+  },
+  {
+   "edge_type": "eq_hit_evidence_request",
+   "provenance": "equilibrium_tokens:Message_eq_hit_evidence_request_Token",
+   "src": {
+    "type": "Message",
+    "var": "a"
+   },
+   "tgt": {
+    "type": "Token",
+    "var": "b"
+   }
+  }
+ ],
+ "rules": [],
+ "self_load_only": true,
+ "taxonomy_version": "eq-tax-0.8.0",
+ "version": "0.8.0"
+}

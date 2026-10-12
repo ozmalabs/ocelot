@@ -270,26 +270,6 @@ def run_rules_delta_report(
     return inner.run_rules_delta_report(max_steps, detect_cycles)
 
 
-def run_rules_effect_delta_report(
-    substrate: _PySubstrate | Any,
-    max_steps: int = 100_000,
-    detect_cycles: bool = False,
-) -> dict[str, Any]:
-    """Mutation-site report including opt-in per-effect value transitions."""
-    inner = substrate._inner if isinstance(substrate, _PySubstrate) else substrate
-    return inner.run_rules_effect_delta_report(max_steps, detect_cycles)
-
-
-def run_rules_effect_target_delta_report(
-    substrate: _PySubstrate | Any,
-    max_steps: int = 100_000,
-    detect_cycles: bool = False,
-) -> dict[str, Any]:
-    """Mutation-site report with per-effect node and edge targets, without values."""
-    inner = substrate._inner if isinstance(substrate, _PySubstrate) else substrate
-    return inner.run_rules_effect_target_delta_report(max_steps, detect_cycles)
-
-
 def run_rules_snapshot_delta_report(
     substrate: _PySubstrate | Any,
     max_steps: int = 100_000,

@@ -125,11 +125,7 @@ fn run(size: usize, fanout: usize, repeats: usize) -> Row {
             semantic_ok &= branch.get(*index) == Some(&(source[*index] ^ 0x5a5a));
             semantic_ok &= cow_base.get(*index) == Some(&source[*index]);
             semantic_ok &= !branch.shares_page_with(&cow_base, *index);
-            let untouched = if *index + 65 < size {
-                *index + 65
-            } else {
-                (*index + size - 65) % size
-            };
+            let untouched = if *index + 65 < size { *index + 65 } else { (*index + size - 65) % size };
             if (untouched >> 6) != (*index >> 6) {
                 semantic_ok &= branch.shares_page_with(&cow_base, untouched);
             }
@@ -145,8 +141,10 @@ fn run(size: usize, fanout: usize, repeats: usize) -> Row {
             let right_before = *cow_branches[1].get(shared_slot).unwrap();
             *cow_branches[0].get_mut(shared_slot).unwrap() ^= 0x1111;
             *cow_branches[1].get_mut(shared_slot).unwrap() ^= 0x2222;
-            semantic_ok &= cow_branches[0].get(shared_slot) == Some(&(left_before ^ 0x1111));
-            semantic_ok &= cow_branches[1].get(shared_slot) == Some(&(right_before ^ 0x2222));
+            semantic_ok &= cow_branches[0].get(shared_slot)
+                == Some(&(left_before ^ 0x1111));
+            semantic_ok &= cow_branches[1].get(shared_slot)
+                == Some(&(right_before ^ 0x2222));
             semantic_ok &= cow_base.get(shared_slot) == Some(&source[shared_slot]);
             semantic_ok &= !cow_branches[0].shares_page_with(&cow_branches[1], shared_slot);
         }
@@ -187,34 +185,14 @@ fn main() {
     let mut args = std::env::args().skip(1);
     while let Some(arg) = args.next() {
         match arg.as_str() {
-            "--sizes" => {
-                sizes = args
-                    .next()
-                    .expect("--sizes value")
-                    .split(',')
-                    .map(|x| x.parse().unwrap())
-                    .collect()
-            }
-            "--fanouts" => {
-                fanouts = args
-                    .next()
-                    .expect("--fanouts value")
-                    .split(',')
-                    .map(|x| x.parse().unwrap())
-                    .collect()
-            }
+            "--sizes" => sizes = args.next().expect("--sizes value").split(',').map(|x| x.parse().unwrap()).collect(),
+            "--fanouts" => fanouts = args.next().expect("--fanouts value").split(',').map(|x| x.parse().unwrap()).collect(),
             "--repeats" => repeats = args.next().expect("--repeats value").parse().unwrap(),
             other => panic!("unknown argument: {other}"),
         }
     }
-    let rows: Vec<Row> = sizes
-        .into_iter()
-        .flat_map(|size| {
-            fanouts
-                .iter()
-                .copied()
-                .map(move |fanout| run(size, fanout, repeats))
-        })
+    let rows: Vec<Row> = sizes.into_iter()
+        .flat_map(|size| fanouts.iter().copied().map(move |fanout| run(size, fanout, repeats)))
         .collect();
     println!("{}", serde_json::to_string(&rows).unwrap());
 }

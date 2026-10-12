@@ -6,8 +6,8 @@
 //! records and the top-level per-node adjacency lists; the hash-based query
 //! indexes and most `Substrate` fields still use eager cloning.
 
-use std::ops::{Index, IndexMut};
 use std::sync::Arc;
+use std::ops::{Index, IndexMut};
 
 const PAGE_BITS: u32 = 6;
 const PAGE_LEN: usize = 1 << PAGE_BITS;
@@ -69,24 +69,20 @@ impl<'a, T: Clone> IntoIterator for &'a CowPagedVec<T> {
     type Item = &'a T;
     type IntoIter = CowPagedVecIter<'a, T>;
 
-    fn into_iter(self) -> Self::IntoIter {
-        self.iter()
-    }
+    fn into_iter(self) -> Self::IntoIter { self.iter() }
 }
 
 impl<T: Clone> Index<usize> for CowPagedVec<T> {
     type Output = T;
 
     fn index(&self, index: usize) -> &Self::Output {
-        self.get(index)
-            .expect("CowPagedVec index out of bounds or vacant")
+        self.get(index).expect("CowPagedVec index out of bounds or vacant")
     }
 }
 
 impl<T: Clone> IndexMut<usize> for CowPagedVec<T> {
     fn index_mut(&mut self, index: usize) -> &mut Self::Output {
-        self.get_mut(index)
-            .expect("CowPagedVec index out of bounds or vacant")
+        self.get_mut(index).expect("CowPagedVec index out of bounds or vacant")
     }
 }
 
@@ -123,10 +119,7 @@ impl<T: Clone> CowPagedVec<T> {
     }
 
     pub fn iter(&self) -> CowPagedVecIter<'_, T> {
-        CowPagedVecIter {
-            vector: self,
-            next: 0,
-        }
+        CowPagedVecIter { vector: self, next: 0 }
     }
 
     #[inline]
@@ -146,9 +139,7 @@ impl<T: Clone> CowPagedVec<T> {
         }
         let page = (index as u32) >> PAGE_BITS;
         let offset = index & (PAGE_LEN - 1);
-        Self::get_page(&self.root, page, RADIX_LEVELS)?
-            .get(offset)?
-            .as_ref()
+        Self::get_page(&self.root, page, RADIX_LEVELS)?.get(offset)?.as_ref()
     }
 
     pub fn get_mut(&mut self, index: usize) -> Option<&mut T> {
@@ -163,10 +154,7 @@ impl<T: Clone> CowPagedVec<T> {
     }
 
     pub fn push(&mut self, value: T) {
-        assert!(
-            self.len <= u32::MAX as usize,
-            "CowPagedVec index space exhausted"
-        );
+        assert!(self.len <= u32::MAX as usize, "CowPagedVec index space exhausted");
         let index = self.len;
         let page = (index as u32) >> PAGE_BITS;
         let offset = index & (PAGE_LEN - 1);
@@ -179,8 +167,12 @@ impl<T: Clone> CowPagedVec<T> {
         if index >= self.len || index > u32::MAX as usize {
             return None;
         }
-        let slot = Self::get_page_mut(&mut self.root, (index as u32) >> PAGE_BITS, RADIX_LEVELS)?
-            .get_mut(index & (PAGE_LEN - 1))?;
+        let slot = Self::get_page_mut(
+            &mut self.root,
+            (index as u32) >> PAGE_BITS,
+            RADIX_LEVELS,
+        )?
+        .get_mut(index & (PAGE_LEN - 1))?;
         slot.replace(value)
     }
 
@@ -219,7 +211,11 @@ impl<T: Clone> CowPagedVec<T> {
         }
     }
 
-    fn get_page(node: &Arc<TrieNode<T>>, page: u32, levels: u32) -> Option<&[Option<T>; PAGE_LEN]> {
+    fn get_page(
+        node: &Arc<TrieNode<T>>,
+        page: u32,
+        levels: u32,
+    ) -> Option<&[Option<T>; PAGE_LEN]> {
         let leaf = Self::page_arc(node, page, levels)?;
         match leaf.as_ref() {
             TrieNode::Leaf(values) => Some(values),
@@ -253,7 +249,13 @@ impl<T: Clone> CowPagedVec<T> {
         }
     }
 
-    fn set_page(node: &mut Arc<TrieNode<T>>, page: u32, levels: u32, offset: usize, value: T) {
+    fn set_page(
+        node: &mut Arc<TrieNode<T>>,
+        page: u32,
+        levels: u32,
+        offset: usize,
+        value: T,
+    ) {
         let shift = (levels - 1) * BRANCH_BITS;
         let slot = ((page >> shift) as usize) & (BRANCH_LEN - 1);
         let TrieNode::Branch(children) = Arc::make_mut(node) else {
