@@ -78,3 +78,37 @@ The traces are still emitted by the Python world adapter after it reads
 recurrent rule can construct the scene. The probe also measures retrieval from
 an encoded episode, rather than invention of details from a generic apple
 concept. That remains the next development step.
+
+## Apple concept rendering — held quale to raster
+
+The rendering extension is implemented in `domains/apple_quale_render.py`.
+It starts from the substrate's held `apples` concept in `learned_lexicon` and
+its held `circle` concept in `geometry_microtheory`. The proposed hierarchy is
+apple concept → circle of fruit → apple-specific visual quale → surface and
+illumination → scene. “Circle of fruit” and this ordering express the user's
+substrate model; the cited studies do not establish that cognitive sequence.
+
+The later graph adds qualitative structure for a rounded pome body and its
+cavities, cultivar-variable skin color, lenticels/cuticle, light from above,
+and fruit situated on a surface. The adapter interprets those graph concepts
+into shape, color, shading, and pixels. RGB values, mesh tessellation, camera,
+and pixel positions stay in the renderer; they are not quale data. Tabletop
+and backdrop styling are illustrative scene choices.
+
+Scientific grounding is recorded in the generated manifest: apple color and
+morphology vary across cultivars; lenticels, cuticle, and wax are documented
+surface features; and human shape-from-shading judgments are affected by a
+light-from-above assumption. Those findings constrain the depicted cues, but
+do not validate the proposed apple → circle abstraction order.
+
+Sources: [apple pigment profiles across commercial varieties](https://www.sciencedirect.com/science/article/pii/S096399691400194X),
+[morphology across 23 cultivars](https://www.genresj.org/index.php/grj/article/download/genresj.HJIF8839/131),
+[apple lenticels](https://pmc.ncbi.nlm.nih.gov/articles/PMC3659274/),
+[apple cuticle and wax](https://pmc.ncbi.nlm.nih.gov/articles/PMC7767305/),
+and [shape-from-shading assumptions](https://pubmed.ncbi.nlm.nih.gov/1635855/).
+
+Executed with `python3 -m domains.apple_quale_render`; seven PNG stages and a
+contact sheet are written under `results/apple_quale_render/`. The series
+shows the held apple node, the circle concept, form, surface, illumination,
+scene, and final render. It is a graph-to-image interpretation, not evidence
+that the substrate has subjective experience or learned the visual structure.
