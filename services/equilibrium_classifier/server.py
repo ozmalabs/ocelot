@@ -952,9 +952,12 @@ class ClassifierService:
             self.conversations_opened -= 1
 
     def conversation_turns(self, cid: str, kind: str, turns: list[dict],
-                           participants: list[dict] | None = None) -> dict:
+                           participants: list[dict] | None = None,
+                           close_after: bool = False) -> dict:
         """One batch of turns (and optionally roster entries, cumulative; aliases are
-        transient: they live only in this conversation's retained fork)."""
+        transient: they live only in this conversation's retained fork). When
+        ``close_after`` is true, ingestion and final read-out/close are serialized
+        under the same session lock."""
         self._require_healthy()
         ec = self._ec
         with self._slot():
@@ -984,10 +987,26 @@ class ClassifierService:
                 with self._meta:
                     if self.sessions.get(cid) is sess:
                         self.sessions.move_to_end(cid)
+                if close_after:
+                    # Keep sess.lock held across the close. A concurrent /turns,
+                    # /close, or /_batch item must not interleave between this
+                    # item's ingest and its requested close.
+                    try:
+                        close_result = self._budget(
+                            ec.conversation_close, sess.branch, self.root, sess.state)
+                    finally:
+                        with self._meta:
+                            self._drop(cid, sess, None)
             finally:
                 sess.lock.release()
         self._after_batch(turns=len(turns))
-        return conversation_to_wire(result, ec.TAXONOMY_VERSION)
+        if close_after:
+            self._after_batch(conversations_closed=1)
+        out = conversation_to_wire(result, ec.TAXONOMY_VERSION)
+        if close_after:
+            final = conversation_to_wire(close_result, ec.TAXONOMY_VERSION)
+            out["turns_delta"] = merge_turns_delta(out, final["turns_delta"])
+        return out
 
     def conversation_close(self, cid: str, read_out: bool = True) -> dict | None:
         """Close: the final read-out (deltas of this call; read_out=False: just free the fork,
@@ -1009,10 +1028,9 @@ class ClassifierService:
     def _batch_item(self, item: dict) -> dict:
         cid = item["conversation_id"]
         try:
-            out = self.conversation_turns(cid, item["kind"], item["turns"], item.get("participants"))
-            if item.get("close") is True:
-                fin = self.conversation_close(cid)
-                out["turns_delta"] = merge_turns_delta(out, fin["turns_delta"])
+            out = self.conversation_turns(cid, item["kind"], item["turns"],
+                                          item.get("participants"),
+                                          close_after=item.get("close") is True)
         except BaseDrift:
             raise
         except ApiError as e:
