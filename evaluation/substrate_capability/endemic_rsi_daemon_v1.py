@@ -54,6 +54,9 @@ def boot(shadow, promote=None):
     if not promote:     # the off arm (a human must promote), and the fresh-boot baseline
         for n in a.s.nodes("SelfPromotionPolicy"):
             a.s.set_attr(n, "enabled", 0)
+    if os.environ.get("ERSI_REOPEN") == "0":    # tranche 24 chain-off arm: no reopen on a new capability
+        for n in a.s.nodes("InstructionRetryPolicy"):
+            a.s.set_attr(n, "max_reopens", 0)
     st = jd.DaemonState(a, "seeds")
     st.runs_dir = tempfile.mkdtemp(prefix="ersid-")
     return st
@@ -170,8 +173,15 @@ def snapshot(st):
                  for n in s.nodes("Adoption")]
     self_promoted = sum(1 for n in s.nodes("SelfConcern") if s.node(n)["attrs"].get("promoted_by") == "self")
     actions = collections.Counter(str(s.node(n)["attrs"].get("action")) for n in s.nodes("HostActionRequest"))
+    # tranche 24: reopened concerns, and adoptions built on an earlier adoption's
+    # own rule (a second-order generalisation carries "_generalised__" in its name)
+    reopened = [{"concern": int(n.value), "kind": s.node(n)["attrs"].get("kind"),
+                 "reopen_count": s.node(n)["attrs"].get("reopen_count")}
+                for n in s.nodes("SelfConcern") if s.node(n)["attrs"].get("reopen_count")]
+    chained = [ad["rule_added"] for ad in adoptions if "_generalised__" in str(ad.get("rule_added") or "")]
     return {"concerns_by_kind": dict(concerns), "self_promoted": self_promoted, "experiments": exps,
-            "adoptions": adoptions, "host_actions": dict(actions)}
+            "adoptions": adoptions, "host_actions": dict(actions), "reopened": reopened,
+            "chained_adoptions": chained}
 
 
 def main():
@@ -180,6 +190,7 @@ def main():
     kind, shadow_arm = sys.argv[1], sys.argv[2]
     n = int(sys.argv[3]) if len(sys.argv) > 3 else 10 ** 6
     arm = "_off" if os.environ.get("ERSI_SELF_PROMOTION") == "0" else ""
+    arm += "_noreopen" if os.environ.get("ERSI_REOPEN") == "0" else ""
     label = os.environ.get("ERSI_LABEL", "")
     out = ROOT / (f"evaluation/reports/endemic_rsi_daemon_v1_{kind}_{shadow_arm}{'' if n >= 10**6 else f'_n{n}'}"
                   f"{arm}{('_' + label) if label else ''}_20261010.json")
