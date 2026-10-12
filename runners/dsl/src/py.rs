@@ -4303,6 +4303,48 @@ impl PySubstrate {
         rule_delta_report_to_pyobj(py, &report, &guard.interner)
     }
 
+    /// Rule settlement with the EXACT net edge change of the run, restricted
+    /// to `edge_types` (edge before-images only, O(touched edges)), and the
+    /// touched node ids restricted to `node_types`, grouped by type. Returns
+    /// {"progress_steps", "status", "affected_nodes": {node_type: [id]},
+    ///  "edges_changed": [(src, edge_type, tgt, exists_now)]}.
+    #[pyo3(signature = (max_steps, edge_types, node_types, detect_cycles=false))]
+    fn run_rules_edge_delta<'py>(
+        &mut self,
+        py: Python<'py>,
+        max_steps: usize,
+        edge_types: Vec<String>,
+        node_types: Vec<String>,
+        detect_cycles: bool,
+    ) -> PyResult<Bound<'py, PyAny>> {
+        crate::scale_audit::ffi(1, 0);
+        crate::scale_audit::begin_epoch();
+        let (run, nodes, edges) = py.allow_threads(|| {
+            let mut guard = self.inner.lock().expect("substrate mutex poisoned");
+            guard.run_rules_edge_delta(max_steps, detect_cycles, &edge_types, &node_types)
+        });
+        let guard = self.inner.lock().expect("substrate mutex poisoned");
+        let status = match run.status {
+            crate::substrate::RuleRunStatus::FixedPoint => "fixed_point",
+            crate::substrate::RuleRunStatus::RepeatedGraphState => "repeated_graph_state",
+            crate::substrate::RuleRunStatus::ProgressBudgetReached => "progress_budget_reached",
+        };
+        let edges: Vec<(u32, String, u32, bool)> = edges
+            .iter()
+            .map(|(key, now)| (key.src.0, guard.interner.resolve(key.edge_type).to_string(), key.tgt.0, *now))
+            .collect();
+        let mut by_type: std::collections::BTreeMap<String, Vec<u32>> = std::collections::BTreeMap::new();
+        for (nid, ty) in &nodes {
+            by_type.entry(guard.interner.resolve(*ty).to_string()).or_default().push(nid.0);
+        }
+        json_to_pyobj(py, &serde_json::json!({
+            "status": status,
+            "progress_steps": run.progress_steps,
+            "affected_nodes": by_type,
+            "edges_changed": edges,
+        }))
+    }
+
     /// Exact O(V+E) graph-state oracle for checking the mutation-site report.
     #[pyo3(signature = (max_steps=100_000, detect_cycles=false))]
     fn run_rules_snapshot_delta_report<'py>(
@@ -4684,6 +4726,63 @@ impl PySubstrate {
             .lock()
             .expect("substrate mutex poisoned")
             .set_incremental_match(on);
+    }
+
+    /// Fresh-node exemption (equilibrium scaling), DEFAULT OFF: an external
+    /// `add_node` dirties by type only, an external `add_edge` clears the cursors
+    /// of the rules whose terms read that edge type (see `Substrate`). Needs
+    /// `set_precise_dirty(True)` to take effect on `add_node`.
+    fn set_fresh_node_exempt(&mut self, on: bool) {
+        self.inner.lock().expect("substrate mutex poisoned").set_fresh_node_exempt(on);
+    }
+
+    /// Semi-naive for `batch` rules (equilibrium scaling), DEFAULT OFF: a batch
+    /// rule takes the delta-driven cursor path when its cursor is valid, else the
+    /// committed full batch pass, after which its cursors are installed.
+    fn set_batch_incremental(&mut self, on: bool) {
+        self.inner.lock().expect("substrate mutex poisoned").set_batch_incremental(on);
+    }
+
+    /// Own-write exemption (equilibrium scaling), DEFAULT OFF: an effect's own
+    /// write-target look-up (AddEdge type, AddNodeIfAbsent type/keys, SetAttr key)
+    /// no longer makes a write to it clear the consumer's cursor (see `Substrate`).
+    fn set_own_write_exempt(&mut self, on: bool) {
+        self.inner.lock().expect("substrate mutex poisoned").set_own_write_exempt(on);
+    }
+
+    /// Precise rule-effect edge deletes (equilibrium scaling), DEFAULT OFF: a
+    /// DelEdge-only rule invalidates like an external remove_edge instead of
+    /// clearing every rule's cursor (see `Substrate`).
+    fn set_precise_rule_deletes(&mut self, on: bool) {
+        self.inner.lock().expect("substrate mutex poisoned").set_precise_rule_deletes(on);
+    }
+
+    /// Seeded join order (equilibrium scaling), DEFAULT OFF: semi-naive / node-
+    /// seeded sub-matches order the remaining match edges by connectivity to the
+    /// seed and keep the rule's index hints (traversal only; see `Substrate`).
+    fn set_seeded_join_order(&mut self, on: bool) {
+        self.inner.lock().expect("substrate mutex poisoned").set_seeded_join_order(on);
+    }
+
+    /// Hop frontier (equilibrium scaling stage B), DEFAULT OFF: one-hop local attr
+    /// reads + transparent set / arithmetic operators refine the write-frontier
+    /// locality (see `Substrate`).
+    fn set_hop_frontier(&mut self, on: bool) {
+        self.inner.lock().expect("substrate mutex poisoned").set_hop_frontier(on);
+    }
+
+    /// Delete frontier (equilibrium scaling stage B), DEFAULT OFF: a rule-effect
+    /// DelEdge re-checks a local / own-target reader at the deleted edge's
+    /// endpoints instead of clearing its cursor (see `Substrate`).
+    fn set_delete_frontier(&mut self, on: bool) {
+        self.inner.lock().expect("substrate mutex poisoned").set_delete_frontier(on);
+    }
+
+    /// Write frontier (equilibrium scaling), DEFAULT OFF: a rule-effect attr write
+    /// seeds a local reader's re-evaluation at the written nodes instead of
+    /// clearing its cursor (see `Substrate`).
+    fn set_write_frontier(&mut self, on: bool) {
+        self.inner.lock().expect("substrate mutex poisoned").set_write_frontier(on);
     }
 
     /// **THE UNSOUND-RETRACTION FALSIFIER** (block 192000). Accepts a stale

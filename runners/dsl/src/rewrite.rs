@@ -350,6 +350,11 @@ pub struct ScopeAnchor {
     pub owner_var: Sym,
     pub owner_type: Sym,
     pub owner_edge: Sym,
+
+thread_local! {
+    /// Set only inside `derive_access`'s third walk: `TypeOf` / `AttrByName`
+    /// do not count as opaque there (see `RewriteRule::reads_any_nonlocal`).
+    static LOCAL_OPAQUE_OK: std::cell::Cell<bool> = const { std::cell::Cell::new(false) };
 }
 
 /// One rewrite rule. Has a name for diagnostics, a pattern (match
@@ -459,6 +464,70 @@ pub struct RewriteRule {
     pub write_set: rustc_hash::FxHashSet<RuleKey>,
     /// Conservative "reads something opaque" — forces always-dirty.
     pub reads_any: bool,
+    /// `reads_any` WITHOUT the bound-node-local opaque reads (`TypeOf`,
+    /// `AttrByName`: the type / a dynamically-named attr of a node the rule
+    /// already reached). Only consulted by the isolated-node write exemption
+    /// (`Substrate::fresh_node_exempt`); every default path uses `reads_any`.
+    pub reads_any_nonlocal: bool,
+    /// `read_set` WITHOUT the effects' own write-target reads: the keys read by
+    /// the where-clause and by computed effect ARGS only. The idempotence /
+    /// dedup look-ups of `AddEdge` (its edge type), `AddNode[IfAbsent]` (its type
+    /// and key attrs) and `SetAttr[IfDifferent]` (its key) are excluded: they
+    /// decide nothing about WHICH bindings match, they only make re-firing an
+    /// already-fired binding a no-op. Only consulted by the own-write exemption
+    /// (`Substrate::own_write_exempt`) when deciding whether a write must CLEAR
+    /// a consumer's semi-naive cursor; dirtying still uses `read_set`.
+    pub read_set_strict: rustc_hash::FxHashSet<RuleKey>,
+    /// The typed-edge subset of `read_set_strict` (cf. `term_edge_reads`, which
+    /// also holds an `AddEdge` effect's own edge type).
+    pub term_edge_reads_strict: rustc_hash::FxHashSet<Sym>,
+    /// WRITE-FRONTIER eligibility (`Substrate::write_frontier`): the rule's
+    /// effects are add/set only (no fresh `AddNode`), it has a match, it does
+    /// not read external state or anything opaque non-locally, and every
+    /// dynamically-named attr read (`AttrByName`) is on a match variable outside
+    /// any binder. Then a write of attr `k` on node `x` can flip only bindings
+    /// that bind `x`, unless `k` is in `wf_nonlocal_keys`.
+    pub wf_ok: bool,
+    /// Attr keys this rule reads OFF its match frontier: under a binder /
+    /// iteration (`Exists`, `Filter`, ...), on a non-match variable, or via
+    /// `NodesWhere`. A write of one of these keys must clear the cursor.
+    pub wf_nonlocal_keys: rustc_hash::FxHashSet<Sym>,
+    /// The rule reads a dynamically-named attr of a match variable, so a write
+    /// of ANY key to a bound node may flip it (node-seeded, not cleared).
+    pub wf_dyn_local: bool,
+    /// The match variables whose dynamically-named attrs are read (`AttrByName`).
+    pub wf_dyn_vars: smallvec::SmallVec<[Sym; 2]>,
+    /// Edge types this rule's terms read ONLY as `Neighbours(v, E)` /
+    /// `InNeighbours(v, E)` of an unshadowed match variable `v`: a new `E` edge
+    /// can then flip only bindings that bind its source (out) / target (in).
+    pub wf_local_out: rustc_hash::FxHashSet<Sym>,
+    pub wf_local_in: rustc_hash::FxHashSet<Sym>,
+    /// HOP FRONTIER (`Substrate::hop_frontier`, DEFAULT OFF) variant of the
+    /// write-frontier locality above: the pure set / arithmetic operators
+    /// (`SetT`, `Pick`, `Union`, `Intersect`, `Difference`, `Plus`, `Minus`) are
+    /// transparent, and an `Attr` read of an `Exists` / `Filter` variable whose
+    /// source is `Neighbours(v, E)` / `InNeighbours(v, E)` of a match variable
+    /// `v` is ONE HOP local (`wf_hop`): a write of that key on node `x` can flip
+    /// only bindings of the `E`-neighbours of `x`. `Substrate::set_hop_frontier`
+    /// swaps these into the `wf_*` fields above (and back).
+    pub wf_hop_alt: Option<Box<WfInfo>>,
+    /// One-hop local attr reads `(key, E, out)` of the active variant: `out` =
+    /// read through `Neighbours(v, E)` (so `v -E-> x`), else `InNeighbours`.
+    pub wf_hop: Vec<(Sym, Sym, bool)>,
+    /// The hop variant is the active one (`swap_wf_hop` toggles; install resets).
+    pub wf_hop_active: bool,
+    /// `AddEdge` effect types with at least one endpoint bound by the match:
+    /// deleting such an edge can re-enable only bindings of its endpoints
+    /// (`Substrate::delete_frontier`).
+    pub own_edge_seedable: rustc_hash::FxHashSet<Sym>,
+    /// Matcher traversal only, DEFAULT FALSE (set on the seeded sub-matches of
+    /// `Substrate::seeded_join_order`): a match edge whose endpoints are BOTH
+    /// bound is checked from its smaller side (the target's in-edges when they
+    /// are fewer than the source's out-edges) instead of enumerating every
+    /// out-neighbour of the source -- e.g. `agent -received-> m` with both bound
+    /// was O(conversation length). Edges are unique per (src, type, tgt), so the
+    /// one surviving candidate, and the binding order, are unchanged.
+    pub both_bound_probe: bool,
     /// Conservative "writes something opaque" — forces a blanket dirty.
     pub writes_any: bool,
     /// THE gate read by both run-rules paths. When true, the runner uses
@@ -562,10 +631,171 @@ impl RewriteRule {
                 RuleKey::Attr(_) | RuleKey::Type(_) => None,
             })
             .collect();
+        // Strict walk (install-time only): where + computed effect args, without
+        // the effects' own write-target look-ups (see `read_set_strict`). Effects
+        // other than the add/set kinds keep their full (conservative) access.
+        {
+            let mut strict = rustc_hash::FxHashSet::default();
+            let mut sra = false;
+            let mut ign_w = rustc_hash::FxHashSet::default();
+            let mut ign_wa = false;
+            if let Some(w) = self.where_ {
+                collect_term_reads(arena, w, &mut strict, &mut sra);
+            }
+            for eff in &self.effects {
+                let args: Option<Vec<&EffectArg>> = match eff {
+                    Effect::AddEdge { attrs, .. } if attrs.is_empty() => Some(Vec::new()),
+                    Effect::AddNode { attrs, .. } | Effect::AddNodeIfAbsent { attrs, .. } => {
+                        Some(attrs.iter().map(|(_, a)| a).collect())
+                    }
+                    Effect::SetAttr { value, .. } | Effect::SetAttrIfDifferent { value, .. } => {
+                        Some(vec![value])
+                    }
+                    _ => None,
+                };
+                match args {
+                    Some(args) => {
+                        for a in args {
+                            if let EffectArg::Computed(idx) = a {
+                                collect_term_reads(arena, *idx, &mut strict, &mut sra);
+                            }
+                        }
+                    }
+                    None => collect_effect_access(
+                        eff, arena, &mut strict, &mut ign_w, &mut sra, &mut ign_wa,
+                    ),
+                }
+            }
+            self.term_edge_reads_strict = strict
+                .iter()
+                .filter_map(|key| match key {
+                    RuleKey::Edge(edge_type) => Some(*edge_type),
+                    RuleKey::Attr(_) | RuleKey::Type(_) => None,
+                })
+                .collect();
+            self.read_set_strict = strict;
+        }
+        // Third walk (install-time only): reads_any minus the bound-node-local
+        // opaque reads, for the isolated-node write exemption.
+        {
+            LOCAL_OPAQUE_OK.with(|c| c.set(true));
+            let mut r2 = rustc_hash::FxHashSet::default();
+            let mut w2 = rustc_hash::FxHashSet::default();
+            let (mut ra2, mut wa2) = (false, false);
+            if let Some(w) = self.where_ {
+                collect_term_reads(arena, w, &mut r2, &mut ra2);
+            }
+            for eff in &self.effects {
+                collect_effect_access(eff, arena, &mut r2, &mut w2, &mut ra2, &mut wa2);
+            }
+            LOCAL_OPAQUE_OK.with(|c| c.set(false));
+            self.reads_any_nonlocal = ra2;
+        }
         self.read_set = reads;
         self.write_set = writes;
         self.reads_any = reads_any;
         self.writes_any = writes_any;
+        // Write-frontier locality walk (install-time only): the committed
+        // analysis, then its hop variant (`wf_hop_alt`).
+        let match_vars: rustc_hash::FxHashSet<Sym> = self
+            .match_edges
+            .iter()
+            .flat_map(|me| [me.src_var, me.tgt_var])
+            .collect();
+        for hop_mode in [false, true] {
+            let mut st = WfLocality {
+                match_vars: &match_vars,
+                shadow: smallvec::SmallVec::new(),
+                nonlocal: rustc_hash::FxHashSet::default(),
+                dyn_local: false,
+                dyn_nonlocal: false,
+                dyn_vars: smallvec::SmallVec::new(),
+                local_out: rustc_hash::FxHashSet::default(),
+                local_in: rustc_hash::FxHashSet::default(),
+                nonlocal_edges: rustc_hash::FxHashSet::default(),
+                hop_mode,
+                hop_src: smallvec::SmallVec::new(),
+                hop: Vec::new(),
+            };
+            if let Some(w) = self.where_ {
+                st.walk(arena, w);
+            }
+            let mut effects_ok = true;
+            for eff in &self.effects {
+                let args: Vec<&EffectArg> = match eff {
+                    Effect::AddEdge { attrs, .. } | Effect::AddNodeIfAbsent { attrs, .. } => {
+                        attrs.iter().map(|(_, a)| a).collect()
+                    }
+                    Effect::SetAttr { value, .. } | Effect::SetAttrIfDifferent { value, .. } => {
+                        vec![value]
+                    }
+                    // hop mode: a DelEdge of a type the rule does not match is a
+                    // read of that edge at its two bound endpoints only (a new
+                    // such edge can re-enable just the binding of its endpoints)
+                    Effect::DelEdge { src_var, edge_type, tgt_var }
+                        if hop_mode
+                            && !self.match_edges.iter().any(|me| me.edge_type == *edge_type)
+                            && match_vars.contains(src_var)
+                            && match_vars.contains(tgt_var) =>
+                    {
+                        st.local_out.insert(*edge_type);
+                        st.local_in.insert(*edge_type);
+                        Vec::new()
+                    }
+                    _ => {
+                        effects_ok = false;
+                        Vec::new()
+                    }
+                };
+                for a in args {
+                    if let EffectArg::Computed(idx) = a {
+                        st.walk(arena, *idx);
+                    }
+                }
+            }
+            let info = WfInfo {
+                ok: effects_ok
+                    && !self.match_edges.is_empty()
+                    && !st.dyn_nonlocal
+                    && !self.reads_any_nonlocal
+                    && !self.writes_any
+                    && !self
+                        .where_
+                        .map(|w| term_reads_fb_frame_seq(arena, w))
+                        .unwrap_or(false),
+                nonlocal_keys: st.nonlocal,
+                dyn_local: st.dyn_local,
+                dyn_vars: st.dyn_vars,
+                // an edge type every term read of which is local (no non-local read)
+                local_out: st.local_out.difference(&st.nonlocal_edges).copied().collect(),
+                local_in: st.local_in.difference(&st.nonlocal_edges).copied().collect(),
+                hop: st.hop,
+            };
+            if hop_mode {
+                self.wf_hop_alt = Some(Box::new(info));
+            } else {
+                self.wf_ok = info.ok;
+                self.wf_nonlocal_keys = info.nonlocal_keys;
+                self.wf_dyn_local = info.dyn_local;
+                self.wf_dyn_vars = info.dyn_vars;
+                self.wf_local_out = info.local_out;
+                self.wf_local_in = info.local_in;
+                self.wf_hop = Vec::new();
+                self.wf_hop_active = false;
+            }
+        }
+        self.own_edge_seedable = self
+            .effects
+            .iter()
+            .filter_map(|e| match e {
+                Effect::AddEdge { src_var, edge_type, tgt_var, .. }
+                    if match_vars.contains(src_var) || match_vars.contains(tgt_var) =>
+                {
+                    Some(*edge_type)
+                }
+                _ => None,
+            })
+            .collect();
         let order_safe = self.effects.iter().all(|e| {
             matches!(
                 e,
@@ -804,6 +1034,203 @@ pub fn rule_reads_attr_via_node_set(rule: &RewriteRule, arena: &TermArena) -> bo
     })
 }
 
+/// One write-frontier locality analysis (see `RewriteRule::wf_hop_alt`).
+#[derive(Clone, Debug, Default)]
+pub struct WfInfo {
+    pub ok: bool,
+    pub nonlocal_keys: rustc_hash::FxHashSet<Sym>,
+    pub dyn_local: bool,
+    pub dyn_vars: smallvec::SmallVec<[Sym; 2]>,
+    pub local_out: rustc_hash::FxHashSet<Sym>,
+    pub local_in: rustc_hash::FxHashSet<Sym>,
+    pub hop: Vec<(Sym, Sym, bool)>,
+}
+
+impl RewriteRule {
+    /// Make the hop variant (both are computed at install time) the active
+    /// write-frontier locality, or restore the committed one.
+    pub fn set_wf_hop(&mut self, on: bool) {
+        if self.wf_hop_active != on {
+            self.swap_wf_hop();
+        }
+    }
+
+    fn swap_wf_hop(&mut self) {
+        let Some(alt) = self.wf_hop_alt.as_mut() else { return };
+        self.wf_hop_active = !self.wf_hop_active;
+        std::mem::swap(&mut self.wf_ok, &mut alt.ok);
+        std::mem::swap(&mut self.wf_nonlocal_keys, &mut alt.nonlocal_keys);
+        std::mem::swap(&mut self.wf_dyn_local, &mut alt.dyn_local);
+        std::mem::swap(&mut self.wf_dyn_vars, &mut alt.dyn_vars);
+        std::mem::swap(&mut self.wf_local_out, &mut alt.local_out);
+        std::mem::swap(&mut self.wf_local_in, &mut alt.local_in);
+        std::mem::swap(&mut self.wf_hop, &mut alt.hop);
+    }
+}
+
+/// Write-frontier locality walker (`RewriteRule::wf_ok`). A read is LOCAL when
+/// it is of a match variable that no enclosing binder shadows, through only the
+/// transparent operators below (`Exists` / `Filter` scope their variable over
+/// the predicate; their source is in the outer scope): an `Attr` / `AttrByName`
+/// of it, or its out- / in-edges of one type (`Neighbours` / `InNeighbours`).
+/// Every other read is NON-LOCAL; any other Term contributes ALL its reads
+/// (`collect_term_reads`) as non-local.
+struct WfLocality<'a> {
+    match_vars: &'a rustc_hash::FxHashSet<Sym>,
+    shadow: smallvec::SmallVec<[Sym; 4]>,
+    nonlocal: rustc_hash::FxHashSet<Sym>,
+    dyn_local: bool,
+    dyn_nonlocal: bool,
+    dyn_vars: smallvec::SmallVec<[Sym; 2]>,
+    local_out: rustc_hash::FxHashSet<Sym>,
+    local_in: rustc_hash::FxHashSet<Sym>,
+    nonlocal_edges: rustc_hash::FxHashSet<Sym>,
+    /// hop mode (see `RewriteRule::wf_hop_alt`)
+    hop_mode: bool,
+    /// parallel to `shadow`: the binder's one-hop source `(E, out)`, if any
+    hop_src: smallvec::SmallVec<[Option<(Sym, bool)>; 4]>,
+    hop: Vec<(Sym, Sym, bool)>,
+}
+
+impl WfLocality<'_> {
+    /// The one-hop source of `idx` when it is a variable whose innermost binder
+    /// iterates `Neighbours` / `InNeighbours` of an unshadowed match variable.
+    fn hop_var(&self, arena: &TermArena, idx: TermIdx) -> Option<(Sym, bool)> {
+        if !self.hop_mode {
+            return None;
+        }
+        let crate::term::TermNode::Var { name } = arena.get(idx) else { return None };
+        let pos = self.shadow.iter().rposition(|s| s == name)?;
+        self.hop_src[pos]
+    }
+
+    fn local_var(&self, arena: &TermArena, idx: TermIdx) -> Option<Sym> {
+        match arena.get(idx) {
+            crate::term::TermNode::Var { name }
+                if self.match_vars.contains(name) && !self.shadow.contains(name) =>
+            {
+                Some(*name)
+            }
+            _ => None,
+        }
+    }
+
+    fn opaque(&mut self, arena: &TermArena, idx: TermIdx) {
+        let mut reads = rustc_hash::FxHashSet::default();
+        let mut ra = false;
+        collect_term_reads(arena, idx, &mut reads, &mut ra);
+        for k in reads {
+            match k {
+                RuleKey::Attr(a) => {
+                    self.nonlocal.insert(a);
+                }
+                RuleKey::Edge(e) => {
+                    self.nonlocal_edges.insert(e);
+                }
+                RuleKey::Type(_) => {}
+            }
+        }
+        if ra {
+            self.dyn_nonlocal = true;
+        }
+    }
+
+    fn walk(&mut self, arena: &TermArena, idx: TermIdx) {
+        use crate::term::TermNode as T;
+        match arena.get(idx) {
+            T::Attr { node, key } => {
+                if self.local_var(arena, *node).is_none() {
+                    match self.hop_var(arena, *node) {
+                        Some((et, out)) => {
+                            if !self.hop.contains(&(*key, et, out)) {
+                                self.hop.push((*key, et, out));
+                            }
+                        }
+                        None => {
+                            self.nonlocal.insert(*key);
+                        }
+                    }
+                }
+                self.walk(arena, *node);
+            }
+            T::AttrByName { node, name } => {
+                match self.local_var(arena, *node) {
+                    Some(v) => {
+                        self.dyn_local = true;
+                        if !self.dyn_vars.contains(&v) {
+                            self.dyn_vars.push(v);
+                        }
+                    }
+                    None => self.dyn_nonlocal = true,
+                }
+                self.walk(arena, *node);
+                self.walk(arena, *name);
+            }
+            T::Neighbours { node, edge_type, any_type } | T::InNeighbours { node, edge_type, any_type } => {
+                let out = matches!(arena.get(idx), T::Neighbours { .. });
+                if *any_type {
+                    self.dyn_nonlocal = true;
+                } else if self.local_var(arena, *node).is_some() {
+                    if out {
+                        self.local_out.insert(*edge_type);
+                    } else {
+                        self.local_in.insert(*edge_type);
+                    }
+                } else {
+                    self.nonlocal_edges.insert(*edge_type);
+                }
+                self.walk(arena, *node);
+            }
+            T::Exists { source, var_name, predicate } | T::Filter { source, var_name, predicate } => {
+                self.walk(arena, *source);
+                let src = match arena.get(*source) {
+                    T::Neighbours { node, edge_type, any_type: false }
+                        if self.local_var(arena, *node).is_some() => Some((*edge_type, true)),
+                    T::InNeighbours { node, edge_type, any_type: false }
+                        if self.local_var(arena, *node).is_some() => Some((*edge_type, false)),
+                    _ => None,
+                };
+                self.shadow.push(*var_name);
+                self.hop_src.push(src);
+                self.walk(arena, *predicate);
+                self.shadow.pop();
+                self.hop_src.pop();
+            }
+            T::SetT { .. }
+            | T::Pick { .. }
+            | T::Union { .. }
+            | T::Intersect { .. }
+            | T::Difference { .. }
+            | T::Plus { .. }
+            | T::Minus { .. }
+                if self.hop_mode =>
+            {
+                for c in crate::term::children(arena.get(idx)) {
+                    self.walk(arena, c);
+                }
+            }
+            T::Lit { .. } | T::Var { .. } => {}
+            T::TypeOf { .. }
+            | T::In { .. }
+            | T::Eq { .. }
+            | T::Lt { .. }
+            | T::Lte { .. }
+            | T::Gt { .. }
+            | T::Gte { .. }
+            | T::Count { .. }
+            | T::And { .. }
+            | T::Or { .. }
+            | T::Not { .. }
+            | T::IfThenElse { .. } => {
+                for c in crate::term::children(arena.get(idx)) {
+                    self.walk(arena, c);
+                }
+            }
+            _ => self.opaque(arena, idx),
+        }
+    }
+}
+
 /// Walk a where-clause / effect-arg Term, collecting graph reads.
 fn collect_term_reads(
     arena: &TermArena,
@@ -893,11 +1320,15 @@ fn collect_term_reads(
             collect_term_reads(arena, *source, reads, reads_any);
         }
         T::TypeOf { node } => {
-            *reads_any = true;
+            if !LOCAL_OPAQUE_OK.with(|c| c.get()) {
+                *reads_any = true;
+            }
             collect_term_reads(arena, *node, reads, reads_any);
         }
         T::AttrByName { node, name } => {
-            *reads_any = true;
+            if !LOCAL_OPAQUE_OK.with(|c| c.get()) {
+                *reads_any = true;
+            }
             collect_term_reads(arena, *node, reads, reads_any);
             collect_term_reads(arena, *name, reads, reads_any);
         }
@@ -1687,6 +2118,18 @@ where
                     .map(|s| (s, t))
                     .collect(),
             }
+        }
+        (Some(s), Some(t))
+            if rule.both_bound_probe
+                && graph.in_edges_slice(t, Some(*edge_type)).len()
+                    < graph.out_edges_slice(s, Some(*edge_type)).len() =>
+        {
+            graph
+                .in_neighbours(t, Some(*edge_type))
+                .into_iter()
+                .filter(|x| *x == s)
+                .map(|x| (x, t))
+                .collect()
         }
         (Some(s), Some(_)) => graph
             .neighbours(s, Some(*edge_type))
