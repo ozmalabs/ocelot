@@ -51,7 +51,9 @@ class DeltaFold:
         refs = [c["ref"] for c in cands]
         _check(basis in ("declared", "tracked", "held", "none"), f"{tid}: basis {basis}")
         _check(conf in (None, "declared", "strong", "weak", "held"), f"{tid}: confidence {conf}")
-        _check(len(cands) <= 16 and len(set(refs)) == len(refs), f"{tid}: candidates {refs}")
+        # T3h bound by construction: <= 4 + 3 x len(addressees)
+        _check(len(cands) <= 4 + 3 * len(t["addressees"]) and len(set(refs)) == len(refs),
+               f"{tid}: candidates {refs}")
         for c in cands:
             _check(set(c) == {"ref", "cues"} and c["cues"] and len(set(c["cues"])) == len(c["cues"])
                    and set(c["cues"]) <= CUE_CODES, f"{tid}: cues {c}")
@@ -69,7 +71,7 @@ class DeltaFold:
         # Amendment A topic relation: closed codebook, earlier refs, strict-superset dominance
         top, tc = t["topic_id"], t["topic_candidates"]
         trefs = [c["ref"] for c in tc]
-        _check(len(tc) <= 16 and len(set(trefs)) == len(trefs), f"{tid}: topic candidates {trefs}")
+        _check(len(tc) <= 4 and len(set(trefs)) == len(trefs), f"{tid}: topic candidates {trefs}")
         for c in tc:
             _check(set(c) == {"ref", "cues"} and c["cues"] and len(set(c["cues"])) == len(c["cues"])
                    and set(c["cues"]) <= TOPIC_CUE_CODES, f"{tid}: topic cues {c}")

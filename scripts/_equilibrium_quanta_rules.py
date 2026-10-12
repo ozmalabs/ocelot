@@ -145,6 +145,108 @@ SCOPE_ITEMS = ([("EqScopeOp", {"op": "neg", "form": f}) for f in NEGATORS]
 SCOPE_EDGE = {"EqScopeOp": "eq_has_scope_op", "EqScopeBoundary": "eq_has_scope_boundary",
               "EqCohMarker": "eq_has_coh_marker", "EqClosedClass": "eq_has_closed_class"}
 
+# ---- eq-tax-0.8.0 T3h: INTERROGATIVE CLAUSE SYNTAX (prosody- and punctuation-free) ----
+# Speech transcripts carry no '?' (AMI ASR: none), so the typed question mark -- the
+# speech_act_classify ladder's main cue -- is absent. English marks a main-clause
+# interrogative SYNTACTICALLY (Huddleston & Pullum 2002 ch.10; Quirk et al. 1985 §11):
+#   * closed (polar) interrogative: subject-auxiliary inversion -- an auxiliary / modal
+#     before the subject at the start of the clause ("do you", "is it", "can we");
+#   * open (wh) interrogative: a clause-initial wh-word followed by the inverted auxiliary
+#     ("what do", "how does", "where's") or the wh-phrase "how" + degree word
+#     ("how many"); WH + AUX + SUBJECT anywhere in the turn (inversion after a wh-word is
+#     a ROOT-clause phenomenon -- embedded interrogatives are not inverted, Emonds 1976;
+#     H&P 2002 §10.4 -- so it marks a main interrogative clause even mid-turn);
+#   * tag question: a turn-final reduced interrogative of negative auxiliary + pronoun
+#     ("..., isn't it", H&P 2002 §10.5).
+# "Clause-initial" admits turn-initial PREFACES before it (Schiffrin 1987 discourse
+# markers oh / well / and / but / or / so / now / then; response tokens and fillers --
+# yeah / okay / right / mm / uh / um, Jefferson 1984, Clark & Fox Tree 2002): earlier
+# tokens of the same clause must all be prefaces. Declarative questions ("you're coming")
+# are marked only by intonation, which a transcript does not carry: NOT guessed.
+# Closed classes; no lengths, no scores. A turn the ladder already calls a question
+# stays one; one the syntax marks is a question instead of an assertion / directive.
+INT_PREFACE = ("oh", "well", "and", "but", "or", "so", "now", "then", "yeah", "yeh", "yah", "yes", "yep",
+               "no", "okay", "ok", "right", "alright", "mm", "mmm", "mhm", "hmm", "hm", "uh", "um", "uhm",
+               "er", "erm", "ah", "huh")
+INT_AUX = ("is", "are", "was", "were", "am", "do", "does", "did", "can", "could", "will", "would",
+           "should", "shall", "may", "might", "must", "have", "has", "had", "isn't", "aren't",
+           "wasn't", "weren't", "don't", "doesn't", "didn't", "can't", "couldn't", "won't",
+           "wouldn't", "shouldn't", "haven't", "hasn't", "hadn't")
+# subject onsets: personal / existential / demonstrative / indefinite pronouns, determiners
+INT_SUBJECT = ("i", "you", "we", "they", "he", "she", "it", "there", "this", "that", "these", "those",
+               "anyone", "anybody", "someone", "somebody", "everyone", "everybody", "anything",
+               "something", "everything", "the", "a", "an", "any", "your", "our", "my", "his", "her",
+               "their", "its")
+INT_WH = ("what", "where", "when", "why", "how", "who", "which", "whose", "whom")
+INT_WH_AUX = ("what's", "where's", "when's", "why's", "how's", "who's", "what're", "who're", "where're",
+              "what've", "how'd", "where'd", "who'd", "what'd", "why'd")
+INT_DEGREE_HEAD = ("how",)
+INT_DEGREE = ("many", "much", "long", "often", "far", "big")
+INT_TAG_AUX = ("isn't", "aren't", "wasn't", "weren't", "don't", "doesn't", "didn't", "can't", "couldn't",
+               "won't", "wouldn't", "shouldn't", "haven't", "hasn't", "hadn't")
+INT_TAG_SUBJECT = ("i", "you", "we", "they", "he", "she", "it", "there")
+# additive SO-inversion ("so do I", "so is it": H&P 2002 §10.2.2 -- a declarative): the
+# preface "so" right before an inverted auxiliary whose subject ENDS the clause
+INT_ADDITIVE = ("so",)
+INTERROG_ITEMS = [("EqInterrog", {"role": role, "form": f})
+                  for role, forms in (("preface", INT_PREFACE), ("aux", INT_AUX), ("subject", INT_SUBJECT),
+                                      ("wh", INT_WH), ("wh_aux", INT_WH_AUX),
+                                      ("degree_head", INT_DEGREE_HEAD), ("degree", INT_DEGREE),
+                                      ("tag_aux", INT_TAG_AUX), ("tag_subject", INT_TAG_SUBJECT),
+                                      ("additive", INT_ADDITIVE))
+                  for f in forms]
+SCOPE_ITEMS += INTERROG_ITEMS
+SCOPE_EDGE["EqInterrog"] = "eq_has_interrog"
+
+
+def _irole(t, role, sfx):
+    v = f"ir_{sfx}"
+    return Ex(Nb("agent", "eq_has_interrog"), v, And(Eq(A(v, "role"), L(role)), Eq(A(v, "form"), A(t, "form"))))
+
+
+def _clause_initial(m, t, sfx):
+    """every earlier token of t's clause is a turn preface"""
+    k = f"ci_{sfx}"
+    return Not(Ex(Nb(m, "eq_has_token"), k, And(Eq(A(k, "eq_clause"), A(t, "eq_clause")),
+                                                Lt(A(k, "eq_pos"), A(t, "eq_pos")),
+                                                Not(_irole(k, "preface", f"{sfx}p")))))
+
+
+def _next_is(t, role, sfx):
+    u = f"nx_{sfx}"
+    return Ex(Nb(t, "eq_next"), u, _irole(u, role, sfx))
+
+
+INTERROG_ATTR = "eq_interrogative"  # (internal per-message mark, not a label: no eqfire / eqlab prefix)
+
+
+def interrogative_rule(name):
+    """m contains a main interrogative clause by syntax alone (see INTERROG_ITEMS): sets
+    `m.eq_interrogative`. The token is bound through the codebook by its form (R10 join
+    index), so only codebook forms are examined, and only an auxiliary / wh / tag token
+    pays for the clause-initial check (a short scan of the earlier tokens of its clause)."""
+    def role(r):
+        return Eq(A("c", "role"), L(r))
+    t = "t"
+    head = _clause_initial("m", t, "h")
+    so_inv = Ex(InNb(t, "eq_next"), "is_m", And(_irole("is_m", "additive", "o"), Ex(
+        Nb(t, "eq_next"), "isj_m", Not(Ex(Nb("isj_m", "eq_next"), "isk_m")))))
+    last = Ex(Nb(t, "eq_next"), "tv", And(_irole("tv", "tag_subject", "P"),
+                                         Not(Ex(Nb("m", "eq_has_token"), "tz", Gt(A("tz", "eq_pos"), A("tv", "eq_pos"))))))
+    pattern = Or(
+        And(role("aux"), _next_is(t, "subject", "s"), head, Not(so_inv)),
+        And(role("wh"), _next_is(t, "aux", "x"), head),
+        And(role("wh_aux"), head),
+        And(role("degree_head"), _next_is(t, "degree", "g"), head),
+        # WH + AUX + SUBJECT anywhere (root-clause inversion)
+        And(role("wh"), Ex(Nb(t, "eq_next"), "iu", And(_irole("iu", "aux", "X"), _next_is("iu", "subject", "S")))),
+        And(role("tag_aux"), last))
+    return {"name": name, "match": [RECV, ["m", "eq_has_token", t], ["agent", "eq_has_interrog", "c"]],
+            "where": And(Eq(A("m", INTERROG_ATTR), L(None)), Eq(A("c", "form"), A(t, "form")), pattern),
+            "effects": [["set_attr", "m", INTERROG_ATTR, True]],
+            "index_hints": [{"for_var": "c", "via_var": t, "via_key": "form", "node_type": "EqInterrog",
+                             "this_key": "form"}]}
+
 
 def in_scope(op, m="m", t="t", sfx=""):
     """Head token `t` of message `m` is in the scope of an `op` operator: an
@@ -892,8 +994,23 @@ def _open_item(y, a, m, b_same=None):
     return Ex(Nb(y, "eq_authored_by"), yb, by)
 
 
+def _pending_live(x):
+    """T3h: pending address x still selects its addressee. SPEECH (kind meeting): transfer
+    to a selected next speaker occurs at the selecting turn's transition-relevance place
+    and the turn-taking rules re-apply at every next one (Sacks, Schegloff & Jefferson
+    1974 rule 1), so a selection that is NOT a first pair part lapses once a further
+    non-continuer turn holds the floor (`w -eq_floor_last-> y`, the latest non-backchannel
+    turn); a question / directive keeps its response conditionally relevant beyond it
+    (Schegloff 1968; 2007 noticeable absence). TEXT (thread / channel) is
+    quasi-synchronous -- no transition-relevance places, disrupted adjacency (Garcia &
+    Jacobs 1999; Herring 1999) -- so an address persists until its addressee posts."""
+    return Or(Not(Eq(A("w", "eq_kind"), L("meeting"))), has(x, QUESTION), has(x, DIRECTIVE),
+              In(V(x), Nb("w", "eq_floor_last")))
+
+
 def _newer_pending(x, a, m, b):
-    return Ex(Nb(a, "eq_pending"), "yp", And(Gt(A("yp", POS), A(x, POS)), _open_item("yp", a, m, b)))
+    return Ex(Nb(a, "eq_pending"), "yp", And(Gt(A("yp", POS), A(x, POS)), _pending_live("yp"),
+                                             _open_item("yp", a, m, b)))
 
 
 def _leads_with_contrast(m):
@@ -904,6 +1021,15 @@ def _leads_with_contrast(m):
 
 
 UNDECLARED = Eq(A("m", "eq_reply_to_ref"), L(None))
+
+
+def _continuer_of(p, a):
+    """p is a CONTINUER inside a's talk: backchannel-only, by another actor than a, and the
+    turn right before p is a's (Yngve 1970 back channel; Schegloff 1982 continuers) and is
+    not a question -- after a question the response token is in the second-pair-part slot
+    (an answer, Schegloff 2007), not a continuer of talk in progress"""
+    return And(Not(_authored_by(p, a)), _backchannel_only(p),
+               Ex(Nb(p, "eq_prev_turn"), f"cq_{p}", And(_authored_by(f"cq_{p}", a), Not(has(f"cq_{p}", QUESTION)))))
 
 # ---- 0.8.0 (T3g): HELD-OPEN reply attribution ---------------------------------
 # A turn's parent is no longer forced. At its cursor step an undeclared turn m gets a
@@ -968,6 +1094,35 @@ TRACKING_EDGE.update({"EqTrkCue": "eq_has_trk_cue", "EqPolarAux": "eq_has_polar_
                       "EqPolarAnswer": "eq_has_polar_answer"})
 
 CANDS = Nb("m", "eq_has_cand")
+
+# T3h closed-class SEQUENCE-CLOSING THIRD forms (Schegloff 2007 ch.7.2 minimal
+# post-expansion: "oh", "okay", "alright", "right", assessments "good" / "great" /
+# "fine" / "cool", "thanks"). Continuers ("mm-hmm", "uh-huh") are NOT in it: they
+# display that the other's turn is still in progress (Schegloff 1982), the opposite of
+# closure. A turn made only of these forms (no span) is closing-third-only.
+CLOSING_THIRD = ("oh", "ah", "okay", "ok", "alright", "right", "good", "great", "fine", "cool", "thanks")
+TRACKING_ITEMS += [("EqClosingThird", {"form": f}) for f in CLOSING_THIRD]
+TRACKING_EDGE["EqClosingThird"] = "eq_has_closing_third"
+
+
+def _closing_third(m):
+    return And(Ex(Nb(m, "eq_has_token"), "ct0"), Not(Ex(Nb(m, "eq_has_span"), "cts")),
+               Not(Ex(Nb(m, "eq_has_token"), "ct1", Not(Ex(Nb("agent", "eq_has_closing_third"), "ct2",
+                                                           Eq(A("ct2", "form"), A("ct1", "form")))))))
+
+
+def _has_cue(c, code):
+    v = f"hk_{c}_{code}"
+    return Ex(Nb(c, "eq_cue"), v, Eq(A(v, "code"), L(code)))
+
+
+def _fpp_paired(c, x):
+    """candidate c -> x is a first pair part paired with the turn by its cues: a question
+    the turn sits in the slot of (`open_question`), answers in its type-conforming form
+    (`answer_form`) or was selected by (`addressed`), or a directive that `addressed` the
+    turn's author"""
+    return Or(And(has(x, QUESTION), Or(*[_has_cue(c, k) for k in ("open_question", "answer_form", "addressed")])),
+              And(has(x, DIRECTIVE), _has_cue(c, "addressed")))
 
 
 def _open_q(x):
@@ -1067,7 +1222,7 @@ def _substantive_answer(m):
 CUE_PREDICATES = {
     "adjacent": In(V("x"), Nb("m", "eq_trk_adj")),
     "open_question": And(_open_q("x"), _qud_for("x", "a"), _reply_gate("x", "b")),
-    "addressed": In(V("a"), InNb("x", "eq_pending")),
+    "addressed": And(In(V("a"), InNb("x", "eq_pending")), _pending_live("x")),
     "vocative": In(V("b"), Nb("m", "eq_trk_voc")),
     "second_person": In(V("b"), Nb("m", "eq_trk_2p")),
     "contrast": And(_contrastive("m"), In(V("x"), Nb("b", "eq_last_claim"))),
@@ -1140,6 +1295,16 @@ def _tdominates(c, r):
 def _tdominates_all(m, c):
     r = f"tr_{c}"
     return Not(Ex(Nb(m, "eq_has_tcand"), r, And(Not(Same(r, c)), Not(_tdominates(c, r)))))
+
+
+def _newer_room_issue(x):
+    """T3h bound (KoS MaxQUD, Ginzburg 2012; Roberts 1996 QUD stack): a strictly more recent
+    live ROOM issue by another actor than m's author, in m's sequence space. The room's
+    topic source contributes its stack top (the maximal live room issue for m), not every
+    asker's pointer: older room issues stay live (open, unanswered / responsiveness state,
+    via_reply into their sequence, and top again once the newer one is downdated)."""
+    return Ex(Nb("w", "eq_has_actor"), "nr_c", And(Not(Same("nr_c", "a")), Ex(
+        Nb("nr_c", "eq_qud_room"), "nr_y", And(Gt(A("nr_y", POS), A(x, POS)), _thread_shared("m", "nr_y")))))
 
 
 def _live_issue(x):
@@ -1227,7 +1392,7 @@ TOPIC_RULES = [
     rule("eq.trk.top.cand.for", [WIN, CUR, AUTH, ["a", "eq_qud_for", "x"], ["x", "eq_authored_by", "b"]],
          And(Not(Same("a", "b")), NOT_DECLARED), TOP_FX),
     rule("eq.trk.top.cand.room", [WIN, CUR, AUTH, ["w", "eq_has_actor", "b"], ["b", "eq_qud_room", "x"]],
-         And(Not(Same("a", "b")), NOT_DECLARED), TOP_FX),
+         And(Not(Same("a", "b")), NOT_DECLARED, _thread_shared("m", "x"), Not(_newer_room_issue("x"))), TOP_FX),
     # via_reply sources: the settled parent question itself, or the parent's decided topic
     *[rule(f"eq.trk.top.via_q.{basis}", [WIN, CUR, ["m", edge, "x"]],
            And(has("x", QUESTION), _live_issue("x")), TOP_FX) for basis, edge in VIA],
@@ -1277,7 +1442,15 @@ TRACKING_RULES = [
     # 0.8.0 adjacent other-speaker turn: the previous turn if another actor wrote it,
     # else (same-actor run) the previous turn's own adjacent turn -- one chain step
     rule("eq.trk.adj.prev", [WIN, CUR, AUTH, ["m", "eq_prev_turn", "p"], ["p", "eq_authored_by", "b"]],
-         Not(Same("a", "b")), [["add_edge", "m", "eq_trk_adj", "p"]]),
+         And(Not(Same("a", "b")), Not(_continuer_of("p", "a"))), [["add_edge", "m", "eq_trk_adj", "p"]]),
+    # T3h CONTINUER (Yngve 1970; Schegloff 1982): a backchannel-only turn by another actor
+    # between two turns of m's author passes up the turn -- the author's talk CONTINUES
+    # across it -- so it is not the other-speaker turn m follows: m's adjacent turn is that
+    # of the author's own previous turn (the run's), exactly as over a same-actor run.
+    # Decided by what follows (the author continues), as Schegloff defines continuers.
+    rule("eq.trk.adj.continuer", [WIN, CUR, AUTH, ["m", "eq_prev_turn", "p"], ["p", "eq_prev_turn", "q"],
+                                  ["q", "eq_trk_adj", "x"]],
+         _continuer_of("p", "a"), [["add_edge", "m", "eq_trk_adj", "x"]]),
     # (p's author is a where-check, not a match edge: a match edge `p -eq_authored_by-> a`
     # joined from the new authorship edge would enumerate every turn of a)
     rule("eq.trk.adj.run", [WIN, CUR, AUTH, ["m", "eq_prev_turn", "p"], ["p", "eq_trk_adj", "x"]],
@@ -1331,7 +1504,8 @@ TRACKING_RULES = [
          CAND_FX),
     rule("eq.trk.cand.pending",
          [WIN, CUR, AUTH, ["a", "eq_pending", "x"], ["x", "eq_authored_by", "b"]],
-         And(UNDECLARED, Not(Same("a", "b")), _compat("m", "x", "b"), Not(_newer_pending("x", "a", "m", "b"))),
+         And(UNDECLARED, Not(Same("a", "b")), _pending_live("x"), _compat("m", "x", "b"),
+             Not(_newer_pending("x", "a", "m", "b"))),
          CAND_FX),
     # a claim the turn contrasts with / concedes / disagrees with: the most recent
     # compatible claim by another actor
@@ -1404,10 +1578,36 @@ TRACKING_RULES = [
              Ex(Nb("p", "eq_authored_by"), "pa", In(V("p"), Nb("pa", "eq_trk_held")))),
          [["add_edge", "c", "eq_cue", "k"], ["add_edge", "m", "eq_trk_up", "p"],
           ["add_edge", "w", "eq_trk_rev", "p"]]),
+    # T3h SEQUENCE-CLOSING THIRD (Schegloff 2007 ch.7: minimal post-expansion -- "oh",
+    # "okay", an assessment -- produced by the FIRST-pair-part speaker on receipt of the
+    # second pair part; Heritage 1984 "oh" receipt). m by a is closing-third-only and comes
+    # right after held frontier turn p (m's adjacent turn is p: third position), and a
+    # authored candidate x of p that is a first pair part paired with p by the cues
+    # (a question with `open_question` -- p is in its slot or has its answer form -- or a
+    # directive that `addressed` p's author). a's receipt displays the sequence x -> p as
+    # a closed adjacency pair: p is that sequence's second pair part, so p's other
+    # candidates are RULED OUT (removed: the participants decided, nothing is ranked) and
+    # x gains `uptake`; p is re-evaluated by the unchanged dominance shape below (a sole
+    # candidate dominates vacuously). Where the FPP speaker produces no such receipt (or
+    # does something else) the turn stays held.
+    rule("eq.trk.sct.ratify",
+         [WIN, CUR, AUTH, ["m", "eq_trk_adj", "p"], ["p", "eq_has_cand", "c"], ["c", "eq_cand_ref", "x"],
+          ["p", "eq_has_cand", "r"], TRK_CUE],
+         And(Eq(A("k", "code"), L("uptake")), Not(Same("r", "c")), Eq(A("p", "eq_trk_conf"), L("held")),
+             _authored_by("x", "a"), _fpp_paired("c", "x"), _closing_third("m"),
+             # the FPP is unique: no other candidate of p is a paired FPP by a (two of a's
+             # questions: which sequence a closed is not decided -- held)
+             Not(Ex(Nb("p", "eq_has_cand"), "so", And(Not(Same("so", "c")), Ex(
+                 Nb("so", "eq_cand_ref"), "sox", And(_authored_by("sox", "a"), _fpp_paired("so", "sox")))))),
+             Ex(Nb("p", "eq_authored_by"), "spa", In(V("p"), Nb("spa", "eq_trk_held")))),
+         [["del_edge", "p", "eq_has_cand", "r"], ["add_edge", "c", "eq_cue", "k"],
+          ["add_edge", "m", "eq_trk_up", "p"], ["add_edge", "w", "eq_trk_rev", "p"]]),
     # late collapse of a taken-up frontier turn p (same dominance shape, at m's step)
     rule("eq.trk.late.mark", [WIN, CUR, ["m", "eq_trk_up", "p"], ["p", "eq_has_cand", "c"], ["c", "eq_cand_ref", "x"]],
          And(_dominates_all("p", "c"), Not(Ex(Nb("p", "eq_trk_to"), "px"))),
-         [["add_edge", "w", "eq_trk_late", "p"]]),
+         # (`eq_trk_resolved`: eval read-out only, read by no rule -- a HELD turn resolved
+         # later, in any batch, incl. the turn's own)
+         [["add_edge", "w", "eq_trk_late", "p"], ["add_edge", "w", "eq_trk_resolved", "p"]]),
     rule("eq.trk.late.strong", [WIN, CUR, ["m", "eq_trk_up", "p"], ["p", "eq_has_cand", "c"], ["c", "eq_cand_ref", "x"]],
          And(_dominates_all("p", "c"), _strong("c")),
          [["add_edge", "p", "eq_trk_to", "x"], ["set_attr", "p", "eq_trk_conf", "strong"]]),
@@ -1480,6 +1680,10 @@ TRACKING_RULES = [
          And(Not(Same("a", "b")), _thread_shared("m", "x")), [["del_edge", "x", "eq_cr_slot", "w"]]),
     rule("eq.trk.slot.open", [WIN, CUR], And(has("m", QUESTION), Not(_addressed_any("m"))),
          [["add_edge", "m", "eq_cr_slot", "w"]]),
+    # T3h the floor's latest non-backchannel turn (read by _pending_live; speech only)
+    rule("eq.trk.floor_last.drop", [WIN, CUR, ["w", "eq_floor_last", "y"]],
+         And(Not(Same("y", "m")), Not(_backchannel_only("m"))), [["del_edge", "w", "eq_floor_last", "y"]]),
+    rule("eq.trk.floor_last.set", [WIN, CUR], Not(_backchannel_only("m")), [["add_edge", "w", "eq_floor_last", "m"]]),
     rule("eq.trk.pending.taken", [WIN, CUR, AUTH, ["a", "eq_pending", "x"]], L(True),
          [["del_edge", "a", "eq_pending", "x"]]),
     rule("eq.trk.pending.add", [WIN, CUR, AUTH, ["m", "eq_addresses", "b"]], Not(Same("a", "b")),
@@ -1540,7 +1744,7 @@ TRACKING_EDGE_TYPES = [
     ("EqAlias", "eq_alias_tok", "EqAliasTok"),
     # 0.8.0 held-open reply attribution
     ("Agent", "eq_has_trk_cue", "EqTrkCue"), ("Agent", "eq_has_polar_aux", "EqPolarAux"),
-    ("Agent", "eq_has_polar_answer", "EqPolarAnswer"),
+    ("Agent", "eq_has_polar_answer", "EqPolarAnswer"), ("Agent", "eq_has_closing_third", "EqClosingThird"),
     ("Message", "eq_trk_adj", "Message"), ("EqActor", "eq_last_turn", "Message"),
     ("Message", "eq_trk_voc", "EqActor"), ("Message", "eq_trk_2p", "EqActor"),
     ("Message", "eq_trk_cand", "Message"), ("Message", "eq_has_cand", "EqParentCand"),
@@ -1548,7 +1752,8 @@ TRACKING_EDGE_TYPES = [
     ("EqActor", "eq_trk_held", "Message"), ("Message", "eq_trk_up", "Message"),
     ("EqWindow", "eq_trk_rev", "Message"), ("EqWindow", "eq_trk_late", "Message"),
     ("EqActor", "eq_qud_for", "Message"), ("EqActor", "eq_qud_room", "Message"),
-    ("EqWindow", "eq_qud_lapsed", "Message"),
+    ("EqWindow", "eq_qud_lapsed", "Message"), ("EqWindow", "eq_trk_resolved", "Message"),
+    ("EqWindow", "eq_floor_last", "Message"),
     # eq-tax-0.8.0 Amendment A: topic relation
     ("Agent", "eq_has_top_cue", "EqTopicCue"), ("Message", "eq_top_cand", "Message"),
     ("Message", "eq_has_tcand", "EqTopicCand"), ("EqTopicCand", "eq_tcand_ref", "Message"),
