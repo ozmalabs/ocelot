@@ -82,6 +82,45 @@ def test_supported_neutral_evidence_materializes_proposition_and_attribution():
     assert agent.s.has_edge(ground, "contains_claim", proposition)
 
 
+def test_live_neutral_events_bind_claims_to_the_addressed_common_ground():
+    agent = WorldAdapter(seeds=())
+    first_speaker = agent.s.add_node("Interlocutor", {"name": "first"})
+    second_speaker = agent.s.add_node("Interlocutor", {"name": "second"})
+    first_ground = agent.s.add_node("Interlocutor", {"name": "first_listener"})
+    second_ground = agent.s.add_node("Interlocutor", {"name": "second_listener"})
+
+    results = []
+    for index, (speaker, addressee) in enumerate((
+            (first_speaker, first_ground), (second_speaker, second_ground))):
+        evidence = _evidence(evidence_id="scope-%d" % index)
+        result = agent.ingest_semantic_event({
+            "event_id": "scope-event-%d" % index,
+            "communicative_force": "assertion_or_correction",
+            "cognitive_goal": "update_common_ground",
+            "grounding_status": "candidate_grounded",
+            "proposition": evidence,
+        }, provider="neutral_semantic_adapter", speaker=speaker,
+           addressee=addressee, conversation_id="shared-conversation")
+        results.append(result)
+
+    first_prop = results[0]["proposition"]["proposition"]
+    second_prop = results[1]["proposition"]["proposition"]
+    # The public claim relation points ledger -> proposition.
+    grounds = agent.s.nodes("CommonGround")
+    scoped_seen = set()
+    for ground in grounds:
+        scope = agent.s.node(ground)["attrs"].get("scope_key")
+        claims = set(agent.inner.neighbours(ground, "contains_claim"))
+        if scope == "addressee:%s" % first_ground:
+            scoped_seen.add(scope)
+            assert first_prop in claims and second_prop not in claims
+        elif scope == "addressee:%s" % second_ground:
+            scoped_seen.add(scope)
+            assert second_prop in claims and first_prop not in claims
+    assert scoped_seen == {"addressee:%s" % first_ground,
+                           "addressee:%s" % second_ground}
+
+
 def test_parse_only_evidence_is_rejected_without_graph_mutation():
     agent = _fresh()
     before = {kind: len(agent.s.nodes(kind)) for kind in (

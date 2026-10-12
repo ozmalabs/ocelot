@@ -1,0 +1,163 @@
+{
+  "capture": "evaluation/reports/cow_high_churn_lifecycle_v1.json",
+  "cells": [
+    {
+      "backends": {
+        "eager_copy": {
+          "adjusted_post_drop_residual_max_bytes": 0,
+          "adjusted_post_drop_residual_min_bytes": 0,
+          "median_after_cancel_delta_bytes": 2087392,
+          "median_all_live_delta_bytes": 4173760,
+          "median_wave_wall_us": 3496.694,
+          "p95_wave_wall_us_nearest_rank": 6442.405,
+          "repeated_wave_all_live_first_last_bytes": [
+            4173760,
+            4173760
+          ]
+        },
+        "shared_snapshot": {
+          "adjusted_post_drop_residual_max_bytes": 0,
+          "adjusted_post_drop_residual_min_bytes": 0,
+          "median_after_cancel_delta_bytes": 130624,
+          "median_all_live_delta_bytes": 260224,
+          "median_wave_wall_us": 404.633,
+          "p95_wave_wall_us_nearest_rank": 1059.0980000000002,
+          "repeated_wave_all_live_first_last_bytes": [
+            260224,
+            260224
+          ]
+        }
+      },
+      "eager_over_shared_median_live_allocation_ratio": 16.03910477127398,
+      "eager_over_shared_median_time_ratio": 8.641643168006564,
+      "fanout": 4,
+      "size_nodes": 10000
+    },
+    {
+      "backends": {
+        "eager_copy": {
+          "adjusted_post_drop_residual_max_bytes": 0,
+          "adjusted_post_drop_residual_min_bytes": 0,
+          "median_after_cancel_delta_bytes": 8349568,
+          "median_all_live_delta_bytes": 16695040,
+          "median_wave_wall_us": 10685.325,
+          "p95_wave_wall_us_nearest_rank": 16856.887000000002,
+          "repeated_wave_all_live_first_last_bytes": [
+            16695040,
+            16695040
+          ]
+        },
+        "shared_snapshot": {
+          "adjusted_post_drop_residual_max_bytes": 0,
+          "adjusted_post_drop_residual_min_bytes": 0,
+          "median_after_cancel_delta_bytes": 522496,
+          "median_all_live_delta_bytes": 1040896,
+          "median_wave_wall_us": 1395.65,
+          "p95_wave_wall_us_nearest_rank": 7448.500999999999,
+          "repeated_wave_all_live_first_last_bytes": [
+            1040896,
+            1040896
+          ]
+        }
+      },
+      "eager_over_shared_median_live_allocation_ratio": 16.03910477127398,
+      "eager_over_shared_median_time_ratio": 7.6561637946476555,
+      "fanout": 16,
+      "size_nodes": 10000
+    },
+    {
+      "backends": {
+        "eager_copy": {
+          "adjusted_post_drop_residual_max_bytes": 0,
+          "adjusted_post_drop_residual_min_bytes": 0,
+          "median_after_cancel_delta_bytes": 10241952,
+          "median_all_live_delta_bytes": 20482880,
+          "median_wave_wall_us": 16857.818,
+          "p95_wave_wall_us_nearest_rank": 19670.828,
+          "repeated_wave_all_live_first_last_bytes": [
+            20482880,
+            20482880
+          ]
+        },
+        "shared_snapshot": {
+          "adjusted_post_drop_residual_max_bytes": 0,
+          "adjusted_post_drop_residual_min_bytes": 0,
+          "median_after_cancel_delta_bytes": 450624,
+          "median_all_live_delta_bytes": 900224,
+          "median_wave_wall_us": 1280.839,
+          "p95_wave_wall_us_nearest_rank": 5358.977,
+          "repeated_wave_all_live_first_last_bytes": [
+            900224,
+            900224
+          ]
+        }
+      },
+      "eager_over_shared_median_live_allocation_ratio": 22.75309256362861,
+      "eager_over_shared_median_time_ratio": 13.161543332144008,
+      "fanout": 4,
+      "size_nodes": 50000
+    },
+    {
+      "backends": {
+        "eager_copy": {
+          "adjusted_post_drop_residual_max_bytes": 0,
+          "adjusted_post_drop_residual_min_bytes": 0,
+          "median_after_cancel_delta_bytes": 40967808,
+          "median_all_live_delta_bytes": 81931520,
+          "median_wave_wall_us": 33926.767,
+          "p95_wave_wall_us_nearest_rank": 56581.565,
+          "repeated_wave_all_live_first_last_bytes": [
+            81931520,
+            81931520
+          ]
+        },
+        "shared_snapshot": {
+          "adjusted_post_drop_residual_max_bytes": 0,
+          "adjusted_post_drop_residual_min_bytes": 0,
+          "median_after_cancel_delta_bytes": 1802496,
+          "median_all_live_delta_bytes": 3600896,
+          "median_wave_wall_us": 3962.9069999999997,
+          "p95_wave_wall_us_nearest_rank": 10109.661,
+          "repeated_wave_all_live_first_last_bytes": [
+            3600896,
+            3600896
+          ]
+        }
+      },
+      "eager_over_shared_median_live_allocation_ratio": 22.75309256362861,
+      "eager_over_shared_median_time_ratio": 8.561080792458668,
+      "fanout": 16,
+      "size_nodes": 50000
+    }
+  ],
+  "gates": {
+    "all_200_waves_semantics_pass": true,
+    "all_adjusted_post_drop_residuals_zero": true,
+    "exact_branch_id_parity": true,
+    "primary_and_later_snapshot_isolation": true,
+    "retained_base_all_live_allocation_first_last_equal": true
+  },
+  "limits": [
+    "one host",
+    "synthetic node-only graph",
+    "requested allocator bytes, not RSS/PSS",
+    "not commit/adoption or serving-runtime evidence"
+  ],
+  "paired_cells": 4,
+  "rows": 200,
+  "schema": "CowHighChurnLifecycleAnalysisV1",
+  "source_capture_sha256": {
+    "docs/research/engine_substrate/COW_HIGH_CHURN_LIFECYCLE_V1_PREREG_20261001.md": "sha256:9bce0f52757c0163947b78b1a77ed39919cdc3a9949970167b29ed35957105de",
+    "evaluation/substrate_capability/cow_high_churn_lifecycle_v1.py": "sha256:97f7db956863d8a623da4d7c78a45c3811983ef11a57c2d1f717668d928a8544",
+    "evaluation/substrate_capability/fixtures/cow_high_churn_lifecycle/Cargo.lock": "sha256:42faa209a8385c3a0a68cdb2b6995c5b34129668f3949be0000845f306847bce",
+    "evaluation/substrate_capability/fixtures/cow_high_churn_lifecycle/Cargo.toml": "sha256:524732ce22ddc3d883d24d38f77949fabe17fbca508418cac516853c68869969",
+    "evaluation/substrate_capability/fixtures/cow_high_churn_lifecycle/src/main.rs": "sha256:23cd90416aa61b8d90f7736b6dc8eb78af3519c8bdd4e96c154d0b6306de952e",
+    "runners/dsl/python/substrate_rs/_native.build.json": "sha256:1134ae2221afebe9dc3dfd10390942162817d59d01e9c2eb85819268102cf13e",
+    "runners/dsl/src/cow_paged_vec.rs": "sha256:4b180c6aeb3cf9ee4391e65ba3aa50110b255da5697a909b46e7f4ec852939e4",
+    "runners/dsl/src/cow_sharded_map.rs": "sha256:b5f9cd600be3c395356cbe361bc4df37f21b28396305bc2f14973f99e17cbe37",
+    "runners/dsl/src/graph.rs": "sha256:9744fec2e0c5091f2036081ffc615b1c7dd00ba2a5995af1294efb0b5aa5a28c",
+    "runners/dsl/src/py.rs": "sha256:201adbebde67c80bce80de6622095472bcb58e83a2b4df50f9b314bc9000a1de",
+    "runners/dsl/src/substrate.rs": "sha256:bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+    "scripts/analyze_cow_high_churn_lifecycle_v1.py": "sha256:43bb37e5a146a0d9235dd4592f40775aa65da8520922da14797dd473f77a5ac0"
+  }
+}

@@ -563,6 +563,211 @@ static DIM_INFER_ARGS_ORDERED: Mutex<Vec<Vec<u8>>> = Mutex::new(Vec::new());
 /// The distinct UNORDERED (canonically sorted) encodings. Lower bound.
 static DIM_INFER_ARGS_UNORDERED: Mutex<Vec<Vec<u8>>> = Mutex::new(Vec::new());
 
+// GenInfer search attribution. These sit at the operation itself rather than
+// in EvalCtx: production rewrite effects construct EvalCtx at several paths,
+// and an EvalCtx-only probe can silently miss the rule engine entirely.
+static GEN_INFER_REQUESTS: AtomicU64 = AtomicU64::new(0);
+static GEN_INFER_CACHE_HITS: AtomicU64 = AtomicU64::new(0);
+static GEN_INFER_KERNEL_CALLS: AtomicU64 = AtomicU64::new(0);
+static GEN_INFER_ELIGIBLE_BASES: AtomicU64 = AtomicU64::new(0);
+static GEN_INFER_MATRIX_ATTEMPTS: AtomicU64 = AtomicU64::new(0);
+static GEN_INFER_APPLY_REJECTS: AtomicU64 = AtomicU64::new(0);
+static GEN_INFER_CANDIDATE_REJECTS: AtomicU64 = AtomicU64::new(0);
+static GEN_INFER_RESIDUAL_REJECTS: AtomicU64 = AtomicU64::new(0);
+static GEN_INFER_CANDIDATE_SURVIVORS: AtomicU64 = AtomicU64::new(0);
+static GEN_INFER_BASES_BY_BOUND: Mutex<BTreeMap<i64, u64>> = Mutex::new(BTreeMap::new());
+static GEN_INFER_FULL_RANK_BASES: AtomicU64 = AtomicU64::new(0);
+static GEN_INFER_FULL_RANK_REFUSALS: AtomicU64 = AtomicU64::new(0);
+static GEN_INFER_FULL_RANK_ATTEMPTS: AtomicU64 = AtomicU64::new(0);
+static GEN_INFER_FULL_RANK_APPLY_REJECTS: AtomicU64 = AtomicU64::new(0);
+static GEN_INFER_FULL_RANK_CANDIDATE_REJECTS: AtomicU64 = AtomicU64::new(0);
+static GEN_INFER_FULL_RANK_RESIDUAL_REJECTS: AtomicU64 = AtomicU64::new(0);
+static GEN_INFER_FULL_RANK_SURVIVORS: AtomicU64 = AtomicU64::new(0);
+#[cfg(feature = "geninfer_linear_exact_prefilter")]
+static GEN_INFER_PREFILTER_ATTEMPTS: AtomicU64 = AtomicU64::new(0);
+#[cfg(feature = "geninfer_linear_exact_prefilter")]
+static GEN_INFER_PREFILTER_SOLVED: AtomicU64 = AtomicU64::new(0);
+#[cfg(feature = "geninfer_linear_exact_prefilter")]
+static GEN_INFER_PREFILTER_NO_FIT: AtomicU64 = AtomicU64::new(0);
+#[cfg(feature = "geninfer_linear_exact_prefilter")]
+static GEN_INFER_PREFILTER_FALLBACK: AtomicU64 = AtomicU64::new(0);
+#[cfg(feature = "geninfer_linear_exact_prefilter")]
+static GEN_INFER_PREFILTER_INPUT_RELATIONS: AtomicU64 = AtomicU64::new(0);
+#[cfg(feature = "geninfer_linear_exact_prefilter")]
+static GEN_INFER_PREFILTER_IDENTITY_VALUE_COMPARISONS: AtomicU64 = AtomicU64::new(0);
+#[cfg(feature = "geninfer_linear_exact_prefilter")]
+static GEN_INFER_PREFILTER_EXACT_ARITHMETIC_CHECKS: AtomicU64 = AtomicU64::new(0);
+#[cfg(feature = "geninfer_linear_exact_prefilter")]
+static GEN_INFER_PREFILTER_NO_FIT_REASONS: Mutex<BTreeMap<&'static str, u64>> = Mutex::new(BTreeMap::new());
+#[cfg(feature = "geninfer_linear_exact_prefilter")]
+static GEN_INFER_PREFILTER_FALLBACK_REASONS: Mutex<BTreeMap<&'static str, u64>> = Mutex::new(BTreeMap::new());
+#[cfg(feature = "geninfer_linear_exact_prefilter")]
+static GEN_INFER_ROWF_ATTEMPTS: AtomicU64 = AtomicU64::new(0);
+#[cfg(feature = "geninfer_linear_exact_prefilter")]
+static GEN_INFER_ROWF_SOLVED: AtomicU64 = AtomicU64::new(0);
+#[cfg(feature = "geninfer_linear_exact_prefilter")]
+static GEN_INFER_ROWF_NO_CANDIDATE: AtomicU64 = AtomicU64::new(0);
+#[cfg(feature = "geninfer_linear_exact_prefilter")]
+static GEN_INFER_ROWF_FALLBACK: AtomicU64 = AtomicU64::new(0);
+#[cfg(feature = "geninfer_linear_exact_prefilter")]
+static GEN_INFER_ROWF_ROW_EVALUATIONS: AtomicU64 = AtomicU64::new(0);
+#[cfg(feature = "geninfer_linear_exact_prefilter")]
+static GEN_INFER_ROWF_NO_CANDIDATE_REASONS: Mutex<BTreeMap<&'static str, u64>> = Mutex::new(BTreeMap::new());
+#[cfg(feature = "geninfer_linear_exact_prefilter")]
+static GEN_INFER_ROWF_FALLBACK_REASONS: Mutex<BTreeMap<&'static str, u64>> = Mutex::new(BTreeMap::new());
+#[cfg(feature = "geninfer_linear_exact_prefilter")]
+static GEN_INFER_CORR_ATTEMPTS: AtomicU64 = AtomicU64::new(0);
+#[cfg(feature = "geninfer_linear_exact_prefilter")]
+static GEN_INFER_CORR_FOUND: AtomicU64 = AtomicU64::new(0);
+#[cfg(feature = "geninfer_linear_exact_prefilter")]
+static GEN_INFER_CORR_NO_CANDIDATE: AtomicU64 = AtomicU64::new(0);
+#[cfg(feature = "geninfer_linear_exact_prefilter")]
+static GEN_INFER_CORR_FALLBACK: AtomicU64 = AtomicU64::new(0);
+#[cfg(feature = "geninfer_linear_exact_prefilter")]
+static GEN_INFER_CORR_HYPOTHESES: AtomicU64 = AtomicU64::new(0);
+#[cfg(feature = "geninfer_linear_exact_prefilter")]
+static GEN_INFER_CORR_VALIDATIONS: AtomicU64 = AtomicU64::new(0);
+#[cfg(feature = "geninfer_linear_exact_prefilter")]
+static GEN_INFER_CORR_NO_CANDIDATE_REASONS: Mutex<BTreeMap<&'static str, u64>> = Mutex::new(BTreeMap::new());
+#[cfg(feature = "geninfer_linear_exact_prefilter")]
+static GEN_INFER_CORR_FALLBACK_REASONS: Mutex<BTreeMap<&'static str, u64>> = Mutex::new(BTreeMap::new());
+#[cfg(feature = "geninfer_quadratic_map_solver")]
+static GEN_INFER_QUADRATIC_ENABLED_CALLS: AtomicU64 = AtomicU64::new(0);
+#[cfg(feature = "geninfer_quadratic_map_solver")]
+static GEN_INFER_QUADRATIC_ATTEMPTS: AtomicU64 = AtomicU64::new(0);
+#[cfg(feature = "geninfer_quadratic_map_solver")]
+static GEN_INFER_QUADRATIC_VALIDATION_REJECTS: AtomicU64 = AtomicU64::new(0);
+#[cfg(feature = "geninfer_quadratic_map_solver")]
+static GEN_INFER_QUADRATIC_SURVIVORS: AtomicU64 = AtomicU64::new(0);
+#[cfg(feature = "geninfer_quadratic_map_solver")]
+static GEN_INFER_QUADRATIC_REFUSALS: Mutex<BTreeMap<&'static str, u64>> = Mutex::new(BTreeMap::new());
+#[cfg(feature = "geninfer_full_rank_identity_join_work_audit")]
+static GEN_INFER_FULL_RANK_IDENTITY_KEY_COMPARISONS: AtomicU64 = AtomicU64::new(0);
+
+#[inline]
+pub fn gen_infer_request() {
+    if enabled() { bump(&GEN_INFER_REQUESTS, 1); }
+}
+
+#[inline]
+pub fn gen_infer_cache_hit() {
+    if enabled() { bump(&GEN_INFER_CACHE_HITS, 1); }
+}
+
+#[inline]
+pub fn gen_infer_kernel_call() {
+    if enabled() { bump(&GEN_INFER_KERNEL_CALLS, 1); }
+}
+
+pub fn gen_infer_search_result(
+    eligible_bases: u64,
+    matrix_attempts: u64,
+    apply_rejects: u64,
+    candidate_rejects: u64,
+    residual_rejects: u64,
+    candidate_survivors: u64,
+    bases_by_bound: &rustc_hash::FxHashMap<i64, u64>,
+) {
+    if !enabled() { return; }
+    bump(&GEN_INFER_ELIGIBLE_BASES, eligible_bases);
+    bump(&GEN_INFER_MATRIX_ATTEMPTS, matrix_attempts);
+    bump(&GEN_INFER_APPLY_REJECTS, apply_rejects);
+    bump(&GEN_INFER_CANDIDATE_REJECTS, candidate_rejects);
+    bump(&GEN_INFER_RESIDUAL_REJECTS, residual_rejects);
+    bump(&GEN_INFER_CANDIDATE_SURVIVORS, candidate_survivors);
+    if let Ok(mut totals) = GEN_INFER_BASES_BY_BOUND.lock() {
+        for (bound, count) in bases_by_bound {
+            *totals.entry(*bound).or_insert(0) += count;
+        }
+    }
+}
+
+pub fn gen_infer_full_rank_result(
+    bases: u64,
+    refusals: u64,
+    attempts: u64,
+    apply_rejects: u64,
+    candidate_rejects: u64,
+    residual_rejects: u64,
+    survivors: u64,
+) {
+    if !enabled() { return; }
+    bump(&GEN_INFER_FULL_RANK_BASES, bases);
+    bump(&GEN_INFER_FULL_RANK_REFUSALS, refusals);
+    bump(&GEN_INFER_FULL_RANK_ATTEMPTS, attempts);
+    bump(&GEN_INFER_FULL_RANK_APPLY_REJECTS, apply_rejects);
+    bump(&GEN_INFER_FULL_RANK_CANDIDATE_REJECTS, candidate_rejects);
+    bump(&GEN_INFER_FULL_RANK_RESIDUAL_REJECTS, residual_rejects);
+    bump(&GEN_INFER_FULL_RANK_SURVIVORS, survivors);
+}
+
+#[cfg(feature = "geninfer_linear_exact_prefilter")]
+pub fn gen_infer_linear_prefilter_result(attempts: u64, solved: u64, no_fit: u64, fallback: u64, input_relations: u64,
+    identity_comparisons: u64, arithmetic_checks: u64,
+    no_fit_reasons: &rustc_hash::FxHashMap<&'static str,u64>, fallback_reasons: &rustc_hash::FxHashMap<&'static str,u64>) {
+    if !enabled() { return; }
+    bump(&GEN_INFER_PREFILTER_ATTEMPTS, attempts);
+    bump(&GEN_INFER_PREFILTER_SOLVED, solved);
+    bump(&GEN_INFER_PREFILTER_NO_FIT, no_fit);
+    bump(&GEN_INFER_PREFILTER_FALLBACK, fallback);
+    bump(&GEN_INFER_PREFILTER_INPUT_RELATIONS, input_relations);
+    bump(&GEN_INFER_PREFILTER_IDENTITY_VALUE_COMPARISONS, identity_comparisons);
+    bump(&GEN_INFER_PREFILTER_EXACT_ARITHMETIC_CHECKS, arithmetic_checks);
+    if let Ok(mut totals)=GEN_INFER_PREFILTER_NO_FIT_REASONS.lock() { for (reason,count) in no_fit_reasons { *totals.entry(reason).or_insert(0)+=count; } }
+    if let Ok(mut totals)=GEN_INFER_PREFILTER_FALLBACK_REASONS.lock() { for (reason,count) in fallback_reasons { *totals.entry(reason).or_insert(0)+=count; } }
+}
+
+#[cfg(feature = "geninfer_linear_exact_prefilter")]
+pub fn gen_infer_row_factorized_result(attempts: u64, solved: u64, no_candidate: u64, fallback: u64, row_evaluations: u64,
+    no_candidate_reasons: &rustc_hash::FxHashMap<&'static str,u64>, fallback_reasons: &rustc_hash::FxHashMap<&'static str,u64>) {
+    if !enabled() { return; }
+    bump(&GEN_INFER_ROWF_ATTEMPTS, attempts);
+    bump(&GEN_INFER_ROWF_SOLVED, solved);
+    bump(&GEN_INFER_ROWF_NO_CANDIDATE, no_candidate);
+    bump(&GEN_INFER_ROWF_FALLBACK, fallback);
+    bump(&GEN_INFER_ROWF_ROW_EVALUATIONS, row_evaluations);
+    if let Ok(mut totals)=GEN_INFER_ROWF_NO_CANDIDATE_REASONS.lock() { for (reason,count) in no_candidate_reasons { *totals.entry(reason).or_insert(0)+=count; } }
+    if let Ok(mut totals)=GEN_INFER_ROWF_FALLBACK_REASONS.lock() { for (reason,count) in fallback_reasons { *totals.entry(reason).or_insert(0)+=count; } }
+}
+
+#[cfg(feature = "geninfer_linear_exact_prefilter")]
+#[allow(clippy::too_many_arguments)]
+pub fn gen_infer_correspondence_result(attempts: u64, found: u64, no_candidate: u64, fallback: u64, hypotheses: u64, validations: u64,
+    no_candidate_reasons: &rustc_hash::FxHashMap<&'static str,u64>, fallback_reasons: &rustc_hash::FxHashMap<&'static str,u64>) {
+    if !enabled() { return; }
+    bump(&GEN_INFER_CORR_ATTEMPTS, attempts);
+    bump(&GEN_INFER_CORR_FOUND, found);
+    bump(&GEN_INFER_CORR_NO_CANDIDATE, no_candidate);
+    bump(&GEN_INFER_CORR_FALLBACK, fallback);
+    bump(&GEN_INFER_CORR_HYPOTHESES, hypotheses);
+    bump(&GEN_INFER_CORR_VALIDATIONS, validations);
+    if let Ok(mut totals)=GEN_INFER_CORR_NO_CANDIDATE_REASONS.lock() { for (reason,count) in no_candidate_reasons { *totals.entry(reason).or_insert(0)+=count; } }
+    if let Ok(mut totals)=GEN_INFER_CORR_FALLBACK_REASONS.lock() { for (reason,count) in fallback_reasons { *totals.entry(reason).or_insert(0)+=count; } }
+}
+
+#[cfg(feature = "geninfer_quadratic_map_solver")]
+pub fn gen_infer_quadratic_result(
+    quadratic_enabled: bool,
+    attempts: u64,
+    refusals: &rustc_hash::FxHashMap<&'static str, u64>,
+    validation_rejects: u64,
+    survivors: u64,
+) {
+    if !quadratic_enabled || !enabled() { return; }
+    bump(&GEN_INFER_QUADRATIC_ENABLED_CALLS, 1);
+    bump(&GEN_INFER_QUADRATIC_ATTEMPTS, attempts);
+    bump(&GEN_INFER_QUADRATIC_VALIDATION_REJECTS, validation_rejects);
+    bump(&GEN_INFER_QUADRATIC_SURVIVORS, survivors);
+    if let Ok(mut totals) = GEN_INFER_QUADRATIC_REFUSALS.lock() {
+        for (reason, count) in refusals { *totals.entry(reason).or_insert(0) += *count; }
+    }
+}
+
+#[cfg(feature = "geninfer_full_rank_identity_join_work_audit")]
+pub fn gen_infer_full_rank_identity_key_comparisons(comparisons: u64) {
+    if enabled() { bump(&GEN_INFER_FULL_RANK_IDENTITY_KEY_COMPARISONS, comparisons); }
+}
+
 /// Record one `DimInfer` invocation's exact argument encoding, in both forms.
 ///
 /// A `Vec<Vec<u8>>` with a linear membership test rather than a `HashSet`: `I`
@@ -676,6 +881,17 @@ pub fn enabled() -> bool {
     MODE.load(Ordering::Relaxed) != MODE_OFF
 }
 
+/// Diagnostic state for proving which audit gates are active on the calling
+/// thread. The tuple is `(process_mode, thread_override, per_rule_mode)`.
+/// `enabled()` remains the authoritative effective process-or-thread gate.
+pub fn mode_snapshot() -> (bool, bool, bool) {
+    init_from_env();
+    let process_mode = MODE.load(Ordering::Relaxed) != MODE_OFF;
+    let thread_override = THREAD_ENABLED.with(Cell::get);
+    let per_rule_mode = PER_RULE_MODE.load(Ordering::Relaxed);
+    (process_mode, thread_override, per_rule_mode)
+}
+
 /// Enable recording FOR THE CALLING THREAD ONLY.
 ///
 /// `set_enabled` flips a process-global mode, which is right for a real
@@ -696,6 +912,7 @@ pub fn enabled() -> bool {
 /// measuring real whole-process cost.
 pub fn set_enabled_for_thread(on: bool) {
     THREAD_ENABLED.with(|c| c.set(on));
+    trace_mode_transition("thread", on);
 }
 
 /// Test-facing setter (the harness's §6.1 zero-when-off gate flips this rather
@@ -738,6 +955,7 @@ pub fn exclusive() -> std::sync::MutexGuard<'static, ()> {
 pub fn set_enabled(on: bool) {
     init_from_env();
     MODE.store(if on { MODE_ON } else { MODE_OFF }, Ordering::Relaxed);
+    trace_mode_transition("process", on);
 }
 
 #[inline(always)]
@@ -833,6 +1051,11 @@ pub fn begin_epoch_kind(apply_once: bool) {
 /// Declare that `rule_i`'s bindings are about to be enumerated. Decides whether
 /// the enumeration that follows is charged to C (first this epoch) or R (repeat).
 pub fn begin_rule_enumeration(rule_i: u32) {
+    begin_rule_enumeration_in_store(0, rule_i);
+}
+
+/// Begin enumeration for a local rule index owned by a specific store.
+pub fn begin_rule_enumeration_in_store(store_id: u64, local_rule_i: u32) {
     if !enabled() {
         return;
     }
@@ -1213,6 +1436,87 @@ pub fn reset() {
         }};
     }
     all_counters!(zero);
+    for counter in [
+        &GEN_INFER_REQUESTS,
+        &GEN_INFER_CACHE_HITS,
+        &GEN_INFER_KERNEL_CALLS,
+        &GEN_INFER_ELIGIBLE_BASES,
+        &GEN_INFER_MATRIX_ATTEMPTS,
+        &GEN_INFER_APPLY_REJECTS,
+        &GEN_INFER_CANDIDATE_REJECTS,
+        &GEN_INFER_RESIDUAL_REJECTS,
+        &GEN_INFER_CANDIDATE_SURVIVORS,
+        &GEN_INFER_FULL_RANK_BASES,
+        &GEN_INFER_FULL_RANK_REFUSALS,
+        &GEN_INFER_FULL_RANK_ATTEMPTS,
+        &GEN_INFER_FULL_RANK_APPLY_REJECTS,
+        &GEN_INFER_FULL_RANK_CANDIDATE_REJECTS,
+        &GEN_INFER_FULL_RANK_RESIDUAL_REJECTS,
+        &GEN_INFER_FULL_RANK_SURVIVORS,
+        #[cfg(feature = "geninfer_linear_exact_prefilter")]
+        &GEN_INFER_PREFILTER_ATTEMPTS,
+        #[cfg(feature = "geninfer_linear_exact_prefilter")]
+        &GEN_INFER_PREFILTER_SOLVED,
+        #[cfg(feature = "geninfer_linear_exact_prefilter")]
+        &GEN_INFER_PREFILTER_NO_FIT,
+        #[cfg(feature = "geninfer_linear_exact_prefilter")]
+        &GEN_INFER_PREFILTER_FALLBACK,
+        #[cfg(feature = "geninfer_linear_exact_prefilter")]
+        &GEN_INFER_PREFILTER_INPUT_RELATIONS,
+        #[cfg(feature = "geninfer_linear_exact_prefilter")]
+        &GEN_INFER_PREFILTER_IDENTITY_VALUE_COMPARISONS,
+        #[cfg(feature = "geninfer_linear_exact_prefilter")]
+        &GEN_INFER_PREFILTER_EXACT_ARITHMETIC_CHECKS,
+        #[cfg(feature = "geninfer_linear_exact_prefilter")]
+        &GEN_INFER_ROWF_ATTEMPTS,
+        #[cfg(feature = "geninfer_linear_exact_prefilter")]
+        &GEN_INFER_ROWF_SOLVED,
+        #[cfg(feature = "geninfer_linear_exact_prefilter")]
+        &GEN_INFER_ROWF_NO_CANDIDATE,
+        #[cfg(feature = "geninfer_linear_exact_prefilter")]
+        &GEN_INFER_ROWF_FALLBACK,
+        #[cfg(feature = "geninfer_linear_exact_prefilter")]
+        &GEN_INFER_ROWF_ROW_EVALUATIONS,
+        #[cfg(feature = "geninfer_linear_exact_prefilter")]
+        &GEN_INFER_CORR_ATTEMPTS,
+        #[cfg(feature = "geninfer_linear_exact_prefilter")]
+        &GEN_INFER_CORR_FOUND,
+        #[cfg(feature = "geninfer_linear_exact_prefilter")]
+        &GEN_INFER_CORR_NO_CANDIDATE,
+        #[cfg(feature = "geninfer_linear_exact_prefilter")]
+        &GEN_INFER_CORR_FALLBACK,
+        #[cfg(feature = "geninfer_linear_exact_prefilter")]
+        &GEN_INFER_CORR_HYPOTHESES,
+        #[cfg(feature = "geninfer_linear_exact_prefilter")]
+        &GEN_INFER_CORR_VALIDATIONS,
+        #[cfg(feature = "geninfer_quadratic_map_solver")]
+        &GEN_INFER_QUADRATIC_ENABLED_CALLS,
+        #[cfg(feature = "geninfer_quadratic_map_solver")]
+        &GEN_INFER_QUADRATIC_ATTEMPTS,
+        #[cfg(feature = "geninfer_quadratic_map_solver")]
+        &GEN_INFER_QUADRATIC_VALIDATION_REJECTS,
+        #[cfg(feature = "geninfer_quadratic_map_solver")]
+        &GEN_INFER_QUADRATIC_SURVIVORS,
+        #[cfg(feature = "geninfer_full_rank_identity_join_work_audit")]
+        &GEN_INFER_FULL_RANK_IDENTITY_KEY_COMPARISONS,
+    ] {
+        counter.store(0, Ordering::Relaxed);
+    }
+    if let Ok(mut bounds) = GEN_INFER_BASES_BY_BOUND.lock() { bounds.clear(); }
+    #[cfg(feature = "geninfer_linear_exact_prefilter")]
+    if let Ok(mut reasons)=GEN_INFER_PREFILTER_NO_FIT_REASONS.lock() { reasons.clear(); }
+    #[cfg(feature = "geninfer_linear_exact_prefilter")]
+    if let Ok(mut reasons)=GEN_INFER_PREFILTER_FALLBACK_REASONS.lock() { reasons.clear(); }
+    #[cfg(feature = "geninfer_linear_exact_prefilter")]
+    if let Ok(mut reasons)=GEN_INFER_ROWF_NO_CANDIDATE_REASONS.lock() { reasons.clear(); }
+    #[cfg(feature = "geninfer_linear_exact_prefilter")]
+    if let Ok(mut reasons)=GEN_INFER_ROWF_FALLBACK_REASONS.lock() { reasons.clear(); }
+    #[cfg(feature = "geninfer_linear_exact_prefilter")]
+    if let Ok(mut reasons)=GEN_INFER_CORR_NO_CANDIDATE_REASONS.lock() { reasons.clear(); }
+    #[cfg(feature = "geninfer_linear_exact_prefilter")]
+    if let Ok(mut reasons)=GEN_INFER_CORR_FALLBACK_REASONS.lock() { reasons.clear(); }
+    #[cfg(feature = "geninfer_quadratic_map_solver")]
+    if let Ok(mut refusals) = GEN_INFER_QUADRATIC_REFUSALS.lock() { refusals.clear(); }
     for i in 0..NUM_TERM_VARIANTS {
         TERM_EVALS[i].store(0, Ordering::Relaxed);
         TERM_UNITS[i].store(0, Ordering::Relaxed);
@@ -1244,6 +1548,50 @@ pub fn reset() {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn mode_snapshot_distinguishes_process_and_thread_gates() {
+        let _x = super::exclusive();
+        set_enabled(false);
+        set_enabled_for_thread(false);
+        set_per_rule_enabled(false);
+        assert_eq!(mode_snapshot(), (false, false, false));
+        set_enabled_for_thread(true);
+        assert_eq!(mode_snapshot(), (false, true, false));
+        set_per_rule_enabled(true);
+        assert_eq!(mode_snapshot(), (false, true, true));
+        set_enabled_for_thread(false);
+        set_enabled(true);
+        assert_eq!(mode_snapshot(), (true, false, true));
+        set_per_rule_enabled(false);
+        set_enabled(false);
+        assert_eq!(mode_snapshot(), (false, false, false));
+    }
+
+    #[test]
+    fn host_term_evaluation_is_separate_from_missing_rule_context() {
+        let _x = super::exclusive();
+        set_enabled(true);
+        set_per_rule_enabled(true);
+        reset();
+        {
+            let _host = host_evaluation_scope().expect("audit is enabled");
+            let _term = term_eval(0);
+        }
+        let counts: std::collections::HashMap<String, u64> = snapshot().into_iter().collect();
+        assert_eq!(counts["term_evals_unattributed"], 1);
+        assert_eq!(counts["term_evals_unattributed_host_api"], 1);
+        assert_eq!(counts["term_evals_unattributed_no_rule"], 0);
+        reset();
+        let _term = term_eval(0);
+        let counts: std::collections::HashMap<String, u64> = snapshot().into_iter().collect();
+        assert_eq!(counts["term_evals_unattributed"], 1);
+        assert_eq!(counts["term_evals_unattributed_host_api"], 0);
+        assert_eq!(counts["term_evals_unattributed_no_rule"], 1);
+        set_per_rule_enabled(false);
+        set_enabled(false);
+        reset();
+    }
 
     /// §6.1 — every counter reads zero when the audit is off, and the sites are
     /// inert. A counter that moves while disabled would contaminate every
@@ -1293,6 +1641,66 @@ mod tests {
         );
         set_enabled_for_thread(false);
         reset();
+    }
+
+    #[test]
+    fn namespaced_rule_identity_separates_overlapping_indices_across_threads() {
+        let _x = super::exclusive();
+        set_enabled(true);
+        set_per_rule_enabled(true);
+        reset();
+        per_rule_reset();
+        begin_epoch();
+
+        let store_a = new_rule_audit_store_id();
+        let store_b = new_rule_audit_store_id();
+        assert_ne!(store_a, store_b);
+        for store in [store_a, store_b] {
+            begin_rule_enumeration_in_store(store, 7);
+            register_rule_audit_metadata_in_store(store, 7, 41, "same_rule", 1);
+        }
+
+        let id_a = rule_audit_id_for(store_a, 7).unwrap();
+        let id_b = rule_audit_id_for(store_b, 7).unwrap();
+        assert_ne!(id_a, id_b);
+        with_rule_index(id_a, || cand_tested(0, 41, 1));
+        std::thread::spawn(move || {
+            with_rule_index(id_b, || cand_tested(0, 41, 1));
+        })
+        .join()
+        .unwrap();
+
+        let global: std::collections::HashMap<String, u64> = snapshot().into_iter().collect();
+        assert_eq!(global["cand_tested"], 2);
+        assert_eq!(global["cand_tested_unattributed"], 0);
+        let per_rule = per_rule_snapshot();
+        let candidate_rows: Vec<_> = per_rule
+            .iter()
+            .filter(|(_, metric, _)| metric == "candidate_tests")
+            .collect();
+        assert_eq!(candidate_rows.len(), 2);
+        assert!(candidate_rows
+            .iter()
+            .any(|(id, _, n)| *id == id_a && *n == 1));
+        assert!(candidate_rows
+            .iter()
+            .any(|(id, _, n)| *id == id_b && *n == 1));
+        let clauses = match_clause_candidate_snapshot();
+        assert_eq!(clauses, vec![(id_a, 0, 1), (id_b, 0, 1)]);
+        let identities = rule_audit_identity_snapshot();
+        assert!(identities.contains(&(id_a, store_a, 7)));
+        assert!(identities.contains(&(id_b, store_b, 7)));
+        assert!(rule_audit_metadata_snapshot()
+            .iter()
+            .all(|(_, _, _, arity, ambiguous)| *arity == 1 && !ambiguous));
+
+        set_enabled(false);
+        reset();
+        per_rule_reset();
+        cand_tested(0, 41, 1);
+        assert!(per_rule_snapshot().is_empty());
+        assert!(match_clause_candidate_snapshot().is_empty());
+        set_per_rule_enabled(false);
     }
 
     /// §6.1 for the TERM family: the per-variant cells and the interior-unit

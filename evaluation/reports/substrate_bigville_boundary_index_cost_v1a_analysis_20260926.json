@@ -1,0 +1,657 @@
+{
+  "all_checks_pass": true,
+  "analyzer_sha256": "cb98a4042391a29ccdf60da5d0e93d2c799ed5e9f4bb4973cb36ae7b81a7ac46",
+  "checks": {
+    "100_owner_frames_revalidated": true,
+    "31_timing_samples_per_operation": true,
+    "balanced_topology_replicates": true,
+    "exact_randomized_schedule": true,
+    "expected_link_sequence": true,
+    "incremental_equals_live_full_rebuild_worker_assertions": true,
+    "lock_sha_matches": true,
+    "native_hash_matches": true,
+    "protocol_tag": true,
+    "raw_lock_matches": true,
+    "registered_analyzer_unchanged": true,
+    "runner_hash_matches": true,
+    "seven_stage_sequence": true,
+    "unique_pids": true,
+    "worker_contains_fail_closed_incremental_parity_guard": true,
+    "worker_count_9": true
+  },
+  "claim_boundary": "supplementary analyzer for the locked nine-worker Bigville capture; worker fail-closed runtime assertions compare each incremental profile to a full rebuild, while this analyzer checks emitted profiles and timing micro-measures for full graph build+partition, live ownership discovery, edge extraction, boundary rebuild and index updates; no closure, task-frequency or general complexity claim",
+  "lock_sha256": "b8f0252b0723981c2218f6feee0e56e6268ffbf707f55b5f019f7e714cdead09",
+  "raw_sha256": "6eb96ba9625b80742f66f5df7c6ac0f68a6ac2672082fb867f918d87ec75b9ee",
+  "summaries": [
+    {
+      "boundary_concepts": 0,
+      "boundary_rebuild_median_ns": 292072,
+      "boundary_rebuild_range_ns": [
+        278562,
+        534623
+      ],
+      "full_graph_build_plus_initial_partition_ns_median": 56036011,
+      "incremental_update_median_ns": 0,
+      "incremental_update_range_ns": [
+        0,
+        0
+      ],
+      "live_edge_extraction_median_ns": 340482,
+      "live_edge_extraction_range_ns": [
+        331932,
+        386373
+      ],
+      "max_fanout": 0,
+      "n_workers": 3,
+      "owner_discovery_median_ns": 320162,
+      "owner_discovery_range_ns": [
+        313902,
+        357373
+      ],
+      "raw_graph_mutation_median_ns": 0,
+      "stage": "runtime_partition_baseline",
+      "topology": "ring",
+      "undirected_cross_edges": 0
+    },
+    {
+      "boundary_concepts": 100,
+      "boundary_rebuild_median_ns": 554634,
+      "boundary_rebuild_range_ns": [
+        530263,
+        1026377
+      ],
+      "full_graph_build_plus_initial_partition_ns_median": null,
+      "incremental_update_median_ns": 260362,
+      "incremental_update_range_ns": [
+        253522,
+        414033
+      ],
+      "live_edge_extraction_median_ns": 388103,
+      "live_edge_extraction_range_ns": [
+        361963,
+        471233
+      ],
+      "max_fanout": 2,
+      "n_workers": 3,
+      "owner_discovery_median_ns": 327563,
+      "owner_discovery_range_ns": [
+        312372,
+        599974
+      ],
+      "raw_graph_mutation_median_ns": 444003,
+      "stage": "insert_cross_links",
+      "topology": "ring",
+      "undirected_cross_edges": 100
+    },
+    {
+      "boundary_concepts": 100,
+      "boundary_rebuild_median_ns": 544934,
+      "boundary_rebuild_range_ns": [
+        528453,
+        1174807
+      ],
+      "full_graph_build_plus_initial_partition_ns_median": null,
+      "incremental_update_median_ns": 0,
+      "incremental_update_range_ns": [
+        0,
+        0
+      ],
+      "live_edge_extraction_median_ns": 388043,
+      "live_edge_extraction_range_ns": [
+        370382,
+        803575
+      ],
+      "max_fanout": 2,
+      "n_workers": 3,
+      "owner_discovery_median_ns": 323613,
+      "owner_discovery_range_ns": [
+        311132,
+        572534
+      ],
+      "raw_graph_mutation_median_ns": 0,
+      "stage": "authored_evidence_update",
+      "topology": "ring",
+      "undirected_cross_edges": 100
+    },
+    {
+      "boundary_concepts": 99,
+      "boundary_rebuild_median_ns": 478633,
+      "boundary_rebuild_range_ns": [
+        460343,
+        790406
+      ],
+      "full_graph_build_plus_initial_partition_ns_median": null,
+      "incremental_update_median_ns": 184481,
+      "incremental_update_range_ns": [
+        179541,
+        353243
+      ],
+      "live_edge_extraction_median_ns": 367802,
+      "live_edge_extraction_range_ns": [
+        357582,
+        480813
+      ],
+      "max_fanout": 2,
+      "n_workers": 3,
+      "owner_discovery_median_ns": 323482,
+      "owner_discovery_range_ns": [
+        314342,
+        357662
+      ],
+      "raw_graph_mutation_median_ns": 1398848,
+      "stage": "delete_one_third",
+      "topology": "ring",
+      "undirected_cross_edges": 66
+    },
+    {
+      "boundary_concepts": 99,
+      "boundary_rebuild_median_ns": 478483,
+      "boundary_rebuild_range_ns": [
+        467593,
+        787465
+      ],
+      "full_graph_build_plus_initial_partition_ns_median": null,
+      "incremental_update_median_ns": 0,
+      "incremental_update_range_ns": [
+        0,
+        0
+      ],
+      "live_edge_extraction_median_ns": 374752,
+      "live_edge_extraction_range_ns": [
+        361382,
+        594424
+      ],
+      "max_fanout": 2,
+      "n_workers": 3,
+      "owner_discovery_median_ns": 334582,
+      "owner_discovery_range_ns": [
+        314092,
+        572223
+      ],
+      "raw_graph_mutation_median_ns": 3259691,
+      "stage": "reweight_remaining",
+      "topology": "ring",
+      "undirected_cross_edges": 66
+    },
+    {
+      "boundary_concepts": 100,
+      "boundary_rebuild_median_ns": 546334,
+      "boundary_rebuild_range_ns": [
+        529213,
+        573134
+      ],
+      "full_graph_build_plus_initial_partition_ns_median": null,
+      "incremental_update_median_ns": 228362,
+      "incremental_update_range_ns": [
+        222681,
+        286412
+      ],
+      "live_edge_extraction_median_ns": 385412,
+      "live_edge_extraction_range_ns": [
+        374473,
+        489613
+      ],
+      "max_fanout": 2,
+      "n_workers": 3,
+      "owner_discovery_median_ns": 328352,
+      "owner_discovery_range_ns": [
+        323193,
+        405983
+      ],
+      "raw_graph_mutation_median_ns": 153781,
+      "stage": "reinsert_deleted_pairs",
+      "topology": "ring",
+      "undirected_cross_edges": 100
+    },
+    {
+      "boundary_concepts": 0,
+      "boundary_rebuild_median_ns": 284462,
+      "boundary_rebuild_range_ns": [
+        275952,
+        311032
+      ],
+      "full_graph_build_plus_initial_partition_ns_median": null,
+      "incremental_update_median_ns": 59610,
+      "incremental_update_range_ns": [
+        58701,
+        99721
+      ],
+      "live_edge_extraction_median_ns": 342192,
+      "live_edge_extraction_range_ns": [
+        328032,
+        525863
+      ],
+      "max_fanout": 0,
+      "n_workers": 3,
+      "owner_discovery_median_ns": 320182,
+      "owner_discovery_range_ns": [
+        306802,
+        336502
+      ],
+      "raw_graph_mutation_median_ns": 3394012,
+      "stage": "remove_all_cross_links",
+      "topology": "ring",
+      "undirected_cross_edges": 0
+    },
+    {
+      "boundary_concepts": 0,
+      "boundary_rebuild_median_ns": 286692,
+      "boundary_rebuild_range_ns": [
+        275072,
+        337153
+      ],
+      "full_graph_build_plus_initial_partition_ns_median": 55736069,
+      "incremental_update_median_ns": 0,
+      "incremental_update_range_ns": [
+        0,
+        0
+      ],
+      "live_edge_extraction_median_ns": 344303,
+      "live_edge_extraction_range_ns": [
+        327702,
+        439813
+      ],
+      "max_fanout": 0,
+      "n_workers": 3,
+      "owner_discovery_median_ns": 324622,
+      "owner_discovery_range_ns": [
+        316422,
+        538684
+      ],
+      "raw_graph_mutation_median_ns": 0,
+      "stage": "runtime_partition_baseline",
+      "topology": "star",
+      "undirected_cross_edges": 0
+    },
+    {
+      "boundary_concepts": 100,
+      "boundary_rebuild_median_ns": 541193,
+      "boundary_rebuild_range_ns": [
+        524134,
+        608554
+      ],
+      "full_graph_build_plus_initial_partition_ns_median": null,
+      "incremental_update_median_ns": 252662,
+      "incremental_update_range_ns": [
+        245741,
+        337702
+      ],
+      "live_edge_extraction_median_ns": 377422,
+      "live_edge_extraction_range_ns": [
+        364973,
+        492253
+      ],
+      "max_fanout": 99,
+      "n_workers": 3,
+      "owner_discovery_median_ns": 325842,
+      "owner_discovery_range_ns": [
+        309562,
+        365713
+      ],
+      "raw_graph_mutation_median_ns": 441363,
+      "stage": "insert_cross_links",
+      "topology": "star",
+      "undirected_cross_edges": 99
+    },
+    {
+      "boundary_concepts": 100,
+      "boundary_rebuild_median_ns": 550464,
+      "boundary_rebuild_range_ns": [
+        530363,
+        928676
+      ],
+      "full_graph_build_plus_initial_partition_ns_median": null,
+      "incremental_update_median_ns": 0,
+      "incremental_update_range_ns": [
+        0,
+        0
+      ],
+      "live_edge_extraction_median_ns": 394562,
+      "live_edge_extraction_range_ns": [
+        366942,
+        499903
+      ],
+      "max_fanout": 99,
+      "n_workers": 3,
+      "owner_discovery_median_ns": 326322,
+      "owner_discovery_range_ns": [
+        308602,
+        397063
+      ],
+      "raw_graph_mutation_median_ns": 0,
+      "stage": "authored_evidence_update",
+      "topology": "star",
+      "undirected_cross_edges": 99
+    },
+    {
+      "boundary_concepts": 67,
+      "boundary_rebuild_median_ns": 461443,
+      "boundary_rebuild_range_ns": [
+        450173,
+        760224
+      ],
+      "full_graph_build_plus_initial_partition_ns_median": null,
+      "incremental_update_median_ns": 164281,
+      "incremental_update_range_ns": [
+        158631,
+        178451
+      ],
+      "live_edge_extraction_median_ns": 367263,
+      "live_edge_extraction_range_ns": [
+        354433,
+        589524
+      ],
+      "max_fanout": 66,
+      "n_workers": 3,
+      "owner_discovery_median_ns": 325202,
+      "owner_discovery_range_ns": [
+        316972,
+        547953
+      ],
+      "raw_graph_mutation_median_ns": 1416719,
+      "stage": "delete_one_third",
+      "topology": "star",
+      "undirected_cross_edges": 66
+    },
+    {
+      "boundary_concepts": 67,
+      "boundary_rebuild_median_ns": 459513,
+      "boundary_rebuild_range_ns": [
+        444292,
+        752325
+      ],
+      "full_graph_build_plus_initial_partition_ns_median": null,
+      "incremental_update_median_ns": 0,
+      "incremental_update_range_ns": [
+        0,
+        0
+      ],
+      "live_edge_extraction_median_ns": 368643,
+      "live_edge_extraction_range_ns": [
+        355543,
+        379992
+      ],
+      "max_fanout": 66,
+      "n_workers": 3,
+      "owner_discovery_median_ns": 324862,
+      "owner_discovery_range_ns": [
+        306102,
+        469443
+      ],
+      "raw_graph_mutation_median_ns": 2614107,
+      "stage": "reweight_remaining",
+      "topology": "star",
+      "undirected_cross_edges": 66
+    },
+    {
+      "boundary_concepts": 100,
+      "boundary_rebuild_median_ns": 548633,
+      "boundary_rebuild_range_ns": [
+        527493,
+        718464
+      ],
+      "full_graph_build_plus_initial_partition_ns_median": null,
+      "incremental_update_median_ns": 229661,
+      "incremental_update_range_ns": [
+        220101,
+        371833
+      ],
+      "live_edge_extraction_median_ns": 381262,
+      "live_edge_extraction_range_ns": [
+        367982,
+        604804
+      ],
+      "max_fanout": 99,
+      "n_workers": 3,
+      "owner_discovery_median_ns": 326472,
+      "owner_discovery_range_ns": [
+        318852,
+        369762
+      ],
+      "raw_graph_mutation_median_ns": 181181,
+      "stage": "reinsert_deleted_pairs",
+      "topology": "star",
+      "undirected_cross_edges": 99
+    },
+    {
+      "boundary_concepts": 0,
+      "boundary_rebuild_median_ns": 286181,
+      "boundary_rebuild_range_ns": [
+        276732,
+        559604
+      ],
+      "full_graph_build_plus_initial_partition_ns_median": null,
+      "incremental_update_median_ns": 60320,
+      "incremental_update_range_ns": [
+        58781,
+        68350
+      ],
+      "live_edge_extraction_median_ns": 341672,
+      "live_edge_extraction_range_ns": [
+        333632,
+        626414
+      ],
+      "max_fanout": 0,
+      "n_workers": 3,
+      "owner_discovery_median_ns": 324852,
+      "owner_discovery_range_ns": [
+        310422,
+        464983
+      ],
+      "raw_graph_mutation_median_ns": 3476732,
+      "stage": "remove_all_cross_links",
+      "topology": "star",
+      "undirected_cross_edges": 0
+    },
+    {
+      "boundary_concepts": 0,
+      "boundary_rebuild_median_ns": 291331,
+      "boundary_rebuild_range_ns": [
+        272352,
+        569194
+      ],
+      "full_graph_build_plus_initial_partition_ns_median": 55347206,
+      "incremental_update_median_ns": 0,
+      "incremental_update_range_ns": [
+        0,
+        0
+      ],
+      "live_edge_extraction_median_ns": 336542,
+      "live_edge_extraction_range_ns": [
+        323572,
+        624194
+      ],
+      "max_fanout": 0,
+      "n_workers": 3,
+      "owner_discovery_median_ns": 325002,
+      "owner_discovery_range_ns": [
+        317662,
+        611843
+      ],
+      "raw_graph_mutation_median_ns": 0,
+      "stage": "runtime_partition_baseline",
+      "topology": "random_connected",
+      "undirected_cross_edges": 0
+    },
+    {
+      "boundary_concepts": 100,
+      "boundary_rebuild_median_ns": 556673,
+      "boundary_rebuild_range_ns": [
+        533573,
+        748315
+      ],
+      "full_graph_build_plus_initial_partition_ns_median": null,
+      "incremental_update_median_ns": 256222,
+      "incremental_update_range_ns": [
+        250242,
+        435633
+      ],
+      "live_edge_extraction_median_ns": 382662,
+      "live_edge_extraction_range_ns": [
+        374542,
+        554884
+      ],
+      "max_fanout": 6,
+      "n_workers": 3,
+      "owner_discovery_median_ns": 325612,
+      "owner_discovery_range_ns": [
+        310342,
+        506043
+      ],
+      "raw_graph_mutation_median_ns": 448213,
+      "stage": "insert_cross_links",
+      "topology": "random_connected",
+      "undirected_cross_edges": 100
+    },
+    {
+      "boundary_concepts": 100,
+      "boundary_rebuild_median_ns": 552454,
+      "boundary_rebuild_range_ns": [
+        540473,
+        1070327
+      ],
+      "full_graph_build_plus_initial_partition_ns_median": null,
+      "incremental_update_median_ns": 0,
+      "incremental_update_range_ns": [
+        0,
+        0
+      ],
+      "live_edge_extraction_median_ns": 376752,
+      "live_edge_extraction_range_ns": [
+        366582,
+        2502726
+      ],
+      "max_fanout": 6,
+      "n_workers": 3,
+      "owner_discovery_median_ns": 321202,
+      "owner_discovery_range_ns": [
+        310022,
+        595003
+      ],
+      "raw_graph_mutation_median_ns": 0,
+      "stage": "authored_evidence_update",
+      "topology": "random_connected",
+      "undirected_cross_edges": 100
+    },
+    {
+      "boundary_concepts": 84,
+      "boundary_rebuild_median_ns": 472673,
+      "boundary_rebuild_range_ns": [
+        451913,
+        839815
+      ],
+      "full_graph_build_plus_initial_partition_ns_median": null,
+      "incremental_update_median_ns": 173151,
+      "incremental_update_range_ns": [
+        166171,
+        304552
+      ],
+      "live_edge_extraction_median_ns": 365242,
+      "live_edge_extraction_range_ns": [
+        346883,
+        577554
+      ],
+      "max_fanout": 5,
+      "n_workers": 3,
+      "owner_discovery_median_ns": 321582,
+      "owner_discovery_range_ns": [
+        311342,
+        354093
+      ],
+      "raw_graph_mutation_median_ns": 1375199,
+      "stage": "delete_one_third",
+      "topology": "random_connected",
+      "undirected_cross_edges": 66
+    },
+    {
+      "boundary_concepts": 84,
+      "boundary_rebuild_median_ns": 466043,
+      "boundary_rebuild_range_ns": [
+        452713,
+        730054
+      ],
+      "full_graph_build_plus_initial_partition_ns_median": null,
+      "incremental_update_median_ns": 0,
+      "incremental_update_range_ns": [
+        0,
+        0
+      ],
+      "live_edge_extraction_median_ns": 371552,
+      "live_edge_extraction_range_ns": [
+        358423,
+        450433
+      ],
+      "max_fanout": 5,
+      "n_workers": 3,
+      "owner_discovery_median_ns": 320012,
+      "owner_discovery_range_ns": [
+        316462,
+        674384
+      ],
+      "raw_graph_mutation_median_ns": 2647127,
+      "stage": "reweight_remaining",
+      "topology": "random_connected",
+      "undirected_cross_edges": 66
+    },
+    {
+      "boundary_concepts": 100,
+      "boundary_rebuild_median_ns": 553853,
+      "boundary_rebuild_range_ns": [
+        536123,
+        1024187
+      ],
+      "full_graph_build_plus_initial_partition_ns_median": null,
+      "incremental_update_median_ns": 233421,
+      "incremental_update_range_ns": [
+        226051,
+        376603
+      ],
+      "live_edge_extraction_median_ns": 381732,
+      "live_edge_extraction_range_ns": [
+        371093,
+        537303
+      ],
+      "max_fanout": 6,
+      "n_workers": 3,
+      "owner_discovery_median_ns": 319352,
+      "owner_discovery_range_ns": [
+        314482,
+        492023
+      ],
+      "raw_graph_mutation_median_ns": 170001,
+      "stage": "reinsert_deleted_pairs",
+      "topology": "random_connected",
+      "undirected_cross_edges": 100
+    },
+    {
+      "boundary_concepts": 0,
+      "boundary_rebuild_median_ns": 284702,
+      "boundary_rebuild_range_ns": [
+        276371,
+        330272
+      ],
+      "full_graph_build_plus_initial_partition_ns_median": null,
+      "incremental_update_median_ns": 59790,
+      "incremental_update_range_ns": [
+        59150,
+        72781
+      ],
+      "live_edge_extraction_median_ns": 339862,
+      "live_edge_extraction_range_ns": [
+        329672,
+        730444
+      ],
+      "max_fanout": 0,
+      "n_workers": 3,
+      "owner_discovery_median_ns": 324032,
+      "owner_discovery_range_ns": [
+        309282,
+        614984
+      ],
+      "raw_graph_mutation_median_ns": 3433343,
+      "stage": "remove_all_cross_links",
+      "topology": "random_connected",
+      "undirected_cross_edges": 0
+    }
+  ]
+}

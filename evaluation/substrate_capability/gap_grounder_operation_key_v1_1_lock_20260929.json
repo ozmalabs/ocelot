@@ -1,0 +1,216 @@
+{
+  "arms": [
+    "faculty",
+    "faculty_plus_operations"
+  ],
+  "fixtures": {
+    "A": {
+      "faculty": "shared_family",
+      "observation": [
+        [
+          "classify the item",
+          "self",
+          "input"
+        ],
+        [
+          "route to a handler",
+          "input",
+          "handler"
+        ],
+        [
+          "mark handled",
+          "handler",
+          "done"
+        ]
+      ],
+      "status": "perceived"
+    },
+    "B": {
+      "example": "per-bin log magnitude",
+      "faculty": "shared_family",
+      "inputs": [
+        "signal"
+      ],
+      "n_samples": 32,
+      "needed_primitive": "spectral_value",
+      "observation": [
+        [
+          "spectral_value",
+          "signal",
+          "magnitude"
+        ],
+        [
+          "log_scale",
+          "magnitude",
+          "value"
+        ]
+      ],
+      "outputs": [
+        "spectrum"
+      ],
+      "status": "perceived",
+      "test_frequencies": [
+        3,
+        7,
+        11
+      ]
+    },
+    "B_value": {
+      "example": "per-bin log magnitude",
+      "faculty": "shared_family",
+      "inputs": [
+        "sensor"
+      ],
+      "n_samples": 32,
+      "needed_primitive": "spectral_value",
+      "observation": [
+        [
+          "spectral_value",
+          "sensor",
+          "amplitude"
+        ],
+        [
+          "log_scale",
+          "amplitude",
+          "result"
+        ]
+      ],
+      "outputs": [
+        "result"
+      ],
+      "status": "perceived",
+      "test_frequencies": [
+        3,
+        7,
+        11
+      ]
+    }
+  },
+  "git_head": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+  "protocol": {
+    "bytes": 1568,
+    "path": "docs/research/engine_substrate/SUBSTRATE_GAP_GROUNDER_OPERATION_KEY_V1_1_PREREG_20260929.md",
+    "sha256": "852a91cf39ad1c47235e5b8d6b983016c2c01cd445d31ff189acfa3c7b2095ca"
+  },
+  "runner": {
+    "bytes": 7521,
+    "path": "evaluation/substrate_capability/gap_grounder_operation_key_v1_1.py",
+    "sha256": "1f353dcd88ed9ed4a6dc17d61bec969101ee07a37e72c357548d09d7d93ae900"
+  },
+  "schema_version": 1,
+  "sequences": [
+    {
+      "events": [
+        "A"
+      ],
+      "id": "isolated_A"
+    },
+    {
+      "events": [
+        "B"
+      ],
+      "id": "isolated_B"
+    },
+    {
+      "events": [
+        "B_value"
+      ],
+      "id": "isolated_B_value"
+    },
+    {
+      "events": [
+        "B",
+        "B"
+      ],
+      "id": "repeat_B"
+    },
+    {
+      "events": [
+        "B",
+        "B_value"
+      ],
+      "id": "B_then_B_value"
+    },
+    {
+      "events": [
+        "A",
+        "B"
+      ],
+      "id": "A_then_B"
+    },
+    {
+      "events": [
+        "B",
+        "A"
+      ],
+      "id": "B_then_A"
+    }
+  ],
+  "sources": [
+    {
+      "bytes": 34191,
+      "path": "domains/substrate_extension.py",
+      "sha256": "d62ddaea0712005e5efd1ab531336a7d7f7315243b85334081ee38d4aa05eff9"
+    },
+    {
+      "bytes": 513738,
+      "path": "domains/reflective_faculty.py",
+      "sha256": "2792e5355c2a78cc23790e7a591ba0c0cb0ef2a249743d2b2da57fefadbd4c9f"
+    },
+    {
+      "bytes": 13625,
+      "path": "domains/self_verification.py",
+      "sha256": "4cf1282b2cdfb0c6c9a0820e7b96c550059e6b3e2dafd11b0dc0eed1a378af8a"
+    },
+    {
+      "bytes": 19906,
+      "path": "domains/self_capability_collapse.py",
+      "sha256": "0f02df6eabbb786281aa29feb45f9cfc156e6f8c2b4326f4198aba2a8674cb3d"
+    },
+    {
+      "bytes": 7251,
+      "path": "substrate/boot_core.py",
+      "sha256": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb"
+    },
+    {
+      "bytes": 999516,
+      "path": "substrate/world_adapter.py",
+      "sha256": "9e83162f72fa5b1c88f0e7bb5f09e937d1819029cb9df311109f86f14a26bc27"
+    },
+    {
+      "bytes": 22070,
+      "path": "substrate/graph.py",
+      "sha256": "edebfafd619d07e4755a6f189d0e3904ec096e6add311f629c88730c0d547c4f"
+    },
+    {
+      "bytes": 10438,
+      "path": "substrate/seed_loader.py",
+      "sha256": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27"
+    },
+    {
+      "bytes": 2490,
+      "path": "seeds/composer_faculty_pipeline.json",
+      "sha256": "39c2f594bd92d56669db5b647a03ae58409aae95abd3700e80040ee646338dfb"
+    },
+    {
+      "bytes": 96537,
+      "path": "seeds/shape_decode_loop.json",
+      "sha256": "3e1783cf566179061250572bbf7bc7bb54cacfafb83f8852008c4618d984a9c6"
+    },
+    {
+      "bytes": 493382,
+      "path": "runners/dsl/src/shape_decode.rs",
+      "sha256": "0e178705d0df8bef0a9d08d5a2efabd1131386b783e87546f33b8601b682ac2c"
+    },
+    {
+      "bytes": 130368728,
+      "path": "runners/dsl/python/substrate_rs/_native.abi3.so",
+      "sha256": "0f95ca6dba7453b5e201b3ea0bdcc10656ad28151fb51eb56d19eee69c307fc4"
+    },
+    {
+      "bytes": 11019,
+      "path": "runners/dsl/python/substrate_rs/_native.build.json",
+      "sha256": "b09f684e4cbd47c5940b980799710ad4ce9e9eb41c2a9801a580cf589df23f16"
+    }
+  ]
+}

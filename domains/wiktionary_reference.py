@@ -55,7 +55,6 @@ from __future__ import annotations
 import gzip
 import json
 import os
-import urllib.request
 from pathlib import Path
 from typing import Any, Iterator, Optional
 
@@ -114,6 +113,10 @@ def _ensure_download(language: str, timeout: int = 600) -> Optional[Path]:
     if path.exists() and path.stat().st_size > 0:
         return path
     try:
+        # The transport dependency is only used on a local-cache miss.
+        # Ordinary slab lookups stay independent of urllib's HTTP stack.
+        import urllib.request
+
         _CACHE_DIR.mkdir(parents=True, exist_ok=True)
         url = _kaikki_url(language)
         req = urllib.request.Request(url, headers={"User-Agent": "curl/8"})

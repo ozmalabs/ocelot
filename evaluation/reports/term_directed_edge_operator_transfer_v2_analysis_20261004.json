@@ -1,0 +1,105 @@
+{
+  "cells": [
+    {
+      "behavior_class_false_on_holdout": false,
+      "decision": "accept_behavior_class",
+      "holdout_scores": [
+        {
+          "id": "term_941c9eb89d3d8ddf",
+          "invalid": 0,
+          "mismatches": 877,
+          "n": 4096
+        },
+        {
+          "id": "term_0d775a2495512e5f",
+          "invalid": 0,
+          "mismatches": 0,
+          "n": 4096
+        },
+        {
+          "id": "term_a89464b71c175c55",
+          "invalid": 0,
+          "mismatches": 0,
+          "n": 4096
+        }
+      ],
+      "labels": 1,
+      "panel": "absolute_square_underflow",
+      "policy_evaluations": 223,
+      "policy_wall_ns": 1049676,
+      "prior_classes": 1,
+      "survivor_ids": [
+        "term_0d775a2495512e5f",
+        "term_a89464b71c175c55"
+      ]
+    },
+    {
+      "behavior_class_false_on_holdout": false,
+      "decision": "accept_behavior_class",
+      "holdout_scores": [
+        {
+          "id": "identity_eq",
+          "invalid": 0,
+          "mismatches": 0,
+          "n": 4096
+        },
+        {
+          "id": "quotient_eq",
+          "invalid": 0,
+          "mismatches": 6,
+          "n": 4096
+        }
+      ],
+      "labels": 1,
+      "panel": "division_signed_zero",
+      "policy_evaluations": 63,
+      "policy_wall_ns": 383413,
+      "prior_classes": 1,
+      "survivor_ids": [
+        "identity_eq"
+      ]
+    },
+    {
+      "behavior_class_false_on_holdout": true,
+      "decision": "accept_behavior_class",
+      "holdout_scores": [
+        {
+          "id": "identity_eq",
+          "invalid": 0,
+          "mismatches": 0,
+          "n": 4096
+        },
+        {
+          "id": "literal_alias",
+          "invalid": 0,
+          "mismatches": 2,
+          "n": 4096
+        }
+      ],
+      "labels": 0,
+      "panel": "structured_literal_alias",
+      "policy_evaluations": 88,
+      "policy_wall_ns": 1034087,
+      "prior_classes": 1,
+      "survivor_ids": [
+        "identity_eq",
+        "literal_alias"
+      ]
+    }
+  ],
+  "checks": {
+    "bitwise_disjoint_proposals": true,
+    "cost_accounting": true,
+    "holdout_replay": true,
+    "probe_and_selector_replay": true,
+    "signed_zero_holdout_detects_div_failure": true,
+    "source_and_upstream_binding": true,
+    "structured_alias_is_detected_as_finite_class_risk": true,
+    "three_panel_pairing": true,
+    "training_candidate_validity": true
+  },
+  "claim_boundary": "Three authored numeric panels show task-blind edge-probe transfer and a deliberately exposed finite-class false-acceptance risk; not broad operator transfer or universal semantic equivalence.",
+  "errors": [],
+  "passed": true,
+  "schema": "TermDirectedEdgeOperatorTransferV2Analysis"
+}

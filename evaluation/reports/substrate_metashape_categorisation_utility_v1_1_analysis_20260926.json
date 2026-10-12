@@ -1,0 +1,156 @@
+{
+  "admitted": true,
+  "baseline": {
+    "abstention_precision": 0.6,
+    "abstention_recall": 0.9,
+    "abstentions": 15,
+    "accuracy": 0.65,
+    "correct": 13,
+    "correct_abstentions": 9,
+    "coverage": 0.25,
+    "covered": 5,
+    "gold_abstain_cases": 10,
+    "n": 20
+  },
+  "gates": {
+    "complete_growth_dependency_closure": true,
+    "correct_protocol_gold_vector": true,
+    "query_phase_did_not_mutate_graph": true,
+    "seed_persistence_disabled": true,
+    "source_protocol_and_lock_match": true,
+    "twenty_queries_in_locked_order": true
+  },
+  "interpretation": "On this locked synthetic filing-category oracle, adding three minted MetaShapes increases classifier coverage but decreases exact accuracy and abstention quality because the prior-only categoriser assigns minted labels to fixed-field, missing-field, and changed-type controls. The structural decoding results from the adjacent MetaShape panel do not determine this categoriser output: categorise_by_shape directly uses the shared keyword-prior scorer. This is task-specific evidence, not a natural-task rate.",
+  "limitations": [
+    "Twenty synthetic queries over four schemas; one process.",
+    "Gold labels encode the preregistered schema/control design, not human semantic judgments.",
+    "No independent replication yet."
+  ],
+  "oracle_mismatches": [],
+  "per_family": {
+    "FrameBindingProbe": {
+      "baseline": {
+        "abstention_precision": 0.6,
+        "abstention_recall": 1.0,
+        "abstentions": 5,
+        "accuracy": 0.6,
+        "correct": 3,
+        "correct_abstentions": 3,
+        "coverage": 0.0,
+        "covered": 0,
+        "gold_abstain_cases": 3,
+        "n": 5
+      },
+      "trained": {
+        "abstention_precision": 0.6,
+        "abstention_recall": 1.0,
+        "abstentions": 5,
+        "accuracy": 0.6,
+        "correct": 3,
+        "correct_abstentions": 3,
+        "coverage": 0.0,
+        "covered": 0,
+        "gold_abstain_cases": 3,
+        "n": 5
+      }
+    },
+    "GoalTraceProbe": {
+      "baseline": {
+        "abstention_precision": 0.6,
+        "abstention_recall": 1.0,
+        "abstentions": 5,
+        "accuracy": 0.6,
+        "correct": 3,
+        "correct_abstentions": 3,
+        "coverage": 0.0,
+        "covered": 0,
+        "gold_abstain_cases": 3,
+        "n": 5
+      },
+      "trained": {
+        "abstention_precision": null,
+        "abstention_recall": 0.0,
+        "abstentions": 0,
+        "accuracy": 0.4,
+        "correct": 2,
+        "correct_abstentions": 0,
+        "coverage": 1.0,
+        "covered": 5,
+        "gold_abstain_cases": 3,
+        "n": 5
+      }
+    },
+    "MotionRuleProbe": {
+      "baseline": {
+        "abstention_precision": null,
+        "abstention_recall": 0.0,
+        "abstentions": 0,
+        "accuracy": 0.8,
+        "correct": 4,
+        "correct_abstentions": 0,
+        "coverage": 1.0,
+        "covered": 5,
+        "gold_abstain_cases": 1,
+        "n": 5
+      },
+      "trained": {
+        "abstention_precision": null,
+        "abstention_recall": 0.0,
+        "abstentions": 0,
+        "accuracy": 0.8,
+        "correct": 4,
+        "correct_abstentions": 0,
+        "coverage": 1.0,
+        "covered": 5,
+        "gold_abstain_cases": 1,
+        "n": 5
+      }
+    },
+    "ResourceTransferProbe": {
+      "baseline": {
+        "abstention_precision": 0.6,
+        "abstention_recall": 1.0,
+        "abstentions": 5,
+        "accuracy": 0.6,
+        "correct": 3,
+        "correct_abstentions": 3,
+        "coverage": 0.0,
+        "covered": 0,
+        "gold_abstain_cases": 3,
+        "n": 5
+      },
+      "trained": {
+        "abstention_precision": null,
+        "abstention_recall": 0.0,
+        "abstentions": 0,
+        "accuracy": 0.4,
+        "correct": 2,
+        "correct_abstentions": 0,
+        "coverage": 1.0,
+        "covered": 5,
+        "gold_abstain_cases": 3,
+        "n": 5
+      }
+    }
+  },
+  "prediction_transitions": {
+    "<ABSTAIN> -> <ABSTAIN>": 5,
+    "<ABSTAIN> -> ms_channel_is_a_phase_terminal": 5,
+    "<ABSTAIN> -> ms_is_a_source_status_target": 5,
+    "spatial_dynamics -> spatial_dynamics": 5
+  },
+  "run_id": "substrate-metashape-categorisation-utility-v1.1-20260926",
+  "schema_version": 1,
+  "trained": {
+    "abstention_precision": 0.6,
+    "abstention_recall": 0.3,
+    "abstentions": 5,
+    "accuracy": 0.55,
+    "correct": 11,
+    "correct_abstentions": 3,
+    "coverage": 0.75,
+    "covered": 15,
+    "gold_abstain_cases": 10,
+    "n": 20
+  }
+}

@@ -1,0 +1,58 @@
+{
+  "all_checks_pass": true,
+  "checks": {
+    "anonymous_rss_available": true,
+    "current_and_high_water_rss_available": true,
+    "high_water_is_monotonic": true,
+    "request_work_completed": true,
+    "seven_ordered_phase_samples": true,
+    "source_lock_stable": true
+  },
+  "interpretation": "Memory grows primarily during seed boot, changes little on scene attachment, then current RSS falls after both calls while process high-water RSS increases. This locates phase changes but attributes no allocation owner.",
+  "phase_deltas_bytes": {
+    "boot_anonymous_rss": 1390514176,
+    "boot_current_rss": 1399930880,
+    "post_requests_current_rss_change": -1064472576,
+    "request_schedule_high_water_increase": 896839680,
+    "scene_current_rss": 1277952
+  },
+  "phase_metrics": [
+    {
+      "anonymous_rss_bytes": 26685440,
+      "current_rss_bytes": 39710720,
+      "high_water_rss_bytes": 137793536,
+      "phase": "post_interpreter_before_adapter",
+      "private_dirty_bytes": 26685440
+    },
+    {
+      "anonymous_rss_bytes": 26697728,
+      "current_rss_bytes": 41492480,
+      "high_water_rss_bytes": 137793536,
+      "phase": "post_adapter_construction",
+      "private_dirty_bytes": 26697728
+    },
+    {
+      "anonymous_rss_bytes": 1417211904,
+      "current_rss_bytes": 1441423360,
+      "high_water_rss_bytes": 1796456448,
+      "phase": "post_full_seed_boot",
+      "private_dirty_bytes": 1417211904
+    },
+    {
+      "anonymous_rss_bytes": 1417703424,
+      "current_rss_bytes": 1442701312,
+      "high_water_rss_bytes": 1796456448,
+      "phase": "post_scene_attachment",
+      "private_dirty_bytes": 1417703424
+    },
+    {
+      "anonymous_rss_bytes": 338657280,
+      "current_rss_bytes": 378228736,
+      "high_water_rss_bytes": 2693296128,
+      "phase": "post_two_request_schedule",
+      "private_dirty_bytes": 338657280
+    }
+  ],
+  "run_id": "describe-scene-boot-memory-profile-v1-analysis-20260927",
+  "schema_version": 1
+}

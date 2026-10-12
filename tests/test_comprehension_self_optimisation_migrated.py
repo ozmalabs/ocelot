@@ -351,16 +351,30 @@ def test_exhausted_experiments_trail_surfaces_in_status(agent, tmp_path):
     a = agent
     _have_two_turns(a)
     S, I = a.s, a.inner
-    I.set_attr(a.agent, "shadow_latency_recent_avg", 999.0)
+    # A baseline no real turn meets (1 ms), so the trial is refuted and the
+    # concern genuinely exhausts. Until tranche 7 every shadow read raised
+    # (_LAAdapter lacked the adapter lock), which made child turns slower than
+    # the old 999 ms baseline; with working shadow reads a child turn averages
+    # ~155 ms, beats 999, and the trial was (correctly) judged supported.
+    I.set_attr(a.agent, "shadow_latency_recent_avg", 1.0)
     # Content matching what note_comprehension_latency_gap actually files: its
     # words don't overlap any acting-rule's provenance keywords, so the
     # reply-ablation variation pick (seeds/variation_ops.json) abstains (empty
     # delta) -- the concern can never become adopt-ready, which is exactly the
     # 'exhausted' case this rule is for.
-    sc = S.add_node("SelfConcern", {"status": "noted", "source": "implicit", "kind": "performance",
-                                    "content": "shadow-read comprehension latency (rolling average) exceeds its held ceiling",
-                                    "metric": "shadow_latency_ms"})
-    I.add_edge_unchecked(a.agent, "has_self_concern", sc)
+    _content = "shadow-read comprehension latency (rolling average) exceeds its held ceiling"
+    # With shadow reads working (tranche 7 _LAAdapter lock fix) the agent's
+    # own note_comprehension_latency_gap files this concern itself; a second,
+    # hand-added copy is retired as a duplicate. Use the agent's own if present.
+    own = [n for n in I.neighbours(a.agent, "has_self_concern")
+           if S.node(n)["attrs"].get("kind") == "performance" and S.node(n)["attrs"].get("status") == "noted"
+           and S.node(n)["attrs"].get("content") == _content]
+    if own:
+        sc = own[0]
+    else:
+        sc = S.add_node("SelfConcern", {"status": "noted", "source": "implicit", "kind": "performance",
+                                        "content": _content, "metric": "shadow_latency_ms"})
+        I.add_edge_unchecked(a.agent, "has_self_concern", sc)
     p = jd.promote_self_concern(a, str(int(sc.value)))
     assert p["ok"]
     jd._concern_tick(a)

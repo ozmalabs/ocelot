@@ -1,0 +1,7 @@
+# Thoughtexperiment recurrence cancellation scale v1 preregistration
+
+Measure cancellation/drop of in-progress thoughtexperiment branches at 1,000,000 linked unrelated nodes. For each fresh worker, prepare the same 64-candidate recurrence task, concurrently create eight isolated branches, and install the authored repair in every branch. Before closure runs, cancel four branches by deleting both branch-wrapper and inner-substrate references. The four surviving branches then concurrently run five bounded native closure sweeps and must emit exactly one offer for every candidate and reach a zero-progress fixed point.
+
+Cross full-copy and shared-graph-pages backends with three fresh processes each. Sample process PSS/RSS at host baseline, all eight repaired branches live, after half the branches are dropped, and after survivor evaluation and release. Every worker must prove primary graph counts, revision, and full rule vector remain unchanged; all survivor oracles pass; source/native provenance is stable; and all eight branches were actually created before cancellation. The independent analyzer checks cell coverage, unique PIDs, stage ordering, semantic outcomes, and source lock.
+
+This cancels branches after a local rule patch but before closure; it does not interrupt a worker during native closure. It measures one synthetic recurrence workload, one host, and sampled residency, not a general cancellation bound, natural task distribution, or autonomous candidate discovery. Check available memory before every worker and stop below 12 GiB.

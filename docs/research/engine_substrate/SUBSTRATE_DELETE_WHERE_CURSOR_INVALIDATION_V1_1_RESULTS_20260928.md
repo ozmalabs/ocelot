@@ -1,0 +1,11 @@
+# Node-deletion where-reader cursor invalidation v1.1 results
+
+**Evidence grade:** nine source-locked fresh worker processes; all 8 runner gates and 6 independent analysis checks pass across N=8/32/128, three workers per size.
+
+The rule matches stable `Root -slot-> Slot` edges and uses a where-only `Count(Edges(Root, block)) == 0` dependency. Initially all slots are blocked. Removing the blocker node makes every slot eligible. Full rescan, sound incremental matching, and the unsound type-local invalidation falsifier all open every slot and produce identical graph dumps. The falsifier does not diverge because the generic `remove_node` path calls `mark_node_mutation`, which clears cursors for every where-rule; that fallback independently preserves correctness.
+
+Candidate-pair counts are exactly N in all arms (8/32/128) and each arm enumerates the reader once. This demonstrates an O(N) full-rescan work floor for this where-only reader shape under node deletion; incremental matching provides no candidate-count reduction here. Median post-delete wall time at N=128 is 86.5 μs (full rescan), 74.6 μs (sound incremental), and 69.1 μs (unsound), but this small fixture is not evidence of a reliable speed difference.
+
+The initial falsifier-divergence gate was incorrect for this mutation route; its failed-gate capture and the reason are retained in the [v1.1 amendment](SUBSTRATE_DELETE_WHERE_CURSOR_INVALIDATION_V1_1_AMENDMENT_20260928.md). This result does not isolate the type-local invalidator. To measure that mechanism directly, use edge-only deletion (`remove_edge`) or an explicitly controlled fallback ablation. It also does not prove all where Term families or arbitrary schedulers correct.
+
+Artifacts: [protocol](SUBSTRATE_DELETE_WHERE_CURSOR_INVALIDATION_V1_PREREG_20260928.md), [amendment](SUBSTRATE_DELETE_WHERE_CURSOR_INVALIDATION_V1_1_AMENDMENT_20260928.md), [runner](../../../scripts/substrate_delete_where_cursor_invalidation_v1.py), [raw](../../../evaluation/reports/substrate_delete_where_cursor_invalidation_v1_1_20260928.json), [analysis](../../../evaluation/reports/substrate_delete_where_cursor_invalidation_v1_1_analysis_20260928.json), and [source lock](../../../evaluation/substrate_capability/delete_where_cursor_invalidation_v1_1_lock_20260928.json).

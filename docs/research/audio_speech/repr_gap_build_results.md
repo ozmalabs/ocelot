@@ -66,3 +66,20 @@ extending the encode Term; that, plus much larger scale, is the honest next step
 frame-level gap is judged worth the compute. The complementary path the corrected note now
 emphasises — higher orders (sequence/syntax/grounding) compensating for a weak frame — remains the
 cheaper route to understanding continuous speech.
+
+## Reanalysis capture support (2026-10-03)
+
+The scoring harness now accepts `--output PATH` and writes an atomic, versioned JSON capture for
+future runs. It records source and native-extension hashes, hashes for the labeled train, held-out
+test, and optional large-train cache, the ordered token/speaker pool, effective configuration,
+deterministic bootstrap seed, all summary metrics and gap-gate outcome, peak RSS, and raw Rust
+recall-detail vectors. Example:
+
+```sh
+PYTHONPATH=runners/dsl/python:.:scripts VENV_PY scripts/apc_repr_gap_build.py \
+  --output evaluation/reports/apc_repr_gap_run_<date>.json
+```
+
+This enables prospective reanalysis without retraining, but does not recreate the missing raw
+records for the historical result above. The source and cache digests are recorded when the new
+run is made; the old prose log remains insufficient for independent reconstruction.

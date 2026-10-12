@@ -1,0 +1,5591 @@
+{
+  "checks": {
+    "complete_workers": true,
+    "coverage": true,
+    "degree_metrics_complete": true,
+    "exact_extraction": true,
+    "no_mutation": true,
+    "oracle_match": true,
+    "paired_node_edge_counts": true,
+    "pre_post_lock_match": true,
+    "width_certificates": true
+  },
+  "claim_boundary": "matched synthetic graph topologies only; no natural task distribution or learned frame discovery",
+  "configuration": {
+    "families": [
+      "grid",
+      "sparse_partial_qtree",
+      "hub_partial_qtree"
+    ],
+    "nodes": 120,
+    "replicates": 6,
+    "widths": [
+      4,
+      5,
+      6
+    ]
+  },
+  "environment": {
+    "platform": "Linux-6.8.0-142-generic-x86_64-with-glibc2.39",
+    "python": "3.13.5"
+  },
+  "input_lock": {
+    "base_inference_runner": {
+      "bytes": 12300,
+      "path": "evaluation/substrate_capability/can_edge_matched_inference_cost_v1.py",
+      "sha256": "f30743a230ec4cc185859d04cee4bcb28addb5b3b8df7cd2fda05821d19428a8"
+    },
+    "families": [
+      "grid",
+      "sparse_partial_qtree",
+      "hub_partial_qtree"
+    ],
+    "git_head": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+    "nodes": 120,
+    "protocol": {
+      "bytes": 2373,
+      "path": "docs/research/engine_substrate/CAN_EDGE_MATCHED_DEGREE_PROFILE_V1_PREREG_20260929.md",
+      "sha256": "697e6132478b099dd91ad6d837dde63852ce6368a9de182be602a616931aba96"
+    },
+    "replicates": 6,
+    "runner": {
+      "bytes": 6496,
+      "path": "evaluation/substrate_capability/can_edge_matched_degree_profile_v1.py",
+      "sha256": "a47c0106301db3741cddcc442b84bdb2f46a348124c0b48ecf7d2ad8f168b8cf"
+    },
+    "schema_version": 1,
+    "sources": [
+      {
+        "bytes": 14856,
+        "path": "domains/can_junction_tree.py",
+        "sha256": "e8d4aa30bfdaced52cda2739f885a56ed50a040b8419cb558b132e5e46206ba7"
+      },
+      {
+        "bytes": 9424,
+        "path": "domains/graph_treewidth.py",
+        "sha256": "e945bea9f54b76098edb3b3dcb784ac5a0ce630de43cd63a9fb5b0f416d543e5"
+      },
+      {
+        "bytes": 10327104,
+        "path": "runners/dsl/python/substrate_rs/_native.abi3.so",
+        "sha256": "54a6481b26ec28a240fe8f33360a93b8e0e7e621b396a81d36e69dae0291ed1c"
+      },
+      {
+        "bytes": 11019,
+        "path": "runners/dsl/python/substrate_rs/_native.build.json",
+        "sha256": "ec39e77e757c994b923c4549c96d7bc7480ab924b158d606f3b49d8c25ecdbd5"
+      }
+    ],
+    "widths": [
+      4,
+      5,
+      6
+    ]
+  },
+  "post_run_input_lock": {
+    "base_inference_runner": {
+      "bytes": 12300,
+      "path": "evaluation/substrate_capability/can_edge_matched_inference_cost_v1.py",
+      "sha256": "f30743a230ec4cc185859d04cee4bcb28addb5b3b8df7cd2fda05821d19428a8"
+    },
+    "families": [
+      "grid",
+      "sparse_partial_qtree",
+      "hub_partial_qtree"
+    ],
+    "git_head": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+    "nodes": 120,
+    "protocol": {
+      "bytes": 2373,
+      "path": "docs/research/engine_substrate/CAN_EDGE_MATCHED_DEGREE_PROFILE_V1_PREREG_20260929.md",
+      "sha256": "697e6132478b099dd91ad6d837dde63852ce6368a9de182be602a616931aba96"
+    },
+    "replicates": 6,
+    "runner": {
+      "bytes": 6496,
+      "path": "evaluation/substrate_capability/can_edge_matched_degree_profile_v1.py",
+      "sha256": "a47c0106301db3741cddcc442b84bdb2f46a348124c0b48ecf7d2ad8f168b8cf"
+    },
+    "schema_version": 1,
+    "sources": [
+      {
+        "bytes": 14856,
+        "path": "domains/can_junction_tree.py",
+        "sha256": "e8d4aa30bfdaced52cda2739f885a56ed50a040b8419cb558b132e5e46206ba7"
+      },
+      {
+        "bytes": 9424,
+        "path": "domains/graph_treewidth.py",
+        "sha256": "e945bea9f54b76098edb3b3dcb784ac5a0ce630de43cd63a9fb5b0f416d543e5"
+      },
+      {
+        "bytes": 10327104,
+        "path": "runners/dsl/python/substrate_rs/_native.abi3.so",
+        "sha256": "54a6481b26ec28a240fe8f33360a93b8e0e7e621b396a81d36e69dae0291ed1c"
+      },
+      {
+        "bytes": 11019,
+        "path": "runners/dsl/python/substrate_rs/_native.build.json",
+        "sha256": "ec39e77e757c994b923c4549c96d7bc7480ab924b158d606f3b49d8c25ecdbd5"
+      }
+    ],
+    "widths": [
+      4,
+      5,
+      6
+    ]
+  },
+  "run_id": "can-edge-matched-degree-profile-v1-20260929",
+  "runs": [
+    {
+      "certificate_bag_size": 5,
+      "certificate_direct_energy": -219.25,
+      "certificate_energy": -219.25,
+      "certificate_width": 4,
+      "decomposition_profiles": {
+        "certificate": {
+          "bag_assignments": 3702,
+          "bag_size_histogram": {
+            "1": 1,
+            "2": 1,
+            "3": 2,
+            "4": 2,
+            "5": 114
+          },
+          "child_count_histogram": {
+            "0": 1,
+            "1": 119
+          },
+          "estimated_inner_loop_iterations": 7396,
+          "estimated_local_energy_term_visits": 18426,
+          "max_bag_size": 5,
+          "message_entries": 1851,
+          "separator_size_histogram": {
+            "0": 1,
+            "1": 1,
+            "2": 2,
+            "3": 2,
+            "4": 114
+          }
+        },
+        "minfill": {
+          "bag_assignments": 3198,
+          "bag_size_histogram": {
+            "1": 1,
+            "2": 1,
+            "3": 5,
+            "4": 29,
+            "5": 84
+          },
+          "child_count_histogram": {
+            "0": 26,
+            "1": 69,
+            "2": 25
+          },
+          "estimated_inner_loop_iterations": 6796,
+          "estimated_local_energy_term_visits": 15426,
+          "max_bag_size": 5,
+          "message_entries": 1599,
+          "separator_size_histogram": {
+            "0": 1,
+            "1": 1,
+            "2": 5,
+            "3": 29,
+            "4": 84
+          }
+        }
+      },
+      "degree_gini": 0.08187702265372176,
+      "degree_max": 4,
+      "degree_median": 3,
+      "degree_min": 2,
+      "degree_p90": 4,
+      "edges": 206,
+      "expected_edges": 206,
+      "extraction_exact": true,
+      "family": "grid",
+      "minfill_bag_size": 5,
+      "minfill_direct_energy": -219.25,
+      "minfill_energy": -219.25,
+      "minfill_width": 4,
+      "no_mutation": true,
+      "nodes": 120,
+      "oracle_energy": -219.25,
+      "oracle_operations": 13840,
+      "process_peak_rss_kib": 27648,
+      "replicate": 0,
+      "seed": 24260941,
+      "timing_ns": {
+        "graph_construction": 1403777,
+        "jt_certificate_cpu": 83028563,
+        "jt_certificate_wall": 83039932,
+        "jt_minfill_cpu": 60864166,
+        "jt_minfill_wall": 60923542,
+        "minfill_order": 8554763,
+        "oracle": 10923994,
+        "runtime_extraction": 2163311
+      },
+      "traced_peak_bytes": {
+        "jt_certificate": 367632,
+        "jt_minfill": 376192
+      },
+      "width": 4
+    },
+    {
+      "certificate_bag_size": 5,
+      "certificate_direct_energy": -196.75,
+      "certificate_energy": -196.75,
+      "certificate_width": 4,
+      "decomposition_profiles": {
+        "certificate": {
+          "bag_assignments": 1278,
+          "bag_size_histogram": {
+            "1": 1,
+            "2": 89,
+            "3": 1,
+            "4": 1,
+            "5": 28
+          },
+          "child_count_histogram": {
+            "0": 116,
+            "1": 2,
+            "28": 1,
+            "89": 1
+          },
+          "estimated_inner_loop_iterations": 1916,
+          "estimated_local_energy_term_visits": 5282,
+          "max_bag_size": 5,
+          "message_entries": 639,
+          "separator_size_histogram": {
+            "0": 1,
+            "1": 89,
+            "2": 1,
+            "3": 1,
+            "4": 28
+          }
+        },
+        "minfill": {
+          "bag_assignments": 1278,
+          "bag_size_histogram": {
+            "1": 1,
+            "2": 89,
+            "3": 1,
+            "4": 1,
+            "5": 28
+          },
+          "child_count_histogram": {
+            "0": 115,
+            "1": 3,
+            "27": 1,
+            "89": 1
+          },
+          "estimated_inner_loop_iterations": 2524,
+          "estimated_local_energy_term_visits": 5282,
+          "max_bag_size": 5,
+          "message_entries": 639,
+          "separator_size_histogram": {
+            "0": 1,
+            "1": 89,
+            "2": 1,
+            "3": 1,
+            "4": 28
+          }
+        }
+      },
+      "degree_gini": 0.636084142394822,
+      "degree_max": 119,
+      "degree_median": 1,
+      "degree_min": 1,
+      "degree_p90": 4,
+      "edges": 206,
+      "expected_edges": 206,
+      "extraction_exact": true,
+      "family": "sparse_partial_qtree",
+      "minfill_bag_size": 5,
+      "minfill_direct_energy": -196.75,
+      "minfill_energy": -196.75,
+      "minfill_width": 4,
+      "no_mutation": true,
+      "nodes": 120,
+      "oracle_energy": -196.75,
+      "oracle_operations": 5920,
+      "process_peak_rss_kib": 27648,
+      "replicate": 0,
+      "seed": 24270948,
+      "timing_ns": {
+        "graph_construction": 1224596,
+        "jt_certificate_cpu": 18795885,
+        "jt_certificate_wall": 18818394,
+        "jt_minfill_cpu": 22138446,
+        "jt_minfill_wall": 22151020,
+        "minfill_order": 29719608,
+        "oracle": 6144011,
+        "runtime_extraction": 3670608
+      },
+      "traced_peak_bytes": {
+        "jt_certificate": 182240,
+        "jt_minfill": 224120
+      },
+      "width": 4
+    },
+    {
+      "certificate_bag_size": 5,
+      "certificate_direct_energy": -206.25,
+      "certificate_energy": -206.25,
+      "certificate_width": 4,
+      "decomposition_profiles": {
+        "certificate": {
+          "bag_assignments": 1278,
+          "bag_size_histogram": {
+            "1": 1,
+            "2": 89,
+            "3": 1,
+            "4": 1,
+            "5": 28
+          },
+          "child_count_histogram": {
+            "0": 116,
+            "1": 2,
+            "28": 1,
+            "89": 1
+          },
+          "estimated_inner_loop_iterations": 1916,
+          "estimated_local_energy_term_visits": 5282,
+          "max_bag_size": 5,
+          "message_entries": 639,
+          "separator_size_histogram": {
+            "0": 1,
+            "1": 89,
+            "2": 1,
+            "3": 1,
+            "4": 28
+          }
+        },
+        "minfill": {
+          "bag_assignments": 1278,
+          "bag_size_histogram": {
+            "1": 1,
+            "2": 89,
+            "3": 1,
+            "4": 1,
+            "5": 28
+          },
+          "child_count_histogram": {
+            "0": 115,
+            "1": 3,
+            "27": 1,
+            "89": 1
+          },
+          "estimated_inner_loop_iterations": 3580,
+          "estimated_local_energy_term_visits": 5282,
+          "max_bag_size": 5,
+          "message_entries": 639,
+          "separator_size_histogram": {
+            "0": 1,
+            "1": 89,
+            "2": 1,
+            "3": 1,
+            "4": 28
+          }
+        }
+      },
+      "degree_gini": 0.636084142394822,
+      "degree_max": 119,
+      "degree_median": 1,
+      "degree_min": 1,
+      "degree_p90": 4,
+      "edges": 206,
+      "expected_edges": 206,
+      "extraction_exact": true,
+      "family": "hub_partial_qtree",
+      "minfill_bag_size": 5,
+      "minfill_direct_energy": -206.25,
+      "minfill_energy": -206.25,
+      "minfill_width": 4,
+      "no_mutation": true,
+      "nodes": 120,
+      "oracle_energy": -206.25,
+      "oracle_operations": 5920,
+      "process_peak_rss_kib": 27648,
+      "replicate": 0,
+      "seed": 24280955,
+      "timing_ns": {
+        "graph_construction": 1225586,
+        "jt_certificate_cpu": 19125346,
+        "jt_certificate_wall": 19129095,
+        "jt_minfill_cpu": 28655607,
+        "jt_minfill_wall": 28706043,
+        "minfill_order": 29584167,
+        "oracle": 6874554,
+        "runtime_extraction": 3986810
+      },
+      "traced_peak_bytes": {
+        "jt_certificate": 182240,
+        "jt_minfill": 231608
+      },
+      "width": 4
+    },
+    {
+      "certificate_bag_size": 5,
+      "certificate_direct_energy": -221.25,
+      "certificate_energy": -221.25,
+      "certificate_width": 4,
+      "decomposition_profiles": {
+        "certificate": {
+          "bag_assignments": 3702,
+          "bag_size_histogram": {
+            "1": 1,
+            "2": 1,
+            "3": 2,
+            "4": 2,
+            "5": 114
+          },
+          "child_count_histogram": {
+            "0": 1,
+            "1": 119
+          },
+          "estimated_inner_loop_iterations": 7396,
+          "estimated_local_energy_term_visits": 18426,
+          "max_bag_size": 5,
+          "message_entries": 1851,
+          "separator_size_histogram": {
+            "0": 1,
+            "1": 1,
+            "2": 2,
+            "3": 2,
+            "4": 114
+          }
+        },
+        "minfill": {
+          "bag_assignments": 3214,
+          "bag_size_histogram": {
+            "1": 1,
+            "2": 1,
+            "3": 5,
+            "4": 28,
+            "5": 85
+          },
+          "child_count_histogram": {
+            "0": 25,
+            "1": 72,
+            "2": 22,
+            "3": 1
+          },
+          "estimated_inner_loop_iterations": 6828,
+          "estimated_local_energy_term_visits": 15522,
+          "max_bag_size": 5,
+          "message_entries": 1607,
+          "separator_size_histogram": {
+            "0": 1,
+            "1": 1,
+            "2": 5,
+            "3": 28,
+            "4": 85
+          }
+        }
+      },
+      "degree_gini": 0.08187702265372176,
+      "degree_max": 4,
+      "degree_median": 3,
+      "degree_min": 2,
+      "degree_p90": 4,
+      "edges": 206,
+      "expected_edges": 206,
+      "extraction_exact": true,
+      "family": "grid",
+      "minfill_bag_size": 5,
+      "minfill_direct_energy": -221.25,
+      "minfill_energy": -221.25,
+      "minfill_width": 4,
+      "no_mutation": true,
+      "nodes": 120,
+      "oracle_energy": -221.25,
+      "oracle_operations": 13840,
+      "process_peak_rss_kib": 27648,
+      "replicate": 1,
+      "seed": 24326478,
+      "timing_ns": {
+        "graph_construction": 1167085,
+        "jt_certificate_cpu": 63583377,
+        "jt_certificate_wall": 63604426,
+        "jt_minfill_cpu": 55643325,
+        "jt_minfill_wall": 55653917,
+        "minfill_order": 8217791,
+        "oracle": 11047445,
+        "runtime_extraction": 2179891
+      },
+      "traced_peak_bytes": {
+        "jt_certificate": 367632,
+        "jt_minfill": 375360
+      },
+      "width": 4
+    },
+    {
+      "certificate_bag_size": 5,
+      "certificate_direct_energy": -193.75,
+      "certificate_energy": -193.75,
+      "certificate_width": 4,
+      "decomposition_profiles": {
+        "certificate": {
+          "bag_assignments": 1278,
+          "bag_size_histogram": {
+            "1": 1,
+            "2": 89,
+            "3": 1,
+            "4": 1,
+            "5": 28
+          },
+          "child_count_histogram": {
+            "0": 116,
+            "1": 2,
+            "28": 1,
+            "89": 1
+          },
+          "estimated_inner_loop_iterations": 1916,
+          "estimated_local_energy_term_visits": 5282,
+          "max_bag_size": 5,
+          "message_entries": 639,
+          "separator_size_histogram": {
+            "0": 1,
+            "1": 89,
+            "2": 1,
+            "3": 1,
+            "4": 28
+          }
+        },
+        "minfill": {
+          "bag_assignments": 1278,
+          "bag_size_histogram": {
+            "1": 1,
+            "2": 89,
+            "3": 1,
+            "4": 1,
+            "5": 28
+          },
+          "child_count_histogram": {
+            "0": 115,
+            "1": 3,
+            "27": 1,
+            "89": 1
+          },
+          "estimated_inner_loop_iterations": 3580,
+          "estimated_local_energy_term_visits": 5282,
+          "max_bag_size": 5,
+          "message_entries": 639,
+          "separator_size_histogram": {
+            "0": 1,
+            "1": 89,
+            "2": 1,
+            "3": 1,
+            "4": 28
+          }
+        }
+      },
+      "degree_gini": 0.636084142394822,
+      "degree_max": 119,
+      "degree_median": 1,
+      "degree_min": 1,
+      "degree_p90": 4,
+      "edges": 206,
+      "expected_edges": 206,
+      "extraction_exact": true,
+      "family": "sparse_partial_qtree",
+      "minfill_bag_size": 5,
+      "minfill_direct_energy": -193.75,
+      "minfill_energy": -193.75,
+      "minfill_width": 4,
+      "no_mutation": true,
+      "nodes": 120,
+      "oracle_energy": -193.75,
+      "oracle_operations": 5920,
+      "process_peak_rss_kib": 27648,
+      "replicate": 1,
+      "seed": 24336485,
+      "timing_ns": {
+        "graph_construction": 1197496,
+        "jt_certificate_cpu": 19181796,
+        "jt_certificate_wall": 19186176,
+        "jt_minfill_cpu": 28619237,
+        "jt_minfill_wall": 28630252,
+        "minfill_order": 29775658,
+        "oracle": 6255271,
+        "runtime_extraction": 3302046
+      },
+      "traced_peak_bytes": {
+        "jt_certificate": 182240,
+        "jt_minfill": 231608
+      },
+      "width": 4
+    },
+    {
+      "certificate_bag_size": 5,
+      "certificate_direct_energy": -207.25,
+      "certificate_energy": -207.25,
+      "certificate_width": 4,
+      "decomposition_profiles": {
+        "certificate": {
+          "bag_assignments": 1278,
+          "bag_size_histogram": {
+            "1": 1,
+            "2": 89,
+            "3": 1,
+            "4": 1,
+            "5": 28
+          },
+          "child_count_histogram": {
+            "0": 116,
+            "1": 2,
+            "28": 1,
+            "89": 1
+          },
+          "estimated_inner_loop_iterations": 1916,
+          "estimated_local_energy_term_visits": 5282,
+          "max_bag_size": 5,
+          "message_entries": 639,
+          "separator_size_histogram": {
+            "0": 1,
+            "1": 89,
+            "2": 1,
+            "3": 1,
+            "4": 28
+          }
+        },
+        "minfill": {
+          "bag_assignments": 1278,
+          "bag_size_histogram": {
+            "1": 1,
+            "2": 89,
+            "3": 1,
+            "4": 1,
+            "5": 28
+          },
+          "child_count_histogram": {
+            "0": 115,
+            "1": 3,
+            "27": 1,
+            "89": 1
+          },
+          "estimated_inner_loop_iterations": 3580,
+          "estimated_local_energy_term_visits": 5282,
+          "max_bag_size": 5,
+          "message_entries": 639,
+          "separator_size_histogram": {
+            "0": 1,
+            "1": 89,
+            "2": 1,
+            "3": 1,
+            "4": 28
+          }
+        }
+      },
+      "degree_gini": 0.636084142394822,
+      "degree_max": 119,
+      "degree_median": 1,
+      "degree_min": 1,
+      "degree_p90": 4,
+      "edges": 206,
+      "expected_edges": 206,
+      "extraction_exact": true,
+      "family": "hub_partial_qtree",
+      "minfill_bag_size": 5,
+      "minfill_direct_energy": -207.25,
+      "minfill_energy": -207.25,
+      "minfill_width": 4,
+      "no_mutation": true,
+      "nodes": 120,
+      "oracle_energy": -207.25,
+      "oracle_operations": 5920,
+      "process_peak_rss_kib": 27648,
+      "replicate": 1,
+      "seed": 24346492,
+      "timing_ns": {
+        "graph_construction": 1194196,
+        "jt_certificate_cpu": 19062875,
+        "jt_certificate_wall": 19066765,
+        "jt_minfill_cpu": 28547588,
+        "jt_minfill_wall": 28562052,
+        "minfill_order": 29263445,
+        "oracle": 6126590,
+        "runtime_extraction": 3597948
+      },
+      "traced_peak_bytes": {
+        "jt_certificate": 182240,
+        "jt_minfill": 231608
+      },
+      "width": 4
+    },
+    {
+      "certificate_bag_size": 5,
+      "certificate_direct_energy": -225.5,
+      "certificate_energy": -225.5,
+      "certificate_width": 4,
+      "decomposition_profiles": {
+        "certificate": {
+          "bag_assignments": 3702,
+          "bag_size_histogram": {
+            "1": 1,
+            "2": 1,
+            "3": 2,
+            "4": 2,
+            "5": 114
+          },
+          "child_count_histogram": {
+            "0": 1,
+            "1": 119
+          },
+          "estimated_inner_loop_iterations": 7396,
+          "estimated_local_energy_term_visits": 18426,
+          "max_bag_size": 5,
+          "message_entries": 1851,
+          "separator_size_histogram": {
+            "0": 1,
+            "1": 1,
+            "2": 2,
+            "3": 2,
+            "4": 114
+          }
+        },
+        "minfill": {
+          "bag_assignments": 3214,
+          "bag_size_histogram": {
+            "1": 1,
+            "2": 1,
+            "3": 5,
+            "4": 28,
+            "5": 85
+          },
+          "child_count_histogram": {
+            "0": 25,
+            "1": 71,
+            "2": 24
+          },
+          "estimated_inner_loop_iterations": 6828,
+          "estimated_local_energy_term_visits": 15522,
+          "max_bag_size": 5,
+          "message_entries": 1607,
+          "separator_size_histogram": {
+            "0": 1,
+            "1": 1,
+            "2": 5,
+            "3": 28,
+            "4": 85
+          }
+        }
+      },
+      "degree_gini": 0.08187702265372176,
+      "degree_max": 4,
+      "degree_median": 3,
+      "degree_min": 2,
+      "degree_p90": 4,
+      "edges": 206,
+      "expected_edges": 206,
+      "extraction_exact": true,
+      "family": "grid",
+      "minfill_bag_size": 5,
+      "minfill_direct_energy": -225.5,
+      "minfill_energy": -225.5,
+      "minfill_width": 4,
+      "no_mutation": true,
+      "nodes": 120,
+      "oracle_energy": -225.5,
+      "oracle_operations": 13840,
+      "process_peak_rss_kib": 27648,
+      "replicate": 2,
+      "seed": 24392015,
+      "timing_ns": {
+        "graph_construction": 1225626,
+        "jt_certificate_cpu": 62160526,
+        "jt_certificate_wall": 62166278,
+        "jt_minfill_cpu": 55842106,
+        "jt_minfill_wall": 55857617,
+        "minfill_order": 8302961,
+        "oracle": 10770923,
+        "runtime_extraction": 2150541
+      },
+      "traced_peak_bytes": {
+        "jt_certificate": 367632,
+        "jt_minfill": 375432
+      },
+      "width": 4
+    },
+    {
+      "certificate_bag_size": 5,
+      "certificate_direct_energy": -198.0,
+      "certificate_energy": -198.0,
+      "certificate_width": 4,
+      "decomposition_profiles": {
+        "certificate": {
+          "bag_assignments": 1278,
+          "bag_size_histogram": {
+            "1": 1,
+            "2": 89,
+            "3": 1,
+            "4": 1,
+            "5": 28
+          },
+          "child_count_histogram": {
+            "0": 116,
+            "1": 2,
+            "28": 1,
+            "89": 1
+          },
+          "estimated_inner_loop_iterations": 1916,
+          "estimated_local_energy_term_visits": 5282,
+          "max_bag_size": 5,
+          "message_entries": 639,
+          "separator_size_histogram": {
+            "0": 1,
+            "1": 89,
+            "2": 1,
+            "3": 1,
+            "4": 28
+          }
+        },
+        "minfill": {
+          "bag_assignments": 1278,
+          "bag_size_histogram": {
+            "1": 1,
+            "2": 89,
+            "3": 1,
+            "4": 1,
+            "5": 28
+          },
+          "child_count_histogram": {
+            "0": 115,
+            "1": 3,
+            "27": 1,
+            "89": 1
+          },
+          "estimated_inner_loop_iterations": 3580,
+          "estimated_local_energy_term_visits": 5282,
+          "max_bag_size": 5,
+          "message_entries": 639,
+          "separator_size_histogram": {
+            "0": 1,
+            "1": 89,
+            "2": 1,
+            "3": 1,
+            "4": 28
+          }
+        }
+      },
+      "degree_gini": 0.636084142394822,
+      "degree_max": 119,
+      "degree_median": 1,
+      "degree_min": 1,
+      "degree_p90": 4,
+      "edges": 206,
+      "expected_edges": 206,
+      "extraction_exact": true,
+      "family": "sparse_partial_qtree",
+      "minfill_bag_size": 5,
+      "minfill_direct_energy": -198.0,
+      "minfill_energy": -198.0,
+      "minfill_width": 4,
+      "no_mutation": true,
+      "nodes": 120,
+      "oracle_energy": -198.0,
+      "oracle_operations": 5920,
+      "process_peak_rss_kib": 27648,
+      "replicate": 2,
+      "seed": 24402022,
+      "timing_ns": {
+        "graph_construction": 1466958,
+        "jt_certificate_cpu": 18820875,
+        "jt_certificate_wall": 18824643,
+        "jt_minfill_cpu": 28451288,
+        "jt_minfill_wall": 28464481,
+        "minfill_order": 31545907,
+        "oracle": 6179710,
+        "runtime_extraction": 4095460
+      },
+      "traced_peak_bytes": {
+        "jt_certificate": 182240,
+        "jt_minfill": 231608
+      },
+      "width": 4
+    },
+    {
+      "certificate_bag_size": 5,
+      "certificate_direct_energy": -205.0,
+      "certificate_energy": -205.0,
+      "certificate_width": 4,
+      "decomposition_profiles": {
+        "certificate": {
+          "bag_assignments": 1278,
+          "bag_size_histogram": {
+            "1": 1,
+            "2": 89,
+            "3": 1,
+            "4": 1,
+            "5": 28
+          },
+          "child_count_histogram": {
+            "0": 116,
+            "1": 2,
+            "28": 1,
+            "89": 1
+          },
+          "estimated_inner_loop_iterations": 1916,
+          "estimated_local_energy_term_visits": 5282,
+          "max_bag_size": 5,
+          "message_entries": 639,
+          "separator_size_histogram": {
+            "0": 1,
+            "1": 89,
+            "2": 1,
+            "3": 1,
+            "4": 28
+          }
+        },
+        "minfill": {
+          "bag_assignments": 1278,
+          "bag_size_histogram": {
+            "1": 1,
+            "2": 89,
+            "3": 1,
+            "4": 1,
+            "5": 28
+          },
+          "child_count_histogram": {
+            "0": 115,
+            "1": 3,
+            "27": 1,
+            "89": 1
+          },
+          "estimated_inner_loop_iterations": 2524,
+          "estimated_local_energy_term_visits": 5282,
+          "max_bag_size": 5,
+          "message_entries": 639,
+          "separator_size_histogram": {
+            "0": 1,
+            "1": 89,
+            "2": 1,
+            "3": 1,
+            "4": 28
+          }
+        }
+      },
+      "degree_gini": 0.636084142394822,
+      "degree_max": 119,
+      "degree_median": 1,
+      "degree_min": 1,
+      "degree_p90": 4,
+      "edges": 206,
+      "expected_edges": 206,
+      "extraction_exact": true,
+      "family": "hub_partial_qtree",
+      "minfill_bag_size": 5,
+      "minfill_direct_energy": -205.0,
+      "minfill_energy": -205.0,
+      "minfill_width": 4,
+      "no_mutation": true,
+      "nodes": 120,
+      "oracle_energy": -205.0,
+      "oracle_operations": 5920,
+      "process_peak_rss_kib": 27648,
+      "replicate": 2,
+      "seed": 24412029,
+      "timing_ns": {
+        "graph_construction": 1223546,
+        "jt_certificate_cpu": 18904075,
+        "jt_certificate_wall": 18909074,
+        "jt_minfill_cpu": 22287666,
+        "jt_minfill_wall": 22303231,
+        "minfill_order": 30257740,
+        "oracle": 6063330,
+        "runtime_extraction": 3533648
+      },
+      "traced_peak_bytes": {
+        "jt_certificate": 182240,
+        "jt_minfill": 224120
+      },
+      "width": 4
+    },
+    {
+      "certificate_bag_size": 5,
+      "certificate_direct_energy": -214.25,
+      "certificate_energy": -214.25,
+      "certificate_width": 4,
+      "decomposition_profiles": {
+        "certificate": {
+          "bag_assignments": 3702,
+          "bag_size_histogram": {
+            "1": 1,
+            "2": 1,
+            "3": 2,
+            "4": 2,
+            "5": 114
+          },
+          "child_count_histogram": {
+            "0": 1,
+            "1": 119
+          },
+          "estimated_inner_loop_iterations": 7396,
+          "estimated_local_energy_term_visits": 18426,
+          "max_bag_size": 5,
+          "message_entries": 1851,
+          "separator_size_histogram": {
+            "0": 1,
+            "1": 1,
+            "2": 2,
+            "3": 2,
+            "4": 114
+          }
+        },
+        "minfill": {
+          "bag_assignments": 3198,
+          "bag_size_histogram": {
+            "1": 1,
+            "2": 1,
+            "3": 5,
+            "4": 29,
+            "5": 84
+          },
+          "child_count_histogram": {
+            "0": 26,
+            "1": 69,
+            "2": 25
+          },
+          "estimated_inner_loop_iterations": 6796,
+          "estimated_local_energy_term_visits": 15426,
+          "max_bag_size": 5,
+          "message_entries": 1599,
+          "separator_size_histogram": {
+            "0": 1,
+            "1": 1,
+            "2": 5,
+            "3": 29,
+            "4": 84
+          }
+        }
+      },
+      "degree_gini": 0.08187702265372176,
+      "degree_max": 4,
+      "degree_median": 3,
+      "degree_min": 2,
+      "degree_p90": 4,
+      "edges": 206,
+      "expected_edges": 206,
+      "extraction_exact": true,
+      "family": "grid",
+      "minfill_bag_size": 5,
+      "minfill_direct_energy": -214.25,
+      "minfill_energy": -214.25,
+      "minfill_width": 4,
+      "no_mutation": true,
+      "nodes": 120,
+      "oracle_energy": -214.25,
+      "oracle_operations": 13840,
+      "process_peak_rss_kib": 27648,
+      "replicate": 3,
+      "seed": 24457552,
+      "timing_ns": {
+        "graph_construction": 1215617,
+        "jt_certificate_cpu": 63688787,
+        "jt_certificate_wall": 63702316,
+        "jt_minfill_cpu": 55254125,
+        "jt_minfill_wall": 55269615,
+        "minfill_order": 8451052,
+        "oracle": 10768653,
+        "runtime_extraction": 2234701
+      },
+      "traced_peak_bytes": {
+        "jt_certificate": 367632,
+        "jt_minfill": 376072
+      },
+      "width": 4
+    },
+    {
+      "certificate_bag_size": 5,
+      "certificate_direct_energy": -192.75,
+      "certificate_energy": -192.75,
+      "certificate_width": 4,
+      "decomposition_profiles": {
+        "certificate": {
+          "bag_assignments": 1278,
+          "bag_size_histogram": {
+            "1": 1,
+            "2": 89,
+            "3": 1,
+            "4": 1,
+            "5": 28
+          },
+          "child_count_histogram": {
+            "0": 116,
+            "1": 2,
+            "28": 1,
+            "89": 1
+          },
+          "estimated_inner_loop_iterations": 1916,
+          "estimated_local_energy_term_visits": 5282,
+          "max_bag_size": 5,
+          "message_entries": 639,
+          "separator_size_histogram": {
+            "0": 1,
+            "1": 89,
+            "2": 1,
+            "3": 1,
+            "4": 28
+          }
+        },
+        "minfill": {
+          "bag_assignments": 1278,
+          "bag_size_histogram": {
+            "1": 1,
+            "2": 89,
+            "3": 1,
+            "4": 1,
+            "5": 28
+          },
+          "child_count_histogram": {
+            "0": 115,
+            "1": 3,
+            "27": 1,
+            "89": 1
+          },
+          "estimated_inner_loop_iterations": 2876,
+          "estimated_local_energy_term_visits": 5282,
+          "max_bag_size": 5,
+          "message_entries": 639,
+          "separator_size_histogram": {
+            "0": 1,
+            "1": 89,
+            "2": 1,
+            "3": 1,
+            "4": 28
+          }
+        }
+      },
+      "degree_gini": 0.636084142394822,
+      "degree_max": 119,
+      "degree_median": 1,
+      "degree_min": 1,
+      "degree_p90": 4,
+      "edges": 206,
+      "expected_edges": 206,
+      "extraction_exact": true,
+      "family": "sparse_partial_qtree",
+      "minfill_bag_size": 5,
+      "minfill_direct_energy": -192.75,
+      "minfill_energy": -192.75,
+      "minfill_width": 4,
+      "no_mutation": true,
+      "nodes": 120,
+      "oracle_energy": -192.75,
+      "oracle_operations": 5920,
+      "process_peak_rss_kib": 27648,
+      "replicate": 3,
+      "seed": 24467559,
+      "timing_ns": {
+        "graph_construction": 1203366,
+        "jt_certificate_cpu": 18778785,
+        "jt_certificate_wall": 18789524,
+        "jt_minfill_cpu": 28580498,
+        "jt_minfill_wall": 28606362,
+        "minfill_order": 29171245,
+        "oracle": 6895794,
+        "runtime_extraction": 3709309
+      },
+      "traced_peak_bytes": {
+        "jt_certificate": 182240,
+        "jt_minfill": 231608
+      },
+      "width": 4
+    },
+    {
+      "certificate_bag_size": 5,
+      "certificate_direct_energy": -203.25,
+      "certificate_energy": -203.25,
+      "certificate_width": 4,
+      "decomposition_profiles": {
+        "certificate": {
+          "bag_assignments": 1278,
+          "bag_size_histogram": {
+            "1": 1,
+            "2": 89,
+            "3": 1,
+            "4": 1,
+            "5": 28
+          },
+          "child_count_histogram": {
+            "0": 116,
+            "1": 2,
+            "28": 1,
+            "89": 1
+          },
+          "estimated_inner_loop_iterations": 1916,
+          "estimated_local_energy_term_visits": 5282,
+          "max_bag_size": 5,
+          "message_entries": 639,
+          "separator_size_histogram": {
+            "0": 1,
+            "1": 89,
+            "2": 1,
+            "3": 1,
+            "4": 28
+          }
+        },
+        "minfill": {
+          "bag_assignments": 1278,
+          "bag_size_histogram": {
+            "1": 1,
+            "2": 89,
+            "3": 1,
+            "4": 1,
+            "5": 28
+          },
+          "child_count_histogram": {
+            "0": 115,
+            "1": 3,
+            "27": 1,
+            "89": 1
+          },
+          "estimated_inner_loop_iterations": 3580,
+          "estimated_local_energy_term_visits": 5282,
+          "max_bag_size": 5,
+          "message_entries": 639,
+          "separator_size_histogram": {
+            "0": 1,
+            "1": 89,
+            "2": 1,
+            "3": 1,
+            "4": 28
+          }
+        }
+      },
+      "degree_gini": 0.636084142394822,
+      "degree_max": 119,
+      "degree_median": 1,
+      "degree_min": 1,
+      "degree_p90": 4,
+      "edges": 206,
+      "expected_edges": 206,
+      "extraction_exact": true,
+      "family": "hub_partial_qtree",
+      "minfill_bag_size": 5,
+      "minfill_direct_energy": -203.25,
+      "minfill_energy": -203.25,
+      "minfill_width": 4,
+      "no_mutation": true,
+      "nodes": 120,
+      "oracle_energy": -203.25,
+      "oracle_operations": 5920,
+      "process_peak_rss_kib": 27648,
+      "replicate": 3,
+      "seed": 24477566,
+      "timing_ns": {
+        "graph_construction": 1187406,
+        "jt_certificate_cpu": 21704376,
+        "jt_certificate_wall": 21748268,
+        "jt_minfill_cpu": 28963458,
+        "jt_minfill_wall": 28976844,
+        "minfill_order": 29768618,
+        "oracle": 6102271,
+        "runtime_extraction": 3381437
+      },
+      "traced_peak_bytes": {
+        "jt_certificate": 182240,
+        "jt_minfill": 231608
+      },
+      "width": 4
+    },
+    {
+      "certificate_bag_size": 5,
+      "certificate_direct_energy": -225.0,
+      "certificate_energy": -225.0,
+      "certificate_width": 4,
+      "decomposition_profiles": {
+        "certificate": {
+          "bag_assignments": 3702,
+          "bag_size_histogram": {
+            "1": 1,
+            "2": 1,
+            "3": 2,
+            "4": 2,
+            "5": 114
+          },
+          "child_count_histogram": {
+            "0": 1,
+            "1": 119
+          },
+          "estimated_inner_loop_iterations": 7396,
+          "estimated_local_energy_term_visits": 18426,
+          "max_bag_size": 5,
+          "message_entries": 1851,
+          "separator_size_histogram": {
+            "0": 1,
+            "1": 1,
+            "2": 2,
+            "3": 2,
+            "4": 114
+          }
+        },
+        "minfill": {
+          "bag_assignments": 3230,
+          "bag_size_histogram": {
+            "1": 1,
+            "2": 1,
+            "3": 5,
+            "4": 27,
+            "5": 86
+          },
+          "child_count_histogram": {
+            "0": 24,
+            "1": 73,
+            "2": 23
+          },
+          "estimated_inner_loop_iterations": 6828,
+          "estimated_local_energy_term_visits": 15618,
+          "max_bag_size": 5,
+          "message_entries": 1615,
+          "separator_size_histogram": {
+            "0": 1,
+            "1": 1,
+            "2": 5,
+            "3": 27,
+            "4": 86
+          }
+        }
+      },
+      "degree_gini": 0.08187702265372176,
+      "degree_max": 4,
+      "degree_median": 3,
+      "degree_min": 2,
+      "degree_p90": 4,
+      "edges": 206,
+      "expected_edges": 206,
+      "extraction_exact": true,
+      "family": "grid",
+      "minfill_bag_size": 5,
+      "minfill_direct_energy": -225.0,
+      "minfill_energy": -225.0,
+      "minfill_width": 4,
+      "no_mutation": true,
+      "nodes": 120,
+      "oracle_energy": -225.0,
+      "oracle_operations": 13840,
+      "process_peak_rss_kib": 27648,
+      "replicate": 4,
+      "seed": 24523089,
+      "timing_ns": {
+        "graph_construction": 1220706,
+        "jt_certificate_cpu": 64857378,
+        "jt_certificate_wall": 64928352,
+        "jt_minfill_cpu": 57892736,
+        "jt_minfill_wall": 57956558,
+        "minfill_order": 8474312,
+        "oracle": 10816794,
+        "runtime_extraction": 2201410
+      },
+      "traced_peak_bytes": {
+        "jt_certificate": 367632,
+        "jt_minfill": 373704
+      },
+      "width": 4
+    },
+    {
+      "certificate_bag_size": 5,
+      "certificate_direct_energy": -198.5,
+      "certificate_energy": -198.5,
+      "certificate_width": 4,
+      "decomposition_profiles": {
+        "certificate": {
+          "bag_assignments": 1278,
+          "bag_size_histogram": {
+            "1": 1,
+            "2": 89,
+            "3": 1,
+            "4": 1,
+            "5": 28
+          },
+          "child_count_histogram": {
+            "0": 116,
+            "1": 2,
+            "28": 1,
+            "89": 1
+          },
+          "estimated_inner_loop_iterations": 1916,
+          "estimated_local_energy_term_visits": 5282,
+          "max_bag_size": 5,
+          "message_entries": 639,
+          "separator_size_histogram": {
+            "0": 1,
+            "1": 89,
+            "2": 1,
+            "3": 1,
+            "4": 28
+          }
+        },
+        "minfill": {
+          "bag_assignments": 1278,
+          "bag_size_histogram": {
+            "1": 1,
+            "2": 89,
+            "3": 1,
+            "4": 1,
+            "5": 28
+          },
+          "child_count_histogram": {
+            "0": 115,
+            "1": 3,
+            "27": 1,
+            "89": 1
+          },
+          "estimated_inner_loop_iterations": 3580,
+          "estimated_local_energy_term_visits": 5282,
+          "max_bag_size": 5,
+          "message_entries": 639,
+          "separator_size_histogram": {
+            "0": 1,
+            "1": 89,
+            "2": 1,
+            "3": 1,
+            "4": 28
+          }
+        }
+      },
+      "degree_gini": 0.636084142394822,
+      "degree_max": 119,
+      "degree_median": 1,
+      "degree_min": 1,
+      "degree_p90": 4,
+      "edges": 206,
+      "expected_edges": 206,
+      "extraction_exact": true,
+      "family": "sparse_partial_qtree",
+      "minfill_bag_size": 5,
+      "minfill_direct_energy": -198.5,
+      "minfill_energy": -198.5,
+      "minfill_width": 4,
+      "no_mutation": true,
+      "nodes": 120,
+      "oracle_energy": -198.5,
+      "oracle_operations": 5920,
+      "process_peak_rss_kib": 27648,
+      "replicate": 4,
+      "seed": 24533096,
+      "timing_ns": {
+        "graph_construction": 1290796,
+        "jt_certificate_cpu": 20531425,
+        "jt_certificate_wall": 20536272,
+        "jt_minfill_cpu": 29916968,
+        "jt_minfill_wall": 29933649,
+        "minfill_order": 30817843,
+        "oracle": 7118025,
+        "runtime_extraction": 4820664
+      },
+      "traced_peak_bytes": {
+        "jt_certificate": 182240,
+        "jt_minfill": 231608
+      },
+      "width": 4
+    },
+    {
+      "certificate_bag_size": 5,
+      "certificate_direct_energy": -214.5,
+      "certificate_energy": -214.5,
+      "certificate_width": 4,
+      "decomposition_profiles": {
+        "certificate": {
+          "bag_assignments": 1278,
+          "bag_size_histogram": {
+            "1": 1,
+            "2": 89,
+            "3": 1,
+            "4": 1,
+            "5": 28
+          },
+          "child_count_histogram": {
+            "0": 116,
+            "1": 2,
+            "28": 1,
+            "89": 1
+          },
+          "estimated_inner_loop_iterations": 1916,
+          "estimated_local_energy_term_visits": 5282,
+          "max_bag_size": 5,
+          "message_entries": 639,
+          "separator_size_histogram": {
+            "0": 1,
+            "1": 89,
+            "2": 1,
+            "3": 1,
+            "4": 28
+          }
+        },
+        "minfill": {
+          "bag_assignments": 1278,
+          "bag_size_histogram": {
+            "1": 1,
+            "2": 89,
+            "3": 1,
+            "4": 1,
+            "5": 28
+          },
+          "child_count_histogram": {
+            "0": 115,
+            "1": 3,
+            "27": 1,
+            "89": 1
+          },
+          "estimated_inner_loop_iterations": 2876,
+          "estimated_local_energy_term_visits": 5282,
+          "max_bag_size": 5,
+          "message_entries": 639,
+          "separator_size_histogram": {
+            "0": 1,
+            "1": 89,
+            "2": 1,
+            "3": 1,
+            "4": 28
+          }
+        }
+      },
+      "degree_gini": 0.636084142394822,
+      "degree_max": 119,
+      "degree_median": 1,
+      "degree_min": 1,
+      "degree_p90": 4,
+      "edges": 206,
+      "expected_edges": 206,
+      "extraction_exact": true,
+      "family": "hub_partial_qtree",
+      "minfill_bag_size": 5,
+      "minfill_direct_energy": -214.5,
+      "minfill_energy": -214.5,
+      "minfill_width": 4,
+      "no_mutation": true,
+      "nodes": 120,
+      "oracle_energy": -214.5,
+      "oracle_operations": 5920,
+      "process_peak_rss_kib": 27648,
+      "replicate": 4,
+      "seed": 24543103,
+      "timing_ns": {
+        "graph_construction": 2091130,
+        "jt_certificate_cpu": 19271605,
+        "jt_certificate_wall": 19276436,
+        "jt_minfill_cpu": 24689717,
+        "jt_minfill_wall": 24704713,
+        "minfill_order": 29350575,
+        "oracle": 6256971,
+        "runtime_extraction": 4908715
+      },
+      "traced_peak_bytes": {
+        "jt_certificate": 182240,
+        "jt_minfill": 231608
+      },
+      "width": 4
+    },
+    {
+      "certificate_bag_size": 5,
+      "certificate_direct_energy": -227.25,
+      "certificate_energy": -227.25,
+      "certificate_width": 4,
+      "decomposition_profiles": {
+        "certificate": {
+          "bag_assignments": 3702,
+          "bag_size_histogram": {
+            "1": 1,
+            "2": 1,
+            "3": 2,
+            "4": 2,
+            "5": 114
+          },
+          "child_count_histogram": {
+            "0": 1,
+            "1": 119
+          },
+          "estimated_inner_loop_iterations": 7396,
+          "estimated_local_energy_term_visits": 18426,
+          "max_bag_size": 5,
+          "message_entries": 1851,
+          "separator_size_histogram": {
+            "0": 1,
+            "1": 1,
+            "2": 2,
+            "3": 2,
+            "4": 114
+          }
+        },
+        "minfill": {
+          "bag_assignments": 3214,
+          "bag_size_histogram": {
+            "1": 1,
+            "2": 1,
+            "3": 5,
+            "4": 28,
+            "5": 85
+          },
+          "child_count_histogram": {
+            "0": 25,
+            "1": 71,
+            "2": 24
+          },
+          "estimated_inner_loop_iterations": 6812,
+          "estimated_local_energy_term_visits": 15522,
+          "max_bag_size": 5,
+          "message_entries": 1607,
+          "separator_size_histogram": {
+            "0": 1,
+            "1": 1,
+            "2": 5,
+            "3": 28,
+            "4": 85
+          }
+        }
+      },
+      "degree_gini": 0.08187702265372176,
+      "degree_max": 4,
+      "degree_median": 3,
+      "degree_min": 2,
+      "degree_p90": 4,
+      "edges": 206,
+      "expected_edges": 206,
+      "extraction_exact": true,
+      "family": "grid",
+      "minfill_bag_size": 5,
+      "minfill_direct_energy": -227.25,
+      "minfill_energy": -227.25,
+      "minfill_width": 4,
+      "no_mutation": true,
+      "nodes": 120,
+      "oracle_energy": -227.25,
+      "oracle_operations": 13840,
+      "process_peak_rss_kib": 27648,
+      "replicate": 5,
+      "seed": 24588626,
+      "timing_ns": {
+        "graph_construction": 1232766,
+        "jt_certificate_cpu": 64617718,
+        "jt_certificate_wall": 64623191,
+        "jt_minfill_cpu": 59250136,
+        "jt_minfill_wall": 59286785,
+        "minfill_order": 8470872,
+        "oracle": 11422887,
+        "runtime_extraction": 2189291
+      },
+      "traced_peak_bytes": {
+        "jt_certificate": 367632,
+        "jt_minfill": 375488
+      },
+      "width": 4
+    },
+    {
+      "certificate_bag_size": 5,
+      "certificate_direct_energy": -209.75,
+      "certificate_energy": -209.75,
+      "certificate_width": 4,
+      "decomposition_profiles": {
+        "certificate": {
+          "bag_assignments": 1278,
+          "bag_size_histogram": {
+            "1": 1,
+            "2": 89,
+            "3": 1,
+            "4": 1,
+            "5": 28
+          },
+          "child_count_histogram": {
+            "0": 116,
+            "1": 2,
+            "28": 1,
+            "89": 1
+          },
+          "estimated_inner_loop_iterations": 1916,
+          "estimated_local_energy_term_visits": 5282,
+          "max_bag_size": 5,
+          "message_entries": 639,
+          "separator_size_histogram": {
+            "0": 1,
+            "1": 89,
+            "2": 1,
+            "3": 1,
+            "4": 28
+          }
+        },
+        "minfill": {
+          "bag_assignments": 1278,
+          "bag_size_histogram": {
+            "1": 1,
+            "2": 89,
+            "3": 1,
+            "4": 1,
+            "5": 28
+          },
+          "child_count_histogram": {
+            "0": 115,
+            "1": 3,
+            "27": 1,
+            "89": 1
+          },
+          "estimated_inner_loop_iterations": 3580,
+          "estimated_local_energy_term_visits": 5282,
+          "max_bag_size": 5,
+          "message_entries": 639,
+          "separator_size_histogram": {
+            "0": 1,
+            "1": 89,
+            "2": 1,
+            "3": 1,
+            "4": 28
+          }
+        }
+      },
+      "degree_gini": 0.636084142394822,
+      "degree_max": 119,
+      "degree_median": 1,
+      "degree_min": 1,
+      "degree_p90": 4,
+      "edges": 206,
+      "expected_edges": 206,
+      "extraction_exact": true,
+      "family": "sparse_partial_qtree",
+      "minfill_bag_size": 5,
+      "minfill_direct_energy": -209.75,
+      "minfill_energy": -209.75,
+      "minfill_width": 4,
+      "no_mutation": true,
+      "nodes": 120,
+      "oracle_energy": -209.75,
+      "oracle_operations": 5920,
+      "process_peak_rss_kib": 27648,
+      "replicate": 5,
+      "seed": 24598633,
+      "timing_ns": {
+        "graph_construction": 1238656,
+        "jt_certificate_cpu": 19050085,
+        "jt_certificate_wall": 19054105,
+        "jt_minfill_cpu": 29190018,
+        "jt_minfill_wall": 29216275,
+        "minfill_order": 30683712,
+        "oracle": 6343641,
+        "runtime_extraction": 3938720
+      },
+      "traced_peak_bytes": {
+        "jt_certificate": 182240,
+        "jt_minfill": 231608
+      },
+      "width": 4
+    },
+    {
+      "certificate_bag_size": 5,
+      "certificate_direct_energy": -204.25,
+      "certificate_energy": -204.25,
+      "certificate_width": 4,
+      "decomposition_profiles": {
+        "certificate": {
+          "bag_assignments": 1278,
+          "bag_size_histogram": {
+            "1": 1,
+            "2": 89,
+            "3": 1,
+            "4": 1,
+            "5": 28
+          },
+          "child_count_histogram": {
+            "0": 116,
+            "1": 2,
+            "28": 1,
+            "89": 1
+          },
+          "estimated_inner_loop_iterations": 1916,
+          "estimated_local_energy_term_visits": 5282,
+          "max_bag_size": 5,
+          "message_entries": 639,
+          "separator_size_histogram": {
+            "0": 1,
+            "1": 89,
+            "2": 1,
+            "3": 1,
+            "4": 28
+          }
+        },
+        "minfill": {
+          "bag_assignments": 1278,
+          "bag_size_histogram": {
+            "1": 1,
+            "2": 89,
+            "3": 1,
+            "4": 1,
+            "5": 28
+          },
+          "child_count_histogram": {
+            "0": 115,
+            "1": 4,
+            "115": 1
+          },
+          "estimated_inner_loop_iterations": 4988,
+          "estimated_local_energy_term_visits": 5282,
+          "max_bag_size": 5,
+          "message_entries": 639,
+          "separator_size_histogram": {
+            "0": 1,
+            "1": 89,
+            "2": 1,
+            "3": 1,
+            "4": 28
+          }
+        }
+      },
+      "degree_gini": 0.636084142394822,
+      "degree_max": 119,
+      "degree_median": 1,
+      "degree_min": 1,
+      "degree_p90": 4,
+      "edges": 206,
+      "expected_edges": 206,
+      "extraction_exact": true,
+      "family": "hub_partial_qtree",
+      "minfill_bag_size": 5,
+      "minfill_direct_energy": -204.25,
+      "minfill_energy": -204.25,
+      "minfill_width": 4,
+      "no_mutation": true,
+      "nodes": 120,
+      "oracle_energy": -204.25,
+      "oracle_operations": 5920,
+      "process_peak_rss_kib": 27648,
+      "replicate": 5,
+      "seed": 24608640,
+      "timing_ns": {
+        "graph_construction": 1888690,
+        "jt_certificate_cpu": 19426946,
+        "jt_certificate_wall": 19438587,
+        "jt_minfill_cpu": 39027829,
+        "jt_minfill_wall": 39688268,
+        "minfill_order": 50826152,
+        "oracle": 6397432,
+        "runtime_extraction": 5964229
+      },
+      "traced_peak_bytes": {
+        "jt_certificate": 182240,
+        "jt_minfill": 231672
+      },
+      "width": 4
+    },
+    {
+      "certificate_bag_size": 6,
+      "certificate_direct_energy": -226.0,
+      "certificate_energy": -226.0,
+      "certificate_width": 5,
+      "decomposition_profiles": {
+        "certificate": {
+          "bag_assignments": 7286,
+          "bag_size_histogram": {
+            "1": 1,
+            "2": 1,
+            "3": 2,
+            "4": 2,
+            "5": 2,
+            "6": 112
+          },
+          "child_count_histogram": {
+            "0": 1,
+            "1": 119
+          },
+          "estimated_inner_loop_iterations": 14564,
+          "estimated_local_energy_term_visits": 43514,
+          "max_bag_size": 6,
+          "message_entries": 3643,
+          "separator_size_histogram": {
+            "0": 1,
+            "1": 1,
+            "2": 2,
+            "3": 2,
+            "4": 2,
+            "5": 112
+          }
+        },
+        "minfill": {
+          "bag_assignments": 5790,
+          "bag_size_histogram": {
+            "1": 1,
+            "2": 1,
+            "3": 5,
+            "4": 25,
+            "5": 23,
+            "6": 58,
+            "7": 7
+          },
+          "child_count_histogram": {
+            "0": 32,
+            "1": 57,
+            "2": 31
+          },
+          "estimated_inner_loop_iterations": 13276,
+          "estimated_local_energy_term_visits": 33954,
+          "max_bag_size": 7,
+          "message_entries": 2895,
+          "separator_size_histogram": {
+            "0": 1,
+            "1": 1,
+            "2": 5,
+            "3": 25,
+            "4": 23,
+            "5": 58,
+            "6": 7
+          }
+        }
+      },
+      "degree_gini": 0.07954186413902065,
+      "degree_max": 4,
+      "degree_median": 4,
+      "degree_min": 2,
+      "degree_p90": 4,
+      "edges": 211,
+      "expected_edges": 211,
+      "extraction_exact": true,
+      "family": "grid",
+      "minfill_bag_size": 7,
+      "minfill_direct_energy": -226.0,
+      "minfill_energy": -226.0,
+      "minfill_width": 6,
+      "no_mutation": true,
+      "nodes": 120,
+      "oracle_energy": -226.0,
+      "oracle_operations": 27600,
+      "process_peak_rss_kib": 28032,
+      "replicate": 0,
+      "seed": 25260944,
+      "timing_ns": {
+        "graph_construction": 1257266,
+        "jt_certificate_cpu": 137689067,
+        "jt_certificate_wall": 137704584,
+        "jt_minfill_cpu": 118047552,
+        "jt_minfill_wall": 118064606,
+        "minfill_order": 9930119,
+        "oracle": 21536347,
+        "runtime_extraction": 2292741
+      },
+      "traced_peak_bytes": {
+        "jt_certificate": 724208,
+        "jt_minfill": 740024
+      },
+      "width": 5
+    },
+    {
+      "certificate_bag_size": 6,
+      "certificate_direct_energy": -215.5,
+      "certificate_energy": -215.5,
+      "certificate_width": 5,
+      "decomposition_profiles": {
+        "certificate": {
+          "bag_assignments": 1794,
+          "bag_size_histogram": {
+            "1": 1,
+            "2": 94,
+            "3": 1,
+            "4": 2,
+            "5": 1,
+            "6": 21
+          },
+          "child_count_histogram": {
+            "0": 115,
+            "1": 2,
+            "2": 1,
+            "21": 1,
+            "94": 1
+          },
+          "estimated_inner_loop_iterations": 2690,
+          "estimated_local_energy_term_visits": 9130,
+          "max_bag_size": 6,
+          "message_entries": 897,
+          "separator_size_histogram": {
+            "0": 1,
+            "1": 94,
+            "2": 1,
+            "3": 2,
+            "4": 1,
+            "5": 21
+          }
+        },
+        "minfill": {
+          "bag_assignments": 1794,
+          "bag_size_histogram": {
+            "1": 1,
+            "2": 94,
+            "3": 1,
+            "4": 2,
+            "5": 1,
+            "6": 21
+          },
+          "child_count_histogram": {
+            "0": 114,
+            "1": 4,
+            "20": 1,
+            "95": 1
+          },
+          "estimated_inner_loop_iterations": 6144,
+          "estimated_local_energy_term_visits": 9130,
+          "max_bag_size": 6,
+          "message_entries": 897,
+          "separator_size_histogram": {
+            "0": 1,
+            "1": 94,
+            "2": 1,
+            "3": 2,
+            "4": 1,
+            "5": 21
+          }
+        }
+      },
+      "degree_gini": 0.64826224328594,
+      "degree_max": 119,
+      "degree_median": 1,
+      "degree_min": 1,
+      "degree_p90": 5,
+      "edges": 211,
+      "expected_edges": 211,
+      "extraction_exact": true,
+      "family": "sparse_partial_qtree",
+      "minfill_bag_size": 6,
+      "minfill_direct_energy": -215.5,
+      "minfill_energy": -215.5,
+      "minfill_width": 5,
+      "no_mutation": true,
+      "nodes": 120,
+      "oracle_energy": -215.5,
+      "oracle_operations": 10026,
+      "process_peak_rss_kib": 27648,
+      "replicate": 0,
+      "seed": 25270951,
+      "timing_ns": {
+        "graph_construction": 1337217,
+        "jt_certificate_cpu": 29363888,
+        "jt_certificate_wall": 29384596,
+        "jt_minfill_cpu": 74786360,
+        "jt_minfill_wall": 74803641,
+        "minfill_order": 32330930,
+        "oracle": 8801483,
+        "runtime_extraction": 6388652
+      },
+      "traced_peak_bytes": {
+        "jt_certificate": 219488,
+        "jt_minfill": 274432
+      },
+      "width": 5
+    },
+    {
+      "certificate_bag_size": 6,
+      "certificate_direct_energy": -207.0,
+      "certificate_energy": -207.0,
+      "certificate_width": 5,
+      "decomposition_profiles": {
+        "certificate": {
+          "bag_assignments": 1794,
+          "bag_size_histogram": {
+            "1": 1,
+            "2": 94,
+            "3": 1,
+            "4": 2,
+            "5": 1,
+            "6": 21
+          },
+          "child_count_histogram": {
+            "0": 115,
+            "1": 2,
+            "2": 1,
+            "21": 1,
+            "94": 1
+          },
+          "estimated_inner_loop_iterations": 2690,
+          "estimated_local_energy_term_visits": 9130,
+          "max_bag_size": 6,
+          "message_entries": 897,
+          "separator_size_histogram": {
+            "0": 1,
+            "1": 94,
+            "2": 1,
+            "3": 2,
+            "4": 1,
+            "5": 21
+          }
+        },
+        "minfill": {
+          "bag_assignments": 1794,
+          "bag_size_histogram": {
+            "1": 1,
+            "2": 94,
+            "3": 1,
+            "4": 2,
+            "5": 1,
+            "6": 21
+          },
+          "child_count_histogram": {
+            "0": 114,
+            "1": 3,
+            "2": 1,
+            "20": 1,
+            "94": 1
+          },
+          "estimated_inner_loop_iterations": 4656,
+          "estimated_local_energy_term_visits": 9130,
+          "max_bag_size": 6,
+          "message_entries": 897,
+          "separator_size_histogram": {
+            "0": 1,
+            "1": 94,
+            "2": 1,
+            "3": 2,
+            "4": 1,
+            "5": 21
+          }
+        }
+      },
+      "degree_gini": 0.64826224328594,
+      "degree_max": 119,
+      "degree_median": 1,
+      "degree_min": 1,
+      "degree_p90": 5,
+      "edges": 211,
+      "expected_edges": 211,
+      "extraction_exact": true,
+      "family": "hub_partial_qtree",
+      "minfill_bag_size": 6,
+      "minfill_direct_energy": -207.0,
+      "minfill_energy": -207.0,
+      "minfill_width": 5,
+      "no_mutation": true,
+      "nodes": 120,
+      "oracle_energy": -207.0,
+      "oracle_operations": 10026,
+      "process_peak_rss_kib": 27648,
+      "replicate": 0,
+      "seed": 25280958,
+      "timing_ns": {
+        "graph_construction": 1264506,
+        "jt_certificate_cpu": 28474947,
+        "jt_certificate_wall": 28492272,
+        "jt_minfill_cpu": 41018192,
+        "jt_minfill_wall": 41033564,
+        "minfill_order": 29836808,
+        "oracle": 9011394,
+        "runtime_extraction": 3976690
+      },
+      "traced_peak_bytes": {
+        "jt_certificate": 219488,
+        "jt_minfill": 274360
+      },
+      "width": 5
+    },
+    {
+      "certificate_bag_size": 6,
+      "certificate_direct_energy": -246.75,
+      "certificate_energy": -246.75,
+      "certificate_width": 5,
+      "decomposition_profiles": {
+        "certificate": {
+          "bag_assignments": 7286,
+          "bag_size_histogram": {
+            "1": 1,
+            "2": 1,
+            "3": 2,
+            "4": 2,
+            "5": 2,
+            "6": 112
+          },
+          "child_count_histogram": {
+            "0": 1,
+            "1": 119
+          },
+          "estimated_inner_loop_iterations": 14564,
+          "estimated_local_energy_term_visits": 43514,
+          "max_bag_size": 6,
+          "message_entries": 3643,
+          "separator_size_histogram": {
+            "0": 1,
+            "1": 1,
+            "2": 2,
+            "3": 2,
+            "4": 2,
+            "5": 112
+          }
+        },
+        "minfill": {
+          "bag_assignments": 5230,
+          "bag_size_histogram": {
+            "1": 1,
+            "2": 1,
+            "3": 5,
+            "4": 26,
+            "5": 27,
+            "6": 59,
+            "7": 1
+          },
+          "child_count_histogram": {
+            "0": 40,
+            "1": 41,
+            "2": 39
+          },
+          "estimated_inner_loop_iterations": 12108,
+          "estimated_local_energy_term_visits": 29666,
+          "max_bag_size": 7,
+          "message_entries": 2615,
+          "separator_size_histogram": {
+            "0": 1,
+            "1": 1,
+            "2": 5,
+            "3": 26,
+            "4": 27,
+            "5": 59,
+            "6": 1
+          }
+        }
+      },
+      "degree_gini": 0.07954186413902065,
+      "degree_max": 4,
+      "degree_median": 4,
+      "degree_min": 2,
+      "degree_p90": 4,
+      "edges": 211,
+      "expected_edges": 211,
+      "extraction_exact": true,
+      "family": "grid",
+      "minfill_bag_size": 7,
+      "minfill_direct_energy": -246.75,
+      "minfill_energy": -246.75,
+      "minfill_width": 6,
+      "no_mutation": true,
+      "nodes": 120,
+      "oracle_energy": -246.75,
+      "oracle_operations": 27600,
+      "process_peak_rss_kib": 27648,
+      "replicate": 1,
+      "seed": 25326481,
+      "timing_ns": {
+        "graph_construction": 1519718,
+        "jt_certificate_cpu": 135710717,
+        "jt_certificate_wall": 135734064,
+        "jt_minfill_cpu": 104979169,
+        "jt_minfill_wall": 104994431,
+        "minfill_order": 10193451,
+        "oracle": 21137245,
+        "runtime_extraction": 2691063
+      },
+      "traced_peak_bytes": {
+        "jt_certificate": 721832,
+        "jt_minfill": 681096
+      },
+      "width": 5
+    },
+    {
+      "certificate_bag_size": 6,
+      "certificate_direct_energy": -209.75,
+      "certificate_energy": -209.75,
+      "certificate_width": 5,
+      "decomposition_profiles": {
+        "certificate": {
+          "bag_assignments": 1794,
+          "bag_size_histogram": {
+            "1": 1,
+            "2": 94,
+            "3": 1,
+            "4": 2,
+            "5": 1,
+            "6": 21
+          },
+          "child_count_histogram": {
+            "0": 115,
+            "1": 2,
+            "2": 1,
+            "21": 1,
+            "94": 1
+          },
+          "estimated_inner_loop_iterations": 2690,
+          "estimated_local_energy_term_visits": 9130,
+          "max_bag_size": 6,
+          "message_entries": 897,
+          "separator_size_histogram": {
+            "0": 1,
+            "1": 94,
+            "2": 1,
+            "3": 2,
+            "4": 1,
+            "5": 21
+          }
+        },
+        "minfill": {
+          "bag_assignments": 1794,
+          "bag_size_histogram": {
+            "1": 1,
+            "2": 94,
+            "3": 1,
+            "4": 2,
+            "5": 1,
+            "6": 21
+          },
+          "child_count_histogram": {
+            "0": 114,
+            "1": 4,
+            "21": 1,
+            "94": 1
+          },
+          "estimated_inner_loop_iterations": 4688,
+          "estimated_local_energy_term_visits": 9130,
+          "max_bag_size": 6,
+          "message_entries": 897,
+          "separator_size_histogram": {
+            "0": 1,
+            "1": 94,
+            "2": 1,
+            "3": 2,
+            "4": 1,
+            "5": 21
+          }
+        }
+      },
+      "degree_gini": 0.64826224328594,
+      "degree_max": 119,
+      "degree_median": 1,
+      "degree_min": 1,
+      "degree_p90": 5,
+      "edges": 211,
+      "expected_edges": 211,
+      "extraction_exact": true,
+      "family": "sparse_partial_qtree",
+      "minfill_bag_size": 6,
+      "minfill_direct_energy": -209.75,
+      "minfill_energy": -209.75,
+      "minfill_width": 5,
+      "no_mutation": true,
+      "nodes": 120,
+      "oracle_energy": -209.75,
+      "oracle_operations": 10026,
+      "process_peak_rss_kib": 27648,
+      "replicate": 1,
+      "seed": 25336488,
+      "timing_ns": {
+        "graph_construction": 1248046,
+        "jt_certificate_cpu": 29313938,
+        "jt_certificate_wall": 29318966,
+        "jt_minfill_cpu": 41634822,
+        "jt_minfill_wall": 42691673,
+        "minfill_order": 30826073,
+        "oracle": 8788524,
+        "runtime_extraction": 3796019
+      },
+      "traced_peak_bytes": {
+        "jt_certificate": 219488,
+        "jt_minfill": 276408
+      },
+      "width": 5
+    },
+    {
+      "certificate_bag_size": 6,
+      "certificate_direct_energy": -209.25,
+      "certificate_energy": -209.25,
+      "certificate_width": 5,
+      "decomposition_profiles": {
+        "certificate": {
+          "bag_assignments": 1794,
+          "bag_size_histogram": {
+            "1": 1,
+            "2": 94,
+            "3": 1,
+            "4": 2,
+            "5": 1,
+            "6": 21
+          },
+          "child_count_histogram": {
+            "0": 115,
+            "1": 2,
+            "2": 1,
+            "21": 1,
+            "94": 1
+          },
+          "estimated_inner_loop_iterations": 2690,
+          "estimated_local_energy_term_visits": 9130,
+          "max_bag_size": 6,
+          "message_entries": 897,
+          "separator_size_histogram": {
+            "0": 1,
+            "1": 94,
+            "2": 1,
+            "3": 2,
+            "4": 1,
+            "5": 21
+          }
+        },
+        "minfill": {
+          "bag_assignments": 1794,
+          "bag_size_histogram": {
+            "1": 1,
+            "2": 94,
+            "3": 1,
+            "4": 2,
+            "5": 1,
+            "6": 21
+          },
+          "child_count_histogram": {
+            "0": 114,
+            "1": 5,
+            "114": 1
+          },
+          "estimated_inner_loop_iterations": 9152,
+          "estimated_local_energy_term_visits": 9130,
+          "max_bag_size": 6,
+          "message_entries": 897,
+          "separator_size_histogram": {
+            "0": 1,
+            "1": 94,
+            "2": 1,
+            "3": 2,
+            "4": 1,
+            "5": 21
+          }
+        }
+      },
+      "degree_gini": 0.64826224328594,
+      "degree_max": 119,
+      "degree_median": 1,
+      "degree_min": 1,
+      "degree_p90": 5,
+      "edges": 211,
+      "expected_edges": 211,
+      "extraction_exact": true,
+      "family": "hub_partial_qtree",
+      "minfill_bag_size": 6,
+      "minfill_direct_energy": -209.25,
+      "minfill_energy": -209.25,
+      "minfill_width": 5,
+      "no_mutation": true,
+      "nodes": 120,
+      "oracle_energy": -209.25,
+      "oracle_operations": 10026,
+      "process_peak_rss_kib": 27648,
+      "replicate": 1,
+      "seed": 25346495,
+      "timing_ns": {
+        "graph_construction": 1349017,
+        "jt_certificate_cpu": 29035598,
+        "jt_certificate_wall": 29040414,
+        "jt_minfill_cpu": 66867508,
+        "jt_minfill_wall": 66891203,
+        "minfill_order": 29808968,
+        "oracle": 8719924,
+        "runtime_extraction": 5670668
+      },
+      "traced_peak_bytes": {
+        "jt_certificate": 219488,
+        "jt_minfill": 276560
+      },
+      "width": 5
+    },
+    {
+      "certificate_bag_size": 6,
+      "certificate_direct_energy": -241.25,
+      "certificate_energy": -241.25,
+      "certificate_width": 5,
+      "decomposition_profiles": {
+        "certificate": {
+          "bag_assignments": 7286,
+          "bag_size_histogram": {
+            "1": 1,
+            "2": 1,
+            "3": 2,
+            "4": 2,
+            "5": 2,
+            "6": 112
+          },
+          "child_count_histogram": {
+            "0": 1,
+            "1": 119
+          },
+          "estimated_inner_loop_iterations": 14564,
+          "estimated_local_energy_term_visits": 43514,
+          "max_bag_size": 6,
+          "message_entries": 3643,
+          "separator_size_histogram": {
+            "0": 1,
+            "1": 1,
+            "2": 2,
+            "3": 2,
+            "4": 2,
+            "5": 112
+          }
+        },
+        "minfill": {
+          "bag_assignments": 5534,
+          "bag_size_histogram": {
+            "1": 1,
+            "2": 1,
+            "3": 5,
+            "4": 25,
+            "5": 25,
+            "6": 59,
+            "7": 4
+          },
+          "child_count_histogram": {
+            "0": 35,
+            "1": 51,
+            "2": 34
+          },
+          "estimated_inner_loop_iterations": 12732,
+          "estimated_local_energy_term_visits": 31970,
+          "max_bag_size": 7,
+          "message_entries": 2767,
+          "separator_size_histogram": {
+            "0": 1,
+            "1": 1,
+            "2": 5,
+            "3": 25,
+            "4": 25,
+            "5": 59,
+            "6": 4
+          }
+        }
+      },
+      "degree_gini": 0.07954186413902065,
+      "degree_max": 4,
+      "degree_median": 4,
+      "degree_min": 2,
+      "degree_p90": 4,
+      "edges": 211,
+      "expected_edges": 211,
+      "extraction_exact": true,
+      "family": "grid",
+      "minfill_bag_size": 7,
+      "minfill_direct_energy": -241.25,
+      "minfill_energy": -241.25,
+      "minfill_width": 6,
+      "no_mutation": true,
+      "nodes": 120,
+      "oracle_energy": -241.25,
+      "oracle_operations": 27600,
+      "process_peak_rss_kib": 28216,
+      "replicate": 2,
+      "seed": 25392018,
+      "timing_ns": {
+        "graph_construction": 1229296,
+        "jt_certificate_cpu": 148634310,
+        "jt_certificate_wall": 148640928,
+        "jt_minfill_cpu": 123662564,
+        "jt_minfill_wall": 123683085,
+        "minfill_order": 9210935,
+        "oracle": 20765654,
+        "runtime_extraction": 2270211
+      },
+      "traced_peak_bytes": {
+        "jt_certificate": 724208,
+        "jt_minfill": 696672
+      },
+      "width": 5
+    },
+    {
+      "certificate_bag_size": 6,
+      "certificate_direct_energy": -207.75,
+      "certificate_energy": -207.75,
+      "certificate_width": 5,
+      "decomposition_profiles": {
+        "certificate": {
+          "bag_assignments": 1794,
+          "bag_size_histogram": {
+            "1": 1,
+            "2": 94,
+            "3": 1,
+            "4": 2,
+            "5": 1,
+            "6": 21
+          },
+          "child_count_histogram": {
+            "0": 115,
+            "1": 2,
+            "2": 1,
+            "21": 1,
+            "94": 1
+          },
+          "estimated_inner_loop_iterations": 2690,
+          "estimated_local_energy_term_visits": 9130,
+          "max_bag_size": 6,
+          "message_entries": 897,
+          "separator_size_histogram": {
+            "0": 1,
+            "1": 94,
+            "2": 1,
+            "3": 2,
+            "4": 1,
+            "5": 21
+          }
+        },
+        "minfill": {
+          "bag_assignments": 1794,
+          "bag_size_histogram": {
+            "1": 1,
+            "2": 94,
+            "3": 1,
+            "4": 2,
+            "5": 1,
+            "6": 21
+          },
+          "child_count_histogram": {
+            "0": 114,
+            "1": 4,
+            "21": 1,
+            "94": 1
+          },
+          "estimated_inner_loop_iterations": 3944,
+          "estimated_local_energy_term_visits": 9130,
+          "max_bag_size": 6,
+          "message_entries": 897,
+          "separator_size_histogram": {
+            "0": 1,
+            "1": 94,
+            "2": 1,
+            "3": 2,
+            "4": 1,
+            "5": 21
+          }
+        }
+      },
+      "degree_gini": 0.64826224328594,
+      "degree_max": 119,
+      "degree_median": 1,
+      "degree_min": 1,
+      "degree_p90": 5,
+      "edges": 211,
+      "expected_edges": 211,
+      "extraction_exact": true,
+      "family": "sparse_partial_qtree",
+      "minfill_bag_size": 6,
+      "minfill_direct_energy": -207.75,
+      "minfill_energy": -207.75,
+      "minfill_width": 5,
+      "no_mutation": true,
+      "nodes": 120,
+      "oracle_energy": -207.75,
+      "oracle_operations": 10026,
+      "process_peak_rss_kib": 27648,
+      "replicate": 2,
+      "seed": 25402025,
+      "timing_ns": {
+        "graph_construction": 1254986,
+        "jt_certificate_cpu": 30126519,
+        "jt_certificate_wall": 30765933,
+        "jt_minfill_cpu": 37707240,
+        "jt_minfill_wall": 38449461,
+        "minfill_order": 29923298,
+        "oracle": 9245966,
+        "runtime_extraction": 4007290
+      },
+      "traced_peak_bytes": {
+        "jt_certificate": 219488,
+        "jt_minfill": 276344
+      },
+      "width": 5
+    },
+    {
+      "certificate_bag_size": 6,
+      "certificate_direct_energy": -216.25,
+      "certificate_energy": -216.25,
+      "certificate_width": 5,
+      "decomposition_profiles": {
+        "certificate": {
+          "bag_assignments": 1794,
+          "bag_size_histogram": {
+            "1": 1,
+            "2": 94,
+            "3": 1,
+            "4": 2,
+            "5": 1,
+            "6": 21
+          },
+          "child_count_histogram": {
+            "0": 115,
+            "1": 2,
+            "2": 1,
+            "21": 1,
+            "94": 1
+          },
+          "estimated_inner_loop_iterations": 2690,
+          "estimated_local_energy_term_visits": 9130,
+          "max_bag_size": 6,
+          "message_entries": 897,
+          "separator_size_histogram": {
+            "0": 1,
+            "1": 94,
+            "2": 1,
+            "3": 2,
+            "4": 1,
+            "5": 21
+          }
+        },
+        "minfill": {
+          "bag_assignments": 1794,
+          "bag_size_histogram": {
+            "1": 1,
+            "2": 94,
+            "3": 1,
+            "4": 2,
+            "5": 1,
+            "6": 21
+          },
+          "child_count_histogram": {
+            "0": 114,
+            "1": 4,
+            "21": 1,
+            "94": 1
+          },
+          "estimated_inner_loop_iterations": 3572,
+          "estimated_local_energy_term_visits": 9130,
+          "max_bag_size": 6,
+          "message_entries": 897,
+          "separator_size_histogram": {
+            "0": 1,
+            "1": 94,
+            "2": 1,
+            "3": 2,
+            "4": 1,
+            "5": 21
+          }
+        }
+      },
+      "degree_gini": 0.64826224328594,
+      "degree_max": 119,
+      "degree_median": 1,
+      "degree_min": 1,
+      "degree_p90": 5,
+      "edges": 211,
+      "expected_edges": 211,
+      "extraction_exact": true,
+      "family": "hub_partial_qtree",
+      "minfill_bag_size": 6,
+      "minfill_direct_energy": -216.25,
+      "minfill_energy": -216.25,
+      "minfill_width": 5,
+      "no_mutation": true,
+      "nodes": 120,
+      "oracle_energy": -216.25,
+      "oracle_operations": 10026,
+      "process_peak_rss_kib": 27648,
+      "replicate": 2,
+      "seed": 25412032,
+      "timing_ns": {
+        "graph_construction": 1325377,
+        "jt_certificate_cpu": 27668617,
+        "jt_certificate_wall": 27672827,
+        "jt_minfill_cpu": 32301699,
+        "jt_minfill_wall": 32314570,
+        "minfill_order": 28380041,
+        "oracle": 8501532,
+        "runtime_extraction": 3673368
+      },
+      "traced_peak_bytes": {
+        "jt_certificate": 219488,
+        "jt_minfill": 276288
+      },
+      "width": 5
+    },
+    {
+      "certificate_bag_size": 6,
+      "certificate_direct_energy": -245.0,
+      "certificate_energy": -245.0,
+      "certificate_width": 5,
+      "decomposition_profiles": {
+        "certificate": {
+          "bag_assignments": 7286,
+          "bag_size_histogram": {
+            "1": 1,
+            "2": 1,
+            "3": 2,
+            "4": 2,
+            "5": 2,
+            "6": 112
+          },
+          "child_count_histogram": {
+            "0": 1,
+            "1": 119
+          },
+          "estimated_inner_loop_iterations": 14564,
+          "estimated_local_energy_term_visits": 43514,
+          "max_bag_size": 6,
+          "message_entries": 3643,
+          "separator_size_histogram": {
+            "0": 1,
+            "1": 1,
+            "2": 2,
+            "3": 2,
+            "4": 2,
+            "5": 112
+          }
+        },
+        "minfill": {
+          "bag_assignments": 5534,
+          "bag_size_histogram": {
+            "1": 1,
+            "2": 1,
+            "3": 5,
+            "4": 25,
+            "5": 31,
+            "6": 50,
+            "7": 7
+          },
+          "child_count_histogram": {
+            "0": 41,
+            "1": 42,
+            "2": 34,
+            "3": 3
+          },
+          "estimated_inner_loop_iterations": 13052,
+          "estimated_local_energy_term_visits": 32162,
+          "max_bag_size": 7,
+          "message_entries": 2767,
+          "separator_size_histogram": {
+            "0": 1,
+            "1": 1,
+            "2": 5,
+            "3": 25,
+            "4": 31,
+            "5": 50,
+            "6": 7
+          }
+        }
+      },
+      "degree_gini": 0.07954186413902065,
+      "degree_max": 4,
+      "degree_median": 4,
+      "degree_min": 2,
+      "degree_p90": 4,
+      "edges": 211,
+      "expected_edges": 211,
+      "extraction_exact": true,
+      "family": "grid",
+      "minfill_bag_size": 7,
+      "minfill_direct_energy": -245.0,
+      "minfill_energy": -245.0,
+      "minfill_width": 6,
+      "no_mutation": true,
+      "nodes": 120,
+      "oracle_energy": -245.0,
+      "oracle_operations": 27600,
+      "process_peak_rss_kib": 28416,
+      "replicate": 3,
+      "seed": 25457555,
+      "timing_ns": {
+        "graph_construction": 1194156,
+        "jt_certificate_cpu": 133171226,
+        "jt_certificate_wall": 133216812,
+        "jt_minfill_cpu": 108650370,
+        "jt_minfill_wall": 108696190,
+        "minfill_order": 9601067,
+        "oracle": 20236591,
+        "runtime_extraction": 2217911
+      },
+      "traced_peak_bytes": {
+        "jt_certificate": 720824,
+        "jt_minfill": 727392
+      },
+      "width": 5
+    },
+    {
+      "certificate_bag_size": 6,
+      "certificate_direct_energy": -210.5,
+      "certificate_energy": -210.5,
+      "certificate_width": 5,
+      "decomposition_profiles": {
+        "certificate": {
+          "bag_assignments": 1794,
+          "bag_size_histogram": {
+            "1": 1,
+            "2": 94,
+            "3": 1,
+            "4": 2,
+            "5": 1,
+            "6": 21
+          },
+          "child_count_histogram": {
+            "0": 115,
+            "1": 2,
+            "2": 1,
+            "21": 1,
+            "94": 1
+          },
+          "estimated_inner_loop_iterations": 2690,
+          "estimated_local_energy_term_visits": 9130,
+          "max_bag_size": 6,
+          "message_entries": 897,
+          "separator_size_histogram": {
+            "0": 1,
+            "1": 94,
+            "2": 1,
+            "3": 2,
+            "4": 1,
+            "5": 21
+          }
+        },
+        "minfill": {
+          "bag_assignments": 1794,
+          "bag_size_histogram": {
+            "1": 1,
+            "2": 94,
+            "3": 1,
+            "4": 2,
+            "5": 1,
+            "6": 21
+          },
+          "child_count_histogram": {
+            "0": 114,
+            "1": 4,
+            "21": 1,
+            "94": 1
+          },
+          "estimated_inner_loop_iterations": 3944,
+          "estimated_local_energy_term_visits": 9130,
+          "max_bag_size": 6,
+          "message_entries": 897,
+          "separator_size_histogram": {
+            "0": 1,
+            "1": 94,
+            "2": 1,
+            "3": 2,
+            "4": 1,
+            "5": 21
+          }
+        }
+      },
+      "degree_gini": 0.64826224328594,
+      "degree_max": 119,
+      "degree_median": 1,
+      "degree_min": 1,
+      "degree_p90": 5,
+      "edges": 211,
+      "expected_edges": 211,
+      "extraction_exact": true,
+      "family": "sparse_partial_qtree",
+      "minfill_bag_size": 6,
+      "minfill_direct_energy": -210.5,
+      "minfill_energy": -210.5,
+      "minfill_width": 5,
+      "no_mutation": true,
+      "nodes": 120,
+      "oracle_energy": -210.5,
+      "oracle_operations": 10026,
+      "process_peak_rss_kib": 27648,
+      "replicate": 3,
+      "seed": 25467562,
+      "timing_ns": {
+        "graph_construction": 1258846,
+        "jt_certificate_cpu": 28082307,
+        "jt_certificate_wall": 28086729,
+        "jt_minfill_cpu": 36568090,
+        "jt_minfill_wall": 36592422,
+        "minfill_order": 30083349,
+        "oracle": 8927715,
+        "runtime_extraction": 4404262
+      },
+      "traced_peak_bytes": {
+        "jt_certificate": 219488,
+        "jt_minfill": 276344
+      },
+      "width": 5
+    },
+    {
+      "certificate_bag_size": 6,
+      "certificate_direct_energy": -214.0,
+      "certificate_energy": -214.0,
+      "certificate_width": 5,
+      "decomposition_profiles": {
+        "certificate": {
+          "bag_assignments": 1794,
+          "bag_size_histogram": {
+            "1": 1,
+            "2": 94,
+            "3": 1,
+            "4": 2,
+            "5": 1,
+            "6": 21
+          },
+          "child_count_histogram": {
+            "0": 115,
+            "1": 2,
+            "2": 1,
+            "21": 1,
+            "94": 1
+          },
+          "estimated_inner_loop_iterations": 2690,
+          "estimated_local_energy_term_visits": 9130,
+          "max_bag_size": 6,
+          "message_entries": 897,
+          "separator_size_histogram": {
+            "0": 1,
+            "1": 94,
+            "2": 1,
+            "3": 2,
+            "4": 1,
+            "5": 21
+          }
+        },
+        "minfill": {
+          "bag_assignments": 1794,
+          "bag_size_histogram": {
+            "1": 1,
+            "2": 94,
+            "3": 1,
+            "4": 2,
+            "5": 1,
+            "6": 21
+          },
+          "child_count_histogram": {
+            "0": 114,
+            "1": 3,
+            "2": 1,
+            "20": 1,
+            "94": 1
+          },
+          "estimated_inner_loop_iterations": 4656,
+          "estimated_local_energy_term_visits": 9130,
+          "max_bag_size": 6,
+          "message_entries": 897,
+          "separator_size_histogram": {
+            "0": 1,
+            "1": 94,
+            "2": 1,
+            "3": 2,
+            "4": 1,
+            "5": 21
+          }
+        }
+      },
+      "degree_gini": 0.64826224328594,
+      "degree_max": 119,
+      "degree_median": 1,
+      "degree_min": 1,
+      "degree_p90": 5,
+      "edges": 211,
+      "expected_edges": 211,
+      "extraction_exact": true,
+      "family": "hub_partial_qtree",
+      "minfill_bag_size": 6,
+      "minfill_direct_energy": -214.0,
+      "minfill_energy": -214.0,
+      "minfill_width": 5,
+      "no_mutation": true,
+      "nodes": 120,
+      "oracle_energy": -214.0,
+      "oracle_operations": 10026,
+      "process_peak_rss_kib": 27648,
+      "replicate": 3,
+      "seed": 25477569,
+      "timing_ns": {
+        "graph_construction": 1755879,
+        "jt_certificate_cpu": 28980438,
+        "jt_certificate_wall": 29007174,
+        "jt_minfill_cpu": 45855683,
+        "jt_minfill_wall": 45975809,
+        "minfill_order": 29494067,
+        "oracle": 8650793,
+        "runtime_extraction": 5789079
+      },
+      "traced_peak_bytes": {
+        "jt_certificate": 219488,
+        "jt_minfill": 274360
+      },
+      "width": 5
+    },
+    {
+      "certificate_bag_size": 6,
+      "certificate_direct_energy": -221.0,
+      "certificate_energy": -221.0,
+      "certificate_width": 5,
+      "decomposition_profiles": {
+        "certificate": {
+          "bag_assignments": 7286,
+          "bag_size_histogram": {
+            "1": 1,
+            "2": 1,
+            "3": 2,
+            "4": 2,
+            "5": 2,
+            "6": 112
+          },
+          "child_count_histogram": {
+            "0": 1,
+            "1": 119
+          },
+          "estimated_inner_loop_iterations": 14564,
+          "estimated_local_energy_term_visits": 43514,
+          "max_bag_size": 6,
+          "message_entries": 3643,
+          "separator_size_histogram": {
+            "0": 1,
+            "1": 1,
+            "2": 2,
+            "3": 2,
+            "4": 2,
+            "5": 112
+          }
+        },
+        "minfill": {
+          "bag_assignments": 5438,
+          "bag_size_histogram": {
+            "1": 1,
+            "2": 1,
+            "3": 5,
+            "4": 25,
+            "5": 30,
+            "6": 53,
+            "7": 5
+          },
+          "child_count_histogram": {
+            "0": 39,
+            "1": 45,
+            "2": 34,
+            "3": 2
+          },
+          "estimated_inner_loop_iterations": 12732,
+          "estimated_local_energy_term_visits": 31362,
+          "max_bag_size": 7,
+          "message_entries": 2719,
+          "separator_size_histogram": {
+            "0": 1,
+            "1": 1,
+            "2": 5,
+            "3": 25,
+            "4": 30,
+            "5": 53,
+            "6": 5
+          }
+        }
+      },
+      "degree_gini": 0.07954186413902065,
+      "degree_max": 4,
+      "degree_median": 4,
+      "degree_min": 2,
+      "degree_p90": 4,
+      "edges": 211,
+      "expected_edges": 211,
+      "extraction_exact": true,
+      "family": "grid",
+      "minfill_bag_size": 7,
+      "minfill_direct_energy": -221.0,
+      "minfill_energy": -221.0,
+      "minfill_width": 6,
+      "no_mutation": true,
+      "nodes": 120,
+      "oracle_energy": -221.0,
+      "oracle_operations": 27600,
+      "process_peak_rss_kib": 27648,
+      "replicate": 4,
+      "seed": 25523092,
+      "timing_ns": {
+        "graph_construction": 1252656,
+        "jt_certificate_cpu": 135898697,
+        "jt_certificate_wall": 135995836,
+        "jt_minfill_cpu": 116616951,
+        "jt_minfill_wall": 116673280,
+        "minfill_order": 14373531,
+        "oracle": 33042914,
+        "runtime_extraction": 3234476
+      },
+      "traced_peak_bytes": {
+        "jt_certificate": 720824,
+        "jt_minfill": 701368
+      },
+      "width": 5
+    },
+    {
+      "certificate_bag_size": 6,
+      "certificate_direct_energy": -193.5,
+      "certificate_energy": -193.5,
+      "certificate_width": 5,
+      "decomposition_profiles": {
+        "certificate": {
+          "bag_assignments": 1794,
+          "bag_size_histogram": {
+            "1": 1,
+            "2": 94,
+            "3": 1,
+            "4": 2,
+            "5": 1,
+            "6": 21
+          },
+          "child_count_histogram": {
+            "0": 115,
+            "1": 2,
+            "2": 1,
+            "21": 1,
+            "94": 1
+          },
+          "estimated_inner_loop_iterations": 2690,
+          "estimated_local_energy_term_visits": 9130,
+          "max_bag_size": 6,
+          "message_entries": 897,
+          "separator_size_histogram": {
+            "0": 1,
+            "1": 94,
+            "2": 1,
+            "3": 2,
+            "4": 1,
+            "5": 21
+          }
+        },
+        "minfill": {
+          "bag_assignments": 1794,
+          "bag_size_histogram": {
+            "1": 1,
+            "2": 94,
+            "3": 1,
+            "4": 2,
+            "5": 1,
+            "6": 21
+          },
+          "child_count_histogram": {
+            "0": 114,
+            "1": 3,
+            "2": 1,
+            "20": 1,
+            "94": 1
+          },
+          "estimated_inner_loop_iterations": 3540,
+          "estimated_local_energy_term_visits": 9130,
+          "max_bag_size": 6,
+          "message_entries": 897,
+          "separator_size_histogram": {
+            "0": 1,
+            "1": 94,
+            "2": 1,
+            "3": 2,
+            "4": 1,
+            "5": 21
+          }
+        }
+      },
+      "degree_gini": 0.64826224328594,
+      "degree_max": 119,
+      "degree_median": 1,
+      "degree_min": 1,
+      "degree_p90": 5,
+      "edges": 211,
+      "expected_edges": 211,
+      "extraction_exact": true,
+      "family": "sparse_partial_qtree",
+      "minfill_bag_size": 6,
+      "minfill_direct_energy": -193.5,
+      "minfill_energy": -193.5,
+      "minfill_width": 5,
+      "no_mutation": true,
+      "nodes": 120,
+      "oracle_energy": -193.5,
+      "oracle_operations": 10026,
+      "process_peak_rss_kib": 27648,
+      "replicate": 4,
+      "seed": 25533099,
+      "timing_ns": {
+        "graph_construction": 1366077,
+        "jt_certificate_cpu": 28107867,
+        "jt_certificate_wall": 28129160,
+        "jt_minfill_cpu": 32666609,
+        "jt_minfill_wall": 32681512,
+        "minfill_order": 28833713,
+        "oracle": 8603742,
+        "runtime_extraction": 3507327
+      },
+      "traced_peak_bytes": {
+        "jt_certificate": 219488,
+        "jt_minfill": 274240
+      },
+      "width": 5
+    },
+    {
+      "certificate_bag_size": 6,
+      "certificate_direct_energy": -215.0,
+      "certificate_energy": -215.0,
+      "certificate_width": 5,
+      "decomposition_profiles": {
+        "certificate": {
+          "bag_assignments": 1794,
+          "bag_size_histogram": {
+            "1": 1,
+            "2": 94,
+            "3": 1,
+            "4": 2,
+            "5": 1,
+            "6": 21
+          },
+          "child_count_histogram": {
+            "0": 115,
+            "1": 2,
+            "2": 1,
+            "21": 1,
+            "94": 1
+          },
+          "estimated_inner_loop_iterations": 2690,
+          "estimated_local_energy_term_visits": 9130,
+          "max_bag_size": 6,
+          "message_entries": 897,
+          "separator_size_histogram": {
+            "0": 1,
+            "1": 94,
+            "2": 1,
+            "3": 2,
+            "4": 1,
+            "5": 21
+          }
+        },
+        "minfill": {
+          "bag_assignments": 1794,
+          "bag_size_histogram": {
+            "1": 1,
+            "2": 94,
+            "3": 1,
+            "4": 2,
+            "5": 1,
+            "6": 21
+          },
+          "child_count_histogram": {
+            "0": 114,
+            "1": 3,
+            "2": 1,
+            "20": 1,
+            "94": 1
+          },
+          "estimated_inner_loop_iterations": 3338,
+          "estimated_local_energy_term_visits": 9130,
+          "max_bag_size": 6,
+          "message_entries": 897,
+          "separator_size_histogram": {
+            "0": 1,
+            "1": 94,
+            "2": 1,
+            "3": 2,
+            "4": 1,
+            "5": 21
+          }
+        }
+      },
+      "degree_gini": 0.64826224328594,
+      "degree_max": 119,
+      "degree_median": 1,
+      "degree_min": 1,
+      "degree_p90": 5,
+      "edges": 211,
+      "expected_edges": 211,
+      "extraction_exact": true,
+      "family": "hub_partial_qtree",
+      "minfill_bag_size": 6,
+      "minfill_direct_energy": -215.0,
+      "minfill_energy": -215.0,
+      "minfill_width": 5,
+      "no_mutation": true,
+      "nodes": 120,
+      "oracle_energy": -215.0,
+      "oracle_operations": 10026,
+      "process_peak_rss_kib": 27648,
+      "replicate": 4,
+      "seed": 25543106,
+      "timing_ns": {
+        "graph_construction": 1231766,
+        "jt_certificate_cpu": 28224447,
+        "jt_certificate_wall": 28229060,
+        "jt_minfill_cpu": 31968669,
+        "jt_minfill_wall": 31995699,
+        "minfill_order": 28752863,
+        "oracle": 8635173,
+        "runtime_extraction": 3988769
+      },
+      "traced_peak_bytes": {
+        "jt_certificate": 219488,
+        "jt_minfill": 273088
+      },
+      "width": 5
+    },
+    {
+      "certificate_bag_size": 6,
+      "certificate_direct_energy": -224.75,
+      "certificate_energy": -224.75,
+      "certificate_width": 5,
+      "decomposition_profiles": {
+        "certificate": {
+          "bag_assignments": 7286,
+          "bag_size_histogram": {
+            "1": 1,
+            "2": 1,
+            "3": 2,
+            "4": 2,
+            "5": 2,
+            "6": 112
+          },
+          "child_count_histogram": {
+            "0": 1,
+            "1": 119
+          },
+          "estimated_inner_loop_iterations": 14564,
+          "estimated_local_energy_term_visits": 43514,
+          "max_bag_size": 6,
+          "message_entries": 3643,
+          "separator_size_histogram": {
+            "0": 1,
+            "1": 1,
+            "2": 2,
+            "3": 2,
+            "4": 2,
+            "5": 112
+          }
+        },
+        "minfill": {
+          "bag_assignments": 5486,
+          "bag_size_histogram": {
+            "1": 1,
+            "2": 1,
+            "3": 5,
+            "4": 26,
+            "5": 23,
+            "6": 61,
+            "7": 3
+          },
+          "child_count_histogram": {
+            "0": 36,
+            "1": 49,
+            "2": 35
+          },
+          "estimated_inner_loop_iterations": 12588,
+          "estimated_local_energy_term_visits": 31586,
+          "max_bag_size": 7,
+          "message_entries": 2743,
+          "separator_size_histogram": {
+            "0": 1,
+            "1": 1,
+            "2": 5,
+            "3": 26,
+            "4": 23,
+            "5": 61,
+            "6": 3
+          }
+        }
+      },
+      "degree_gini": 0.07954186413902065,
+      "degree_max": 4,
+      "degree_median": 4,
+      "degree_min": 2,
+      "degree_p90": 4,
+      "edges": 211,
+      "expected_edges": 211,
+      "extraction_exact": true,
+      "family": "grid",
+      "minfill_bag_size": 7,
+      "minfill_direct_energy": -224.75,
+      "minfill_energy": -224.75,
+      "minfill_width": 6,
+      "no_mutation": true,
+      "nodes": 120,
+      "oracle_energy": -224.75,
+      "oracle_operations": 27600,
+      "process_peak_rss_kib": 27648,
+      "replicate": 5,
+      "seed": 25588629,
+      "timing_ns": {
+        "graph_construction": 1231507,
+        "jt_certificate_cpu": 135049786,
+        "jt_certificate_wall": 135056921,
+        "jt_minfill_cpu": 112324610,
+        "jt_minfill_wall": 112627009,
+        "minfill_order": 9547457,
+        "oracle": 21118315,
+        "runtime_extraction": 3352596
+      },
+      "traced_peak_bytes": {
+        "jt_certificate": 724208,
+        "jt_minfill": 693168
+      },
+      "width": 5
+    },
+    {
+      "certificate_bag_size": 6,
+      "certificate_direct_energy": -203.25,
+      "certificate_energy": -203.25,
+      "certificate_width": 5,
+      "decomposition_profiles": {
+        "certificate": {
+          "bag_assignments": 1794,
+          "bag_size_histogram": {
+            "1": 1,
+            "2": 94,
+            "3": 1,
+            "4": 2,
+            "5": 1,
+            "6": 21
+          },
+          "child_count_histogram": {
+            "0": 115,
+            "1": 2,
+            "2": 1,
+            "21": 1,
+            "94": 1
+          },
+          "estimated_inner_loop_iterations": 2690,
+          "estimated_local_energy_term_visits": 9130,
+          "max_bag_size": 6,
+          "message_entries": 897,
+          "separator_size_histogram": {
+            "0": 1,
+            "1": 94,
+            "2": 1,
+            "3": 2,
+            "4": 1,
+            "5": 21
+          }
+        },
+        "minfill": {
+          "bag_assignments": 1794,
+          "bag_size_histogram": {
+            "1": 1,
+            "2": 94,
+            "3": 1,
+            "4": 2,
+            "5": 1,
+            "6": 21
+          },
+          "child_count_histogram": {
+            "0": 114,
+            "1": 3,
+            "2": 1,
+            "20": 1,
+            "94": 1
+          },
+          "estimated_inner_loop_iterations": 3540,
+          "estimated_local_energy_term_visits": 9130,
+          "max_bag_size": 6,
+          "message_entries": 897,
+          "separator_size_histogram": {
+            "0": 1,
+            "1": 94,
+            "2": 1,
+            "3": 2,
+            "4": 1,
+            "5": 21
+          }
+        }
+      },
+      "degree_gini": 0.64826224328594,
+      "degree_max": 119,
+      "degree_median": 1,
+      "degree_min": 1,
+      "degree_p90": 5,
+      "edges": 211,
+      "expected_edges": 211,
+      "extraction_exact": true,
+      "family": "sparse_partial_qtree",
+      "minfill_bag_size": 6,
+      "minfill_direct_energy": -203.25,
+      "minfill_energy": -203.25,
+      "minfill_width": 5,
+      "no_mutation": true,
+      "nodes": 120,
+      "oracle_energy": -203.25,
+      "oracle_operations": 10026,
+      "process_peak_rss_kib": 27648,
+      "replicate": 5,
+      "seed": 25598636,
+      "timing_ns": {
+        "graph_construction": 1430468,
+        "jt_certificate_cpu": 41043742,
+        "jt_certificate_wall": 41085834,
+        "jt_minfill_cpu": 32915908,
+        "jt_minfill_wall": 32930183,
+        "minfill_order": 28764343,
+        "oracle": 8557232,
+        "runtime_extraction": 4172240
+      },
+      "traced_peak_bytes": {
+        "jt_certificate": 219488,
+        "jt_minfill": 274240
+      },
+      "width": 5
+    },
+    {
+      "certificate_bag_size": 6,
+      "certificate_direct_energy": -208.25,
+      "certificate_energy": -208.25,
+      "certificate_width": 5,
+      "decomposition_profiles": {
+        "certificate": {
+          "bag_assignments": 1794,
+          "bag_size_histogram": {
+            "1": 1,
+            "2": 94,
+            "3": 1,
+            "4": 2,
+            "5": 1,
+            "6": 21
+          },
+          "child_count_histogram": {
+            "0": 115,
+            "1": 2,
+            "2": 1,
+            "21": 1,
+            "94": 1
+          },
+          "estimated_inner_loop_iterations": 2690,
+          "estimated_local_energy_term_visits": 9130,
+          "max_bag_size": 6,
+          "message_entries": 897,
+          "separator_size_histogram": {
+            "0": 1,
+            "1": 94,
+            "2": 1,
+            "3": 2,
+            "4": 1,
+            "5": 21
+          }
+        },
+        "minfill": {
+          "bag_assignments": 1794,
+          "bag_size_histogram": {
+            "1": 1,
+            "2": 94,
+            "3": 1,
+            "4": 2,
+            "5": 1,
+            "6": 21
+          },
+          "child_count_histogram": {
+            "0": 114,
+            "1": 5,
+            "114": 1
+          },
+          "estimated_inner_loop_iterations": 9152,
+          "estimated_local_energy_term_visits": 9130,
+          "max_bag_size": 6,
+          "message_entries": 897,
+          "separator_size_histogram": {
+            "0": 1,
+            "1": 94,
+            "2": 1,
+            "3": 2,
+            "4": 1,
+            "5": 21
+          }
+        }
+      },
+      "degree_gini": 0.64826224328594,
+      "degree_max": 119,
+      "degree_median": 1,
+      "degree_min": 1,
+      "degree_p90": 5,
+      "edges": 211,
+      "expected_edges": 211,
+      "extraction_exact": true,
+      "family": "hub_partial_qtree",
+      "minfill_bag_size": 6,
+      "minfill_direct_energy": -208.25,
+      "minfill_energy": -208.25,
+      "minfill_width": 5,
+      "no_mutation": true,
+      "nodes": 120,
+      "oracle_energy": -208.25,
+      "oracle_operations": 10026,
+      "process_peak_rss_kib": 27648,
+      "replicate": 5,
+      "seed": 25608643,
+      "timing_ns": {
+        "graph_construction": 1243346,
+        "jt_certificate_cpu": 27789948,
+        "jt_certificate_wall": 27794149,
+        "jt_minfill_cpu": 65427267,
+        "jt_minfill_wall": 65442965,
+        "minfill_order": 29388016,
+        "oracle": 8547522,
+        "runtime_extraction": 3747828
+      },
+      "traced_peak_bytes": {
+        "jt_certificate": 219488,
+        "jt_minfill": 276560
+      },
+      "width": 5
+    },
+    {
+      "certificate_bag_size": 7,
+      "certificate_direct_energy": -217.75,
+      "certificate_energy": -217.75,
+      "certificate_width": 6,
+      "decomposition_profiles": {
+        "certificate": {
+          "bag_assignments": 14326,
+          "bag_size_histogram": {
+            "1": 1,
+            "2": 1,
+            "3": 2,
+            "4": 2,
+            "5": 2,
+            "6": 2,
+            "7": 110
+          },
+          "child_count_histogram": {
+            "0": 1,
+            "1": 119
+          },
+          "estimated_inner_loop_iterations": 28644,
+          "estimated_local_energy_term_visits": 99834,
+          "max_bag_size": 7,
+          "message_entries": 7163,
+          "separator_size_histogram": {
+            "0": 1,
+            "1": 1,
+            "2": 2,
+            "3": 2,
+            "4": 2,
+            "5": 2,
+            "6": 110
+          }
+        },
+        "minfill": {
+          "bag_assignments": 8718,
+          "bag_size_histogram": {
+            "1": 1,
+            "2": 1,
+            "3": 5,
+            "4": 22,
+            "5": 38,
+            "6": 11,
+            "7": 34,
+            "8": 8
+          },
+          "child_count_histogram": {
+            "0": 44,
+            "1": 37,
+            "2": 35,
+            "3": 4
+          },
+          "estimated_inner_loop_iterations": 22220,
+          "estimated_local_energy_term_visits": 58690,
+          "max_bag_size": 8,
+          "message_entries": 4359,
+          "separator_size_histogram": {
+            "0": 1,
+            "1": 1,
+            "2": 5,
+            "3": 22,
+            "4": 38,
+            "5": 11,
+            "6": 34,
+            "7": 8
+          }
+        }
+      },
+      "degree_gini": 0.07632398753894076,
+      "degree_max": 4,
+      "degree_median": 4,
+      "degree_min": 2,
+      "degree_p90": 4,
+      "edges": 214,
+      "expected_edges": 214,
+      "extraction_exact": true,
+      "family": "grid",
+      "minfill_bag_size": 8,
+      "minfill_direct_energy": -217.75,
+      "minfill_energy": -217.75,
+      "minfill_width": 7,
+      "no_mutation": true,
+      "nodes": 120,
+      "oracle_energy": -217.75,
+      "oracle_operations": 54736,
+      "process_peak_rss_kib": 30720,
+      "replicate": 0,
+      "seed": 26260947,
+      "timing_ns": {
+        "graph_construction": 1240337,
+        "jt_certificate_cpu": 277277135,
+        "jt_certificate_wall": 277291388,
+        "jt_minfill_cpu": 189032551,
+        "jt_minfill_wall": 189192290,
+        "minfill_order": 11374467,
+        "oracle": 40337541,
+        "runtime_extraction": 2223471
+      },
+      "traced_peak_bytes": {
+        "jt_certificate": 1469392,
+        "jt_minfill": 1217664
+      },
+      "width": 6
+    },
+    {
+      "certificate_bag_size": 7,
+      "certificate_direct_energy": -196.25,
+      "certificate_energy": -196.25,
+      "certificate_width": 6,
+      "decomposition_profiles": {
+        "certificate": {
+          "bag_assignments": 2690,
+          "bag_size_histogram": {
+            "1": 1,
+            "2": 98,
+            "3": 1,
+            "4": 1,
+            "5": 1,
+            "6": 1,
+            "7": 17
+          },
+          "child_count_histogram": {
+            "0": 114,
+            "1": 4,
+            "17": 1,
+            "98": 1
+          },
+          "estimated_inner_loop_iterations": 4034,
+          "estimated_local_energy_term_visits": 16650,
+          "max_bag_size": 7,
+          "message_entries": 1345,
+          "separator_size_histogram": {
+            "0": 1,
+            "1": 98,
+            "2": 1,
+            "3": 1,
+            "4": 1,
+            "5": 1,
+            "6": 17
+          }
+        },
+        "minfill": {
+          "bag_assignments": 2690,
+          "bag_size_histogram": {
+            "1": 1,
+            "2": 98,
+            "3": 1,
+            "4": 1,
+            "5": 1,
+            "6": 1,
+            "7": 17
+          },
+          "child_count_histogram": {
+            "0": 113,
+            "1": 6,
+            "113": 1
+          },
+          "estimated_inner_loop_iterations": 17280,
+          "estimated_local_energy_term_visits": 16650,
+          "max_bag_size": 7,
+          "message_entries": 1345,
+          "separator_size_histogram": {
+            "0": 1,
+            "1": 98,
+            "2": 1,
+            "3": 1,
+            "4": 1,
+            "5": 1,
+            "6": 17
+          }
+        }
+      },
+      "degree_gini": 0.6550233644859813,
+      "degree_max": 119,
+      "degree_median": 1,
+      "degree_min": 1,
+      "degree_p90": 6,
+      "edges": 214,
+      "expected_edges": 214,
+      "extraction_exact": true,
+      "family": "sparse_partial_qtree",
+      "minfill_bag_size": 7,
+      "minfill_direct_energy": -196.25,
+      "minfill_energy": -196.25,
+      "minfill_width": 6,
+      "no_mutation": true,
+      "nodes": 120,
+      "oracle_energy": -196.25,
+      "oracle_operations": 17994,
+      "process_peak_rss_kib": 27648,
+      "replicate": 0,
+      "seed": 26270954,
+      "timing_ns": {
+        "graph_construction": 1233656,
+        "jt_certificate_cpu": 44306462,
+        "jt_certificate_wall": 44312620,
+        "jt_minfill_cpu": 121152863,
+        "jt_minfill_wall": 121200463,
+        "minfill_order": 28729193,
+        "oracle": 13088036,
+        "runtime_extraction": 4207041
+      },
+      "traced_peak_bytes": {
+        "jt_certificate": 289608,
+        "jt_minfill": 293568
+      },
+      "width": 6
+    },
+    {
+      "certificate_bag_size": 7,
+      "certificate_direct_energy": -189.25,
+      "certificate_energy": -189.25,
+      "certificate_width": 6,
+      "decomposition_profiles": {
+        "certificate": {
+          "bag_assignments": 2690,
+          "bag_size_histogram": {
+            "1": 1,
+            "2": 98,
+            "3": 1,
+            "4": 1,
+            "5": 1,
+            "6": 1,
+            "7": 17
+          },
+          "child_count_histogram": {
+            "0": 114,
+            "1": 4,
+            "17": 1,
+            "98": 1
+          },
+          "estimated_inner_loop_iterations": 4034,
+          "estimated_local_energy_term_visits": 16650,
+          "max_bag_size": 7,
+          "message_entries": 1345,
+          "separator_size_histogram": {
+            "0": 1,
+            "1": 98,
+            "2": 1,
+            "3": 1,
+            "4": 1,
+            "5": 1,
+            "6": 17
+          }
+        },
+        "minfill": {
+          "bag_assignments": 2690,
+          "bag_size_histogram": {
+            "1": 1,
+            "2": 98,
+            "3": 1,
+            "4": 1,
+            "5": 1,
+            "6": 1,
+            "7": 17
+          },
+          "child_count_histogram": {
+            "0": 113,
+            "1": 5,
+            "16": 1,
+            "98": 1
+          },
+          "estimated_inner_loop_iterations": 5640,
+          "estimated_local_energy_term_visits": 16650,
+          "max_bag_size": 7,
+          "message_entries": 1345,
+          "separator_size_histogram": {
+            "0": 1,
+            "1": 98,
+            "2": 1,
+            "3": 1,
+            "4": 1,
+            "5": 1,
+            "6": 17
+          }
+        }
+      },
+      "degree_gini": 0.6550233644859813,
+      "degree_max": 119,
+      "degree_median": 1,
+      "degree_min": 1,
+      "degree_p90": 6,
+      "edges": 214,
+      "expected_edges": 214,
+      "extraction_exact": true,
+      "family": "hub_partial_qtree",
+      "minfill_bag_size": 7,
+      "minfill_direct_energy": -189.25,
+      "minfill_energy": -189.25,
+      "minfill_width": 6,
+      "no_mutation": true,
+      "nodes": 120,
+      "oracle_energy": -189.25,
+      "oracle_operations": 17994,
+      "process_peak_rss_kib": 27648,
+      "replicate": 0,
+      "seed": 26280961,
+      "timing_ns": {
+        "graph_construction": 1242746,
+        "jt_certificate_cpu": 45894682,
+        "jt_certificate_wall": 45900428,
+        "jt_minfill_cpu": 56311465,
+        "jt_minfill_wall": 56360051,
+        "minfill_order": 44689962,
+        "oracle": 20320392,
+        "runtime_extraction": 4065190
+      },
+      "traced_peak_bytes": {
+        "jt_certificate": 289608,
+        "jt_minfill": 293288
+      },
+      "width": 6
+    },
+    {
+      "certificate_bag_size": 7,
+      "certificate_direct_energy": -232.75,
+      "certificate_energy": -232.75,
+      "certificate_width": 6,
+      "decomposition_profiles": {
+        "certificate": {
+          "bag_assignments": 14326,
+          "bag_size_histogram": {
+            "1": 1,
+            "2": 1,
+            "3": 2,
+            "4": 2,
+            "5": 2,
+            "6": 2,
+            "7": 110
+          },
+          "child_count_histogram": {
+            "0": 1,
+            "1": 119
+          },
+          "estimated_inner_loop_iterations": 28644,
+          "estimated_local_energy_term_visits": 99834,
+          "max_bag_size": 7,
+          "message_entries": 7163,
+          "separator_size_histogram": {
+            "0": 1,
+            "1": 1,
+            "2": 2,
+            "3": 2,
+            "4": 2,
+            "5": 2,
+            "6": 110
+          }
+        },
+        "minfill": {
+          "bag_assignments": 8846,
+          "bag_size_histogram": {
+            "1": 1,
+            "2": 1,
+            "3": 5,
+            "4": 22,
+            "5": 36,
+            "6": 12,
+            "7": 35,
+            "8": 8
+          },
+          "child_count_histogram": {
+            "0": 42,
+            "1": 42,
+            "2": 31,
+            "3": 5
+          },
+          "estimated_inner_loop_iterations": 22348,
+          "estimated_local_energy_term_visits": 59650,
+          "max_bag_size": 8,
+          "message_entries": 4423,
+          "separator_size_histogram": {
+            "0": 1,
+            "1": 1,
+            "2": 5,
+            "3": 22,
+            "4": 36,
+            "5": 12,
+            "6": 35,
+            "7": 8
+          }
+        }
+      },
+      "degree_gini": 0.07632398753894076,
+      "degree_max": 4,
+      "degree_median": 4,
+      "degree_min": 2,
+      "degree_p90": 4,
+      "edges": 214,
+      "expected_edges": 214,
+      "extraction_exact": true,
+      "family": "grid",
+      "minfill_bag_size": 8,
+      "minfill_direct_energy": -232.75,
+      "minfill_energy": -232.75,
+      "minfill_width": 7,
+      "no_mutation": true,
+      "nodes": 120,
+      "oracle_energy": -232.75,
+      "oracle_operations": 54736,
+      "process_peak_rss_kib": 30404,
+      "replicate": 1,
+      "seed": 26326484,
+      "timing_ns": {
+        "graph_construction": 1216496,
+        "jt_certificate_cpu": 272316314,
+        "jt_certificate_wall": 272334444,
+        "jt_minfill_cpu": 191610382,
+        "jt_minfill_wall": 191688823,
+        "minfill_order": 11345527,
+        "oracle": 40246720,
+        "runtime_extraction": 2524693
+      },
+      "traced_peak_bytes": {
+        "jt_certificate": 1461792,
+        "jt_minfill": 1235624
+      },
+      "width": 6
+    },
+    {
+      "certificate_bag_size": 7,
+      "certificate_direct_energy": -214.75,
+      "certificate_energy": -214.75,
+      "certificate_width": 6,
+      "decomposition_profiles": {
+        "certificate": {
+          "bag_assignments": 2690,
+          "bag_size_histogram": {
+            "1": 1,
+            "2": 98,
+            "3": 1,
+            "4": 1,
+            "5": 1,
+            "6": 1,
+            "7": 17
+          },
+          "child_count_histogram": {
+            "0": 114,
+            "1": 4,
+            "17": 1,
+            "98": 1
+          },
+          "estimated_inner_loop_iterations": 4034,
+          "estimated_local_energy_term_visits": 16650,
+          "max_bag_size": 7,
+          "message_entries": 1345,
+          "separator_size_histogram": {
+            "0": 1,
+            "1": 98,
+            "2": 1,
+            "3": 1,
+            "4": 1,
+            "5": 1,
+            "6": 17
+          }
+        },
+        "minfill": {
+          "bag_assignments": 2690,
+          "bag_size_histogram": {
+            "1": 1,
+            "2": 98,
+            "3": 1,
+            "4": 1,
+            "5": 1,
+            "6": 1,
+            "7": 17
+          },
+          "child_count_histogram": {
+            "0": 113,
+            "1": 6,
+            "113": 1
+          },
+          "estimated_inner_loop_iterations": 17280,
+          "estimated_local_energy_term_visits": 16650,
+          "max_bag_size": 7,
+          "message_entries": 1345,
+          "separator_size_histogram": {
+            "0": 1,
+            "1": 98,
+            "2": 1,
+            "3": 1,
+            "4": 1,
+            "5": 1,
+            "6": 17
+          }
+        }
+      },
+      "degree_gini": 0.6550233644859813,
+      "degree_max": 119,
+      "degree_median": 1,
+      "degree_min": 1,
+      "degree_p90": 6,
+      "edges": 214,
+      "expected_edges": 214,
+      "extraction_exact": true,
+      "family": "sparse_partial_qtree",
+      "minfill_bag_size": 7,
+      "minfill_direct_energy": -214.75,
+      "minfill_energy": -214.75,
+      "minfill_width": 6,
+      "no_mutation": true,
+      "nodes": 120,
+      "oracle_energy": -214.75,
+      "oracle_operations": 17994,
+      "process_peak_rss_kib": 27648,
+      "replicate": 1,
+      "seed": 26336491,
+      "timing_ns": {
+        "graph_construction": 1240596,
+        "jt_certificate_cpu": 43847891,
+        "jt_certificate_wall": 43861128,
+        "jt_minfill_cpu": 119726823,
+        "jt_minfill_wall": 119771726,
+        "minfill_order": 28395741,
+        "oracle": 13111206,
+        "runtime_extraction": 4187821
+      },
+      "traced_peak_bytes": {
+        "jt_certificate": 289608,
+        "jt_minfill": 293568
+      },
+      "width": 6
+    },
+    {
+      "certificate_bag_size": 7,
+      "certificate_direct_energy": -213.75,
+      "certificate_energy": -213.75,
+      "certificate_width": 6,
+      "decomposition_profiles": {
+        "certificate": {
+          "bag_assignments": 2690,
+          "bag_size_histogram": {
+            "1": 1,
+            "2": 98,
+            "3": 1,
+            "4": 1,
+            "5": 1,
+            "6": 1,
+            "7": 17
+          },
+          "child_count_histogram": {
+            "0": 114,
+            "1": 4,
+            "17": 1,
+            "98": 1
+          },
+          "estimated_inner_loop_iterations": 4034,
+          "estimated_local_energy_term_visits": 16650,
+          "max_bag_size": 7,
+          "message_entries": 1345,
+          "separator_size_histogram": {
+            "0": 1,
+            "1": 98,
+            "2": 1,
+            "3": 1,
+            "4": 1,
+            "5": 1,
+            "6": 17
+          }
+        },
+        "minfill": {
+          "bag_assignments": 2690,
+          "bag_size_histogram": {
+            "1": 1,
+            "2": 98,
+            "3": 1,
+            "4": 1,
+            "5": 1,
+            "6": 1,
+            "7": 17
+          },
+          "child_count_histogram": {
+            "0": 113,
+            "1": 5,
+            "16": 1,
+            "98": 1
+          },
+          "estimated_inner_loop_iterations": 7968,
+          "estimated_local_energy_term_visits": 16650,
+          "max_bag_size": 7,
+          "message_entries": 1345,
+          "separator_size_histogram": {
+            "0": 1,
+            "1": 98,
+            "2": 1,
+            "3": 1,
+            "4": 1,
+            "5": 1,
+            "6": 17
+          }
+        }
+      },
+      "degree_gini": 0.6550233644859813,
+      "degree_max": 119,
+      "degree_median": 1,
+      "degree_min": 1,
+      "degree_p90": 6,
+      "edges": 214,
+      "expected_edges": 214,
+      "extraction_exact": true,
+      "family": "hub_partial_qtree",
+      "minfill_bag_size": 7,
+      "minfill_direct_energy": -213.75,
+      "minfill_energy": -213.75,
+      "minfill_width": 6,
+      "no_mutation": true,
+      "nodes": 120,
+      "oracle_energy": -213.75,
+      "oracle_operations": 17994,
+      "process_peak_rss_kib": 27648,
+      "replicate": 1,
+      "seed": 26346498,
+      "timing_ns": {
+        "graph_construction": 1294537,
+        "jt_certificate_cpu": 45272873,
+        "jt_certificate_wall": 45303035,
+        "jt_minfill_cpu": 92736595,
+        "jt_minfill_wall": 92778181,
+        "minfill_order": 29104705,
+        "oracle": 12878344,
+        "runtime_extraction": 3622148
+      },
+      "traced_peak_bytes": {
+        "jt_certificate": 289608,
+        "jt_minfill": 293424
+      },
+      "width": 6
+    },
+    {
+      "certificate_bag_size": 7,
+      "certificate_direct_energy": -227.5,
+      "certificate_energy": -227.5,
+      "certificate_width": 6,
+      "decomposition_profiles": {
+        "certificate": {
+          "bag_assignments": 14326,
+          "bag_size_histogram": {
+            "1": 1,
+            "2": 1,
+            "3": 2,
+            "4": 2,
+            "5": 2,
+            "6": 2,
+            "7": 110
+          },
+          "child_count_histogram": {
+            "0": 1,
+            "1": 119
+          },
+          "estimated_inner_loop_iterations": 28644,
+          "estimated_local_energy_term_visits": 99834,
+          "max_bag_size": 7,
+          "message_entries": 7163,
+          "separator_size_histogram": {
+            "0": 1,
+            "1": 1,
+            "2": 2,
+            "3": 2,
+            "4": 2,
+            "5": 2,
+            "6": 110
+          }
+        },
+        "minfill": {
+          "bag_assignments": 8622,
+          "bag_size_histogram": {
+            "1": 1,
+            "2": 1,
+            "3": 5,
+            "4": 22,
+            "5": 39,
+            "6": 11,
+            "7": 33,
+            "8": 8
+          },
+          "child_count_histogram": {
+            "0": 45,
+            "1": 36,
+            "2": 34,
+            "3": 5
+          },
+          "estimated_inner_loop_iterations": 21996,
+          "estimated_local_energy_term_visits": 57954,
+          "max_bag_size": 8,
+          "message_entries": 4311,
+          "separator_size_histogram": {
+            "0": 1,
+            "1": 1,
+            "2": 5,
+            "3": 22,
+            "4": 39,
+            "5": 11,
+            "6": 33,
+            "7": 8
+          }
+        }
+      },
+      "degree_gini": 0.07632398753894076,
+      "degree_max": 4,
+      "degree_median": 4,
+      "degree_min": 2,
+      "degree_p90": 4,
+      "edges": 214,
+      "expected_edges": 214,
+      "extraction_exact": true,
+      "family": "grid",
+      "minfill_bag_size": 8,
+      "minfill_direct_energy": -227.5,
+      "minfill_energy": -227.5,
+      "minfill_width": 7,
+      "no_mutation": true,
+      "nodes": 120,
+      "oracle_energy": -227.5,
+      "oracle_operations": 54736,
+      "process_peak_rss_kib": 30140,
+      "replicate": 2,
+      "seed": 26392021,
+      "timing_ns": {
+        "graph_construction": 1203725,
+        "jt_certificate_cpu": 274137473,
+        "jt_certificate_wall": 274237394,
+        "jt_minfill_cpu": 192099432,
+        "jt_minfill_wall": 192171685,
+        "minfill_order": 11252986,
+        "oracle": 39706637,
+        "runtime_extraction": 2247512
+      },
+      "traced_peak_bytes": {
+        "jt_certificate": 1469392,
+        "jt_minfill": 1193528
+      },
+      "width": 6
+    },
+    {
+      "certificate_bag_size": 7,
+      "certificate_direct_energy": -221.0,
+      "certificate_energy": -221.0,
+      "certificate_width": 6,
+      "decomposition_profiles": {
+        "certificate": {
+          "bag_assignments": 2690,
+          "bag_size_histogram": {
+            "1": 1,
+            "2": 98,
+            "3": 1,
+            "4": 1,
+            "5": 1,
+            "6": 1,
+            "7": 17
+          },
+          "child_count_histogram": {
+            "0": 114,
+            "1": 4,
+            "17": 1,
+            "98": 1
+          },
+          "estimated_inner_loop_iterations": 4034,
+          "estimated_local_energy_term_visits": 16650,
+          "max_bag_size": 7,
+          "message_entries": 1345,
+          "separator_size_histogram": {
+            "0": 1,
+            "1": 98,
+            "2": 1,
+            "3": 1,
+            "4": 1,
+            "5": 1,
+            "6": 17
+          }
+        },
+        "minfill": {
+          "bag_assignments": 2690,
+          "bag_size_histogram": {
+            "1": 1,
+            "2": 98,
+            "3": 1,
+            "4": 1,
+            "5": 1,
+            "6": 1,
+            "7": 17
+          },
+          "child_count_histogram": {
+            "0": 113,
+            "1": 5,
+            "16": 1,
+            "98": 1
+          },
+          "estimated_inner_loop_iterations": 5252,
+          "estimated_local_energy_term_visits": 16650,
+          "max_bag_size": 7,
+          "message_entries": 1345,
+          "separator_size_histogram": {
+            "0": 1,
+            "1": 98,
+            "2": 1,
+            "3": 1,
+            "4": 1,
+            "5": 1,
+            "6": 17
+          }
+        }
+      },
+      "degree_gini": 0.6550233644859813,
+      "degree_max": 119,
+      "degree_median": 1,
+      "degree_min": 1,
+      "degree_p90": 6,
+      "edges": 214,
+      "expected_edges": 214,
+      "extraction_exact": true,
+      "family": "sparse_partial_qtree",
+      "minfill_bag_size": 7,
+      "minfill_direct_energy": -221.0,
+      "minfill_energy": -221.0,
+      "minfill_width": 6,
+      "no_mutation": true,
+      "nodes": 120,
+      "oracle_energy": -221.0,
+      "oracle_operations": 17994,
+      "process_peak_rss_kib": 27648,
+      "replicate": 2,
+      "seed": 26402028,
+      "timing_ns": {
+        "graph_construction": 1248747,
+        "jt_certificate_cpu": 43810442,
+        "jt_certificate_wall": 43816308,
+        "jt_minfill_cpu": 50952794,
+        "jt_minfill_wall": 50969794,
+        "minfill_order": 30630802,
+        "oracle": 13257595,
+        "runtime_extraction": 5192326
+      },
+      "traced_peak_bytes": {
+        "jt_certificate": 289608,
+        "jt_minfill": 293232
+      },
+      "width": 6
+    },
+    {
+      "certificate_bag_size": 7,
+      "certificate_direct_energy": -210.0,
+      "certificate_energy": -210.0,
+      "certificate_width": 6,
+      "decomposition_profiles": {
+        "certificate": {
+          "bag_assignments": 2690,
+          "bag_size_histogram": {
+            "1": 1,
+            "2": 98,
+            "3": 1,
+            "4": 1,
+            "5": 1,
+            "6": 1,
+            "7": 17
+          },
+          "child_count_histogram": {
+            "0": 114,
+            "1": 4,
+            "17": 1,
+            "98": 1
+          },
+          "estimated_inner_loop_iterations": 4034,
+          "estimated_local_energy_term_visits": 16650,
+          "max_bag_size": 7,
+          "message_entries": 1345,
+          "separator_size_histogram": {
+            "0": 1,
+            "1": 98,
+            "2": 1,
+            "3": 1,
+            "4": 1,
+            "5": 1,
+            "6": 17
+          }
+        },
+        "minfill": {
+          "bag_assignments": 2690,
+          "bag_size_histogram": {
+            "1": 1,
+            "2": 98,
+            "3": 1,
+            "4": 1,
+            "5": 1,
+            "6": 1,
+            "7": 17
+          },
+          "child_count_histogram": {
+            "0": 113,
+            "1": 5,
+            "16": 1,
+            "98": 1
+          },
+          "estimated_inner_loop_iterations": 5252,
+          "estimated_local_energy_term_visits": 16650,
+          "max_bag_size": 7,
+          "message_entries": 1345,
+          "separator_size_histogram": {
+            "0": 1,
+            "1": 98,
+            "2": 1,
+            "3": 1,
+            "4": 1,
+            "5": 1,
+            "6": 17
+          }
+        }
+      },
+      "degree_gini": 0.6550233644859813,
+      "degree_max": 119,
+      "degree_median": 1,
+      "degree_min": 1,
+      "degree_p90": 6,
+      "edges": 214,
+      "expected_edges": 214,
+      "extraction_exact": true,
+      "family": "hub_partial_qtree",
+      "minfill_bag_size": 7,
+      "minfill_direct_energy": -210.0,
+      "minfill_energy": -210.0,
+      "minfill_width": 6,
+      "no_mutation": true,
+      "nodes": 120,
+      "oracle_energy": -210.0,
+      "oracle_operations": 17994,
+      "process_peak_rss_kib": 27648,
+      "replicate": 2,
+      "seed": 26412035,
+      "timing_ns": {
+        "graph_construction": 1248436,
+        "jt_certificate_cpu": 45679153,
+        "jt_certificate_wall": 45697107,
+        "jt_minfill_cpu": 52805514,
+        "jt_minfill_wall": 52862162,
+        "minfill_order": 30183909,
+        "oracle": 13037915,
+        "runtime_extraction": 4082431
+      },
+      "traced_peak_bytes": {
+        "jt_certificate": 289608,
+        "jt_minfill": 293232
+      },
+      "width": 6
+    },
+    {
+      "certificate_bag_size": 7,
+      "certificate_direct_energy": -210.25,
+      "certificate_energy": -210.25,
+      "certificate_width": 6,
+      "decomposition_profiles": {
+        "certificate": {
+          "bag_assignments": 14326,
+          "bag_size_histogram": {
+            "1": 1,
+            "2": 1,
+            "3": 2,
+            "4": 2,
+            "5": 2,
+            "6": 2,
+            "7": 110
+          },
+          "child_count_histogram": {
+            "0": 1,
+            "1": 119
+          },
+          "estimated_inner_loop_iterations": 28644,
+          "estimated_local_energy_term_visits": 99834,
+          "max_bag_size": 7,
+          "message_entries": 7163,
+          "separator_size_histogram": {
+            "0": 1,
+            "1": 1,
+            "2": 2,
+            "3": 2,
+            "4": 2,
+            "5": 2,
+            "6": 110
+          }
+        },
+        "minfill": {
+          "bag_assignments": 10158,
+          "bag_size_histogram": {
+            "1": 1,
+            "2": 1,
+            "3": 5,
+            "4": 22,
+            "5": 37,
+            "6": 10,
+            "7": 32,
+            "8": 9,
+            "9": 3
+          },
+          "child_count_histogram": {
+            "0": 43,
+            "1": 37,
+            "2": 38,
+            "3": 2
+          },
+          "estimated_inner_loop_iterations": 25836,
+          "estimated_local_energy_term_visits": 72226,
+          "max_bag_size": 9,
+          "message_entries": 5079,
+          "separator_size_histogram": {
+            "0": 1,
+            "1": 1,
+            "2": 5,
+            "3": 22,
+            "4": 37,
+            "5": 10,
+            "6": 32,
+            "7": 9,
+            "8": 3
+          }
+        }
+      },
+      "degree_gini": 0.07632398753894076,
+      "degree_max": 4,
+      "degree_median": 4,
+      "degree_min": 2,
+      "degree_p90": 4,
+      "edges": 214,
+      "expected_edges": 214,
+      "extraction_exact": true,
+      "family": "grid",
+      "minfill_bag_size": 9,
+      "minfill_direct_energy": -210.25,
+      "minfill_energy": -210.25,
+      "minfill_width": 8,
+      "no_mutation": true,
+      "nodes": 120,
+      "oracle_energy": -210.25,
+      "oracle_operations": 54736,
+      "process_peak_rss_kib": 30748,
+      "replicate": 3,
+      "seed": 26457558,
+      "timing_ns": {
+        "graph_construction": 1323036,
+        "jt_certificate_cpu": 279126596,
+        "jt_certificate_wall": 279175478,
+        "jt_minfill_cpu": 230652462,
+        "jt_minfill_wall": 230722007,
+        "minfill_order": 11290946,
+        "oracle": 45863658,
+        "runtime_extraction": 2768884
+      },
+      "traced_peak_bytes": {
+        "jt_certificate": 1469392,
+        "jt_minfill": 1485024
+      },
+      "width": 6
+    },
+    {
+      "certificate_bag_size": 7,
+      "certificate_direct_energy": -215.25,
+      "certificate_energy": -215.25,
+      "certificate_width": 6,
+      "decomposition_profiles": {
+        "certificate": {
+          "bag_assignments": 2690,
+          "bag_size_histogram": {
+            "1": 1,
+            "2": 98,
+            "3": 1,
+            "4": 1,
+            "5": 1,
+            "6": 1,
+            "7": 17
+          },
+          "child_count_histogram": {
+            "0": 114,
+            "1": 4,
+            "17": 1,
+            "98": 1
+          },
+          "estimated_inner_loop_iterations": 4034,
+          "estimated_local_energy_term_visits": 16650,
+          "max_bag_size": 7,
+          "message_entries": 1345,
+          "separator_size_histogram": {
+            "0": 1,
+            "1": 98,
+            "2": 1,
+            "3": 1,
+            "4": 1,
+            "5": 1,
+            "6": 17
+          }
+        },
+        "minfill": {
+          "bag_assignments": 2690,
+          "bag_size_histogram": {
+            "1": 1,
+            "2": 98,
+            "3": 1,
+            "4": 1,
+            "5": 1,
+            "6": 1,
+            "7": 17
+          },
+          "child_count_histogram": {
+            "0": 113,
+            "1": 5,
+            "16": 1,
+            "98": 1
+          },
+          "estimated_inner_loop_iterations": 5640,
+          "estimated_local_energy_term_visits": 16650,
+          "max_bag_size": 7,
+          "message_entries": 1345,
+          "separator_size_histogram": {
+            "0": 1,
+            "1": 98,
+            "2": 1,
+            "3": 1,
+            "4": 1,
+            "5": 1,
+            "6": 17
+          }
+        }
+      },
+      "degree_gini": 0.6550233644859813,
+      "degree_max": 119,
+      "degree_median": 1,
+      "degree_min": 1,
+      "degree_p90": 6,
+      "edges": 214,
+      "expected_edges": 214,
+      "extraction_exact": true,
+      "family": "sparse_partial_qtree",
+      "minfill_bag_size": 7,
+      "minfill_direct_energy": -215.25,
+      "minfill_energy": -215.25,
+      "minfill_width": 6,
+      "no_mutation": true,
+      "nodes": 120,
+      "oracle_energy": -215.25,
+      "oracle_operations": 17994,
+      "process_peak_rss_kib": 27648,
+      "replicate": 3,
+      "seed": 26467565,
+      "timing_ns": {
+        "graph_construction": 1213066,
+        "jt_certificate_cpu": 44141852,
+        "jt_certificate_wall": 44153370,
+        "jt_minfill_cpu": 53932045,
+        "jt_minfill_wall": 53956259,
+        "minfill_order": 30705133,
+        "oracle": 13303146,
+        "runtime_extraction": 3448957
+      },
+      "traced_peak_bytes": {
+        "jt_certificate": 289608,
+        "jt_minfill": 293288
+      },
+      "width": 6
+    },
+    {
+      "certificate_bag_size": 7,
+      "certificate_direct_energy": -216.75,
+      "certificate_energy": -216.75,
+      "certificate_width": 6,
+      "decomposition_profiles": {
+        "certificate": {
+          "bag_assignments": 2690,
+          "bag_size_histogram": {
+            "1": 1,
+            "2": 98,
+            "3": 1,
+            "4": 1,
+            "5": 1,
+            "6": 1,
+            "7": 17
+          },
+          "child_count_histogram": {
+            "0": 114,
+            "1": 4,
+            "17": 1,
+            "98": 1
+          },
+          "estimated_inner_loop_iterations": 4034,
+          "estimated_local_energy_term_visits": 16650,
+          "max_bag_size": 7,
+          "message_entries": 1345,
+          "separator_size_histogram": {
+            "0": 1,
+            "1": 98,
+            "2": 1,
+            "3": 1,
+            "4": 1,
+            "5": 1,
+            "6": 17
+          }
+        },
+        "minfill": {
+          "bag_assignments": 2690,
+          "bag_size_histogram": {
+            "1": 1,
+            "2": 98,
+            "3": 1,
+            "4": 1,
+            "5": 1,
+            "6": 1,
+            "7": 17
+          },
+          "child_count_histogram": {
+            "0": 113,
+            "1": 5,
+            "16": 1,
+            "98": 1
+          },
+          "estimated_inner_loop_iterations": 5640,
+          "estimated_local_energy_term_visits": 16650,
+          "max_bag_size": 7,
+          "message_entries": 1345,
+          "separator_size_histogram": {
+            "0": 1,
+            "1": 98,
+            "2": 1,
+            "3": 1,
+            "4": 1,
+            "5": 1,
+            "6": 17
+          }
+        }
+      },
+      "degree_gini": 0.6550233644859813,
+      "degree_max": 119,
+      "degree_median": 1,
+      "degree_min": 1,
+      "degree_p90": 6,
+      "edges": 214,
+      "expected_edges": 214,
+      "extraction_exact": true,
+      "family": "hub_partial_qtree",
+      "minfill_bag_size": 7,
+      "minfill_direct_energy": -216.75,
+      "minfill_energy": -216.75,
+      "minfill_width": 6,
+      "no_mutation": true,
+      "nodes": 120,
+      "oracle_energy": -216.75,
+      "oracle_operations": 17994,
+      "process_peak_rss_kib": 27648,
+      "replicate": 3,
+      "seed": 26477572,
+      "timing_ns": {
+        "graph_construction": 1263646,
+        "jt_certificate_cpu": 44364022,
+        "jt_certificate_wall": 44384481,
+        "jt_minfill_cpu": 52739374,
+        "jt_minfill_wall": 52762722,
+        "minfill_order": 28341821,
+        "oracle": 13741148,
+        "runtime_extraction": 3693188
+      },
+      "traced_peak_bytes": {
+        "jt_certificate": 289608,
+        "jt_minfill": 293288
+      },
+      "width": 6
+    },
+    {
+      "certificate_bag_size": 7,
+      "certificate_direct_energy": -230.5,
+      "certificate_energy": -230.5,
+      "certificate_width": 6,
+      "decomposition_profiles": {
+        "certificate": {
+          "bag_assignments": 14326,
+          "bag_size_histogram": {
+            "1": 1,
+            "2": 1,
+            "3": 2,
+            "4": 2,
+            "5": 2,
+            "6": 2,
+            "7": 110
+          },
+          "child_count_histogram": {
+            "0": 1,
+            "1": 119
+          },
+          "estimated_inner_loop_iterations": 28644,
+          "estimated_local_energy_term_visits": 99834,
+          "max_bag_size": 7,
+          "message_entries": 7163,
+          "separator_size_histogram": {
+            "0": 1,
+            "1": 1,
+            "2": 2,
+            "3": 2,
+            "4": 2,
+            "5": 2,
+            "6": 110
+          }
+        },
+        "minfill": {
+          "bag_assignments": 8558,
+          "bag_size_histogram": {
+            "1": 1,
+            "2": 1,
+            "3": 5,
+            "4": 22,
+            "5": 39,
+            "6": 10,
+            "7": 35,
+            "8": 7
+          },
+          "child_count_histogram": {
+            "0": 45,
+            "1": 36,
+            "2": 34,
+            "3": 5
+          },
+          "estimated_inner_loop_iterations": 21884,
+          "estimated_local_energy_term_visits": 57314,
+          "max_bag_size": 8,
+          "message_entries": 4279,
+          "separator_size_histogram": {
+            "0": 1,
+            "1": 1,
+            "2": 5,
+            "3": 22,
+            "4": 39,
+            "5": 10,
+            "6": 35,
+            "7": 7
+          }
+        }
+      },
+      "degree_gini": 0.07632398753894076,
+      "degree_max": 4,
+      "degree_median": 4,
+      "degree_min": 2,
+      "degree_p90": 4,
+      "edges": 214,
+      "expected_edges": 214,
+      "extraction_exact": true,
+      "family": "grid",
+      "minfill_bag_size": 8,
+      "minfill_direct_energy": -230.5,
+      "minfill_energy": -230.5,
+      "minfill_width": 7,
+      "no_mutation": true,
+      "nodes": 120,
+      "oracle_energy": -230.5,
+      "oracle_operations": 54736,
+      "process_peak_rss_kib": 30144,
+      "replicate": 4,
+      "seed": 26523095,
+      "timing_ns": {
+        "graph_construction": 1892150,
+        "jt_certificate_cpu": 274523914,
+        "jt_certificate_wall": 275598180,
+        "jt_minfill_cpu": 190825192,
+        "jt_minfill_wall": 190892660,
+        "minfill_order": 17088515,
+        "oracle": 52966794,
+        "runtime_extraction": 3583148
+      },
+      "traced_peak_bytes": {
+        "jt_certificate": 1469392,
+        "jt_minfill": 1173888
+      },
+      "width": 6
+    },
+    {
+      "certificate_bag_size": 7,
+      "certificate_direct_energy": -214.5,
+      "certificate_energy": -214.5,
+      "certificate_width": 6,
+      "decomposition_profiles": {
+        "certificate": {
+          "bag_assignments": 2690,
+          "bag_size_histogram": {
+            "1": 1,
+            "2": 98,
+            "3": 1,
+            "4": 1,
+            "5": 1,
+            "6": 1,
+            "7": 17
+          },
+          "child_count_histogram": {
+            "0": 114,
+            "1": 4,
+            "17": 1,
+            "98": 1
+          },
+          "estimated_inner_loop_iterations": 4034,
+          "estimated_local_energy_term_visits": 16650,
+          "max_bag_size": 7,
+          "message_entries": 1345,
+          "separator_size_histogram": {
+            "0": 1,
+            "1": 98,
+            "2": 1,
+            "3": 1,
+            "4": 1,
+            "5": 1,
+            "6": 17
+          }
+        },
+        "minfill": {
+          "bag_assignments": 2690,
+          "bag_size_histogram": {
+            "1": 1,
+            "2": 98,
+            "3": 1,
+            "4": 1,
+            "5": 1,
+            "6": 1,
+            "7": 17
+          },
+          "child_count_histogram": {
+            "0": 113,
+            "1": 5,
+            "16": 1,
+            "98": 1
+          },
+          "estimated_inner_loop_iterations": 11072,
+          "estimated_local_energy_term_visits": 16650,
+          "max_bag_size": 7,
+          "message_entries": 1345,
+          "separator_size_histogram": {
+            "0": 1,
+            "1": 98,
+            "2": 1,
+            "3": 1,
+            "4": 1,
+            "5": 1,
+            "6": 17
+          }
+        }
+      },
+      "degree_gini": 0.6550233644859813,
+      "degree_max": 119,
+      "degree_median": 1,
+      "degree_min": 1,
+      "degree_p90": 6,
+      "edges": 214,
+      "expected_edges": 214,
+      "extraction_exact": true,
+      "family": "sparse_partial_qtree",
+      "minfill_bag_size": 7,
+      "minfill_direct_energy": -214.5,
+      "minfill_energy": -214.5,
+      "minfill_width": 6,
+      "no_mutation": true,
+      "nodes": 120,
+      "oracle_energy": -214.5,
+      "oracle_operations": 17994,
+      "process_peak_rss_kib": 27648,
+      "replicate": 4,
+      "seed": 26533102,
+      "timing_ns": {
+        "graph_construction": 1273936,
+        "jt_certificate_cpu": 43473621,
+        "jt_certificate_wall": 43481686,
+        "jt_minfill_cpu": 84898903,
+        "jt_minfill_wall": 84914982,
+        "minfill_order": 30769953,
+        "oracle": 13389947,
+        "runtime_extraction": 3567508
+      },
+      "traced_peak_bytes": {
+        "jt_certificate": 289608,
+        "jt_minfill": 293504
+      },
+      "width": 6
+    },
+    {
+      "certificate_bag_size": 7,
+      "certificate_direct_energy": -203.0,
+      "certificate_energy": -203.0,
+      "certificate_width": 6,
+      "decomposition_profiles": {
+        "certificate": {
+          "bag_assignments": 2690,
+          "bag_size_histogram": {
+            "1": 1,
+            "2": 98,
+            "3": 1,
+            "4": 1,
+            "5": 1,
+            "6": 1,
+            "7": 17
+          },
+          "child_count_histogram": {
+            "0": 114,
+            "1": 4,
+            "17": 1,
+            "98": 1
+          },
+          "estimated_inner_loop_iterations": 4034,
+          "estimated_local_energy_term_visits": 16650,
+          "max_bag_size": 7,
+          "message_entries": 1345,
+          "separator_size_histogram": {
+            "0": 1,
+            "1": 98,
+            "2": 1,
+            "3": 1,
+            "4": 1,
+            "5": 1,
+            "6": 17
+          }
+        },
+        "minfill": {
+          "bag_assignments": 2690,
+          "bag_size_histogram": {
+            "1": 1,
+            "2": 98,
+            "3": 1,
+            "4": 1,
+            "5": 1,
+            "6": 1,
+            "7": 17
+          },
+          "child_count_histogram": {
+            "0": 113,
+            "1": 5,
+            "16": 1,
+            "98": 1
+          },
+          "estimated_inner_loop_iterations": 6416,
+          "estimated_local_energy_term_visits": 16650,
+          "max_bag_size": 7,
+          "message_entries": 1345,
+          "separator_size_histogram": {
+            "0": 1,
+            "1": 98,
+            "2": 1,
+            "3": 1,
+            "4": 1,
+            "5": 1,
+            "6": 17
+          }
+        }
+      },
+      "degree_gini": 0.6550233644859813,
+      "degree_max": 119,
+      "degree_median": 1,
+      "degree_min": 1,
+      "degree_p90": 6,
+      "edges": 214,
+      "expected_edges": 214,
+      "extraction_exact": true,
+      "family": "hub_partial_qtree",
+      "minfill_bag_size": 7,
+      "minfill_direct_energy": -203.0,
+      "minfill_energy": -203.0,
+      "minfill_width": 6,
+      "no_mutation": true,
+      "nodes": 120,
+      "oracle_energy": -203.0,
+      "oracle_operations": 17994,
+      "process_peak_rss_kib": 27648,
+      "replicate": 4,
+      "seed": 26543109,
+      "timing_ns": {
+        "graph_construction": 1248006,
+        "jt_certificate_cpu": 44647082,
+        "jt_certificate_wall": 44660902,
+        "jt_minfill_cpu": 57198396,
+        "jt_minfill_wall": 57213765,
+        "minfill_order": 29726007,
+        "oracle": 13272626,
+        "runtime_extraction": 4102951
+      },
+      "traced_peak_bytes": {
+        "jt_certificate": 289608,
+        "jt_minfill": 293352
+      },
+      "width": 6
+    },
+    {
+      "certificate_bag_size": 7,
+      "certificate_direct_energy": -244.0,
+      "certificate_energy": -244.0,
+      "certificate_width": 6,
+      "decomposition_profiles": {
+        "certificate": {
+          "bag_assignments": 14326,
+          "bag_size_histogram": {
+            "1": 1,
+            "2": 1,
+            "3": 2,
+            "4": 2,
+            "5": 2,
+            "6": 2,
+            "7": 110
+          },
+          "child_count_histogram": {
+            "0": 1,
+            "1": 119
+          },
+          "estimated_inner_loop_iterations": 28644,
+          "estimated_local_energy_term_visits": 99834,
+          "max_bag_size": 7,
+          "message_entries": 7163,
+          "separator_size_histogram": {
+            "0": 1,
+            "1": 1,
+            "2": 2,
+            "3": 2,
+            "4": 2,
+            "5": 2,
+            "6": 110
+          }
+        },
+        "minfill": {
+          "bag_assignments": 9550,
+          "bag_size_histogram": {
+            "1": 1,
+            "2": 1,
+            "3": 5,
+            "4": 22,
+            "5": 36,
+            "6": 11,
+            "7": 35,
+            "8": 7,
+            "9": 2
+          },
+          "child_count_histogram": {
+            "0": 42,
+            "1": 39,
+            "2": 37,
+            "3": 2
+          },
+          "estimated_inner_loop_iterations": 24140,
+          "estimated_local_energy_term_visits": 66434,
+          "max_bag_size": 9,
+          "message_entries": 4775,
+          "separator_size_histogram": {
+            "0": 1,
+            "1": 1,
+            "2": 5,
+            "3": 22,
+            "4": 36,
+            "5": 11,
+            "6": 35,
+            "7": 7,
+            "8": 2
+          }
+        }
+      },
+      "degree_gini": 0.07632398753894076,
+      "degree_max": 4,
+      "degree_median": 4,
+      "degree_min": 2,
+      "degree_p90": 4,
+      "edges": 214,
+      "expected_edges": 214,
+      "extraction_exact": true,
+      "family": "grid",
+      "minfill_bag_size": 9,
+      "minfill_direct_energy": -244.0,
+      "minfill_energy": -244.0,
+      "minfill_width": 8,
+      "no_mutation": true,
+      "nodes": 120,
+      "oracle_energy": -244.0,
+      "oracle_operations": 54736,
+      "process_peak_rss_kib": 30636,
+      "replicate": 5,
+      "seed": 26588632,
+      "timing_ns": {
+        "graph_construction": 1342647,
+        "jt_certificate_cpu": 276581656,
+        "jt_certificate_wall": 278640446,
+        "jt_minfill_cpu": 235664624,
+        "jt_minfill_wall": 235706382,
+        "minfill_order": 11327516,
+        "oracle": 39419216,
+        "runtime_extraction": 2326792
+      },
+      "traced_peak_bytes": {
+        "jt_certificate": 1469392,
+        "jt_minfill": 1341480
+      },
+      "width": 6
+    },
+    {
+      "certificate_bag_size": 7,
+      "certificate_direct_energy": -218.0,
+      "certificate_energy": -218.0,
+      "certificate_width": 6,
+      "decomposition_profiles": {
+        "certificate": {
+          "bag_assignments": 2690,
+          "bag_size_histogram": {
+            "1": 1,
+            "2": 98,
+            "3": 1,
+            "4": 1,
+            "5": 1,
+            "6": 1,
+            "7": 17
+          },
+          "child_count_histogram": {
+            "0": 114,
+            "1": 4,
+            "17": 1,
+            "98": 1
+          },
+          "estimated_inner_loop_iterations": 4034,
+          "estimated_local_energy_term_visits": 16650,
+          "max_bag_size": 7,
+          "message_entries": 1345,
+          "separator_size_histogram": {
+            "0": 1,
+            "1": 98,
+            "2": 1,
+            "3": 1,
+            "4": 1,
+            "5": 1,
+            "6": 17
+          }
+        },
+        "minfill": {
+          "bag_assignments": 2690,
+          "bag_size_histogram": {
+            "1": 1,
+            "2": 98,
+            "3": 1,
+            "4": 1,
+            "5": 1,
+            "6": 1,
+            "7": 17
+          },
+          "child_count_histogram": {
+            "0": 113,
+            "1": 5,
+            "16": 1,
+            "98": 1
+          },
+          "estimated_inner_loop_iterations": 5058,
+          "estimated_local_energy_term_visits": 16650,
+          "max_bag_size": 7,
+          "message_entries": 1345,
+          "separator_size_histogram": {
+            "0": 1,
+            "1": 98,
+            "2": 1,
+            "3": 1,
+            "4": 1,
+            "5": 1,
+            "6": 17
+          }
+        }
+      },
+      "degree_gini": 0.6550233644859813,
+      "degree_max": 119,
+      "degree_median": 1,
+      "degree_min": 1,
+      "degree_p90": 6,
+      "edges": 214,
+      "expected_edges": 214,
+      "extraction_exact": true,
+      "family": "sparse_partial_qtree",
+      "minfill_bag_size": 7,
+      "minfill_direct_energy": -218.0,
+      "minfill_energy": -218.0,
+      "minfill_width": 6,
+      "no_mutation": true,
+      "nodes": 120,
+      "oracle_energy": -218.0,
+      "oracle_operations": 17994,
+      "process_peak_rss_kib": 27648,
+      "replicate": 5,
+      "seed": 26598639,
+      "timing_ns": {
+        "graph_construction": 1249517,
+        "jt_certificate_cpu": 43478572,
+        "jt_certificate_wall": 43502966,
+        "jt_minfill_cpu": 50215404,
+        "jt_minfill_wall": 50249090,
+        "minfill_order": 29071085,
+        "oracle": 13185356,
+        "runtime_extraction": 3964339
+      },
+      "traced_peak_bytes": {
+        "jt_certificate": 289608,
+        "jt_minfill": 292560
+      },
+      "width": 6
+    },
+    {
+      "certificate_bag_size": 7,
+      "certificate_direct_energy": -221.5,
+      "certificate_energy": -221.5,
+      "certificate_width": 6,
+      "decomposition_profiles": {
+        "certificate": {
+          "bag_assignments": 2690,
+          "bag_size_histogram": {
+            "1": 1,
+            "2": 98,
+            "3": 1,
+            "4": 1,
+            "5": 1,
+            "6": 1,
+            "7": 17
+          },
+          "child_count_histogram": {
+            "0": 114,
+            "1": 4,
+            "17": 1,
+            "98": 1
+          },
+          "estimated_inner_loop_iterations": 4034,
+          "estimated_local_energy_term_visits": 16650,
+          "max_bag_size": 7,
+          "message_entries": 1345,
+          "separator_size_histogram": {
+            "0": 1,
+            "1": 98,
+            "2": 1,
+            "3": 1,
+            "4": 1,
+            "5": 1,
+            "6": 17
+          }
+        },
+        "minfill": {
+          "bag_assignments": 2690,
+          "bag_size_histogram": {
+            "1": 1,
+            "2": 98,
+            "3": 1,
+            "4": 1,
+            "5": 1,
+            "6": 1,
+            "7": 17
+          },
+          "child_count_histogram": {
+            "0": 113,
+            "1": 6,
+            "113": 1
+          },
+          "estimated_inner_loop_iterations": 17280,
+          "estimated_local_energy_term_visits": 16650,
+          "max_bag_size": 7,
+          "message_entries": 1345,
+          "separator_size_histogram": {
+            "0": 1,
+            "1": 98,
+            "2": 1,
+            "3": 1,
+            "4": 1,
+            "5": 1,
+            "6": 17
+          }
+        }
+      },
+      "degree_gini": 0.6550233644859813,
+      "degree_max": 119,
+      "degree_median": 1,
+      "degree_min": 1,
+      "degree_p90": 6,
+      "edges": 214,
+      "expected_edges": 214,
+      "extraction_exact": true,
+      "family": "hub_partial_qtree",
+      "minfill_bag_size": 7,
+      "minfill_direct_energy": -221.5,
+      "minfill_energy": -221.5,
+      "minfill_width": 6,
+      "no_mutation": true,
+      "nodes": 120,
+      "oracle_energy": -221.5,
+      "oracle_operations": 17994,
+      "process_peak_rss_kib": 27648,
+      "replicate": 5,
+      "seed": 26608646,
+      "timing_ns": {
+        "graph_construction": 1230146,
+        "jt_certificate_cpu": 45294442,
+        "jt_certificate_wall": 45302596,
+        "jt_minfill_cpu": 119603782,
+        "jt_minfill_wall": 119622985,
+        "minfill_order": 28327911,
+        "oracle": 14179360,
+        "runtime_extraction": 4143230
+      },
+      "traced_peak_bytes": {
+        "jt_certificate": 289608,
+        "jt_minfill": 293568
+      },
+      "width": 6
+    }
+  ],
+  "schema_version": 1,
+  "status": "complete"
+}

@@ -1,0 +1,3 @@
+# Vision settling single-sweep scale v1.4 harness-lock amendment
+
+V1.3's capture passes all driver source-stability checks, but its analyzer independently constructs the dynamic module closure after importing the runner differently from a fresh worker. That added the runner path in one context, while the separate runner SHA already covers it. V1.4 excludes the exact runner and analyzer paths from the dynamic module closure; both continue to be explicit, mandatory lock fields. All other loaded project modules and transitive seed manifests remain hashed. No semantic, tracing, operation-count, timing, or workload gate changes.

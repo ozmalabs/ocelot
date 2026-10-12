@@ -1,0 +1,107 @@
+{
+  "analyses": {
+    "mbpp_full_r3_vs_no_retrieval": {
+      "exact_mcnemar": {
+        "discordant_n": 7,
+        "two_sided_p": 0.453125
+      },
+      "input": "evaluation/reports/substrate_mbpp_arc3_current_recheck_20260925.json",
+      "input_sha256": "e672c3ee113387881b73cdf0790d3bc838023868880f054222eb42a874d14ff4",
+      "interpretation_limit": "Fixed-set paired reanalysis. The exact McNemar value summarizes discordance under task-level exchangeability; it is not evidence of generalization to natural task populations, and no task-family cluster adjustment is applied.",
+      "left_arm": "full_r3",
+      "left_only_task_ids": [
+        "138",
+        "142",
+        "20",
+        "281",
+        "406"
+      ],
+      "paired_cells": {
+        "both_pass": 83,
+        "left_only_pass": 5,
+        "neither_pass": 167,
+        "right_only_pass": 2
+      },
+      "paired_delta_left_minus_right": 0.011673151750972763,
+      "paired_delta_percentage_points": 1.1673151750972763,
+      "right_arm": "no_retrieval",
+      "right_only_task_ids": [
+        "242",
+        "424"
+      ],
+      "strata": {
+        "not_recorded": {
+          "both_pass": 83,
+          "left_only_pass": 5,
+          "neither_pass": 167,
+          "right_only_pass": 2
+        }
+      }
+    },
+    "p6_main_vs_frozen": {
+      "exact_mcnemar": {
+        "discordant_n": 1,
+        "two_sided_p": 1.0
+      },
+      "input": "evaluation/reports/substrate_p6_current_recheck_20260925.json",
+      "input_sha256": "7efb5bae9f8d04fd1acf33093fee7cf4acdf8d70784188c1efacbb6af265e3ec",
+      "interpretation_limit": "Fixed-set paired reanalysis. The exact McNemar value summarizes discordance under task-level exchangeability; it is not evidence of generalization to natural task populations, and no task-family cluster adjustment is applied.",
+      "left_arm": "main",
+      "left_only_task_ids": [
+        "la_17_fact_of"
+      ],
+      "paired_cells": {
+        "both_pass": 82,
+        "left_only_pass": 1,
+        "neither_pass": 42,
+        "right_only_pass": 0
+      },
+      "paired_delta_left_minus_right": 0.008,
+      "paired_delta_percentage_points": 0.8,
+      "right_arm": "frozen",
+      "right_only_task_ids": [],
+      "strata": {
+        "branching": {
+          "both_pass": 16,
+          "left_only_pass": 0,
+          "neither_pass": 9,
+          "right_only_pass": 0
+        },
+        "error_handling": {
+          "both_pass": 2,
+          "left_only_pass": 0,
+          "neither_pass": 3,
+          "right_only_pass": 0
+        },
+        "expression": {
+          "both_pass": 23,
+          "left_only_pass": 0,
+          "neither_pass": 7,
+          "right_only_pass": 0
+        },
+        "loop_accumulation": {
+          "both_pass": 17,
+          "left_only_pass": 1,
+          "neither_pass": 12,
+          "right_only_pass": 0
+        },
+        "multi_statement": {
+          "both_pass": 7,
+          "left_only_pass": 0,
+          "neither_pass": 3,
+          "right_only_pass": 0
+        },
+        "single_statement": {
+          "both_pass": 17,
+          "left_only_pass": 0,
+          "neither_pass": 8,
+          "right_only_pass": 0
+        }
+      }
+    }
+  },
+  "created_on": "2026-09-30",
+  "method": "Task-ID alignment, binary strict held-out pass, discordance table, exact two-sided McNemar/binomial test.",
+  "not_a_population_claim": true,
+  "title": "Paired battery current-recheck reanalysis"
+}

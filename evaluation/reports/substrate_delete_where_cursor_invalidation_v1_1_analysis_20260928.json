@@ -1,0 +1,90 @@
+{
+  "all_checks_pass": true,
+  "analysis_id": "substrate-delete-where-cursor-invalidation-v1-independent-analysis",
+  "cells": [
+    {
+      "arms": {
+        "incremental": {
+          "median_candidate_pairs": 8,
+          "median_post_delete_wall_ns": 16061,
+          "median_rule_enumerations": 1,
+          "open_count": 8
+        },
+        "off": {
+          "median_candidate_pairs": 8,
+          "median_post_delete_wall_ns": 30600,
+          "median_rule_enumerations": 1,
+          "open_count": 8
+        },
+        "unsound": {
+          "median_candidate_pairs": 8,
+          "median_post_delete_wall_ns": 13770,
+          "median_rule_enumerations": 1,
+          "open_count": 8
+        }
+      },
+      "n": 8,
+      "replicates": 3
+    },
+    {
+      "arms": {
+        "incremental": {
+          "median_candidate_pairs": 32,
+          "median_post_delete_wall_ns": 28210,
+          "median_rule_enumerations": 1,
+          "open_count": 32
+        },
+        "off": {
+          "median_candidate_pairs": 32,
+          "median_post_delete_wall_ns": 42301,
+          "median_rule_enumerations": 1,
+          "open_count": 32
+        },
+        "unsound": {
+          "median_candidate_pairs": 32,
+          "median_post_delete_wall_ns": 25660,
+          "median_rule_enumerations": 1,
+          "open_count": 32
+        }
+      },
+      "n": 32,
+      "replicates": 3
+    },
+    {
+      "arms": {
+        "incremental": {
+          "median_candidate_pairs": 128,
+          "median_post_delete_wall_ns": 74620,
+          "median_rule_enumerations": 1,
+          "open_count": 128
+        },
+        "off": {
+          "median_candidate_pairs": 128,
+          "median_post_delete_wall_ns": 86451,
+          "median_rule_enumerations": 1,
+          "open_count": 128
+        },
+        "unsound": {
+          "median_candidate_pairs": 128,
+          "median_post_delete_wall_ns": 69050,
+          "median_rule_enumerations": 1,
+          "open_count": 128
+        }
+      },
+      "n": 128,
+      "replicates": 3
+    }
+  ],
+  "checks": {
+    "all_modes_match_independent_full_rescan": true,
+    "all_slots_reenabled": true,
+    "incremental_reader_candidate_work": true,
+    "manifest_success": true,
+    "runner_gates_pass": true,
+    "three_unique_processes": true
+  },
+  "checks_passed": 6,
+  "checks_total": 6,
+  "claim_boundary": "One where-only edge reader after public blocker-node deletion; all modes are refreshed by the generic where-rule cursor invalidation fallback, so this does not isolate type-local cursor clearing.",
+  "raw_sha256": "28d1cb08b2416a74930ec5121d3b94864d68a7d71d4508a883c66f4b8686a166"
+}

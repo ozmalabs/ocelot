@@ -1,0 +1,104 @@
+{
+  "all_checks_pass": true,
+  "analysis_id": "substrate-interacting-tree-construction-cost-v1-posthoc",
+  "base_analysis_sha256": "14f5526e4e184d4310b797c1a056b039707578bd0e5223eae5861dc47bd2c12d",
+  "cells": [
+    {
+      "edge_count": 19998,
+      "median_closure_wall_ns": 42185216,
+      "median_edge_build_wall_ns": 14467420,
+      "median_node_build_wall_ns": 24203686,
+      "median_peak_rss_bytes": 42819584,
+      "median_validation_wall_ns": 590863,
+      "n": 10000,
+      "replicates": 3,
+      "topology": "balanced"
+    },
+    {
+      "edge_count": 19998,
+      "median_closure_wall_ns": 12180988,
+      "median_edge_build_wall_ns": 37429290,
+      "median_node_build_wall_ns": 23248400,
+      "median_peak_rss_bytes": 40923136,
+      "median_validation_wall_ns": 569404,
+      "n": 10000,
+      "replicates": 3,
+      "topology": "star"
+    },
+    {
+      "edge_count": 199998,
+      "median_closure_wall_ns": 489504677,
+      "median_edge_build_wall_ns": 151808617,
+      "median_node_build_wall_ns": 228700393,
+      "median_peak_rss_bytes": 96219136,
+      "median_validation_wall_ns": 5778542,
+      "n": 100000,
+      "replicates": 3,
+      "topology": "balanced"
+    },
+    {
+      "edge_count": 199998,
+      "median_closure_wall_ns": 132714837,
+      "median_edge_build_wall_ns": 2798919356,
+      "median_node_build_wall_ns": 223283554,
+      "median_peak_rss_bytes": 94433280,
+      "median_validation_wall_ns": 6201856,
+      "n": 100000,
+      "replicates": 3,
+      "topology": "star"
+    },
+    {
+      "edge_count": 1999998,
+      "median_closure_wall_ns": 6112311765,
+      "median_edge_build_wall_ns": 1673663418,
+      "median_node_build_wall_ns": 2322635718,
+      "median_peak_rss_bytes": 642437120,
+      "median_validation_wall_ns": 61152829,
+      "n": 1000000,
+      "replicates": 3,
+      "topology": "balanced"
+    },
+    {
+      "edge_count": 1999998,
+      "median_closure_wall_ns": 1676681537,
+      "median_edge_build_wall_ns": 456859925808,
+      "median_node_build_wall_ns": 2296865820,
+      "median_peak_rss_bytes": 832704512,
+      "median_validation_wall_ns": 61191897,
+      "n": 1000000,
+      "replicates": 3,
+      "topology": "star"
+    }
+  ],
+  "checks": {
+    "all_measured_phases_positive": true,
+    "original_independent_analysis_passed": true,
+    "raw_lock_records_original_graph_source_hash": true,
+    "raw_matches_original_lock": true,
+    "raw_passed_original_runner_gates": true,
+    "star_edge_build_dominates_closure_at_1m": true,
+    "star_edge_build_grows_superlinearly_in_measured_decade": true,
+    "three_uninstrumented_replicates_1000000_balanced": true,
+    "three_uninstrumented_replicates_1000000_star": true,
+    "three_uninstrumented_replicates_100000_balanced": true,
+    "three_uninstrumented_replicates_100000_star": true,
+    "three_uninstrumented_replicates_10000_balanced": true,
+    "three_uninstrumented_replicates_10000_star": true
+  },
+  "claim_boundary": "Post-hoc decomposition of phase timings already captured in the source-locked v1 run. The star edge-build curve is consistent with the original source's linear scan of a source/type adjacency bucket during duplicate detection; the raw lock preserves that source hash, and the current source has since changed. Timing alone did not prove the mechanism; the later indexed replay is the causal intervention. This is not a 10M result; the separate uninstrumented 10M star pilot was interrupted before it emitted a row and is excluded.",
+  "derived_ratios": {
+    "balanced_edge_build_growth_100k_to_1m": 11.024824881976231,
+    "balanced_edge_build_to_closure_at_1m": 0.273818398397746,
+    "star_edge_build_growth_100k_to_1m": 163.2272558438086,
+    "star_edge_build_to_closure_at_1m": 272.478652461001
+  },
+  "graph_source_locked_sha256": "f1bff152147f6ba79d3f2f25a8bd9ee8fb4132d787775e9031c52f0c24d99a36",
+  "graph_source_matches_original_lock_now": false,
+  "graph_source_path": "runners/dsl/src/graph.rs",
+  "graph_source_sha256": "2e161fb2e9ef01163cfb213e1fbab16934dc0b25acaf80ce8e3297dcad806abf",
+  "lock_path": "evaluation/substrate_capability/interacting_tree_closure_scale_v1_lock_20260928.json",
+  "lock_sha256": "f351fb7ca1af688c048e9e5e7ec005343a69f3be7f0264577a76c771b5779a11",
+  "raw_path": "evaluation/reports/substrate_interacting_tree_closure_scale_v1_20260928.json",
+  "raw_sha256": "5c6e607c95eb7adcdc1502ee826c896d23781796db3ae6bb0412c451b0d18148",
+  "schema_version": 1
+}

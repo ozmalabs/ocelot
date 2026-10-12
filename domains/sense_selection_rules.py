@@ -268,7 +268,7 @@ def install_sense_selection_rules(substrate) -> list:
 
 
 # RolePrior expected-category sets are GRAPH DATA — the single source of
-# truth is seeds/conceptual_categories.json (each RolePrior carries
+# truth is domain_data/conceptual_categories.json (each RolePrior carries
 # `expected_categories`). The scratch substrate the boundary ticks on loads
 # those RolePrior nodes from the seed so the rule reads the same graph data
 # the world substrate's typing rules read. No Python copy of the sets.
@@ -281,7 +281,7 @@ def _load_role_priors_from_seed(substrate) -> int:
     import json
     from pathlib import Path
     seed_path = (Path(__file__).resolve().parent.parent
-                 / "seeds" / "conceptual_categories.json")
+                 / "domain_data" / "conceptual_categories.json")
     existing = {substrate.node(r)["attrs"].get("slot")
                 for r in substrate.nodes("RolePrior")}
     loaded = 0

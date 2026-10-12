@@ -1,0 +1,186 @@
+{
+  "captured_utc": "2026-10-02T11:25:35Z",
+  "checks": {
+    "connected_expected_graphs": true,
+    "exact_energy": true,
+    "exact_extraction": true,
+    "failure_free": false,
+    "fresh_pids": true,
+    "no_mutation": true,
+    "paired_conditions": true,
+    "pre_post_lock": true,
+    "ten_inputs_each": true,
+    "three_replicates": false,
+    "valid_predictions": true,
+    "width_certificates": true,
+    "worker_source_locks": true
+  },
+  "claim_boundary": "one learned Qwen3-0.6B L12-to-L13 transport, eight selected source modes, eight targets, ten heldout transitions; no broad language or natural frame-prevalence claim",
+  "configuration": {
+    "heldout_rows_per_worker": 10,
+    "modes_per_layer": 8,
+    "replicates": 3,
+    "ridge": 1.0,
+    "vocabulary": [
+      -1.0,
+      0.0,
+      1.0
+    ]
+  },
+  "failures": [
+    {
+      "error": "RuntimeError: Traceback (most recent call last):\n  File \"/home/matt/ozmadev/ocelot/evaluation/substrate_capability/llm_transport_task_graph_exact_census_v1.py\", line 140, in <module>\n    if __name__=='__main__':raise SystemExit(main())\n                                             ~~~~^^\n  File \"/home/matt/ozmadev/ocelot/evaluation/substrate_capability/llm_transport_task_graph_exact_census_v1.py\", line 110, in main\n    print(json.dumps(worker(int(args[1])),sort_keys=True,separators=(',',':')));return 0\n                     ~~~~~~^^^^^^^^^^^^^^\n  File \"/home/matt/ozmadev/ocelot/evaluation/substrate_capability/llm_transport_task_graph_exact_census_v1.py\", line 87, in worker\n    state_before={nid(v):float(sub.node(v)['attrs'].get('state',0.0)) for v in ids0+ids1}\n                               ~~~~~~~~^^^\n  File \"/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/__init__.py\", line 878, in node\n    return self._inner.node(nid)\n           ~~~~~~~~~~~~~~~~^^^^^\nTypeError: argument 'nid': 'int' object cannot be converted to 'NodeID'\n",
+      "replicate": 0
+    },
+    {
+      "error": "RuntimeError: Traceback (most recent call last):\n  File \"/home/matt/ozmadev/ocelot/evaluation/substrate_capability/llm_transport_task_graph_exact_census_v1.py\", line 140, in <module>\n    if __name__=='__main__':raise SystemExit(main())\n                                             ~~~~^^\n  File \"/home/matt/ozmadev/ocelot/evaluation/substrate_capability/llm_transport_task_graph_exact_census_v1.py\", line 110, in main\n    print(json.dumps(worker(int(args[1])),sort_keys=True,separators=(',',':')));return 0\n                     ~~~~~~^^^^^^^^^^^^^^\n  File \"/home/matt/ozmadev/ocelot/evaluation/substrate_capability/llm_transport_task_graph_exact_census_v1.py\", line 87, in worker\n    state_before={nid(v):float(sub.node(v)['attrs'].get('state',0.0)) for v in ids0+ids1}\n                               ~~~~~~~~^^^\n  File \"/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/__init__.py\", line 878, in node\n    return self._inner.node(nid)\n           ~~~~~~~~~~~~~~~~^^^^^\nTypeError: argument 'nid': 'int' object cannot be converted to 'NodeID'\n",
+      "replicate": 1
+    },
+    {
+      "error": "RuntimeError: Traceback (most recent call last):\n  File \"/home/matt/ozmadev/ocelot/evaluation/substrate_capability/llm_transport_task_graph_exact_census_v1.py\", line 140, in <module>\n    if __name__=='__main__':raise SystemExit(main())\n                                             ~~~~^^\n  File \"/home/matt/ozmadev/ocelot/evaluation/substrate_capability/llm_transport_task_graph_exact_census_v1.py\", line 110, in main\n    print(json.dumps(worker(int(args[1])),sort_keys=True,separators=(',',':')));return 0\n                     ~~~~~~^^^^^^^^^^^^^^\n  File \"/home/matt/ozmadev/ocelot/evaluation/substrate_capability/llm_transport_task_graph_exact_census_v1.py\", line 87, in worker\n    state_before={nid(v):float(sub.node(v)['attrs'].get('state',0.0)) for v in ids0+ids1}\n                               ~~~~~~~~^^^\n  File \"/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/__init__.py\", line 878, in node\n    return self._inner.node(nid)\n           ~~~~~~~~~~~~~~~~^^^^^\nTypeError: argument 'nid': 'int' object cannot be converted to 'NodeID'\n",
+      "replicate": 2
+    }
+  ],
+  "host": "Linux-6.8.0-142-generic-x86_64-with-glibc2.39",
+  "lock_sha256": "689f8d4751a1989be132527ed9d114afcd0263b40f7964ac362650e360e4e84b",
+  "post_run_sources": {
+    "analyzer": {
+      "bytes": 4821,
+      "path": "/home/matt/ozmadev/ocelot/evaluation/substrate_capability/analyze_llm_transport_task_graph_exact_census_v1.py",
+      "sha256": "e090228bd60c4dd18f201d6a9a0b8a62418421d6510c19b8a39829511904b70d"
+    },
+    "export": {
+      "bytes": 1093784,
+      "path": "/applications/data/model_graph_work/transport_L12_13.npz",
+      "sha256": "d04f14de800bff4a5015a8063b678c2167188ec90c0749308b6af8a5a864161c"
+    },
+    "mode_count": 8,
+    "native_binary": {
+      "bytes": 10599400,
+      "path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+      "sha256": "7148f66f4cd307b7b34e03970b6a0c12177973105af8e1f3c6684e2e6132a63e"
+    },
+    "native_build_manifest": {
+      "bytes": 12669,
+      "path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.build.json",
+      "sha256": "476fdf4408323867341f127b3947f5a528743ebb86ab2a7973442993447f0e82"
+    },
+    "protocol": {
+      "bytes": 3237,
+      "path": "/home/matt/ozmadev/ocelot/docs/research/engine_substrate/LLM_TRANSPORT_TASK_GRAPH_EXACT_CENSUS_V1_PREREG_20261002.md",
+      "sha256": "520290e90d283824b2413420eb5edbc6fadebfd35a0ba6a41f4eb5ed50565f4e"
+    },
+    "replicates": 3,
+    "ridge": 1.0,
+    "runner": {
+      "bytes": 11951,
+      "path": "/home/matt/ozmadev/ocelot/evaluation/substrate_capability/llm_transport_task_graph_exact_census_v1.py",
+      "sha256": "61120e7ea0bb5a68cc174ffb31025df8a798b1c36c9a54edadad408195c6c85d"
+    },
+    "seed": {
+      "bytes": 43983,
+      "path": "/home/matt/ozmadev/ocelot/seeds/can_native_reimplementation.json",
+      "sha256": "3b185987ae810d5e05ab2468b044ab73d8890c8e73ac86dfcaf35b734b9c61d8"
+    },
+    "shuffle_seed": 0,
+    "sources": [
+      {
+        "bytes": 29504,
+        "path": "/home/matt/ozmadev/ocelot/domains/llm_native_graph.py",
+        "sha256": "3091594306fbfcc7aa93588b2b085ab72376fbb59817cc6c952dba20a05a1809"
+      },
+      {
+        "bytes": 14856,
+        "path": "/home/matt/ozmadev/ocelot/domains/can_junction_tree.py",
+        "sha256": "e8d4aa30bfdaced52cda2739f885a56ed50a040b8419cb558b132e5e46206ba7"
+      },
+      {
+        "bytes": 9424,
+        "path": "/home/matt/ozmadev/ocelot/domains/graph_treewidth.py",
+        "sha256": "e945bea9f54b76098edb3b3dcb784ac5a0ce630de43cd63a9fb5b0f416d543e5"
+      },
+      {
+        "bytes": 23330,
+        "path": "/home/matt/ozmadev/ocelot/domains/can_native_bp.py",
+        "sha256": "67d1cec2f6147d33d66fc7e07584571852d2325e14306ea61e93591bbb90f20b"
+      }
+    ],
+    "tolerance": 1e-08,
+    "vocabulary": [
+      -1.0,
+      0.0,
+      1.0
+    ]
+  },
+  "runs": [],
+  "schema": "LlmTransportTaskGraphExactCensusV1Results",
+  "sources": {
+    "analyzer": {
+      "bytes": 4821,
+      "path": "/home/matt/ozmadev/ocelot/evaluation/substrate_capability/analyze_llm_transport_task_graph_exact_census_v1.py",
+      "sha256": "e090228bd60c4dd18f201d6a9a0b8a62418421d6510c19b8a39829511904b70d"
+    },
+    "export": {
+      "bytes": 1093784,
+      "path": "/applications/data/model_graph_work/transport_L12_13.npz",
+      "sha256": "d04f14de800bff4a5015a8063b678c2167188ec90c0749308b6af8a5a864161c"
+    },
+    "mode_count": 8,
+    "native_binary": {
+      "bytes": 10599400,
+      "path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+      "sha256": "7148f66f4cd307b7b34e03970b6a0c12177973105af8e1f3c6684e2e6132a63e"
+    },
+    "native_build_manifest": {
+      "bytes": 12669,
+      "path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.build.json",
+      "sha256": "476fdf4408323867341f127b3947f5a528743ebb86ab2a7973442993447f0e82"
+    },
+    "protocol": {
+      "bytes": 3237,
+      "path": "/home/matt/ozmadev/ocelot/docs/research/engine_substrate/LLM_TRANSPORT_TASK_GRAPH_EXACT_CENSUS_V1_PREREG_20261002.md",
+      "sha256": "520290e90d283824b2413420eb5edbc6fadebfd35a0ba6a41f4eb5ed50565f4e"
+    },
+    "replicates": 3,
+    "ridge": 1.0,
+    "runner": {
+      "bytes": 11951,
+      "path": "/home/matt/ozmadev/ocelot/evaluation/substrate_capability/llm_transport_task_graph_exact_census_v1.py",
+      "sha256": "61120e7ea0bb5a68cc174ffb31025df8a798b1c36c9a54edadad408195c6c85d"
+    },
+    "seed": {
+      "bytes": 43983,
+      "path": "/home/matt/ozmadev/ocelot/seeds/can_native_reimplementation.json",
+      "sha256": "3b185987ae810d5e05ab2468b044ab73d8890c8e73ac86dfcaf35b734b9c61d8"
+    },
+    "shuffle_seed": 0,
+    "sources": [
+      {
+        "bytes": 29504,
+        "path": "/home/matt/ozmadev/ocelot/domains/llm_native_graph.py",
+        "sha256": "3091594306fbfcc7aa93588b2b085ab72376fbb59817cc6c952dba20a05a1809"
+      },
+      {
+        "bytes": 14856,
+        "path": "/home/matt/ozmadev/ocelot/domains/can_junction_tree.py",
+        "sha256": "e8d4aa30bfdaced52cda2739f885a56ed50a040b8419cb558b132e5e46206ba7"
+      },
+      {
+        "bytes": 9424,
+        "path": "/home/matt/ozmadev/ocelot/domains/graph_treewidth.py",
+        "sha256": "e945bea9f54b76098edb3b3dcb784ac5a0ce630de43cd63a9fb5b0f416d543e5"
+      },
+      {
+        "bytes": 23330,
+        "path": "/home/matt/ozmadev/ocelot/domains/can_native_bp.py",
+        "sha256": "67d1cec2f6147d33d66fc7e07584571852d2325e14306ea61e93591bbb90f20b"
+      }
+    ],
+    "tolerance": 1e-08,
+    "vocabulary": [
+      -1.0,
+      0.0,
+      1.0
+    ]
+  }
+}

@@ -4,7 +4,7 @@ Block 330 calibration earned the KNOWLEDGE tier (is-a held-out transitive
 entailment 1.00, 0 self-loops) and did NOT earn concept (AUC 0.59 ≈ control) or
 process (control failed). So this harvest reaps KNOWLEDGE ONLY — the honest,
 calibration-earned tier — at a broader scale, and writes it as a native CAN seed
-fragment (`seeds/generated/qwen3_reaped_knowledge.json`) with every edge tagged
+fragment (`domain_data/llm_harvest/qwen3_reaped_knowledge.json`) with every edge tagged
 `source: qwen3` and the knowledge-tier trust weight.
 
 Elicitation is a constrained next-token read (`elicit_isa`) through the HF-forward
@@ -28,7 +28,7 @@ from domains import llm_hf_forward as hf
 from domains import llm_knowledge_seed as ks
 
 MODEL = "/applications/data/model_graph_work/Qwen3.8-4B-Distill"
-OUT = "seeds/generated/qwen3_reaped_knowledge.json"
+OUT = "domain_data/llm_harvest/qwen3_reaped_knowledge.json"
 SOURCE = "qwen3"
 KNOWLEDGE_TRUST = 0.5      # the qwen3 source band (block 331); knowledge is the
 #                           earned tier, so its edges ride at the source band.

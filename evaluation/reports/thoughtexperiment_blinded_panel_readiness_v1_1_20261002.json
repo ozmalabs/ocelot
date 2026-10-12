@@ -1,0 +1,116 @@
+{
+  "checks": {
+    "common_candidate_level_cost_capture": false,
+    "four_families_with_three_candidates_and_mixed_utility": true,
+    "four_fixture_artifacts_present": true,
+    "four_fresh_workers_per_family": false,
+    "heldout_orders_and_scores_absent_before_capture": true,
+    "source_stability_recorded_for_all_families": true,
+    "v1_protocol_and_amendment_present": true
+  },
+  "families": {
+    "control_kind": {
+      "candidate_labels": [
+        "add_match_guard(control)",
+        "flip_comparison",
+        "swap_term_leaf:family->name_lc",
+        "swap_term_leaf:family->spec",
+        "swap_term_leaf:family->word",
+        "swap_term_leaf:name_lc->family"
+      ],
+      "candidate_level_cost_fields_present": false,
+      "distinct_candidates": 6,
+      "has_successful_candidate": true,
+      "has_unsuccessful_candidate": true,
+      "raw": "evaluation/reports/thoughtexperiment_control_kind_classification_repair_v1_raw_20261002.json",
+      "sha256": "c17fa63d37de12a71a88f42266629c7826b3833183272fd0030c7bac946613ca",
+      "source_stability_recorded": true,
+      "unscored_candidates": [],
+      "utility_measured_candidates": 6,
+      "utility_measured_for_every_candidate": true,
+      "utility_measurement_coverage": "6/6",
+      "workers": 3
+    },
+    "navigation": {
+      "candidate_labels": [
+        "add_match_guard(control)",
+        "flip_comparison",
+        "swap_term_leaf:_adist->_dist",
+        "swap_term_leaf:_adist->_epoch",
+        "swap_term_leaf:_adist->col",
+        "swap_term_leaf:_adist->flood_epoch"
+      ],
+      "candidate_level_cost_fields_present": false,
+      "distinct_candidates": 6,
+      "has_successful_candidate": true,
+      "has_unsuccessful_candidate": true,
+      "raw": "evaluation/reports/thoughtexperiment_navigation_outcome_rank_integration_v1_raw_20261002.json",
+      "sha256": "9c21809feefbd51c3d62ac722e8f42166457838a79ec9ae7ab47ad2ac7880ba6",
+      "source_stability_recorded": true,
+      "unscored_candidates": [],
+      "utility_measured_candidates": 6,
+      "utility_measured_for_every_candidate": true,
+      "utility_measurement_coverage": "6/6",
+      "workers": 3
+    },
+    "recurrence": {
+      "candidate_labels": [
+        "add_match_guard(control)",
+        "dedup_identity_fix",
+        "drop_match_edge",
+        "episode_scoped_offer_guard",
+        "swap_term_leaf:capability_key->latest_segment_ordinal",
+        "swap_term_leaf:capability_key->persistence",
+        "swap_term_leaf:capability_key->structural_signature",
+        "swap_term_leaf:latest_segment_ordinal->capability_key"
+      ],
+      "candidate_level_cost_fields_present": false,
+      "distinct_candidates": 8,
+      "has_successful_candidate": true,
+      "has_unsuccessful_candidate": true,
+      "raw": "evaluation/reports/thoughtexperiment_recurrence_candidate_admission_v1_raw_20261002.json",
+      "sha256": "e775ef17e3e58e84b4b2e32688f0b5e5d100b3ad5fb63391e53bbbc6f682a28f",
+      "source_stability_recorded": true,
+      "unscored_candidates": [],
+      "utility_measured_candidates": 8,
+      "utility_measured_for_every_candidate": true,
+      "utility_measurement_coverage": "8/8",
+      "workers": 3
+    },
+    "shape_axis": {
+      "candidate_labels": [
+        "add_match_guard(control)",
+        "dedup_identity_fix",
+        "swap_term_leaf:key->signature",
+        "swap_term_leaf:signature->key",
+        "swap_term_leaf:signature->name",
+        "swap_term_leaf:signature->residual"
+      ],
+      "candidate_level_cost_fields_present": false,
+      "distinct_candidates": 6,
+      "has_successful_candidate": true,
+      "has_unsuccessful_candidate": true,
+      "raw": "evaluation/reports/thoughtexperiment_shape_axis_full_candidate_admission_v1_raw_20261002.json",
+      "sha256": "68524366910cdff23e5069a27d6bcfd790692784908ab7e94f7d38c3c2cde5a3",
+      "source_stability_recorded": true,
+      "unscored_candidates": [],
+      "utility_measured_candidates": 6,
+      "utility_measured_for_every_candidate": true,
+      "utility_measurement_coverage": "6/6",
+      "workers": 4
+    }
+  },
+  "next_gate": "build a source-locked common runner, scorer, and analyzer; then capture only after all readiness gates pass",
+  "panel_capture_ready": false,
+  "passed": 5,
+  "required_cost_fields": [
+    "enumeration_ns",
+    "ranking_ns",
+    "branch_ns",
+    "scoring_ns",
+    "adoption_verification_ns"
+  ],
+  "schema": "ThoughtexperimentBlindedPanelReadinessV1_1",
+  "scope": "read-only admission audit; does not execute or authorize the confirmatory panel",
+  "total": 7
+}

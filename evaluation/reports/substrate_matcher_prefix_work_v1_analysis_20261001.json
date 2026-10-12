@@ -1,0 +1,1319 @@
+{
+  "all_checks_pass": true,
+  "analyzer_sha256": "cc33da8a6352fde823bff52e1045eff458c6f0dc364371622034d1ce97cc35cf",
+  "checks": {
+    "108_fresh_workers": true,
+    "below_match_step_cap": true,
+    "clause_sums_match_global_candidate_tests": true,
+    "complete_108_cells": true,
+    "installed_order_matches_independent_greedy_oracle": true,
+    "prefix_counters_match_independent_join_enumerator": true,
+    "read_only_fixed_point_and_graph_preservation": true,
+    "single_rule_and_per_rule_reconciliation": true,
+    "stable_source_lock": true
+  },
+  "checks_passed": 9,
+  "checks_total": 9,
+  "claim_boundary": "Exact native candidate-test prefix accounting for effect-free four-clause patterns over small synthetic causal graphs; validates counter semantics and shape/topology sensitivity only.",
+  "groups": [
+    {
+      "authored": {
+        "installed_order": [
+          [
+            "x0",
+            "causal_influence",
+            "x1"
+          ],
+          [
+            "x1",
+            "causal_influence",
+            "x2"
+          ],
+          [
+            "x2",
+            "causal_influence",
+            "x3"
+          ],
+          [
+            "x3",
+            "causal_influence",
+            "x4"
+          ]
+        ],
+        "median_candidate_tests": 54,
+        "median_clause_candidates": [
+          15,
+          14,
+          13,
+          12
+        ],
+        "median_wall_ms": 0.05128,
+        "replicates": 3
+      },
+      "graph": "path",
+      "n": 16,
+      "pattern": "path4",
+      "reversed": {
+        "installed_order": [
+          [
+            "x3",
+            "causal_influence",
+            "x4"
+          ],
+          [
+            "x2",
+            "causal_influence",
+            "x3"
+          ],
+          [
+            "x1",
+            "causal_influence",
+            "x2"
+          ],
+          [
+            "x0",
+            "causal_influence",
+            "x1"
+          ]
+        ],
+        "median_candidate_tests": 54,
+        "median_clause_candidates": [
+          15,
+          14,
+          13,
+          12
+        ],
+        "median_wall_ms": 0.05002,
+        "replicates": 3
+      },
+      "reversed_over_authored": 1.0
+    },
+    {
+      "authored": {
+        "installed_order": [
+          [
+            "x0",
+            "causal_influence",
+            "x1"
+          ],
+          [
+            "x1",
+            "causal_influence",
+            "x2"
+          ],
+          [
+            "x2",
+            "causal_influence",
+            "x3"
+          ],
+          [
+            "x3",
+            "causal_influence",
+            "x4"
+          ]
+        ],
+        "median_candidate_tests": 15,
+        "median_clause_candidates": [
+          15,
+          0,
+          0,
+          0
+        ],
+        "median_wall_ms": 0.03062,
+        "replicates": 3
+      },
+      "graph": "star",
+      "n": 16,
+      "pattern": "path4",
+      "reversed": {
+        "installed_order": [
+          [
+            "x3",
+            "causal_influence",
+            "x4"
+          ],
+          [
+            "x2",
+            "causal_influence",
+            "x3"
+          ],
+          [
+            "x1",
+            "causal_influence",
+            "x2"
+          ],
+          [
+            "x0",
+            "causal_influence",
+            "x1"
+          ]
+        ],
+        "median_candidate_tests": 15,
+        "median_clause_candidates": [
+          15,
+          0,
+          0,
+          0
+        ],
+        "median_wall_ms": 0.0312,
+        "replicates": 3
+      },
+      "reversed_over_authored": 1.0
+    },
+    {
+      "authored": {
+        "installed_order": [
+          [
+            "x0",
+            "causal_influence",
+            "x1"
+          ],
+          [
+            "x1",
+            "causal_influence",
+            "x2"
+          ],
+          [
+            "x2",
+            "causal_influence",
+            "x3"
+          ],
+          [
+            "x3",
+            "causal_influence",
+            "x4"
+          ]
+        ],
+        "median_candidate_tests": 64,
+        "median_clause_candidates": [
+          16,
+          16,
+          16,
+          16
+        ],
+        "median_wall_ms": 0.06259,
+        "replicates": 3
+      },
+      "graph": "ring",
+      "n": 16,
+      "pattern": "path4",
+      "reversed": {
+        "installed_order": [
+          [
+            "x3",
+            "causal_influence",
+            "x4"
+          ],
+          [
+            "x2",
+            "causal_influence",
+            "x3"
+          ],
+          [
+            "x1",
+            "causal_influence",
+            "x2"
+          ],
+          [
+            "x0",
+            "causal_influence",
+            "x1"
+          ]
+        ],
+        "median_candidate_tests": 64,
+        "median_clause_candidates": [
+          16,
+          16,
+          16,
+          16
+        ],
+        "median_wall_ms": 0.056061,
+        "replicates": 3
+      },
+      "reversed_over_authored": 1.0
+    },
+    {
+      "authored": {
+        "installed_order": [
+          [
+            "x0",
+            "causal_influence",
+            "x1"
+          ],
+          [
+            "x0",
+            "causal_influence",
+            "x4"
+          ],
+          [
+            "x0",
+            "causal_influence",
+            "x3"
+          ],
+          [
+            "x0",
+            "causal_influence",
+            "x2"
+          ]
+        ],
+        "median_candidate_tests": 60,
+        "median_clause_candidates": [
+          15,
+          15,
+          15,
+          15
+        ],
+        "median_wall_ms": 0.03708,
+        "replicates": 3
+      },
+      "graph": "path",
+      "n": 16,
+      "pattern": "star4",
+      "reversed": {
+        "installed_order": [
+          [
+            "x0",
+            "causal_influence",
+            "x4"
+          ],
+          [
+            "x0",
+            "causal_influence",
+            "x1"
+          ],
+          [
+            "x0",
+            "causal_influence",
+            "x2"
+          ],
+          [
+            "x0",
+            "causal_influence",
+            "x3"
+          ]
+        ],
+        "median_candidate_tests": 60,
+        "median_clause_candidates": [
+          15,
+          15,
+          15,
+          15
+        ],
+        "median_wall_ms": 0.0482,
+        "replicates": 3
+      },
+      "reversed_over_authored": 1.0
+    },
+    {
+      "authored": {
+        "installed_order": [
+          [
+            "x0",
+            "causal_influence",
+            "x1"
+          ],
+          [
+            "x0",
+            "causal_influence",
+            "x4"
+          ],
+          [
+            "x0",
+            "causal_influence",
+            "x3"
+          ],
+          [
+            "x0",
+            "causal_influence",
+            "x2"
+          ]
+        ],
+        "median_candidate_tests": 54240,
+        "median_clause_candidates": [
+          15,
+          225,
+          3375,
+          50625
+        ],
+        "median_wall_ms": 17.040712,
+        "replicates": 3
+      },
+      "graph": "star",
+      "n": 16,
+      "pattern": "star4",
+      "reversed": {
+        "installed_order": [
+          [
+            "x0",
+            "causal_influence",
+            "x4"
+          ],
+          [
+            "x0",
+            "causal_influence",
+            "x1"
+          ],
+          [
+            "x0",
+            "causal_influence",
+            "x2"
+          ],
+          [
+            "x0",
+            "causal_influence",
+            "x3"
+          ]
+        ],
+        "median_candidate_tests": 54240,
+        "median_clause_candidates": [
+          15,
+          225,
+          3375,
+          50625
+        ],
+        "median_wall_ms": 16.613138,
+        "replicates": 3
+      },
+      "reversed_over_authored": 1.0
+    },
+    {
+      "authored": {
+        "installed_order": [
+          [
+            "x0",
+            "causal_influence",
+            "x1"
+          ],
+          [
+            "x0",
+            "causal_influence",
+            "x4"
+          ],
+          [
+            "x0",
+            "causal_influence",
+            "x3"
+          ],
+          [
+            "x0",
+            "causal_influence",
+            "x2"
+          ]
+        ],
+        "median_candidate_tests": 64,
+        "median_clause_candidates": [
+          16,
+          16,
+          16,
+          16
+        ],
+        "median_wall_ms": 0.042601,
+        "replicates": 3
+      },
+      "graph": "ring",
+      "n": 16,
+      "pattern": "star4",
+      "reversed": {
+        "installed_order": [
+          [
+            "x0",
+            "causal_influence",
+            "x4"
+          ],
+          [
+            "x0",
+            "causal_influence",
+            "x1"
+          ],
+          [
+            "x0",
+            "causal_influence",
+            "x2"
+          ],
+          [
+            "x0",
+            "causal_influence",
+            "x3"
+          ]
+        ],
+        "median_candidate_tests": 64,
+        "median_clause_candidates": [
+          16,
+          16,
+          16,
+          16
+        ],
+        "median_wall_ms": 0.036761,
+        "replicates": 3
+      },
+      "reversed_over_authored": 1.0
+    },
+    {
+      "authored": {
+        "installed_order": [
+          [
+            "x0",
+            "causal_influence",
+            "x1"
+          ],
+          [
+            "x3",
+            "causal_influence",
+            "x0"
+          ],
+          [
+            "x2",
+            "causal_influence",
+            "x3"
+          ],
+          [
+            "x1",
+            "causal_influence",
+            "x2"
+          ]
+        ],
+        "median_candidate_tests": 54,
+        "median_clause_candidates": [
+          15,
+          14,
+          13,
+          12
+        ],
+        "median_wall_ms": 0.03676,
+        "replicates": 3
+      },
+      "graph": "path",
+      "n": 16,
+      "pattern": "cycle4",
+      "reversed": {
+        "installed_order": [
+          [
+            "x3",
+            "causal_influence",
+            "x0"
+          ],
+          [
+            "x0",
+            "causal_influence",
+            "x1"
+          ],
+          [
+            "x1",
+            "causal_influence",
+            "x2"
+          ],
+          [
+            "x2",
+            "causal_influence",
+            "x3"
+          ]
+        ],
+        "median_candidate_tests": 54,
+        "median_clause_candidates": [
+          15,
+          14,
+          13,
+          12
+        ],
+        "median_wall_ms": 0.035861,
+        "replicates": 3
+      },
+      "reversed_over_authored": 1.0
+    },
+    {
+      "authored": {
+        "installed_order": [
+          [
+            "x0",
+            "causal_influence",
+            "x1"
+          ],
+          [
+            "x3",
+            "causal_influence",
+            "x0"
+          ],
+          [
+            "x2",
+            "causal_influence",
+            "x3"
+          ],
+          [
+            "x1",
+            "causal_influence",
+            "x2"
+          ]
+        ],
+        "median_candidate_tests": 15,
+        "median_clause_candidates": [
+          15,
+          0,
+          0,
+          0
+        ],
+        "median_wall_ms": 0.03784,
+        "replicates": 3
+      },
+      "graph": "star",
+      "n": 16,
+      "pattern": "cycle4",
+      "reversed": {
+        "installed_order": [
+          [
+            "x3",
+            "causal_influence",
+            "x0"
+          ],
+          [
+            "x0",
+            "causal_influence",
+            "x1"
+          ],
+          [
+            "x1",
+            "causal_influence",
+            "x2"
+          ],
+          [
+            "x2",
+            "causal_influence",
+            "x3"
+          ]
+        ],
+        "median_candidate_tests": 15,
+        "median_clause_candidates": [
+          15,
+          0,
+          0,
+          0
+        ],
+        "median_wall_ms": 0.02961,
+        "replicates": 3
+      },
+      "reversed_over_authored": 1.0
+    },
+    {
+      "authored": {
+        "installed_order": [
+          [
+            "x0",
+            "causal_influence",
+            "x1"
+          ],
+          [
+            "x3",
+            "causal_influence",
+            "x0"
+          ],
+          [
+            "x2",
+            "causal_influence",
+            "x3"
+          ],
+          [
+            "x1",
+            "causal_influence",
+            "x2"
+          ]
+        ],
+        "median_candidate_tests": 64,
+        "median_clause_candidates": [
+          16,
+          16,
+          16,
+          16
+        ],
+        "median_wall_ms": 0.03685,
+        "replicates": 3
+      },
+      "graph": "ring",
+      "n": 16,
+      "pattern": "cycle4",
+      "reversed": {
+        "installed_order": [
+          [
+            "x3",
+            "causal_influence",
+            "x0"
+          ],
+          [
+            "x0",
+            "causal_influence",
+            "x1"
+          ],
+          [
+            "x1",
+            "causal_influence",
+            "x2"
+          ],
+          [
+            "x2",
+            "causal_influence",
+            "x3"
+          ]
+        ],
+        "median_candidate_tests": 64,
+        "median_clause_candidates": [
+          16,
+          16,
+          16,
+          16
+        ],
+        "median_wall_ms": 0.04169,
+        "replicates": 3
+      },
+      "reversed_over_authored": 1.0
+    },
+    {
+      "authored": {
+        "installed_order": [
+          [
+            "x0",
+            "causal_influence",
+            "x1"
+          ],
+          [
+            "x1",
+            "causal_influence",
+            "x2"
+          ],
+          [
+            "x2",
+            "causal_influence",
+            "x3"
+          ],
+          [
+            "x3",
+            "causal_influence",
+            "x4"
+          ]
+        ],
+        "median_candidate_tests": 118,
+        "median_clause_candidates": [
+          31,
+          30,
+          29,
+          28
+        ],
+        "median_wall_ms": 0.06237,
+        "replicates": 3
+      },
+      "graph": "path",
+      "n": 32,
+      "pattern": "path4",
+      "reversed": {
+        "installed_order": [
+          [
+            "x3",
+            "causal_influence",
+            "x4"
+          ],
+          [
+            "x2",
+            "causal_influence",
+            "x3"
+          ],
+          [
+            "x1",
+            "causal_influence",
+            "x2"
+          ],
+          [
+            "x0",
+            "causal_influence",
+            "x1"
+          ]
+        ],
+        "median_candidate_tests": 118,
+        "median_clause_candidates": [
+          31,
+          30,
+          29,
+          28
+        ],
+        "median_wall_ms": 0.064141,
+        "replicates": 3
+      },
+      "reversed_over_authored": 1.0
+    },
+    {
+      "authored": {
+        "installed_order": [
+          [
+            "x0",
+            "causal_influence",
+            "x1"
+          ],
+          [
+            "x1",
+            "causal_influence",
+            "x2"
+          ],
+          [
+            "x2",
+            "causal_influence",
+            "x3"
+          ],
+          [
+            "x3",
+            "causal_influence",
+            "x4"
+          ]
+        ],
+        "median_candidate_tests": 31,
+        "median_clause_candidates": [
+          31,
+          0,
+          0,
+          0
+        ],
+        "median_wall_ms": 0.03573,
+        "replicates": 3
+      },
+      "graph": "star",
+      "n": 32,
+      "pattern": "path4",
+      "reversed": {
+        "installed_order": [
+          [
+            "x3",
+            "causal_influence",
+            "x4"
+          ],
+          [
+            "x2",
+            "causal_influence",
+            "x3"
+          ],
+          [
+            "x1",
+            "causal_influence",
+            "x2"
+          ],
+          [
+            "x0",
+            "causal_influence",
+            "x1"
+          ]
+        ],
+        "median_candidate_tests": 31,
+        "median_clause_candidates": [
+          31,
+          0,
+          0,
+          0
+        ],
+        "median_wall_ms": 0.03206,
+        "replicates": 3
+      },
+      "reversed_over_authored": 1.0
+    },
+    {
+      "authored": {
+        "installed_order": [
+          [
+            "x0",
+            "causal_influence",
+            "x1"
+          ],
+          [
+            "x1",
+            "causal_influence",
+            "x2"
+          ],
+          [
+            "x2",
+            "causal_influence",
+            "x3"
+          ],
+          [
+            "x3",
+            "causal_influence",
+            "x4"
+          ]
+        ],
+        "median_candidate_tests": 128,
+        "median_clause_candidates": [
+          32,
+          32,
+          32,
+          32
+        ],
+        "median_wall_ms": 0.082811,
+        "replicates": 3
+      },
+      "graph": "ring",
+      "n": 32,
+      "pattern": "path4",
+      "reversed": {
+        "installed_order": [
+          [
+            "x3",
+            "causal_influence",
+            "x4"
+          ],
+          [
+            "x2",
+            "causal_influence",
+            "x3"
+          ],
+          [
+            "x1",
+            "causal_influence",
+            "x2"
+          ],
+          [
+            "x0",
+            "causal_influence",
+            "x1"
+          ]
+        ],
+        "median_candidate_tests": 128,
+        "median_clause_candidates": [
+          32,
+          32,
+          32,
+          32
+        ],
+        "median_wall_ms": 0.071891,
+        "replicates": 3
+      },
+      "reversed_over_authored": 1.0
+    },
+    {
+      "authored": {
+        "installed_order": [
+          [
+            "x0",
+            "causal_influence",
+            "x1"
+          ],
+          [
+            "x0",
+            "causal_influence",
+            "x4"
+          ],
+          [
+            "x0",
+            "causal_influence",
+            "x3"
+          ],
+          [
+            "x0",
+            "causal_influence",
+            "x2"
+          ]
+        ],
+        "median_candidate_tests": 124,
+        "median_clause_candidates": [
+          31,
+          31,
+          31,
+          31
+        ],
+        "median_wall_ms": 0.05315,
+        "replicates": 3
+      },
+      "graph": "path",
+      "n": 32,
+      "pattern": "star4",
+      "reversed": {
+        "installed_order": [
+          [
+            "x0",
+            "causal_influence",
+            "x4"
+          ],
+          [
+            "x0",
+            "causal_influence",
+            "x1"
+          ],
+          [
+            "x0",
+            "causal_influence",
+            "x2"
+          ],
+          [
+            "x0",
+            "causal_influence",
+            "x3"
+          ]
+        ],
+        "median_candidate_tests": 124,
+        "median_clause_candidates": [
+          31,
+          31,
+          31,
+          31
+        ],
+        "median_wall_ms": 0.04383,
+        "replicates": 3
+      },
+      "reversed_over_authored": 1.0
+    },
+    {
+      "authored": {
+        "installed_order": [
+          [
+            "x0",
+            "causal_influence",
+            "x1"
+          ],
+          [
+            "x0",
+            "causal_influence",
+            "x4"
+          ],
+          [
+            "x0",
+            "causal_influence",
+            "x3"
+          ],
+          [
+            "x0",
+            "causal_influence",
+            "x2"
+          ]
+        ],
+        "median_candidate_tests": 954304,
+        "median_clause_candidates": [
+          31,
+          961,
+          29791,
+          923521
+        ],
+        "median_wall_ms": 396.013521,
+        "replicates": 3
+      },
+      "graph": "star",
+      "n": 32,
+      "pattern": "star4",
+      "reversed": {
+        "installed_order": [
+          [
+            "x0",
+            "causal_influence",
+            "x4"
+          ],
+          [
+            "x0",
+            "causal_influence",
+            "x1"
+          ],
+          [
+            "x0",
+            "causal_influence",
+            "x2"
+          ],
+          [
+            "x0",
+            "causal_influence",
+            "x3"
+          ]
+        ],
+        "median_candidate_tests": 954304,
+        "median_clause_candidates": [
+          31,
+          961,
+          29791,
+          923521
+        ],
+        "median_wall_ms": 406.544163,
+        "replicates": 3
+      },
+      "reversed_over_authored": 1.0
+    },
+    {
+      "authored": {
+        "installed_order": [
+          [
+            "x0",
+            "causal_influence",
+            "x1"
+          ],
+          [
+            "x0",
+            "causal_influence",
+            "x4"
+          ],
+          [
+            "x0",
+            "causal_influence",
+            "x3"
+          ],
+          [
+            "x0",
+            "causal_influence",
+            "x2"
+          ]
+        ],
+        "median_candidate_tests": 128,
+        "median_clause_candidates": [
+          32,
+          32,
+          32,
+          32
+        ],
+        "median_wall_ms": 0.044491,
+        "replicates": 3
+      },
+      "graph": "ring",
+      "n": 32,
+      "pattern": "star4",
+      "reversed": {
+        "installed_order": [
+          [
+            "x0",
+            "causal_influence",
+            "x4"
+          ],
+          [
+            "x0",
+            "causal_influence",
+            "x1"
+          ],
+          [
+            "x0",
+            "causal_influence",
+            "x2"
+          ],
+          [
+            "x0",
+            "causal_influence",
+            "x3"
+          ]
+        ],
+        "median_candidate_tests": 128,
+        "median_clause_candidates": [
+          32,
+          32,
+          32,
+          32
+        ],
+        "median_wall_ms": 0.04421,
+        "replicates": 3
+      },
+      "reversed_over_authored": 1.0
+    },
+    {
+      "authored": {
+        "installed_order": [
+          [
+            "x0",
+            "causal_influence",
+            "x1"
+          ],
+          [
+            "x3",
+            "causal_influence",
+            "x0"
+          ],
+          [
+            "x2",
+            "causal_influence",
+            "x3"
+          ],
+          [
+            "x1",
+            "causal_influence",
+            "x2"
+          ]
+        ],
+        "median_candidate_tests": 118,
+        "median_clause_candidates": [
+          31,
+          30,
+          29,
+          28
+        ],
+        "median_wall_ms": 0.04536,
+        "replicates": 3
+      },
+      "graph": "path",
+      "n": 32,
+      "pattern": "cycle4",
+      "reversed": {
+        "installed_order": [
+          [
+            "x3",
+            "causal_influence",
+            "x0"
+          ],
+          [
+            "x0",
+            "causal_influence",
+            "x1"
+          ],
+          [
+            "x1",
+            "causal_influence",
+            "x2"
+          ],
+          [
+            "x2",
+            "causal_influence",
+            "x3"
+          ]
+        ],
+        "median_candidate_tests": 118,
+        "median_clause_candidates": [
+          31,
+          30,
+          29,
+          28
+        ],
+        "median_wall_ms": 0.04064,
+        "replicates": 3
+      },
+      "reversed_over_authored": 1.0
+    },
+    {
+      "authored": {
+        "installed_order": [
+          [
+            "x0",
+            "causal_influence",
+            "x1"
+          ],
+          [
+            "x3",
+            "causal_influence",
+            "x0"
+          ],
+          [
+            "x2",
+            "causal_influence",
+            "x3"
+          ],
+          [
+            "x1",
+            "causal_influence",
+            "x2"
+          ]
+        ],
+        "median_candidate_tests": 31,
+        "median_clause_candidates": [
+          31,
+          0,
+          0,
+          0
+        ],
+        "median_wall_ms": 0.03254,
+        "replicates": 3
+      },
+      "graph": "star",
+      "n": 32,
+      "pattern": "cycle4",
+      "reversed": {
+        "installed_order": [
+          [
+            "x3",
+            "causal_influence",
+            "x0"
+          ],
+          [
+            "x0",
+            "causal_influence",
+            "x1"
+          ],
+          [
+            "x1",
+            "causal_influence",
+            "x2"
+          ],
+          [
+            "x2",
+            "causal_influence",
+            "x3"
+          ]
+        ],
+        "median_candidate_tests": 31,
+        "median_clause_candidates": [
+          31,
+          0,
+          0,
+          0
+        ],
+        "median_wall_ms": 0.040121,
+        "replicates": 3
+      },
+      "reversed_over_authored": 1.0
+    },
+    {
+      "authored": {
+        "installed_order": [
+          [
+            "x0",
+            "causal_influence",
+            "x1"
+          ],
+          [
+            "x3",
+            "causal_influence",
+            "x0"
+          ],
+          [
+            "x2",
+            "causal_influence",
+            "x3"
+          ],
+          [
+            "x1",
+            "causal_influence",
+            "x2"
+          ]
+        ],
+        "median_candidate_tests": 128,
+        "median_clause_candidates": [
+          32,
+          32,
+          32,
+          32
+        ],
+        "median_wall_ms": 0.05164,
+        "replicates": 3
+      },
+      "graph": "ring",
+      "n": 32,
+      "pattern": "cycle4",
+      "reversed": {
+        "installed_order": [
+          [
+            "x3",
+            "causal_influence",
+            "x0"
+          ],
+          [
+            "x0",
+            "causal_influence",
+            "x1"
+          ],
+          [
+            "x1",
+            "causal_influence",
+            "x2"
+          ],
+          [
+            "x2",
+            "causal_influence",
+            "x3"
+          ]
+        ],
+        "median_candidate_tests": 128,
+        "median_clause_candidates": [
+          32,
+          32,
+          32,
+          32
+        ],
+        "median_wall_ms": 0.05098,
+        "replicates": 3
+      },
+      "reversed_over_authored": 1.0
+    }
+  ],
+  "protocol": "SUBSTRATE_MATCHER_PREFIX_WORK_V1",
+  "raw_sha256": "17e3589fcde9eca559d7336b6eeab32b162d612ccb975e0196a695fd00db3909",
+  "workers": 108
+}

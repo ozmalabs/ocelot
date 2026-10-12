@@ -1,0 +1,206 @@
+{
+  "id": "communication_causal_retrieval",
+  "version": "1.0.5",
+  "depends_on": ["communication_intent_arbitration"],
+  "description": "Graph-native, event-bound request intent for missing causal explanations. This seed only requests retrieval; it never turns a topic summary into causal evidence or authorizes answer release.",
+  "nodes": [],
+  "edges": [],
+  "productions": [],
+  "rules": [
+    {
+      "name": "select_supported_causal_relation_answer",
+      "comment": "A unique incoming causal edge to the graph-selected effect supports an event-bound semantic answer plan. The language adapter only realizes this selected graph relation; ambiguous or stale evidence fails closed.",
+      "match": [
+        ["agent", "holds_interpretation", "i"],
+        ["i", "interprets", "m"],
+        ["cause", "causal_influence", "effect"]
+      ],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "schema"}, "b": {"type": "Lit", "value": "communication_interpretation.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_schema"}, "b": {"type": "Lit", "value": "communication_evidence.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_force"}, "b": {"type": "Lit", "value": "information_request"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "relation_focus"}, "b": {"type": "Lit", "value": "reason"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "relation_support"}, "b": {"type": "Lit", "value": "supported"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "causal_relation_candidate_count"}, "b": {"type": "Lit", "value": 1}},
+        {"type": "Eq", "a": {"type": "TypeOf", "node": {"type": "Var", "name": "cause"}}, "b": {"type": "Lit", "value": "Concept"}},
+        {"type": "Eq", "a": {"type": "TypeOf", "node": {"type": "Var", "name": "effect"}}, "b": {"type": "Lit", "value": "Concept"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "effect"}, "key": "name"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "comp_know_concept"}},
+        {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "causal_relation_answer_plan_minted"}, "b": {"type": "Lit", "value": 1}}}]},
+      "effects": [
+        ["set_attr", "i", "cognitive_disposition", "answer"],
+        ["set_attr", "i", "cognitive_goal", "answer_or_learn"],
+        ["set_attr", "i", "arbitration_basis", "supported_causal_relation_evidence"],
+        ["set_attr", "i", "causal_relation_answer_plan_minted", 1],
+        ["add_node", "plan", "CausalRelationAnswerPlan", {"schema": "causal_relation_answer_plan.v1", "status": "selected", "relation": "incoming_cause"}],
+        ["add_edge", "i", "has_causal_relation_answer_plan", "plan"],
+        ["add_edge", "plan", "based_on_cause", "cause"],
+        ["add_edge", "plan", "based_on_effect", "effect"],
+        ["add_edge", "plan", "for_event", "m"],
+        ["add_node", "reply", "Message", {"from": "agent", "native_causal_relation_answer": 1.0}],
+        ["add_node", "answer_act", "Concept", {"name": "answer", "description": "answers from a supported causal relation plan"}],
+        ["add_edge", "reply", "has_speech_act", "answer_act"],
+        ["add_edge", "reply", "realizes_causal_relation_answer_plan", "plan"],
+        ["add_edge", "reply", "responds_to", "m"],
+        ["add_edge", "agent", "sent", "reply"]
+      ]
+    },
+    {
+      "name": "select_supported_semantic_event_causal_answer",
+      "comment": "A language-neutral semantic event can select an answerable reason relation only when its typed target resolves to a live Concept and exactly one incoming causal Concept is present. The event receives a graph-bound plan; the adapter cannot assert relation support.",
+      "match": [
+        ["agent", "holds_interpretation", "i"],
+        ["event", "has_interpretation", "i"],
+        ["i", "asks_about_relation_target", "effect"],
+        ["cause", "causal_influence", "effect"]
+      ],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "schema"}, "b": {"type": "Lit", "value": "communication_interpretation.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_schema"}, "b": {"type": "Lit", "value": "communication_evidence.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_force"}, "b": {"type": "Lit", "value": "information_request"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "relation_focus"}, "b": {"type": "Lit", "value": "reason"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "relation_scope"}, "b": {"type": "Lit", "value": "event_specific"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "relation_target_status"}, "b": {"type": "Lit", "value": "graph_resolved"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "relation_support"}, "b": {"type": "Lit", "value": "supported"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "causal_relation_candidate_count"}, "b": {"type": "Lit", "value": 1}},
+        {"type": "Eq", "a": {"type": "TypeOf", "node": {"type": "Var", "name": "effect"}}, "b": {"type": "Lit", "value": "Concept"}},
+        {"type": "Eq", "a": {"type": "TypeOf", "node": {"type": "Var", "name": "cause"}}, "b": {"type": "Lit", "value": "Concept"}},
+        {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "semantic_causal_answer_plan_minted"}, "b": {"type": "Lit", "value": 1}}}
+      ]},
+      "effects": [
+        ["set_attr", "i", "communicative_force", "request_information"],
+        ["set_attr", "i", "cognitive_disposition", "answer"],
+        ["set_attr", "i", "cognitive_goal", "answer_or_learn"],
+        ["set_attr", "i", "arbitration_basis", "supported_causal_relation_evidence"],
+        ["set_attr", "i", "semantic_causal_answer_plan_minted", 1],
+        ["add_node", "plan", "CausalRelationAnswerPlan", {"schema": "causal_relation_answer_plan.v1", "status": "selected", "relation": "incoming_cause", "source": "semantic_event"}],
+        ["add_edge", "i", "has_causal_relation_answer_plan", "plan"],
+        ["add_edge", "plan", "based_on_cause", "cause"],
+        ["add_edge", "plan", "based_on_effect", "effect"],
+        ["add_edge", "plan", "for_event", "event"]
+      ]
+    },
+    {
+      "name": "select_missing_semantic_event_causal_evidence",
+      "comment": "A typed event-specific reason question with a resolved target but no incoming causal Concept remains a learning request; it is not answered from the topic noun or adapter claim.",
+      "match": [
+        ["agent", "holds_interpretation", "i"],
+        ["event", "has_interpretation", "i"],
+        ["i", "asks_about_relation_target", "effect"]
+      ],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "schema"}, "b": {"type": "Lit", "value": "communication_interpretation.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_schema"}, "b": {"type": "Lit", "value": "communication_evidence.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_force"}, "b": {"type": "Lit", "value": "information_request"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "relation_focus"}, "b": {"type": "Lit", "value": "reason"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "relation_scope"}, "b": {"type": "Lit", "value": "event_specific"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "relation_target_status"}, "b": {"type": "Lit", "value": "graph_resolved"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "relation_support"}, "b": {"type": "Lit", "value": "missing"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "causal_relation_candidate_count"}, "b": {"type": "Lit", "value": 0}},
+        {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "semantic_causal_missing_selected"}, "b": {"type": "Lit", "value": 1}}}
+      ]},
+      "effects": [
+        ["set_attr", "i", "communicative_force", "request_information"],
+        ["set_attr", "i", "cognitive_disposition", "learn"],
+        ["set_attr", "i", "cognitive_goal", "answer_or_learn"],
+        ["set_attr", "i", "arbitration_basis", "missing_event_specific_causal_evidence"],
+        ["set_attr", "i", "semantic_causal_missing_selected", 1]
+      ]
+    },
+    {
+      "name": "select_ambiguous_semantic_event_causal_evidence",
+      "comment": "Multiple incoming causal Concepts do not authorize choosing an arbitrary cause; retain an unresolved learning outcome without minting an answer plan.",
+      "match": [
+        ["agent", "holds_interpretation", "i"],
+        ["event", "has_interpretation", "i"],
+        ["i", "asks_about_relation_target", "effect"]
+      ],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "schema"}, "b": {"type": "Lit", "value": "communication_interpretation.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_schema"}, "b": {"type": "Lit", "value": "communication_evidence.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_force"}, "b": {"type": "Lit", "value": "information_request"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "relation_focus"}, "b": {"type": "Lit", "value": "reason"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "relation_scope"}, "b": {"type": "Lit", "value": "event_specific"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "relation_target_status"}, "b": {"type": "Lit", "value": "graph_resolved"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "relation_support"}, "b": {"type": "Lit", "value": "ambiguous"}},
+        {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "semantic_causal_ambiguity_selected"}, "b": {"type": "Lit", "value": 1}}}
+      ]},
+      "effects": [
+        ["set_attr", "i", "communicative_force", "request_information"],
+        ["set_attr", "i", "cognitive_disposition", "learn"],
+        ["set_attr", "i", "cognitive_goal", "answer_or_learn"],
+        ["set_attr", "i", "arbitration_basis", "ambiguous_event_specific_causal_evidence"],
+        ["set_attr", "i", "semantic_causal_ambiguity_selected", 1]
+      ]
+    },
+    {
+      "name": "request_causal_retrieval_for_unresolved_reason_question",
+      "comment": "A selected native learn disposition for a non-anaphoric reason question may request a typed incoming-cause lookup for its graph-selected object. Retrieval and evidence validation remain separate; this request alone has no answer authority.",
+      "match": [
+            ["agent", "holds_interpretation", "i"],
+            ["i", "interprets", "m"],
+            ["m", "has_mention", "mention"],
+            ["mention", "refers_to", "topic_node"]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "schema"}, "b": {"type": "Lit", "value": "communication_interpretation.v1"}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_schema"}, "b": {"type": "Lit", "value": "communication_evidence.v1"}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "cognitive_disposition"}, "b": {"type": "Lit", "value": "learn"}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "relation_focus"}, "b": {"type": "Lit", "value": "reason"}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "relation_scope"}, "b": {"type": "Lit", "value": "conceptual_general"}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "relation_support"}, "b": {"type": "Lit", "value": "missing"}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "anaphor"}, "b": {"type": "Lit", "value": 0}},
+          {"type": "Eq", "a": {"type": "TypeOf", "node": {"type": "Var", "name": "topic_node"}}, "b": {"type": "Lit", "value": "Concept"}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "topic_node"}, "key": "name"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "comp_know_concept"}},
+          {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "comp_know_concept"}, "b": {"type": "Lit", "value": null}}},
+          {"type": "Not", "arg": {"type": "Exists", "source": {"type": "Neighbours", "node": {"type": "Var", "name": "i"}, "edge_type": "requests_causal_retrieval"}, "var_name": "existing", "predicate": {"type": "Lit", "value": true}}}
+        ]
+      },
+      "effects": [
+        ["add_node", "request", "CausalRetrievalRequest", {
+          "schema": "causal_retrieval_request.v1",
+          "status": "requested",
+          "relation": "incoming_cause",
+          "topic": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "comp_know_concept"}},
+          "authority": "none"
+        }],
+        ["add_edge", "i", "requests_causal_retrieval", "request"],
+        ["add_edge", "request", "about_topic", "topic_node"],
+        ["add_edge", "request", "for_event", "m"]
+      ]
+    },
+    {
+      "name": "clarify_missing_cause_for_anaphoric_reason_repair",
+      "comment": "A native repair for a missing causal relation with an anaphoric topic asks for the missing event/evidence. It does not answer the causal question from a lexical topic summary.",
+      "match": [
+        ["agent", "holds_interpretation", "i"],
+        ["i", "interprets", "m"],
+        ["agent", "has_goal", "g"],
+        ["g", "comprehends", "m"]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "schema"}, "b": {"type": "Lit", "value": "communication_interpretation.v1"}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "cognitive_disposition"}, "b": {"type": "Lit", "value": "repair"}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "arbitration_basis"}, "b": {"type": "Lit", "value": "missing_causal_relation_with_anaphor"}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "relation_focus"}, "b": {"type": "Lit", "value": "reason"}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "relation_support"}, "b": {"type": "Lit", "value": "missing"}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "anaphor"}, "b": {"type": "Lit", "value": 1}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "g"}, "key": "kind"}, "b": {"type": "Lit", "value": "answer_topic"}},
+          {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "communication_repair_route"}, "b": {"type": "Lit", "value": "causal_evidence"}}}
+        ]
+      },
+      "effects": [
+        ["set_attr", "m", "communication_repair_route", "causal_evidence"],
+        ["add_node", "reply", "Message", {"from": "agent", "native_causal_repair_reply": 1.0, "text": "What event or evidence would help establish what caused it to close?"}],
+        ["add_node", "clarification", "Concept", {"name": "clarification", "description": "requests evidence needed to resolve a missing causal relation"}],
+        ["add_edge", "reply", "has_speech_act", "clarification"],
+        ["add_edge", "reply", "responds_to", "m"],
+        ["add_edge", "agent", "sent", "reply"],
+        ["set_attr", "reply", "expects_response", true]
+      ]
+    }
+  ]
+}

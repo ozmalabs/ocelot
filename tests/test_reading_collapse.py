@@ -79,7 +79,7 @@ def test_battery_is_one_decode_not_per_construction_branches(agent):
 #  THE HEADLINE — learn a held-out construction via the sd loop.
 # --------------------------------------------------------------------------- #
 def test_learns_held_out_construction(agent):
-    # possessive "X of Y" is deliberately NOT in seeds/reading_constructions.json.
+    # possessive "X of Y" is deliberately NOT in domain_data/reading_constructions.json.
     r = rc.read_clause(agent, "the capital of france")
     # BEFORE: no held construction covers the [[OF]] skeleton -> residual.
     assert r["residual_before"] == [["OF"]], r["residual_before"]

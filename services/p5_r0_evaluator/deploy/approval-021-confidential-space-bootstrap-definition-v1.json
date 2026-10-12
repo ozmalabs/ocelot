@@ -1,0 +1,145 @@
+{
+  "schema": "P5R0APPROVAL021ConfidentialSpaceBootstrapDefinitionV1",
+  "version": 1,
+  "classification": "repository_definition_only_non_release",
+  "status": "blocked_pending_fresh_live_bindings_and_child_approval",
+  "approval_context": {
+    "approval_id": "P5-MASTER-001/APPROVAL-021",
+    "single_attempt": true,
+    "retry_allowed": false,
+    "master_runsheet_modified": false,
+    "cloud_operations": [],
+    "attestation_claimed": false
+  },
+  "operation": {
+    "id": "bootstrap_confidential_space_vm",
+    "scope": ["bootstrap_confidential_space_vm"],
+    "order": 1,
+    "later_operations_enabled": false,
+    "cloud_operations": [],
+    "mutations_performed": false,
+    "credentials_exported": false,
+    "forbidden_operations": ["retry", "attestation_fabrication", "credential_export", "timing", "task_issuance", "native_execution", "kms_result_signing", "gcs_publication"]
+  },
+  "target": {
+    "project_id": "ocelot-proof",
+    "project_number": "141633828616",
+    "region": "us-east1",
+    "zone": "us-east1-b",
+    "vm_name": "p5-r0-confidential-space-evaluator",
+    "machine_type": "n2d-standard-2",
+    "confidential_compute_type": "SEV",
+    "secure_boot": true,
+    "vtpm": true,
+    "external_ip": false,
+    "network": "default",
+    "service_account": "p5-r0-gcs-only@ocelot-proof.iam.gserviceaccount.com"
+  },
+  "image": {
+    "reference": "us-east1-docker.pkg.dev/ocelot-proof/p5-cs/evaluator@sha256:394a0707d1e162315bdf22de4ff034a7cf75a32b919cef6f12bba501521be11c",
+    "digest": "sha256:394a0707d1e162315bdf22de4ff034a7cf75a32b919cef6f12bba501521be11c",
+    "remote_digest_verified": true,
+    "source_path": "var/p5-r0-rs069r1/candidate-image-binding.json"
+  },
+  "wip": {
+    "provider": "//iam.googleapis.com/projects/141633828616/locations/global/workloadIdentityPools/p5-cs-pool/providers/p5-cs-production",
+    "token_audience": "https://sts.googleapis.com",
+    "issuer": "https://confidentialcomputing.googleapis.com",
+    "claim_paths": {
+      "audience": "aud",
+      "nonce": "eat_nonce",
+      "issued_at": "iat",
+      "expires_at": "exp",
+      "issuer": "iss",
+      "subject": "sub",
+      "image_digest": "submods.container.image_digest",
+      "project_number": "submods.gce.project_number",
+      "project_id": "submods.gce.project_id",
+      "zone": "submods.gce.zone",
+      "debug_state": "dbgstat",
+      "tee": "swname",
+      "hardware_model": "hwmodel",
+      "secure_boot": "secboot",
+      "workload": "submods.container.env.P5R0_EXPECTED_WORKLOAD",
+      "smoke": "submods.container.env.P5R0_CONFIDENTIAL_SPACE_SMOKE"
+    },
+    "subject_prefix": "https://www.googleapis.com/compute/v1/projects/ocelot-proof/zones/us-east1-b/instances/",
+    "image_digest": "sha256:394a0707d1e162315bdf22de4ff034a7cf75a32b919cef6f12bba501521be11c",
+    "project_id": "ocelot-proof",
+    "project_number": "141633828616",
+    "zone": "us-east1-b",
+    "debug_state": "disabled-since-boot",
+    "tee": "CONFIDENTIAL_SPACE",
+    "hardware_model": "GCP_AMD_SEV",
+    "secure_boot": true,
+    "workload": "evaluator",
+    "smoke": "0"
+  },
+  "iam": {
+    "capability_service_account": "p5-r0-gcs-only@ocelot-proof.iam.gserviceaccount.com",
+    "custom_role": "projects/ocelot-proof/roles/p5R0Operation4BundleWriterV1",
+    "wif_principal": "principalSet://iam.googleapis.com/projects/141633828616/locations/global/workloadIdentityPools/p5-cs-pool/attribute.image_digest/394a0707d1e162315bdf22de4ff034a7cf75a32b919cef6f12bba501521be11c",
+    "token_creator_role": "roles/iam.serviceAccountTokenCreator",
+    "direct_bucket_access": false,
+    "fresh_poststate_required": true
+  },
+  "container_closure": {
+    "runtime": "crun",
+    "network": "none",
+    "pull": "never",
+    "host_mounts": [],
+    "privileged": false,
+    "seccomp": "default-deny-reviewed-profile",
+    "capabilities": "drop-all",
+    "user": "65532:65532",
+    "filesystem": "read-only",
+    "pids_limit": 32,
+    "memory_limit": "512Mi",
+    "cpu_limit": "1",
+    "runtime_digest": "sha256:bd8ad7e7798edd5a857476c33bbef463b8b60ca2db43d7feb77698a703060c84",
+    "seccomp_digest": "sha256:cc374cf23846ce1f62f4dc807a8e2b8673c783c6f56cb475467621035d281e6c",
+    "allowed_syscalls_digest": "sha256:f7aa546b7b880ed6ba2ee4ec1bdf3c3d554204aff22c5bf08e11c9e273e5147d",
+    "closure_digest": "sha256:4f49f208c6e65d87c5c50b90a316a1314298719425dde0858d66b33ceabed5c3",
+    "argv_digest": "sha256:dd7f904e77834b2cbcde1996e549c336b8b31fc9c9cacd40a5b3b424107dae21",
+    "resource_profile_digest": "sha256:113b8d7763e70dce6f9b7697459a14ae46180cd478a38f76b962414eb03d63c6"
+  },
+  "prestate_contract": {
+    "schema": "P5R0APPROVAL021ConfidentialSpaceVMPrestateV1",
+    "required": ["project", "zone", "vm_name", "instance", "iam_poststate", "wip_poststate"],
+    "expected": {"instance_exists": false, "external_ip": false},
+    "fresh_capture_required": true,
+    "capture_read_only": true,
+    "ambiguous_state": "manual_review_no_retry"
+  },
+  "apply_order": ["validate_definition_and_external_child_approval", "capture_fresh_read_only_prestate", "create_exact_shielded_confidential_space_vm", "capture_exact_poststate", "capture_one_shot_redacted_launcher_evidence", "verify_poststate_and_receipt"],
+  "rollback": {
+    "required_on_any_post_create_failure": true,
+    "action": "delete_only_the_created_vm_then_reobserve",
+    "if_delete_fails": "manual_review_no_retry",
+    "if_account_or_network_state_is_ambiguous": "manual_review_no_retry"
+  },
+  "poststate": {
+    "required": true,
+    "instance": "exact VM identity, digest-pinned image, n2d-standard-2, SEV, Secure Boot, vTPM, and no external IP",
+    "container_closure": "no host mounts, privileged=false, default-deny-reviewed-profile, network=none, pull=never",
+    "iam": "fresh exact GCS-only account/custom-role/WIP token-creator binding",
+    "wip": "fresh exact provider/audience/claim binding",
+    "launcher_evidence": "one redacted verified launcher evidence object; token/claims/nonce never persisted",
+    "receipt": "prestate/poststate/rollback/evidence digests"
+  },
+  "execution_boundary": {
+    "apply_performed": false,
+    "cloud_operations": [],
+    "credentials_created_or_exported": false,
+    "attestation_claimed": false,
+    "master_runsheet_modified": false,
+    "later_operations_enabled": false
+  },
+  "future_commands": {
+    "validate": "PYTHONPATH=. python3 -m services.p5_r0_evaluator.deploy.confidential_space_bootstrap validate --definition services/p5_r0_evaluator/deploy/approval-021-confidential-space-bootstrap-definition-v1.json",
+    "render": "PYTHONPATH=. python3 -m services.p5_r0_evaluator.deploy.confidential_space_bootstrap render --definition services/p5_r0_evaluator/deploy/approval-021-confidential-space-bootstrap-definition-v1.json",
+    "future_apply": "PYTHONPATH=. python3 -m services.p5_r0_evaluator.deploy.confidential_space_bootstrap apply --definition services/p5_r0_evaluator/deploy/approval-021-confidential-space-bootstrap-definition-v1.json --approval var/p5-r0-rs069/approval-021-confidential-space-approval.json --ledger var/p5-r0-rs069/approval-021-confidential-space-bootstrap-ledger.jsonl",
+    "future_launch_template": ["gcloud", "compute", "instances", "create", "p5-r0-confidential-space-evaluator", "--project=ocelot-proof", "--zone=us-east1-b", "--machine-type=n2d-standard-2", "--confidential-compute-type=SEV", "--maintenance-policy=TERMINATE", "--image-family=confidential-space", "--image-project=confidential-space-images", "--shielded-secure-boot", "--shielded-vtpm", "--network-interface=network=default,subnet=default,no-address", "--service-account=p5-r0-gcs-only@ocelot-proof.iam.gserviceaccount.com", "--scopes=https://www.googleapis.com/auth/cloud-platform", "--metadata=^|^$(awk 'BEGIN { sep=\"\" } /^[[:space:]]*#/ || NF == 0 { next } { key=$1; sub(/^[^=]*/, \"\"); printf \"%s%s=%s\", sep, key, $0; sep=\"|\" }' rendered-p5-r0-confidential-space-evaluator.metadata)"]
+  },
+  "definition_digest": "sha256:dd94c5b18d4cc3a6f7494ca1602dbd31922c61c6baf7851a9258720ddc730e87"
+}

@@ -1,0 +1,2300 @@
+{
+  "captured_utc": "2026-10-02T01:34:17Z",
+  "host": {
+    "machine": "x86_64",
+    "platform": "Linux-6.8.0-142-generic-x86_64-with-glibc2.39",
+    "python": "3.13.5"
+  },
+  "lock_sha256": "37b2e73169c994bf8550db9fa00d929b3a708758abb8aebb378b1ef7f543cca9",
+  "schema": "ComposedProposalActiveQueryV1Orders",
+  "workers": [
+    {
+      "fault_baseline": {
+        "label": "fault_baseline",
+        "rules": {
+          "classify_kind_family": {
+            "active": true,
+            "batch": false,
+            "content_hash": 6412259605892349207,
+            "effects": [
+              [
+                "set_attr",
+                "ck",
+                "effect_family",
+                {
+                  "__term__": {
+                    "key": "family",
+                    "node": {
+                      "default": {
+                        "name": "ck",
+                        "type": "Var"
+                      },
+                      "source": {
+                        "predicate": {
+                          "a": {
+                            "haystack": {
+                              "key": "name_lc",
+                              "node": {
+                                "name": "ck",
+                                "type": "Var"
+                              },
+                              "type": "Attr"
+                            },
+                            "needle": {
+                              "key": "word",
+                              "node": {
+                                "name": "fs",
+                                "type": "Var"
+                              },
+                              "type": "Attr"
+                            },
+                            "type": "StringIndexOf"
+                          },
+                          "b": {
+                            "type": "Lit",
+                            "value": -1.0
+                          },
+                          "type": "Lt"
+                        },
+                        "source": {
+                          "node_type": "FamilySignal",
+                          "type": "NodesOfType"
+                        },
+                        "type": "Filter",
+                        "var_name": "fs"
+                      },
+                      "type": "Argmax",
+                      "value": {
+                        "items": [
+                          {
+                            "key": "spec",
+                            "node": {
+                              "name": "fs",
+                              "type": "Var"
+                            },
+                            "type": "Attr"
+                          },
+                          {
+                            "type": "Lit",
+                            "value": 0.0
+                          }
+                        ],
+                        "type": "Plus"
+                      },
+                      "var_name": "fs"
+                    },
+                    "type": "Attr"
+                  }
+                }
+              ],
+              [
+                "set_attr",
+                "ck",
+                "family_set",
+                1.0
+              ]
+            ],
+            "match": [
+              [
+                "kreg",
+                "has_kind",
+                "ck"
+              ]
+            ],
+            "match_type": null,
+            "name": "classify_kind_family",
+            "revision": 0,
+            "rule_uid": 2,
+            "where": {
+              "items": [
+                {
+                  "a": {
+                    "items": [
+                      {
+                        "key": "family_set",
+                        "node": {
+                          "name": "ck",
+                          "type": "Var"
+                        },
+                        "type": "Attr"
+                      },
+                      {
+                        "type": "Lit",
+                        "value": 0.0
+                      }
+                    ],
+                    "type": "Plus"
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": 0.5
+                  },
+                  "type": "Lt"
+                },
+                {
+                  "a": {
+                    "source": {
+                      "predicate": {
+                        "a": {
+                          "haystack": {
+                            "key": "name_lc",
+                            "node": {
+                              "name": "ck",
+                              "type": "Var"
+                            },
+                            "type": "Attr"
+                          },
+                          "needle": {
+                            "key": "word",
+                            "node": {
+                              "name": "fs",
+                              "type": "Var"
+                            },
+                            "type": "Attr"
+                          },
+                          "type": "StringIndexOf"
+                        },
+                        "b": {
+                          "type": "Lit",
+                          "value": -1.0
+                        },
+                        "type": "Gt"
+                      },
+                      "source": {
+                        "node_type": "FamilySignal",
+                        "type": "NodesOfType"
+                      },
+                      "type": "Filter",
+                      "var_name": "fs"
+                    },
+                    "type": "Count"
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": 0.5
+                  },
+                  "type": "Gt"
+                }
+              ],
+              "type": "And"
+            }
+          }
+        }
+      },
+      "operator": "flip_comparison",
+      "proposal": {
+        "label": "graph_flip_comparison",
+        "rules": {
+          "classify_kind_family": {
+            "batch": false,
+            "content_hash": 6412259605892349207,
+            "effects": [
+              [
+                "set_attr",
+                "ck",
+                "effect_family",
+                {
+                  "__term__": {
+                    "key": "family",
+                    "node": {
+                      "default": {
+                        "name": "ck",
+                        "type": "Var"
+                      },
+                      "source": {
+                        "predicate": {
+                          "a": {
+                            "haystack": {
+                              "key": "name_lc",
+                              "node": {
+                                "name": "ck",
+                                "type": "Var"
+                              },
+                              "type": "Attr"
+                            },
+                            "needle": {
+                              "key": "word",
+                              "node": {
+                                "name": "fs",
+                                "type": "Var"
+                              },
+                              "type": "Attr"
+                            },
+                            "type": "StringIndexOf"
+                          },
+                          "b": {
+                            "type": "Lit",
+                            "value": -1.0
+                          },
+                          "type": "Gt"
+                        },
+                        "source": {
+                          "node_type": "FamilySignal",
+                          "type": "NodesOfType"
+                        },
+                        "type": "Filter",
+                        "var_name": "fs"
+                      },
+                      "type": "Argmax",
+                      "value": {
+                        "items": [
+                          {
+                            "key": "spec",
+                            "node": {
+                              "name": "fs",
+                              "type": "Var"
+                            },
+                            "type": "Attr"
+                          },
+                          {
+                            "type": "Lit",
+                            "value": 0.0
+                          }
+                        ],
+                        "type": "Plus"
+                      },
+                      "var_name": "fs"
+                    },
+                    "type": "Attr"
+                  }
+                }
+              ],
+              [
+                "set_attr",
+                "ck",
+                "family_set",
+                1.0
+              ]
+            ],
+            "match": [
+              [
+                "kreg",
+                "has_kind",
+                "ck"
+              ]
+            ],
+            "match_type": null,
+            "name": "classify_kind_family_structvariant_general_structural_control_kind_0_prompted",
+            "revision": 0,
+            "rule_uid": 2,
+            "where": {
+              "items": [
+                {
+                  "a": {
+                    "items": [
+                      {
+                        "key": "family_set",
+                        "node": {
+                          "name": "ck",
+                          "type": "Var"
+                        },
+                        "type": "Attr"
+                      },
+                      {
+                        "type": "Lit",
+                        "value": 0.0
+                      }
+                    ],
+                    "type": "Plus"
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": 0.5
+                  },
+                  "type": "Lt"
+                },
+                {
+                  "a": {
+                    "source": {
+                      "predicate": {
+                        "a": {
+                          "haystack": {
+                            "key": "name_lc",
+                            "node": {
+                              "name": "ck",
+                              "type": "Var"
+                            },
+                            "type": "Attr"
+                          },
+                          "needle": {
+                            "key": "word",
+                            "node": {
+                              "name": "fs",
+                              "type": "Var"
+                            },
+                            "type": "Attr"
+                          },
+                          "type": "StringIndexOf"
+                        },
+                        "b": {
+                          "type": "Lit",
+                          "value": -1.0
+                        },
+                        "type": "Gt"
+                      },
+                      "source": {
+                        "node_type": "FamilySignal",
+                        "type": "NodesOfType"
+                      },
+                      "type": "Filter",
+                      "var_name": "fs"
+                    },
+                    "type": "Count"
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": 0.5
+                  },
+                  "type": "Gt"
+                }
+              ],
+              "type": "And"
+            }
+          }
+        }
+      },
+      "proposal_digest": "sha256:59b43fc288da64c0b87d00131ed2256bee5b879fb4e7256832a5345913611293",
+      "proposal_host_reference_match": {
+        "digest": "sha256:59b43fc288da64c0b87d00131ed2256bee5b879fb4e7256832a5345913611293",
+        "label": "flip_comparison",
+        "targets": [
+          "classify_kind_family"
+        ]
+      },
+      "selections": [
+        {
+          "alias_rate_percent": 0,
+          "candidate_count": 100,
+          "informative_count": 100,
+          "random_env": {
+            "name": "switch instrument probe0_0_13"
+          },
+          "selected": {
+            "entropy_bits": 1.0,
+            "ok": true,
+            "partition_count": 2,
+            "predictions": [
+              {
+                "hypothesis": "fault",
+                "output": [
+                  null,
+                  1.0
+                ]
+              },
+              {
+                "hypothesis": "proposal",
+                "output": [
+                  "discrete_select",
+                  1.0
+                ]
+              }
+            ],
+            "query": {
+              "name": "knob instrument probe0_0_49"
+            },
+            "surviving_hypotheses": [
+              "fault",
+              "proposal"
+            ]
+          },
+          "selector_cpu_ns": 9563053,
+          "selector_wall_ns": 9563629
+        },
+        {
+          "alias_rate_percent": 50,
+          "candidate_count": 100,
+          "informative_count": 50,
+          "random_env": {
+            "name": "trackball instrument probe0_50_25"
+          },
+          "selected": {
+            "entropy_bits": 1.0,
+            "ok": true,
+            "partition_count": 2,
+            "predictions": [
+              {
+                "hypothesis": "fault",
+                "output": [
+                  null,
+                  1.0
+                ]
+              },
+              {
+                "hypothesis": "proposal",
+                "output": [
+                  "range_1dof",
+                  1.0
+                ]
+              }
+            ],
+            "query": {
+              "name": "throttle instrument probe0_50_39"
+            },
+            "surviving_hypotheses": [
+              "fault",
+              "proposal"
+            ]
+          },
+          "selector_cpu_ns": 44365662,
+          "selector_wall_ns": 44362390
+        },
+        {
+          "alias_rate_percent": 90,
+          "candidate_count": 100,
+          "informative_count": 10,
+          "random_env": {
+            "name": "plain device probe0_90_79"
+          },
+          "selected": {
+            "entropy_bits": 1.0,
+            "ok": true,
+            "partition_count": 2,
+            "predictions": [
+              {
+                "hypothesis": "fault",
+                "output": [
+                  null,
+                  1.0
+                ]
+              },
+              {
+                "hypothesis": "proposal",
+                "output": [
+                  "discrete_select",
+                  1.0
+                ]
+              }
+            ],
+            "query": {
+              "name": "knob instrument probe0_90_7"
+            },
+            "surviving_hypotheses": [
+              "fault",
+              "proposal"
+            ]
+          },
+          "selector_cpu_ns": 113878721,
+          "selector_wall_ns": 113906034
+        },
+        {
+          "alias_rate_percent": 99,
+          "candidate_count": 100,
+          "informative_count": 1,
+          "random_env": {
+            "name": "amber object probe0_99_77"
+          },
+          "selected": {
+            "entropy_bits": 1.0,
+            "ok": true,
+            "partition_count": 2,
+            "predictions": [
+              {
+                "hypothesis": "fault",
+                "output": [
+                  null,
+                  1.0
+                ]
+              },
+              {
+                "hypothesis": "proposal",
+                "output": [
+                  "relative_pointer",
+                  1.0
+                ]
+              }
+            ],
+            "query": {
+              "name": "trackpad instrument probe0_99_0"
+            },
+            "surviving_hypotheses": [
+              "fault",
+              "proposal"
+            ]
+          },
+          "selector_cpu_ns": 200377064,
+          "selector_wall_ns": 200401286
+        }
+      ],
+      "site": "all comparison nodes in effects (a homogeneous family \u2014 see module docstring)",
+      "source_after": {
+        "docs/research/engine_substrate/THOUGHTEXPERIMENT_COMPOSED_PROPOSAL_ACTIVE_QUERY_V1_PREREG_20261002.md": "f28bd9427ae91069ee5819d1bba0145c25ef3f472e96ba0e8431b53d1e84caf3",
+        "domains/contract_query.py": "9e42a16541e95fb0de8a051aebb654c39cf22fd5c5d7c610b58711692e789b37",
+        "domains/edit_ops.py": "5fef079eff6c47e6feb7cd35a92e39913312835acd82c151ca726319c4e9da1c",
+        "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+        "domains/reflective_faculty.py": "30951ff474cf00dba5cf9dfc01589a61104f2a05120f530c941d1fbd40c0d845",
+        "domains/self_correction.py": "7c4f28e21afc4c334328d03146c56d5c46c80a9ec5c21aa22e1ee29f12deb2dd",
+        "evaluation/substrate_capability/analyze_thoughtexperiment_composed_proposal_active_query_v1.py": "10ee6c2ff4e6b33c61179fb677caff0b826afb83ebd554414b047cebfd0ad019",
+        "evaluation/substrate_capability/thoughtexperiment_blinded_panel_adapters_v1.py": "6354a6f9e34cf2f1108311be3a082b37f47390b2eb6949c0283ab43172ffd82d",
+        "evaluation/substrate_capability/thoughtexperiment_composed_proposal_active_query_v1.py": "39cdf8adb3cbcf6487ac7ec9d6b038b206eaf313ad9b1c8281d81101b3ec3af2",
+        "evaluation/substrate_capability/thoughtexperiment_control_kind_classification_repair_v1.py": "f06822b0d786c2b9217ca282170d61dd8b8cf94382256d59519192521af91d4a",
+        "evaluation/substrate_capability/thoughtexperiment_general_structural_proposal_control_kind_v1_2.py": "5300be92eadbaf3a272b9a198b888e67af405c7cce5390167b3c386fc32ba093",
+        "loaded_native_binary": "09d0ac3d2b3362f5cdf7d6b1cb5ef21524cf25672916b6928c29da7997fd32c6",
+        "runners/dsl/Cargo.lock": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+        "runners/dsl/Cargo.toml": "c4d8ffff2241352a5150b5a9937dbb8010e958b6f115235b7daeae716c1a9332",
+        "runners/dsl/python/substrate_rs/__init__.py": "4e338797786071822b2e3d919ca1da3a266bda60c3ce0e29e13213a9d37454b4",
+        "runners/dsl/src/grammar.rs": "aaf6f571bf8e8761584c7473d3fe3130c5a6e395bff7f2b63f1cdcf6046b73f6",
+        "runners/dsl/src/graph.rs": "9744fec2e0c5091f2036081ffc615b1c7dd00ba2a5995af1294efb0b5aa5a28c",
+        "runners/dsl/src/graph_rules.rs": "b0e9c5bf0bbb4bf278fdab03610fa3f6f82d01ad8ee898ec789982ff41812a50",
+        "runners/dsl/src/lib.rs": "f8c5ae707046db8347438227913a737faf78a184b294c8e339a9008e71fab36c",
+        "runners/dsl/src/persist.rs": "066d026451c97e1032c30054a3a4c556d386f23db2304630a4625c5bf81306cf",
+        "runners/dsl/src/py.rs": "6a6da90d425e4f8da7b7626fc8dda39b46b63529a312d482d80e6e2ec4d03fd6",
+        "runners/dsl/src/substrate.rs": "bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+        "runners/dsl/src/sym.rs": "b54f6af6e456a7095a02eb5b3cab42a73072318bd7e54ed150c787468b170d5f",
+        "runners/dsl/src/term.rs": "5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+        "seeds/control_kinds.json": "8d62dacf9c72dc0c88550ea7d879d5c4300a6f3cbd2b2e94eb30cbbf0f8886b0",
+        "seeds/relation_vocabulary.json": "781e89f27c5d31c214d57eb521deb6dab04c34ef51413b7a14739dd98861d90a",
+        "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+        "substrate/seed_loader.py": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27"
+      },
+      "source_before": {
+        "docs/research/engine_substrate/THOUGHTEXPERIMENT_COMPOSED_PROPOSAL_ACTIVE_QUERY_V1_PREREG_20261002.md": "f28bd9427ae91069ee5819d1bba0145c25ef3f472e96ba0e8431b53d1e84caf3",
+        "domains/contract_query.py": "9e42a16541e95fb0de8a051aebb654c39cf22fd5c5d7c610b58711692e789b37",
+        "domains/edit_ops.py": "5fef079eff6c47e6feb7cd35a92e39913312835acd82c151ca726319c4e9da1c",
+        "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+        "domains/reflective_faculty.py": "30951ff474cf00dba5cf9dfc01589a61104f2a05120f530c941d1fbd40c0d845",
+        "domains/self_correction.py": "7c4f28e21afc4c334328d03146c56d5c46c80a9ec5c21aa22e1ee29f12deb2dd",
+        "evaluation/substrate_capability/analyze_thoughtexperiment_composed_proposal_active_query_v1.py": "10ee6c2ff4e6b33c61179fb677caff0b826afb83ebd554414b047cebfd0ad019",
+        "evaluation/substrate_capability/thoughtexperiment_blinded_panel_adapters_v1.py": "6354a6f9e34cf2f1108311be3a082b37f47390b2eb6949c0283ab43172ffd82d",
+        "evaluation/substrate_capability/thoughtexperiment_composed_proposal_active_query_v1.py": "39cdf8adb3cbcf6487ac7ec9d6b038b206eaf313ad9b1c8281d81101b3ec3af2",
+        "evaluation/substrate_capability/thoughtexperiment_control_kind_classification_repair_v1.py": "f06822b0d786c2b9217ca282170d61dd8b8cf94382256d59519192521af91d4a",
+        "evaluation/substrate_capability/thoughtexperiment_general_structural_proposal_control_kind_v1_2.py": "5300be92eadbaf3a272b9a198b888e67af405c7cce5390167b3c386fc32ba093",
+        "loaded_native_binary": "09d0ac3d2b3362f5cdf7d6b1cb5ef21524cf25672916b6928c29da7997fd32c6",
+        "runners/dsl/Cargo.lock": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+        "runners/dsl/Cargo.toml": "c4d8ffff2241352a5150b5a9937dbb8010e958b6f115235b7daeae716c1a9332",
+        "runners/dsl/python/substrate_rs/__init__.py": "4e338797786071822b2e3d919ca1da3a266bda60c3ce0e29e13213a9d37454b4",
+        "runners/dsl/src/grammar.rs": "aaf6f571bf8e8761584c7473d3fe3130c5a6e395bff7f2b63f1cdcf6046b73f6",
+        "runners/dsl/src/graph.rs": "9744fec2e0c5091f2036081ffc615b1c7dd00ba2a5995af1294efb0b5aa5a28c",
+        "runners/dsl/src/graph_rules.rs": "b0e9c5bf0bbb4bf278fdab03610fa3f6f82d01ad8ee898ec789982ff41812a50",
+        "runners/dsl/src/lib.rs": "f8c5ae707046db8347438227913a737faf78a184b294c8e339a9008e71fab36c",
+        "runners/dsl/src/persist.rs": "066d026451c97e1032c30054a3a4c556d386f23db2304630a4625c5bf81306cf",
+        "runners/dsl/src/py.rs": "6a6da90d425e4f8da7b7626fc8dda39b46b63529a312d482d80e6e2ec4d03fd6",
+        "runners/dsl/src/substrate.rs": "bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+        "runners/dsl/src/sym.rs": "b54f6af6e456a7095a02eb5b3cab42a73072318bd7e54ed150c787468b170d5f",
+        "runners/dsl/src/term.rs": "5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+        "seeds/control_kinds.json": "8d62dacf9c72dc0c88550ea7d879d5c4300a6f3cbd2b2e94eb30cbbf0f8886b0",
+        "seeds/relation_vocabulary.json": "781e89f27c5d31c214d57eb521deb6dab04c34ef51413b7a14739dd98861d90a",
+        "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+        "substrate/seed_loader.py": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27"
+      },
+      "source_stable": true,
+      "target": "classify_kind_family",
+      "worker": 0
+    },
+    {
+      "fault_baseline": {
+        "label": "fault_baseline",
+        "rules": {
+          "classify_kind_family": {
+            "active": true,
+            "batch": false,
+            "content_hash": 6412259605892349207,
+            "effects": [
+              [
+                "set_attr",
+                "ck",
+                "effect_family",
+                {
+                  "__term__": {
+                    "key": "family",
+                    "node": {
+                      "default": {
+                        "name": "ck",
+                        "type": "Var"
+                      },
+                      "source": {
+                        "predicate": {
+                          "a": {
+                            "haystack": {
+                              "key": "name_lc",
+                              "node": {
+                                "name": "ck",
+                                "type": "Var"
+                              },
+                              "type": "Attr"
+                            },
+                            "needle": {
+                              "key": "word",
+                              "node": {
+                                "name": "fs",
+                                "type": "Var"
+                              },
+                              "type": "Attr"
+                            },
+                            "type": "StringIndexOf"
+                          },
+                          "b": {
+                            "type": "Lit",
+                            "value": -1.0
+                          },
+                          "type": "Lt"
+                        },
+                        "source": {
+                          "node_type": "FamilySignal",
+                          "type": "NodesOfType"
+                        },
+                        "type": "Filter",
+                        "var_name": "fs"
+                      },
+                      "type": "Argmax",
+                      "value": {
+                        "items": [
+                          {
+                            "key": "spec",
+                            "node": {
+                              "name": "fs",
+                              "type": "Var"
+                            },
+                            "type": "Attr"
+                          },
+                          {
+                            "type": "Lit",
+                            "value": 0.0
+                          }
+                        ],
+                        "type": "Plus"
+                      },
+                      "var_name": "fs"
+                    },
+                    "type": "Attr"
+                  }
+                }
+              ],
+              [
+                "set_attr",
+                "ck",
+                "family_set",
+                1.0
+              ]
+            ],
+            "match": [
+              [
+                "kreg",
+                "has_kind",
+                "ck"
+              ]
+            ],
+            "match_type": null,
+            "name": "classify_kind_family",
+            "revision": 0,
+            "rule_uid": 2,
+            "where": {
+              "items": [
+                {
+                  "a": {
+                    "items": [
+                      {
+                        "key": "family_set",
+                        "node": {
+                          "name": "ck",
+                          "type": "Var"
+                        },
+                        "type": "Attr"
+                      },
+                      {
+                        "type": "Lit",
+                        "value": 0.0
+                      }
+                    ],
+                    "type": "Plus"
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": 0.5
+                  },
+                  "type": "Lt"
+                },
+                {
+                  "a": {
+                    "source": {
+                      "predicate": {
+                        "a": {
+                          "haystack": {
+                            "key": "name_lc",
+                            "node": {
+                              "name": "ck",
+                              "type": "Var"
+                            },
+                            "type": "Attr"
+                          },
+                          "needle": {
+                            "key": "word",
+                            "node": {
+                              "name": "fs",
+                              "type": "Var"
+                            },
+                            "type": "Attr"
+                          },
+                          "type": "StringIndexOf"
+                        },
+                        "b": {
+                          "type": "Lit",
+                          "value": -1.0
+                        },
+                        "type": "Gt"
+                      },
+                      "source": {
+                        "node_type": "FamilySignal",
+                        "type": "NodesOfType"
+                      },
+                      "type": "Filter",
+                      "var_name": "fs"
+                    },
+                    "type": "Count"
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": 0.5
+                  },
+                  "type": "Gt"
+                }
+              ],
+              "type": "And"
+            }
+          }
+        }
+      },
+      "operator": "flip_comparison",
+      "proposal": {
+        "label": "graph_flip_comparison",
+        "rules": {
+          "classify_kind_family": {
+            "batch": false,
+            "content_hash": 6412259605892349207,
+            "effects": [
+              [
+                "set_attr",
+                "ck",
+                "effect_family",
+                {
+                  "__term__": {
+                    "key": "family",
+                    "node": {
+                      "default": {
+                        "name": "ck",
+                        "type": "Var"
+                      },
+                      "source": {
+                        "predicate": {
+                          "a": {
+                            "haystack": {
+                              "key": "name_lc",
+                              "node": {
+                                "name": "ck",
+                                "type": "Var"
+                              },
+                              "type": "Attr"
+                            },
+                            "needle": {
+                              "key": "word",
+                              "node": {
+                                "name": "fs",
+                                "type": "Var"
+                              },
+                              "type": "Attr"
+                            },
+                            "type": "StringIndexOf"
+                          },
+                          "b": {
+                            "type": "Lit",
+                            "value": -1.0
+                          },
+                          "type": "Gt"
+                        },
+                        "source": {
+                          "node_type": "FamilySignal",
+                          "type": "NodesOfType"
+                        },
+                        "type": "Filter",
+                        "var_name": "fs"
+                      },
+                      "type": "Argmax",
+                      "value": {
+                        "items": [
+                          {
+                            "key": "spec",
+                            "node": {
+                              "name": "fs",
+                              "type": "Var"
+                            },
+                            "type": "Attr"
+                          },
+                          {
+                            "type": "Lit",
+                            "value": 0.0
+                          }
+                        ],
+                        "type": "Plus"
+                      },
+                      "var_name": "fs"
+                    },
+                    "type": "Attr"
+                  }
+                }
+              ],
+              [
+                "set_attr",
+                "ck",
+                "family_set",
+                1.0
+              ]
+            ],
+            "match": [
+              [
+                "kreg",
+                "has_kind",
+                "ck"
+              ]
+            ],
+            "match_type": null,
+            "name": "classify_kind_family_structvariant_general_structural_control_kind_1_prompted",
+            "revision": 0,
+            "rule_uid": 2,
+            "where": {
+              "items": [
+                {
+                  "a": {
+                    "items": [
+                      {
+                        "key": "family_set",
+                        "node": {
+                          "name": "ck",
+                          "type": "Var"
+                        },
+                        "type": "Attr"
+                      },
+                      {
+                        "type": "Lit",
+                        "value": 0.0
+                      }
+                    ],
+                    "type": "Plus"
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": 0.5
+                  },
+                  "type": "Lt"
+                },
+                {
+                  "a": {
+                    "source": {
+                      "predicate": {
+                        "a": {
+                          "haystack": {
+                            "key": "name_lc",
+                            "node": {
+                              "name": "ck",
+                              "type": "Var"
+                            },
+                            "type": "Attr"
+                          },
+                          "needle": {
+                            "key": "word",
+                            "node": {
+                              "name": "fs",
+                              "type": "Var"
+                            },
+                            "type": "Attr"
+                          },
+                          "type": "StringIndexOf"
+                        },
+                        "b": {
+                          "type": "Lit",
+                          "value": -1.0
+                        },
+                        "type": "Gt"
+                      },
+                      "source": {
+                        "node_type": "FamilySignal",
+                        "type": "NodesOfType"
+                      },
+                      "type": "Filter",
+                      "var_name": "fs"
+                    },
+                    "type": "Count"
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": 0.5
+                  },
+                  "type": "Gt"
+                }
+              ],
+              "type": "And"
+            }
+          }
+        }
+      },
+      "proposal_digest": "sha256:59b43fc288da64c0b87d00131ed2256bee5b879fb4e7256832a5345913611293",
+      "proposal_host_reference_match": {
+        "digest": "sha256:59b43fc288da64c0b87d00131ed2256bee5b879fb4e7256832a5345913611293",
+        "label": "flip_comparison",
+        "targets": [
+          "classify_kind_family"
+        ]
+      },
+      "selections": [
+        {
+          "alias_rate_percent": 0,
+          "candidate_count": 100,
+          "informative_count": 100,
+          "random_env": {
+            "name": "steering instrument probe1_0_89"
+          },
+          "selected": {
+            "entropy_bits": 1.0,
+            "ok": true,
+            "partition_count": 2,
+            "predictions": [
+              {
+                "hypothesis": "fault",
+                "output": [
+                  null,
+                  1.0
+                ]
+              },
+              {
+                "hypothesis": "proposal",
+                "output": [
+                  "discrete_act",
+                  1.0
+                ]
+              }
+            ],
+            "query": {
+              "name": "button instrument probe1_0_51"
+            },
+            "surviving_hypotheses": [
+              "fault",
+              "proposal"
+            ]
+          },
+          "selector_cpu_ns": 9952183,
+          "selector_wall_ns": 9952901
+        },
+        {
+          "alias_rate_percent": 50,
+          "candidate_count": 100,
+          "informative_count": 50,
+          "random_env": {
+            "name": "trackball instrument probe1_50_1"
+          },
+          "selected": {
+            "entropy_bits": 1.0,
+            "ok": true,
+            "partition_count": 2,
+            "predictions": [
+              {
+                "hypothesis": "fault",
+                "output": [
+                  null,
+                  1.0
+                ]
+              },
+              {
+                "hypothesis": "proposal",
+                "output": [
+                  "relative_pointer",
+                  1.0
+                ]
+              }
+            ],
+            "query": {
+              "name": "pointer instrument probe1_50_0"
+            },
+            "surviving_hypotheses": [
+              "fault",
+              "proposal"
+            ]
+          },
+          "selector_cpu_ns": 45726712,
+          "selector_wall_ns": 45724126
+        },
+        {
+          "alias_rate_percent": 90,
+          "candidate_count": 100,
+          "informative_count": 10,
+          "random_env": {
+            "name": "silent vessel probe1_90_45"
+          },
+          "selected": {
+            "entropy_bits": 1.0,
+            "ok": true,
+            "partition_count": 2,
+            "predictions": [
+              {
+                "hypothesis": "fault",
+                "output": [
+                  null,
+                  1.0
+                ]
+              },
+              {
+                "hypothesis": "proposal",
+                "output": [
+                  "discrete_act",
+                  1.0
+                ]
+              }
+            ],
+            "query": {
+              "name": "trigger instrument probe1_90_8"
+            },
+            "surviving_hypotheses": [
+              "fault",
+              "proposal"
+            ]
+          },
+          "selector_cpu_ns": 114229911,
+          "selector_wall_ns": 114243325
+        },
+        {
+          "alias_rate_percent": 99,
+          "candidate_count": 100,
+          "informative_count": 1,
+          "random_env": {
+            "name": "blank instrument probe1_99_52"
+          },
+          "selected": {
+            "entropy_bits": 1.0,
+            "ok": true,
+            "partition_count": 2,
+            "predictions": [
+              {
+                "hypothesis": "fault",
+                "output": [
+                  null,
+                  1.0
+                ]
+              },
+              {
+                "hypothesis": "proposal",
+                "output": [
+                  "relative_pointer",
+                  1.0
+                ]
+              }
+            ],
+            "query": {
+              "name": "pointer instrument probe1_99_0"
+            },
+            "surviving_hypotheses": [
+              "fault",
+              "proposal"
+            ]
+          },
+          "selector_cpu_ns": 227140792,
+          "selector_wall_ns": 227248866
+        }
+      ],
+      "site": "all comparison nodes in effects (a homogeneous family \u2014 see module docstring)",
+      "source_after": {
+        "docs/research/engine_substrate/THOUGHTEXPERIMENT_COMPOSED_PROPOSAL_ACTIVE_QUERY_V1_PREREG_20261002.md": "f28bd9427ae91069ee5819d1bba0145c25ef3f472e96ba0e8431b53d1e84caf3",
+        "domains/contract_query.py": "9e42a16541e95fb0de8a051aebb654c39cf22fd5c5d7c610b58711692e789b37",
+        "domains/edit_ops.py": "5fef079eff6c47e6feb7cd35a92e39913312835acd82c151ca726319c4e9da1c",
+        "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+        "domains/reflective_faculty.py": "30951ff474cf00dba5cf9dfc01589a61104f2a05120f530c941d1fbd40c0d845",
+        "domains/self_correction.py": "7c4f28e21afc4c334328d03146c56d5c46c80a9ec5c21aa22e1ee29f12deb2dd",
+        "evaluation/substrate_capability/analyze_thoughtexperiment_composed_proposal_active_query_v1.py": "10ee6c2ff4e6b33c61179fb677caff0b826afb83ebd554414b047cebfd0ad019",
+        "evaluation/substrate_capability/thoughtexperiment_blinded_panel_adapters_v1.py": "6354a6f9e34cf2f1108311be3a082b37f47390b2eb6949c0283ab43172ffd82d",
+        "evaluation/substrate_capability/thoughtexperiment_composed_proposal_active_query_v1.py": "39cdf8adb3cbcf6487ac7ec9d6b038b206eaf313ad9b1c8281d81101b3ec3af2",
+        "evaluation/substrate_capability/thoughtexperiment_control_kind_classification_repair_v1.py": "f06822b0d786c2b9217ca282170d61dd8b8cf94382256d59519192521af91d4a",
+        "evaluation/substrate_capability/thoughtexperiment_general_structural_proposal_control_kind_v1_2.py": "5300be92eadbaf3a272b9a198b888e67af405c7cce5390167b3c386fc32ba093",
+        "loaded_native_binary": "09d0ac3d2b3362f5cdf7d6b1cb5ef21524cf25672916b6928c29da7997fd32c6",
+        "runners/dsl/Cargo.lock": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+        "runners/dsl/Cargo.toml": "c4d8ffff2241352a5150b5a9937dbb8010e958b6f115235b7daeae716c1a9332",
+        "runners/dsl/python/substrate_rs/__init__.py": "4e338797786071822b2e3d919ca1da3a266bda60c3ce0e29e13213a9d37454b4",
+        "runners/dsl/src/grammar.rs": "aaf6f571bf8e8761584c7473d3fe3130c5a6e395bff7f2b63f1cdcf6046b73f6",
+        "runners/dsl/src/graph.rs": "9744fec2e0c5091f2036081ffc615b1c7dd00ba2a5995af1294efb0b5aa5a28c",
+        "runners/dsl/src/graph_rules.rs": "b0e9c5bf0bbb4bf278fdab03610fa3f6f82d01ad8ee898ec789982ff41812a50",
+        "runners/dsl/src/lib.rs": "f8c5ae707046db8347438227913a737faf78a184b294c8e339a9008e71fab36c",
+        "runners/dsl/src/persist.rs": "066d026451c97e1032c30054a3a4c556d386f23db2304630a4625c5bf81306cf",
+        "runners/dsl/src/py.rs": "6a6da90d425e4f8da7b7626fc8dda39b46b63529a312d482d80e6e2ec4d03fd6",
+        "runners/dsl/src/substrate.rs": "bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+        "runners/dsl/src/sym.rs": "b54f6af6e456a7095a02eb5b3cab42a73072318bd7e54ed150c787468b170d5f",
+        "runners/dsl/src/term.rs": "5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+        "seeds/control_kinds.json": "8d62dacf9c72dc0c88550ea7d879d5c4300a6f3cbd2b2e94eb30cbbf0f8886b0",
+        "seeds/relation_vocabulary.json": "781e89f27c5d31c214d57eb521deb6dab04c34ef51413b7a14739dd98861d90a",
+        "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+        "substrate/seed_loader.py": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27"
+      },
+      "source_before": {
+        "docs/research/engine_substrate/THOUGHTEXPERIMENT_COMPOSED_PROPOSAL_ACTIVE_QUERY_V1_PREREG_20261002.md": "f28bd9427ae91069ee5819d1bba0145c25ef3f472e96ba0e8431b53d1e84caf3",
+        "domains/contract_query.py": "9e42a16541e95fb0de8a051aebb654c39cf22fd5c5d7c610b58711692e789b37",
+        "domains/edit_ops.py": "5fef079eff6c47e6feb7cd35a92e39913312835acd82c151ca726319c4e9da1c",
+        "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+        "domains/reflective_faculty.py": "30951ff474cf00dba5cf9dfc01589a61104f2a05120f530c941d1fbd40c0d845",
+        "domains/self_correction.py": "7c4f28e21afc4c334328d03146c56d5c46c80a9ec5c21aa22e1ee29f12deb2dd",
+        "evaluation/substrate_capability/analyze_thoughtexperiment_composed_proposal_active_query_v1.py": "10ee6c2ff4e6b33c61179fb677caff0b826afb83ebd554414b047cebfd0ad019",
+        "evaluation/substrate_capability/thoughtexperiment_blinded_panel_adapters_v1.py": "6354a6f9e34cf2f1108311be3a082b37f47390b2eb6949c0283ab43172ffd82d",
+        "evaluation/substrate_capability/thoughtexperiment_composed_proposal_active_query_v1.py": "39cdf8adb3cbcf6487ac7ec9d6b038b206eaf313ad9b1c8281d81101b3ec3af2",
+        "evaluation/substrate_capability/thoughtexperiment_control_kind_classification_repair_v1.py": "f06822b0d786c2b9217ca282170d61dd8b8cf94382256d59519192521af91d4a",
+        "evaluation/substrate_capability/thoughtexperiment_general_structural_proposal_control_kind_v1_2.py": "5300be92eadbaf3a272b9a198b888e67af405c7cce5390167b3c386fc32ba093",
+        "loaded_native_binary": "09d0ac3d2b3362f5cdf7d6b1cb5ef21524cf25672916b6928c29da7997fd32c6",
+        "runners/dsl/Cargo.lock": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+        "runners/dsl/Cargo.toml": "c4d8ffff2241352a5150b5a9937dbb8010e958b6f115235b7daeae716c1a9332",
+        "runners/dsl/python/substrate_rs/__init__.py": "4e338797786071822b2e3d919ca1da3a266bda60c3ce0e29e13213a9d37454b4",
+        "runners/dsl/src/grammar.rs": "aaf6f571bf8e8761584c7473d3fe3130c5a6e395bff7f2b63f1cdcf6046b73f6",
+        "runners/dsl/src/graph.rs": "9744fec2e0c5091f2036081ffc615b1c7dd00ba2a5995af1294efb0b5aa5a28c",
+        "runners/dsl/src/graph_rules.rs": "b0e9c5bf0bbb4bf278fdab03610fa3f6f82d01ad8ee898ec789982ff41812a50",
+        "runners/dsl/src/lib.rs": "f8c5ae707046db8347438227913a737faf78a184b294c8e339a9008e71fab36c",
+        "runners/dsl/src/persist.rs": "066d026451c97e1032c30054a3a4c556d386f23db2304630a4625c5bf81306cf",
+        "runners/dsl/src/py.rs": "6a6da90d425e4f8da7b7626fc8dda39b46b63529a312d482d80e6e2ec4d03fd6",
+        "runners/dsl/src/substrate.rs": "bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+        "runners/dsl/src/sym.rs": "b54f6af6e456a7095a02eb5b3cab42a73072318bd7e54ed150c787468b170d5f",
+        "runners/dsl/src/term.rs": "5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+        "seeds/control_kinds.json": "8d62dacf9c72dc0c88550ea7d879d5c4300a6f3cbd2b2e94eb30cbbf0f8886b0",
+        "seeds/relation_vocabulary.json": "781e89f27c5d31c214d57eb521deb6dab04c34ef51413b7a14739dd98861d90a",
+        "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+        "substrate/seed_loader.py": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27"
+      },
+      "source_stable": true,
+      "target": "classify_kind_family",
+      "worker": 1
+    },
+    {
+      "fault_baseline": {
+        "label": "fault_baseline",
+        "rules": {
+          "classify_kind_family": {
+            "active": true,
+            "batch": false,
+            "content_hash": 6412259605892349207,
+            "effects": [
+              [
+                "set_attr",
+                "ck",
+                "effect_family",
+                {
+                  "__term__": {
+                    "key": "family",
+                    "node": {
+                      "default": {
+                        "name": "ck",
+                        "type": "Var"
+                      },
+                      "source": {
+                        "predicate": {
+                          "a": {
+                            "haystack": {
+                              "key": "name_lc",
+                              "node": {
+                                "name": "ck",
+                                "type": "Var"
+                              },
+                              "type": "Attr"
+                            },
+                            "needle": {
+                              "key": "word",
+                              "node": {
+                                "name": "fs",
+                                "type": "Var"
+                              },
+                              "type": "Attr"
+                            },
+                            "type": "StringIndexOf"
+                          },
+                          "b": {
+                            "type": "Lit",
+                            "value": -1.0
+                          },
+                          "type": "Lt"
+                        },
+                        "source": {
+                          "node_type": "FamilySignal",
+                          "type": "NodesOfType"
+                        },
+                        "type": "Filter",
+                        "var_name": "fs"
+                      },
+                      "type": "Argmax",
+                      "value": {
+                        "items": [
+                          {
+                            "key": "spec",
+                            "node": {
+                              "name": "fs",
+                              "type": "Var"
+                            },
+                            "type": "Attr"
+                          },
+                          {
+                            "type": "Lit",
+                            "value": 0.0
+                          }
+                        ],
+                        "type": "Plus"
+                      },
+                      "var_name": "fs"
+                    },
+                    "type": "Attr"
+                  }
+                }
+              ],
+              [
+                "set_attr",
+                "ck",
+                "family_set",
+                1.0
+              ]
+            ],
+            "match": [
+              [
+                "kreg",
+                "has_kind",
+                "ck"
+              ]
+            ],
+            "match_type": null,
+            "name": "classify_kind_family",
+            "revision": 0,
+            "rule_uid": 2,
+            "where": {
+              "items": [
+                {
+                  "a": {
+                    "items": [
+                      {
+                        "key": "family_set",
+                        "node": {
+                          "name": "ck",
+                          "type": "Var"
+                        },
+                        "type": "Attr"
+                      },
+                      {
+                        "type": "Lit",
+                        "value": 0.0
+                      }
+                    ],
+                    "type": "Plus"
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": 0.5
+                  },
+                  "type": "Lt"
+                },
+                {
+                  "a": {
+                    "source": {
+                      "predicate": {
+                        "a": {
+                          "haystack": {
+                            "key": "name_lc",
+                            "node": {
+                              "name": "ck",
+                              "type": "Var"
+                            },
+                            "type": "Attr"
+                          },
+                          "needle": {
+                            "key": "word",
+                            "node": {
+                              "name": "fs",
+                              "type": "Var"
+                            },
+                            "type": "Attr"
+                          },
+                          "type": "StringIndexOf"
+                        },
+                        "b": {
+                          "type": "Lit",
+                          "value": -1.0
+                        },
+                        "type": "Gt"
+                      },
+                      "source": {
+                        "node_type": "FamilySignal",
+                        "type": "NodesOfType"
+                      },
+                      "type": "Filter",
+                      "var_name": "fs"
+                    },
+                    "type": "Count"
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": 0.5
+                  },
+                  "type": "Gt"
+                }
+              ],
+              "type": "And"
+            }
+          }
+        }
+      },
+      "operator": "flip_comparison",
+      "proposal": {
+        "label": "graph_flip_comparison",
+        "rules": {
+          "classify_kind_family": {
+            "batch": false,
+            "content_hash": 6412259605892349207,
+            "effects": [
+              [
+                "set_attr",
+                "ck",
+                "effect_family",
+                {
+                  "__term__": {
+                    "key": "family",
+                    "node": {
+                      "default": {
+                        "name": "ck",
+                        "type": "Var"
+                      },
+                      "source": {
+                        "predicate": {
+                          "a": {
+                            "haystack": {
+                              "key": "name_lc",
+                              "node": {
+                                "name": "ck",
+                                "type": "Var"
+                              },
+                              "type": "Attr"
+                            },
+                            "needle": {
+                              "key": "word",
+                              "node": {
+                                "name": "fs",
+                                "type": "Var"
+                              },
+                              "type": "Attr"
+                            },
+                            "type": "StringIndexOf"
+                          },
+                          "b": {
+                            "type": "Lit",
+                            "value": -1.0
+                          },
+                          "type": "Gt"
+                        },
+                        "source": {
+                          "node_type": "FamilySignal",
+                          "type": "NodesOfType"
+                        },
+                        "type": "Filter",
+                        "var_name": "fs"
+                      },
+                      "type": "Argmax",
+                      "value": {
+                        "items": [
+                          {
+                            "key": "spec",
+                            "node": {
+                              "name": "fs",
+                              "type": "Var"
+                            },
+                            "type": "Attr"
+                          },
+                          {
+                            "type": "Lit",
+                            "value": 0.0
+                          }
+                        ],
+                        "type": "Plus"
+                      },
+                      "var_name": "fs"
+                    },
+                    "type": "Attr"
+                  }
+                }
+              ],
+              [
+                "set_attr",
+                "ck",
+                "family_set",
+                1.0
+              ]
+            ],
+            "match": [
+              [
+                "kreg",
+                "has_kind",
+                "ck"
+              ]
+            ],
+            "match_type": null,
+            "name": "classify_kind_family_structvariant_general_structural_control_kind_2_prompted",
+            "revision": 0,
+            "rule_uid": 2,
+            "where": {
+              "items": [
+                {
+                  "a": {
+                    "items": [
+                      {
+                        "key": "family_set",
+                        "node": {
+                          "name": "ck",
+                          "type": "Var"
+                        },
+                        "type": "Attr"
+                      },
+                      {
+                        "type": "Lit",
+                        "value": 0.0
+                      }
+                    ],
+                    "type": "Plus"
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": 0.5
+                  },
+                  "type": "Lt"
+                },
+                {
+                  "a": {
+                    "source": {
+                      "predicate": {
+                        "a": {
+                          "haystack": {
+                            "key": "name_lc",
+                            "node": {
+                              "name": "ck",
+                              "type": "Var"
+                            },
+                            "type": "Attr"
+                          },
+                          "needle": {
+                            "key": "word",
+                            "node": {
+                              "name": "fs",
+                              "type": "Var"
+                            },
+                            "type": "Attr"
+                          },
+                          "type": "StringIndexOf"
+                        },
+                        "b": {
+                          "type": "Lit",
+                          "value": -1.0
+                        },
+                        "type": "Gt"
+                      },
+                      "source": {
+                        "node_type": "FamilySignal",
+                        "type": "NodesOfType"
+                      },
+                      "type": "Filter",
+                      "var_name": "fs"
+                    },
+                    "type": "Count"
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": 0.5
+                  },
+                  "type": "Gt"
+                }
+              ],
+              "type": "And"
+            }
+          }
+        }
+      },
+      "proposal_digest": "sha256:59b43fc288da64c0b87d00131ed2256bee5b879fb4e7256832a5345913611293",
+      "proposal_host_reference_match": {
+        "digest": "sha256:59b43fc288da64c0b87d00131ed2256bee5b879fb4e7256832a5345913611293",
+        "label": "flip_comparison",
+        "targets": [
+          "classify_kind_family"
+        ]
+      },
+      "selections": [
+        {
+          "alias_rate_percent": 0,
+          "candidate_count": 100,
+          "informative_count": 100,
+          "random_env": {
+            "name": "lever instrument probe2_0_76"
+          },
+          "selected": {
+            "entropy_bits": 1.0,
+            "ok": true,
+            "partition_count": 2,
+            "predictions": [
+              {
+                "hypothesis": "fault",
+                "output": [
+                  null,
+                  1.0
+                ]
+              },
+              {
+                "hypothesis": "proposal",
+                "output": [
+                  "relative_pointer",
+                  1.0
+                ]
+              }
+            ],
+            "query": {
+              "name": "trackpad instrument probe2_0_99"
+            },
+            "surviving_hypotheses": [
+              "fault",
+              "proposal"
+            ]
+          },
+          "selector_cpu_ns": 9512212,
+          "selector_wall_ns": 9512359
+        },
+        {
+          "alias_rate_percent": 50,
+          "candidate_count": 100,
+          "informative_count": 50,
+          "random_env": {
+            "name": "amber object probe2_50_80"
+          },
+          "selected": {
+            "entropy_bits": 1.0,
+            "ok": true,
+            "partition_count": 2,
+            "predictions": [
+              {
+                "hypothesis": "fault",
+                "output": [
+                  null,
+                  1.0
+                ]
+              },
+              {
+                "hypothesis": "proposal",
+                "output": [
+                  "relative_pointer",
+                  1.0
+                ]
+              }
+            ],
+            "query": {
+              "name": "pointer instrument probe2_50_18"
+            },
+            "surviving_hypotheses": [
+              "fault",
+              "proposal"
+            ]
+          },
+          "selector_cpu_ns": 50627733,
+          "selector_wall_ns": 50624026
+        },
+        {
+          "alias_rate_percent": 90,
+          "candidate_count": 100,
+          "informative_count": 10,
+          "random_env": {
+            "name": "quartz widget probe2_90_58"
+          },
+          "selected": {
+            "entropy_bits": 1.0,
+            "ok": true,
+            "partition_count": 2,
+            "predictions": [
+              {
+                "hypothesis": "fault",
+                "output": [
+                  null,
+                  1.0
+                ]
+              },
+              {
+                "hypothesis": "proposal",
+                "output": [
+                  "continuous_rotation",
+                  1.0
+                ]
+              }
+            ],
+            "query": {
+              "name": "wheel instrument probe2_90_3"
+            },
+            "surviving_hypotheses": [
+              "fault",
+              "proposal"
+            ]
+          },
+          "selector_cpu_ns": 117317762,
+          "selector_wall_ns": 117329248
+        },
+        {
+          "alias_rate_percent": 99,
+          "candidate_count": 100,
+          "informative_count": 1,
+          "random_env": {
+            "name": "quartz widget probe2_99_33"
+          },
+          "selected": {
+            "entropy_bits": 1.0,
+            "ok": true,
+            "partition_count": 2,
+            "predictions": [
+              {
+                "hypothesis": "fault",
+                "output": [
+                  null,
+                  1.0
+                ]
+              },
+              {
+                "hypothesis": "proposal",
+                "output": [
+                  "discrete_select",
+                  1.0
+                ]
+              }
+            ],
+            "query": {
+              "name": "dial instrument probe2_99_0"
+            },
+            "surviving_hypotheses": [
+              "fault",
+              "proposal"
+            ]
+          },
+          "selector_cpu_ns": 206967276,
+          "selector_wall_ns": 206965654
+        }
+      ],
+      "site": "all comparison nodes in effects (a homogeneous family \u2014 see module docstring)",
+      "source_after": {
+        "docs/research/engine_substrate/THOUGHTEXPERIMENT_COMPOSED_PROPOSAL_ACTIVE_QUERY_V1_PREREG_20261002.md": "f28bd9427ae91069ee5819d1bba0145c25ef3f472e96ba0e8431b53d1e84caf3",
+        "domains/contract_query.py": "9e42a16541e95fb0de8a051aebb654c39cf22fd5c5d7c610b58711692e789b37",
+        "domains/edit_ops.py": "5fef079eff6c47e6feb7cd35a92e39913312835acd82c151ca726319c4e9da1c",
+        "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+        "domains/reflective_faculty.py": "30951ff474cf00dba5cf9dfc01589a61104f2a05120f530c941d1fbd40c0d845",
+        "domains/self_correction.py": "7c4f28e21afc4c334328d03146c56d5c46c80a9ec5c21aa22e1ee29f12deb2dd",
+        "evaluation/substrate_capability/analyze_thoughtexperiment_composed_proposal_active_query_v1.py": "10ee6c2ff4e6b33c61179fb677caff0b826afb83ebd554414b047cebfd0ad019",
+        "evaluation/substrate_capability/thoughtexperiment_blinded_panel_adapters_v1.py": "6354a6f9e34cf2f1108311be3a082b37f47390b2eb6949c0283ab43172ffd82d",
+        "evaluation/substrate_capability/thoughtexperiment_composed_proposal_active_query_v1.py": "39cdf8adb3cbcf6487ac7ec9d6b038b206eaf313ad9b1c8281d81101b3ec3af2",
+        "evaluation/substrate_capability/thoughtexperiment_control_kind_classification_repair_v1.py": "f06822b0d786c2b9217ca282170d61dd8b8cf94382256d59519192521af91d4a",
+        "evaluation/substrate_capability/thoughtexperiment_general_structural_proposal_control_kind_v1_2.py": "5300be92eadbaf3a272b9a198b888e67af405c7cce5390167b3c386fc32ba093",
+        "loaded_native_binary": "09d0ac3d2b3362f5cdf7d6b1cb5ef21524cf25672916b6928c29da7997fd32c6",
+        "runners/dsl/Cargo.lock": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+        "runners/dsl/Cargo.toml": "c4d8ffff2241352a5150b5a9937dbb8010e958b6f115235b7daeae716c1a9332",
+        "runners/dsl/python/substrate_rs/__init__.py": "4e338797786071822b2e3d919ca1da3a266bda60c3ce0e29e13213a9d37454b4",
+        "runners/dsl/src/grammar.rs": "aaf6f571bf8e8761584c7473d3fe3130c5a6e395bff7f2b63f1cdcf6046b73f6",
+        "runners/dsl/src/graph.rs": "9744fec2e0c5091f2036081ffc615b1c7dd00ba2a5995af1294efb0b5aa5a28c",
+        "runners/dsl/src/graph_rules.rs": "b0e9c5bf0bbb4bf278fdab03610fa3f6f82d01ad8ee898ec789982ff41812a50",
+        "runners/dsl/src/lib.rs": "f8c5ae707046db8347438227913a737faf78a184b294c8e339a9008e71fab36c",
+        "runners/dsl/src/persist.rs": "066d026451c97e1032c30054a3a4c556d386f23db2304630a4625c5bf81306cf",
+        "runners/dsl/src/py.rs": "6a6da90d425e4f8da7b7626fc8dda39b46b63529a312d482d80e6e2ec4d03fd6",
+        "runners/dsl/src/substrate.rs": "bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+        "runners/dsl/src/sym.rs": "b54f6af6e456a7095a02eb5b3cab42a73072318bd7e54ed150c787468b170d5f",
+        "runners/dsl/src/term.rs": "5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+        "seeds/control_kinds.json": "8d62dacf9c72dc0c88550ea7d879d5c4300a6f3cbd2b2e94eb30cbbf0f8886b0",
+        "seeds/relation_vocabulary.json": "781e89f27c5d31c214d57eb521deb6dab04c34ef51413b7a14739dd98861d90a",
+        "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+        "substrate/seed_loader.py": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27"
+      },
+      "source_before": {
+        "docs/research/engine_substrate/THOUGHTEXPERIMENT_COMPOSED_PROPOSAL_ACTIVE_QUERY_V1_PREREG_20261002.md": "f28bd9427ae91069ee5819d1bba0145c25ef3f472e96ba0e8431b53d1e84caf3",
+        "domains/contract_query.py": "9e42a16541e95fb0de8a051aebb654c39cf22fd5c5d7c610b58711692e789b37",
+        "domains/edit_ops.py": "5fef079eff6c47e6feb7cd35a92e39913312835acd82c151ca726319c4e9da1c",
+        "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+        "domains/reflective_faculty.py": "30951ff474cf00dba5cf9dfc01589a61104f2a05120f530c941d1fbd40c0d845",
+        "domains/self_correction.py": "7c4f28e21afc4c334328d03146c56d5c46c80a9ec5c21aa22e1ee29f12deb2dd",
+        "evaluation/substrate_capability/analyze_thoughtexperiment_composed_proposal_active_query_v1.py": "10ee6c2ff4e6b33c61179fb677caff0b826afb83ebd554414b047cebfd0ad019",
+        "evaluation/substrate_capability/thoughtexperiment_blinded_panel_adapters_v1.py": "6354a6f9e34cf2f1108311be3a082b37f47390b2eb6949c0283ab43172ffd82d",
+        "evaluation/substrate_capability/thoughtexperiment_composed_proposal_active_query_v1.py": "39cdf8adb3cbcf6487ac7ec9d6b038b206eaf313ad9b1c8281d81101b3ec3af2",
+        "evaluation/substrate_capability/thoughtexperiment_control_kind_classification_repair_v1.py": "f06822b0d786c2b9217ca282170d61dd8b8cf94382256d59519192521af91d4a",
+        "evaluation/substrate_capability/thoughtexperiment_general_structural_proposal_control_kind_v1_2.py": "5300be92eadbaf3a272b9a198b888e67af405c7cce5390167b3c386fc32ba093",
+        "loaded_native_binary": "09d0ac3d2b3362f5cdf7d6b1cb5ef21524cf25672916b6928c29da7997fd32c6",
+        "runners/dsl/Cargo.lock": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+        "runners/dsl/Cargo.toml": "c4d8ffff2241352a5150b5a9937dbb8010e958b6f115235b7daeae716c1a9332",
+        "runners/dsl/python/substrate_rs/__init__.py": "4e338797786071822b2e3d919ca1da3a266bda60c3ce0e29e13213a9d37454b4",
+        "runners/dsl/src/grammar.rs": "aaf6f571bf8e8761584c7473d3fe3130c5a6e395bff7f2b63f1cdcf6046b73f6",
+        "runners/dsl/src/graph.rs": "9744fec2e0c5091f2036081ffc615b1c7dd00ba2a5995af1294efb0b5aa5a28c",
+        "runners/dsl/src/graph_rules.rs": "b0e9c5bf0bbb4bf278fdab03610fa3f6f82d01ad8ee898ec789982ff41812a50",
+        "runners/dsl/src/lib.rs": "f8c5ae707046db8347438227913a737faf78a184b294c8e339a9008e71fab36c",
+        "runners/dsl/src/persist.rs": "066d026451c97e1032c30054a3a4c556d386f23db2304630a4625c5bf81306cf",
+        "runners/dsl/src/py.rs": "6a6da90d425e4f8da7b7626fc8dda39b46b63529a312d482d80e6e2ec4d03fd6",
+        "runners/dsl/src/substrate.rs": "bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+        "runners/dsl/src/sym.rs": "b54f6af6e456a7095a02eb5b3cab42a73072318bd7e54ed150c787468b170d5f",
+        "runners/dsl/src/term.rs": "5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+        "seeds/control_kinds.json": "8d62dacf9c72dc0c88550ea7d879d5c4300a6f3cbd2b2e94eb30cbbf0f8886b0",
+        "seeds/relation_vocabulary.json": "781e89f27c5d31c214d57eb521deb6dab04c34ef51413b7a14739dd98861d90a",
+        "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+        "substrate/seed_loader.py": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27"
+      },
+      "source_stable": true,
+      "target": "classify_kind_family",
+      "worker": 2
+    },
+    {
+      "fault_baseline": {
+        "label": "fault_baseline",
+        "rules": {
+          "classify_kind_family": {
+            "active": true,
+            "batch": false,
+            "content_hash": 6412259605892349207,
+            "effects": [
+              [
+                "set_attr",
+                "ck",
+                "effect_family",
+                {
+                  "__term__": {
+                    "key": "family",
+                    "node": {
+                      "default": {
+                        "name": "ck",
+                        "type": "Var"
+                      },
+                      "source": {
+                        "predicate": {
+                          "a": {
+                            "haystack": {
+                              "key": "name_lc",
+                              "node": {
+                                "name": "ck",
+                                "type": "Var"
+                              },
+                              "type": "Attr"
+                            },
+                            "needle": {
+                              "key": "word",
+                              "node": {
+                                "name": "fs",
+                                "type": "Var"
+                              },
+                              "type": "Attr"
+                            },
+                            "type": "StringIndexOf"
+                          },
+                          "b": {
+                            "type": "Lit",
+                            "value": -1.0
+                          },
+                          "type": "Lt"
+                        },
+                        "source": {
+                          "node_type": "FamilySignal",
+                          "type": "NodesOfType"
+                        },
+                        "type": "Filter",
+                        "var_name": "fs"
+                      },
+                      "type": "Argmax",
+                      "value": {
+                        "items": [
+                          {
+                            "key": "spec",
+                            "node": {
+                              "name": "fs",
+                              "type": "Var"
+                            },
+                            "type": "Attr"
+                          },
+                          {
+                            "type": "Lit",
+                            "value": 0.0
+                          }
+                        ],
+                        "type": "Plus"
+                      },
+                      "var_name": "fs"
+                    },
+                    "type": "Attr"
+                  }
+                }
+              ],
+              [
+                "set_attr",
+                "ck",
+                "family_set",
+                1.0
+              ]
+            ],
+            "match": [
+              [
+                "kreg",
+                "has_kind",
+                "ck"
+              ]
+            ],
+            "match_type": null,
+            "name": "classify_kind_family",
+            "revision": 0,
+            "rule_uid": 2,
+            "where": {
+              "items": [
+                {
+                  "a": {
+                    "items": [
+                      {
+                        "key": "family_set",
+                        "node": {
+                          "name": "ck",
+                          "type": "Var"
+                        },
+                        "type": "Attr"
+                      },
+                      {
+                        "type": "Lit",
+                        "value": 0.0
+                      }
+                    ],
+                    "type": "Plus"
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": 0.5
+                  },
+                  "type": "Lt"
+                },
+                {
+                  "a": {
+                    "source": {
+                      "predicate": {
+                        "a": {
+                          "haystack": {
+                            "key": "name_lc",
+                            "node": {
+                              "name": "ck",
+                              "type": "Var"
+                            },
+                            "type": "Attr"
+                          },
+                          "needle": {
+                            "key": "word",
+                            "node": {
+                              "name": "fs",
+                              "type": "Var"
+                            },
+                            "type": "Attr"
+                          },
+                          "type": "StringIndexOf"
+                        },
+                        "b": {
+                          "type": "Lit",
+                          "value": -1.0
+                        },
+                        "type": "Gt"
+                      },
+                      "source": {
+                        "node_type": "FamilySignal",
+                        "type": "NodesOfType"
+                      },
+                      "type": "Filter",
+                      "var_name": "fs"
+                    },
+                    "type": "Count"
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": 0.5
+                  },
+                  "type": "Gt"
+                }
+              ],
+              "type": "And"
+            }
+          }
+        }
+      },
+      "operator": "flip_comparison",
+      "proposal": {
+        "label": "graph_flip_comparison",
+        "rules": {
+          "classify_kind_family": {
+            "batch": false,
+            "content_hash": 6412259605892349207,
+            "effects": [
+              [
+                "set_attr",
+                "ck",
+                "effect_family",
+                {
+                  "__term__": {
+                    "key": "family",
+                    "node": {
+                      "default": {
+                        "name": "ck",
+                        "type": "Var"
+                      },
+                      "source": {
+                        "predicate": {
+                          "a": {
+                            "haystack": {
+                              "key": "name_lc",
+                              "node": {
+                                "name": "ck",
+                                "type": "Var"
+                              },
+                              "type": "Attr"
+                            },
+                            "needle": {
+                              "key": "word",
+                              "node": {
+                                "name": "fs",
+                                "type": "Var"
+                              },
+                              "type": "Attr"
+                            },
+                            "type": "StringIndexOf"
+                          },
+                          "b": {
+                            "type": "Lit",
+                            "value": -1.0
+                          },
+                          "type": "Gt"
+                        },
+                        "source": {
+                          "node_type": "FamilySignal",
+                          "type": "NodesOfType"
+                        },
+                        "type": "Filter",
+                        "var_name": "fs"
+                      },
+                      "type": "Argmax",
+                      "value": {
+                        "items": [
+                          {
+                            "key": "spec",
+                            "node": {
+                              "name": "fs",
+                              "type": "Var"
+                            },
+                            "type": "Attr"
+                          },
+                          {
+                            "type": "Lit",
+                            "value": 0.0
+                          }
+                        ],
+                        "type": "Plus"
+                      },
+                      "var_name": "fs"
+                    },
+                    "type": "Attr"
+                  }
+                }
+              ],
+              [
+                "set_attr",
+                "ck",
+                "family_set",
+                1.0
+              ]
+            ],
+            "match": [
+              [
+                "kreg",
+                "has_kind",
+                "ck"
+              ]
+            ],
+            "match_type": null,
+            "name": "classify_kind_family_structvariant_general_structural_control_kind_3_prompted",
+            "revision": 0,
+            "rule_uid": 2,
+            "where": {
+              "items": [
+                {
+                  "a": {
+                    "items": [
+                      {
+                        "key": "family_set",
+                        "node": {
+                          "name": "ck",
+                          "type": "Var"
+                        },
+                        "type": "Attr"
+                      },
+                      {
+                        "type": "Lit",
+                        "value": 0.0
+                      }
+                    ],
+                    "type": "Plus"
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": 0.5
+                  },
+                  "type": "Lt"
+                },
+                {
+                  "a": {
+                    "source": {
+                      "predicate": {
+                        "a": {
+                          "haystack": {
+                            "key": "name_lc",
+                            "node": {
+                              "name": "ck",
+                              "type": "Var"
+                            },
+                            "type": "Attr"
+                          },
+                          "needle": {
+                            "key": "word",
+                            "node": {
+                              "name": "fs",
+                              "type": "Var"
+                            },
+                            "type": "Attr"
+                          },
+                          "type": "StringIndexOf"
+                        },
+                        "b": {
+                          "type": "Lit",
+                          "value": -1.0
+                        },
+                        "type": "Gt"
+                      },
+                      "source": {
+                        "node_type": "FamilySignal",
+                        "type": "NodesOfType"
+                      },
+                      "type": "Filter",
+                      "var_name": "fs"
+                    },
+                    "type": "Count"
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": 0.5
+                  },
+                  "type": "Gt"
+                }
+              ],
+              "type": "And"
+            }
+          }
+        }
+      },
+      "proposal_digest": "sha256:59b43fc288da64c0b87d00131ed2256bee5b879fb4e7256832a5345913611293",
+      "proposal_host_reference_match": {
+        "digest": "sha256:59b43fc288da64c0b87d00131ed2256bee5b879fb4e7256832a5345913611293",
+        "label": "flip_comparison",
+        "targets": [
+          "classify_kind_family"
+        ]
+      },
+      "selections": [
+        {
+          "alias_rate_percent": 0,
+          "candidate_count": 100,
+          "informative_count": 100,
+          "random_env": {
+            "name": "pedal instrument probe3_0_53"
+          },
+          "selected": {
+            "entropy_bits": 1.0,
+            "ok": true,
+            "partition_count": 2,
+            "predictions": [
+              {
+                "hypothesis": "fault",
+                "output": [
+                  null,
+                  1.0
+                ]
+              },
+              {
+                "hypothesis": "proposal",
+                "output": [
+                  "discrete_act",
+                  1.0
+                ]
+              }
+            ],
+            "query": {
+              "name": "trigger instrument probe3_0_2"
+            },
+            "surviving_hypotheses": [
+              "fault",
+              "proposal"
+            ]
+          },
+          "selector_cpu_ns": 13443883,
+          "selector_wall_ns": 13443955
+        },
+        {
+          "alias_rate_percent": 50,
+          "candidate_count": 100,
+          "informative_count": 50,
+          "random_env": {
+            "name": "button instrument probe3_50_3"
+          },
+          "selected": {
+            "entropy_bits": 1.0,
+            "ok": true,
+            "partition_count": 2,
+            "predictions": [
+              {
+                "hypothesis": "fault",
+                "output": [
+                  null,
+                  1.0
+                ]
+              },
+              {
+                "hypothesis": "proposal",
+                "output": [
+                  "discrete_act",
+                  1.0
+                ]
+              }
+            ],
+            "query": {
+              "name": "trigger instrument probe3_50_23"
+            },
+            "surviving_hypotheses": [
+              "fault",
+              "proposal"
+            ]
+          },
+          "selector_cpu_ns": 71158879,
+          "selector_wall_ns": 71156520
+        },
+        {
+          "alias_rate_percent": 90,
+          "candidate_count": 100,
+          "informative_count": 10,
+          "random_env": {
+            "name": "plain device probe3_90_51"
+          },
+          "selected": {
+            "entropy_bits": 1.0,
+            "ok": true,
+            "partition_count": 2,
+            "predictions": [
+              {
+                "hypothesis": "fault",
+                "output": [
+                  null,
+                  1.0
+                ]
+              },
+              {
+                "hypothesis": "proposal",
+                "output": [
+                  "continuous_direction",
+                  1.0
+                ]
+              }
+            ],
+            "query": {
+              "name": "joystick instrument probe3_90_6"
+            },
+            "surviving_hypotheses": [
+              "fault",
+              "proposal"
+            ]
+          },
+          "selector_cpu_ns": 114148771,
+          "selector_wall_ns": 114146796
+        },
+        {
+          "alias_rate_percent": 99,
+          "candidate_count": 100,
+          "informative_count": 1,
+          "random_env": {
+            "name": "amber object probe3_99_54"
+          },
+          "selected": {
+            "entropy_bits": 1.0,
+            "ok": true,
+            "partition_count": 2,
+            "predictions": [
+              {
+                "hypothesis": "fault",
+                "output": [
+                  null,
+                  1.0
+                ]
+              },
+              {
+                "hypothesis": "proposal",
+                "output": [
+                  "continuous_rotation",
+                  1.0
+                ]
+              }
+            ],
+            "query": {
+              "name": "wheel instrument probe3_99_0"
+            },
+            "surviving_hypotheses": [
+              "fault",
+              "proposal"
+            ]
+          },
+          "selector_cpu_ns": 199986725,
+          "selector_wall_ns": 200023086
+        }
+      ],
+      "site": "all comparison nodes in effects (a homogeneous family \u2014 see module docstring)",
+      "source_after": {
+        "docs/research/engine_substrate/THOUGHTEXPERIMENT_COMPOSED_PROPOSAL_ACTIVE_QUERY_V1_PREREG_20261002.md": "f28bd9427ae91069ee5819d1bba0145c25ef3f472e96ba0e8431b53d1e84caf3",
+        "domains/contract_query.py": "9e42a16541e95fb0de8a051aebb654c39cf22fd5c5d7c610b58711692e789b37",
+        "domains/edit_ops.py": "5fef079eff6c47e6feb7cd35a92e39913312835acd82c151ca726319c4e9da1c",
+        "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+        "domains/reflective_faculty.py": "30951ff474cf00dba5cf9dfc01589a61104f2a05120f530c941d1fbd40c0d845",
+        "domains/self_correction.py": "7c4f28e21afc4c334328d03146c56d5c46c80a9ec5c21aa22e1ee29f12deb2dd",
+        "evaluation/substrate_capability/analyze_thoughtexperiment_composed_proposal_active_query_v1.py": "10ee6c2ff4e6b33c61179fb677caff0b826afb83ebd554414b047cebfd0ad019",
+        "evaluation/substrate_capability/thoughtexperiment_blinded_panel_adapters_v1.py": "6354a6f9e34cf2f1108311be3a082b37f47390b2eb6949c0283ab43172ffd82d",
+        "evaluation/substrate_capability/thoughtexperiment_composed_proposal_active_query_v1.py": "39cdf8adb3cbcf6487ac7ec9d6b038b206eaf313ad9b1c8281d81101b3ec3af2",
+        "evaluation/substrate_capability/thoughtexperiment_control_kind_classification_repair_v1.py": "f06822b0d786c2b9217ca282170d61dd8b8cf94382256d59519192521af91d4a",
+        "evaluation/substrate_capability/thoughtexperiment_general_structural_proposal_control_kind_v1_2.py": "5300be92eadbaf3a272b9a198b888e67af405c7cce5390167b3c386fc32ba093",
+        "loaded_native_binary": "09d0ac3d2b3362f5cdf7d6b1cb5ef21524cf25672916b6928c29da7997fd32c6",
+        "runners/dsl/Cargo.lock": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+        "runners/dsl/Cargo.toml": "c4d8ffff2241352a5150b5a9937dbb8010e958b6f115235b7daeae716c1a9332",
+        "runners/dsl/python/substrate_rs/__init__.py": "4e338797786071822b2e3d919ca1da3a266bda60c3ce0e29e13213a9d37454b4",
+        "runners/dsl/src/grammar.rs": "aaf6f571bf8e8761584c7473d3fe3130c5a6e395bff7f2b63f1cdcf6046b73f6",
+        "runners/dsl/src/graph.rs": "9744fec2e0c5091f2036081ffc615b1c7dd00ba2a5995af1294efb0b5aa5a28c",
+        "runners/dsl/src/graph_rules.rs": "b0e9c5bf0bbb4bf278fdab03610fa3f6f82d01ad8ee898ec789982ff41812a50",
+        "runners/dsl/src/lib.rs": "f8c5ae707046db8347438227913a737faf78a184b294c8e339a9008e71fab36c",
+        "runners/dsl/src/persist.rs": "066d026451c97e1032c30054a3a4c556d386f23db2304630a4625c5bf81306cf",
+        "runners/dsl/src/py.rs": "6a6da90d425e4f8da7b7626fc8dda39b46b63529a312d482d80e6e2ec4d03fd6",
+        "runners/dsl/src/substrate.rs": "bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+        "runners/dsl/src/sym.rs": "b54f6af6e456a7095a02eb5b3cab42a73072318bd7e54ed150c787468b170d5f",
+        "runners/dsl/src/term.rs": "5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+        "seeds/control_kinds.json": "8d62dacf9c72dc0c88550ea7d879d5c4300a6f3cbd2b2e94eb30cbbf0f8886b0",
+        "seeds/relation_vocabulary.json": "781e89f27c5d31c214d57eb521deb6dab04c34ef51413b7a14739dd98861d90a",
+        "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+        "substrate/seed_loader.py": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27"
+      },
+      "source_before": {
+        "docs/research/engine_substrate/THOUGHTEXPERIMENT_COMPOSED_PROPOSAL_ACTIVE_QUERY_V1_PREREG_20261002.md": "f28bd9427ae91069ee5819d1bba0145c25ef3f472e96ba0e8431b53d1e84caf3",
+        "domains/contract_query.py": "9e42a16541e95fb0de8a051aebb654c39cf22fd5c5d7c610b58711692e789b37",
+        "domains/edit_ops.py": "5fef079eff6c47e6feb7cd35a92e39913312835acd82c151ca726319c4e9da1c",
+        "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+        "domains/reflective_faculty.py": "30951ff474cf00dba5cf9dfc01589a61104f2a05120f530c941d1fbd40c0d845",
+        "domains/self_correction.py": "7c4f28e21afc4c334328d03146c56d5c46c80a9ec5c21aa22e1ee29f12deb2dd",
+        "evaluation/substrate_capability/analyze_thoughtexperiment_composed_proposal_active_query_v1.py": "10ee6c2ff4e6b33c61179fb677caff0b826afb83ebd554414b047cebfd0ad019",
+        "evaluation/substrate_capability/thoughtexperiment_blinded_panel_adapters_v1.py": "6354a6f9e34cf2f1108311be3a082b37f47390b2eb6949c0283ab43172ffd82d",
+        "evaluation/substrate_capability/thoughtexperiment_composed_proposal_active_query_v1.py": "39cdf8adb3cbcf6487ac7ec9d6b038b206eaf313ad9b1c8281d81101b3ec3af2",
+        "evaluation/substrate_capability/thoughtexperiment_control_kind_classification_repair_v1.py": "f06822b0d786c2b9217ca282170d61dd8b8cf94382256d59519192521af91d4a",
+        "evaluation/substrate_capability/thoughtexperiment_general_structural_proposal_control_kind_v1_2.py": "5300be92eadbaf3a272b9a198b888e67af405c7cce5390167b3c386fc32ba093",
+        "loaded_native_binary": "09d0ac3d2b3362f5cdf7d6b1cb5ef21524cf25672916b6928c29da7997fd32c6",
+        "runners/dsl/Cargo.lock": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+        "runners/dsl/Cargo.toml": "c4d8ffff2241352a5150b5a9937dbb8010e958b6f115235b7daeae716c1a9332",
+        "runners/dsl/python/substrate_rs/__init__.py": "4e338797786071822b2e3d919ca1da3a266bda60c3ce0e29e13213a9d37454b4",
+        "runners/dsl/src/grammar.rs": "aaf6f571bf8e8761584c7473d3fe3130c5a6e395bff7f2b63f1cdcf6046b73f6",
+        "runners/dsl/src/graph.rs": "9744fec2e0c5091f2036081ffc615b1c7dd00ba2a5995af1294efb0b5aa5a28c",
+        "runners/dsl/src/graph_rules.rs": "b0e9c5bf0bbb4bf278fdab03610fa3f6f82d01ad8ee898ec789982ff41812a50",
+        "runners/dsl/src/lib.rs": "f8c5ae707046db8347438227913a737faf78a184b294c8e339a9008e71fab36c",
+        "runners/dsl/src/persist.rs": "066d026451c97e1032c30054a3a4c556d386f23db2304630a4625c5bf81306cf",
+        "runners/dsl/src/py.rs": "6a6da90d425e4f8da7b7626fc8dda39b46b63529a312d482d80e6e2ec4d03fd6",
+        "runners/dsl/src/substrate.rs": "bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+        "runners/dsl/src/sym.rs": "b54f6af6e456a7095a02eb5b3cab42a73072318bd7e54ed150c787468b170d5f",
+        "runners/dsl/src/term.rs": "5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+        "seeds/control_kinds.json": "8d62dacf9c72dc0c88550ea7d879d5c4300a6f3cbd2b2e94eb30cbbf0f8886b0",
+        "seeds/relation_vocabulary.json": "781e89f27c5d31c214d57eb521deb6dab04c34ef51413b7a14739dd98861d90a",
+        "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+        "substrate/seed_loader.py": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27"
+      },
+      "source_stable": true,
+      "target": "classify_kind_family",
+      "worker": 3
+    }
+  ]
+}

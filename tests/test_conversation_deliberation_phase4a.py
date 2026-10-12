@@ -86,6 +86,55 @@ def test_adapter_does_not_select_or_rank_candidates():
     assert not calls.intersection(forbidden)
 
 
+def test_incomplete_tuple_is_rejected_unless_prior_mode_is_explicit():
+    a = WorldAdapter(seeds=())
+    goal = _goal(a)
+    with pytest.raises(ValueError, match="missing evidence fields"):
+        materialize_deliberation(a, goal=goal, candidates=[
+            {"candidate_id": "partial", "grounding": 1.0}
+        ])
+    with pytest.raises(ValueError, match="must not supply Phase 4 tuple"):
+        materialize_deliberation(a, goal=goal, candidates=[
+            {"candidate_id": "mixed", "grounding": 1.0,
+             "expected_value": 0.5}
+        ], valuation_mode="authored_family_prior")
+
+
+def test_authored_prior_mode_preserves_absence_and_requires_seed_policy():
+    a = WorldAdapter(seeds=())
+    a.inner.load_seed_manifest(manifest_for("conversation_deliberation_phase4a"), a.agent)
+    d = materialize_deliberation(
+        a, goal=_goal(a), valuation_mode="authored_family_prior",
+        candidates=[{"candidate_id": "unknown-family", "kind": "unlisted",
+                     "grounding": 1.0}])
+    a.s.set_attr(d, "candidate_source", "authored_family_prior")
+    candidate = next(iter(a.inner.neighbours(d, "has_candidate")))
+    a.inner.run_rules()
+    attrs = a.s.node(candidate)["attrs"]
+    assert all(key not in attrs for key in
+               ("expected_value", "residual_cost", "consequence", "novelty"))
+    assert attrs.get("valuation_trace") != 1.0
+    assert a.s.node(d)["attrs"]["status"] == "no_candidate"
+
+
+def test_family_prior_rules_do_not_overwrite_complete_tuple_valuation():
+    a = WorldAdapter(seeds=())
+    a.inner.load_seed_manifest(manifest_for("conversation_deliberation_phase4a"), a.agent)
+    d = materialize_deliberation(a, goal=_goal(a), candidates=[{
+        "candidate_id": "measured-direct-fact",
+        "kind": "turn_continuation_direct_fact", "grounding": 1.0,
+        "expected_value": 0.21, "residual_cost": 0.1,
+        "consequence": 0.3, "novelty": 0.2,
+    }])
+    a.inner.run_rules()
+    candidate = next(iter(a.inner.neighbours(d, "has_candidate")))
+    attrs = a.s.node(candidate)["attrs"]
+    assert attrs["expected_value"] == 0.21
+    assert "policy_source" not in attrs
+    assert attrs["valuation_trace"] == 1.0
+    assert attrs.get("valuation_basis") != "authored_family_prior"
+
+
 def test_live_thought_manifold_source_is_materialized_with_provenance():
     a = WorldAdapter(seeds=())
     a.inner.load_seed_manifest(manifest_for("conversation_deliberation_phase4a"), a.agent)
@@ -456,3 +505,105 @@ def test_live_manifold_task_families_preserve_grounded_native_lifecycle(
     assert credit["counterfactual_credit"] < 0.0
     assert a.s.node(ledger[winner_id])["attrs"]["status"] == "resolved"
     assert a.s.node(ledger[alternative_id])["attrs"]["status"] == "rejected"
+
+
+def test_live_fact_continuation_is_selected_and_released_by_phase4a():
+    a = WorldAdapter(seeds=())
+    fact = a.learn_fact({"is_a": {"left": "moon", "right": "rock"}})
+    inbound = a.receive_utterance("The moon looks bright", "statement")
+
+    reply = a._deliberate_turn_continuation(
+        inbound, "The moon looks bright")
+
+    assert reply == "moon is_a rock"
+    deliberations = [d for d in a.s.nodes("Deliberation")
+                     if inbound in a.inner.neighbours(
+                         d, "generated_from_message")]
+    assert len(deliberations) == 1
+    d = deliberations[0]
+    assert a.s.node(d)["attrs"]["status"] == "selected"
+    assert a.s.node(d)["attrs"]["candidate_trace_complete"] == 1.0
+    selections = list(a.inner.neighbours(d, "has_selection"))
+    assert len(selections) == 1
+    winners = list(a.inner.neighbours(selections[0], "selects_candidate"))
+    assert len(winners) == 1
+    winner = winners[0]
+    attrs = a.s.node(winner)["attrs"]
+    assert attrs["kind"] == "turn_continuation_direct_fact"
+    assert attrs["policy_source"] == "seed:grounded_fact_continuation"
+    assert attrs["status"] == "selected"
+    assert attrs["surface"] == reply
+    assert list(a.inner.neighbours(winner, "derived_from_evidence")) == [fact]
+
+    receipts = [node for node in a.s.nodes("ProductionGateReceipt")
+                if a.s.node(node)["attrs"].get("turn_message_id")
+                == int(inbound.value)
+                and a.s.node(node)["attrs"].get("surface") == reply]
+    assert len(receipts) == 1
+    receipt = receipts[0]
+    assert a.s.node(receipt)["attrs"]["status"] == "released"
+    assert list(a.inner.neighbours(receipt, "releases")) == [winner]
+
+
+def test_live_fact_continuation_fails_closed_without_native_policy():
+    a = WorldAdapter(seeds=())
+    a.learn_fact({"is_a": {"left": "moon", "right": "rock"}})
+    inbound = a.receive_utterance("The moon looks bright", "statement")
+    a._ensure_live_deliberation_seeds = lambda: False
+
+    reply = a._deliberate_turn_continuation(
+        inbound, "The moon looks bright")
+
+    assert reply is None
+    assert not [node for node in a.s.nodes("ProductionGateReceipt")
+                if a.s.node(node)["attrs"].get("turn_message_id")
+                == int(inbound.value)]
+
+
+def test_transitive_continuation_candidates_collapse_natively_and_release_winner():
+    a = WorldAdapter(seeds=())
+    poodle = a.s.add_node("Concept", {"name": "poodle"})
+    dog = a.s.add_node("Concept", {"name": "dog"})
+    mammal = a.s.add_node("Concept", {"name": "mammal"})
+    a.inner.add_edge_unchecked(poodle, "causal_influence", dog)
+    a.inner.add_edge_unchecked(dog, "causal_influence", mammal)
+    inbound = a.receive_utterance("The poodle is clever", "user")
+
+    reply = a._deliberate_turn_continuation(
+        inbound, "The poodle is clever")
+
+    assert reply == "Indeed, poodle relates to mammal."
+    deliberation = next(d for d in a.s.nodes("Deliberation")
+                        if inbound in a.inner.neighbours(
+                            d, "generated_from_message"))
+    assert a.s.node(deliberation)["attrs"]["status"] == "selected"
+    trace = a.reply_turn_trace(int(inbound.value))
+    assert len(trace["deliberations"]) == 1
+    assert trace["deliberations"][0]["id"] == int(deliberation.value)
+    assert len(trace["deliberations"][0]["candidates"]) >= 2
+    candidates = list(a.inner.neighbours(deliberation, "has_candidate"))
+    assert len(candidates) >= 2
+    winner = next(candidate for selection in a.inner.neighbours(
+        deliberation, "has_selection")
+        for candidate in a.inner.neighbours(selection, "selects_candidate"))
+    winner_attrs = a.s.node(winner)["attrs"]
+    assert winner_attrs["kind"] == "turn_continuation_transitive_relation"
+    assert winner_attrs["decision_depth"] == "deep"
+    assert winner_attrs["policy_source"] == \
+        "seed:transitive_relation_continuation"
+    assert winner_attrs["valuation_basis"] == "authored_family_prior"
+    assert all(key not in winner_attrs for key in
+               ("residual_cost", "consequence", "novelty"))
+    assert winner_attrs["surface"] == reply
+    rejected = [a.s.node(candidate)["attrs"] for candidate in candidates
+                if candidate != winner]
+    assert rejected and all(
+        attrs.get("status") == "rejected"
+        and attrs.get("rejection_reason") == "outcompeted_by_native_collapse"
+        for attrs in rejected)
+
+    receipt = next(node for node in a.s.nodes("ProductionGateReceipt")
+                   if a.s.node(node)["attrs"].get("turn_message_id")
+                   == int(inbound.value))
+    assert a.s.node(receipt)["attrs"]["surface"] == reply
+    assert list(a.inner.neighbours(receipt, "releases")) == [winner]

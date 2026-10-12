@@ -1,0 +1,5 @@
+# Shape-decoding Python/native CPU attribution v1 — profiler scope amendment
+
+The preregistered attempt enabled `cProfile.Profile(timer=time.thread_time_ns)` in every worker. Sequential profiling worked. In the concurrent ThreadPool wave, independently enabling profilers raised `ValueError: Another profiling tool is already active`. A follow-up that enabled only one worker's profiler avoided that exception but produced invalid attribution: the per-thread CPU timer yielded profile totals far outside that worker's thread CPU and negative C-call self time while other workers were active. That result is diagnostic only and is excluded.
+
+The confirmatory capture therefore profiles all eight rehearsals only in sequential cells. Concurrent cells retain the preregistered synchronized fanout, per-thread CPU, wave wall, and phase timings, but run without cProfile. This gives valid Python/native call-site attribution for isolated operation and preserves uninstrumented concurrency evidence; it does not attribute Python versus native CPU in the concurrent wave. The cProfile CPU and phase totals remain subject to profiler overhead and apply only to this task and host.

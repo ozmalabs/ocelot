@@ -1,0 +1,84 @@
+{
+  "checks": {
+    "access_trace_on_events_present_and_off_events_absent": true,
+    "all_trace_drop_counters_zero": true,
+    "existing_semantic_controls_pass": true,
+    "lifecycle_and_shortfall_reproduce": true,
+    "no_worker_failures": true,
+    "semantic_digest_matches_v2_and_pairs": true,
+    "six_distinct_fresh_processes": true,
+    "source_lock_stable": true,
+    "three_matched_replicate_pairs": true,
+    "two_prompt_schedule_reproduces": true
+  },
+  "lock_path": "evaluation/substrate_capability/access_trace_overhead_v1_lock_20261003.json",
+  "lock_sha256": "48d6167ec41634687bdb8788aecc68da89ce28681040c659a0d6b496c155826f",
+  "raw_compressed_sha256": "62b91a06f5d737c10cd265644b08efb42e923557603706b619e83335286c18e6",
+  "raw_path": "evaluation/reports/access_trace_overhead_v1_workers_raw_20261003.json.gz",
+  "raw_sha256": "bd45124a5843590dd12434dd1fda8e9f972e9d2c49e1d0bf4d6fcc0947e690e9",
+  "run_id": "access-trace-overhead-v1-20261003",
+  "schema_version": 1,
+  "summary": {
+    "latency_rows": 12,
+    "matched_pairs": 3,
+    "off_access_event_rows": 0,
+    "on_access_event_rows": 279024,
+    "workers": 6
+  },
+  "timing_summary": {
+    "describe who you are": {
+      "median_paired_on_over_off": 1.1092045427472925,
+      "off_median_ns": 7643272972,
+      "on_median_ns": 8477953102,
+      "paired_ratio_max": 1.1454323500973354,
+      "paired_ratio_min": 1.010303999518627,
+      "pairs": [
+        {
+          "off_ns": 7643272972,
+          "on_ns": 8477953102,
+          "on_over_off": 1.1092045427472925,
+          "replicate": 0
+        },
+        {
+          "off_ns": 7990609166,
+          "on_ns": 8072944399,
+          "on_over_off": 1.010303999518627,
+          "replicate": 1
+        },
+        {
+          "off_ns": 7529616473,
+          "on_ns": 8624666292,
+          "on_over_off": 1.1454323500973354,
+          "replicate": 2
+        }
+      ]
+    },
+    "report your organisation": {
+      "median_paired_on_over_off": 1.019136929499555,
+      "off_median_ns": 8275741989,
+      "on_median_ns": 8434114280,
+      "paired_ratio_max": 1.0294601601336537,
+      "paired_ratio_min": 0.9863443512962026,
+      "pairs": [
+        {
+          "off_ns": 8562327457,
+          "on_ns": 8814574995,
+          "on_over_off": 1.0294601601336537,
+          "replicate": 0
+        },
+        {
+          "off_ns": 8153728059,
+          "on_ns": 8042383613,
+          "on_over_off": 0.9863443512962026,
+          "replicate": 1
+        },
+        {
+          "off_ns": 8275741989,
+          "on_ns": 8434114280,
+          "on_over_off": 1.019136929499555,
+          "replicate": 2
+        }
+      ]
+    }
+  }
+}

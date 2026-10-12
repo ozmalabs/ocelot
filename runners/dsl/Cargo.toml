@@ -65,6 +65,33 @@ cabac_baseline = []
 # Enable wgpu-based motion estimation. Adds the wgpu/pollster
 # dependencies. Build with `--features gpu_me`.
 gpu_me = ["dep:wgpu", "dep:pollster", "dep:bytemuck"]
+cow_shards_128 = []
+cow_shards_256 = []
+cow_shards_512 = []
+# Experimental GenInfer validator: combine structural and slot scans while
+# preserving the baseline build_candidate result contract. Off by default.
+geninfer_fused_candidate_validation = []
+# Experimental exact full-rank matrix recovery for one- and three-coordinate
+# GenInfer cases. Rank-deficient or unsupported inputs abstain. Off by default.
+geninfer_full_rank_matrix_solver = []
+# Experimental exact 2-D quadratic-map induction. Requires unique typed
+# predicate+id alignment, full-rank degree-2 features, bounded integer
+# coefficients, and exact residual validation. Off by default.
+geninfer_quadratic_map_solver = []
+# Exact 2-D linear map prefilter for uniquely identity-aligned full-rank bases.
+# It is additionally runtime-gated and falls back to exhaustive enumeration
+# whenever it cannot prove the alignment and rank conditions.
+geninfer_linear_exact_prefilter = []
+# WP3 (RECURSIVE_SELF_IMPROVEMENT_PLAN_20261006): MDL witness for GenInfer maps.
+geninfer_grain_mdl = []
+# Experimental identity alignment for the full-rank GenInfer solver. Sorts
+# typed identity keys and merges them in O(N log N), rather than scanning all
+# target relations for each source relation. Off by default.
+geninfer_full_rank_sorted_identity_join = ["geninfer_full_rank_matrix_solver"]
+# Adds an audit-only counter for identity-key field comparisons in both
+# full-rank GenInfer alignment algorithms. Off by default; comparison counts
+# are recorded only while scale audit is enabled.
+geninfer_full_rank_identity_join_work_audit = ["geninfer_full_rank_matrix_solver"]
 # AVX-512 fast paths (l1_hot_paths.rs::find_attr_sym_avx512, l3_lqr.rs's
 # mul_avx512 / mul_bf16_inner / mul_bf16_pre_b_inner). OFF by default:
 # `stdarch_x86_avx512` (rust-lang/rust#111137) and `avx512_target_feature`

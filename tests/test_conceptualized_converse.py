@@ -176,15 +176,28 @@ def test_monitor_gates_a_revision_on_the_live_agent():
 # ===========================================================================
 # 4. NO REGRESSION of prior behaviour + RICH PROSE NOT DOWNGRADED.
 # ===========================================================================
-def test_no_regression_and_rich_prose_intact():
+def test_no_regression_and_rich_prose_intact(monkeypatch):
     a = _agent()
     # A social surface is supported; an unsupported statement must expose the
     # explicit cognition failure rather than a fixed acknowledgement.
     assert a.converse("hello", "greeting") == "hello"
     assert a.converse("the sky is blue", "statement") == \
         "ERROR: no communicative response could be generated."
-    # The current world has a grounded Borogove article.  Verify the answer by
-    # its graph evidence rather than requiring a prose fallback string.
+    # Keep this production/rendering regression independent of live Wikipedia
+    # availability. The grounding boundary is deterministic here; retrieval
+    # itself is covered by the topic-grounding tests.
+    import domains.topic_grounding as topic_grounding
+
+    def ground_offline_fixture(agent, phrase, **_kwargs):
+        if str(phrase).strip().casefold() != "borogove":
+            return None
+        answer = "A borogove is a fictional creature described in the local test fixture."
+        return agent.learn_from_teacher(phrase, {
+            "answer": answer,
+            "learn": [{"phrase": phrase, "answer": answer}],
+        })
+
+    monkeypatch.setattr(topic_grounding, "ground_topic", ground_offline_fixture)
     unans = a.converse("what is a borogove", "question")
     assert unans != "ERROR: no communicative response could be generated."
     held = [a.s.node(n)["attrs"] for n in a.s.nodes("HeldAnswer")
@@ -198,6 +211,62 @@ def test_no_regression_and_rich_prose_intact():
     rule = a.converse("Tell me about the rule hop_descend_gradient.", "question")
     assert "hop_descend_gradient" in rule
     assert len(rule.split()) >= 5, "fluent prose, not a bag of concept tokens"
+
+
+def test_authored_vision_answer_releases_from_seeded_topic_evidence(monkeypatch):
+    a = _agent()
+    import domains.topic_grounding as topic_grounding
+
+    def no_external_retrieval(*_args, **_kwargs):
+        raise AssertionError("seeded answer must not require external retrieval")
+
+    monkeypatch.setattr(topic_grounding, "ground_topic", no_external_retrieval)
+    held = next(n for n in a.s.nodes("HeldAnswer")
+                if a.s.node(n)["attrs"].get("topic") == "vision")
+    attrs = a.s.node(held)["attrs"]
+    assert attrs["grounding_referent"] == "vision"
+    assert attrs["grounding_status"] == "supported"
+    assert held in a.inner.neighbours(a.agent, "holds_answer")
+    evidence = [a.s.node(n)["attrs"] for n in a.inner.neighbours(
+        held, "grounded_by")]
+    assert any(ev.get("kind") == "topic_answer"
+               and ev.get("referent") == "vision"
+               and ev.get("status") == "supported"
+               and ev.get("source") == "vision_science:1.1.0"
+               for ev in evidence)
+
+    reply = a.converse("What do you know about vision?", "question")
+
+    assert reply == attrs["text"]
+    goals = [a.s.node(g)["attrs"] for g in a.inner.neighbours(
+        a.agent, "has_goal")
+        if a.s.node(g)["attrs"].get("kind") == "answer_topic"
+        and a.s.node(g)["attrs"].get("concept") == "vision"]
+    assert goals and goals[-1].get("outcome") == "resolved"
+    receipts = [a.s.node(r)["attrs"] for r in a.s.nodes(
+        "ProductionGateReceipt")]
+    assert any(r.get("semantic_event") == "answer_topic"
+               and r.get("surface") == reply
+               and r.get("recoverable") is True
+               and r.get("parse_back_mode") == "conversation_information_graph"
+               for r in receipts)
+
+
+def test_canonical_diagnostic_error_skips_communicative_intent_pipeline(monkeypatch):
+    a = _agent()
+    calls = []
+
+    def should_not_conceptualize(*args, **kwargs):
+        calls.append((args, kwargs))
+        raise AssertionError("diagnostic error is not an utterance")
+
+    monkeypatch.setattr(cc, "conceptualize_reply", should_not_conceptualize)
+
+    reply = a.converse("the sky is blue", "statement")
+
+    assert reply == "ERROR: no communicative response could be generated."
+    assert calls == []
+    assert a._last_reply_intent is None
     org = a.converse("How are you organised?", "question")
     assert "organis" in org.lower()
     assert a._donkey["n"] == 0

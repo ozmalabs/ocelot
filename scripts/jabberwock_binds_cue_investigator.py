@@ -6,7 +6,7 @@ WALL D (81d1ddea) made a teacher-grown axis carry the REAL acoustic cue the teac
 was wired to a GENERIC held Operator just to prove pickability/dispatch -- so dispatching the axis
 did NOT actually MEASURE its cue. THIS build closes that gap.
 
-THE FIX (this script + domains/cue_investigator.py + seeds/cue_investigator.json, donkey=0):
+THE FIX (this script + domains/cue_investigator.py + domain_data/cue_investigator.json, donkey=0):
 a CUE-SPECIFIC Operator (runner='cue_investigator') is installed (graph-data swap, precedent
 4bca77bc/81d1ddea), and a cue-grounded axis's `investigated_by` is re-pointed at it. Dispatching
 the axis composes the cue's Term via hint_grounding.compose_from_spec(res, operator), EVALUATES the
@@ -56,11 +56,11 @@ SEP = "=" * 92
 # GRAPH-DATA SWAP: install the cue-specific Operator + delegate the world's execute (LIVE wrap).
 # ---------------------------------------------------------------------------------------------
 def install_cue_investigator(agent, world):
-    """Install the cue-specific Operator (seeds/cue_investigator.json) onto the live agent and make
+    """Install the cue-specific Operator (domain_data/cue_investigator.json) onto the live agent and make
     the world's execute delegate runner='cue_investigator' to the held-Term measurement. The world
     file is NOT edited -- we wrap the live instance's execute (world-adapter work). Returns the
     Operator node id."""
-    man = json.load(open(os.path.join(ROOT, "seeds", "cue_investigator.json")))
+    man = json.load(open(os.path.join(ROOT, "domain_data", "cue_investigator.json")))
     opid = None
     for node in man.get("nodes", []):
         if node.get("type") == "Operator":
@@ -110,7 +110,7 @@ def repoint_axis(agent, axis_id, opid):
 # Wall-D vocab match (reused verbatim from jabberwock_grounds_acoustic_cue): advice -> real cue.
 # ---------------------------------------------------------------------------------------------
 def install_cue_vocab(agent):
-    man = json.load(open(os.path.join(ROOT, "seeds", "acoustic_cue_vocab.json")))
+    man = json.load(open(os.path.join(ROOT, "domain_data", "acoustic_cue_vocab.json")))
     for node in man.get("nodes", []):
         if node.get("type") == "AcousticCue":
             agent.s.add_node("AcousticCue", dict(node["attrs"]))
@@ -120,7 +120,7 @@ def install_cue_vocab(agent):
 
 
 def _cue_match_term():
-    man = json.load(open(os.path.join(ROOT, "seeds", "acoustic_cue_vocab.json")))
+    man = json.load(open(os.path.join(ROOT, "domain_data", "acoustic_cue_vocab.json")))
     for c in man.get("concepts", []):
         if c.get("name") == "acoustic_cue_match":
             return c["definition"]

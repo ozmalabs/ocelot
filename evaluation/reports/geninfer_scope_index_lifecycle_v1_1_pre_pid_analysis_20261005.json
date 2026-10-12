@@ -1,0 +1,177 @@
+{
+  "all_gates_passed": true,
+  "capture_sha256": "sha256:350b29a5d43f8787413b7abcae5dd2d6a04eee8b7a1766597cf77cd3bf6aab2a",
+  "gate_count": 15,
+  "gates": [
+    {
+      "detail": "expected 36 locked cases; observed 36 rows",
+      "name": "locked_case_set",
+      "passed": true
+    },
+    {
+      "detail": "capture references current lock bytes",
+      "name": "capture_lock_hash",
+      "passed": true
+    },
+    {
+      "detail": "top-level and all worker source/build manifests match the lock",
+      "name": "source_manifest_matches",
+      "passed": true
+    },
+    {
+      "detail": "indexed task parts resolve to the exact scan-derived member IDs",
+      "name": "scope_and_task_membership",
+      "passed": true
+    },
+    {
+      "detail": "fork graph equals parent at creation; branch writes leave parent unchanged",
+      "name": "fork_and_branch_isolation",
+      "passed": true
+    },
+    {
+      "detail": "indexed branch scope buckets and decoy bucket agree with full-scan oracle",
+      "name": "branch_index_mutation",
+      "passed": true
+    },
+    {
+      "detail": "restored graph and re-declared indexed membership match",
+      "name": "restore_parity",
+      "passed": true
+    },
+    {
+      "detail": "each target frame has exact oracle, decoded status, receipt, and acquired generator",
+      "name": "output_oracles",
+      "passed": true
+    },
+    {
+      "detail": "exact output and run_rules return-count parity across 9 untraced scan/index pairs",
+      "name": "paired_output_and_coarse_work",
+      "passed": true
+    },
+    {
+      "detail": "traced workers match the separate untraced result and coarse work count; no trace drops",
+      "name": "traced_untraced_outcome_parity",
+      "passed": true
+    },
+    {
+      "detail": "traced indexed closure records fewer codebook population node visits in every cell",
+      "name": "indexed_trace_avoids_population_scan",
+      "passed": true
+    },
+    {
+      "detail": "indexed and scan closures parse equal parts and enumerate equal search candidates",
+      "name": "traced_parse_and_candidate_parity",
+      "passed": true
+    },
+    {
+      "detail": "indexed path records scope-index queries and returned members without trace drops",
+      "name": "indexed_scope_query_events",
+      "passed": true
+    },
+    {
+      "detail": "all lifecycle phases were recorded",
+      "name": "lifecycle_measurements_present",
+      "passed": true
+    },
+    {
+      "detail": "index phases are present only in indexed arms and RSS high-water checkpoints are recorded",
+      "name": "index_toggle_and_phase_rss",
+      "passed": true
+    }
+  ],
+  "lock_sha256": "sha256:5cbd387787147877730e6683332721f10ffde6f17e2ad73b20b37e292b5411f5",
+  "paired_rows": [
+    {
+      "closure_work_match": true,
+      "decoys": 0,
+      "indexed_cpu_ns": 19649515,
+      "indexed_wall_ns": 19643369,
+      "outputs_match": true,
+      "replicate": 0,
+      "scan_cpu_ns": 19480275,
+      "scan_wall_ns": 19477038
+    },
+    {
+      "closure_work_match": true,
+      "decoys": 0,
+      "indexed_cpu_ns": 19301865,
+      "indexed_wall_ns": 19295836,
+      "outputs_match": true,
+      "replicate": 1,
+      "scan_cpu_ns": 29650298,
+      "scan_wall_ns": 29736030
+    },
+    {
+      "closure_work_match": true,
+      "decoys": 0,
+      "indexed_cpu_ns": 19334835,
+      "indexed_wall_ns": 19332137,
+      "outputs_match": true,
+      "replicate": 2,
+      "scan_cpu_ns": 19887236,
+      "scan_wall_ns": 19888440
+    },
+    {
+      "closure_work_match": true,
+      "decoys": 1000,
+      "indexed_cpu_ns": 26627457,
+      "indexed_wall_ns": 26623818,
+      "outputs_match": true,
+      "replicate": 0,
+      "scan_cpu_ns": 25891507,
+      "scan_wall_ns": 25888872
+    },
+    {
+      "closure_work_match": true,
+      "decoys": 1000,
+      "indexed_cpu_ns": 26601877,
+      "indexed_wall_ns": 26598758,
+      "outputs_match": true,
+      "replicate": 1,
+      "scan_cpu_ns": 26704887,
+      "scan_wall_ns": 26715439
+    },
+    {
+      "closure_work_match": true,
+      "decoys": 1000,
+      "indexed_cpu_ns": 26243287,
+      "indexed_wall_ns": 26240755,
+      "outputs_match": true,
+      "replicate": 2,
+      "scan_cpu_ns": 38952650,
+      "scan_wall_ns": 38945375
+    },
+    {
+      "closure_work_match": true,
+      "decoys": 10000,
+      "indexed_cpu_ns": 85192653,
+      "indexed_wall_ns": 85191741,
+      "outputs_match": true,
+      "replicate": 0,
+      "scan_cpu_ns": 85881153,
+      "scan_wall_ns": 85874436
+    },
+    {
+      "closure_work_match": true,
+      "decoys": 10000,
+      "indexed_cpu_ns": 84970573,
+      "indexed_wall_ns": 84987329,
+      "outputs_match": true,
+      "replicate": 1,
+      "scan_cpu_ns": 86878434,
+      "scan_wall_ns": 86869073
+    },
+    {
+      "closure_work_match": true,
+      "decoys": 10000,
+      "indexed_cpu_ns": 86397224,
+      "indexed_wall_ns": 86389329,
+      "outputs_match": true,
+      "replicate": 2,
+      "scan_cpu_ns": 86259024,
+      "scan_wall_ns": 86251619
+    }
+  ],
+  "passed_count": 15,
+  "schema": "GenInferScopeIndexLifecycleV1_1Analysis"
+}

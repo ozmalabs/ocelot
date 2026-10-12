@@ -1,0 +1,535 @@
+{
+  "checks": {
+    "all_exact_key_queries_correct": true,
+    "all_readers_reindex_all_records": true,
+    "all_shape_queries_return_six_records": true,
+    "all_written_records_paged_out": true,
+    "magnitude_collision_is_observed": true,
+    "rank_shape_recall_is_exact": true
+  },
+  "claim_boundary": "Synthetic adapter-level retrieval pilot. Rank labels are deliberately aligned with the ordinal-shape feature representation; magnitude labels are deliberately not. It is not natural-task memory utility, retrieval against learned semantics, or broad long-term-memory efficacy.",
+  "configuration": {
+    "arms": [
+      "shape_recall",
+      "exact_key_control"
+    ],
+    "magnitude_classes_per_rank": 2,
+    "queries": 12,
+    "rank_classes": 6,
+    "resident_records_after_shuffle": 0,
+    "stored_record_count": 36,
+    "stored_replicates_per_class": 3,
+    "writer_shuffle_evicted_clusters": 6
+  },
+  "dataset_record_metadata": [
+    {
+      "key": "new_signs<utts<round|low|0",
+      "magnitude_label": "low",
+      "rank_label": "new_signs<utts<round"
+    },
+    {
+      "key": "new_signs<utts<round|low|1",
+      "magnitude_label": "low",
+      "rank_label": "new_signs<utts<round"
+    },
+    {
+      "key": "new_signs<utts<round|low|2",
+      "magnitude_label": "low",
+      "rank_label": "new_signs<utts<round"
+    },
+    {
+      "key": "new_signs<utts<round|high|0",
+      "magnitude_label": "high",
+      "rank_label": "new_signs<utts<round"
+    },
+    {
+      "key": "new_signs<utts<round|high|1",
+      "magnitude_label": "high",
+      "rank_label": "new_signs<utts<round"
+    },
+    {
+      "key": "new_signs<utts<round|high|2",
+      "magnitude_label": "high",
+      "rank_label": "new_signs<utts<round"
+    },
+    {
+      "key": "new_signs<round<utts|low|0",
+      "magnitude_label": "low",
+      "rank_label": "new_signs<round<utts"
+    },
+    {
+      "key": "new_signs<round<utts|low|1",
+      "magnitude_label": "low",
+      "rank_label": "new_signs<round<utts"
+    },
+    {
+      "key": "new_signs<round<utts|low|2",
+      "magnitude_label": "low",
+      "rank_label": "new_signs<round<utts"
+    },
+    {
+      "key": "new_signs<round<utts|high|0",
+      "magnitude_label": "high",
+      "rank_label": "new_signs<round<utts"
+    },
+    {
+      "key": "new_signs<round<utts|high|1",
+      "magnitude_label": "high",
+      "rank_label": "new_signs<round<utts"
+    },
+    {
+      "key": "new_signs<round<utts|high|2",
+      "magnitude_label": "high",
+      "rank_label": "new_signs<round<utts"
+    },
+    {
+      "key": "utts<new_signs<round|low|0",
+      "magnitude_label": "low",
+      "rank_label": "utts<new_signs<round"
+    },
+    {
+      "key": "utts<new_signs<round|low|1",
+      "magnitude_label": "low",
+      "rank_label": "utts<new_signs<round"
+    },
+    {
+      "key": "utts<new_signs<round|low|2",
+      "magnitude_label": "low",
+      "rank_label": "utts<new_signs<round"
+    },
+    {
+      "key": "utts<new_signs<round|high|0",
+      "magnitude_label": "high",
+      "rank_label": "utts<new_signs<round"
+    },
+    {
+      "key": "utts<new_signs<round|high|1",
+      "magnitude_label": "high",
+      "rank_label": "utts<new_signs<round"
+    },
+    {
+      "key": "utts<new_signs<round|high|2",
+      "magnitude_label": "high",
+      "rank_label": "utts<new_signs<round"
+    },
+    {
+      "key": "utts<round<new_signs|low|0",
+      "magnitude_label": "low",
+      "rank_label": "utts<round<new_signs"
+    },
+    {
+      "key": "utts<round<new_signs|low|1",
+      "magnitude_label": "low",
+      "rank_label": "utts<round<new_signs"
+    },
+    {
+      "key": "utts<round<new_signs|low|2",
+      "magnitude_label": "low",
+      "rank_label": "utts<round<new_signs"
+    },
+    {
+      "key": "utts<round<new_signs|high|0",
+      "magnitude_label": "high",
+      "rank_label": "utts<round<new_signs"
+    },
+    {
+      "key": "utts<round<new_signs|high|1",
+      "magnitude_label": "high",
+      "rank_label": "utts<round<new_signs"
+    },
+    {
+      "key": "utts<round<new_signs|high|2",
+      "magnitude_label": "high",
+      "rank_label": "utts<round<new_signs"
+    },
+    {
+      "key": "round<new_signs<utts|low|0",
+      "magnitude_label": "low",
+      "rank_label": "round<new_signs<utts"
+    },
+    {
+      "key": "round<new_signs<utts|low|1",
+      "magnitude_label": "low",
+      "rank_label": "round<new_signs<utts"
+    },
+    {
+      "key": "round<new_signs<utts|low|2",
+      "magnitude_label": "low",
+      "rank_label": "round<new_signs<utts"
+    },
+    {
+      "key": "round<new_signs<utts|high|0",
+      "magnitude_label": "high",
+      "rank_label": "round<new_signs<utts"
+    },
+    {
+      "key": "round<new_signs<utts|high|1",
+      "magnitude_label": "high",
+      "rank_label": "round<new_signs<utts"
+    },
+    {
+      "key": "round<new_signs<utts|high|2",
+      "magnitude_label": "high",
+      "rank_label": "round<new_signs<utts"
+    },
+    {
+      "key": "round<utts<new_signs|low|0",
+      "magnitude_label": "low",
+      "rank_label": "round<utts<new_signs"
+    },
+    {
+      "key": "round<utts<new_signs|low|1",
+      "magnitude_label": "low",
+      "rank_label": "round<utts<new_signs"
+    },
+    {
+      "key": "round<utts<new_signs|low|2",
+      "magnitude_label": "low",
+      "rank_label": "round<utts<new_signs"
+    },
+    {
+      "key": "round<utts<new_signs|high|0",
+      "magnitude_label": "high",
+      "rank_label": "round<utts<new_signs"
+    },
+    {
+      "key": "round<utts<new_signs|high|1",
+      "magnitude_label": "high",
+      "rank_label": "round<utts<new_signs"
+    },
+    {
+      "key": "round<utts<new_signs|high|2",
+      "magnitude_label": "high",
+      "rank_label": "round<utts<new_signs"
+    }
+  ],
+  "environment": {
+    "platform": "Linux-6.8.0-137-generic-x86_64-with-glibc2.39",
+    "processor": "x86_64",
+    "python": "3.13.5"
+  },
+  "queries": [
+    {
+      "exact_bind_ns": 1369878,
+      "exact_key_correct": true,
+      "exact_recall_ns": 83681,
+      "exact_restore": {
+        "duplicate_keys": 0,
+        "indexed": 36,
+        "skipped": 0
+      },
+      "expected_magnitude_label": "low",
+      "expected_rank_label": "new_signs<utts<round",
+      "query_id": "new_signs<utts<round|low",
+      "shape_bind_ns": 1401149,
+      "shape_candidate_count": 6,
+      "shape_cluster_id": "cat:0,1,2",
+      "shape_magnitude_precision": 0.5,
+      "shape_rank_precision": 1.0,
+      "shape_recall_all_records_in_rank_cluster": true,
+      "shape_recall_ns": 84630,
+      "shape_restore": {
+        "duplicate_keys": 0,
+        "indexed": 36,
+        "skipped": 0
+      }
+    },
+    {
+      "exact_bind_ns": 1258108,
+      "exact_key_correct": true,
+      "exact_recall_ns": 76071,
+      "exact_restore": {
+        "duplicate_keys": 0,
+        "indexed": 36,
+        "skipped": 0
+      },
+      "expected_magnitude_label": "high",
+      "expected_rank_label": "new_signs<utts<round",
+      "query_id": "new_signs<utts<round|high",
+      "shape_bind_ns": 1619770,
+      "shape_candidate_count": 6,
+      "shape_cluster_id": "cat:0,1,2",
+      "shape_magnitude_precision": 0.5,
+      "shape_rank_precision": 1.0,
+      "shape_recall_all_records_in_rank_cluster": true,
+      "shape_recall_ns": 96151,
+      "shape_restore": {
+        "duplicate_keys": 0,
+        "indexed": 36,
+        "skipped": 0
+      }
+    },
+    {
+      "exact_bind_ns": 1265218,
+      "exact_key_correct": true,
+      "exact_recall_ns": 82291,
+      "exact_restore": {
+        "duplicate_keys": 0,
+        "indexed": 36,
+        "skipped": 0
+      },
+      "expected_magnitude_label": "low",
+      "expected_rank_label": "new_signs<round<utts",
+      "query_id": "new_signs<round<utts|low",
+      "shape_bind_ns": 1307698,
+      "shape_candidate_count": 6,
+      "shape_cluster_id": "cat:0,2,1",
+      "shape_magnitude_precision": 0.5,
+      "shape_rank_precision": 1.0,
+      "shape_recall_all_records_in_rank_cluster": true,
+      "shape_recall_ns": 88850,
+      "shape_restore": {
+        "duplicate_keys": 0,
+        "indexed": 36,
+        "skipped": 0
+      }
+    },
+    {
+      "exact_bind_ns": 1504260,
+      "exact_key_correct": true,
+      "exact_recall_ns": 84420,
+      "exact_restore": {
+        "duplicate_keys": 0,
+        "indexed": 36,
+        "skipped": 0
+      },
+      "expected_magnitude_label": "high",
+      "expected_rank_label": "new_signs<round<utts",
+      "query_id": "new_signs<round<utts|high",
+      "shape_bind_ns": 1262308,
+      "shape_candidate_count": 6,
+      "shape_cluster_id": "cat:0,2,1",
+      "shape_magnitude_precision": 0.5,
+      "shape_rank_precision": 1.0,
+      "shape_recall_all_records_in_rank_cluster": true,
+      "shape_recall_ns": 76091,
+      "shape_restore": {
+        "duplicate_keys": 0,
+        "indexed": 36,
+        "skipped": 0
+      }
+    },
+    {
+      "exact_bind_ns": 1307238,
+      "exact_key_correct": true,
+      "exact_recall_ns": 89250,
+      "exact_restore": {
+        "duplicate_keys": 0,
+        "indexed": 36,
+        "skipped": 0
+      },
+      "expected_magnitude_label": "low",
+      "expected_rank_label": "utts<new_signs<round",
+      "query_id": "utts<new_signs<round|low",
+      "shape_bind_ns": 1302299,
+      "shape_candidate_count": 6,
+      "shape_cluster_id": "cat:1,0,2",
+      "shape_magnitude_precision": 0.5,
+      "shape_rank_precision": 1.0,
+      "shape_recall_all_records_in_rank_cluster": true,
+      "shape_recall_ns": 78420,
+      "shape_restore": {
+        "duplicate_keys": 0,
+        "indexed": 36,
+        "skipped": 0
+      }
+    },
+    {
+      "exact_bind_ns": 1310228,
+      "exact_key_correct": true,
+      "exact_recall_ns": 80230,
+      "exact_restore": {
+        "duplicate_keys": 0,
+        "indexed": 36,
+        "skipped": 0
+      },
+      "expected_magnitude_label": "high",
+      "expected_rank_label": "utts<new_signs<round",
+      "query_id": "utts<new_signs<round|high",
+      "shape_bind_ns": 1287098,
+      "shape_candidate_count": 6,
+      "shape_cluster_id": "cat:1,0,2",
+      "shape_magnitude_precision": 0.5,
+      "shape_rank_precision": 1.0,
+      "shape_recall_all_records_in_rank_cluster": true,
+      "shape_recall_ns": 74321,
+      "shape_restore": {
+        "duplicate_keys": 0,
+        "indexed": 36,
+        "skipped": 0
+      }
+    },
+    {
+      "exact_bind_ns": 1289548,
+      "exact_key_correct": true,
+      "exact_recall_ns": 81191,
+      "exact_restore": {
+        "duplicate_keys": 0,
+        "indexed": 36,
+        "skipped": 0
+      },
+      "expected_magnitude_label": "low",
+      "expected_rank_label": "utts<round<new_signs",
+      "query_id": "utts<round<new_signs|low",
+      "shape_bind_ns": 1292008,
+      "shape_candidate_count": 6,
+      "shape_cluster_id": "cat:2,0,1",
+      "shape_magnitude_precision": 0.5,
+      "shape_rank_precision": 1.0,
+      "shape_recall_all_records_in_rank_cluster": true,
+      "shape_recall_ns": 85681,
+      "shape_restore": {
+        "duplicate_keys": 0,
+        "indexed": 36,
+        "skipped": 0
+      }
+    },
+    {
+      "exact_bind_ns": 1388588,
+      "exact_key_correct": true,
+      "exact_recall_ns": 89771,
+      "exact_restore": {
+        "duplicate_keys": 0,
+        "indexed": 36,
+        "skipped": 0
+      },
+      "expected_magnitude_label": "high",
+      "expected_rank_label": "utts<round<new_signs",
+      "query_id": "utts<round<new_signs|high",
+      "shape_bind_ns": 1282658,
+      "shape_candidate_count": 6,
+      "shape_cluster_id": "cat:2,0,1",
+      "shape_magnitude_precision": 0.5,
+      "shape_rank_precision": 1.0,
+      "shape_recall_all_records_in_rank_cluster": true,
+      "shape_recall_ns": 81380,
+      "shape_restore": {
+        "duplicate_keys": 0,
+        "indexed": 36,
+        "skipped": 0
+      }
+    },
+    {
+      "exact_bind_ns": 1499029,
+      "exact_key_correct": true,
+      "exact_recall_ns": 78730,
+      "exact_restore": {
+        "duplicate_keys": 0,
+        "indexed": 36,
+        "skipped": 0
+      },
+      "expected_magnitude_label": "low",
+      "expected_rank_label": "round<new_signs<utts",
+      "query_id": "round<new_signs<utts|low",
+      "shape_bind_ns": 1275328,
+      "shape_candidate_count": 6,
+      "shape_cluster_id": "cat:1,2,0",
+      "shape_magnitude_precision": 0.5,
+      "shape_rank_precision": 1.0,
+      "shape_recall_all_records_in_rank_cluster": true,
+      "shape_recall_ns": 76580,
+      "shape_restore": {
+        "duplicate_keys": 0,
+        "indexed": 36,
+        "skipped": 0
+      }
+    },
+    {
+      "exact_bind_ns": 1346128,
+      "exact_key_correct": true,
+      "exact_recall_ns": 85400,
+      "exact_restore": {
+        "duplicate_keys": 0,
+        "indexed": 36,
+        "skipped": 0
+      },
+      "expected_magnitude_label": "high",
+      "expected_rank_label": "round<new_signs<utts",
+      "query_id": "round<new_signs<utts|high",
+      "shape_bind_ns": 1317638,
+      "shape_candidate_count": 6,
+      "shape_cluster_id": "cat:1,2,0",
+      "shape_magnitude_precision": 0.5,
+      "shape_rank_precision": 1.0,
+      "shape_recall_all_records_in_rank_cluster": true,
+      "shape_recall_ns": 86081,
+      "shape_restore": {
+        "duplicate_keys": 0,
+        "indexed": 36,
+        "skipped": 0
+      }
+    },
+    {
+      "exact_bind_ns": 1311398,
+      "exact_key_correct": true,
+      "exact_recall_ns": 85540,
+      "exact_restore": {
+        "duplicate_keys": 0,
+        "indexed": 36,
+        "skipped": 0
+      },
+      "expected_magnitude_label": "low",
+      "expected_rank_label": "round<utts<new_signs",
+      "query_id": "round<utts<new_signs|low",
+      "shape_bind_ns": 1339569,
+      "shape_candidate_count": 6,
+      "shape_cluster_id": "cat:2,1,0",
+      "shape_magnitude_precision": 0.5,
+      "shape_rank_precision": 1.0,
+      "shape_recall_all_records_in_rank_cluster": true,
+      "shape_recall_ns": 88650,
+      "shape_restore": {
+        "duplicate_keys": 0,
+        "indexed": 36,
+        "skipped": 0
+      }
+    },
+    {
+      "exact_bind_ns": 1321368,
+      "exact_key_correct": true,
+      "exact_recall_ns": 86581,
+      "exact_restore": {
+        "duplicate_keys": 0,
+        "indexed": 36,
+        "skipped": 0
+      },
+      "expected_magnitude_label": "high",
+      "expected_rank_label": "round<utts<new_signs",
+      "query_id": "round<utts<new_signs|high",
+      "shape_bind_ns": 1374608,
+      "shape_candidate_count": 6,
+      "shape_cluster_id": "cat:2,1,0",
+      "shape_magnitude_precision": 0.5,
+      "shape_rank_precision": 1.0,
+      "shape_recall_all_records_in_rank_cluster": true,
+      "shape_recall_ns": 90521,
+      "shape_restore": {
+        "duplicate_keys": 0,
+        "indexed": 36,
+        "skipped": 0
+      }
+    }
+  ],
+  "run_id": "substrate-memory-shape-quality-pilot-20260925-v1",
+  "schema_version": 1,
+  "scope": "fresh-process durable long-term shape recall on a controlled six-rank-class dataset with low/high magnitude labels",
+  "source_sha256": {
+    "domains/long_term_memory.py": "22afc178eb5c8cf2947131035daa57429bec9852bf5a308a97f453815778e950",
+    "runners/dsl/Cargo.lock": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+    "runners/dsl/python/substrate_rs/_native.abi3.so": "fd775294cfcc702d362042b43919272931568ef278c83e6b18f0ea3caab1ee40",
+    "runners/dsl/python/substrate_rs/_native.build.json": "4b92d4307bd88491920d0ccd991e47f5cd7deccecb3daf3b99c4127a67c1c690",
+    "runners/dsl/src/memory.rs": "c51bd2b726d136c90ffe6e541b2c54d39e8e0a5a606342aab6dfdef6c673fe2e",
+    "runners/dsl/src/py.rs": "1758ee1bc7c6ea0013bc88cfa99d024a49572cd7fb805f1baeaebd6beef30126",
+    "scripts/substrate_memory_shape_quality_pilot.py": "0537113bf0f201613b463d9f119b009d06c929442a4f66a9637052c6073d315b"
+  },
+  "summary": {
+    "exact_key_accuracy": 1,
+    "magnitude_precision_mean": 0.5,
+    "median_exact_bind_ms": 1.316383,
+    "median_exact_recall_ms": 0.0840505,
+    "median_shape_bind_ms": 1.3049985,
+    "median_shape_recall_ms": 0.0851555,
+    "query_count": 12,
+    "rank_shape_precision_mean": 1.0
+  }
+}

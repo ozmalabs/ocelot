@@ -1,0 +1,76 @@
+{
+  "all_checks_pass": true,
+  "analysis_id": "substrate-high-degree-edge-delete-batch-v1-independent-analysis",
+  "baseline_analysis_sha256": "4debc9627c6bfe149d0a8225f0b4dfeef1db41173e8f35dca0802b44c91dba52",
+  "baseline_raw_sha256": "c657e9adff9437a74023ec59470ec9603d6d3f9a2c0b4fc2a5a8944c2e79e28f",
+  "cells": [
+    {
+      "baseline_sequential_median_delete_wall_ns": 35145290,
+      "batch_median_delete_wall_ns": 3534504,
+      "batch_time_per_edge_ns": 706.9008,
+      "n": 5000,
+      "paired_speedups": [
+        15.850618473641807,
+        10.167778845348598,
+        7.894874593498866
+      ],
+      "replicates": 3,
+      "sequential_median_delete_wall_ns": 35938055,
+      "sequential_to_batch_speedup": 10.167778845348598,
+      "sequential_to_prior_baseline_ratio": 1.0225567921050018
+    },
+    {
+      "baseline_sequential_median_delete_wall_ns": 550725101,
+      "batch_median_delete_wall_ns": 9164213,
+      "batch_time_per_edge_ns": 458.21065,
+      "n": 20000,
+      "paired_speedups": [
+        62.156972453608404,
+        63.24983350252386,
+        48.441900410799
+      ],
+      "replicates": 3,
+      "sequential_median_delete_wall_ns": 569542044,
+      "sequential_to_batch_speedup": 62.14849480255424,
+      "sequential_to_prior_baseline_ratio": 1.0341675782814919
+    },
+    {
+      "baseline_sequential_median_delete_wall_ns": 8695205434,
+      "batch_median_delete_wall_ns": 42708730,
+      "batch_time_per_edge_ns": 533.859125,
+      "n": 80000,
+      "paired_speedups": [
+        198.19213737106483,
+        204.95865496456162,
+        204.05874030906563
+      ],
+      "replicates": 3,
+      "sequential_median_delete_wall_ns": 8740060122,
+      "sequential_to_batch_speedup": 204.64340948560167,
+      "sequential_to_prior_baseline_ratio": 1.0051585541411834
+    }
+  ],
+  "checks": {
+    "baseline_capture_gates_pass": true,
+    "baseline_independent_analysis_pass": true,
+    "hook_sequence_exact": true,
+    "mixed_graph_snapshot_exact": true,
+    "mixed_input_outcomes_exact": true,
+    "paired_exact_state_20000": true,
+    "paired_exact_state_5000": true,
+    "paired_exact_state_80000": true,
+    "remaining_adjacency_order_exact": true,
+    "runner_gates_pass": true,
+    "stable_parent_lock": true,
+    "stable_worker_locks": true,
+    "three_pairs_20000": true,
+    "three_pairs_5000": true,
+    "three_pairs_80000": true,
+    "unique_worker_pids": true
+  },
+  "claim_boundary": "Paired sequential-versus-batch deletion cost and exact semantics for one high-degree outgoing bucket; three sizes and replicates; no general complexity claim.",
+  "lock_sha256": "3fa06313b00a013f3d74c3c6b4faecd7dd437e63d681987697d5b2ce081de3bc",
+  "raw_path": "evaluation/reports/substrate_high_degree_edge_delete_batch_v1_20260928.json",
+  "raw_sha256": "67c2d3a5610d5f1bde2dd8728c8e2ae07646aa98247e6f4374413d5eb8cce746",
+  "schema_version": 1
+}

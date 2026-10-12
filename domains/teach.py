@@ -147,8 +147,16 @@ def teach(agent, type_: str, attrs: dict, *,
     """
     attrs = dict(attrs)
 
-    # 1) LIVE — the agent holds it now.
-    nid = agent.s.add_node(type_, attrs)
+    # 1) LIVE — the agent holds it now. Match the facility's documented
+    # idempotency contract before mutating the graph: native add_node assigns
+    # a new NodeID even when an identical (type, attrs) node is already held.
+    # Reuse that node so replay after seed restore cannot accumulate duplicate
+    # live facts. Persistence below still runs, allowing an already-held item
+    # to be written when its durable seed entry is absent.
+    nid = next((n for n in agent.s.nodes(type_)
+                if agent.s.node(n)["attrs"] == attrs), None)
+    if nid is None:
+        nid = agent.s.add_node(type_, attrs)
 
     # 2) CATEGORY — the agent's filing. Order: an explicit category overrides;
     # else a caller-supplied hook; else the jabberwock files it under one of ITS

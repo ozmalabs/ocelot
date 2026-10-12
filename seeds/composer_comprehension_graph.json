@@ -332,8 +332,56 @@
          "seq": {
           "type": "Append",
           "seq": {
-           "type": "Lit",
-           "value": []
+           "type": "Append",
+           "seq": {
+            "type": "Lit",
+            "value": []
+           },
+           "item": {
+            "type": "Append",
+            "seq": {
+             "type": "Append",
+             "seq": {
+              "type": "Append",
+              "seq": {
+               "type": "Append",
+               "seq": {
+                "type": "Lit",
+                "value": []
+               },
+               "item": {
+                "type": "Lit",
+                "value": "add_node"
+               }
+              },
+              "item": {
+               "type": "Lit",
+               "value": "g"
+              }
+             },
+             "item": {
+              "type": "Lit",
+              "value": "Goal"
+             }
+            },
+            "item": {
+             "type": "MkDict",
+             "items": [
+              {
+               "type": "Lit",
+               "value": "kind"
+              },
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "cr"
+               },
+               "key": "goal_kind"
+              }
+             ]
+            }
+           }
           },
           "item": {
            "type": "Append",
@@ -349,7 +397,7 @@
               },
               "item": {
                "type": "Lit",
-               "value": "add_node"
+               "value": "add_edge"
               }
              },
              "item": {
@@ -359,25 +407,12 @@
             },
             "item": {
              "type": "Lit",
-             "value": "Goal"
+             "value": "describes"
             }
            },
            "item": {
-            "type": "MkDict",
-            "items": [
-             {
-              "type": "Lit",
-              "value": "kind"
-             },
-             {
-              "type": "Attr",
-              "node": {
-               "type": "Var",
-               "name": "cr"
-              },
-              "key": "goal_kind"
-             }
-            ]
+            "type": "Lit",
+            "value": "scene"
            }
           }
          },
@@ -405,12 +440,12 @@
            },
            "item": {
             "type": "Lit",
-            "value": "describes"
+            "value": "comprehends"
            }
           },
           "item": {
            "type": "Lit",
-           "value": "scene"
+           "value": "m"
           }
          }
         },

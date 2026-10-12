@@ -73,7 +73,16 @@ def support(on: np.ndarray, off: np.ndarray) -> list[list]:
 
 
 def ingest(s, ag, signature: list[list], key: str):
-    """Write one Observation into the graph and hand off to the loop. No decisions."""
+    """Write one Observation into the graph and hand off to the loop. No decisions.
+
+    Vision route: the held-generator grain policy (seeds/vision_grain_policy.json)
+    is loaded once, so DimInfer may recognise at a coarser grain; an explicit
+    agent.dim_grains always wins."""
+    try:
+        from domains import reflective_faculty as _rf
+        _rf._ensure_vision_grain_policy(s, _rf._native_eval2(s), ag)
+    except Exception:  # noqa: BLE001 -- a minimal fixture without the seed registry
+        pass
     obs = s.add_node("Observation", {
         "signature": [list(x) for x in signature],
         "key": [key],

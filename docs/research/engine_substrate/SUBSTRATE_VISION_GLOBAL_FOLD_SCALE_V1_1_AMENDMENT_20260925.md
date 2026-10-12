@@ -1,0 +1,7 @@
+# Global-fold scaling v1.1 amendment
+
+Date: 2026-09-25, before a complete benchmark run. The initial v1 launch verified n=2,4,8, then stopped at n=16 because `settle_lib.build_sheet` uses a fixed 16×16 retina and admits at most 10 non-clipped RF=7 centers per side. No raw final result was written and no outcome comparison was inspected. Preserve the v1 preregistration as the original intent and use this amendment for execution.
+
+Keep the registered SUnit sizes 2,4,8,16 and all seeds, arms, cap, outputs, and analysis. For each size use a square retina of side `max(16, 2*n_side + RF)`, with the committed RF=7 unchanged. This gives the lattice at least one RF-width of margin and enables uniform integer spacing. In the benchmark harness only, set the geometry constants consumed by `settle_lib.lattice_centres` and `rung8_lib.build_sheet` for the duration of each build, then restore them. The global and scoped pair at each n use identical retinal dimensions. Retinal and sheet construction remain outside the measured interval; record retina dimensions and graph counts so the co-varying construction envelope is explicit.
+
+The result estimates settlement work versus SUnit count under this controlled resized-retina family. Since retina dimensions and background graph size increase with SUnit count, it is not a pure constant-background scaling experiment. Report graph size alongside SUnit count and avoid attributing any unexplained trend to the global fold alone. No change is made to production seeds or runtime code.

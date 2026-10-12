@@ -1,0 +1,7 @@
+# Thoughtexperiment event value attribution v1.2.2 protocol amendment
+
+The implementation-status note in the locked v1.2.2 preregistration records the earlier v1.2 source slice. The later v1.2.2 section and capture supersede that note for the current source: at event finish, the journal estimates both before- and after-value Debug representations before retaining complete pairs, and enforces per-event limits of 64 KiB and 512 objects plus report limits of 4 MiB and 16,384 objects. A pair that would exceed an enforced cap is omitted; the event and report expose truncation.
+
+The v1.2.2 five-fixture capture confirms the per-event byte and object cases: the oversized value has zero retained pairs, and the 520-node event retains 512 pairs. Three complete fixtures replay to exact graph state. Report-wide limits were not saturated. These representation estimates do not bound temporary formatting allocations, exact heap use, or serialized JSON size. The amendment clarifies interpretation only; it does not alter the locked runner, protocol, analyzer, source, build manifest, or native binary.
+
+See the [v1.2.2 results](THOUGHTEXPERIMENT_EVENT_VALUE_ATTRIBUTION_V1_2_2_RESULTS_20261005.md), [locked protocol](THOUGHTEXPERIMENT_EVENT_VALUE_ATTRIBUTION_V1_2_2_PREREG_20261005.md), and [source lock](../../../evaluation/substrate_capability/thoughtexperiment_event_value_attribution_v1_2_2_lock_20261005.json).

@@ -1,0 +1,107 @@
+{
+  "checks": [
+    {
+      "name": "capture_lock",
+      "pass": true
+    },
+    {
+      "name": "current_lock",
+      "pass": true
+    },
+    {
+      "name": "source_stability",
+      "pass": true
+    },
+    {
+      "name": "15_unique_workers",
+      "pass": true
+    },
+    {
+      "name": "schedule",
+      "pass": true
+    },
+    {
+      "name": "selection_recomputed",
+      "pass": true
+    },
+    {
+      "name": "all_signatures_valid",
+      "pass": true
+    },
+    {
+      "name": "receipts_recomputed",
+      "pass": true
+    },
+    {
+      "name": "heldouts_recomputed",
+      "pass": true
+    },
+    {
+      "name": "truthful_positive_expected_outcome",
+      "pass": true
+    },
+    {
+      "name": "truthful_wrong_broad_expected_outcome",
+      "pass": false
+    },
+    {
+      "name": "truthful_wrong_alias_expected_outcome",
+      "pass": false
+    },
+    {
+      "name": "trusted_false_label_expected_outcome",
+      "pass": false
+    },
+    {
+      "name": "conflicting_signed_labels_expected_outcome",
+      "pass": false
+    }
+  ],
+  "interpretation": "The trusted false-label condition is an expected, measured failure: authentication and probe disagreement do not establish label truth.",
+  "limits": [
+    "one authored task",
+    "one host",
+    "harness-supplied finite domain and provider keys",
+    "adversarial false-label rate is not prevalence"
+  ],
+  "passed": 10,
+  "schema": "SubstrateAdequacyThresholdNoiseV1Analysis",
+  "summary": {
+    "conflicting_signed_labels": {
+      "adopted_per_run": 0,
+      "heldout_count": 100,
+      "heldout_exact_per_run": 58,
+      "n": 3,
+      "receipt": "ambiguous"
+    },
+    "trusted_false_label": {
+      "adopted_per_run": 1,
+      "heldout_count": 100,
+      "heldout_exact_per_run": 58,
+      "n": 3,
+      "receipt": "accepted"
+    },
+    "truthful_positive": {
+      "adopted_per_run": 1,
+      "heldout_count": 100,
+      "heldout_exact_per_run": 100,
+      "n": 3,
+      "receipt": "accepted"
+    },
+    "truthful_wrong_alias": {
+      "adopted_per_run": 0,
+      "heldout_count": 100,
+      "heldout_exact_per_run": 58,
+      "n": 3,
+      "receipt": "accepted"
+    },
+    "truthful_wrong_broad": {
+      "adopted_per_run": 0,
+      "heldout_count": 100,
+      "heldout_exact_per_run": 58,
+      "n": 3,
+      "receipt": "rejected"
+    }
+  },
+  "total": 14
+}

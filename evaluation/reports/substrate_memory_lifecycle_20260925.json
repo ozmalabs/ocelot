@@ -1,0 +1,717 @@
+{
+  "schema_version": 2,
+  "probe": "multi-record page-out/page-in and fresh-substrate restart analogue",
+  "measured_at": "2026-09-25T00:17:12+1000",
+  "sizes": [
+    1,
+    8,
+    32,
+    64
+  ],
+  "replicates_per_size": 3,
+  "summary_by_size": {
+    "1": {
+      "replicates": 3,
+      "all_records_pagein": [
+        true,
+        true,
+        true
+      ],
+      "same_id_counts": [
+        0,
+        0,
+        0
+      ],
+      "external_edges_restored": [
+        0,
+        0,
+        0
+      ],
+      "chain_edges_restored": [
+        0,
+        0,
+        0
+      ],
+      "pagein_median_ms": 0.0159,
+      "consolidate_median_ms": 0.0556,
+      "store_bytes": [
+        159,
+        159,
+        159
+      ],
+      "restart_index_empty_all": true
+    },
+    "8": {
+      "replicates": 3,
+      "all_records_pagein": [
+        true,
+        true,
+        true
+      ],
+      "same_id_counts": [
+        0,
+        0,
+        0
+      ],
+      "external_edges_restored": [
+        0,
+        0,
+        0
+      ],
+      "chain_edges_restored": [
+        0,
+        0,
+        0
+      ],
+      "pagein_median_ms": 0.057,
+      "consolidate_median_ms": 0.2314,
+      "store_bytes": [
+        1272,
+        1272,
+        1272
+      ],
+      "restart_index_empty_all": true
+    },
+    "32": {
+      "replicates": 3,
+      "all_records_pagein": [
+        true,
+        true,
+        true
+      ],
+      "same_id_counts": [
+        0,
+        0,
+        0
+      ],
+      "external_edges_restored": [
+        0,
+        0,
+        0
+      ],
+      "chain_edges_restored": [
+        0,
+        0,
+        0
+      ],
+      "pagein_median_ms": 0.2339,
+      "consolidate_median_ms": 0.8471,
+      "store_bytes": [
+        5111,
+        5111,
+        5111
+      ],
+      "restart_index_empty_all": true
+    },
+    "64": {
+      "replicates": 3,
+      "all_records_pagein": [
+        true,
+        true,
+        true
+      ],
+      "same_id_counts": [
+        0,
+        0,
+        0
+      ],
+      "external_edges_restored": [
+        0,
+        0,
+        0
+      ],
+      "chain_edges_restored": [
+        0,
+        0,
+        0
+      ],
+      "pagein_median_ms": 0.4489,
+      "consolidate_median_ms": 1.6826,
+      "store_bytes": [
+        10231,
+        10231,
+        10231
+      ],
+      "restart_index_empty_all": true
+    }
+  },
+  "single_record_no_interleave_control": {
+    "n_records": 1,
+    "replicate": 0,
+    "interleaved_allocations": 0,
+    "same_substrate": {
+      "index_clusters_before_pageout": 1,
+      "evicted_clusters": [
+        "cat:0,1,2"
+      ],
+      "original_nodes_present_after_pageout": 0,
+      "external_edges_present_after_pageout": 0,
+      "shape_recall": [
+        "cat:0,1,2",
+        1
+      ],
+      "records_restored": 1,
+      "same_record_id_count_after_interleaved_allocations": 1,
+      "external_edges_restored": 0,
+      "chain_edges_restored": 0
+    },
+    "fresh_substrate": {
+      "record_files_present": 1,
+      "store_bytes": 159,
+      "shape_index_clusters": 0,
+      "shape_recall": null,
+      "exact_key_recall": null
+    },
+    "timing_ns": {
+      "graph_setup": 9950,
+      "consolidate_all": 36451,
+      "pageout": 2180,
+      "interleaved_allocations": 370,
+      "pagein_all": 12450
+    },
+    "provenance": {
+      "repo_head": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+      "native_extension": "runners/dsl/python/substrate_rs/_native.abi3.so",
+      "native_extension_sha256": "2e31b4f92f4d58b537c51ad1205b7ba54c0111ed5c9104e0fd2448220e1b030e",
+      "native_extension_matches_build_manifest": true,
+      "rust_memory_source_sha256": "5d61d2956477570af928a2bdb1a6fe69d57256033d053a511955ae91f832e735"
+    }
+  },
+  "actual_process_restart": {
+    "writer_pid": 632116,
+    "reader_pid": 632117,
+    "pid": 632117,
+    "files": [
+      "process-restart-probe.json"
+    ],
+    "index_clusters": 0,
+    "shape_recall": null
+  },
+  "runs": [
+    {
+      "n_records": 1,
+      "replicate": 1,
+      "interleaved_allocations": 1,
+      "same_substrate": {
+        "index_clusters_before_pageout": 1,
+        "evicted_clusters": [
+          "cat:0,1,2"
+        ],
+        "original_nodes_present_after_pageout": 0,
+        "external_edges_present_after_pageout": 0,
+        "shape_recall": [
+          "cat:0,1,2",
+          1
+        ],
+        "records_restored": 1,
+        "same_record_id_count_after_interleaved_allocations": 0,
+        "external_edges_restored": 0,
+        "chain_edges_restored": 0
+      },
+      "fresh_substrate": {
+        "record_files_present": 1,
+        "store_bytes": 159,
+        "shape_index_clusters": 0,
+        "shape_recall": null,
+        "exact_key_recall": null
+      },
+      "timing_ns": {
+        "graph_setup": 31261,
+        "consolidate_all": 56780,
+        "pageout": 3650,
+        "interleaved_allocations": 3500,
+        "pagein_all": 20120
+      },
+      "provenance": {
+        "repo_head": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+        "native_extension": "runners/dsl/python/substrate_rs/_native.abi3.so",
+        "native_extension_sha256": "2e31b4f92f4d58b537c51ad1205b7ba54c0111ed5c9104e0fd2448220e1b030e",
+        "native_extension_matches_build_manifest": true,
+        "rust_memory_source_sha256": "5d61d2956477570af928a2bdb1a6fe69d57256033d053a511955ae91f832e735"
+      }
+    },
+    {
+      "n_records": 1,
+      "replicate": 2,
+      "interleaved_allocations": 1,
+      "same_substrate": {
+        "index_clusters_before_pageout": 1,
+        "evicted_clusters": [
+          "cat:0,1,2"
+        ],
+        "original_nodes_present_after_pageout": 0,
+        "external_edges_present_after_pageout": 0,
+        "shape_recall": [
+          "cat:0,1,2",
+          1
+        ],
+        "records_restored": 1,
+        "same_record_id_count_after_interleaved_allocations": 0,
+        "external_edges_restored": 0,
+        "chain_edges_restored": 0
+      },
+      "fresh_substrate": {
+        "record_files_present": 1,
+        "store_bytes": 159,
+        "shape_index_clusters": 0,
+        "shape_recall": null,
+        "exact_key_recall": null
+      },
+      "timing_ns": {
+        "graph_setup": 14210,
+        "consolidate_all": 55560,
+        "pageout": 3590,
+        "interleaved_allocations": 3390,
+        "pagein_all": 15270
+      },
+      "provenance": {
+        "repo_head": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+        "native_extension": "runners/dsl/python/substrate_rs/_native.abi3.so",
+        "native_extension_sha256": "2e31b4f92f4d58b537c51ad1205b7ba54c0111ed5c9104e0fd2448220e1b030e",
+        "native_extension_matches_build_manifest": true,
+        "rust_memory_source_sha256": "5d61d2956477570af928a2bdb1a6fe69d57256033d053a511955ae91f832e735"
+      }
+    },
+    {
+      "n_records": 1,
+      "replicate": 3,
+      "interleaved_allocations": 1,
+      "same_substrate": {
+        "index_clusters_before_pageout": 1,
+        "evicted_clusters": [
+          "cat:0,1,2"
+        ],
+        "original_nodes_present_after_pageout": 0,
+        "external_edges_present_after_pageout": 0,
+        "shape_recall": [
+          "cat:0,1,2",
+          1
+        ],
+        "records_restored": 1,
+        "same_record_id_count_after_interleaved_allocations": 0,
+        "external_edges_restored": 0,
+        "chain_edges_restored": 0
+      },
+      "fresh_substrate": {
+        "record_files_present": 1,
+        "store_bytes": 159,
+        "shape_index_clusters": 0,
+        "shape_recall": null,
+        "exact_key_recall": null
+      },
+      "timing_ns": {
+        "graph_setup": 12620,
+        "consolidate_all": 52940,
+        "pageout": 3720,
+        "interleaved_allocations": 3390,
+        "pagein_all": 15870
+      },
+      "provenance": {
+        "repo_head": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+        "native_extension": "runners/dsl/python/substrate_rs/_native.abi3.so",
+        "native_extension_sha256": "2e31b4f92f4d58b537c51ad1205b7ba54c0111ed5c9104e0fd2448220e1b030e",
+        "native_extension_matches_build_manifest": true,
+        "rust_memory_source_sha256": "5d61d2956477570af928a2bdb1a6fe69d57256033d053a511955ae91f832e735"
+      }
+    },
+    {
+      "n_records": 8,
+      "replicate": 1,
+      "interleaved_allocations": 8,
+      "same_substrate": {
+        "index_clusters_before_pageout": 1,
+        "evicted_clusters": [
+          "cat:0,1,2"
+        ],
+        "original_nodes_present_after_pageout": 0,
+        "external_edges_present_after_pageout": 0,
+        "shape_recall": [
+          "cat:0,1,2",
+          8
+        ],
+        "records_restored": 8,
+        "same_record_id_count_after_interleaved_allocations": 0,
+        "external_edges_restored": 0,
+        "chain_edges_restored": 0
+      },
+      "fresh_substrate": {
+        "record_files_present": 8,
+        "store_bytes": 1272,
+        "shape_index_clusters": 0,
+        "shape_recall": null,
+        "exact_key_recall": null
+      },
+      "timing_ns": {
+        "graph_setup": 53080,
+        "consolidate_all": 245082,
+        "pageout": 5100,
+        "interleaved_allocations": 8830,
+        "pagein_all": 57000
+      },
+      "provenance": {
+        "repo_head": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+        "native_extension": "runners/dsl/python/substrate_rs/_native.abi3.so",
+        "native_extension_sha256": "2e31b4f92f4d58b537c51ad1205b7ba54c0111ed5c9104e0fd2448220e1b030e",
+        "native_extension_matches_build_manifest": true,
+        "rust_memory_source_sha256": "5d61d2956477570af928a2bdb1a6fe69d57256033d053a511955ae91f832e735"
+      }
+    },
+    {
+      "n_records": 8,
+      "replicate": 2,
+      "interleaved_allocations": 8,
+      "same_substrate": {
+        "index_clusters_before_pageout": 1,
+        "evicted_clusters": [
+          "cat:0,1,2"
+        ],
+        "original_nodes_present_after_pageout": 0,
+        "external_edges_present_after_pageout": 0,
+        "shape_recall": [
+          "cat:0,1,2",
+          8
+        ],
+        "records_restored": 8,
+        "same_record_id_count_after_interleaved_allocations": 0,
+        "external_edges_restored": 0,
+        "chain_edges_restored": 0
+      },
+      "fresh_substrate": {
+        "record_files_present": 8,
+        "store_bytes": 1272,
+        "shape_index_clusters": 0,
+        "shape_recall": null,
+        "exact_key_recall": null
+      },
+      "timing_ns": {
+        "graph_setup": 48821,
+        "consolidate_all": 231381,
+        "pageout": 5040,
+        "interleaved_allocations": 8990,
+        "pagein_all": 56121
+      },
+      "provenance": {
+        "repo_head": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+        "native_extension": "runners/dsl/python/substrate_rs/_native.abi3.so",
+        "native_extension_sha256": "2e31b4f92f4d58b537c51ad1205b7ba54c0111ed5c9104e0fd2448220e1b030e",
+        "native_extension_matches_build_manifest": true,
+        "rust_memory_source_sha256": "5d61d2956477570af928a2bdb1a6fe69d57256033d053a511955ae91f832e735"
+      }
+    },
+    {
+      "n_records": 8,
+      "replicate": 3,
+      "interleaved_allocations": 8,
+      "same_substrate": {
+        "index_clusters_before_pageout": 1,
+        "evicted_clusters": [
+          "cat:0,1,2"
+        ],
+        "original_nodes_present_after_pageout": 0,
+        "external_edges_present_after_pageout": 0,
+        "shape_recall": [
+          "cat:0,1,2",
+          8
+        ],
+        "records_restored": 8,
+        "same_record_id_count_after_interleaved_allocations": 0,
+        "external_edges_restored": 0,
+        "chain_edges_restored": 0
+      },
+      "fresh_substrate": {
+        "record_files_present": 8,
+        "store_bytes": 1272,
+        "shape_index_clusters": 0,
+        "shape_recall": null,
+        "exact_key_recall": null
+      },
+      "timing_ns": {
+        "graph_setup": 47670,
+        "consolidate_all": 225772,
+        "pageout": 5620,
+        "interleaved_allocations": 9040,
+        "pagein_all": 58890
+      },
+      "provenance": {
+        "repo_head": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+        "native_extension": "runners/dsl/python/substrate_rs/_native.abi3.so",
+        "native_extension_sha256": "2e31b4f92f4d58b537c51ad1205b7ba54c0111ed5c9104e0fd2448220e1b030e",
+        "native_extension_matches_build_manifest": true,
+        "rust_memory_source_sha256": "5d61d2956477570af928a2bdb1a6fe69d57256033d053a511955ae91f832e735"
+      }
+    },
+    {
+      "n_records": 32,
+      "replicate": 1,
+      "interleaved_allocations": 32,
+      "same_substrate": {
+        "index_clusters_before_pageout": 1,
+        "evicted_clusters": [
+          "cat:0,1,2"
+        ],
+        "original_nodes_present_after_pageout": 0,
+        "external_edges_present_after_pageout": 0,
+        "shape_recall": [
+          "cat:0,1,2",
+          32
+        ],
+        "records_restored": 32,
+        "same_record_id_count_after_interleaved_allocations": 0,
+        "external_edges_restored": 0,
+        "chain_edges_restored": 0
+      },
+      "fresh_substrate": {
+        "record_files_present": 32,
+        "store_bytes": 5111,
+        "shape_index_clusters": 0,
+        "shape_recall": null,
+        "exact_key_recall": null
+      },
+      "timing_ns": {
+        "graph_setup": 155891,
+        "consolidate_all": 862476,
+        "pageout": 12570,
+        "interleaved_allocations": 26731,
+        "pagein_all": 233921
+      },
+      "provenance": {
+        "repo_head": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+        "native_extension": "runners/dsl/python/substrate_rs/_native.abi3.so",
+        "native_extension_sha256": "2e31b4f92f4d58b537c51ad1205b7ba54c0111ed5c9104e0fd2448220e1b030e",
+        "native_extension_matches_build_manifest": true,
+        "rust_memory_source_sha256": "5d61d2956477570af928a2bdb1a6fe69d57256033d053a511955ae91f832e735"
+      }
+    },
+    {
+      "n_records": 32,
+      "replicate": 2,
+      "interleaved_allocations": 32,
+      "same_substrate": {
+        "index_clusters_before_pageout": 1,
+        "evicted_clusters": [
+          "cat:0,1,2"
+        ],
+        "original_nodes_present_after_pageout": 0,
+        "external_edges_present_after_pageout": 0,
+        "shape_recall": [
+          "cat:0,1,2",
+          32
+        ],
+        "records_restored": 32,
+        "same_record_id_count_after_interleaved_allocations": 0,
+        "external_edges_restored": 0,
+        "chain_edges_restored": 0
+      },
+      "fresh_substrate": {
+        "record_files_present": 32,
+        "store_bytes": 5111,
+        "shape_index_clusters": 0,
+        "shape_recall": null,
+        "exact_key_recall": null
+      },
+      "timing_ns": {
+        "graph_setup": 164371,
+        "consolidate_all": 847096,
+        "pageout": 11720,
+        "interleaved_allocations": 26490,
+        "pagein_all": 210771
+      },
+      "provenance": {
+        "repo_head": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+        "native_extension": "runners/dsl/python/substrate_rs/_native.abi3.so",
+        "native_extension_sha256": "2e31b4f92f4d58b537c51ad1205b7ba54c0111ed5c9104e0fd2448220e1b030e",
+        "native_extension_matches_build_manifest": true,
+        "rust_memory_source_sha256": "5d61d2956477570af928a2bdb1a6fe69d57256033d053a511955ae91f832e735"
+      }
+    },
+    {
+      "n_records": 32,
+      "replicate": 3,
+      "interleaved_allocations": 32,
+      "same_substrate": {
+        "index_clusters_before_pageout": 1,
+        "evicted_clusters": [
+          "cat:0,1,2"
+        ],
+        "original_nodes_present_after_pageout": 0,
+        "external_edges_present_after_pageout": 0,
+        "shape_recall": [
+          "cat:0,1,2",
+          32
+        ],
+        "records_restored": 32,
+        "same_record_id_count_after_interleaved_allocations": 0,
+        "external_edges_restored": 0,
+        "chain_edges_restored": 0
+      },
+      "fresh_substrate": {
+        "record_files_present": 32,
+        "store_bytes": 5111,
+        "shape_index_clusters": 0,
+        "shape_recall": null,
+        "exact_key_recall": null
+      },
+      "timing_ns": {
+        "graph_setup": 163711,
+        "consolidate_all": 810835,
+        "pageout": 11470,
+        "interleaved_allocations": 25240,
+        "pagein_all": 233921
+      },
+      "provenance": {
+        "repo_head": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+        "native_extension": "runners/dsl/python/substrate_rs/_native.abi3.so",
+        "native_extension_sha256": "2e31b4f92f4d58b537c51ad1205b7ba54c0111ed5c9104e0fd2448220e1b030e",
+        "native_extension_matches_build_manifest": true,
+        "rust_memory_source_sha256": "5d61d2956477570af928a2bdb1a6fe69d57256033d053a511955ae91f832e735"
+      }
+    },
+    {
+      "n_records": 64,
+      "replicate": 1,
+      "interleaved_allocations": 64,
+      "same_substrate": {
+        "index_clusters_before_pageout": 1,
+        "evicted_clusters": [
+          "cat:0,1,2"
+        ],
+        "original_nodes_present_after_pageout": 0,
+        "external_edges_present_after_pageout": 0,
+        "shape_recall": [
+          "cat:0,1,2",
+          64
+        ],
+        "records_restored": 64,
+        "same_record_id_count_after_interleaved_allocations": 0,
+        "external_edges_restored": 0,
+        "chain_edges_restored": 0
+      },
+      "fresh_substrate": {
+        "record_files_present": 64,
+        "store_bytes": 10231,
+        "shape_index_clusters": 0,
+        "shape_recall": null,
+        "exact_key_recall": null
+      },
+      "timing_ns": {
+        "graph_setup": 312192,
+        "consolidate_all": 1674942,
+        "pageout": 22621,
+        "interleaved_allocations": 48360,
+        "pagein_all": 435643
+      },
+      "provenance": {
+        "repo_head": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+        "native_extension": "runners/dsl/python/substrate_rs/_native.abi3.so",
+        "native_extension_sha256": "2e31b4f92f4d58b537c51ad1205b7ba54c0111ed5c9104e0fd2448220e1b030e",
+        "native_extension_matches_build_manifest": true,
+        "rust_memory_source_sha256": "5d61d2956477570af928a2bdb1a6fe69d57256033d053a511955ae91f832e735"
+      }
+    },
+    {
+      "n_records": 64,
+      "replicate": 2,
+      "interleaved_allocations": 64,
+      "same_substrate": {
+        "index_clusters_before_pageout": 1,
+        "evicted_clusters": [
+          "cat:0,1,2"
+        ],
+        "original_nodes_present_after_pageout": 0,
+        "external_edges_present_after_pageout": 0,
+        "shape_recall": [
+          "cat:0,1,2",
+          64
+        ],
+        "records_restored": 64,
+        "same_record_id_count_after_interleaved_allocations": 0,
+        "external_edges_restored": 0,
+        "chain_edges_restored": 0
+      },
+      "fresh_substrate": {
+        "record_files_present": 64,
+        "store_bytes": 10231,
+        "shape_index_clusters": 0,
+        "shape_recall": null,
+        "exact_key_recall": null
+      },
+      "timing_ns": {
+        "graph_setup": 299642,
+        "consolidate_all": 1682582,
+        "pageout": 21550,
+        "interleaved_allocations": 47450,
+        "pagein_all": 464964
+      },
+      "provenance": {
+        "repo_head": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+        "native_extension": "runners/dsl/python/substrate_rs/_native.abi3.so",
+        "native_extension_sha256": "2e31b4f92f4d58b537c51ad1205b7ba54c0111ed5c9104e0fd2448220e1b030e",
+        "native_extension_matches_build_manifest": true,
+        "rust_memory_source_sha256": "5d61d2956477570af928a2bdb1a6fe69d57256033d053a511955ae91f832e735"
+      }
+    },
+    {
+      "n_records": 64,
+      "replicate": 3,
+      "interleaved_allocations": 64,
+      "same_substrate": {
+        "index_clusters_before_pageout": 1,
+        "evicted_clusters": [
+          "cat:0,1,2"
+        ],
+        "original_nodes_present_after_pageout": 0,
+        "external_edges_present_after_pageout": 0,
+        "shape_recall": [
+          "cat:0,1,2",
+          64
+        ],
+        "records_restored": 64,
+        "same_record_id_count_after_interleaved_allocations": 0,
+        "external_edges_restored": 0,
+        "chain_edges_restored": 0
+      },
+      "fresh_substrate": {
+        "record_files_present": 64,
+        "store_bytes": 10231,
+        "shape_index_clusters": 0,
+        "shape_recall": null,
+        "exact_key_recall": null
+      },
+      "timing_ns": {
+        "graph_setup": 310022,
+        "consolidate_all": 1733692,
+        "pageout": 22720,
+        "interleaved_allocations": 48511,
+        "pagein_all": 448943
+      },
+      "provenance": {
+        "repo_head": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+        "native_extension": "runners/dsl/python/substrate_rs/_native.abi3.so",
+        "native_extension_sha256": "2e31b4f92f4d58b537c51ad1205b7ba54c0111ed5c9104e0fd2448220e1b030e",
+        "native_extension_matches_build_manifest": true,
+        "rust_memory_source_sha256": "5d61d2956477570af928a2bdb1a6fe69d57256033d053a511955ae91f832e735"
+      }
+    }
+  ],
+  "provenance": {
+    "repo_head": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+    "native_extension": "runners/dsl/python/substrate_rs/_native.abi3.so",
+    "native_extension_sha256": "2e31b4f92f4d58b537c51ad1205b7ba54c0111ed5c9104e0fd2448220e1b030e",
+    "native_extension_matches_build_manifest": true,
+    "rust_memory_source_sha256": "5d61d2956477570af928a2bdb1a6fe69d57256033d053a511955ae91f832e735",
+    "build_manifest_sha256": "0a230802e876fed450eda500922860005e2203324da0cc7deab2c726cd6ca3c3",
+    "adapter_source_sha256": "280e926e5d3d06535249c0ecd29dcaec4b500fe473e8de4aa8f208da1653f5af",
+    "probe_source_sha256": "bbc0d66dd7c72ab9aa14c90c6c3d9a8fc7b40b603bb9511584ed43e0701f5033",
+    "python": "3.13.5 (main, Jun 11 2025, 15:36:57) [GCC 11.4.0]",
+    "platform": "Linux-6.8.0-137-generic-x86_64-with-glibc2.39",
+    "logical_cpu_count": 24,
+    "worktree_dirty": true,
+    "audited_rust_and_adapter_sources_clean": true
+  },
+  "command": "PYTHONPATH=runners/dsl/python:. OZMA_NO_LLM=1 OZMA_SEED_PERSIST_DISABLED=1 python3 scripts/substrate_memory_lifecycle_probe.py --output evaluation/reports/substrate_memory_lifecycle_20260925.json",
+  "limits": [
+    "Synthetic records share one category-shape cluster; sizes are small and do not represent an application memory workload.",
+    "Each replicate uses an independent substrate and a unique TemporaryDirectory, removed automatically after the cell.",
+    "The process restart probe covers one record; the size sweep itself remains in-process with independent substrate instances."
+  ]
+}

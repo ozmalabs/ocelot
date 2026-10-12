@@ -8,7 +8,7 @@ acoustic advice -- e.g. "use FORMANT TRANSITIONS / the F2 trajectory" and "VOICE
 SEMANTICALLY-EMPTY axis tokens `faculty_stalls` / `scoring_static`. The grown axis's IDENTITY LOST
 the real acoustic cue the teacher named (and distinct advices could collide / produce garbage).
 
-THE FIX (this script, donkey=0). A HELD ACOUSTIC-CUE VOCABULARY (seeds/acoustic_cue_vocab.json:
+THE FIX (this script, donkey=0). A HELD ACOUSTIC-CUE VOCABULARY (domain_data/acoustic_cue_vocab.json:
 AcousticCue nodes carrying canonical cues + surface-forms, grounded in the agent's existing
 hint_grounding.CUE_MENU operators) + a GRAPH-NATIVE cue-extraction Term (`acoustic_cue_match`):
   Pick( Filter(NodesOfType(AcousticCue), c, Exists(c.surface_forms, f, StringIndexOf(adv,f) >= 0)) )
@@ -89,7 +89,7 @@ def old_heuristic_token(advice: str) -> str:
 
 # --- the NEW held cue-extraction Term (read from the seed = graph data) ---------------------------
 def cue_match_term() -> dict:
-    man = json.load(open(os.path.join(ROOT, "seeds", "acoustic_cue_vocab.json")))
+    man = json.load(open(os.path.join(ROOT, "domain_data", "acoustic_cue_vocab.json")))
     for c in man.get("concepts", []):
         if c.get("name") == "acoustic_cue_match":
             return c["definition"]
@@ -100,7 +100,7 @@ def install_cue_vocab(agent) -> int:
     """GRAPH-DATA SWAP (precedent 4bca77bc): install the held acoustic-cue vocabulary onto the live
     agent and register the cue-extraction Term -- leaving investigation_teacher.json and
     world_adapter.py untouched. Returns the count of AcousticCue nodes installed."""
-    man = json.load(open(os.path.join(ROOT, "seeds", "acoustic_cue_vocab.json")))
+    man = json.load(open(os.path.join(ROOT, "domain_data", "acoustic_cue_vocab.json")))
     n = 0
     for node in man.get("nodes", []):
         if node.get("type") == "AcousticCue":

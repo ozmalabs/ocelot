@@ -15,6 +15,7 @@ from __future__ import annotations
 import hashlib
 import os
 import sqlite3
+import sys
 import tempfile
 import threading
 import zipfile
@@ -25,27 +26,53 @@ _SCHEMA = 1
 _INDEX_FILES = ("index.adj", "index.adv", "index.noun", "index.verb")
 _EXCEPTION_FILES = ("adj.exc", "adv.exc", "noun.exc", "verb.exc")
 _POS_BY_SUFFIX = {"adj": "a", "adv": "r", "noun": "n", "verb": "v"}
+# WordNetCorpusReader.MORPHOLOGICAL_SUBSTITUTIONS. Kept here as the tiny
+# membership boundary must not import NLTK's high-residency package merely to
+# read these fixed WordNet inflection rules. Equivalence is pinned in tests.
+_MORPHOLOGICAL_SUBSTITUTIONS = {
+    "n": (("s", ""), ("ses", "s"), ("ves", "f"), ("xes", "x"),
+          ("zes", "z"), ("ches", "ch"), ("shes", "sh"),
+          ("men", "man"), ("ies", "y")),
+    "v": (("s", ""), ("ies", "y"), ("es", "e"), ("es", ""),
+          ("ed", "e"), ("ed", ""), ("ing", "e"), ("ing", "")),
+    "a": (("er", ""), ("est", ""), ("er", "e"), ("est", "e")),
+    "s": (("er", ""), ("est", ""), ("er", "e"), ("est", "e")),
+    "r": (),
+}
 _LOCK = threading.Lock()
 _CONNECTIONS: dict[str, sqlite3.Connection] = {}
 _ACTIVE_CONNECTIONS: dict[tuple, sqlite3.Connection] = {}
 
 
 def _find_corpus() -> tuple[Path, bool] | None:
-    try:
-        from nltk.data import find
-        pointer = find("corpora/wordnet.zip")
-        path = Path(str(pointer))
-        if path.is_file():
-            return path, True
-    except Exception:
-        pass
-    try:
-        from nltk.data import find
-        pointer = Path(str(find("corpora/wordnet")))
-        if pointer.is_dir():
-            return pointer, False
-    except Exception:
-        pass
+    paths = [os.path.expanduser(path) for path in
+             os.environ.get("NLTK_DATA", "").split(os.pathsep) if path]
+    if "APPENGINE_RUNTIME" not in os.environ and os.path.expanduser("~/") != "~/":
+        paths.append(os.path.expanduser("~/nltk_data"))
+    if os.name == "nt":
+        paths.extend((
+            os.path.join(sys.prefix, "nltk_data"),
+            os.path.join(sys.prefix, "share", "nltk_data"),
+            os.path.join(sys.prefix, "lib", "nltk_data"),
+            os.path.join(os.environ.get("APPDATA", "C:\\"), "nltk_data"),
+            r"C:\nltk_data", r"D:\nltk_data", r"E:\nltk_data",
+        ))
+    else:
+        paths.extend((
+            os.path.join(sys.prefix, "nltk_data"),
+            os.path.join(sys.prefix, "share", "nltk_data"),
+            os.path.join(sys.prefix, "lib", "nltk_data"),
+            "/usr/share/nltk_data", "/usr/local/share/nltk_data",
+            "/usr/lib/nltk_data", "/usr/local/lib/nltk_data",
+        ))
+    for directory in paths:
+        root = Path(directory)
+        archive = root / "corpora" / "wordnet.zip"
+        if archive.is_file():
+            return archive, True
+        corpus = root / "corpora" / "wordnet"
+        if corpus.is_dir():
+            return corpus, False
     return None
 
 
@@ -203,12 +230,12 @@ def has_synset(token: str) -> Optional[bool]:
     if connection is None:
         return None
     try:
-        from nltk.corpus.reader.wordnet import WordNetCorpusReader
         word = token.lower()
-        rules = WordNetCorpusReader.MORPHOLOGICAL_SUBSTITUTIONS
-        positions = (("n", rules["n"]), ("v", rules["v"]),
-                     ("a", rules["a"]), ("s", rules["s"]),
-                     ("r", rules["r"]))
+        positions = (("n", _MORPHOLOGICAL_SUBSTITUTIONS["n"]),
+                     ("v", _MORPHOLOGICAL_SUBSTITUTIONS["v"]),
+                     ("a", _MORPHOLOGICAL_SUBSTITUTIONS["a"]),
+                     ("s", _MORPHOLOGICAL_SUBSTITUTIONS["s"]),
+                     ("r", _MORPHOLOGICAL_SUBSTITUTIONS["r"]))
         for pos, substitutions in positions:
             exceptions = connection.execute(
                 "SELECT lemma FROM exception WHERE pos=? AND form=?",
@@ -226,5 +253,43 @@ def has_synset(token: str) -> Optional[bool]:
                 ).fetchone():
                     return True
         return False
+    except Exception:
+        return None
+
+
+def lemmas(token: str, pos: str) -> Optional[tuple[str, ...]]:
+    """Return WordNet morphology lemmas for one token and part of speech.
+
+    ``None`` means the low-residency WordNet index is unavailable. An empty
+    tuple means the token has no lemma for this POS. This exposes morphology
+    only; it does not select a sense or ground a referent.
+    """
+    connection = _connection()
+    if connection is None:
+        return None
+    token = str(token or "").strip().lower()
+    pos = str(pos or "").strip().lower()
+    index_pos = {"a": "a", "s": "a", "r": "r", "n": "n", "v": "v"}.get(pos)
+    if not token or index_pos is None:
+        return ()
+    try:
+        rows = connection.execute(
+            "SELECT lemma FROM exception WHERE pos=? AND form=?",
+            (index_pos, token),
+        ).fetchall()
+        if rows:
+            candidates = {str(row[0]) for row in rows}
+        else:
+            substitutions = _MORPHOLOGICAL_SUBSTITUTIONS.get(pos, ())
+            candidates = _forms(token, substitutions)
+        found = []
+        for candidate in candidates:
+            row = connection.execute(
+                "SELECT 1 FROM lemma WHERE pos=? AND word=? LIMIT 1",
+                (index_pos, candidate),
+            ).fetchone()
+            if row:
+                found.append(candidate)
+        return tuple(sorted(set(found)))
     except Exception:
         return None

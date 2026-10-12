@@ -1,0 +1,42 @@
+{
+  "gates": {
+    "cpu_split_reconciles_within_10ms": true,
+    "rayon_setting_observed": true,
+    "schedule_matches_lock": true,
+    "six_unique_fresh_processes": true,
+    "source_stable": true,
+    "task_semantics_and_refusal": true,
+    "tooling_lock_matches": true,
+    "worker_fingerprints_stable": true
+  },
+  "interpretation": "Diagnostic only: caller CPU is separated; the residual aggregates all other threads and does not name a rule or pool.",
+  "lock_sha256": "fedc32215cbadd6cb4e6642e1c56d56c97669c6157d4a186210e180554bf5c7f",
+  "raw_sha256": "90da0354a4a4a997a872596ee9f97eac1f77b4952445dc3ac25a046d3e9caaea",
+  "schema": "WarmConverseCallerCpuV1Analysis",
+  "summary": {
+    "default": {
+      "median_caller_thread_cpu_ms": 85.448563,
+      "median_other_thread_aggregate_cpu_ms": 1560.542891,
+      "median_other_thread_fraction": 0.9480868732384075,
+      "median_peak_os_threads": 49,
+      "median_process_cpu_ms": 1645.991454,
+      "median_target_wall_ms": 111.290829,
+      "n": 3,
+      "rayon_threads": [
+        24
+      ]
+    },
+    "one_thread": {
+      "median_caller_thread_cpu_ms": 86.321154,
+      "median_other_thread_aggregate_cpu_ms": 1559.791148,
+      "median_other_thread_fraction": 0.9482260561979802,
+      "median_peak_os_threads": 26,
+      "median_process_cpu_ms": 1642.45941,
+      "median_target_wall_ms": 111.658071,
+      "n": 3,
+      "rayon_threads": [
+        1
+      ]
+    }
+  }
+}

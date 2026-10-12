@@ -36,7 +36,7 @@ consequent in the BYTE-IDENTICAL `{"relation": "is_a", "attr": ...}` shape the
 THE CORRECTION (2026-08-13). The FIRST landing of this module (commit
 2f3e872/a20e334) built `parse_conditional` as an INDEPENDENT, hand-rolled
 token-pattern mini-grammar (8 literal surface forms, its own tokenizer). That
-was a real miss: `seeds/reading_constructions.json` (`local_id: 48`) already
+was a real miss: `domain_data/reading_constructions.json` (`local_id: 48`) already
 declares a GENERAL `ShapeSignature{kind:"construction", name:"conditional"}`
 construction (`signature: [["IF"],["THEN"]]`, `predication: "implies"`) that
 `domains/reading_collapse.py` decodes GENERICALLY, through the exact same

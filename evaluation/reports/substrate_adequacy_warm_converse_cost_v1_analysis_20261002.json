@@ -1,0 +1,138 @@
+{
+  "cells": {
+    "clamp/missing_evidence": {
+      "median_ms": {
+        "cold_first_converse_cpu": 95.100816,
+        "cold_first_converse_wall": 94.608565,
+        "target_converse_cpu": 1677.005973,
+        "target_converse_wall": 113.59023
+      },
+      "median_target_graph_counts": {
+        "after_edges": 1553,
+        "after_nodes": 1749,
+        "before_edges": 1447,
+        "before_nodes": 1708
+      },
+      "n": 3
+    },
+    "clamp/truthful_adoption": {
+      "median_ms": {
+        "cold_first_converse_cpu": 100.504047,
+        "cold_first_converse_wall": 100.258953,
+        "target_converse_cpu": 1675.571526,
+        "target_converse_wall": 114.637724
+      },
+      "median_target_graph_counts": {
+        "after_edges": 1606,
+        "after_nodes": 1810,
+        "before_edges": 1447,
+        "before_nodes": 1708
+      },
+      "n": 3
+    },
+    "parity/missing_evidence": {
+      "median_ms": {
+        "cold_first_converse_cpu": 96.749337,
+        "cold_first_converse_wall": 96.262703,
+        "target_converse_cpu": 1680.663643,
+        "target_converse_wall": 111.171677
+      },
+      "median_target_graph_counts": {
+        "after_edges": 1499,
+        "after_nodes": 1719,
+        "before_edges": 1427,
+        "before_nodes": 1688
+      },
+      "n": 3
+    },
+    "parity/truthful_adoption": {
+      "median_ms": {
+        "cold_first_converse_cpu": 95.180677,
+        "cold_first_converse_wall": 95.258617,
+        "target_converse_cpu": 1702.811228,
+        "target_converse_wall": 115.997911
+      },
+      "median_target_graph_counts": {
+        "after_edges": 1519,
+        "after_nodes": 1744,
+        "before_edges": 1427,
+        "before_nodes": 1688
+      },
+      "n": 3
+    },
+    "square/missing_evidence": {
+      "median_ms": {
+        "cold_first_converse_cpu": 98.266687,
+        "cold_first_converse_wall": 97.775601,
+        "target_converse_cpu": 1669.873253,
+        "target_converse_wall": 111.35898
+      },
+      "median_target_graph_counts": {
+        "after_edges": 1489,
+        "after_nodes": 1713,
+        "before_edges": 1423,
+        "before_nodes": 1684
+      },
+      "n": 3
+    },
+    "square/truthful_adoption": {
+      "median_ms": {
+        "cold_first_converse_cpu": 97.359116,
+        "cold_first_converse_wall": 96.909487,
+        "target_converse_cpu": 1650.399825,
+        "target_converse_wall": 111.753831
+      },
+      "median_target_graph_counts": {
+        "after_edges": 1503,
+        "after_nodes": 1732,
+        "before_edges": 1423,
+        "before_nodes": 1684
+      },
+      "n": 3
+    }
+  },
+  "checks": [
+    {
+      "name": "18_unique_workers",
+      "pass": true
+    },
+    {
+      "name": "complete_grid",
+      "pass": true
+    },
+    {
+      "name": "source_stability",
+      "pass": true
+    },
+    {
+      "name": "positive_wall_and_cpu",
+      "pass": true
+    },
+    {
+      "name": "receipt_replay_or_expected_absence",
+      "pass": true
+    },
+    {
+      "name": "provider_authentication",
+      "pass": true
+    },
+    {
+      "name": "adoption_and_refusal_shape_state",
+      "pass": true
+    },
+    {
+      "name": "heldout_oracle_parity",
+      "pass": true
+    }
+  ],
+  "limits": [
+    "one host, three authored codewrite task families, one test provider, three repetitions per cell",
+    "first converse is a controlled hello warm-up; second is the target task",
+    "target full-graph changes include normal per-turn writes and are descriptive",
+    "timings are descriptive and not confidence intervals",
+    "HMAC authenticates test labels but does not establish their truth"
+  ],
+  "passed": 8,
+  "schema": "SubstrateAdequacyWarmConverseCostV1Analysis",
+  "total": 8
+}

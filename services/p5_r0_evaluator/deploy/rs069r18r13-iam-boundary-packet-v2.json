@@ -1,0 +1,128 @@
+{
+  "schema": "P5R0RS069R18R13IAMBoundaryPacketV2",
+  "classification": "repository_review_only_non_release",
+  "status": "blocked_pending_signed_environment_credential_and_executor",
+  "packet_version": 2,
+  "master_run": "P5-MASTER-001",
+  "dispatch_id": "DISPATCH-052",
+  "review_id": "P5-MASTER-001/REVIEW-052",
+  "operation": {
+    "id": "provision_gcs_only_iam_boundary",
+    "order": 0,
+    "scope": ["provision_gcs_only_iam_boundary"],
+    "apply_order": [
+      "capture_and_digest_fresh_read_only_prestate",
+      "ensure_gcs_only_service_account_without_key_material",
+      "create_or_reconcile_exact_custom_role",
+      "atomically_update_bucket_policy_add_exact_writer_and_remove_broad_or_stale_grants",
+      "atomically_update_gcs_only_service_account_policy_add_exact_token_creator",
+      "reobserve_and_verify_exact_poststate_and_private_visibility"
+    ],
+    "later_operations_enabled": false,
+    "cloud_operations": [],
+    "mutations_performed": false
+  },
+  "capability_identity": {
+    "project_id": "ocelot-proof",
+    "project_number": "141633828616",
+    "bucket": "p5-evaluator-ocelot-proof-141633828616",
+    "service_account": "p5-r0-gcs-only@ocelot-proof.iam.gserviceaccount.com",
+    "service_account_resource": "projects/ocelot-proof/serviceAccounts/p5-r0-gcs-only@ocelot-proof.iam.gserviceaccount.com",
+    "custom_role": "projects/ocelot-proof/roles/p5R0Operation4BundleWriterV1",
+    "wif_principal": "principalSet://iam.googleapis.com/projects/141633828616/locations/global/workloadIdentityPools/p5-cs-pool/attribute.image_digest/sha256:394a0707d1e162315bdf22de4ff034a7cf75a32b919cef6f12bba501521be11c",
+    "condition_title": "p5_r0_r18r13_op4_exact_run",
+    "condition_expression": "resource.name.startsWith('projects/_/buckets/p5-evaluator-ocelot-proof-141633828616/objects/p5-r0/operation-4/rs069r18r13-op4-04a98e3e/')",
+    "permissions": ["storage.objects.create", "storage.objects.get"],
+    "forbidden_permissions": ["storage.objects.list", "storage.objects.delete", "storage.objects.update", "storage.buckets.get"]
+  },
+  "source_bindings": {
+    "iam_definition_path": "services/p5_r0_evaluator/deploy/rs069r18r13-iam-provisioning-definition-v1.json",
+    "iam_definition_digest": "sha256:817ce6cff5f25487ba131a2d587fbcd489a52245e3a8173aa6320862ed49ce25",
+    "gcs_capability_definition_path": "services/p5_r0_evaluator/deploy/gcs-capability-definition.json",
+    "gcs_capability_definition_digest": "sha256:705c5323a8bf8f300547d2051cf128825b03e0415c334dd452cd4e9db0280ee2",
+    "prestate_path": "var/p5-r0-rs069/rs069r18r13-iam-prestate-v2.json",
+    "prestate_artifact_digest": "sha256:03c83325fd531f0a2db39f0d54d02b10ae7cfa96577ab3cc93046602f109b946",
+    "prestate_state_digest": "sha256:a7580109437962f92903ff8d03f03a3f3de386b1da0f51e2cb73aff2518dc692",
+    "credential_evidence_path": "var/p5-r0-rs069/rs069r18r13-credential-binding-evidence-v1.json",
+    "credential_evidence_digest": "sha256:725608ffadaadc94bbcb0ff9fc640d14350f914c5508530969a584df65fedeef"
+  },
+  "authority_dependency": {
+    "binding_path": "services/p5_r0_evaluator/deploy/rs-069r18r12-binding-review.json",
+    "binding_artifact_digest": "sha256:c8e186d51eb0dcce6d3b2db4939f0e62af69ee88fc5ada19c4ad8c878245fd61",
+    "authority_binding_digest": "sha256:9837a8f8e5f214a474f685e259f0acb1d6b6fff4b02d9ebbc3919fbf1e7c13e6",
+    "r18r12_approval_path": "services/p5_r0_evaluator/deploy/rs-069r18r12-operation-3-approval.json",
+    "r18r12_approval_digest": "sha256:cfa0b7cc40f288282fdb432538460fc65cc4b0c8d3d247c73786fd4fa5cc9dd0",
+    "r18r12_ledger_path": "var/p5-r0-rs069/operation-3-r18r12-ledger.jsonl",
+    "r18r12_ledger_head_digest": "sha256:30a59807d8dbf7aa2529d4efab406b4dcd5e87597442be71045827c816833329",
+    "r18r12_verified_event_digest": "sha256:bbb534870778e46c38c6e0fc03dbc36f47f5f78c6127b12ef2e8557877f0a727",
+    "required_terminal_status": "verified_repository_binding_review_only"
+  },
+  "credential_binding": {
+    "service_account": "p5-r0-gcs-only@ocelot-proof.iam.gserviceaccount.com",
+    "source": "signed-environment STS -> IAM Credentials generateAccessToken",
+    "status": "required_but_not_injected",
+    "signed_environment_evidence_digest": null,
+    "token_present": false,
+    "credential_created": false,
+    "credential_exported": false,
+    "ambient_adc_allowed": false,
+    "service_account_key_allowed": false,
+    "direct_wif_bucket_access_allowed": false,
+    "fail_closed_if_absent": true
+  },
+  "prestate_observation": {
+    "read_only": true,
+    "applied_state": false,
+    "target_account_exists": false,
+    "target_account_policy": null,
+    "custom_role_exists": false,
+    "existing_kms_authority_account": "p5-evaluator@ocelot-proof.iam.gserviceaccount.com",
+    "existing_kms_authority_role": "roles/cloudkms.signerVerifier",
+    "shared_account_is_not_capability_account": true
+  },
+  "desired_iam": {
+    "target_account": "p5-r0-gcs-only@ocelot-proof.iam.gserviceaccount.com",
+    "bucket_grant": {
+      "member": "serviceAccount:p5-r0-gcs-only@ocelot-proof.iam.gserviceaccount.com",
+      "role": "projects/ocelot-proof/roles/p5R0Operation4BundleWriterV1",
+      "condition_title": "p5_r0_r18r13_op4_exact_run",
+      "condition_expression": "resource.name.startsWith('projects/_/buckets/p5-evaluator-ocelot-proof-141633828616/objects/p5-r0/operation-4/rs069r18r13-op4-04a98e3e/')"
+    },
+    "token_creator": {
+      "member": "principalSet://iam.googleapis.com/projects/141633828616/locations/global/workloadIdentityPools/p5-cs-pool/attribute.image_digest/sha256:394a0707d1e162315bdf22de4ff034a7cf75a32b919cef6f12bba501521be11c",
+      "role": "roles/iam.serviceAccountTokenCreator",
+      "resource": "projects/ocelot-proof/serviceAccounts/p5-r0-gcs-only@ocelot-proof.iam.gserviceaccount.com"
+    },
+    "remove": [
+      {"member": "serviceAccount:p5-evaluator@ocelot-proof.iam.gserviceaccount.com", "role": "roles/storage.objectAdmin"},
+      {"member": "principalSet://iam.googleapis.com/projects/141633828616/locations/global/workloadIdentityPools/p5-cs-pool/attribute.image_digest/sha256:0a42a061ac593c7dd4e21e90fab7b8bb62d1836666e5507549fb4194b18dcca7", "role": "roles/storage.objectUser"}
+    ],
+    "poststate_requires": ["gcs_only_account_exists_without_key_material_or_kms_role", "exact_custom_role_only", "exact_conditional_bucket_grant", "exact_wif_token_creator_grant", "no_public_principals", "receipt_verified"]
+  },
+  "supersession": {
+    "prior_packet_path": "services/p5_r0_evaluator/deploy/rs069r18r13-gcs-boundary-packet-v1.json",
+    "prior_packet_digest": "sha256:a8c313f6e5b775b4ba48a8e8ff4cc5e2561c560930c4e89ec2e9666fb509c447",
+    "observation": "superseded_observation_only",
+    "reason": "The shared old packet names p5-evaluator@ocelot-proof as its capability service account even though that account is KMS-capable; this V2 boundary uses the separate GCS-only account consistently.",
+    "historical_packet_rewritten": false,
+    "historical_packet_authority": false
+  },
+  "rollback": {
+    "required_on_post_mutation_failure": true,
+    "order": ["restore_target_service_account_policy", "restore_bucket_policy", "restore_custom_role"],
+    "verify_exact_prestate": true,
+    "ambiguous_state": "manual_review_no_retry",
+    "never_delete_created_service_account_automatically": true
+  },
+  "execution_boundary": {
+    "apply_performed": false,
+    "cloud_operations": [],
+    "mutations_performed": false,
+    "master_runsheet_modified": false,
+    "later_operations_enabled": false,
+    "direct_gcloud_allowed": false,
+    "adc_discovery_allowed": false,
+    "safe_apply_requires": ["fresh signed-environment credential evidence", "enabled exact child approval", "reviewed executor adapter", "fresh target account and custom-role preconditions"]
+  },
+  "packet_digest": "sha256:a9b975dc9a66ec5bc12a9c3dd8c825f494ddbe76b4b3e51578b7f2b367b2b546"
+}

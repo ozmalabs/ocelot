@@ -1,0 +1,85 @@
+{
+  "checks": [
+    {
+      "name": "capture_matches_lock",
+      "pass": true
+    },
+    {
+      "name": "current_lock_matches",
+      "pass": true
+    },
+    {
+      "name": "source_stable",
+      "pass": true
+    },
+    {
+      "name": "15_fresh_workers",
+      "pass": true
+    },
+    {
+      "name": "complete_schedule",
+      "pass": true
+    },
+    {
+      "name": "honest_single_outcome",
+      "pass": true
+    },
+    {
+      "name": "conflicting_two_outcome",
+      "pass": true
+    },
+    {
+      "name": "correlated_wrong_two_outcome",
+      "pass": true
+    },
+    {
+      "name": "aliased_honest_two_outcome",
+      "pass": true
+    },
+    {
+      "name": "distinguishing_honest_two_outcome",
+      "pass": true
+    }
+  ],
+  "limits": [
+    "two provider IDs do not prove independent operators",
+    "aliasing domain is intentionally inadequate",
+    "one scalar task family",
+    "does not estimate natural provider-correlation prevalence"
+  ],
+  "passed": 10,
+  "schema": "SubstrateAdequacyProviderAgreementDomainV1Analysis",
+  "summary": {
+    "aliased_honest_two": {
+      "adopted_per_run": 1,
+      "heldout_correct_per_run": 0,
+      "n": 3,
+      "receipt_status": "accepted"
+    },
+    "conflicting_two": {
+      "adopted_per_run": 0,
+      "heldout_correct_per_run": 0,
+      "n": 3,
+      "receipt_status": "ambiguous"
+    },
+    "correlated_wrong_two": {
+      "adopted_per_run": 1,
+      "heldout_correct_per_run": 0,
+      "n": 3,
+      "receipt_status": "accepted"
+    },
+    "distinguishing_honest_two": {
+      "adopted_per_run": 0,
+      "heldout_correct_per_run": 0,
+      "n": 3,
+      "receipt_status": "rejected"
+    },
+    "honest_single": {
+      "adopted_per_run": 1,
+      "heldout_correct_per_run": 3,
+      "n": 3,
+      "receipt_status": "accepted"
+    }
+  },
+  "total": 10
+}

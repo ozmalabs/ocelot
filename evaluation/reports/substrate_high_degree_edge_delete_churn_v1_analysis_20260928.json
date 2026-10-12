@@ -1,0 +1,60 @@
+{
+  "all_checks_pass": true,
+  "analysis_id": "substrate-high-degree-edge-delete-churn-v1-independent-analysis",
+  "cells": [
+    {
+      "median_delete_all_wall_ns": 35145290,
+      "median_delete_ns_per_edge": 7029.058,
+      "median_edge_build_wall_ns": 2079812,
+      "median_node_build_wall_ns": 3668512,
+      "median_reinsert_all_wall_ns": 1831731,
+      "median_reinsert_ns_per_edge": 366.3462,
+      "n": 5000,
+      "replicates": 3
+    },
+    {
+      "median_delete_all_wall_ns": 550725101,
+      "median_delete_ns_per_edge": 27536.25505,
+      "median_edge_build_wall_ns": 9012624,
+      "median_node_build_wall_ns": 14948189,
+      "median_reinsert_all_wall_ns": 8572721,
+      "median_reinsert_ns_per_edge": 428.63605,
+      "n": 20000,
+      "replicates": 3
+    },
+    {
+      "median_delete_all_wall_ns": 8695205434,
+      "median_delete_ns_per_edge": 108690.067925,
+      "median_edge_build_wall_ns": 36244646,
+      "median_node_build_wall_ns": 62469402,
+      "median_reinsert_all_wall_ns": 37869485,
+      "median_reinsert_ns_per_edge": 473.3685625,
+      "n": 80000,
+      "replicates": 3
+    }
+  ],
+  "checks": {
+    "exact_mutation_oracles_20000": true,
+    "exact_mutation_oracles_5000": true,
+    "exact_mutation_oracles_80000": true,
+    "manifest_success": true,
+    "parent_lock_stable": true,
+    "runner_gates_pass": true,
+    "three_workers_20000": true,
+    "three_workers_5000": true,
+    "three_workers_80000": true,
+    "worker_pids_unique": true,
+    "worker_snapshots_stable": true
+  },
+  "claim_boundary": "Exact deletion/reinsertion semantics and descriptive cost curve for one homogeneous hub bucket over three sizes; no general asymptotic or mixed-graph claim.",
+  "growth_ratios": {
+    "delete_20k_to_80k": 15.788649215754559,
+    "delete_5k_to_20k": 15.669954665333535,
+    "reinsert_20k_to_80k": 4.417440506928897,
+    "reinsert_5k_to_20k": 4.6801200612972105
+  },
+  "lock_sha256": "a7c17d4c9a7958b7792bb64adb9d42bc3c5bb5a2780abbdf1b61b275e9b905f4",
+  "raw_path": "evaluation/reports/substrate_high_degree_edge_delete_churn_v1_20260928.json",
+  "raw_sha256": "c657e9adff9437a74023ec59470ec9603d6d3f9a2c0b4fc2a5a8944c2e79e28f",
+  "schema_version": 1
+}

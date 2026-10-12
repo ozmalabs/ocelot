@@ -1,0 +1,3 @@
+# Shape-decoding native rule-patch comparison v4 — implementation amendment
+
+The candidate is a single named rule replacement on each detached branch. The native method resolves an active name against the branch interner/rule slots and applies remove-plus-add (or removal only), preserving the historical branch-local mutation outcome. If the target name is absent, it returns false and the caller continues to report an unapplied/inert candidate. The reference route remains the prior full `export_rules()` plus Python name scan. A replacement parse failure rolls back its term and symbol allocations; the detached branch is discarded by the caller. The method does not mutate or adopt into the primary graph.

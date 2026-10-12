@@ -1,0 +1,52 @@
+{
+  "checks": {
+    "independent_live_path_gates_pass": true,
+    "locked_input_and_output_hash_match": true,
+    "replicates_match_event_goal_kind_shape": true,
+    "runner_gates_pass": true,
+    "three_distinct_fresh_workers": true
+  },
+  "claim_boundary": "One live full-seed instruction path, three fresh processes. Confirms that this path creates inbound event/Goal provenance but no selection/execution/action_result DiscourseEvents. Does not claim other producers are absent or assess task performance.",
+  "interpretation": "The tested live instruction path produces inbound message/discourse provenance and conversation Goals bound to that turn. It produces no operation lifecycle DiscourseEvents and the new Goals have no lifecycle transitions. This is a bounded path audit; it does not establish absence in all producers or applications.",
+  "lock_sha256": "1621a6408bbd9560a42e93006857ad86ee555e4345208857d1f31766d78b4460",
+  "raw_sha256": "9049f09cba57d93d8a265616924ed1bf3a853967b830b05f48116da7fe76fe82",
+  "run_id": "substrate-live-action-event-identity-v1-analysis-20260926",
+  "schema_version": 1,
+  "summary": {
+    "boot_ns_median": 12165285136,
+    "new_goal_count": 3,
+    "operation_event_counts": {
+      "action_result": 0,
+      "execution": 0,
+      "instruction": 1,
+      "selection": 0
+    },
+    "turn_ns_median": 3365836927
+  },
+  "worker_gates": {
+    "0": {
+      "conversation_goal_bound_to_message_and_origin_event": true,
+      "event_has_no_explicit_for_goal_edge": true,
+      "goal_deliberations_are_empty_state_routes": true,
+      "lifecycle_event_kinds_absent": true,
+      "no_new_goal_has_lifecycle_transition": true,
+      "one_inbound_instruction_event": true
+    },
+    "1": {
+      "conversation_goal_bound_to_message_and_origin_event": true,
+      "event_has_no_explicit_for_goal_edge": true,
+      "goal_deliberations_are_empty_state_routes": true,
+      "lifecycle_event_kinds_absent": true,
+      "no_new_goal_has_lifecycle_transition": true,
+      "one_inbound_instruction_event": true
+    },
+    "2": {
+      "conversation_goal_bound_to_message_and_origin_event": true,
+      "event_has_no_explicit_for_goal_edge": true,
+      "goal_deliberations_are_empty_state_routes": true,
+      "lifecycle_event_kinds_absent": true,
+      "no_new_goal_has_lifecycle_transition": true,
+      "one_inbound_instruction_event": true
+    }
+  }
+}

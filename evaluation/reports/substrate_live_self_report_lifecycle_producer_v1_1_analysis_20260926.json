@@ -1,0 +1,30 @@
+{
+  "checks": {
+    "each_goal_comprehends_its_own_origin": true,
+    "each_run_contains_two_live_held_self_report_turns": true,
+    "no_for_goal_lifecycle_links": true,
+    "no_lifecycle_events_or_transitions": true,
+    "producer_shape_repeats": true,
+    "raw_lock_matches_current_sources": true,
+    "recipient_stable_and_goal_ids_distinct": true,
+    "runner_gates_pass": true,
+    "three_fresh_processes": true,
+    "worker_and_postrun_source_fingerprints_match_lock": true
+  },
+  "conclusion": "The repeated live held self-report route preserves distinct per-turn Goal origin provenance across two same-recipient turns and three fresh full-seed runs. Although the reply route is self_report, the discourse lifecycle stream records only the inbound instructions: no selection, execution, action_result, for_goal edge, or Goal transition was observed. This is evidence for the audited route only; the reply is not itself a durable execution receipt.",
+  "metrics": {
+    "distinct_pids": 3,
+    "event_counts": {
+      "action_result": 0,
+      "execution": 0,
+      "instruction": 2,
+      "selection": 0
+    },
+    "median_full_seed_boot_seconds": 13.323002905,
+    "median_turn_seconds": 2.205946192,
+    "replicates": 3
+  },
+  "raw_capture": "evaluation/reports/substrate_live_self_report_lifecycle_producer_v1_1_20260926.json",
+  "raw_sha256": "99413ed941086a95e495fafdc40136343ab675a51f85ca905ea53fd45f18f3cb",
+  "schema_version": 1
+}

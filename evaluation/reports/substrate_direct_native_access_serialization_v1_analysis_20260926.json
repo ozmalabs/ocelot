@@ -1,0 +1,16 @@
+{
+  "checks": {
+    "all_expected_paths_complete": true,
+    "conversation_semantics_preserved": true,
+    "four_handle_calls_blocked_then_entered": true,
+    "no_thread_errors": true,
+    "normalized_shape_repeats": true,
+    "raw_and_lock_match": true,
+    "three_source_stable_processes": true
+  },
+  "finding": "All four tested adapter entry paths\u2014public tick(), adapter.inner.node(), adapter.s.node(), and adapter.s._inner.node()\u2014attempt the same per-instance RLock while converse is paused, remain outside the protected body until release, and then complete. Across three fresh workers the conversation Goal lifecycle and baseline reply are preserved, with no thread errors.",
+  "limits": "This covers only the tested adapter-owned references. Handles retained before wrapping, access to facade internals, separate adapters around one native object, autonomous workers, external PyO3 references, other schedules, and throughput remain outside the evidence.",
+  "lock_sha256": "4a4ab541f737188ba3f9f605adc90d41830f0fb5ce6232ce3b098ad502c24bab",
+  "raw_sha256": "18b4eb3d921bfc9cf2835a1b50c7c76018bf2ef359f1e5e59cbaf3b867166e6d",
+  "schema_version": 1
+}

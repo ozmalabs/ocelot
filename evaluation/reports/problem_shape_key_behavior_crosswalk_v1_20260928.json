@@ -1,0 +1,141 @@
+{
+  "all_checks_pass": true,
+  "analysis_class": "post-hoc cross-study evidence join; not preregistered",
+  "behavior_pairs": [
+    {
+      "belief_maps_equal": false,
+      "max_abs_belief_delta": 2.0,
+      "max_converged": false,
+      "max_key": "ps_has_combine=yes_has_targets_mt=yes",
+      "replicate": 0,
+      "resident_index": 0,
+      "same_key": true,
+      "sum_converged": true,
+      "sum_key": "ps_has_combine=yes_has_targets_mt=yes"
+    },
+    {
+      "belief_maps_equal": false,
+      "max_abs_belief_delta": 2.0,
+      "max_converged": false,
+      "max_key": "ps_has_combine=yes_has_targets_mt=yes",
+      "replicate": 1,
+      "resident_index": 0,
+      "same_key": true,
+      "sum_converged": true,
+      "sum_key": "ps_has_combine=yes_has_targets_mt=yes"
+    },
+    {
+      "belief_maps_equal": false,
+      "max_abs_belief_delta": 2.0,
+      "max_converged": true,
+      "max_key": "ps_has_combine=yes_has_targets_mt=yes",
+      "replicate": 0,
+      "resident_index": 25,
+      "same_key": true,
+      "sum_converged": true,
+      "sum_key": "ps_has_combine=yes_has_targets_mt=yes"
+    },
+    {
+      "belief_maps_equal": false,
+      "max_abs_belief_delta": 2.0,
+      "max_converged": true,
+      "max_key": "ps_has_combine=yes_has_targets_mt=yes",
+      "replicate": 1,
+      "resident_index": 25,
+      "same_key": true,
+      "sum_converged": true,
+      "sum_key": "ps_has_combine=yes_has_targets_mt=yes"
+    },
+    {
+      "belief_maps_equal": false,
+      "max_abs_belief_delta": 2.0,
+      "max_converged": false,
+      "max_key": "ps_has_combine=yes_has_targets_mt=yes",
+      "replicate": 0,
+      "resident_index": 50,
+      "same_key": true,
+      "sum_converged": true,
+      "sum_key": "ps_has_combine=yes_has_targets_mt=yes"
+    },
+    {
+      "belief_maps_equal": false,
+      "max_abs_belief_delta": 2.0,
+      "max_converged": false,
+      "max_key": "ps_has_combine=yes_has_targets_mt=yes",
+      "replicate": 1,
+      "resident_index": 50,
+      "same_key": true,
+      "sum_converged": true,
+      "sum_key": "ps_has_combine=yes_has_targets_mt=yes"
+    }
+  ],
+  "checks": {
+    "all_behavior_pairs_differ_in_belief_map": true,
+    "all_behavior_pairs_share_structural_key": true,
+    "all_transfer_pairs_share_structural_key": true,
+    "behavior_workers_source_stable": true,
+    "four_transfer_bp_pairs": true,
+    "input_behavior_analysis_passes": true,
+    "input_transfer_analysis_passes": true,
+    "six_behavior_pairs": true,
+    "source_axis_is_presence_only": true,
+    "transfer_workers_source_stable": true
+  },
+  "inputs": {
+    "domains/problem_shape.py": "d88f2285362e089a0b1a9e5005bb2aef0b713ec937e5d986b51e502b61d8704b",
+    "evaluation/reports/problem_shape_bp_parameter_semantics_v1_1_20260927.json": "ee4c35158f0148ac1bbe38445fa42c961434afa88b2bb8db799bbb230944285f",
+    "evaluation/reports/problem_shape_bp_parameter_semantics_v1_1_analysis_20260927.json": "0b725d3a88e1033de66a6ae0aaa42a65a19a6e25cd43419107cd7199c1cf97fb",
+    "evaluation/reports/problem_shape_unseeded_schema_transfer_v1_20260927.json": "043bc9cab34cc420bf66a305305ff10b25bfe291de39bcbbb4908c8b4e1d91b0",
+    "evaluation/reports/problem_shape_unseeded_schema_transfer_v1_analysis_20260927.json": "5e5205e40ad4a6178dbdd4b87abdd103286a445e2191232c5ec1c97adc253073"
+  },
+  "interpretation": "ProblemShape successfully groups the two BP calls as one structural schema and transfers recognition across recurrence in the study fixtures. The same key does not imply behavioral equivalence: max_product and sum_product share it while their measured belief maps differ in every behavior-panel pair. The key is appropriate as structural description only; any consumer that treats recognition as a substitute for parameter-level behavior must preserve and evaluate combine values separately.",
+  "limits": [
+    "The cross-study join relates separate locked panels, not identical Goal instances or one shared held-out checkpoint.",
+    "Only three resident networks and two BP combine settings are represented in the behavior panel.",
+    "No solver-quality oracle establishes which belief map is preferable.",
+    "This establishes one known omitted behavior axis, not general false-mint precision or the full learning class."
+  ],
+  "schema_version": 1,
+  "transfer_bp_pairs": [
+    {
+      "max_covered_by": "ps_has_combine=yes_has_targets_mt=yes",
+      "max_final_status": "recognized",
+      "max_key": "ps_has_combine=yes_has_targets_mt=yes",
+      "panel": "bp_recurrence_transfer",
+      "replicate": 0,
+      "sum_covered_by": "ps_has_combine=yes_has_targets_mt=yes",
+      "sum_final_status": "recognized",
+      "sum_key": "ps_has_combine=yes_has_targets_mt=yes"
+    },
+    {
+      "max_covered_by": "ps_has_combine=yes_has_targets_mt=yes",
+      "max_final_status": "recognized",
+      "max_key": "ps_has_combine=yes_has_targets_mt=yes",
+      "panel": "bp_recurrence_transfer",
+      "replicate": 1,
+      "sum_covered_by": "ps_has_combine=yes_has_targets_mt=yes",
+      "sum_final_status": "recognized",
+      "sum_key": "ps_has_combine=yes_has_targets_mt=yes"
+    },
+    {
+      "max_covered_by": "ps_has_combine=yes_has_targets_mt=yes",
+      "max_final_status": "recognized",
+      "max_key": "ps_has_combine=yes_has_targets_mt=yes",
+      "panel": "mixed_family_separation",
+      "replicate": 0,
+      "sum_covered_by": "ps_has_combine=yes_has_targets_mt=yes",
+      "sum_final_status": "recognized",
+      "sum_key": "ps_has_combine=yes_has_targets_mt=yes"
+    },
+    {
+      "max_covered_by": "ps_has_combine=yes_has_targets_mt=yes",
+      "max_final_status": "recognized",
+      "max_key": "ps_has_combine=yes_has_targets_mt=yes",
+      "panel": "mixed_family_separation",
+      "replicate": 1,
+      "sum_covered_by": "ps_has_combine=yes_has_targets_mt=yes",
+      "sum_final_status": "recognized",
+      "sum_key": "ps_has_combine=yes_has_targets_mt=yes"
+    }
+  ]
+}

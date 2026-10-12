@@ -31,7 +31,7 @@ HOW `--batch off` IS EXPRESSED
 NOT by a conditional in the adapter -- that would be an agent decision in
 Python (CLAUDE.md), and it would also make the "off" arm a different code path
 rather than the same path with different DATA. Instead the arm points
-`wave_world._CHANGE_SEED` at a temp copy of `seeds/vision_change.json` with the
+`wave_world._CHANGE_SEED` at a temp copy of `domain_data/vision_change.json` with the
 `batch` key stripped from every rule. The flag is graph DATA; the control arm
 varies the data and nothing else. On the unmodified tree the strip is a no-op
 (no flag is present), which is what makes the same script run on both engines.
@@ -106,9 +106,9 @@ CELL_ATTRS = (
 
 
 def _strip_batch_seed() -> str:
-    """A temp copy of `seeds/vision_change.json` with `batch` stripped from
+    """A temp copy of `domain_data/vision_change.json` with `batch` stripped from
     every rule. The control arm varies the DATA, not the code path."""
-    src = os.path.join(ROOT, "seeds", "vision_change.json")
+    src = os.path.join(ROOT, "domain_data", "vision_change.json")
     with open(src) as fh:
         seed = json.load(fh)
     for r in seed.get("rules", []):
@@ -122,7 +122,7 @@ def _strip_batch_seed() -> str:
 def _seed_batch_flags() -> dict:
     """What the seed ACTUALLY says, read back from the file -- so the report
     records the flag state rather than asserting it."""
-    with open(os.path.join(ROOT, "seeds", "vision_change.json")) as fh:
+    with open(os.path.join(ROOT, "domain_data", "vision_change.json")) as fh:
         seed = json.load(fh)
     return {r["name"]: bool(r.get("batch", False)) for r in seed.get("rules", [])}
 

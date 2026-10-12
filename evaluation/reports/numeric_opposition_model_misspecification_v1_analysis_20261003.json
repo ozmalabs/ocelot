@@ -1,0 +1,37 @@
+{
+  "checks": {
+    "all_initial_and_final_terms_rescored_exactly": true,
+    "five_frozen_panels_and_disjoint_coverage": true,
+    "query_policies_replay_on_frozen_pools": true,
+    "source_lock_and_capture_binding": true
+  },
+  "empty_version_space_stops": 3,
+  "false_confidence_singletons": [
+    {
+      "hypothesis": "h001",
+      "policy": "paired_sequential",
+      "worker": 0
+    },
+    {
+      "hypothesis": "h007",
+      "policy": "paired_sequential",
+      "worker": 1
+    },
+    {
+      "hypothesis": "h002",
+      "policy": "paired_sequential",
+      "worker": 2
+    }
+  ],
+  "interpretation": "An empty version space or unresolved aliased set can expose inadequate grammar, but a unique training/query survivor may still be false on disjoint holdouts.",
+  "limits": [
+    "one additive target relation, absent from Neg/Eq/And",
+    "five repeated deterministic panels",
+    "simulated local oracle; query-call counts are not real oracle economics"
+  ],
+  "median_oracle_calls": 0.0,
+  "passed": 4,
+  "schema": "NumericOppositionModelMisspecificationV1Analysis",
+  "total": 4,
+  "total_final_survivors": 34
+}

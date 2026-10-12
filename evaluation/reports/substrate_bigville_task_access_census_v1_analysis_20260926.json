@@ -1,0 +1,89 @@
+{
+  "access": {
+    "observed_frames": [
+      40
+    ],
+    "rule": {
+      "active": true,
+      "index": 0,
+      "name": "can_native_update_3state",
+      "reads": [
+        "attr:discrete_mode",
+        "attr:external_field",
+        "attr:identity_field",
+        "attr:state",
+        "attr:temperature",
+        "edge:causal_influence",
+        "edge:has_concept"
+      ],
+      "reads_any": true,
+      "uid": 1,
+      "writes": [
+        "attr:state"
+      ],
+      "writes_any": false
+    },
+    "runtime_event_counts_by_kind": {
+      "effect_attr_write": 5,
+      "pattern_edge": 5,
+      "term_attr_read": 353,
+      "term_edge_attr_read": 119,
+      "term_edge_read": 119
+    },
+    "runtime_trace_is_partial": true,
+    "static_reads_any": true,
+    "unobserved_pairs_are_not_absence_evidence": true
+  },
+  "checks": {
+    "all_1000_dependency_edges_internal": true,
+    "each_runtime_frame_has_five_nodes": true,
+    "event_residual_zero": true,
+    "exact_component_treewidth_two": true,
+    "observed_access_rows_reconcile": true,
+    "observed_runtime_cross_frame_accesses_zero": true,
+    "raw_runner_checks_all_pass": true,
+    "runtime_events_reach_only_mutated_frame": true,
+    "three_fresh_processes": true,
+    "three_graph_states_equal": true,
+    "trace_still_marks_read_wildcard": true,
+    "unique_ownership_for_500_nodes": true
+  },
+  "claim_boundary": "Fresh diagnostic trace of one authored Bigville resident update on its existing 100-frame workload. The dynamic access trace is partial; zero observed cross-frame events is not proof that no dependencies exist. This is not an independent task family, representative-distribution estimate, boundary-aware scheduler, or speed claim.",
+  "lock_sha256": "f3ec027e13e37b30407d77a64a4d3706fcc4779a9956d4f7d48cb75888045dfe",
+  "operation_counts": {
+    "candidate_reduction_fraction": 0.9707317073170731,
+    "event_candidates": 30,
+    "event_term_evaluations": 1831,
+    "full_candidates": 1025,
+    "full_term_evaluations": 46147,
+    "term_reduction_fraction": 0.9603224478297614
+  },
+  "raw_sha256": "c826dfb510c4e64010147f10bee02a7cd74847fc77b1bf6b7bfbf74f2e4156a6",
+  "run_id": "substrate-bigville-task-access-census-v1-analysis-20260926",
+  "schema_version": 1,
+  "single_run_settlement_timing": {
+    "event_over_full_ratio": 0.05236853815935823,
+    "event_wall_ms": 0.199351,
+    "full_wall_ms": 3.806694,
+    "interpretation": "one fresh process per arm, one update each; descriptive only, no repeated timing interval"
+  },
+  "structure": {
+    "cross_frame_dependency_edges": 0,
+    "exact_treewidth_per_component": 2,
+    "frame_hierarchy_depth": 1,
+    "nodes": 500,
+    "nodes_per_frame": 5,
+    "partition_build_plus_graph_setup_ns_by_arm": [
+      53004974,
+      54961957,
+      52723812
+    ],
+    "partition_map_materialization_ns_by_arm": [
+      198561,
+      202551,
+      207371
+    ],
+    "runtime_dependency_edges": 1000,
+    "runtime_frames": 100
+  }
+}

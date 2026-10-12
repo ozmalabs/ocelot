@@ -1,0 +1,20 @@
+{
+  "run_id": "vision-shared-substrate-multisheet-task-pilot-v1.1-interrupted-20260927",
+  "status": "interrupted_before_first_complete_arm",
+  "protocol_path": "docs/research/engine_substrate/SUBSTRATE_VISION_SHARED_SUBSTRATE_MULTI_SHEET_TASK_PILOT_V1_PREREG_20260927.md",
+  "runner_path": "scripts/substrate_vision_shared_substrate_multisheet_task_pilot_v1_1.py",
+  "worker_log_path": "evaluation/reports/substrate_vision_shared_substrate_multisheet_task_pilot_v1_1_20260927.worker.log",
+  "completed_arm_count": 0,
+  "partial_adaptation_presentations": 200,
+  "registered_adaptation_presentations": 2000,
+  "elapsed_seconds_at_200_presentations": 135.9,
+  "phase_log_summary": {
+    "two_retina_development_calls": 3000,
+    "reported_development_elapsed_seconds": 2.16,
+    "adaptation_100_checkpoint_status": "repeated_graph_state",
+    "adaptation_200_checkpoint_status": "repeated_graph_state"
+  },
+  "source_lock_status": "capture_not_finalized; worker start/end and post-run stability gates unavailable",
+  "semantic_measurements": null,
+  "interpretation": "Censored harness attempt. The unusually short retinal-development duration is consistent with the known default DualProcess latency filter: the benchmark clone did not tag vision rules hard_realtime, so WaveWorld.step may have advanced clocks without running vision rules. This diagnosis is an inference to be tested by v1.2 calibration gates. The 200-presentation adaptation timing is a partial diagnostic, not a calibrated workload or semantic result."
+}

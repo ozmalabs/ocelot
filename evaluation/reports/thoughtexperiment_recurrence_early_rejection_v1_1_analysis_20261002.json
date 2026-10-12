@@ -1,0 +1,38 @@
+{
+  "baseline_and_bounded_cap_counts": {
+    "baseline_heldout": 80,
+    "baseline_training": 80,
+    "bounded_heldout": 80,
+    "bounded_training": 80
+  },
+  "checks": {
+    "all_256_paired_episode_outcomes_match": true,
+    "baseline_and_bounded_choose_same_unique_repair": true,
+    "bounded_stage_work_never_exceeds_200": true,
+    "candidate_descriptors_stable_across_workers": true,
+    "first_stage_caps_reject_before_second_candidate": true,
+    "four_train_and_heldout_samples_per_candidate": true,
+    "four_workers_eight_candidates": true,
+    "order_lock_score_chain_valid": true,
+    "orders_exclude_heldout_data": true,
+    "primary_state_and_residual_contract": true,
+    "same_candidate_keyed_inputs_in_pairs": true,
+    "selected_candidate_never_budget_rejected": true,
+    "selected_repair_is_dedup_and_passes_all_splits": true,
+    "source_hashes_stable_across_stages": true
+  },
+  "cost_summary": {
+    "baseline_total_runtime_ms": 116384.270194,
+    "bounded_total_runtime_ms": 5642.566384,
+    "mean_baseline_episode_ms": 454.6260554453125,
+    "mean_bounded_episode_ms": 22.0412749375,
+    "mean_candidate_enumeration_ms": 104.0601705,
+    "mean_graph_decision_ms_baseline": 0.89492325,
+    "mean_graph_decision_ms_bounded": 0.794273,
+    "measured_runtime_ratio_baseline_over_bounded": 20.62612334061642,
+    "paired_candidate_episodes": 256
+  },
+  "schema": "RecurrenceEarlyRejectionV1Analysis",
+  "scope": "Paired current-versus-early-rejection candidate evaluation; recurrence task, candidates, predictions, and oracle remain authored/host-generated.",
+  "selection_and_semantic_gates_pass": true
+}

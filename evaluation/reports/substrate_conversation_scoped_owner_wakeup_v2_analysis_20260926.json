@@ -1,0 +1,95 @@
+{
+  "checks": {
+    "fixture_and_checkpoint_shape": true,
+    "fixture_intended_goal_pairing_not_realized_by_rules": true,
+    "full_arm_reaches_fixed_points": true,
+    "global_recovery_exact": true,
+    "lock_digest_matches": true,
+    "observed_rule_pairing_recomputed": true,
+    "omission_stale_on_receipt_checkpoint": true,
+    "owner_goal_state_and_common_ground_match_full": true,
+    "owner_queue_exact_graph_parity": true,
+    "remote_result_notifies_both_origin_frames": true,
+    "runner_checks_all_pass": true,
+    "three_fresh_processes": true
+  },
+  "claim_boundary": "Fresh diagnostic of the native Microtheory-scoped delta API on one authored interleaved two-goal ten-event task, with four caller-constructed frames and a receipt sentinel. Exact closure parity is bounded to this fixture; seed lifecycle rules associate actions by event order, not addressee. The caller queue is not an engine scheduler.",
+  "fixture_sha256": "3ed9fa757e1fac8d6ec84b497a4156ba7237ac79ab637ec1eb20a5a8efb67b2e",
+  "lock_sha256": "31e57e3ca17307dd1e99a9b2698eba12ea03d6708d74441722cbb5109ff8214a",
+  "raw_sha256": "be6bd88d40ba905aefe261591fecd9b10df42f20d5f31b97b72a2fff12e5f8e3",
+  "run_id": "substrate-conversation-scoped-owner-wakeup-v2-analysis-20260926",
+  "schema_version": 1,
+  "summary": {
+    "checkpoint_count": 10,
+    "fixture_pairing_by_origin": {
+      "0": [
+        4,
+        5,
+        6
+      ],
+      "3": [
+        7,
+        8,
+        9
+      ]
+    },
+    "native_rule_pairing_by_origin": {
+      "0": [
+        4,
+        5,
+        6
+      ],
+      "3": [
+        4,
+        5,
+        6
+      ]
+    },
+    "omission_divergence_event_indices": [
+      6,
+      7,
+      8,
+      9
+    ],
+    "owner_queue_equal_checkpoints": 10,
+    "receipt_divergence_event_indices": [
+      6,
+      7,
+      8,
+      9
+    ],
+    "remote_notifications": [
+      [
+        4,
+        2,
+        0
+      ],
+      [
+        4,
+        2,
+        1
+      ],
+      [
+        5,
+        2,
+        0
+      ],
+      [
+        5,
+        2,
+        1
+      ],
+      [
+        6,
+        2,
+        0
+      ],
+      [
+        6,
+        2,
+        1
+      ]
+    ],
+    "semantic_gap": "The benchmark-loaded experimental seed rules transition both open Goals on events 4, 5, and 6 because their guards use temporal order rather than task identity/addressee. The domain contains an explicit host transition_goal(agent, goal, ...) helper, but source audit found no domain-module call sites; this probe does not establish a production task misassignment. See the v3 candidate guard diagnostic."
+  }
+}

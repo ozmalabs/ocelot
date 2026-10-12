@@ -1,0 +1,89 @@
+{
+  "checks": {
+    "all_heldout_candidates_scored_and_isolated": true,
+    "all_wrong_and_tie_controls_abstain": true,
+    "both_families_have_four_candidates": true,
+    "candidate_rule_ids_bind_to_frozen_descriptors": true,
+    "capture_lock_binding": true,
+    "four_unique_workers_both_stages": true,
+    "frozen_candidate_permutations_valid": true,
+    "one_training_winner_selected_each": true,
+    "paired_backend_semantic_parity_and_primary_isolation": true,
+    "selected_receipts_return_atomically": true,
+    "selected_repairs_pass_both_heldout_backends": true,
+    "source_hashes_stable": true,
+    "source_positive_controls_pass": true
+  },
+  "interpretation_boundary": "Two authored task families with supplied faults, cues, training examples, and oracles. Candidate rules are isolated in CoW branches; only proposal receipts return. This does not test automatic target diagnosis or production rule activation.",
+  "schema": "ThoughtexperimentEditOpsCrossFamilyCowV1Analysis",
+  "summary": {
+    "heldout_all_candidate_lifecycle_median_ms": {
+      "full_copy": 3.587946,
+      "shared_graph_pages": 3.0749009999999997
+    },
+    "receipt_adoption_median_ms": 0.17132150000000002,
+    "selector_median_ms": 1.3259865,
+    "single_candidate_snapshot_median_ms": {
+      "full_copy": 0.239012,
+      "shared_graph_pages": 0.07578599999999999
+    },
+    "training_all_candidate_lifecycle_median_ms": {
+      "full_copy": 19.372922499999998,
+      "shared_graph_pages": 3.6765165
+    }
+  },
+  "training_selection": {
+    "conversation": {
+      "0": {
+        "selected": "editops_edge_once:in:m:responds_to:any",
+        "training_winners": [
+          "editops_edge_once:in:m:responds_to:any"
+        ]
+      },
+      "1": {
+        "selected": "editops_edge_once:in:m:responds_to:any",
+        "training_winners": [
+          "editops_edge_once:in:m:responds_to:any"
+        ]
+      },
+      "2": {
+        "selected": "editops_edge_once:in:m:responds_to:any",
+        "training_winners": [
+          "editops_edge_once:in:m:responds_to:any"
+        ]
+      },
+      "3": {
+        "selected": "editops_edge_once:in:m:responds_to:any",
+        "training_winners": [
+          "editops_edge_once:in:m:responds_to:any"
+        ]
+      }
+    },
+    "recurrence": {
+      "0": {
+        "selected": "editops_edge_once:out:candidate:has_mint_offer:any",
+        "training_winners": [
+          "editops_edge_once:out:candidate:has_mint_offer:any"
+        ]
+      },
+      "1": {
+        "selected": "editops_edge_once:out:candidate:has_mint_offer:any",
+        "training_winners": [
+          "editops_edge_once:out:candidate:has_mint_offer:any"
+        ]
+      },
+      "2": {
+        "selected": "editops_edge_once:out:candidate:has_mint_offer:any",
+        "training_winners": [
+          "editops_edge_once:out:candidate:has_mint_offer:any"
+        ]
+      },
+      "3": {
+        "selected": "editops_edge_once:out:candidate:has_mint_offer:any",
+        "training_winners": [
+          "editops_edge_once:out:candidate:has_mint_offer:any"
+        ]
+      }
+    }
+  }
+}

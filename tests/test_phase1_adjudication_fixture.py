@@ -115,6 +115,25 @@ def test_expanded_adjudications_report_false_route_metrics():
                 "gap_count": attrs.get("gap_count"),
             })
 
+    # Typed cognitive inability is an assertion/self-report, while physical
+    # inability remains refusal and explicit nonunderstanding remains repair.
+    controls = (
+        ("I cannot parse this.", "assertion_or_correction",
+         "language_statement_act", "assertion"),
+        ("I cannot reach the upper switch.", "refusal",
+         "evidence_communicative_act", "inability_action"),
+        ("I do not understand the signal.", "repair_or_defer",
+         "evidence_communicative_act", "nonunderstanding_report"),
+    )
+    for text, force, evidence_key, evidence_value in controls:
+        agent.converse(text, "statement")
+        message = agent._last_turn_inbound
+        interpretation = agent.inner.neighbours(
+            message, "has_interpretation")[0]
+        attrs = agent.s.node(interpretation)["attrs"]
+        assert attrs.get("communicative_force") == force, (text, attrs)
+        assert attrs.get(evidence_key) == evidence_value, (text, attrs)
+
     # The action-evidence upgrade closes the previous polite-imperative miss.
     # The expanded result is now 20/20 = 100.0%, with no false action, answer,
     # or repair routes in this adjudicated slice.

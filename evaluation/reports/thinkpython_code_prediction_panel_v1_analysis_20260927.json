@@ -1,0 +1,410 @@
+{
+  "checks": {
+    "four_static_candidates": true,
+    "frame_equals_independent_selection": true,
+    "independent_oracle_all_cases": true,
+    "nine_fixed_cases": true,
+    "parent_lock_stable": true,
+    "schedule_parity": true,
+    "source_hash_and_schedule": true,
+    "two_worker_results_identical": true,
+    "two_workers": true,
+    "unique_worker_pids": true,
+    "worker_call_counts": true,
+    "worker_locks_stable": true,
+    "workers_succeeded": true
+  },
+  "pass": true,
+  "summary": {
+    "case_count": 9,
+    "claim_boundary": "Typed native-Term prediction versus a separately implemented safe AST oracle over nine fixed inputs for four textbook functions; no broad code-capability estimate.",
+    "functions": [
+      {
+        "function": "distance",
+        "id": [
+          "ch06_thinkpython2007.txt",
+          6
+        ],
+        "input_count": 2
+      },
+      {
+        "function": "is_divisible",
+        "id": [
+          "ch06_thinkpython2007.txt",
+          17
+        ],
+        "input_count": 3
+      },
+      {
+        "function": "min_max",
+        "id": [
+          "ch12_thinkpython2013.txt",
+          18
+        ],
+        "input_count": 2
+      },
+      {
+        "function": "different_words",
+        "id": [
+          "ch13_thinkpython2014.txt",
+          7
+        ],
+        "input_count": 2
+      }
+    ],
+    "workers": [
+      {
+        "abstentions": 4,
+        "accuracy_all_cases": 0.5555555555555556,
+        "accuracy_when_predicted": 1.0,
+        "boot_failures": 11,
+        "boot_loaded": 731,
+        "boot_total": 742,
+        "boot_wall_ns": 11873778696,
+        "case_results": [
+          {
+            "abstained": false,
+            "case_index": 0,
+            "correct": true,
+            "cpu_ns": 329141970,
+            "error_type": null,
+            "expected": {
+              "type": "float",
+              "value": 0.0
+            },
+            "function": "distance",
+            "prediction": {
+              "type": "float",
+              "value": 0.0
+            },
+            "wall_ns": 40229514
+          },
+          {
+            "abstained": false,
+            "case_index": 1,
+            "correct": true,
+            "cpu_ns": 4011451,
+            "error_type": null,
+            "expected": {
+              "type": "float",
+              "value": 0.0
+            },
+            "function": "distance",
+            "prediction": {
+              "type": "float",
+              "value": 0.0
+            },
+            "wall_ns": 4004207
+          },
+          {
+            "abstained": false,
+            "case_index": 0,
+            "correct": true,
+            "cpu_ns": 3063171,
+            "error_type": null,
+            "expected": {
+              "type": "bool",
+              "value": true
+            },
+            "function": "is_divisible",
+            "prediction": {
+              "type": "bool",
+              "value": true
+            },
+            "wall_ns": 3058040
+          },
+          {
+            "abstained": false,
+            "case_index": 1,
+            "correct": true,
+            "cpu_ns": 5192801,
+            "error_type": null,
+            "expected": {
+              "type": "bool",
+              "value": false
+            },
+            "function": "is_divisible",
+            "prediction": {
+              "type": "bool",
+              "value": false
+            },
+            "wall_ns": 5186725
+          },
+          {
+            "abstained": false,
+            "case_index": 2,
+            "correct": true,
+            "cpu_ns": 2990431,
+            "error_type": null,
+            "expected": {
+              "type": "bool",
+              "value": true
+            },
+            "function": "is_divisible",
+            "prediction": {
+              "type": "bool",
+              "value": true
+            },
+            "wall_ns": 2989811
+          },
+          {
+            "abstained": true,
+            "case_index": 0,
+            "correct": false,
+            "cpu_ns": 20504466,
+            "error_type": "EmitError",
+            "expected": {
+              "type": "tuple",
+              "value": [
+                {
+                  "type": "int",
+                  "value": 1
+                },
+                {
+                  "type": "int",
+                  "value": 3
+                }
+              ]
+            },
+            "function": "min_max",
+            "prediction": null,
+            "wall_ns": 20499589
+          },
+          {
+            "abstained": true,
+            "case_index": 1,
+            "correct": false,
+            "cpu_ns": 3858371,
+            "error_type": "EmitError",
+            "expected": {
+              "type": "tuple",
+              "value": [
+                {
+                  "type": "int",
+                  "value": -2
+                },
+                {
+                  "type": "int",
+                  "value": 5
+                }
+              ]
+            },
+            "function": "min_max",
+            "prediction": null,
+            "wall_ns": 3851276
+          },
+          {
+            "abstained": true,
+            "case_index": 0,
+            "correct": false,
+            "cpu_ns": 26840907,
+            "error_type": "EmitError",
+            "expected": {
+              "type": "int",
+              "value": 2
+            },
+            "function": "different_words",
+            "prediction": null,
+            "wall_ns": 26858343
+          },
+          {
+            "abstained": true,
+            "case_index": 1,
+            "correct": false,
+            "cpu_ns": 3805341,
+            "error_type": "EmitError",
+            "expected": {
+              "type": "int",
+              "value": 0
+            },
+            "function": "different_words",
+            "prediction": null,
+            "wall_ns": 3798246
+          }
+        ],
+        "cases": 9,
+        "correct": 5,
+        "coverage": 0.5555555555555556,
+        "peak_rss_bytes": 1951457280,
+        "predictions": 5,
+        "replicate": 0
+      },
+      {
+        "abstentions": 4,
+        "accuracy_all_cases": 0.5555555555555556,
+        "accuracy_when_predicted": 1.0,
+        "boot_failures": 11,
+        "boot_loaded": 731,
+        "boot_total": 742,
+        "boot_wall_ns": 11937545943,
+        "case_results": [
+          {
+            "abstained": false,
+            "case_index": 0,
+            "correct": true,
+            "cpu_ns": 258181767,
+            "error_type": null,
+            "expected": {
+              "type": "float",
+              "value": 0.0
+            },
+            "function": "distance",
+            "prediction": {
+              "type": "float",
+              "value": 0.0
+            },
+            "wall_ns": 44804883
+          },
+          {
+            "abstained": false,
+            "case_index": 1,
+            "correct": true,
+            "cpu_ns": 4392321,
+            "error_type": null,
+            "expected": {
+              "type": "float",
+              "value": 0.0
+            },
+            "function": "distance",
+            "prediction": {
+              "type": "float",
+              "value": 0.0
+            },
+            "wall_ns": 4384230
+          },
+          {
+            "abstained": false,
+            "case_index": 0,
+            "correct": true,
+            "cpu_ns": 3313851,
+            "error_type": null,
+            "expected": {
+              "type": "bool",
+              "value": true
+            },
+            "function": "is_divisible",
+            "prediction": {
+              "type": "bool",
+              "value": true
+            },
+            "wall_ns": 3308602
+          },
+          {
+            "abstained": false,
+            "case_index": 1,
+            "correct": true,
+            "cpu_ns": 5852712,
+            "error_type": null,
+            "expected": {
+              "type": "bool",
+              "value": false
+            },
+            "function": "is_divisible",
+            "prediction": {
+              "type": "bool",
+              "value": false
+            },
+            "wall_ns": 5846540
+          },
+          {
+            "abstained": false,
+            "case_index": 2,
+            "correct": true,
+            "cpu_ns": 3414051,
+            "error_type": null,
+            "expected": {
+              "type": "bool",
+              "value": true
+            },
+            "function": "is_divisible",
+            "prediction": {
+              "type": "bool",
+              "value": true
+            },
+            "wall_ns": 3407733
+          },
+          {
+            "abstained": true,
+            "case_index": 0,
+            "correct": false,
+            "cpu_ns": 21932336,
+            "error_type": "EmitError",
+            "expected": {
+              "type": "tuple",
+              "value": [
+                {
+                  "type": "int",
+                  "value": 1
+                },
+                {
+                  "type": "int",
+                  "value": 3
+                }
+              ]
+            },
+            "function": "min_max",
+            "prediction": null,
+            "wall_ns": 21924848
+          },
+          {
+            "abstained": true,
+            "case_index": 1,
+            "correct": false,
+            "cpu_ns": 3851421,
+            "error_type": "EmitError",
+            "expected": {
+              "type": "tuple",
+              "value": [
+                {
+                  "type": "int",
+                  "value": -2
+                },
+                {
+                  "type": "int",
+                  "value": 5
+                }
+              ]
+            },
+            "function": "min_max",
+            "prediction": null,
+            "wall_ns": 3845416
+          },
+          {
+            "abstained": true,
+            "case_index": 0,
+            "correct": false,
+            "cpu_ns": 27700057,
+            "error_type": "EmitError",
+            "expected": {
+              "type": "int",
+              "value": 2
+            },
+            "function": "different_words",
+            "prediction": null,
+            "wall_ns": 27692738
+          },
+          {
+            "abstained": true,
+            "case_index": 1,
+            "correct": false,
+            "cpu_ns": 3935121,
+            "error_type": "EmitError",
+            "expected": {
+              "type": "int",
+              "value": 0
+            },
+            "function": "different_words",
+            "prediction": null,
+            "wall_ns": 3928326
+          }
+        ],
+        "cases": 9,
+        "correct": 5,
+        "coverage": 0.5555555555555556,
+        "peak_rss_bytes": 1951453184,
+        "predictions": 5,
+        "replicate": 1
+      }
+    ]
+  }
+}

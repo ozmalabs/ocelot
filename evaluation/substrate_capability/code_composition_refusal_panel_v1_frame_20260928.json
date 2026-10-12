@@ -1,0 +1,17 @@
+{
+  "schema": "code-composition-refusal-panel-v1",
+  "cases": [
+    {"id":"unique_constant_positive","source":"KIND = 64\ndef probe(mode):\n    return (mode & KIND) == KIND\n","function":"probe","args":{"mode":65},"expected":{"kind":"value","type":"bool","value":true}},
+    {"id":"pure_helper_positive","source":"def mask(value):\n    return value & 64\ndef probe(mode):\n    return mask(mode) == 64\n","function":"probe","args":{"mode":65},"expected":{"kind":"value","type":"bool","value":true}},
+    {"id":"duplicate_global","source":"KIND = 64\nKIND = 32\ndef probe(mode):\n    return (mode & KIND) == KIND\n","function":"probe","args":{"mode":65},"expected":{"kind":"error","type":"EmitError"}},
+    {"id":"dynamic_global","source":"if unknown_condition:\n    KIND = 64\ndef probe(mode):\n    return (mode & KIND) == KIND\n","function":"probe","args":{"mode":65},"expected":{"kind":"error","type":"EmitError"}},
+    {"id":"wildcard_import","source":"from math import *\nKIND = 64\ndef probe(mode):\n    return (mode & KIND) == KIND\n","function":"probe","args":{"mode":65},"expected":{"kind":"error","type":"EmitError"}},
+    {"id":"recursive_helper","source":"def helper(value):\n    return helper(value)\ndef probe(mode):\n    return helper(mode)\n","function":"probe","args":{"mode":65},"expected":{"kind":"error","type":"EmitError"}},
+    {"id":"depth_overflow","source":"def h0(x):\n    return h1(x)\ndef h1(x):\n    return h2(x)\ndef h2(x):\n    return h3(x)\ndef h3(x):\n    return h4(x)\ndef h4(x):\n    return x & 64\ndef probe(mode):\n    return h0(mode) == 64\n","function":"probe","args":{"mode":65},"expected":{"kind":"error","type":"EmitError"}},
+    {"id":"keyword_helper_argument","source":"def mask(value):\n    return value & 64\ndef probe(mode):\n    return mask(value=mode) == 64\n","function":"probe","args":{"mode":65},"expected":{"kind":"error","type":"EmitError"}},
+    {"id":"effectful_helper_refusal","source":"def dangerous(value):\n    open('/tmp/ocelot_code_composition_refusal_sentinel_20260928', 'w').write(str(value))\n    return value\ndef probe(mode):\n    return dangerous(mode)\n","function":"probe","args":{"mode":65},"expected":{"kind":"error","type":"EmitError"},"sentinel":"/tmp/ocelot_code_composition_refusal_sentinel_20260928"},
+    {"id":"bitwise_bool_refusal","source":"def probe(mode):\n    return mode & 1\n","function":"probe","args":{"mode":true},"expected":{"kind":"error","type":"EmitError"}},
+    {"id":"bitwise_string_refusal","source":"def probe(mode):\n    return mode & 1\n","function":"probe","args":{"mode":"65"},"expected":{"kind":"error","type":"EmitError"}},
+    {"id":"bitwise_i64_overflow_refusal","source":"def probe(mode):\n    return mode & 1\n","function":"probe","args":{"mode":9223372036854775808},"expected":{"kind":"error","type":"EmitError"}}
+  ]
+}

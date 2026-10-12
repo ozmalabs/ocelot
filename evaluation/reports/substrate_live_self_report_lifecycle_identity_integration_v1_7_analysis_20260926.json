@@ -1,0 +1,164 @@
+{
+  "checks": {
+    "all_worker_and_postrun_fingerprints_stable": true,
+    "event_identity_shape_repeats": true,
+    "five_controls_pass": true,
+    "live_producer_events_have_one_goal_owner": true,
+    "producer_counter_conservation": true,
+    "producer_work_replicates_exactly": true,
+    "raw_lock_matches_current_sources": true,
+    "runner_gates_pass": true,
+    "six_producer_calls_each": true,
+    "three_distinct_fresh_pids": true
+  },
+  "conclusion": "The amended producer emits Goal-bound selection, execution, and result events on the live self_report route. Native identity-constrained rules resolve each successful Goal and close it; omission/swapped-link/duplicate-result/faculty-failure controls pass. Scope is limited to this action route and two sequential same-recipient turns.",
+  "control_checks": {
+    "correct_link_selects_only_owner": true,
+    "duplicate_result_is_idempotent_and_closed": true,
+    "faculty_failure_blocks_and_closes": true,
+    "omitted_link_selects_no_goal": true,
+    "swapped_link_follows_explicit_edge": true
+  },
+  "metrics": {
+    "distinct_pids": 3,
+    "median_full_seed_boot_seconds": 12.222955713,
+    "median_turn_seconds": 0.252897172,
+    "replicates": 3
+  },
+  "production_helper_work_by_replicate": {
+    "0": {
+      "by_kind": {
+        "action_result": {
+          "calls": 2,
+          "candidate_pairs": 16600,
+          "elapsed_ns": [
+            19366480,
+            14605092
+          ],
+          "term_evaluations": 174796
+        },
+        "execution": {
+          "calls": 2,
+          "candidate_pairs": 16606,
+          "elapsed_ns": [
+            11410551,
+            14864363
+          ],
+          "term_evaluations": 174824
+        },
+        "selection": {
+          "calls": 2,
+          "candidate_pairs": 16682,
+          "elapsed_ns": [
+            12776960,
+            14634101
+          ],
+          "term_evaluations": 178869
+        }
+      },
+      "candidate_pairs": 49888,
+      "term_evaluations": 528489
+    },
+    "1": {
+      "by_kind": {
+        "action_result": {
+          "calls": 2,
+          "candidate_pairs": 16600,
+          "elapsed_ns": [
+            12765200,
+            13446844
+          ],
+          "term_evaluations": 174796
+        },
+        "execution": {
+          "calls": 2,
+          "candidate_pairs": 16606,
+          "elapsed_ns": [
+            12538318,
+            13151222
+          ],
+          "term_evaluations": 174824
+        },
+        "selection": {
+          "calls": 2,
+          "candidate_pairs": 16682,
+          "elapsed_ns": [
+            13597054,
+            13895717
+          ],
+          "term_evaluations": 178869
+        }
+      },
+      "candidate_pairs": 49888,
+      "term_evaluations": 528489
+    },
+    "2": {
+      "by_kind": {
+        "action_result": {
+          "calls": 2,
+          "candidate_pairs": 16600,
+          "elapsed_ns": [
+            11794654,
+            13481714
+          ],
+          "term_evaluations": 174796
+        },
+        "execution": {
+          "calls": 2,
+          "candidate_pairs": 16606,
+          "elapsed_ns": [
+            11856244,
+            14639072
+          ],
+          "term_evaluations": 174824
+        },
+        "selection": {
+          "calls": 2,
+          "candidate_pairs": 16682,
+          "elapsed_ns": [
+            13213923,
+            13523304
+          ],
+          "term_evaluations": 178869
+        }
+      },
+      "candidate_pairs": 49888,
+      "term_evaluations": 528489
+    }
+  },
+  "production_helper_work_summary": {
+    "action_result": {
+      "calls_per_run": 2,
+      "candidate_pairs_per_run": 16600,
+      "elapsed_ns_range": [
+        11794654,
+        19366480
+      ],
+      "median_elapsed_ns_per_call": 13464279.0,
+      "term_evaluations_per_run": 174796
+    },
+    "execution": {
+      "calls_per_run": 2,
+      "candidate_pairs_per_run": 16606,
+      "elapsed_ns_range": [
+        11410551,
+        14864363
+      ],
+      "median_elapsed_ns_per_call": 12844770.0,
+      "term_evaluations_per_run": 174824
+    },
+    "selection": {
+      "calls_per_run": 2,
+      "candidate_pairs_per_run": 16682,
+      "elapsed_ns_range": [
+        12776960,
+        14634101
+      ],
+      "median_elapsed_ns_per_call": 13560179.0,
+      "term_evaluations_per_run": 178869
+    }
+  },
+  "raw_capture": "evaluation/reports/substrate_live_self_report_lifecycle_identity_integration_v1_7_20260926.json",
+  "raw_sha256": "332d6f9c7a5b39502e5ef08bf54aa616b0140cc67f7f84879edbb3c1049cc0ef",
+  "schema_version": 1
+}

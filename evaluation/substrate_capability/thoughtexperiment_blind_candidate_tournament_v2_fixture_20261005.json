@@ -1,0 +1,59 @@
+{
+  "schema": "ThoughtexperimentBlindCandidateTournamentV2Fixture",
+  "cases": [
+    {
+      "case_id": "opaque_01",
+      "live_effect_value": false,
+      "live_where": {"type": "Lit", "value": true},
+      "observed_relations": [],
+      "train": [{"id": 1, "signal": -1, "expected": true}, {"id": 2, "signal": 2, "expected": true}],
+      "canary": [{"id": 10, "signal": 0, "expected": true}, {"id": 11, "signal": 3, "expected": true}, {"id": 12, "signal": -2, "expected": true}],
+      "final": [{"id": 20, "signal": 5, "expected": true}, {"id": 21, "signal": 0, "expected": true}]
+    },
+    {
+      "case_id": "opaque_02",
+      "live_effect_value": true,
+      "live_where": {"type": "Lit", "value": true},
+      "observed_relations": [],
+      "train": [{"id": 3, "signal": 0, "expected": true}, {"id": 4, "signal": 1, "expected": true}],
+      "canary": [{"id": 13, "signal": -1, "expected": true}, {"id": 14, "signal": 2, "expected": true}, {"id": 15, "signal": 4, "expected": true}],
+      "final": [{"id": 22, "signal": 0, "expected": true}, {"id": 23, "signal": 3, "expected": true}]
+    },
+    {
+      "case_id": "opaque_03",
+      "live_effect_value": true,
+      "live_where": {"type": "Gte", "a": {"type": "Attr", "node": {"type": "Var", "name": "x"}, "key": "signal"}, "b": {"type": "Lit", "value": 0}},
+      "observed_relations": [],
+      "train": [{"id": 5, "signal": 0, "expected": false}, {"id": 6, "signal": 1, "expected": true}, {"id": 40, "signal": 2, "expected": true}],
+      "canary": [{"id": 16, "signal": -1, "expected": false}, {"id": 17, "signal": 0, "expected": false}, {"id": 18, "signal": 2, "expected": true}],
+      "final": [{"id": 24, "signal": 3, "expected": true}, {"id": 25, "signal": 0, "expected": false}]
+    },
+    {
+      "case_id": "opaque_04",
+      "live_effect_value": true,
+      "live_where": {"type": "Gte", "a": {"type": "Attr", "node": {"type": "Var", "name": "x"}, "key": "signal"}, "b": {"type": "Lit", "value": 1}},
+      "observed_relations": [],
+      "train": [{"id": 7, "signal": 0, "expected": false}, {"id": 8, "signal": 1, "expected": true}],
+      "canary": [{"id": 19, "signal": -1, "expected": false}, {"id": 26, "signal": 0, "expected": false}, {"id": 27, "signal": 2, "expected": true}],
+      "final": [{"id": 28, "signal": 4, "expected": true}, {"id": 29, "signal": 0, "expected": false}]
+    },
+    {
+      "case_id": "opaque_05",
+      "live_effect_value": true,
+      "live_where": {"type": "Gte", "a": {"type": "Attr", "node": {"type": "Var", "name": "x"}, "key": "signal"}, "b": {"type": "Lit", "value": 0}},
+      "observed_relations": [],
+      "train": [{"id": 9, "signal": 1, "expected": true}],
+      "canary": [{"id": 30, "signal": 0, "expected": false}, {"id": 31, "signal": 2, "expected": true}],
+      "final": [{"id": 32, "signal": -1, "expected": false}, {"id": 33, "signal": 2, "expected": true}]
+    },
+    {
+      "case_id": "opaque_06",
+      "live_effect_value": true,
+      "live_where": {"type": "Lit", "value": true},
+      "observed_relations": [{"anchor_var": "y", "direction": "out", "edge_type": "has_tag"}],
+      "train": [{"id": 34, "signal": 0, "expected": true}, {"id": 35, "signal": 1, "expected": true}],
+      "canary": [{"id": 36, "signal": -1, "expected": true}, {"id": 37, "signal": 2, "expected": true}],
+      "final": [{"id": 38, "signal": 3, "expected": true}, {"id": 39, "signal": 0, "expected": true}]
+    }
+  ]
+}

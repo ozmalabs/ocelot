@@ -1,0 +1,277 @@
+{
+  "analyzer_sha256": "b70760767d0cf0ccbfcf914b716612069b73c9b73ee0578020a27491d3cb6d6a",
+  "engine_provenance": {
+    "ambiguous": false,
+    "engine_source_fingerprint": "d2642ca004810bb10e84cee1b8cd7ac74df2bb0e086954d2d96d9e1ce767b8a2",
+    "engine_tree": "/home/matt/ozmadev/ocelot",
+    "mtime": 1790643943.2177348,
+    "native_path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+    "other_resolvable": [],
+    "sha256": "a5aa1ea0812e8ad2bd84e0c78864e23f33bccda3e3b9db2d946708d378e811de",
+    "short": "a5aa1ea0812e",
+    "source_fingerprint": "d2642ca004810bb10e84cee1b8cd7ac74df2bb0e086954d2d96d9e1ce767b8a2",
+    "source_match": "own",
+    "stale_rust": [],
+    "this_tree": "/home/matt/ozmadev/ocelot"
+  },
+  "inputs": {
+    "entrypoint": "ensure_program_synthesis -> ingest_spec -> pump",
+    "protocol": "synthesis_rung3_nonlinear_map_v1_1_20260929",
+    "repetitions": 5,
+    "schema": 1,
+    "tasks": {
+      "absolute_shear": {
+        "formula": "(r+abs(c-2),c)",
+        "heldout": [
+          [
+            0,
+            -1
+          ],
+          [
+            2,
+            -1
+          ],
+          [
+            1,
+            2
+          ],
+          [
+            4,
+            2
+          ],
+          [
+            2,
+            5
+          ],
+          [
+            5,
+            5
+          ]
+        ],
+        "request": "write a function map_absolute that returns a transformed pair",
+        "training": [
+          [
+            0,
+            0
+          ],
+          [
+            1,
+            0
+          ],
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            1
+          ],
+          [
+            0,
+            3
+          ],
+          [
+            1,
+            3
+          ],
+          [
+            0,
+            4
+          ],
+          [
+            1,
+            4
+          ]
+        ]
+      },
+      "hinge_shear": {
+        "formula": "(r+max(c-1,0),c)",
+        "heldout": [
+          [
+            0,
+            3
+          ],
+          [
+            2,
+            3
+          ],
+          [
+            1,
+            4
+          ],
+          [
+            4,
+            4
+          ],
+          [
+            2,
+            5
+          ],
+          [
+            5,
+            5
+          ]
+        ],
+        "request": "write a function map_hinge that returns a transformed pair",
+        "training": [
+          [
+            0,
+            0
+          ],
+          [
+            1,
+            0
+          ],
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            1
+          ],
+          [
+            0,
+            2
+          ],
+          [
+            1,
+            2
+          ]
+        ]
+      },
+      "linear": {
+        "formula": "(r+c,c+c)",
+        "heldout": [
+          [
+            0,
+            3
+          ],
+          [
+            2,
+            3
+          ],
+          [
+            1,
+            4
+          ],
+          [
+            4,
+            4
+          ],
+          [
+            2,
+            5
+          ],
+          [
+            5,
+            5
+          ]
+        ],
+        "request": "write a function map_linear that returns a transformed pair",
+        "training": [
+          [
+            0,
+            0
+          ],
+          [
+            1,
+            0
+          ],
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            1
+          ],
+          [
+            0,
+            2
+          ],
+          [
+            1,
+            2
+          ]
+        ]
+      },
+      "quadratic_shear": {
+        "formula": "(r+c*c,c)",
+        "heldout": [
+          [
+            0,
+            3
+          ],
+          [
+            2,
+            3
+          ],
+          [
+            1,
+            4
+          ],
+          [
+            4,
+            4
+          ],
+          [
+            2,
+            5
+          ],
+          [
+            5,
+            5
+          ]
+        ],
+        "request": "write a function map_quad that returns a transformed pair",
+        "training": [
+          [
+            0,
+            0
+          ],
+          [
+            1,
+            0
+          ],
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            1
+          ],
+          [
+            0,
+            2
+          ],
+          [
+            1,
+            2
+          ]
+        ]
+      }
+    }
+  },
+  "native_extension": {
+    "path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+    "sha256": "a5aa1ea0812e8ad2bd84e0c78864e23f33bccda3e3b9db2d946708d378e811de"
+  },
+  "protocol_sha256": "f0f33abba2a912dd0bce36fbcbe9c325f11d8475008769fb96a90beafd5fbf29",
+  "runner_sha256": "aaddec59d8d941ff8bd8193a2604482255b6f2f1d0e70c5e88be9cd63aa503fd",
+  "source_sha256": {
+    "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+    "domains/prog_synthesis.py": "52c01df0e08483b3ad5b35c45da27f92b70805957f068995fbfbd8c57b9cae2b",
+    "runners/dsl/python/substrate_rs/__init__.py": "499266c869c2d0a6b1e8265f9b0ca7a6c6eb096783e5bb98cd424c54239ce1c0",
+    "runners/dsl/python/substrate_rs/_native.build.json": "351d26e4aa91e988a9f06874213e157c41acc73557a3b7966bcdd5eb6b05ca33",
+    "runners/dsl/src/graph_rules.rs": "b0e9c5bf0bbb4bf278fdab03610fa3f6f82d01ad8ee898ec789982ff41812a50",
+    "runners/dsl/src/prog_eval.rs": "d419bda3288c534cbc8c35a3bccc29b67171b8297ecf8aeb43a474f77f0e1451",
+    "runners/dsl/src/py.rs": "c5034c827842ba92f37f0f1e01cb364133dd2e0b031bccefdd896e71096ee289",
+    "runners/dsl/src/substrate.rs": "fe839cb8fe702a8c9caa265acb578765a62a265939856d608d2a05fba0e79b50",
+    "runners/dsl/src/synth_enumerate.rs": "f3ae5dd0b15f0fef1713fa92ccb563e4b573dd94b626f0bfed58413298ee6203",
+    "runners/dsl/src/term.rs": "4d9ee91ad62b07282ab1ee8fe14f180158cb0cd59ffba2a46646593a6dd9c203",
+    "seeds/program_synthesis.json": "9d657f4409e470626f3bb9adc1236b7c6c59976a7a1b16b38e566813324916bd",
+    "seeds/program_synthesis_opgrammar.json": "8e747abefc9c4814a2b7bff1cce73acdef34d765e93dc1855d0a12dfc44042eb"
+  }
+}

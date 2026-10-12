@@ -1,0 +1,3620 @@
+{
+  "captured_utc": "2026-10-02T05:07:38Z",
+  "host": "Linux-6.8.0-142-generic-x86_64-with-glibc2.39",
+  "lock_sha256": "c3f205fb96cf3d2b1226543e9f7a7963a2f795748444a2087380cace40e61a13",
+  "schema": "ThoughtexperimentBidirectionalEdgeIdentityGuardsV1Orders",
+  "workers": [
+    {
+      "families": {
+        "conversation": {
+          "branch_evidence_isolated": true,
+          "candidate_order": [
+            3,
+            0,
+            2,
+            1
+          ],
+          "compose_ns": 49394804,
+          "composer": {
+            "operator": "add_match_guard",
+            "site": "where += Eq(Attr('m', 'adopted_variant_probe'), True) (a NEW conjunct)",
+            "target": "reply_to_adjacency_pair"
+          },
+          "controls": {
+            "all_wrong": {
+              "ok": false,
+              "probe_count": 2,
+              "proposal_count": 4,
+              "reason": "no unique proposal has positive matching evidence"
+            },
+            "tie": {
+              "ok": false,
+              "probe_count": 2,
+              "proposal_count": 4,
+              "reason": "no unique proposal has positive matching evidence"
+            }
+          },
+          "decision": {
+            "matching_evidence_count": 2,
+            "ok": true,
+            "probe_count": 2,
+            "proposal_count": 4,
+            "proposal_id": "sha256:bf06df0cd4584f1b11d7f3fd75654dc7d8e1665477f97bf41e4228611ee0f9b3",
+            "proposal_label": "hypothesis"
+          },
+          "descriptors": [
+            {
+              "label": "composer:add_match_guard",
+              "proposal_id": "sha256:4978adf6467218503a365c5022985819a0c74d595d143cea04376a30bdeb313d"
+            },
+            {
+              "label": "edge_once:in:r:has_speech_act:any_target",
+              "proposal_id": "sha256:92166eb379ff2efe698220215f4c126d8051bb47cdc7e19d13f4234775abf39c"
+            },
+            {
+              "label": "edge_once:out:agent:sent:any_target",
+              "proposal_id": "sha256:af4eb625863a571aa9cc20ec21e48265d75bb25ebda0574d16da0053e8a79f81"
+            },
+            {
+              "label": "edge_once:in:m:responds_to:any_target",
+              "proposal_id": "sha256:bf06df0cd4584f1b11d7f3fd75654dc7d8e1665477f97bf41e4228611ee0f9b3"
+            }
+          ],
+          "primary_rule_unchanged": true,
+          "selected_label": "edge_once:in:m:responds_to:any_target",
+          "selector_ns": 871555,
+          "selector_proposals": [
+            {
+              "proposal_id": "sha256:4978adf6467218503a365c5022985819a0c74d595d143cea04376a30bdeb313d",
+              "proposal_label": "hypothesis"
+            },
+            {
+              "proposal_id": "sha256:92166eb379ff2efe698220215f4c126d8051bb47cdc7e19d13f4234775abf39c",
+              "proposal_label": "hypothesis"
+            },
+            {
+              "proposal_id": "sha256:af4eb625863a571aa9cc20ec21e48265d75bb25ebda0574d16da0053e8a79f81",
+              "proposal_label": "hypothesis"
+            },
+            {
+              "proposal_id": "sha256:bf06df0cd4584f1b11d7f3fd75654dc7d8e1665477f97bf41e4228611ee0f9b3",
+              "proposal_label": "hypothesis"
+            }
+          ],
+          "sites": [
+            [
+              "in",
+              "r",
+              "has_speech_act",
+              null
+            ],
+            [
+              "in",
+              "m",
+              "responds_to",
+              null
+            ],
+            [
+              "out",
+              "agent",
+              "sent",
+              null
+            ]
+          ],
+          "source_train": [
+            {
+              "correct": true,
+              "expected_counts": [
+                1,
+                1
+              ],
+              "input_ids": [
+                "#482",
+                "#491"
+              ],
+              "output_counts": [
+                1,
+                1
+              ],
+              "rule_store_stable": true,
+              "sequence_runtime_ns": 701345
+            },
+            {
+              "correct": true,
+              "expected_counts": [
+                1,
+                1
+              ],
+              "input_ids": [
+                "#482",
+                "#491"
+              ],
+              "output_counts": [
+                1,
+                1
+              ],
+              "rule_store_stable": true,
+              "sequence_runtime_ns": 803335
+            }
+          ],
+          "training_evidence": [
+            {
+              "expected": "correct",
+              "predicted": "incorrect",
+              "probe_id": "train_0_0",
+              "proposal_id": "sha256:4978adf6467218503a365c5022985819a0c74d595d143cea04376a30bdeb313d"
+            },
+            {
+              "expected": "correct",
+              "predicted": "incorrect",
+              "probe_id": "train_0_1",
+              "proposal_id": "sha256:4978adf6467218503a365c5022985819a0c74d595d143cea04376a30bdeb313d"
+            },
+            {
+              "expected": "correct",
+              "predicted": "incorrect",
+              "probe_id": "train_0_0",
+              "proposal_id": "sha256:92166eb379ff2efe698220215f4c126d8051bb47cdc7e19d13f4234775abf39c"
+            },
+            {
+              "expected": "correct",
+              "predicted": "incorrect",
+              "probe_id": "train_0_1",
+              "proposal_id": "sha256:92166eb379ff2efe698220215f4c126d8051bb47cdc7e19d13f4234775abf39c"
+            },
+            {
+              "expected": "correct",
+              "predicted": "incorrect",
+              "probe_id": "train_0_0",
+              "proposal_id": "sha256:af4eb625863a571aa9cc20ec21e48265d75bb25ebda0574d16da0053e8a79f81"
+            },
+            {
+              "expected": "correct",
+              "predicted": "incorrect",
+              "probe_id": "train_0_1",
+              "proposal_id": "sha256:af4eb625863a571aa9cc20ec21e48265d75bb25ebda0574d16da0053e8a79f81"
+            },
+            {
+              "expected": "correct",
+              "predicted": "correct",
+              "probe_id": "train_0_0",
+              "proposal_id": "sha256:bf06df0cd4584f1b11d7f3fd75654dc7d8e1665477f97bf41e4228611ee0f9b3"
+            },
+            {
+              "expected": "correct",
+              "predicted": "correct",
+              "probe_id": "train_0_1",
+              "proposal_id": "sha256:bf06df0cd4584f1b11d7f3fd75654dc7d8e1665477f97bf41e4228611ee0f9b3"
+            }
+          ],
+          "training_keys": [],
+          "training_outcomes": [
+            {
+              "label": "composer:add_match_guard",
+              "proposal_id": "sha256:4978adf6467218503a365c5022985819a0c74d595d143cea04376a30bdeb313d",
+              "rows": [
+                {
+                  "correct": false,
+                  "expected_counts": [
+                    1,
+                    1
+                  ],
+                  "input_ids": [
+                    "#482",
+                    "#488"
+                  ],
+                  "output_counts": [
+                    0,
+                    0
+                  ],
+                  "rule_store_stable": true,
+                  "sample": 0,
+                  "sequence_runtime_ns": 26563747
+                },
+                {
+                  "correct": false,
+                  "expected_counts": [
+                    1,
+                    1
+                  ],
+                  "input_ids": [
+                    "#482",
+                    "#488"
+                  ],
+                  "output_counts": [
+                    0,
+                    0
+                  ],
+                  "rule_store_stable": true,
+                  "sample": 1,
+                  "sequence_runtime_ns": 406563
+                }
+              ]
+            },
+            {
+              "label": "edge_once:in:r:has_speech_act:any_target",
+              "proposal_id": "sha256:92166eb379ff2efe698220215f4c126d8051bb47cdc7e19d13f4234775abf39c",
+              "rows": [
+                {
+                  "correct": false,
+                  "expected_counts": [
+                    1,
+                    1
+                  ],
+                  "input_ids": [
+                    "#482",
+                    "#488"
+                  ],
+                  "output_counts": [
+                    0,
+                    0
+                  ],
+                  "rule_store_stable": true,
+                  "sample": 0,
+                  "sequence_runtime_ns": 456113
+                },
+                {
+                  "correct": false,
+                  "expected_counts": [
+                    1,
+                    1
+                  ],
+                  "input_ids": [
+                    "#482",
+                    "#488"
+                  ],
+                  "output_counts": [
+                    0,
+                    0
+                  ],
+                  "rule_store_stable": true,
+                  "sample": 1,
+                  "sequence_runtime_ns": 560943
+                }
+              ]
+            },
+            {
+              "label": "edge_once:out:agent:sent:any_target",
+              "proposal_id": "sha256:af4eb625863a571aa9cc20ec21e48265d75bb25ebda0574d16da0053e8a79f81",
+              "rows": [
+                {
+                  "correct": false,
+                  "expected_counts": [
+                    1,
+                    1
+                  ],
+                  "input_ids": [
+                    "#482",
+                    "#491"
+                  ],
+                  "output_counts": [
+                    1,
+                    0
+                  ],
+                  "rule_store_stable": true,
+                  "sample": 0,
+                  "sequence_runtime_ns": 442553
+                },
+                {
+                  "correct": false,
+                  "expected_counts": [
+                    1,
+                    1
+                  ],
+                  "input_ids": [
+                    "#482",
+                    "#491"
+                  ],
+                  "output_counts": [
+                    1,
+                    0
+                  ],
+                  "rule_store_stable": true,
+                  "sample": 1,
+                  "sequence_runtime_ns": 380753
+                }
+              ]
+            },
+            {
+              "label": "edge_once:in:m:responds_to:any_target",
+              "proposal_id": "sha256:bf06df0cd4584f1b11d7f3fd75654dc7d8e1665477f97bf41e4228611ee0f9b3",
+              "rows": [
+                {
+                  "correct": true,
+                  "expected_counts": [
+                    1,
+                    1
+                  ],
+                  "input_ids": [
+                    "#482",
+                    "#491"
+                  ],
+                  "output_counts": [
+                    1,
+                    1
+                  ],
+                  "rule_store_stable": true,
+                  "sample": 0,
+                  "sequence_runtime_ns": 527702
+                },
+                {
+                  "correct": true,
+                  "expected_counts": [
+                    1,
+                    1
+                  ],
+                  "input_ids": [
+                    "#482",
+                    "#491"
+                  ],
+                  "output_counts": [
+                    1,
+                    1
+                  ],
+                  "rule_store_stable": true,
+                  "sample": 1,
+                  "sequence_runtime_ns": 665873
+                }
+              ]
+            }
+          ],
+          "training_scoring_ns": 134129417
+        },
+        "recurrence": {
+          "branch_evidence_isolated": true,
+          "candidate_order": [
+            3,
+            0,
+            1,
+            2
+          ],
+          "compose_ns": 50061498,
+          "composer": {
+            "operator": "add_match_guard",
+            "site": "where += Eq(Attr('agent', 'adopted_variant_probe'), True) (a NEW conjunct)",
+            "target": "mrl_offer_due_once"
+          },
+          "controls": {
+            "all_wrong": {
+              "ok": false,
+              "probe_count": 2,
+              "proposal_count": 4,
+              "reason": "no unique proposal has positive matching evidence"
+            },
+            "tie": {
+              "ok": false,
+              "probe_count": 2,
+              "proposal_count": 4,
+              "reason": "no unique proposal has positive matching evidence"
+            }
+          },
+          "decision": {
+            "matching_evidence_count": 2,
+            "ok": true,
+            "probe_count": 2,
+            "proposal_count": 4,
+            "proposal_id": "sha256:febb968ea31a93a59efd981856b416790b803c6e1fd63f40eaa6880e8b35ea99",
+            "proposal_label": "hypothesis"
+          },
+          "descriptors": [
+            {
+              "label": "composer:add_match_guard",
+              "proposal_id": "sha256:a0e3249b07a997e5a606ed8b15f4f72b0dabbbe72f8a1b993667a7ce1010a492"
+            },
+            {
+              "label": "edge_once:out:agent:observed:any_target",
+              "proposal_id": "sha256:b4748673cb93a284227cf0782dc86457cf5732e6e3817ae170df77df3a5233b5"
+            },
+            {
+              "label": "edge_once:out:candidate:has_mint_offer:any_target",
+              "proposal_id": "sha256:febb968ea31a93a59efd981856b416790b803c6e1fd63f40eaa6880e8b35ea99"
+            },
+            {
+              "label": "edge_once:out:episode:has_mint_offer:any_target",
+              "proposal_id": "sha256:e8ff48aabc1cd06e0197c1ad63e4c3f03f138bef6d76ce49901618141f4e0a5a"
+            }
+          ],
+          "primary_rule_unchanged": true,
+          "selected_label": "edge_once:out:candidate:has_mint_offer:any_target",
+          "selector_ns": 918505,
+          "selector_proposals": [
+            {
+              "proposal_id": "sha256:a0e3249b07a997e5a606ed8b15f4f72b0dabbbe72f8a1b993667a7ce1010a492",
+              "proposal_label": "hypothesis"
+            },
+            {
+              "proposal_id": "sha256:b4748673cb93a284227cf0782dc86457cf5732e6e3817ae170df77df3a5233b5",
+              "proposal_label": "hypothesis"
+            },
+            {
+              "proposal_id": "sha256:febb968ea31a93a59efd981856b416790b803c6e1fd63f40eaa6880e8b35ea99",
+              "proposal_label": "hypothesis"
+            },
+            {
+              "proposal_id": "sha256:e8ff48aabc1cd06e0197c1ad63e4c3f03f138bef6d76ce49901618141f4e0a5a",
+              "proposal_label": "hypothesis"
+            }
+          ],
+          "sites": [
+            [
+              "out",
+              "agent",
+              "observed",
+              null
+            ],
+            [
+              "out",
+              "candidate",
+              "has_mint_offer",
+              null
+            ],
+            [
+              "out",
+              "episode",
+              "has_mint_offer",
+              null
+            ]
+          ],
+          "source_train": [
+            {
+              "correct": true,
+              "fixedpoint_progress": 0,
+              "keys": [
+                "bidir-0-train_source_0-0-0",
+                "bidir-0-train_source_0-0-1"
+              ],
+              "output_counts": [
+                1,
+                1
+              ],
+              "rule_store_stable": true,
+              "stage0_sweeps": [
+                2,
+                0,
+                0,
+                0,
+                0
+              ],
+              "stage1_sweeps": [
+                2,
+                0,
+                0,
+                0,
+                0
+              ]
+            },
+            {
+              "correct": true,
+              "fixedpoint_progress": 0,
+              "keys": [
+                "bidir-0-train_source_0-1-0",
+                "bidir-0-train_source_0-1-1"
+              ],
+              "output_counts": [
+                1,
+                1
+              ],
+              "rule_store_stable": true,
+              "stage0_sweeps": [
+                2,
+                0,
+                0,
+                0,
+                0
+              ],
+              "stage1_sweeps": [
+                2,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          ],
+          "training_evidence": [
+            {
+              "expected": "correct",
+              "predicted": "incorrect",
+              "probe_id": "train_0_0",
+              "proposal_id": "sha256:a0e3249b07a997e5a606ed8b15f4f72b0dabbbe72f8a1b993667a7ce1010a492"
+            },
+            {
+              "expected": "correct",
+              "predicted": "incorrect",
+              "probe_id": "train_0_1",
+              "proposal_id": "sha256:a0e3249b07a997e5a606ed8b15f4f72b0dabbbe72f8a1b993667a7ce1010a492"
+            },
+            {
+              "expected": "correct",
+              "predicted": "incorrect",
+              "probe_id": "train_0_0",
+              "proposal_id": "sha256:b4748673cb93a284227cf0782dc86457cf5732e6e3817ae170df77df3a5233b5"
+            },
+            {
+              "expected": "correct",
+              "predicted": "incorrect",
+              "probe_id": "train_0_1",
+              "proposal_id": "sha256:b4748673cb93a284227cf0782dc86457cf5732e6e3817ae170df77df3a5233b5"
+            },
+            {
+              "expected": "correct",
+              "predicted": "correct",
+              "probe_id": "train_0_0",
+              "proposal_id": "sha256:febb968ea31a93a59efd981856b416790b803c6e1fd63f40eaa6880e8b35ea99"
+            },
+            {
+              "expected": "correct",
+              "predicted": "correct",
+              "probe_id": "train_0_1",
+              "proposal_id": "sha256:febb968ea31a93a59efd981856b416790b803c6e1fd63f40eaa6880e8b35ea99"
+            },
+            {
+              "expected": "correct",
+              "predicted": "incorrect",
+              "probe_id": "train_0_0",
+              "proposal_id": "sha256:e8ff48aabc1cd06e0197c1ad63e4c3f03f138bef6d76ce49901618141f4e0a5a"
+            },
+            {
+              "expected": "correct",
+              "predicted": "incorrect",
+              "probe_id": "train_0_1",
+              "proposal_id": "sha256:e8ff48aabc1cd06e0197c1ad63e4c3f03f138bef6d76ce49901618141f4e0a5a"
+            }
+          ],
+          "training_keys": [
+            "bidir-0-train_0-0-0",
+            "bidir-0-train_0-0-1",
+            "bidir-0-train_0-1-0",
+            "bidir-0-train_0-1-1",
+            "bidir-0-train_0-0-0",
+            "bidir-0-train_0-0-1",
+            "bidir-0-train_0-1-0",
+            "bidir-0-train_0-1-1",
+            "bidir-0-train_0-0-0",
+            "bidir-0-train_0-0-1",
+            "bidir-0-train_0-1-0",
+            "bidir-0-train_0-1-1",
+            "bidir-0-train_0-0-0",
+            "bidir-0-train_0-0-1",
+            "bidir-0-train_0-1-0",
+            "bidir-0-train_0-1-1"
+          ],
+          "training_outcomes": [
+            {
+              "label": "composer:add_match_guard",
+              "proposal_id": "sha256:a0e3249b07a997e5a606ed8b15f4f72b0dabbbe72f8a1b993667a7ce1010a492",
+              "rows": [
+                {
+                  "correct": false,
+                  "fixedpoint_progress": 0,
+                  "keys": [
+                    "bidir-0-train_0-0-0",
+                    "bidir-0-train_0-0-1"
+                  ],
+                  "output_counts": [
+                    0,
+                    0
+                  ],
+                  "rule_store_stable": true,
+                  "sample": 0,
+                  "stage0_sweeps": [
+                    1,
+                    0,
+                    0,
+                    0,
+                    0
+                  ],
+                  "stage1_sweeps": [
+                    1,
+                    0,
+                    0,
+                    0,
+                    0
+                  ]
+                },
+                {
+                  "correct": false,
+                  "fixedpoint_progress": 0,
+                  "keys": [
+                    "bidir-0-train_0-1-0",
+                    "bidir-0-train_0-1-1"
+                  ],
+                  "output_counts": [
+                    0,
+                    0
+                  ],
+                  "rule_store_stable": true,
+                  "sample": 1,
+                  "stage0_sweeps": [
+                    1,
+                    0,
+                    0,
+                    0,
+                    0
+                  ],
+                  "stage1_sweeps": [
+                    1,
+                    0,
+                    0,
+                    0,
+                    0
+                  ]
+                }
+              ]
+            },
+            {
+              "label": "edge_once:out:agent:observed:any_target",
+              "proposal_id": "sha256:b4748673cb93a284227cf0782dc86457cf5732e6e3817ae170df77df3a5233b5",
+              "rows": [
+                {
+                  "correct": false,
+                  "fixedpoint_progress": 0,
+                  "keys": [
+                    "bidir-0-train_0-0-0",
+                    "bidir-0-train_0-0-1"
+                  ],
+                  "output_counts": [
+                    1,
+                    0
+                  ],
+                  "rule_store_stable": true,
+                  "sample": 0,
+                  "stage0_sweeps": [
+                    2,
+                    0,
+                    0,
+                    0,
+                    0
+                  ],
+                  "stage1_sweeps": [
+                    1,
+                    0,
+                    0,
+                    0,
+                    0
+                  ]
+                },
+                {
+                  "correct": false,
+                  "fixedpoint_progress": 0,
+                  "keys": [
+                    "bidir-0-train_0-1-0",
+                    "bidir-0-train_0-1-1"
+                  ],
+                  "output_counts": [
+                    1,
+                    0
+                  ],
+                  "rule_store_stable": true,
+                  "sample": 1,
+                  "stage0_sweeps": [
+                    2,
+                    0,
+                    0,
+                    0,
+                    0
+                  ],
+                  "stage1_sweeps": [
+                    1,
+                    0,
+                    0,
+                    0,
+                    0
+                  ]
+                }
+              ]
+            },
+            {
+              "label": "edge_once:out:candidate:has_mint_offer:any_target",
+              "proposal_id": "sha256:febb968ea31a93a59efd981856b416790b803c6e1fd63f40eaa6880e8b35ea99",
+              "rows": [
+                {
+                  "correct": true,
+                  "fixedpoint_progress": 0,
+                  "keys": [
+                    "bidir-0-train_0-0-0",
+                    "bidir-0-train_0-0-1"
+                  ],
+                  "output_counts": [
+                    1,
+                    1
+                  ],
+                  "rule_store_stable": true,
+                  "sample": 0,
+                  "stage0_sweeps": [
+                    2,
+                    0,
+                    0,
+                    0,
+                    0
+                  ],
+                  "stage1_sweeps": [
+                    2,
+                    0,
+                    0,
+                    0,
+                    0
+                  ]
+                },
+                {
+                  "correct": true,
+                  "fixedpoint_progress": 0,
+                  "keys": [
+                    "bidir-0-train_0-1-0",
+                    "bidir-0-train_0-1-1"
+                  ],
+                  "output_counts": [
+                    1,
+                    1
+                  ],
+                  "rule_store_stable": true,
+                  "sample": 1,
+                  "stage0_sweeps": [
+                    2,
+                    0,
+                    0,
+                    0,
+                    0
+                  ],
+                  "stage1_sweeps": [
+                    2,
+                    0,
+                    0,
+                    0,
+                    0
+                  ]
+                }
+              ]
+            },
+            {
+              "label": "edge_once:out:episode:has_mint_offer:any_target",
+              "proposal_id": "sha256:e8ff48aabc1cd06e0197c1ad63e4c3f03f138bef6d76ce49901618141f4e0a5a",
+              "rows": [
+                {
+                  "correct": false,
+                  "fixedpoint_progress": 0,
+                  "keys": [
+                    "bidir-0-train_0-0-0",
+                    "bidir-0-train_0-0-1"
+                  ],
+                  "output_counts": [
+                    1,
+                    0
+                  ],
+                  "rule_store_stable": true,
+                  "sample": 0,
+                  "stage0_sweeps": [
+                    2,
+                    0,
+                    0,
+                    0,
+                    0
+                  ],
+                  "stage1_sweeps": [
+                    1,
+                    0,
+                    0,
+                    0,
+                    0
+                  ]
+                },
+                {
+                  "correct": false,
+                  "fixedpoint_progress": 0,
+                  "keys": [
+                    "bidir-0-train_0-1-0",
+                    "bidir-0-train_0-1-1"
+                  ],
+                  "output_counts": [
+                    1,
+                    0
+                  ],
+                  "rule_store_stable": true,
+                  "sample": 1,
+                  "stage0_sweeps": [
+                    2,
+                    0,
+                    0,
+                    0,
+                    0
+                  ],
+                  "stage1_sweeps": [
+                    1,
+                    0,
+                    0,
+                    0,
+                    0
+                  ]
+                }
+              ]
+            }
+          ],
+          "training_scoring_ns": 53378306
+        }
+      },
+      "source_after": {
+        "docs/research/engine_substrate/THOUGHTEXPERIMENT_BIDIRECTIONAL_EDGE_IDENTITY_GUARDS_V1_PREREG_20261002.md": "2475c402246935fd9f60ba4a5994592b52a40653065f4055636da8756e1b743a",
+        "domains/contract_query.py": "5861f25467e2fed9905fa325816a3dc60822d4a79004b8b7b095511c3806b9a6",
+        "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+        "domains/language_world.py": "06d24bdba1ccbd720f749f0c02d5a96729c40601237ec21a8f938077b2a262bb",
+        "domains/reference_resolution.py": "1f9c6ce8eaf98c33deb025110a0dea5e7960251eace4f7dc6872d3d4b85c2701",
+        "domains/reflective_faculty.py": "30951ff474cf00dba5cf9dfc01589a61104f2a05120f530c941d1fbd40c0d845",
+        "evaluation/substrate_capability/analyze_thoughtexperiment_bidirectional_edge_identity_guards_v1.py": "578604241375643846fa574f515fe41e8af4714145414b6146db35dbda9783d5",
+        "evaluation/substrate_capability/thoughtexperiment_bidirectional_edge_identity_guards_v1.py": "f23b90fd2e9c5491e4bc75e132054f83eeee3db44aa39dc6e2af907829e50543",
+        "loaded_native_binary": "09d0ac3d2b3362f5cdf7d6b1cb5ef21524cf25672916b6928c29da7997fd32c6",
+        "runners/dsl/Cargo.lock": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+        "runners/dsl/Cargo.toml": "c4d8ffff2241352a5150b5a9937dbb8010e958b6f115235b7daeae716c1a9332",
+        "runners/dsl/python/substrate_rs/__init__.py": "4e338797786071822b2e3d919ca1da3a266bda60c3ce0e29e13213a9d37454b4",
+        "runners/dsl/src/grammar.rs": "aaf6f571bf8e8761584c7473d3fe3130c5a6e395bff7f2b63f1cdcf6046b73f6",
+        "runners/dsl/src/graph.rs": "9744fec2e0c5091f2036081ffc615b1c7dd00ba2a5995af1294efb0b5aa5a28c",
+        "runners/dsl/src/graph_rules.rs": "b0e9c5bf0bbb4bf278fdab03610fa3f6f82d01ad8ee898ec789982ff41812a50",
+        "runners/dsl/src/lib.rs": "f8c5ae707046db8347438227913a737faf78a184b294c8e339a9008e71fab36c",
+        "runners/dsl/src/persist.rs": "066d026451c97e1032c30054a3a4c556d386f23db2304630a4625c5bf81306cf",
+        "runners/dsl/src/py.rs": "6a6da90d425e4f8da7b7626fc8dda39b46b63529a312d482d80e6e2ec4d03fd6",
+        "runners/dsl/src/substrate.rs": "bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+        "runners/dsl/src/sym.rs": "b54f6af6e456a7095a02eb5b3cab42a73072318bd7e54ed150c787468b170d5f",
+        "runners/dsl/src/term.rs": "5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+        "seeds/autonomy.json": "5eb18e0b06de6243ac1abae5a51bdc146e78d4d5a13ec863a9baa20f9ede9dfe",
+        "seeds/composer_dispatch.json": "a167c0ef5fba47ef9c46a3c87db972e5a85f444f9a930e761a7ef40d25b9a09a",
+        "seeds/conversation.json": "dbcf2ec16f706ee4057f9a0fc6266c764b83c4631f067a32b4e9c6d2bf9f748a",
+        "seeds/conversation_reply.json": "32be4138d22d9cca4c1872f79e86729a830f4e2952375a847ea00f2767aa15ff",
+        "seeds/faculty_lessons.json": "a1a0ab3e67957666dfdf7cc6a20f0e3f15203d6553e16c08f2bbeb16774f9c2a",
+        "seeds/intent.json": "1833b673e04f98521361bc1d93e57f4feb5add49e93ce9fd813ed2bb5eebae5f",
+        "seeds/minting_recurrence_ledger.json": "10c5df924cb98eacea2a2159e60247c1d783db37f4be147378c6115e1b545a92",
+        "seeds/psychology.json": "1c8753c431f829f4a144d8c3d777df86af3f68c6139e7a247fa1db7e171d45b1",
+        "seeds/relation_vocabulary.json": "781e89f27c5d31c214d57eb521deb6dab04c34ef51413b7a14739dd98861d90a",
+        "seeds/relations.json": "94c553808d35c873f328691bccf4d0a3e37d6b30137e1038a4b3ff69898e4f5c",
+        "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+        "substrate/seed_loader.py": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27",
+        "substrate/world_adapter.py": "e5850e4df2ff28d8c941cc3c0d12a840ab230ce627833421a88c3b354f65027c"
+      },
+      "source_before": {
+        "docs/research/engine_substrate/THOUGHTEXPERIMENT_BIDIRECTIONAL_EDGE_IDENTITY_GUARDS_V1_PREREG_20261002.md": "2475c402246935fd9f60ba4a5994592b52a40653065f4055636da8756e1b743a",
+        "domains/contract_query.py": "5861f25467e2fed9905fa325816a3dc60822d4a79004b8b7b095511c3806b9a6",
+        "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+        "domains/language_world.py": "06d24bdba1ccbd720f749f0c02d5a96729c40601237ec21a8f938077b2a262bb",
+        "domains/reference_resolution.py": "1f9c6ce8eaf98c33deb025110a0dea5e7960251eace4f7dc6872d3d4b85c2701",
+        "domains/reflective_faculty.py": "30951ff474cf00dba5cf9dfc01589a61104f2a05120f530c941d1fbd40c0d845",
+        "evaluation/substrate_capability/analyze_thoughtexperiment_bidirectional_edge_identity_guards_v1.py": "578604241375643846fa574f515fe41e8af4714145414b6146db35dbda9783d5",
+        "evaluation/substrate_capability/thoughtexperiment_bidirectional_edge_identity_guards_v1.py": "f23b90fd2e9c5491e4bc75e132054f83eeee3db44aa39dc6e2af907829e50543",
+        "loaded_native_binary": "09d0ac3d2b3362f5cdf7d6b1cb5ef21524cf25672916b6928c29da7997fd32c6",
+        "runners/dsl/Cargo.lock": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+        "runners/dsl/Cargo.toml": "c4d8ffff2241352a5150b5a9937dbb8010e958b6f115235b7daeae716c1a9332",
+        "runners/dsl/python/substrate_rs/__init__.py": "4e338797786071822b2e3d919ca1da3a266bda60c3ce0e29e13213a9d37454b4",
+        "runners/dsl/src/grammar.rs": "aaf6f571bf8e8761584c7473d3fe3130c5a6e395bff7f2b63f1cdcf6046b73f6",
+        "runners/dsl/src/graph.rs": "9744fec2e0c5091f2036081ffc615b1c7dd00ba2a5995af1294efb0b5aa5a28c",
+        "runners/dsl/src/graph_rules.rs": "b0e9c5bf0bbb4bf278fdab03610fa3f6f82d01ad8ee898ec789982ff41812a50",
+        "runners/dsl/src/lib.rs": "f8c5ae707046db8347438227913a737faf78a184b294c8e339a9008e71fab36c",
+        "runners/dsl/src/persist.rs": "066d026451c97e1032c30054a3a4c556d386f23db2304630a4625c5bf81306cf",
+        "runners/dsl/src/py.rs": "6a6da90d425e4f8da7b7626fc8dda39b46b63529a312d482d80e6e2ec4d03fd6",
+        "runners/dsl/src/substrate.rs": "bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+        "runners/dsl/src/sym.rs": "b54f6af6e456a7095a02eb5b3cab42a73072318bd7e54ed150c787468b170d5f",
+        "runners/dsl/src/term.rs": "5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+        "seeds/autonomy.json": "5eb18e0b06de6243ac1abae5a51bdc146e78d4d5a13ec863a9baa20f9ede9dfe",
+        "seeds/composer_dispatch.json": "a167c0ef5fba47ef9c46a3c87db972e5a85f444f9a930e761a7ef40d25b9a09a",
+        "seeds/conversation.json": "dbcf2ec16f706ee4057f9a0fc6266c764b83c4631f067a32b4e9c6d2bf9f748a",
+        "seeds/conversation_reply.json": "32be4138d22d9cca4c1872f79e86729a830f4e2952375a847ea00f2767aa15ff",
+        "seeds/faculty_lessons.json": "a1a0ab3e67957666dfdf7cc6a20f0e3f15203d6553e16c08f2bbeb16774f9c2a",
+        "seeds/intent.json": "1833b673e04f98521361bc1d93e57f4feb5add49e93ce9fd813ed2bb5eebae5f",
+        "seeds/minting_recurrence_ledger.json": "10c5df924cb98eacea2a2159e60247c1d783db37f4be147378c6115e1b545a92",
+        "seeds/psychology.json": "1c8753c431f829f4a144d8c3d777df86af3f68c6139e7a247fa1db7e171d45b1",
+        "seeds/relation_vocabulary.json": "781e89f27c5d31c214d57eb521deb6dab04c34ef51413b7a14739dd98861d90a",
+        "seeds/relations.json": "94c553808d35c873f328691bccf4d0a3e37d6b30137e1038a4b3ff69898e4f5c",
+        "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+        "substrate/seed_loader.py": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27",
+        "substrate/world_adapter.py": "e5850e4df2ff28d8c941cc3c0d12a840ab230ce627833421a88c3b354f65027c"
+      },
+      "source_stable": true,
+      "worker": 0
+    },
+    {
+      "families": {
+        "conversation": {
+          "branch_evidence_isolated": true,
+          "candidate_order": [
+            3,
+            0,
+            2,
+            1
+          ],
+          "compose_ns": 53673369,
+          "composer": {
+            "operator": "add_match_guard",
+            "site": "where += Eq(Attr('m', 'adopted_variant_probe'), True) (a NEW conjunct)",
+            "target": "reply_to_adjacency_pair"
+          },
+          "controls": {
+            "all_wrong": {
+              "ok": false,
+              "probe_count": 2,
+              "proposal_count": 4,
+              "reason": "no unique proposal has positive matching evidence"
+            },
+            "tie": {
+              "ok": false,
+              "probe_count": 2,
+              "proposal_count": 4,
+              "reason": "no unique proposal has positive matching evidence"
+            }
+          },
+          "decision": {
+            "matching_evidence_count": 2,
+            "ok": true,
+            "probe_count": 2,
+            "proposal_count": 4,
+            "proposal_id": "sha256:bf06df0cd4584f1b11d7f3fd75654dc7d8e1665477f97bf41e4228611ee0f9b3",
+            "proposal_label": "hypothesis"
+          },
+          "descriptors": [
+            {
+              "label": "composer:add_match_guard",
+              "proposal_id": "sha256:4978adf6467218503a365c5022985819a0c74d595d143cea04376a30bdeb313d"
+            },
+            {
+              "label": "edge_once:in:r:has_speech_act:any_target",
+              "proposal_id": "sha256:92166eb379ff2efe698220215f4c126d8051bb47cdc7e19d13f4234775abf39c"
+            },
+            {
+              "label": "edge_once:out:agent:sent:any_target",
+              "proposal_id": "sha256:af4eb625863a571aa9cc20ec21e48265d75bb25ebda0574d16da0053e8a79f81"
+            },
+            {
+              "label": "edge_once:in:m:responds_to:any_target",
+              "proposal_id": "sha256:bf06df0cd4584f1b11d7f3fd75654dc7d8e1665477f97bf41e4228611ee0f9b3"
+            }
+          ],
+          "primary_rule_unchanged": true,
+          "selected_label": "edge_once:in:m:responds_to:any_target",
+          "selector_ns": 826704,
+          "selector_proposals": [
+            {
+              "proposal_id": "sha256:4978adf6467218503a365c5022985819a0c74d595d143cea04376a30bdeb313d",
+              "proposal_label": "hypothesis"
+            },
+            {
+              "proposal_id": "sha256:92166eb379ff2efe698220215f4c126d8051bb47cdc7e19d13f4234775abf39c",
+              "proposal_label": "hypothesis"
+            },
+            {
+              "proposal_id": "sha256:af4eb625863a571aa9cc20ec21e48265d75bb25ebda0574d16da0053e8a79f81",
+              "proposal_label": "hypothesis"
+            },
+            {
+              "proposal_id": "sha256:bf06df0cd4584f1b11d7f3fd75654dc7d8e1665477f97bf41e4228611ee0f9b3",
+              "proposal_label": "hypothesis"
+            }
+          ],
+          "sites": [
+            [
+              "in",
+              "r",
+              "has_speech_act",
+              null
+            ],
+            [
+              "in",
+              "m",
+              "responds_to",
+              null
+            ],
+            [
+              "out",
+              "agent",
+              "sent",
+              null
+            ]
+          ],
+          "source_train": [
+            {
+              "correct": true,
+              "expected_counts": [
+                1,
+                1
+              ],
+              "input_ids": [
+                "#482",
+                "#491"
+              ],
+              "output_counts": [
+                1,
+                1
+              ],
+              "rule_store_stable": true,
+              "sequence_runtime_ns": 653653
+            },
+            {
+              "correct": true,
+              "expected_counts": [
+                1,
+                1
+              ],
+              "input_ids": [
+                "#482",
+                "#491"
+              ],
+              "output_counts": [
+                1,
+                1
+              ],
+              "rule_store_stable": true,
+              "sequence_runtime_ns": 821044
+            }
+          ],
+          "training_evidence": [
+            {
+              "expected": "correct",
+              "predicted": "incorrect",
+              "probe_id": "train_1_0",
+              "proposal_id": "sha256:4978adf6467218503a365c5022985819a0c74d595d143cea04376a30bdeb313d"
+            },
+            {
+              "expected": "correct",
+              "predicted": "incorrect",
+              "probe_id": "train_1_1",
+              "proposal_id": "sha256:4978adf6467218503a365c5022985819a0c74d595d143cea04376a30bdeb313d"
+            },
+            {
+              "expected": "correct",
+              "predicted": "incorrect",
+              "probe_id": "train_1_0",
+              "proposal_id": "sha256:92166eb379ff2efe698220215f4c126d8051bb47cdc7e19d13f4234775abf39c"
+            },
+            {
+              "expected": "correct",
+              "predicted": "incorrect",
+              "probe_id": "train_1_1",
+              "proposal_id": "sha256:92166eb379ff2efe698220215f4c126d8051bb47cdc7e19d13f4234775abf39c"
+            },
+            {
+              "expected": "correct",
+              "predicted": "incorrect",
+              "probe_id": "train_1_0",
+              "proposal_id": "sha256:af4eb625863a571aa9cc20ec21e48265d75bb25ebda0574d16da0053e8a79f81"
+            },
+            {
+              "expected": "correct",
+              "predicted": "incorrect",
+              "probe_id": "train_1_1",
+              "proposal_id": "sha256:af4eb625863a571aa9cc20ec21e48265d75bb25ebda0574d16da0053e8a79f81"
+            },
+            {
+              "expected": "correct",
+              "predicted": "correct",
+              "probe_id": "train_1_0",
+              "proposal_id": "sha256:bf06df0cd4584f1b11d7f3fd75654dc7d8e1665477f97bf41e4228611ee0f9b3"
+            },
+            {
+              "expected": "correct",
+              "predicted": "correct",
+              "probe_id": "train_1_1",
+              "proposal_id": "sha256:bf06df0cd4584f1b11d7f3fd75654dc7d8e1665477f97bf41e4228611ee0f9b3"
+            }
+          ],
+          "training_keys": [],
+          "training_outcomes": [
+            {
+              "label": "composer:add_match_guard",
+              "proposal_id": "sha256:4978adf6467218503a365c5022985819a0c74d595d143cea04376a30bdeb313d",
+              "rows": [
+                {
+                  "correct": false,
+                  "expected_counts": [
+                    1,
+                    1
+                  ],
+                  "input_ids": [
+                    "#482",
+                    "#488"
+                  ],
+                  "output_counts": [
+                    0,
+                    0
+                  ],
+                  "rule_store_stable": true,
+                  "sample": 0,
+                  "sequence_runtime_ns": 44588318
+                },
+                {
+                  "correct": false,
+                  "expected_counts": [
+                    1,
+                    1
+                  ],
+                  "input_ids": [
+                    "#482",
+                    "#488"
+                  ],
+                  "output_counts": [
+                    0,
+                    0
+                  ],
+                  "rule_store_stable": true,
+                  "sample": 1,
+                  "sequence_runtime_ns": 592934
+                }
+              ]
+            },
+            {
+              "label": "edge_once:in:r:has_speech_act:any_target",
+              "proposal_id": "sha256:92166eb379ff2efe698220215f4c126d8051bb47cdc7e19d13f4234775abf39c",
+              "rows": [
+                {
+                  "correct": false,
+                  "expected_counts": [
+                    1,
+                    1
+                  ],
+                  "input_ids": [
+                    "#482",
+                    "#488"
+                  ],
+                  "output_counts": [
+                    0,
+                    0
+                  ],
+                  "rule_store_stable": true,
+                  "sample": 0,
+                  "sequence_runtime_ns": 379323
+                },
+                {
+                  "correct": false,
+                  "expected_counts": [
+                    1,
+                    1
+                  ],
+                  "input_ids": [
+                    "#482",
+                    "#488"
+                  ],
+                  "output_counts": [
+                    0,
+                    0
+                  ],
+                  "rule_store_stable": true,
+                  "sample": 1,
+                  "sequence_runtime_ns": 331482
+                }
+              ]
+            },
+            {
+              "label": "edge_once:out:agent:sent:any_target",
+              "proposal_id": "sha256:af4eb625863a571aa9cc20ec21e48265d75bb25ebda0574d16da0053e8a79f81",
+              "rows": [
+                {
+                  "correct": false,
+                  "expected_counts": [
+                    1,
+                    1
+                  ],
+                  "input_ids": [
+                    "#482",
+                    "#491"
+                  ],
+                  "output_counts": [
+                    1,
+                    0
+                  ],
+                  "rule_store_stable": true,
+                  "sample": 0,
+                  "sequence_runtime_ns": 393093
+                },
+                {
+                  "correct": false,
+                  "expected_counts": [
+                    1,
+                    1
+                  ],
+                  "input_ids": [
+                    "#482",
+                    "#491"
+                  ],
+                  "output_counts": [
+                    1,
+                    0
+                  ],
+                  "rule_store_stable": true,
+                  "sample": 1,
+                  "sequence_runtime_ns": 523952
+                }
+              ]
+            },
+            {
+              "label": "edge_once:in:m:responds_to:any_target",
+              "proposal_id": "sha256:bf06df0cd4584f1b11d7f3fd75654dc7d8e1665477f97bf41e4228611ee0f9b3",
+              "rows": [
+                {
+                  "correct": true,
+                  "expected_counts": [
+                    1,
+                    1
+                  ],
+                  "input_ids": [
+                    "#482",
+                    "#491"
+                  ],
+                  "output_counts": [
+                    1,
+                    1
+                  ],
+                  "rule_store_stable": true,
+                  "sample": 0,
+                  "sequence_runtime_ns": 887235
+                },
+                {
+                  "correct": true,
+                  "expected_counts": [
+                    1,
+                    1
+                  ],
+                  "input_ids": [
+                    "#482",
+                    "#491"
+                  ],
+                  "output_counts": [
+                    1,
+                    1
+                  ],
+                  "rule_store_stable": true,
+                  "sample": 1,
+                  "sequence_runtime_ns": 642983
+                }
+              ]
+            }
+          ],
+          "training_scoring_ns": 176651514
+        },
+        "recurrence": {
+          "branch_evidence_isolated": true,
+          "candidate_order": [
+            1,
+            2,
+            0,
+            3
+          ],
+          "compose_ns": 50117719,
+          "composer": {
+            "operator": "add_match_guard",
+            "site": "where += Eq(Attr('agent', 'adopted_variant_probe'), True) (a NEW conjunct)",
+            "target": "mrl_offer_due_once"
+          },
+          "controls": {
+            "all_wrong": {
+              "ok": false,
+              "probe_count": 2,
+              "proposal_count": 4,
+              "reason": "no unique proposal has positive matching evidence"
+            },
+            "tie": {
+              "ok": false,
+              "probe_count": 2,
+              "proposal_count": 4,
+              "reason": "no unique proposal has positive matching evidence"
+            }
+          },
+          "decision": {
+            "matching_evidence_count": 2,
+            "ok": true,
+            "probe_count": 2,
+            "proposal_count": 4,
+            "proposal_id": "sha256:febb968ea31a93a59efd981856b416790b803c6e1fd63f40eaa6880e8b35ea99",
+            "proposal_label": "hypothesis"
+          },
+          "descriptors": [
+            {
+              "label": "edge_once:out:candidate:has_mint_offer:any_target",
+              "proposal_id": "sha256:febb968ea31a93a59efd981856b416790b803c6e1fd63f40eaa6880e8b35ea99"
+            },
+            {
+              "label": "edge_once:out:episode:has_mint_offer:any_target",
+              "proposal_id": "sha256:e8ff48aabc1cd06e0197c1ad63e4c3f03f138bef6d76ce49901618141f4e0a5a"
+            },
+            {
+              "label": "edge_once:out:agent:observed:any_target",
+              "proposal_id": "sha256:b4748673cb93a284227cf0782dc86457cf5732e6e3817ae170df77df3a5233b5"
+            },
+            {
+              "label": "composer:add_match_guard",
+              "proposal_id": "sha256:a0e3249b07a997e5a606ed8b15f4f72b0dabbbe72f8a1b993667a7ce1010a492"
+            }
+          ],
+          "primary_rule_unchanged": true,
+          "selected_label": "edge_once:out:candidate:has_mint_offer:any_target",
+          "selector_ns": 1562858,
+          "selector_proposals": [
+            {
+              "proposal_id": "sha256:febb968ea31a93a59efd981856b416790b803c6e1fd63f40eaa6880e8b35ea99",
+              "proposal_label": "hypothesis"
+            },
+            {
+              "proposal_id": "sha256:e8ff48aabc1cd06e0197c1ad63e4c3f03f138bef6d76ce49901618141f4e0a5a",
+              "proposal_label": "hypothesis"
+            },
+            {
+              "proposal_id": "sha256:b4748673cb93a284227cf0782dc86457cf5732e6e3817ae170df77df3a5233b5",
+              "proposal_label": "hypothesis"
+            },
+            {
+              "proposal_id": "sha256:a0e3249b07a997e5a606ed8b15f4f72b0dabbbe72f8a1b993667a7ce1010a492",
+              "proposal_label": "hypothesis"
+            }
+          ],
+          "sites": [
+            [
+              "out",
+              "agent",
+              "observed",
+              null
+            ],
+            [
+              "out",
+              "candidate",
+              "has_mint_offer",
+              null
+            ],
+            [
+              "out",
+              "episode",
+              "has_mint_offer",
+              null
+            ]
+          ],
+          "source_train": [
+            {
+              "correct": true,
+              "fixedpoint_progress": 0,
+              "keys": [
+                "bidir-1-train_source_1-0-0",
+                "bidir-1-train_source_1-0-1"
+              ],
+              "output_counts": [
+                1,
+                1
+              ],
+              "rule_store_stable": true,
+              "stage0_sweeps": [
+                2,
+                0,
+                0,
+                0,
+                0
+              ],
+              "stage1_sweeps": [
+                2,
+                0,
+                0,
+                0,
+                0
+              ]
+            },
+            {
+              "correct": true,
+              "fixedpoint_progress": 0,
+              "keys": [
+                "bidir-1-train_source_1-1-0",
+                "bidir-1-train_source_1-1-1"
+              ],
+              "output_counts": [
+                1,
+                1
+              ],
+              "rule_store_stable": true,
+              "stage0_sweeps": [
+                2,
+                0,
+                0,
+                0,
+                0
+              ],
+              "stage1_sweeps": [
+                2,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          ],
+          "training_evidence": [
+            {
+              "expected": "correct",
+              "predicted": "correct",
+              "probe_id": "train_1_0",
+              "proposal_id": "sha256:febb968ea31a93a59efd981856b416790b803c6e1fd63f40eaa6880e8b35ea99"
+            },
+            {
+              "expected": "correct",
+              "predicted": "correct",
+              "probe_id": "train_1_1",
+              "proposal_id": "sha256:febb968ea31a93a59efd981856b416790b803c6e1fd63f40eaa6880e8b35ea99"
+            },
+            {
+              "expected": "correct",
+              "predicted": "incorrect",
+              "probe_id": "train_1_0",
+              "proposal_id": "sha256:e8ff48aabc1cd06e0197c1ad63e4c3f03f138bef6d76ce49901618141f4e0a5a"
+            },
+            {
+              "expected": "correct",
+              "predicted": "incorrect",
+              "probe_id": "train_1_1",
+              "proposal_id": "sha256:e8ff48aabc1cd06e0197c1ad63e4c3f03f138bef6d76ce49901618141f4e0a5a"
+            },
+            {
+              "expected": "correct",
+              "predicted": "incorrect",
+              "probe_id": "train_1_0",
+              "proposal_id": "sha256:b4748673cb93a284227cf0782dc86457cf5732e6e3817ae170df77df3a5233b5"
+            },
+            {
+              "expected": "correct",
+              "predicted": "incorrect",
+              "probe_id": "train_1_1",
+              "proposal_id": "sha256:b4748673cb93a284227cf0782dc86457cf5732e6e3817ae170df77df3a5233b5"
+            },
+            {
+              "expected": "correct",
+              "predicted": "incorrect",
+              "probe_id": "train_1_0",
+              "proposal_id": "sha256:a0e3249b07a997e5a606ed8b15f4f72b0dabbbe72f8a1b993667a7ce1010a492"
+            },
+            {
+              "expected": "correct",
+              "predicted": "incorrect",
+              "probe_id": "train_1_1",
+              "proposal_id": "sha256:a0e3249b07a997e5a606ed8b15f4f72b0dabbbe72f8a1b993667a7ce1010a492"
+            }
+          ],
+          "training_keys": [
+            "bidir-1-train_1-0-0",
+            "bidir-1-train_1-0-1",
+            "bidir-1-train_1-1-0",
+            "bidir-1-train_1-1-1",
+            "bidir-1-train_1-0-0",
+            "bidir-1-train_1-0-1",
+            "bidir-1-train_1-1-0",
+            "bidir-1-train_1-1-1",
+            "bidir-1-train_1-0-0",
+            "bidir-1-train_1-0-1",
+            "bidir-1-train_1-1-0",
+            "bidir-1-train_1-1-1",
+            "bidir-1-train_1-0-0",
+            "bidir-1-train_1-0-1",
+            "bidir-1-train_1-1-0",
+            "bidir-1-train_1-1-1"
+          ],
+          "training_outcomes": [
+            {
+              "label": "edge_once:out:candidate:has_mint_offer:any_target",
+              "proposal_id": "sha256:febb968ea31a93a59efd981856b416790b803c6e1fd63f40eaa6880e8b35ea99",
+              "rows": [
+                {
+                  "correct": true,
+                  "fixedpoint_progress": 0,
+                  "keys": [
+                    "bidir-1-train_1-0-0",
+                    "bidir-1-train_1-0-1"
+                  ],
+                  "output_counts": [
+                    1,
+                    1
+                  ],
+                  "rule_store_stable": true,
+                  "sample": 0,
+                  "stage0_sweeps": [
+                    2,
+                    0,
+                    0,
+                    0,
+                    0
+                  ],
+                  "stage1_sweeps": [
+                    2,
+                    0,
+                    0,
+                    0,
+                    0
+                  ]
+                },
+                {
+                  "correct": true,
+                  "fixedpoint_progress": 0,
+                  "keys": [
+                    "bidir-1-train_1-1-0",
+                    "bidir-1-train_1-1-1"
+                  ],
+                  "output_counts": [
+                    1,
+                    1
+                  ],
+                  "rule_store_stable": true,
+                  "sample": 1,
+                  "stage0_sweeps": [
+                    2,
+                    0,
+                    0,
+                    0,
+                    0
+                  ],
+                  "stage1_sweeps": [
+                    2,
+                    0,
+                    0,
+                    0,
+                    0
+                  ]
+                }
+              ]
+            },
+            {
+              "label": "edge_once:out:episode:has_mint_offer:any_target",
+              "proposal_id": "sha256:e8ff48aabc1cd06e0197c1ad63e4c3f03f138bef6d76ce49901618141f4e0a5a",
+              "rows": [
+                {
+                  "correct": false,
+                  "fixedpoint_progress": 0,
+                  "keys": [
+                    "bidir-1-train_1-0-0",
+                    "bidir-1-train_1-0-1"
+                  ],
+                  "output_counts": [
+                    1,
+                    0
+                  ],
+                  "rule_store_stable": true,
+                  "sample": 0,
+                  "stage0_sweeps": [
+                    2,
+                    0,
+                    0,
+                    0,
+                    0
+                  ],
+                  "stage1_sweeps": [
+                    1,
+                    0,
+                    0,
+                    0,
+                    0
+                  ]
+                },
+                {
+                  "correct": false,
+                  "fixedpoint_progress": 0,
+                  "keys": [
+                    "bidir-1-train_1-1-0",
+                    "bidir-1-train_1-1-1"
+                  ],
+                  "output_counts": [
+                    1,
+                    0
+                  ],
+                  "rule_store_stable": true,
+                  "sample": 1,
+                  "stage0_sweeps": [
+                    2,
+                    0,
+                    0,
+                    0,
+                    0
+                  ],
+                  "stage1_sweeps": [
+                    1,
+                    0,
+                    0,
+                    0,
+                    0
+                  ]
+                }
+              ]
+            },
+            {
+              "label": "edge_once:out:agent:observed:any_target",
+              "proposal_id": "sha256:b4748673cb93a284227cf0782dc86457cf5732e6e3817ae170df77df3a5233b5",
+              "rows": [
+                {
+                  "correct": false,
+                  "fixedpoint_progress": 0,
+                  "keys": [
+                    "bidir-1-train_1-0-0",
+                    "bidir-1-train_1-0-1"
+                  ],
+                  "output_counts": [
+                    1,
+                    0
+                  ],
+                  "rule_store_stable": true,
+                  "sample": 0,
+                  "stage0_sweeps": [
+                    2,
+                    0,
+                    0,
+                    0,
+                    0
+                  ],
+                  "stage1_sweeps": [
+                    1,
+                    0,
+                    0,
+                    0,
+                    0
+                  ]
+                },
+                {
+                  "correct": false,
+                  "fixedpoint_progress": 0,
+                  "keys": [
+                    "bidir-1-train_1-1-0",
+                    "bidir-1-train_1-1-1"
+                  ],
+                  "output_counts": [
+                    1,
+                    0
+                  ],
+                  "rule_store_stable": true,
+                  "sample": 1,
+                  "stage0_sweeps": [
+                    2,
+                    0,
+                    0,
+                    0,
+                    0
+                  ],
+                  "stage1_sweeps": [
+                    1,
+                    0,
+                    0,
+                    0,
+                    0
+                  ]
+                }
+              ]
+            },
+            {
+              "label": "composer:add_match_guard",
+              "proposal_id": "sha256:a0e3249b07a997e5a606ed8b15f4f72b0dabbbe72f8a1b993667a7ce1010a492",
+              "rows": [
+                {
+                  "correct": false,
+                  "fixedpoint_progress": 0,
+                  "keys": [
+                    "bidir-1-train_1-0-0",
+                    "bidir-1-train_1-0-1"
+                  ],
+                  "output_counts": [
+                    0,
+                    0
+                  ],
+                  "rule_store_stable": true,
+                  "sample": 0,
+                  "stage0_sweeps": [
+                    1,
+                    0,
+                    0,
+                    0,
+                    0
+                  ],
+                  "stage1_sweeps": [
+                    1,
+                    0,
+                    0,
+                    0,
+                    0
+                  ]
+                },
+                {
+                  "correct": false,
+                  "fixedpoint_progress": 0,
+                  "keys": [
+                    "bidir-1-train_1-1-0",
+                    "bidir-1-train_1-1-1"
+                  ],
+                  "output_counts": [
+                    0,
+                    0
+                  ],
+                  "rule_store_stable": true,
+                  "sample": 1,
+                  "stage0_sweeps": [
+                    1,
+                    0,
+                    0,
+                    0,
+                    0
+                  ],
+                  "stage1_sweeps": [
+                    1,
+                    0,
+                    0,
+                    0,
+                    0
+                  ]
+                }
+              ]
+            }
+          ],
+          "training_scoring_ns": 74945237
+        }
+      },
+      "source_after": {
+        "docs/research/engine_substrate/THOUGHTEXPERIMENT_BIDIRECTIONAL_EDGE_IDENTITY_GUARDS_V1_PREREG_20261002.md": "2475c402246935fd9f60ba4a5994592b52a40653065f4055636da8756e1b743a",
+        "domains/contract_query.py": "5861f25467e2fed9905fa325816a3dc60822d4a79004b8b7b095511c3806b9a6",
+        "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+        "domains/language_world.py": "06d24bdba1ccbd720f749f0c02d5a96729c40601237ec21a8f938077b2a262bb",
+        "domains/reference_resolution.py": "1f9c6ce8eaf98c33deb025110a0dea5e7960251eace4f7dc6872d3d4b85c2701",
+        "domains/reflective_faculty.py": "30951ff474cf00dba5cf9dfc01589a61104f2a05120f530c941d1fbd40c0d845",
+        "evaluation/substrate_capability/analyze_thoughtexperiment_bidirectional_edge_identity_guards_v1.py": "578604241375643846fa574f515fe41e8af4714145414b6146db35dbda9783d5",
+        "evaluation/substrate_capability/thoughtexperiment_bidirectional_edge_identity_guards_v1.py": "f23b90fd2e9c5491e4bc75e132054f83eeee3db44aa39dc6e2af907829e50543",
+        "loaded_native_binary": "09d0ac3d2b3362f5cdf7d6b1cb5ef21524cf25672916b6928c29da7997fd32c6",
+        "runners/dsl/Cargo.lock": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+        "runners/dsl/Cargo.toml": "c4d8ffff2241352a5150b5a9937dbb8010e958b6f115235b7daeae716c1a9332",
+        "runners/dsl/python/substrate_rs/__init__.py": "4e338797786071822b2e3d919ca1da3a266bda60c3ce0e29e13213a9d37454b4",
+        "runners/dsl/src/grammar.rs": "aaf6f571bf8e8761584c7473d3fe3130c5a6e395bff7f2b63f1cdcf6046b73f6",
+        "runners/dsl/src/graph.rs": "9744fec2e0c5091f2036081ffc615b1c7dd00ba2a5995af1294efb0b5aa5a28c",
+        "runners/dsl/src/graph_rules.rs": "b0e9c5bf0bbb4bf278fdab03610fa3f6f82d01ad8ee898ec789982ff41812a50",
+        "runners/dsl/src/lib.rs": "f8c5ae707046db8347438227913a737faf78a184b294c8e339a9008e71fab36c",
+        "runners/dsl/src/persist.rs": "066d026451c97e1032c30054a3a4c556d386f23db2304630a4625c5bf81306cf",
+        "runners/dsl/src/py.rs": "6a6da90d425e4f8da7b7626fc8dda39b46b63529a312d482d80e6e2ec4d03fd6",
+        "runners/dsl/src/substrate.rs": "bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+        "runners/dsl/src/sym.rs": "b54f6af6e456a7095a02eb5b3cab42a73072318bd7e54ed150c787468b170d5f",
+        "runners/dsl/src/term.rs": "5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+        "seeds/autonomy.json": "5eb18e0b06de6243ac1abae5a51bdc146e78d4d5a13ec863a9baa20f9ede9dfe",
+        "seeds/composer_dispatch.json": "a167c0ef5fba47ef9c46a3c87db972e5a85f444f9a930e761a7ef40d25b9a09a",
+        "seeds/conversation.json": "dbcf2ec16f706ee4057f9a0fc6266c764b83c4631f067a32b4e9c6d2bf9f748a",
+        "seeds/conversation_reply.json": "32be4138d22d9cca4c1872f79e86729a830f4e2952375a847ea00f2767aa15ff",
+        "seeds/faculty_lessons.json": "a1a0ab3e67957666dfdf7cc6a20f0e3f15203d6553e16c08f2bbeb16774f9c2a",
+        "seeds/intent.json": "1833b673e04f98521361bc1d93e57f4feb5add49e93ce9fd813ed2bb5eebae5f",
+        "seeds/minting_recurrence_ledger.json": "10c5df924cb98eacea2a2159e60247c1d783db37f4be147378c6115e1b545a92",
+        "seeds/psychology.json": "1c8753c431f829f4a144d8c3d777df86af3f68c6139e7a247fa1db7e171d45b1",
+        "seeds/relation_vocabulary.json": "781e89f27c5d31c214d57eb521deb6dab04c34ef51413b7a14739dd98861d90a",
+        "seeds/relations.json": "94c553808d35c873f328691bccf4d0a3e37d6b30137e1038a4b3ff69898e4f5c",
+        "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+        "substrate/seed_loader.py": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27",
+        "substrate/world_adapter.py": "e5850e4df2ff28d8c941cc3c0d12a840ab230ce627833421a88c3b354f65027c"
+      },
+      "source_before": {
+        "docs/research/engine_substrate/THOUGHTEXPERIMENT_BIDIRECTIONAL_EDGE_IDENTITY_GUARDS_V1_PREREG_20261002.md": "2475c402246935fd9f60ba4a5994592b52a40653065f4055636da8756e1b743a",
+        "domains/contract_query.py": "5861f25467e2fed9905fa325816a3dc60822d4a79004b8b7b095511c3806b9a6",
+        "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+        "domains/language_world.py": "06d24bdba1ccbd720f749f0c02d5a96729c40601237ec21a8f938077b2a262bb",
+        "domains/reference_resolution.py": "1f9c6ce8eaf98c33deb025110a0dea5e7960251eace4f7dc6872d3d4b85c2701",
+        "domains/reflective_faculty.py": "30951ff474cf00dba5cf9dfc01589a61104f2a05120f530c941d1fbd40c0d845",
+        "evaluation/substrate_capability/analyze_thoughtexperiment_bidirectional_edge_identity_guards_v1.py": "578604241375643846fa574f515fe41e8af4714145414b6146db35dbda9783d5",
+        "evaluation/substrate_capability/thoughtexperiment_bidirectional_edge_identity_guards_v1.py": "f23b90fd2e9c5491e4bc75e132054f83eeee3db44aa39dc6e2af907829e50543",
+        "loaded_native_binary": "09d0ac3d2b3362f5cdf7d6b1cb5ef21524cf25672916b6928c29da7997fd32c6",
+        "runners/dsl/Cargo.lock": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+        "runners/dsl/Cargo.toml": "c4d8ffff2241352a5150b5a9937dbb8010e958b6f115235b7daeae716c1a9332",
+        "runners/dsl/python/substrate_rs/__init__.py": "4e338797786071822b2e3d919ca1da3a266bda60c3ce0e29e13213a9d37454b4",
+        "runners/dsl/src/grammar.rs": "aaf6f571bf8e8761584c7473d3fe3130c5a6e395bff7f2b63f1cdcf6046b73f6",
+        "runners/dsl/src/graph.rs": "9744fec2e0c5091f2036081ffc615b1c7dd00ba2a5995af1294efb0b5aa5a28c",
+        "runners/dsl/src/graph_rules.rs": "b0e9c5bf0bbb4bf278fdab03610fa3f6f82d01ad8ee898ec789982ff41812a50",
+        "runners/dsl/src/lib.rs": "f8c5ae707046db8347438227913a737faf78a184b294c8e339a9008e71fab36c",
+        "runners/dsl/src/persist.rs": "066d026451c97e1032c30054a3a4c556d386f23db2304630a4625c5bf81306cf",
+        "runners/dsl/src/py.rs": "6a6da90d425e4f8da7b7626fc8dda39b46b63529a312d482d80e6e2ec4d03fd6",
+        "runners/dsl/src/substrate.rs": "bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+        "runners/dsl/src/sym.rs": "b54f6af6e456a7095a02eb5b3cab42a73072318bd7e54ed150c787468b170d5f",
+        "runners/dsl/src/term.rs": "5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+        "seeds/autonomy.json": "5eb18e0b06de6243ac1abae5a51bdc146e78d4d5a13ec863a9baa20f9ede9dfe",
+        "seeds/composer_dispatch.json": "a167c0ef5fba47ef9c46a3c87db972e5a85f444f9a930e761a7ef40d25b9a09a",
+        "seeds/conversation.json": "dbcf2ec16f706ee4057f9a0fc6266c764b83c4631f067a32b4e9c6d2bf9f748a",
+        "seeds/conversation_reply.json": "32be4138d22d9cca4c1872f79e86729a830f4e2952375a847ea00f2767aa15ff",
+        "seeds/faculty_lessons.json": "a1a0ab3e67957666dfdf7cc6a20f0e3f15203d6553e16c08f2bbeb16774f9c2a",
+        "seeds/intent.json": "1833b673e04f98521361bc1d93e57f4feb5add49e93ce9fd813ed2bb5eebae5f",
+        "seeds/minting_recurrence_ledger.json": "10c5df924cb98eacea2a2159e60247c1d783db37f4be147378c6115e1b545a92",
+        "seeds/psychology.json": "1c8753c431f829f4a144d8c3d777df86af3f68c6139e7a247fa1db7e171d45b1",
+        "seeds/relation_vocabulary.json": "781e89f27c5d31c214d57eb521deb6dab04c34ef51413b7a14739dd98861d90a",
+        "seeds/relations.json": "94c553808d35c873f328691bccf4d0a3e37d6b30137e1038a4b3ff69898e4f5c",
+        "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+        "substrate/seed_loader.py": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27",
+        "substrate/world_adapter.py": "e5850e4df2ff28d8c941cc3c0d12a840ab230ce627833421a88c3b354f65027c"
+      },
+      "source_stable": true,
+      "worker": 1
+    },
+    {
+      "families": {
+        "conversation": {
+          "branch_evidence_isolated": true,
+          "candidate_order": [
+            3,
+            2,
+            1,
+            0
+          ],
+          "compose_ns": 32316450,
+          "composer": {
+            "operator": "add_match_guard",
+            "site": "where += Eq(Attr('m', 'adopted_variant_probe'), True) (a NEW conjunct)",
+            "target": "reply_to_adjacency_pair"
+          },
+          "controls": {
+            "all_wrong": {
+              "ok": false,
+              "probe_count": 2,
+              "proposal_count": 4,
+              "reason": "no unique proposal has positive matching evidence"
+            },
+            "tie": {
+              "ok": false,
+              "probe_count": 2,
+              "proposal_count": 4,
+              "reason": "no unique proposal has positive matching evidence"
+            }
+          },
+          "decision": {
+            "matching_evidence_count": 2,
+            "ok": true,
+            "probe_count": 2,
+            "proposal_count": 4,
+            "proposal_id": "sha256:bf06df0cd4584f1b11d7f3fd75654dc7d8e1665477f97bf41e4228611ee0f9b3",
+            "proposal_label": "hypothesis"
+          },
+          "descriptors": [
+            {
+              "label": "composer:add_match_guard",
+              "proposal_id": "sha256:4978adf6467218503a365c5022985819a0c74d595d143cea04376a30bdeb313d"
+            },
+            {
+              "label": "edge_once:out:agent:sent:any_target",
+              "proposal_id": "sha256:af4eb625863a571aa9cc20ec21e48265d75bb25ebda0574d16da0053e8a79f81"
+            },
+            {
+              "label": "edge_once:in:m:responds_to:any_target",
+              "proposal_id": "sha256:bf06df0cd4584f1b11d7f3fd75654dc7d8e1665477f97bf41e4228611ee0f9b3"
+            },
+            {
+              "label": "edge_once:in:r:has_speech_act:any_target",
+              "proposal_id": "sha256:92166eb379ff2efe698220215f4c126d8051bb47cdc7e19d13f4234775abf39c"
+            }
+          ],
+          "primary_rule_unchanged": true,
+          "selected_label": "edge_once:in:m:responds_to:any_target",
+          "selector_ns": 862114,
+          "selector_proposals": [
+            {
+              "proposal_id": "sha256:4978adf6467218503a365c5022985819a0c74d595d143cea04376a30bdeb313d",
+              "proposal_label": "hypothesis"
+            },
+            {
+              "proposal_id": "sha256:af4eb625863a571aa9cc20ec21e48265d75bb25ebda0574d16da0053e8a79f81",
+              "proposal_label": "hypothesis"
+            },
+            {
+              "proposal_id": "sha256:bf06df0cd4584f1b11d7f3fd75654dc7d8e1665477f97bf41e4228611ee0f9b3",
+              "proposal_label": "hypothesis"
+            },
+            {
+              "proposal_id": "sha256:92166eb379ff2efe698220215f4c126d8051bb47cdc7e19d13f4234775abf39c",
+              "proposal_label": "hypothesis"
+            }
+          ],
+          "sites": [
+            [
+              "in",
+              "r",
+              "has_speech_act",
+              null
+            ],
+            [
+              "in",
+              "m",
+              "responds_to",
+              null
+            ],
+            [
+              "out",
+              "agent",
+              "sent",
+              null
+            ]
+          ],
+          "source_train": [
+            {
+              "correct": true,
+              "expected_counts": [
+                1,
+                1
+              ],
+              "input_ids": [
+                "#482",
+                "#491"
+              ],
+              "output_counts": [
+                1,
+                1
+              ],
+              "rule_store_stable": true,
+              "sequence_runtime_ns": 451263
+            },
+            {
+              "correct": true,
+              "expected_counts": [
+                1,
+                1
+              ],
+              "input_ids": [
+                "#482",
+                "#491"
+              ],
+              "output_counts": [
+                1,
+                1
+              ],
+              "rule_store_stable": true,
+              "sequence_runtime_ns": 599203
+            }
+          ],
+          "training_evidence": [
+            {
+              "expected": "correct",
+              "predicted": "incorrect",
+              "probe_id": "train_2_0",
+              "proposal_id": "sha256:4978adf6467218503a365c5022985819a0c74d595d143cea04376a30bdeb313d"
+            },
+            {
+              "expected": "correct",
+              "predicted": "incorrect",
+              "probe_id": "train_2_1",
+              "proposal_id": "sha256:4978adf6467218503a365c5022985819a0c74d595d143cea04376a30bdeb313d"
+            },
+            {
+              "expected": "correct",
+              "predicted": "incorrect",
+              "probe_id": "train_2_0",
+              "proposal_id": "sha256:af4eb625863a571aa9cc20ec21e48265d75bb25ebda0574d16da0053e8a79f81"
+            },
+            {
+              "expected": "correct",
+              "predicted": "incorrect",
+              "probe_id": "train_2_1",
+              "proposal_id": "sha256:af4eb625863a571aa9cc20ec21e48265d75bb25ebda0574d16da0053e8a79f81"
+            },
+            {
+              "expected": "correct",
+              "predicted": "correct",
+              "probe_id": "train_2_0",
+              "proposal_id": "sha256:bf06df0cd4584f1b11d7f3fd75654dc7d8e1665477f97bf41e4228611ee0f9b3"
+            },
+            {
+              "expected": "correct",
+              "predicted": "correct",
+              "probe_id": "train_2_1",
+              "proposal_id": "sha256:bf06df0cd4584f1b11d7f3fd75654dc7d8e1665477f97bf41e4228611ee0f9b3"
+            },
+            {
+              "expected": "correct",
+              "predicted": "incorrect",
+              "probe_id": "train_2_0",
+              "proposal_id": "sha256:92166eb379ff2efe698220215f4c126d8051bb47cdc7e19d13f4234775abf39c"
+            },
+            {
+              "expected": "correct",
+              "predicted": "incorrect",
+              "probe_id": "train_2_1",
+              "proposal_id": "sha256:92166eb379ff2efe698220215f4c126d8051bb47cdc7e19d13f4234775abf39c"
+            }
+          ],
+          "training_keys": [],
+          "training_outcomes": [
+            {
+              "label": "composer:add_match_guard",
+              "proposal_id": "sha256:4978adf6467218503a365c5022985819a0c74d595d143cea04376a30bdeb313d",
+              "rows": [
+                {
+                  "correct": false,
+                  "expected_counts": [
+                    1,
+                    1
+                  ],
+                  "input_ids": [
+                    "#482",
+                    "#488"
+                  ],
+                  "output_counts": [
+                    0,
+                    0
+                  ],
+                  "rule_store_stable": true,
+                  "sample": 0,
+                  "sequence_runtime_ns": 20059292
+                },
+                {
+                  "correct": false,
+                  "expected_counts": [
+                    1,
+                    1
+                  ],
+                  "input_ids": [
+                    "#482",
+                    "#488"
+                  ],
+                  "output_counts": [
+                    0,
+                    0
+                  ],
+                  "rule_store_stable": true,
+                  "sample": 1,
+                  "sequence_runtime_ns": 382372
+                }
+              ]
+            },
+            {
+              "label": "edge_once:out:agent:sent:any_target",
+              "proposal_id": "sha256:af4eb625863a571aa9cc20ec21e48265d75bb25ebda0574d16da0053e8a79f81",
+              "rows": [
+                {
+                  "correct": false,
+                  "expected_counts": [
+                    1,
+                    1
+                  ],
+                  "input_ids": [
+                    "#482",
+                    "#491"
+                  ],
+                  "output_counts": [
+                    1,
+                    0
+                  ],
+                  "rule_store_stable": true,
+                  "sample": 0,
+                  "sequence_runtime_ns": 583923
+                },
+                {
+                  "correct": false,
+                  "expected_counts": [
+                    1,
+                    1
+                  ],
+                  "input_ids": [
+                    "#482",
+                    "#491"
+                  ],
+                  "output_counts": [
+                    1,
+                    0
+                  ],
+                  "rule_store_stable": true,
+                  "sample": 1,
+                  "sequence_runtime_ns": 806834
+                }
+              ]
+            },
+            {
+              "label": "edge_once:in:m:responds_to:any_target",
+              "proposal_id": "sha256:bf06df0cd4584f1b11d7f3fd75654dc7d8e1665477f97bf41e4228611ee0f9b3",
+              "rows": [
+                {
+                  "correct": true,
+                  "expected_counts": [
+                    1,
+                    1
+                  ],
+                  "input_ids": [
+                    "#482",
+                    "#491"
+                  ],
+                  "output_counts": [
+                    1,
+                    1
+                  ],
+                  "rule_store_stable": true,
+                  "sample": 0,
+                  "sequence_runtime_ns": 460791
+                },
+                {
+                  "correct": true,
+                  "expected_counts": [
+                    1,
+                    1
+                  ],
+                  "input_ids": [
+                    "#482",
+                    "#491"
+                  ],
+                  "output_counts": [
+                    1,
+                    1
+                  ],
+                  "rule_store_stable": true,
+                  "sample": 1,
+                  "sequence_runtime_ns": 458232
+                }
+              ]
+            },
+            {
+              "label": "edge_once:in:r:has_speech_act:any_target",
+              "proposal_id": "sha256:92166eb379ff2efe698220215f4c126d8051bb47cdc7e19d13f4234775abf39c",
+              "rows": [
+                {
+                  "correct": false,
+                  "expected_counts": [
+                    1,
+                    1
+                  ],
+                  "input_ids": [
+                    "#482",
+                    "#488"
+                  ],
+                  "output_counts": [
+                    0,
+                    0
+                  ],
+                  "rule_store_stable": true,
+                  "sample": 0,
+                  "sequence_runtime_ns": 537063
+                },
+                {
+                  "correct": false,
+                  "expected_counts": [
+                    1,
+                    1
+                  ],
+                  "input_ids": [
+                    "#482",
+                    "#488"
+                  ],
+                  "output_counts": [
+                    0,
+                    0
+                  ],
+                  "rule_store_stable": true,
+                  "sample": 1,
+                  "sequence_runtime_ns": 633843
+                }
+              ]
+            }
+          ],
+          "training_scoring_ns": 144504015
+        },
+        "recurrence": {
+          "branch_evidence_isolated": true,
+          "candidate_order": [
+            1,
+            3,
+            2,
+            0
+          ],
+          "compose_ns": 50949574,
+          "composer": {
+            "operator": "add_match_guard",
+            "site": "where += Eq(Attr('agent', 'adopted_variant_probe'), True) (a NEW conjunct)",
+            "target": "mrl_offer_due_once"
+          },
+          "controls": {
+            "all_wrong": {
+              "ok": false,
+              "probe_count": 2,
+              "proposal_count": 4,
+              "reason": "no unique proposal has positive matching evidence"
+            },
+            "tie": {
+              "ok": false,
+              "probe_count": 2,
+              "proposal_count": 4,
+              "reason": "no unique proposal has positive matching evidence"
+            }
+          },
+          "decision": {
+            "matching_evidence_count": 2,
+            "ok": true,
+            "probe_count": 2,
+            "proposal_count": 4,
+            "proposal_id": "sha256:febb968ea31a93a59efd981856b416790b803c6e1fd63f40eaa6880e8b35ea99",
+            "proposal_label": "hypothesis"
+          },
+          "descriptors": [
+            {
+              "label": "edge_once:out:candidate:has_mint_offer:any_target",
+              "proposal_id": "sha256:febb968ea31a93a59efd981856b416790b803c6e1fd63f40eaa6880e8b35ea99"
+            },
+            {
+              "label": "composer:add_match_guard",
+              "proposal_id": "sha256:a0e3249b07a997e5a606ed8b15f4f72b0dabbbe72f8a1b993667a7ce1010a492"
+            },
+            {
+              "label": "edge_once:out:episode:has_mint_offer:any_target",
+              "proposal_id": "sha256:e8ff48aabc1cd06e0197c1ad63e4c3f03f138bef6d76ce49901618141f4e0a5a"
+            },
+            {
+              "label": "edge_once:out:agent:observed:any_target",
+              "proposal_id": "sha256:b4748673cb93a284227cf0782dc86457cf5732e6e3817ae170df77df3a5233b5"
+            }
+          ],
+          "primary_rule_unchanged": true,
+          "selected_label": "edge_once:out:candidate:has_mint_offer:any_target",
+          "selector_ns": 868205,
+          "selector_proposals": [
+            {
+              "proposal_id": "sha256:febb968ea31a93a59efd981856b416790b803c6e1fd63f40eaa6880e8b35ea99",
+              "proposal_label": "hypothesis"
+            },
+            {
+              "proposal_id": "sha256:a0e3249b07a997e5a606ed8b15f4f72b0dabbbe72f8a1b993667a7ce1010a492",
+              "proposal_label": "hypothesis"
+            },
+            {
+              "proposal_id": "sha256:e8ff48aabc1cd06e0197c1ad63e4c3f03f138bef6d76ce49901618141f4e0a5a",
+              "proposal_label": "hypothesis"
+            },
+            {
+              "proposal_id": "sha256:b4748673cb93a284227cf0782dc86457cf5732e6e3817ae170df77df3a5233b5",
+              "proposal_label": "hypothesis"
+            }
+          ],
+          "sites": [
+            [
+              "out",
+              "agent",
+              "observed",
+              null
+            ],
+            [
+              "out",
+              "candidate",
+              "has_mint_offer",
+              null
+            ],
+            [
+              "out",
+              "episode",
+              "has_mint_offer",
+              null
+            ]
+          ],
+          "source_train": [
+            {
+              "correct": true,
+              "fixedpoint_progress": 0,
+              "keys": [
+                "bidir-2-train_source_2-0-0",
+                "bidir-2-train_source_2-0-1"
+              ],
+              "output_counts": [
+                1,
+                1
+              ],
+              "rule_store_stable": true,
+              "stage0_sweeps": [
+                2,
+                0,
+                0,
+                0,
+                0
+              ],
+              "stage1_sweeps": [
+                2,
+                0,
+                0,
+                0,
+                0
+              ]
+            },
+            {
+              "correct": true,
+              "fixedpoint_progress": 0,
+              "keys": [
+                "bidir-2-train_source_2-1-0",
+                "bidir-2-train_source_2-1-1"
+              ],
+              "output_counts": [
+                1,
+                1
+              ],
+              "rule_store_stable": true,
+              "stage0_sweeps": [
+                2,
+                0,
+                0,
+                0,
+                0
+              ],
+              "stage1_sweeps": [
+                2,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          ],
+          "training_evidence": [
+            {
+              "expected": "correct",
+              "predicted": "correct",
+              "probe_id": "train_2_0",
+              "proposal_id": "sha256:febb968ea31a93a59efd981856b416790b803c6e1fd63f40eaa6880e8b35ea99"
+            },
+            {
+              "expected": "correct",
+              "predicted": "correct",
+              "probe_id": "train_2_1",
+              "proposal_id": "sha256:febb968ea31a93a59efd981856b416790b803c6e1fd63f40eaa6880e8b35ea99"
+            },
+            {
+              "expected": "correct",
+              "predicted": "incorrect",
+              "probe_id": "train_2_0",
+              "proposal_id": "sha256:a0e3249b07a997e5a606ed8b15f4f72b0dabbbe72f8a1b993667a7ce1010a492"
+            },
+            {
+              "expected": "correct",
+              "predicted": "incorrect",
+              "probe_id": "train_2_1",
+              "proposal_id": "sha256:a0e3249b07a997e5a606ed8b15f4f72b0dabbbe72f8a1b993667a7ce1010a492"
+            },
+            {
+              "expected": "correct",
+              "predicted": "incorrect",
+              "probe_id": "train_2_0",
+              "proposal_id": "sha256:e8ff48aabc1cd06e0197c1ad63e4c3f03f138bef6d76ce49901618141f4e0a5a"
+            },
+            {
+              "expected": "correct",
+              "predicted": "incorrect",
+              "probe_id": "train_2_1",
+              "proposal_id": "sha256:e8ff48aabc1cd06e0197c1ad63e4c3f03f138bef6d76ce49901618141f4e0a5a"
+            },
+            {
+              "expected": "correct",
+              "predicted": "incorrect",
+              "probe_id": "train_2_0",
+              "proposal_id": "sha256:b4748673cb93a284227cf0782dc86457cf5732e6e3817ae170df77df3a5233b5"
+            },
+            {
+              "expected": "correct",
+              "predicted": "incorrect",
+              "probe_id": "train_2_1",
+              "proposal_id": "sha256:b4748673cb93a284227cf0782dc86457cf5732e6e3817ae170df77df3a5233b5"
+            }
+          ],
+          "training_keys": [
+            "bidir-2-train_2-0-0",
+            "bidir-2-train_2-0-1",
+            "bidir-2-train_2-1-0",
+            "bidir-2-train_2-1-1",
+            "bidir-2-train_2-0-0",
+            "bidir-2-train_2-0-1",
+            "bidir-2-train_2-1-0",
+            "bidir-2-train_2-1-1",
+            "bidir-2-train_2-0-0",
+            "bidir-2-train_2-0-1",
+            "bidir-2-train_2-1-0",
+            "bidir-2-train_2-1-1",
+            "bidir-2-train_2-0-0",
+            "bidir-2-train_2-0-1",
+            "bidir-2-train_2-1-0",
+            "bidir-2-train_2-1-1"
+          ],
+          "training_outcomes": [
+            {
+              "label": "edge_once:out:candidate:has_mint_offer:any_target",
+              "proposal_id": "sha256:febb968ea31a93a59efd981856b416790b803c6e1fd63f40eaa6880e8b35ea99",
+              "rows": [
+                {
+                  "correct": true,
+                  "fixedpoint_progress": 0,
+                  "keys": [
+                    "bidir-2-train_2-0-0",
+                    "bidir-2-train_2-0-1"
+                  ],
+                  "output_counts": [
+                    1,
+                    1
+                  ],
+                  "rule_store_stable": true,
+                  "sample": 0,
+                  "stage0_sweeps": [
+                    2,
+                    0,
+                    0,
+                    0,
+                    0
+                  ],
+                  "stage1_sweeps": [
+                    2,
+                    0,
+                    0,
+                    0,
+                    0
+                  ]
+                },
+                {
+                  "correct": true,
+                  "fixedpoint_progress": 0,
+                  "keys": [
+                    "bidir-2-train_2-1-0",
+                    "bidir-2-train_2-1-1"
+                  ],
+                  "output_counts": [
+                    1,
+                    1
+                  ],
+                  "rule_store_stable": true,
+                  "sample": 1,
+                  "stage0_sweeps": [
+                    2,
+                    0,
+                    0,
+                    0,
+                    0
+                  ],
+                  "stage1_sweeps": [
+                    2,
+                    0,
+                    0,
+                    0,
+                    0
+                  ]
+                }
+              ]
+            },
+            {
+              "label": "composer:add_match_guard",
+              "proposal_id": "sha256:a0e3249b07a997e5a606ed8b15f4f72b0dabbbe72f8a1b993667a7ce1010a492",
+              "rows": [
+                {
+                  "correct": false,
+                  "fixedpoint_progress": 0,
+                  "keys": [
+                    "bidir-2-train_2-0-0",
+                    "bidir-2-train_2-0-1"
+                  ],
+                  "output_counts": [
+                    0,
+                    0
+                  ],
+                  "rule_store_stable": true,
+                  "sample": 0,
+                  "stage0_sweeps": [
+                    1,
+                    0,
+                    0,
+                    0,
+                    0
+                  ],
+                  "stage1_sweeps": [
+                    1,
+                    0,
+                    0,
+                    0,
+                    0
+                  ]
+                },
+                {
+                  "correct": false,
+                  "fixedpoint_progress": 0,
+                  "keys": [
+                    "bidir-2-train_2-1-0",
+                    "bidir-2-train_2-1-1"
+                  ],
+                  "output_counts": [
+                    0,
+                    0
+                  ],
+                  "rule_store_stable": true,
+                  "sample": 1,
+                  "stage0_sweeps": [
+                    1,
+                    0,
+                    0,
+                    0,
+                    0
+                  ],
+                  "stage1_sweeps": [
+                    1,
+                    0,
+                    0,
+                    0,
+                    0
+                  ]
+                }
+              ]
+            },
+            {
+              "label": "edge_once:out:episode:has_mint_offer:any_target",
+              "proposal_id": "sha256:e8ff48aabc1cd06e0197c1ad63e4c3f03f138bef6d76ce49901618141f4e0a5a",
+              "rows": [
+                {
+                  "correct": false,
+                  "fixedpoint_progress": 0,
+                  "keys": [
+                    "bidir-2-train_2-0-0",
+                    "bidir-2-train_2-0-1"
+                  ],
+                  "output_counts": [
+                    1,
+                    0
+                  ],
+                  "rule_store_stable": true,
+                  "sample": 0,
+                  "stage0_sweeps": [
+                    2,
+                    0,
+                    0,
+                    0,
+                    0
+                  ],
+                  "stage1_sweeps": [
+                    1,
+                    0,
+                    0,
+                    0,
+                    0
+                  ]
+                },
+                {
+                  "correct": false,
+                  "fixedpoint_progress": 0,
+                  "keys": [
+                    "bidir-2-train_2-1-0",
+                    "bidir-2-train_2-1-1"
+                  ],
+                  "output_counts": [
+                    1,
+                    0
+                  ],
+                  "rule_store_stable": true,
+                  "sample": 1,
+                  "stage0_sweeps": [
+                    2,
+                    0,
+                    0,
+                    0,
+                    0
+                  ],
+                  "stage1_sweeps": [
+                    1,
+                    0,
+                    0,
+                    0,
+                    0
+                  ]
+                }
+              ]
+            },
+            {
+              "label": "edge_once:out:agent:observed:any_target",
+              "proposal_id": "sha256:b4748673cb93a284227cf0782dc86457cf5732e6e3817ae170df77df3a5233b5",
+              "rows": [
+                {
+                  "correct": false,
+                  "fixedpoint_progress": 0,
+                  "keys": [
+                    "bidir-2-train_2-0-0",
+                    "bidir-2-train_2-0-1"
+                  ],
+                  "output_counts": [
+                    1,
+                    0
+                  ],
+                  "rule_store_stable": true,
+                  "sample": 0,
+                  "stage0_sweeps": [
+                    2,
+                    0,
+                    0,
+                    0,
+                    0
+                  ],
+                  "stage1_sweeps": [
+                    1,
+                    0,
+                    0,
+                    0,
+                    0
+                  ]
+                },
+                {
+                  "correct": false,
+                  "fixedpoint_progress": 0,
+                  "keys": [
+                    "bidir-2-train_2-1-0",
+                    "bidir-2-train_2-1-1"
+                  ],
+                  "output_counts": [
+                    1,
+                    0
+                  ],
+                  "rule_store_stable": true,
+                  "sample": 1,
+                  "stage0_sweeps": [
+                    2,
+                    0,
+                    0,
+                    0,
+                    0
+                  ],
+                  "stage1_sweeps": [
+                    1,
+                    0,
+                    0,
+                    0,
+                    0
+                  ]
+                }
+              ]
+            }
+          ],
+          "training_scoring_ns": 53231786
+        }
+      },
+      "source_after": {
+        "docs/research/engine_substrate/THOUGHTEXPERIMENT_BIDIRECTIONAL_EDGE_IDENTITY_GUARDS_V1_PREREG_20261002.md": "2475c402246935fd9f60ba4a5994592b52a40653065f4055636da8756e1b743a",
+        "domains/contract_query.py": "5861f25467e2fed9905fa325816a3dc60822d4a79004b8b7b095511c3806b9a6",
+        "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+        "domains/language_world.py": "06d24bdba1ccbd720f749f0c02d5a96729c40601237ec21a8f938077b2a262bb",
+        "domains/reference_resolution.py": "1f9c6ce8eaf98c33deb025110a0dea5e7960251eace4f7dc6872d3d4b85c2701",
+        "domains/reflective_faculty.py": "30951ff474cf00dba5cf9dfc01589a61104f2a05120f530c941d1fbd40c0d845",
+        "evaluation/substrate_capability/analyze_thoughtexperiment_bidirectional_edge_identity_guards_v1.py": "578604241375643846fa574f515fe41e8af4714145414b6146db35dbda9783d5",
+        "evaluation/substrate_capability/thoughtexperiment_bidirectional_edge_identity_guards_v1.py": "f23b90fd2e9c5491e4bc75e132054f83eeee3db44aa39dc6e2af907829e50543",
+        "loaded_native_binary": "09d0ac3d2b3362f5cdf7d6b1cb5ef21524cf25672916b6928c29da7997fd32c6",
+        "runners/dsl/Cargo.lock": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+        "runners/dsl/Cargo.toml": "c4d8ffff2241352a5150b5a9937dbb8010e958b6f115235b7daeae716c1a9332",
+        "runners/dsl/python/substrate_rs/__init__.py": "4e338797786071822b2e3d919ca1da3a266bda60c3ce0e29e13213a9d37454b4",
+        "runners/dsl/src/grammar.rs": "aaf6f571bf8e8761584c7473d3fe3130c5a6e395bff7f2b63f1cdcf6046b73f6",
+        "runners/dsl/src/graph.rs": "9744fec2e0c5091f2036081ffc615b1c7dd00ba2a5995af1294efb0b5aa5a28c",
+        "runners/dsl/src/graph_rules.rs": "b0e9c5bf0bbb4bf278fdab03610fa3f6f82d01ad8ee898ec789982ff41812a50",
+        "runners/dsl/src/lib.rs": "f8c5ae707046db8347438227913a737faf78a184b294c8e339a9008e71fab36c",
+        "runners/dsl/src/persist.rs": "066d026451c97e1032c30054a3a4c556d386f23db2304630a4625c5bf81306cf",
+        "runners/dsl/src/py.rs": "6a6da90d425e4f8da7b7626fc8dda39b46b63529a312d482d80e6e2ec4d03fd6",
+        "runners/dsl/src/substrate.rs": "bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+        "runners/dsl/src/sym.rs": "b54f6af6e456a7095a02eb5b3cab42a73072318bd7e54ed150c787468b170d5f",
+        "runners/dsl/src/term.rs": "5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+        "seeds/autonomy.json": "5eb18e0b06de6243ac1abae5a51bdc146e78d4d5a13ec863a9baa20f9ede9dfe",
+        "seeds/composer_dispatch.json": "a167c0ef5fba47ef9c46a3c87db972e5a85f444f9a930e761a7ef40d25b9a09a",
+        "seeds/conversation.json": "dbcf2ec16f706ee4057f9a0fc6266c764b83c4631f067a32b4e9c6d2bf9f748a",
+        "seeds/conversation_reply.json": "32be4138d22d9cca4c1872f79e86729a830f4e2952375a847ea00f2767aa15ff",
+        "seeds/faculty_lessons.json": "a1a0ab3e67957666dfdf7cc6a20f0e3f15203d6553e16c08f2bbeb16774f9c2a",
+        "seeds/intent.json": "1833b673e04f98521361bc1d93e57f4feb5add49e93ce9fd813ed2bb5eebae5f",
+        "seeds/minting_recurrence_ledger.json": "10c5df924cb98eacea2a2159e60247c1d783db37f4be147378c6115e1b545a92",
+        "seeds/psychology.json": "1c8753c431f829f4a144d8c3d777df86af3f68c6139e7a247fa1db7e171d45b1",
+        "seeds/relation_vocabulary.json": "781e89f27c5d31c214d57eb521deb6dab04c34ef51413b7a14739dd98861d90a",
+        "seeds/relations.json": "94c553808d35c873f328691bccf4d0a3e37d6b30137e1038a4b3ff69898e4f5c",
+        "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+        "substrate/seed_loader.py": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27",
+        "substrate/world_adapter.py": "e5850e4df2ff28d8c941cc3c0d12a840ab230ce627833421a88c3b354f65027c"
+      },
+      "source_before": {
+        "docs/research/engine_substrate/THOUGHTEXPERIMENT_BIDIRECTIONAL_EDGE_IDENTITY_GUARDS_V1_PREREG_20261002.md": "2475c402246935fd9f60ba4a5994592b52a40653065f4055636da8756e1b743a",
+        "domains/contract_query.py": "5861f25467e2fed9905fa325816a3dc60822d4a79004b8b7b095511c3806b9a6",
+        "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+        "domains/language_world.py": "06d24bdba1ccbd720f749f0c02d5a96729c40601237ec21a8f938077b2a262bb",
+        "domains/reference_resolution.py": "1f9c6ce8eaf98c33deb025110a0dea5e7960251eace4f7dc6872d3d4b85c2701",
+        "domains/reflective_faculty.py": "30951ff474cf00dba5cf9dfc01589a61104f2a05120f530c941d1fbd40c0d845",
+        "evaluation/substrate_capability/analyze_thoughtexperiment_bidirectional_edge_identity_guards_v1.py": "578604241375643846fa574f515fe41e8af4714145414b6146db35dbda9783d5",
+        "evaluation/substrate_capability/thoughtexperiment_bidirectional_edge_identity_guards_v1.py": "f23b90fd2e9c5491e4bc75e132054f83eeee3db44aa39dc6e2af907829e50543",
+        "loaded_native_binary": "09d0ac3d2b3362f5cdf7d6b1cb5ef21524cf25672916b6928c29da7997fd32c6",
+        "runners/dsl/Cargo.lock": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+        "runners/dsl/Cargo.toml": "c4d8ffff2241352a5150b5a9937dbb8010e958b6f115235b7daeae716c1a9332",
+        "runners/dsl/python/substrate_rs/__init__.py": "4e338797786071822b2e3d919ca1da3a266bda60c3ce0e29e13213a9d37454b4",
+        "runners/dsl/src/grammar.rs": "aaf6f571bf8e8761584c7473d3fe3130c5a6e395bff7f2b63f1cdcf6046b73f6",
+        "runners/dsl/src/graph.rs": "9744fec2e0c5091f2036081ffc615b1c7dd00ba2a5995af1294efb0b5aa5a28c",
+        "runners/dsl/src/graph_rules.rs": "b0e9c5bf0bbb4bf278fdab03610fa3f6f82d01ad8ee898ec789982ff41812a50",
+        "runners/dsl/src/lib.rs": "f8c5ae707046db8347438227913a737faf78a184b294c8e339a9008e71fab36c",
+        "runners/dsl/src/persist.rs": "066d026451c97e1032c30054a3a4c556d386f23db2304630a4625c5bf81306cf",
+        "runners/dsl/src/py.rs": "6a6da90d425e4f8da7b7626fc8dda39b46b63529a312d482d80e6e2ec4d03fd6",
+        "runners/dsl/src/substrate.rs": "bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+        "runners/dsl/src/sym.rs": "b54f6af6e456a7095a02eb5b3cab42a73072318bd7e54ed150c787468b170d5f",
+        "runners/dsl/src/term.rs": "5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+        "seeds/autonomy.json": "5eb18e0b06de6243ac1abae5a51bdc146e78d4d5a13ec863a9baa20f9ede9dfe",
+        "seeds/composer_dispatch.json": "a167c0ef5fba47ef9c46a3c87db972e5a85f444f9a930e761a7ef40d25b9a09a",
+        "seeds/conversation.json": "dbcf2ec16f706ee4057f9a0fc6266c764b83c4631f067a32b4e9c6d2bf9f748a",
+        "seeds/conversation_reply.json": "32be4138d22d9cca4c1872f79e86729a830f4e2952375a847ea00f2767aa15ff",
+        "seeds/faculty_lessons.json": "a1a0ab3e67957666dfdf7cc6a20f0e3f15203d6553e16c08f2bbeb16774f9c2a",
+        "seeds/intent.json": "1833b673e04f98521361bc1d93e57f4feb5add49e93ce9fd813ed2bb5eebae5f",
+        "seeds/minting_recurrence_ledger.json": "10c5df924cb98eacea2a2159e60247c1d783db37f4be147378c6115e1b545a92",
+        "seeds/psychology.json": "1c8753c431f829f4a144d8c3d777df86af3f68c6139e7a247fa1db7e171d45b1",
+        "seeds/relation_vocabulary.json": "781e89f27c5d31c214d57eb521deb6dab04c34ef51413b7a14739dd98861d90a",
+        "seeds/relations.json": "94c553808d35c873f328691bccf4d0a3e37d6b30137e1038a4b3ff69898e4f5c",
+        "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+        "substrate/seed_loader.py": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27",
+        "substrate/world_adapter.py": "e5850e4df2ff28d8c941cc3c0d12a840ab230ce627833421a88c3b354f65027c"
+      },
+      "source_stable": true,
+      "worker": 2
+    },
+    {
+      "families": {
+        "conversation": {
+          "branch_evidence_isolated": true,
+          "candidate_order": [
+            0,
+            2,
+            3,
+            1
+          ],
+          "compose_ns": 35015225,
+          "composer": {
+            "operator": "add_match_guard",
+            "site": "where += Eq(Attr('m', 'adopted_variant_probe'), True) (a NEW conjunct)",
+            "target": "reply_to_adjacency_pair"
+          },
+          "controls": {
+            "all_wrong": {
+              "ok": false,
+              "probe_count": 2,
+              "proposal_count": 4,
+              "reason": "no unique proposal has positive matching evidence"
+            },
+            "tie": {
+              "ok": false,
+              "probe_count": 2,
+              "proposal_count": 4,
+              "reason": "no unique proposal has positive matching evidence"
+            }
+          },
+          "decision": {
+            "matching_evidence_count": 2,
+            "ok": true,
+            "probe_count": 2,
+            "proposal_count": 4,
+            "proposal_id": "sha256:bf06df0cd4584f1b11d7f3fd75654dc7d8e1665477f97bf41e4228611ee0f9b3",
+            "proposal_label": "hypothesis"
+          },
+          "descriptors": [
+            {
+              "label": "edge_once:in:r:has_speech_act:any_target",
+              "proposal_id": "sha256:92166eb379ff2efe698220215f4c126d8051bb47cdc7e19d13f4234775abf39c"
+            },
+            {
+              "label": "edge_once:out:agent:sent:any_target",
+              "proposal_id": "sha256:af4eb625863a571aa9cc20ec21e48265d75bb25ebda0574d16da0053e8a79f81"
+            },
+            {
+              "label": "composer:add_match_guard",
+              "proposal_id": "sha256:4978adf6467218503a365c5022985819a0c74d595d143cea04376a30bdeb313d"
+            },
+            {
+              "label": "edge_once:in:m:responds_to:any_target",
+              "proposal_id": "sha256:bf06df0cd4584f1b11d7f3fd75654dc7d8e1665477f97bf41e4228611ee0f9b3"
+            }
+          ],
+          "primary_rule_unchanged": true,
+          "selected_label": "edge_once:in:m:responds_to:any_target",
+          "selector_ns": 680564,
+          "selector_proposals": [
+            {
+              "proposal_id": "sha256:92166eb379ff2efe698220215f4c126d8051bb47cdc7e19d13f4234775abf39c",
+              "proposal_label": "hypothesis"
+            },
+            {
+              "proposal_id": "sha256:af4eb625863a571aa9cc20ec21e48265d75bb25ebda0574d16da0053e8a79f81",
+              "proposal_label": "hypothesis"
+            },
+            {
+              "proposal_id": "sha256:4978adf6467218503a365c5022985819a0c74d595d143cea04376a30bdeb313d",
+              "proposal_label": "hypothesis"
+            },
+            {
+              "proposal_id": "sha256:bf06df0cd4584f1b11d7f3fd75654dc7d8e1665477f97bf41e4228611ee0f9b3",
+              "proposal_label": "hypothesis"
+            }
+          ],
+          "sites": [
+            [
+              "in",
+              "r",
+              "has_speech_act",
+              null
+            ],
+            [
+              "in",
+              "m",
+              "responds_to",
+              null
+            ],
+            [
+              "out",
+              "agent",
+              "sent",
+              null
+            ]
+          ],
+          "source_train": [
+            {
+              "correct": true,
+              "expected_counts": [
+                1,
+                1
+              ],
+              "input_ids": [
+                "#482",
+                "#491"
+              ],
+              "output_counts": [
+                1,
+                1
+              ],
+              "rule_store_stable": true,
+              "sequence_runtime_ns": 549133
+            },
+            {
+              "correct": true,
+              "expected_counts": [
+                1,
+                1
+              ],
+              "input_ids": [
+                "#482",
+                "#491"
+              ],
+              "output_counts": [
+                1,
+                1
+              ],
+              "rule_store_stable": true,
+              "sequence_runtime_ns": 447793
+            }
+          ],
+          "training_evidence": [
+            {
+              "expected": "correct",
+              "predicted": "incorrect",
+              "probe_id": "train_3_0",
+              "proposal_id": "sha256:92166eb379ff2efe698220215f4c126d8051bb47cdc7e19d13f4234775abf39c"
+            },
+            {
+              "expected": "correct",
+              "predicted": "incorrect",
+              "probe_id": "train_3_1",
+              "proposal_id": "sha256:92166eb379ff2efe698220215f4c126d8051bb47cdc7e19d13f4234775abf39c"
+            },
+            {
+              "expected": "correct",
+              "predicted": "incorrect",
+              "probe_id": "train_3_0",
+              "proposal_id": "sha256:af4eb625863a571aa9cc20ec21e48265d75bb25ebda0574d16da0053e8a79f81"
+            },
+            {
+              "expected": "correct",
+              "predicted": "incorrect",
+              "probe_id": "train_3_1",
+              "proposal_id": "sha256:af4eb625863a571aa9cc20ec21e48265d75bb25ebda0574d16da0053e8a79f81"
+            },
+            {
+              "expected": "correct",
+              "predicted": "incorrect",
+              "probe_id": "train_3_0",
+              "proposal_id": "sha256:4978adf6467218503a365c5022985819a0c74d595d143cea04376a30bdeb313d"
+            },
+            {
+              "expected": "correct",
+              "predicted": "incorrect",
+              "probe_id": "train_3_1",
+              "proposal_id": "sha256:4978adf6467218503a365c5022985819a0c74d595d143cea04376a30bdeb313d"
+            },
+            {
+              "expected": "correct",
+              "predicted": "correct",
+              "probe_id": "train_3_0",
+              "proposal_id": "sha256:bf06df0cd4584f1b11d7f3fd75654dc7d8e1665477f97bf41e4228611ee0f9b3"
+            },
+            {
+              "expected": "correct",
+              "predicted": "correct",
+              "probe_id": "train_3_1",
+              "proposal_id": "sha256:bf06df0cd4584f1b11d7f3fd75654dc7d8e1665477f97bf41e4228611ee0f9b3"
+            }
+          ],
+          "training_keys": [],
+          "training_outcomes": [
+            {
+              "label": "edge_once:in:r:has_speech_act:any_target",
+              "proposal_id": "sha256:92166eb379ff2efe698220215f4c126d8051bb47cdc7e19d13f4234775abf39c",
+              "rows": [
+                {
+                  "correct": false,
+                  "expected_counts": [
+                    1,
+                    1
+                  ],
+                  "input_ids": [
+                    "#482",
+                    "#488"
+                  ],
+                  "output_counts": [
+                    0,
+                    0
+                  ],
+                  "rule_store_stable": true,
+                  "sample": 0,
+                  "sequence_runtime_ns": 23683652
+                },
+                {
+                  "correct": false,
+                  "expected_counts": [
+                    1,
+                    1
+                  ],
+                  "input_ids": [
+                    "#482",
+                    "#488"
+                  ],
+                  "output_counts": [
+                    0,
+                    0
+                  ],
+                  "rule_store_stable": true,
+                  "sample": 1,
+                  "sequence_runtime_ns": 715974
+                }
+              ]
+            },
+            {
+              "label": "edge_once:out:agent:sent:any_target",
+              "proposal_id": "sha256:af4eb625863a571aa9cc20ec21e48265d75bb25ebda0574d16da0053e8a79f81",
+              "rows": [
+                {
+                  "correct": false,
+                  "expected_counts": [
+                    1,
+                    1
+                  ],
+                  "input_ids": [
+                    "#482",
+                    "#491"
+                  ],
+                  "output_counts": [
+                    1,
+                    0
+                  ],
+                  "rule_store_stable": true,
+                  "sample": 0,
+                  "sequence_runtime_ns": 625844
+                },
+                {
+                  "correct": false,
+                  "expected_counts": [
+                    1,
+                    1
+                  ],
+                  "input_ids": [
+                    "#482",
+                    "#491"
+                  ],
+                  "output_counts": [
+                    1,
+                    0
+                  ],
+                  "rule_store_stable": true,
+                  "sample": 1,
+                  "sequence_runtime_ns": 401453
+                }
+              ]
+            },
+            {
+              "label": "composer:add_match_guard",
+              "proposal_id": "sha256:4978adf6467218503a365c5022985819a0c74d595d143cea04376a30bdeb313d",
+              "rows": [
+                {
+                  "correct": false,
+                  "expected_counts": [
+                    1,
+                    1
+                  ],
+                  "input_ids": [
+                    "#482",
+                    "#488"
+                  ],
+                  "output_counts": [
+                    0,
+                    0
+                  ],
+                  "rule_store_stable": true,
+                  "sample": 0,
+                  "sequence_runtime_ns": 659654
+                },
+                {
+                  "correct": false,
+                  "expected_counts": [
+                    1,
+                    1
+                  ],
+                  "input_ids": [
+                    "#482",
+                    "#488"
+                  ],
+                  "output_counts": [
+                    0,
+                    0
+                  ],
+                  "rule_store_stable": true,
+                  "sample": 1,
+                  "sequence_runtime_ns": 514703
+                }
+              ]
+            },
+            {
+              "label": "edge_once:in:m:responds_to:any_target",
+              "proposal_id": "sha256:bf06df0cd4584f1b11d7f3fd75654dc7d8e1665477f97bf41e4228611ee0f9b3",
+              "rows": [
+                {
+                  "correct": true,
+                  "expected_counts": [
+                    1,
+                    1
+                  ],
+                  "input_ids": [
+                    "#482",
+                    "#491"
+                  ],
+                  "output_counts": [
+                    1,
+                    1
+                  ],
+                  "rule_store_stable": true,
+                  "sample": 0,
+                  "sequence_runtime_ns": 563113
+                },
+                {
+                  "correct": true,
+                  "expected_counts": [
+                    1,
+                    1
+                  ],
+                  "input_ids": [
+                    "#482",
+                    "#491"
+                  ],
+                  "output_counts": [
+                    1,
+                    1
+                  ],
+                  "rule_store_stable": true,
+                  "sample": 1,
+                  "sequence_runtime_ns": 579393
+                }
+              ]
+            }
+          ],
+          "training_scoring_ns": 163957653
+        },
+        "recurrence": {
+          "branch_evidence_isolated": true,
+          "candidate_order": [
+            2,
+            0,
+            3,
+            1
+          ],
+          "compose_ns": 55852222,
+          "composer": {
+            "operator": "add_match_guard",
+            "site": "where += Eq(Attr('agent', 'adopted_variant_probe'), True) (a NEW conjunct)",
+            "target": "mrl_offer_due_once"
+          },
+          "controls": {
+            "all_wrong": {
+              "ok": false,
+              "probe_count": 2,
+              "proposal_count": 4,
+              "reason": "no unique proposal has positive matching evidence"
+            },
+            "tie": {
+              "ok": false,
+              "probe_count": 2,
+              "proposal_count": 4,
+              "reason": "no unique proposal has positive matching evidence"
+            }
+          },
+          "decision": {
+            "matching_evidence_count": 2,
+            "ok": true,
+            "probe_count": 2,
+            "proposal_count": 4,
+            "proposal_id": "sha256:febb968ea31a93a59efd981856b416790b803c6e1fd63f40eaa6880e8b35ea99",
+            "proposal_label": "hypothesis"
+          },
+          "descriptors": [
+            {
+              "label": "edge_once:out:episode:has_mint_offer:any_target",
+              "proposal_id": "sha256:e8ff48aabc1cd06e0197c1ad63e4c3f03f138bef6d76ce49901618141f4e0a5a"
+            },
+            {
+              "label": "edge_once:out:agent:observed:any_target",
+              "proposal_id": "sha256:b4748673cb93a284227cf0782dc86457cf5732e6e3817ae170df77df3a5233b5"
+            },
+            {
+              "label": "composer:add_match_guard",
+              "proposal_id": "sha256:a0e3249b07a997e5a606ed8b15f4f72b0dabbbe72f8a1b993667a7ce1010a492"
+            },
+            {
+              "label": "edge_once:out:candidate:has_mint_offer:any_target",
+              "proposal_id": "sha256:febb968ea31a93a59efd981856b416790b803c6e1fd63f40eaa6880e8b35ea99"
+            }
+          ],
+          "primary_rule_unchanged": true,
+          "selected_label": "edge_once:out:candidate:has_mint_offer:any_target",
+          "selector_ns": 1272727,
+          "selector_proposals": [
+            {
+              "proposal_id": "sha256:e8ff48aabc1cd06e0197c1ad63e4c3f03f138bef6d76ce49901618141f4e0a5a",
+              "proposal_label": "hypothesis"
+            },
+            {
+              "proposal_id": "sha256:b4748673cb93a284227cf0782dc86457cf5732e6e3817ae170df77df3a5233b5",
+              "proposal_label": "hypothesis"
+            },
+            {
+              "proposal_id": "sha256:a0e3249b07a997e5a606ed8b15f4f72b0dabbbe72f8a1b993667a7ce1010a492",
+              "proposal_label": "hypothesis"
+            },
+            {
+              "proposal_id": "sha256:febb968ea31a93a59efd981856b416790b803c6e1fd63f40eaa6880e8b35ea99",
+              "proposal_label": "hypothesis"
+            }
+          ],
+          "sites": [
+            [
+              "out",
+              "agent",
+              "observed",
+              null
+            ],
+            [
+              "out",
+              "candidate",
+              "has_mint_offer",
+              null
+            ],
+            [
+              "out",
+              "episode",
+              "has_mint_offer",
+              null
+            ]
+          ],
+          "source_train": [
+            {
+              "correct": true,
+              "fixedpoint_progress": 0,
+              "keys": [
+                "bidir-3-train_source_3-0-0",
+                "bidir-3-train_source_3-0-1"
+              ],
+              "output_counts": [
+                1,
+                1
+              ],
+              "rule_store_stable": true,
+              "stage0_sweeps": [
+                2,
+                0,
+                0,
+                0,
+                0
+              ],
+              "stage1_sweeps": [
+                2,
+                0,
+                0,
+                0,
+                0
+              ]
+            },
+            {
+              "correct": true,
+              "fixedpoint_progress": 0,
+              "keys": [
+                "bidir-3-train_source_3-1-0",
+                "bidir-3-train_source_3-1-1"
+              ],
+              "output_counts": [
+                1,
+                1
+              ],
+              "rule_store_stable": true,
+              "stage0_sweeps": [
+                2,
+                0,
+                0,
+                0,
+                0
+              ],
+              "stage1_sweeps": [
+                2,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          ],
+          "training_evidence": [
+            {
+              "expected": "correct",
+              "predicted": "incorrect",
+              "probe_id": "train_3_0",
+              "proposal_id": "sha256:e8ff48aabc1cd06e0197c1ad63e4c3f03f138bef6d76ce49901618141f4e0a5a"
+            },
+            {
+              "expected": "correct",
+              "predicted": "incorrect",
+              "probe_id": "train_3_1",
+              "proposal_id": "sha256:e8ff48aabc1cd06e0197c1ad63e4c3f03f138bef6d76ce49901618141f4e0a5a"
+            },
+            {
+              "expected": "correct",
+              "predicted": "incorrect",
+              "probe_id": "train_3_0",
+              "proposal_id": "sha256:b4748673cb93a284227cf0782dc86457cf5732e6e3817ae170df77df3a5233b5"
+            },
+            {
+              "expected": "correct",
+              "predicted": "incorrect",
+              "probe_id": "train_3_1",
+              "proposal_id": "sha256:b4748673cb93a284227cf0782dc86457cf5732e6e3817ae170df77df3a5233b5"
+            },
+            {
+              "expected": "correct",
+              "predicted": "incorrect",
+              "probe_id": "train_3_0",
+              "proposal_id": "sha256:a0e3249b07a997e5a606ed8b15f4f72b0dabbbe72f8a1b993667a7ce1010a492"
+            },
+            {
+              "expected": "correct",
+              "predicted": "incorrect",
+              "probe_id": "train_3_1",
+              "proposal_id": "sha256:a0e3249b07a997e5a606ed8b15f4f72b0dabbbe72f8a1b993667a7ce1010a492"
+            },
+            {
+              "expected": "correct",
+              "predicted": "correct",
+              "probe_id": "train_3_0",
+              "proposal_id": "sha256:febb968ea31a93a59efd981856b416790b803c6e1fd63f40eaa6880e8b35ea99"
+            },
+            {
+              "expected": "correct",
+              "predicted": "correct",
+              "probe_id": "train_3_1",
+              "proposal_id": "sha256:febb968ea31a93a59efd981856b416790b803c6e1fd63f40eaa6880e8b35ea99"
+            }
+          ],
+          "training_keys": [
+            "bidir-3-train_3-0-0",
+            "bidir-3-train_3-0-1",
+            "bidir-3-train_3-1-0",
+            "bidir-3-train_3-1-1",
+            "bidir-3-train_3-0-0",
+            "bidir-3-train_3-0-1",
+            "bidir-3-train_3-1-0",
+            "bidir-3-train_3-1-1",
+            "bidir-3-train_3-0-0",
+            "bidir-3-train_3-0-1",
+            "bidir-3-train_3-1-0",
+            "bidir-3-train_3-1-1",
+            "bidir-3-train_3-0-0",
+            "bidir-3-train_3-0-1",
+            "bidir-3-train_3-1-0",
+            "bidir-3-train_3-1-1"
+          ],
+          "training_outcomes": [
+            {
+              "label": "edge_once:out:episode:has_mint_offer:any_target",
+              "proposal_id": "sha256:e8ff48aabc1cd06e0197c1ad63e4c3f03f138bef6d76ce49901618141f4e0a5a",
+              "rows": [
+                {
+                  "correct": false,
+                  "fixedpoint_progress": 0,
+                  "keys": [
+                    "bidir-3-train_3-0-0",
+                    "bidir-3-train_3-0-1"
+                  ],
+                  "output_counts": [
+                    1,
+                    0
+                  ],
+                  "rule_store_stable": true,
+                  "sample": 0,
+                  "stage0_sweeps": [
+                    2,
+                    0,
+                    0,
+                    0,
+                    0
+                  ],
+                  "stage1_sweeps": [
+                    1,
+                    0,
+                    0,
+                    0,
+                    0
+                  ]
+                },
+                {
+                  "correct": false,
+                  "fixedpoint_progress": 0,
+                  "keys": [
+                    "bidir-3-train_3-1-0",
+                    "bidir-3-train_3-1-1"
+                  ],
+                  "output_counts": [
+                    1,
+                    0
+                  ],
+                  "rule_store_stable": true,
+                  "sample": 1,
+                  "stage0_sweeps": [
+                    2,
+                    0,
+                    0,
+                    0,
+                    0
+                  ],
+                  "stage1_sweeps": [
+                    1,
+                    0,
+                    0,
+                    0,
+                    0
+                  ]
+                }
+              ]
+            },
+            {
+              "label": "edge_once:out:agent:observed:any_target",
+              "proposal_id": "sha256:b4748673cb93a284227cf0782dc86457cf5732e6e3817ae170df77df3a5233b5",
+              "rows": [
+                {
+                  "correct": false,
+                  "fixedpoint_progress": 0,
+                  "keys": [
+                    "bidir-3-train_3-0-0",
+                    "bidir-3-train_3-0-1"
+                  ],
+                  "output_counts": [
+                    1,
+                    0
+                  ],
+                  "rule_store_stable": true,
+                  "sample": 0,
+                  "stage0_sweeps": [
+                    2,
+                    0,
+                    0,
+                    0,
+                    0
+                  ],
+                  "stage1_sweeps": [
+                    1,
+                    0,
+                    0,
+                    0,
+                    0
+                  ]
+                },
+                {
+                  "correct": false,
+                  "fixedpoint_progress": 0,
+                  "keys": [
+                    "bidir-3-train_3-1-0",
+                    "bidir-3-train_3-1-1"
+                  ],
+                  "output_counts": [
+                    1,
+                    0
+                  ],
+                  "rule_store_stable": true,
+                  "sample": 1,
+                  "stage0_sweeps": [
+                    2,
+                    0,
+                    0,
+                    0,
+                    0
+                  ],
+                  "stage1_sweeps": [
+                    1,
+                    0,
+                    0,
+                    0,
+                    0
+                  ]
+                }
+              ]
+            },
+            {
+              "label": "composer:add_match_guard",
+              "proposal_id": "sha256:a0e3249b07a997e5a606ed8b15f4f72b0dabbbe72f8a1b993667a7ce1010a492",
+              "rows": [
+                {
+                  "correct": false,
+                  "fixedpoint_progress": 0,
+                  "keys": [
+                    "bidir-3-train_3-0-0",
+                    "bidir-3-train_3-0-1"
+                  ],
+                  "output_counts": [
+                    0,
+                    0
+                  ],
+                  "rule_store_stable": true,
+                  "sample": 0,
+                  "stage0_sweeps": [
+                    1,
+                    0,
+                    0,
+                    0,
+                    0
+                  ],
+                  "stage1_sweeps": [
+                    1,
+                    0,
+                    0,
+                    0,
+                    0
+                  ]
+                },
+                {
+                  "correct": false,
+                  "fixedpoint_progress": 0,
+                  "keys": [
+                    "bidir-3-train_3-1-0",
+                    "bidir-3-train_3-1-1"
+                  ],
+                  "output_counts": [
+                    0,
+                    0
+                  ],
+                  "rule_store_stable": true,
+                  "sample": 1,
+                  "stage0_sweeps": [
+                    1,
+                    0,
+                    0,
+                    0,
+                    0
+                  ],
+                  "stage1_sweeps": [
+                    1,
+                    0,
+                    0,
+                    0,
+                    0
+                  ]
+                }
+              ]
+            },
+            {
+              "label": "edge_once:out:candidate:has_mint_offer:any_target",
+              "proposal_id": "sha256:febb968ea31a93a59efd981856b416790b803c6e1fd63f40eaa6880e8b35ea99",
+              "rows": [
+                {
+                  "correct": true,
+                  "fixedpoint_progress": 0,
+                  "keys": [
+                    "bidir-3-train_3-0-0",
+                    "bidir-3-train_3-0-1"
+                  ],
+                  "output_counts": [
+                    1,
+                    1
+                  ],
+                  "rule_store_stable": true,
+                  "sample": 0,
+                  "stage0_sweeps": [
+                    2,
+                    0,
+                    0,
+                    0,
+                    0
+                  ],
+                  "stage1_sweeps": [
+                    2,
+                    0,
+                    0,
+                    0,
+                    0
+                  ]
+                },
+                {
+                  "correct": true,
+                  "fixedpoint_progress": 0,
+                  "keys": [
+                    "bidir-3-train_3-1-0",
+                    "bidir-3-train_3-1-1"
+                  ],
+                  "output_counts": [
+                    1,
+                    1
+                  ],
+                  "rule_store_stable": true,
+                  "sample": 1,
+                  "stage0_sweeps": [
+                    2,
+                    0,
+                    0,
+                    0,
+                    0
+                  ],
+                  "stage1_sweeps": [
+                    2,
+                    0,
+                    0,
+                    0,
+                    0
+                  ]
+                }
+              ]
+            }
+          ],
+          "training_scoring_ns": 81220981
+        }
+      },
+      "source_after": {
+        "docs/research/engine_substrate/THOUGHTEXPERIMENT_BIDIRECTIONAL_EDGE_IDENTITY_GUARDS_V1_PREREG_20261002.md": "2475c402246935fd9f60ba4a5994592b52a40653065f4055636da8756e1b743a",
+        "domains/contract_query.py": "5861f25467e2fed9905fa325816a3dc60822d4a79004b8b7b095511c3806b9a6",
+        "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+        "domains/language_world.py": "06d24bdba1ccbd720f749f0c02d5a96729c40601237ec21a8f938077b2a262bb",
+        "domains/reference_resolution.py": "1f9c6ce8eaf98c33deb025110a0dea5e7960251eace4f7dc6872d3d4b85c2701",
+        "domains/reflective_faculty.py": "30951ff474cf00dba5cf9dfc01589a61104f2a05120f530c941d1fbd40c0d845",
+        "evaluation/substrate_capability/analyze_thoughtexperiment_bidirectional_edge_identity_guards_v1.py": "578604241375643846fa574f515fe41e8af4714145414b6146db35dbda9783d5",
+        "evaluation/substrate_capability/thoughtexperiment_bidirectional_edge_identity_guards_v1.py": "f23b90fd2e9c5491e4bc75e132054f83eeee3db44aa39dc6e2af907829e50543",
+        "loaded_native_binary": "09d0ac3d2b3362f5cdf7d6b1cb5ef21524cf25672916b6928c29da7997fd32c6",
+        "runners/dsl/Cargo.lock": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+        "runners/dsl/Cargo.toml": "c4d8ffff2241352a5150b5a9937dbb8010e958b6f115235b7daeae716c1a9332",
+        "runners/dsl/python/substrate_rs/__init__.py": "4e338797786071822b2e3d919ca1da3a266bda60c3ce0e29e13213a9d37454b4",
+        "runners/dsl/src/grammar.rs": "aaf6f571bf8e8761584c7473d3fe3130c5a6e395bff7f2b63f1cdcf6046b73f6",
+        "runners/dsl/src/graph.rs": "9744fec2e0c5091f2036081ffc615b1c7dd00ba2a5995af1294efb0b5aa5a28c",
+        "runners/dsl/src/graph_rules.rs": "b0e9c5bf0bbb4bf278fdab03610fa3f6f82d01ad8ee898ec789982ff41812a50",
+        "runners/dsl/src/lib.rs": "f8c5ae707046db8347438227913a737faf78a184b294c8e339a9008e71fab36c",
+        "runners/dsl/src/persist.rs": "066d026451c97e1032c30054a3a4c556d386f23db2304630a4625c5bf81306cf",
+        "runners/dsl/src/py.rs": "6a6da90d425e4f8da7b7626fc8dda39b46b63529a312d482d80e6e2ec4d03fd6",
+        "runners/dsl/src/substrate.rs": "bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+        "runners/dsl/src/sym.rs": "b54f6af6e456a7095a02eb5b3cab42a73072318bd7e54ed150c787468b170d5f",
+        "runners/dsl/src/term.rs": "5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+        "seeds/autonomy.json": "5eb18e0b06de6243ac1abae5a51bdc146e78d4d5a13ec863a9baa20f9ede9dfe",
+        "seeds/composer_dispatch.json": "a167c0ef5fba47ef9c46a3c87db972e5a85f444f9a930e761a7ef40d25b9a09a",
+        "seeds/conversation.json": "dbcf2ec16f706ee4057f9a0fc6266c764b83c4631f067a32b4e9c6d2bf9f748a",
+        "seeds/conversation_reply.json": "32be4138d22d9cca4c1872f79e86729a830f4e2952375a847ea00f2767aa15ff",
+        "seeds/faculty_lessons.json": "a1a0ab3e67957666dfdf7cc6a20f0e3f15203d6553e16c08f2bbeb16774f9c2a",
+        "seeds/intent.json": "1833b673e04f98521361bc1d93e57f4feb5add49e93ce9fd813ed2bb5eebae5f",
+        "seeds/minting_recurrence_ledger.json": "10c5df924cb98eacea2a2159e60247c1d783db37f4be147378c6115e1b545a92",
+        "seeds/psychology.json": "1c8753c431f829f4a144d8c3d777df86af3f68c6139e7a247fa1db7e171d45b1",
+        "seeds/relation_vocabulary.json": "781e89f27c5d31c214d57eb521deb6dab04c34ef51413b7a14739dd98861d90a",
+        "seeds/relations.json": "94c553808d35c873f328691bccf4d0a3e37d6b30137e1038a4b3ff69898e4f5c",
+        "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+        "substrate/seed_loader.py": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27",
+        "substrate/world_adapter.py": "e5850e4df2ff28d8c941cc3c0d12a840ab230ce627833421a88c3b354f65027c"
+      },
+      "source_before": {
+        "docs/research/engine_substrate/THOUGHTEXPERIMENT_BIDIRECTIONAL_EDGE_IDENTITY_GUARDS_V1_PREREG_20261002.md": "2475c402246935fd9f60ba4a5994592b52a40653065f4055636da8756e1b743a",
+        "domains/contract_query.py": "5861f25467e2fed9905fa325816a3dc60822d4a79004b8b7b095511c3806b9a6",
+        "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+        "domains/language_world.py": "06d24bdba1ccbd720f749f0c02d5a96729c40601237ec21a8f938077b2a262bb",
+        "domains/reference_resolution.py": "1f9c6ce8eaf98c33deb025110a0dea5e7960251eace4f7dc6872d3d4b85c2701",
+        "domains/reflective_faculty.py": "30951ff474cf00dba5cf9dfc01589a61104f2a05120f530c941d1fbd40c0d845",
+        "evaluation/substrate_capability/analyze_thoughtexperiment_bidirectional_edge_identity_guards_v1.py": "578604241375643846fa574f515fe41e8af4714145414b6146db35dbda9783d5",
+        "evaluation/substrate_capability/thoughtexperiment_bidirectional_edge_identity_guards_v1.py": "f23b90fd2e9c5491e4bc75e132054f83eeee3db44aa39dc6e2af907829e50543",
+        "loaded_native_binary": "09d0ac3d2b3362f5cdf7d6b1cb5ef21524cf25672916b6928c29da7997fd32c6",
+        "runners/dsl/Cargo.lock": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+        "runners/dsl/Cargo.toml": "c4d8ffff2241352a5150b5a9937dbb8010e958b6f115235b7daeae716c1a9332",
+        "runners/dsl/python/substrate_rs/__init__.py": "4e338797786071822b2e3d919ca1da3a266bda60c3ce0e29e13213a9d37454b4",
+        "runners/dsl/src/grammar.rs": "aaf6f571bf8e8761584c7473d3fe3130c5a6e395bff7f2b63f1cdcf6046b73f6",
+        "runners/dsl/src/graph.rs": "9744fec2e0c5091f2036081ffc615b1c7dd00ba2a5995af1294efb0b5aa5a28c",
+        "runners/dsl/src/graph_rules.rs": "b0e9c5bf0bbb4bf278fdab03610fa3f6f82d01ad8ee898ec789982ff41812a50",
+        "runners/dsl/src/lib.rs": "f8c5ae707046db8347438227913a737faf78a184b294c8e339a9008e71fab36c",
+        "runners/dsl/src/persist.rs": "066d026451c97e1032c30054a3a4c556d386f23db2304630a4625c5bf81306cf",
+        "runners/dsl/src/py.rs": "6a6da90d425e4f8da7b7626fc8dda39b46b63529a312d482d80e6e2ec4d03fd6",
+        "runners/dsl/src/substrate.rs": "bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+        "runners/dsl/src/sym.rs": "b54f6af6e456a7095a02eb5b3cab42a73072318bd7e54ed150c787468b170d5f",
+        "runners/dsl/src/term.rs": "5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+        "seeds/autonomy.json": "5eb18e0b06de6243ac1abae5a51bdc146e78d4d5a13ec863a9baa20f9ede9dfe",
+        "seeds/composer_dispatch.json": "a167c0ef5fba47ef9c46a3c87db972e5a85f444f9a930e761a7ef40d25b9a09a",
+        "seeds/conversation.json": "dbcf2ec16f706ee4057f9a0fc6266c764b83c4631f067a32b4e9c6d2bf9f748a",
+        "seeds/conversation_reply.json": "32be4138d22d9cca4c1872f79e86729a830f4e2952375a847ea00f2767aa15ff",
+        "seeds/faculty_lessons.json": "a1a0ab3e67957666dfdf7cc6a20f0e3f15203d6553e16c08f2bbeb16774f9c2a",
+        "seeds/intent.json": "1833b673e04f98521361bc1d93e57f4feb5add49e93ce9fd813ed2bb5eebae5f",
+        "seeds/minting_recurrence_ledger.json": "10c5df924cb98eacea2a2159e60247c1d783db37f4be147378c6115e1b545a92",
+        "seeds/psychology.json": "1c8753c431f829f4a144d8c3d777df86af3f68c6139e7a247fa1db7e171d45b1",
+        "seeds/relation_vocabulary.json": "781e89f27c5d31c214d57eb521deb6dab04c34ef51413b7a14739dd98861d90a",
+        "seeds/relations.json": "94c553808d35c873f328691bccf4d0a3e37d6b30137e1038a4b3ff69898e4f5c",
+        "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+        "substrate/seed_loader.py": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27",
+        "substrate/world_adapter.py": "e5850e4df2ff28d8c941cc3c0d12a840ab230ce627833421a88c3b354f65027c"
+      },
+      "source_stable": true,
+      "worker": 3
+    }
+  ]
+}

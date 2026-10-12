@@ -1,0 +1,38 @@
+# Runtime task-boundary comparison v1 (2026-09-26)
+
+## Evidence set
+
+Three independently authored live task families now have complete typed-edge cuts over explicit operational task-owned node sets, captured after timed execution in three fresh source-locked workers per family:
+
+| Family and capture | Task-owned nodes | Internal edges | Boundary incidences | Unique external nodes | Owned induced-width upper bound | Cross-task/shared structure |
+|---|---:|---:|---:|---:|---:|---|
+| Held-topic answers, five positive route/task turns | 11 each | 11 each | 41–46 | 26–30 | 2 | no paired concurrent task test |
+| Self-report actions, two success forms | 7 each | 15 each | 29–31 | 15–17 | 3 | no paired concurrent task test |
+| `describe_scene`, concurrent A/B | A: 7; B: 6 | A: 12; B: 11 | A: 35; B: 32 | A: 20; B: 18 | 2 each | one direct A↔B `responds_to` edge; six shared external nodes |
+
+The `describe_scene` schedule repeats the original exact replies, Goal identity, event order, terminal lifecycle, and serialization behavior. Its single direct cross-task edge is `B inbound Message -responds_to-> A inbound Message`. Both individual cuts also share six external nodes by type: one each of Agent, Channel, Concept, DiscourseEvent, DiscourseState, and Interlocutor. These are explicit graph relationships in this authored concurrent schedule, not inferred dependencies.
+
+## What the evidence says
+
+Complete boundary incidence is much larger than the earlier fixed-edge projection suggested. It also varies by task family, and individual crossing edges can include direct links to another task rather than only global context. A useful frame model must therefore preserve at least three structures separately: the owned subgraph, direct edges between owned task sets, and shared external boundary nodes/hyperedges. Collapsing all crossing incidences to one scalar `k` would hide those distinctions.
+
+The min-fill values are deterministic upper bounds on the undirected graph induced by the declared owned vertices only. They omit factors/rules and dependencies mediated through external nodes; they are not the treewidth of the engine's rule-dependency graph. The owned vertices were selected by the measurement protocol, not discovered by a learned framing mechanism. These measurements therefore falsify the sufficiency of the earlier 9–10-edge allowlist count for live complete cuts, but do not establish that the architecture's natural tasks admit cheap separators or that execution factorizes.
+
+## Evidence and limits by source
+
+- Held-topic complete-cut audit: [results](SUBSTRATE_LIVE_HELD_TOPIC_EVIDENCE_V1_6_RESULTS_20260926.md), [raw graph cuts](../../../evaluation/reports/substrate_live_held_topic_evidence_v1_6_workers_raw_20260926.json), [lock](../../../evaluation/substrate_capability/live_held_topic_evidence_v1_6_lock_20260926.json).
+- Self-report complete-cut audit: [results](SUBSTRATE_LIVE_SELF_IDENTITY_BOUNDARY_V1_RESULTS_20260926.md), [raw graph cuts](../../../evaluation/reports/substrate_live_self_identity_boundary_v1_workers_raw_20260926.json), [lock](../../../evaluation/substrate_capability/live_self_identity_boundary_v1_lock_20260926.json).
+- Concurrent scene-description audit: [results](SUBSTRATE_LIVE_DESCRIBE_SCENE_BOUNDARY_V1_RESULTS_20260926.md), [raw graph cuts and paired boundary](../../../evaluation/reports/substrate_live_describe_scene_boundary_v1_workers_raw_20260926.json), [lock](../../../evaluation/substrate_capability/live_describe_scene_boundary_v1_lock_20260926.json).
+- Concurrent scene-description rule-attributed trace: [results](SUBSTRATE_LIVE_DESCRIBE_SCENE_ACCESS_TRACE_V1_RESULTS_20260926.md), [amendment](SUBSTRATE_LIVE_DESCRIBE_SCENE_ACCESS_TRACE_V1_AMENDMENT_20260926.md), [raw trace and task IDs](../../../evaluation/reports/substrate_live_describe_scene_access_trace_v1_workers_raw_20260926.json), [lock](../../../evaluation/substrate_capability/live_describe_scene_access_trace_v1_lock_20260926.json).
+
+## Next gate
+
+The first rule-attributed trace is now paired with the concurrent scene task sets. It records 1,870,767 selected native events per run across 410 rules; only 5,562 events touch A-owned nodes and 3,011 touch B-owned nodes, while 12 touch both. This is a concrete warning that small task projections can coexist with broad global closure work. The trace is partial and spans both serialized requests, so it neither proves global work is necessary nor permits attribution to each turn. Next expand access coverage (especially specialized scans and host effects), capture paired traced/untraced semantic twins, and add per-request trace intervals. Only then build a partitioned/owner-scoped candidate that preserves shared hyperedges, direct A/B edges, and whole-graph closure semantics; charge discovery, boundary exchange, dirty notification, and scheduling overhead. Do not infer polynomial operating cost from small induced widths alone.
+
+The per-request paired follow-up is complete: three traced/untraced pairs pass exact reply, lifecycle, task-cut, and normalized whole-graph parity. A records 951,567 events, with 3,481 touching A's owned nodes; B records 919,200, with 2,081 touching A-owned nodes and 3,011 touching B-owned nodes. Each request touches all 410 loaded rule IDs, and the dominant recorded operation is attribute reading. Median traced/untraced call wall times are 10.85/10.63 s for A and 0.853/0.676 s for B; three pairs are too few to estimate overhead precisely. B's measured access to A-owned state and the broad rule work make an independent-frame closure comparison semantically under-specified until dynamic coverage and shared-boundary wakeups are improved. See [per-request trace results](SUBSTRATE_LIVE_DESCRIBE_SCENE_ACCESS_TRACE_V2_RESULTS_20260926.md), [amendment](SUBSTRATE_LIVE_DESCRIBE_SCENE_ACCESS_TRACE_V2_AMENDMENT_20260926.md), [raw captures](../../../evaluation/reports/substrate_live_describe_scene_access_trace_v2_workers_raw_20260926.json), and [lock](../../../evaluation/substrate_capability/live_describe_scene_access_trace_v2_lock_20260926.json).
+
+V2.1 reruns this panel after `WorldAdapter` changed to serialize public transactions through a shared reentrant lock. The current-source lock matches at report time, all eight checks pass, and the same per-request counts and cross-owner accesses reproduce. New median traced/untraced call wall times are 10.636/10.660 s for A and 0.830/0.682 s for B. The B difference suggests 22–25% trace overhead in this three-pair fixture, while A shows no measurable median increase; these small paired samples are descriptive. See [current-source results](SUBSTRATE_LIVE_DESCRIBE_SCENE_ACCESS_TRACE_V2_1_RESULTS_20260926.md), [amendment](SUBSTRATE_LIVE_DESCRIBE_SCENE_ACCESS_TRACE_V2_1_AMENDMENT_20260926.md), [raw captures](../../../evaluation/reports/substrate_live_describe_scene_access_trace_v2_1_workers_raw_20260926.json), and [current-source lock](../../../evaluation/substrate_capability/live_describe_scene_access_trace_v2_1_lock_20260926.json).
+
+## Next gate
+
+Expand native trace coverage and add explicit coverage counters for omitted term scans, host-side mutations, and scheduler wakeups. Then capture additional action families with separate request intervals. A partitioned-versus-monolithic closure experiment should proceed only with a candidate that preserves the shared external nodes, direct A/B edges, and discovered cross-owner accesses; compare full graph state, replies, lifecycle, wall/CPU time, and partition maintenance costs. The current measurements identify cross-owner work but do not yet specify a complete dependency graph or establish natural-task prevalence.

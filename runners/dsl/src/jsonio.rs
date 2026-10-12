@@ -1209,6 +1209,7 @@ fn write_fields(node: &TermNode, arena: &TermArena, interner: &Interner, m: &mut
             codebook_type,
             exclude,
             generator_type,
+            grain,
             max_dims,
             field,
         } => {
@@ -1216,6 +1217,9 @@ fn write_fields(node: &TermNode, arena: &TermArena, interner: &Interner, m: &mut
             m.insert("codebook_type".into(), sym_str(*codebook_type, interner));
             m.insert("exclude".into(), opt_child(*exclude, arena, interner));
             m.insert("generator_type".into(), sym_str(*generator_type, interner));
+            if grain.is_some() {
+                m.insert("grain".into(), opt_child(*grain, arena, interner));
+            }
             m.insert("max_dims".into(), J::Number((*max_dims).into()));
             m.insert("field".into(), sym_str(*field, interner));
         }
@@ -1223,12 +1227,24 @@ fn write_fields(node: &TermNode, arena: &TermArena, interner: &Interner, m: &mut
             goal,
             codebook_type,
             exclude,
+            scope,
+            require_scope,
+            quadratic_enabled,
+            linear_prefilter_enabled,
+            grain,
+            mdl_enabled,
             max_dims,
             field,
         } => {
             m.insert("goal".into(), child(*goal, arena, interner));
             m.insert("codebook_type".into(), sym_str(*codebook_type, interner));
             m.insert("exclude".into(), opt_child(*exclude, arena, interner));
+            m.insert("scope".into(), opt_child(*scope, arena, interner));
+            m.insert("require_scope".into(), opt_child(*require_scope, arena, interner));
+            m.insert("quadratic_enabled".into(), opt_child(*quadratic_enabled, arena, interner));
+            m.insert("linear_prefilter_enabled".into(), opt_child(*linear_prefilter_enabled, arena, interner));
+            m.insert("grain".into(), opt_child(*grain, arena, interner));
+            m.insert("mdl_enabled".into(), opt_child(*mdl_enabled, arena, interner));
             m.insert("max_dims".into(), J::Number((*max_dims).into()));
             m.insert("field".into(), sym_str(*field, interner));
         }
@@ -2644,6 +2660,7 @@ fn read_term(
             inputs: child_of("inputs", obj, arena, interner, variant)?,
         },
         "DimInfer" => TermNode::DimInfer {
+            grain: opt_child_of("grain", obj, arena, interner)?,
             goal: child_of("goal", obj, arena, interner, variant)?,
             codebook_type: interner.intern(
                 obj.get("codebook_type")
@@ -2667,6 +2684,12 @@ fn read_term(
                     .unwrap_or("ShapeSignature"),
             ),
             exclude: opt_child_of("exclude", obj, arena, interner)?,
+            scope: opt_child_of("scope", obj, arena, interner)?,
+            require_scope: opt_child_of("require_scope", obj, arena, interner)?,
+            quadratic_enabled: opt_child_of("quadratic_enabled", obj, arena, interner)?,
+            linear_prefilter_enabled: opt_child_of("linear_prefilter_enabled", obj, arena, interner)?,
+            grain: opt_child_of("grain", obj, arena, interner)?,
+            mdl_enabled: opt_child_of("mdl_enabled", obj, arena, interner)?,
             max_dims: obj.get("max_dims").and_then(|v| v.as_i64()).unwrap_or(2),
             field: get_optional_sym("field", interner),
         },

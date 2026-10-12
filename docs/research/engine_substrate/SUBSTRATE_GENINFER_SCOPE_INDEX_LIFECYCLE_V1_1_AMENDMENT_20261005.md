@@ -1,0 +1,11 @@
+# GenInfer scope-index lifecycle v1.1 amendment
+
+The completed v1 capture and its independent analysis are preserved as a pilot. Review found that v1's protocol called for candidate-work parity but the capture recorded only `run_rules()`'s coarse return count. That count is not a substitute for per-helper population, parse, and candidate-search work. V1 also recorded lifecycle timing and exact output parity correctly; those observations remain pilot evidence.
+
+V1.1 adds a distinct traced worker for every untraced worker. Traced and untraced workers use identical locked cases but run in separate fresh processes. The untraced worker supplies closure wall/CPU and lifecycle timing. The traced worker supplies bounded dynamic-helper work events and exact output parity; its timing is excluded from performance summaries. The analyzer will require traced/untraced outcome and coarse-work parity, scan/index exact output parity, reduced typed-population visits in the indexed arm, and equal parsed-part/search-candidate work between scan and index. Trace overflow invalidates work attribution. All 36 workers are source-locked, with the same three populations, two arms, and three replicates.
+
+The original v1 lock, capture, and analysis are retained. This amendment changes no engine implementation and does not upgrade harness-authored scopes or synthetic decoys into natural-task evidence.
+
+The initial v1.1 capture is also retained separately. Its first independent analysis correctly passed trace attribution and work parity but failed a denominator check that expected nine indexed cases instead of all 18 traced/untraced indexed workers. The analyzer is corrected to count the full locked set and check the scan arm explicitly. The corrected analyzer hash is rebound in a fresh lock and all workers are rerun; see the `initial` artifacts for the superseded audit trail.
+
+The corrected capture and analysis are preserved as `pre_pid` artifacts. A final provenance audit added worker PIDs so the 36 distinct fresh processes required by protocol are directly verifiable; the runner and analyzer changes are rebound in a new source lock and the panel is rerun. The `pre_pid` results remain a valid pilot but are superseded for the final report.

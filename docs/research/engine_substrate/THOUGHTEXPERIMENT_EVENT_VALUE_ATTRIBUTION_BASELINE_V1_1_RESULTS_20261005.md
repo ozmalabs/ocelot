@@ -1,0 +1,13 @@
+# Thoughtexperiment event value attribution baseline v1.1 results
+
+## Result
+
+All 14 independent-analysis checks pass across three fresh workers. The analyzer independently derives the changed fields from captured before/after graph snapshots and independently rebuilds event candidates; ordinary, target-traced, and exact-snapshot modes match in both fixtures. No observer events were dropped.
+
+The direct fixture reaches fixed point after one progress step and uniquely attributes both changes: the `observed` node attribute and inserted `derived` edge. The deferred TrackIdentity fixture is deliberately capped at three progress steps and reaches `progress_budget_reached`; in that bounded prefix, all six changed fields have one candidate progressed event. Five fields are assigned to the single deferred TrackIdentity event and one field to the direct control event. This is evidence that external graph snapshots can recover value changes in a bounded, non-overlapping event window, including one deferred write.
+
+This result does not establish value attribution after a full settlement when target overlap accumulates. The earlier v1 exploratory run continued the same TrackIdentity fixture to a 10,000-step cap and found three fields matching 9,998 events each; retain that as negative evidence that whole-settlement diffs lose event order under repeated writes, not as a termination result. Together the captures imply a useful boundary: snapshot reconstruction works while progressed event targets are unique, and becomes ambiguous under repeated overlap. See the [v1 pilot results](THOUGHTEXPERIMENT_EVENT_VALUE_ATTRIBUTION_BASELINE_V1_RESULTS_20261005.md).
+
+## Artifacts and claim limits
+
+The [v1.1 preregistration](THOUGHTEXPERIMENT_EVENT_VALUE_ATTRIBUTION_BASELINE_V1_1_PREREG_20261005.md), [runner](../../../evaluation/substrate_capability/thoughtexperiment_event_value_attribution_baseline_v1_1.py), [source lock](../../../evaluation/substrate_capability/thoughtexperiment_event_value_attribution_baseline_v1_1_lock_20261005.json), [raw capture](../../../evaluation/reports/thoughtexperiment_event_value_attribution_baseline_v1_1_20261005.json), [independent analyzer](../../../evaluation/substrate_capability/analyze_thoughtexperiment_event_value_attribution_baseline_v1_1.py), and [analysis](../../../evaluation/reports/thoughtexperiment_event_value_attribution_baseline_v1_1_analysis_20261005.json) preserve the result. This remains a small authored fixture; it does not prove causal necessity, target-blind diagnosis, natural-task prevalence, or production-scale instrumentation cost. Event-local native before-images remain the next step for reliable ordered attribution under arbitrary repeated writes.

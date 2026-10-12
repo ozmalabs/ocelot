@@ -1,0 +1,3790 @@
+{
+  "checks": {
+    "energy_parity": true,
+    "expected_connected_width8_graphs": true,
+    "full_coverage": true,
+    "no_failures": true,
+    "no_mutation": true,
+    "source_stable": true,
+    "state_validity": true,
+    "three_fresh_workers": true
+  },
+  "failures": [],
+  "lock_sha256": "668fb12bcf6f82a71d776ebf004f118923a9da33ebe527cbe8dbe67efd77e88a",
+  "post_run_sources": {
+    "analyzer": {
+      "bytes": 3196,
+      "path": "/home/matt/ozmadev/ocelot/evaluation/substrate_capability/analyze_llm_transport_role_separator_v1.py",
+      "sha256": "fc7a602ee0ee764f2cb684b33dc1c4fc84e8a9b7e37a72eec32e87ebfbf00717"
+    },
+    "baseline_analysis": {
+      "bytes": 684,
+      "path": "/home/matt/ozmadev/ocelot/evaluation/reports/llm_transport_task_graph_cost_v1_analysis_20261002.json",
+      "sha256": "3d5634ca2c88e76a941605b8f6fcdb9b211079f73276c14890ee09b5944d2bca"
+    },
+    "baseline_runner": {
+      "bytes": 10324,
+      "path": "/home/matt/ozmadev/ocelot/evaluation/substrate_capability/llm_transport_task_graph_cost_v1.py",
+      "sha256": "8c6261a37353343039bbbacf59a1fef273564b2b60baa6e963f842a296219623"
+    },
+    "export": {
+      "bytes": 1093784,
+      "path": "/applications/data/model_graph_work/transport_L12_13.npz",
+      "sha256": "d04f14de800bff4a5015a8063b678c2167188ec90c0749308b6af8a5a864161c"
+    },
+    "k": 8,
+    "native": {
+      "bytes": 10599400,
+      "path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+      "sha256": "7148f66f4cd307b7b34e03970b6a0c12177973105af8e1f3c6684e2e6132a63e"
+    },
+    "native_manifest": {
+      "bytes": 12669,
+      "path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.build.json",
+      "sha256": "476fdf4408323867341f127b3947f5a528743ebb86ab2a7973442993447f0e82"
+    },
+    "prior_capture": {
+      "bytes": 130187,
+      "path": "/home/matt/ozmadev/ocelot/evaluation/reports/llm_transport_task_graph_exact_census_v1_1_20261002.json",
+      "sha256": "b70d35060c2c177391b7022b781e832a53d016cf37393b1ffa0e7d4307164008"
+    },
+    "protocol": {
+      "bytes": 2443,
+      "path": "/home/matt/ozmadev/ocelot/docs/research/engine_substrate/LLM_TRANSPORT_ROLE_SEPARATOR_V1_PREREG_20261002.md",
+      "sha256": "849e2ac8e33609a810ad37151d8003cac617de56dd116eb21583d4fafa0bf761"
+    },
+    "replicates": 3,
+    "ridge": 1.0,
+    "runner": {
+      "bytes": 9024,
+      "path": "/home/matt/ozmadev/ocelot/evaluation/substrate_capability/llm_transport_role_separator_v1.py",
+      "sha256": "368230ab873ac158ede4b5b964ffe5d9d8f8fa6f64b0a1daf81f01aeb0172b53"
+    },
+    "seed": {
+      "bytes": 43983,
+      "path": "/home/matt/ozmadev/ocelot/seeds/can_native_reimplementation.json",
+      "sha256": "3b185987ae810d5e05ab2468b044ab73d8890c8e73ac86dfcaf35b734b9c61d8"
+    },
+    "shuffle_seed": 0,
+    "sources": [
+      {
+        "bytes": 29504,
+        "path": "/home/matt/ozmadev/ocelot/domains/llm_native_graph.py",
+        "sha256": "3091594306fbfcc7aa93588b2b085ab72376fbb59817cc6c952dba20a05a1809"
+      },
+      {
+        "bytes": 14856,
+        "path": "/home/matt/ozmadev/ocelot/domains/can_junction_tree.py",
+        "sha256": "e8d4aa30bfdaced52cda2739f885a56ed50a040b8419cb558b132e5e46206ba7"
+      },
+      {
+        "bytes": 9424,
+        "path": "/home/matt/ozmadev/ocelot/domains/graph_treewidth.py",
+        "sha256": "e945bea9f54b76098edb3b3dcb784ac5a0ce630de43cd63a9fb5b0f416d543e5"
+      }
+    ],
+    "tolerance": 1e-08,
+    "vocab": [
+      -1.0,
+      0.0,
+      1.0
+    ]
+  },
+  "runs": [
+    {
+      "peak_rss_kib": 68612,
+      "pid": 51,
+      "replicate": 0,
+      "rows": [
+        {
+          "bp_accuracy": 0.625,
+          "bp_prediction": [
+            1.0,
+            1.0,
+            -1.0,
+            -1.0,
+            -1.0,
+            -1.0,
+            1.0,
+            -1.0
+          ],
+          "certified_width": 8,
+          "condition": "learned",
+          "conditioned_accuracy": 0.625,
+          "conditioned_direct_rescore": -31.265723153985164,
+          "conditioned_energy": -31.265723153985164,
+          "conditioned_prediction": [
+            1.0,
+            1.0,
+            -1.0,
+            -1.0,
+            -1.0,
+            -1.0,
+            1.0,
+            -1.0
+          ],
+          "conditioned_state_valid": true,
+          "conditioned_traced_peak_bytes": 3636112,
+          "connected": true,
+          "edges": 64,
+          "heldout_index": 0,
+          "jt_direct_rescore": -31.265723153985164,
+          "jt_energy": -31.265723153985164,
+          "no_mutation": true,
+          "nodes": 16,
+          "target": [
+            1.0,
+            -1.0,
+            -1.0,
+            -1.0,
+            1.0,
+            -1.0,
+            1.0,
+            1.0
+          ],
+          "timing_ns": {
+            "conditioned_solver": 3090429,
+            "junction_tree": 542379416
+          },
+          "width": 8
+        },
+        {
+          "bp_accuracy": 0.125,
+          "bp_prediction": [
+            -1.0,
+            1.0,
+            -1.0,
+            1.0,
+            -1.0,
+            1.0,
+            -1.0,
+            -1.0
+          ],
+          "certified_width": 8,
+          "condition": "shuffled",
+          "conditioned_accuracy": 0.125,
+          "conditioned_direct_rescore": -32.48989308346063,
+          "conditioned_energy": -32.48989308346063,
+          "conditioned_prediction": [
+            -1.0,
+            1.0,
+            -1.0,
+            1.0,
+            -1.0,
+            1.0,
+            -1.0,
+            -1.0
+          ],
+          "conditioned_state_valid": true,
+          "conditioned_traced_peak_bytes": 3635608,
+          "connected": true,
+          "edges": 64,
+          "heldout_index": 0,
+          "jt_direct_rescore": -32.48989308346063,
+          "jt_energy": -32.48989308346063,
+          "no_mutation": true,
+          "nodes": 16,
+          "target": [
+            1.0,
+            -1.0,
+            -1.0,
+            -1.0,
+            1.0,
+            -1.0,
+            1.0,
+            1.0
+          ],
+          "timing_ns": {
+            "conditioned_solver": 2517817,
+            "junction_tree": 529584034
+          },
+          "width": 8
+        },
+        {
+          "bp_accuracy": 0.625,
+          "bp_prediction": [
+            1.0,
+            1.0,
+            -1.0,
+            -1.0,
+            -1.0,
+            -1.0,
+            1.0,
+            -1.0
+          ],
+          "certified_width": 8,
+          "condition": "learned",
+          "conditioned_accuracy": 0.625,
+          "conditioned_direct_rescore": -31.687531635201594,
+          "conditioned_energy": -31.687531635201594,
+          "conditioned_prediction": [
+            1.0,
+            1.0,
+            -1.0,
+            -1.0,
+            -1.0,
+            -1.0,
+            1.0,
+            -1.0
+          ],
+          "conditioned_state_valid": true,
+          "conditioned_traced_peak_bytes": 3635552,
+          "connected": true,
+          "edges": 64,
+          "heldout_index": 1,
+          "jt_direct_rescore": -31.687531635201594,
+          "jt_energy": -31.687531635201594,
+          "no_mutation": true,
+          "nodes": 16,
+          "target": [
+            1.0,
+            -1.0,
+            -1.0,
+            -1.0,
+            1.0,
+            -1.0,
+            1.0,
+            1.0
+          ],
+          "timing_ns": {
+            "conditioned_solver": 2694867,
+            "junction_tree": 539433537
+          },
+          "width": 8
+        },
+        {
+          "bp_accuracy": 0.125,
+          "bp_prediction": [
+            -1.0,
+            1.0,
+            -1.0,
+            1.0,
+            -1.0,
+            1.0,
+            -1.0,
+            -1.0
+          ],
+          "certified_width": 8,
+          "condition": "shuffled",
+          "conditioned_accuracy": 0.125,
+          "conditioned_direct_rescore": -32.91170156467706,
+          "conditioned_energy": -32.91170156467706,
+          "conditioned_prediction": [
+            -1.0,
+            1.0,
+            -1.0,
+            1.0,
+            -1.0,
+            1.0,
+            -1.0,
+            -1.0
+          ],
+          "conditioned_state_valid": true,
+          "conditioned_traced_peak_bytes": 3635552,
+          "connected": true,
+          "edges": 64,
+          "heldout_index": 1,
+          "jt_direct_rescore": -32.91170156467706,
+          "jt_energy": -32.91170156467706,
+          "no_mutation": true,
+          "nodes": 16,
+          "target": [
+            1.0,
+            -1.0,
+            -1.0,
+            -1.0,
+            1.0,
+            -1.0,
+            1.0,
+            1.0
+          ],
+          "timing_ns": {
+            "conditioned_solver": 2404455,
+            "junction_tree": 551013891
+          },
+          "width": 8
+        },
+        {
+          "bp_accuracy": 0.875,
+          "bp_prediction": [
+            1.0,
+            -1.0,
+            -1.0,
+            -1.0,
+            1.0,
+            -1.0,
+            -1.0,
+            -1.0
+          ],
+          "certified_width": 8,
+          "condition": "learned",
+          "conditioned_accuracy": 0.875,
+          "conditioned_direct_rescore": -32.204531180206686,
+          "conditioned_energy": -32.204531180206686,
+          "conditioned_prediction": [
+            1.0,
+            -1.0,
+            -1.0,
+            -1.0,
+            1.0,
+            -1.0,
+            -1.0,
+            -1.0
+          ],
+          "conditioned_state_valid": true,
+          "conditioned_traced_peak_bytes": 3635552,
+          "connected": true,
+          "edges": 64,
+          "heldout_index": 2,
+          "jt_direct_rescore": -32.204531180206686,
+          "jt_energy": -32.204531180206686,
+          "no_mutation": true,
+          "nodes": 16,
+          "target": [
+            1.0,
+            -1.0,
+            -1.0,
+            -1.0,
+            1.0,
+            -1.0,
+            1.0,
+            -1.0
+          ],
+          "timing_ns": {
+            "conditioned_solver": 2478975,
+            "junction_tree": 517201395
+          },
+          "width": 8
+        },
+        {
+          "bp_accuracy": 0.5,
+          "bp_prediction": [
+            -1.0,
+            1.0,
+            -1.0,
+            1.0,
+            1.0,
+            -1.0,
+            -1.0,
+            -1.0
+          ],
+          "certified_width": 8,
+          "condition": "shuffled",
+          "conditioned_accuracy": 0.5,
+          "conditioned_direct_rescore": -31.559851609636098,
+          "conditioned_energy": -31.559851609636098,
+          "conditioned_prediction": [
+            -1.0,
+            1.0,
+            -1.0,
+            1.0,
+            1.0,
+            -1.0,
+            -1.0,
+            -1.0
+          ],
+          "conditioned_state_valid": true,
+          "conditioned_traced_peak_bytes": 3635552,
+          "connected": true,
+          "edges": 64,
+          "heldout_index": 2,
+          "jt_direct_rescore": -31.559851609636098,
+          "jt_energy": -31.559851609636098,
+          "no_mutation": true,
+          "nodes": 16,
+          "target": [
+            1.0,
+            -1.0,
+            -1.0,
+            -1.0,
+            1.0,
+            -1.0,
+            1.0,
+            -1.0
+          ],
+          "timing_ns": {
+            "conditioned_solver": 2389716,
+            "junction_tree": 538380410
+          },
+          "width": 8
+        },
+        {
+          "bp_accuracy": 0.875,
+          "bp_prediction": [
+            1.0,
+            1.0,
+            -1.0,
+            -1.0,
+            1.0,
+            -1.0,
+            -1.0,
+            1.0
+          ],
+          "certified_width": 8,
+          "condition": "learned",
+          "conditioned_accuracy": 0.875,
+          "conditioned_direct_rescore": -30.266287613660097,
+          "conditioned_energy": -30.266287613660097,
+          "conditioned_prediction": [
+            1.0,
+            1.0,
+            -1.0,
+            -1.0,
+            1.0,
+            -1.0,
+            -1.0,
+            1.0
+          ],
+          "conditioned_state_valid": true,
+          "conditioned_traced_peak_bytes": 3635552,
+          "connected": true,
+          "edges": 64,
+          "heldout_index": 3,
+          "jt_direct_rescore": -30.266287613660097,
+          "jt_energy": -30.266287613660097,
+          "no_mutation": true,
+          "nodes": 16,
+          "target": [
+            1.0,
+            1.0,
+            -1.0,
+            -1.0,
+            1.0,
+            1.0,
+            -1.0,
+            1.0
+          ],
+          "timing_ns": {
+            "conditioned_solver": 2721418,
+            "junction_tree": 542754757
+          },
+          "width": 8
+        },
+        {
+          "bp_accuracy": 0.375,
+          "bp_prediction": [
+            -1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            -1.0
+          ],
+          "certified_width": 8,
+          "condition": "shuffled",
+          "conditioned_accuracy": 0.375,
+          "conditioned_direct_rescore": -31.92190448148176,
+          "conditioned_energy": -31.92190448148176,
+          "conditioned_prediction": [
+            -1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            -1.0
+          ],
+          "conditioned_state_valid": true,
+          "conditioned_traced_peak_bytes": 3635552,
+          "connected": true,
+          "edges": 64,
+          "heldout_index": 3,
+          "jt_direct_rescore": -31.92190448148176,
+          "jt_energy": -31.92190448148176,
+          "no_mutation": true,
+          "nodes": 16,
+          "target": [
+            1.0,
+            1.0,
+            -1.0,
+            -1.0,
+            1.0,
+            1.0,
+            -1.0,
+            1.0
+          ],
+          "timing_ns": {
+            "conditioned_solver": 2373475,
+            "junction_tree": 513947933
+          },
+          "width": 8
+        },
+        {
+          "bp_accuracy": 1.0,
+          "bp_prediction": [
+            1.0,
+            1.0,
+            -1.0,
+            -1.0,
+            1.0,
+            1.0,
+            -1.0,
+            1.0
+          ],
+          "certified_width": 8,
+          "condition": "learned",
+          "conditioned_accuracy": 1.0,
+          "conditioned_direct_rescore": -27.901933659799397,
+          "conditioned_energy": -27.901933659799397,
+          "conditioned_prediction": [
+            1.0,
+            1.0,
+            -1.0,
+            -1.0,
+            1.0,
+            1.0,
+            -1.0,
+            1.0
+          ],
+          "conditioned_state_valid": true,
+          "conditioned_traced_peak_bytes": 3635552,
+          "connected": true,
+          "edges": 64,
+          "heldout_index": 4,
+          "jt_direct_rescore": -27.901933659799397,
+          "jt_energy": -27.901933659799397,
+          "no_mutation": true,
+          "nodes": 16,
+          "target": [
+            1.0,
+            1.0,
+            -1.0,
+            -1.0,
+            1.0,
+            1.0,
+            -1.0,
+            1.0
+          ],
+          "timing_ns": {
+            "conditioned_solver": 2366705,
+            "junction_tree": 546011029
+          },
+          "width": 8
+        },
+        {
+          "bp_accuracy": 0.625,
+          "bp_prediction": [
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            -1.0,
+            -1.0
+          ],
+          "certified_width": 8,
+          "condition": "shuffled",
+          "conditioned_accuracy": 0.625,
+          "conditioned_direct_rescore": -29.494069394189864,
+          "conditioned_energy": -29.494069394189864,
+          "conditioned_prediction": [
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            -1.0,
+            -1.0
+          ],
+          "conditioned_state_valid": true,
+          "conditioned_traced_peak_bytes": 3635552,
+          "connected": true,
+          "edges": 64,
+          "heldout_index": 4,
+          "jt_direct_rescore": -29.494069394189864,
+          "jt_energy": -29.494069394189864,
+          "no_mutation": true,
+          "nodes": 16,
+          "target": [
+            1.0,
+            1.0,
+            -1.0,
+            -1.0,
+            1.0,
+            1.0,
+            -1.0,
+            1.0
+          ],
+          "timing_ns": {
+            "conditioned_solver": 2381585,
+            "junction_tree": 534867677
+          },
+          "width": 8
+        },
+        {
+          "bp_accuracy": 0.875,
+          "bp_prediction": [
+            1.0,
+            1.0,
+            1.0,
+            -1.0,
+            1.0,
+            1.0,
+            -1.0,
+            -1.0
+          ],
+          "certified_width": 8,
+          "condition": "learned",
+          "conditioned_accuracy": 0.875,
+          "conditioned_direct_rescore": -21.635106690657267,
+          "conditioned_energy": -21.635106690657267,
+          "conditioned_prediction": [
+            1.0,
+            1.0,
+            1.0,
+            -1.0,
+            1.0,
+            1.0,
+            -1.0,
+            -1.0
+          ],
+          "conditioned_state_valid": true,
+          "conditioned_traced_peak_bytes": 3635552,
+          "connected": true,
+          "edges": 64,
+          "heldout_index": 5,
+          "jt_direct_rescore": -21.635106690657267,
+          "jt_energy": -21.635106690657267,
+          "no_mutation": true,
+          "nodes": 16,
+          "target": [
+            1.0,
+            1.0,
+            -1.0,
+            -1.0,
+            1.0,
+            1.0,
+            -1.0,
+            -1.0
+          ],
+          "timing_ns": {
+            "conditioned_solver": 2462855,
+            "junction_tree": 520199453
+          },
+          "width": 8
+        },
+        {
+          "bp_accuracy": 0.5,
+          "bp_prediction": [
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            -1.0,
+            1.0,
+            1.0,
+            -1.0
+          ],
+          "certified_width": 8,
+          "condition": "shuffled",
+          "conditioned_accuracy": 0.5,
+          "conditioned_direct_rescore": -18.541713347658515,
+          "conditioned_energy": -18.541713347658515,
+          "conditioned_prediction": [
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            -1.0,
+            1.0,
+            1.0,
+            -1.0
+          ],
+          "conditioned_state_valid": true,
+          "conditioned_traced_peak_bytes": 3635552,
+          "connected": true,
+          "edges": 64,
+          "heldout_index": 5,
+          "jt_direct_rescore": -18.541713347658515,
+          "jt_energy": -18.541713347658515,
+          "no_mutation": true,
+          "nodes": 16,
+          "target": [
+            1.0,
+            1.0,
+            -1.0,
+            -1.0,
+            1.0,
+            1.0,
+            -1.0,
+            -1.0
+          ],
+          "timing_ns": {
+            "conditioned_solver": 2390545,
+            "junction_tree": 540887036
+          },
+          "width": 8
+        },
+        {
+          "bp_accuracy": 0.875,
+          "bp_prediction": [
+            1.0,
+            -1.0,
+            -1.0,
+            -1.0,
+            1.0,
+            -1.0,
+            1.0,
+            1.0
+          ],
+          "certified_width": 8,
+          "condition": "learned",
+          "conditioned_accuracy": 0.875,
+          "conditioned_direct_rescore": -33.062470838856825,
+          "conditioned_energy": -33.062470838856825,
+          "conditioned_prediction": [
+            1.0,
+            -1.0,
+            -1.0,
+            -1.0,
+            1.0,
+            -1.0,
+            1.0,
+            1.0
+          ],
+          "conditioned_state_valid": true,
+          "conditioned_traced_peak_bytes": 3635552,
+          "connected": true,
+          "edges": 64,
+          "heldout_index": 6,
+          "jt_direct_rescore": -33.062470838856825,
+          "jt_energy": -33.062470838856825,
+          "no_mutation": true,
+          "nodes": 16,
+          "target": [
+            1.0,
+            -1.0,
+            -1.0,
+            -1.0,
+            -1.0,
+            -1.0,
+            1.0,
+            1.0
+          ],
+          "timing_ns": {
+            "conditioned_solver": 3115999,
+            "junction_tree": 537295052
+          },
+          "width": 8
+        },
+        {
+          "bp_accuracy": 0.5,
+          "bp_prediction": [
+            1.0,
+            -1.0,
+            1.0,
+            1.0,
+            -1.0,
+            -1.0,
+            -1.0,
+            -1.0
+          ],
+          "certified_width": 8,
+          "condition": "shuffled",
+          "conditioned_accuracy": 0.5,
+          "conditioned_direct_rescore": -32.851674598641694,
+          "conditioned_energy": -32.851674598641694,
+          "conditioned_prediction": [
+            1.0,
+            -1.0,
+            1.0,
+            1.0,
+            -1.0,
+            -1.0,
+            -1.0,
+            -1.0
+          ],
+          "conditioned_state_valid": true,
+          "conditioned_traced_peak_bytes": 3635552,
+          "connected": true,
+          "edges": 64,
+          "heldout_index": 6,
+          "jt_direct_rescore": -32.851674598641694,
+          "jt_energy": -32.851674598641694,
+          "no_mutation": true,
+          "nodes": 16,
+          "target": [
+            1.0,
+            -1.0,
+            -1.0,
+            -1.0,
+            -1.0,
+            -1.0,
+            1.0,
+            1.0
+          ],
+          "timing_ns": {
+            "conditioned_solver": 2373915,
+            "junction_tree": 514208112
+          },
+          "width": 8
+        },
+        {
+          "bp_accuracy": 1.0,
+          "bp_prediction": [
+            1.0,
+            -1.0,
+            -1.0,
+            1.0,
+            1.0,
+            1.0,
+            -1.0,
+            -1.0
+          ],
+          "certified_width": 8,
+          "condition": "learned",
+          "conditioned_accuracy": 1.0,
+          "conditioned_direct_rescore": -24.43402127412992,
+          "conditioned_energy": -24.43402127412992,
+          "conditioned_prediction": [
+            1.0,
+            -1.0,
+            -1.0,
+            1.0,
+            1.0,
+            1.0,
+            -1.0,
+            -1.0
+          ],
+          "conditioned_state_valid": true,
+          "conditioned_traced_peak_bytes": 3635552,
+          "connected": true,
+          "edges": 64,
+          "heldout_index": 7,
+          "jt_direct_rescore": -24.43402127412992,
+          "jt_energy": -24.43402127412992,
+          "no_mutation": true,
+          "nodes": 16,
+          "target": [
+            1.0,
+            -1.0,
+            -1.0,
+            1.0,
+            1.0,
+            1.0,
+            -1.0,
+            -1.0
+          ],
+          "timing_ns": {
+            "conditioned_solver": 2401045,
+            "junction_tree": 547571688
+          },
+          "width": 8
+        },
+        {
+          "bp_accuracy": 0.5,
+          "bp_prediction": [
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            -1.0,
+            -1.0,
+            -1.0,
+            -1.0
+          ],
+          "certified_width": 8,
+          "condition": "shuffled",
+          "conditioned_accuracy": 0.5,
+          "conditioned_direct_rescore": -22.711115860845894,
+          "conditioned_energy": -22.711115860845894,
+          "conditioned_prediction": [
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            -1.0,
+            -1.0,
+            -1.0,
+            -1.0
+          ],
+          "conditioned_state_valid": true,
+          "conditioned_traced_peak_bytes": 3635552,
+          "connected": true,
+          "edges": 64,
+          "heldout_index": 7,
+          "jt_direct_rescore": -22.711115860845894,
+          "jt_energy": -22.711115860845894,
+          "no_mutation": true,
+          "nodes": 16,
+          "target": [
+            1.0,
+            -1.0,
+            -1.0,
+            1.0,
+            1.0,
+            1.0,
+            -1.0,
+            -1.0
+          ],
+          "timing_ns": {
+            "conditioned_solver": 2920708,
+            "junction_tree": 528308064
+          },
+          "width": 8
+        },
+        {
+          "bp_accuracy": 0.5,
+          "bp_prediction": [
+            1.0,
+            1.0,
+            -1.0,
+            -1.0,
+            1.0,
+            -1.0,
+            -1.0,
+            1.0
+          ],
+          "certified_width": 8,
+          "condition": "learned",
+          "conditioned_accuracy": 0.5,
+          "conditioned_direct_rescore": -20.06996570713818,
+          "conditioned_energy": -20.06996570713818,
+          "conditioned_prediction": [
+            1.0,
+            1.0,
+            -1.0,
+            -1.0,
+            1.0,
+            -1.0,
+            -1.0,
+            1.0
+          ],
+          "conditioned_state_valid": true,
+          "conditioned_traced_peak_bytes": 3635552,
+          "connected": true,
+          "edges": 64,
+          "heldout_index": 8,
+          "jt_direct_rescore": -20.06996570713818,
+          "jt_energy": -20.06996570713818,
+          "no_mutation": true,
+          "nodes": 16,
+          "target": [
+            1.0,
+            -1.0,
+            -1.0,
+            -1.0,
+            1.0,
+            1.0,
+            1.0,
+            -1.0
+          ],
+          "timing_ns": {
+            "conditioned_solver": 2383276,
+            "junction_tree": 524167787
+          },
+          "width": 8
+        },
+        {
+          "bp_accuracy": 0.375,
+          "bp_prediction": [
+            -1.0,
+            1.0,
+            -1.0,
+            1.0,
+            1.0,
+            1.0,
+            -1.0,
+            1.0
+          ],
+          "certified_width": 8,
+          "condition": "shuffled",
+          "conditioned_accuracy": 0.375,
+          "conditioned_direct_rescore": -21.143081857357174,
+          "conditioned_energy": -21.143081857357174,
+          "conditioned_prediction": [
+            -1.0,
+            1.0,
+            -1.0,
+            1.0,
+            1.0,
+            1.0,
+            -1.0,
+            1.0
+          ],
+          "conditioned_state_valid": true,
+          "conditioned_traced_peak_bytes": 3635552,
+          "connected": true,
+          "edges": 64,
+          "heldout_index": 8,
+          "jt_direct_rescore": -21.143081857357174,
+          "jt_energy": -21.143081857357174,
+          "no_mutation": true,
+          "nodes": 16,
+          "target": [
+            1.0,
+            -1.0,
+            -1.0,
+            -1.0,
+            1.0,
+            1.0,
+            1.0,
+            -1.0
+          ],
+          "timing_ns": {
+            "conditioned_solver": 2391085,
+            "junction_tree": 553956278
+          },
+          "width": 8
+        },
+        {
+          "bp_accuracy": 0.75,
+          "bp_prediction": [
+            1.0,
+            1.0,
+            -1.0,
+            -1.0,
+            1.0,
+            1.0,
+            -1.0,
+            1.0
+          ],
+          "certified_width": 8,
+          "condition": "learned",
+          "conditioned_accuracy": 0.75,
+          "conditioned_direct_rescore": -17.634220898151398,
+          "conditioned_energy": -17.634220898151398,
+          "conditioned_prediction": [
+            1.0,
+            1.0,
+            -1.0,
+            -1.0,
+            1.0,
+            1.0,
+            -1.0,
+            1.0
+          ],
+          "conditioned_state_valid": true,
+          "conditioned_traced_peak_bytes": 3635552,
+          "connected": true,
+          "edges": 64,
+          "heldout_index": 9,
+          "jt_direct_rescore": -17.634220898151398,
+          "jt_energy": -17.634220898151398,
+          "no_mutation": true,
+          "nodes": 16,
+          "target": [
+            1.0,
+            1.0,
+            -1.0,
+            -1.0,
+            1.0,
+            -1.0,
+            1.0,
+            1.0
+          ],
+          "timing_ns": {
+            "conditioned_solver": 2875298,
+            "junction_tree": 514244913
+          },
+          "width": 8
+        },
+        {
+          "bp_accuracy": 0.5,
+          "bp_prediction": [
+            -1.0,
+            1.0,
+            -1.0,
+            1.0,
+            -1.0,
+            -1.0,
+            1.0,
+            -1.0
+          ],
+          "certified_width": 8,
+          "condition": "shuffled",
+          "conditioned_accuracy": 0.5,
+          "conditioned_direct_rescore": -16.46490679634735,
+          "conditioned_energy": -16.46490679634735,
+          "conditioned_prediction": [
+            -1.0,
+            1.0,
+            -1.0,
+            1.0,
+            -1.0,
+            -1.0,
+            1.0,
+            -1.0
+          ],
+          "conditioned_state_valid": true,
+          "conditioned_traced_peak_bytes": 3635552,
+          "connected": true,
+          "edges": 64,
+          "heldout_index": 9,
+          "jt_direct_rescore": -16.46490679634735,
+          "jt_energy": -16.46490679634735,
+          "no_mutation": true,
+          "nodes": 16,
+          "target": [
+            1.0,
+            1.0,
+            -1.0,
+            -1.0,
+            1.0,
+            -1.0,
+            1.0,
+            1.0
+          ],
+          "timing_ns": {
+            "conditioned_solver": 2388375,
+            "junction_tree": 518196148
+          },
+          "width": 8
+        }
+      ],
+      "source_end": {
+        "analyzer": {
+          "bytes": 3196,
+          "path": "/home/matt/ozmadev/ocelot/evaluation/substrate_capability/analyze_llm_transport_role_separator_v1.py",
+          "sha256": "fc7a602ee0ee764f2cb684b33dc1c4fc84e8a9b7e37a72eec32e87ebfbf00717"
+        },
+        "baseline_analysis": {
+          "bytes": 684,
+          "path": "/home/matt/ozmadev/ocelot/evaluation/reports/llm_transport_task_graph_cost_v1_analysis_20261002.json",
+          "sha256": "3d5634ca2c88e76a941605b8f6fcdb9b211079f73276c14890ee09b5944d2bca"
+        },
+        "baseline_runner": {
+          "bytes": 10324,
+          "path": "/home/matt/ozmadev/ocelot/evaluation/substrate_capability/llm_transport_task_graph_cost_v1.py",
+          "sha256": "8c6261a37353343039bbbacf59a1fef273564b2b60baa6e963f842a296219623"
+        },
+        "export": {
+          "bytes": 1093784,
+          "path": "/applications/data/model_graph_work/transport_L12_13.npz",
+          "sha256": "d04f14de800bff4a5015a8063b678c2167188ec90c0749308b6af8a5a864161c"
+        },
+        "k": 8,
+        "native": {
+          "bytes": 10599400,
+          "path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+          "sha256": "7148f66f4cd307b7b34e03970b6a0c12177973105af8e1f3c6684e2e6132a63e"
+        },
+        "native_manifest": {
+          "bytes": 12669,
+          "path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.build.json",
+          "sha256": "476fdf4408323867341f127b3947f5a528743ebb86ab2a7973442993447f0e82"
+        },
+        "prior_capture": {
+          "bytes": 130187,
+          "path": "/home/matt/ozmadev/ocelot/evaluation/reports/llm_transport_task_graph_exact_census_v1_1_20261002.json",
+          "sha256": "b70d35060c2c177391b7022b781e832a53d016cf37393b1ffa0e7d4307164008"
+        },
+        "protocol": {
+          "bytes": 2443,
+          "path": "/home/matt/ozmadev/ocelot/docs/research/engine_substrate/LLM_TRANSPORT_ROLE_SEPARATOR_V1_PREREG_20261002.md",
+          "sha256": "849e2ac8e33609a810ad37151d8003cac617de56dd116eb21583d4fafa0bf761"
+        },
+        "replicates": 3,
+        "ridge": 1.0,
+        "runner": {
+          "bytes": 9024,
+          "path": "/home/matt/ozmadev/ocelot/evaluation/substrate_capability/llm_transport_role_separator_v1.py",
+          "sha256": "368230ab873ac158ede4b5b964ffe5d9d8f8fa6f64b0a1daf81f01aeb0172b53"
+        },
+        "seed": {
+          "bytes": 43983,
+          "path": "/home/matt/ozmadev/ocelot/seeds/can_native_reimplementation.json",
+          "sha256": "3b185987ae810d5e05ab2468b044ab73d8890c8e73ac86dfcaf35b734b9c61d8"
+        },
+        "shuffle_seed": 0,
+        "sources": [
+          {
+            "bytes": 29504,
+            "path": "/home/matt/ozmadev/ocelot/domains/llm_native_graph.py",
+            "sha256": "3091594306fbfcc7aa93588b2b085ab72376fbb59817cc6c952dba20a05a1809"
+          },
+          {
+            "bytes": 14856,
+            "path": "/home/matt/ozmadev/ocelot/domains/can_junction_tree.py",
+            "sha256": "e8d4aa30bfdaced52cda2739f885a56ed50a040b8419cb558b132e5e46206ba7"
+          },
+          {
+            "bytes": 9424,
+            "path": "/home/matt/ozmadev/ocelot/domains/graph_treewidth.py",
+            "sha256": "e945bea9f54b76098edb3b3dcb784ac5a0ce630de43cd63a9fb5b0f416d543e5"
+          }
+        ],
+        "tolerance": 1e-08,
+        "vocab": [
+          -1.0,
+          0.0,
+          1.0
+        ]
+      },
+      "source_start": {
+        "analyzer": {
+          "bytes": 3196,
+          "path": "/home/matt/ozmadev/ocelot/evaluation/substrate_capability/analyze_llm_transport_role_separator_v1.py",
+          "sha256": "fc7a602ee0ee764f2cb684b33dc1c4fc84e8a9b7e37a72eec32e87ebfbf00717"
+        },
+        "baseline_analysis": {
+          "bytes": 684,
+          "path": "/home/matt/ozmadev/ocelot/evaluation/reports/llm_transport_task_graph_cost_v1_analysis_20261002.json",
+          "sha256": "3d5634ca2c88e76a941605b8f6fcdb9b211079f73276c14890ee09b5944d2bca"
+        },
+        "baseline_runner": {
+          "bytes": 10324,
+          "path": "/home/matt/ozmadev/ocelot/evaluation/substrate_capability/llm_transport_task_graph_cost_v1.py",
+          "sha256": "8c6261a37353343039bbbacf59a1fef273564b2b60baa6e963f842a296219623"
+        },
+        "export": {
+          "bytes": 1093784,
+          "path": "/applications/data/model_graph_work/transport_L12_13.npz",
+          "sha256": "d04f14de800bff4a5015a8063b678c2167188ec90c0749308b6af8a5a864161c"
+        },
+        "k": 8,
+        "native": {
+          "bytes": 10599400,
+          "path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+          "sha256": "7148f66f4cd307b7b34e03970b6a0c12177973105af8e1f3c6684e2e6132a63e"
+        },
+        "native_manifest": {
+          "bytes": 12669,
+          "path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.build.json",
+          "sha256": "476fdf4408323867341f127b3947f5a528743ebb86ab2a7973442993447f0e82"
+        },
+        "prior_capture": {
+          "bytes": 130187,
+          "path": "/home/matt/ozmadev/ocelot/evaluation/reports/llm_transport_task_graph_exact_census_v1_1_20261002.json",
+          "sha256": "b70d35060c2c177391b7022b781e832a53d016cf37393b1ffa0e7d4307164008"
+        },
+        "protocol": {
+          "bytes": 2443,
+          "path": "/home/matt/ozmadev/ocelot/docs/research/engine_substrate/LLM_TRANSPORT_ROLE_SEPARATOR_V1_PREREG_20261002.md",
+          "sha256": "849e2ac8e33609a810ad37151d8003cac617de56dd116eb21583d4fafa0bf761"
+        },
+        "replicates": 3,
+        "ridge": 1.0,
+        "runner": {
+          "bytes": 9024,
+          "path": "/home/matt/ozmadev/ocelot/evaluation/substrate_capability/llm_transport_role_separator_v1.py",
+          "sha256": "368230ab873ac158ede4b5b964ffe5d9d8f8fa6f64b0a1daf81f01aeb0172b53"
+        },
+        "seed": {
+          "bytes": 43983,
+          "path": "/home/matt/ozmadev/ocelot/seeds/can_native_reimplementation.json",
+          "sha256": "3b185987ae810d5e05ab2468b044ab73d8890c8e73ac86dfcaf35b734b9c61d8"
+        },
+        "shuffle_seed": 0,
+        "sources": [
+          {
+            "bytes": 29504,
+            "path": "/home/matt/ozmadev/ocelot/domains/llm_native_graph.py",
+            "sha256": "3091594306fbfcc7aa93588b2b085ab72376fbb59817cc6c952dba20a05a1809"
+          },
+          {
+            "bytes": 14856,
+            "path": "/home/matt/ozmadev/ocelot/domains/can_junction_tree.py",
+            "sha256": "e8d4aa30bfdaced52cda2739f885a56ed50a040b8419cb558b132e5e46206ba7"
+          },
+          {
+            "bytes": 9424,
+            "path": "/home/matt/ozmadev/ocelot/domains/graph_treewidth.py",
+            "sha256": "e945bea9f54b76098edb3b3dcb784ac5a0ce630de43cd63a9fb5b0f416d543e5"
+          }
+        ],
+        "tolerance": 1e-08,
+        "vocab": [
+          -1.0,
+          0.0,
+          1.0
+        ]
+      }
+    },
+    {
+      "peak_rss_kib": 68756,
+      "pid": 175,
+      "replicate": 1,
+      "rows": [
+        {
+          "bp_accuracy": 0.625,
+          "bp_prediction": [
+            1.0,
+            1.0,
+            -1.0,
+            -1.0,
+            -1.0,
+            -1.0,
+            1.0,
+            -1.0
+          ],
+          "certified_width": 8,
+          "condition": "learned",
+          "conditioned_accuracy": 0.625,
+          "conditioned_direct_rescore": -31.265723153985164,
+          "conditioned_energy": -31.265723153985164,
+          "conditioned_prediction": [
+            1.0,
+            1.0,
+            -1.0,
+            -1.0,
+            -1.0,
+            -1.0,
+            1.0,
+            -1.0
+          ],
+          "conditioned_state_valid": true,
+          "conditioned_traced_peak_bytes": 3636112,
+          "connected": true,
+          "edges": 64,
+          "heldout_index": 0,
+          "jt_direct_rescore": -31.265723153985164,
+          "jt_energy": -31.265723153985164,
+          "no_mutation": true,
+          "nodes": 16,
+          "target": [
+            1.0,
+            -1.0,
+            -1.0,
+            -1.0,
+            1.0,
+            -1.0,
+            1.0,
+            1.0
+          ],
+          "timing_ns": {
+            "conditioned_solver": 3117740,
+            "junction_tree": 547468256
+          },
+          "width": 8
+        },
+        {
+          "bp_accuracy": 0.125,
+          "bp_prediction": [
+            -1.0,
+            1.0,
+            -1.0,
+            1.0,
+            -1.0,
+            1.0,
+            -1.0,
+            -1.0
+          ],
+          "certified_width": 8,
+          "condition": "shuffled",
+          "conditioned_accuracy": 0.125,
+          "conditioned_direct_rescore": -32.48989308346063,
+          "conditioned_energy": -32.48989308346063,
+          "conditioned_prediction": [
+            -1.0,
+            1.0,
+            -1.0,
+            1.0,
+            -1.0,
+            1.0,
+            -1.0,
+            -1.0
+          ],
+          "conditioned_state_valid": true,
+          "conditioned_traced_peak_bytes": 3635608,
+          "connected": true,
+          "edges": 64,
+          "heldout_index": 0,
+          "jt_direct_rescore": -32.48989308346063,
+          "jt_energy": -32.48989308346063,
+          "no_mutation": true,
+          "nodes": 16,
+          "target": [
+            1.0,
+            -1.0,
+            -1.0,
+            -1.0,
+            1.0,
+            -1.0,
+            1.0,
+            1.0
+          ],
+          "timing_ns": {
+            "conditioned_solver": 2521926,
+            "junction_tree": 554692471
+          },
+          "width": 8
+        },
+        {
+          "bp_accuracy": 0.625,
+          "bp_prediction": [
+            1.0,
+            1.0,
+            -1.0,
+            -1.0,
+            -1.0,
+            -1.0,
+            1.0,
+            -1.0
+          ],
+          "certified_width": 8,
+          "condition": "learned",
+          "conditioned_accuracy": 0.625,
+          "conditioned_direct_rescore": -31.687531635201594,
+          "conditioned_energy": -31.687531635201594,
+          "conditioned_prediction": [
+            1.0,
+            1.0,
+            -1.0,
+            -1.0,
+            -1.0,
+            -1.0,
+            1.0,
+            -1.0
+          ],
+          "conditioned_state_valid": true,
+          "conditioned_traced_peak_bytes": 3635552,
+          "connected": true,
+          "edges": 64,
+          "heldout_index": 1,
+          "jt_direct_rescore": -31.687531635201594,
+          "jt_energy": -31.687531635201594,
+          "no_mutation": true,
+          "nodes": 16,
+          "target": [
+            1.0,
+            -1.0,
+            -1.0,
+            -1.0,
+            1.0,
+            -1.0,
+            1.0,
+            1.0
+          ],
+          "timing_ns": {
+            "conditioned_solver": 2396576,
+            "junction_tree": 522876898
+          },
+          "width": 8
+        },
+        {
+          "bp_accuracy": 0.125,
+          "bp_prediction": [
+            -1.0,
+            1.0,
+            -1.0,
+            1.0,
+            -1.0,
+            1.0,
+            -1.0,
+            -1.0
+          ],
+          "certified_width": 8,
+          "condition": "shuffled",
+          "conditioned_accuracy": 0.125,
+          "conditioned_direct_rescore": -32.91170156467706,
+          "conditioned_energy": -32.91170156467706,
+          "conditioned_prediction": [
+            -1.0,
+            1.0,
+            -1.0,
+            1.0,
+            -1.0,
+            1.0,
+            -1.0,
+            -1.0
+          ],
+          "conditioned_state_valid": true,
+          "conditioned_traced_peak_bytes": 3635552,
+          "connected": true,
+          "edges": 64,
+          "heldout_index": 1,
+          "jt_direct_rescore": -32.91170156467706,
+          "jt_energy": -32.91170156467706,
+          "no_mutation": true,
+          "nodes": 16,
+          "target": [
+            1.0,
+            -1.0,
+            -1.0,
+            -1.0,
+            1.0,
+            -1.0,
+            1.0,
+            1.0
+          ],
+          "timing_ns": {
+            "conditioned_solver": 2427906,
+            "junction_tree": 549403427
+          },
+          "width": 8
+        },
+        {
+          "bp_accuracy": 0.875,
+          "bp_prediction": [
+            1.0,
+            -1.0,
+            -1.0,
+            -1.0,
+            1.0,
+            -1.0,
+            -1.0,
+            -1.0
+          ],
+          "certified_width": 8,
+          "condition": "learned",
+          "conditioned_accuracy": 0.875,
+          "conditioned_direct_rescore": -32.204531180206686,
+          "conditioned_energy": -32.204531180206686,
+          "conditioned_prediction": [
+            1.0,
+            -1.0,
+            -1.0,
+            -1.0,
+            1.0,
+            -1.0,
+            -1.0,
+            -1.0
+          ],
+          "conditioned_state_valid": true,
+          "conditioned_traced_peak_bytes": 3635552,
+          "connected": true,
+          "edges": 64,
+          "heldout_index": 2,
+          "jt_direct_rescore": -32.204531180206686,
+          "jt_energy": -32.204531180206686,
+          "no_mutation": true,
+          "nodes": 16,
+          "target": [
+            1.0,
+            -1.0,
+            -1.0,
+            -1.0,
+            1.0,
+            -1.0,
+            1.0,
+            -1.0
+          ],
+          "timing_ns": {
+            "conditioned_solver": 2531586,
+            "junction_tree": 556731653
+          },
+          "width": 8
+        },
+        {
+          "bp_accuracy": 0.5,
+          "bp_prediction": [
+            -1.0,
+            1.0,
+            -1.0,
+            1.0,
+            1.0,
+            -1.0,
+            -1.0,
+            -1.0
+          ],
+          "certified_width": 8,
+          "condition": "shuffled",
+          "conditioned_accuracy": 0.5,
+          "conditioned_direct_rescore": -31.559851609636098,
+          "conditioned_energy": -31.559851609636098,
+          "conditioned_prediction": [
+            -1.0,
+            1.0,
+            -1.0,
+            1.0,
+            1.0,
+            -1.0,
+            -1.0,
+            -1.0
+          ],
+          "conditioned_state_valid": true,
+          "conditioned_traced_peak_bytes": 3635552,
+          "connected": true,
+          "edges": 64,
+          "heldout_index": 2,
+          "jt_direct_rescore": -31.559851609636098,
+          "jt_energy": -31.559851609636098,
+          "no_mutation": true,
+          "nodes": 16,
+          "target": [
+            1.0,
+            -1.0,
+            -1.0,
+            -1.0,
+            1.0,
+            -1.0,
+            1.0,
+            -1.0
+          ],
+          "timing_ns": {
+            "conditioned_solver": 2419176,
+            "junction_tree": 535528308
+          },
+          "width": 8
+        },
+        {
+          "bp_accuracy": 0.875,
+          "bp_prediction": [
+            1.0,
+            1.0,
+            -1.0,
+            -1.0,
+            1.0,
+            -1.0,
+            -1.0,
+            1.0
+          ],
+          "certified_width": 8,
+          "condition": "learned",
+          "conditioned_accuracy": 0.875,
+          "conditioned_direct_rescore": -30.266287613660097,
+          "conditioned_energy": -30.266287613660097,
+          "conditioned_prediction": [
+            1.0,
+            1.0,
+            -1.0,
+            -1.0,
+            1.0,
+            -1.0,
+            -1.0,
+            1.0
+          ],
+          "conditioned_state_valid": true,
+          "conditioned_traced_peak_bytes": 3635552,
+          "connected": true,
+          "edges": 64,
+          "heldout_index": 3,
+          "jt_direct_rescore": -30.266287613660097,
+          "jt_energy": -30.266287613660097,
+          "no_mutation": true,
+          "nodes": 16,
+          "target": [
+            1.0,
+            1.0,
+            -1.0,
+            -1.0,
+            1.0,
+            1.0,
+            -1.0,
+            1.0
+          ],
+          "timing_ns": {
+            "conditioned_solver": 2432355,
+            "junction_tree": 551724351
+          },
+          "width": 8
+        },
+        {
+          "bp_accuracy": 0.375,
+          "bp_prediction": [
+            -1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            -1.0
+          ],
+          "certified_width": 8,
+          "condition": "shuffled",
+          "conditioned_accuracy": 0.375,
+          "conditioned_direct_rescore": -31.92190448148176,
+          "conditioned_energy": -31.92190448148176,
+          "conditioned_prediction": [
+            -1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            -1.0
+          ],
+          "conditioned_state_valid": true,
+          "conditioned_traced_peak_bytes": 3635552,
+          "connected": true,
+          "edges": 64,
+          "heldout_index": 3,
+          "jt_direct_rescore": -31.92190448148176,
+          "jt_energy": -31.92190448148176,
+          "no_mutation": true,
+          "nodes": 16,
+          "target": [
+            1.0,
+            1.0,
+            -1.0,
+            -1.0,
+            1.0,
+            1.0,
+            -1.0,
+            1.0
+          ],
+          "timing_ns": {
+            "conditioned_solver": 2405695,
+            "junction_tree": 554269718
+          },
+          "width": 8
+        },
+        {
+          "bp_accuracy": 1.0,
+          "bp_prediction": [
+            1.0,
+            1.0,
+            -1.0,
+            -1.0,
+            1.0,
+            1.0,
+            -1.0,
+            1.0
+          ],
+          "certified_width": 8,
+          "condition": "learned",
+          "conditioned_accuracy": 1.0,
+          "conditioned_direct_rescore": -27.901933659799397,
+          "conditioned_energy": -27.901933659799397,
+          "conditioned_prediction": [
+            1.0,
+            1.0,
+            -1.0,
+            -1.0,
+            1.0,
+            1.0,
+            -1.0,
+            1.0
+          ],
+          "conditioned_state_valid": true,
+          "conditioned_traced_peak_bytes": 3635552,
+          "connected": true,
+          "edges": 64,
+          "heldout_index": 4,
+          "jt_direct_rescore": -27.901933659799397,
+          "jt_energy": -27.901933659799397,
+          "no_mutation": true,
+          "nodes": 16,
+          "target": [
+            1.0,
+            1.0,
+            -1.0,
+            -1.0,
+            1.0,
+            1.0,
+            -1.0,
+            1.0
+          ],
+          "timing_ns": {
+            "conditioned_solver": 2432215,
+            "junction_tree": 523960044
+          },
+          "width": 8
+        },
+        {
+          "bp_accuracy": 0.625,
+          "bp_prediction": [
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            -1.0,
+            -1.0
+          ],
+          "certified_width": 8,
+          "condition": "shuffled",
+          "conditioned_accuracy": 0.625,
+          "conditioned_direct_rescore": -29.494069394189864,
+          "conditioned_energy": -29.494069394189864,
+          "conditioned_prediction": [
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            -1.0,
+            -1.0
+          ],
+          "conditioned_state_valid": true,
+          "conditioned_traced_peak_bytes": 3635552,
+          "connected": true,
+          "edges": 64,
+          "heldout_index": 4,
+          "jt_direct_rescore": -29.494069394189864,
+          "jt_energy": -29.494069394189864,
+          "no_mutation": true,
+          "nodes": 16,
+          "target": [
+            1.0,
+            1.0,
+            -1.0,
+            -1.0,
+            1.0,
+            1.0,
+            -1.0,
+            1.0
+          ],
+          "timing_ns": {
+            "conditioned_solver": 2518516,
+            "junction_tree": 558045221
+          },
+          "width": 8
+        },
+        {
+          "bp_accuracy": 0.875,
+          "bp_prediction": [
+            1.0,
+            1.0,
+            1.0,
+            -1.0,
+            1.0,
+            1.0,
+            -1.0,
+            -1.0
+          ],
+          "certified_width": 8,
+          "condition": "learned",
+          "conditioned_accuracy": 0.875,
+          "conditioned_direct_rescore": -21.635106690657267,
+          "conditioned_energy": -21.635106690657267,
+          "conditioned_prediction": [
+            1.0,
+            1.0,
+            1.0,
+            -1.0,
+            1.0,
+            1.0,
+            -1.0,
+            -1.0
+          ],
+          "conditioned_state_valid": true,
+          "conditioned_traced_peak_bytes": 3635552,
+          "connected": true,
+          "edges": 64,
+          "heldout_index": 5,
+          "jt_direct_rescore": -21.635106690657267,
+          "jt_energy": -21.635106690657267,
+          "no_mutation": true,
+          "nodes": 16,
+          "target": [
+            1.0,
+            1.0,
+            -1.0,
+            -1.0,
+            1.0,
+            1.0,
+            -1.0,
+            -1.0
+          ],
+          "timing_ns": {
+            "conditioned_solver": 2645058,
+            "junction_tree": 549088724
+          },
+          "width": 8
+        },
+        {
+          "bp_accuracy": 0.5,
+          "bp_prediction": [
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            -1.0,
+            1.0,
+            1.0,
+            -1.0
+          ],
+          "certified_width": 8,
+          "condition": "shuffled",
+          "conditioned_accuracy": 0.5,
+          "conditioned_direct_rescore": -18.541713347658515,
+          "conditioned_energy": -18.541713347658515,
+          "conditioned_prediction": [
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            -1.0,
+            1.0,
+            1.0,
+            -1.0
+          ],
+          "conditioned_state_valid": true,
+          "conditioned_traced_peak_bytes": 3635552,
+          "connected": true,
+          "edges": 64,
+          "heldout_index": 5,
+          "jt_direct_rescore": -18.541713347658515,
+          "jt_energy": -18.541713347658515,
+          "no_mutation": true,
+          "nodes": 16,
+          "target": [
+            1.0,
+            1.0,
+            -1.0,
+            -1.0,
+            1.0,
+            1.0,
+            -1.0,
+            -1.0
+          ],
+          "timing_ns": {
+            "conditioned_solver": 2379406,
+            "junction_tree": 526651200
+          },
+          "width": 8
+        },
+        {
+          "bp_accuracy": 0.875,
+          "bp_prediction": [
+            1.0,
+            -1.0,
+            -1.0,
+            -1.0,
+            1.0,
+            -1.0,
+            1.0,
+            1.0
+          ],
+          "certified_width": 8,
+          "condition": "learned",
+          "conditioned_accuracy": 0.875,
+          "conditioned_direct_rescore": -33.062470838856825,
+          "conditioned_energy": -33.062470838856825,
+          "conditioned_prediction": [
+            1.0,
+            -1.0,
+            -1.0,
+            -1.0,
+            1.0,
+            -1.0,
+            1.0,
+            1.0
+          ],
+          "conditioned_state_valid": true,
+          "conditioned_traced_peak_bytes": 3635552,
+          "connected": true,
+          "edges": 64,
+          "heldout_index": 6,
+          "jt_direct_rescore": -33.062470838856825,
+          "jt_energy": -33.062470838856825,
+          "no_mutation": true,
+          "nodes": 16,
+          "target": [
+            1.0,
+            -1.0,
+            -1.0,
+            -1.0,
+            -1.0,
+            -1.0,
+            1.0,
+            1.0
+          ],
+          "timing_ns": {
+            "conditioned_solver": 2384365,
+            "junction_tree": 531633302
+          },
+          "width": 8
+        },
+        {
+          "bp_accuracy": 0.5,
+          "bp_prediction": [
+            1.0,
+            -1.0,
+            1.0,
+            1.0,
+            -1.0,
+            -1.0,
+            -1.0,
+            -1.0
+          ],
+          "certified_width": 8,
+          "condition": "shuffled",
+          "conditioned_accuracy": 0.5,
+          "conditioned_direct_rescore": -32.851674598641694,
+          "conditioned_energy": -32.851674598641694,
+          "conditioned_prediction": [
+            1.0,
+            -1.0,
+            1.0,
+            1.0,
+            -1.0,
+            -1.0,
+            -1.0,
+            -1.0
+          ],
+          "conditioned_state_valid": true,
+          "conditioned_traced_peak_bytes": 3635552,
+          "connected": true,
+          "edges": 64,
+          "heldout_index": 6,
+          "jt_direct_rescore": -32.851674598641694,
+          "jt_energy": -32.851674598641694,
+          "no_mutation": true,
+          "nodes": 16,
+          "target": [
+            1.0,
+            -1.0,
+            -1.0,
+            -1.0,
+            -1.0,
+            -1.0,
+            1.0,
+            1.0
+          ],
+          "timing_ns": {
+            "conditioned_solver": 2395365,
+            "junction_tree": 553213749
+          },
+          "width": 8
+        },
+        {
+          "bp_accuracy": 1.0,
+          "bp_prediction": [
+            1.0,
+            -1.0,
+            -1.0,
+            1.0,
+            1.0,
+            1.0,
+            -1.0,
+            -1.0
+          ],
+          "certified_width": 8,
+          "condition": "learned",
+          "conditioned_accuracy": 1.0,
+          "conditioned_direct_rescore": -24.43402127412992,
+          "conditioned_energy": -24.43402127412992,
+          "conditioned_prediction": [
+            1.0,
+            -1.0,
+            -1.0,
+            1.0,
+            1.0,
+            1.0,
+            -1.0,
+            -1.0
+          ],
+          "conditioned_state_valid": true,
+          "conditioned_traced_peak_bytes": 3635552,
+          "connected": true,
+          "edges": 64,
+          "heldout_index": 7,
+          "jt_direct_rescore": -24.43402127412992,
+          "jt_energy": -24.43402127412992,
+          "no_mutation": true,
+          "nodes": 16,
+          "target": [
+            1.0,
+            -1.0,
+            -1.0,
+            1.0,
+            1.0,
+            1.0,
+            -1.0,
+            -1.0
+          ],
+          "timing_ns": {
+            "conditioned_solver": 2386825,
+            "junction_tree": 533757405
+          },
+          "width": 8
+        },
+        {
+          "bp_accuracy": 0.5,
+          "bp_prediction": [
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            -1.0,
+            -1.0,
+            -1.0,
+            -1.0
+          ],
+          "certified_width": 8,
+          "condition": "shuffled",
+          "conditioned_accuracy": 0.5,
+          "conditioned_direct_rescore": -22.711115860845894,
+          "conditioned_energy": -22.711115860845894,
+          "conditioned_prediction": [
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            -1.0,
+            -1.0,
+            -1.0,
+            -1.0
+          ],
+          "conditioned_state_valid": true,
+          "conditioned_traced_peak_bytes": 3635552,
+          "connected": true,
+          "edges": 64,
+          "heldout_index": 7,
+          "jt_direct_rescore": -22.711115860845894,
+          "jt_energy": -22.711115860845894,
+          "no_mutation": true,
+          "nodes": 16,
+          "target": [
+            1.0,
+            -1.0,
+            -1.0,
+            1.0,
+            1.0,
+            1.0,
+            -1.0,
+            -1.0
+          ],
+          "timing_ns": {
+            "conditioned_solver": 2328795,
+            "junction_tree": 558123851
+          },
+          "width": 8
+        },
+        {
+          "bp_accuracy": 0.5,
+          "bp_prediction": [
+            1.0,
+            1.0,
+            -1.0,
+            -1.0,
+            1.0,
+            -1.0,
+            -1.0,
+            1.0
+          ],
+          "certified_width": 8,
+          "condition": "learned",
+          "conditioned_accuracy": 0.5,
+          "conditioned_direct_rescore": -20.06996570713818,
+          "conditioned_energy": -20.06996570713818,
+          "conditioned_prediction": [
+            1.0,
+            1.0,
+            -1.0,
+            -1.0,
+            1.0,
+            -1.0,
+            -1.0,
+            1.0
+          ],
+          "conditioned_state_valid": true,
+          "conditioned_traced_peak_bytes": 3635552,
+          "connected": true,
+          "edges": 64,
+          "heldout_index": 8,
+          "jt_direct_rescore": -20.06996570713818,
+          "jt_energy": -20.06996570713818,
+          "no_mutation": true,
+          "nodes": 16,
+          "target": [
+            1.0,
+            -1.0,
+            -1.0,
+            -1.0,
+            1.0,
+            1.0,
+            1.0,
+            -1.0
+          ],
+          "timing_ns": {
+            "conditioned_solver": 2462405,
+            "junction_tree": 554594418
+          },
+          "width": 8
+        },
+        {
+          "bp_accuracy": 0.375,
+          "bp_prediction": [
+            -1.0,
+            1.0,
+            -1.0,
+            1.0,
+            1.0,
+            1.0,
+            -1.0,
+            1.0
+          ],
+          "certified_width": 8,
+          "condition": "shuffled",
+          "conditioned_accuracy": 0.375,
+          "conditioned_direct_rescore": -21.143081857357174,
+          "conditioned_energy": -21.143081857357174,
+          "conditioned_prediction": [
+            -1.0,
+            1.0,
+            -1.0,
+            1.0,
+            1.0,
+            1.0,
+            -1.0,
+            1.0
+          ],
+          "conditioned_state_valid": true,
+          "conditioned_traced_peak_bytes": 3635552,
+          "connected": true,
+          "edges": 64,
+          "heldout_index": 8,
+          "jt_direct_rescore": -21.143081857357174,
+          "jt_energy": -21.143081857357174,
+          "no_mutation": true,
+          "nodes": 16,
+          "target": [
+            1.0,
+            -1.0,
+            -1.0,
+            -1.0,
+            1.0,
+            1.0,
+            1.0,
+            -1.0
+          ],
+          "timing_ns": {
+            "conditioned_solver": 2336875,
+            "junction_tree": 515971021
+          },
+          "width": 8
+        },
+        {
+          "bp_accuracy": 0.75,
+          "bp_prediction": [
+            1.0,
+            1.0,
+            -1.0,
+            -1.0,
+            1.0,
+            1.0,
+            -1.0,
+            1.0
+          ],
+          "certified_width": 8,
+          "condition": "learned",
+          "conditioned_accuracy": 0.75,
+          "conditioned_direct_rescore": -17.634220898151398,
+          "conditioned_energy": -17.634220898151398,
+          "conditioned_prediction": [
+            1.0,
+            1.0,
+            -1.0,
+            -1.0,
+            1.0,
+            1.0,
+            -1.0,
+            1.0
+          ],
+          "conditioned_state_valid": true,
+          "conditioned_traced_peak_bytes": 3635552,
+          "connected": true,
+          "edges": 64,
+          "heldout_index": 9,
+          "jt_direct_rescore": -17.634220898151398,
+          "jt_energy": -17.634220898151398,
+          "no_mutation": true,
+          "nodes": 16,
+          "target": [
+            1.0,
+            1.0,
+            -1.0,
+            -1.0,
+            1.0,
+            -1.0,
+            1.0,
+            1.0
+          ],
+          "timing_ns": {
+            "conditioned_solver": 2441585,
+            "junction_tree": 544573033
+          },
+          "width": 8
+        },
+        {
+          "bp_accuracy": 0.5,
+          "bp_prediction": [
+            -1.0,
+            1.0,
+            -1.0,
+            1.0,
+            -1.0,
+            -1.0,
+            1.0,
+            -1.0
+          ],
+          "certified_width": 8,
+          "condition": "shuffled",
+          "conditioned_accuracy": 0.5,
+          "conditioned_direct_rescore": -16.46490679634735,
+          "conditioned_energy": -16.46490679634735,
+          "conditioned_prediction": [
+            -1.0,
+            1.0,
+            -1.0,
+            1.0,
+            -1.0,
+            -1.0,
+            1.0,
+            -1.0
+          ],
+          "conditioned_state_valid": true,
+          "conditioned_traced_peak_bytes": 3635552,
+          "connected": true,
+          "edges": 64,
+          "heldout_index": 9,
+          "jt_direct_rescore": -16.46490679634735,
+          "jt_energy": -16.46490679634735,
+          "no_mutation": true,
+          "nodes": 16,
+          "target": [
+            1.0,
+            1.0,
+            -1.0,
+            -1.0,
+            1.0,
+            -1.0,
+            1.0,
+            1.0
+          ],
+          "timing_ns": {
+            "conditioned_solver": 2380146,
+            "junction_tree": 557226655
+          },
+          "width": 8
+        }
+      ],
+      "source_end": {
+        "analyzer": {
+          "bytes": 3196,
+          "path": "/home/matt/ozmadev/ocelot/evaluation/substrate_capability/analyze_llm_transport_role_separator_v1.py",
+          "sha256": "fc7a602ee0ee764f2cb684b33dc1c4fc84e8a9b7e37a72eec32e87ebfbf00717"
+        },
+        "baseline_analysis": {
+          "bytes": 684,
+          "path": "/home/matt/ozmadev/ocelot/evaluation/reports/llm_transport_task_graph_cost_v1_analysis_20261002.json",
+          "sha256": "3d5634ca2c88e76a941605b8f6fcdb9b211079f73276c14890ee09b5944d2bca"
+        },
+        "baseline_runner": {
+          "bytes": 10324,
+          "path": "/home/matt/ozmadev/ocelot/evaluation/substrate_capability/llm_transport_task_graph_cost_v1.py",
+          "sha256": "8c6261a37353343039bbbacf59a1fef273564b2b60baa6e963f842a296219623"
+        },
+        "export": {
+          "bytes": 1093784,
+          "path": "/applications/data/model_graph_work/transport_L12_13.npz",
+          "sha256": "d04f14de800bff4a5015a8063b678c2167188ec90c0749308b6af8a5a864161c"
+        },
+        "k": 8,
+        "native": {
+          "bytes": 10599400,
+          "path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+          "sha256": "7148f66f4cd307b7b34e03970b6a0c12177973105af8e1f3c6684e2e6132a63e"
+        },
+        "native_manifest": {
+          "bytes": 12669,
+          "path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.build.json",
+          "sha256": "476fdf4408323867341f127b3947f5a528743ebb86ab2a7973442993447f0e82"
+        },
+        "prior_capture": {
+          "bytes": 130187,
+          "path": "/home/matt/ozmadev/ocelot/evaluation/reports/llm_transport_task_graph_exact_census_v1_1_20261002.json",
+          "sha256": "b70d35060c2c177391b7022b781e832a53d016cf37393b1ffa0e7d4307164008"
+        },
+        "protocol": {
+          "bytes": 2443,
+          "path": "/home/matt/ozmadev/ocelot/docs/research/engine_substrate/LLM_TRANSPORT_ROLE_SEPARATOR_V1_PREREG_20261002.md",
+          "sha256": "849e2ac8e33609a810ad37151d8003cac617de56dd116eb21583d4fafa0bf761"
+        },
+        "replicates": 3,
+        "ridge": 1.0,
+        "runner": {
+          "bytes": 9024,
+          "path": "/home/matt/ozmadev/ocelot/evaluation/substrate_capability/llm_transport_role_separator_v1.py",
+          "sha256": "368230ab873ac158ede4b5b964ffe5d9d8f8fa6f64b0a1daf81f01aeb0172b53"
+        },
+        "seed": {
+          "bytes": 43983,
+          "path": "/home/matt/ozmadev/ocelot/seeds/can_native_reimplementation.json",
+          "sha256": "3b185987ae810d5e05ab2468b044ab73d8890c8e73ac86dfcaf35b734b9c61d8"
+        },
+        "shuffle_seed": 0,
+        "sources": [
+          {
+            "bytes": 29504,
+            "path": "/home/matt/ozmadev/ocelot/domains/llm_native_graph.py",
+            "sha256": "3091594306fbfcc7aa93588b2b085ab72376fbb59817cc6c952dba20a05a1809"
+          },
+          {
+            "bytes": 14856,
+            "path": "/home/matt/ozmadev/ocelot/domains/can_junction_tree.py",
+            "sha256": "e8d4aa30bfdaced52cda2739f885a56ed50a040b8419cb558b132e5e46206ba7"
+          },
+          {
+            "bytes": 9424,
+            "path": "/home/matt/ozmadev/ocelot/domains/graph_treewidth.py",
+            "sha256": "e945bea9f54b76098edb3b3dcb784ac5a0ce630de43cd63a9fb5b0f416d543e5"
+          }
+        ],
+        "tolerance": 1e-08,
+        "vocab": [
+          -1.0,
+          0.0,
+          1.0
+        ]
+      },
+      "source_start": {
+        "analyzer": {
+          "bytes": 3196,
+          "path": "/home/matt/ozmadev/ocelot/evaluation/substrate_capability/analyze_llm_transport_role_separator_v1.py",
+          "sha256": "fc7a602ee0ee764f2cb684b33dc1c4fc84e8a9b7e37a72eec32e87ebfbf00717"
+        },
+        "baseline_analysis": {
+          "bytes": 684,
+          "path": "/home/matt/ozmadev/ocelot/evaluation/reports/llm_transport_task_graph_cost_v1_analysis_20261002.json",
+          "sha256": "3d5634ca2c88e76a941605b8f6fcdb9b211079f73276c14890ee09b5944d2bca"
+        },
+        "baseline_runner": {
+          "bytes": 10324,
+          "path": "/home/matt/ozmadev/ocelot/evaluation/substrate_capability/llm_transport_task_graph_cost_v1.py",
+          "sha256": "8c6261a37353343039bbbacf59a1fef273564b2b60baa6e963f842a296219623"
+        },
+        "export": {
+          "bytes": 1093784,
+          "path": "/applications/data/model_graph_work/transport_L12_13.npz",
+          "sha256": "d04f14de800bff4a5015a8063b678c2167188ec90c0749308b6af8a5a864161c"
+        },
+        "k": 8,
+        "native": {
+          "bytes": 10599400,
+          "path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+          "sha256": "7148f66f4cd307b7b34e03970b6a0c12177973105af8e1f3c6684e2e6132a63e"
+        },
+        "native_manifest": {
+          "bytes": 12669,
+          "path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.build.json",
+          "sha256": "476fdf4408323867341f127b3947f5a528743ebb86ab2a7973442993447f0e82"
+        },
+        "prior_capture": {
+          "bytes": 130187,
+          "path": "/home/matt/ozmadev/ocelot/evaluation/reports/llm_transport_task_graph_exact_census_v1_1_20261002.json",
+          "sha256": "b70d35060c2c177391b7022b781e832a53d016cf37393b1ffa0e7d4307164008"
+        },
+        "protocol": {
+          "bytes": 2443,
+          "path": "/home/matt/ozmadev/ocelot/docs/research/engine_substrate/LLM_TRANSPORT_ROLE_SEPARATOR_V1_PREREG_20261002.md",
+          "sha256": "849e2ac8e33609a810ad37151d8003cac617de56dd116eb21583d4fafa0bf761"
+        },
+        "replicates": 3,
+        "ridge": 1.0,
+        "runner": {
+          "bytes": 9024,
+          "path": "/home/matt/ozmadev/ocelot/evaluation/substrate_capability/llm_transport_role_separator_v1.py",
+          "sha256": "368230ab873ac158ede4b5b964ffe5d9d8f8fa6f64b0a1daf81f01aeb0172b53"
+        },
+        "seed": {
+          "bytes": 43983,
+          "path": "/home/matt/ozmadev/ocelot/seeds/can_native_reimplementation.json",
+          "sha256": "3b185987ae810d5e05ab2468b044ab73d8890c8e73ac86dfcaf35b734b9c61d8"
+        },
+        "shuffle_seed": 0,
+        "sources": [
+          {
+            "bytes": 29504,
+            "path": "/home/matt/ozmadev/ocelot/domains/llm_native_graph.py",
+            "sha256": "3091594306fbfcc7aa93588b2b085ab72376fbb59817cc6c952dba20a05a1809"
+          },
+          {
+            "bytes": 14856,
+            "path": "/home/matt/ozmadev/ocelot/domains/can_junction_tree.py",
+            "sha256": "e8d4aa30bfdaced52cda2739f885a56ed50a040b8419cb558b132e5e46206ba7"
+          },
+          {
+            "bytes": 9424,
+            "path": "/home/matt/ozmadev/ocelot/domains/graph_treewidth.py",
+            "sha256": "e945bea9f54b76098edb3b3dcb784ac5a0ce630de43cd63a9fb5b0f416d543e5"
+          }
+        ],
+        "tolerance": 1e-08,
+        "vocab": [
+          -1.0,
+          0.0,
+          1.0
+        ]
+      }
+    },
+    {
+      "peak_rss_kib": 68984,
+      "pid": 299,
+      "replicate": 2,
+      "rows": [
+        {
+          "bp_accuracy": 0.625,
+          "bp_prediction": [
+            1.0,
+            1.0,
+            -1.0,
+            -1.0,
+            -1.0,
+            -1.0,
+            1.0,
+            -1.0
+          ],
+          "certified_width": 8,
+          "condition": "learned",
+          "conditioned_accuracy": 0.625,
+          "conditioned_direct_rescore": -31.265723153985164,
+          "conditioned_energy": -31.265723153985164,
+          "conditioned_prediction": [
+            1.0,
+            1.0,
+            -1.0,
+            -1.0,
+            -1.0,
+            -1.0,
+            1.0,
+            -1.0
+          ],
+          "conditioned_state_valid": true,
+          "conditioned_traced_peak_bytes": 3636112,
+          "connected": true,
+          "edges": 64,
+          "heldout_index": 0,
+          "jt_direct_rescore": -31.265723153985164,
+          "jt_energy": -31.265723153985164,
+          "no_mutation": true,
+          "nodes": 16,
+          "target": [
+            1.0,
+            -1.0,
+            -1.0,
+            -1.0,
+            1.0,
+            -1.0,
+            1.0,
+            1.0
+          ],
+          "timing_ns": {
+            "conditioned_solver": 3010570,
+            "junction_tree": 547090009
+          },
+          "width": 8
+        },
+        {
+          "bp_accuracy": 0.125,
+          "bp_prediction": [
+            -1.0,
+            1.0,
+            -1.0,
+            1.0,
+            -1.0,
+            1.0,
+            -1.0,
+            -1.0
+          ],
+          "certified_width": 8,
+          "condition": "shuffled",
+          "conditioned_accuracy": 0.125,
+          "conditioned_direct_rescore": -32.48989308346063,
+          "conditioned_energy": -32.48989308346063,
+          "conditioned_prediction": [
+            -1.0,
+            1.0,
+            -1.0,
+            1.0,
+            -1.0,
+            1.0,
+            -1.0,
+            -1.0
+          ],
+          "conditioned_state_valid": true,
+          "conditioned_traced_peak_bytes": 3635608,
+          "connected": true,
+          "edges": 64,
+          "heldout_index": 0,
+          "jt_direct_rescore": -32.48989308346063,
+          "jt_energy": -32.48989308346063,
+          "no_mutation": true,
+          "nodes": 16,
+          "target": [
+            1.0,
+            -1.0,
+            -1.0,
+            -1.0,
+            1.0,
+            -1.0,
+            1.0,
+            1.0
+          ],
+          "timing_ns": {
+            "conditioned_solver": 2599576,
+            "junction_tree": 521707727
+          },
+          "width": 8
+        },
+        {
+          "bp_accuracy": 0.625,
+          "bp_prediction": [
+            1.0,
+            1.0,
+            -1.0,
+            -1.0,
+            -1.0,
+            -1.0,
+            1.0,
+            -1.0
+          ],
+          "certified_width": 8,
+          "condition": "learned",
+          "conditioned_accuracy": 0.625,
+          "conditioned_direct_rescore": -31.687531635201594,
+          "conditioned_energy": -31.687531635201594,
+          "conditioned_prediction": [
+            1.0,
+            1.0,
+            -1.0,
+            -1.0,
+            -1.0,
+            -1.0,
+            1.0,
+            -1.0
+          ],
+          "conditioned_state_valid": true,
+          "conditioned_traced_peak_bytes": 3635552,
+          "connected": true,
+          "edges": 64,
+          "heldout_index": 1,
+          "jt_direct_rescore": -31.687531635201594,
+          "jt_energy": -31.687531635201594,
+          "no_mutation": true,
+          "nodes": 16,
+          "target": [
+            1.0,
+            -1.0,
+            -1.0,
+            -1.0,
+            1.0,
+            -1.0,
+            1.0,
+            1.0
+          ],
+          "timing_ns": {
+            "conditioned_solver": 2332975,
+            "junction_tree": 561968994
+          },
+          "width": 8
+        },
+        {
+          "bp_accuracy": 0.125,
+          "bp_prediction": [
+            -1.0,
+            1.0,
+            -1.0,
+            1.0,
+            -1.0,
+            1.0,
+            -1.0,
+            -1.0
+          ],
+          "certified_width": 8,
+          "condition": "shuffled",
+          "conditioned_accuracy": 0.125,
+          "conditioned_direct_rescore": -32.91170156467706,
+          "conditioned_energy": -32.91170156467706,
+          "conditioned_prediction": [
+            -1.0,
+            1.0,
+            -1.0,
+            1.0,
+            -1.0,
+            1.0,
+            -1.0,
+            -1.0
+          ],
+          "conditioned_state_valid": true,
+          "conditioned_traced_peak_bytes": 3635552,
+          "connected": true,
+          "edges": 64,
+          "heldout_index": 1,
+          "jt_direct_rescore": -32.91170156467706,
+          "jt_energy": -32.91170156467706,
+          "no_mutation": true,
+          "nodes": 16,
+          "target": [
+            1.0,
+            -1.0,
+            -1.0,
+            -1.0,
+            1.0,
+            -1.0,
+            1.0,
+            1.0
+          ],
+          "timing_ns": {
+            "conditioned_solver": 2343905,
+            "junction_tree": 541509833
+          },
+          "width": 8
+        },
+        {
+          "bp_accuracy": 0.875,
+          "bp_prediction": [
+            1.0,
+            -1.0,
+            -1.0,
+            -1.0,
+            1.0,
+            -1.0,
+            -1.0,
+            -1.0
+          ],
+          "certified_width": 8,
+          "condition": "learned",
+          "conditioned_accuracy": 0.875,
+          "conditioned_direct_rescore": -32.204531180206686,
+          "conditioned_energy": -32.204531180206686,
+          "conditioned_prediction": [
+            1.0,
+            -1.0,
+            -1.0,
+            -1.0,
+            1.0,
+            -1.0,
+            -1.0,
+            -1.0
+          ],
+          "conditioned_state_valid": true,
+          "conditioned_traced_peak_bytes": 3635552,
+          "connected": true,
+          "edges": 64,
+          "heldout_index": 2,
+          "jt_direct_rescore": -32.204531180206686,
+          "jt_energy": -32.204531180206686,
+          "no_mutation": true,
+          "nodes": 16,
+          "target": [
+            1.0,
+            -1.0,
+            -1.0,
+            -1.0,
+            1.0,
+            -1.0,
+            1.0,
+            -1.0
+          ],
+          "timing_ns": {
+            "conditioned_solver": 2462425,
+            "junction_tree": 512385287
+          },
+          "width": 8
+        },
+        {
+          "bp_accuracy": 0.5,
+          "bp_prediction": [
+            -1.0,
+            1.0,
+            -1.0,
+            1.0,
+            1.0,
+            -1.0,
+            -1.0,
+            -1.0
+          ],
+          "certified_width": 8,
+          "condition": "shuffled",
+          "conditioned_accuracy": 0.5,
+          "conditioned_direct_rescore": -31.559851609636098,
+          "conditioned_energy": -31.559851609636098,
+          "conditioned_prediction": [
+            -1.0,
+            1.0,
+            -1.0,
+            1.0,
+            1.0,
+            -1.0,
+            -1.0,
+            -1.0
+          ],
+          "conditioned_state_valid": true,
+          "conditioned_traced_peak_bytes": 3635552,
+          "connected": true,
+          "edges": 64,
+          "heldout_index": 2,
+          "jt_direct_rescore": -31.559851609636098,
+          "jt_energy": -31.559851609636098,
+          "no_mutation": true,
+          "nodes": 16,
+          "target": [
+            1.0,
+            -1.0,
+            -1.0,
+            -1.0,
+            1.0,
+            -1.0,
+            1.0,
+            -1.0
+          ],
+          "timing_ns": {
+            "conditioned_solver": 2309215,
+            "junction_tree": 539080577
+          },
+          "width": 8
+        },
+        {
+          "bp_accuracy": 0.875,
+          "bp_prediction": [
+            1.0,
+            1.0,
+            -1.0,
+            -1.0,
+            1.0,
+            -1.0,
+            -1.0,
+            1.0
+          ],
+          "certified_width": 8,
+          "condition": "learned",
+          "conditioned_accuracy": 0.875,
+          "conditioned_direct_rescore": -30.266287613660097,
+          "conditioned_energy": -30.266287613660097,
+          "conditioned_prediction": [
+            1.0,
+            1.0,
+            -1.0,
+            -1.0,
+            1.0,
+            -1.0,
+            -1.0,
+            1.0
+          ],
+          "conditioned_state_valid": true,
+          "conditioned_traced_peak_bytes": 3635552,
+          "connected": true,
+          "edges": 64,
+          "heldout_index": 3,
+          "jt_direct_rescore": -30.266287613660097,
+          "jt_energy": -30.266287613660097,
+          "no_mutation": true,
+          "nodes": 16,
+          "target": [
+            1.0,
+            1.0,
+            -1.0,
+            -1.0,
+            1.0,
+            1.0,
+            -1.0,
+            1.0
+          ],
+          "timing_ns": {
+            "conditioned_solver": 2373815,
+            "junction_tree": 537649558
+          },
+          "width": 8
+        },
+        {
+          "bp_accuracy": 0.375,
+          "bp_prediction": [
+            -1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            -1.0
+          ],
+          "certified_width": 8,
+          "condition": "shuffled",
+          "conditioned_accuracy": 0.375,
+          "conditioned_direct_rescore": -31.92190448148176,
+          "conditioned_energy": -31.92190448148176,
+          "conditioned_prediction": [
+            -1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            -1.0
+          ],
+          "conditioned_state_valid": true,
+          "conditioned_traced_peak_bytes": 3635552,
+          "connected": true,
+          "edges": 64,
+          "heldout_index": 3,
+          "jt_direct_rescore": -31.92190448148176,
+          "jt_energy": -31.92190448148176,
+          "no_mutation": true,
+          "nodes": 16,
+          "target": [
+            1.0,
+            1.0,
+            -1.0,
+            -1.0,
+            1.0,
+            1.0,
+            -1.0,
+            1.0
+          ],
+          "timing_ns": {
+            "conditioned_solver": 2365544,
+            "junction_tree": 528195437
+          },
+          "width": 8
+        },
+        {
+          "bp_accuracy": 1.0,
+          "bp_prediction": [
+            1.0,
+            1.0,
+            -1.0,
+            -1.0,
+            1.0,
+            1.0,
+            -1.0,
+            1.0
+          ],
+          "certified_width": 8,
+          "condition": "learned",
+          "conditioned_accuracy": 1.0,
+          "conditioned_direct_rescore": -27.901933659799397,
+          "conditioned_energy": -27.901933659799397,
+          "conditioned_prediction": [
+            1.0,
+            1.0,
+            -1.0,
+            -1.0,
+            1.0,
+            1.0,
+            -1.0,
+            1.0
+          ],
+          "conditioned_state_valid": true,
+          "conditioned_traced_peak_bytes": 3635552,
+          "connected": true,
+          "edges": 64,
+          "heldout_index": 4,
+          "jt_direct_rescore": -27.901933659799397,
+          "jt_energy": -27.901933659799397,
+          "no_mutation": true,
+          "nodes": 16,
+          "target": [
+            1.0,
+            1.0,
+            -1.0,
+            -1.0,
+            1.0,
+            1.0,
+            -1.0,
+            1.0
+          ],
+          "timing_ns": {
+            "conditioned_solver": 2359515,
+            "junction_tree": 539369608
+          },
+          "width": 8
+        },
+        {
+          "bp_accuracy": 0.625,
+          "bp_prediction": [
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            -1.0,
+            -1.0
+          ],
+          "certified_width": 8,
+          "condition": "shuffled",
+          "conditioned_accuracy": 0.625,
+          "conditioned_direct_rescore": -29.494069394189864,
+          "conditioned_energy": -29.494069394189864,
+          "conditioned_prediction": [
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            -1.0,
+            -1.0
+          ],
+          "conditioned_state_valid": true,
+          "conditioned_traced_peak_bytes": 3635552,
+          "connected": true,
+          "edges": 64,
+          "heldout_index": 4,
+          "jt_direct_rescore": -29.494069394189864,
+          "jt_energy": -29.494069394189864,
+          "no_mutation": true,
+          "nodes": 16,
+          "target": [
+            1.0,
+            1.0,
+            -1.0,
+            -1.0,
+            1.0,
+            1.0,
+            -1.0,
+            1.0
+          ],
+          "timing_ns": {
+            "conditioned_solver": 2502616,
+            "junction_tree": 536349169
+          },
+          "width": 8
+        },
+        {
+          "bp_accuracy": 0.875,
+          "bp_prediction": [
+            1.0,
+            1.0,
+            1.0,
+            -1.0,
+            1.0,
+            1.0,
+            -1.0,
+            -1.0
+          ],
+          "certified_width": 8,
+          "condition": "learned",
+          "conditioned_accuracy": 0.875,
+          "conditioned_direct_rescore": -21.635106690657267,
+          "conditioned_energy": -21.635106690657267,
+          "conditioned_prediction": [
+            1.0,
+            1.0,
+            1.0,
+            -1.0,
+            1.0,
+            1.0,
+            -1.0,
+            -1.0
+          ],
+          "conditioned_state_valid": true,
+          "conditioned_traced_peak_bytes": 3635552,
+          "connected": true,
+          "edges": 64,
+          "heldout_index": 5,
+          "jt_direct_rescore": -21.635106690657267,
+          "jt_energy": -21.635106690657267,
+          "no_mutation": true,
+          "nodes": 16,
+          "target": [
+            1.0,
+            1.0,
+            -1.0,
+            -1.0,
+            1.0,
+            1.0,
+            -1.0,
+            -1.0
+          ],
+          "timing_ns": {
+            "conditioned_solver": 2585847,
+            "junction_tree": 516833684
+          },
+          "width": 8
+        },
+        {
+          "bp_accuracy": 0.5,
+          "bp_prediction": [
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            -1.0,
+            1.0,
+            1.0,
+            -1.0
+          ],
+          "certified_width": 8,
+          "condition": "shuffled",
+          "conditioned_accuracy": 0.5,
+          "conditioned_direct_rescore": -18.541713347658515,
+          "conditioned_energy": -18.541713347658515,
+          "conditioned_prediction": [
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            -1.0,
+            1.0,
+            1.0,
+            -1.0
+          ],
+          "conditioned_state_valid": true,
+          "conditioned_traced_peak_bytes": 3635552,
+          "connected": true,
+          "edges": 64,
+          "heldout_index": 5,
+          "jt_direct_rescore": -18.541713347658515,
+          "jt_energy": -18.541713347658515,
+          "no_mutation": true,
+          "nodes": 16,
+          "target": [
+            1.0,
+            1.0,
+            -1.0,
+            -1.0,
+            1.0,
+            1.0,
+            -1.0,
+            -1.0
+          ],
+          "timing_ns": {
+            "conditioned_solver": 2418596,
+            "junction_tree": 546349913
+          },
+          "width": 8
+        },
+        {
+          "bp_accuracy": 0.875,
+          "bp_prediction": [
+            1.0,
+            -1.0,
+            -1.0,
+            -1.0,
+            1.0,
+            -1.0,
+            1.0,
+            1.0
+          ],
+          "certified_width": 8,
+          "condition": "learned",
+          "conditioned_accuracy": 0.875,
+          "conditioned_direct_rescore": -33.062470838856825,
+          "conditioned_energy": -33.062470838856825,
+          "conditioned_prediction": [
+            1.0,
+            -1.0,
+            -1.0,
+            -1.0,
+            1.0,
+            -1.0,
+            1.0,
+            1.0
+          ],
+          "conditioned_state_valid": true,
+          "conditioned_traced_peak_bytes": 3635552,
+          "connected": true,
+          "edges": 64,
+          "heldout_index": 6,
+          "jt_direct_rescore": -33.062470838856825,
+          "jt_energy": -33.062470838856825,
+          "no_mutation": true,
+          "nodes": 16,
+          "target": [
+            1.0,
+            -1.0,
+            -1.0,
+            -1.0,
+            -1.0,
+            -1.0,
+            1.0,
+            1.0
+          ],
+          "timing_ns": {
+            "conditioned_solver": 2933169,
+            "junction_tree": 537065703
+          },
+          "width": 8
+        },
+        {
+          "bp_accuracy": 0.5,
+          "bp_prediction": [
+            1.0,
+            -1.0,
+            1.0,
+            1.0,
+            -1.0,
+            -1.0,
+            -1.0,
+            -1.0
+          ],
+          "certified_width": 8,
+          "condition": "shuffled",
+          "conditioned_accuracy": 0.5,
+          "conditioned_direct_rescore": -32.851674598641694,
+          "conditioned_energy": -32.851674598641694,
+          "conditioned_prediction": [
+            1.0,
+            -1.0,
+            1.0,
+            1.0,
+            -1.0,
+            -1.0,
+            -1.0,
+            -1.0
+          ],
+          "conditioned_state_valid": true,
+          "conditioned_traced_peak_bytes": 3635552,
+          "connected": true,
+          "edges": 64,
+          "heldout_index": 6,
+          "jt_direct_rescore": -32.851674598641694,
+          "jt_energy": -32.851674598641694,
+          "no_mutation": true,
+          "nodes": 16,
+          "target": [
+            1.0,
+            -1.0,
+            -1.0,
+            -1.0,
+            -1.0,
+            -1.0,
+            1.0,
+            1.0
+          ],
+          "timing_ns": {
+            "conditioned_solver": 2399935,
+            "junction_tree": 514010565
+          },
+          "width": 8
+        },
+        {
+          "bp_accuracy": 1.0,
+          "bp_prediction": [
+            1.0,
+            -1.0,
+            -1.0,
+            1.0,
+            1.0,
+            1.0,
+            -1.0,
+            -1.0
+          ],
+          "certified_width": 8,
+          "condition": "learned",
+          "conditioned_accuracy": 1.0,
+          "conditioned_direct_rescore": -24.43402127412992,
+          "conditioned_energy": -24.43402127412992,
+          "conditioned_prediction": [
+            1.0,
+            -1.0,
+            -1.0,
+            1.0,
+            1.0,
+            1.0,
+            -1.0,
+            -1.0
+          ],
+          "conditioned_state_valid": true,
+          "conditioned_traced_peak_bytes": 3635552,
+          "connected": true,
+          "edges": 64,
+          "heldout_index": 7,
+          "jt_direct_rescore": -24.43402127412992,
+          "jt_energy": -24.43402127412992,
+          "no_mutation": true,
+          "nodes": 16,
+          "target": [
+            1.0,
+            -1.0,
+            -1.0,
+            1.0,
+            1.0,
+            1.0,
+            -1.0,
+            -1.0
+          ],
+          "timing_ns": {
+            "conditioned_solver": 2437936,
+            "junction_tree": 542967060
+          },
+          "width": 8
+        },
+        {
+          "bp_accuracy": 0.5,
+          "bp_prediction": [
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            -1.0,
+            -1.0,
+            -1.0,
+            -1.0
+          ],
+          "certified_width": 8,
+          "condition": "shuffled",
+          "conditioned_accuracy": 0.5,
+          "conditioned_direct_rescore": -22.711115860845894,
+          "conditioned_energy": -22.711115860845894,
+          "conditioned_prediction": [
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            -1.0,
+            -1.0,
+            -1.0,
+            -1.0
+          ],
+          "conditioned_state_valid": true,
+          "conditioned_traced_peak_bytes": 3635552,
+          "connected": true,
+          "edges": 64,
+          "heldout_index": 7,
+          "jt_direct_rescore": -22.711115860845894,
+          "jt_energy": -22.711115860845894,
+          "no_mutation": true,
+          "nodes": 16,
+          "target": [
+            1.0,
+            -1.0,
+            -1.0,
+            1.0,
+            1.0,
+            1.0,
+            -1.0,
+            -1.0
+          ],
+          "timing_ns": {
+            "conditioned_solver": 2333835,
+            "junction_tree": 518141622
+          },
+          "width": 8
+        },
+        {
+          "bp_accuracy": 0.5,
+          "bp_prediction": [
+            1.0,
+            1.0,
+            -1.0,
+            -1.0,
+            1.0,
+            -1.0,
+            -1.0,
+            1.0
+          ],
+          "certified_width": 8,
+          "condition": "learned",
+          "conditioned_accuracy": 0.5,
+          "conditioned_direct_rescore": -20.06996570713818,
+          "conditioned_energy": -20.06996570713818,
+          "conditioned_prediction": [
+            1.0,
+            1.0,
+            -1.0,
+            -1.0,
+            1.0,
+            -1.0,
+            -1.0,
+            1.0
+          ],
+          "conditioned_state_valid": true,
+          "conditioned_traced_peak_bytes": 3635552,
+          "connected": true,
+          "edges": 64,
+          "heldout_index": 8,
+          "jt_direct_rescore": -20.06996570713818,
+          "jt_energy": -20.06996570713818,
+          "no_mutation": true,
+          "nodes": 16,
+          "target": [
+            1.0,
+            -1.0,
+            -1.0,
+            -1.0,
+            1.0,
+            1.0,
+            1.0,
+            -1.0
+          ],
+          "timing_ns": {
+            "conditioned_solver": 2323654,
+            "junction_tree": 516023108
+          },
+          "width": 8
+        },
+        {
+          "bp_accuracy": 0.375,
+          "bp_prediction": [
+            -1.0,
+            1.0,
+            -1.0,
+            1.0,
+            1.0,
+            1.0,
+            -1.0,
+            1.0
+          ],
+          "certified_width": 8,
+          "condition": "shuffled",
+          "conditioned_accuracy": 0.375,
+          "conditioned_direct_rescore": -21.143081857357174,
+          "conditioned_energy": -21.143081857357174,
+          "conditioned_prediction": [
+            -1.0,
+            1.0,
+            -1.0,
+            1.0,
+            1.0,
+            1.0,
+            -1.0,
+            1.0
+          ],
+          "conditioned_state_valid": true,
+          "conditioned_traced_peak_bytes": 3635552,
+          "connected": true,
+          "edges": 64,
+          "heldout_index": 8,
+          "jt_direct_rescore": -21.143081857357174,
+          "jt_energy": -21.143081857357174,
+          "no_mutation": true,
+          "nodes": 16,
+          "target": [
+            1.0,
+            -1.0,
+            -1.0,
+            -1.0,
+            1.0,
+            1.0,
+            1.0,
+            -1.0
+          ],
+          "timing_ns": {
+            "conditioned_solver": 2443096,
+            "junction_tree": 546748544
+          },
+          "width": 8
+        },
+        {
+          "bp_accuracy": 0.75,
+          "bp_prediction": [
+            1.0,
+            1.0,
+            -1.0,
+            -1.0,
+            1.0,
+            1.0,
+            -1.0,
+            1.0
+          ],
+          "certified_width": 8,
+          "condition": "learned",
+          "conditioned_accuracy": 0.75,
+          "conditioned_direct_rescore": -17.634220898151398,
+          "conditioned_energy": -17.634220898151398,
+          "conditioned_prediction": [
+            1.0,
+            1.0,
+            -1.0,
+            -1.0,
+            1.0,
+            1.0,
+            -1.0,
+            1.0
+          ],
+          "conditioned_state_valid": true,
+          "conditioned_traced_peak_bytes": 3635552,
+          "connected": true,
+          "edges": 64,
+          "heldout_index": 9,
+          "jt_direct_rescore": -17.634220898151398,
+          "jt_energy": -17.634220898151398,
+          "no_mutation": true,
+          "nodes": 16,
+          "target": [
+            1.0,
+            1.0,
+            -1.0,
+            -1.0,
+            1.0,
+            -1.0,
+            1.0,
+            1.0
+          ],
+          "timing_ns": {
+            "conditioned_solver": 2359114,
+            "junction_tree": 531179615
+          },
+          "width": 8
+        },
+        {
+          "bp_accuracy": 0.5,
+          "bp_prediction": [
+            -1.0,
+            1.0,
+            -1.0,
+            1.0,
+            -1.0,
+            -1.0,
+            1.0,
+            -1.0
+          ],
+          "certified_width": 8,
+          "condition": "shuffled",
+          "conditioned_accuracy": 0.5,
+          "conditioned_direct_rescore": -16.46490679634735,
+          "conditioned_energy": -16.46490679634735,
+          "conditioned_prediction": [
+            -1.0,
+            1.0,
+            -1.0,
+            1.0,
+            -1.0,
+            -1.0,
+            1.0,
+            -1.0
+          ],
+          "conditioned_state_valid": true,
+          "conditioned_traced_peak_bytes": 3635552,
+          "connected": true,
+          "edges": 64,
+          "heldout_index": 9,
+          "jt_direct_rescore": -16.46490679634735,
+          "jt_energy": -16.46490679634735,
+          "no_mutation": true,
+          "nodes": 16,
+          "target": [
+            1.0,
+            1.0,
+            -1.0,
+            -1.0,
+            1.0,
+            -1.0,
+            1.0,
+            1.0
+          ],
+          "timing_ns": {
+            "conditioned_solver": 2409925,
+            "junction_tree": 514603228
+          },
+          "width": 8
+        }
+      ],
+      "source_end": {
+        "analyzer": {
+          "bytes": 3196,
+          "path": "/home/matt/ozmadev/ocelot/evaluation/substrate_capability/analyze_llm_transport_role_separator_v1.py",
+          "sha256": "fc7a602ee0ee764f2cb684b33dc1c4fc84e8a9b7e37a72eec32e87ebfbf00717"
+        },
+        "baseline_analysis": {
+          "bytes": 684,
+          "path": "/home/matt/ozmadev/ocelot/evaluation/reports/llm_transport_task_graph_cost_v1_analysis_20261002.json",
+          "sha256": "3d5634ca2c88e76a941605b8f6fcdb9b211079f73276c14890ee09b5944d2bca"
+        },
+        "baseline_runner": {
+          "bytes": 10324,
+          "path": "/home/matt/ozmadev/ocelot/evaluation/substrate_capability/llm_transport_task_graph_cost_v1.py",
+          "sha256": "8c6261a37353343039bbbacf59a1fef273564b2b60baa6e963f842a296219623"
+        },
+        "export": {
+          "bytes": 1093784,
+          "path": "/applications/data/model_graph_work/transport_L12_13.npz",
+          "sha256": "d04f14de800bff4a5015a8063b678c2167188ec90c0749308b6af8a5a864161c"
+        },
+        "k": 8,
+        "native": {
+          "bytes": 10599400,
+          "path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+          "sha256": "7148f66f4cd307b7b34e03970b6a0c12177973105af8e1f3c6684e2e6132a63e"
+        },
+        "native_manifest": {
+          "bytes": 12669,
+          "path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.build.json",
+          "sha256": "476fdf4408323867341f127b3947f5a528743ebb86ab2a7973442993447f0e82"
+        },
+        "prior_capture": {
+          "bytes": 130187,
+          "path": "/home/matt/ozmadev/ocelot/evaluation/reports/llm_transport_task_graph_exact_census_v1_1_20261002.json",
+          "sha256": "b70d35060c2c177391b7022b781e832a53d016cf37393b1ffa0e7d4307164008"
+        },
+        "protocol": {
+          "bytes": 2443,
+          "path": "/home/matt/ozmadev/ocelot/docs/research/engine_substrate/LLM_TRANSPORT_ROLE_SEPARATOR_V1_PREREG_20261002.md",
+          "sha256": "849e2ac8e33609a810ad37151d8003cac617de56dd116eb21583d4fafa0bf761"
+        },
+        "replicates": 3,
+        "ridge": 1.0,
+        "runner": {
+          "bytes": 9024,
+          "path": "/home/matt/ozmadev/ocelot/evaluation/substrate_capability/llm_transport_role_separator_v1.py",
+          "sha256": "368230ab873ac158ede4b5b964ffe5d9d8f8fa6f64b0a1daf81f01aeb0172b53"
+        },
+        "seed": {
+          "bytes": 43983,
+          "path": "/home/matt/ozmadev/ocelot/seeds/can_native_reimplementation.json",
+          "sha256": "3b185987ae810d5e05ab2468b044ab73d8890c8e73ac86dfcaf35b734b9c61d8"
+        },
+        "shuffle_seed": 0,
+        "sources": [
+          {
+            "bytes": 29504,
+            "path": "/home/matt/ozmadev/ocelot/domains/llm_native_graph.py",
+            "sha256": "3091594306fbfcc7aa93588b2b085ab72376fbb59817cc6c952dba20a05a1809"
+          },
+          {
+            "bytes": 14856,
+            "path": "/home/matt/ozmadev/ocelot/domains/can_junction_tree.py",
+            "sha256": "e8d4aa30bfdaced52cda2739f885a56ed50a040b8419cb558b132e5e46206ba7"
+          },
+          {
+            "bytes": 9424,
+            "path": "/home/matt/ozmadev/ocelot/domains/graph_treewidth.py",
+            "sha256": "e945bea9f54b76098edb3b3dcb784ac5a0ce630de43cd63a9fb5b0f416d543e5"
+          }
+        ],
+        "tolerance": 1e-08,
+        "vocab": [
+          -1.0,
+          0.0,
+          1.0
+        ]
+      },
+      "source_start": {
+        "analyzer": {
+          "bytes": 3196,
+          "path": "/home/matt/ozmadev/ocelot/evaluation/substrate_capability/analyze_llm_transport_role_separator_v1.py",
+          "sha256": "fc7a602ee0ee764f2cb684b33dc1c4fc84e8a9b7e37a72eec32e87ebfbf00717"
+        },
+        "baseline_analysis": {
+          "bytes": 684,
+          "path": "/home/matt/ozmadev/ocelot/evaluation/reports/llm_transport_task_graph_cost_v1_analysis_20261002.json",
+          "sha256": "3d5634ca2c88e76a941605b8f6fcdb9b211079f73276c14890ee09b5944d2bca"
+        },
+        "baseline_runner": {
+          "bytes": 10324,
+          "path": "/home/matt/ozmadev/ocelot/evaluation/substrate_capability/llm_transport_task_graph_cost_v1.py",
+          "sha256": "8c6261a37353343039bbbacf59a1fef273564b2b60baa6e963f842a296219623"
+        },
+        "export": {
+          "bytes": 1093784,
+          "path": "/applications/data/model_graph_work/transport_L12_13.npz",
+          "sha256": "d04f14de800bff4a5015a8063b678c2167188ec90c0749308b6af8a5a864161c"
+        },
+        "k": 8,
+        "native": {
+          "bytes": 10599400,
+          "path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+          "sha256": "7148f66f4cd307b7b34e03970b6a0c12177973105af8e1f3c6684e2e6132a63e"
+        },
+        "native_manifest": {
+          "bytes": 12669,
+          "path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.build.json",
+          "sha256": "476fdf4408323867341f127b3947f5a528743ebb86ab2a7973442993447f0e82"
+        },
+        "prior_capture": {
+          "bytes": 130187,
+          "path": "/home/matt/ozmadev/ocelot/evaluation/reports/llm_transport_task_graph_exact_census_v1_1_20261002.json",
+          "sha256": "b70d35060c2c177391b7022b781e832a53d016cf37393b1ffa0e7d4307164008"
+        },
+        "protocol": {
+          "bytes": 2443,
+          "path": "/home/matt/ozmadev/ocelot/docs/research/engine_substrate/LLM_TRANSPORT_ROLE_SEPARATOR_V1_PREREG_20261002.md",
+          "sha256": "849e2ac8e33609a810ad37151d8003cac617de56dd116eb21583d4fafa0bf761"
+        },
+        "replicates": 3,
+        "ridge": 1.0,
+        "runner": {
+          "bytes": 9024,
+          "path": "/home/matt/ozmadev/ocelot/evaluation/substrate_capability/llm_transport_role_separator_v1.py",
+          "sha256": "368230ab873ac158ede4b5b964ffe5d9d8f8fa6f64b0a1daf81f01aeb0172b53"
+        },
+        "seed": {
+          "bytes": 43983,
+          "path": "/home/matt/ozmadev/ocelot/seeds/can_native_reimplementation.json",
+          "sha256": "3b185987ae810d5e05ab2468b044ab73d8890c8e73ac86dfcaf35b734b9c61d8"
+        },
+        "shuffle_seed": 0,
+        "sources": [
+          {
+            "bytes": 29504,
+            "path": "/home/matt/ozmadev/ocelot/domains/llm_native_graph.py",
+            "sha256": "3091594306fbfcc7aa93588b2b085ab72376fbb59817cc6c952dba20a05a1809"
+          },
+          {
+            "bytes": 14856,
+            "path": "/home/matt/ozmadev/ocelot/domains/can_junction_tree.py",
+            "sha256": "e8d4aa30bfdaced52cda2739f885a56ed50a040b8419cb558b132e5e46206ba7"
+          },
+          {
+            "bytes": 9424,
+            "path": "/home/matt/ozmadev/ocelot/domains/graph_treewidth.py",
+            "sha256": "e945bea9f54b76098edb3b3dcb784ac5a0ce630de43cd63a9fb5b0f416d543e5"
+          }
+        ],
+        "tolerance": 1e-08,
+        "vocab": [
+          -1.0,
+          0.0,
+          1.0
+        ]
+      }
+    }
+  ],
+  "schema": "LlmTransportRoleSeparatorV1Capture",
+  "sources": {
+    "analyzer": {
+      "bytes": 3196,
+      "path": "/home/matt/ozmadev/ocelot/evaluation/substrate_capability/analyze_llm_transport_role_separator_v1.py",
+      "sha256": "fc7a602ee0ee764f2cb684b33dc1c4fc84e8a9b7e37a72eec32e87ebfbf00717"
+    },
+    "baseline_analysis": {
+      "bytes": 684,
+      "path": "/home/matt/ozmadev/ocelot/evaluation/reports/llm_transport_task_graph_cost_v1_analysis_20261002.json",
+      "sha256": "3d5634ca2c88e76a941605b8f6fcdb9b211079f73276c14890ee09b5944d2bca"
+    },
+    "baseline_runner": {
+      "bytes": 10324,
+      "path": "/home/matt/ozmadev/ocelot/evaluation/substrate_capability/llm_transport_task_graph_cost_v1.py",
+      "sha256": "8c6261a37353343039bbbacf59a1fef273564b2b60baa6e963f842a296219623"
+    },
+    "export": {
+      "bytes": 1093784,
+      "path": "/applications/data/model_graph_work/transport_L12_13.npz",
+      "sha256": "d04f14de800bff4a5015a8063b678c2167188ec90c0749308b6af8a5a864161c"
+    },
+    "k": 8,
+    "native": {
+      "bytes": 10599400,
+      "path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+      "sha256": "7148f66f4cd307b7b34e03970b6a0c12177973105af8e1f3c6684e2e6132a63e"
+    },
+    "native_manifest": {
+      "bytes": 12669,
+      "path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.build.json",
+      "sha256": "476fdf4408323867341f127b3947f5a528743ebb86ab2a7973442993447f0e82"
+    },
+    "prior_capture": {
+      "bytes": 130187,
+      "path": "/home/matt/ozmadev/ocelot/evaluation/reports/llm_transport_task_graph_exact_census_v1_1_20261002.json",
+      "sha256": "b70d35060c2c177391b7022b781e832a53d016cf37393b1ffa0e7d4307164008"
+    },
+    "protocol": {
+      "bytes": 2443,
+      "path": "/home/matt/ozmadev/ocelot/docs/research/engine_substrate/LLM_TRANSPORT_ROLE_SEPARATOR_V1_PREREG_20261002.md",
+      "sha256": "849e2ac8e33609a810ad37151d8003cac617de56dd116eb21583d4fafa0bf761"
+    },
+    "replicates": 3,
+    "ridge": 1.0,
+    "runner": {
+      "bytes": 9024,
+      "path": "/home/matt/ozmadev/ocelot/evaluation/substrate_capability/llm_transport_role_separator_v1.py",
+      "sha256": "368230ab873ac158ede4b5b964ffe5d9d8f8fa6f64b0a1daf81f01aeb0172b53"
+    },
+    "seed": {
+      "bytes": 43983,
+      "path": "/home/matt/ozmadev/ocelot/seeds/can_native_reimplementation.json",
+      "sha256": "3b185987ae810d5e05ab2468b044ab73d8890c8e73ac86dfcaf35b734b9c61d8"
+    },
+    "shuffle_seed": 0,
+    "sources": [
+      {
+        "bytes": 29504,
+        "path": "/home/matt/ozmadev/ocelot/domains/llm_native_graph.py",
+        "sha256": "3091594306fbfcc7aa93588b2b085ab72376fbb59817cc6c952dba20a05a1809"
+      },
+      {
+        "bytes": 14856,
+        "path": "/home/matt/ozmadev/ocelot/domains/can_junction_tree.py",
+        "sha256": "e8d4aa30bfdaced52cda2739f885a56ed50a040b8419cb558b132e5e46206ba7"
+      },
+      {
+        "bytes": 9424,
+        "path": "/home/matt/ozmadev/ocelot/domains/graph_treewidth.py",
+        "sha256": "e945bea9f54b76098edb3b3dcb784ac5a0ce630de43cd63a9fb5b0f416d543e5"
+      }
+    ],
+    "tolerance": 1e-08,
+    "vocab": [
+      -1.0,
+      0.0,
+      1.0
+    ]
+  }
+}

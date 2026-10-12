@@ -1,0 +1,1888 @@
+{
+  "behavior_passed": true,
+  "case_count": 7,
+  "conflict_candidates_expected": 6,
+  "conflict_candidates_returned": 6,
+  "errors": [],
+  "integrity_passed": true,
+  "interpretation": "A hand-authored conflict guard is added only to a CoW experiment branch, before the existing polar rules. Candidate and baseline branches fork the same proposition/query graph. The candidate creates a conflict outcome and returns its graph delta to primary only for conflict conditions. This probes a repair candidate; it does not establish learned rule invention, trusted uptake/source lineage, or production safety.",
+  "locked_inputs": {
+    "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+    "evaluation/substrate_capability/thoughtexperiment_polar_conflict_guard_v1.py": "f81732a1e993187563f6bc3fb660f93368bde8ede13083dbbc2a197c8b191d07",
+    "runners/dsl/python/substrate_rs/__init__.py": "4e338797786071822b2e3d919ca1da3a266bda60c3ce0e29e13213a9d37454b4",
+    "runners/dsl/python/substrate_rs/_native.abi3.so": "a4c30df0aff2e8e0723a3d957142e4e9a5bc321592d40295ec863310ca2c5af8",
+    "runners/dsl/python/substrate_rs/ext.py": "eb24354f3c500a2394cba96a1522d18ebdd2a3bf1df13676c5a989f8acae998a",
+    "seeds/communication_intent_arbitration.json": "23f35ca85bc2f69c2ab1bb9028203a6d64b2b2fbefb8f97ff32af6b3e33f46c6",
+    "seeds/intent.json": "1833b673e04f98521361bc1d93e57f4feb5add49e93ce9fd813ed2bb5eebae5f",
+    "substrate/graph.py": "edebfafd619d07e4755a6f189d0e3904ec096e6add311f629c88730c0d547c4f",
+    "substrate/seed_loader.py": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27",
+    "substrate/world_adapter.py": "e5850e4df2ff28d8c941cc3c0d12a840ab230ce627833421a88c3b354f65027c"
+  },
+  "native_binary_sha256": "a4c30df0aff2e8e0723a3d957142e4e9a5bc321592d40295ec863310ca2c5af8",
+  "post_run_inputs": {
+    "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+    "evaluation/substrate_capability/thoughtexperiment_polar_conflict_guard_v1.py": "f81732a1e993187563f6bc3fb660f93368bde8ede13083dbbc2a197c8b191d07",
+    "runners/dsl/python/substrate_rs/__init__.py": "4e338797786071822b2e3d919ca1da3a266bda60c3ce0e29e13213a9d37454b4",
+    "runners/dsl/python/substrate_rs/_native.abi3.so": "a4c30df0aff2e8e0723a3d957142e4e9a5bc321592d40295ec863310ca2c5af8",
+    "runners/dsl/python/substrate_rs/ext.py": "eb24354f3c500a2394cba96a1522d18ebdd2a3bf1df13676c5a989f8acae998a",
+    "seeds/communication_intent_arbitration.json": "23f35ca85bc2f69c2ab1bb9028203a6d64b2b2fbefb8f97ff32af6b3e33f46c6",
+    "seeds/intent.json": "1833b673e04f98521361bc1d93e57f4feb5add49e93ce9fd813ed2bb5eebae5f",
+    "substrate/graph.py": "edebfafd619d07e4755a6f189d0e3904ec096e6add311f629c88730c0d547c4f",
+    "substrate/seed_loader.py": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27",
+    "substrate/world_adapter.py": "e5850e4df2ff28d8c941cc3c0d12a840ab230ce627833421a88c3b354f65027c"
+  },
+  "repeat_count_per_case": 3,
+  "row_count": 21,
+  "rows": [
+    {
+      "baseline": {
+        "conflict_outcome_count": 0,
+        "conflict_outcomes": [],
+        "interpretation": {
+          "anaphor": 0,
+          "arbitration_basis": "accepted_proposition_polar_answer",
+          "cognitive_disposition": "answer",
+          "cognitive_goal": "answer_or_learn",
+          "communicative_force": "request_information",
+          "evidence_force": "information_request",
+          "evidence_schema": "communication_evidence.v1",
+          "parsed_predicate_lemma": "open",
+          "parsed_relation_schema": "communication_relation_projection.v1",
+          "parsed_relation_status": "selected_parse_unverified",
+          "parsed_subject": "gate",
+          "polar_answer_plan_minted": 1,
+          "polar_relation_support_minted": 1,
+          "question_polarity": "affirmed",
+          "relation_focus": "polar",
+          "relation_support": "supported",
+          "schema": "communication_interpretation.v1"
+        },
+        "plan_values": [
+          "yes"
+        ],
+        "support_count": 1
+      },
+      "baseline_answer_matches_oracle": true,
+      "baseline_rule_firings": 2,
+      "candidate": {
+        "conflict_outcome_count": 0,
+        "conflict_outcomes": [],
+        "interpretation": {
+          "anaphor": 0,
+          "arbitration_basis": "accepted_proposition_polar_answer",
+          "cognitive_disposition": "answer",
+          "cognitive_goal": "answer_or_learn",
+          "communicative_force": "request_information",
+          "evidence_force": "information_request",
+          "evidence_schema": "communication_evidence.v1",
+          "parsed_predicate_lemma": "open",
+          "parsed_relation_schema": "communication_relation_projection.v1",
+          "parsed_relation_status": "selected_parse_unverified",
+          "parsed_subject": "gate",
+          "polar_answer_plan_minted": 1,
+          "polar_relation_support_minted": 1,
+          "question_polarity": "affirmed",
+          "relation_focus": "polar",
+          "relation_support": "supported",
+          "schema": "communication_interpretation.v1"
+        },
+        "plan_values": [
+          "yes"
+        ],
+        "support_count": 1
+      },
+      "candidate_answer_matches_oracle": true,
+      "candidate_rule_firings": 2,
+      "case_id": "unique_affirmed",
+      "input_claims": [
+        {
+          "polarity": "affirmed",
+          "status": "accepted",
+          "subject": "gate"
+        }
+      ],
+      "pid": 2,
+      "primary_graph_digest_after": "2abd92454a5afa9c063b76ffef3e8a51ce862ca7097acc973a6f67b0d03294b9",
+      "primary_graph_digest_before": "2abd92454a5afa9c063b76ffef3e8a51ce862ca7097acc973a6f67b0d03294b9",
+      "primary_rules_after_count": 0,
+      "primary_rules_before_count": 0,
+      "primary_unchanged_before_return": true,
+      "replicate": 0,
+      "residual_digest": "df18cc076a3bdc25229487c4b11a1098c863d9fda66c904662f28f955725b2ac",
+      "residual_edges_added": 0,
+      "residual_nodes_added": 0,
+      "residual_nonempty": false,
+      "residual_return_error": null,
+      "residual_returned": false,
+      "returned_conflict_count": 0,
+      "returned_node_parity": true
+    },
+    {
+      "baseline": {
+        "conflict_outcome_count": 0,
+        "conflict_outcomes": [],
+        "interpretation": {
+          "anaphor": 0,
+          "arbitration_basis": "accepted_proposition_polar_answer",
+          "cognitive_disposition": "answer",
+          "cognitive_goal": "answer_or_learn",
+          "communicative_force": "request_information",
+          "evidence_force": "information_request",
+          "evidence_schema": "communication_evidence.v1",
+          "parsed_predicate_lemma": "open",
+          "parsed_relation_schema": "communication_relation_projection.v1",
+          "parsed_relation_status": "selected_parse_unverified",
+          "parsed_subject": "gate",
+          "polar_answer_plan_minted": 1,
+          "polar_relation_support_minted": 1,
+          "question_polarity": "affirmed",
+          "relation_focus": "polar",
+          "relation_support": "supported",
+          "schema": "communication_interpretation.v1"
+        },
+        "plan_values": [
+          "yes"
+        ],
+        "support_count": 1
+      },
+      "baseline_answer_matches_oracle": true,
+      "baseline_rule_firings": 2,
+      "candidate": {
+        "conflict_outcome_count": 0,
+        "conflict_outcomes": [],
+        "interpretation": {
+          "anaphor": 0,
+          "arbitration_basis": "accepted_proposition_polar_answer",
+          "cognitive_disposition": "answer",
+          "cognitive_goal": "answer_or_learn",
+          "communicative_force": "request_information",
+          "evidence_force": "information_request",
+          "evidence_schema": "communication_evidence.v1",
+          "parsed_predicate_lemma": "open",
+          "parsed_relation_schema": "communication_relation_projection.v1",
+          "parsed_relation_status": "selected_parse_unverified",
+          "parsed_subject": "gate",
+          "polar_answer_plan_minted": 1,
+          "polar_relation_support_minted": 1,
+          "question_polarity": "affirmed",
+          "relation_focus": "polar",
+          "relation_support": "supported",
+          "schema": "communication_interpretation.v1"
+        },
+        "plan_values": [
+          "yes"
+        ],
+        "support_count": 1
+      },
+      "candidate_answer_matches_oracle": true,
+      "candidate_rule_firings": 2,
+      "case_id": "unique_affirmed",
+      "input_claims": [
+        {
+          "polarity": "affirmed",
+          "status": "accepted",
+          "subject": "gate"
+        }
+      ],
+      "pid": 2,
+      "primary_graph_digest_after": "3ebd0693194948f5861c13e283571acd65948decc98451e0d29ccfe6b899dbaa",
+      "primary_graph_digest_before": "3ebd0693194948f5861c13e283571acd65948decc98451e0d29ccfe6b899dbaa",
+      "primary_rules_after_count": 0,
+      "primary_rules_before_count": 0,
+      "primary_unchanged_before_return": true,
+      "replicate": 1,
+      "residual_digest": "df18cc076a3bdc25229487c4b11a1098c863d9fda66c904662f28f955725b2ac",
+      "residual_edges_added": 0,
+      "residual_nodes_added": 0,
+      "residual_nonempty": false,
+      "residual_return_error": null,
+      "residual_returned": false,
+      "returned_conflict_count": 0,
+      "returned_node_parity": true
+    },
+    {
+      "baseline": {
+        "conflict_outcome_count": 0,
+        "conflict_outcomes": [],
+        "interpretation": {
+          "anaphor": 0,
+          "arbitration_basis": "accepted_proposition_polar_answer",
+          "cognitive_disposition": "answer",
+          "cognitive_goal": "answer_or_learn",
+          "communicative_force": "request_information",
+          "evidence_force": "information_request",
+          "evidence_schema": "communication_evidence.v1",
+          "parsed_predicate_lemma": "open",
+          "parsed_relation_schema": "communication_relation_projection.v1",
+          "parsed_relation_status": "selected_parse_unverified",
+          "parsed_subject": "gate",
+          "polar_answer_plan_minted": 1,
+          "polar_relation_support_minted": 1,
+          "question_polarity": "affirmed",
+          "relation_focus": "polar",
+          "relation_support": "supported",
+          "schema": "communication_interpretation.v1"
+        },
+        "plan_values": [
+          "yes"
+        ],
+        "support_count": 1
+      },
+      "baseline_answer_matches_oracle": true,
+      "baseline_rule_firings": 2,
+      "candidate": {
+        "conflict_outcome_count": 0,
+        "conflict_outcomes": [],
+        "interpretation": {
+          "anaphor": 0,
+          "arbitration_basis": "accepted_proposition_polar_answer",
+          "cognitive_disposition": "answer",
+          "cognitive_goal": "answer_or_learn",
+          "communicative_force": "request_information",
+          "evidence_force": "information_request",
+          "evidence_schema": "communication_evidence.v1",
+          "parsed_predicate_lemma": "open",
+          "parsed_relation_schema": "communication_relation_projection.v1",
+          "parsed_relation_status": "selected_parse_unverified",
+          "parsed_subject": "gate",
+          "polar_answer_plan_minted": 1,
+          "polar_relation_support_minted": 1,
+          "question_polarity": "affirmed",
+          "relation_focus": "polar",
+          "relation_support": "supported",
+          "schema": "communication_interpretation.v1"
+        },
+        "plan_values": [
+          "yes"
+        ],
+        "support_count": 1
+      },
+      "candidate_answer_matches_oracle": true,
+      "candidate_rule_firings": 2,
+      "case_id": "unique_affirmed",
+      "input_claims": [
+        {
+          "polarity": "affirmed",
+          "status": "accepted",
+          "subject": "gate"
+        }
+      ],
+      "pid": 2,
+      "primary_graph_digest_after": "e60934606402a3bf2443dc47cfabe39fa533063db0b102fb7ddac2b916cea435",
+      "primary_graph_digest_before": "e60934606402a3bf2443dc47cfabe39fa533063db0b102fb7ddac2b916cea435",
+      "primary_rules_after_count": 0,
+      "primary_rules_before_count": 0,
+      "primary_unchanged_before_return": true,
+      "replicate": 2,
+      "residual_digest": "df18cc076a3bdc25229487c4b11a1098c863d9fda66c904662f28f955725b2ac",
+      "residual_edges_added": 0,
+      "residual_nodes_added": 0,
+      "residual_nonempty": false,
+      "residual_return_error": null,
+      "residual_returned": false,
+      "returned_conflict_count": 0,
+      "returned_node_parity": true
+    },
+    {
+      "baseline": {
+        "conflict_outcome_count": 0,
+        "conflict_outcomes": [],
+        "interpretation": {
+          "anaphor": 0,
+          "arbitration_basis": "accepted_proposition_polar_answer",
+          "cognitive_disposition": "answer",
+          "cognitive_goal": "answer_or_learn",
+          "communicative_force": "request_information",
+          "evidence_force": "information_request",
+          "evidence_schema": "communication_evidence.v1",
+          "parsed_predicate_lemma": "open",
+          "parsed_relation_schema": "communication_relation_projection.v1",
+          "parsed_relation_status": "selected_parse_unverified",
+          "parsed_subject": "gate",
+          "polar_answer_plan_minted": 1,
+          "polar_relation_support_minted": 1,
+          "question_polarity": "affirmed",
+          "relation_focus": "polar",
+          "relation_support": "supported",
+          "schema": "communication_interpretation.v1"
+        },
+        "plan_values": [
+          "no"
+        ],
+        "support_count": 1
+      },
+      "baseline_answer_matches_oracle": true,
+      "baseline_rule_firings": 2,
+      "candidate": {
+        "conflict_outcome_count": 0,
+        "conflict_outcomes": [],
+        "interpretation": {
+          "anaphor": 0,
+          "arbitration_basis": "accepted_proposition_polar_answer",
+          "cognitive_disposition": "answer",
+          "cognitive_goal": "answer_or_learn",
+          "communicative_force": "request_information",
+          "evidence_force": "information_request",
+          "evidence_schema": "communication_evidence.v1",
+          "parsed_predicate_lemma": "open",
+          "parsed_relation_schema": "communication_relation_projection.v1",
+          "parsed_relation_status": "selected_parse_unverified",
+          "parsed_subject": "gate",
+          "polar_answer_plan_minted": 1,
+          "polar_relation_support_minted": 1,
+          "question_polarity": "affirmed",
+          "relation_focus": "polar",
+          "relation_support": "supported",
+          "schema": "communication_interpretation.v1"
+        },
+        "plan_values": [
+          "no"
+        ],
+        "support_count": 1
+      },
+      "candidate_answer_matches_oracle": true,
+      "candidate_rule_firings": 2,
+      "case_id": "unique_negated",
+      "input_claims": [
+        {
+          "polarity": "negated",
+          "status": "accepted",
+          "subject": "gate"
+        }
+      ],
+      "pid": 2,
+      "primary_graph_digest_after": "8d88118dea3de3c560961481d9b0b6f349f2a7b2a0a04196462b9204c6af4924",
+      "primary_graph_digest_before": "8d88118dea3de3c560961481d9b0b6f349f2a7b2a0a04196462b9204c6af4924",
+      "primary_rules_after_count": 0,
+      "primary_rules_before_count": 0,
+      "primary_unchanged_before_return": true,
+      "replicate": 0,
+      "residual_digest": "df18cc076a3bdc25229487c4b11a1098c863d9fda66c904662f28f955725b2ac",
+      "residual_edges_added": 0,
+      "residual_nodes_added": 0,
+      "residual_nonempty": false,
+      "residual_return_error": null,
+      "residual_returned": false,
+      "returned_conflict_count": 0,
+      "returned_node_parity": true
+    },
+    {
+      "baseline": {
+        "conflict_outcome_count": 0,
+        "conflict_outcomes": [],
+        "interpretation": {
+          "anaphor": 0,
+          "arbitration_basis": "accepted_proposition_polar_answer",
+          "cognitive_disposition": "answer",
+          "cognitive_goal": "answer_or_learn",
+          "communicative_force": "request_information",
+          "evidence_force": "information_request",
+          "evidence_schema": "communication_evidence.v1",
+          "parsed_predicate_lemma": "open",
+          "parsed_relation_schema": "communication_relation_projection.v1",
+          "parsed_relation_status": "selected_parse_unverified",
+          "parsed_subject": "gate",
+          "polar_answer_plan_minted": 1,
+          "polar_relation_support_minted": 1,
+          "question_polarity": "affirmed",
+          "relation_focus": "polar",
+          "relation_support": "supported",
+          "schema": "communication_interpretation.v1"
+        },
+        "plan_values": [
+          "no"
+        ],
+        "support_count": 1
+      },
+      "baseline_answer_matches_oracle": true,
+      "baseline_rule_firings": 2,
+      "candidate": {
+        "conflict_outcome_count": 0,
+        "conflict_outcomes": [],
+        "interpretation": {
+          "anaphor": 0,
+          "arbitration_basis": "accepted_proposition_polar_answer",
+          "cognitive_disposition": "answer",
+          "cognitive_goal": "answer_or_learn",
+          "communicative_force": "request_information",
+          "evidence_force": "information_request",
+          "evidence_schema": "communication_evidence.v1",
+          "parsed_predicate_lemma": "open",
+          "parsed_relation_schema": "communication_relation_projection.v1",
+          "parsed_relation_status": "selected_parse_unverified",
+          "parsed_subject": "gate",
+          "polar_answer_plan_minted": 1,
+          "polar_relation_support_minted": 1,
+          "question_polarity": "affirmed",
+          "relation_focus": "polar",
+          "relation_support": "supported",
+          "schema": "communication_interpretation.v1"
+        },
+        "plan_values": [
+          "no"
+        ],
+        "support_count": 1
+      },
+      "candidate_answer_matches_oracle": true,
+      "candidate_rule_firings": 2,
+      "case_id": "unique_negated",
+      "input_claims": [
+        {
+          "polarity": "negated",
+          "status": "accepted",
+          "subject": "gate"
+        }
+      ],
+      "pid": 2,
+      "primary_graph_digest_after": "1acbd8fe515daa70e6eabf2ce1a9499d6a778cfd740856c83978a45d525020fe",
+      "primary_graph_digest_before": "1acbd8fe515daa70e6eabf2ce1a9499d6a778cfd740856c83978a45d525020fe",
+      "primary_rules_after_count": 0,
+      "primary_rules_before_count": 0,
+      "primary_unchanged_before_return": true,
+      "replicate": 1,
+      "residual_digest": "df18cc076a3bdc25229487c4b11a1098c863d9fda66c904662f28f955725b2ac",
+      "residual_edges_added": 0,
+      "residual_nodes_added": 0,
+      "residual_nonempty": false,
+      "residual_return_error": null,
+      "residual_returned": false,
+      "returned_conflict_count": 0,
+      "returned_node_parity": true
+    },
+    {
+      "baseline": {
+        "conflict_outcome_count": 0,
+        "conflict_outcomes": [],
+        "interpretation": {
+          "anaphor": 0,
+          "arbitration_basis": "accepted_proposition_polar_answer",
+          "cognitive_disposition": "answer",
+          "cognitive_goal": "answer_or_learn",
+          "communicative_force": "request_information",
+          "evidence_force": "information_request",
+          "evidence_schema": "communication_evidence.v1",
+          "parsed_predicate_lemma": "open",
+          "parsed_relation_schema": "communication_relation_projection.v1",
+          "parsed_relation_status": "selected_parse_unverified",
+          "parsed_subject": "gate",
+          "polar_answer_plan_minted": 1,
+          "polar_relation_support_minted": 1,
+          "question_polarity": "affirmed",
+          "relation_focus": "polar",
+          "relation_support": "supported",
+          "schema": "communication_interpretation.v1"
+        },
+        "plan_values": [
+          "no"
+        ],
+        "support_count": 1
+      },
+      "baseline_answer_matches_oracle": true,
+      "baseline_rule_firings": 2,
+      "candidate": {
+        "conflict_outcome_count": 0,
+        "conflict_outcomes": [],
+        "interpretation": {
+          "anaphor": 0,
+          "arbitration_basis": "accepted_proposition_polar_answer",
+          "cognitive_disposition": "answer",
+          "cognitive_goal": "answer_or_learn",
+          "communicative_force": "request_information",
+          "evidence_force": "information_request",
+          "evidence_schema": "communication_evidence.v1",
+          "parsed_predicate_lemma": "open",
+          "parsed_relation_schema": "communication_relation_projection.v1",
+          "parsed_relation_status": "selected_parse_unverified",
+          "parsed_subject": "gate",
+          "polar_answer_plan_minted": 1,
+          "polar_relation_support_minted": 1,
+          "question_polarity": "affirmed",
+          "relation_focus": "polar",
+          "relation_support": "supported",
+          "schema": "communication_interpretation.v1"
+        },
+        "plan_values": [
+          "no"
+        ],
+        "support_count": 1
+      },
+      "candidate_answer_matches_oracle": true,
+      "candidate_rule_firings": 2,
+      "case_id": "unique_negated",
+      "input_claims": [
+        {
+          "polarity": "negated",
+          "status": "accepted",
+          "subject": "gate"
+        }
+      ],
+      "pid": 2,
+      "primary_graph_digest_after": "31b0f10ea66cc78f5642a7a8d8570c49d581fdd9ca33d177b7cd4939cfdca310",
+      "primary_graph_digest_before": "31b0f10ea66cc78f5642a7a8d8570c49d581fdd9ca33d177b7cd4939cfdca310",
+      "primary_rules_after_count": 0,
+      "primary_rules_before_count": 0,
+      "primary_unchanged_before_return": true,
+      "replicate": 2,
+      "residual_digest": "df18cc076a3bdc25229487c4b11a1098c863d9fda66c904662f28f955725b2ac",
+      "residual_edges_added": 0,
+      "residual_nodes_added": 0,
+      "residual_nonempty": false,
+      "residual_return_error": null,
+      "residual_returned": false,
+      "returned_conflict_count": 0,
+      "returned_node_parity": true
+    },
+    {
+      "baseline": {
+        "conflict_outcome_count": 0,
+        "conflict_outcomes": [],
+        "interpretation": {
+          "anaphor": 0,
+          "arbitration_basis": "accepted_proposition_polar_answer",
+          "cognitive_disposition": "answer",
+          "cognitive_goal": "answer_or_learn",
+          "communicative_force": "request_information",
+          "evidence_force": "information_request",
+          "evidence_schema": "communication_evidence.v1",
+          "parsed_predicate_lemma": "open",
+          "parsed_relation_schema": "communication_relation_projection.v1",
+          "parsed_relation_status": "selected_parse_unverified",
+          "parsed_subject": "gate",
+          "polar_answer_plan_minted": 1,
+          "polar_relation_support_minted": 1,
+          "question_polarity": "affirmed",
+          "relation_focus": "polar",
+          "relation_support": "supported",
+          "schema": "communication_interpretation.v1"
+        },
+        "plan_values": [
+          "yes"
+        ],
+        "support_count": 2
+      },
+      "baseline_answer_matches_oracle": true,
+      "baseline_rule_firings": 2,
+      "candidate": {
+        "conflict_outcome_count": 1,
+        "conflict_outcomes": [
+          {
+            "affirmed_evidence_id": "cow-polar-conflict_affirmed_first-0-0",
+            "negated_evidence_id": "cow-polar-conflict_affirmed_first-0-1",
+            "observation_status": "not_observed",
+            "predicate": "open",
+            "schema": "polar_conflict_outcome.v1",
+            "status": "conflict"
+          }
+        ],
+        "interpretation": {
+          "anaphor": 0,
+          "arbitration_basis": "contradictory_accepted_propositions",
+          "cognitive_disposition": "repair",
+          "cognitive_goal": "clarify_or_defer",
+          "evidence_force": "information_request",
+          "evidence_schema": "communication_evidence.v1",
+          "experiment_polar_conflict_detected": 1,
+          "parsed_predicate_lemma": "open",
+          "parsed_relation_schema": "communication_relation_projection.v1",
+          "parsed_relation_status": "selected_parse_unverified",
+          "parsed_subject": "gate",
+          "question_polarity": "affirmed",
+          "relation_focus": "polar",
+          "relation_support": "conflict",
+          "schema": "communication_interpretation.v1"
+        },
+        "plan_values": [],
+        "support_count": 0
+      },
+      "candidate_answer_matches_oracle": true,
+      "candidate_rule_firings": 1,
+      "case_id": "conflict_affirmed_first",
+      "input_claims": [
+        {
+          "polarity": "affirmed",
+          "status": "accepted",
+          "subject": "gate"
+        },
+        {
+          "polarity": "negated",
+          "status": "accepted",
+          "subject": "gate"
+        }
+      ],
+      "pid": 2,
+      "primary_graph_digest_after": "d3460d91641bdc05eb880574a2d23709ebbc82d7ac783622f6127c4bffefed0c",
+      "primary_graph_digest_before": "d3460d91641bdc05eb880574a2d23709ebbc82d7ac783622f6127c4bffefed0c",
+      "primary_rules_after_count": 0,
+      "primary_rules_before_count": 0,
+      "primary_unchanged_before_return": true,
+      "replicate": 0,
+      "residual_digest": "df18cc076a3bdc25229487c4b11a1098c863d9fda66c904662f28f955725b2ac",
+      "residual_edges_added": 0,
+      "residual_nodes_added": 0,
+      "residual_nonempty": false,
+      "residual_return_error": null,
+      "residual_returned": true,
+      "returned_conflict_count": 0,
+      "returned_node_parity": true
+    },
+    {
+      "baseline": {
+        "conflict_outcome_count": 0,
+        "conflict_outcomes": [],
+        "interpretation": {
+          "anaphor": 0,
+          "arbitration_basis": "accepted_proposition_polar_answer",
+          "cognitive_disposition": "answer",
+          "cognitive_goal": "answer_or_learn",
+          "communicative_force": "request_information",
+          "evidence_force": "information_request",
+          "evidence_schema": "communication_evidence.v1",
+          "parsed_predicate_lemma": "open",
+          "parsed_relation_schema": "communication_relation_projection.v1",
+          "parsed_relation_status": "selected_parse_unverified",
+          "parsed_subject": "gate",
+          "polar_answer_plan_minted": 1,
+          "polar_relation_support_minted": 1,
+          "question_polarity": "affirmed",
+          "relation_focus": "polar",
+          "relation_support": "supported",
+          "schema": "communication_interpretation.v1"
+        },
+        "plan_values": [
+          "yes"
+        ],
+        "support_count": 2
+      },
+      "baseline_answer_matches_oracle": true,
+      "baseline_rule_firings": 2,
+      "candidate": {
+        "conflict_outcome_count": 1,
+        "conflict_outcomes": [
+          {
+            "affirmed_evidence_id": "cow-polar-conflict_affirmed_first-1-0",
+            "negated_evidence_id": "cow-polar-conflict_affirmed_first-1-1",
+            "observation_status": "not_observed",
+            "predicate": "open",
+            "schema": "polar_conflict_outcome.v1",
+            "status": "conflict"
+          }
+        ],
+        "interpretation": {
+          "anaphor": 0,
+          "arbitration_basis": "contradictory_accepted_propositions",
+          "cognitive_disposition": "repair",
+          "cognitive_goal": "clarify_or_defer",
+          "evidence_force": "information_request",
+          "evidence_schema": "communication_evidence.v1",
+          "experiment_polar_conflict_detected": 1,
+          "parsed_predicate_lemma": "open",
+          "parsed_relation_schema": "communication_relation_projection.v1",
+          "parsed_relation_status": "selected_parse_unverified",
+          "parsed_subject": "gate",
+          "question_polarity": "affirmed",
+          "relation_focus": "polar",
+          "relation_support": "conflict",
+          "schema": "communication_interpretation.v1"
+        },
+        "plan_values": [],
+        "support_count": 0
+      },
+      "candidate_answer_matches_oracle": true,
+      "candidate_rule_firings": 1,
+      "case_id": "conflict_affirmed_first",
+      "input_claims": [
+        {
+          "polarity": "affirmed",
+          "status": "accepted",
+          "subject": "gate"
+        },
+        {
+          "polarity": "negated",
+          "status": "accepted",
+          "subject": "gate"
+        }
+      ],
+      "pid": 2,
+      "primary_graph_digest_after": "394e1b5d42fa9d0e764a1050883265dd2a16adb1baad92020b84b6cfa6a2d8f4",
+      "primary_graph_digest_before": "394e1b5d42fa9d0e764a1050883265dd2a16adb1baad92020b84b6cfa6a2d8f4",
+      "primary_rules_after_count": 0,
+      "primary_rules_before_count": 0,
+      "primary_unchanged_before_return": true,
+      "replicate": 1,
+      "residual_digest": "df18cc076a3bdc25229487c4b11a1098c863d9fda66c904662f28f955725b2ac",
+      "residual_edges_added": 0,
+      "residual_nodes_added": 0,
+      "residual_nonempty": false,
+      "residual_return_error": null,
+      "residual_returned": true,
+      "returned_conflict_count": 0,
+      "returned_node_parity": true
+    },
+    {
+      "baseline": {
+        "conflict_outcome_count": 0,
+        "conflict_outcomes": [],
+        "interpretation": {
+          "anaphor": 0,
+          "arbitration_basis": "accepted_proposition_polar_answer",
+          "cognitive_disposition": "answer",
+          "cognitive_goal": "answer_or_learn",
+          "communicative_force": "request_information",
+          "evidence_force": "information_request",
+          "evidence_schema": "communication_evidence.v1",
+          "parsed_predicate_lemma": "open",
+          "parsed_relation_schema": "communication_relation_projection.v1",
+          "parsed_relation_status": "selected_parse_unverified",
+          "parsed_subject": "gate",
+          "polar_answer_plan_minted": 1,
+          "polar_relation_support_minted": 1,
+          "question_polarity": "affirmed",
+          "relation_focus": "polar",
+          "relation_support": "supported",
+          "schema": "communication_interpretation.v1"
+        },
+        "plan_values": [
+          "yes"
+        ],
+        "support_count": 2
+      },
+      "baseline_answer_matches_oracle": true,
+      "baseline_rule_firings": 2,
+      "candidate": {
+        "conflict_outcome_count": 1,
+        "conflict_outcomes": [
+          {
+            "affirmed_evidence_id": "cow-polar-conflict_affirmed_first-2-0",
+            "negated_evidence_id": "cow-polar-conflict_affirmed_first-2-1",
+            "observation_status": "not_observed",
+            "predicate": "open",
+            "schema": "polar_conflict_outcome.v1",
+            "status": "conflict"
+          }
+        ],
+        "interpretation": {
+          "anaphor": 0,
+          "arbitration_basis": "contradictory_accepted_propositions",
+          "cognitive_disposition": "repair",
+          "cognitive_goal": "clarify_or_defer",
+          "evidence_force": "information_request",
+          "evidence_schema": "communication_evidence.v1",
+          "experiment_polar_conflict_detected": 1,
+          "parsed_predicate_lemma": "open",
+          "parsed_relation_schema": "communication_relation_projection.v1",
+          "parsed_relation_status": "selected_parse_unverified",
+          "parsed_subject": "gate",
+          "question_polarity": "affirmed",
+          "relation_focus": "polar",
+          "relation_support": "conflict",
+          "schema": "communication_interpretation.v1"
+        },
+        "plan_values": [],
+        "support_count": 0
+      },
+      "candidate_answer_matches_oracle": true,
+      "candidate_rule_firings": 1,
+      "case_id": "conflict_affirmed_first",
+      "input_claims": [
+        {
+          "polarity": "affirmed",
+          "status": "accepted",
+          "subject": "gate"
+        },
+        {
+          "polarity": "negated",
+          "status": "accepted",
+          "subject": "gate"
+        }
+      ],
+      "pid": 2,
+      "primary_graph_digest_after": "968c882da3fd22b9bdce8f3a4fe628627ac8463bd35ba36ffd728694cc10945a",
+      "primary_graph_digest_before": "968c882da3fd22b9bdce8f3a4fe628627ac8463bd35ba36ffd728694cc10945a",
+      "primary_rules_after_count": 0,
+      "primary_rules_before_count": 0,
+      "primary_unchanged_before_return": true,
+      "replicate": 2,
+      "residual_digest": "df18cc076a3bdc25229487c4b11a1098c863d9fda66c904662f28f955725b2ac",
+      "residual_edges_added": 0,
+      "residual_nodes_added": 0,
+      "residual_nonempty": false,
+      "residual_return_error": null,
+      "residual_returned": true,
+      "returned_conflict_count": 0,
+      "returned_node_parity": true
+    },
+    {
+      "baseline": {
+        "conflict_outcome_count": 0,
+        "conflict_outcomes": [],
+        "interpretation": {
+          "anaphor": 0,
+          "arbitration_basis": "accepted_proposition_polar_answer",
+          "cognitive_disposition": "answer",
+          "cognitive_goal": "answer_or_learn",
+          "communicative_force": "request_information",
+          "evidence_force": "information_request",
+          "evidence_schema": "communication_evidence.v1",
+          "parsed_predicate_lemma": "open",
+          "parsed_relation_schema": "communication_relation_projection.v1",
+          "parsed_relation_status": "selected_parse_unverified",
+          "parsed_subject": "gate",
+          "polar_answer_plan_minted": 1,
+          "polar_relation_support_minted": 1,
+          "question_polarity": "affirmed",
+          "relation_focus": "polar",
+          "relation_support": "supported",
+          "schema": "communication_interpretation.v1"
+        },
+        "plan_values": [
+          "yes"
+        ],
+        "support_count": 2
+      },
+      "baseline_answer_matches_oracle": true,
+      "baseline_rule_firings": 2,
+      "candidate": {
+        "conflict_outcome_count": 1,
+        "conflict_outcomes": [
+          {
+            "affirmed_evidence_id": "cow-polar-conflict_negated_first-0-1",
+            "negated_evidence_id": "cow-polar-conflict_negated_first-0-0",
+            "observation_status": "not_observed",
+            "predicate": "open",
+            "schema": "polar_conflict_outcome.v1",
+            "status": "conflict"
+          }
+        ],
+        "interpretation": {
+          "anaphor": 0,
+          "arbitration_basis": "contradictory_accepted_propositions",
+          "cognitive_disposition": "repair",
+          "cognitive_goal": "clarify_or_defer",
+          "evidence_force": "information_request",
+          "evidence_schema": "communication_evidence.v1",
+          "experiment_polar_conflict_detected": 1,
+          "parsed_predicate_lemma": "open",
+          "parsed_relation_schema": "communication_relation_projection.v1",
+          "parsed_relation_status": "selected_parse_unverified",
+          "parsed_subject": "gate",
+          "question_polarity": "affirmed",
+          "relation_focus": "polar",
+          "relation_support": "conflict",
+          "schema": "communication_interpretation.v1"
+        },
+        "plan_values": [],
+        "support_count": 0
+      },
+      "candidate_answer_matches_oracle": true,
+      "candidate_rule_firings": 1,
+      "case_id": "conflict_negated_first",
+      "input_claims": [
+        {
+          "polarity": "negated",
+          "status": "accepted",
+          "subject": "gate"
+        },
+        {
+          "polarity": "affirmed",
+          "status": "accepted",
+          "subject": "gate"
+        }
+      ],
+      "pid": 2,
+      "primary_graph_digest_after": "84eec78927313a91f351a5d8adc9f927c4daa62754ca282cf158ef8bfd9360cd",
+      "primary_graph_digest_before": "84eec78927313a91f351a5d8adc9f927c4daa62754ca282cf158ef8bfd9360cd",
+      "primary_rules_after_count": 0,
+      "primary_rules_before_count": 0,
+      "primary_unchanged_before_return": true,
+      "replicate": 0,
+      "residual_digest": "df18cc076a3bdc25229487c4b11a1098c863d9fda66c904662f28f955725b2ac",
+      "residual_edges_added": 0,
+      "residual_nodes_added": 0,
+      "residual_nonempty": false,
+      "residual_return_error": null,
+      "residual_returned": true,
+      "returned_conflict_count": 0,
+      "returned_node_parity": true
+    },
+    {
+      "baseline": {
+        "conflict_outcome_count": 0,
+        "conflict_outcomes": [],
+        "interpretation": {
+          "anaphor": 0,
+          "arbitration_basis": "accepted_proposition_polar_answer",
+          "cognitive_disposition": "answer",
+          "cognitive_goal": "answer_or_learn",
+          "communicative_force": "request_information",
+          "evidence_force": "information_request",
+          "evidence_schema": "communication_evidence.v1",
+          "parsed_predicate_lemma": "open",
+          "parsed_relation_schema": "communication_relation_projection.v1",
+          "parsed_relation_status": "selected_parse_unverified",
+          "parsed_subject": "gate",
+          "polar_answer_plan_minted": 1,
+          "polar_relation_support_minted": 1,
+          "question_polarity": "affirmed",
+          "relation_focus": "polar",
+          "relation_support": "supported",
+          "schema": "communication_interpretation.v1"
+        },
+        "plan_values": [
+          "yes"
+        ],
+        "support_count": 2
+      },
+      "baseline_answer_matches_oracle": true,
+      "baseline_rule_firings": 2,
+      "candidate": {
+        "conflict_outcome_count": 1,
+        "conflict_outcomes": [
+          {
+            "affirmed_evidence_id": "cow-polar-conflict_negated_first-1-1",
+            "negated_evidence_id": "cow-polar-conflict_negated_first-1-0",
+            "observation_status": "not_observed",
+            "predicate": "open",
+            "schema": "polar_conflict_outcome.v1",
+            "status": "conflict"
+          }
+        ],
+        "interpretation": {
+          "anaphor": 0,
+          "arbitration_basis": "contradictory_accepted_propositions",
+          "cognitive_disposition": "repair",
+          "cognitive_goal": "clarify_or_defer",
+          "evidence_force": "information_request",
+          "evidence_schema": "communication_evidence.v1",
+          "experiment_polar_conflict_detected": 1,
+          "parsed_predicate_lemma": "open",
+          "parsed_relation_schema": "communication_relation_projection.v1",
+          "parsed_relation_status": "selected_parse_unverified",
+          "parsed_subject": "gate",
+          "question_polarity": "affirmed",
+          "relation_focus": "polar",
+          "relation_support": "conflict",
+          "schema": "communication_interpretation.v1"
+        },
+        "plan_values": [],
+        "support_count": 0
+      },
+      "candidate_answer_matches_oracle": true,
+      "candidate_rule_firings": 1,
+      "case_id": "conflict_negated_first",
+      "input_claims": [
+        {
+          "polarity": "negated",
+          "status": "accepted",
+          "subject": "gate"
+        },
+        {
+          "polarity": "affirmed",
+          "status": "accepted",
+          "subject": "gate"
+        }
+      ],
+      "pid": 2,
+      "primary_graph_digest_after": "99b2315d8b3cc04c1de552776d41e6a7d2d8bcbadb676c354931c7a97055440d",
+      "primary_graph_digest_before": "99b2315d8b3cc04c1de552776d41e6a7d2d8bcbadb676c354931c7a97055440d",
+      "primary_rules_after_count": 0,
+      "primary_rules_before_count": 0,
+      "primary_unchanged_before_return": true,
+      "replicate": 1,
+      "residual_digest": "df18cc076a3bdc25229487c4b11a1098c863d9fda66c904662f28f955725b2ac",
+      "residual_edges_added": 0,
+      "residual_nodes_added": 0,
+      "residual_nonempty": false,
+      "residual_return_error": null,
+      "residual_returned": true,
+      "returned_conflict_count": 0,
+      "returned_node_parity": true
+    },
+    {
+      "baseline": {
+        "conflict_outcome_count": 0,
+        "conflict_outcomes": [],
+        "interpretation": {
+          "anaphor": 0,
+          "arbitration_basis": "accepted_proposition_polar_answer",
+          "cognitive_disposition": "answer",
+          "cognitive_goal": "answer_or_learn",
+          "communicative_force": "request_information",
+          "evidence_force": "information_request",
+          "evidence_schema": "communication_evidence.v1",
+          "parsed_predicate_lemma": "open",
+          "parsed_relation_schema": "communication_relation_projection.v1",
+          "parsed_relation_status": "selected_parse_unverified",
+          "parsed_subject": "gate",
+          "polar_answer_plan_minted": 1,
+          "polar_relation_support_minted": 1,
+          "question_polarity": "affirmed",
+          "relation_focus": "polar",
+          "relation_support": "supported",
+          "schema": "communication_interpretation.v1"
+        },
+        "plan_values": [
+          "yes"
+        ],
+        "support_count": 2
+      },
+      "baseline_answer_matches_oracle": true,
+      "baseline_rule_firings": 2,
+      "candidate": {
+        "conflict_outcome_count": 1,
+        "conflict_outcomes": [
+          {
+            "affirmed_evidence_id": "cow-polar-conflict_negated_first-2-1",
+            "negated_evidence_id": "cow-polar-conflict_negated_first-2-0",
+            "observation_status": "not_observed",
+            "predicate": "open",
+            "schema": "polar_conflict_outcome.v1",
+            "status": "conflict"
+          }
+        ],
+        "interpretation": {
+          "anaphor": 0,
+          "arbitration_basis": "contradictory_accepted_propositions",
+          "cognitive_disposition": "repair",
+          "cognitive_goal": "clarify_or_defer",
+          "evidence_force": "information_request",
+          "evidence_schema": "communication_evidence.v1",
+          "experiment_polar_conflict_detected": 1,
+          "parsed_predicate_lemma": "open",
+          "parsed_relation_schema": "communication_relation_projection.v1",
+          "parsed_relation_status": "selected_parse_unverified",
+          "parsed_subject": "gate",
+          "question_polarity": "affirmed",
+          "relation_focus": "polar",
+          "relation_support": "conflict",
+          "schema": "communication_interpretation.v1"
+        },
+        "plan_values": [],
+        "support_count": 0
+      },
+      "candidate_answer_matches_oracle": true,
+      "candidate_rule_firings": 1,
+      "case_id": "conflict_negated_first",
+      "input_claims": [
+        {
+          "polarity": "negated",
+          "status": "accepted",
+          "subject": "gate"
+        },
+        {
+          "polarity": "affirmed",
+          "status": "accepted",
+          "subject": "gate"
+        }
+      ],
+      "pid": 2,
+      "primary_graph_digest_after": "56d097deec811a462cea56cd70d9838171a9df6895971caceee3d03686005f7f",
+      "primary_graph_digest_before": "56d097deec811a462cea56cd70d9838171a9df6895971caceee3d03686005f7f",
+      "primary_rules_after_count": 0,
+      "primary_rules_before_count": 0,
+      "primary_unchanged_before_return": true,
+      "replicate": 2,
+      "residual_digest": "df18cc076a3bdc25229487c4b11a1098c863d9fda66c904662f28f955725b2ac",
+      "residual_edges_added": 0,
+      "residual_nodes_added": 0,
+      "residual_nonempty": false,
+      "residual_return_error": null,
+      "residual_returned": true,
+      "returned_conflict_count": 0,
+      "returned_node_parity": true
+    },
+    {
+      "baseline": {
+        "conflict_outcome_count": 0,
+        "conflict_outcomes": [],
+        "interpretation": {
+          "anaphor": 0,
+          "arbitration_basis": "accepted_proposition_polar_answer",
+          "cognitive_disposition": "answer",
+          "cognitive_goal": "answer_or_learn",
+          "communicative_force": "request_information",
+          "evidence_force": "information_request",
+          "evidence_schema": "communication_evidence.v1",
+          "parsed_predicate_lemma": "open",
+          "parsed_relation_schema": "communication_relation_projection.v1",
+          "parsed_relation_status": "selected_parse_unverified",
+          "parsed_subject": "gate",
+          "polar_answer_plan_minted": 1,
+          "polar_relation_support_minted": 1,
+          "question_polarity": "affirmed",
+          "relation_focus": "polar",
+          "relation_support": "supported",
+          "schema": "communication_interpretation.v1"
+        },
+        "plan_values": [
+          "yes"
+        ],
+        "support_count": 1
+      },
+      "baseline_answer_matches_oracle": true,
+      "baseline_rule_firings": 2,
+      "candidate": {
+        "conflict_outcome_count": 0,
+        "conflict_outcomes": [],
+        "interpretation": {
+          "anaphor": 0,
+          "arbitration_basis": "accepted_proposition_polar_answer",
+          "cognitive_disposition": "answer",
+          "cognitive_goal": "answer_or_learn",
+          "communicative_force": "request_information",
+          "evidence_force": "information_request",
+          "evidence_schema": "communication_evidence.v1",
+          "parsed_predicate_lemma": "open",
+          "parsed_relation_schema": "communication_relation_projection.v1",
+          "parsed_relation_status": "selected_parse_unverified",
+          "parsed_subject": "gate",
+          "polar_answer_plan_minted": 1,
+          "polar_relation_support_minted": 1,
+          "question_polarity": "affirmed",
+          "relation_focus": "polar",
+          "relation_support": "supported",
+          "schema": "communication_interpretation.v1"
+        },
+        "plan_values": [
+          "yes"
+        ],
+        "support_count": 1
+      },
+      "candidate_answer_matches_oracle": true,
+      "candidate_rule_firings": 2,
+      "case_id": "retracted_conflict",
+      "input_claims": [
+        {
+          "polarity": "affirmed",
+          "status": "accepted",
+          "subject": "gate"
+        },
+        {
+          "polarity": "negated",
+          "status": "retracted",
+          "subject": "gate"
+        }
+      ],
+      "pid": 2,
+      "primary_graph_digest_after": "9f12805fd00b89956208ad8e35cddccb453af998549c0b3ccafeafc13cbbea87",
+      "primary_graph_digest_before": "9f12805fd00b89956208ad8e35cddccb453af998549c0b3ccafeafc13cbbea87",
+      "primary_rules_after_count": 0,
+      "primary_rules_before_count": 0,
+      "primary_unchanged_before_return": true,
+      "replicate": 0,
+      "residual_digest": "df18cc076a3bdc25229487c4b11a1098c863d9fda66c904662f28f955725b2ac",
+      "residual_edges_added": 0,
+      "residual_nodes_added": 0,
+      "residual_nonempty": false,
+      "residual_return_error": null,
+      "residual_returned": false,
+      "returned_conflict_count": 0,
+      "returned_node_parity": true
+    },
+    {
+      "baseline": {
+        "conflict_outcome_count": 0,
+        "conflict_outcomes": [],
+        "interpretation": {
+          "anaphor": 0,
+          "arbitration_basis": "accepted_proposition_polar_answer",
+          "cognitive_disposition": "answer",
+          "cognitive_goal": "answer_or_learn",
+          "communicative_force": "request_information",
+          "evidence_force": "information_request",
+          "evidence_schema": "communication_evidence.v1",
+          "parsed_predicate_lemma": "open",
+          "parsed_relation_schema": "communication_relation_projection.v1",
+          "parsed_relation_status": "selected_parse_unverified",
+          "parsed_subject": "gate",
+          "polar_answer_plan_minted": 1,
+          "polar_relation_support_minted": 1,
+          "question_polarity": "affirmed",
+          "relation_focus": "polar",
+          "relation_support": "supported",
+          "schema": "communication_interpretation.v1"
+        },
+        "plan_values": [
+          "yes"
+        ],
+        "support_count": 1
+      },
+      "baseline_answer_matches_oracle": true,
+      "baseline_rule_firings": 2,
+      "candidate": {
+        "conflict_outcome_count": 0,
+        "conflict_outcomes": [],
+        "interpretation": {
+          "anaphor": 0,
+          "arbitration_basis": "accepted_proposition_polar_answer",
+          "cognitive_disposition": "answer",
+          "cognitive_goal": "answer_or_learn",
+          "communicative_force": "request_information",
+          "evidence_force": "information_request",
+          "evidence_schema": "communication_evidence.v1",
+          "parsed_predicate_lemma": "open",
+          "parsed_relation_schema": "communication_relation_projection.v1",
+          "parsed_relation_status": "selected_parse_unverified",
+          "parsed_subject": "gate",
+          "polar_answer_plan_minted": 1,
+          "polar_relation_support_minted": 1,
+          "question_polarity": "affirmed",
+          "relation_focus": "polar",
+          "relation_support": "supported",
+          "schema": "communication_interpretation.v1"
+        },
+        "plan_values": [
+          "yes"
+        ],
+        "support_count": 1
+      },
+      "candidate_answer_matches_oracle": true,
+      "candidate_rule_firings": 2,
+      "case_id": "retracted_conflict",
+      "input_claims": [
+        {
+          "polarity": "affirmed",
+          "status": "accepted",
+          "subject": "gate"
+        },
+        {
+          "polarity": "negated",
+          "status": "retracted",
+          "subject": "gate"
+        }
+      ],
+      "pid": 2,
+      "primary_graph_digest_after": "c8f4831d0c99f00edfacd45f4353efbae470973c501e38fd7518f76527c801c7",
+      "primary_graph_digest_before": "c8f4831d0c99f00edfacd45f4353efbae470973c501e38fd7518f76527c801c7",
+      "primary_rules_after_count": 0,
+      "primary_rules_before_count": 0,
+      "primary_unchanged_before_return": true,
+      "replicate": 1,
+      "residual_digest": "df18cc076a3bdc25229487c4b11a1098c863d9fda66c904662f28f955725b2ac",
+      "residual_edges_added": 0,
+      "residual_nodes_added": 0,
+      "residual_nonempty": false,
+      "residual_return_error": null,
+      "residual_returned": false,
+      "returned_conflict_count": 0,
+      "returned_node_parity": true
+    },
+    {
+      "baseline": {
+        "conflict_outcome_count": 0,
+        "conflict_outcomes": [],
+        "interpretation": {
+          "anaphor": 0,
+          "arbitration_basis": "accepted_proposition_polar_answer",
+          "cognitive_disposition": "answer",
+          "cognitive_goal": "answer_or_learn",
+          "communicative_force": "request_information",
+          "evidence_force": "information_request",
+          "evidence_schema": "communication_evidence.v1",
+          "parsed_predicate_lemma": "open",
+          "parsed_relation_schema": "communication_relation_projection.v1",
+          "parsed_relation_status": "selected_parse_unverified",
+          "parsed_subject": "gate",
+          "polar_answer_plan_minted": 1,
+          "polar_relation_support_minted": 1,
+          "question_polarity": "affirmed",
+          "relation_focus": "polar",
+          "relation_support": "supported",
+          "schema": "communication_interpretation.v1"
+        },
+        "plan_values": [
+          "yes"
+        ],
+        "support_count": 1
+      },
+      "baseline_answer_matches_oracle": true,
+      "baseline_rule_firings": 2,
+      "candidate": {
+        "conflict_outcome_count": 0,
+        "conflict_outcomes": [],
+        "interpretation": {
+          "anaphor": 0,
+          "arbitration_basis": "accepted_proposition_polar_answer",
+          "cognitive_disposition": "answer",
+          "cognitive_goal": "answer_or_learn",
+          "communicative_force": "request_information",
+          "evidence_force": "information_request",
+          "evidence_schema": "communication_evidence.v1",
+          "parsed_predicate_lemma": "open",
+          "parsed_relation_schema": "communication_relation_projection.v1",
+          "parsed_relation_status": "selected_parse_unverified",
+          "parsed_subject": "gate",
+          "polar_answer_plan_minted": 1,
+          "polar_relation_support_minted": 1,
+          "question_polarity": "affirmed",
+          "relation_focus": "polar",
+          "relation_support": "supported",
+          "schema": "communication_interpretation.v1"
+        },
+        "plan_values": [
+          "yes"
+        ],
+        "support_count": 1
+      },
+      "candidate_answer_matches_oracle": true,
+      "candidate_rule_firings": 2,
+      "case_id": "retracted_conflict",
+      "input_claims": [
+        {
+          "polarity": "affirmed",
+          "status": "accepted",
+          "subject": "gate"
+        },
+        {
+          "polarity": "negated",
+          "status": "retracted",
+          "subject": "gate"
+        }
+      ],
+      "pid": 2,
+      "primary_graph_digest_after": "121549fc0f9e132833298c65b86807c0ca82bdf351984356e97d6bf02fa588ea",
+      "primary_graph_digest_before": "121549fc0f9e132833298c65b86807c0ca82bdf351984356e97d6bf02fa588ea",
+      "primary_rules_after_count": 0,
+      "primary_rules_before_count": 0,
+      "primary_unchanged_before_return": true,
+      "replicate": 2,
+      "residual_digest": "df18cc076a3bdc25229487c4b11a1098c863d9fda66c904662f28f955725b2ac",
+      "residual_edges_added": 0,
+      "residual_nodes_added": 0,
+      "residual_nonempty": false,
+      "residual_return_error": null,
+      "residual_returned": false,
+      "returned_conflict_count": 0,
+      "returned_node_parity": true
+    },
+    {
+      "baseline": {
+        "conflict_outcome_count": 0,
+        "conflict_outcomes": [],
+        "interpretation": {
+          "anaphor": 0,
+          "arbitration_basis": "accepted_proposition_polar_answer",
+          "cognitive_disposition": "answer",
+          "cognitive_goal": "answer_or_learn",
+          "communicative_force": "request_information",
+          "evidence_force": "information_request",
+          "evidence_schema": "communication_evidence.v1",
+          "parsed_predicate_lemma": "open",
+          "parsed_relation_schema": "communication_relation_projection.v1",
+          "parsed_relation_status": "selected_parse_unverified",
+          "parsed_subject": "gate",
+          "polar_answer_plan_minted": 1,
+          "polar_relation_support_minted": 1,
+          "question_polarity": "affirmed",
+          "relation_focus": "polar",
+          "relation_support": "supported",
+          "schema": "communication_interpretation.v1"
+        },
+        "plan_values": [
+          "yes"
+        ],
+        "support_count": 1
+      },
+      "baseline_answer_matches_oracle": true,
+      "baseline_rule_firings": 2,
+      "candidate": {
+        "conflict_outcome_count": 0,
+        "conflict_outcomes": [],
+        "interpretation": {
+          "anaphor": 0,
+          "arbitration_basis": "accepted_proposition_polar_answer",
+          "cognitive_disposition": "answer",
+          "cognitive_goal": "answer_or_learn",
+          "communicative_force": "request_information",
+          "evidence_force": "information_request",
+          "evidence_schema": "communication_evidence.v1",
+          "parsed_predicate_lemma": "open",
+          "parsed_relation_schema": "communication_relation_projection.v1",
+          "parsed_relation_status": "selected_parse_unverified",
+          "parsed_subject": "gate",
+          "polar_answer_plan_minted": 1,
+          "polar_relation_support_minted": 1,
+          "question_polarity": "affirmed",
+          "relation_focus": "polar",
+          "relation_support": "supported",
+          "schema": "communication_interpretation.v1"
+        },
+        "plan_values": [
+          "yes"
+        ],
+        "support_count": 1
+      },
+      "candidate_answer_matches_oracle": true,
+      "candidate_rule_firings": 2,
+      "case_id": "proposed_conflict",
+      "input_claims": [
+        {
+          "polarity": "affirmed",
+          "status": "accepted",
+          "subject": "gate"
+        },
+        {
+          "polarity": "negated",
+          "status": "proposed",
+          "subject": "gate"
+        }
+      ],
+      "pid": 2,
+      "primary_graph_digest_after": "ca109dc87f93d6c8067e1a90bfb449c6f894d00d496ab3b3e8a0a29e37452885",
+      "primary_graph_digest_before": "ca109dc87f93d6c8067e1a90bfb449c6f894d00d496ab3b3e8a0a29e37452885",
+      "primary_rules_after_count": 0,
+      "primary_rules_before_count": 0,
+      "primary_unchanged_before_return": true,
+      "replicate": 0,
+      "residual_digest": "df18cc076a3bdc25229487c4b11a1098c863d9fda66c904662f28f955725b2ac",
+      "residual_edges_added": 0,
+      "residual_nodes_added": 0,
+      "residual_nonempty": false,
+      "residual_return_error": null,
+      "residual_returned": false,
+      "returned_conflict_count": 0,
+      "returned_node_parity": true
+    },
+    {
+      "baseline": {
+        "conflict_outcome_count": 0,
+        "conflict_outcomes": [],
+        "interpretation": {
+          "anaphor": 0,
+          "arbitration_basis": "accepted_proposition_polar_answer",
+          "cognitive_disposition": "answer",
+          "cognitive_goal": "answer_or_learn",
+          "communicative_force": "request_information",
+          "evidence_force": "information_request",
+          "evidence_schema": "communication_evidence.v1",
+          "parsed_predicate_lemma": "open",
+          "parsed_relation_schema": "communication_relation_projection.v1",
+          "parsed_relation_status": "selected_parse_unverified",
+          "parsed_subject": "gate",
+          "polar_answer_plan_minted": 1,
+          "polar_relation_support_minted": 1,
+          "question_polarity": "affirmed",
+          "relation_focus": "polar",
+          "relation_support": "supported",
+          "schema": "communication_interpretation.v1"
+        },
+        "plan_values": [
+          "yes"
+        ],
+        "support_count": 1
+      },
+      "baseline_answer_matches_oracle": true,
+      "baseline_rule_firings": 2,
+      "candidate": {
+        "conflict_outcome_count": 0,
+        "conflict_outcomes": [],
+        "interpretation": {
+          "anaphor": 0,
+          "arbitration_basis": "accepted_proposition_polar_answer",
+          "cognitive_disposition": "answer",
+          "cognitive_goal": "answer_or_learn",
+          "communicative_force": "request_information",
+          "evidence_force": "information_request",
+          "evidence_schema": "communication_evidence.v1",
+          "parsed_predicate_lemma": "open",
+          "parsed_relation_schema": "communication_relation_projection.v1",
+          "parsed_relation_status": "selected_parse_unverified",
+          "parsed_subject": "gate",
+          "polar_answer_plan_minted": 1,
+          "polar_relation_support_minted": 1,
+          "question_polarity": "affirmed",
+          "relation_focus": "polar",
+          "relation_support": "supported",
+          "schema": "communication_interpretation.v1"
+        },
+        "plan_values": [
+          "yes"
+        ],
+        "support_count": 1
+      },
+      "candidate_answer_matches_oracle": true,
+      "candidate_rule_firings": 2,
+      "case_id": "proposed_conflict",
+      "input_claims": [
+        {
+          "polarity": "affirmed",
+          "status": "accepted",
+          "subject": "gate"
+        },
+        {
+          "polarity": "negated",
+          "status": "proposed",
+          "subject": "gate"
+        }
+      ],
+      "pid": 2,
+      "primary_graph_digest_after": "a7e5fa0a62c4fddcc6f49670971e00d55e99597526c1e33e3f3e638365d02428",
+      "primary_graph_digest_before": "a7e5fa0a62c4fddcc6f49670971e00d55e99597526c1e33e3f3e638365d02428",
+      "primary_rules_after_count": 0,
+      "primary_rules_before_count": 0,
+      "primary_unchanged_before_return": true,
+      "replicate": 1,
+      "residual_digest": "df18cc076a3bdc25229487c4b11a1098c863d9fda66c904662f28f955725b2ac",
+      "residual_edges_added": 0,
+      "residual_nodes_added": 0,
+      "residual_nonempty": false,
+      "residual_return_error": null,
+      "residual_returned": false,
+      "returned_conflict_count": 0,
+      "returned_node_parity": true
+    },
+    {
+      "baseline": {
+        "conflict_outcome_count": 0,
+        "conflict_outcomes": [],
+        "interpretation": {
+          "anaphor": 0,
+          "arbitration_basis": "accepted_proposition_polar_answer",
+          "cognitive_disposition": "answer",
+          "cognitive_goal": "answer_or_learn",
+          "communicative_force": "request_information",
+          "evidence_force": "information_request",
+          "evidence_schema": "communication_evidence.v1",
+          "parsed_predicate_lemma": "open",
+          "parsed_relation_schema": "communication_relation_projection.v1",
+          "parsed_relation_status": "selected_parse_unverified",
+          "parsed_subject": "gate",
+          "polar_answer_plan_minted": 1,
+          "polar_relation_support_minted": 1,
+          "question_polarity": "affirmed",
+          "relation_focus": "polar",
+          "relation_support": "supported",
+          "schema": "communication_interpretation.v1"
+        },
+        "plan_values": [
+          "yes"
+        ],
+        "support_count": 1
+      },
+      "baseline_answer_matches_oracle": true,
+      "baseline_rule_firings": 2,
+      "candidate": {
+        "conflict_outcome_count": 0,
+        "conflict_outcomes": [],
+        "interpretation": {
+          "anaphor": 0,
+          "arbitration_basis": "accepted_proposition_polar_answer",
+          "cognitive_disposition": "answer",
+          "cognitive_goal": "answer_or_learn",
+          "communicative_force": "request_information",
+          "evidence_force": "information_request",
+          "evidence_schema": "communication_evidence.v1",
+          "parsed_predicate_lemma": "open",
+          "parsed_relation_schema": "communication_relation_projection.v1",
+          "parsed_relation_status": "selected_parse_unverified",
+          "parsed_subject": "gate",
+          "polar_answer_plan_minted": 1,
+          "polar_relation_support_minted": 1,
+          "question_polarity": "affirmed",
+          "relation_focus": "polar",
+          "relation_support": "supported",
+          "schema": "communication_interpretation.v1"
+        },
+        "plan_values": [
+          "yes"
+        ],
+        "support_count": 1
+      },
+      "candidate_answer_matches_oracle": true,
+      "candidate_rule_firings": 2,
+      "case_id": "proposed_conflict",
+      "input_claims": [
+        {
+          "polarity": "affirmed",
+          "status": "accepted",
+          "subject": "gate"
+        },
+        {
+          "polarity": "negated",
+          "status": "proposed",
+          "subject": "gate"
+        }
+      ],
+      "pid": 2,
+      "primary_graph_digest_after": "cd53ec32d9f1030d2a12d15d750dc74f2ac75e1be34b58d970152b5c246f7f94",
+      "primary_graph_digest_before": "cd53ec32d9f1030d2a12d15d750dc74f2ac75e1be34b58d970152b5c246f7f94",
+      "primary_rules_after_count": 0,
+      "primary_rules_before_count": 0,
+      "primary_unchanged_before_return": true,
+      "replicate": 2,
+      "residual_digest": "df18cc076a3bdc25229487c4b11a1098c863d9fda66c904662f28f955725b2ac",
+      "residual_edges_added": 0,
+      "residual_nodes_added": 0,
+      "residual_nonempty": false,
+      "residual_return_error": null,
+      "residual_returned": false,
+      "returned_conflict_count": 0,
+      "returned_node_parity": true
+    },
+    {
+      "baseline": {
+        "conflict_outcome_count": 0,
+        "conflict_outcomes": [],
+        "interpretation": {
+          "anaphor": 0,
+          "arbitration_basis": "accepted_proposition_polar_answer",
+          "cognitive_disposition": "answer",
+          "cognitive_goal": "answer_or_learn",
+          "communicative_force": "request_information",
+          "evidence_force": "information_request",
+          "evidence_schema": "communication_evidence.v1",
+          "parsed_predicate_lemma": "open",
+          "parsed_relation_schema": "communication_relation_projection.v1",
+          "parsed_relation_status": "selected_parse_unverified",
+          "parsed_subject": "gate",
+          "polar_answer_plan_minted": 1,
+          "polar_relation_support_minted": 1,
+          "question_polarity": "affirmed",
+          "relation_focus": "polar",
+          "relation_support": "supported",
+          "schema": "communication_interpretation.v1"
+        },
+        "plan_values": [
+          "yes"
+        ],
+        "support_count": 1
+      },
+      "baseline_answer_matches_oracle": true,
+      "baseline_rule_firings": 2,
+      "candidate": {
+        "conflict_outcome_count": 0,
+        "conflict_outcomes": [],
+        "interpretation": {
+          "anaphor": 0,
+          "arbitration_basis": "accepted_proposition_polar_answer",
+          "cognitive_disposition": "answer",
+          "cognitive_goal": "answer_or_learn",
+          "communicative_force": "request_information",
+          "evidence_force": "information_request",
+          "evidence_schema": "communication_evidence.v1",
+          "parsed_predicate_lemma": "open",
+          "parsed_relation_schema": "communication_relation_projection.v1",
+          "parsed_relation_status": "selected_parse_unverified",
+          "parsed_subject": "gate",
+          "polar_answer_plan_minted": 1,
+          "polar_relation_support_minted": 1,
+          "question_polarity": "affirmed",
+          "relation_focus": "polar",
+          "relation_support": "supported",
+          "schema": "communication_interpretation.v1"
+        },
+        "plan_values": [
+          "yes"
+        ],
+        "support_count": 1
+      },
+      "candidate_answer_matches_oracle": true,
+      "candidate_rule_firings": 2,
+      "case_id": "different_subject",
+      "input_claims": [
+        {
+          "polarity": "affirmed",
+          "status": "accepted",
+          "subject": "gate"
+        },
+        {
+          "polarity": "negated",
+          "status": "accepted",
+          "subject": "door"
+        }
+      ],
+      "pid": 2,
+      "primary_graph_digest_after": "96d0bd0c0b793f1c50c2b87a2a959ed97e609c8cd24a64ec67415a75a713b436",
+      "primary_graph_digest_before": "96d0bd0c0b793f1c50c2b87a2a959ed97e609c8cd24a64ec67415a75a713b436",
+      "primary_rules_after_count": 0,
+      "primary_rules_before_count": 0,
+      "primary_unchanged_before_return": true,
+      "replicate": 0,
+      "residual_digest": "df18cc076a3bdc25229487c4b11a1098c863d9fda66c904662f28f955725b2ac",
+      "residual_edges_added": 0,
+      "residual_nodes_added": 0,
+      "residual_nonempty": false,
+      "residual_return_error": null,
+      "residual_returned": false,
+      "returned_conflict_count": 0,
+      "returned_node_parity": true
+    },
+    {
+      "baseline": {
+        "conflict_outcome_count": 0,
+        "conflict_outcomes": [],
+        "interpretation": {
+          "anaphor": 0,
+          "arbitration_basis": "accepted_proposition_polar_answer",
+          "cognitive_disposition": "answer",
+          "cognitive_goal": "answer_or_learn",
+          "communicative_force": "request_information",
+          "evidence_force": "information_request",
+          "evidence_schema": "communication_evidence.v1",
+          "parsed_predicate_lemma": "open",
+          "parsed_relation_schema": "communication_relation_projection.v1",
+          "parsed_relation_status": "selected_parse_unverified",
+          "parsed_subject": "gate",
+          "polar_answer_plan_minted": 1,
+          "polar_relation_support_minted": 1,
+          "question_polarity": "affirmed",
+          "relation_focus": "polar",
+          "relation_support": "supported",
+          "schema": "communication_interpretation.v1"
+        },
+        "plan_values": [
+          "yes"
+        ],
+        "support_count": 1
+      },
+      "baseline_answer_matches_oracle": true,
+      "baseline_rule_firings": 2,
+      "candidate": {
+        "conflict_outcome_count": 0,
+        "conflict_outcomes": [],
+        "interpretation": {
+          "anaphor": 0,
+          "arbitration_basis": "accepted_proposition_polar_answer",
+          "cognitive_disposition": "answer",
+          "cognitive_goal": "answer_or_learn",
+          "communicative_force": "request_information",
+          "evidence_force": "information_request",
+          "evidence_schema": "communication_evidence.v1",
+          "parsed_predicate_lemma": "open",
+          "parsed_relation_schema": "communication_relation_projection.v1",
+          "parsed_relation_status": "selected_parse_unverified",
+          "parsed_subject": "gate",
+          "polar_answer_plan_minted": 1,
+          "polar_relation_support_minted": 1,
+          "question_polarity": "affirmed",
+          "relation_focus": "polar",
+          "relation_support": "supported",
+          "schema": "communication_interpretation.v1"
+        },
+        "plan_values": [
+          "yes"
+        ],
+        "support_count": 1
+      },
+      "candidate_answer_matches_oracle": true,
+      "candidate_rule_firings": 2,
+      "case_id": "different_subject",
+      "input_claims": [
+        {
+          "polarity": "affirmed",
+          "status": "accepted",
+          "subject": "gate"
+        },
+        {
+          "polarity": "negated",
+          "status": "accepted",
+          "subject": "door"
+        }
+      ],
+      "pid": 2,
+      "primary_graph_digest_after": "537d5e93383acd391e0374a7a4ce733be6d081f098ce850a75124e5d381be386",
+      "primary_graph_digest_before": "537d5e93383acd391e0374a7a4ce733be6d081f098ce850a75124e5d381be386",
+      "primary_rules_after_count": 0,
+      "primary_rules_before_count": 0,
+      "primary_unchanged_before_return": true,
+      "replicate": 1,
+      "residual_digest": "df18cc076a3bdc25229487c4b11a1098c863d9fda66c904662f28f955725b2ac",
+      "residual_edges_added": 0,
+      "residual_nodes_added": 0,
+      "residual_nonempty": false,
+      "residual_return_error": null,
+      "residual_returned": false,
+      "returned_conflict_count": 0,
+      "returned_node_parity": true
+    },
+    {
+      "baseline": {
+        "conflict_outcome_count": 0,
+        "conflict_outcomes": [],
+        "interpretation": {
+          "anaphor": 0,
+          "arbitration_basis": "accepted_proposition_polar_answer",
+          "cognitive_disposition": "answer",
+          "cognitive_goal": "answer_or_learn",
+          "communicative_force": "request_information",
+          "evidence_force": "information_request",
+          "evidence_schema": "communication_evidence.v1",
+          "parsed_predicate_lemma": "open",
+          "parsed_relation_schema": "communication_relation_projection.v1",
+          "parsed_relation_status": "selected_parse_unverified",
+          "parsed_subject": "gate",
+          "polar_answer_plan_minted": 1,
+          "polar_relation_support_minted": 1,
+          "question_polarity": "affirmed",
+          "relation_focus": "polar",
+          "relation_support": "supported",
+          "schema": "communication_interpretation.v1"
+        },
+        "plan_values": [
+          "yes"
+        ],
+        "support_count": 1
+      },
+      "baseline_answer_matches_oracle": true,
+      "baseline_rule_firings": 2,
+      "candidate": {
+        "conflict_outcome_count": 0,
+        "conflict_outcomes": [],
+        "interpretation": {
+          "anaphor": 0,
+          "arbitration_basis": "accepted_proposition_polar_answer",
+          "cognitive_disposition": "answer",
+          "cognitive_goal": "answer_or_learn",
+          "communicative_force": "request_information",
+          "evidence_force": "information_request",
+          "evidence_schema": "communication_evidence.v1",
+          "parsed_predicate_lemma": "open",
+          "parsed_relation_schema": "communication_relation_projection.v1",
+          "parsed_relation_status": "selected_parse_unverified",
+          "parsed_subject": "gate",
+          "polar_answer_plan_minted": 1,
+          "polar_relation_support_minted": 1,
+          "question_polarity": "affirmed",
+          "relation_focus": "polar",
+          "relation_support": "supported",
+          "schema": "communication_interpretation.v1"
+        },
+        "plan_values": [
+          "yes"
+        ],
+        "support_count": 1
+      },
+      "candidate_answer_matches_oracle": true,
+      "candidate_rule_firings": 2,
+      "case_id": "different_subject",
+      "input_claims": [
+        {
+          "polarity": "affirmed",
+          "status": "accepted",
+          "subject": "gate"
+        },
+        {
+          "polarity": "negated",
+          "status": "accepted",
+          "subject": "door"
+        }
+      ],
+      "pid": 2,
+      "primary_graph_digest_after": "6132504654bca8d1ecea63b04a646b8924f92079aac4bc2be36a234570a47c56",
+      "primary_graph_digest_before": "6132504654bca8d1ecea63b04a646b8924f92079aac4bc2be36a234570a47c56",
+      "primary_rules_after_count": 0,
+      "primary_rules_before_count": 0,
+      "primary_unchanged_before_return": true,
+      "replicate": 2,
+      "residual_digest": "df18cc076a3bdc25229487c4b11a1098c863d9fda66c904662f28f955725b2ac",
+      "residual_edges_added": 0,
+      "residual_nodes_added": 0,
+      "residual_nonempty": false,
+      "residual_return_error": null,
+      "residual_returned": false,
+      "returned_conflict_count": 0,
+      "returned_node_parity": true
+    }
+  ],
+  "rust_source_fingerprint": "6130b317a8991b7d4226268aeacb6904f20b4efae0232c696bc18442f6e1cd1c",
+  "schema": "thoughtexperiment_polar_conflict_guard_v1"
+}

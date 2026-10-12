@@ -1,0 +1,5093 @@
+{
+  "claim_boundary": "synthetic rule firing queues RulePatch, TrackIdentity, and NetCollapse; audits enqueue producer and between-pass drain family counts",
+  "locked_inputs": {
+    "analyzer": "3c794f1853de6af64614c990e11b196655cafb921210b730db0320f5e781217e",
+    "graph_rules": "852c51d7011c60aabce9a9cf30e06d2162cceaf9c8cab04b9a9c548f91f8ea3d",
+    "native_build_manifest": "79561cb82ecbd33c6f20881b8f9de906349b7c969eb9d2eadbbfa5ad9af57163",
+    "native_extension": "27d8de9e6405b39785867721f0498c6d2f43aa5bc808f6301e3356bfc64fab8c",
+    "net_forward": "b99e8728d9b98e3137718e56bdfcefe1b37db4b359fa51f6e5f37fa7c9aebe73",
+    "protocol": "38172c5fc04634be56bda7a51ade19812663d92b7163527b4ebdc619c5b82faf",
+    "py_binding": "11c82c44174c05385050e75cd85a8ad4979b12e8f70e23308f37a42b1b6fcb4d",
+    "rewrite": "b0d09e786c79b7be55f5c83c06dae8cc6751a78fed4873466c422e452d98b627",
+    "runner": "3f28977091fd7930203767fe6929e85ed5fd92907196beedcfc0aac1121171c6",
+    "scale_audit": "2729e096f6eb500fbd7b9f9cdec46d448a236a45d66409b2308b578769f3943d",
+    "substrate": "44f0453e72d7855ce7d5bb646a182b4baed651fa5499dc0ffb09a625bb6ebc90",
+    "term": "0b91be836a6a7fe4587fb2ec3a944fdd6fb461838ca25151b1358c2158705fce"
+  },
+  "post_run_inputs": {
+    "analyzer": "3c794f1853de6af64614c990e11b196655cafb921210b730db0320f5e781217e",
+    "graph_rules": "852c51d7011c60aabce9a9cf30e06d2162cceaf9c8cab04b9a9c548f91f8ea3d",
+    "native_build_manifest": "79561cb82ecbd33c6f20881b8f9de906349b7c969eb9d2eadbbfa5ad9af57163",
+    "native_extension": "27d8de9e6405b39785867721f0498c6d2f43aa5bc808f6301e3356bfc64fab8c",
+    "net_forward": "b99e8728d9b98e3137718e56bdfcefe1b37db4b359fa51f6e5f37fa7c9aebe73",
+    "protocol": "38172c5fc04634be56bda7a51ade19812663d92b7163527b4ebdc619c5b82faf",
+    "py_binding": "11c82c44174c05385050e75cd85a8ad4979b12e8f70e23308f37a42b1b6fcb4d",
+    "rewrite": "b0d09e786c79b7be55f5c83c06dae8cc6751a78fed4873466c422e452d98b627",
+    "runner": "3f28977091fd7930203767fe6929e85ed5fd92907196beedcfc0aac1121171c6",
+    "scale_audit": "2729e096f6eb500fbd7b9f9cdec46d448a236a45d66409b2308b578769f3943d",
+    "substrate": "44f0453e72d7855ce7d5bb646a182b4baed651fa5499dc0ffb09a625bb6ebc90",
+    "term": "0b91be836a6a7fe4587fb2ec3a944fdd6fb461838ca25151b1358c2158705fce"
+  },
+  "run_id": "substrate-deferred-queue-audit-v2-20260926",
+  "runs": [
+    {
+      "arm": "full",
+      "audits": {
+        "full": {
+          "global": {
+            "apply_probe_rollbacks": 0,
+            "bindings_cloned": 2,
+            "cand_enum": 12,
+            "cand_enum_apply_once": 0,
+            "cand_enum_first": 6,
+            "cand_enum_hinted": 0,
+            "cand_enum_local": 8,
+            "cand_enum_repeat": 6,
+            "cand_enum_scan": 4,
+            "cand_reject_bound": 0,
+            "cand_tested": 12,
+            "deferred_queue:net_collapses:drain_batches": 1,
+            "deferred_queue:net_collapses:drain_ns": 3360,
+            "deferred_queue:net_collapses:drained_items": 1,
+            "deferred_queue:net_collapses:enqueued_items": 1,
+            "deferred_queue:rule_patches:drain_batches": 1,
+            "deferred_queue:rule_patches:drain_ns": 15400,
+            "deferred_queue:rule_patches:drained_items": 1,
+            "deferred_queue:rule_patches:enqueued_items": 1,
+            "deferred_queue:track_identity:drain_batches": 1,
+            "deferred_queue:track_identity:drain_ns": 2330,
+            "deferred_queue:track_identity:drained_items": 1,
+            "deferred_queue:track_identity:enqueued_items": 1,
+            "dim_infer_arg_calls": 0,
+            "dim_infer_arg_distinct_ordered": 0,
+            "dim_infer_arg_distinct_unordered": 0,
+            "epochs": 1,
+            "epochs_apply_once": 0,
+            "ffi_calls": 1,
+            "ffi_items": 1,
+            "ffi_pyobjects": 0,
+            "graph_writes": 0,
+            "leaf_visits": 2,
+            "pushdown_evals": 0,
+            "pushdown_prunes": 0,
+            "rule_effect_attr_set_attempts": 3,
+            "rule_effect_edge_deletes": 0,
+            "rule_effect_edge_insert_attempts": 0,
+            "rule_effect_node_delete_attempts": 0,
+            "rule_effect_node_inserts": 0,
+            "rule_effect_replace_edge_deletes": 0,
+            "rule_effect_replace_edge_insert_attempts": 0,
+            "rule_enumerations": 5,
+            "rule_enumerations_repeat": 3,
+            "scoped_full_fallback_rule_matches": 0,
+            "scoped_local_rule_matches": 0,
+            "scoped_mt_seeded_rule_matches": 0,
+            "term_eval:Attr": 5,
+            "term_eval:Eq": 2,
+            "term_eval:Lit": 3,
+            "term_eval:NodesOfType": 2,
+            "term_eval:Not": 2,
+            "term_eval:Var": 5,
+            "term_evals_total": 19,
+            "term_unit:NodesOfType": 2,
+            "term_units_total": 2,
+            "term_units_unattributed": 0,
+            "var_collisions": 0,
+            "where_evals": 4,
+            "where_evals_first": 2,
+            "where_evals_repeat": 2,
+            "where_rejects": 2
+          },
+          "per_rule": [
+            [
+              0,
+              "Lit",
+              1
+            ],
+            [
+              0,
+              "binding_clones",
+              1
+            ],
+            [
+              0,
+              "binding_leaves",
+              1
+            ],
+            [
+              0,
+              "candidate_pairs",
+              2
+            ],
+            [
+              0,
+              "candidate_tests",
+              2
+            ],
+            [
+              0,
+              "effect_attr_set_attempts",
+              1
+            ],
+            [
+              0,
+              "rule_enumerations",
+              2
+            ],
+            [
+              0,
+              "term_evaluations",
+              1
+            ],
+            [
+              0,
+              "where_evaluations",
+              2
+            ],
+            [
+              0,
+              "where_rejections",
+              1
+            ],
+            [
+              1,
+              "Attr",
+              5
+            ],
+            [
+              1,
+              "Eq",
+              2
+            ],
+            [
+              1,
+              "Lit",
+              2
+            ],
+            [
+              1,
+              "NodesOfType",
+              2
+            ],
+            [
+              1,
+              "Not",
+              2
+            ],
+            [
+              1,
+              "Var",
+              5
+            ],
+            [
+              1,
+              "binding_clones",
+              1
+            ],
+            [
+              1,
+              "binding_leaves",
+              1
+            ],
+            [
+              1,
+              "candidate_pairs",
+              10
+            ],
+            [
+              1,
+              "candidate_tests",
+              10
+            ],
+            [
+              1,
+              "deferred_queue_enqueued:net_collapses",
+              1
+            ],
+            [
+              1,
+              "deferred_queue_enqueued:rule_patches",
+              1
+            ],
+            [
+              1,
+              "deferred_queue_enqueued:track_identity",
+              1
+            ],
+            [
+              1,
+              "effect_attr_set_attempts",
+              2
+            ],
+            [
+              1,
+              "rule_enumerations",
+              3
+            ],
+            [
+              1,
+              "term_evaluations",
+              18
+            ],
+            [
+              1,
+              "term_units",
+              2
+            ],
+            [
+              1,
+              "where_evaluations",
+              2
+            ],
+            [
+              1,
+              "where_rejections",
+              1
+            ]
+          ]
+        }
+      },
+      "count": 1,
+      "global_report": {
+        "budget_overshoot": 0,
+        "cycle_detection_enabled": false,
+        "passes_completed": 3,
+        "progress_steps": 2,
+        "requested_progress_budget": 20000,
+        "status": "fixed_point"
+      },
+      "native_extension_sha256": "27d8de9e6405b39785867721f0498c6d2f43aa5bc808f6301e3356bfc64fab8c",
+      "pid": 3,
+      "replicate": 0,
+      "scoped_report": null,
+      "state": {
+        "identities": {
+          "current": [
+            5
+          ],
+          "previous": [
+            5
+          ]
+        },
+        "observation_status": "consumed",
+        "outputs": [
+          true
+        ],
+        "patch_reason": "ok",
+        "patch_result_revision": 1,
+        "patch_status": "committed",
+        "surprise": 0.15,
+        "target_content_hash": 5927251937629756515,
+        "target_revision": 1,
+        "trigger_fired": true,
+        "weights": {
+          "W2": [
+            [
+              0.05
+            ]
+          ],
+          "b2": [
+            0.05
+          ]
+        }
+      },
+      "terminal_progress": 0,
+      "terminal_status": "fixed_point",
+      "writer_rule_index": 1
+    },
+    {
+      "arm": "scoped_only",
+      "audits": {
+        "scoped": {
+          "global": {
+            "apply_probe_rollbacks": 0,
+            "bindings_cloned": 0,
+            "cand_enum": 5,
+            "cand_enum_apply_once": 0,
+            "cand_enum_first": 5,
+            "cand_enum_hinted": 0,
+            "cand_enum_local": 4,
+            "cand_enum_repeat": 0,
+            "cand_enum_scan": 1,
+            "cand_reject_bound": 0,
+            "cand_tested": 5,
+            "deferred_queue:net_collapses:enqueued_items": 1,
+            "deferred_queue:rule_patches:enqueued_items": 1,
+            "deferred_queue:track_identity:enqueued_items": 1,
+            "dim_infer_arg_calls": 0,
+            "dim_infer_arg_distinct_ordered": 0,
+            "dim_infer_arg_distinct_unordered": 0,
+            "epochs": 1,
+            "epochs_apply_once": 0,
+            "ffi_calls": 1,
+            "ffi_items": 1,
+            "ffi_pyobjects": 0,
+            "graph_writes": 0,
+            "leaf_visits": 1,
+            "pushdown_evals": 0,
+            "pushdown_prunes": 0,
+            "rule_effect_attr_set_attempts": 2,
+            "rule_effect_edge_deletes": 0,
+            "rule_effect_edge_insert_attempts": 0,
+            "rule_effect_node_delete_attempts": 0,
+            "rule_effect_node_inserts": 0,
+            "rule_effect_replace_edge_deletes": 0,
+            "rule_effect_replace_edge_insert_attempts": 0,
+            "rule_enumerations": 2,
+            "rule_enumerations_repeat": 0,
+            "scoped_full_fallback_rule_matches": 1,
+            "scoped_local_rule_matches": 1,
+            "scoped_mt_seeded_rule_matches": 0,
+            "term_eval:Attr": 4,
+            "term_eval:Eq": 1,
+            "term_eval:Lit": 1,
+            "term_eval:NodesOfType": 2,
+            "term_eval:Not": 1,
+            "term_eval:Var": 4,
+            "term_evals_total": 13,
+            "term_unit:NodesOfType": 2,
+            "term_units_total": 2,
+            "term_units_unattributed": 0,
+            "var_collisions": 0,
+            "where_evals": 1,
+            "where_evals_first": 1,
+            "where_evals_repeat": 0,
+            "where_rejects": 0
+          },
+          "per_rule": [
+            [
+              0,
+              "rule_enumerations",
+              1
+            ],
+            [
+              1,
+              "Attr",
+              4
+            ],
+            [
+              1,
+              "Eq",
+              1
+            ],
+            [
+              1,
+              "Lit",
+              1
+            ],
+            [
+              1,
+              "NodesOfType",
+              2
+            ],
+            [
+              1,
+              "Not",
+              1
+            ],
+            [
+              1,
+              "Var",
+              4
+            ],
+            [
+              1,
+              "binding_leaves",
+              1
+            ],
+            [
+              1,
+              "candidate_pairs",
+              5
+            ],
+            [
+              1,
+              "candidate_tests",
+              5
+            ],
+            [
+              1,
+              "deferred_queue_enqueued:net_collapses",
+              1
+            ],
+            [
+              1,
+              "deferred_queue_enqueued:rule_patches",
+              1
+            ],
+            [
+              1,
+              "deferred_queue_enqueued:track_identity",
+              1
+            ],
+            [
+              1,
+              "effect_attr_set_attempts",
+              2
+            ],
+            [
+              1,
+              "rule_enumerations",
+              1
+            ],
+            [
+              1,
+              "term_evaluations",
+              13
+            ],
+            [
+              1,
+              "term_units",
+              2
+            ],
+            [
+              1,
+              "where_evaluations",
+              1
+            ]
+          ]
+        }
+      },
+      "count": 1,
+      "global_report": null,
+      "native_extension_sha256": "27d8de9e6405b39785867721f0498c6d2f43aa5bc808f6301e3356bfc64fab8c",
+      "pid": 6,
+      "replicate": 0,
+      "scoped_report": {
+        "deferred_effects_pending": true,
+        "hit_progress_budget": true,
+        "progress_steps": 1
+      },
+      "state": {
+        "identities": {
+          "current": [
+            null
+          ],
+          "previous": [
+            null
+          ]
+        },
+        "observation_status": "consumed",
+        "outputs": [
+          false
+        ],
+        "patch_reason": null,
+        "patch_result_revision": null,
+        "patch_status": "pending",
+        "surprise": 0.0,
+        "target_content_hash": 8901692549051697090,
+        "target_revision": 0,
+        "trigger_fired": true,
+        "weights": {
+          "W2": [
+            [
+              0.0
+            ]
+          ],
+          "b2": [
+            0.0
+          ]
+        }
+      },
+      "terminal_progress": null,
+      "terminal_status": null,
+      "writer_rule_index": 1
+    },
+    {
+      "arm": "scoped_fallback",
+      "audits": {
+        "fallback": {
+          "global": {
+            "apply_probe_rollbacks": 0,
+            "bindings_cloned": 1,
+            "cand_enum": 6,
+            "cand_enum_apply_once": 0,
+            "cand_enum_first": 6,
+            "cand_enum_hinted": 0,
+            "cand_enum_local": 4,
+            "cand_enum_repeat": 0,
+            "cand_enum_scan": 2,
+            "cand_reject_bound": 0,
+            "cand_tested": 6,
+            "deferred_queue:net_collapses:drain_batches": 1,
+            "deferred_queue:net_collapses:drain_ns": 3880,
+            "deferred_queue:net_collapses:drained_items": 1,
+            "deferred_queue:rule_patches:drain_batches": 1,
+            "deferred_queue:rule_patches:drain_ns": 19520,
+            "deferred_queue:rule_patches:drained_items": 1,
+            "deferred_queue:track_identity:drain_batches": 1,
+            "deferred_queue:track_identity:drain_ns": 2030,
+            "deferred_queue:track_identity:drained_items": 1,
+            "dim_infer_arg_calls": 0,
+            "dim_infer_arg_distinct_ordered": 0,
+            "dim_infer_arg_distinct_unordered": 0,
+            "epochs": 1,
+            "epochs_apply_once": 0,
+            "ffi_calls": 1,
+            "ffi_items": 1,
+            "ffi_pyobjects": 0,
+            "graph_writes": 0,
+            "leaf_visits": 1,
+            "pushdown_evals": 0,
+            "pushdown_prunes": 0,
+            "rule_effect_attr_set_attempts": 1,
+            "rule_effect_edge_deletes": 0,
+            "rule_effect_edge_insert_attempts": 0,
+            "rule_effect_node_delete_attempts": 0,
+            "rule_effect_node_inserts": 0,
+            "rule_effect_replace_edge_deletes": 0,
+            "rule_effect_replace_edge_insert_attempts": 0,
+            "rule_enumerations": 3,
+            "rule_enumerations_repeat": 1,
+            "scoped_full_fallback_rule_matches": 0,
+            "scoped_local_rule_matches": 0,
+            "scoped_mt_seeded_rule_matches": 0,
+            "term_eval:Attr": 1,
+            "term_eval:Eq": 1,
+            "term_eval:Lit": 2,
+            "term_eval:Not": 1,
+            "term_eval:Var": 1,
+            "term_evals_total": 6,
+            "term_units_total": 0,
+            "term_units_unattributed": 0,
+            "var_collisions": 0,
+            "where_evals": 2,
+            "where_evals_first": 2,
+            "where_evals_repeat": 0,
+            "where_rejects": 1
+          },
+          "per_rule": [
+            [
+              0,
+              "Lit",
+              1
+            ],
+            [
+              0,
+              "binding_clones",
+              1
+            ],
+            [
+              0,
+              "binding_leaves",
+              1
+            ],
+            [
+              0,
+              "candidate_pairs",
+              1
+            ],
+            [
+              0,
+              "candidate_tests",
+              1
+            ],
+            [
+              0,
+              "effect_attr_set_attempts",
+              1
+            ],
+            [
+              0,
+              "rule_enumerations",
+              1
+            ],
+            [
+              0,
+              "term_evaluations",
+              1
+            ],
+            [
+              0,
+              "where_evaluations",
+              1
+            ],
+            [
+              1,
+              "Attr",
+              1
+            ],
+            [
+              1,
+              "Eq",
+              1
+            ],
+            [
+              1,
+              "Lit",
+              1
+            ],
+            [
+              1,
+              "Not",
+              1
+            ],
+            [
+              1,
+              "Var",
+              1
+            ],
+            [
+              1,
+              "candidate_pairs",
+              5
+            ],
+            [
+              1,
+              "candidate_tests",
+              5
+            ],
+            [
+              1,
+              "rule_enumerations",
+              2
+            ],
+            [
+              1,
+              "term_evaluations",
+              5
+            ],
+            [
+              1,
+              "where_evaluations",
+              1
+            ],
+            [
+              1,
+              "where_rejections",
+              1
+            ]
+          ]
+        },
+        "scoped": {
+          "global": {
+            "apply_probe_rollbacks": 0,
+            "bindings_cloned": 0,
+            "cand_enum": 5,
+            "cand_enum_apply_once": 0,
+            "cand_enum_first": 5,
+            "cand_enum_hinted": 0,
+            "cand_enum_local": 4,
+            "cand_enum_repeat": 0,
+            "cand_enum_scan": 1,
+            "cand_reject_bound": 0,
+            "cand_tested": 5,
+            "deferred_queue:net_collapses:enqueued_items": 1,
+            "deferred_queue:rule_patches:enqueued_items": 1,
+            "deferred_queue:track_identity:enqueued_items": 1,
+            "dim_infer_arg_calls": 0,
+            "dim_infer_arg_distinct_ordered": 0,
+            "dim_infer_arg_distinct_unordered": 0,
+            "epochs": 1,
+            "epochs_apply_once": 0,
+            "ffi_calls": 1,
+            "ffi_items": 1,
+            "ffi_pyobjects": 0,
+            "graph_writes": 0,
+            "leaf_visits": 1,
+            "pushdown_evals": 0,
+            "pushdown_prunes": 0,
+            "rule_effect_attr_set_attempts": 2,
+            "rule_effect_edge_deletes": 0,
+            "rule_effect_edge_insert_attempts": 0,
+            "rule_effect_node_delete_attempts": 0,
+            "rule_effect_node_inserts": 0,
+            "rule_effect_replace_edge_deletes": 0,
+            "rule_effect_replace_edge_insert_attempts": 0,
+            "rule_enumerations": 2,
+            "rule_enumerations_repeat": 0,
+            "scoped_full_fallback_rule_matches": 1,
+            "scoped_local_rule_matches": 1,
+            "scoped_mt_seeded_rule_matches": 0,
+            "term_eval:Attr": 4,
+            "term_eval:Eq": 1,
+            "term_eval:Lit": 1,
+            "term_eval:NodesOfType": 2,
+            "term_eval:Not": 1,
+            "term_eval:Var": 4,
+            "term_evals_total": 13,
+            "term_unit:NodesOfType": 2,
+            "term_units_total": 2,
+            "term_units_unattributed": 0,
+            "var_collisions": 0,
+            "where_evals": 1,
+            "where_evals_first": 1,
+            "where_evals_repeat": 0,
+            "where_rejects": 0
+          },
+          "per_rule": [
+            [
+              0,
+              "rule_enumerations",
+              1
+            ],
+            [
+              1,
+              "Attr",
+              4
+            ],
+            [
+              1,
+              "Eq",
+              1
+            ],
+            [
+              1,
+              "Lit",
+              1
+            ],
+            [
+              1,
+              "NodesOfType",
+              2
+            ],
+            [
+              1,
+              "Not",
+              1
+            ],
+            [
+              1,
+              "Var",
+              4
+            ],
+            [
+              1,
+              "binding_leaves",
+              1
+            ],
+            [
+              1,
+              "candidate_pairs",
+              5
+            ],
+            [
+              1,
+              "candidate_tests",
+              5
+            ],
+            [
+              1,
+              "deferred_queue_enqueued:net_collapses",
+              1
+            ],
+            [
+              1,
+              "deferred_queue_enqueued:rule_patches",
+              1
+            ],
+            [
+              1,
+              "deferred_queue_enqueued:track_identity",
+              1
+            ],
+            [
+              1,
+              "effect_attr_set_attempts",
+              2
+            ],
+            [
+              1,
+              "rule_enumerations",
+              1
+            ],
+            [
+              1,
+              "term_evaluations",
+              13
+            ],
+            [
+              1,
+              "term_units",
+              2
+            ],
+            [
+              1,
+              "where_evaluations",
+              1
+            ]
+          ]
+        }
+      },
+      "count": 1,
+      "global_report": {
+        "budget_overshoot": 0,
+        "cycle_detection_enabled": false,
+        "passes_completed": 2,
+        "progress_steps": 1,
+        "requested_progress_budget": 20000,
+        "status": "fixed_point"
+      },
+      "native_extension_sha256": "27d8de9e6405b39785867721f0498c6d2f43aa5bc808f6301e3356bfc64fab8c",
+      "pid": 9,
+      "replicate": 0,
+      "scoped_report": {
+        "deferred_effects_pending": true,
+        "hit_progress_budget": true,
+        "progress_steps": 1
+      },
+      "state": {
+        "identities": {
+          "current": [
+            5
+          ],
+          "previous": [
+            5
+          ]
+        },
+        "observation_status": "consumed",
+        "outputs": [
+          true
+        ],
+        "patch_reason": "ok",
+        "patch_result_revision": 1,
+        "patch_status": "committed",
+        "surprise": 0.15,
+        "target_content_hash": 5927251937629756515,
+        "target_revision": 1,
+        "trigger_fired": true,
+        "weights": {
+          "W2": [
+            [
+              0.05
+            ]
+          ],
+          "b2": [
+            0.05
+          ]
+        }
+      },
+      "terminal_progress": 0,
+      "terminal_status": "fixed_point",
+      "writer_rule_index": 1
+    },
+    {
+      "arm": "full",
+      "audits": {
+        "full": {
+          "global": {
+            "apply_probe_rollbacks": 0,
+            "bindings_cloned": 2,
+            "cand_enum": 12,
+            "cand_enum_apply_once": 0,
+            "cand_enum_first": 6,
+            "cand_enum_hinted": 0,
+            "cand_enum_local": 8,
+            "cand_enum_repeat": 6,
+            "cand_enum_scan": 4,
+            "cand_reject_bound": 0,
+            "cand_tested": 12,
+            "deferred_queue:net_collapses:drain_batches": 1,
+            "deferred_queue:net_collapses:drain_ns": 4590,
+            "deferred_queue:net_collapses:drained_items": 1,
+            "deferred_queue:net_collapses:enqueued_items": 1,
+            "deferred_queue:rule_patches:drain_batches": 1,
+            "deferred_queue:rule_patches:drain_ns": 21930,
+            "deferred_queue:rule_patches:drained_items": 1,
+            "deferred_queue:rule_patches:enqueued_items": 1,
+            "deferred_queue:track_identity:drain_batches": 1,
+            "deferred_queue:track_identity:drain_ns": 3110,
+            "deferred_queue:track_identity:drained_items": 1,
+            "deferred_queue:track_identity:enqueued_items": 1,
+            "dim_infer_arg_calls": 0,
+            "dim_infer_arg_distinct_ordered": 0,
+            "dim_infer_arg_distinct_unordered": 0,
+            "epochs": 1,
+            "epochs_apply_once": 0,
+            "ffi_calls": 1,
+            "ffi_items": 1,
+            "ffi_pyobjects": 0,
+            "graph_writes": 0,
+            "leaf_visits": 2,
+            "pushdown_evals": 0,
+            "pushdown_prunes": 0,
+            "rule_effect_attr_set_attempts": 3,
+            "rule_effect_edge_deletes": 0,
+            "rule_effect_edge_insert_attempts": 0,
+            "rule_effect_node_delete_attempts": 0,
+            "rule_effect_node_inserts": 0,
+            "rule_effect_replace_edge_deletes": 0,
+            "rule_effect_replace_edge_insert_attempts": 0,
+            "rule_enumerations": 5,
+            "rule_enumerations_repeat": 3,
+            "scoped_full_fallback_rule_matches": 0,
+            "scoped_local_rule_matches": 0,
+            "scoped_mt_seeded_rule_matches": 0,
+            "term_eval:Attr": 5,
+            "term_eval:Eq": 2,
+            "term_eval:Lit": 3,
+            "term_eval:NodesOfType": 2,
+            "term_eval:Not": 2,
+            "term_eval:Var": 5,
+            "term_evals_total": 19,
+            "term_unit:NodesOfType": 2,
+            "term_units_total": 2,
+            "term_units_unattributed": 0,
+            "var_collisions": 0,
+            "where_evals": 4,
+            "where_evals_first": 2,
+            "where_evals_repeat": 2,
+            "where_rejects": 2
+          },
+          "per_rule": [
+            [
+              0,
+              "Lit",
+              1
+            ],
+            [
+              0,
+              "binding_clones",
+              1
+            ],
+            [
+              0,
+              "binding_leaves",
+              1
+            ],
+            [
+              0,
+              "candidate_pairs",
+              2
+            ],
+            [
+              0,
+              "candidate_tests",
+              2
+            ],
+            [
+              0,
+              "effect_attr_set_attempts",
+              1
+            ],
+            [
+              0,
+              "rule_enumerations",
+              2
+            ],
+            [
+              0,
+              "term_evaluations",
+              1
+            ],
+            [
+              0,
+              "where_evaluations",
+              2
+            ],
+            [
+              0,
+              "where_rejections",
+              1
+            ],
+            [
+              1,
+              "Attr",
+              5
+            ],
+            [
+              1,
+              "Eq",
+              2
+            ],
+            [
+              1,
+              "Lit",
+              2
+            ],
+            [
+              1,
+              "NodesOfType",
+              2
+            ],
+            [
+              1,
+              "Not",
+              2
+            ],
+            [
+              1,
+              "Var",
+              5
+            ],
+            [
+              1,
+              "binding_clones",
+              1
+            ],
+            [
+              1,
+              "binding_leaves",
+              1
+            ],
+            [
+              1,
+              "candidate_pairs",
+              10
+            ],
+            [
+              1,
+              "candidate_tests",
+              10
+            ],
+            [
+              1,
+              "deferred_queue_enqueued:net_collapses",
+              1
+            ],
+            [
+              1,
+              "deferred_queue_enqueued:rule_patches",
+              1
+            ],
+            [
+              1,
+              "deferred_queue_enqueued:track_identity",
+              1
+            ],
+            [
+              1,
+              "effect_attr_set_attempts",
+              2
+            ],
+            [
+              1,
+              "rule_enumerations",
+              3
+            ],
+            [
+              1,
+              "term_evaluations",
+              18
+            ],
+            [
+              1,
+              "term_units",
+              2
+            ],
+            [
+              1,
+              "where_evaluations",
+              2
+            ],
+            [
+              1,
+              "where_rejections",
+              1
+            ]
+          ]
+        }
+      },
+      "count": 1,
+      "global_report": {
+        "budget_overshoot": 0,
+        "cycle_detection_enabled": false,
+        "passes_completed": 3,
+        "progress_steps": 2,
+        "requested_progress_budget": 20000,
+        "status": "fixed_point"
+      },
+      "native_extension_sha256": "27d8de9e6405b39785867721f0498c6d2f43aa5bc808f6301e3356bfc64fab8c",
+      "pid": 12,
+      "replicate": 1,
+      "scoped_report": null,
+      "state": {
+        "identities": {
+          "current": [
+            5
+          ],
+          "previous": [
+            5
+          ]
+        },
+        "observation_status": "consumed",
+        "outputs": [
+          true
+        ],
+        "patch_reason": "ok",
+        "patch_result_revision": 1,
+        "patch_status": "committed",
+        "surprise": 0.15,
+        "target_content_hash": 5927251937629756515,
+        "target_revision": 1,
+        "trigger_fired": true,
+        "weights": {
+          "W2": [
+            [
+              0.05
+            ]
+          ],
+          "b2": [
+            0.05
+          ]
+        }
+      },
+      "terminal_progress": 0,
+      "terminal_status": "fixed_point",
+      "writer_rule_index": 1
+    },
+    {
+      "arm": "scoped_only",
+      "audits": {
+        "scoped": {
+          "global": {
+            "apply_probe_rollbacks": 0,
+            "bindings_cloned": 0,
+            "cand_enum": 5,
+            "cand_enum_apply_once": 0,
+            "cand_enum_first": 5,
+            "cand_enum_hinted": 0,
+            "cand_enum_local": 4,
+            "cand_enum_repeat": 0,
+            "cand_enum_scan": 1,
+            "cand_reject_bound": 0,
+            "cand_tested": 5,
+            "deferred_queue:net_collapses:enqueued_items": 1,
+            "deferred_queue:rule_patches:enqueued_items": 1,
+            "deferred_queue:track_identity:enqueued_items": 1,
+            "dim_infer_arg_calls": 0,
+            "dim_infer_arg_distinct_ordered": 0,
+            "dim_infer_arg_distinct_unordered": 0,
+            "epochs": 1,
+            "epochs_apply_once": 0,
+            "ffi_calls": 1,
+            "ffi_items": 1,
+            "ffi_pyobjects": 0,
+            "graph_writes": 0,
+            "leaf_visits": 1,
+            "pushdown_evals": 0,
+            "pushdown_prunes": 0,
+            "rule_effect_attr_set_attempts": 2,
+            "rule_effect_edge_deletes": 0,
+            "rule_effect_edge_insert_attempts": 0,
+            "rule_effect_node_delete_attempts": 0,
+            "rule_effect_node_inserts": 0,
+            "rule_effect_replace_edge_deletes": 0,
+            "rule_effect_replace_edge_insert_attempts": 0,
+            "rule_enumerations": 2,
+            "rule_enumerations_repeat": 0,
+            "scoped_full_fallback_rule_matches": 1,
+            "scoped_local_rule_matches": 1,
+            "scoped_mt_seeded_rule_matches": 0,
+            "term_eval:Attr": 4,
+            "term_eval:Eq": 1,
+            "term_eval:Lit": 1,
+            "term_eval:NodesOfType": 2,
+            "term_eval:Not": 1,
+            "term_eval:Var": 4,
+            "term_evals_total": 13,
+            "term_unit:NodesOfType": 2,
+            "term_units_total": 2,
+            "term_units_unattributed": 0,
+            "var_collisions": 0,
+            "where_evals": 1,
+            "where_evals_first": 1,
+            "where_evals_repeat": 0,
+            "where_rejects": 0
+          },
+          "per_rule": [
+            [
+              0,
+              "rule_enumerations",
+              1
+            ],
+            [
+              1,
+              "Attr",
+              4
+            ],
+            [
+              1,
+              "Eq",
+              1
+            ],
+            [
+              1,
+              "Lit",
+              1
+            ],
+            [
+              1,
+              "NodesOfType",
+              2
+            ],
+            [
+              1,
+              "Not",
+              1
+            ],
+            [
+              1,
+              "Var",
+              4
+            ],
+            [
+              1,
+              "binding_leaves",
+              1
+            ],
+            [
+              1,
+              "candidate_pairs",
+              5
+            ],
+            [
+              1,
+              "candidate_tests",
+              5
+            ],
+            [
+              1,
+              "deferred_queue_enqueued:net_collapses",
+              1
+            ],
+            [
+              1,
+              "deferred_queue_enqueued:rule_patches",
+              1
+            ],
+            [
+              1,
+              "deferred_queue_enqueued:track_identity",
+              1
+            ],
+            [
+              1,
+              "effect_attr_set_attempts",
+              2
+            ],
+            [
+              1,
+              "rule_enumerations",
+              1
+            ],
+            [
+              1,
+              "term_evaluations",
+              13
+            ],
+            [
+              1,
+              "term_units",
+              2
+            ],
+            [
+              1,
+              "where_evaluations",
+              1
+            ]
+          ]
+        }
+      },
+      "count": 1,
+      "global_report": null,
+      "native_extension_sha256": "27d8de9e6405b39785867721f0498c6d2f43aa5bc808f6301e3356bfc64fab8c",
+      "pid": 15,
+      "replicate": 1,
+      "scoped_report": {
+        "deferred_effects_pending": true,
+        "hit_progress_budget": true,
+        "progress_steps": 1
+      },
+      "state": {
+        "identities": {
+          "current": [
+            null
+          ],
+          "previous": [
+            null
+          ]
+        },
+        "observation_status": "consumed",
+        "outputs": [
+          false
+        ],
+        "patch_reason": null,
+        "patch_result_revision": null,
+        "patch_status": "pending",
+        "surprise": 0.0,
+        "target_content_hash": 8901692549051697090,
+        "target_revision": 0,
+        "trigger_fired": true,
+        "weights": {
+          "W2": [
+            [
+              0.0
+            ]
+          ],
+          "b2": [
+            0.0
+          ]
+        }
+      },
+      "terminal_progress": null,
+      "terminal_status": null,
+      "writer_rule_index": 1
+    },
+    {
+      "arm": "scoped_fallback",
+      "audits": {
+        "fallback": {
+          "global": {
+            "apply_probe_rollbacks": 0,
+            "bindings_cloned": 1,
+            "cand_enum": 6,
+            "cand_enum_apply_once": 0,
+            "cand_enum_first": 6,
+            "cand_enum_hinted": 0,
+            "cand_enum_local": 4,
+            "cand_enum_repeat": 0,
+            "cand_enum_scan": 2,
+            "cand_reject_bound": 0,
+            "cand_tested": 6,
+            "deferred_queue:net_collapses:drain_batches": 1,
+            "deferred_queue:net_collapses:drain_ns": 3580,
+            "deferred_queue:net_collapses:drained_items": 1,
+            "deferred_queue:rule_patches:drain_batches": 1,
+            "deferred_queue:rule_patches:drain_ns": 19200,
+            "deferred_queue:rule_patches:drained_items": 1,
+            "deferred_queue:track_identity:drain_batches": 1,
+            "deferred_queue:track_identity:drain_ns": 1960,
+            "deferred_queue:track_identity:drained_items": 1,
+            "dim_infer_arg_calls": 0,
+            "dim_infer_arg_distinct_ordered": 0,
+            "dim_infer_arg_distinct_unordered": 0,
+            "epochs": 1,
+            "epochs_apply_once": 0,
+            "ffi_calls": 1,
+            "ffi_items": 1,
+            "ffi_pyobjects": 0,
+            "graph_writes": 0,
+            "leaf_visits": 1,
+            "pushdown_evals": 0,
+            "pushdown_prunes": 0,
+            "rule_effect_attr_set_attempts": 1,
+            "rule_effect_edge_deletes": 0,
+            "rule_effect_edge_insert_attempts": 0,
+            "rule_effect_node_delete_attempts": 0,
+            "rule_effect_node_inserts": 0,
+            "rule_effect_replace_edge_deletes": 0,
+            "rule_effect_replace_edge_insert_attempts": 0,
+            "rule_enumerations": 3,
+            "rule_enumerations_repeat": 1,
+            "scoped_full_fallback_rule_matches": 0,
+            "scoped_local_rule_matches": 0,
+            "scoped_mt_seeded_rule_matches": 0,
+            "term_eval:Attr": 1,
+            "term_eval:Eq": 1,
+            "term_eval:Lit": 2,
+            "term_eval:Not": 1,
+            "term_eval:Var": 1,
+            "term_evals_total": 6,
+            "term_units_total": 0,
+            "term_units_unattributed": 0,
+            "var_collisions": 0,
+            "where_evals": 2,
+            "where_evals_first": 2,
+            "where_evals_repeat": 0,
+            "where_rejects": 1
+          },
+          "per_rule": [
+            [
+              0,
+              "Lit",
+              1
+            ],
+            [
+              0,
+              "binding_clones",
+              1
+            ],
+            [
+              0,
+              "binding_leaves",
+              1
+            ],
+            [
+              0,
+              "candidate_pairs",
+              1
+            ],
+            [
+              0,
+              "candidate_tests",
+              1
+            ],
+            [
+              0,
+              "effect_attr_set_attempts",
+              1
+            ],
+            [
+              0,
+              "rule_enumerations",
+              1
+            ],
+            [
+              0,
+              "term_evaluations",
+              1
+            ],
+            [
+              0,
+              "where_evaluations",
+              1
+            ],
+            [
+              1,
+              "Attr",
+              1
+            ],
+            [
+              1,
+              "Eq",
+              1
+            ],
+            [
+              1,
+              "Lit",
+              1
+            ],
+            [
+              1,
+              "Not",
+              1
+            ],
+            [
+              1,
+              "Var",
+              1
+            ],
+            [
+              1,
+              "candidate_pairs",
+              5
+            ],
+            [
+              1,
+              "candidate_tests",
+              5
+            ],
+            [
+              1,
+              "rule_enumerations",
+              2
+            ],
+            [
+              1,
+              "term_evaluations",
+              5
+            ],
+            [
+              1,
+              "where_evaluations",
+              1
+            ],
+            [
+              1,
+              "where_rejections",
+              1
+            ]
+          ]
+        },
+        "scoped": {
+          "global": {
+            "apply_probe_rollbacks": 0,
+            "bindings_cloned": 0,
+            "cand_enum": 5,
+            "cand_enum_apply_once": 0,
+            "cand_enum_first": 5,
+            "cand_enum_hinted": 0,
+            "cand_enum_local": 4,
+            "cand_enum_repeat": 0,
+            "cand_enum_scan": 1,
+            "cand_reject_bound": 0,
+            "cand_tested": 5,
+            "deferred_queue:net_collapses:enqueued_items": 1,
+            "deferred_queue:rule_patches:enqueued_items": 1,
+            "deferred_queue:track_identity:enqueued_items": 1,
+            "dim_infer_arg_calls": 0,
+            "dim_infer_arg_distinct_ordered": 0,
+            "dim_infer_arg_distinct_unordered": 0,
+            "epochs": 1,
+            "epochs_apply_once": 0,
+            "ffi_calls": 1,
+            "ffi_items": 1,
+            "ffi_pyobjects": 0,
+            "graph_writes": 0,
+            "leaf_visits": 1,
+            "pushdown_evals": 0,
+            "pushdown_prunes": 0,
+            "rule_effect_attr_set_attempts": 2,
+            "rule_effect_edge_deletes": 0,
+            "rule_effect_edge_insert_attempts": 0,
+            "rule_effect_node_delete_attempts": 0,
+            "rule_effect_node_inserts": 0,
+            "rule_effect_replace_edge_deletes": 0,
+            "rule_effect_replace_edge_insert_attempts": 0,
+            "rule_enumerations": 2,
+            "rule_enumerations_repeat": 0,
+            "scoped_full_fallback_rule_matches": 1,
+            "scoped_local_rule_matches": 1,
+            "scoped_mt_seeded_rule_matches": 0,
+            "term_eval:Attr": 4,
+            "term_eval:Eq": 1,
+            "term_eval:Lit": 1,
+            "term_eval:NodesOfType": 2,
+            "term_eval:Not": 1,
+            "term_eval:Var": 4,
+            "term_evals_total": 13,
+            "term_unit:NodesOfType": 2,
+            "term_units_total": 2,
+            "term_units_unattributed": 0,
+            "var_collisions": 0,
+            "where_evals": 1,
+            "where_evals_first": 1,
+            "where_evals_repeat": 0,
+            "where_rejects": 0
+          },
+          "per_rule": [
+            [
+              0,
+              "rule_enumerations",
+              1
+            ],
+            [
+              1,
+              "Attr",
+              4
+            ],
+            [
+              1,
+              "Eq",
+              1
+            ],
+            [
+              1,
+              "Lit",
+              1
+            ],
+            [
+              1,
+              "NodesOfType",
+              2
+            ],
+            [
+              1,
+              "Not",
+              1
+            ],
+            [
+              1,
+              "Var",
+              4
+            ],
+            [
+              1,
+              "binding_leaves",
+              1
+            ],
+            [
+              1,
+              "candidate_pairs",
+              5
+            ],
+            [
+              1,
+              "candidate_tests",
+              5
+            ],
+            [
+              1,
+              "deferred_queue_enqueued:net_collapses",
+              1
+            ],
+            [
+              1,
+              "deferred_queue_enqueued:rule_patches",
+              1
+            ],
+            [
+              1,
+              "deferred_queue_enqueued:track_identity",
+              1
+            ],
+            [
+              1,
+              "effect_attr_set_attempts",
+              2
+            ],
+            [
+              1,
+              "rule_enumerations",
+              1
+            ],
+            [
+              1,
+              "term_evaluations",
+              13
+            ],
+            [
+              1,
+              "term_units",
+              2
+            ],
+            [
+              1,
+              "where_evaluations",
+              1
+            ]
+          ]
+        }
+      },
+      "count": 1,
+      "global_report": {
+        "budget_overshoot": 0,
+        "cycle_detection_enabled": false,
+        "passes_completed": 2,
+        "progress_steps": 1,
+        "requested_progress_budget": 20000,
+        "status": "fixed_point"
+      },
+      "native_extension_sha256": "27d8de9e6405b39785867721f0498c6d2f43aa5bc808f6301e3356bfc64fab8c",
+      "pid": 18,
+      "replicate": 1,
+      "scoped_report": {
+        "deferred_effects_pending": true,
+        "hit_progress_budget": true,
+        "progress_steps": 1
+      },
+      "state": {
+        "identities": {
+          "current": [
+            5
+          ],
+          "previous": [
+            5
+          ]
+        },
+        "observation_status": "consumed",
+        "outputs": [
+          true
+        ],
+        "patch_reason": "ok",
+        "patch_result_revision": 1,
+        "patch_status": "committed",
+        "surprise": 0.15,
+        "target_content_hash": 5927251937629756515,
+        "target_revision": 1,
+        "trigger_fired": true,
+        "weights": {
+          "W2": [
+            [
+              0.05
+            ]
+          ],
+          "b2": [
+            0.05
+          ]
+        }
+      },
+      "terminal_progress": 0,
+      "terminal_status": "fixed_point",
+      "writer_rule_index": 1
+    },
+    {
+      "arm": "full",
+      "audits": {
+        "full": {
+          "global": {
+            "apply_probe_rollbacks": 0,
+            "bindings_cloned": 3,
+            "cand_enum": 14,
+            "cand_enum_apply_once": 0,
+            "cand_enum_first": 7,
+            "cand_enum_hinted": 0,
+            "cand_enum_local": 8,
+            "cand_enum_repeat": 7,
+            "cand_enum_scan": 6,
+            "cand_reject_bound": 0,
+            "cand_tested": 14,
+            "deferred_queue:net_collapses:drain_batches": 1,
+            "deferred_queue:net_collapses:drain_ns": 3530,
+            "deferred_queue:net_collapses:drained_items": 1,
+            "deferred_queue:net_collapses:enqueued_items": 1,
+            "deferred_queue:rule_patches:drain_batches": 1,
+            "deferred_queue:rule_patches:drain_ns": 15370,
+            "deferred_queue:rule_patches:drained_items": 1,
+            "deferred_queue:rule_patches:enqueued_items": 1,
+            "deferred_queue:track_identity:drain_batches": 1,
+            "deferred_queue:track_identity:drain_ns": 2610,
+            "deferred_queue:track_identity:drained_items": 1,
+            "deferred_queue:track_identity:enqueued_items": 1,
+            "dim_infer_arg_calls": 0,
+            "dim_infer_arg_distinct_ordered": 0,
+            "dim_infer_arg_distinct_unordered": 0,
+            "epochs": 1,
+            "epochs_apply_once": 0,
+            "ffi_calls": 1,
+            "ffi_items": 1,
+            "ffi_pyobjects": 0,
+            "graph_writes": 0,
+            "leaf_visits": 3,
+            "pushdown_evals": 0,
+            "pushdown_prunes": 0,
+            "rule_effect_attr_set_attempts": 4,
+            "rule_effect_edge_deletes": 0,
+            "rule_effect_edge_insert_attempts": 0,
+            "rule_effect_node_delete_attempts": 0,
+            "rule_effect_node_inserts": 0,
+            "rule_effect_replace_edge_deletes": 0,
+            "rule_effect_replace_edge_insert_attempts": 0,
+            "rule_enumerations": 5,
+            "rule_enumerations_repeat": 3,
+            "scoped_full_fallback_rule_matches": 0,
+            "scoped_local_rule_matches": 0,
+            "scoped_mt_seeded_rule_matches": 0,
+            "term_eval:Attr": 5,
+            "term_eval:Eq": 2,
+            "term_eval:Lit": 4,
+            "term_eval:NodesOfType": 2,
+            "term_eval:Not": 2,
+            "term_eval:Var": 5,
+            "term_evals_total": 20,
+            "term_unit:NodesOfType": 4,
+            "term_units_total": 4,
+            "term_units_unattributed": 0,
+            "var_collisions": 0,
+            "where_evals": 6,
+            "where_evals_first": 3,
+            "where_evals_repeat": 3,
+            "where_rejects": 3
+          },
+          "per_rule": [
+            [
+              0,
+              "Lit",
+              2
+            ],
+            [
+              0,
+              "binding_clones",
+              2
+            ],
+            [
+              0,
+              "binding_leaves",
+              2
+            ],
+            [
+              0,
+              "candidate_pairs",
+              4
+            ],
+            [
+              0,
+              "candidate_tests",
+              4
+            ],
+            [
+              0,
+              "effect_attr_set_attempts",
+              2
+            ],
+            [
+              0,
+              "rule_enumerations",
+              2
+            ],
+            [
+              0,
+              "term_evaluations",
+              2
+            ],
+            [
+              0,
+              "where_evaluations",
+              4
+            ],
+            [
+              0,
+              "where_rejections",
+              2
+            ],
+            [
+              1,
+              "Attr",
+              5
+            ],
+            [
+              1,
+              "Eq",
+              2
+            ],
+            [
+              1,
+              "Lit",
+              2
+            ],
+            [
+              1,
+              "NodesOfType",
+              2
+            ],
+            [
+              1,
+              "Not",
+              2
+            ],
+            [
+              1,
+              "Var",
+              5
+            ],
+            [
+              1,
+              "binding_clones",
+              1
+            ],
+            [
+              1,
+              "binding_leaves",
+              1
+            ],
+            [
+              1,
+              "candidate_pairs",
+              10
+            ],
+            [
+              1,
+              "candidate_tests",
+              10
+            ],
+            [
+              1,
+              "deferred_queue_enqueued:net_collapses",
+              1
+            ],
+            [
+              1,
+              "deferred_queue_enqueued:rule_patches",
+              1
+            ],
+            [
+              1,
+              "deferred_queue_enqueued:track_identity",
+              1
+            ],
+            [
+              1,
+              "effect_attr_set_attempts",
+              2
+            ],
+            [
+              1,
+              "rule_enumerations",
+              3
+            ],
+            [
+              1,
+              "term_evaluations",
+              18
+            ],
+            [
+              1,
+              "term_units",
+              4
+            ],
+            [
+              1,
+              "where_evaluations",
+              2
+            ],
+            [
+              1,
+              "where_rejections",
+              1
+            ]
+          ]
+        }
+      },
+      "count": 2,
+      "global_report": {
+        "budget_overshoot": 0,
+        "cycle_detection_enabled": false,
+        "passes_completed": 3,
+        "progress_steps": 2,
+        "requested_progress_budget": 20000,
+        "status": "fixed_point"
+      },
+      "native_extension_sha256": "27d8de9e6405b39785867721f0498c6d2f43aa5bc808f6301e3356bfc64fab8c",
+      "pid": 21,
+      "replicate": 0,
+      "scoped_report": null,
+      "state": {
+        "identities": {
+          "current": [
+            5,
+            10
+          ],
+          "previous": [
+            5,
+            10
+          ]
+        },
+        "observation_status": "consumed",
+        "outputs": [
+          true,
+          true
+        ],
+        "patch_reason": "ok",
+        "patch_result_revision": 1,
+        "patch_status": "committed",
+        "surprise": 0.15,
+        "target_content_hash": 5927251937629756515,
+        "target_revision": 1,
+        "trigger_fired": true,
+        "weights": {
+          "W2": [
+            [
+              0.05
+            ]
+          ],
+          "b2": [
+            0.05
+          ]
+        }
+      },
+      "terminal_progress": 0,
+      "terminal_status": "fixed_point",
+      "writer_rule_index": 1
+    },
+    {
+      "arm": "scoped_only",
+      "audits": {
+        "scoped": {
+          "global": {
+            "apply_probe_rollbacks": 0,
+            "bindings_cloned": 0,
+            "cand_enum": 5,
+            "cand_enum_apply_once": 0,
+            "cand_enum_first": 5,
+            "cand_enum_hinted": 0,
+            "cand_enum_local": 4,
+            "cand_enum_repeat": 0,
+            "cand_enum_scan": 1,
+            "cand_reject_bound": 0,
+            "cand_tested": 5,
+            "deferred_queue:net_collapses:enqueued_items": 1,
+            "deferred_queue:rule_patches:enqueued_items": 1,
+            "deferred_queue:track_identity:enqueued_items": 1,
+            "dim_infer_arg_calls": 0,
+            "dim_infer_arg_distinct_ordered": 0,
+            "dim_infer_arg_distinct_unordered": 0,
+            "epochs": 1,
+            "epochs_apply_once": 0,
+            "ffi_calls": 1,
+            "ffi_items": 1,
+            "ffi_pyobjects": 0,
+            "graph_writes": 0,
+            "leaf_visits": 1,
+            "pushdown_evals": 0,
+            "pushdown_prunes": 0,
+            "rule_effect_attr_set_attempts": 2,
+            "rule_effect_edge_deletes": 0,
+            "rule_effect_edge_insert_attempts": 0,
+            "rule_effect_node_delete_attempts": 0,
+            "rule_effect_node_inserts": 0,
+            "rule_effect_replace_edge_deletes": 0,
+            "rule_effect_replace_edge_insert_attempts": 0,
+            "rule_enumerations": 2,
+            "rule_enumerations_repeat": 0,
+            "scoped_full_fallback_rule_matches": 1,
+            "scoped_local_rule_matches": 1,
+            "scoped_mt_seeded_rule_matches": 0,
+            "term_eval:Attr": 4,
+            "term_eval:Eq": 1,
+            "term_eval:Lit": 1,
+            "term_eval:NodesOfType": 2,
+            "term_eval:Not": 1,
+            "term_eval:Var": 4,
+            "term_evals_total": 13,
+            "term_unit:NodesOfType": 4,
+            "term_units_total": 4,
+            "term_units_unattributed": 0,
+            "var_collisions": 0,
+            "where_evals": 1,
+            "where_evals_first": 1,
+            "where_evals_repeat": 0,
+            "where_rejects": 0
+          },
+          "per_rule": [
+            [
+              0,
+              "rule_enumerations",
+              1
+            ],
+            [
+              1,
+              "Attr",
+              4
+            ],
+            [
+              1,
+              "Eq",
+              1
+            ],
+            [
+              1,
+              "Lit",
+              1
+            ],
+            [
+              1,
+              "NodesOfType",
+              2
+            ],
+            [
+              1,
+              "Not",
+              1
+            ],
+            [
+              1,
+              "Var",
+              4
+            ],
+            [
+              1,
+              "binding_leaves",
+              1
+            ],
+            [
+              1,
+              "candidate_pairs",
+              5
+            ],
+            [
+              1,
+              "candidate_tests",
+              5
+            ],
+            [
+              1,
+              "deferred_queue_enqueued:net_collapses",
+              1
+            ],
+            [
+              1,
+              "deferred_queue_enqueued:rule_patches",
+              1
+            ],
+            [
+              1,
+              "deferred_queue_enqueued:track_identity",
+              1
+            ],
+            [
+              1,
+              "effect_attr_set_attempts",
+              2
+            ],
+            [
+              1,
+              "rule_enumerations",
+              1
+            ],
+            [
+              1,
+              "term_evaluations",
+              13
+            ],
+            [
+              1,
+              "term_units",
+              4
+            ],
+            [
+              1,
+              "where_evaluations",
+              1
+            ]
+          ]
+        }
+      },
+      "count": 2,
+      "global_report": null,
+      "native_extension_sha256": "27d8de9e6405b39785867721f0498c6d2f43aa5bc808f6301e3356bfc64fab8c",
+      "pid": 24,
+      "replicate": 0,
+      "scoped_report": {
+        "deferred_effects_pending": true,
+        "hit_progress_budget": true,
+        "progress_steps": 1
+      },
+      "state": {
+        "identities": {
+          "current": [
+            null,
+            null
+          ],
+          "previous": [
+            null,
+            null
+          ]
+        },
+        "observation_status": "consumed",
+        "outputs": [
+          false,
+          false
+        ],
+        "patch_reason": null,
+        "patch_result_revision": null,
+        "patch_status": "pending",
+        "surprise": 0.0,
+        "target_content_hash": 8901692549051697090,
+        "target_revision": 0,
+        "trigger_fired": true,
+        "weights": {
+          "W2": [
+            [
+              0.0
+            ]
+          ],
+          "b2": [
+            0.0
+          ]
+        }
+      },
+      "terminal_progress": null,
+      "terminal_status": null,
+      "writer_rule_index": 1
+    },
+    {
+      "arm": "scoped_fallback",
+      "audits": {
+        "fallback": {
+          "global": {
+            "apply_probe_rollbacks": 0,
+            "bindings_cloned": 2,
+            "cand_enum": 7,
+            "cand_enum_apply_once": 0,
+            "cand_enum_first": 7,
+            "cand_enum_hinted": 0,
+            "cand_enum_local": 4,
+            "cand_enum_repeat": 0,
+            "cand_enum_scan": 3,
+            "cand_reject_bound": 0,
+            "cand_tested": 7,
+            "deferred_queue:net_collapses:drain_batches": 1,
+            "deferred_queue:net_collapses:drain_ns": 3200,
+            "deferred_queue:net_collapses:drained_items": 1,
+            "deferred_queue:rule_patches:drain_batches": 1,
+            "deferred_queue:rule_patches:drain_ns": 18440,
+            "deferred_queue:rule_patches:drained_items": 1,
+            "deferred_queue:track_identity:drain_batches": 1,
+            "deferred_queue:track_identity:drain_ns": 3021,
+            "deferred_queue:track_identity:drained_items": 1,
+            "dim_infer_arg_calls": 0,
+            "dim_infer_arg_distinct_ordered": 0,
+            "dim_infer_arg_distinct_unordered": 0,
+            "epochs": 1,
+            "epochs_apply_once": 0,
+            "ffi_calls": 1,
+            "ffi_items": 1,
+            "ffi_pyobjects": 0,
+            "graph_writes": 0,
+            "leaf_visits": 2,
+            "pushdown_evals": 0,
+            "pushdown_prunes": 0,
+            "rule_effect_attr_set_attempts": 2,
+            "rule_effect_edge_deletes": 0,
+            "rule_effect_edge_insert_attempts": 0,
+            "rule_effect_node_delete_attempts": 0,
+            "rule_effect_node_inserts": 0,
+            "rule_effect_replace_edge_deletes": 0,
+            "rule_effect_replace_edge_insert_attempts": 0,
+            "rule_enumerations": 3,
+            "rule_enumerations_repeat": 1,
+            "scoped_full_fallback_rule_matches": 0,
+            "scoped_local_rule_matches": 0,
+            "scoped_mt_seeded_rule_matches": 0,
+            "term_eval:Attr": 1,
+            "term_eval:Eq": 1,
+            "term_eval:Lit": 3,
+            "term_eval:Not": 1,
+            "term_eval:Var": 1,
+            "term_evals_total": 7,
+            "term_units_total": 0,
+            "term_units_unattributed": 0,
+            "var_collisions": 0,
+            "where_evals": 3,
+            "where_evals_first": 3,
+            "where_evals_repeat": 0,
+            "where_rejects": 1
+          },
+          "per_rule": [
+            [
+              0,
+              "Lit",
+              2
+            ],
+            [
+              0,
+              "binding_clones",
+              2
+            ],
+            [
+              0,
+              "binding_leaves",
+              2
+            ],
+            [
+              0,
+              "candidate_pairs",
+              2
+            ],
+            [
+              0,
+              "candidate_tests",
+              2
+            ],
+            [
+              0,
+              "effect_attr_set_attempts",
+              2
+            ],
+            [
+              0,
+              "rule_enumerations",
+              1
+            ],
+            [
+              0,
+              "term_evaluations",
+              2
+            ],
+            [
+              0,
+              "where_evaluations",
+              2
+            ],
+            [
+              1,
+              "Attr",
+              1
+            ],
+            [
+              1,
+              "Eq",
+              1
+            ],
+            [
+              1,
+              "Lit",
+              1
+            ],
+            [
+              1,
+              "Not",
+              1
+            ],
+            [
+              1,
+              "Var",
+              1
+            ],
+            [
+              1,
+              "candidate_pairs",
+              5
+            ],
+            [
+              1,
+              "candidate_tests",
+              5
+            ],
+            [
+              1,
+              "rule_enumerations",
+              2
+            ],
+            [
+              1,
+              "term_evaluations",
+              5
+            ],
+            [
+              1,
+              "where_evaluations",
+              1
+            ],
+            [
+              1,
+              "where_rejections",
+              1
+            ]
+          ]
+        },
+        "scoped": {
+          "global": {
+            "apply_probe_rollbacks": 0,
+            "bindings_cloned": 0,
+            "cand_enum": 5,
+            "cand_enum_apply_once": 0,
+            "cand_enum_first": 5,
+            "cand_enum_hinted": 0,
+            "cand_enum_local": 4,
+            "cand_enum_repeat": 0,
+            "cand_enum_scan": 1,
+            "cand_reject_bound": 0,
+            "cand_tested": 5,
+            "deferred_queue:net_collapses:enqueued_items": 1,
+            "deferred_queue:rule_patches:enqueued_items": 1,
+            "deferred_queue:track_identity:enqueued_items": 1,
+            "dim_infer_arg_calls": 0,
+            "dim_infer_arg_distinct_ordered": 0,
+            "dim_infer_arg_distinct_unordered": 0,
+            "epochs": 1,
+            "epochs_apply_once": 0,
+            "ffi_calls": 1,
+            "ffi_items": 1,
+            "ffi_pyobjects": 0,
+            "graph_writes": 0,
+            "leaf_visits": 1,
+            "pushdown_evals": 0,
+            "pushdown_prunes": 0,
+            "rule_effect_attr_set_attempts": 2,
+            "rule_effect_edge_deletes": 0,
+            "rule_effect_edge_insert_attempts": 0,
+            "rule_effect_node_delete_attempts": 0,
+            "rule_effect_node_inserts": 0,
+            "rule_effect_replace_edge_deletes": 0,
+            "rule_effect_replace_edge_insert_attempts": 0,
+            "rule_enumerations": 2,
+            "rule_enumerations_repeat": 0,
+            "scoped_full_fallback_rule_matches": 1,
+            "scoped_local_rule_matches": 1,
+            "scoped_mt_seeded_rule_matches": 0,
+            "term_eval:Attr": 4,
+            "term_eval:Eq": 1,
+            "term_eval:Lit": 1,
+            "term_eval:NodesOfType": 2,
+            "term_eval:Not": 1,
+            "term_eval:Var": 4,
+            "term_evals_total": 13,
+            "term_unit:NodesOfType": 4,
+            "term_units_total": 4,
+            "term_units_unattributed": 0,
+            "var_collisions": 0,
+            "where_evals": 1,
+            "where_evals_first": 1,
+            "where_evals_repeat": 0,
+            "where_rejects": 0
+          },
+          "per_rule": [
+            [
+              0,
+              "rule_enumerations",
+              1
+            ],
+            [
+              1,
+              "Attr",
+              4
+            ],
+            [
+              1,
+              "Eq",
+              1
+            ],
+            [
+              1,
+              "Lit",
+              1
+            ],
+            [
+              1,
+              "NodesOfType",
+              2
+            ],
+            [
+              1,
+              "Not",
+              1
+            ],
+            [
+              1,
+              "Var",
+              4
+            ],
+            [
+              1,
+              "binding_leaves",
+              1
+            ],
+            [
+              1,
+              "candidate_pairs",
+              5
+            ],
+            [
+              1,
+              "candidate_tests",
+              5
+            ],
+            [
+              1,
+              "deferred_queue_enqueued:net_collapses",
+              1
+            ],
+            [
+              1,
+              "deferred_queue_enqueued:rule_patches",
+              1
+            ],
+            [
+              1,
+              "deferred_queue_enqueued:track_identity",
+              1
+            ],
+            [
+              1,
+              "effect_attr_set_attempts",
+              2
+            ],
+            [
+              1,
+              "rule_enumerations",
+              1
+            ],
+            [
+              1,
+              "term_evaluations",
+              13
+            ],
+            [
+              1,
+              "term_units",
+              4
+            ],
+            [
+              1,
+              "where_evaluations",
+              1
+            ]
+          ]
+        }
+      },
+      "count": 2,
+      "global_report": {
+        "budget_overshoot": 0,
+        "cycle_detection_enabled": false,
+        "passes_completed": 2,
+        "progress_steps": 1,
+        "requested_progress_budget": 20000,
+        "status": "fixed_point"
+      },
+      "native_extension_sha256": "27d8de9e6405b39785867721f0498c6d2f43aa5bc808f6301e3356bfc64fab8c",
+      "pid": 27,
+      "replicate": 0,
+      "scoped_report": {
+        "deferred_effects_pending": true,
+        "hit_progress_budget": true,
+        "progress_steps": 1
+      },
+      "state": {
+        "identities": {
+          "current": [
+            5,
+            10
+          ],
+          "previous": [
+            5,
+            10
+          ]
+        },
+        "observation_status": "consumed",
+        "outputs": [
+          true,
+          true
+        ],
+        "patch_reason": "ok",
+        "patch_result_revision": 1,
+        "patch_status": "committed",
+        "surprise": 0.15,
+        "target_content_hash": 5927251937629756515,
+        "target_revision": 1,
+        "trigger_fired": true,
+        "weights": {
+          "W2": [
+            [
+              0.05
+            ]
+          ],
+          "b2": [
+            0.05
+          ]
+        }
+      },
+      "terminal_progress": 0,
+      "terminal_status": "fixed_point",
+      "writer_rule_index": 1
+    },
+    {
+      "arm": "full",
+      "audits": {
+        "full": {
+          "global": {
+            "apply_probe_rollbacks": 0,
+            "bindings_cloned": 3,
+            "cand_enum": 14,
+            "cand_enum_apply_once": 0,
+            "cand_enum_first": 7,
+            "cand_enum_hinted": 0,
+            "cand_enum_local": 8,
+            "cand_enum_repeat": 7,
+            "cand_enum_scan": 6,
+            "cand_reject_bound": 0,
+            "cand_tested": 14,
+            "deferred_queue:net_collapses:drain_batches": 1,
+            "deferred_queue:net_collapses:drain_ns": 3410,
+            "deferred_queue:net_collapses:drained_items": 1,
+            "deferred_queue:net_collapses:enqueued_items": 1,
+            "deferred_queue:rule_patches:drain_batches": 1,
+            "deferred_queue:rule_patches:drain_ns": 16120,
+            "deferred_queue:rule_patches:drained_items": 1,
+            "deferred_queue:rule_patches:enqueued_items": 1,
+            "deferred_queue:track_identity:drain_batches": 1,
+            "deferred_queue:track_identity:drain_ns": 2510,
+            "deferred_queue:track_identity:drained_items": 1,
+            "deferred_queue:track_identity:enqueued_items": 1,
+            "dim_infer_arg_calls": 0,
+            "dim_infer_arg_distinct_ordered": 0,
+            "dim_infer_arg_distinct_unordered": 0,
+            "epochs": 1,
+            "epochs_apply_once": 0,
+            "ffi_calls": 1,
+            "ffi_items": 1,
+            "ffi_pyobjects": 0,
+            "graph_writes": 0,
+            "leaf_visits": 3,
+            "pushdown_evals": 0,
+            "pushdown_prunes": 0,
+            "rule_effect_attr_set_attempts": 4,
+            "rule_effect_edge_deletes": 0,
+            "rule_effect_edge_insert_attempts": 0,
+            "rule_effect_node_delete_attempts": 0,
+            "rule_effect_node_inserts": 0,
+            "rule_effect_replace_edge_deletes": 0,
+            "rule_effect_replace_edge_insert_attempts": 0,
+            "rule_enumerations": 5,
+            "rule_enumerations_repeat": 3,
+            "scoped_full_fallback_rule_matches": 0,
+            "scoped_local_rule_matches": 0,
+            "scoped_mt_seeded_rule_matches": 0,
+            "term_eval:Attr": 5,
+            "term_eval:Eq": 2,
+            "term_eval:Lit": 4,
+            "term_eval:NodesOfType": 2,
+            "term_eval:Not": 2,
+            "term_eval:Var": 5,
+            "term_evals_total": 20,
+            "term_unit:NodesOfType": 4,
+            "term_units_total": 4,
+            "term_units_unattributed": 0,
+            "var_collisions": 0,
+            "where_evals": 6,
+            "where_evals_first": 3,
+            "where_evals_repeat": 3,
+            "where_rejects": 3
+          },
+          "per_rule": [
+            [
+              0,
+              "Lit",
+              2
+            ],
+            [
+              0,
+              "binding_clones",
+              2
+            ],
+            [
+              0,
+              "binding_leaves",
+              2
+            ],
+            [
+              0,
+              "candidate_pairs",
+              4
+            ],
+            [
+              0,
+              "candidate_tests",
+              4
+            ],
+            [
+              0,
+              "effect_attr_set_attempts",
+              2
+            ],
+            [
+              0,
+              "rule_enumerations",
+              2
+            ],
+            [
+              0,
+              "term_evaluations",
+              2
+            ],
+            [
+              0,
+              "where_evaluations",
+              4
+            ],
+            [
+              0,
+              "where_rejections",
+              2
+            ],
+            [
+              1,
+              "Attr",
+              5
+            ],
+            [
+              1,
+              "Eq",
+              2
+            ],
+            [
+              1,
+              "Lit",
+              2
+            ],
+            [
+              1,
+              "NodesOfType",
+              2
+            ],
+            [
+              1,
+              "Not",
+              2
+            ],
+            [
+              1,
+              "Var",
+              5
+            ],
+            [
+              1,
+              "binding_clones",
+              1
+            ],
+            [
+              1,
+              "binding_leaves",
+              1
+            ],
+            [
+              1,
+              "candidate_pairs",
+              10
+            ],
+            [
+              1,
+              "candidate_tests",
+              10
+            ],
+            [
+              1,
+              "deferred_queue_enqueued:net_collapses",
+              1
+            ],
+            [
+              1,
+              "deferred_queue_enqueued:rule_patches",
+              1
+            ],
+            [
+              1,
+              "deferred_queue_enqueued:track_identity",
+              1
+            ],
+            [
+              1,
+              "effect_attr_set_attempts",
+              2
+            ],
+            [
+              1,
+              "rule_enumerations",
+              3
+            ],
+            [
+              1,
+              "term_evaluations",
+              18
+            ],
+            [
+              1,
+              "term_units",
+              4
+            ],
+            [
+              1,
+              "where_evaluations",
+              2
+            ],
+            [
+              1,
+              "where_rejections",
+              1
+            ]
+          ]
+        }
+      },
+      "count": 2,
+      "global_report": {
+        "budget_overshoot": 0,
+        "cycle_detection_enabled": false,
+        "passes_completed": 3,
+        "progress_steps": 2,
+        "requested_progress_budget": 20000,
+        "status": "fixed_point"
+      },
+      "native_extension_sha256": "27d8de9e6405b39785867721f0498c6d2f43aa5bc808f6301e3356bfc64fab8c",
+      "pid": 30,
+      "replicate": 1,
+      "scoped_report": null,
+      "state": {
+        "identities": {
+          "current": [
+            5,
+            10
+          ],
+          "previous": [
+            5,
+            10
+          ]
+        },
+        "observation_status": "consumed",
+        "outputs": [
+          true,
+          true
+        ],
+        "patch_reason": "ok",
+        "patch_result_revision": 1,
+        "patch_status": "committed",
+        "surprise": 0.15,
+        "target_content_hash": 5927251937629756515,
+        "target_revision": 1,
+        "trigger_fired": true,
+        "weights": {
+          "W2": [
+            [
+              0.05
+            ]
+          ],
+          "b2": [
+            0.05
+          ]
+        }
+      },
+      "terminal_progress": 0,
+      "terminal_status": "fixed_point",
+      "writer_rule_index": 1
+    },
+    {
+      "arm": "scoped_only",
+      "audits": {
+        "scoped": {
+          "global": {
+            "apply_probe_rollbacks": 0,
+            "bindings_cloned": 0,
+            "cand_enum": 5,
+            "cand_enum_apply_once": 0,
+            "cand_enum_first": 5,
+            "cand_enum_hinted": 0,
+            "cand_enum_local": 4,
+            "cand_enum_repeat": 0,
+            "cand_enum_scan": 1,
+            "cand_reject_bound": 0,
+            "cand_tested": 5,
+            "deferred_queue:net_collapses:enqueued_items": 1,
+            "deferred_queue:rule_patches:enqueued_items": 1,
+            "deferred_queue:track_identity:enqueued_items": 1,
+            "dim_infer_arg_calls": 0,
+            "dim_infer_arg_distinct_ordered": 0,
+            "dim_infer_arg_distinct_unordered": 0,
+            "epochs": 1,
+            "epochs_apply_once": 0,
+            "ffi_calls": 1,
+            "ffi_items": 1,
+            "ffi_pyobjects": 0,
+            "graph_writes": 0,
+            "leaf_visits": 1,
+            "pushdown_evals": 0,
+            "pushdown_prunes": 0,
+            "rule_effect_attr_set_attempts": 2,
+            "rule_effect_edge_deletes": 0,
+            "rule_effect_edge_insert_attempts": 0,
+            "rule_effect_node_delete_attempts": 0,
+            "rule_effect_node_inserts": 0,
+            "rule_effect_replace_edge_deletes": 0,
+            "rule_effect_replace_edge_insert_attempts": 0,
+            "rule_enumerations": 2,
+            "rule_enumerations_repeat": 0,
+            "scoped_full_fallback_rule_matches": 1,
+            "scoped_local_rule_matches": 1,
+            "scoped_mt_seeded_rule_matches": 0,
+            "term_eval:Attr": 4,
+            "term_eval:Eq": 1,
+            "term_eval:Lit": 1,
+            "term_eval:NodesOfType": 2,
+            "term_eval:Not": 1,
+            "term_eval:Var": 4,
+            "term_evals_total": 13,
+            "term_unit:NodesOfType": 4,
+            "term_units_total": 4,
+            "term_units_unattributed": 0,
+            "var_collisions": 0,
+            "where_evals": 1,
+            "where_evals_first": 1,
+            "where_evals_repeat": 0,
+            "where_rejects": 0
+          },
+          "per_rule": [
+            [
+              0,
+              "rule_enumerations",
+              1
+            ],
+            [
+              1,
+              "Attr",
+              4
+            ],
+            [
+              1,
+              "Eq",
+              1
+            ],
+            [
+              1,
+              "Lit",
+              1
+            ],
+            [
+              1,
+              "NodesOfType",
+              2
+            ],
+            [
+              1,
+              "Not",
+              1
+            ],
+            [
+              1,
+              "Var",
+              4
+            ],
+            [
+              1,
+              "binding_leaves",
+              1
+            ],
+            [
+              1,
+              "candidate_pairs",
+              5
+            ],
+            [
+              1,
+              "candidate_tests",
+              5
+            ],
+            [
+              1,
+              "deferred_queue_enqueued:net_collapses",
+              1
+            ],
+            [
+              1,
+              "deferred_queue_enqueued:rule_patches",
+              1
+            ],
+            [
+              1,
+              "deferred_queue_enqueued:track_identity",
+              1
+            ],
+            [
+              1,
+              "effect_attr_set_attempts",
+              2
+            ],
+            [
+              1,
+              "rule_enumerations",
+              1
+            ],
+            [
+              1,
+              "term_evaluations",
+              13
+            ],
+            [
+              1,
+              "term_units",
+              4
+            ],
+            [
+              1,
+              "where_evaluations",
+              1
+            ]
+          ]
+        }
+      },
+      "count": 2,
+      "global_report": null,
+      "native_extension_sha256": "27d8de9e6405b39785867721f0498c6d2f43aa5bc808f6301e3356bfc64fab8c",
+      "pid": 33,
+      "replicate": 1,
+      "scoped_report": {
+        "deferred_effects_pending": true,
+        "hit_progress_budget": true,
+        "progress_steps": 1
+      },
+      "state": {
+        "identities": {
+          "current": [
+            null,
+            null
+          ],
+          "previous": [
+            null,
+            null
+          ]
+        },
+        "observation_status": "consumed",
+        "outputs": [
+          false,
+          false
+        ],
+        "patch_reason": null,
+        "patch_result_revision": null,
+        "patch_status": "pending",
+        "surprise": 0.0,
+        "target_content_hash": 8901692549051697090,
+        "target_revision": 0,
+        "trigger_fired": true,
+        "weights": {
+          "W2": [
+            [
+              0.0
+            ]
+          ],
+          "b2": [
+            0.0
+          ]
+        }
+      },
+      "terminal_progress": null,
+      "terminal_status": null,
+      "writer_rule_index": 1
+    },
+    {
+      "arm": "scoped_fallback",
+      "audits": {
+        "fallback": {
+          "global": {
+            "apply_probe_rollbacks": 0,
+            "bindings_cloned": 2,
+            "cand_enum": 7,
+            "cand_enum_apply_once": 0,
+            "cand_enum_first": 7,
+            "cand_enum_hinted": 0,
+            "cand_enum_local": 4,
+            "cand_enum_repeat": 0,
+            "cand_enum_scan": 3,
+            "cand_reject_bound": 0,
+            "cand_tested": 7,
+            "deferred_queue:net_collapses:drain_batches": 1,
+            "deferred_queue:net_collapses:drain_ns": 2970,
+            "deferred_queue:net_collapses:drained_items": 1,
+            "deferred_queue:rule_patches:drain_batches": 1,
+            "deferred_queue:rule_patches:drain_ns": 19440,
+            "deferred_queue:rule_patches:drained_items": 1,
+            "deferred_queue:track_identity:drain_batches": 1,
+            "deferred_queue:track_identity:drain_ns": 2300,
+            "deferred_queue:track_identity:drained_items": 1,
+            "dim_infer_arg_calls": 0,
+            "dim_infer_arg_distinct_ordered": 0,
+            "dim_infer_arg_distinct_unordered": 0,
+            "epochs": 1,
+            "epochs_apply_once": 0,
+            "ffi_calls": 1,
+            "ffi_items": 1,
+            "ffi_pyobjects": 0,
+            "graph_writes": 0,
+            "leaf_visits": 2,
+            "pushdown_evals": 0,
+            "pushdown_prunes": 0,
+            "rule_effect_attr_set_attempts": 2,
+            "rule_effect_edge_deletes": 0,
+            "rule_effect_edge_insert_attempts": 0,
+            "rule_effect_node_delete_attempts": 0,
+            "rule_effect_node_inserts": 0,
+            "rule_effect_replace_edge_deletes": 0,
+            "rule_effect_replace_edge_insert_attempts": 0,
+            "rule_enumerations": 3,
+            "rule_enumerations_repeat": 1,
+            "scoped_full_fallback_rule_matches": 0,
+            "scoped_local_rule_matches": 0,
+            "scoped_mt_seeded_rule_matches": 0,
+            "term_eval:Attr": 1,
+            "term_eval:Eq": 1,
+            "term_eval:Lit": 3,
+            "term_eval:Not": 1,
+            "term_eval:Var": 1,
+            "term_evals_total": 7,
+            "term_units_total": 0,
+            "term_units_unattributed": 0,
+            "var_collisions": 0,
+            "where_evals": 3,
+            "where_evals_first": 3,
+            "where_evals_repeat": 0,
+            "where_rejects": 1
+          },
+          "per_rule": [
+            [
+              0,
+              "Lit",
+              2
+            ],
+            [
+              0,
+              "binding_clones",
+              2
+            ],
+            [
+              0,
+              "binding_leaves",
+              2
+            ],
+            [
+              0,
+              "candidate_pairs",
+              2
+            ],
+            [
+              0,
+              "candidate_tests",
+              2
+            ],
+            [
+              0,
+              "effect_attr_set_attempts",
+              2
+            ],
+            [
+              0,
+              "rule_enumerations",
+              1
+            ],
+            [
+              0,
+              "term_evaluations",
+              2
+            ],
+            [
+              0,
+              "where_evaluations",
+              2
+            ],
+            [
+              1,
+              "Attr",
+              1
+            ],
+            [
+              1,
+              "Eq",
+              1
+            ],
+            [
+              1,
+              "Lit",
+              1
+            ],
+            [
+              1,
+              "Not",
+              1
+            ],
+            [
+              1,
+              "Var",
+              1
+            ],
+            [
+              1,
+              "candidate_pairs",
+              5
+            ],
+            [
+              1,
+              "candidate_tests",
+              5
+            ],
+            [
+              1,
+              "rule_enumerations",
+              2
+            ],
+            [
+              1,
+              "term_evaluations",
+              5
+            ],
+            [
+              1,
+              "where_evaluations",
+              1
+            ],
+            [
+              1,
+              "where_rejections",
+              1
+            ]
+          ]
+        },
+        "scoped": {
+          "global": {
+            "apply_probe_rollbacks": 0,
+            "bindings_cloned": 0,
+            "cand_enum": 5,
+            "cand_enum_apply_once": 0,
+            "cand_enum_first": 5,
+            "cand_enum_hinted": 0,
+            "cand_enum_local": 4,
+            "cand_enum_repeat": 0,
+            "cand_enum_scan": 1,
+            "cand_reject_bound": 0,
+            "cand_tested": 5,
+            "deferred_queue:net_collapses:enqueued_items": 1,
+            "deferred_queue:rule_patches:enqueued_items": 1,
+            "deferred_queue:track_identity:enqueued_items": 1,
+            "dim_infer_arg_calls": 0,
+            "dim_infer_arg_distinct_ordered": 0,
+            "dim_infer_arg_distinct_unordered": 0,
+            "epochs": 1,
+            "epochs_apply_once": 0,
+            "ffi_calls": 1,
+            "ffi_items": 1,
+            "ffi_pyobjects": 0,
+            "graph_writes": 0,
+            "leaf_visits": 1,
+            "pushdown_evals": 0,
+            "pushdown_prunes": 0,
+            "rule_effect_attr_set_attempts": 2,
+            "rule_effect_edge_deletes": 0,
+            "rule_effect_edge_insert_attempts": 0,
+            "rule_effect_node_delete_attempts": 0,
+            "rule_effect_node_inserts": 0,
+            "rule_effect_replace_edge_deletes": 0,
+            "rule_effect_replace_edge_insert_attempts": 0,
+            "rule_enumerations": 2,
+            "rule_enumerations_repeat": 0,
+            "scoped_full_fallback_rule_matches": 1,
+            "scoped_local_rule_matches": 1,
+            "scoped_mt_seeded_rule_matches": 0,
+            "term_eval:Attr": 4,
+            "term_eval:Eq": 1,
+            "term_eval:Lit": 1,
+            "term_eval:NodesOfType": 2,
+            "term_eval:Not": 1,
+            "term_eval:Var": 4,
+            "term_evals_total": 13,
+            "term_unit:NodesOfType": 4,
+            "term_units_total": 4,
+            "term_units_unattributed": 0,
+            "var_collisions": 0,
+            "where_evals": 1,
+            "where_evals_first": 1,
+            "where_evals_repeat": 0,
+            "where_rejects": 0
+          },
+          "per_rule": [
+            [
+              0,
+              "rule_enumerations",
+              1
+            ],
+            [
+              1,
+              "Attr",
+              4
+            ],
+            [
+              1,
+              "Eq",
+              1
+            ],
+            [
+              1,
+              "Lit",
+              1
+            ],
+            [
+              1,
+              "NodesOfType",
+              2
+            ],
+            [
+              1,
+              "Not",
+              1
+            ],
+            [
+              1,
+              "Var",
+              4
+            ],
+            [
+              1,
+              "binding_leaves",
+              1
+            ],
+            [
+              1,
+              "candidate_pairs",
+              5
+            ],
+            [
+              1,
+              "candidate_tests",
+              5
+            ],
+            [
+              1,
+              "deferred_queue_enqueued:net_collapses",
+              1
+            ],
+            [
+              1,
+              "deferred_queue_enqueued:rule_patches",
+              1
+            ],
+            [
+              1,
+              "deferred_queue_enqueued:track_identity",
+              1
+            ],
+            [
+              1,
+              "effect_attr_set_attempts",
+              2
+            ],
+            [
+              1,
+              "rule_enumerations",
+              1
+            ],
+            [
+              1,
+              "term_evaluations",
+              13
+            ],
+            [
+              1,
+              "term_units",
+              4
+            ],
+            [
+              1,
+              "where_evaluations",
+              1
+            ]
+          ]
+        }
+      },
+      "count": 2,
+      "global_report": {
+        "budget_overshoot": 0,
+        "cycle_detection_enabled": false,
+        "passes_completed": 2,
+        "progress_steps": 1,
+        "requested_progress_budget": 20000,
+        "status": "fixed_point"
+      },
+      "native_extension_sha256": "27d8de9e6405b39785867721f0498c6d2f43aa5bc808f6301e3356bfc64fab8c",
+      "pid": 36,
+      "replicate": 1,
+      "scoped_report": {
+        "deferred_effects_pending": true,
+        "hit_progress_budget": true,
+        "progress_steps": 1
+      },
+      "state": {
+        "identities": {
+          "current": [
+            5,
+            10
+          ],
+          "previous": [
+            5,
+            10
+          ]
+        },
+        "observation_status": "consumed",
+        "outputs": [
+          true,
+          true
+        ],
+        "patch_reason": "ok",
+        "patch_result_revision": 1,
+        "patch_status": "committed",
+        "surprise": 0.15,
+        "target_content_hash": 5927251937629756515,
+        "target_revision": 1,
+        "trigger_fired": true,
+        "weights": {
+          "W2": [
+            [
+              0.05
+            ]
+          ],
+          "b2": [
+            0.05
+          ]
+        }
+      },
+      "terminal_progress": 0,
+      "terminal_status": "fixed_point",
+      "writer_rule_index": 1
+    },
+    {
+      "arm": "full",
+      "audits": {
+        "full": {
+          "global": {
+            "apply_probe_rollbacks": 0,
+            "bindings_cloned": 5,
+            "cand_enum": 18,
+            "cand_enum_apply_once": 0,
+            "cand_enum_first": 9,
+            "cand_enum_hinted": 0,
+            "cand_enum_local": 8,
+            "cand_enum_repeat": 9,
+            "cand_enum_scan": 10,
+            "cand_reject_bound": 0,
+            "cand_tested": 18,
+            "deferred_queue:net_collapses:drain_batches": 1,
+            "deferred_queue:net_collapses:drain_ns": 4190,
+            "deferred_queue:net_collapses:drained_items": 1,
+            "deferred_queue:net_collapses:enqueued_items": 1,
+            "deferred_queue:rule_patches:drain_batches": 1,
+            "deferred_queue:rule_patches:drain_ns": 21000,
+            "deferred_queue:rule_patches:drained_items": 1,
+            "deferred_queue:rule_patches:enqueued_items": 1,
+            "deferred_queue:track_identity:drain_batches": 1,
+            "deferred_queue:track_identity:drain_ns": 4370,
+            "deferred_queue:track_identity:drained_items": 1,
+            "deferred_queue:track_identity:enqueued_items": 1,
+            "dim_infer_arg_calls": 0,
+            "dim_infer_arg_distinct_ordered": 0,
+            "dim_infer_arg_distinct_unordered": 0,
+            "epochs": 1,
+            "epochs_apply_once": 0,
+            "ffi_calls": 1,
+            "ffi_items": 1,
+            "ffi_pyobjects": 0,
+            "graph_writes": 0,
+            "leaf_visits": 5,
+            "pushdown_evals": 0,
+            "pushdown_prunes": 0,
+            "rule_effect_attr_set_attempts": 6,
+            "rule_effect_edge_deletes": 0,
+            "rule_effect_edge_insert_attempts": 0,
+            "rule_effect_node_delete_attempts": 0,
+            "rule_effect_node_inserts": 0,
+            "rule_effect_replace_edge_deletes": 0,
+            "rule_effect_replace_edge_insert_attempts": 0,
+            "rule_enumerations": 5,
+            "rule_enumerations_repeat": 3,
+            "scoped_full_fallback_rule_matches": 0,
+            "scoped_local_rule_matches": 0,
+            "scoped_mt_seeded_rule_matches": 0,
+            "term_eval:Attr": 5,
+            "term_eval:Eq": 2,
+            "term_eval:Lit": 6,
+            "term_eval:NodesOfType": 2,
+            "term_eval:Not": 2,
+            "term_eval:Var": 5,
+            "term_evals_total": 22,
+            "term_unit:NodesOfType": 8,
+            "term_units_total": 8,
+            "term_units_unattributed": 0,
+            "var_collisions": 0,
+            "where_evals": 10,
+            "where_evals_first": 5,
+            "where_evals_repeat": 5,
+            "where_rejects": 5
+          },
+          "per_rule": [
+            [
+              0,
+              "Lit",
+              4
+            ],
+            [
+              0,
+              "binding_clones",
+              4
+            ],
+            [
+              0,
+              "binding_leaves",
+              4
+            ],
+            [
+              0,
+              "candidate_pairs",
+              8
+            ],
+            [
+              0,
+              "candidate_tests",
+              8
+            ],
+            [
+              0,
+              "effect_attr_set_attempts",
+              4
+            ],
+            [
+              0,
+              "rule_enumerations",
+              2
+            ],
+            [
+              0,
+              "term_evaluations",
+              4
+            ],
+            [
+              0,
+              "where_evaluations",
+              8
+            ],
+            [
+              0,
+              "where_rejections",
+              4
+            ],
+            [
+              1,
+              "Attr",
+              5
+            ],
+            [
+              1,
+              "Eq",
+              2
+            ],
+            [
+              1,
+              "Lit",
+              2
+            ],
+            [
+              1,
+              "NodesOfType",
+              2
+            ],
+            [
+              1,
+              "Not",
+              2
+            ],
+            [
+              1,
+              "Var",
+              5
+            ],
+            [
+              1,
+              "binding_clones",
+              1
+            ],
+            [
+              1,
+              "binding_leaves",
+              1
+            ],
+            [
+              1,
+              "candidate_pairs",
+              10
+            ],
+            [
+              1,
+              "candidate_tests",
+              10
+            ],
+            [
+              1,
+              "deferred_queue_enqueued:net_collapses",
+              1
+            ],
+            [
+              1,
+              "deferred_queue_enqueued:rule_patches",
+              1
+            ],
+            [
+              1,
+              "deferred_queue_enqueued:track_identity",
+              1
+            ],
+            [
+              1,
+              "effect_attr_set_attempts",
+              2
+            ],
+            [
+              1,
+              "rule_enumerations",
+              3
+            ],
+            [
+              1,
+              "term_evaluations",
+              18
+            ],
+            [
+              1,
+              "term_units",
+              8
+            ],
+            [
+              1,
+              "where_evaluations",
+              2
+            ],
+            [
+              1,
+              "where_rejections",
+              1
+            ]
+          ]
+        }
+      },
+      "count": 4,
+      "global_report": {
+        "budget_overshoot": 0,
+        "cycle_detection_enabled": false,
+        "passes_completed": 3,
+        "progress_steps": 2,
+        "requested_progress_budget": 20000,
+        "status": "fixed_point"
+      },
+      "native_extension_sha256": "27d8de9e6405b39785867721f0498c6d2f43aa5bc808f6301e3356bfc64fab8c",
+      "pid": 39,
+      "replicate": 0,
+      "scoped_report": null,
+      "state": {
+        "identities": {
+          "current": [
+            5,
+            10,
+            15,
+            20
+          ],
+          "previous": [
+            5,
+            10,
+            15,
+            20
+          ]
+        },
+        "observation_status": "consumed",
+        "outputs": [
+          true,
+          true,
+          true,
+          true
+        ],
+        "patch_reason": "ok",
+        "patch_result_revision": 1,
+        "patch_status": "committed",
+        "surprise": 0.15,
+        "target_content_hash": 5927251937629756515,
+        "target_revision": 1,
+        "trigger_fired": true,
+        "weights": {
+          "W2": [
+            [
+              0.05
+            ]
+          ],
+          "b2": [
+            0.05
+          ]
+        }
+      },
+      "terminal_progress": 0,
+      "terminal_status": "fixed_point",
+      "writer_rule_index": 1
+    },
+    {
+      "arm": "scoped_only",
+      "audits": {
+        "scoped": {
+          "global": {
+            "apply_probe_rollbacks": 0,
+            "bindings_cloned": 0,
+            "cand_enum": 5,
+            "cand_enum_apply_once": 0,
+            "cand_enum_first": 5,
+            "cand_enum_hinted": 0,
+            "cand_enum_local": 4,
+            "cand_enum_repeat": 0,
+            "cand_enum_scan": 1,
+            "cand_reject_bound": 0,
+            "cand_tested": 5,
+            "deferred_queue:net_collapses:enqueued_items": 1,
+            "deferred_queue:rule_patches:enqueued_items": 1,
+            "deferred_queue:track_identity:enqueued_items": 1,
+            "dim_infer_arg_calls": 0,
+            "dim_infer_arg_distinct_ordered": 0,
+            "dim_infer_arg_distinct_unordered": 0,
+            "epochs": 1,
+            "epochs_apply_once": 0,
+            "ffi_calls": 1,
+            "ffi_items": 1,
+            "ffi_pyobjects": 0,
+            "graph_writes": 0,
+            "leaf_visits": 1,
+            "pushdown_evals": 0,
+            "pushdown_prunes": 0,
+            "rule_effect_attr_set_attempts": 2,
+            "rule_effect_edge_deletes": 0,
+            "rule_effect_edge_insert_attempts": 0,
+            "rule_effect_node_delete_attempts": 0,
+            "rule_effect_node_inserts": 0,
+            "rule_effect_replace_edge_deletes": 0,
+            "rule_effect_replace_edge_insert_attempts": 0,
+            "rule_enumerations": 2,
+            "rule_enumerations_repeat": 0,
+            "scoped_full_fallback_rule_matches": 1,
+            "scoped_local_rule_matches": 1,
+            "scoped_mt_seeded_rule_matches": 0,
+            "term_eval:Attr": 4,
+            "term_eval:Eq": 1,
+            "term_eval:Lit": 1,
+            "term_eval:NodesOfType": 2,
+            "term_eval:Not": 1,
+            "term_eval:Var": 4,
+            "term_evals_total": 13,
+            "term_unit:NodesOfType": 8,
+            "term_units_total": 8,
+            "term_units_unattributed": 0,
+            "var_collisions": 0,
+            "where_evals": 1,
+            "where_evals_first": 1,
+            "where_evals_repeat": 0,
+            "where_rejects": 0
+          },
+          "per_rule": [
+            [
+              0,
+              "rule_enumerations",
+              1
+            ],
+            [
+              1,
+              "Attr",
+              4
+            ],
+            [
+              1,
+              "Eq",
+              1
+            ],
+            [
+              1,
+              "Lit",
+              1
+            ],
+            [
+              1,
+              "NodesOfType",
+              2
+            ],
+            [
+              1,
+              "Not",
+              1
+            ],
+            [
+              1,
+              "Var",
+              4
+            ],
+            [
+              1,
+              "binding_leaves",
+              1
+            ],
+            [
+              1,
+              "candidate_pairs",
+              5
+            ],
+            [
+              1,
+              "candidate_tests",
+              5
+            ],
+            [
+              1,
+              "deferred_queue_enqueued:net_collapses",
+              1
+            ],
+            [
+              1,
+              "deferred_queue_enqueued:rule_patches",
+              1
+            ],
+            [
+              1,
+              "deferred_queue_enqueued:track_identity",
+              1
+            ],
+            [
+              1,
+              "effect_attr_set_attempts",
+              2
+            ],
+            [
+              1,
+              "rule_enumerations",
+              1
+            ],
+            [
+              1,
+              "term_evaluations",
+              13
+            ],
+            [
+              1,
+              "term_units",
+              8
+            ],
+            [
+              1,
+              "where_evaluations",
+              1
+            ]
+          ]
+        }
+      },
+      "count": 4,
+      "global_report": null,
+      "native_extension_sha256": "27d8de9e6405b39785867721f0498c6d2f43aa5bc808f6301e3356bfc64fab8c",
+      "pid": 42,
+      "replicate": 0,
+      "scoped_report": {
+        "deferred_effects_pending": true,
+        "hit_progress_budget": true,
+        "progress_steps": 1
+      },
+      "state": {
+        "identities": {
+          "current": [
+            null,
+            null,
+            null,
+            null
+          ],
+          "previous": [
+            null,
+            null,
+            null,
+            null
+          ]
+        },
+        "observation_status": "consumed",
+        "outputs": [
+          false,
+          false,
+          false,
+          false
+        ],
+        "patch_reason": null,
+        "patch_result_revision": null,
+        "patch_status": "pending",
+        "surprise": 0.0,
+        "target_content_hash": 8901692549051697090,
+        "target_revision": 0,
+        "trigger_fired": true,
+        "weights": {
+          "W2": [
+            [
+              0.0
+            ]
+          ],
+          "b2": [
+            0.0
+          ]
+        }
+      },
+      "terminal_progress": null,
+      "terminal_status": null,
+      "writer_rule_index": 1
+    },
+    {
+      "arm": "scoped_fallback",
+      "audits": {
+        "fallback": {
+          "global": {
+            "apply_probe_rollbacks": 0,
+            "bindings_cloned": 4,
+            "cand_enum": 9,
+            "cand_enum_apply_once": 0,
+            "cand_enum_first": 9,
+            "cand_enum_hinted": 0,
+            "cand_enum_local": 4,
+            "cand_enum_repeat": 0,
+            "cand_enum_scan": 5,
+            "cand_reject_bound": 0,
+            "cand_tested": 9,
+            "deferred_queue:net_collapses:drain_batches": 1,
+            "deferred_queue:net_collapses:drain_ns": 3640,
+            "deferred_queue:net_collapses:drained_items": 1,
+            "deferred_queue:rule_patches:drain_batches": 1,
+            "deferred_queue:rule_patches:drain_ns": 17570,
+            "deferred_queue:rule_patches:drained_items": 1,
+            "deferred_queue:track_identity:drain_batches": 1,
+            "deferred_queue:track_identity:drain_ns": 3590,
+            "deferred_queue:track_identity:drained_items": 1,
+            "dim_infer_arg_calls": 0,
+            "dim_infer_arg_distinct_ordered": 0,
+            "dim_infer_arg_distinct_unordered": 0,
+            "epochs": 1,
+            "epochs_apply_once": 0,
+            "ffi_calls": 1,
+            "ffi_items": 1,
+            "ffi_pyobjects": 0,
+            "graph_writes": 0,
+            "leaf_visits": 4,
+            "pushdown_evals": 0,
+            "pushdown_prunes": 0,
+            "rule_effect_attr_set_attempts": 4,
+            "rule_effect_edge_deletes": 0,
+            "rule_effect_edge_insert_attempts": 0,
+            "rule_effect_node_delete_attempts": 0,
+            "rule_effect_node_inserts": 0,
+            "rule_effect_replace_edge_deletes": 0,
+            "rule_effect_replace_edge_insert_attempts": 0,
+            "rule_enumerations": 3,
+            "rule_enumerations_repeat": 1,
+            "scoped_full_fallback_rule_matches": 0,
+            "scoped_local_rule_matches": 0,
+            "scoped_mt_seeded_rule_matches": 0,
+            "term_eval:Attr": 1,
+            "term_eval:Eq": 1,
+            "term_eval:Lit": 5,
+            "term_eval:Not": 1,
+            "term_eval:Var": 1,
+            "term_evals_total": 9,
+            "term_units_total": 0,
+            "term_units_unattributed": 0,
+            "var_collisions": 0,
+            "where_evals": 5,
+            "where_evals_first": 5,
+            "where_evals_repeat": 0,
+            "where_rejects": 1
+          },
+          "per_rule": [
+            [
+              0,
+              "Lit",
+              4
+            ],
+            [
+              0,
+              "binding_clones",
+              4
+            ],
+            [
+              0,
+              "binding_leaves",
+              4
+            ],
+            [
+              0,
+              "candidate_pairs",
+              4
+            ],
+            [
+              0,
+              "candidate_tests",
+              4
+            ],
+            [
+              0,
+              "effect_attr_set_attempts",
+              4
+            ],
+            [
+              0,
+              "rule_enumerations",
+              1
+            ],
+            [
+              0,
+              "term_evaluations",
+              4
+            ],
+            [
+              0,
+              "where_evaluations",
+              4
+            ],
+            [
+              1,
+              "Attr",
+              1
+            ],
+            [
+              1,
+              "Eq",
+              1
+            ],
+            [
+              1,
+              "Lit",
+              1
+            ],
+            [
+              1,
+              "Not",
+              1
+            ],
+            [
+              1,
+              "Var",
+              1
+            ],
+            [
+              1,
+              "candidate_pairs",
+              5
+            ],
+            [
+              1,
+              "candidate_tests",
+              5
+            ],
+            [
+              1,
+              "rule_enumerations",
+              2
+            ],
+            [
+              1,
+              "term_evaluations",
+              5
+            ],
+            [
+              1,
+              "where_evaluations",
+              1
+            ],
+            [
+              1,
+              "where_rejections",
+              1
+            ]
+          ]
+        },
+        "scoped": {
+          "global": {
+            "apply_probe_rollbacks": 0,
+            "bindings_cloned": 0,
+            "cand_enum": 5,
+            "cand_enum_apply_once": 0,
+            "cand_enum_first": 5,
+            "cand_enum_hinted": 0,
+            "cand_enum_local": 4,
+            "cand_enum_repeat": 0,
+            "cand_enum_scan": 1,
+            "cand_reject_bound": 0,
+            "cand_tested": 5,
+            "deferred_queue:net_collapses:enqueued_items": 1,
+            "deferred_queue:rule_patches:enqueued_items": 1,
+            "deferred_queue:track_identity:enqueued_items": 1,
+            "dim_infer_arg_calls": 0,
+            "dim_infer_arg_distinct_ordered": 0,
+            "dim_infer_arg_distinct_unordered": 0,
+            "epochs": 1,
+            "epochs_apply_once": 0,
+            "ffi_calls": 1,
+            "ffi_items": 1,
+            "ffi_pyobjects": 0,
+            "graph_writes": 0,
+            "leaf_visits": 1,
+            "pushdown_evals": 0,
+            "pushdown_prunes": 0,
+            "rule_effect_attr_set_attempts": 2,
+            "rule_effect_edge_deletes": 0,
+            "rule_effect_edge_insert_attempts": 0,
+            "rule_effect_node_delete_attempts": 0,
+            "rule_effect_node_inserts": 0,
+            "rule_effect_replace_edge_deletes": 0,
+            "rule_effect_replace_edge_insert_attempts": 0,
+            "rule_enumerations": 2,
+            "rule_enumerations_repeat": 0,
+            "scoped_full_fallback_rule_matches": 1,
+            "scoped_local_rule_matches": 1,
+            "scoped_mt_seeded_rule_matches": 0,
+            "term_eval:Attr": 4,
+            "term_eval:Eq": 1,
+            "term_eval:Lit": 1,
+            "term_eval:NodesOfType": 2,
+            "term_eval:Not": 1,
+            "term_eval:Var": 4,
+            "term_evals_total": 13,
+            "term_unit:NodesOfType": 8,
+            "term_units_total": 8,
+            "term_units_unattributed": 0,
+            "var_collisions": 0,
+            "where_evals": 1,
+            "where_evals_first": 1,
+            "where_evals_repeat": 0,
+            "where_rejects": 0
+          },
+          "per_rule": [
+            [
+              0,
+              "rule_enumerations",
+              1
+            ],
+            [
+              1,
+              "Attr",
+              4
+            ],
+            [
+              1,
+              "Eq",
+              1
+            ],
+            [
+              1,
+              "Lit",
+              1
+            ],
+            [
+              1,
+              "NodesOfType",
+              2
+            ],
+            [
+              1,
+              "Not",
+              1
+            ],
+            [
+              1,
+              "Var",
+              4
+            ],
+            [
+              1,
+              "binding_leaves",
+              1
+            ],
+            [
+              1,
+              "candidate_pairs",
+              5
+            ],
+            [
+              1,
+              "candidate_tests",
+              5
+            ],
+            [
+              1,
+              "deferred_queue_enqueued:net_collapses",
+              1
+            ],
+            [
+              1,
+              "deferred_queue_enqueued:rule_patches",
+              1
+            ],
+            [
+              1,
+              "deferred_queue_enqueued:track_identity",
+              1
+            ],
+            [
+              1,
+              "effect_attr_set_attempts",
+              2
+            ],
+            [
+              1,
+              "rule_enumerations",
+              1
+            ],
+            [
+              1,
+              "term_evaluations",
+              13
+            ],
+            [
+              1,
+              "term_units",
+              8
+            ],
+            [
+              1,
+              "where_evaluations",
+              1
+            ]
+          ]
+        }
+      },
+      "count": 4,
+      "global_report": {
+        "budget_overshoot": 0,
+        "cycle_detection_enabled": false,
+        "passes_completed": 2,
+        "progress_steps": 1,
+        "requested_progress_budget": 20000,
+        "status": "fixed_point"
+      },
+      "native_extension_sha256": "27d8de9e6405b39785867721f0498c6d2f43aa5bc808f6301e3356bfc64fab8c",
+      "pid": 45,
+      "replicate": 0,
+      "scoped_report": {
+        "deferred_effects_pending": true,
+        "hit_progress_budget": true,
+        "progress_steps": 1
+      },
+      "state": {
+        "identities": {
+          "current": [
+            5,
+            10,
+            15,
+            20
+          ],
+          "previous": [
+            5,
+            10,
+            15,
+            20
+          ]
+        },
+        "observation_status": "consumed",
+        "outputs": [
+          true,
+          true,
+          true,
+          true
+        ],
+        "patch_reason": "ok",
+        "patch_result_revision": 1,
+        "patch_status": "committed",
+        "surprise": 0.15,
+        "target_content_hash": 5927251937629756515,
+        "target_revision": 1,
+        "trigger_fired": true,
+        "weights": {
+          "W2": [
+            [
+              0.05
+            ]
+          ],
+          "b2": [
+            0.05
+          ]
+        }
+      },
+      "terminal_progress": 0,
+      "terminal_status": "fixed_point",
+      "writer_rule_index": 1
+    },
+    {
+      "arm": "full",
+      "audits": {
+        "full": {
+          "global": {
+            "apply_probe_rollbacks": 0,
+            "bindings_cloned": 5,
+            "cand_enum": 18,
+            "cand_enum_apply_once": 0,
+            "cand_enum_first": 9,
+            "cand_enum_hinted": 0,
+            "cand_enum_local": 8,
+            "cand_enum_repeat": 9,
+            "cand_enum_scan": 10,
+            "cand_reject_bound": 0,
+            "cand_tested": 18,
+            "deferred_queue:net_collapses:drain_batches": 1,
+            "deferred_queue:net_collapses:drain_ns": 2870,
+            "deferred_queue:net_collapses:drained_items": 1,
+            "deferred_queue:net_collapses:enqueued_items": 1,
+            "deferred_queue:rule_patches:drain_batches": 1,
+            "deferred_queue:rule_patches:drain_ns": 15280,
+            "deferred_queue:rule_patches:drained_items": 1,
+            "deferred_queue:rule_patches:enqueued_items": 1,
+            "deferred_queue:track_identity:drain_batches": 1,
+            "deferred_queue:track_identity:drain_ns": 2900,
+            "deferred_queue:track_identity:drained_items": 1,
+            "deferred_queue:track_identity:enqueued_items": 1,
+            "dim_infer_arg_calls": 0,
+            "dim_infer_arg_distinct_ordered": 0,
+            "dim_infer_arg_distinct_unordered": 0,
+            "epochs": 1,
+            "epochs_apply_once": 0,
+            "ffi_calls": 1,
+            "ffi_items": 1,
+            "ffi_pyobjects": 0,
+            "graph_writes": 0,
+            "leaf_visits": 5,
+            "pushdown_evals": 0,
+            "pushdown_prunes": 0,
+            "rule_effect_attr_set_attempts": 6,
+            "rule_effect_edge_deletes": 0,
+            "rule_effect_edge_insert_attempts": 0,
+            "rule_effect_node_delete_attempts": 0,
+            "rule_effect_node_inserts": 0,
+            "rule_effect_replace_edge_deletes": 0,
+            "rule_effect_replace_edge_insert_attempts": 0,
+            "rule_enumerations": 5,
+            "rule_enumerations_repeat": 3,
+            "scoped_full_fallback_rule_matches": 0,
+            "scoped_local_rule_matches": 0,
+            "scoped_mt_seeded_rule_matches": 0,
+            "term_eval:Attr": 5,
+            "term_eval:Eq": 2,
+            "term_eval:Lit": 6,
+            "term_eval:NodesOfType": 2,
+            "term_eval:Not": 2,
+            "term_eval:Var": 5,
+            "term_evals_total": 22,
+            "term_unit:NodesOfType": 8,
+            "term_units_total": 8,
+            "term_units_unattributed": 0,
+            "var_collisions": 0,
+            "where_evals": 10,
+            "where_evals_first": 5,
+            "where_evals_repeat": 5,
+            "where_rejects": 5
+          },
+          "per_rule": [
+            [
+              0,
+              "Lit",
+              4
+            ],
+            [
+              0,
+              "binding_clones",
+              4
+            ],
+            [
+              0,
+              "binding_leaves",
+              4
+            ],
+            [
+              0,
+              "candidate_pairs",
+              8
+            ],
+            [
+              0,
+              "candidate_tests",
+              8
+            ],
+            [
+              0,
+              "effect_attr_set_attempts",
+              4
+            ],
+            [
+              0,
+              "rule_enumerations",
+              2
+            ],
+            [
+              0,
+              "term_evaluations",
+              4
+            ],
+            [
+              0,
+              "where_evaluations",
+              8
+            ],
+            [
+              0,
+              "where_rejections",
+              4
+            ],
+            [
+              1,
+              "Attr",
+              5
+            ],
+            [
+              1,
+              "Eq",
+              2
+            ],
+            [
+              1,
+              "Lit",
+              2
+            ],
+            [
+              1,
+              "NodesOfType",
+              2
+            ],
+            [
+              1,
+              "Not",
+              2
+            ],
+            [
+              1,
+              "Var",
+              5
+            ],
+            [
+              1,
+              "binding_clones",
+              1
+            ],
+            [
+              1,
+              "binding_leaves",
+              1
+            ],
+            [
+              1,
+              "candidate_pairs",
+              10
+            ],
+            [
+              1,
+              "candidate_tests",
+              10
+            ],
+            [
+              1,
+              "deferred_queue_enqueued:net_collapses",
+              1
+            ],
+            [
+              1,
+              "deferred_queue_enqueued:rule_patches",
+              1
+            ],
+            [
+              1,
+              "deferred_queue_enqueued:track_identity",
+              1
+            ],
+            [
+              1,
+              "effect_attr_set_attempts",
+              2
+            ],
+            [
+              1,
+              "rule_enumerations",
+              3
+            ],
+            [
+              1,
+              "term_evaluations",
+              18
+            ],
+            [
+              1,
+              "term_units",
+              8
+            ],
+            [
+              1,
+              "where_evaluations",
+              2
+            ],
+            [
+              1,
+              "where_rejections",
+              1
+            ]
+          ]
+        }
+      },
+      "count": 4,
+      "global_report": {
+        "budget_overshoot": 0,
+        "cycle_detection_enabled": false,
+        "passes_completed": 3,
+        "progress_steps": 2,
+        "requested_progress_budget": 20000,
+        "status": "fixed_point"
+      },
+      "native_extension_sha256": "27d8de9e6405b39785867721f0498c6d2f43aa5bc808f6301e3356bfc64fab8c",
+      "pid": 48,
+      "replicate": 1,
+      "scoped_report": null,
+      "state": {
+        "identities": {
+          "current": [
+            5,
+            10,
+            15,
+            20
+          ],
+          "previous": [
+            5,
+            10,
+            15,
+            20
+          ]
+        },
+        "observation_status": "consumed",
+        "outputs": [
+          true,
+          true,
+          true,
+          true
+        ],
+        "patch_reason": "ok",
+        "patch_result_revision": 1,
+        "patch_status": "committed",
+        "surprise": 0.15,
+        "target_content_hash": 5927251937629756515,
+        "target_revision": 1,
+        "trigger_fired": true,
+        "weights": {
+          "W2": [
+            [
+              0.05
+            ]
+          ],
+          "b2": [
+            0.05
+          ]
+        }
+      },
+      "terminal_progress": 0,
+      "terminal_status": "fixed_point",
+      "writer_rule_index": 1
+    },
+    {
+      "arm": "scoped_only",
+      "audits": {
+        "scoped": {
+          "global": {
+            "apply_probe_rollbacks": 0,
+            "bindings_cloned": 0,
+            "cand_enum": 5,
+            "cand_enum_apply_once": 0,
+            "cand_enum_first": 5,
+            "cand_enum_hinted": 0,
+            "cand_enum_local": 4,
+            "cand_enum_repeat": 0,
+            "cand_enum_scan": 1,
+            "cand_reject_bound": 0,
+            "cand_tested": 5,
+            "deferred_queue:net_collapses:enqueued_items": 1,
+            "deferred_queue:rule_patches:enqueued_items": 1,
+            "deferred_queue:track_identity:enqueued_items": 1,
+            "dim_infer_arg_calls": 0,
+            "dim_infer_arg_distinct_ordered": 0,
+            "dim_infer_arg_distinct_unordered": 0,
+            "epochs": 1,
+            "epochs_apply_once": 0,
+            "ffi_calls": 1,
+            "ffi_items": 1,
+            "ffi_pyobjects": 0,
+            "graph_writes": 0,
+            "leaf_visits": 1,
+            "pushdown_evals": 0,
+            "pushdown_prunes": 0,
+            "rule_effect_attr_set_attempts": 2,
+            "rule_effect_edge_deletes": 0,
+            "rule_effect_edge_insert_attempts": 0,
+            "rule_effect_node_delete_attempts": 0,
+            "rule_effect_node_inserts": 0,
+            "rule_effect_replace_edge_deletes": 0,
+            "rule_effect_replace_edge_insert_attempts": 0,
+            "rule_enumerations": 2,
+            "rule_enumerations_repeat": 0,
+            "scoped_full_fallback_rule_matches": 1,
+            "scoped_local_rule_matches": 1,
+            "scoped_mt_seeded_rule_matches": 0,
+            "term_eval:Attr": 4,
+            "term_eval:Eq": 1,
+            "term_eval:Lit": 1,
+            "term_eval:NodesOfType": 2,
+            "term_eval:Not": 1,
+            "term_eval:Var": 4,
+            "term_evals_total": 13,
+            "term_unit:NodesOfType": 8,
+            "term_units_total": 8,
+            "term_units_unattributed": 0,
+            "var_collisions": 0,
+            "where_evals": 1,
+            "where_evals_first": 1,
+            "where_evals_repeat": 0,
+            "where_rejects": 0
+          },
+          "per_rule": [
+            [
+              0,
+              "rule_enumerations",
+              1
+            ],
+            [
+              1,
+              "Attr",
+              4
+            ],
+            [
+              1,
+              "Eq",
+              1
+            ],
+            [
+              1,
+              "Lit",
+              1
+            ],
+            [
+              1,
+              "NodesOfType",
+              2
+            ],
+            [
+              1,
+              "Not",
+              1
+            ],
+            [
+              1,
+              "Var",
+              4
+            ],
+            [
+              1,
+              "binding_leaves",
+              1
+            ],
+            [
+              1,
+              "candidate_pairs",
+              5
+            ],
+            [
+              1,
+              "candidate_tests",
+              5
+            ],
+            [
+              1,
+              "deferred_queue_enqueued:net_collapses",
+              1
+            ],
+            [
+              1,
+              "deferred_queue_enqueued:rule_patches",
+              1
+            ],
+            [
+              1,
+              "deferred_queue_enqueued:track_identity",
+              1
+            ],
+            [
+              1,
+              "effect_attr_set_attempts",
+              2
+            ],
+            [
+              1,
+              "rule_enumerations",
+              1
+            ],
+            [
+              1,
+              "term_evaluations",
+              13
+            ],
+            [
+              1,
+              "term_units",
+              8
+            ],
+            [
+              1,
+              "where_evaluations",
+              1
+            ]
+          ]
+        }
+      },
+      "count": 4,
+      "global_report": null,
+      "native_extension_sha256": "27d8de9e6405b39785867721f0498c6d2f43aa5bc808f6301e3356bfc64fab8c",
+      "pid": 51,
+      "replicate": 1,
+      "scoped_report": {
+        "deferred_effects_pending": true,
+        "hit_progress_budget": true,
+        "progress_steps": 1
+      },
+      "state": {
+        "identities": {
+          "current": [
+            null,
+            null,
+            null,
+            null
+          ],
+          "previous": [
+            null,
+            null,
+            null,
+            null
+          ]
+        },
+        "observation_status": "consumed",
+        "outputs": [
+          false,
+          false,
+          false,
+          false
+        ],
+        "patch_reason": null,
+        "patch_result_revision": null,
+        "patch_status": "pending",
+        "surprise": 0.0,
+        "target_content_hash": 8901692549051697090,
+        "target_revision": 0,
+        "trigger_fired": true,
+        "weights": {
+          "W2": [
+            [
+              0.0
+            ]
+          ],
+          "b2": [
+            0.0
+          ]
+        }
+      },
+      "terminal_progress": null,
+      "terminal_status": null,
+      "writer_rule_index": 1
+    },
+    {
+      "arm": "scoped_fallback",
+      "audits": {
+        "fallback": {
+          "global": {
+            "apply_probe_rollbacks": 0,
+            "bindings_cloned": 4,
+            "cand_enum": 9,
+            "cand_enum_apply_once": 0,
+            "cand_enum_first": 9,
+            "cand_enum_hinted": 0,
+            "cand_enum_local": 4,
+            "cand_enum_repeat": 0,
+            "cand_enum_scan": 5,
+            "cand_reject_bound": 0,
+            "cand_tested": 9,
+            "deferred_queue:net_collapses:drain_batches": 1,
+            "deferred_queue:net_collapses:drain_ns": 3910,
+            "deferred_queue:net_collapses:drained_items": 1,
+            "deferred_queue:rule_patches:drain_batches": 1,
+            "deferred_queue:rule_patches:drain_ns": 18660,
+            "deferred_queue:rule_patches:drained_items": 1,
+            "deferred_queue:track_identity:drain_batches": 1,
+            "deferred_queue:track_identity:drain_ns": 3390,
+            "deferred_queue:track_identity:drained_items": 1,
+            "dim_infer_arg_calls": 0,
+            "dim_infer_arg_distinct_ordered": 0,
+            "dim_infer_arg_distinct_unordered": 0,
+            "epochs": 1,
+            "epochs_apply_once": 0,
+            "ffi_calls": 1,
+            "ffi_items": 1,
+            "ffi_pyobjects": 0,
+            "graph_writes": 0,
+            "leaf_visits": 4,
+            "pushdown_evals": 0,
+            "pushdown_prunes": 0,
+            "rule_effect_attr_set_attempts": 4,
+            "rule_effect_edge_deletes": 0,
+            "rule_effect_edge_insert_attempts": 0,
+            "rule_effect_node_delete_attempts": 0,
+            "rule_effect_node_inserts": 0,
+            "rule_effect_replace_edge_deletes": 0,
+            "rule_effect_replace_edge_insert_attempts": 0,
+            "rule_enumerations": 3,
+            "rule_enumerations_repeat": 1,
+            "scoped_full_fallback_rule_matches": 0,
+            "scoped_local_rule_matches": 0,
+            "scoped_mt_seeded_rule_matches": 0,
+            "term_eval:Attr": 1,
+            "term_eval:Eq": 1,
+            "term_eval:Lit": 5,
+            "term_eval:Not": 1,
+            "term_eval:Var": 1,
+            "term_evals_total": 9,
+            "term_units_total": 0,
+            "term_units_unattributed": 0,
+            "var_collisions": 0,
+            "where_evals": 5,
+            "where_evals_first": 5,
+            "where_evals_repeat": 0,
+            "where_rejects": 1
+          },
+          "per_rule": [
+            [
+              0,
+              "Lit",
+              4
+            ],
+            [
+              0,
+              "binding_clones",
+              4
+            ],
+            [
+              0,
+              "binding_leaves",
+              4
+            ],
+            [
+              0,
+              "candidate_pairs",
+              4
+            ],
+            [
+              0,
+              "candidate_tests",
+              4
+            ],
+            [
+              0,
+              "effect_attr_set_attempts",
+              4
+            ],
+            [
+              0,
+              "rule_enumerations",
+              1
+            ],
+            [
+              0,
+              "term_evaluations",
+              4
+            ],
+            [
+              0,
+              "where_evaluations",
+              4
+            ],
+            [
+              1,
+              "Attr",
+              1
+            ],
+            [
+              1,
+              "Eq",
+              1
+            ],
+            [
+              1,
+              "Lit",
+              1
+            ],
+            [
+              1,
+              "Not",
+              1
+            ],
+            [
+              1,
+              "Var",
+              1
+            ],
+            [
+              1,
+              "candidate_pairs",
+              5
+            ],
+            [
+              1,
+              "candidate_tests",
+              5
+            ],
+            [
+              1,
+              "rule_enumerations",
+              2
+            ],
+            [
+              1,
+              "term_evaluations",
+              5
+            ],
+            [
+              1,
+              "where_evaluations",
+              1
+            ],
+            [
+              1,
+              "where_rejections",
+              1
+            ]
+          ]
+        },
+        "scoped": {
+          "global": {
+            "apply_probe_rollbacks": 0,
+            "bindings_cloned": 0,
+            "cand_enum": 5,
+            "cand_enum_apply_once": 0,
+            "cand_enum_first": 5,
+            "cand_enum_hinted": 0,
+            "cand_enum_local": 4,
+            "cand_enum_repeat": 0,
+            "cand_enum_scan": 1,
+            "cand_reject_bound": 0,
+            "cand_tested": 5,
+            "deferred_queue:net_collapses:enqueued_items": 1,
+            "deferred_queue:rule_patches:enqueued_items": 1,
+            "deferred_queue:track_identity:enqueued_items": 1,
+            "dim_infer_arg_calls": 0,
+            "dim_infer_arg_distinct_ordered": 0,
+            "dim_infer_arg_distinct_unordered": 0,
+            "epochs": 1,
+            "epochs_apply_once": 0,
+            "ffi_calls": 1,
+            "ffi_items": 1,
+            "ffi_pyobjects": 0,
+            "graph_writes": 0,
+            "leaf_visits": 1,
+            "pushdown_evals": 0,
+            "pushdown_prunes": 0,
+            "rule_effect_attr_set_attempts": 2,
+            "rule_effect_edge_deletes": 0,
+            "rule_effect_edge_insert_attempts": 0,
+            "rule_effect_node_delete_attempts": 0,
+            "rule_effect_node_inserts": 0,
+            "rule_effect_replace_edge_deletes": 0,
+            "rule_effect_replace_edge_insert_attempts": 0,
+            "rule_enumerations": 2,
+            "rule_enumerations_repeat": 0,
+            "scoped_full_fallback_rule_matches": 1,
+            "scoped_local_rule_matches": 1,
+            "scoped_mt_seeded_rule_matches": 0,
+            "term_eval:Attr": 4,
+            "term_eval:Eq": 1,
+            "term_eval:Lit": 1,
+            "term_eval:NodesOfType": 2,
+            "term_eval:Not": 1,
+            "term_eval:Var": 4,
+            "term_evals_total": 13,
+            "term_unit:NodesOfType": 8,
+            "term_units_total": 8,
+            "term_units_unattributed": 0,
+            "var_collisions": 0,
+            "where_evals": 1,
+            "where_evals_first": 1,
+            "where_evals_repeat": 0,
+            "where_rejects": 0
+          },
+          "per_rule": [
+            [
+              0,
+              "rule_enumerations",
+              1
+            ],
+            [
+              1,
+              "Attr",
+              4
+            ],
+            [
+              1,
+              "Eq",
+              1
+            ],
+            [
+              1,
+              "Lit",
+              1
+            ],
+            [
+              1,
+              "NodesOfType",
+              2
+            ],
+            [
+              1,
+              "Not",
+              1
+            ],
+            [
+              1,
+              "Var",
+              4
+            ],
+            [
+              1,
+              "binding_leaves",
+              1
+            ],
+            [
+              1,
+              "candidate_pairs",
+              5
+            ],
+            [
+              1,
+              "candidate_tests",
+              5
+            ],
+            [
+              1,
+              "deferred_queue_enqueued:net_collapses",
+              1
+            ],
+            [
+              1,
+              "deferred_queue_enqueued:rule_patches",
+              1
+            ],
+            [
+              1,
+              "deferred_queue_enqueued:track_identity",
+              1
+            ],
+            [
+              1,
+              "effect_attr_set_attempts",
+              2
+            ],
+            [
+              1,
+              "rule_enumerations",
+              1
+            ],
+            [
+              1,
+              "term_evaluations",
+              13
+            ],
+            [
+              1,
+              "term_units",
+              8
+            ],
+            [
+              1,
+              "where_evaluations",
+              1
+            ]
+          ]
+        }
+      },
+      "count": 4,
+      "global_report": {
+        "budget_overshoot": 0,
+        "cycle_detection_enabled": false,
+        "passes_completed": 2,
+        "progress_steps": 1,
+        "requested_progress_budget": 20000,
+        "status": "fixed_point"
+      },
+      "native_extension_sha256": "27d8de9e6405b39785867721f0498c6d2f43aa5bc808f6301e3356bfc64fab8c",
+      "pid": 54,
+      "replicate": 1,
+      "scoped_report": {
+        "deferred_effects_pending": true,
+        "hit_progress_budget": true,
+        "progress_steps": 1
+      },
+      "state": {
+        "identities": {
+          "current": [
+            5,
+            10,
+            15,
+            20
+          ],
+          "previous": [
+            5,
+            10,
+            15,
+            20
+          ]
+        },
+        "observation_status": "consumed",
+        "outputs": [
+          true,
+          true,
+          true,
+          true
+        ],
+        "patch_reason": "ok",
+        "patch_result_revision": 1,
+        "patch_status": "committed",
+        "surprise": 0.15,
+        "target_content_hash": 5927251937629756515,
+        "target_revision": 1,
+        "trigger_fired": true,
+        "weights": {
+          "W2": [
+            [
+              0.05
+            ]
+          ],
+          "b2": [
+            0.05
+          ]
+        }
+      },
+      "terminal_progress": 0,
+      "terminal_status": "fixed_point",
+      "writer_rule_index": 1
+    }
+  ],
+  "schema_version": 1
+}

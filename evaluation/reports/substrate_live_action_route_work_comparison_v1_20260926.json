@@ -1,0 +1,116 @@
+{
+  "all_checks_pass": true,
+  "check_count": 9,
+  "checks": {
+    "same_full_source_closure": true,
+    "same_native_build_manifest": true,
+    "same_native_extension": true,
+    "same_python_platform": true,
+    "same_two_request_six_helper_schedule": true,
+    "scene_analysis_all_checks_pass": true,
+    "self_report_analysis_all_checks_pass": true,
+    "source_match_claim_is_not_empty": true,
+    "three_worker_replicates_each": true
+  },
+  "claim_boundary": "Retrospective same-source comparison of two different task contents and schedules. Route, scene/organization content, evolving graph state, and threaded-vs-sequential schedule are confounded. The ratios describe these two captured fixtures; they are not causal route effects or natural workload averages.",
+  "descriptive_ratios": {
+    "describe_scene_over_self_report_candidate_pairs": 6.765594932649134,
+    "describe_scene_over_self_report_term_evaluations": 3.191090069991996
+  },
+  "input_sha256": {
+    "scene_analysis": "83ed41c9acd6eb6550a30fbe4fbfcf3df469712d4bfb8e418c544af53024b7f9",
+    "scene_lock": "1c68282f63b74453e44cf863523382cda1e4bd67427a8d669e80da2e078e8f49",
+    "scene_raw": "f5e05b169880db3d079d5d95cc821e496ae8a9cd91c8d4b47610b51370d39baf",
+    "self_report_analysis": "b30e856cac7afb4fd87844e6f9365512b991e5e4f17c3a6b6a5c6f09f608528c",
+    "self_report_lock": "a5b14921a69aa60334bae31ddbdcc9c08a8fec77caef3bb62733cb6873a221a1",
+    "self_report_raw": "332d6f9c7a5b39502e5ef08bf54aa616b0140cc67f7f84879edbb3c1049cc0ef"
+  },
+  "matched_execution_context": {
+    "environment": {
+      "platform": "Linux-6.8.0-142-generic-x86_64-with-glibc2.39",
+      "python": "3.13.5 (main, Jun 11 2025, 15:36:57) [GCC 11.4.0]"
+    },
+    "native_build_manifest_sha256": "2d10ff9cc7f9832d91d1603c74dd0a0e0c4c5d3080a618a33575e9d5400ae871",
+    "native_extension_sha256": "9291c67b03cd5bf3d6be1a7fd043b232742e8d7eb48536f3d1625daa94b02e39",
+    "source_closure_files": 1669
+  },
+  "routes": {
+    "describe_scene": {
+      "by_event_kind": {
+        "action_result": {
+          "calls_per_run": 2,
+          "candidate_pairs_per_run": 112506,
+          "elapsed_ns_median": 45679514,
+          "elapsed_ns_range": [
+            33256667,
+            49476417
+          ],
+          "term_evaluations_per_run": 562140
+        },
+        "execution": {
+          "calls_per_run": 2,
+          "candidate_pairs_per_run": 112514,
+          "elapsed_ns_median": 47851997,
+          "elapsed_ns_range": [
+            32852684,
+            64185748
+          ],
+          "term_evaluations_per_run": 562178
+        },
+        "selection": {
+          "calls_per_run": 2,
+          "candidate_pairs_per_run": 112502,
+          "elapsed_ns_median": 46017816,
+          "elapsed_ns_range": [
+            32126750,
+            51969623
+          ],
+          "term_evaluations_per_run": 562138
+        }
+      },
+      "candidate_pairs_per_run": 337522,
+      "helper_calls_per_run": 6,
+      "requests_per_run": 2,
+      "term_evaluations_per_run": 1686456
+    },
+    "self_report": {
+      "by_event_kind": {
+        "action_result": {
+          "calls_per_run": 2,
+          "candidate_pairs_per_run": 16600,
+          "elapsed_ns_range": [
+            11794654,
+            19366480
+          ],
+          "median_elapsed_ns_per_call": 13464279.0,
+          "term_evaluations_per_run": 174796
+        },
+        "execution": {
+          "calls_per_run": 2,
+          "candidate_pairs_per_run": 16606,
+          "elapsed_ns_range": [
+            11410551,
+            14864363
+          ],
+          "median_elapsed_ns_per_call": 12844770.0,
+          "term_evaluations_per_run": 174824
+        },
+        "selection": {
+          "calls_per_run": 2,
+          "candidate_pairs_per_run": 16682,
+          "elapsed_ns_range": [
+            12776960,
+            14634101
+          ],
+          "median_elapsed_ns_per_call": 13560179.0,
+          "term_evaluations_per_run": 178869
+        }
+      },
+      "candidate_pairs_per_run": 49888,
+      "helper_calls_per_run": 6,
+      "requests_per_run": 2,
+      "term_evaluations_per_run": 528489
+    }
+  },
+  "schema": "substrate_live_action_route_work_comparison_v1"
+}

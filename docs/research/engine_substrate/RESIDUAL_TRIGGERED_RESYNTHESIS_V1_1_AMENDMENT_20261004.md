@@ -1,0 +1,3 @@
+# Residual-triggered resynthesis v1.1 amendment
+
+The first capture completed all 20 workers, but its independent analyzer failed the current-source gate after a post-lock correction to training-row wire conversion. The other semantic checks passed, but the capture is retained as diagnostic only. This v1.1 rerun binds the corrected runner and analyzer with a fresh, versioned lock and raw output path. The cohort, two arms, operator schedule, 0.5-second per-branch budgets, size/candidate limits, selection budget, and holdout remain unchanged. No outcomes from the diagnostic capture are used in v1.1 analysis.

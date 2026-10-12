@@ -1,0 +1,169 @@
+{
+  "all_checks_pass": true,
+  "checks": {
+    "five_distinct_workers": true,
+    "request_goals_resolved": true,
+    "source_and_native_lock_stable": true,
+    "two_expected_calls_per_worker": true,
+    "workers_joined_without_errors": true
+  },
+  "classification": "valid_five_process_fixture_measurement",
+  "instrumentation": "No native access tracing, per-rule audit counters, selection barrier, or graph output readback is used in the timed interval.",
+  "interpretation": "Caller wall and thread CPU values are measured during two simultaneously launched calls against one adapter. They include scheduling/serialization effects and must not be read as isolated single-request service time. Five replicates quantify this fixture and schedule only.",
+  "run_id": "describe-scene-uninstrumented-timing-v2-analysis-20260927",
+  "schema_version": 1,
+  "source_raw": "evaluation/reports/describe_scene_uninstrumented_timing_v2_20260927.json",
+  "summaries": {
+    "A": {
+      "thread_cpu_ms": {
+        "max": 12174.525926,
+        "median": 11108.346615,
+        "min": 285.291429,
+        "replicates": [
+          285.291429,
+          10895.535122,
+          11171.635481,
+          12174.525926,
+          11108.346615
+        ]
+      },
+      "wall_ms": {
+        "max": 12283.610147,
+        "median": 11191.789366,
+        "min": 10995.970652,
+        "replicates": [
+          11068.98183,
+          10995.970652,
+          11299.814818,
+          12283.610147,
+          11191.789366
+        ]
+      }
+    },
+    "B": {
+      "thread_cpu_ms": {
+        "max": 10675.839764,
+        "median": 278.101193,
+        "min": 261.59607,
+        "replicates": [
+          10675.839764,
+          278.101193,
+          271.250045,
+          292.052329,
+          261.59607
+        ]
+      },
+      "wall_ms": {
+        "max": 12631.392454,
+        "median": 11462.633806,
+        "min": 10774.48852,
+        "replicates": [
+          10774.48852,
+          11285.596233,
+          11579.295973,
+          12631.392454,
+          11462.633806
+        ]
+      }
+    },
+    "boot_phase_high_water_rss_bytes": {
+      "max": 1797148672,
+      "median": 1796706304,
+      "min": 1796370432,
+      "replicates": [
+        1796370432,
+        1796706304,
+        1797148672,
+        1796571136,
+        1796845568
+      ]
+    },
+    "boot_process_cpu_ns": {
+      "max": 14185626621,
+      "median": 13247722460,
+      "min": 12983530001,
+      "replicates": [
+        12983530001,
+        13247722460,
+        12994732733,
+        14185626621,
+        13628993780
+      ]
+    },
+    "boot_wall_ns": {
+      "max": 13245615159,
+      "median": 12284483540,
+      "min": 11949767905,
+      "replicates": [
+        11949767905,
+        12284483540,
+        11986130521,
+        13245615159,
+        12676412380
+      ]
+    },
+    "peak_rss_bytes": {
+      "max": 2693963776,
+      "median": 2693136384,
+      "min": 2692841472,
+      "replicates": [
+        2692841472,
+        2693312512,
+        2693963776,
+        2692870144,
+        2693136384
+      ]
+    },
+    "two_call_schedule": {
+      "combined_thread_cpu_ms": {
+        "max": 12466.578255,
+        "median": 11369.942685,
+        "min": 10961.131193,
+        "replicates": [
+          10961.131193,
+          11173.636315,
+          11369.942685,
+          11442.885526,
+          12466.578255
+        ]
+      },
+      "higher_cpu_thread_ms": {
+        "max": 12174.525926,
+        "median": 11108.346615,
+        "min": 10675.839764,
+        "replicates": [
+          10675.839764,
+          10895.535122,
+          11108.346615,
+          11171.635481,
+          12174.525926
+        ]
+      },
+      "lower_cpu_thread_ms": {
+        "max": 292.052329,
+        "median": 278.101193,
+        "min": 261.59607,
+        "replicates": [
+          261.59607,
+          271.250045,
+          278.101193,
+          285.291429,
+          292.052329
+        ]
+      },
+      "max_caller_wall_ms": {
+        "max": 12631.392454,
+        "median": 11462.633806,
+        "min": 11068.98183,
+        "replicates": [
+          11068.98183,
+          11285.596233,
+          11462.633806,
+          11579.295973,
+          12631.392454
+        ]
+      },
+      "note": "Which label (A/B) receives the high-CPU request varies by replicate; report role-sorted values for workload behavior, not fixed-label medians."
+    }
+  }
+}

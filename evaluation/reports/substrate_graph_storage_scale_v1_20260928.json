@@ -1,0 +1,702 @@
+{
+  "all_checks_pass": true,
+  "checks": {
+    "correct_graph_counts": true,
+    "positive_timings": true,
+    "rss_nondecreasing": true,
+    "sampled_graph_checks": true,
+    "six_workers": true,
+    "stable_parent_and_workers": true,
+    "two_workers_per_size": true,
+    "unique_pids": true
+  },
+  "locked_inputs": {
+    "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+    "files": {
+      "docs/research/engine_substrate/SUBSTRATE_GRAPH_STORAGE_SCALE_V1_PREREG_20260928.md": "7c3ec9e1b078b655ec074bee06ca3e71f7a9fb89f24c11e6dc53fc08a66088ae",
+      "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+      "runners/dsl/python/substrate_rs/__init__.py": "6ec0316afae414329e36d3f121fc56b556e7315f17b93aab911ca09a29726694",
+      "runners/dsl/python/substrate_rs/_native.build.json": "425e086594e50335ca917e330206fec9bd8c778d4e58d2c5dd0d06cc61bc41ee",
+      "runners/dsl/src/graph.rs": "f1bff152147f6ba79d3f2f25a8bd9ee8fb4132d787775e9031c52f0c24d99a36",
+      "runners/dsl/src/py.rs": "68347817627387a7730c86ff3ff0f69d45788fe0754227914437dd7d8207a576",
+      "runners/dsl/src/substrate.rs": "7548e63870c676a46232469717739db03c3e8e19e0557aeabf17a42b29068f86",
+      "scripts/analyze_substrate_graph_storage_scale_v1.py": "ad3507d1384a89034e878824aae6ee2e4884a68b9eade7fbbd6a2e4c70949c8e",
+      "scripts/substrate_graph_storage_scale_v1.py": "206354636d21d015c93e5c809f1595af0ccf5059db450c99f3d71afc731d03b6"
+    },
+    "native_build_stale": [],
+    "native_path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+    "native_sha256": "260cf6063acbfb2fb83a7bfbe8b0bbe35afa951d3142539fbd868edf331d3afa"
+  },
+  "post_run_inputs": {
+    "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+    "files": {
+      "docs/research/engine_substrate/SUBSTRATE_GRAPH_STORAGE_SCALE_V1_PREREG_20260928.md": "7c3ec9e1b078b655ec074bee06ca3e71f7a9fb89f24c11e6dc53fc08a66088ae",
+      "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+      "runners/dsl/python/substrate_rs/__init__.py": "6ec0316afae414329e36d3f121fc56b556e7315f17b93aab911ca09a29726694",
+      "runners/dsl/python/substrate_rs/_native.build.json": "425e086594e50335ca917e330206fec9bd8c778d4e58d2c5dd0d06cc61bc41ee",
+      "runners/dsl/src/graph.rs": "f1bff152147f6ba79d3f2f25a8bd9ee8fb4132d787775e9031c52f0c24d99a36",
+      "runners/dsl/src/py.rs": "68347817627387a7730c86ff3ff0f69d45788fe0754227914437dd7d8207a576",
+      "runners/dsl/src/substrate.rs": "7548e63870c676a46232469717739db03c3e8e19e0557aeabf17a42b29068f86",
+      "scripts/analyze_substrate_graph_storage_scale_v1.py": "ad3507d1384a89034e878824aae6ee2e4884a68b9eade7fbbd6a2e4c70949c8e",
+      "scripts/substrate_graph_storage_scale_v1.py": "206354636d21d015c93e5c809f1595af0ccf5059db450c99f3d71afc731d03b6"
+    },
+    "native_build_stale": [],
+    "native_path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+    "native_sha256": "260cf6063acbfb2fb83a7bfbe8b0bbe35afa951d3142539fbd868edf331d3afa"
+  },
+  "run_id": "substrate-graph-storage-scale-v1-20260928",
+  "runs": [
+    {
+      "after": {
+        "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+        "files": {
+          "docs/research/engine_substrate/SUBSTRATE_GRAPH_STORAGE_SCALE_V1_PREREG_20260928.md": "7c3ec9e1b078b655ec074bee06ca3e71f7a9fb89f24c11e6dc53fc08a66088ae",
+          "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+          "runners/dsl/python/substrate_rs/__init__.py": "6ec0316afae414329e36d3f121fc56b556e7315f17b93aab911ca09a29726694",
+          "runners/dsl/python/substrate_rs/_native.build.json": "425e086594e50335ca917e330206fec9bd8c778d4e58d2c5dd0d06cc61bc41ee",
+          "runners/dsl/src/graph.rs": "f1bff152147f6ba79d3f2f25a8bd9ee8fb4132d787775e9031c52f0c24d99a36",
+          "runners/dsl/src/py.rs": "68347817627387a7730c86ff3ff0f69d45788fe0754227914437dd7d8207a576",
+          "runners/dsl/src/substrate.rs": "7548e63870c676a46232469717739db03c3e8e19e0557aeabf17a42b29068f86",
+          "scripts/analyze_substrate_graph_storage_scale_v1.py": "ad3507d1384a89034e878824aae6ee2e4884a68b9eade7fbbd6a2e4c70949c8e",
+          "scripts/substrate_graph_storage_scale_v1.py": "206354636d21d015c93e5c809f1595af0ccf5059db450c99f3d71afc731d03b6"
+        },
+        "native_build_stale": [],
+        "native_path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+        "native_sha256": "260cf6063acbfb2fb83a7bfbe8b0bbe35afa951d3142539fbd868edf331d3afa"
+      },
+      "before": {
+        "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+        "files": {
+          "docs/research/engine_substrate/SUBSTRATE_GRAPH_STORAGE_SCALE_V1_PREREG_20260928.md": "7c3ec9e1b078b655ec074bee06ca3e71f7a9fb89f24c11e6dc53fc08a66088ae",
+          "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+          "runners/dsl/python/substrate_rs/__init__.py": "6ec0316afae414329e36d3f121fc56b556e7315f17b93aab911ca09a29726694",
+          "runners/dsl/python/substrate_rs/_native.build.json": "425e086594e50335ca917e330206fec9bd8c778d4e58d2c5dd0d06cc61bc41ee",
+          "runners/dsl/src/graph.rs": "f1bff152147f6ba79d3f2f25a8bd9ee8fb4132d787775e9031c52f0c24d99a36",
+          "runners/dsl/src/py.rs": "68347817627387a7730c86ff3ff0f69d45788fe0754227914437dd7d8207a576",
+          "runners/dsl/src/substrate.rs": "7548e63870c676a46232469717739db03c3e8e19e0557aeabf17a42b29068f86",
+          "scripts/analyze_substrate_graph_storage_scale_v1.py": "ad3507d1384a89034e878824aae6ee2e4884a68b9eade7fbbd6a2e4c70949c8e",
+          "scripts/substrate_graph_storage_scale_v1.py": "206354636d21d015c93e5c809f1595af0ccf5059db450c99f3d71afc731d03b6"
+        },
+        "native_build_stale": [],
+        "native_path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+        "native_sha256": "260cf6063acbfb2fb83a7bfbe8b0bbe35afa951d3142539fbd868edf331d3afa"
+      },
+      "edge_build_cpu_ns": 7798382,
+      "edge_build_wall_ns": 7805865,
+      "edge_count": 9999,
+      "environment": {
+        "platform": "Linux-6.8.0-142-generic-x86_64-with-glibc2.39",
+        "python": "3.13.5 (main, Jun 11 2025, 15:36:57) [GCC 11.4.0]"
+      },
+      "n": 10000,
+      "node_build_cpu_ns": 4674932,
+      "node_build_wall_ns": 4676667,
+      "node_count": 10000,
+      "peak_rss_bytes": 37093376,
+      "pid": 4,
+      "replicate": 1,
+      "rss_after_edges_bytes": 27721728,
+      "rss_after_nodes_bytes": 25833472,
+      "rss_before_bytes": 24059904,
+      "sampled_checks_pass": true,
+      "sampled_edge_reads": [
+        {
+          "actual_tgts": [
+            1
+          ],
+          "expected_tgt": 1,
+          "pass": true,
+          "src": 0
+        },
+        {
+          "actual_tgts": [
+            5000
+          ],
+          "expected_tgt": 5000,
+          "pass": true,
+          "src": 4999
+        },
+        {
+          "actual_tgts": [
+            9999
+          ],
+          "expected_tgt": 9999,
+          "pass": true,
+          "src": 9998
+        }
+      ],
+      "sampled_node_reads": [
+        {
+          "exists": true,
+          "id": 0,
+          "label": "first",
+          "type": "StorageProbe"
+        },
+        {
+          "exists": true,
+          "id": 5000,
+          "label": "middle",
+          "type": "StorageProbe"
+        },
+        {
+          "exists": true,
+          "id": 9999,
+          "label": "last",
+          "type": "StorageProbe"
+        }
+      ],
+      "total_build_cpu_ns": 12473314,
+      "total_build_wall_ns": 12482532,
+      "worker_returncode": 0,
+      "worker_stderr": ""
+    },
+    {
+      "after": {
+        "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+        "files": {
+          "docs/research/engine_substrate/SUBSTRATE_GRAPH_STORAGE_SCALE_V1_PREREG_20260928.md": "7c3ec9e1b078b655ec074bee06ca3e71f7a9fb89f24c11e6dc53fc08a66088ae",
+          "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+          "runners/dsl/python/substrate_rs/__init__.py": "6ec0316afae414329e36d3f121fc56b556e7315f17b93aab911ca09a29726694",
+          "runners/dsl/python/substrate_rs/_native.build.json": "425e086594e50335ca917e330206fec9bd8c778d4e58d2c5dd0d06cc61bc41ee",
+          "runners/dsl/src/graph.rs": "f1bff152147f6ba79d3f2f25a8bd9ee8fb4132d787775e9031c52f0c24d99a36",
+          "runners/dsl/src/py.rs": "68347817627387a7730c86ff3ff0f69d45788fe0754227914437dd7d8207a576",
+          "runners/dsl/src/substrate.rs": "7548e63870c676a46232469717739db03c3e8e19e0557aeabf17a42b29068f86",
+          "scripts/analyze_substrate_graph_storage_scale_v1.py": "ad3507d1384a89034e878824aae6ee2e4884a68b9eade7fbbd6a2e4c70949c8e",
+          "scripts/substrate_graph_storage_scale_v1.py": "206354636d21d015c93e5c809f1595af0ccf5059db450c99f3d71afc731d03b6"
+        },
+        "native_build_stale": [],
+        "native_path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+        "native_sha256": "260cf6063acbfb2fb83a7bfbe8b0bbe35afa951d3142539fbd868edf331d3afa"
+      },
+      "before": {
+        "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+        "files": {
+          "docs/research/engine_substrate/SUBSTRATE_GRAPH_STORAGE_SCALE_V1_PREREG_20260928.md": "7c3ec9e1b078b655ec074bee06ca3e71f7a9fb89f24c11e6dc53fc08a66088ae",
+          "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+          "runners/dsl/python/substrate_rs/__init__.py": "6ec0316afae414329e36d3f121fc56b556e7315f17b93aab911ca09a29726694",
+          "runners/dsl/python/substrate_rs/_native.build.json": "425e086594e50335ca917e330206fec9bd8c778d4e58d2c5dd0d06cc61bc41ee",
+          "runners/dsl/src/graph.rs": "f1bff152147f6ba79d3f2f25a8bd9ee8fb4132d787775e9031c52f0c24d99a36",
+          "runners/dsl/src/py.rs": "68347817627387a7730c86ff3ff0f69d45788fe0754227914437dd7d8207a576",
+          "runners/dsl/src/substrate.rs": "7548e63870c676a46232469717739db03c3e8e19e0557aeabf17a42b29068f86",
+          "scripts/analyze_substrate_graph_storage_scale_v1.py": "ad3507d1384a89034e878824aae6ee2e4884a68b9eade7fbbd6a2e4c70949c8e",
+          "scripts/substrate_graph_storage_scale_v1.py": "206354636d21d015c93e5c809f1595af0ccf5059db450c99f3d71afc731d03b6"
+        },
+        "native_build_stale": [],
+        "native_path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+        "native_sha256": "260cf6063acbfb2fb83a7bfbe8b0bbe35afa951d3142539fbd868edf331d3afa"
+      },
+      "edge_build_cpu_ns": 8216702,
+      "edge_build_wall_ns": 8216377,
+      "edge_count": 9999,
+      "environment": {
+        "platform": "Linux-6.8.0-142-generic-x86_64-with-glibc2.39",
+        "python": "3.13.5 (main, Jun 11 2025, 15:36:57) [GCC 11.4.0]"
+      },
+      "n": 10000,
+      "node_build_cpu_ns": 5295142,
+      "node_build_wall_ns": 5296250,
+      "node_count": 10000,
+      "peak_rss_bytes": 36818944,
+      "pid": 8,
+      "replicate": 0,
+      "rss_after_edges_bytes": 27717632,
+      "rss_after_nodes_bytes": 25829376,
+      "rss_before_bytes": 24055808,
+      "sampled_checks_pass": true,
+      "sampled_edge_reads": [
+        {
+          "actual_tgts": [
+            1
+          ],
+          "expected_tgt": 1,
+          "pass": true,
+          "src": 0
+        },
+        {
+          "actual_tgts": [
+            5000
+          ],
+          "expected_tgt": 5000,
+          "pass": true,
+          "src": 4999
+        },
+        {
+          "actual_tgts": [
+            9999
+          ],
+          "expected_tgt": 9999,
+          "pass": true,
+          "src": 9998
+        }
+      ],
+      "sampled_node_reads": [
+        {
+          "exists": true,
+          "id": 0,
+          "label": "first",
+          "type": "StorageProbe"
+        },
+        {
+          "exists": true,
+          "id": 5000,
+          "label": "middle",
+          "type": "StorageProbe"
+        },
+        {
+          "exists": true,
+          "id": 9999,
+          "label": "last",
+          "type": "StorageProbe"
+        }
+      ],
+      "total_build_cpu_ns": 13511844,
+      "total_build_wall_ns": 13512627,
+      "worker_returncode": 0,
+      "worker_stderr": ""
+    },
+    {
+      "after": {
+        "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+        "files": {
+          "docs/research/engine_substrate/SUBSTRATE_GRAPH_STORAGE_SCALE_V1_PREREG_20260928.md": "7c3ec9e1b078b655ec074bee06ca3e71f7a9fb89f24c11e6dc53fc08a66088ae",
+          "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+          "runners/dsl/python/substrate_rs/__init__.py": "6ec0316afae414329e36d3f121fc56b556e7315f17b93aab911ca09a29726694",
+          "runners/dsl/python/substrate_rs/_native.build.json": "425e086594e50335ca917e330206fec9bd8c778d4e58d2c5dd0d06cc61bc41ee",
+          "runners/dsl/src/graph.rs": "f1bff152147f6ba79d3f2f25a8bd9ee8fb4132d787775e9031c52f0c24d99a36",
+          "runners/dsl/src/py.rs": "68347817627387a7730c86ff3ff0f69d45788fe0754227914437dd7d8207a576",
+          "runners/dsl/src/substrate.rs": "7548e63870c676a46232469717739db03c3e8e19e0557aeabf17a42b29068f86",
+          "scripts/analyze_substrate_graph_storage_scale_v1.py": "ad3507d1384a89034e878824aae6ee2e4884a68b9eade7fbbd6a2e4c70949c8e",
+          "scripts/substrate_graph_storage_scale_v1.py": "206354636d21d015c93e5c809f1595af0ccf5059db450c99f3d71afc731d03b6"
+        },
+        "native_build_stale": [],
+        "native_path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+        "native_sha256": "260cf6063acbfb2fb83a7bfbe8b0bbe35afa951d3142539fbd868edf331d3afa"
+      },
+      "before": {
+        "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+        "files": {
+          "docs/research/engine_substrate/SUBSTRATE_GRAPH_STORAGE_SCALE_V1_PREREG_20260928.md": "7c3ec9e1b078b655ec074bee06ca3e71f7a9fb89f24c11e6dc53fc08a66088ae",
+          "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+          "runners/dsl/python/substrate_rs/__init__.py": "6ec0316afae414329e36d3f121fc56b556e7315f17b93aab911ca09a29726694",
+          "runners/dsl/python/substrate_rs/_native.build.json": "425e086594e50335ca917e330206fec9bd8c778d4e58d2c5dd0d06cc61bc41ee",
+          "runners/dsl/src/graph.rs": "f1bff152147f6ba79d3f2f25a8bd9ee8fb4132d787775e9031c52f0c24d99a36",
+          "runners/dsl/src/py.rs": "68347817627387a7730c86ff3ff0f69d45788fe0754227914437dd7d8207a576",
+          "runners/dsl/src/substrate.rs": "7548e63870c676a46232469717739db03c3e8e19e0557aeabf17a42b29068f86",
+          "scripts/analyze_substrate_graph_storage_scale_v1.py": "ad3507d1384a89034e878824aae6ee2e4884a68b9eade7fbbd6a2e4c70949c8e",
+          "scripts/substrate_graph_storage_scale_v1.py": "206354636d21d015c93e5c809f1595af0ccf5059db450c99f3d71afc731d03b6"
+        },
+        "native_build_stale": [],
+        "native_path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+        "native_sha256": "260cf6063acbfb2fb83a7bfbe8b0bbe35afa951d3142539fbd868edf331d3afa"
+      },
+      "edge_build_cpu_ns": 101687897,
+      "edge_build_wall_ns": 101779420,
+      "edge_count": 99999,
+      "environment": {
+        "platform": "Linux-6.8.0-142-generic-x86_64-with-glibc2.39",
+        "python": "3.13.5 (main, Jun 11 2025, 15:36:57) [GCC 11.4.0]"
+      },
+      "n": 100000,
+      "node_build_cpu_ns": 49266584,
+      "node_build_wall_ns": 49289900,
+      "node_count": 100000,
+      "peak_rss_bytes": 60010496,
+      "pid": 12,
+      "replicate": 1,
+      "rss_after_edges_bytes": 50380800,
+      "rss_after_nodes_bytes": 37273600,
+      "rss_before_bytes": 24055808,
+      "sampled_checks_pass": true,
+      "sampled_edge_reads": [
+        {
+          "actual_tgts": [
+            1
+          ],
+          "expected_tgt": 1,
+          "pass": true,
+          "src": 0
+        },
+        {
+          "actual_tgts": [
+            50000
+          ],
+          "expected_tgt": 50000,
+          "pass": true,
+          "src": 49999
+        },
+        {
+          "actual_tgts": [
+            99999
+          ],
+          "expected_tgt": 99999,
+          "pass": true,
+          "src": 99998
+        }
+      ],
+      "sampled_node_reads": [
+        {
+          "exists": true,
+          "id": 0,
+          "label": "first",
+          "type": "StorageProbe"
+        },
+        {
+          "exists": true,
+          "id": 50000,
+          "label": "middle",
+          "type": "StorageProbe"
+        },
+        {
+          "exists": true,
+          "id": 99999,
+          "label": "last",
+          "type": "StorageProbe"
+        }
+      ],
+      "total_build_cpu_ns": 150954481,
+      "total_build_wall_ns": 151069320,
+      "worker_returncode": 0,
+      "worker_stderr": ""
+    },
+    {
+      "after": {
+        "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+        "files": {
+          "docs/research/engine_substrate/SUBSTRATE_GRAPH_STORAGE_SCALE_V1_PREREG_20260928.md": "7c3ec9e1b078b655ec074bee06ca3e71f7a9fb89f24c11e6dc53fc08a66088ae",
+          "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+          "runners/dsl/python/substrate_rs/__init__.py": "6ec0316afae414329e36d3f121fc56b556e7315f17b93aab911ca09a29726694",
+          "runners/dsl/python/substrate_rs/_native.build.json": "425e086594e50335ca917e330206fec9bd8c778d4e58d2c5dd0d06cc61bc41ee",
+          "runners/dsl/src/graph.rs": "f1bff152147f6ba79d3f2f25a8bd9ee8fb4132d787775e9031c52f0c24d99a36",
+          "runners/dsl/src/py.rs": "68347817627387a7730c86ff3ff0f69d45788fe0754227914437dd7d8207a576",
+          "runners/dsl/src/substrate.rs": "7548e63870c676a46232469717739db03c3e8e19e0557aeabf17a42b29068f86",
+          "scripts/analyze_substrate_graph_storage_scale_v1.py": "ad3507d1384a89034e878824aae6ee2e4884a68b9eade7fbbd6a2e4c70949c8e",
+          "scripts/substrate_graph_storage_scale_v1.py": "206354636d21d015c93e5c809f1595af0ccf5059db450c99f3d71afc731d03b6"
+        },
+        "native_build_stale": [],
+        "native_path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+        "native_sha256": "260cf6063acbfb2fb83a7bfbe8b0bbe35afa951d3142539fbd868edf331d3afa"
+      },
+      "before": {
+        "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+        "files": {
+          "docs/research/engine_substrate/SUBSTRATE_GRAPH_STORAGE_SCALE_V1_PREREG_20260928.md": "7c3ec9e1b078b655ec074bee06ca3e71f7a9fb89f24c11e6dc53fc08a66088ae",
+          "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+          "runners/dsl/python/substrate_rs/__init__.py": "6ec0316afae414329e36d3f121fc56b556e7315f17b93aab911ca09a29726694",
+          "runners/dsl/python/substrate_rs/_native.build.json": "425e086594e50335ca917e330206fec9bd8c778d4e58d2c5dd0d06cc61bc41ee",
+          "runners/dsl/src/graph.rs": "f1bff152147f6ba79d3f2f25a8bd9ee8fb4132d787775e9031c52f0c24d99a36",
+          "runners/dsl/src/py.rs": "68347817627387a7730c86ff3ff0f69d45788fe0754227914437dd7d8207a576",
+          "runners/dsl/src/substrate.rs": "7548e63870c676a46232469717739db03c3e8e19e0557aeabf17a42b29068f86",
+          "scripts/analyze_substrate_graph_storage_scale_v1.py": "ad3507d1384a89034e878824aae6ee2e4884a68b9eade7fbbd6a2e4c70949c8e",
+          "scripts/substrate_graph_storage_scale_v1.py": "206354636d21d015c93e5c809f1595af0ccf5059db450c99f3d71afc731d03b6"
+        },
+        "native_build_stale": [],
+        "native_path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+        "native_sha256": "260cf6063acbfb2fb83a7bfbe8b0bbe35afa951d3142539fbd868edf331d3afa"
+      },
+      "edge_build_cpu_ns": 81535032,
+      "edge_build_wall_ns": 81569615,
+      "edge_count": 99999,
+      "environment": {
+        "platform": "Linux-6.8.0-142-generic-x86_64-with-glibc2.39",
+        "python": "3.13.5 (main, Jun 11 2025, 15:36:57) [GCC 11.4.0]"
+      },
+      "n": 100000,
+      "node_build_cpu_ns": 47296412,
+      "node_build_wall_ns": 47305359,
+      "node_count": 100000,
+      "peak_rss_bytes": 59486208,
+      "pid": 16,
+      "replicate": 0,
+      "rss_after_edges_bytes": 50380800,
+      "rss_after_nodes_bytes": 37273600,
+      "rss_before_bytes": 24055808,
+      "sampled_checks_pass": true,
+      "sampled_edge_reads": [
+        {
+          "actual_tgts": [
+            1
+          ],
+          "expected_tgt": 1,
+          "pass": true,
+          "src": 0
+        },
+        {
+          "actual_tgts": [
+            50000
+          ],
+          "expected_tgt": 50000,
+          "pass": true,
+          "src": 49999
+        },
+        {
+          "actual_tgts": [
+            99999
+          ],
+          "expected_tgt": 99999,
+          "pass": true,
+          "src": 99998
+        }
+      ],
+      "sampled_node_reads": [
+        {
+          "exists": true,
+          "id": 0,
+          "label": "first",
+          "type": "StorageProbe"
+        },
+        {
+          "exists": true,
+          "id": 50000,
+          "label": "middle",
+          "type": "StorageProbe"
+        },
+        {
+          "exists": true,
+          "id": 99999,
+          "label": "last",
+          "type": "StorageProbe"
+        }
+      ],
+      "total_build_cpu_ns": 128831444,
+      "total_build_wall_ns": 128874974,
+      "worker_returncode": 0,
+      "worker_stderr": ""
+    },
+    {
+      "after": {
+        "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+        "files": {
+          "docs/research/engine_substrate/SUBSTRATE_GRAPH_STORAGE_SCALE_V1_PREREG_20260928.md": "7c3ec9e1b078b655ec074bee06ca3e71f7a9fb89f24c11e6dc53fc08a66088ae",
+          "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+          "runners/dsl/python/substrate_rs/__init__.py": "6ec0316afae414329e36d3f121fc56b556e7315f17b93aab911ca09a29726694",
+          "runners/dsl/python/substrate_rs/_native.build.json": "425e086594e50335ca917e330206fec9bd8c778d4e58d2c5dd0d06cc61bc41ee",
+          "runners/dsl/src/graph.rs": "f1bff152147f6ba79d3f2f25a8bd9ee8fb4132d787775e9031c52f0c24d99a36",
+          "runners/dsl/src/py.rs": "68347817627387a7730c86ff3ff0f69d45788fe0754227914437dd7d8207a576",
+          "runners/dsl/src/substrate.rs": "7548e63870c676a46232469717739db03c3e8e19e0557aeabf17a42b29068f86",
+          "scripts/analyze_substrate_graph_storage_scale_v1.py": "ad3507d1384a89034e878824aae6ee2e4884a68b9eade7fbbd6a2e4c70949c8e",
+          "scripts/substrate_graph_storage_scale_v1.py": "206354636d21d015c93e5c809f1595af0ccf5059db450c99f3d71afc731d03b6"
+        },
+        "native_build_stale": [],
+        "native_path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+        "native_sha256": "260cf6063acbfb2fb83a7bfbe8b0bbe35afa951d3142539fbd868edf331d3afa"
+      },
+      "before": {
+        "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+        "files": {
+          "docs/research/engine_substrate/SUBSTRATE_GRAPH_STORAGE_SCALE_V1_PREREG_20260928.md": "7c3ec9e1b078b655ec074bee06ca3e71f7a9fb89f24c11e6dc53fc08a66088ae",
+          "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+          "runners/dsl/python/substrate_rs/__init__.py": "6ec0316afae414329e36d3f121fc56b556e7315f17b93aab911ca09a29726694",
+          "runners/dsl/python/substrate_rs/_native.build.json": "425e086594e50335ca917e330206fec9bd8c778d4e58d2c5dd0d06cc61bc41ee",
+          "runners/dsl/src/graph.rs": "f1bff152147f6ba79d3f2f25a8bd9ee8fb4132d787775e9031c52f0c24d99a36",
+          "runners/dsl/src/py.rs": "68347817627387a7730c86ff3ff0f69d45788fe0754227914437dd7d8207a576",
+          "runners/dsl/src/substrate.rs": "7548e63870c676a46232469717739db03c3e8e19e0557aeabf17a42b29068f86",
+          "scripts/analyze_substrate_graph_storage_scale_v1.py": "ad3507d1384a89034e878824aae6ee2e4884a68b9eade7fbbd6a2e4c70949c8e",
+          "scripts/substrate_graph_storage_scale_v1.py": "206354636d21d015c93e5c809f1595af0ccf5059db450c99f3d71afc731d03b6"
+        },
+        "native_build_stale": [],
+        "native_path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+        "native_sha256": "260cf6063acbfb2fb83a7bfbe8b0bbe35afa951d3142539fbd868edf331d3afa"
+      },
+      "edge_build_cpu_ns": 954418058,
+      "edge_build_wall_ns": 954472540,
+      "edge_count": 999999,
+      "environment": {
+        "platform": "Linux-6.8.0-142-generic-x86_64-with-glibc2.39",
+        "python": "3.13.5 (main, Jun 11 2025, 15:36:57) [GCC 11.4.0]"
+      },
+      "n": 1000000,
+      "node_build_cpu_ns": 472637428,
+      "node_build_wall_ns": 472701924,
+      "node_count": 1000000,
+      "peak_rss_bytes": 309813248,
+      "pid": 20,
+      "replicate": 0,
+      "rss_after_edges_bytes": 277725184,
+      "rss_after_nodes_bytes": 133656576,
+      "rss_before_bytes": 24018944,
+      "sampled_checks_pass": true,
+      "sampled_edge_reads": [
+        {
+          "actual_tgts": [
+            1
+          ],
+          "expected_tgt": 1,
+          "pass": true,
+          "src": 0
+        },
+        {
+          "actual_tgts": [
+            500000
+          ],
+          "expected_tgt": 500000,
+          "pass": true,
+          "src": 499999
+        },
+        {
+          "actual_tgts": [
+            999999
+          ],
+          "expected_tgt": 999999,
+          "pass": true,
+          "src": 999998
+        }
+      ],
+      "sampled_node_reads": [
+        {
+          "exists": true,
+          "id": 0,
+          "label": "first",
+          "type": "StorageProbe"
+        },
+        {
+          "exists": true,
+          "id": 500000,
+          "label": "middle",
+          "type": "StorageProbe"
+        },
+        {
+          "exists": true,
+          "id": 999999,
+          "label": "last",
+          "type": "StorageProbe"
+        }
+      ],
+      "total_build_cpu_ns": 1427055486,
+      "total_build_wall_ns": 1427174464,
+      "worker_returncode": 0,
+      "worker_stderr": ""
+    },
+    {
+      "after": {
+        "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+        "files": {
+          "docs/research/engine_substrate/SUBSTRATE_GRAPH_STORAGE_SCALE_V1_PREREG_20260928.md": "7c3ec9e1b078b655ec074bee06ca3e71f7a9fb89f24c11e6dc53fc08a66088ae",
+          "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+          "runners/dsl/python/substrate_rs/__init__.py": "6ec0316afae414329e36d3f121fc56b556e7315f17b93aab911ca09a29726694",
+          "runners/dsl/python/substrate_rs/_native.build.json": "425e086594e50335ca917e330206fec9bd8c778d4e58d2c5dd0d06cc61bc41ee",
+          "runners/dsl/src/graph.rs": "f1bff152147f6ba79d3f2f25a8bd9ee8fb4132d787775e9031c52f0c24d99a36",
+          "runners/dsl/src/py.rs": "68347817627387a7730c86ff3ff0f69d45788fe0754227914437dd7d8207a576",
+          "runners/dsl/src/substrate.rs": "7548e63870c676a46232469717739db03c3e8e19e0557aeabf17a42b29068f86",
+          "scripts/analyze_substrate_graph_storage_scale_v1.py": "ad3507d1384a89034e878824aae6ee2e4884a68b9eade7fbbd6a2e4c70949c8e",
+          "scripts/substrate_graph_storage_scale_v1.py": "206354636d21d015c93e5c809f1595af0ccf5059db450c99f3d71afc731d03b6"
+        },
+        "native_build_stale": [],
+        "native_path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+        "native_sha256": "260cf6063acbfb2fb83a7bfbe8b0bbe35afa951d3142539fbd868edf331d3afa"
+      },
+      "before": {
+        "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+        "files": {
+          "docs/research/engine_substrate/SUBSTRATE_GRAPH_STORAGE_SCALE_V1_PREREG_20260928.md": "7c3ec9e1b078b655ec074bee06ca3e71f7a9fb89f24c11e6dc53fc08a66088ae",
+          "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+          "runners/dsl/python/substrate_rs/__init__.py": "6ec0316afae414329e36d3f121fc56b556e7315f17b93aab911ca09a29726694",
+          "runners/dsl/python/substrate_rs/_native.build.json": "425e086594e50335ca917e330206fec9bd8c778d4e58d2c5dd0d06cc61bc41ee",
+          "runners/dsl/src/graph.rs": "f1bff152147f6ba79d3f2f25a8bd9ee8fb4132d787775e9031c52f0c24d99a36",
+          "runners/dsl/src/py.rs": "68347817627387a7730c86ff3ff0f69d45788fe0754227914437dd7d8207a576",
+          "runners/dsl/src/substrate.rs": "7548e63870c676a46232469717739db03c3e8e19e0557aeabf17a42b29068f86",
+          "scripts/analyze_substrate_graph_storage_scale_v1.py": "ad3507d1384a89034e878824aae6ee2e4884a68b9eade7fbbd6a2e4c70949c8e",
+          "scripts/substrate_graph_storage_scale_v1.py": "206354636d21d015c93e5c809f1595af0ccf5059db450c99f3d71afc731d03b6"
+        },
+        "native_build_stale": [],
+        "native_path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+        "native_sha256": "260cf6063acbfb2fb83a7bfbe8b0bbe35afa951d3142539fbd868edf331d3afa"
+      },
+      "edge_build_cpu_ns": 961797761,
+      "edge_build_wall_ns": 961888432,
+      "edge_count": 999999,
+      "environment": {
+        "platform": "Linux-6.8.0-142-generic-x86_64-with-glibc2.39",
+        "python": "3.13.5 (main, Jun 11 2025, 15:36:57) [GCC 11.4.0]"
+      },
+      "n": 1000000,
+      "node_build_cpu_ns": 474779008,
+      "node_build_wall_ns": 474808666,
+      "node_count": 1000000,
+      "peak_rss_bytes": 310542336,
+      "pid": 24,
+      "replicate": 1,
+      "rss_after_edges_bytes": 277725184,
+      "rss_after_nodes_bytes": 133656576,
+      "rss_before_bytes": 24018944,
+      "sampled_checks_pass": true,
+      "sampled_edge_reads": [
+        {
+          "actual_tgts": [
+            1
+          ],
+          "expected_tgt": 1,
+          "pass": true,
+          "src": 0
+        },
+        {
+          "actual_tgts": [
+            500000
+          ],
+          "expected_tgt": 500000,
+          "pass": true,
+          "src": 499999
+        },
+        {
+          "actual_tgts": [
+            999999
+          ],
+          "expected_tgt": 999999,
+          "pass": true,
+          "src": 999998
+        }
+      ],
+      "sampled_node_reads": [
+        {
+          "exists": true,
+          "id": 0,
+          "label": "first",
+          "type": "StorageProbe"
+        },
+        {
+          "exists": true,
+          "id": 500000,
+          "label": "middle",
+          "type": "StorageProbe"
+        },
+        {
+          "exists": true,
+          "id": 999999,
+          "label": "last",
+          "type": "StorageProbe"
+        }
+      ],
+      "total_build_cpu_ns": 1436576769,
+      "total_build_wall_ns": 1436697098,
+      "worker_returncode": 0,
+      "worker_stderr": ""
+    }
+  ],
+  "schedule": [
+    [
+      10000,
+      1
+    ],
+    [
+      10000,
+      0
+    ],
+    [
+      100000,
+      1
+    ],
+    [
+      100000,
+      0
+    ],
+    [
+      1000000,
+      0
+    ],
+    [
+      1000000,
+      1
+    ]
+  ],
+  "schema_version": 1,
+  "started_utc": "2026-09-27T20:22:11.278761+00:00"
+}

@@ -1,0 +1,729 @@
+{
+  "captured_utc": "2026-10-01T09:20:35Z",
+  "engine_fingerprint": "4036d3738ccc0e1f0fa3a6ef00ab3e271c1205921ca074a3f02334919a46d6ee",
+  "gates": {
+    "outer_phases_within_wall_tolerance": true,
+    "phase_fields_present_nonnegative": true,
+    "positive_shape_oracle": true,
+    "primary_isolation": true,
+    "six_fresh_processes": true,
+    "source_binary_lock": true
+  },
+  "lock_sha256": "sha256:c0616e3ea6678d0670c029c7527d35241ad84cad138ba5e541efb5c0be0fb310",
+  "native_binary": {
+    "path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+    "sha256": "sha256:b9f398c75ceb12a5d519235efb6b3ec403d1b153a576aad6def528c2d48a7617"
+  },
+  "protocol": {
+    "backends": [
+      "native_full_copy_scoped",
+      "native_shared_graph_pages_scoped"
+    ],
+    "candidate": "sd_mint_quantum/dedup_identity_fix",
+    "noise_nodes": 100000,
+    "repeats_per_backend": 3,
+    "warmups": 0
+  },
+  "rows": [
+    {
+      "applied_targets": [
+        "sd_dedup_existing",
+        "sd_mint_quantum"
+      ],
+      "backend": "native_full_copy_scoped",
+      "candidate": "dedup_identity_fix",
+      "converges": true,
+      "inert": false,
+      "outer_phase_sum_ms": 217.522612,
+      "phase_timings_ms": {
+        "branch_snapshot_and_setup": 35.865716,
+        "candidate_rule_patch": 18.735854,
+        "forward_look_branch_internal": [
+          {
+            "imagination": {
+              "branch_snapshot_and_rule_setup": 37.554328,
+              "collapse_tick": 1.061727,
+              "grounding_and_hypothesis_preparation": 0.411643,
+              "residual_readout": 1.40437,
+              "trace_minting": 2.039985
+            },
+            "round_index": 0
+          },
+          {
+            "imagination": {
+              "branch_snapshot_and_rule_setup": 48.999229,
+              "collapse_tick": 0.834496,
+              "grounding_and_hypothesis_preparation": 0.612034,
+              "residual_readout": 0.862356,
+              "trace_minting": 1.38751
+            },
+            "round_index": 1
+          },
+          {
+            "imagination": {
+              "branch_snapshot_and_rule_setup": 32.035118,
+              "collapse_tick": 1.28296,
+              "grounding_and_hypothesis_preparation": 0.775616,
+              "residual_readout": 1.554421,
+              "trace_minting": 1.909903
+            },
+            "round_index": 2
+          }
+        ],
+        "initial_branch_internal": {
+          "branch_snapshot_and_rule_setup": 35.842076,
+          "collapse_tick": 0.00012,
+          "grounding_and_hypothesis_preparation": 0.00319,
+          "residual_readout": 0.00317,
+          "trace_minting": 0.0002
+        },
+        "model_after_prediction": 162.921042,
+        "prediction_internal": {
+          "bounded_forward_look": 148.946242,
+          "structural_frontier_scan": 13.739378,
+          "trace_minting": 0.186861
+        }
+      },
+      "pid": 5,
+      "primary_unchanged": true,
+      "replicate": 0,
+      "source_hashes_after": {
+        "docs/research/engine_substrate/THOUGHTEXPERIMENT_SHAPE_DECODING_PHASE_PROFILE_V1_PREREG_20261001.md": "sha256:b7684a8abca405e890e6adae8d8b7c8af16ffdc562a0e362cf8c96e5597ccadf",
+        "domains/collapse_model.py": "sha256:97aaa5c26e6cb3f2682f6d9ee7aa9f0fbbc622e27063b1947edab26fa0ef4ea7",
+        "domains/engine_provenance.py": "sha256:a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+        "domains/imagination.py": "sha256:d6effe8eb0a6de2a7697be0f80b6787d2c00278654e9fe69e8aeb8b598956219",
+        "domains/reflective_faculty.py": "sha256:8f530a8c8754949216b71b473c4769fa5d351d01d6055127943c009d06763d05",
+        "domains/self_correction.py": "sha256:682c4fda4d18bf2e7655988c6ef8e52dc6ab7bae143851d804c122a0dbeb8a2d",
+        "evaluation/substrate_capability/thoughtexperiment_self_correction_copy_comparison_v1.py": "sha256:399cff2b650a131bcf4076d0e0a70f26c081c93aec6ea8a4686183b874ec56fc",
+        "evaluation/substrate_capability/thoughtexperiment_shape_decoding_phase_profile_v1.py": "sha256:3ad957689808e74ff956b012d47f4ddfdc0b3f776266bb178210fc25bf38bb1d",
+        "runners/dsl/python/substrate_rs/__init__.py": "sha256:16afa0fa0a9cf12eb306ecad98ccda27ca059f5e1cfbaffd899ee4cb74ebb3c1",
+        "runners/dsl/src/checker.rs": "sha256:eb46f2f884f468b90d1b79ec2d160812f0c166ac78245fb3b23a4a22b3fa2ff7",
+        "runners/dsl/src/cow_paged_vec.rs": "sha256:4b180c6aeb3cf9ee4391e65ba3aa50110b255da5697a909b46e7f4ec852939e4",
+        "runners/dsl/src/grammar.rs": "sha256:aaf6f571bf8e8761584c7473d3fe3130c5a6e395bff7f2b63f1cdcf6046b73f6",
+        "runners/dsl/src/graph.rs": "sha256:9744fec2e0c5091f2036081ffc615b1c7dd00ba2a5995af1294efb0b5aa5a28c",
+        "runners/dsl/src/persist.rs": "sha256:066d026451c97e1032c30054a3a4c556d386f23db2304630a4625c5bf81306cf",
+        "runners/dsl/src/py.rs": "sha256:201adbebde67c80bce80de6622095472bcb58e83a2b4df50f9b314bc9000a1de",
+        "runners/dsl/src/substrate.rs": "sha256:bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+        "runners/dsl/src/term.rs": "sha256:5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+        "seeds/shape_decode_loop.json": "sha256:3e1783cf566179061250572bbf7bc7bb54cacfafb83f8852008c4618d984a9c6",
+        "substrate/boot_core.py": "sha256:9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb"
+      },
+      "source_hashes_before": {
+        "docs/research/engine_substrate/THOUGHTEXPERIMENT_SHAPE_DECODING_PHASE_PROFILE_V1_PREREG_20261001.md": "sha256:b7684a8abca405e890e6adae8d8b7c8af16ffdc562a0e362cf8c96e5597ccadf",
+        "domains/collapse_model.py": "sha256:97aaa5c26e6cb3f2682f6d9ee7aa9f0fbbc622e27063b1947edab26fa0ef4ea7",
+        "domains/engine_provenance.py": "sha256:a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+        "domains/imagination.py": "sha256:d6effe8eb0a6de2a7697be0f80b6787d2c00278654e9fe69e8aeb8b598956219",
+        "domains/reflective_faculty.py": "sha256:8f530a8c8754949216b71b473c4769fa5d351d01d6055127943c009d06763d05",
+        "domains/self_correction.py": "sha256:682c4fda4d18bf2e7655988c6ef8e52dc6ab7bae143851d804c122a0dbeb8a2d",
+        "evaluation/substrate_capability/thoughtexperiment_self_correction_copy_comparison_v1.py": "sha256:399cff2b650a131bcf4076d0e0a70f26c081c93aec6ea8a4686183b874ec56fc",
+        "evaluation/substrate_capability/thoughtexperiment_shape_decoding_phase_profile_v1.py": "sha256:3ad957689808e74ff956b012d47f4ddfdc0b3f776266bb178210fc25bf38bb1d",
+        "runners/dsl/python/substrate_rs/__init__.py": "sha256:16afa0fa0a9cf12eb306ecad98ccda27ca059f5e1cfbaffd899ee4cb74ebb3c1",
+        "runners/dsl/src/checker.rs": "sha256:eb46f2f884f468b90d1b79ec2d160812f0c166ac78245fb3b23a4a22b3fa2ff7",
+        "runners/dsl/src/cow_paged_vec.rs": "sha256:4b180c6aeb3cf9ee4391e65ba3aa50110b255da5697a909b46e7f4ec852939e4",
+        "runners/dsl/src/grammar.rs": "sha256:aaf6f571bf8e8761584c7473d3fe3130c5a6e395bff7f2b63f1cdcf6046b73f6",
+        "runners/dsl/src/graph.rs": "sha256:9744fec2e0c5091f2036081ffc615b1c7dd00ba2a5995af1294efb0b5aa5a28c",
+        "runners/dsl/src/persist.rs": "sha256:066d026451c97e1032c30054a3a4c556d386f23db2304630a4625c5bf81306cf",
+        "runners/dsl/src/py.rs": "sha256:201adbebde67c80bce80de6622095472bcb58e83a2b4df50f9b314bc9000a1de",
+        "runners/dsl/src/substrate.rs": "sha256:bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+        "runners/dsl/src/term.rs": "sha256:5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+        "seeds/shape_decode_loop.json": "sha256:3e1783cf566179061250572bbf7bc7bb54cacfafb83f8852008c4618d984a9c6",
+        "substrate/boot_core.py": "sha256:9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb"
+      },
+      "sources_stable": true,
+      "wall_ms": 219.071002
+    },
+    {
+      "applied_targets": [
+        "sd_dedup_existing",
+        "sd_mint_quantum"
+      ],
+      "backend": "native_shared_graph_pages_scoped",
+      "candidate": "dedup_identity_fix",
+      "converges": true,
+      "inert": false,
+      "outer_phase_sum_ms": 98.625863,
+      "phase_timings_ms": {
+        "branch_snapshot_and_setup": 11.334181,
+        "candidate_rule_patch": 19.144836,
+        "forward_look_branch_internal": [
+          {
+            "imagination": {
+              "branch_snapshot_and_rule_setup": 14.696295,
+              "collapse_tick": 1.314759,
+              "grounding_and_hypothesis_preparation": 0.212072,
+              "residual_readout": 1.557621,
+              "trace_minting": 2.543998
+            },
+            "round_index": 0
+          },
+          {
+            "imagination": {
+              "branch_snapshot_and_rule_setup": 9.218326,
+              "collapse_tick": 0.717505,
+              "grounding_and_hypothesis_preparation": 0.528154,
+              "residual_readout": 0.797615,
+              "trace_minting": 1.41894
+            },
+            "round_index": 1
+          },
+          {
+            "imagination": {
+              "branch_snapshot_and_rule_setup": 12.702691,
+              "collapse_tick": 0.805276,
+              "grounding_and_hypothesis_preparation": 0.932366,
+              "residual_readout": 0.804796,
+              "trace_minting": 1.44761
+            },
+            "round_index": 2
+          }
+        ],
+        "initial_branch_internal": {
+          "branch_snapshot_and_rule_setup": 11.305701,
+          "collapse_tick": 0.00013,
+          "grounding_and_hypothesis_preparation": 0.00328,
+          "residual_readout": 0.0037,
+          "trace_minting": 0.00025
+        },
+        "model_after_prediction": 68.146846,
+        "prediction_internal": {
+          "bounded_forward_look": 51.014754,
+          "structural_frontier_scan": 16.89226,
+          "trace_minting": 0.211121
+        }
+      },
+      "pid": 104,
+      "primary_unchanged": true,
+      "replicate": 0,
+      "source_hashes_after": {
+        "docs/research/engine_substrate/THOUGHTEXPERIMENT_SHAPE_DECODING_PHASE_PROFILE_V1_PREREG_20261001.md": "sha256:b7684a8abca405e890e6adae8d8b7c8af16ffdc562a0e362cf8c96e5597ccadf",
+        "domains/collapse_model.py": "sha256:97aaa5c26e6cb3f2682f6d9ee7aa9f0fbbc622e27063b1947edab26fa0ef4ea7",
+        "domains/engine_provenance.py": "sha256:a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+        "domains/imagination.py": "sha256:d6effe8eb0a6de2a7697be0f80b6787d2c00278654e9fe69e8aeb8b598956219",
+        "domains/reflective_faculty.py": "sha256:8f530a8c8754949216b71b473c4769fa5d351d01d6055127943c009d06763d05",
+        "domains/self_correction.py": "sha256:682c4fda4d18bf2e7655988c6ef8e52dc6ab7bae143851d804c122a0dbeb8a2d",
+        "evaluation/substrate_capability/thoughtexperiment_self_correction_copy_comparison_v1.py": "sha256:399cff2b650a131bcf4076d0e0a70f26c081c93aec6ea8a4686183b874ec56fc",
+        "evaluation/substrate_capability/thoughtexperiment_shape_decoding_phase_profile_v1.py": "sha256:3ad957689808e74ff956b012d47f4ddfdc0b3f776266bb178210fc25bf38bb1d",
+        "runners/dsl/python/substrate_rs/__init__.py": "sha256:16afa0fa0a9cf12eb306ecad98ccda27ca059f5e1cfbaffd899ee4cb74ebb3c1",
+        "runners/dsl/src/checker.rs": "sha256:eb46f2f884f468b90d1b79ec2d160812f0c166ac78245fb3b23a4a22b3fa2ff7",
+        "runners/dsl/src/cow_paged_vec.rs": "sha256:4b180c6aeb3cf9ee4391e65ba3aa50110b255da5697a909b46e7f4ec852939e4",
+        "runners/dsl/src/grammar.rs": "sha256:aaf6f571bf8e8761584c7473d3fe3130c5a6e395bff7f2b63f1cdcf6046b73f6",
+        "runners/dsl/src/graph.rs": "sha256:9744fec2e0c5091f2036081ffc615b1c7dd00ba2a5995af1294efb0b5aa5a28c",
+        "runners/dsl/src/persist.rs": "sha256:066d026451c97e1032c30054a3a4c556d386f23db2304630a4625c5bf81306cf",
+        "runners/dsl/src/py.rs": "sha256:201adbebde67c80bce80de6622095472bcb58e83a2b4df50f9b314bc9000a1de",
+        "runners/dsl/src/substrate.rs": "sha256:bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+        "runners/dsl/src/term.rs": "sha256:5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+        "seeds/shape_decode_loop.json": "sha256:3e1783cf566179061250572bbf7bc7bb54cacfafb83f8852008c4618d984a9c6",
+        "substrate/boot_core.py": "sha256:9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb"
+      },
+      "source_hashes_before": {
+        "docs/research/engine_substrate/THOUGHTEXPERIMENT_SHAPE_DECODING_PHASE_PROFILE_V1_PREREG_20261001.md": "sha256:b7684a8abca405e890e6adae8d8b7c8af16ffdc562a0e362cf8c96e5597ccadf",
+        "domains/collapse_model.py": "sha256:97aaa5c26e6cb3f2682f6d9ee7aa9f0fbbc622e27063b1947edab26fa0ef4ea7",
+        "domains/engine_provenance.py": "sha256:a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+        "domains/imagination.py": "sha256:d6effe8eb0a6de2a7697be0f80b6787d2c00278654e9fe69e8aeb8b598956219",
+        "domains/reflective_faculty.py": "sha256:8f530a8c8754949216b71b473c4769fa5d351d01d6055127943c009d06763d05",
+        "domains/self_correction.py": "sha256:682c4fda4d18bf2e7655988c6ef8e52dc6ab7bae143851d804c122a0dbeb8a2d",
+        "evaluation/substrate_capability/thoughtexperiment_self_correction_copy_comparison_v1.py": "sha256:399cff2b650a131bcf4076d0e0a70f26c081c93aec6ea8a4686183b874ec56fc",
+        "evaluation/substrate_capability/thoughtexperiment_shape_decoding_phase_profile_v1.py": "sha256:3ad957689808e74ff956b012d47f4ddfdc0b3f776266bb178210fc25bf38bb1d",
+        "runners/dsl/python/substrate_rs/__init__.py": "sha256:16afa0fa0a9cf12eb306ecad98ccda27ca059f5e1cfbaffd899ee4cb74ebb3c1",
+        "runners/dsl/src/checker.rs": "sha256:eb46f2f884f468b90d1b79ec2d160812f0c166ac78245fb3b23a4a22b3fa2ff7",
+        "runners/dsl/src/cow_paged_vec.rs": "sha256:4b180c6aeb3cf9ee4391e65ba3aa50110b255da5697a909b46e7f4ec852939e4",
+        "runners/dsl/src/grammar.rs": "sha256:aaf6f571bf8e8761584c7473d3fe3130c5a6e395bff7f2b63f1cdcf6046b73f6",
+        "runners/dsl/src/graph.rs": "sha256:9744fec2e0c5091f2036081ffc615b1c7dd00ba2a5995af1294efb0b5aa5a28c",
+        "runners/dsl/src/persist.rs": "sha256:066d026451c97e1032c30054a3a4c556d386f23db2304630a4625c5bf81306cf",
+        "runners/dsl/src/py.rs": "sha256:201adbebde67c80bce80de6622095472bcb58e83a2b4df50f9b314bc9000a1de",
+        "runners/dsl/src/substrate.rs": "sha256:bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+        "runners/dsl/src/term.rs": "sha256:5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+        "seeds/shape_decode_loop.json": "sha256:3e1783cf566179061250572bbf7bc7bb54cacfafb83f8852008c4618d984a9c6",
+        "substrate/boot_core.py": "sha256:9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb"
+      },
+      "sources_stable": true,
+      "wall_ms": 99.6681
+    },
+    {
+      "applied_targets": [
+        "sd_dedup_existing",
+        "sd_mint_quantum"
+      ],
+      "backend": "native_shared_graph_pages_scoped",
+      "candidate": "dedup_identity_fix",
+      "converges": true,
+      "inert": false,
+      "outer_phase_sum_ms": 100.498847,
+      "phase_timings_ms": {
+        "branch_snapshot_and_setup": 10.187743,
+        "candidate_rule_patch": 20.575627,
+        "forward_look_branch_internal": [
+          {
+            "imagination": {
+              "branch_snapshot_and_rule_setup": 13.900499,
+              "collapse_tick": 1.323039,
+              "grounding_and_hypothesis_preparation": 0.817876,
+              "residual_readout": 1.619212,
+              "trace_minting": 2.721969
+            },
+            "round_index": 0
+          },
+          {
+            "imagination": {
+              "branch_snapshot_and_rule_setup": 11.847994,
+              "collapse_tick": 1.170679,
+              "grounding_and_hypothesis_preparation": 1.243679,
+              "residual_readout": 1.050387,
+              "trace_minting": 1.829423
+            },
+            "round_index": 1
+          },
+          {
+            "imagination": {
+              "branch_snapshot_and_rule_setup": 10.772477,
+              "collapse_tick": 1.109258,
+              "grounding_and_hypothesis_preparation": 1.067867,
+              "residual_readout": 1.159338,
+              "trace_minting": 1.34171
+            },
+            "round_index": 2
+          }
+        ],
+        "initial_branch_internal": {
+          "branch_snapshot_and_rule_setup": 10.159933,
+          "collapse_tick": 0.0002,
+          "grounding_and_hypothesis_preparation": 0.00323,
+          "residual_readout": 0.00397,
+          "trace_minting": 0.00023
+        },
+        "model_after_prediction": 69.735477,
+        "prediction_internal": {
+          "bounded_forward_look": 54.254156,
+          "structural_frontier_scan": 15.248819,
+          "trace_minting": 0.204222
+        }
+      },
+      "pid": 203,
+      "primary_unchanged": true,
+      "replicate": 1,
+      "source_hashes_after": {
+        "docs/research/engine_substrate/THOUGHTEXPERIMENT_SHAPE_DECODING_PHASE_PROFILE_V1_PREREG_20261001.md": "sha256:b7684a8abca405e890e6adae8d8b7c8af16ffdc562a0e362cf8c96e5597ccadf",
+        "domains/collapse_model.py": "sha256:97aaa5c26e6cb3f2682f6d9ee7aa9f0fbbc622e27063b1947edab26fa0ef4ea7",
+        "domains/engine_provenance.py": "sha256:a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+        "domains/imagination.py": "sha256:d6effe8eb0a6de2a7697be0f80b6787d2c00278654e9fe69e8aeb8b598956219",
+        "domains/reflective_faculty.py": "sha256:8f530a8c8754949216b71b473c4769fa5d351d01d6055127943c009d06763d05",
+        "domains/self_correction.py": "sha256:682c4fda4d18bf2e7655988c6ef8e52dc6ab7bae143851d804c122a0dbeb8a2d",
+        "evaluation/substrate_capability/thoughtexperiment_self_correction_copy_comparison_v1.py": "sha256:399cff2b650a131bcf4076d0e0a70f26c081c93aec6ea8a4686183b874ec56fc",
+        "evaluation/substrate_capability/thoughtexperiment_shape_decoding_phase_profile_v1.py": "sha256:3ad957689808e74ff956b012d47f4ddfdc0b3f776266bb178210fc25bf38bb1d",
+        "runners/dsl/python/substrate_rs/__init__.py": "sha256:16afa0fa0a9cf12eb306ecad98ccda27ca059f5e1cfbaffd899ee4cb74ebb3c1",
+        "runners/dsl/src/checker.rs": "sha256:eb46f2f884f468b90d1b79ec2d160812f0c166ac78245fb3b23a4a22b3fa2ff7",
+        "runners/dsl/src/cow_paged_vec.rs": "sha256:4b180c6aeb3cf9ee4391e65ba3aa50110b255da5697a909b46e7f4ec852939e4",
+        "runners/dsl/src/grammar.rs": "sha256:aaf6f571bf8e8761584c7473d3fe3130c5a6e395bff7f2b63f1cdcf6046b73f6",
+        "runners/dsl/src/graph.rs": "sha256:9744fec2e0c5091f2036081ffc615b1c7dd00ba2a5995af1294efb0b5aa5a28c",
+        "runners/dsl/src/persist.rs": "sha256:066d026451c97e1032c30054a3a4c556d386f23db2304630a4625c5bf81306cf",
+        "runners/dsl/src/py.rs": "sha256:201adbebde67c80bce80de6622095472bcb58e83a2b4df50f9b314bc9000a1de",
+        "runners/dsl/src/substrate.rs": "sha256:bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+        "runners/dsl/src/term.rs": "sha256:5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+        "seeds/shape_decode_loop.json": "sha256:3e1783cf566179061250572bbf7bc7bb54cacfafb83f8852008c4618d984a9c6",
+        "substrate/boot_core.py": "sha256:9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb"
+      },
+      "source_hashes_before": {
+        "docs/research/engine_substrate/THOUGHTEXPERIMENT_SHAPE_DECODING_PHASE_PROFILE_V1_PREREG_20261001.md": "sha256:b7684a8abca405e890e6adae8d8b7c8af16ffdc562a0e362cf8c96e5597ccadf",
+        "domains/collapse_model.py": "sha256:97aaa5c26e6cb3f2682f6d9ee7aa9f0fbbc622e27063b1947edab26fa0ef4ea7",
+        "domains/engine_provenance.py": "sha256:a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+        "domains/imagination.py": "sha256:d6effe8eb0a6de2a7697be0f80b6787d2c00278654e9fe69e8aeb8b598956219",
+        "domains/reflective_faculty.py": "sha256:8f530a8c8754949216b71b473c4769fa5d351d01d6055127943c009d06763d05",
+        "domains/self_correction.py": "sha256:682c4fda4d18bf2e7655988c6ef8e52dc6ab7bae143851d804c122a0dbeb8a2d",
+        "evaluation/substrate_capability/thoughtexperiment_self_correction_copy_comparison_v1.py": "sha256:399cff2b650a131bcf4076d0e0a70f26c081c93aec6ea8a4686183b874ec56fc",
+        "evaluation/substrate_capability/thoughtexperiment_shape_decoding_phase_profile_v1.py": "sha256:3ad957689808e74ff956b012d47f4ddfdc0b3f776266bb178210fc25bf38bb1d",
+        "runners/dsl/python/substrate_rs/__init__.py": "sha256:16afa0fa0a9cf12eb306ecad98ccda27ca059f5e1cfbaffd899ee4cb74ebb3c1",
+        "runners/dsl/src/checker.rs": "sha256:eb46f2f884f468b90d1b79ec2d160812f0c166ac78245fb3b23a4a22b3fa2ff7",
+        "runners/dsl/src/cow_paged_vec.rs": "sha256:4b180c6aeb3cf9ee4391e65ba3aa50110b255da5697a909b46e7f4ec852939e4",
+        "runners/dsl/src/grammar.rs": "sha256:aaf6f571bf8e8761584c7473d3fe3130c5a6e395bff7f2b63f1cdcf6046b73f6",
+        "runners/dsl/src/graph.rs": "sha256:9744fec2e0c5091f2036081ffc615b1c7dd00ba2a5995af1294efb0b5aa5a28c",
+        "runners/dsl/src/persist.rs": "sha256:066d026451c97e1032c30054a3a4c556d386f23db2304630a4625c5bf81306cf",
+        "runners/dsl/src/py.rs": "sha256:201adbebde67c80bce80de6622095472bcb58e83a2b4df50f9b314bc9000a1de",
+        "runners/dsl/src/substrate.rs": "sha256:bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+        "runners/dsl/src/term.rs": "sha256:5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+        "seeds/shape_decode_loop.json": "sha256:3e1783cf566179061250572bbf7bc7bb54cacfafb83f8852008c4618d984a9c6",
+        "substrate/boot_core.py": "sha256:9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb"
+      },
+      "sources_stable": true,
+      "wall_ms": 101.472634
+    },
+    {
+      "applied_targets": [
+        "sd_dedup_existing",
+        "sd_mint_quantum"
+      ],
+      "backend": "native_full_copy_scoped",
+      "candidate": "dedup_identity_fix",
+      "converges": true,
+      "inert": false,
+      "outer_phase_sum_ms": 248.874364,
+      "phase_timings_ms": {
+        "branch_snapshot_and_setup": 42.662804,
+        "candidate_rule_patch": 18.25094,
+        "forward_look_branch_internal": [
+          {
+            "imagination": {
+              "branch_snapshot_and_rule_setup": 39.503441,
+              "collapse_tick": 1.30279,
+              "grounding_and_hypothesis_preparation": 1.34043,
+              "residual_readout": 2.416157,
+              "trace_minting": 3.353054
+            },
+            "round_index": 0
+          },
+          {
+            "imagination": {
+              "branch_snapshot_and_rule_setup": 58.983821,
+              "collapse_tick": 1.104638,
+              "grounding_and_hypothesis_preparation": 1.210478,
+              "residual_readout": 1.233549,
+              "trace_minting": 2.014194
+            },
+            "round_index": 1
+          },
+          {
+            "imagination": {
+              "branch_snapshot_and_rule_setup": 37.390786,
+              "collapse_tick": 0.768485,
+              "grounding_and_hypothesis_preparation": 0.523184,
+              "residual_readout": 0.776756,
+              "trace_minting": 1.731472
+            },
+            "round_index": 2
+          }
+        ],
+        "initial_branch_internal": {
+          "branch_snapshot_and_rule_setup": 42.633314,
+          "collapse_tick": 0.00014,
+          "grounding_and_hypothesis_preparation": 0.00342,
+          "residual_readout": 0.00372,
+          "trace_minting": 0.00014
+        },
+        "model_after_prediction": 187.96062,
+        "prediction_internal": {
+          "bounded_forward_look": 170.847158,
+          "structural_frontier_scan": 16.941321,
+          "trace_minting": 0.131791
+        }
+      },
+      "pid": 302,
+      "primary_unchanged": true,
+      "replicate": 1,
+      "source_hashes_after": {
+        "docs/research/engine_substrate/THOUGHTEXPERIMENT_SHAPE_DECODING_PHASE_PROFILE_V1_PREREG_20261001.md": "sha256:b7684a8abca405e890e6adae8d8b7c8af16ffdc562a0e362cf8c96e5597ccadf",
+        "domains/collapse_model.py": "sha256:97aaa5c26e6cb3f2682f6d9ee7aa9f0fbbc622e27063b1947edab26fa0ef4ea7",
+        "domains/engine_provenance.py": "sha256:a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+        "domains/imagination.py": "sha256:d6effe8eb0a6de2a7697be0f80b6787d2c00278654e9fe69e8aeb8b598956219",
+        "domains/reflective_faculty.py": "sha256:8f530a8c8754949216b71b473c4769fa5d351d01d6055127943c009d06763d05",
+        "domains/self_correction.py": "sha256:682c4fda4d18bf2e7655988c6ef8e52dc6ab7bae143851d804c122a0dbeb8a2d",
+        "evaluation/substrate_capability/thoughtexperiment_self_correction_copy_comparison_v1.py": "sha256:399cff2b650a131bcf4076d0e0a70f26c081c93aec6ea8a4686183b874ec56fc",
+        "evaluation/substrate_capability/thoughtexperiment_shape_decoding_phase_profile_v1.py": "sha256:3ad957689808e74ff956b012d47f4ddfdc0b3f776266bb178210fc25bf38bb1d",
+        "runners/dsl/python/substrate_rs/__init__.py": "sha256:16afa0fa0a9cf12eb306ecad98ccda27ca059f5e1cfbaffd899ee4cb74ebb3c1",
+        "runners/dsl/src/checker.rs": "sha256:eb46f2f884f468b90d1b79ec2d160812f0c166ac78245fb3b23a4a22b3fa2ff7",
+        "runners/dsl/src/cow_paged_vec.rs": "sha256:4b180c6aeb3cf9ee4391e65ba3aa50110b255da5697a909b46e7f4ec852939e4",
+        "runners/dsl/src/grammar.rs": "sha256:aaf6f571bf8e8761584c7473d3fe3130c5a6e395bff7f2b63f1cdcf6046b73f6",
+        "runners/dsl/src/graph.rs": "sha256:9744fec2e0c5091f2036081ffc615b1c7dd00ba2a5995af1294efb0b5aa5a28c",
+        "runners/dsl/src/persist.rs": "sha256:066d026451c97e1032c30054a3a4c556d386f23db2304630a4625c5bf81306cf",
+        "runners/dsl/src/py.rs": "sha256:201adbebde67c80bce80de6622095472bcb58e83a2b4df50f9b314bc9000a1de",
+        "runners/dsl/src/substrate.rs": "sha256:bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+        "runners/dsl/src/term.rs": "sha256:5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+        "seeds/shape_decode_loop.json": "sha256:3e1783cf566179061250572bbf7bc7bb54cacfafb83f8852008c4618d984a9c6",
+        "substrate/boot_core.py": "sha256:9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb"
+      },
+      "source_hashes_before": {
+        "docs/research/engine_substrate/THOUGHTEXPERIMENT_SHAPE_DECODING_PHASE_PROFILE_V1_PREREG_20261001.md": "sha256:b7684a8abca405e890e6adae8d8b7c8af16ffdc562a0e362cf8c96e5597ccadf",
+        "domains/collapse_model.py": "sha256:97aaa5c26e6cb3f2682f6d9ee7aa9f0fbbc622e27063b1947edab26fa0ef4ea7",
+        "domains/engine_provenance.py": "sha256:a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+        "domains/imagination.py": "sha256:d6effe8eb0a6de2a7697be0f80b6787d2c00278654e9fe69e8aeb8b598956219",
+        "domains/reflective_faculty.py": "sha256:8f530a8c8754949216b71b473c4769fa5d351d01d6055127943c009d06763d05",
+        "domains/self_correction.py": "sha256:682c4fda4d18bf2e7655988c6ef8e52dc6ab7bae143851d804c122a0dbeb8a2d",
+        "evaluation/substrate_capability/thoughtexperiment_self_correction_copy_comparison_v1.py": "sha256:399cff2b650a131bcf4076d0e0a70f26c081c93aec6ea8a4686183b874ec56fc",
+        "evaluation/substrate_capability/thoughtexperiment_shape_decoding_phase_profile_v1.py": "sha256:3ad957689808e74ff956b012d47f4ddfdc0b3f776266bb178210fc25bf38bb1d",
+        "runners/dsl/python/substrate_rs/__init__.py": "sha256:16afa0fa0a9cf12eb306ecad98ccda27ca059f5e1cfbaffd899ee4cb74ebb3c1",
+        "runners/dsl/src/checker.rs": "sha256:eb46f2f884f468b90d1b79ec2d160812f0c166ac78245fb3b23a4a22b3fa2ff7",
+        "runners/dsl/src/cow_paged_vec.rs": "sha256:4b180c6aeb3cf9ee4391e65ba3aa50110b255da5697a909b46e7f4ec852939e4",
+        "runners/dsl/src/grammar.rs": "sha256:aaf6f571bf8e8761584c7473d3fe3130c5a6e395bff7f2b63f1cdcf6046b73f6",
+        "runners/dsl/src/graph.rs": "sha256:9744fec2e0c5091f2036081ffc615b1c7dd00ba2a5995af1294efb0b5aa5a28c",
+        "runners/dsl/src/persist.rs": "sha256:066d026451c97e1032c30054a3a4c556d386f23db2304630a4625c5bf81306cf",
+        "runners/dsl/src/py.rs": "sha256:201adbebde67c80bce80de6622095472bcb58e83a2b4df50f9b314bc9000a1de",
+        "runners/dsl/src/substrate.rs": "sha256:bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+        "runners/dsl/src/term.rs": "sha256:5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+        "seeds/shape_decode_loop.json": "sha256:3e1783cf566179061250572bbf7bc7bb54cacfafb83f8852008c4618d984a9c6",
+        "substrate/boot_core.py": "sha256:9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb"
+      },
+      "sources_stable": true,
+      "wall_ms": 249.934362
+    },
+    {
+      "applied_targets": [
+        "sd_dedup_existing",
+        "sd_mint_quantum"
+      ],
+      "backend": "native_full_copy_scoped",
+      "candidate": "dedup_identity_fix",
+      "converges": true,
+      "inert": false,
+      "outer_phase_sum_ms": 217.64504200000002,
+      "phase_timings_ms": {
+        "branch_snapshot_and_setup": 37.93353,
+        "candidate_rule_patch": 25.20832,
+        "forward_look_branch_internal": [
+          {
+            "imagination": {
+              "branch_snapshot_and_rule_setup": 32.2059,
+              "collapse_tick": 1.122058,
+              "grounding_and_hypothesis_preparation": 0.414713,
+              "residual_readout": 1.497651,
+              "trace_minting": 2.266456
+            },
+            "round_index": 0
+          },
+          {
+            "imagination": {
+              "branch_snapshot_and_rule_setup": 48.915109,
+              "collapse_tick": 0.731945,
+              "grounding_and_hypothesis_preparation": 0.502553,
+              "residual_readout": 0.755256,
+              "trace_minting": 1.154838
+            },
+            "round_index": 1
+          },
+          {
+            "imagination": {
+              "branch_snapshot_and_rule_setup": 33.69718,
+              "collapse_tick": 0.725715,
+              "grounding_and_hypothesis_preparation": 0.413533,
+              "residual_readout": 0.753746,
+              "trace_minting": 1.164838
+            },
+            "round_index": 2
+          }
+        ],
+        "initial_branch_internal": {
+          "branch_snapshot_and_rule_setup": 37.9051,
+          "collapse_tick": 0.00013,
+          "grounding_and_hypothesis_preparation": 0.00258,
+          "residual_readout": 0.0035,
+          "trace_minting": 0.00034
+        },
+        "model_after_prediction": 154.503192,
+        "prediction_internal": {
+          "bounded_forward_look": 140.316821,
+          "structural_frontier_scan": 14.03283,
+          "trace_minting": 0.116221
+        }
+      },
+      "pid": 401,
+      "primary_unchanged": true,
+      "replicate": 2,
+      "source_hashes_after": {
+        "docs/research/engine_substrate/THOUGHTEXPERIMENT_SHAPE_DECODING_PHASE_PROFILE_V1_PREREG_20261001.md": "sha256:b7684a8abca405e890e6adae8d8b7c8af16ffdc562a0e362cf8c96e5597ccadf",
+        "domains/collapse_model.py": "sha256:97aaa5c26e6cb3f2682f6d9ee7aa9f0fbbc622e27063b1947edab26fa0ef4ea7",
+        "domains/engine_provenance.py": "sha256:a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+        "domains/imagination.py": "sha256:d6effe8eb0a6de2a7697be0f80b6787d2c00278654e9fe69e8aeb8b598956219",
+        "domains/reflective_faculty.py": "sha256:8f530a8c8754949216b71b473c4769fa5d351d01d6055127943c009d06763d05",
+        "domains/self_correction.py": "sha256:682c4fda4d18bf2e7655988c6ef8e52dc6ab7bae143851d804c122a0dbeb8a2d",
+        "evaluation/substrate_capability/thoughtexperiment_self_correction_copy_comparison_v1.py": "sha256:399cff2b650a131bcf4076d0e0a70f26c081c93aec6ea8a4686183b874ec56fc",
+        "evaluation/substrate_capability/thoughtexperiment_shape_decoding_phase_profile_v1.py": "sha256:3ad957689808e74ff956b012d47f4ddfdc0b3f776266bb178210fc25bf38bb1d",
+        "runners/dsl/python/substrate_rs/__init__.py": "sha256:16afa0fa0a9cf12eb306ecad98ccda27ca059f5e1cfbaffd899ee4cb74ebb3c1",
+        "runners/dsl/src/checker.rs": "sha256:eb46f2f884f468b90d1b79ec2d160812f0c166ac78245fb3b23a4a22b3fa2ff7",
+        "runners/dsl/src/cow_paged_vec.rs": "sha256:4b180c6aeb3cf9ee4391e65ba3aa50110b255da5697a909b46e7f4ec852939e4",
+        "runners/dsl/src/grammar.rs": "sha256:aaf6f571bf8e8761584c7473d3fe3130c5a6e395bff7f2b63f1cdcf6046b73f6",
+        "runners/dsl/src/graph.rs": "sha256:9744fec2e0c5091f2036081ffc615b1c7dd00ba2a5995af1294efb0b5aa5a28c",
+        "runners/dsl/src/persist.rs": "sha256:066d026451c97e1032c30054a3a4c556d386f23db2304630a4625c5bf81306cf",
+        "runners/dsl/src/py.rs": "sha256:201adbebde67c80bce80de6622095472bcb58e83a2b4df50f9b314bc9000a1de",
+        "runners/dsl/src/substrate.rs": "sha256:bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+        "runners/dsl/src/term.rs": "sha256:5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+        "seeds/shape_decode_loop.json": "sha256:3e1783cf566179061250572bbf7bc7bb54cacfafb83f8852008c4618d984a9c6",
+        "substrate/boot_core.py": "sha256:9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb"
+      },
+      "source_hashes_before": {
+        "docs/research/engine_substrate/THOUGHTEXPERIMENT_SHAPE_DECODING_PHASE_PROFILE_V1_PREREG_20261001.md": "sha256:b7684a8abca405e890e6adae8d8b7c8af16ffdc562a0e362cf8c96e5597ccadf",
+        "domains/collapse_model.py": "sha256:97aaa5c26e6cb3f2682f6d9ee7aa9f0fbbc622e27063b1947edab26fa0ef4ea7",
+        "domains/engine_provenance.py": "sha256:a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+        "domains/imagination.py": "sha256:d6effe8eb0a6de2a7697be0f80b6787d2c00278654e9fe69e8aeb8b598956219",
+        "domains/reflective_faculty.py": "sha256:8f530a8c8754949216b71b473c4769fa5d351d01d6055127943c009d06763d05",
+        "domains/self_correction.py": "sha256:682c4fda4d18bf2e7655988c6ef8e52dc6ab7bae143851d804c122a0dbeb8a2d",
+        "evaluation/substrate_capability/thoughtexperiment_self_correction_copy_comparison_v1.py": "sha256:399cff2b650a131bcf4076d0e0a70f26c081c93aec6ea8a4686183b874ec56fc",
+        "evaluation/substrate_capability/thoughtexperiment_shape_decoding_phase_profile_v1.py": "sha256:3ad957689808e74ff956b012d47f4ddfdc0b3f776266bb178210fc25bf38bb1d",
+        "runners/dsl/python/substrate_rs/__init__.py": "sha256:16afa0fa0a9cf12eb306ecad98ccda27ca059f5e1cfbaffd899ee4cb74ebb3c1",
+        "runners/dsl/src/checker.rs": "sha256:eb46f2f884f468b90d1b79ec2d160812f0c166ac78245fb3b23a4a22b3fa2ff7",
+        "runners/dsl/src/cow_paged_vec.rs": "sha256:4b180c6aeb3cf9ee4391e65ba3aa50110b255da5697a909b46e7f4ec852939e4",
+        "runners/dsl/src/grammar.rs": "sha256:aaf6f571bf8e8761584c7473d3fe3130c5a6e395bff7f2b63f1cdcf6046b73f6",
+        "runners/dsl/src/graph.rs": "sha256:9744fec2e0c5091f2036081ffc615b1c7dd00ba2a5995af1294efb0b5aa5a28c",
+        "runners/dsl/src/persist.rs": "sha256:066d026451c97e1032c30054a3a4c556d386f23db2304630a4625c5bf81306cf",
+        "runners/dsl/src/py.rs": "sha256:201adbebde67c80bce80de6622095472bcb58e83a2b4df50f9b314bc9000a1de",
+        "runners/dsl/src/substrate.rs": "sha256:bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+        "runners/dsl/src/term.rs": "sha256:5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+        "seeds/shape_decode_loop.json": "sha256:3e1783cf566179061250572bbf7bc7bb54cacfafb83f8852008c4618d984a9c6",
+        "substrate/boot_core.py": "sha256:9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb"
+      },
+      "sources_stable": true,
+      "wall_ms": 218.672619
+    },
+    {
+      "applied_targets": [
+        "sd_dedup_existing",
+        "sd_mint_quantum"
+      ],
+      "backend": "native_shared_graph_pages_scoped",
+      "candidate": "dedup_identity_fix",
+      "converges": true,
+      "inert": false,
+      "outer_phase_sum_ms": 85.994193,
+      "phase_timings_ms": {
+        "branch_snapshot_and_setup": 8.162848,
+        "candidate_rule_patch": 20.068623,
+        "forward_look_branch_internal": [
+          {
+            "imagination": {
+              "branch_snapshot_and_rule_setup": 8.717932,
+              "collapse_tick": 1.280369,
+              "grounding_and_hypothesis_preparation": 0.521454,
+              "residual_readout": 1.516961,
+              "trace_minting": 2.80706
+            },
+            "round_index": 0
+          },
+          {
+            "imagination": {
+              "branch_snapshot_and_rule_setup": 9.487118,
+              "collapse_tick": 0.764025,
+              "grounding_and_hypothesis_preparation": 0.562054,
+              "residual_readout": 0.995117,
+              "trace_minting": 1.864263
+            },
+            "round_index": 1
+          },
+          {
+            "imagination": {
+              "branch_snapshot_and_rule_setup": 9.78444,
+              "collapse_tick": 0.808506,
+              "grounding_and_hypothesis_preparation": 0.691425,
+              "residual_readout": 0.967807,
+              "trace_minting": 1.380829
+            },
+            "round_index": 2
+          }
+        ],
+        "initial_branch_internal": {
+          "branch_snapshot_and_rule_setup": 8.136928,
+          "collapse_tick": 0.00014,
+          "grounding_and_hypothesis_preparation": 0.002681,
+          "residual_readout": 0.00321,
+          "trace_minting": 0.0003
+        },
+        "model_after_prediction": 57.762722,
+        "prediction_internal": {
+          "bounded_forward_look": 43.54077,
+          "structural_frontier_scan": 13.96029,
+          "trace_minting": 0.233352
+        }
+      },
+      "pid": 500,
+      "primary_unchanged": true,
+      "replicate": 2,
+      "source_hashes_after": {
+        "docs/research/engine_substrate/THOUGHTEXPERIMENT_SHAPE_DECODING_PHASE_PROFILE_V1_PREREG_20261001.md": "sha256:b7684a8abca405e890e6adae8d8b7c8af16ffdc562a0e362cf8c96e5597ccadf",
+        "domains/collapse_model.py": "sha256:97aaa5c26e6cb3f2682f6d9ee7aa9f0fbbc622e27063b1947edab26fa0ef4ea7",
+        "domains/engine_provenance.py": "sha256:a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+        "domains/imagination.py": "sha256:d6effe8eb0a6de2a7697be0f80b6787d2c00278654e9fe69e8aeb8b598956219",
+        "domains/reflective_faculty.py": "sha256:8f530a8c8754949216b71b473c4769fa5d351d01d6055127943c009d06763d05",
+        "domains/self_correction.py": "sha256:682c4fda4d18bf2e7655988c6ef8e52dc6ab7bae143851d804c122a0dbeb8a2d",
+        "evaluation/substrate_capability/thoughtexperiment_self_correction_copy_comparison_v1.py": "sha256:399cff2b650a131bcf4076d0e0a70f26c081c93aec6ea8a4686183b874ec56fc",
+        "evaluation/substrate_capability/thoughtexperiment_shape_decoding_phase_profile_v1.py": "sha256:3ad957689808e74ff956b012d47f4ddfdc0b3f776266bb178210fc25bf38bb1d",
+        "runners/dsl/python/substrate_rs/__init__.py": "sha256:16afa0fa0a9cf12eb306ecad98ccda27ca059f5e1cfbaffd899ee4cb74ebb3c1",
+        "runners/dsl/src/checker.rs": "sha256:eb46f2f884f468b90d1b79ec2d160812f0c166ac78245fb3b23a4a22b3fa2ff7",
+        "runners/dsl/src/cow_paged_vec.rs": "sha256:4b180c6aeb3cf9ee4391e65ba3aa50110b255da5697a909b46e7f4ec852939e4",
+        "runners/dsl/src/grammar.rs": "sha256:aaf6f571bf8e8761584c7473d3fe3130c5a6e395bff7f2b63f1cdcf6046b73f6",
+        "runners/dsl/src/graph.rs": "sha256:9744fec2e0c5091f2036081ffc615b1c7dd00ba2a5995af1294efb0b5aa5a28c",
+        "runners/dsl/src/persist.rs": "sha256:066d026451c97e1032c30054a3a4c556d386f23db2304630a4625c5bf81306cf",
+        "runners/dsl/src/py.rs": "sha256:201adbebde67c80bce80de6622095472bcb58e83a2b4df50f9b314bc9000a1de",
+        "runners/dsl/src/substrate.rs": "sha256:bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+        "runners/dsl/src/term.rs": "sha256:5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+        "seeds/shape_decode_loop.json": "sha256:3e1783cf566179061250572bbf7bc7bb54cacfafb83f8852008c4618d984a9c6",
+        "substrate/boot_core.py": "sha256:9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb"
+      },
+      "source_hashes_before": {
+        "docs/research/engine_substrate/THOUGHTEXPERIMENT_SHAPE_DECODING_PHASE_PROFILE_V1_PREREG_20261001.md": "sha256:b7684a8abca405e890e6adae8d8b7c8af16ffdc562a0e362cf8c96e5597ccadf",
+        "domains/collapse_model.py": "sha256:97aaa5c26e6cb3f2682f6d9ee7aa9f0fbbc622e27063b1947edab26fa0ef4ea7",
+        "domains/engine_provenance.py": "sha256:a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+        "domains/imagination.py": "sha256:d6effe8eb0a6de2a7697be0f80b6787d2c00278654e9fe69e8aeb8b598956219",
+        "domains/reflective_faculty.py": "sha256:8f530a8c8754949216b71b473c4769fa5d351d01d6055127943c009d06763d05",
+        "domains/self_correction.py": "sha256:682c4fda4d18bf2e7655988c6ef8e52dc6ab7bae143851d804c122a0dbeb8a2d",
+        "evaluation/substrate_capability/thoughtexperiment_self_correction_copy_comparison_v1.py": "sha256:399cff2b650a131bcf4076d0e0a70f26c081c93aec6ea8a4686183b874ec56fc",
+        "evaluation/substrate_capability/thoughtexperiment_shape_decoding_phase_profile_v1.py": "sha256:3ad957689808e74ff956b012d47f4ddfdc0b3f776266bb178210fc25bf38bb1d",
+        "runners/dsl/python/substrate_rs/__init__.py": "sha256:16afa0fa0a9cf12eb306ecad98ccda27ca059f5e1cfbaffd899ee4cb74ebb3c1",
+        "runners/dsl/src/checker.rs": "sha256:eb46f2f884f468b90d1b79ec2d160812f0c166ac78245fb3b23a4a22b3fa2ff7",
+        "runners/dsl/src/cow_paged_vec.rs": "sha256:4b180c6aeb3cf9ee4391e65ba3aa50110b255da5697a909b46e7f4ec852939e4",
+        "runners/dsl/src/grammar.rs": "sha256:aaf6f571bf8e8761584c7473d3fe3130c5a6e395bff7f2b63f1cdcf6046b73f6",
+        "runners/dsl/src/graph.rs": "sha256:9744fec2e0c5091f2036081ffc615b1c7dd00ba2a5995af1294efb0b5aa5a28c",
+        "runners/dsl/src/persist.rs": "sha256:066d026451c97e1032c30054a3a4c556d386f23db2304630a4625c5bf81306cf",
+        "runners/dsl/src/py.rs": "sha256:201adbebde67c80bce80de6622095472bcb58e83a2b4df50f9b314bc9000a1de",
+        "runners/dsl/src/substrate.rs": "sha256:bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+        "runners/dsl/src/term.rs": "sha256:5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+        "seeds/shape_decode_loop.json": "sha256:3e1783cf566179061250572bbf7bc7bb54cacfafb83f8852008c4618d984a9c6",
+        "substrate/boot_core.py": "sha256:9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb"
+      },
+      "sources_stable": true,
+      "wall_ms": 87.048701
+    }
+  ],
+  "schema": "ThoughtexperimentShapeDecodingPhaseProfileV1",
+  "source_hashes": {
+    "docs/research/engine_substrate/THOUGHTEXPERIMENT_SHAPE_DECODING_PHASE_PROFILE_V1_PREREG_20261001.md": "sha256:b7684a8abca405e890e6adae8d8b7c8af16ffdc562a0e362cf8c96e5597ccadf",
+    "domains/collapse_model.py": "sha256:97aaa5c26e6cb3f2682f6d9ee7aa9f0fbbc622e27063b1947edab26fa0ef4ea7",
+    "domains/engine_provenance.py": "sha256:a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+    "domains/imagination.py": "sha256:d6effe8eb0a6de2a7697be0f80b6787d2c00278654e9fe69e8aeb8b598956219",
+    "domains/reflective_faculty.py": "sha256:8f530a8c8754949216b71b473c4769fa5d351d01d6055127943c009d06763d05",
+    "domains/self_correction.py": "sha256:682c4fda4d18bf2e7655988c6ef8e52dc6ab7bae143851d804c122a0dbeb8a2d",
+    "evaluation/substrate_capability/thoughtexperiment_self_correction_copy_comparison_v1.py": "sha256:399cff2b650a131bcf4076d0e0a70f26c081c93aec6ea8a4686183b874ec56fc",
+    "evaluation/substrate_capability/thoughtexperiment_shape_decoding_phase_profile_v1.py": "sha256:3ad957689808e74ff956b012d47f4ddfdc0b3f776266bb178210fc25bf38bb1d",
+    "runners/dsl/python/substrate_rs/__init__.py": "sha256:16afa0fa0a9cf12eb306ecad98ccda27ca059f5e1cfbaffd899ee4cb74ebb3c1",
+    "runners/dsl/src/checker.rs": "sha256:eb46f2f884f468b90d1b79ec2d160812f0c166ac78245fb3b23a4a22b3fa2ff7",
+    "runners/dsl/src/cow_paged_vec.rs": "sha256:4b180c6aeb3cf9ee4391e65ba3aa50110b255da5697a909b46e7f4ec852939e4",
+    "runners/dsl/src/grammar.rs": "sha256:aaf6f571bf8e8761584c7473d3fe3130c5a6e395bff7f2b63f1cdcf6046b73f6",
+    "runners/dsl/src/graph.rs": "sha256:9744fec2e0c5091f2036081ffc615b1c7dd00ba2a5995af1294efb0b5aa5a28c",
+    "runners/dsl/src/persist.rs": "sha256:066d026451c97e1032c30054a3a4c556d386f23db2304630a4625c5bf81306cf",
+    "runners/dsl/src/py.rs": "sha256:201adbebde67c80bce80de6622095472bcb58e83a2b4df50f9b314bc9000a1de",
+    "runners/dsl/src/substrate.rs": "sha256:bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+    "runners/dsl/src/term.rs": "sha256:5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+    "seeds/shape_decode_loop.json": "sha256:3e1783cf566179061250572bbf7bc7bb54cacfafb83f8852008c4618d984a9c6",
+    "substrate/boot_core.py": "sha256:9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb"
+  },
+  "summaries": [
+    {
+      "backend": "native_full_copy_scoped",
+      "median_phase_ms": {
+        "branch_snapshot_and_setup": 37.93353,
+        "candidate_rule_patch": 18.735854,
+        "initial_branch_internal.branch_snapshot_and_rule_setup": 37.9051,
+        "initial_branch_internal.collapse_tick": 0.00013,
+        "initial_branch_internal.grounding_and_hypothesis_preparation": 0.00319,
+        "initial_branch_internal.residual_readout": 0.0035,
+        "initial_branch_internal.trace_minting": 0.0002,
+        "model_after_prediction": 162.921042,
+        "prediction_internal.bounded_forward_look": 148.946242,
+        "prediction_internal.structural_frontier_scan": 14.03283,
+        "prediction_internal.trace_minting": 0.131791
+      },
+      "median_wall_ms": 219.071002
+    },
+    {
+      "backend": "native_shared_graph_pages_scoped",
+      "median_phase_ms": {
+        "branch_snapshot_and_setup": 10.187743,
+        "candidate_rule_patch": 20.068623,
+        "initial_branch_internal.branch_snapshot_and_rule_setup": 10.159933,
+        "initial_branch_internal.collapse_tick": 0.00014,
+        "initial_branch_internal.grounding_and_hypothesis_preparation": 0.00323,
+        "initial_branch_internal.residual_readout": 0.0037,
+        "initial_branch_internal.trace_minting": 0.00025,
+        "model_after_prediction": 68.146846,
+        "prediction_internal.bounded_forward_look": 51.014754,
+        "prediction_internal.structural_frontier_scan": 15.248819,
+        "prediction_internal.trace_minting": 0.211121
+      },
+      "median_wall_ms": 99.6681
+    }
+  ]
+}

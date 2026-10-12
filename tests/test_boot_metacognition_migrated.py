@@ -91,3 +91,22 @@ def test_graph_assesses_an_anomaly_free_boot_as_healthy(tmp_path: Path):
     assert _attrs(agent, "BootSeedAnomaly") == []
     assert not [a for a in _attrs(agent, "SelfConcern")
                 if a.get("kind") == "boot_integrity"]
+
+
+def test_many_failed_seeds_file_one_concern_with_all_evidence(tmp_path: Path):
+    """v1.1.0: a boot with N failed seeds is ONE compromised-boot assessment
+    (one SelfConcern) supported by all N anomalies -- v1.0.0 matched per
+    anomaly and minted N concerns in a single rule pass."""
+    agent = _agent_with_metacognition()
+    for i in range(4):
+        (tmp_path / f"broken{i}.json").write_text(json.dumps({
+            "id": f"broken{i}", "version": "1",
+            "nodes": [{"type": "Concept", "attrs": {"name": f"b{i}"}}],
+            "edges": [], "productions": [], "rules": [],
+        }))
+    load_all_seeds(agent, seed_dir=tmp_path)
+    agent.inner.run_rules()
+    concerns = [n for n in agent.s.nodes("SelfConcern")
+                if agent.s.node(n)["attrs"].get("kind") == "boot_integrity"]
+    assert len(concerns) == 1
+    assert len(list(agent.inner.neighbours(concerns[0], "supported_by"))) == 4

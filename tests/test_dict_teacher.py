@@ -5,8 +5,11 @@ without it shouldn't hard-fail), but require it on developer machines.
 """
 from __future__ import annotations
 
+import sys
+
 import pytest
 
+from domains import dict_teacher
 from domains.dict_teacher import (DictionaryTeacher, Entry, entry_to_answer,
                                   entry_to_payload, is_available, lookup)
 
@@ -18,6 +21,18 @@ pytestmark = pytest.mark.skipif(
 # ---------------------------------------------------------------------------
 # lookup
 # ---------------------------------------------------------------------------
+
+def test_availability_probe_only_checks_local_filesystem(monkeypatch, tmp_path):
+    root = tmp_path / "nltk-data"
+    monkeypatch.setattr(dict_teacher, "_nltk_data_roots", lambda: (root,))
+    monkeypatch.setitem(sys.modules, "nltk", None)
+
+    assert not is_available()
+    corpus_dir = root / "corpora"
+    corpus_dir.mkdir(parents=True)
+    (corpus_dir / "wordnet.zip").touch()
+    assert is_available()
+
 
 def test_lookup_finds_common_noun():
     e = lookup("photosynthesis")

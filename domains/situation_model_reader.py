@@ -23,7 +23,7 @@ reimplemented) build the situation model FROM the read text.
 WHAT MINTS WHEN
   1. CHANGE-OF-STATE IS A CLASS. A predication's verb (lemmatised by the held
      WordNet morphy) is tested against the `COS` MarkerClass in
-     seeds/reading_constructions.json: a SEED member directly, else JOIN-BY-
+     domain_data/reading_constructions.json: a SEED member directly, else JOIN-BY-
      ADJACENCY (reusing reading_collapse's WordNet path-similarity nearness to the
      class anchor — the SAME signal DESIGNATE/POSSESS use). NOT a hardcoded Python
      verb list; the members live in the seed, an unseen synonym joins by nearness.

@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "suite_id": "anaphora_independent_task_suite_v1",
+  "selection_note": "Assistant-authored before capture from the documented anaphora rule contract; no runtime pilot outputs were used. Inputs are new combinations relative to the existing intent integration examples.",
+  "cases": [
+    {"case_id":"question_difficult_describe_it","turns":["the question is difficult","describe it"],"pronoun":"it","expected_referent":"question","expected_intent_about":true},
+    {"case_id":"question_important_tell_about_it","turns":["the question seems important","tell me about it"],"pronoun":"it","expected_referent":"question","expected_intent_about":true},
+    {"case_id":"answer_useful_describe_it","turns":["the answer is useful","describe it"],"pronoun":"it","expected_referent":"answer","expected_intent_about":true},
+    {"case_id":"answer_important_explain_it","turns":["the answer seems important","explain it"],"pronoun":"it","expected_referent":"answer","expected_intent_about":true},
+    {"case_id":"recent_answer_after_question","turns":["the question is difficult","the answer is useful","describe it"],"pronoun":"it","expected_referent":"answer","expected_intent_about":true},
+    {"case_id":"recent_question_after_answer","turns":["the answer is useful","the question is difficult","explain it"],"pronoun":"it","expected_referent":"question","expected_intent_about":true},
+    {"case_id":"pronoun_chain_after_question","turns":["the question is difficult","i need it answered","describe it"],"pronoun":"it","expected_referent":"question","expected_intent_about":true},
+    {"case_id":"answer_deictic_that","turns":["the answer is useful","explain that"],"pronoun":"that","expected_referent":"answer","expected_intent_about":true},
+    {"case_id":"question_deictic_this","turns":["the question seems important","explain this"],"pronoun":"this","expected_referent":"question","expected_intent_about":true},
+    {"case_id":"unknown_antecedent_no_bind","turns":["the foobletwizz exploded","describe it"],"pronoun":"it","expected_referent":null,"expected_intent_about":false},
+    {"case_id":"first_turn_no_antecedent","turns":["describe it"],"pronoun":"it","expected_referent":null,"expected_intent_about":null}
+  ]
+}

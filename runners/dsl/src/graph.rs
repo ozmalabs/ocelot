@@ -23,6 +23,8 @@
 //! Here we just clone the SmallVec (cheap: usually inline). New edges
 //! appear on the *next* iteration call, matching Python semantics.
 
+use crate::cow_paged_vec::CowPagedVec;
+use crate::cow_sharded_map::{CowShardKey, CowShardedMap};
 use crate::sym::Sym;
 use crate::value::Value;
 use crate::cow_paged_vec::CowPagedVec;
@@ -306,9 +308,14 @@ pub struct TypedGraph {
     /// edges with carry-along scalars pay one entry each.
     edge_attrs: FxHashMap<EdgeIdx, Attrs>,
 
-    /// nodes-of-type index: Sym → contiguous Vec<NodeID>. Linear scan
-    /// of a small Vec is hard to beat for typed iteration.
-    by_type: FxHashMap<Sym, Vec<NodeID>>,
+    /// Ordered, tombstone-backed typed-node populations. Stable order
+    /// preserves first-witness semantics while position slots enable O(1)
+    /// removal and periodic compaction bounds iteration overhead.
+    by_type: FxHashMap<Sym, TypeNodeIndex>,
+    /// Current `by_type` position for each live NodeID; vacant/deleted nodes
+    /// carry `NO_TYPE_POSITION`. COW pages keep branch-local position writes
+    /// sparse.
+    by_type_positions: CowPagedVec<u32>,
 
     /// Per-node full out-edge list (any edge_type).
     out: CowPagedVec<SmallVec<[EdgeIdx; 4]>>,
@@ -348,7 +355,7 @@ pub struct TypedGraph {
     edge_delete_version_by_type: FxHashMap<Sym, u64>,
 
     /// Declared attribute indices (Phase 7b). Maps `(node_type,
-    /// attr_key) → value → SmallVec<NodeID>`. Maintained automatically
+    /// attr_key) → value → RoaringBitmap<NodeID>`. Maintained automatically
     /// across `insert_node` / `delete_node` / `set_node_attr` /
     /// `set_node_type` so queries against an indexed (type, key) pair
     /// return in O(1+result). Closes the "Filter(nodes(t), Eq(Attr...))
@@ -359,39 +366,41 @@ pub struct TypedGraph {
     /// in a 1M-node graph") compress ~30× vs a flat Vec and AND/OR/NOT/
     /// popcount run in SIMD. Sparse sets stay efficient via Roaring's
     /// adaptive container choice (array / bitset / run-length).
-    attr_indices: FxHashMap<(Sym, Sym), FxHashMap<Value, RoaringBitmap>>,
+    /// Both levels are sharded COW maps: a graph fork shares their roots;
+    /// an index mutation copies only the affected outer and value shard.
+    attr_indices: CowShardedMap<(Sym, Sym), CowShardedMap<Value, RoaringBitmap>>,
 
     /// INTRINSIC SELF-REPAIR queue. A `SetRuleClause` effect cannot mutate the
     /// rule list from inside `apply_rule_full` (it only holds `&mut graph`), so it
-    /// QUEUES the edit here as `(rule_name, field, new_clause_value)`; `Substrate::
+    /// QUEUES the edit here as `(rule_name, field, new_clause_value, producer)`; `Substrate::
     /// run_rules` drains this between passes, where it holds `&mut self.rules`
     /// cleanly, and swaps the named rule's `where`/`effect`. Transient (drained to
     /// empty within run_rules); not part of the persisted graph.
-    pub pending_rule_edits: Vec<(String, String, Value)>,
+    pub pending_rule_edits: Vec<(String, String, Value, Sym)>,
 
     /// Transactional self-modification queue. `ApplyRulePatch` effects push
     /// the bound graph-resident `RulePatch` node here; `Substrate` drains the
     /// queue between passes, where it can stage and atomically replace the
     /// corresponding live rule without borrowing the matcher.
-    pub pending_rule_patches: Vec<NodeID>,
+    pub pending_rule_patches: Vec<(NodeID, Vec<Sym>)>,
 
     /// PERCEPTION-AS-ACTION queue. An `Effect::FbSample` cannot call
     /// `Substrate::fb_sample` from inside `apply_rule_full` (it only
     /// holds `&mut graph`, not `&mut Substrate` — which owns the
     /// attached-framebuffer registry and the dirty-tracking node/edge
     /// mutation helpers `segment_and_track` needs), so it QUEUES
-    /// `(fb_id, game, grid_w, grid_h)` here; `Substrate::run_rules`
+    /// `(fb_id, game, grid_w, grid_h, producer)` here; `Substrate::run_rules`
     /// drains this each pass (where `&mut self` is free) by calling
     /// `Substrate::fb_sample` — the same fn the PyO3 `fb_sample` method
     /// calls. Transient (drained to empty within `run_rules`); not
     /// part of the persisted graph. Mirrors `pending_rule_edits` above.
-    pub pending_fb_samples: Vec<(u32, NodeID, usize, usize)>,
+    pub pending_fb_samples: Vec<(u32, NodeID, usize, usize, Sym)>,
 
     /// GRAPH LAW #6 queue. An `Effect::TrackIdentity` cannot call
     /// `Substrate::track_identity` from inside `apply_rule_full` (it
     /// only holds `&mut graph`, not `&mut Substrate`), so it QUEUES
     /// `(prev_ids, cur_ids, feature_key, category_key, extent_key,
-    /// identity_key, radius)` here; `Substrate::run_rules` drains this
+    /// identity_key, radius, producer)` here; `Substrate::run_rules` drains this
     /// each pass by calling `Substrate::track_identity` — the same fn
     /// a direct/PyO3 call uses. Transient; not part of the persisted
     /// graph. Mirrors `pending_fb_samples` above.
@@ -404,19 +413,20 @@ pub struct TypedGraph {
         Option<Sym>,
         Sym,
         f64,
+        Sym,
     )>,
 
     /// SELF-TRAINING queue. An `Effect::NetCollapse` cannot mutate a net's
     /// `WeightTensor` data from inside `apply_rule_full` (it only holds
     /// `&mut graph`, and the collapse reads+writes across the assemblage),
-    /// so it QUEUES `(reflex_net, input_vec, target_vec, eta)` here;
+    /// so it QUEUES `(reflex_net, input_vec, target_vec, eta, producer)` here;
     /// `Substrate::run_rules` drains this each pass by calling
     /// `net_forward::net_collapse_step` on the net's assemblage and
     /// recording the surprise back onto the reflex net. Transient; not part
     /// of the persisted graph. Mirrors `pending_fb_samples` above — this is
     /// how "collapse and surprise within the net" runs INSIDE the engine's
     /// run_rules loop rather than a Python observation loop.
-    pub pending_net_collapses: Vec<(NodeID, Vec<f64>, Vec<f64>, f64)>,
+    pub pending_net_collapses: Vec<(NodeID, Vec<f64>, Vec<f64>, f64, Sym)>,
     /// block 292000 — rule-effect attr-write log for frontier-incremental
     /// predicate retraction. Every rule-effect `SetAttr` (via `set_node_attr`)
     /// pushes `(node, key)` here, but ONLY when `log_attr_writes` is on (a mirror
@@ -468,7 +478,7 @@ impl TypedGraph {
             in_by_type: CowShardedMap::default(),
             edges_by_type: FxHashMap::default(),
             edge_delete_version_by_type: FxHashMap::default(),
-            attr_indices: FxHashMap::default(),
+            attr_indices: CowShardedMap::default(),
             pending_rule_edits: Vec::new(),
             pending_rule_patches: Vec::new(),
             pending_fb_samples: Vec::new(),
@@ -694,18 +704,15 @@ impl TypedGraph {
         if self.attr_indices.contains_key(&(node_type, attr_key)) {
             return;
         }
-        let mut bucket: FxHashMap<Value, RoaringBitmap> = FxHashMap::default();
+        let mut bucket: CowShardedMap<Value, RoaringBitmap> = CowShardedMap::default();
         // Back-fill: walk every node of this type that already has the
         // attr so the index is consistent the moment it's declared.
         if let Some(nids) = self.by_type.get(&node_type) {
-            for &nid in nids {
+            for nid in nids.nodes() {
                 if let Some(slot) = self.nodes.get(nid.0 as usize) {
                     if let Some(node) = slot.as_ref() {
                         if let Some(v) = node.attrs.get(&attr_key) {
-                            bucket
-                                .entry(v.clone())
-                                .or_insert_with(RoaringBitmap::new)
-                                .insert(nid.0);
+                            bucket.get_or_default_mut(v.clone()).insert(nid.0);
                         }
                     }
                 }
@@ -757,12 +764,23 @@ impl TypedGraph {
         &self,
         conditions: &[(Sym, Sym, &Value)],
     ) -> Option<RoaringBitmap> {
-        let mut iter = conditions.iter();
-        let first = iter.next()?;
-        let mut acc = self.nodes_where_bitmap(first.0, first.1, first.2)?.clone();
-        for cond in iter {
+        let first = conditions.first()?;
+        // Validate declaration separately from value-bucket presence. A
+        // declared index with no entries for a value is a proven empty result,
+        // not an unavailable index; callers may safely avoid a reference scan.
+        if conditions
+            .iter()
+            .any(|(node_type, attr_key, _)| !self.has_attr_index(*node_type, *attr_key))
+        {
+            return None;
+        }
+        let mut acc = self
+            .nodes_where_bitmap(first.0, first.1, first.2)
+            .cloned()
+            .unwrap_or_default();
+        for cond in &conditions[1..] {
             let Some(bm) = self.nodes_where_bitmap(cond.0, cond.1, cond.2) else {
-                return None;
+                return Some(RoaringBitmap::new());
             };
             acc &= bm;
             if acc.is_empty() {
@@ -785,30 +803,54 @@ impl TypedGraph {
         }
         for (t, k, v) in additions {
             self.attr_indices
-                .entry((t, k))
-                .or_default()
-                .entry(v)
-                .or_insert_with(RoaringBitmap::new)
+                .get_or_default_mut((t, k))
+                .get_or_default_mut(v)
                 .insert(nid.0);
         }
     }
 
-    /// Internal: remove `nid` from every index that may contain it.
-    fn unindex_node(&mut self, nid: NodeID, node_type: Sym) {
-        // Walk indices declared for this type; for each value bucket,
-        // drop occurrences of nid.
-        let keys: SmallVec<[(Sym, Sym); 4]> = self
-            .attr_indices
-            .keys()
-            .filter(|(t, _)| *t == node_type)
-            .copied()
-            .collect();
-        for key in keys {
-            if let Some(bucket) = self.attr_indices.get_mut(&key) {
-                bucket.retain(|_, bm| {
-                    bm.remove(nid.0);
-                    !bm.is_empty()
-                });
+    fn add_node_to_type(&mut self, node_type: Sym, nid: NodeID) {
+        while self.by_type_positions.len() <= nid.0 as usize {
+            self.by_type_positions.push(NO_TYPE_POSITION);
+        }
+        let pos = self.by_type.entry(node_type).or_default().insert(nid);
+        self.by_type_positions[nid.0 as usize] = pos;
+    }
+
+    fn remove_node_from_type(&mut self, node_type: Sym, nid: NodeID) {
+        let Some(&pos) = self.by_type_positions.get(nid.0 as usize) else {
+            return;
+        };
+        if pos == NO_TYPE_POSITION {
+            return;
+        }
+        let remapped = self.by_type
+            .get_mut(&node_type)
+            .and_then(|index| index.remove(pos, nid));
+        self.by_type_positions[nid.0 as usize] = NO_TYPE_POSITION;
+        if let Some(remapped) = remapped {
+            for (node, new_pos) in remapped {
+                self.by_type_positions[node.0 as usize] = new_pos;
+            }
+        }
+    }
+
+    /// Internal: remove `nid` from the value buckets named by its before-image.
+    /// This is proportional to the node's indexed attributes, not the total
+    /// cardinality of every declared value map for its type.
+    fn unindex_node(&mut self, nid: NodeID, node_type: Sym, attrs: &Attrs) {
+        for (attr_key, value) in attrs {
+            let Some(bucket) = self.attr_indices.get_mut(&(node_type, *attr_key)) else {
+                continue;
+            };
+            let empty = if let Some(bitmap) = bucket.get_mut(value) {
+                bitmap.remove(nid.0);
+                bitmap.is_empty()
+            } else {
+                false
+            };
+            if empty {
+                bucket.remove(value);
             }
         }
     }
@@ -1087,7 +1129,7 @@ impl TypedGraph {
     /// don't invalidate iteration (matches Python's tuple-snapshot
     /// behaviour).
     pub fn nodes_of_type(&self, type_: Sym) -> Vec<NodeID> {
-        self.by_type.get(&type_).cloned().unwrap_or_default()
+        self.by_type.get(&type_).map(TypeNodeIndex::nodes).unwrap_or_default()
     }
 
     pub fn all_nodes(&self) -> Vec<NodeID> {
@@ -1203,7 +1245,7 @@ impl TypedGraph {
         while self.in_.len() <= nid.0 as usize {
             self.in_.push(SmallVec::new());
         }
-        self.by_type.entry(type_).or_default().push(nid);
+        self.add_node_to_type(type_, nid);
         // Maintain declared attr indices — Phase 7b. No-op if no index
         // is declared for any (type_, attr_key) on this node.
         if !self.attr_indices.is_empty() {
@@ -1510,12 +1552,10 @@ impl TypedGraph {
         let data = self.nodes[nid.0 as usize].take()?;
         self.bump_mutation_version();
         // Remove from the by_type index. Same retain rationale.
-        if let Some(v) = self.by_type.get_mut(&data.type_) {
-            v.retain(|n| *n != nid);
-        }
+        self.remove_node_from_type(data.type_, nid);
         // Phase 7b: drop from any declared attr indices.
         if !self.attr_indices.is_empty() {
-            self.unindex_node(nid, data.type_);
+            self.unindex_node(nid, data.type_, &data.attrs);
         }
         self.node_freelist.push(nid.0);
         Some(data)
@@ -1550,10 +1590,8 @@ impl TypedGraph {
                 }
             }
             self.attr_indices
-                .entry((node_type, key))
-                .or_default()
-                .entry(value)
-                .or_insert_with(RoaringBitmap::new)
+                .get_or_default_mut((node_type, key))
+                .get_or_default_mut(value)
                 .insert(nid.0);
         }
     }
@@ -1586,20 +1624,21 @@ impl TypedGraph {
         if old == new_type {
             return;
         }
-        if let Some(v) = self.by_type.get_mut(&old) {
-            v.retain(|n| *n != nid);
-        }
-        // Phase 7b: drop from any old-type indices, then re-index under
-        // the new type. The attrs are unchanged so we can re-snapshot
-        // them from the (still-old-type) node before flipping.
-        if !self.attr_indices.is_empty() {
-            self.unindex_node(nid, old);
+        let attrs = if self.attr_indices.is_empty() {
+            None
+        } else {
+            Some(self.node(nid).attrs.clone())
+        };
+        self.remove_node_from_type(old, nid);
+        // Use the node's before-image to remove only its old-value buckets,
+        // then re-index the unchanged attributes under the new type.
+        if let Some(attrs) = &attrs {
+            self.unindex_node(nid, old, attrs);
         }
         self.node_mut(nid).type_ = new_type;
-        self.by_type.entry(new_type).or_default().push(nid);
-        if !self.attr_indices.is_empty() {
-            let attrs = self.node(nid).attrs.clone();
-            self.index_node(nid, new_type, &attrs);
+        self.add_node_to_type(new_type, nid);
+        if let Some(attrs) = &attrs {
+            self.index_node(nid, new_type, attrs);
         }
     }
 

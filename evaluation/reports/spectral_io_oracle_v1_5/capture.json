@@ -1,0 +1,3359 @@
+{
+  "cases": [
+    {
+      "arm": "faculty",
+      "case": {
+        "id": "B_rep1",
+        "label": "B",
+        "replicate": 1
+      },
+      "cpu_seconds": 0.03332886899999998,
+      "gap_attrs": {
+        "example": "per-bin log magnitude",
+        "faculty": "shared_family",
+        "inputs": [
+          "signal"
+        ],
+        "n_samples": 32,
+        "needed_primitive": "spectral_value",
+        "observation": [
+          [
+            "spectral_value",
+            "signal",
+            "magnitude"
+          ],
+          [
+            "log_scale",
+            "magnitude",
+            "value"
+          ]
+        ],
+        "outputs": [
+          "spectrum"
+        ],
+        "status": "perceived",
+        "test_frequencies": [
+          3,
+          7,
+          11
+        ]
+      },
+      "graph": {
+        "axis_count": 2,
+        "codebook_epoch": 0.0,
+        "held_primitive_count": 1,
+        "held_primitive_names": [
+          "spectral_value"
+        ],
+        "primitive_request_count": 0,
+        "primitive_request_names": []
+      },
+      "independent_forward_oracle": {
+        "mixed_3_7": {
+          "actual": [
+            -20.723262395260956,
+            -20.723264502080124,
+            -20.723262949837004,
+            2.549445171003696,
+            -20.723263502838893,
+            -20.723261396064174,
+            -20.723259737554915,
+            1.5686159181221782,
+            -20.723257248316774,
+            -20.723256395810456,
+            -20.72325996536363,
+            -20.723257371395178,
+            -20.723252862137617,
+            -20.723260093503313,
+            -20.723252278674014,
+            -20.72326178502081,
+            -20.723261191398535
+          ],
+          "expected": [
+            -20.723262395260956,
+            -20.723264502080124,
+            -20.723262949837004,
+            2.549445171003696,
+            -20.723263502838893,
+            -20.723261396064174,
+            -20.723259737554915,
+            1.5686159181221782,
+            -20.723257248316774,
+            -20.723256395810456,
+            -20.72325996536363,
+            -20.723257371395178,
+            -20.723252862137617,
+            -20.723260093503313,
+            -20.723252278674014,
+            -20.72326178502081,
+            -20.723261191398535
+          ],
+          "max_abs_error": 0.0,
+          "passed": true
+        },
+        "shifted_impulse": {
+          "actual": [
+            1.000000082240371e-09,
+            1.000000082240371e-09,
+            1.000000082240371e-09,
+            1.000000082240371e-09,
+            1.000000082240371e-09,
+            1.000000082240371e-09,
+            1.000000082240371e-09,
+            1.000000082240371e-09,
+            1.000000082240371e-09,
+            9.999998601957662e-10,
+            1.000000082240371e-09,
+            9.999998601957662e-10,
+            1.000000082240371e-09,
+            1.000000082240371e-09,
+            1.000000082240371e-09,
+            9.999998601957662e-10,
+            1.000000082240371e-09
+          ],
+          "expected": [
+            1.000000082240371e-09,
+            1.000000082240371e-09,
+            1.000000082240371e-09,
+            1.000000082240371e-09,
+            1.000000082240371e-09,
+            1.000000082240371e-09,
+            1.000000082240371e-09,
+            1.000000082240371e-09,
+            1.000000082240371e-09,
+            9.999998601957662e-10,
+            1.000000082240371e-09,
+            1.000000082240371e-09,
+            1.000000082240371e-09,
+            1.000000082240371e-09,
+            1.000000082240371e-09,
+            1.000000082240371e-09,
+            1.000000082240371e-09
+          ],
+          "max_abs_error": 2.2204460471823615e-16,
+          "passed": true
+        },
+        "tone_3": {
+          "actual": [
+            -20.72326184015151,
+            -20.72326422712432,
+            -20.723262600123125,
+            2.772588722302281,
+            -20.723263946306513,
+            -20.723261505662865,
+            -20.723259391933663,
+            -20.723260198206894,
+            -20.72325613710426,
+            -20.723255706212626,
+            -20.72326171527529,
+            -20.723258098594442,
+            -20.723249018399898,
+            -20.723256787307573,
+            -20.72324570656751,
+            -20.72325840215727,
+            -20.723255898337303
+          ],
+          "expected": [
+            -20.72326184015151,
+            -20.72326422712432,
+            -20.723262600123125,
+            2.772588722302281,
+            -20.723263946306513,
+            -20.723261505662865,
+            -20.723259391933663,
+            -20.723260198206894,
+            -20.72325613710426,
+            -20.723255706212626,
+            -20.72326171527529,
+            -20.723258098594442,
+            -20.723249018399898,
+            -20.723256787307573,
+            -20.72324570656751,
+            -20.72325840215727,
+            -20.723255898337303
+          ],
+          "max_abs_error": 0.0,
+          "passed": true
+        }
+      },
+      "result": {
+        "accepted": true,
+        "admitted": true,
+        "concern_key": "gap_shared_family",
+        "construction": "spectral_value",
+        "gap": "#9",
+        "gate_reason": "ADMITTED \u2014 native collapse confidence 1.000000 (FULL contraction: all 3 problem constraints reproduced; the binary verify's POINT collapse)",
+        "held_primitive": "#87",
+        "how": "the residual named a COMPUTATIONAL transform; I CONSTRUCTED it as a native Term-tree from my held constructors (Sum/Nth/Cos/Sin/Sqrt/Log), materialised it via add_term_subgraph, admitted it through the admissibility gate (it reproduces the gap's stated constraints), verified it with a discriminative control (a non-selective fake FAILS), and INSTALLED it. It now runs natively. I did NOT hand this to a human.",
+        "name": "spectral_value",
+        "object_props": {
+          "peak_bin@11": 11,
+          "peak_bin@3": 3,
+          "peak_bin@7": 7
+        },
+        "operation": "spectral log-magnitude X[k]=log(|\u03a3_n x[n]\u00b7e^{-i2\u03c0kn/N}|) \u2014 amplitudes over a frequency axis, log-scaled",
+        "outcome": "built_primitive",
+        "stated_props": {
+          "peak_bin@11": 11,
+          "peak_bin@3": 3,
+          "peak_bin@7": 7
+        },
+        "term_root": "80",
+        "term_tree": {
+          "arg": {
+            "items": [
+              {
+                "arg": {
+                  "items": [
+                    {
+                      "a": {
+                        "source": {
+                          "name": "sig",
+                          "type": "Var"
+                        },
+                        "type": "Sum",
+                        "value": {
+                          "items": [
+                            {
+                              "index": 1,
+                              "items": {
+                                "name": "p",
+                                "type": "Var"
+                              },
+                              "type": "Nth"
+                            },
+                            {
+                              "arg": {
+                                "a": {
+                                  "items": [
+                                    {
+                                      "type": "Lit",
+                                      "value": 6.283185307179586
+                                    },
+                                    {
+                                      "name": "k",
+                                      "type": "Var"
+                                    },
+                                    {
+                                      "index": 0,
+                                      "items": {
+                                        "name": "p",
+                                        "type": "Var"
+                                      },
+                                      "type": "Nth"
+                                    }
+                                  ],
+                                  "type": "Times"
+                                },
+                                "b": {
+                                  "name": "N",
+                                  "type": "Var"
+                                },
+                                "type": "Div"
+                              },
+                              "type": "Cos"
+                            }
+                          ],
+                          "type": "Times"
+                        },
+                        "var_name": "p"
+                      },
+                      "b": {
+                        "type": "Lit",
+                        "value": 2.0
+                      },
+                      "type": "Pow"
+                    },
+                    {
+                      "a": {
+                        "source": {
+                          "name": "sig",
+                          "type": "Var"
+                        },
+                        "type": "Sum",
+                        "value": {
+                          "items": [
+                            {
+                              "index": 1,
+                              "items": {
+                                "name": "p",
+                                "type": "Var"
+                              },
+                              "type": "Nth"
+                            },
+                            {
+                              "arg": {
+                                "a": {
+                                  "items": [
+                                    {
+                                      "type": "Lit",
+                                      "value": 6.283185307179586
+                                    },
+                                    {
+                                      "name": "k",
+                                      "type": "Var"
+                                    },
+                                    {
+                                      "index": 0,
+                                      "items": {
+                                        "name": "p",
+                                        "type": "Var"
+                                      },
+                                      "type": "Nth"
+                                    }
+                                  ],
+                                  "type": "Times"
+                                },
+                                "b": {
+                                  "name": "N",
+                                  "type": "Var"
+                                },
+                                "type": "Div"
+                              },
+                              "type": "Sin"
+                            }
+                          ],
+                          "type": "Times"
+                        },
+                        "var_name": "p"
+                      },
+                      "b": {
+                        "type": "Lit",
+                        "value": 2.0
+                      },
+                      "type": "Pow"
+                    }
+                  ],
+                  "type": "Plus"
+                },
+                "type": "Sqrt"
+              },
+              {
+                "type": "Lit",
+                "value": 1e-09
+              }
+            ],
+            "type": "Plus"
+          },
+          "type": "Log"
+        },
+        "test_eval": {
+          "n_samples": 32,
+          "peak_bins": {
+            "peak_bin@11": 11,
+            "peak_bin@3": 3,
+            "peak_bin@7": 7
+          },
+          "spectrum": [
+            -20.72326184015151,
+            -20.72326422712432,
+            -20.723262600123125,
+            2.772588722302281,
+            -20.723263946306513,
+            -20.723261505662865,
+            -20.723259391933663,
+            -20.723260198206894,
+            -20.72325613710426,
+            -20.723255706212626,
+            -20.72326171527529,
+            -20.723258098594442,
+            -20.723249018399898,
+            -20.723256787307573,
+            -20.72324570656751,
+            -20.72325840215727,
+            -20.723255898337303
+          ],
+          "tone": 3
+        },
+        "verified": {
+          "accepted": true,
+          "anchors": [
+            "SensorAnchor"
+          ],
+          "claim_node": "#81",
+          "discriminates": true,
+          "grounded": true,
+          "no_regression": true,
+          "probe_node": "#82",
+          "real_pass": true,
+          "reason": "ACCEPTED: control discriminates (mechanism survives 3 held-out case(s); the known-fake twin FAILS it), no regression, grounded in ['SensorAnchor'].",
+          "twin_pass": false,
+          "verdict": 1.0
+        },
+        "wall": "the residual's predicates ground to NO held structural relation (they are genuinely-novel terms outside the held RelationCue lexicon); the shape cannot be composed from held vocab without inventing a law. NEXT FRONTIER: predicate-grounding (extend the lexicon, or self-author a base primitive for the novel shape) \u2014 NOT hand-picked here (that would be the donkey)."
+      },
+      "returned_term_ops": [
+        "Cos",
+        "Div",
+        "Lit",
+        "Log",
+        "Nth",
+        "Plus",
+        "Pow",
+        "Sin",
+        "Sqrt",
+        "Sum",
+        "Times",
+        "Var"
+      ],
+      "returned_term_vars": [
+        "N",
+        "k",
+        "p",
+        "sig"
+      ],
+      "wall_seconds": 0.03326227399520576
+    },
+    {
+      "arm": "faculty",
+      "case": {
+        "id": "B_rep2",
+        "label": "B",
+        "replicate": 2
+      },
+      "cpu_seconds": 0.025946778000000004,
+      "gap_attrs": {
+        "example": "per-bin log magnitude",
+        "faculty": "shared_family",
+        "inputs": [
+          "signal"
+        ],
+        "n_samples": 32,
+        "needed_primitive": "spectral_value",
+        "observation": [
+          [
+            "spectral_value",
+            "signal",
+            "magnitude"
+          ],
+          [
+            "log_scale",
+            "magnitude",
+            "value"
+          ]
+        ],
+        "outputs": [
+          "spectrum"
+        ],
+        "status": "perceived",
+        "test_frequencies": [
+          3,
+          7,
+          11
+        ]
+      },
+      "graph": {
+        "axis_count": 2,
+        "codebook_epoch": 0.0,
+        "held_primitive_count": 1,
+        "held_primitive_names": [
+          "spectral_value"
+        ],
+        "primitive_request_count": 0,
+        "primitive_request_names": []
+      },
+      "independent_forward_oracle": {
+        "mixed_3_7": {
+          "actual": [
+            -20.723262395260956,
+            -20.723264502080124,
+            -20.723262949837004,
+            2.549445171003696,
+            -20.723263502838893,
+            -20.723261396064174,
+            -20.723259737554915,
+            1.5686159181221782,
+            -20.723257248316774,
+            -20.723256395810456,
+            -20.72325996536363,
+            -20.723257371395178,
+            -20.723252862137617,
+            -20.723260093503313,
+            -20.723252278674014,
+            -20.72326178502081,
+            -20.723261191398535
+          ],
+          "expected": [
+            -20.723262395260956,
+            -20.723264502080124,
+            -20.723262949837004,
+            2.549445171003696,
+            -20.723263502838893,
+            -20.723261396064174,
+            -20.723259737554915,
+            1.5686159181221782,
+            -20.723257248316774,
+            -20.723256395810456,
+            -20.72325996536363,
+            -20.723257371395178,
+            -20.723252862137617,
+            -20.723260093503313,
+            -20.723252278674014,
+            -20.72326178502081,
+            -20.723261191398535
+          ],
+          "max_abs_error": 0.0,
+          "passed": true
+        },
+        "shifted_impulse": {
+          "actual": [
+            1.000000082240371e-09,
+            1.000000082240371e-09,
+            1.000000082240371e-09,
+            1.000000082240371e-09,
+            1.000000082240371e-09,
+            1.000000082240371e-09,
+            1.000000082240371e-09,
+            1.000000082240371e-09,
+            1.000000082240371e-09,
+            9.999998601957662e-10,
+            1.000000082240371e-09,
+            9.999998601957662e-10,
+            1.000000082240371e-09,
+            1.000000082240371e-09,
+            1.000000082240371e-09,
+            9.999998601957662e-10,
+            1.000000082240371e-09
+          ],
+          "expected": [
+            1.000000082240371e-09,
+            1.000000082240371e-09,
+            1.000000082240371e-09,
+            1.000000082240371e-09,
+            1.000000082240371e-09,
+            1.000000082240371e-09,
+            1.000000082240371e-09,
+            1.000000082240371e-09,
+            1.000000082240371e-09,
+            9.999998601957662e-10,
+            1.000000082240371e-09,
+            1.000000082240371e-09,
+            1.000000082240371e-09,
+            1.000000082240371e-09,
+            1.000000082240371e-09,
+            1.000000082240371e-09,
+            1.000000082240371e-09
+          ],
+          "max_abs_error": 2.2204460471823615e-16,
+          "passed": true
+        },
+        "tone_3": {
+          "actual": [
+            -20.72326184015151,
+            -20.72326422712432,
+            -20.723262600123125,
+            2.772588722302281,
+            -20.723263946306513,
+            -20.723261505662865,
+            -20.723259391933663,
+            -20.723260198206894,
+            -20.72325613710426,
+            -20.723255706212626,
+            -20.72326171527529,
+            -20.723258098594442,
+            -20.723249018399898,
+            -20.723256787307573,
+            -20.72324570656751,
+            -20.72325840215727,
+            -20.723255898337303
+          ],
+          "expected": [
+            -20.72326184015151,
+            -20.72326422712432,
+            -20.723262600123125,
+            2.772588722302281,
+            -20.723263946306513,
+            -20.723261505662865,
+            -20.723259391933663,
+            -20.723260198206894,
+            -20.72325613710426,
+            -20.723255706212626,
+            -20.72326171527529,
+            -20.723258098594442,
+            -20.723249018399898,
+            -20.723256787307573,
+            -20.72324570656751,
+            -20.72325840215727,
+            -20.723255898337303
+          ],
+          "max_abs_error": 0.0,
+          "passed": true
+        }
+      },
+      "result": {
+        "accepted": true,
+        "admitted": true,
+        "concern_key": "gap_shared_family",
+        "construction": "spectral_value",
+        "gap": "#9",
+        "gate_reason": "ADMITTED \u2014 native collapse confidence 1.000000 (FULL contraction: all 3 problem constraints reproduced; the binary verify's POINT collapse)",
+        "held_primitive": "#87",
+        "how": "the residual named a COMPUTATIONAL transform; I CONSTRUCTED it as a native Term-tree from my held constructors (Sum/Nth/Cos/Sin/Sqrt/Log), materialised it via add_term_subgraph, admitted it through the admissibility gate (it reproduces the gap's stated constraints), verified it with a discriminative control (a non-selective fake FAILS), and INSTALLED it. It now runs natively. I did NOT hand this to a human.",
+        "name": "spectral_value",
+        "object_props": {
+          "peak_bin@11": 11,
+          "peak_bin@3": 3,
+          "peak_bin@7": 7
+        },
+        "operation": "spectral log-magnitude X[k]=log(|\u03a3_n x[n]\u00b7e^{-i2\u03c0kn/N}|) \u2014 amplitudes over a frequency axis, log-scaled",
+        "outcome": "built_primitive",
+        "stated_props": {
+          "peak_bin@11": 11,
+          "peak_bin@3": 3,
+          "peak_bin@7": 7
+        },
+        "term_root": "80",
+        "term_tree": {
+          "arg": {
+            "items": [
+              {
+                "arg": {
+                  "items": [
+                    {
+                      "a": {
+                        "source": {
+                          "name": "sig",
+                          "type": "Var"
+                        },
+                        "type": "Sum",
+                        "value": {
+                          "items": [
+                            {
+                              "index": 1,
+                              "items": {
+                                "name": "p",
+                                "type": "Var"
+                              },
+                              "type": "Nth"
+                            },
+                            {
+                              "arg": {
+                                "a": {
+                                  "items": [
+                                    {
+                                      "type": "Lit",
+                                      "value": 6.283185307179586
+                                    },
+                                    {
+                                      "name": "k",
+                                      "type": "Var"
+                                    },
+                                    {
+                                      "index": 0,
+                                      "items": {
+                                        "name": "p",
+                                        "type": "Var"
+                                      },
+                                      "type": "Nth"
+                                    }
+                                  ],
+                                  "type": "Times"
+                                },
+                                "b": {
+                                  "name": "N",
+                                  "type": "Var"
+                                },
+                                "type": "Div"
+                              },
+                              "type": "Cos"
+                            }
+                          ],
+                          "type": "Times"
+                        },
+                        "var_name": "p"
+                      },
+                      "b": {
+                        "type": "Lit",
+                        "value": 2.0
+                      },
+                      "type": "Pow"
+                    },
+                    {
+                      "a": {
+                        "source": {
+                          "name": "sig",
+                          "type": "Var"
+                        },
+                        "type": "Sum",
+                        "value": {
+                          "items": [
+                            {
+                              "index": 1,
+                              "items": {
+                                "name": "p",
+                                "type": "Var"
+                              },
+                              "type": "Nth"
+                            },
+                            {
+                              "arg": {
+                                "a": {
+                                  "items": [
+                                    {
+                                      "type": "Lit",
+                                      "value": 6.283185307179586
+                                    },
+                                    {
+                                      "name": "k",
+                                      "type": "Var"
+                                    },
+                                    {
+                                      "index": 0,
+                                      "items": {
+                                        "name": "p",
+                                        "type": "Var"
+                                      },
+                                      "type": "Nth"
+                                    }
+                                  ],
+                                  "type": "Times"
+                                },
+                                "b": {
+                                  "name": "N",
+                                  "type": "Var"
+                                },
+                                "type": "Div"
+                              },
+                              "type": "Sin"
+                            }
+                          ],
+                          "type": "Times"
+                        },
+                        "var_name": "p"
+                      },
+                      "b": {
+                        "type": "Lit",
+                        "value": 2.0
+                      },
+                      "type": "Pow"
+                    }
+                  ],
+                  "type": "Plus"
+                },
+                "type": "Sqrt"
+              },
+              {
+                "type": "Lit",
+                "value": 1e-09
+              }
+            ],
+            "type": "Plus"
+          },
+          "type": "Log"
+        },
+        "test_eval": {
+          "n_samples": 32,
+          "peak_bins": {
+            "peak_bin@11": 11,
+            "peak_bin@3": 3,
+            "peak_bin@7": 7
+          },
+          "spectrum": [
+            -20.72326184015151,
+            -20.72326422712432,
+            -20.723262600123125,
+            2.772588722302281,
+            -20.723263946306513,
+            -20.723261505662865,
+            -20.723259391933663,
+            -20.723260198206894,
+            -20.72325613710426,
+            -20.723255706212626,
+            -20.72326171527529,
+            -20.723258098594442,
+            -20.723249018399898,
+            -20.723256787307573,
+            -20.72324570656751,
+            -20.72325840215727,
+            -20.723255898337303
+          ],
+          "tone": 3
+        },
+        "verified": {
+          "accepted": true,
+          "anchors": [
+            "SensorAnchor"
+          ],
+          "claim_node": "#81",
+          "discriminates": true,
+          "grounded": true,
+          "no_regression": true,
+          "probe_node": "#82",
+          "real_pass": true,
+          "reason": "ACCEPTED: control discriminates (mechanism survives 3 held-out case(s); the known-fake twin FAILS it), no regression, grounded in ['SensorAnchor'].",
+          "twin_pass": false,
+          "verdict": 1.0
+        },
+        "wall": "the residual's predicates ground to NO held structural relation (they are genuinely-novel terms outside the held RelationCue lexicon); the shape cannot be composed from held vocab without inventing a law. NEXT FRONTIER: predicate-grounding (extend the lexicon, or self-author a base primitive for the novel shape) \u2014 NOT hand-picked here (that would be the donkey)."
+      },
+      "returned_term_ops": [
+        "Cos",
+        "Div",
+        "Lit",
+        "Log",
+        "Nth",
+        "Plus",
+        "Pow",
+        "Sin",
+        "Sqrt",
+        "Sum",
+        "Times",
+        "Var"
+      ],
+      "returned_term_vars": [
+        "N",
+        "k",
+        "p",
+        "sig"
+      ],
+      "wall_seconds": 0.02588825998827815
+    },
+    {
+      "arm": "faculty",
+      "case": {
+        "id": "B_rep3",
+        "label": "B",
+        "replicate": 3
+      },
+      "cpu_seconds": 0.025899746999999973,
+      "gap_attrs": {
+        "example": "per-bin log magnitude",
+        "faculty": "shared_family",
+        "inputs": [
+          "signal"
+        ],
+        "n_samples": 32,
+        "needed_primitive": "spectral_value",
+        "observation": [
+          [
+            "spectral_value",
+            "signal",
+            "magnitude"
+          ],
+          [
+            "log_scale",
+            "magnitude",
+            "value"
+          ]
+        ],
+        "outputs": [
+          "spectrum"
+        ],
+        "status": "perceived",
+        "test_frequencies": [
+          3,
+          7,
+          11
+        ]
+      },
+      "graph": {
+        "axis_count": 2,
+        "codebook_epoch": 0.0,
+        "held_primitive_count": 1,
+        "held_primitive_names": [
+          "spectral_value"
+        ],
+        "primitive_request_count": 0,
+        "primitive_request_names": []
+      },
+      "independent_forward_oracle": {
+        "mixed_3_7": {
+          "actual": [
+            -20.723262395260956,
+            -20.723264502080124,
+            -20.723262949837004,
+            2.549445171003696,
+            -20.723263502838893,
+            -20.723261396064174,
+            -20.723259737554915,
+            1.5686159181221782,
+            -20.723257248316774,
+            -20.723256395810456,
+            -20.72325996536363,
+            -20.723257371395178,
+            -20.723252862137617,
+            -20.723260093503313,
+            -20.723252278674014,
+            -20.72326178502081,
+            -20.723261191398535
+          ],
+          "expected": [
+            -20.723262395260956,
+            -20.723264502080124,
+            -20.723262949837004,
+            2.549445171003696,
+            -20.723263502838893,
+            -20.723261396064174,
+            -20.723259737554915,
+            1.5686159181221782,
+            -20.723257248316774,
+            -20.723256395810456,
+            -20.72325996536363,
+            -20.723257371395178,
+            -20.723252862137617,
+            -20.723260093503313,
+            -20.723252278674014,
+            -20.72326178502081,
+            -20.723261191398535
+          ],
+          "max_abs_error": 0.0,
+          "passed": true
+        },
+        "shifted_impulse": {
+          "actual": [
+            1.000000082240371e-09,
+            1.000000082240371e-09,
+            1.000000082240371e-09,
+            1.000000082240371e-09,
+            1.000000082240371e-09,
+            1.000000082240371e-09,
+            1.000000082240371e-09,
+            1.000000082240371e-09,
+            1.000000082240371e-09,
+            9.999998601957662e-10,
+            1.000000082240371e-09,
+            9.999998601957662e-10,
+            1.000000082240371e-09,
+            1.000000082240371e-09,
+            1.000000082240371e-09,
+            9.999998601957662e-10,
+            1.000000082240371e-09
+          ],
+          "expected": [
+            1.000000082240371e-09,
+            1.000000082240371e-09,
+            1.000000082240371e-09,
+            1.000000082240371e-09,
+            1.000000082240371e-09,
+            1.000000082240371e-09,
+            1.000000082240371e-09,
+            1.000000082240371e-09,
+            1.000000082240371e-09,
+            9.999998601957662e-10,
+            1.000000082240371e-09,
+            1.000000082240371e-09,
+            1.000000082240371e-09,
+            1.000000082240371e-09,
+            1.000000082240371e-09,
+            1.000000082240371e-09,
+            1.000000082240371e-09
+          ],
+          "max_abs_error": 2.2204460471823615e-16,
+          "passed": true
+        },
+        "tone_3": {
+          "actual": [
+            -20.72326184015151,
+            -20.72326422712432,
+            -20.723262600123125,
+            2.772588722302281,
+            -20.723263946306513,
+            -20.723261505662865,
+            -20.723259391933663,
+            -20.723260198206894,
+            -20.72325613710426,
+            -20.723255706212626,
+            -20.72326171527529,
+            -20.723258098594442,
+            -20.723249018399898,
+            -20.723256787307573,
+            -20.72324570656751,
+            -20.72325840215727,
+            -20.723255898337303
+          ],
+          "expected": [
+            -20.72326184015151,
+            -20.72326422712432,
+            -20.723262600123125,
+            2.772588722302281,
+            -20.723263946306513,
+            -20.723261505662865,
+            -20.723259391933663,
+            -20.723260198206894,
+            -20.72325613710426,
+            -20.723255706212626,
+            -20.72326171527529,
+            -20.723258098594442,
+            -20.723249018399898,
+            -20.723256787307573,
+            -20.72324570656751,
+            -20.72325840215727,
+            -20.723255898337303
+          ],
+          "max_abs_error": 0.0,
+          "passed": true
+        }
+      },
+      "result": {
+        "accepted": true,
+        "admitted": true,
+        "concern_key": "gap_shared_family",
+        "construction": "spectral_value",
+        "gap": "#9",
+        "gate_reason": "ADMITTED \u2014 native collapse confidence 1.000000 (FULL contraction: all 3 problem constraints reproduced; the binary verify's POINT collapse)",
+        "held_primitive": "#87",
+        "how": "the residual named a COMPUTATIONAL transform; I CONSTRUCTED it as a native Term-tree from my held constructors (Sum/Nth/Cos/Sin/Sqrt/Log), materialised it via add_term_subgraph, admitted it through the admissibility gate (it reproduces the gap's stated constraints), verified it with a discriminative control (a non-selective fake FAILS), and INSTALLED it. It now runs natively. I did NOT hand this to a human.",
+        "name": "spectral_value",
+        "object_props": {
+          "peak_bin@11": 11,
+          "peak_bin@3": 3,
+          "peak_bin@7": 7
+        },
+        "operation": "spectral log-magnitude X[k]=log(|\u03a3_n x[n]\u00b7e^{-i2\u03c0kn/N}|) \u2014 amplitudes over a frequency axis, log-scaled",
+        "outcome": "built_primitive",
+        "stated_props": {
+          "peak_bin@11": 11,
+          "peak_bin@3": 3,
+          "peak_bin@7": 7
+        },
+        "term_root": "80",
+        "term_tree": {
+          "arg": {
+            "items": [
+              {
+                "arg": {
+                  "items": [
+                    {
+                      "a": {
+                        "source": {
+                          "name": "sig",
+                          "type": "Var"
+                        },
+                        "type": "Sum",
+                        "value": {
+                          "items": [
+                            {
+                              "index": 1,
+                              "items": {
+                                "name": "p",
+                                "type": "Var"
+                              },
+                              "type": "Nth"
+                            },
+                            {
+                              "arg": {
+                                "a": {
+                                  "items": [
+                                    {
+                                      "type": "Lit",
+                                      "value": 6.283185307179586
+                                    },
+                                    {
+                                      "name": "k",
+                                      "type": "Var"
+                                    },
+                                    {
+                                      "index": 0,
+                                      "items": {
+                                        "name": "p",
+                                        "type": "Var"
+                                      },
+                                      "type": "Nth"
+                                    }
+                                  ],
+                                  "type": "Times"
+                                },
+                                "b": {
+                                  "name": "N",
+                                  "type": "Var"
+                                },
+                                "type": "Div"
+                              },
+                              "type": "Cos"
+                            }
+                          ],
+                          "type": "Times"
+                        },
+                        "var_name": "p"
+                      },
+                      "b": {
+                        "type": "Lit",
+                        "value": 2.0
+                      },
+                      "type": "Pow"
+                    },
+                    {
+                      "a": {
+                        "source": {
+                          "name": "sig",
+                          "type": "Var"
+                        },
+                        "type": "Sum",
+                        "value": {
+                          "items": [
+                            {
+                              "index": 1,
+                              "items": {
+                                "name": "p",
+                                "type": "Var"
+                              },
+                              "type": "Nth"
+                            },
+                            {
+                              "arg": {
+                                "a": {
+                                  "items": [
+                                    {
+                                      "type": "Lit",
+                                      "value": 6.283185307179586
+                                    },
+                                    {
+                                      "name": "k",
+                                      "type": "Var"
+                                    },
+                                    {
+                                      "index": 0,
+                                      "items": {
+                                        "name": "p",
+                                        "type": "Var"
+                                      },
+                                      "type": "Nth"
+                                    }
+                                  ],
+                                  "type": "Times"
+                                },
+                                "b": {
+                                  "name": "N",
+                                  "type": "Var"
+                                },
+                                "type": "Div"
+                              },
+                              "type": "Sin"
+                            }
+                          ],
+                          "type": "Times"
+                        },
+                        "var_name": "p"
+                      },
+                      "b": {
+                        "type": "Lit",
+                        "value": 2.0
+                      },
+                      "type": "Pow"
+                    }
+                  ],
+                  "type": "Plus"
+                },
+                "type": "Sqrt"
+              },
+              {
+                "type": "Lit",
+                "value": 1e-09
+              }
+            ],
+            "type": "Plus"
+          },
+          "type": "Log"
+        },
+        "test_eval": {
+          "n_samples": 32,
+          "peak_bins": {
+            "peak_bin@11": 11,
+            "peak_bin@3": 3,
+            "peak_bin@7": 7
+          },
+          "spectrum": [
+            -20.72326184015151,
+            -20.72326422712432,
+            -20.723262600123125,
+            2.772588722302281,
+            -20.723263946306513,
+            -20.723261505662865,
+            -20.723259391933663,
+            -20.723260198206894,
+            -20.72325613710426,
+            -20.723255706212626,
+            -20.72326171527529,
+            -20.723258098594442,
+            -20.723249018399898,
+            -20.723256787307573,
+            -20.72324570656751,
+            -20.72325840215727,
+            -20.723255898337303
+          ],
+          "tone": 3
+        },
+        "verified": {
+          "accepted": true,
+          "anchors": [
+            "SensorAnchor"
+          ],
+          "claim_node": "#81",
+          "discriminates": true,
+          "grounded": true,
+          "no_regression": true,
+          "probe_node": "#82",
+          "real_pass": true,
+          "reason": "ACCEPTED: control discriminates (mechanism survives 3 held-out case(s); the known-fake twin FAILS it), no regression, grounded in ['SensorAnchor'].",
+          "twin_pass": false,
+          "verdict": 1.0
+        },
+        "wall": "the residual's predicates ground to NO held structural relation (they are genuinely-novel terms outside the held RelationCue lexicon); the shape cannot be composed from held vocab without inventing a law. NEXT FRONTIER: predicate-grounding (extend the lexicon, or self-author a base primitive for the novel shape) \u2014 NOT hand-picked here (that would be the donkey)."
+      },
+      "returned_term_ops": [
+        "Cos",
+        "Div",
+        "Lit",
+        "Log",
+        "Nth",
+        "Plus",
+        "Pow",
+        "Sin",
+        "Sqrt",
+        "Sum",
+        "Times",
+        "Var"
+      ],
+      "returned_term_vars": [
+        "N",
+        "k",
+        "p",
+        "sig"
+      ],
+      "wall_seconds": 0.025833880994468927
+    },
+    {
+      "arm": "faculty",
+      "case": {
+        "id": "C_rep1",
+        "label": "C",
+        "replicate": 1
+      },
+      "cpu_seconds": 0.0055898709999999685,
+      "gap_attrs": {
+        "example": "recover the signal from its magnitude spectrum",
+        "faculty": "shared_family",
+        "inputs": [
+          "magnitude_spectrum"
+        ],
+        "n_samples": 32,
+        "needed_primitive": "recover_signal",
+        "observation": [
+          [
+            "spectral_value",
+            "magnitude_spectrum",
+            "recovered_signal"
+          ],
+          [
+            "log_scale",
+            "recovered_signal",
+            "magnitude_spectrum"
+          ]
+        ],
+        "outputs": [
+          "recovered_signal"
+        ],
+        "status": "perceived",
+        "test_frequencies": [
+          3,
+          7,
+          11
+        ]
+      },
+      "graph": {
+        "axis_count": 2,
+        "codebook_epoch": 0.0,
+        "held_primitive_count": 0,
+        "held_primitive_names": [],
+        "primitive_request_count": 1,
+        "primitive_request_names": [
+          "recover_signal"
+        ]
+      },
+      "independent_forward_oracle": {},
+      "result": {
+        "concern_key": "gap_shared_family",
+        "gap": "#9",
+        "how": "the residual names a computation I do not yet know how to CONSTRUCT from my held Term constructors. I mint a PrimitiveRequest, honestly tagged: not a forever-wall, a construction I have not learned.",
+        "outcome": "primitive_request",
+        "primitive_request": "#46",
+        "residual_kind": "no_construction",
+        "spec": {
+          "example": "recover the signal from its magnitude spectrum",
+          "inputs": [
+            "magnitude_spectrum"
+          ],
+          "name": "recover_signal",
+          "operation": "spectral_value magnitude_spectrum recovered_signal ; log_scale recovered_signal magnitude_spectrum",
+          "outputs": [
+            "recovered_signal"
+          ],
+          "why_uncomposable": "the residual's predicates ground to NO held structural relation (they are genuinely-novel terms outside the held RelationCue lexicon); the shape cannot be composed from held vocab without inventing a law. NEXT FRONTIER: predicate-grounding (extend the lexicon, or self-author a base primitive for the novel shape) \u2014 NOT hand-picked here (that would be the donkey)."
+        },
+        "wall": "the residual's predicates ground to NO held structural relation (they are genuinely-novel terms outside the held RelationCue lexicon); the shape cannot be composed from held vocab without inventing a law. NEXT FRONTIER: predicate-grounding (extend the lexicon, or self-author a base primitive for the novel shape) \u2014 NOT hand-picked here (that would be the donkey)."
+      },
+      "returned_term_ops": [],
+      "returned_term_vars": [],
+      "wall_seconds": 0.005524680949747562
+    },
+    {
+      "arm": "faculty",
+      "case": {
+        "id": "C_rep2",
+        "label": "C",
+        "replicate": 2
+      },
+      "cpu_seconds": 0.005536682000000015,
+      "gap_attrs": {
+        "example": "recover the signal from its magnitude spectrum",
+        "faculty": "shared_family",
+        "inputs": [
+          "magnitude_spectrum"
+        ],
+        "n_samples": 32,
+        "needed_primitive": "recover_signal",
+        "observation": [
+          [
+            "spectral_value",
+            "magnitude_spectrum",
+            "recovered_signal"
+          ],
+          [
+            "log_scale",
+            "recovered_signal",
+            "magnitude_spectrum"
+          ]
+        ],
+        "outputs": [
+          "recovered_signal"
+        ],
+        "status": "perceived",
+        "test_frequencies": [
+          3,
+          7,
+          11
+        ]
+      },
+      "graph": {
+        "axis_count": 2,
+        "codebook_epoch": 0.0,
+        "held_primitive_count": 0,
+        "held_primitive_names": [],
+        "primitive_request_count": 1,
+        "primitive_request_names": [
+          "recover_signal"
+        ]
+      },
+      "independent_forward_oracle": {},
+      "result": {
+        "concern_key": "gap_shared_family",
+        "gap": "#9",
+        "how": "the residual names a computation I do not yet know how to CONSTRUCT from my held Term constructors. I mint a PrimitiveRequest, honestly tagged: not a forever-wall, a construction I have not learned.",
+        "outcome": "primitive_request",
+        "primitive_request": "#46",
+        "residual_kind": "no_construction",
+        "spec": {
+          "example": "recover the signal from its magnitude spectrum",
+          "inputs": [
+            "magnitude_spectrum"
+          ],
+          "name": "recover_signal",
+          "operation": "spectral_value magnitude_spectrum recovered_signal ; log_scale recovered_signal magnitude_spectrum",
+          "outputs": [
+            "recovered_signal"
+          ],
+          "why_uncomposable": "the residual's predicates ground to NO held structural relation (they are genuinely-novel terms outside the held RelationCue lexicon); the shape cannot be composed from held vocab without inventing a law. NEXT FRONTIER: predicate-grounding (extend the lexicon, or self-author a base primitive for the novel shape) \u2014 NOT hand-picked here (that would be the donkey)."
+        },
+        "wall": "the residual's predicates ground to NO held structural relation (they are genuinely-novel terms outside the held RelationCue lexicon); the shape cannot be composed from held vocab without inventing a law. NEXT FRONTIER: predicate-grounding (extend the lexicon, or self-author a base primitive for the novel shape) \u2014 NOT hand-picked here (that would be the donkey)."
+      },
+      "returned_term_ops": [],
+      "returned_term_vars": [],
+      "wall_seconds": 0.005471880023833364
+    },
+    {
+      "arm": "faculty",
+      "case": {
+        "id": "C_rep3",
+        "label": "C",
+        "replicate": 3
+      },
+      "cpu_seconds": 0.00560028100000004,
+      "gap_attrs": {
+        "example": "recover the signal from its magnitude spectrum",
+        "faculty": "shared_family",
+        "inputs": [
+          "magnitude_spectrum"
+        ],
+        "n_samples": 32,
+        "needed_primitive": "recover_signal",
+        "observation": [
+          [
+            "spectral_value",
+            "magnitude_spectrum",
+            "recovered_signal"
+          ],
+          [
+            "log_scale",
+            "recovered_signal",
+            "magnitude_spectrum"
+          ]
+        ],
+        "outputs": [
+          "recovered_signal"
+        ],
+        "status": "perceived",
+        "test_frequencies": [
+          3,
+          7,
+          11
+        ]
+      },
+      "graph": {
+        "axis_count": 2,
+        "codebook_epoch": 0.0,
+        "held_primitive_count": 0,
+        "held_primitive_names": [],
+        "primitive_request_count": 1,
+        "primitive_request_names": [
+          "recover_signal"
+        ]
+      },
+      "independent_forward_oracle": {},
+      "result": {
+        "concern_key": "gap_shared_family",
+        "gap": "#9",
+        "how": "the residual names a computation I do not yet know how to CONSTRUCT from my held Term constructors. I mint a PrimitiveRequest, honestly tagged: not a forever-wall, a construction I have not learned.",
+        "outcome": "primitive_request",
+        "primitive_request": "#46",
+        "residual_kind": "no_construction",
+        "spec": {
+          "example": "recover the signal from its magnitude spectrum",
+          "inputs": [
+            "magnitude_spectrum"
+          ],
+          "name": "recover_signal",
+          "operation": "spectral_value magnitude_spectrum recovered_signal ; log_scale recovered_signal magnitude_spectrum",
+          "outputs": [
+            "recovered_signal"
+          ],
+          "why_uncomposable": "the residual's predicates ground to NO held structural relation (they are genuinely-novel terms outside the held RelationCue lexicon); the shape cannot be composed from held vocab without inventing a law. NEXT FRONTIER: predicate-grounding (extend the lexicon, or self-author a base primitive for the novel shape) \u2014 NOT hand-picked here (that would be the donkey)."
+        },
+        "wall": "the residual's predicates ground to NO held structural relation (they are genuinely-novel terms outside the held RelationCue lexicon); the shape cannot be composed from held vocab without inventing a law. NEXT FRONTIER: predicate-grounding (extend the lexicon, or self-author a base primitive for the novel shape) \u2014 NOT hand-picked here (that would be the donkey)."
+      },
+      "returned_term_ops": [],
+      "returned_term_vars": [],
+      "wall_seconds": 0.005535861011594534
+    },
+    {
+      "arm": "faculty_plus_operations",
+      "case": {
+        "id": "B_rep1",
+        "label": "B",
+        "replicate": 1
+      },
+      "cpu_seconds": 0.025932076999999998,
+      "gap_attrs": {
+        "example": "per-bin log magnitude",
+        "faculty": "shared_family",
+        "inputs": [
+          "signal"
+        ],
+        "n_samples": 32,
+        "needed_primitive": "spectral_value",
+        "observation": [
+          [
+            "spectral_value",
+            "signal",
+            "magnitude"
+          ],
+          [
+            "log_scale",
+            "magnitude",
+            "value"
+          ]
+        ],
+        "outputs": [
+          "spectrum"
+        ],
+        "status": "perceived",
+        "test_frequencies": [
+          3,
+          7,
+          11
+        ]
+      },
+      "graph": {
+        "axis_count": 2,
+        "codebook_epoch": 0.0,
+        "held_primitive_count": 1,
+        "held_primitive_names": [
+          "spectral_value"
+        ],
+        "primitive_request_count": 0,
+        "primitive_request_names": []
+      },
+      "independent_forward_oracle": {
+        "mixed_3_7": {
+          "actual": [
+            -20.723262395260956,
+            -20.723264502080124,
+            -20.723262949837004,
+            2.549445171003696,
+            -20.723263502838893,
+            -20.723261396064174,
+            -20.723259737554915,
+            1.5686159181221782,
+            -20.723257248316774,
+            -20.723256395810456,
+            -20.72325996536363,
+            -20.723257371395178,
+            -20.723252862137617,
+            -20.723260093503313,
+            -20.723252278674014,
+            -20.72326178502081,
+            -20.723261191398535
+          ],
+          "expected": [
+            -20.723262395260956,
+            -20.723264502080124,
+            -20.723262949837004,
+            2.549445171003696,
+            -20.723263502838893,
+            -20.723261396064174,
+            -20.723259737554915,
+            1.5686159181221782,
+            -20.723257248316774,
+            -20.723256395810456,
+            -20.72325996536363,
+            -20.723257371395178,
+            -20.723252862137617,
+            -20.723260093503313,
+            -20.723252278674014,
+            -20.72326178502081,
+            -20.723261191398535
+          ],
+          "max_abs_error": 0.0,
+          "passed": true
+        },
+        "shifted_impulse": {
+          "actual": [
+            1.000000082240371e-09,
+            1.000000082240371e-09,
+            1.000000082240371e-09,
+            1.000000082240371e-09,
+            1.000000082240371e-09,
+            1.000000082240371e-09,
+            1.000000082240371e-09,
+            1.000000082240371e-09,
+            1.000000082240371e-09,
+            9.999998601957662e-10,
+            1.000000082240371e-09,
+            9.999998601957662e-10,
+            1.000000082240371e-09,
+            1.000000082240371e-09,
+            1.000000082240371e-09,
+            9.999998601957662e-10,
+            1.000000082240371e-09
+          ],
+          "expected": [
+            1.000000082240371e-09,
+            1.000000082240371e-09,
+            1.000000082240371e-09,
+            1.000000082240371e-09,
+            1.000000082240371e-09,
+            1.000000082240371e-09,
+            1.000000082240371e-09,
+            1.000000082240371e-09,
+            1.000000082240371e-09,
+            9.999998601957662e-10,
+            1.000000082240371e-09,
+            1.000000082240371e-09,
+            1.000000082240371e-09,
+            1.000000082240371e-09,
+            1.000000082240371e-09,
+            1.000000082240371e-09,
+            1.000000082240371e-09
+          ],
+          "max_abs_error": 2.2204460471823615e-16,
+          "passed": true
+        },
+        "tone_3": {
+          "actual": [
+            -20.72326184015151,
+            -20.72326422712432,
+            -20.723262600123125,
+            2.772588722302281,
+            -20.723263946306513,
+            -20.723261505662865,
+            -20.723259391933663,
+            -20.723260198206894,
+            -20.72325613710426,
+            -20.723255706212626,
+            -20.72326171527529,
+            -20.723258098594442,
+            -20.723249018399898,
+            -20.723256787307573,
+            -20.72324570656751,
+            -20.72325840215727,
+            -20.723255898337303
+          ],
+          "expected": [
+            -20.72326184015151,
+            -20.72326422712432,
+            -20.723262600123125,
+            2.772588722302281,
+            -20.723263946306513,
+            -20.723261505662865,
+            -20.723259391933663,
+            -20.723260198206894,
+            -20.72325613710426,
+            -20.723255706212626,
+            -20.72326171527529,
+            -20.723258098594442,
+            -20.723249018399898,
+            -20.723256787307573,
+            -20.72324570656751,
+            -20.72325840215727,
+            -20.723255898337303
+          ],
+          "max_abs_error": 0.0,
+          "passed": true
+        }
+      },
+      "result": {
+        "accepted": true,
+        "admitted": true,
+        "concern_key": "gap_shared_family__ops_log%5fscale_spectral%5fvalue",
+        "construction": "spectral_value",
+        "gap": "#9",
+        "gate_reason": "ADMITTED \u2014 native collapse confidence 1.000000 (FULL contraction: all 3 problem constraints reproduced; the binary verify's POINT collapse)",
+        "held_primitive": "#87",
+        "how": "the residual named a COMPUTATIONAL transform; I CONSTRUCTED it as a native Term-tree from my held constructors (Sum/Nth/Cos/Sin/Sqrt/Log), materialised it via add_term_subgraph, admitted it through the admissibility gate (it reproduces the gap's stated constraints), verified it with a discriminative control (a non-selective fake FAILS), and INSTALLED it. It now runs natively. I did NOT hand this to a human.",
+        "name": "spectral_value",
+        "object_props": {
+          "peak_bin@11": 11,
+          "peak_bin@3": 3,
+          "peak_bin@7": 7
+        },
+        "operation": "spectral log-magnitude X[k]=log(|\u03a3_n x[n]\u00b7e^{-i2\u03c0kn/N}|) \u2014 amplitudes over a frequency axis, log-scaled",
+        "outcome": "built_primitive",
+        "stated_props": {
+          "peak_bin@11": 11,
+          "peak_bin@3": 3,
+          "peak_bin@7": 7
+        },
+        "term_root": "80",
+        "term_tree": {
+          "arg": {
+            "items": [
+              {
+                "arg": {
+                  "items": [
+                    {
+                      "a": {
+                        "source": {
+                          "name": "sig",
+                          "type": "Var"
+                        },
+                        "type": "Sum",
+                        "value": {
+                          "items": [
+                            {
+                              "index": 1,
+                              "items": {
+                                "name": "p",
+                                "type": "Var"
+                              },
+                              "type": "Nth"
+                            },
+                            {
+                              "arg": {
+                                "a": {
+                                  "items": [
+                                    {
+                                      "type": "Lit",
+                                      "value": 6.283185307179586
+                                    },
+                                    {
+                                      "name": "k",
+                                      "type": "Var"
+                                    },
+                                    {
+                                      "index": 0,
+                                      "items": {
+                                        "name": "p",
+                                        "type": "Var"
+                                      },
+                                      "type": "Nth"
+                                    }
+                                  ],
+                                  "type": "Times"
+                                },
+                                "b": {
+                                  "name": "N",
+                                  "type": "Var"
+                                },
+                                "type": "Div"
+                              },
+                              "type": "Cos"
+                            }
+                          ],
+                          "type": "Times"
+                        },
+                        "var_name": "p"
+                      },
+                      "b": {
+                        "type": "Lit",
+                        "value": 2.0
+                      },
+                      "type": "Pow"
+                    },
+                    {
+                      "a": {
+                        "source": {
+                          "name": "sig",
+                          "type": "Var"
+                        },
+                        "type": "Sum",
+                        "value": {
+                          "items": [
+                            {
+                              "index": 1,
+                              "items": {
+                                "name": "p",
+                                "type": "Var"
+                              },
+                              "type": "Nth"
+                            },
+                            {
+                              "arg": {
+                                "a": {
+                                  "items": [
+                                    {
+                                      "type": "Lit",
+                                      "value": 6.283185307179586
+                                    },
+                                    {
+                                      "name": "k",
+                                      "type": "Var"
+                                    },
+                                    {
+                                      "index": 0,
+                                      "items": {
+                                        "name": "p",
+                                        "type": "Var"
+                                      },
+                                      "type": "Nth"
+                                    }
+                                  ],
+                                  "type": "Times"
+                                },
+                                "b": {
+                                  "name": "N",
+                                  "type": "Var"
+                                },
+                                "type": "Div"
+                              },
+                              "type": "Sin"
+                            }
+                          ],
+                          "type": "Times"
+                        },
+                        "var_name": "p"
+                      },
+                      "b": {
+                        "type": "Lit",
+                        "value": 2.0
+                      },
+                      "type": "Pow"
+                    }
+                  ],
+                  "type": "Plus"
+                },
+                "type": "Sqrt"
+              },
+              {
+                "type": "Lit",
+                "value": 1e-09
+              }
+            ],
+            "type": "Plus"
+          },
+          "type": "Log"
+        },
+        "test_eval": {
+          "n_samples": 32,
+          "peak_bins": {
+            "peak_bin@11": 11,
+            "peak_bin@3": 3,
+            "peak_bin@7": 7
+          },
+          "spectrum": [
+            -20.72326184015151,
+            -20.72326422712432,
+            -20.723262600123125,
+            2.772588722302281,
+            -20.723263946306513,
+            -20.723261505662865,
+            -20.723259391933663,
+            -20.723260198206894,
+            -20.72325613710426,
+            -20.723255706212626,
+            -20.72326171527529,
+            -20.723258098594442,
+            -20.723249018399898,
+            -20.723256787307573,
+            -20.72324570656751,
+            -20.72325840215727,
+            -20.723255898337303
+          ],
+          "tone": 3
+        },
+        "verified": {
+          "accepted": true,
+          "anchors": [
+            "SensorAnchor"
+          ],
+          "claim_node": "#81",
+          "discriminates": true,
+          "grounded": true,
+          "no_regression": true,
+          "probe_node": "#82",
+          "real_pass": true,
+          "reason": "ACCEPTED: control discriminates (mechanism survives 3 held-out case(s); the known-fake twin FAILS it), no regression, grounded in ['SensorAnchor'].",
+          "twin_pass": false,
+          "verdict": 1.0
+        },
+        "wall": "the residual's predicates ground to NO held structural relation (they are genuinely-novel terms outside the held RelationCue lexicon); the shape cannot be composed from held vocab without inventing a law. NEXT FRONTIER: predicate-grounding (extend the lexicon, or self-author a base primitive for the novel shape) \u2014 NOT hand-picked here (that would be the donkey)."
+      },
+      "returned_term_ops": [
+        "Cos",
+        "Div",
+        "Lit",
+        "Log",
+        "Nth",
+        "Plus",
+        "Pow",
+        "Sin",
+        "Sqrt",
+        "Sum",
+        "Times",
+        "Var"
+      ],
+      "returned_term_vars": [
+        "N",
+        "k",
+        "p",
+        "sig"
+      ],
+      "wall_seconds": 0.025874580023810267
+    },
+    {
+      "arm": "faculty_plus_operations",
+      "case": {
+        "id": "B_rep2",
+        "label": "B",
+        "replicate": 2
+      },
+      "cpu_seconds": 0.026624847000000007,
+      "gap_attrs": {
+        "example": "per-bin log magnitude",
+        "faculty": "shared_family",
+        "inputs": [
+          "signal"
+        ],
+        "n_samples": 32,
+        "needed_primitive": "spectral_value",
+        "observation": [
+          [
+            "spectral_value",
+            "signal",
+            "magnitude"
+          ],
+          [
+            "log_scale",
+            "magnitude",
+            "value"
+          ]
+        ],
+        "outputs": [
+          "spectrum"
+        ],
+        "status": "perceived",
+        "test_frequencies": [
+          3,
+          7,
+          11
+        ]
+      },
+      "graph": {
+        "axis_count": 2,
+        "codebook_epoch": 0.0,
+        "held_primitive_count": 1,
+        "held_primitive_names": [
+          "spectral_value"
+        ],
+        "primitive_request_count": 0,
+        "primitive_request_names": []
+      },
+      "independent_forward_oracle": {
+        "mixed_3_7": {
+          "actual": [
+            -20.723262395260956,
+            -20.723264502080124,
+            -20.723262949837004,
+            2.549445171003696,
+            -20.723263502838893,
+            -20.723261396064174,
+            -20.723259737554915,
+            1.5686159181221782,
+            -20.723257248316774,
+            -20.723256395810456,
+            -20.72325996536363,
+            -20.723257371395178,
+            -20.723252862137617,
+            -20.723260093503313,
+            -20.723252278674014,
+            -20.72326178502081,
+            -20.723261191398535
+          ],
+          "expected": [
+            -20.723262395260956,
+            -20.723264502080124,
+            -20.723262949837004,
+            2.549445171003696,
+            -20.723263502838893,
+            -20.723261396064174,
+            -20.723259737554915,
+            1.5686159181221782,
+            -20.723257248316774,
+            -20.723256395810456,
+            -20.72325996536363,
+            -20.723257371395178,
+            -20.723252862137617,
+            -20.723260093503313,
+            -20.723252278674014,
+            -20.72326178502081,
+            -20.723261191398535
+          ],
+          "max_abs_error": 0.0,
+          "passed": true
+        },
+        "shifted_impulse": {
+          "actual": [
+            1.000000082240371e-09,
+            1.000000082240371e-09,
+            1.000000082240371e-09,
+            1.000000082240371e-09,
+            1.000000082240371e-09,
+            1.000000082240371e-09,
+            1.000000082240371e-09,
+            1.000000082240371e-09,
+            1.000000082240371e-09,
+            9.999998601957662e-10,
+            1.000000082240371e-09,
+            9.999998601957662e-10,
+            1.000000082240371e-09,
+            1.000000082240371e-09,
+            1.000000082240371e-09,
+            9.999998601957662e-10,
+            1.000000082240371e-09
+          ],
+          "expected": [
+            1.000000082240371e-09,
+            1.000000082240371e-09,
+            1.000000082240371e-09,
+            1.000000082240371e-09,
+            1.000000082240371e-09,
+            1.000000082240371e-09,
+            1.000000082240371e-09,
+            1.000000082240371e-09,
+            1.000000082240371e-09,
+            9.999998601957662e-10,
+            1.000000082240371e-09,
+            1.000000082240371e-09,
+            1.000000082240371e-09,
+            1.000000082240371e-09,
+            1.000000082240371e-09,
+            1.000000082240371e-09,
+            1.000000082240371e-09
+          ],
+          "max_abs_error": 2.2204460471823615e-16,
+          "passed": true
+        },
+        "tone_3": {
+          "actual": [
+            -20.72326184015151,
+            -20.72326422712432,
+            -20.723262600123125,
+            2.772588722302281,
+            -20.723263946306513,
+            -20.723261505662865,
+            -20.723259391933663,
+            -20.723260198206894,
+            -20.72325613710426,
+            -20.723255706212626,
+            -20.72326171527529,
+            -20.723258098594442,
+            -20.723249018399898,
+            -20.723256787307573,
+            -20.72324570656751,
+            -20.72325840215727,
+            -20.723255898337303
+          ],
+          "expected": [
+            -20.72326184015151,
+            -20.72326422712432,
+            -20.723262600123125,
+            2.772588722302281,
+            -20.723263946306513,
+            -20.723261505662865,
+            -20.723259391933663,
+            -20.723260198206894,
+            -20.72325613710426,
+            -20.723255706212626,
+            -20.72326171527529,
+            -20.723258098594442,
+            -20.723249018399898,
+            -20.723256787307573,
+            -20.72324570656751,
+            -20.72325840215727,
+            -20.723255898337303
+          ],
+          "max_abs_error": 0.0,
+          "passed": true
+        }
+      },
+      "result": {
+        "accepted": true,
+        "admitted": true,
+        "concern_key": "gap_shared_family__ops_log%5fscale_spectral%5fvalue",
+        "construction": "spectral_value",
+        "gap": "#9",
+        "gate_reason": "ADMITTED \u2014 native collapse confidence 1.000000 (FULL contraction: all 3 problem constraints reproduced; the binary verify's POINT collapse)",
+        "held_primitive": "#87",
+        "how": "the residual named a COMPUTATIONAL transform; I CONSTRUCTED it as a native Term-tree from my held constructors (Sum/Nth/Cos/Sin/Sqrt/Log), materialised it via add_term_subgraph, admitted it through the admissibility gate (it reproduces the gap's stated constraints), verified it with a discriminative control (a non-selective fake FAILS), and INSTALLED it. It now runs natively. I did NOT hand this to a human.",
+        "name": "spectral_value",
+        "object_props": {
+          "peak_bin@11": 11,
+          "peak_bin@3": 3,
+          "peak_bin@7": 7
+        },
+        "operation": "spectral log-magnitude X[k]=log(|\u03a3_n x[n]\u00b7e^{-i2\u03c0kn/N}|) \u2014 amplitudes over a frequency axis, log-scaled",
+        "outcome": "built_primitive",
+        "stated_props": {
+          "peak_bin@11": 11,
+          "peak_bin@3": 3,
+          "peak_bin@7": 7
+        },
+        "term_root": "80",
+        "term_tree": {
+          "arg": {
+            "items": [
+              {
+                "arg": {
+                  "items": [
+                    {
+                      "a": {
+                        "source": {
+                          "name": "sig",
+                          "type": "Var"
+                        },
+                        "type": "Sum",
+                        "value": {
+                          "items": [
+                            {
+                              "index": 1,
+                              "items": {
+                                "name": "p",
+                                "type": "Var"
+                              },
+                              "type": "Nth"
+                            },
+                            {
+                              "arg": {
+                                "a": {
+                                  "items": [
+                                    {
+                                      "type": "Lit",
+                                      "value": 6.283185307179586
+                                    },
+                                    {
+                                      "name": "k",
+                                      "type": "Var"
+                                    },
+                                    {
+                                      "index": 0,
+                                      "items": {
+                                        "name": "p",
+                                        "type": "Var"
+                                      },
+                                      "type": "Nth"
+                                    }
+                                  ],
+                                  "type": "Times"
+                                },
+                                "b": {
+                                  "name": "N",
+                                  "type": "Var"
+                                },
+                                "type": "Div"
+                              },
+                              "type": "Cos"
+                            }
+                          ],
+                          "type": "Times"
+                        },
+                        "var_name": "p"
+                      },
+                      "b": {
+                        "type": "Lit",
+                        "value": 2.0
+                      },
+                      "type": "Pow"
+                    },
+                    {
+                      "a": {
+                        "source": {
+                          "name": "sig",
+                          "type": "Var"
+                        },
+                        "type": "Sum",
+                        "value": {
+                          "items": [
+                            {
+                              "index": 1,
+                              "items": {
+                                "name": "p",
+                                "type": "Var"
+                              },
+                              "type": "Nth"
+                            },
+                            {
+                              "arg": {
+                                "a": {
+                                  "items": [
+                                    {
+                                      "type": "Lit",
+                                      "value": 6.283185307179586
+                                    },
+                                    {
+                                      "name": "k",
+                                      "type": "Var"
+                                    },
+                                    {
+                                      "index": 0,
+                                      "items": {
+                                        "name": "p",
+                                        "type": "Var"
+                                      },
+                                      "type": "Nth"
+                                    }
+                                  ],
+                                  "type": "Times"
+                                },
+                                "b": {
+                                  "name": "N",
+                                  "type": "Var"
+                                },
+                                "type": "Div"
+                              },
+                              "type": "Sin"
+                            }
+                          ],
+                          "type": "Times"
+                        },
+                        "var_name": "p"
+                      },
+                      "b": {
+                        "type": "Lit",
+                        "value": 2.0
+                      },
+                      "type": "Pow"
+                    }
+                  ],
+                  "type": "Plus"
+                },
+                "type": "Sqrt"
+              },
+              {
+                "type": "Lit",
+                "value": 1e-09
+              }
+            ],
+            "type": "Plus"
+          },
+          "type": "Log"
+        },
+        "test_eval": {
+          "n_samples": 32,
+          "peak_bins": {
+            "peak_bin@11": 11,
+            "peak_bin@3": 3,
+            "peak_bin@7": 7
+          },
+          "spectrum": [
+            -20.72326184015151,
+            -20.72326422712432,
+            -20.723262600123125,
+            2.772588722302281,
+            -20.723263946306513,
+            -20.723261505662865,
+            -20.723259391933663,
+            -20.723260198206894,
+            -20.72325613710426,
+            -20.723255706212626,
+            -20.72326171527529,
+            -20.723258098594442,
+            -20.723249018399898,
+            -20.723256787307573,
+            -20.72324570656751,
+            -20.72325840215727,
+            -20.723255898337303
+          ],
+          "tone": 3
+        },
+        "verified": {
+          "accepted": true,
+          "anchors": [
+            "SensorAnchor"
+          ],
+          "claim_node": "#81",
+          "discriminates": true,
+          "grounded": true,
+          "no_regression": true,
+          "probe_node": "#82",
+          "real_pass": true,
+          "reason": "ACCEPTED: control discriminates (mechanism survives 3 held-out case(s); the known-fake twin FAILS it), no regression, grounded in ['SensorAnchor'].",
+          "twin_pass": false,
+          "verdict": 1.0
+        },
+        "wall": "the residual's predicates ground to NO held structural relation (they are genuinely-novel terms outside the held RelationCue lexicon); the shape cannot be composed from held vocab without inventing a law. NEXT FRONTIER: predicate-grounding (extend the lexicon, or self-author a base primitive for the novel shape) \u2014 NOT hand-picked here (that would be the donkey)."
+      },
+      "returned_term_ops": [
+        "Cos",
+        "Div",
+        "Lit",
+        "Log",
+        "Nth",
+        "Plus",
+        "Pow",
+        "Sin",
+        "Sqrt",
+        "Sum",
+        "Times",
+        "Var"
+      ],
+      "returned_term_vars": [
+        "N",
+        "k",
+        "p",
+        "sig"
+      ],
+      "wall_seconds": 0.02655284496722743
+    },
+    {
+      "arm": "faculty_plus_operations",
+      "case": {
+        "id": "B_rep3",
+        "label": "B",
+        "replicate": 3
+      },
+      "cpu_seconds": 0.027084916999999986,
+      "gap_attrs": {
+        "example": "per-bin log magnitude",
+        "faculty": "shared_family",
+        "inputs": [
+          "signal"
+        ],
+        "n_samples": 32,
+        "needed_primitive": "spectral_value",
+        "observation": [
+          [
+            "spectral_value",
+            "signal",
+            "magnitude"
+          ],
+          [
+            "log_scale",
+            "magnitude",
+            "value"
+          ]
+        ],
+        "outputs": [
+          "spectrum"
+        ],
+        "status": "perceived",
+        "test_frequencies": [
+          3,
+          7,
+          11
+        ]
+      },
+      "graph": {
+        "axis_count": 2,
+        "codebook_epoch": 0.0,
+        "held_primitive_count": 1,
+        "held_primitive_names": [
+          "spectral_value"
+        ],
+        "primitive_request_count": 0,
+        "primitive_request_names": []
+      },
+      "independent_forward_oracle": {
+        "mixed_3_7": {
+          "actual": [
+            -20.723262395260956,
+            -20.723264502080124,
+            -20.723262949837004,
+            2.549445171003696,
+            -20.723263502838893,
+            -20.723261396064174,
+            -20.723259737554915,
+            1.5686159181221782,
+            -20.723257248316774,
+            -20.723256395810456,
+            -20.72325996536363,
+            -20.723257371395178,
+            -20.723252862137617,
+            -20.723260093503313,
+            -20.723252278674014,
+            -20.72326178502081,
+            -20.723261191398535
+          ],
+          "expected": [
+            -20.723262395260956,
+            -20.723264502080124,
+            -20.723262949837004,
+            2.549445171003696,
+            -20.723263502838893,
+            -20.723261396064174,
+            -20.723259737554915,
+            1.5686159181221782,
+            -20.723257248316774,
+            -20.723256395810456,
+            -20.72325996536363,
+            -20.723257371395178,
+            -20.723252862137617,
+            -20.723260093503313,
+            -20.723252278674014,
+            -20.72326178502081,
+            -20.723261191398535
+          ],
+          "max_abs_error": 0.0,
+          "passed": true
+        },
+        "shifted_impulse": {
+          "actual": [
+            1.000000082240371e-09,
+            1.000000082240371e-09,
+            1.000000082240371e-09,
+            1.000000082240371e-09,
+            1.000000082240371e-09,
+            1.000000082240371e-09,
+            1.000000082240371e-09,
+            1.000000082240371e-09,
+            1.000000082240371e-09,
+            9.999998601957662e-10,
+            1.000000082240371e-09,
+            9.999998601957662e-10,
+            1.000000082240371e-09,
+            1.000000082240371e-09,
+            1.000000082240371e-09,
+            9.999998601957662e-10,
+            1.000000082240371e-09
+          ],
+          "expected": [
+            1.000000082240371e-09,
+            1.000000082240371e-09,
+            1.000000082240371e-09,
+            1.000000082240371e-09,
+            1.000000082240371e-09,
+            1.000000082240371e-09,
+            1.000000082240371e-09,
+            1.000000082240371e-09,
+            1.000000082240371e-09,
+            9.999998601957662e-10,
+            1.000000082240371e-09,
+            1.000000082240371e-09,
+            1.000000082240371e-09,
+            1.000000082240371e-09,
+            1.000000082240371e-09,
+            1.000000082240371e-09,
+            1.000000082240371e-09
+          ],
+          "max_abs_error": 2.2204460471823615e-16,
+          "passed": true
+        },
+        "tone_3": {
+          "actual": [
+            -20.72326184015151,
+            -20.72326422712432,
+            -20.723262600123125,
+            2.772588722302281,
+            -20.723263946306513,
+            -20.723261505662865,
+            -20.723259391933663,
+            -20.723260198206894,
+            -20.72325613710426,
+            -20.723255706212626,
+            -20.72326171527529,
+            -20.723258098594442,
+            -20.723249018399898,
+            -20.723256787307573,
+            -20.72324570656751,
+            -20.72325840215727,
+            -20.723255898337303
+          ],
+          "expected": [
+            -20.72326184015151,
+            -20.72326422712432,
+            -20.723262600123125,
+            2.772588722302281,
+            -20.723263946306513,
+            -20.723261505662865,
+            -20.723259391933663,
+            -20.723260198206894,
+            -20.72325613710426,
+            -20.723255706212626,
+            -20.72326171527529,
+            -20.723258098594442,
+            -20.723249018399898,
+            -20.723256787307573,
+            -20.72324570656751,
+            -20.72325840215727,
+            -20.723255898337303
+          ],
+          "max_abs_error": 0.0,
+          "passed": true
+        }
+      },
+      "result": {
+        "accepted": true,
+        "admitted": true,
+        "concern_key": "gap_shared_family__ops_log%5fscale_spectral%5fvalue",
+        "construction": "spectral_value",
+        "gap": "#9",
+        "gate_reason": "ADMITTED \u2014 native collapse confidence 1.000000 (FULL contraction: all 3 problem constraints reproduced; the binary verify's POINT collapse)",
+        "held_primitive": "#87",
+        "how": "the residual named a COMPUTATIONAL transform; I CONSTRUCTED it as a native Term-tree from my held constructors (Sum/Nth/Cos/Sin/Sqrt/Log), materialised it via add_term_subgraph, admitted it through the admissibility gate (it reproduces the gap's stated constraints), verified it with a discriminative control (a non-selective fake FAILS), and INSTALLED it. It now runs natively. I did NOT hand this to a human.",
+        "name": "spectral_value",
+        "object_props": {
+          "peak_bin@11": 11,
+          "peak_bin@3": 3,
+          "peak_bin@7": 7
+        },
+        "operation": "spectral log-magnitude X[k]=log(|\u03a3_n x[n]\u00b7e^{-i2\u03c0kn/N}|) \u2014 amplitudes over a frequency axis, log-scaled",
+        "outcome": "built_primitive",
+        "stated_props": {
+          "peak_bin@11": 11,
+          "peak_bin@3": 3,
+          "peak_bin@7": 7
+        },
+        "term_root": "80",
+        "term_tree": {
+          "arg": {
+            "items": [
+              {
+                "arg": {
+                  "items": [
+                    {
+                      "a": {
+                        "source": {
+                          "name": "sig",
+                          "type": "Var"
+                        },
+                        "type": "Sum",
+                        "value": {
+                          "items": [
+                            {
+                              "index": 1,
+                              "items": {
+                                "name": "p",
+                                "type": "Var"
+                              },
+                              "type": "Nth"
+                            },
+                            {
+                              "arg": {
+                                "a": {
+                                  "items": [
+                                    {
+                                      "type": "Lit",
+                                      "value": 6.283185307179586
+                                    },
+                                    {
+                                      "name": "k",
+                                      "type": "Var"
+                                    },
+                                    {
+                                      "index": 0,
+                                      "items": {
+                                        "name": "p",
+                                        "type": "Var"
+                                      },
+                                      "type": "Nth"
+                                    }
+                                  ],
+                                  "type": "Times"
+                                },
+                                "b": {
+                                  "name": "N",
+                                  "type": "Var"
+                                },
+                                "type": "Div"
+                              },
+                              "type": "Cos"
+                            }
+                          ],
+                          "type": "Times"
+                        },
+                        "var_name": "p"
+                      },
+                      "b": {
+                        "type": "Lit",
+                        "value": 2.0
+                      },
+                      "type": "Pow"
+                    },
+                    {
+                      "a": {
+                        "source": {
+                          "name": "sig",
+                          "type": "Var"
+                        },
+                        "type": "Sum",
+                        "value": {
+                          "items": [
+                            {
+                              "index": 1,
+                              "items": {
+                                "name": "p",
+                                "type": "Var"
+                              },
+                              "type": "Nth"
+                            },
+                            {
+                              "arg": {
+                                "a": {
+                                  "items": [
+                                    {
+                                      "type": "Lit",
+                                      "value": 6.283185307179586
+                                    },
+                                    {
+                                      "name": "k",
+                                      "type": "Var"
+                                    },
+                                    {
+                                      "index": 0,
+                                      "items": {
+                                        "name": "p",
+                                        "type": "Var"
+                                      },
+                                      "type": "Nth"
+                                    }
+                                  ],
+                                  "type": "Times"
+                                },
+                                "b": {
+                                  "name": "N",
+                                  "type": "Var"
+                                },
+                                "type": "Div"
+                              },
+                              "type": "Sin"
+                            }
+                          ],
+                          "type": "Times"
+                        },
+                        "var_name": "p"
+                      },
+                      "b": {
+                        "type": "Lit",
+                        "value": 2.0
+                      },
+                      "type": "Pow"
+                    }
+                  ],
+                  "type": "Plus"
+                },
+                "type": "Sqrt"
+              },
+              {
+                "type": "Lit",
+                "value": 1e-09
+              }
+            ],
+            "type": "Plus"
+          },
+          "type": "Log"
+        },
+        "test_eval": {
+          "n_samples": 32,
+          "peak_bins": {
+            "peak_bin@11": 11,
+            "peak_bin@3": 3,
+            "peak_bin@7": 7
+          },
+          "spectrum": [
+            -20.72326184015151,
+            -20.72326422712432,
+            -20.723262600123125,
+            2.772588722302281,
+            -20.723263946306513,
+            -20.723261505662865,
+            -20.723259391933663,
+            -20.723260198206894,
+            -20.72325613710426,
+            -20.723255706212626,
+            -20.72326171527529,
+            -20.723258098594442,
+            -20.723249018399898,
+            -20.723256787307573,
+            -20.72324570656751,
+            -20.72325840215727,
+            -20.723255898337303
+          ],
+          "tone": 3
+        },
+        "verified": {
+          "accepted": true,
+          "anchors": [
+            "SensorAnchor"
+          ],
+          "claim_node": "#81",
+          "discriminates": true,
+          "grounded": true,
+          "no_regression": true,
+          "probe_node": "#82",
+          "real_pass": true,
+          "reason": "ACCEPTED: control discriminates (mechanism survives 3 held-out case(s); the known-fake twin FAILS it), no regression, grounded in ['SensorAnchor'].",
+          "twin_pass": false,
+          "verdict": 1.0
+        },
+        "wall": "the residual's predicates ground to NO held structural relation (they are genuinely-novel terms outside the held RelationCue lexicon); the shape cannot be composed from held vocab without inventing a law. NEXT FRONTIER: predicate-grounding (extend the lexicon, or self-author a base primitive for the novel shape) \u2014 NOT hand-picked here (that would be the donkey)."
+      },
+      "returned_term_ops": [
+        "Cos",
+        "Div",
+        "Lit",
+        "Log",
+        "Nth",
+        "Plus",
+        "Pow",
+        "Sin",
+        "Sqrt",
+        "Sum",
+        "Times",
+        "Var"
+      ],
+      "returned_term_vars": [
+        "N",
+        "k",
+        "p",
+        "sig"
+      ],
+      "wall_seconds": 0.027037238993216306
+    },
+    {
+      "arm": "faculty_plus_operations",
+      "case": {
+        "id": "C_rep1",
+        "label": "C",
+        "replicate": 1
+      },
+      "cpu_seconds": 0.005458050999999964,
+      "gap_attrs": {
+        "example": "recover the signal from its magnitude spectrum",
+        "faculty": "shared_family",
+        "inputs": [
+          "magnitude_spectrum"
+        ],
+        "n_samples": 32,
+        "needed_primitive": "recover_signal",
+        "observation": [
+          [
+            "spectral_value",
+            "magnitude_spectrum",
+            "recovered_signal"
+          ],
+          [
+            "log_scale",
+            "recovered_signal",
+            "magnitude_spectrum"
+          ]
+        ],
+        "outputs": [
+          "recovered_signal"
+        ],
+        "status": "perceived",
+        "test_frequencies": [
+          3,
+          7,
+          11
+        ]
+      },
+      "graph": {
+        "axis_count": 2,
+        "codebook_epoch": 0.0,
+        "held_primitive_count": 0,
+        "held_primitive_names": [],
+        "primitive_request_count": 1,
+        "primitive_request_names": [
+          "recover_signal"
+        ]
+      },
+      "independent_forward_oracle": {},
+      "result": {
+        "concern_key": "gap_shared_family__ops_log%5fscale_spectral%5fvalue",
+        "gap": "#9",
+        "how": "the residual names a computation I do not yet know how to CONSTRUCT from my held Term constructors. I mint a PrimitiveRequest, honestly tagged: not a forever-wall, a construction I have not learned.",
+        "outcome": "primitive_request",
+        "primitive_request": "#46",
+        "residual_kind": "no_construction",
+        "spec": {
+          "example": "recover the signal from its magnitude spectrum",
+          "inputs": [
+            "magnitude_spectrum"
+          ],
+          "name": "recover_signal",
+          "operation": "spectral_value magnitude_spectrum recovered_signal ; log_scale recovered_signal magnitude_spectrum",
+          "outputs": [
+            "recovered_signal"
+          ],
+          "why_uncomposable": "the residual's predicates ground to NO held structural relation (they are genuinely-novel terms outside the held RelationCue lexicon); the shape cannot be composed from held vocab without inventing a law. NEXT FRONTIER: predicate-grounding (extend the lexicon, or self-author a base primitive for the novel shape) \u2014 NOT hand-picked here (that would be the donkey)."
+        },
+        "wall": "the residual's predicates ground to NO held structural relation (they are genuinely-novel terms outside the held RelationCue lexicon); the shape cannot be composed from held vocab without inventing a law. NEXT FRONTIER: predicate-grounding (extend the lexicon, or self-author a base primitive for the novel shape) \u2014 NOT hand-picked here (that would be the donkey)."
+      },
+      "returned_term_ops": [],
+      "returned_term_vars": [],
+      "wall_seconds": 0.005400580004788935
+    },
+    {
+      "arm": "faculty_plus_operations",
+      "case": {
+        "id": "C_rep2",
+        "label": "C",
+        "replicate": 2
+      },
+      "cpu_seconds": 0.00503263100000001,
+      "gap_attrs": {
+        "example": "recover the signal from its magnitude spectrum",
+        "faculty": "shared_family",
+        "inputs": [
+          "magnitude_spectrum"
+        ],
+        "n_samples": 32,
+        "needed_primitive": "recover_signal",
+        "observation": [
+          [
+            "spectral_value",
+            "magnitude_spectrum",
+            "recovered_signal"
+          ],
+          [
+            "log_scale",
+            "recovered_signal",
+            "magnitude_spectrum"
+          ]
+        ],
+        "outputs": [
+          "recovered_signal"
+        ],
+        "status": "perceived",
+        "test_frequencies": [
+          3,
+          7,
+          11
+        ]
+      },
+      "graph": {
+        "axis_count": 2,
+        "codebook_epoch": 0.0,
+        "held_primitive_count": 0,
+        "held_primitive_names": [],
+        "primitive_request_count": 1,
+        "primitive_request_names": [
+          "recover_signal"
+        ]
+      },
+      "independent_forward_oracle": {},
+      "result": {
+        "concern_key": "gap_shared_family__ops_log%5fscale_spectral%5fvalue",
+        "gap": "#9",
+        "how": "the residual names a computation I do not yet know how to CONSTRUCT from my held Term constructors. I mint a PrimitiveRequest, honestly tagged: not a forever-wall, a construction I have not learned.",
+        "outcome": "primitive_request",
+        "primitive_request": "#46",
+        "residual_kind": "no_construction",
+        "spec": {
+          "example": "recover the signal from its magnitude spectrum",
+          "inputs": [
+            "magnitude_spectrum"
+          ],
+          "name": "recover_signal",
+          "operation": "spectral_value magnitude_spectrum recovered_signal ; log_scale recovered_signal magnitude_spectrum",
+          "outputs": [
+            "recovered_signal"
+          ],
+          "why_uncomposable": "the residual's predicates ground to NO held structural relation (they are genuinely-novel terms outside the held RelationCue lexicon); the shape cannot be composed from held vocab without inventing a law. NEXT FRONTIER: predicate-grounding (extend the lexicon, or self-author a base primitive for the novel shape) \u2014 NOT hand-picked here (that would be the donkey)."
+        },
+        "wall": "the residual's predicates ground to NO held structural relation (they are genuinely-novel terms outside the held RelationCue lexicon); the shape cannot be composed from held vocab without inventing a law. NEXT FRONTIER: predicate-grounding (extend the lexicon, or self-author a base primitive for the novel shape) \u2014 NOT hand-picked here (that would be the donkey)."
+      },
+      "returned_term_ops": [],
+      "returned_term_vars": [],
+      "wall_seconds": 0.004976576019544154
+    },
+    {
+      "arm": "faculty_plus_operations",
+      "case": {
+        "id": "C_rep3",
+        "label": "C",
+        "replicate": 3
+      },
+      "cpu_seconds": 0.004896980999999967,
+      "gap_attrs": {
+        "example": "recover the signal from its magnitude spectrum",
+        "faculty": "shared_family",
+        "inputs": [
+          "magnitude_spectrum"
+        ],
+        "n_samples": 32,
+        "needed_primitive": "recover_signal",
+        "observation": [
+          [
+            "spectral_value",
+            "magnitude_spectrum",
+            "recovered_signal"
+          ],
+          [
+            "log_scale",
+            "recovered_signal",
+            "magnitude_spectrum"
+          ]
+        ],
+        "outputs": [
+          "recovered_signal"
+        ],
+        "status": "perceived",
+        "test_frequencies": [
+          3,
+          7,
+          11
+        ]
+      },
+      "graph": {
+        "axis_count": 2,
+        "codebook_epoch": 0.0,
+        "held_primitive_count": 0,
+        "held_primitive_names": [],
+        "primitive_request_count": 1,
+        "primitive_request_names": [
+          "recover_signal"
+        ]
+      },
+      "independent_forward_oracle": {},
+      "result": {
+        "concern_key": "gap_shared_family__ops_log%5fscale_spectral%5fvalue",
+        "gap": "#9",
+        "how": "the residual names a computation I do not yet know how to CONSTRUCT from my held Term constructors. I mint a PrimitiveRequest, honestly tagged: not a forever-wall, a construction I have not learned.",
+        "outcome": "primitive_request",
+        "primitive_request": "#46",
+        "residual_kind": "no_construction",
+        "spec": {
+          "example": "recover the signal from its magnitude spectrum",
+          "inputs": [
+            "magnitude_spectrum"
+          ],
+          "name": "recover_signal",
+          "operation": "spectral_value magnitude_spectrum recovered_signal ; log_scale recovered_signal magnitude_spectrum",
+          "outputs": [
+            "recovered_signal"
+          ],
+          "why_uncomposable": "the residual's predicates ground to NO held structural relation (they are genuinely-novel terms outside the held RelationCue lexicon); the shape cannot be composed from held vocab without inventing a law. NEXT FRONTIER: predicate-grounding (extend the lexicon, or self-author a base primitive for the novel shape) \u2014 NOT hand-picked here (that would be the donkey)."
+        },
+        "wall": "the residual's predicates ground to NO held structural relation (they are genuinely-novel terms outside the held RelationCue lexicon); the shape cannot be composed from held vocab without inventing a law. NEXT FRONTIER: predicate-grounding (extend the lexicon, or self-author a base primitive for the novel shape) \u2014 NOT hand-picked here (that would be the donkey)."
+      },
+      "returned_term_ops": [],
+      "returned_term_vars": [],
+      "wall_seconds": 0.0048436360084451735
+    }
+  ],
+  "input_lock": {
+    "arms": [
+      "faculty",
+      "faculty_plus_operations"
+    ],
+    "cases": [
+      {
+        "id": "B_rep1",
+        "label": "B",
+        "replicate": 1
+      },
+      {
+        "id": "B_rep2",
+        "label": "B",
+        "replicate": 2
+      },
+      {
+        "id": "B_rep3",
+        "label": "B",
+        "replicate": 3
+      },
+      {
+        "id": "C_rep1",
+        "label": "C",
+        "replicate": 1
+      },
+      {
+        "id": "C_rep2",
+        "label": "C",
+        "replicate": 2
+      },
+      {
+        "id": "C_rep3",
+        "label": "C",
+        "replicate": 3
+      }
+    ],
+    "fixtures": {
+      "B": {
+        "example": "per-bin log magnitude",
+        "faculty": "shared_family",
+        "inputs": [
+          "signal"
+        ],
+        "n_samples": 32,
+        "needed_primitive": "spectral_value",
+        "observation": [
+          [
+            "spectral_value",
+            "signal",
+            "magnitude"
+          ],
+          [
+            "log_scale",
+            "magnitude",
+            "value"
+          ]
+        ],
+        "outputs": [
+          "spectrum"
+        ],
+        "status": "perceived",
+        "test_frequencies": [
+          3,
+          7,
+          11
+        ]
+      },
+      "C": {
+        "example": "recover the signal from its magnitude spectrum",
+        "faculty": "shared_family",
+        "inputs": [
+          "magnitude_spectrum"
+        ],
+        "n_samples": 32,
+        "needed_primitive": "recover_signal",
+        "observation": [
+          [
+            "spectral_value",
+            "magnitude_spectrum",
+            "recovered_signal"
+          ],
+          [
+            "log_scale",
+            "recovered_signal",
+            "magnitude_spectrum"
+          ]
+        ],
+        "outputs": [
+          "recovered_signal"
+        ],
+        "status": "perceived",
+        "test_frequencies": [
+          3,
+          7,
+          11
+        ]
+      }
+    },
+    "git_head": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+    "n_samples": 32,
+    "protocol": {
+      "bytes": 1311,
+      "path": "docs/research/engine_substrate/SUBSTRATE_SPECTRAL_IO_ORACLE_V1_5_PREREG_20260929.md",
+      "sha256": "80d5158213805a5445008eab8b6708ba76d336cd01e99d17bd8eacf97f939e12"
+    },
+    "runner": {
+      "bytes": 8943,
+      "path": "evaluation/substrate_capability/spectral_io_oracle_v1_5.py",
+      "sha256": "b8cd12ecbf5b217a025ea4247a3d6639c561afe155437cf1b42ad7036dc8ba12"
+    },
+    "schema_version": 1,
+    "sources": [
+      {
+        "bytes": 35264,
+        "path": "domains/substrate_extension.py",
+        "sha256": "4df4ea17bd0e87a7c006886d88ad71c987a2ca160ed964b192a882c310f0b6ff"
+      },
+      {
+        "bytes": 513738,
+        "path": "domains/reflective_faculty.py",
+        "sha256": "2792e5355c2a78cc23790e7a591ba0c0cb0ef2a249743d2b2da57fefadbd4c9f"
+      },
+      {
+        "bytes": 13625,
+        "path": "domains/self_verification.py",
+        "sha256": "4cf1282b2cdfb0c6c9a0820e7b96c550059e6b3e2dafd11b0dc0eed1a378af8a"
+      },
+      {
+        "bytes": 19906,
+        "path": "domains/self_capability_collapse.py",
+        "sha256": "0f02df6eabbb786281aa29feb45f9cfc156e6f8c2b4326f4198aba2a8674cb3d"
+      },
+      {
+        "bytes": 7251,
+        "path": "substrate/boot_core.py",
+        "sha256": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb"
+      },
+      {
+        "bytes": 999897,
+        "path": "substrate/world_adapter.py",
+        "sha256": "b1c3aece2093af804f7d5a4380e0be2119250a6c663b02a43ef79ff06bfe158d"
+      },
+      {
+        "bytes": 22070,
+        "path": "substrate/graph.py",
+        "sha256": "edebfafd619d07e4755a6f189d0e3904ec096e6add311f629c88730c0d547c4f"
+      },
+      {
+        "bytes": 10438,
+        "path": "substrate/seed_loader.py",
+        "sha256": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27"
+      },
+      {
+        "bytes": 2490,
+        "path": "seeds/composer_faculty_pipeline.json",
+        "sha256": "39c2f594bd92d56669db5b647a03ae58409aae95abd3700e80040ee646338dfb"
+      },
+      {
+        "bytes": 96537,
+        "path": "seeds/shape_decode_loop.json",
+        "sha256": "3e1783cf566179061250572bbf7bc7bb54cacfafb83f8852008c4618d984a9c6"
+      },
+      {
+        "bytes": 493382,
+        "path": "runners/dsl/src/shape_decode.rs",
+        "sha256": "0e178705d0df8bef0a9d08d5a2efabd1131386b783e87546f33b8601b682ac2c"
+      },
+      {
+        "bytes": 695586,
+        "path": "runners/dsl/src/term.rs",
+        "sha256": "3dc19255f1353c683cb963ce4485fb85b36bb87bd8db8d19ac851a5f4f5b02c8"
+      },
+      {
+        "bytes": 10327104,
+        "path": "runners/dsl/python/substrate_rs/_native.abi3.so",
+        "sha256": "54a6481b26ec28a240fe8f33360a93b8e0e7e621b396a81d36e69dae0291ed1c"
+      },
+      {
+        "bytes": 11019,
+        "path": "runners/dsl/python/substrate_rs/_native.build.json",
+        "sha256": "ec39e77e757c994b923c4549c96d7bc7480ab924b158d606f3b49d8c25ecdbd5"
+      }
+    ]
+  },
+  "inverse_nonidentifiability_witness": {
+    "magnitude_x": [
+      3.0,
+      2.9871627209800478,
+      2.9488163947667454,
+      2.885459833234589,
+      2.7979326519318133,
+      2.687430172502796,
+      2.555530029066448,
+      2.404238192872019,
+      2.23606797749979,
+      2.0541759203961787,
+      1.8625966473017288,
+      1.6666490536167453,
+      1.4736257582079006,
+      1.2938784915090826,
+      1.142139164005356,
+      1.0377181112359362,
+      1.0
+    ],
+    "magnitude_y": [
+      3.0,
+      2.9871627209800478,
+      2.9488163947667454,
+      2.885459833234588,
+      2.7979326519318124,
+      2.687430172502795,
+      2.5555300290664444,
+      2.404238192872016,
+      2.2360679774997863,
+      2.054175920396175,
+      1.862596647301726,
+      1.6666490536167355,
+      1.473625758207892,
+      1.2938784915090873,
+      1.1421391640053502,
+      1.037718111235933,
+      1.0
+    ],
+    "max_abs_magnitude_difference": 9.769962616701378e-15,
+    "x": [
+      1.0,
+      2.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "x_not_equal_y": true,
+    "y": [
+      1.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      2.0
+    ]
+  },
+  "post_run_input_lock": {
+    "arms": [
+      "faculty",
+      "faculty_plus_operations"
+    ],
+    "cases": [
+      {
+        "id": "B_rep1",
+        "label": "B",
+        "replicate": 1
+      },
+      {
+        "id": "B_rep2",
+        "label": "B",
+        "replicate": 2
+      },
+      {
+        "id": "B_rep3",
+        "label": "B",
+        "replicate": 3
+      },
+      {
+        "id": "C_rep1",
+        "label": "C",
+        "replicate": 1
+      },
+      {
+        "id": "C_rep2",
+        "label": "C",
+        "replicate": 2
+      },
+      {
+        "id": "C_rep3",
+        "label": "C",
+        "replicate": 3
+      }
+    ],
+    "fixtures": {
+      "B": {
+        "example": "per-bin log magnitude",
+        "faculty": "shared_family",
+        "inputs": [
+          "signal"
+        ],
+        "n_samples": 32,
+        "needed_primitive": "spectral_value",
+        "observation": [
+          [
+            "spectral_value",
+            "signal",
+            "magnitude"
+          ],
+          [
+            "log_scale",
+            "magnitude",
+            "value"
+          ]
+        ],
+        "outputs": [
+          "spectrum"
+        ],
+        "status": "perceived",
+        "test_frequencies": [
+          3,
+          7,
+          11
+        ]
+      },
+      "C": {
+        "example": "recover the signal from its magnitude spectrum",
+        "faculty": "shared_family",
+        "inputs": [
+          "magnitude_spectrum"
+        ],
+        "n_samples": 32,
+        "needed_primitive": "recover_signal",
+        "observation": [
+          [
+            "spectral_value",
+            "magnitude_spectrum",
+            "recovered_signal"
+          ],
+          [
+            "log_scale",
+            "recovered_signal",
+            "magnitude_spectrum"
+          ]
+        ],
+        "outputs": [
+          "recovered_signal"
+        ],
+        "status": "perceived",
+        "test_frequencies": [
+          3,
+          7,
+          11
+        ]
+      }
+    },
+    "git_head": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+    "n_samples": 32,
+    "protocol": {
+      "bytes": 1311,
+      "path": "docs/research/engine_substrate/SUBSTRATE_SPECTRAL_IO_ORACLE_V1_5_PREREG_20260929.md",
+      "sha256": "80d5158213805a5445008eab8b6708ba76d336cd01e99d17bd8eacf97f939e12"
+    },
+    "runner": {
+      "bytes": 8943,
+      "path": "evaluation/substrate_capability/spectral_io_oracle_v1_5.py",
+      "sha256": "b8cd12ecbf5b217a025ea4247a3d6639c561afe155437cf1b42ad7036dc8ba12"
+    },
+    "schema_version": 1,
+    "sources": [
+      {
+        "bytes": 35264,
+        "path": "domains/substrate_extension.py",
+        "sha256": "4df4ea17bd0e87a7c006886d88ad71c987a2ca160ed964b192a882c310f0b6ff"
+      },
+      {
+        "bytes": 513738,
+        "path": "domains/reflective_faculty.py",
+        "sha256": "2792e5355c2a78cc23790e7a591ba0c0cb0ef2a249743d2b2da57fefadbd4c9f"
+      },
+      {
+        "bytes": 13625,
+        "path": "domains/self_verification.py",
+        "sha256": "4cf1282b2cdfb0c6c9a0820e7b96c550059e6b3e2dafd11b0dc0eed1a378af8a"
+      },
+      {
+        "bytes": 19906,
+        "path": "domains/self_capability_collapse.py",
+        "sha256": "0f02df6eabbb786281aa29feb45f9cfc156e6f8c2b4326f4198aba2a8674cb3d"
+      },
+      {
+        "bytes": 7251,
+        "path": "substrate/boot_core.py",
+        "sha256": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb"
+      },
+      {
+        "bytes": 999897,
+        "path": "substrate/world_adapter.py",
+        "sha256": "b1c3aece2093af804f7d5a4380e0be2119250a6c663b02a43ef79ff06bfe158d"
+      },
+      {
+        "bytes": 22070,
+        "path": "substrate/graph.py",
+        "sha256": "edebfafd619d07e4755a6f189d0e3904ec096e6add311f629c88730c0d547c4f"
+      },
+      {
+        "bytes": 10438,
+        "path": "substrate/seed_loader.py",
+        "sha256": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27"
+      },
+      {
+        "bytes": 2490,
+        "path": "seeds/composer_faculty_pipeline.json",
+        "sha256": "39c2f594bd92d56669db5b647a03ae58409aae95abd3700e80040ee646338dfb"
+      },
+      {
+        "bytes": 96537,
+        "path": "seeds/shape_decode_loop.json",
+        "sha256": "3e1783cf566179061250572bbf7bc7bb54cacfafb83f8852008c4618d984a9c6"
+      },
+      {
+        "bytes": 493382,
+        "path": "runners/dsl/src/shape_decode.rs",
+        "sha256": "0e178705d0df8bef0a9d08d5a2efabd1131386b783e87546f33b8601b682ac2c"
+      },
+      {
+        "bytes": 695586,
+        "path": "runners/dsl/src/term.rs",
+        "sha256": "3dc19255f1353c683cb963ce4485fb85b36bb87bd8db8d19ac851a5f4f5b02c8"
+      },
+      {
+        "bytes": 10327104,
+        "path": "runners/dsl/python/substrate_rs/_native.abi3.so",
+        "sha256": "54a6481b26ec28a240fe8f33360a93b8e0e7e621b396a81d36e69dae0291ed1c"
+      },
+      {
+        "bytes": 11019,
+        "path": "runners/dsl/python/substrate_rs/_native.build.json",
+        "sha256": "ec39e77e757c994b923c4549c96d7bc7480ab924b158d606f3b49d8c25ecdbd5"
+      }
+    ]
+  },
+  "process": {
+    "cpu_seconds": 0.459381825,
+    "wall_seconds": 0.46033030399121344
+  },
+  "run_id": "spectral-io-oracle-v1.5-20260929",
+  "schema_version": 1,
+  "status": "complete"
+}

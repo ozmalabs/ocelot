@@ -1,0 +1,1973 @@
+{
+  "all_checks_pass": true,
+  "checks": {
+    "all_derived_descendants_have_native_mint_rows": true,
+    "event_counts_reconcile": true,
+    "nonempty_requests": true,
+    "repeated_derived_sets_match": true,
+    "source_stable": true,
+    "three_traces": true,
+    "trace_complete": true
+  },
+  "claim_boundary": "Lower-bound descendants inferred from native rule mint and edge-upsert events in three identical v2.4 traced workers; not a complete dynamic dependency graph or proof of task locality.",
+  "raw_sha256": "881314757251c005b85cc2fd3b2395ca8a1fb1090d15dedf10e58e1dc8bc19bc",
+  "rows": [
+    {
+      "base_lifecycle_nodes": 7,
+      "candidate_rule_minted_node_ids": [
+        9,
+        12,
+        16,
+        17,
+        18,
+        23,
+        29,
+        36,
+        38,
+        24958,
+        24959,
+        24960,
+        24961,
+        24963,
+        24967,
+        24971,
+        24975,
+        25107,
+        25108,
+        25109,
+        25110,
+        25111,
+        25112,
+        25113,
+        25114,
+        25120,
+        25125,
+        25126,
+        25127,
+        25130,
+        25132,
+        25133,
+        25135,
+        25136,
+        25137,
+        25141,
+        25142,
+        25143,
+        25146,
+        25148,
+        25149
+      ],
+      "event_kinds_by_expanded_frame_touch": {
+        "none_of_measured_frame_sets": {
+          "effect_attr_compare_read": 43,
+          "effect_attr_write": 363,
+          "effect_edge_upsert": 105,
+          "effect_node_delete": 52,
+          "effect_node_mint": 32,
+          "effect_type_candidate_read": 932,
+          "effect_type_query": 208,
+          "pattern_edge": 818,
+          "term_attr_read": 1083319,
+          "term_edge_read": 5035,
+          "term_index_query": 528,
+          "term_type_read": 41682
+        },
+        "request_lifecycle": {
+          "effect_attr_write": 35,
+          "effect_edge_delete": 1,
+          "effect_edge_upsert": 9,
+          "effect_node_mint": 2,
+          "pattern_edge": 87,
+          "term_attr_read": 2818,
+          "term_edge_read": 700
+        },
+        "request_lifecycle+rule_produced_descendant": {
+          "effect_edge_upsert": 6,
+          "pattern_edge": 15,
+          "term_edge_read": 53
+        },
+        "rule_produced_descendant": {
+          "effect_attr_write": 20,
+          "effect_edge_upsert": 22,
+          "effect_node_mint": 7,
+          "pattern_edge": 19,
+          "term_attr_read": 767,
+          "term_edge_read": 2802,
+          "term_type_read": 12
+        },
+        "shared_scene_input": {
+          "effect_edge_upsert": 48,
+          "pattern_edge": 48,
+          "term_attr_read": 304
+        }
+      },
+      "events_by_expanded_frame_touch": {
+        "none_of_measured_frame_sets": 1133117,
+        "request_lifecycle": 3652,
+        "request_lifecycle+rule_produced_descendant": 74,
+        "rule_produced_descendant": 3649,
+        "shared_scene_input": 400
+      },
+      "events_touching_any_measured_frame_node": 7775,
+      "limitation": "Descendants are only rule-minted nodes connected by captured native effect_edge_upsert rows. Host-created nodes, non-mint descendant mutations, specialized untraced operations, and dependencies without concrete node/peer events are omitted; this is a lower bound, not a complete ownership assignment.",
+      "request": "request-A",
+      "rule_effect_edges_incident_to_descendants": [
+        {
+          "count": 1,
+          "edge_type": "has_intent",
+          "other_endpoint_type": "preexisting_or_host_created",
+          "rule_name": "rule_intent_from_claim",
+          "src": 24947,
+          "tgt": 24958
+        },
+        {
+          "count": 1,
+          "edge_type": "speech_act",
+          "other_endpoint_type": "preexisting_or_host_created",
+          "rule_name": "rule_intent_from_claim",
+          "src": 24958,
+          "tgt": 4752
+        },
+        {
+          "count": 1,
+          "edge_type": "claimed_speaker",
+          "other_endpoint_type": "preexisting_or_host_created",
+          "rule_name": "rule_intent_from_claim",
+          "src": 24958,
+          "tgt": 24948
+        },
+        {
+          "count": 1,
+          "edge_type": "speaker",
+          "other_endpoint_type": "preexisting_or_host_created",
+          "rule_name": "rule_intent_from_claim",
+          "src": 24958,
+          "tgt": 24948
+        },
+        {
+          "count": 1,
+          "edge_type": "about_concept",
+          "other_endpoint_type": "preexisting_or_host_created",
+          "rule_name": "rule_intent_about_mentioned_concept",
+          "src": 24958,
+          "tgt": 3249
+        },
+        {
+          "count": 1,
+          "edge_type": "about_concept",
+          "other_endpoint_type": "preexisting_or_host_created",
+          "rule_name": "rule_intent_about_mentioned_concept",
+          "src": 24958,
+          "tgt": 3328
+        },
+        {
+          "count": 1,
+          "edge_type": "about_concept",
+          "other_endpoint_type": "preexisting_or_host_created",
+          "rule_name": "rule_intent_about_mentioned_concept",
+          "src": 24958,
+          "tgt": 4966
+        },
+        {
+          "count": 1,
+          "edge_type": "about_concept",
+          "other_endpoint_type": "preexisting_or_host_created",
+          "rule_name": "rule_intent_about_mentioned_concept",
+          "src": 24958,
+          "tgt": 4997
+        },
+        {
+          "count": 1,
+          "edge_type": "about_concept",
+          "other_endpoint_type": "preexisting_or_host_created",
+          "rule_name": "rule_intent_about_mentioned_concept",
+          "src": 24958,
+          "tgt": 5350
+        },
+        {
+          "count": 1,
+          "edge_type": "about_concept",
+          "other_endpoint_type": "preexisting_or_host_created",
+          "rule_name": "rule_intent_about_mentioned_concept",
+          "src": 24958,
+          "tgt": 8618
+        },
+        {
+          "count": 1,
+          "edge_type": "about_concept",
+          "other_endpoint_type": "preexisting_or_host_created",
+          "rule_name": "rule_intent_about_mentioned_concept",
+          "src": 24958,
+          "tgt": 10263
+        },
+        {
+          "count": 1,
+          "edge_type": "about_concept",
+          "other_endpoint_type": "preexisting_or_host_created",
+          "rule_name": "rule_intent_about_mentioned_concept",
+          "src": 24958,
+          "tgt": 10301
+        },
+        {
+          "count": 1,
+          "edge_type": "about_concept",
+          "other_endpoint_type": "preexisting_or_host_created",
+          "rule_name": "rule_intent_about_mentioned_concept",
+          "src": 24958,
+          "tgt": 10744
+        },
+        {
+          "count": 1,
+          "edge_type": "about_concept",
+          "other_endpoint_type": "preexisting_or_host_created",
+          "rule_name": "rule_intent_about_mentioned_concept",
+          "src": 24958,
+          "tgt": 19306
+        },
+        {
+          "count": 1,
+          "edge_type": "has_self_concern",
+          "other_endpoint_type": "preexisting_or_host_created",
+          "rule_name": "note_unhandled_instruction_gap",
+          "src": 0,
+          "tgt": 25135
+        },
+        {
+          "count": 1,
+          "edge_type": "about_message",
+          "other_endpoint_type": "preexisting_or_host_created",
+          "rule_name": "note_unhandled_instruction_gap",
+          "src": 25135,
+          "tgt": 24947
+        },
+        {
+          "count": 1,
+          "edge_type": "has_gap_recurrence",
+          "other_endpoint_type": "preexisting_or_host_created",
+          "rule_name": "register_gap_recurrence_identity",
+          "src": 0,
+          "tgt": 25137
+        },
+        {
+          "count": 1,
+          "edge_type": "tracks_self_concern",
+          "other_endpoint_type": "rule_minted",
+          "rule_name": "register_gap_recurrence_identity",
+          "src": 25137,
+          "tgt": 25135
+        },
+        {
+          "count": 1,
+          "edge_type": "seeks_interpretation_shadow",
+          "other_endpoint_type": "preexisting_or_host_created",
+          "rule_name": "ris_request_independent_shadow",
+          "src": 24947,
+          "tgt": 24961
+        },
+        {
+          "count": 1,
+          "edge_type": "has_subgoal",
+          "other_endpoint_type": "rule_minted",
+          "rule_name": "communicate_what_i_see_communicate_what_i_see",
+          "src": 25107,
+          "tgt": 25108
+        },
+        {
+          "count": 1,
+          "edge_type": "has_subgoal",
+          "other_endpoint_type": "rule_minted",
+          "rule_name": "communicate_what_i_see_communicate_what_i_see",
+          "src": 25107,
+          "tgt": 25109
+        },
+        {
+          "count": 1,
+          "edge_type": "has_subgoal",
+          "other_endpoint_type": "rule_minted",
+          "rule_name": "communicate_what_i_see_communicate_what_i_see",
+          "src": 25107,
+          "tgt": 25110
+        },
+        {
+          "count": 1,
+          "edge_type": "about",
+          "other_endpoint_type": "preexisting_or_host_created",
+          "rule_name": "communicate_what_i_see_communicate_what_i_see",
+          "src": 25108,
+          "tgt": 5575
+        },
+        {
+          "count": 1,
+          "edge_type": "of_percept",
+          "other_endpoint_type": "preexisting_or_host_created",
+          "rule_name": "communicate_what_i_see_communicate_what_i_see",
+          "src": 25108,
+          "tgt": 25104
+        },
+        {
+          "count": 1,
+          "edge_type": "about",
+          "other_endpoint_type": "preexisting_or_host_created",
+          "rule_name": "communicate_what_i_see_communicate_what_i_see",
+          "src": 25109,
+          "tgt": 5576
+        },
+        {
+          "count": 1,
+          "edge_type": "of_percept",
+          "other_endpoint_type": "preexisting_or_host_created",
+          "rule_name": "communicate_what_i_see_communicate_what_i_see",
+          "src": 25109,
+          "tgt": 25105
+        },
+        {
+          "count": 1,
+          "edge_type": "about",
+          "other_endpoint_type": "preexisting_or_host_created",
+          "rule_name": "communicate_what_i_see_communicate_what_i_see",
+          "src": 25110,
+          "tgt": 5574
+        },
+        {
+          "count": 1,
+          "edge_type": "of_percept",
+          "other_endpoint_type": "preexisting_or_host_created",
+          "rule_name": "communicate_what_i_see_communicate_what_i_see",
+          "src": 25110,
+          "tgt": 25106
+        }
+      ],
+      "rule_produced_descendant_count": 7,
+      "rule_produced_descendant_ids": [
+        24958,
+        24961,
+        25108,
+        25109,
+        25110,
+        25135,
+        25137
+      ],
+      "rule_produced_descendants_by_type": {
+        "GapRecurrence": 1,
+        "Goal": 3,
+        "Intent": 1,
+        "SelfConcern": 1,
+        "TeacherRequest": 1
+      },
+      "selected_events_total": 1140892,
+      "shared_scene_input_nodes": 4
+    },
+    {
+      "base_lifecycle_nodes": 6,
+      "candidate_rule_minted_node_ids": [
+        9,
+        12,
+        16,
+        17,
+        18,
+        23,
+        29,
+        36,
+        38,
+        25158,
+        25159,
+        25160,
+        25161,
+        25166,
+        25167,
+        25168,
+        25169,
+        25175,
+        25176,
+        25177,
+        25181,
+        25184,
+        25185,
+        25190,
+        25191,
+        25192,
+        25195,
+        25198,
+        25199
+      ],
+      "event_kinds_by_expanded_frame_touch": {
+        "none_of_measured_frame_sets": {
+          "effect_attr_compare_read": 27,
+          "effect_attr_write": 258,
+          "effect_edge_upsert": 139,
+          "effect_node_delete": 52,
+          "effect_node_mint": 23,
+          "effect_type_candidate_read": 936,
+          "effect_type_query": 208,
+          "pattern_edge": 800,
+          "term_attr_read": 961152,
+          "term_edge_read": 8353,
+          "term_index_query": 468,
+          "term_type_read": 16624
+        },
+        "other_request_lifecycle": {
+          "effect_attr_write": 13,
+          "pattern_edge": 40,
+          "term_attr_read": 2086,
+          "term_edge_read": 248
+        },
+        "request_lifecycle": {
+          "effect_attr_write": 24,
+          "effect_edge_delete": 1,
+          "effect_edge_upsert": 7,
+          "effect_node_mint": 1,
+          "pattern_edge": 69,
+          "term_attr_read": 2380,
+          "term_edge_read": 868
+        },
+        "request_lifecycle+other_request_lifecycle": {
+          "term_edge_read": 13
+        },
+        "request_lifecycle+rule_produced_descendant": {
+          "effect_edge_upsert": 5,
+          "pattern_edge": 11,
+          "term_edge_read": 37
+        },
+        "rule_produced_descendant": {
+          "effect_attr_write": 8,
+          "effect_edge_upsert": 19,
+          "effect_node_mint": 5,
+          "pattern_edge": 12,
+          "term_attr_read": 336,
+          "term_edge_read": 2300
+        },
+        "shared_scene_input": {
+          "effect_edge_upsert": 39,
+          "pattern_edge": 39,
+          "term_attr_read": 247
+        }
+      },
+      "events_by_expanded_frame_touch": {
+        "none_of_measured_frame_sets": 989040,
+        "other_request_lifecycle": 2387,
+        "request_lifecycle": 3350,
+        "request_lifecycle+other_request_lifecycle": 13,
+        "request_lifecycle+rule_produced_descendant": 53,
+        "rule_produced_descendant": 2680,
+        "shared_scene_input": 325
+      },
+      "events_touching_any_measured_frame_node": 8808,
+      "limitation": "Descendants are only rule-minted nodes connected by captured native effect_edge_upsert rows. Host-created nodes, non-mint descendant mutations, specialized untraced operations, and dependencies without concrete node/peer events are omitted; this is a lower bound, not a complete ownership assignment.",
+      "request": "request-B",
+      "rule_effect_edges_incident_to_descendants": [
+        {
+          "count": 1,
+          "edge_type": "has_intent",
+          "other_endpoint_type": "preexisting_or_host_created",
+          "rule_name": "rule_intent_from_claim",
+          "src": 25151,
+          "tgt": 25158
+        },
+        {
+          "count": 1,
+          "edge_type": "speech_act",
+          "other_endpoint_type": "preexisting_or_host_created",
+          "rule_name": "rule_intent_from_claim",
+          "src": 25158,
+          "tgt": 4752
+        },
+        {
+          "count": 1,
+          "edge_type": "claimed_speaker",
+          "other_endpoint_type": "preexisting_or_host_created",
+          "rule_name": "rule_intent_from_claim",
+          "src": 25158,
+          "tgt": 24948
+        },
+        {
+          "count": 1,
+          "edge_type": "speaker",
+          "other_endpoint_type": "preexisting_or_host_created",
+          "rule_name": "rule_intent_from_claim",
+          "src": 25158,
+          "tgt": 24948
+        },
+        {
+          "count": 1,
+          "edge_type": "about_concept",
+          "other_endpoint_type": "preexisting_or_host_created",
+          "rule_name": "rule_intent_about_mentioned_concept",
+          "src": 25158,
+          "tgt": 3249
+        },
+        {
+          "count": 1,
+          "edge_type": "about_concept",
+          "other_endpoint_type": "preexisting_or_host_created",
+          "rule_name": "rule_intent_about_mentioned_concept",
+          "src": 25158,
+          "tgt": 3328
+        },
+        {
+          "count": 1,
+          "edge_type": "about_concept",
+          "other_endpoint_type": "preexisting_or_host_created",
+          "rule_name": "rule_intent_about_mentioned_concept",
+          "src": 25158,
+          "tgt": 4966
+        },
+        {
+          "count": 1,
+          "edge_type": "about_concept",
+          "other_endpoint_type": "preexisting_or_host_created",
+          "rule_name": "rule_intent_about_mentioned_concept",
+          "src": 25158,
+          "tgt": 4997
+        },
+        {
+          "count": 1,
+          "edge_type": "about_concept",
+          "other_endpoint_type": "preexisting_or_host_created",
+          "rule_name": "rule_intent_about_mentioned_concept",
+          "src": 25158,
+          "tgt": 5350
+        },
+        {
+          "count": 1,
+          "edge_type": "about_concept",
+          "other_endpoint_type": "preexisting_or_host_created",
+          "rule_name": "rule_intent_about_mentioned_concept",
+          "src": 25158,
+          "tgt": 8618
+        },
+        {
+          "count": 1,
+          "edge_type": "about_concept",
+          "other_endpoint_type": "preexisting_or_host_created",
+          "rule_name": "rule_intent_about_mentioned_concept",
+          "src": 25158,
+          "tgt": 10263
+        },
+        {
+          "count": 1,
+          "edge_type": "about_concept",
+          "other_endpoint_type": "preexisting_or_host_created",
+          "rule_name": "rule_intent_about_mentioned_concept",
+          "src": 25158,
+          "tgt": 10301
+        },
+        {
+          "count": 1,
+          "edge_type": "about_concept",
+          "other_endpoint_type": "preexisting_or_host_created",
+          "rule_name": "rule_intent_about_mentioned_concept",
+          "src": 25158,
+          "tgt": 10744
+        },
+        {
+          "count": 1,
+          "edge_type": "about_concept",
+          "other_endpoint_type": "preexisting_or_host_created",
+          "rule_name": "rule_intent_about_mentioned_concept",
+          "src": 25158,
+          "tgt": 19306
+        },
+        {
+          "count": 1,
+          "edge_type": "seeks_interpretation_shadow",
+          "other_endpoint_type": "preexisting_or_host_created",
+          "rule_name": "ris_request_independent_shadow",
+          "src": 25151,
+          "tgt": 25161
+        },
+        {
+          "count": 1,
+          "edge_type": "has_subgoal",
+          "other_endpoint_type": "rule_minted",
+          "rule_name": "communicate_what_i_see_communicate_what_i_see",
+          "src": 25166,
+          "tgt": 25167
+        },
+        {
+          "count": 1,
+          "edge_type": "has_subgoal",
+          "other_endpoint_type": "rule_minted",
+          "rule_name": "communicate_what_i_see_communicate_what_i_see",
+          "src": 25166,
+          "tgt": 25168
+        },
+        {
+          "count": 1,
+          "edge_type": "has_subgoal",
+          "other_endpoint_type": "rule_minted",
+          "rule_name": "communicate_what_i_see_communicate_what_i_see",
+          "src": 25166,
+          "tgt": 25169
+        },
+        {
+          "count": 1,
+          "edge_type": "about",
+          "other_endpoint_type": "preexisting_or_host_created",
+          "rule_name": "communicate_what_i_see_communicate_what_i_see",
+          "src": 25167,
+          "tgt": 5575
+        },
+        {
+          "count": 1,
+          "edge_type": "of_percept",
+          "other_endpoint_type": "preexisting_or_host_created",
+          "rule_name": "communicate_what_i_see_communicate_what_i_see",
+          "src": 25167,
+          "tgt": 25163
+        },
+        {
+          "count": 1,
+          "edge_type": "about",
+          "other_endpoint_type": "preexisting_or_host_created",
+          "rule_name": "communicate_what_i_see_communicate_what_i_see",
+          "src": 25168,
+          "tgt": 5576
+        },
+        {
+          "count": 1,
+          "edge_type": "of_percept",
+          "other_endpoint_type": "preexisting_or_host_created",
+          "rule_name": "communicate_what_i_see_communicate_what_i_see",
+          "src": 25168,
+          "tgt": 25164
+        },
+        {
+          "count": 1,
+          "edge_type": "about",
+          "other_endpoint_type": "preexisting_or_host_created",
+          "rule_name": "communicate_what_i_see_communicate_what_i_see",
+          "src": 25169,
+          "tgt": 5574
+        },
+        {
+          "count": 1,
+          "edge_type": "of_percept",
+          "other_endpoint_type": "preexisting_or_host_created",
+          "rule_name": "communicate_what_i_see_communicate_what_i_see",
+          "src": 25169,
+          "tgt": 25165
+        }
+      ],
+      "rule_produced_descendant_count": 5,
+      "rule_produced_descendant_ids": [
+        25158,
+        25161,
+        25167,
+        25168,
+        25169
+      ],
+      "rule_produced_descendants_by_type": {
+        "Goal": 3,
+        "Intent": 1,
+        "TeacherRequest": 1
+      },
+      "selected_events_total": 997848,
+      "shared_scene_input_nodes": 4
+    },
+    {
+      "base_lifecycle_nodes": 7,
+      "candidate_rule_minted_node_ids": [
+        9,
+        12,
+        16,
+        17,
+        18,
+        23,
+        29,
+        36,
+        38,
+        24958,
+        24959,
+        24960,
+        24961,
+        24963,
+        24967,
+        24971,
+        24975,
+        25107,
+        25108,
+        25109,
+        25110,
+        25111,
+        25112,
+        25113,
+        25114,
+        25120,
+        25125,
+        25126,
+        25127,
+        25130,
+        25132,
+        25133,
+        25135,
+        25136,
+        25137,
+        25141,
+        25142,
+        25143,
+        25146,
+        25148,
+        25149
+      ],
+      "event_kinds_by_expanded_frame_touch": {
+        "none_of_measured_frame_sets": {
+          "effect_attr_compare_read": 43,
+          "effect_attr_write": 363,
+          "effect_edge_upsert": 105,
+          "effect_node_delete": 52,
+          "effect_node_mint": 32,
+          "effect_type_candidate_read": 932,
+          "effect_type_query": 208,
+          "pattern_edge": 818,
+          "term_attr_read": 1083319,
+          "term_edge_read": 5035,
+          "term_index_query": 528,
+          "term_type_read": 41682
+        },
+        "request_lifecycle": {
+          "effect_attr_write": 35,
+          "effect_edge_delete": 1,
+          "effect_edge_upsert": 9,
+          "effect_node_mint": 2,
+          "pattern_edge": 87,
+          "term_attr_read": 2818,
+          "term_edge_read": 700
+        },
+        "request_lifecycle+rule_produced_descendant": {
+          "effect_edge_upsert": 6,
+          "pattern_edge": 15,
+          "term_edge_read": 53
+        },
+        "rule_produced_descendant": {
+          "effect_attr_write": 20,
+          "effect_edge_upsert": 22,
+          "effect_node_mint": 7,
+          "pattern_edge": 19,
+          "term_attr_read": 767,
+          "term_edge_read": 2802,
+          "term_type_read": 12
+        },
+        "shared_scene_input": {
+          "effect_edge_upsert": 48,
+          "pattern_edge": 48,
+          "term_attr_read": 304
+        }
+      },
+      "events_by_expanded_frame_touch": {
+        "none_of_measured_frame_sets": 1133117,
+        "request_lifecycle": 3652,
+        "request_lifecycle+rule_produced_descendant": 74,
+        "rule_produced_descendant": 3649,
+        "shared_scene_input": 400
+      },
+      "events_touching_any_measured_frame_node": 7775,
+      "limitation": "Descendants are only rule-minted nodes connected by captured native effect_edge_upsert rows. Host-created nodes, non-mint descendant mutations, specialized untraced operations, and dependencies without concrete node/peer events are omitted; this is a lower bound, not a complete ownership assignment.",
+      "request": "request-A",
+      "rule_effect_edges_incident_to_descendants": [
+        {
+          "count": 1,
+          "edge_type": "has_intent",
+          "other_endpoint_type": "preexisting_or_host_created",
+          "rule_name": "rule_intent_from_claim",
+          "src": 24947,
+          "tgt": 24958
+        },
+        {
+          "count": 1,
+          "edge_type": "speech_act",
+          "other_endpoint_type": "preexisting_or_host_created",
+          "rule_name": "rule_intent_from_claim",
+          "src": 24958,
+          "tgt": 4752
+        },
+        {
+          "count": 1,
+          "edge_type": "claimed_speaker",
+          "other_endpoint_type": "preexisting_or_host_created",
+          "rule_name": "rule_intent_from_claim",
+          "src": 24958,
+          "tgt": 24948
+        },
+        {
+          "count": 1,
+          "edge_type": "speaker",
+          "other_endpoint_type": "preexisting_or_host_created",
+          "rule_name": "rule_intent_from_claim",
+          "src": 24958,
+          "tgt": 24948
+        },
+        {
+          "count": 1,
+          "edge_type": "about_concept",
+          "other_endpoint_type": "preexisting_or_host_created",
+          "rule_name": "rule_intent_about_mentioned_concept",
+          "src": 24958,
+          "tgt": 3249
+        },
+        {
+          "count": 1,
+          "edge_type": "about_concept",
+          "other_endpoint_type": "preexisting_or_host_created",
+          "rule_name": "rule_intent_about_mentioned_concept",
+          "src": 24958,
+          "tgt": 3328
+        },
+        {
+          "count": 1,
+          "edge_type": "about_concept",
+          "other_endpoint_type": "preexisting_or_host_created",
+          "rule_name": "rule_intent_about_mentioned_concept",
+          "src": 24958,
+          "tgt": 4966
+        },
+        {
+          "count": 1,
+          "edge_type": "about_concept",
+          "other_endpoint_type": "preexisting_or_host_created",
+          "rule_name": "rule_intent_about_mentioned_concept",
+          "src": 24958,
+          "tgt": 4997
+        },
+        {
+          "count": 1,
+          "edge_type": "about_concept",
+          "other_endpoint_type": "preexisting_or_host_created",
+          "rule_name": "rule_intent_about_mentioned_concept",
+          "src": 24958,
+          "tgt": 5350
+        },
+        {
+          "count": 1,
+          "edge_type": "about_concept",
+          "other_endpoint_type": "preexisting_or_host_created",
+          "rule_name": "rule_intent_about_mentioned_concept",
+          "src": 24958,
+          "tgt": 8618
+        },
+        {
+          "count": 1,
+          "edge_type": "about_concept",
+          "other_endpoint_type": "preexisting_or_host_created",
+          "rule_name": "rule_intent_about_mentioned_concept",
+          "src": 24958,
+          "tgt": 10263
+        },
+        {
+          "count": 1,
+          "edge_type": "about_concept",
+          "other_endpoint_type": "preexisting_or_host_created",
+          "rule_name": "rule_intent_about_mentioned_concept",
+          "src": 24958,
+          "tgt": 10301
+        },
+        {
+          "count": 1,
+          "edge_type": "about_concept",
+          "other_endpoint_type": "preexisting_or_host_created",
+          "rule_name": "rule_intent_about_mentioned_concept",
+          "src": 24958,
+          "tgt": 10744
+        },
+        {
+          "count": 1,
+          "edge_type": "about_concept",
+          "other_endpoint_type": "preexisting_or_host_created",
+          "rule_name": "rule_intent_about_mentioned_concept",
+          "src": 24958,
+          "tgt": 19306
+        },
+        {
+          "count": 1,
+          "edge_type": "has_self_concern",
+          "other_endpoint_type": "preexisting_or_host_created",
+          "rule_name": "note_unhandled_instruction_gap",
+          "src": 0,
+          "tgt": 25135
+        },
+        {
+          "count": 1,
+          "edge_type": "about_message",
+          "other_endpoint_type": "preexisting_or_host_created",
+          "rule_name": "note_unhandled_instruction_gap",
+          "src": 25135,
+          "tgt": 24947
+        },
+        {
+          "count": 1,
+          "edge_type": "has_gap_recurrence",
+          "other_endpoint_type": "preexisting_or_host_created",
+          "rule_name": "register_gap_recurrence_identity",
+          "src": 0,
+          "tgt": 25137
+        },
+        {
+          "count": 1,
+          "edge_type": "tracks_self_concern",
+          "other_endpoint_type": "rule_minted",
+          "rule_name": "register_gap_recurrence_identity",
+          "src": 25137,
+          "tgt": 25135
+        },
+        {
+          "count": 1,
+          "edge_type": "seeks_interpretation_shadow",
+          "other_endpoint_type": "preexisting_or_host_created",
+          "rule_name": "ris_request_independent_shadow",
+          "src": 24947,
+          "tgt": 24961
+        },
+        {
+          "count": 1,
+          "edge_type": "has_subgoal",
+          "other_endpoint_type": "rule_minted",
+          "rule_name": "communicate_what_i_see_communicate_what_i_see",
+          "src": 25107,
+          "tgt": 25108
+        },
+        {
+          "count": 1,
+          "edge_type": "has_subgoal",
+          "other_endpoint_type": "rule_minted",
+          "rule_name": "communicate_what_i_see_communicate_what_i_see",
+          "src": 25107,
+          "tgt": 25109
+        },
+        {
+          "count": 1,
+          "edge_type": "has_subgoal",
+          "other_endpoint_type": "rule_minted",
+          "rule_name": "communicate_what_i_see_communicate_what_i_see",
+          "src": 25107,
+          "tgt": 25110
+        },
+        {
+          "count": 1,
+          "edge_type": "about",
+          "other_endpoint_type": "preexisting_or_host_created",
+          "rule_name": "communicate_what_i_see_communicate_what_i_see",
+          "src": 25108,
+          "tgt": 5575
+        },
+        {
+          "count": 1,
+          "edge_type": "of_percept",
+          "other_endpoint_type": "preexisting_or_host_created",
+          "rule_name": "communicate_what_i_see_communicate_what_i_see",
+          "src": 25108,
+          "tgt": 25104
+        },
+        {
+          "count": 1,
+          "edge_type": "about",
+          "other_endpoint_type": "preexisting_or_host_created",
+          "rule_name": "communicate_what_i_see_communicate_what_i_see",
+          "src": 25109,
+          "tgt": 5576
+        },
+        {
+          "count": 1,
+          "edge_type": "of_percept",
+          "other_endpoint_type": "preexisting_or_host_created",
+          "rule_name": "communicate_what_i_see_communicate_what_i_see",
+          "src": 25109,
+          "tgt": 25105
+        },
+        {
+          "count": 1,
+          "edge_type": "about",
+          "other_endpoint_type": "preexisting_or_host_created",
+          "rule_name": "communicate_what_i_see_communicate_what_i_see",
+          "src": 25110,
+          "tgt": 5574
+        },
+        {
+          "count": 1,
+          "edge_type": "of_percept",
+          "other_endpoint_type": "preexisting_or_host_created",
+          "rule_name": "communicate_what_i_see_communicate_what_i_see",
+          "src": 25110,
+          "tgt": 25106
+        }
+      ],
+      "rule_produced_descendant_count": 7,
+      "rule_produced_descendant_ids": [
+        24958,
+        24961,
+        25108,
+        25109,
+        25110,
+        25135,
+        25137
+      ],
+      "rule_produced_descendants_by_type": {
+        "GapRecurrence": 1,
+        "Goal": 3,
+        "Intent": 1,
+        "SelfConcern": 1,
+        "TeacherRequest": 1
+      },
+      "selected_events_total": 1140892,
+      "shared_scene_input_nodes": 4
+    },
+    {
+      "base_lifecycle_nodes": 6,
+      "candidate_rule_minted_node_ids": [
+        9,
+        12,
+        16,
+        17,
+        18,
+        23,
+        29,
+        36,
+        38,
+        25158,
+        25159,
+        25160,
+        25161,
+        25166,
+        25167,
+        25168,
+        25169,
+        25175,
+        25176,
+        25177,
+        25181,
+        25184,
+        25185,
+        25190,
+        25191,
+        25192,
+        25195,
+        25198,
+        25199
+      ],
+      "event_kinds_by_expanded_frame_touch": {
+        "none_of_measured_frame_sets": {
+          "effect_attr_compare_read": 27,
+          "effect_attr_write": 258,
+          "effect_edge_upsert": 139,
+          "effect_node_delete": 52,
+          "effect_node_mint": 23,
+          "effect_type_candidate_read": 936,
+          "effect_type_query": 208,
+          "pattern_edge": 800,
+          "term_attr_read": 961152,
+          "term_edge_read": 8353,
+          "term_index_query": 468,
+          "term_type_read": 16624
+        },
+        "other_request_lifecycle": {
+          "effect_attr_write": 13,
+          "pattern_edge": 40,
+          "term_attr_read": 2086,
+          "term_edge_read": 248
+        },
+        "request_lifecycle": {
+          "effect_attr_write": 24,
+          "effect_edge_delete": 1,
+          "effect_edge_upsert": 7,
+          "effect_node_mint": 1,
+          "pattern_edge": 69,
+          "term_attr_read": 2380,
+          "term_edge_read": 868
+        },
+        "request_lifecycle+other_request_lifecycle": {
+          "term_edge_read": 13
+        },
+        "request_lifecycle+rule_produced_descendant": {
+          "effect_edge_upsert": 5,
+          "pattern_edge": 11,
+          "term_edge_read": 37
+        },
+        "rule_produced_descendant": {
+          "effect_attr_write": 8,
+          "effect_edge_upsert": 19,
+          "effect_node_mint": 5,
+          "pattern_edge": 12,
+          "term_attr_read": 336,
+          "term_edge_read": 2300
+        },
+        "shared_scene_input": {
+          "effect_edge_upsert": 39,
+          "pattern_edge": 39,
+          "term_attr_read": 247
+        }
+      },
+      "events_by_expanded_frame_touch": {
+        "none_of_measured_frame_sets": 989040,
+        "other_request_lifecycle": 2387,
+        "request_lifecycle": 3350,
+        "request_lifecycle+other_request_lifecycle": 13,
+        "request_lifecycle+rule_produced_descendant": 53,
+        "rule_produced_descendant": 2680,
+        "shared_scene_input": 325
+      },
+      "events_touching_any_measured_frame_node": 8808,
+      "limitation": "Descendants are only rule-minted nodes connected by captured native effect_edge_upsert rows. Host-created nodes, non-mint descendant mutations, specialized untraced operations, and dependencies without concrete node/peer events are omitted; this is a lower bound, not a complete ownership assignment.",
+      "request": "request-B",
+      "rule_effect_edges_incident_to_descendants": [
+        {
+          "count": 1,
+          "edge_type": "has_intent",
+          "other_endpoint_type": "preexisting_or_host_created",
+          "rule_name": "rule_intent_from_claim",
+          "src": 25151,
+          "tgt": 25158
+        },
+        {
+          "count": 1,
+          "edge_type": "speech_act",
+          "other_endpoint_type": "preexisting_or_host_created",
+          "rule_name": "rule_intent_from_claim",
+          "src": 25158,
+          "tgt": 4752
+        },
+        {
+          "count": 1,
+          "edge_type": "claimed_speaker",
+          "other_endpoint_type": "preexisting_or_host_created",
+          "rule_name": "rule_intent_from_claim",
+          "src": 25158,
+          "tgt": 24948
+        },
+        {
+          "count": 1,
+          "edge_type": "speaker",
+          "other_endpoint_type": "preexisting_or_host_created",
+          "rule_name": "rule_intent_from_claim",
+          "src": 25158,
+          "tgt": 24948
+        },
+        {
+          "count": 1,
+          "edge_type": "about_concept",
+          "other_endpoint_type": "preexisting_or_host_created",
+          "rule_name": "rule_intent_about_mentioned_concept",
+          "src": 25158,
+          "tgt": 3249
+        },
+        {
+          "count": 1,
+          "edge_type": "about_concept",
+          "other_endpoint_type": "preexisting_or_host_created",
+          "rule_name": "rule_intent_about_mentioned_concept",
+          "src": 25158,
+          "tgt": 3328
+        },
+        {
+          "count": 1,
+          "edge_type": "about_concept",
+          "other_endpoint_type": "preexisting_or_host_created",
+          "rule_name": "rule_intent_about_mentioned_concept",
+          "src": 25158,
+          "tgt": 4966
+        },
+        {
+          "count": 1,
+          "edge_type": "about_concept",
+          "other_endpoint_type": "preexisting_or_host_created",
+          "rule_name": "rule_intent_about_mentioned_concept",
+          "src": 25158,
+          "tgt": 4997
+        },
+        {
+          "count": 1,
+          "edge_type": "about_concept",
+          "other_endpoint_type": "preexisting_or_host_created",
+          "rule_name": "rule_intent_about_mentioned_concept",
+          "src": 25158,
+          "tgt": 5350
+        },
+        {
+          "count": 1,
+          "edge_type": "about_concept",
+          "other_endpoint_type": "preexisting_or_host_created",
+          "rule_name": "rule_intent_about_mentioned_concept",
+          "src": 25158,
+          "tgt": 8618
+        },
+        {
+          "count": 1,
+          "edge_type": "about_concept",
+          "other_endpoint_type": "preexisting_or_host_created",
+          "rule_name": "rule_intent_about_mentioned_concept",
+          "src": 25158,
+          "tgt": 10263
+        },
+        {
+          "count": 1,
+          "edge_type": "about_concept",
+          "other_endpoint_type": "preexisting_or_host_created",
+          "rule_name": "rule_intent_about_mentioned_concept",
+          "src": 25158,
+          "tgt": 10301
+        },
+        {
+          "count": 1,
+          "edge_type": "about_concept",
+          "other_endpoint_type": "preexisting_or_host_created",
+          "rule_name": "rule_intent_about_mentioned_concept",
+          "src": 25158,
+          "tgt": 10744
+        },
+        {
+          "count": 1,
+          "edge_type": "about_concept",
+          "other_endpoint_type": "preexisting_or_host_created",
+          "rule_name": "rule_intent_about_mentioned_concept",
+          "src": 25158,
+          "tgt": 19306
+        },
+        {
+          "count": 1,
+          "edge_type": "seeks_interpretation_shadow",
+          "other_endpoint_type": "preexisting_or_host_created",
+          "rule_name": "ris_request_independent_shadow",
+          "src": 25151,
+          "tgt": 25161
+        },
+        {
+          "count": 1,
+          "edge_type": "has_subgoal",
+          "other_endpoint_type": "rule_minted",
+          "rule_name": "communicate_what_i_see_communicate_what_i_see",
+          "src": 25166,
+          "tgt": 25167
+        },
+        {
+          "count": 1,
+          "edge_type": "has_subgoal",
+          "other_endpoint_type": "rule_minted",
+          "rule_name": "communicate_what_i_see_communicate_what_i_see",
+          "src": 25166,
+          "tgt": 25168
+        },
+        {
+          "count": 1,
+          "edge_type": "has_subgoal",
+          "other_endpoint_type": "rule_minted",
+          "rule_name": "communicate_what_i_see_communicate_what_i_see",
+          "src": 25166,
+          "tgt": 25169
+        },
+        {
+          "count": 1,
+          "edge_type": "about",
+          "other_endpoint_type": "preexisting_or_host_created",
+          "rule_name": "communicate_what_i_see_communicate_what_i_see",
+          "src": 25167,
+          "tgt": 5575
+        },
+        {
+          "count": 1,
+          "edge_type": "of_percept",
+          "other_endpoint_type": "preexisting_or_host_created",
+          "rule_name": "communicate_what_i_see_communicate_what_i_see",
+          "src": 25167,
+          "tgt": 25163
+        },
+        {
+          "count": 1,
+          "edge_type": "about",
+          "other_endpoint_type": "preexisting_or_host_created",
+          "rule_name": "communicate_what_i_see_communicate_what_i_see",
+          "src": 25168,
+          "tgt": 5576
+        },
+        {
+          "count": 1,
+          "edge_type": "of_percept",
+          "other_endpoint_type": "preexisting_or_host_created",
+          "rule_name": "communicate_what_i_see_communicate_what_i_see",
+          "src": 25168,
+          "tgt": 25164
+        },
+        {
+          "count": 1,
+          "edge_type": "about",
+          "other_endpoint_type": "preexisting_or_host_created",
+          "rule_name": "communicate_what_i_see_communicate_what_i_see",
+          "src": 25169,
+          "tgt": 5574
+        },
+        {
+          "count": 1,
+          "edge_type": "of_percept",
+          "other_endpoint_type": "preexisting_or_host_created",
+          "rule_name": "communicate_what_i_see_communicate_what_i_see",
+          "src": 25169,
+          "tgt": 25165
+        }
+      ],
+      "rule_produced_descendant_count": 5,
+      "rule_produced_descendant_ids": [
+        25158,
+        25161,
+        25167,
+        25168,
+        25169
+      ],
+      "rule_produced_descendants_by_type": {
+        "Goal": 3,
+        "Intent": 1,
+        "TeacherRequest": 1
+      },
+      "selected_events_total": 997848,
+      "shared_scene_input_nodes": 4
+    },
+    {
+      "base_lifecycle_nodes": 7,
+      "candidate_rule_minted_node_ids": [
+        9,
+        12,
+        16,
+        17,
+        18,
+        23,
+        29,
+        36,
+        38,
+        24958,
+        24959,
+        24960,
+        24961,
+        24963,
+        24967,
+        24971,
+        24975,
+        25107,
+        25108,
+        25109,
+        25110,
+        25111,
+        25112,
+        25113,
+        25114,
+        25120,
+        25125,
+        25126,
+        25127,
+        25130,
+        25132,
+        25133,
+        25135,
+        25136,
+        25137,
+        25141,
+        25142,
+        25143,
+        25146,
+        25148,
+        25149
+      ],
+      "event_kinds_by_expanded_frame_touch": {
+        "none_of_measured_frame_sets": {
+          "effect_attr_compare_read": 43,
+          "effect_attr_write": 363,
+          "effect_edge_upsert": 105,
+          "effect_node_delete": 52,
+          "effect_node_mint": 32,
+          "effect_type_candidate_read": 932,
+          "effect_type_query": 208,
+          "pattern_edge": 818,
+          "term_attr_read": 1083319,
+          "term_edge_read": 5035,
+          "term_index_query": 528,
+          "term_type_read": 41682
+        },
+        "request_lifecycle": {
+          "effect_attr_write": 35,
+          "effect_edge_delete": 1,
+          "effect_edge_upsert": 9,
+          "effect_node_mint": 2,
+          "pattern_edge": 87,
+          "term_attr_read": 2818,
+          "term_edge_read": 700
+        },
+        "request_lifecycle+rule_produced_descendant": {
+          "effect_edge_upsert": 6,
+          "pattern_edge": 15,
+          "term_edge_read": 53
+        },
+        "rule_produced_descendant": {
+          "effect_attr_write": 20,
+          "effect_edge_upsert": 22,
+          "effect_node_mint": 7,
+          "pattern_edge": 19,
+          "term_attr_read": 767,
+          "term_edge_read": 2802,
+          "term_type_read": 12
+        },
+        "shared_scene_input": {
+          "effect_edge_upsert": 48,
+          "pattern_edge": 48,
+          "term_attr_read": 304
+        }
+      },
+      "events_by_expanded_frame_touch": {
+        "none_of_measured_frame_sets": 1133117,
+        "request_lifecycle": 3652,
+        "request_lifecycle+rule_produced_descendant": 74,
+        "rule_produced_descendant": 3649,
+        "shared_scene_input": 400
+      },
+      "events_touching_any_measured_frame_node": 7775,
+      "limitation": "Descendants are only rule-minted nodes connected by captured native effect_edge_upsert rows. Host-created nodes, non-mint descendant mutations, specialized untraced operations, and dependencies without concrete node/peer events are omitted; this is a lower bound, not a complete ownership assignment.",
+      "request": "request-A",
+      "rule_effect_edges_incident_to_descendants": [
+        {
+          "count": 1,
+          "edge_type": "has_intent",
+          "other_endpoint_type": "preexisting_or_host_created",
+          "rule_name": "rule_intent_from_claim",
+          "src": 24947,
+          "tgt": 24958
+        },
+        {
+          "count": 1,
+          "edge_type": "speech_act",
+          "other_endpoint_type": "preexisting_or_host_created",
+          "rule_name": "rule_intent_from_claim",
+          "src": 24958,
+          "tgt": 4752
+        },
+        {
+          "count": 1,
+          "edge_type": "claimed_speaker",
+          "other_endpoint_type": "preexisting_or_host_created",
+          "rule_name": "rule_intent_from_claim",
+          "src": 24958,
+          "tgt": 24948
+        },
+        {
+          "count": 1,
+          "edge_type": "speaker",
+          "other_endpoint_type": "preexisting_or_host_created",
+          "rule_name": "rule_intent_from_claim",
+          "src": 24958,
+          "tgt": 24948
+        },
+        {
+          "count": 1,
+          "edge_type": "about_concept",
+          "other_endpoint_type": "preexisting_or_host_created",
+          "rule_name": "rule_intent_about_mentioned_concept",
+          "src": 24958,
+          "tgt": 3249
+        },
+        {
+          "count": 1,
+          "edge_type": "about_concept",
+          "other_endpoint_type": "preexisting_or_host_created",
+          "rule_name": "rule_intent_about_mentioned_concept",
+          "src": 24958,
+          "tgt": 3328
+        },
+        {
+          "count": 1,
+          "edge_type": "about_concept",
+          "other_endpoint_type": "preexisting_or_host_created",
+          "rule_name": "rule_intent_about_mentioned_concept",
+          "src": 24958,
+          "tgt": 4966
+        },
+        {
+          "count": 1,
+          "edge_type": "about_concept",
+          "other_endpoint_type": "preexisting_or_host_created",
+          "rule_name": "rule_intent_about_mentioned_concept",
+          "src": 24958,
+          "tgt": 4997
+        },
+        {
+          "count": 1,
+          "edge_type": "about_concept",
+          "other_endpoint_type": "preexisting_or_host_created",
+          "rule_name": "rule_intent_about_mentioned_concept",
+          "src": 24958,
+          "tgt": 5350
+        },
+        {
+          "count": 1,
+          "edge_type": "about_concept",
+          "other_endpoint_type": "preexisting_or_host_created",
+          "rule_name": "rule_intent_about_mentioned_concept",
+          "src": 24958,
+          "tgt": 8618
+        },
+        {
+          "count": 1,
+          "edge_type": "about_concept",
+          "other_endpoint_type": "preexisting_or_host_created",
+          "rule_name": "rule_intent_about_mentioned_concept",
+          "src": 24958,
+          "tgt": 10263
+        },
+        {
+          "count": 1,
+          "edge_type": "about_concept",
+          "other_endpoint_type": "preexisting_or_host_created",
+          "rule_name": "rule_intent_about_mentioned_concept",
+          "src": 24958,
+          "tgt": 10301
+        },
+        {
+          "count": 1,
+          "edge_type": "about_concept",
+          "other_endpoint_type": "preexisting_or_host_created",
+          "rule_name": "rule_intent_about_mentioned_concept",
+          "src": 24958,
+          "tgt": 10744
+        },
+        {
+          "count": 1,
+          "edge_type": "about_concept",
+          "other_endpoint_type": "preexisting_or_host_created",
+          "rule_name": "rule_intent_about_mentioned_concept",
+          "src": 24958,
+          "tgt": 19306
+        },
+        {
+          "count": 1,
+          "edge_type": "has_self_concern",
+          "other_endpoint_type": "preexisting_or_host_created",
+          "rule_name": "note_unhandled_instruction_gap",
+          "src": 0,
+          "tgt": 25135
+        },
+        {
+          "count": 1,
+          "edge_type": "about_message",
+          "other_endpoint_type": "preexisting_or_host_created",
+          "rule_name": "note_unhandled_instruction_gap",
+          "src": 25135,
+          "tgt": 24947
+        },
+        {
+          "count": 1,
+          "edge_type": "has_gap_recurrence",
+          "other_endpoint_type": "preexisting_or_host_created",
+          "rule_name": "register_gap_recurrence_identity",
+          "src": 0,
+          "tgt": 25137
+        },
+        {
+          "count": 1,
+          "edge_type": "tracks_self_concern",
+          "other_endpoint_type": "rule_minted",
+          "rule_name": "register_gap_recurrence_identity",
+          "src": 25137,
+          "tgt": 25135
+        },
+        {
+          "count": 1,
+          "edge_type": "seeks_interpretation_shadow",
+          "other_endpoint_type": "preexisting_or_host_created",
+          "rule_name": "ris_request_independent_shadow",
+          "src": 24947,
+          "tgt": 24961
+        },
+        {
+          "count": 1,
+          "edge_type": "has_subgoal",
+          "other_endpoint_type": "rule_minted",
+          "rule_name": "communicate_what_i_see_communicate_what_i_see",
+          "src": 25107,
+          "tgt": 25108
+        },
+        {
+          "count": 1,
+          "edge_type": "has_subgoal",
+          "other_endpoint_type": "rule_minted",
+          "rule_name": "communicate_what_i_see_communicate_what_i_see",
+          "src": 25107,
+          "tgt": 25109
+        },
+        {
+          "count": 1,
+          "edge_type": "has_subgoal",
+          "other_endpoint_type": "rule_minted",
+          "rule_name": "communicate_what_i_see_communicate_what_i_see",
+          "src": 25107,
+          "tgt": 25110
+        },
+        {
+          "count": 1,
+          "edge_type": "about",
+          "other_endpoint_type": "preexisting_or_host_created",
+          "rule_name": "communicate_what_i_see_communicate_what_i_see",
+          "src": 25108,
+          "tgt": 5575
+        },
+        {
+          "count": 1,
+          "edge_type": "of_percept",
+          "other_endpoint_type": "preexisting_or_host_created",
+          "rule_name": "communicate_what_i_see_communicate_what_i_see",
+          "src": 25108,
+          "tgt": 25104
+        },
+        {
+          "count": 1,
+          "edge_type": "about",
+          "other_endpoint_type": "preexisting_or_host_created",
+          "rule_name": "communicate_what_i_see_communicate_what_i_see",
+          "src": 25109,
+          "tgt": 5576
+        },
+        {
+          "count": 1,
+          "edge_type": "of_percept",
+          "other_endpoint_type": "preexisting_or_host_created",
+          "rule_name": "communicate_what_i_see_communicate_what_i_see",
+          "src": 25109,
+          "tgt": 25105
+        },
+        {
+          "count": 1,
+          "edge_type": "about",
+          "other_endpoint_type": "preexisting_or_host_created",
+          "rule_name": "communicate_what_i_see_communicate_what_i_see",
+          "src": 25110,
+          "tgt": 5574
+        },
+        {
+          "count": 1,
+          "edge_type": "of_percept",
+          "other_endpoint_type": "preexisting_or_host_created",
+          "rule_name": "communicate_what_i_see_communicate_what_i_see",
+          "src": 25110,
+          "tgt": 25106
+        }
+      ],
+      "rule_produced_descendant_count": 7,
+      "rule_produced_descendant_ids": [
+        24958,
+        24961,
+        25108,
+        25109,
+        25110,
+        25135,
+        25137
+      ],
+      "rule_produced_descendants_by_type": {
+        "GapRecurrence": 1,
+        "Goal": 3,
+        "Intent": 1,
+        "SelfConcern": 1,
+        "TeacherRequest": 1
+      },
+      "selected_events_total": 1140892,
+      "shared_scene_input_nodes": 4
+    },
+    {
+      "base_lifecycle_nodes": 6,
+      "candidate_rule_minted_node_ids": [
+        9,
+        12,
+        16,
+        17,
+        18,
+        23,
+        29,
+        36,
+        38,
+        25158,
+        25159,
+        25160,
+        25161,
+        25166,
+        25167,
+        25168,
+        25169,
+        25175,
+        25176,
+        25177,
+        25181,
+        25184,
+        25185,
+        25190,
+        25191,
+        25192,
+        25195,
+        25198,
+        25199
+      ],
+      "event_kinds_by_expanded_frame_touch": {
+        "none_of_measured_frame_sets": {
+          "effect_attr_compare_read": 27,
+          "effect_attr_write": 258,
+          "effect_edge_upsert": 139,
+          "effect_node_delete": 52,
+          "effect_node_mint": 23,
+          "effect_type_candidate_read": 936,
+          "effect_type_query": 208,
+          "pattern_edge": 800,
+          "term_attr_read": 961152,
+          "term_edge_read": 8353,
+          "term_index_query": 468,
+          "term_type_read": 16624
+        },
+        "other_request_lifecycle": {
+          "effect_attr_write": 13,
+          "pattern_edge": 40,
+          "term_attr_read": 2086,
+          "term_edge_read": 248
+        },
+        "request_lifecycle": {
+          "effect_attr_write": 24,
+          "effect_edge_delete": 1,
+          "effect_edge_upsert": 7,
+          "effect_node_mint": 1,
+          "pattern_edge": 69,
+          "term_attr_read": 2380,
+          "term_edge_read": 868
+        },
+        "request_lifecycle+other_request_lifecycle": {
+          "term_edge_read": 13
+        },
+        "request_lifecycle+rule_produced_descendant": {
+          "effect_edge_upsert": 5,
+          "pattern_edge": 11,
+          "term_edge_read": 37
+        },
+        "rule_produced_descendant": {
+          "effect_attr_write": 8,
+          "effect_edge_upsert": 19,
+          "effect_node_mint": 5,
+          "pattern_edge": 12,
+          "term_attr_read": 336,
+          "term_edge_read": 2300
+        },
+        "shared_scene_input": {
+          "effect_edge_upsert": 39,
+          "pattern_edge": 39,
+          "term_attr_read": 247
+        }
+      },
+      "events_by_expanded_frame_touch": {
+        "none_of_measured_frame_sets": 989040,
+        "other_request_lifecycle": 2387,
+        "request_lifecycle": 3350,
+        "request_lifecycle+other_request_lifecycle": 13,
+        "request_lifecycle+rule_produced_descendant": 53,
+        "rule_produced_descendant": 2680,
+        "shared_scene_input": 325
+      },
+      "events_touching_any_measured_frame_node": 8808,
+      "limitation": "Descendants are only rule-minted nodes connected by captured native effect_edge_upsert rows. Host-created nodes, non-mint descendant mutations, specialized untraced operations, and dependencies without concrete node/peer events are omitted; this is a lower bound, not a complete ownership assignment.",
+      "request": "request-B",
+      "rule_effect_edges_incident_to_descendants": [
+        {
+          "count": 1,
+          "edge_type": "has_intent",
+          "other_endpoint_type": "preexisting_or_host_created",
+          "rule_name": "rule_intent_from_claim",
+          "src": 25151,
+          "tgt": 25158
+        },
+        {
+          "count": 1,
+          "edge_type": "speech_act",
+          "other_endpoint_type": "preexisting_or_host_created",
+          "rule_name": "rule_intent_from_claim",
+          "src": 25158,
+          "tgt": 4752
+        },
+        {
+          "count": 1,
+          "edge_type": "claimed_speaker",
+          "other_endpoint_type": "preexisting_or_host_created",
+          "rule_name": "rule_intent_from_claim",
+          "src": 25158,
+          "tgt": 24948
+        },
+        {
+          "count": 1,
+          "edge_type": "speaker",
+          "other_endpoint_type": "preexisting_or_host_created",
+          "rule_name": "rule_intent_from_claim",
+          "src": 25158,
+          "tgt": 24948
+        },
+        {
+          "count": 1,
+          "edge_type": "about_concept",
+          "other_endpoint_type": "preexisting_or_host_created",
+          "rule_name": "rule_intent_about_mentioned_concept",
+          "src": 25158,
+          "tgt": 3249
+        },
+        {
+          "count": 1,
+          "edge_type": "about_concept",
+          "other_endpoint_type": "preexisting_or_host_created",
+          "rule_name": "rule_intent_about_mentioned_concept",
+          "src": 25158,
+          "tgt": 3328
+        },
+        {
+          "count": 1,
+          "edge_type": "about_concept",
+          "other_endpoint_type": "preexisting_or_host_created",
+          "rule_name": "rule_intent_about_mentioned_concept",
+          "src": 25158,
+          "tgt": 4966
+        },
+        {
+          "count": 1,
+          "edge_type": "about_concept",
+          "other_endpoint_type": "preexisting_or_host_created",
+          "rule_name": "rule_intent_about_mentioned_concept",
+          "src": 25158,
+          "tgt": 4997
+        },
+        {
+          "count": 1,
+          "edge_type": "about_concept",
+          "other_endpoint_type": "preexisting_or_host_created",
+          "rule_name": "rule_intent_about_mentioned_concept",
+          "src": 25158,
+          "tgt": 5350
+        },
+        {
+          "count": 1,
+          "edge_type": "about_concept",
+          "other_endpoint_type": "preexisting_or_host_created",
+          "rule_name": "rule_intent_about_mentioned_concept",
+          "src": 25158,
+          "tgt": 8618
+        },
+        {
+          "count": 1,
+          "edge_type": "about_concept",
+          "other_endpoint_type": "preexisting_or_host_created",
+          "rule_name": "rule_intent_about_mentioned_concept",
+          "src": 25158,
+          "tgt": 10263
+        },
+        {
+          "count": 1,
+          "edge_type": "about_concept",
+          "other_endpoint_type": "preexisting_or_host_created",
+          "rule_name": "rule_intent_about_mentioned_concept",
+          "src": 25158,
+          "tgt": 10301
+        },
+        {
+          "count": 1,
+          "edge_type": "about_concept",
+          "other_endpoint_type": "preexisting_or_host_created",
+          "rule_name": "rule_intent_about_mentioned_concept",
+          "src": 25158,
+          "tgt": 10744
+        },
+        {
+          "count": 1,
+          "edge_type": "about_concept",
+          "other_endpoint_type": "preexisting_or_host_created",
+          "rule_name": "rule_intent_about_mentioned_concept",
+          "src": 25158,
+          "tgt": 19306
+        },
+        {
+          "count": 1,
+          "edge_type": "seeks_interpretation_shadow",
+          "other_endpoint_type": "preexisting_or_host_created",
+          "rule_name": "ris_request_independent_shadow",
+          "src": 25151,
+          "tgt": 25161
+        },
+        {
+          "count": 1,
+          "edge_type": "has_subgoal",
+          "other_endpoint_type": "rule_minted",
+          "rule_name": "communicate_what_i_see_communicate_what_i_see",
+          "src": 25166,
+          "tgt": 25167
+        },
+        {
+          "count": 1,
+          "edge_type": "has_subgoal",
+          "other_endpoint_type": "rule_minted",
+          "rule_name": "communicate_what_i_see_communicate_what_i_see",
+          "src": 25166,
+          "tgt": 25168
+        },
+        {
+          "count": 1,
+          "edge_type": "has_subgoal",
+          "other_endpoint_type": "rule_minted",
+          "rule_name": "communicate_what_i_see_communicate_what_i_see",
+          "src": 25166,
+          "tgt": 25169
+        },
+        {
+          "count": 1,
+          "edge_type": "about",
+          "other_endpoint_type": "preexisting_or_host_created",
+          "rule_name": "communicate_what_i_see_communicate_what_i_see",
+          "src": 25167,
+          "tgt": 5575
+        },
+        {
+          "count": 1,
+          "edge_type": "of_percept",
+          "other_endpoint_type": "preexisting_or_host_created",
+          "rule_name": "communicate_what_i_see_communicate_what_i_see",
+          "src": 25167,
+          "tgt": 25163
+        },
+        {
+          "count": 1,
+          "edge_type": "about",
+          "other_endpoint_type": "preexisting_or_host_created",
+          "rule_name": "communicate_what_i_see_communicate_what_i_see",
+          "src": 25168,
+          "tgt": 5576
+        },
+        {
+          "count": 1,
+          "edge_type": "of_percept",
+          "other_endpoint_type": "preexisting_or_host_created",
+          "rule_name": "communicate_what_i_see_communicate_what_i_see",
+          "src": 25168,
+          "tgt": 25164
+        },
+        {
+          "count": 1,
+          "edge_type": "about",
+          "other_endpoint_type": "preexisting_or_host_created",
+          "rule_name": "communicate_what_i_see_communicate_what_i_see",
+          "src": 25169,
+          "tgt": 5574
+        },
+        {
+          "count": 1,
+          "edge_type": "of_percept",
+          "other_endpoint_type": "preexisting_or_host_created",
+          "rule_name": "communicate_what_i_see_communicate_what_i_see",
+          "src": 25169,
+          "tgt": 25165
+        }
+      ],
+      "rule_produced_descendant_count": 5,
+      "rule_produced_descendant_ids": [
+        25158,
+        25161,
+        25167,
+        25168,
+        25169
+      ],
+      "rule_produced_descendants_by_type": {
+        "Goal": 3,
+        "Intent": 1,
+        "TeacherRequest": 1
+      },
+      "selected_events_total": 997848,
+      "shared_scene_input_nodes": 4
+    }
+  ],
+  "schema_version": 1
+}

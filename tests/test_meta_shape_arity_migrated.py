@@ -126,6 +126,12 @@ def test_rung_four_still_grows_the_codebook():
     minted = sorted(wa.s.node(n)["attrs"]["name"] for n in wa.s.nodes("MetaShape")
                     if wa.s.node(n)["attrs"].get("signature"))
     assert minted == ["ms_buyer_is_a_lot_seller", "ms_is_a_sensor_value"], minted
+    # tranche 2 gate 6: MetaShape mints carry provenance
+    for n in wa.s.nodes("MetaShape"):
+        a = wa.s.node(n)["attrs"]
+        if a.get("signature") and a.get("source") == "meta_shape_growth":
+            assert a.get("minted_from_signature"), a
+            assert "minted_epoch" in a
 
 
 def test_the_shared_covers_term_is_unchanged():

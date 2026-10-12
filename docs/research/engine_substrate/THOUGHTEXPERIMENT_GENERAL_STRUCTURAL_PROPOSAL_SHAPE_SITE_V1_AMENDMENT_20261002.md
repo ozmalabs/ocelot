@@ -1,0 +1,5 @@
+# General structural proposal shape-site direction v1 — amendment
+
+Before locking, code inspection of an earlier exploratory run found `_ensure_general_rule_provenance` skipped existing `RuleSummary` placeholders. That issue was repaired and remeasured in control-kind v1.2. A new unlocked shape-axis smoke then confirmed target selection but showed the deterministic key swap chose `signature->key` and failed the held-out shape oracle. The direction cue experiment therefore starts from known outcomes and is explicitly diagnostic; it must not be reported as first-look or confirmatory transfer.
+
+The implementation now exposes both ordered key-pair orientations as `EditSite` graph nodes. The graph Term scores those sites against the residual predicates, and equal best scores abstain. Python discovers existing attribute-key pairs and applies the chosen rewrite. The protocol compares a cue naming each orientation with an ambiguous cue to test cue-conditioned selection and tie refusal, and scores the resulting branches only after frozen order capture. No other target, operator, or task behavior changes.

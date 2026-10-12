@@ -6,12 +6,17 @@ def _event(case_id, state="defer"):
 
 
 def test_separates_graph_mismatch_from_interpretation_authority_gap():
-    corpus = {"events": [_event("graph"), _event("interpretation"), _event("match")]}
+    corpus = {"events": [_event("graph"), _event("interpretation"),
+                         _event("unverified_match"), _event("match")]}
     report = {"runtime_state_diagnostics": [
         {"id": "graph", "observed_state": "act", "match": False,
          "authority": "graph_readback", "source": "graph_resident_goal_lifecycle",
          "evidence_available": True, "release_state": "released"},
         {"id": "interpretation", "observed_state": "act", "match": False,
+         "authority": "interpretation_readback_not_disposition",
+         "source": "graph_resident_communication_interpretation",
+         "evidence_available": True, "release_state": "released"},
+        {"id": "unverified_match", "observed_state": "defer", "match": True,
          "authority": "interpretation_readback_not_disposition",
          "source": "graph_resident_communication_interpretation",
          "evidence_available": True, "release_state": "released"},
@@ -22,7 +27,7 @@ def test_separates_graph_mismatch_from_interpretation_authority_gap():
     result = adjudicate_runtime_state(report, corpus)
     assert result["status"] == "measured"
     assert result["category_counts"] == {
-        "disposition_authority_missing": 1,
+        "disposition_authority_missing": 2,
         "graph_cognitive_state_mismatch": 1,
         "state_match": 1,
     }
@@ -58,3 +63,25 @@ def test_current_corpus_observations_are_reused_without_surface_evidence():
         "disposition_authority_missing": 1,
     }
     assert result["reply_text_used_as_evidence"] is False
+
+
+def test_matching_label_without_disposition_authority_is_not_a_state_match():
+    result = adjudicate_runtime_state(
+        {"observations": [{
+            "id": "coincidental_match",
+            "expected_state": "repair",
+            "observed_state": "repair",
+            "state_match": True,
+            "cognitive_state_evidence_source":
+                "graph_resident_communication_interpretation",
+            "cognitive_state_authority":
+                "interpretation_readback_not_disposition",
+            "cognitive_state_evidence_available": True,
+            "release_state": "error",
+        }]},
+        {"events": [{"id": "coincidental_match",
+                     "expected_state": "repair"}]},
+    )
+    assert result["category_counts"] == {
+        "disposition_authority_missing": 1,
+    }

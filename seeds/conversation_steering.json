@@ -1,15 +1,16 @@
 {
  "id": "conversation_steering",
- "version": "1.0.0",
+ "version": "2.1.0",
  "depends_on": [
-  "intent"
+  "intent",
+  "lexical_qualia"
  ],
  "capability_keys": [
   "steer_gap_pipeline",
   "promote_concern",
   "retire_concern"
  ],
- "_steering_note": "NL PROMOTE/RETIRE STEERING over the gap pipeline (Wave 2). The human steers the agent's SelfConcern backlog in plain chat: 'Work on the <content> gap.' / 'Drop the <content> gap.'. VERBS ARE GRAPH DATA (the comprehend_instruction v2.0.0 pattern): each steering verb is a held Concept{name:<verb>, instruction_route:'steer_promote'|'steer_retire'} seeded below; the rules match a Mention of the turn resolving (intent's rule_mention_resolves_to_concept) to a route-carrying Concept -- no in-body verb list, teach-extensible at runtime. WHICH concern the turn names is decided graph-natively by CONTENT-WORD OVERLAP: a non-stopword Mention of the turn whose text occurs inside a noted SelfConcern's `content` (StringIndexOf >= 0 -- the graph reading its own filed gap text against the turn's own tokens). Exactly ONE concern is picked per turn via the retire_duplicate_gap Argmin idiom (the survivor is Argmin over the matching noted concerns from a fixed snapshot; the rule fires only for that binding), so a turn never batch-promotes several gaps or mints several replies. THE HUMAN GATE IS PRESERVED: steer_promote_concern only marks the concern `promote_requested=1.0` -- the DAEMON hook (_steer_tick) mechanically executes the EXISTING human-gated promote_self_concern on what the rule marked, and only interlocutor utterances (`from=='interlocutor'`) can mark it. steer_retire_concern mirrors gap_awareness's retire_duplicate_gap effects exactly (status='retired' + del_edge has_self_concern). AMBIGUITY FLOOR: when a steering verb + gap-noun fire but NO noted concern's content overlaps the turn, steer_clarify_no_match replies honestly that it couldn't tell which gap was meant and mints NOTHING (no marker, no retire). All three rules require a gap-NOUN mention (gap/concern/limitation/... -- held Concepts) so an ordinary sentence that happens to contain 'work'/'drop' never steers, and require the turn be instruction-shaped (comp_kind=='instruction' OR the boundary-classified 'request' speech act on the Message's has_speech_act edge -- a datum the adapter already writes, needed because the POS layer tags sentence-initial 'work'/'focus'/'drop' as nouns so comp_kind misses those imperatives; that POS mis-tag is the documented Python-layer blind spot). Every rule sets comprehended=1.0 on the Message it claims, so note_unhandled_instruction_gap never files a spurious gap for a steered turn. ANAPHORA ('work on that gap') is NOT wired: a bare demonstrative has no content-word overlap, so it lands on the clarify floor -- the honest, documented fallback (wiring it through current-topic tracking is a detour; the clarify floor names the fix: ask 'what gaps do you have' and name one).",
+ "_steering_note": "NL PROMOTE/RETIRE STEERING over the gap pipeline (Wave 2). The human steers the agent's SelfConcern backlog in plain chat: 'Work on the <content> gap.' / 'Drop the <content> gap.'. VERBS ARE GRAPH DATA (the comprehend_instruction v2.0.0 pattern): each steering verb is a held Concept{name:<verb>, instruction_route:'steer_promote'|'steer_retire'} seeded below; the rules match a Mention of the turn resolving (intent's rule_mention_resolves_to_concept) to a route-carrying Concept -- no in-body verb list, teach-extensible at runtime. WHICH concern the turn names is decided graph-natively by CONTENT-WORD OVERLAP: a non-stopword Mention of the turn whose text occurs inside a noted SelfConcern's `content` (StringIndexOf >= 0 -- the graph reading its own filed gap text against the turn's own tokens). Exactly ONE concern is picked per turn via the retire_duplicate_gap Argmin idiom (the survivor is Argmin over the matching noted concerns from a fixed snapshot; the rule fires only for that binding), so a turn never batch-promotes several gaps or mints several replies. THE HUMAN GATE IS PRESERVED: steer_promote_concern only marks the concern `promote_requested=1.0` -- the DAEMON hook (_steer_tick) mechanically executes the EXISTING human-gated promote_self_concern on what the rule marked, and only interlocutor utterances (`from=='interlocutor'`) can mark it. steer_retire_concern mirrors gap_awareness's retire_duplicate_gap effects exactly (status='retired' + del_edge has_self_concern). AMBIGUITY FLOOR: when a steering verb + gap-noun fire but NO noted concern's content overlaps the turn, steer_clarify_no_match replies honestly that it couldn't tell which gap was meant and mints NOTHING (no marker, no retire). All three rules require a gap-NOUN mention (gap/concern/limitation/... -- held Concepts) so an ordinary sentence that happens to contain 'work'/'drop' never steers, and require the turn be instruction-shaped (comp_kind=='instruction' OR the boundary-classified 'request' speech act on the Message's has_speech_act edge -- a datum the adapter already writes, needed because the POS layer tags sentence-initial 'work'/'focus'/'drop' as nouns so comp_kind misses those imperatives; that POS mis-tag is the documented Python-layer blind spot). Every rule sets comprehended=1.0 on the Message it claims, so note_unhandled_instruction_gap never files a spurious gap for a steered turn. ANAPHORA ('work on that gap') is NOT wired: a bare demonstrative has no content-word overlap, so it lands on the clarify floor -- the honest, documented fallback (wiring it through current-topic tracking is a detour; the clarify floor names the fix: ask 'what gaps do you have' and name one). || v2.0.0 (tranche 15): WHICH concern the turn names is decided by QUALIA, not content-word overlap -- see scripts/gen_steer_qualia_match.py. || v2.1.0 (tranche 17): the steering aperture also resolves lexical:definition qualia -- see scripts/gen_steer_aperture_definition.py.",
  "nodes": [
   {
    "local_id": 1,
@@ -165,6 +166,20 @@
     "name": "shortcomings",
     "description": "gap-noun (plural): filed shortcomings"
    }
+  },
+  {
+   "local_id": 19,
+   "type": "QualiaAperture",
+   "attrs": {
+    "name": "steering",
+    "resolves": [
+     "lexical:sense",
+     "lexical:definition",
+     "lexical:identity"
+    ],
+    "max_extent_per_mille": 50,
+    "description": "which qualia decide a steer match: WordNet senses, the definition quale of a held word grounded through its definition's genus, and the identity quale of an ungrounded held word; a shared quale counts only if at most max_extent_per_mille/1000 of held words share it. Agent-editable data."
+   }
   }
  ],
  "edges": [],
@@ -183,6 +198,14 @@
      "has_self_concern",
      "sc"
     ]
+   ],
+   "index_hints": [
+    {
+     "for_var": "m",
+     "probe_value": "interlocutor",
+     "node_type": "Message",
+     "this_key": "from"
+    }
    ],
    "where": {
     "type": "And",
@@ -410,291 +433,1492 @@
       }
      },
      {
-      "type": "Exists",
-      "source": {
-       "type": "Neighbours",
-       "node": {
-        "type": "Var",
-        "name": "m"
-       },
-       "edge_type": "has_mention"
-      },
-      "var_name": "mn",
-      "predicate": {
-       "type": "And",
-       "items": [
-        {
-         "type": "Not",
-         "arg": {
-          "type": "In",
-          "member": {
-           "type": "Attr",
-           "node": {
-            "type": "Var",
-            "name": "mn"
-           },
-           "key": "text"
-          },
-          "container": {
-           "type": "Lit",
-           "value": [
-            "the",
-            "a",
-            "an",
-            "on",
-            "to",
-            "of",
-            "in",
-            "at",
-            "for",
-            "and",
-            "or",
-            "it",
-            "its",
-            "this",
-            "that",
-            "my",
-            "your",
-            "you",
-            "yours",
-            "me",
-            "we",
-            "us",
-            "is",
-            "are",
-            "was",
-            "be",
-            "do",
-            "does",
-            "did",
-            "have",
-            "has",
-            "had",
-            "please",
-            "not",
-            "no",
-            "so",
-            "up",
-            "about",
-            "with",
-            "gap",
-            "gaps",
-            "concern",
-            "concerns",
-            "limitation",
-            "limitations",
-            "weakness",
-            "weaknesses",
-            "shortcoming",
-            "shortcomings",
-            "promote",
-            "pursue",
-            "prioritise",
-            "prioritize",
-            "work",
-            "working",
-            "focus",
-            "drop",
-            "retire",
-            "stop",
-            "abandon",
-            "dismiss"
-           ]
-          }
-         }
-        },
-        {
-         "type": "Gte",
-         "a": {
-          "type": "StringIndexOf",
-          "haystack": {
-           "type": "Attr",
-           "node": {
-            "type": "Var",
-            "name": "sc"
-           },
-           "key": "content"
-          },
-          "needle": {
-           "type": "Attr",
-           "node": {
-            "type": "Var",
-            "name": "mn"
-           },
-           "key": "text"
-          }
-         },
-         "b": {
-          "type": "Lit",
-          "value": 0
-         }
-        }
-       ]
-      }
-     },
-     {
-      "type": "Eq",
-      "a": {
-       "type": "Var",
-       "name": "sc"
-      },
-      "b": {
+      "type": "Let",
+      "name": "qap",
+      "value": {
        "type": "Argmin",
        "source": {
         "type": "Filter",
         "source": {
          "type": "NodesOfType",
-         "node_type": "SelfConcern"
+         "node_type": "QualiaAperture"
         },
-        "var_name": "y",
+        "var_name": "qa",
         "predicate": {
-         "type": "And",
-         "items": [
-          {
-           "type": "Eq",
-           "a": {
-            "type": "Attr",
-            "node": {
-             "type": "Var",
-             "name": "y"
-            },
-            "key": "status"
-           },
-           "b": {
-            "type": "Lit",
-            "value": "noted"
-           }
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "qa"
           },
-          {
-           "type": "Exists",
-           "source": {
-            "type": "Neighbours",
-            "node": {
-             "type": "Var",
-             "name": "m"
-            },
-            "edge_type": "has_mention"
+          "key": "name"
+         },
+         "b": {
+          "type": "Lit",
+          "value": "steering"
+         }
+        }
+       },
+       "var_name": "qa",
+       "value": {
+        "type": "Lit",
+        "value": 0
+       },
+       "default": null
+      },
+      "body": {
+       "type": "Let",
+       "name": "qix",
+       "value": {
+        "type": "Argmin",
+        "source": {
+         "type": "Filter",
+         "source": {
+          "type": "NodesOfType",
+          "node_type": "QualiaIndex"
+         },
+         "var_name": "qi",
+         "predicate": {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "qi"
            },
-           "var_name": "mn2",
-           "predicate": {
-            "type": "And",
-            "items": [
-             {
-              "type": "Not",
-              "arg": {
+           "key": "name"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "lexical_qualia"
+          }
+         }
+        },
+        "var_name": "qi",
+        "value": {
+         "type": "Lit",
+         "value": 0
+        },
+        "default": null
+       },
+       "body": {
+        "type": "Let",
+        "name": "steer_targets",
+        "value": {
+         "type": "FilterList",
+         "source": {
+          "type": "Neighbours",
+          "node": {
+           "type": "Var",
+           "name": "m"
+          },
+          "edge_type": "has_mention"
+         },
+         "var_name": "mn",
+         "predicate": {
+          "type": "And",
+          "items": [
+           {
+            "type": "Not",
+            "arg": {
+             "type": "Exists",
+             "source": {
+              "type": "Neighbours",
+              "node": {
+               "type": "Var",
+               "name": "mn"
+              },
+              "edge_type": "refers_to"
+             },
+             "var_name": "rc",
+             "predicate": {
+              "type": "Or",
+              "items": [
+               {
+                "type": "In",
+                "member": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "rc"
+                 },
+                 "key": "instruction_route"
+                },
+                "container": {
+                 "type": "Lit",
+                 "value": [
+                  "steer_promote",
+                  "steer_retire"
+                 ]
+                }
+               },
+               {
+                "type": "And",
+                "items": [
+                 {
+                  "type": "Eq",
+                  "a": {
+                   "type": "TypeOf",
+                   "node": {
+                    "type": "Var",
+                    "name": "rc"
+                   }
+                  },
+                  "b": {
+                   "type": "Lit",
+                   "value": "Concept"
+                  }
+                 },
+                 {
+                  "type": "In",
+                  "member": {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "rc"
+                   },
+                   "key": "name"
+                  },
+                  "container": {
+                   "type": "Lit",
+                   "value": [
+                    "gap",
+                    "gaps",
+                    "concern",
+                    "concerns",
+                    "limitation",
+                    "limitations",
+                    "weakness",
+                    "weaknesses",
+                    "shortcoming",
+                    "shortcomings"
+                   ]
+                  }
+                 }
+                ]
+               }
+              ]
+             }
+            }
+           },
+           {
+            "type": "Exists",
+            "source": {
+             "type": "Fold",
+             "source": {
+              "type": "Neighbours",
+              "node": {
+               "type": "Var",
+               "name": "mn"
+              },
+              "edge_type": "refers_to"
+             },
+             "var_name": "qc",
+             "acc_name": "qacc",
+             "init": {
+              "type": "SetT",
+              "items": []
+             },
+             "body": {
+              "type": "Union",
+              "a": {
+               "type": "Var",
+               "name": "qacc"
+              },
+              "b": {
+               "type": "ReachableFrom",
+               "node": {
+                "type": "Var",
+                "name": "qc"
+               },
+               "edge_type": "has_quale"
+              }
+             }
+            },
+            "var_name": "q",
+            "predicate": {
+             "type": "And",
+             "items": [
+              {
                "type": "In",
                "member": {
                 "type": "Attr",
                 "node": {
                  "type": "Var",
-                 "name": "mn2"
+                 "name": "q"
                 },
-                "key": "text"
+                "key": "dimension"
                },
                "container": {
-                "type": "Lit",
-                "value": [
-                 "the",
-                 "a",
-                 "an",
-                 "on",
-                 "to",
-                 "of",
-                 "in",
-                 "at",
-                 "for",
-                 "and",
-                 "or",
-                 "it",
-                 "its",
-                 "this",
-                 "that",
-                 "my",
-                 "your",
-                 "you",
-                 "yours",
-                 "me",
-                 "we",
-                 "us",
-                 "is",
-                 "are",
-                 "was",
-                 "be",
-                 "do",
-                 "does",
-                 "did",
-                 "have",
-                 "has",
-                 "had",
-                 "please",
-                 "not",
-                 "no",
-                 "so",
-                 "up",
-                 "about",
-                 "with",
-                 "gap",
-                 "gaps",
-                 "concern",
-                 "concerns",
-                 "limitation",
-                 "limitations",
-                 "weakness",
-                 "weaknesses",
-                 "shortcoming",
-                 "shortcomings",
-                 "promote",
-                 "pursue",
-                 "prioritise",
-                 "prioritize",
-                 "work",
-                 "working",
-                 "focus",
-                 "drop",
-                 "retire",
-                 "stop",
-                 "abandon",
-                 "dismiss"
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "qap"
+                },
+                "key": "resolves"
+               }
+              },
+              {
+               "type": "Lte",
+               "a": {
+                "type": "Times",
+                "items": [
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "q"
+                  },
+                  "key": "extent"
+                 },
+                 {
+                  "type": "Lit",
+                  "value": 1000
+                 }
+                ]
+               },
+               "b": {
+                "type": "Times",
+                "items": [
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "qap"
+                  },
+                  "key": "max_extent_per_mille"
+                 },
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "qix"
+                  },
+                  "key": "words"
+                 }
                 ]
                }
               }
+             ]
+            }
+           }
+          ]
+         }
+        },
+        "body": {
+         "type": "Let",
+         "name": "steer_tq",
+         "value": {
+          "type": "Fold",
+          "source": {
+           "type": "Var",
+           "name": "steer_targets"
+          },
+          "var_name": "mn",
+          "acc_name": "tacc",
+          "init": {
+           "type": "SetT",
+           "items": []
+          },
+          "body": {
+           "type": "Union",
+           "a": {
+            "type": "Var",
+            "name": "tacc"
+           },
+           "b": {
+            "type": "Fold",
+            "source": {
+             "type": "Neighbours",
+             "node": {
+              "type": "Var",
+              "name": "mn"
              },
-             {
-              "type": "Gte",
+             "edge_type": "refers_to"
+            },
+            "var_name": "qc",
+            "acc_name": "qacc",
+            "init": {
+             "type": "SetT",
+             "items": []
+            },
+            "body": {
+             "type": "Union",
+             "a": {
+              "type": "Var",
+              "name": "qacc"
+             },
+             "b": {
+              "type": "ReachableFrom",
+              "node": {
+               "type": "Var",
+               "name": "qc"
+              },
+              "edge_type": "has_quale"
+             }
+            }
+           }
+          }
+         },
+         "body": {
+          "type": "Let",
+          "name": "steer_c",
+          "value": {
+           "type": "MaxOver",
+           "source": {
+            "type": "Filter",
+            "source": {
+             "type": "NodesOfType",
+             "node_type": "SelfConcern"
+            },
+            "var_name": "y",
+            "predicate": {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "y"
+              },
+              "key": "status"
+             },
+             "b": {
+              "type": "Lit",
+              "value": "noted"
+             }
+            }
+           },
+           "var_name": "y",
+           "value": {
+            "type": "Let",
+            "name": "ycl",
+            "value": {
+             "type": "Fold",
+             "source": {
+              "type": "Neighbours",
+              "node": {
+               "type": "Var",
+               "name": "y"
+              },
+              "edge_type": "has_mention"
+             },
+             "var_name": "yn",
+             "acc_name": "yacc",
+             "init": {
+              "type": "SetT",
+              "items": []
+             },
+             "body": {
+              "type": "Union",
               "a": {
-               "type": "StringIndexOf",
-               "haystack": {
-                "type": "Attr",
-                "node": {
-                 "type": "Var",
-                 "name": "y"
-                },
-                "key": "content"
-               },
-               "needle": {
-                "type": "Attr",
-                "node": {
-                 "type": "Var",
-                 "name": "mn2"
-                },
-                "key": "text"
-               }
+               "type": "Var",
+               "name": "yacc"
               },
               "b": {
+               "type": "Fold",
+               "source": {
+                "type": "Neighbours",
+                "node": {
+                 "type": "Var",
+                 "name": "yn"
+                },
+                "edge_type": "refers_to"
+               },
+               "var_name": "qc",
+               "acc_name": "qacc",
+               "init": {
+                "type": "SetT",
+                "items": []
+               },
+               "body": {
+                "type": "Union",
+                "a": {
+                 "type": "Var",
+                 "name": "qacc"
+                },
+                "b": {
+                 "type": "ReachableFrom",
+                 "node": {
+                  "type": "Var",
+                  "name": "qc"
+                 },
+                 "edge_type": "has_quale"
+                }
+               }
+              }
+             }
+            },
+            "body": {
+             "type": "Count",
+             "source": {
+              "type": "FilterList",
+              "source": {
+               "type": "Var",
+               "name": "steer_targets"
+              },
+              "var_name": "mn",
+              "predicate": {
+               "type": "Exists",
+               "source": {
+                "type": "Intersect",
+                "a": {
+                 "type": "Fold",
+                 "source": {
+                  "type": "Neighbours",
+                  "node": {
+                   "type": "Var",
+                   "name": "mn"
+                  },
+                  "edge_type": "refers_to"
+                 },
+                 "var_name": "qc",
+                 "acc_name": "qacc",
+                 "init": {
+                  "type": "SetT",
+                  "items": []
+                 },
+                 "body": {
+                  "type": "Union",
+                  "a": {
+                   "type": "Var",
+                   "name": "qacc"
+                  },
+                  "b": {
+                   "type": "ReachableFrom",
+                   "node": {
+                    "type": "Var",
+                    "name": "qc"
+                   },
+                   "edge_type": "has_quale"
+                  }
+                 }
+                },
+                "b": {
+                 "type": "Var",
+                 "name": "ycl"
+                }
+               },
+               "var_name": "q",
+               "predicate": {
+                "type": "And",
+                "items": [
+                 {
+                  "type": "In",
+                  "member": {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "q"
+                   },
+                   "key": "dimension"
+                  },
+                  "container": {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "qap"
+                   },
+                   "key": "resolves"
+                  }
+                 },
+                 {
+                  "type": "Lte",
+                  "a": {
+                   "type": "Times",
+                   "items": [
+                    {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "q"
+                     },
+                     "key": "extent"
+                    },
+                    {
+                     "type": "Lit",
+                     "value": 1000
+                    }
+                   ]
+                  },
+                  "b": {
+                   "type": "Times",
+                   "items": [
+                    {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "qap"
+                     },
+                     "key": "max_extent_per_mille"
+                    },
+                    {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "qix"
+                     },
+                     "key": "words"
+                    }
+                   ]
+                  }
+                 }
+                ]
+               }
+              }
+             }
+            }
+           },
+           "default": {
+            "type": "Lit",
+            "value": 0
+           }
+          },
+          "body": {
+           "type": "And",
+           "items": [
+            {
+             "type": "Gt",
+             "a": {
+              "type": "Var",
+              "name": "steer_c"
+             },
+             "b": {
+              "type": "Lit",
+              "value": 0
+             }
+            },
+            {
+             "type": "Let",
+             "name": "steer_u",
+             "value": {
+              "type": "MinOver",
+              "source": {
+               "type": "Filter",
+               "source": {
+                "type": "NodesOfType",
+                "node_type": "SelfConcern"
+               },
+               "var_name": "y",
+               "predicate": {
+                "type": "And",
+                "items": [
+                 {
+                  "type": "Eq",
+                  "a": {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "y"
+                   },
+                   "key": "status"
+                  },
+                  "b": {
+                   "type": "Lit",
+                   "value": "noted"
+                  }
+                 },
+                 {
+                  "type": "Eq",
+                  "a": {
+                   "type": "Let",
+                   "name": "ycl",
+                   "value": {
+                    "type": "Fold",
+                    "source": {
+                     "type": "Neighbours",
+                     "node": {
+                      "type": "Var",
+                      "name": "y"
+                     },
+                     "edge_type": "has_mention"
+                    },
+                    "var_name": "yn",
+                    "acc_name": "yacc",
+                    "init": {
+                     "type": "SetT",
+                     "items": []
+                    },
+                    "body": {
+                     "type": "Union",
+                     "a": {
+                      "type": "Var",
+                      "name": "yacc"
+                     },
+                     "b": {
+                      "type": "Fold",
+                      "source": {
+                       "type": "Neighbours",
+                       "node": {
+                        "type": "Var",
+                        "name": "yn"
+                       },
+                       "edge_type": "refers_to"
+                      },
+                      "var_name": "qc",
+                      "acc_name": "qacc",
+                      "init": {
+                       "type": "SetT",
+                       "items": []
+                      },
+                      "body": {
+                       "type": "Union",
+                       "a": {
+                        "type": "Var",
+                        "name": "qacc"
+                       },
+                       "b": {
+                        "type": "ReachableFrom",
+                        "node": {
+                         "type": "Var",
+                         "name": "qc"
+                        },
+                        "edge_type": "has_quale"
+                       }
+                      }
+                     }
+                    }
+                   },
+                   "body": {
+                    "type": "Count",
+                    "source": {
+                     "type": "FilterList",
+                     "source": {
+                      "type": "Var",
+                      "name": "steer_targets"
+                     },
+                     "var_name": "mn",
+                     "predicate": {
+                      "type": "Exists",
+                      "source": {
+                       "type": "Intersect",
+                       "a": {
+                        "type": "Fold",
+                        "source": {
+                         "type": "Neighbours",
+                         "node": {
+                          "type": "Var",
+                          "name": "mn"
+                         },
+                         "edge_type": "refers_to"
+                        },
+                        "var_name": "qc",
+                        "acc_name": "qacc",
+                        "init": {
+                         "type": "SetT",
+                         "items": []
+                        },
+                        "body": {
+                         "type": "Union",
+                         "a": {
+                          "type": "Var",
+                          "name": "qacc"
+                         },
+                         "b": {
+                          "type": "ReachableFrom",
+                          "node": {
+                           "type": "Var",
+                           "name": "qc"
+                          },
+                          "edge_type": "has_quale"
+                         }
+                        }
+                       },
+                       "b": {
+                        "type": "Var",
+                        "name": "ycl"
+                       }
+                      },
+                      "var_name": "q",
+                      "predicate": {
+                       "type": "And",
+                       "items": [
+                        {
+                         "type": "In",
+                         "member": {
+                          "type": "Attr",
+                          "node": {
+                           "type": "Var",
+                           "name": "q"
+                          },
+                          "key": "dimension"
+                         },
+                         "container": {
+                          "type": "Attr",
+                          "node": {
+                           "type": "Var",
+                           "name": "qap"
+                          },
+                          "key": "resolves"
+                         }
+                        },
+                        {
+                         "type": "Lte",
+                         "a": {
+                          "type": "Times",
+                          "items": [
+                           {
+                            "type": "Attr",
+                            "node": {
+                             "type": "Var",
+                             "name": "q"
+                            },
+                            "key": "extent"
+                           },
+                           {
+                            "type": "Lit",
+                            "value": 1000
+                           }
+                          ]
+                         },
+                         "b": {
+                          "type": "Times",
+                          "items": [
+                           {
+                            "type": "Attr",
+                            "node": {
+                             "type": "Var",
+                             "name": "qap"
+                            },
+                            "key": "max_extent_per_mille"
+                           },
+                           {
+                            "type": "Attr",
+                            "node": {
+                             "type": "Var",
+                             "name": "qix"
+                            },
+                            "key": "words"
+                           }
+                          ]
+                         }
+                        }
+                       ]
+                      }
+                     }
+                    }
+                   }
+                  },
+                  "b": {
+                   "type": "Var",
+                   "name": "steer_c"
+                  }
+                 }
+                ]
+               }
+              },
+              "var_name": "y",
+              "value": {
+               "type": "Count",
+               "source": {
+                "type": "FilterList",
+                "source": {
+                 "type": "Neighbours",
+                 "node": {
+                  "type": "Var",
+                  "name": "y"
+                 },
+                 "edge_type": "has_mention"
+                },
+                "var_name": "yn",
+                "predicate": {
+                 "type": "And",
+                 "items": [
+                  {
+                   "type": "Exists",
+                   "source": {
+                    "type": "Fold",
+                    "source": {
+                     "type": "Neighbours",
+                     "node": {
+                      "type": "Var",
+                      "name": "yn"
+                     },
+                     "edge_type": "refers_to"
+                    },
+                    "var_name": "qc",
+                    "acc_name": "qacc",
+                    "init": {
+                     "type": "SetT",
+                     "items": []
+                    },
+                    "body": {
+                     "type": "Union",
+                     "a": {
+                      "type": "Var",
+                      "name": "qacc"
+                     },
+                     "b": {
+                      "type": "ReachableFrom",
+                      "node": {
+                       "type": "Var",
+                       "name": "qc"
+                      },
+                      "edge_type": "has_quale"
+                     }
+                    }
+                   },
+                   "var_name": "q",
+                   "predicate": {
+                    "type": "And",
+                    "items": [
+                     {
+                      "type": "In",
+                      "member": {
+                       "type": "Attr",
+                       "node": {
+                        "type": "Var",
+                        "name": "q"
+                       },
+                       "key": "dimension"
+                      },
+                      "container": {
+                       "type": "Attr",
+                       "node": {
+                        "type": "Var",
+                        "name": "qap"
+                       },
+                       "key": "resolves"
+                      }
+                     },
+                     {
+                      "type": "Lte",
+                      "a": {
+                       "type": "Times",
+                       "items": [
+                        {
+                         "type": "Attr",
+                         "node": {
+                          "type": "Var",
+                          "name": "q"
+                         },
+                         "key": "extent"
+                        },
+                        {
+                         "type": "Lit",
+                         "value": 1000
+                        }
+                       ]
+                      },
+                      "b": {
+                       "type": "Times",
+                       "items": [
+                        {
+                         "type": "Attr",
+                         "node": {
+                          "type": "Var",
+                          "name": "qap"
+                         },
+                         "key": "max_extent_per_mille"
+                        },
+                        {
+                         "type": "Attr",
+                         "node": {
+                          "type": "Var",
+                          "name": "qix"
+                         },
+                         "key": "words"
+                        }
+                       ]
+                      }
+                     }
+                    ]
+                   }
+                  },
+                  {
+                   "type": "Not",
+                   "arg": {
+                    "type": "Exists",
+                    "source": {
+                     "type": "Intersect",
+                     "a": {
+                      "type": "Fold",
+                      "source": {
+                       "type": "Neighbours",
+                       "node": {
+                        "type": "Var",
+                        "name": "yn"
+                       },
+                       "edge_type": "refers_to"
+                      },
+                      "var_name": "qc",
+                      "acc_name": "qacc",
+                      "init": {
+                       "type": "SetT",
+                       "items": []
+                      },
+                      "body": {
+                       "type": "Union",
+                       "a": {
+                        "type": "Var",
+                        "name": "qacc"
+                       },
+                       "b": {
+                        "type": "ReachableFrom",
+                        "node": {
+                         "type": "Var",
+                         "name": "qc"
+                        },
+                        "edge_type": "has_quale"
+                       }
+                      }
+                     },
+                     "b": {
+                      "type": "Var",
+                      "name": "steer_tq"
+                     }
+                    },
+                    "var_name": "q",
+                    "predicate": {
+                     "type": "And",
+                     "items": [
+                      {
+                       "type": "In",
+                       "member": {
+                        "type": "Attr",
+                        "node": {
+                         "type": "Var",
+                         "name": "q"
+                        },
+                        "key": "dimension"
+                       },
+                       "container": {
+                        "type": "Attr",
+                        "node": {
+                         "type": "Var",
+                         "name": "qap"
+                        },
+                        "key": "resolves"
+                       }
+                      },
+                      {
+                       "type": "Lte",
+                       "a": {
+                        "type": "Times",
+                        "items": [
+                         {
+                          "type": "Attr",
+                          "node": {
+                           "type": "Var",
+                           "name": "q"
+                          },
+                          "key": "extent"
+                         },
+                         {
+                          "type": "Lit",
+                          "value": 1000
+                         }
+                        ]
+                       },
+                       "b": {
+                        "type": "Times",
+                        "items": [
+                         {
+                          "type": "Attr",
+                          "node": {
+                           "type": "Var",
+                           "name": "qap"
+                          },
+                          "key": "max_extent_per_mille"
+                         },
+                         {
+                          "type": "Attr",
+                          "node": {
+                           "type": "Var",
+                           "name": "qix"
+                          },
+                          "key": "words"
+                         }
+                        ]
+                       }
+                      }
+                     ]
+                    }
+                   }
+                  }
+                 ]
+                }
+               }
+              },
+              "default": {
                "type": "Lit",
                "value": 0
               }
+             },
+             "body": {
+              "type": "Eq",
+              "a": {
+               "type": "Var",
+               "name": "sc"
+              },
+              "b": {
+               "type": "Argmin",
+               "source": {
+                "type": "Filter",
+                "source": {
+                 "type": "NodesOfType",
+                 "node_type": "SelfConcern"
+                },
+                "var_name": "z",
+                "predicate": {
+                 "type": "And",
+                 "items": [
+                  {
+                   "type": "Eq",
+                   "a": {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "z"
+                    },
+                    "key": "status"
+                   },
+                   "b": {
+                    "type": "Lit",
+                    "value": "noted"
+                   }
+                  },
+                  {
+                   "type": "Eq",
+                   "a": {
+                    "type": "Let",
+                    "name": "ycl",
+                    "value": {
+                     "type": "Fold",
+                     "source": {
+                      "type": "Neighbours",
+                      "node": {
+                       "type": "Var",
+                       "name": "z"
+                      },
+                      "edge_type": "has_mention"
+                     },
+                     "var_name": "yn",
+                     "acc_name": "yacc",
+                     "init": {
+                      "type": "SetT",
+                      "items": []
+                     },
+                     "body": {
+                      "type": "Union",
+                      "a": {
+                       "type": "Var",
+                       "name": "yacc"
+                      },
+                      "b": {
+                       "type": "Fold",
+                       "source": {
+                        "type": "Neighbours",
+                        "node": {
+                         "type": "Var",
+                         "name": "yn"
+                        },
+                        "edge_type": "refers_to"
+                       },
+                       "var_name": "qc",
+                       "acc_name": "qacc",
+                       "init": {
+                        "type": "SetT",
+                        "items": []
+                       },
+                       "body": {
+                        "type": "Union",
+                        "a": {
+                         "type": "Var",
+                         "name": "qacc"
+                        },
+                        "b": {
+                         "type": "ReachableFrom",
+                         "node": {
+                          "type": "Var",
+                          "name": "qc"
+                         },
+                         "edge_type": "has_quale"
+                        }
+                       }
+                      }
+                     }
+                    },
+                    "body": {
+                     "type": "Count",
+                     "source": {
+                      "type": "FilterList",
+                      "source": {
+                       "type": "Var",
+                       "name": "steer_targets"
+                      },
+                      "var_name": "mn",
+                      "predicate": {
+                       "type": "Exists",
+                       "source": {
+                        "type": "Intersect",
+                        "a": {
+                         "type": "Fold",
+                         "source": {
+                          "type": "Neighbours",
+                          "node": {
+                           "type": "Var",
+                           "name": "mn"
+                          },
+                          "edge_type": "refers_to"
+                         },
+                         "var_name": "qc",
+                         "acc_name": "qacc",
+                         "init": {
+                          "type": "SetT",
+                          "items": []
+                         },
+                         "body": {
+                          "type": "Union",
+                          "a": {
+                           "type": "Var",
+                           "name": "qacc"
+                          },
+                          "b": {
+                           "type": "ReachableFrom",
+                           "node": {
+                            "type": "Var",
+                            "name": "qc"
+                           },
+                           "edge_type": "has_quale"
+                          }
+                         }
+                        },
+                        "b": {
+                         "type": "Var",
+                         "name": "ycl"
+                        }
+                       },
+                       "var_name": "q",
+                       "predicate": {
+                        "type": "And",
+                        "items": [
+                         {
+                          "type": "In",
+                          "member": {
+                           "type": "Attr",
+                           "node": {
+                            "type": "Var",
+                            "name": "q"
+                           },
+                           "key": "dimension"
+                          },
+                          "container": {
+                           "type": "Attr",
+                           "node": {
+                            "type": "Var",
+                            "name": "qap"
+                           },
+                           "key": "resolves"
+                          }
+                         },
+                         {
+                          "type": "Lte",
+                          "a": {
+                           "type": "Times",
+                           "items": [
+                            {
+                             "type": "Attr",
+                             "node": {
+                              "type": "Var",
+                              "name": "q"
+                             },
+                             "key": "extent"
+                            },
+                            {
+                             "type": "Lit",
+                             "value": 1000
+                            }
+                           ]
+                          },
+                          "b": {
+                           "type": "Times",
+                           "items": [
+                            {
+                             "type": "Attr",
+                             "node": {
+                              "type": "Var",
+                              "name": "qap"
+                             },
+                             "key": "max_extent_per_mille"
+                            },
+                            {
+                             "type": "Attr",
+                             "node": {
+                              "type": "Var",
+                              "name": "qix"
+                             },
+                             "key": "words"
+                            }
+                           ]
+                          }
+                         }
+                        ]
+                       }
+                      }
+                     }
+                    }
+                   },
+                   "b": {
+                    "type": "Var",
+                    "name": "steer_c"
+                   }
+                  },
+                  {
+                   "type": "Eq",
+                   "a": {
+                    "type": "Count",
+                    "source": {
+                     "type": "FilterList",
+                     "source": {
+                      "type": "Neighbours",
+                      "node": {
+                       "type": "Var",
+                       "name": "z"
+                      },
+                      "edge_type": "has_mention"
+                     },
+                     "var_name": "yn",
+                     "predicate": {
+                      "type": "And",
+                      "items": [
+                       {
+                        "type": "Exists",
+                        "source": {
+                         "type": "Fold",
+                         "source": {
+                          "type": "Neighbours",
+                          "node": {
+                           "type": "Var",
+                           "name": "yn"
+                          },
+                          "edge_type": "refers_to"
+                         },
+                         "var_name": "qc",
+                         "acc_name": "qacc",
+                         "init": {
+                          "type": "SetT",
+                          "items": []
+                         },
+                         "body": {
+                          "type": "Union",
+                          "a": {
+                           "type": "Var",
+                           "name": "qacc"
+                          },
+                          "b": {
+                           "type": "ReachableFrom",
+                           "node": {
+                            "type": "Var",
+                            "name": "qc"
+                           },
+                           "edge_type": "has_quale"
+                          }
+                         }
+                        },
+                        "var_name": "q",
+                        "predicate": {
+                         "type": "And",
+                         "items": [
+                          {
+                           "type": "In",
+                           "member": {
+                            "type": "Attr",
+                            "node": {
+                             "type": "Var",
+                             "name": "q"
+                            },
+                            "key": "dimension"
+                           },
+                           "container": {
+                            "type": "Attr",
+                            "node": {
+                             "type": "Var",
+                             "name": "qap"
+                            },
+                            "key": "resolves"
+                           }
+                          },
+                          {
+                           "type": "Lte",
+                           "a": {
+                            "type": "Times",
+                            "items": [
+                             {
+                              "type": "Attr",
+                              "node": {
+                               "type": "Var",
+                               "name": "q"
+                              },
+                              "key": "extent"
+                             },
+                             {
+                              "type": "Lit",
+                              "value": 1000
+                             }
+                            ]
+                           },
+                           "b": {
+                            "type": "Times",
+                            "items": [
+                             {
+                              "type": "Attr",
+                              "node": {
+                               "type": "Var",
+                               "name": "qap"
+                              },
+                              "key": "max_extent_per_mille"
+                             },
+                             {
+                              "type": "Attr",
+                              "node": {
+                               "type": "Var",
+                               "name": "qix"
+                              },
+                              "key": "words"
+                             }
+                            ]
+                           }
+                          }
+                         ]
+                        }
+                       },
+                       {
+                        "type": "Not",
+                        "arg": {
+                         "type": "Exists",
+                         "source": {
+                          "type": "Intersect",
+                          "a": {
+                           "type": "Fold",
+                           "source": {
+                            "type": "Neighbours",
+                            "node": {
+                             "type": "Var",
+                             "name": "yn"
+                            },
+                            "edge_type": "refers_to"
+                           },
+                           "var_name": "qc",
+                           "acc_name": "qacc",
+                           "init": {
+                            "type": "SetT",
+                            "items": []
+                           },
+                           "body": {
+                            "type": "Union",
+                            "a": {
+                             "type": "Var",
+                             "name": "qacc"
+                            },
+                            "b": {
+                             "type": "ReachableFrom",
+                             "node": {
+                              "type": "Var",
+                              "name": "qc"
+                             },
+                             "edge_type": "has_quale"
+                            }
+                           }
+                          },
+                          "b": {
+                           "type": "Var",
+                           "name": "steer_tq"
+                          }
+                         },
+                         "var_name": "q",
+                         "predicate": {
+                          "type": "And",
+                          "items": [
+                           {
+                            "type": "In",
+                            "member": {
+                             "type": "Attr",
+                             "node": {
+                              "type": "Var",
+                              "name": "q"
+                             },
+                             "key": "dimension"
+                            },
+                            "container": {
+                             "type": "Attr",
+                             "node": {
+                              "type": "Var",
+                              "name": "qap"
+                             },
+                             "key": "resolves"
+                            }
+                           },
+                           {
+                            "type": "Lte",
+                            "a": {
+                             "type": "Times",
+                             "items": [
+                              {
+                               "type": "Attr",
+                               "node": {
+                                "type": "Var",
+                                "name": "q"
+                               },
+                               "key": "extent"
+                              },
+                              {
+                               "type": "Lit",
+                               "value": 1000
+                              }
+                             ]
+                            },
+                            "b": {
+                             "type": "Times",
+                             "items": [
+                              {
+                               "type": "Attr",
+                               "node": {
+                                "type": "Var",
+                                "name": "qap"
+                               },
+                               "key": "max_extent_per_mille"
+                              },
+                              {
+                               "type": "Attr",
+                               "node": {
+                                "type": "Var",
+                                "name": "qix"
+                               },
+                               "key": "words"
+                              }
+                             ]
+                            }
+                           }
+                          ]
+                         }
+                        }
+                       }
+                      ]
+                     }
+                    }
+                   },
+                   "b": {
+                    "type": "Var",
+                    "name": "steer_u"
+                   }
+                  }
+                 ]
+                }
+               },
+               "var_name": "z",
+               "value": {
+                "type": "Var",
+                "name": "z"
+               },
+               "default": null
+              }
              }
-            ]
-           }
+            }
+           ]
           }
-         ]
+         }
         }
-       },
-       "var_name": "z",
-       "value": {
-        "type": "Var",
-        "name": "z"
        }
       }
      }
@@ -706,6 +1930,12 @@
      "m",
      "comprehended",
      1.0
+    ],
+    [
+     "set_attr",
+     "m",
+     "self_improvement_route",
+     "promote_concern"
     ],
     [
      "set_attr",
@@ -762,7 +1992,8 @@
      "sent",
      "reply"
     ]
-   ]
+   ],
+   "comment": " v1.2.0 (tranche 14): among matching noted concerns, the one with the MOST matched mention words wins (ties: oldest). Fixes a quoted-steer-text comprehension concern stealing the promote. v2.0.0 (tranche 15): the concern is chosen by QUALIA through the lexical qualia index, not by word overlap (scripts/gen_steer_qualia_match.py)."
   },
   {
    "name": "steer_retire_concern",
@@ -777,6 +2008,14 @@
      "has_self_concern",
      "sc"
     ]
+   ],
+   "index_hints": [
+    {
+     "for_var": "m",
+     "probe_value": "interlocutor",
+     "node_type": "Message",
+     "this_key": "from"
+    }
    ],
    "where": {
     "type": "And",
@@ -1004,291 +2243,1492 @@
       }
      },
      {
-      "type": "Exists",
-      "source": {
-       "type": "Neighbours",
-       "node": {
-        "type": "Var",
-        "name": "m"
-       },
-       "edge_type": "has_mention"
-      },
-      "var_name": "mn",
-      "predicate": {
-       "type": "And",
-       "items": [
-        {
-         "type": "Not",
-         "arg": {
-          "type": "In",
-          "member": {
-           "type": "Attr",
-           "node": {
-            "type": "Var",
-            "name": "mn"
-           },
-           "key": "text"
-          },
-          "container": {
-           "type": "Lit",
-           "value": [
-            "the",
-            "a",
-            "an",
-            "on",
-            "to",
-            "of",
-            "in",
-            "at",
-            "for",
-            "and",
-            "or",
-            "it",
-            "its",
-            "this",
-            "that",
-            "my",
-            "your",
-            "you",
-            "yours",
-            "me",
-            "we",
-            "us",
-            "is",
-            "are",
-            "was",
-            "be",
-            "do",
-            "does",
-            "did",
-            "have",
-            "has",
-            "had",
-            "please",
-            "not",
-            "no",
-            "so",
-            "up",
-            "about",
-            "with",
-            "gap",
-            "gaps",
-            "concern",
-            "concerns",
-            "limitation",
-            "limitations",
-            "weakness",
-            "weaknesses",
-            "shortcoming",
-            "shortcomings",
-            "promote",
-            "pursue",
-            "prioritise",
-            "prioritize",
-            "work",
-            "working",
-            "focus",
-            "drop",
-            "retire",
-            "stop",
-            "abandon",
-            "dismiss"
-           ]
-          }
-         }
-        },
-        {
-         "type": "Gte",
-         "a": {
-          "type": "StringIndexOf",
-          "haystack": {
-           "type": "Attr",
-           "node": {
-            "type": "Var",
-            "name": "sc"
-           },
-           "key": "content"
-          },
-          "needle": {
-           "type": "Attr",
-           "node": {
-            "type": "Var",
-            "name": "mn"
-           },
-           "key": "text"
-          }
-         },
-         "b": {
-          "type": "Lit",
-          "value": 0
-         }
-        }
-       ]
-      }
-     },
-     {
-      "type": "Eq",
-      "a": {
-       "type": "Var",
-       "name": "sc"
-      },
-      "b": {
+      "type": "Let",
+      "name": "qap",
+      "value": {
        "type": "Argmin",
        "source": {
         "type": "Filter",
         "source": {
          "type": "NodesOfType",
-         "node_type": "SelfConcern"
+         "node_type": "QualiaAperture"
         },
-        "var_name": "y",
+        "var_name": "qa",
         "predicate": {
-         "type": "And",
-         "items": [
-          {
-           "type": "Eq",
-           "a": {
-            "type": "Attr",
-            "node": {
-             "type": "Var",
-             "name": "y"
-            },
-            "key": "status"
-           },
-           "b": {
-            "type": "Lit",
-            "value": "noted"
-           }
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "qa"
           },
-          {
-           "type": "Exists",
-           "source": {
-            "type": "Neighbours",
-            "node": {
-             "type": "Var",
-             "name": "m"
-            },
-            "edge_type": "has_mention"
+          "key": "name"
+         },
+         "b": {
+          "type": "Lit",
+          "value": "steering"
+         }
+        }
+       },
+       "var_name": "qa",
+       "value": {
+        "type": "Lit",
+        "value": 0
+       },
+       "default": null
+      },
+      "body": {
+       "type": "Let",
+       "name": "qix",
+       "value": {
+        "type": "Argmin",
+        "source": {
+         "type": "Filter",
+         "source": {
+          "type": "NodesOfType",
+          "node_type": "QualiaIndex"
+         },
+         "var_name": "qi",
+         "predicate": {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "qi"
            },
-           "var_name": "mn2",
-           "predicate": {
-            "type": "And",
-            "items": [
-             {
-              "type": "Not",
-              "arg": {
+           "key": "name"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "lexical_qualia"
+          }
+         }
+        },
+        "var_name": "qi",
+        "value": {
+         "type": "Lit",
+         "value": 0
+        },
+        "default": null
+       },
+       "body": {
+        "type": "Let",
+        "name": "steer_targets",
+        "value": {
+         "type": "FilterList",
+         "source": {
+          "type": "Neighbours",
+          "node": {
+           "type": "Var",
+           "name": "m"
+          },
+          "edge_type": "has_mention"
+         },
+         "var_name": "mn",
+         "predicate": {
+          "type": "And",
+          "items": [
+           {
+            "type": "Not",
+            "arg": {
+             "type": "Exists",
+             "source": {
+              "type": "Neighbours",
+              "node": {
+               "type": "Var",
+               "name": "mn"
+              },
+              "edge_type": "refers_to"
+             },
+             "var_name": "rc",
+             "predicate": {
+              "type": "Or",
+              "items": [
+               {
+                "type": "In",
+                "member": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "rc"
+                 },
+                 "key": "instruction_route"
+                },
+                "container": {
+                 "type": "Lit",
+                 "value": [
+                  "steer_promote",
+                  "steer_retire"
+                 ]
+                }
+               },
+               {
+                "type": "And",
+                "items": [
+                 {
+                  "type": "Eq",
+                  "a": {
+                   "type": "TypeOf",
+                   "node": {
+                    "type": "Var",
+                    "name": "rc"
+                   }
+                  },
+                  "b": {
+                   "type": "Lit",
+                   "value": "Concept"
+                  }
+                 },
+                 {
+                  "type": "In",
+                  "member": {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "rc"
+                   },
+                   "key": "name"
+                  },
+                  "container": {
+                   "type": "Lit",
+                   "value": [
+                    "gap",
+                    "gaps",
+                    "concern",
+                    "concerns",
+                    "limitation",
+                    "limitations",
+                    "weakness",
+                    "weaknesses",
+                    "shortcoming",
+                    "shortcomings"
+                   ]
+                  }
+                 }
+                ]
+               }
+              ]
+             }
+            }
+           },
+           {
+            "type": "Exists",
+            "source": {
+             "type": "Fold",
+             "source": {
+              "type": "Neighbours",
+              "node": {
+               "type": "Var",
+               "name": "mn"
+              },
+              "edge_type": "refers_to"
+             },
+             "var_name": "qc",
+             "acc_name": "qacc",
+             "init": {
+              "type": "SetT",
+              "items": []
+             },
+             "body": {
+              "type": "Union",
+              "a": {
+               "type": "Var",
+               "name": "qacc"
+              },
+              "b": {
+               "type": "ReachableFrom",
+               "node": {
+                "type": "Var",
+                "name": "qc"
+               },
+               "edge_type": "has_quale"
+              }
+             }
+            },
+            "var_name": "q",
+            "predicate": {
+             "type": "And",
+             "items": [
+              {
                "type": "In",
                "member": {
                 "type": "Attr",
                 "node": {
                  "type": "Var",
-                 "name": "mn2"
+                 "name": "q"
                 },
-                "key": "text"
+                "key": "dimension"
                },
                "container": {
-                "type": "Lit",
-                "value": [
-                 "the",
-                 "a",
-                 "an",
-                 "on",
-                 "to",
-                 "of",
-                 "in",
-                 "at",
-                 "for",
-                 "and",
-                 "or",
-                 "it",
-                 "its",
-                 "this",
-                 "that",
-                 "my",
-                 "your",
-                 "you",
-                 "yours",
-                 "me",
-                 "we",
-                 "us",
-                 "is",
-                 "are",
-                 "was",
-                 "be",
-                 "do",
-                 "does",
-                 "did",
-                 "have",
-                 "has",
-                 "had",
-                 "please",
-                 "not",
-                 "no",
-                 "so",
-                 "up",
-                 "about",
-                 "with",
-                 "gap",
-                 "gaps",
-                 "concern",
-                 "concerns",
-                 "limitation",
-                 "limitations",
-                 "weakness",
-                 "weaknesses",
-                 "shortcoming",
-                 "shortcomings",
-                 "promote",
-                 "pursue",
-                 "prioritise",
-                 "prioritize",
-                 "work",
-                 "working",
-                 "focus",
-                 "drop",
-                 "retire",
-                 "stop",
-                 "abandon",
-                 "dismiss"
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "qap"
+                },
+                "key": "resolves"
+               }
+              },
+              {
+               "type": "Lte",
+               "a": {
+                "type": "Times",
+                "items": [
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "q"
+                  },
+                  "key": "extent"
+                 },
+                 {
+                  "type": "Lit",
+                  "value": 1000
+                 }
+                ]
+               },
+               "b": {
+                "type": "Times",
+                "items": [
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "qap"
+                  },
+                  "key": "max_extent_per_mille"
+                 },
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "qix"
+                  },
+                  "key": "words"
+                 }
                 ]
                }
               }
+             ]
+            }
+           }
+          ]
+         }
+        },
+        "body": {
+         "type": "Let",
+         "name": "steer_tq",
+         "value": {
+          "type": "Fold",
+          "source": {
+           "type": "Var",
+           "name": "steer_targets"
+          },
+          "var_name": "mn",
+          "acc_name": "tacc",
+          "init": {
+           "type": "SetT",
+           "items": []
+          },
+          "body": {
+           "type": "Union",
+           "a": {
+            "type": "Var",
+            "name": "tacc"
+           },
+           "b": {
+            "type": "Fold",
+            "source": {
+             "type": "Neighbours",
+             "node": {
+              "type": "Var",
+              "name": "mn"
              },
-             {
-              "type": "Gte",
+             "edge_type": "refers_to"
+            },
+            "var_name": "qc",
+            "acc_name": "qacc",
+            "init": {
+             "type": "SetT",
+             "items": []
+            },
+            "body": {
+             "type": "Union",
+             "a": {
+              "type": "Var",
+              "name": "qacc"
+             },
+             "b": {
+              "type": "ReachableFrom",
+              "node": {
+               "type": "Var",
+               "name": "qc"
+              },
+              "edge_type": "has_quale"
+             }
+            }
+           }
+          }
+         },
+         "body": {
+          "type": "Let",
+          "name": "steer_c",
+          "value": {
+           "type": "MaxOver",
+           "source": {
+            "type": "Filter",
+            "source": {
+             "type": "NodesOfType",
+             "node_type": "SelfConcern"
+            },
+            "var_name": "y",
+            "predicate": {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "y"
+              },
+              "key": "status"
+             },
+             "b": {
+              "type": "Lit",
+              "value": "noted"
+             }
+            }
+           },
+           "var_name": "y",
+           "value": {
+            "type": "Let",
+            "name": "ycl",
+            "value": {
+             "type": "Fold",
+             "source": {
+              "type": "Neighbours",
+              "node": {
+               "type": "Var",
+               "name": "y"
+              },
+              "edge_type": "has_mention"
+             },
+             "var_name": "yn",
+             "acc_name": "yacc",
+             "init": {
+              "type": "SetT",
+              "items": []
+             },
+             "body": {
+              "type": "Union",
               "a": {
-               "type": "StringIndexOf",
-               "haystack": {
-                "type": "Attr",
-                "node": {
-                 "type": "Var",
-                 "name": "y"
-                },
-                "key": "content"
-               },
-               "needle": {
-                "type": "Attr",
-                "node": {
-                 "type": "Var",
-                 "name": "mn2"
-                },
-                "key": "text"
-               }
+               "type": "Var",
+               "name": "yacc"
               },
               "b": {
+               "type": "Fold",
+               "source": {
+                "type": "Neighbours",
+                "node": {
+                 "type": "Var",
+                 "name": "yn"
+                },
+                "edge_type": "refers_to"
+               },
+               "var_name": "qc",
+               "acc_name": "qacc",
+               "init": {
+                "type": "SetT",
+                "items": []
+               },
+               "body": {
+                "type": "Union",
+                "a": {
+                 "type": "Var",
+                 "name": "qacc"
+                },
+                "b": {
+                 "type": "ReachableFrom",
+                 "node": {
+                  "type": "Var",
+                  "name": "qc"
+                 },
+                 "edge_type": "has_quale"
+                }
+               }
+              }
+             }
+            },
+            "body": {
+             "type": "Count",
+             "source": {
+              "type": "FilterList",
+              "source": {
+               "type": "Var",
+               "name": "steer_targets"
+              },
+              "var_name": "mn",
+              "predicate": {
+               "type": "Exists",
+               "source": {
+                "type": "Intersect",
+                "a": {
+                 "type": "Fold",
+                 "source": {
+                  "type": "Neighbours",
+                  "node": {
+                   "type": "Var",
+                   "name": "mn"
+                  },
+                  "edge_type": "refers_to"
+                 },
+                 "var_name": "qc",
+                 "acc_name": "qacc",
+                 "init": {
+                  "type": "SetT",
+                  "items": []
+                 },
+                 "body": {
+                  "type": "Union",
+                  "a": {
+                   "type": "Var",
+                   "name": "qacc"
+                  },
+                  "b": {
+                   "type": "ReachableFrom",
+                   "node": {
+                    "type": "Var",
+                    "name": "qc"
+                   },
+                   "edge_type": "has_quale"
+                  }
+                 }
+                },
+                "b": {
+                 "type": "Var",
+                 "name": "ycl"
+                }
+               },
+               "var_name": "q",
+               "predicate": {
+                "type": "And",
+                "items": [
+                 {
+                  "type": "In",
+                  "member": {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "q"
+                   },
+                   "key": "dimension"
+                  },
+                  "container": {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "qap"
+                   },
+                   "key": "resolves"
+                  }
+                 },
+                 {
+                  "type": "Lte",
+                  "a": {
+                   "type": "Times",
+                   "items": [
+                    {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "q"
+                     },
+                     "key": "extent"
+                    },
+                    {
+                     "type": "Lit",
+                     "value": 1000
+                    }
+                   ]
+                  },
+                  "b": {
+                   "type": "Times",
+                   "items": [
+                    {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "qap"
+                     },
+                     "key": "max_extent_per_mille"
+                    },
+                    {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "qix"
+                     },
+                     "key": "words"
+                    }
+                   ]
+                  }
+                 }
+                ]
+               }
+              }
+             }
+            }
+           },
+           "default": {
+            "type": "Lit",
+            "value": 0
+           }
+          },
+          "body": {
+           "type": "And",
+           "items": [
+            {
+             "type": "Gt",
+             "a": {
+              "type": "Var",
+              "name": "steer_c"
+             },
+             "b": {
+              "type": "Lit",
+              "value": 0
+             }
+            },
+            {
+             "type": "Let",
+             "name": "steer_u",
+             "value": {
+              "type": "MinOver",
+              "source": {
+               "type": "Filter",
+               "source": {
+                "type": "NodesOfType",
+                "node_type": "SelfConcern"
+               },
+               "var_name": "y",
+               "predicate": {
+                "type": "And",
+                "items": [
+                 {
+                  "type": "Eq",
+                  "a": {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "y"
+                   },
+                   "key": "status"
+                  },
+                  "b": {
+                   "type": "Lit",
+                   "value": "noted"
+                  }
+                 },
+                 {
+                  "type": "Eq",
+                  "a": {
+                   "type": "Let",
+                   "name": "ycl",
+                   "value": {
+                    "type": "Fold",
+                    "source": {
+                     "type": "Neighbours",
+                     "node": {
+                      "type": "Var",
+                      "name": "y"
+                     },
+                     "edge_type": "has_mention"
+                    },
+                    "var_name": "yn",
+                    "acc_name": "yacc",
+                    "init": {
+                     "type": "SetT",
+                     "items": []
+                    },
+                    "body": {
+                     "type": "Union",
+                     "a": {
+                      "type": "Var",
+                      "name": "yacc"
+                     },
+                     "b": {
+                      "type": "Fold",
+                      "source": {
+                       "type": "Neighbours",
+                       "node": {
+                        "type": "Var",
+                        "name": "yn"
+                       },
+                       "edge_type": "refers_to"
+                      },
+                      "var_name": "qc",
+                      "acc_name": "qacc",
+                      "init": {
+                       "type": "SetT",
+                       "items": []
+                      },
+                      "body": {
+                       "type": "Union",
+                       "a": {
+                        "type": "Var",
+                        "name": "qacc"
+                       },
+                       "b": {
+                        "type": "ReachableFrom",
+                        "node": {
+                         "type": "Var",
+                         "name": "qc"
+                        },
+                        "edge_type": "has_quale"
+                       }
+                      }
+                     }
+                    }
+                   },
+                   "body": {
+                    "type": "Count",
+                    "source": {
+                     "type": "FilterList",
+                     "source": {
+                      "type": "Var",
+                      "name": "steer_targets"
+                     },
+                     "var_name": "mn",
+                     "predicate": {
+                      "type": "Exists",
+                      "source": {
+                       "type": "Intersect",
+                       "a": {
+                        "type": "Fold",
+                        "source": {
+                         "type": "Neighbours",
+                         "node": {
+                          "type": "Var",
+                          "name": "mn"
+                         },
+                         "edge_type": "refers_to"
+                        },
+                        "var_name": "qc",
+                        "acc_name": "qacc",
+                        "init": {
+                         "type": "SetT",
+                         "items": []
+                        },
+                        "body": {
+                         "type": "Union",
+                         "a": {
+                          "type": "Var",
+                          "name": "qacc"
+                         },
+                         "b": {
+                          "type": "ReachableFrom",
+                          "node": {
+                           "type": "Var",
+                           "name": "qc"
+                          },
+                          "edge_type": "has_quale"
+                         }
+                        }
+                       },
+                       "b": {
+                        "type": "Var",
+                        "name": "ycl"
+                       }
+                      },
+                      "var_name": "q",
+                      "predicate": {
+                       "type": "And",
+                       "items": [
+                        {
+                         "type": "In",
+                         "member": {
+                          "type": "Attr",
+                          "node": {
+                           "type": "Var",
+                           "name": "q"
+                          },
+                          "key": "dimension"
+                         },
+                         "container": {
+                          "type": "Attr",
+                          "node": {
+                           "type": "Var",
+                           "name": "qap"
+                          },
+                          "key": "resolves"
+                         }
+                        },
+                        {
+                         "type": "Lte",
+                         "a": {
+                          "type": "Times",
+                          "items": [
+                           {
+                            "type": "Attr",
+                            "node": {
+                             "type": "Var",
+                             "name": "q"
+                            },
+                            "key": "extent"
+                           },
+                           {
+                            "type": "Lit",
+                            "value": 1000
+                           }
+                          ]
+                         },
+                         "b": {
+                          "type": "Times",
+                          "items": [
+                           {
+                            "type": "Attr",
+                            "node": {
+                             "type": "Var",
+                             "name": "qap"
+                            },
+                            "key": "max_extent_per_mille"
+                           },
+                           {
+                            "type": "Attr",
+                            "node": {
+                             "type": "Var",
+                             "name": "qix"
+                            },
+                            "key": "words"
+                           }
+                          ]
+                         }
+                        }
+                       ]
+                      }
+                     }
+                    }
+                   }
+                  },
+                  "b": {
+                   "type": "Var",
+                   "name": "steer_c"
+                  }
+                 }
+                ]
+               }
+              },
+              "var_name": "y",
+              "value": {
+               "type": "Count",
+               "source": {
+                "type": "FilterList",
+                "source": {
+                 "type": "Neighbours",
+                 "node": {
+                  "type": "Var",
+                  "name": "y"
+                 },
+                 "edge_type": "has_mention"
+                },
+                "var_name": "yn",
+                "predicate": {
+                 "type": "And",
+                 "items": [
+                  {
+                   "type": "Exists",
+                   "source": {
+                    "type": "Fold",
+                    "source": {
+                     "type": "Neighbours",
+                     "node": {
+                      "type": "Var",
+                      "name": "yn"
+                     },
+                     "edge_type": "refers_to"
+                    },
+                    "var_name": "qc",
+                    "acc_name": "qacc",
+                    "init": {
+                     "type": "SetT",
+                     "items": []
+                    },
+                    "body": {
+                     "type": "Union",
+                     "a": {
+                      "type": "Var",
+                      "name": "qacc"
+                     },
+                     "b": {
+                      "type": "ReachableFrom",
+                      "node": {
+                       "type": "Var",
+                       "name": "qc"
+                      },
+                      "edge_type": "has_quale"
+                     }
+                    }
+                   },
+                   "var_name": "q",
+                   "predicate": {
+                    "type": "And",
+                    "items": [
+                     {
+                      "type": "In",
+                      "member": {
+                       "type": "Attr",
+                       "node": {
+                        "type": "Var",
+                        "name": "q"
+                       },
+                       "key": "dimension"
+                      },
+                      "container": {
+                       "type": "Attr",
+                       "node": {
+                        "type": "Var",
+                        "name": "qap"
+                       },
+                       "key": "resolves"
+                      }
+                     },
+                     {
+                      "type": "Lte",
+                      "a": {
+                       "type": "Times",
+                       "items": [
+                        {
+                         "type": "Attr",
+                         "node": {
+                          "type": "Var",
+                          "name": "q"
+                         },
+                         "key": "extent"
+                        },
+                        {
+                         "type": "Lit",
+                         "value": 1000
+                        }
+                       ]
+                      },
+                      "b": {
+                       "type": "Times",
+                       "items": [
+                        {
+                         "type": "Attr",
+                         "node": {
+                          "type": "Var",
+                          "name": "qap"
+                         },
+                         "key": "max_extent_per_mille"
+                        },
+                        {
+                         "type": "Attr",
+                         "node": {
+                          "type": "Var",
+                          "name": "qix"
+                         },
+                         "key": "words"
+                        }
+                       ]
+                      }
+                     }
+                    ]
+                   }
+                  },
+                  {
+                   "type": "Not",
+                   "arg": {
+                    "type": "Exists",
+                    "source": {
+                     "type": "Intersect",
+                     "a": {
+                      "type": "Fold",
+                      "source": {
+                       "type": "Neighbours",
+                       "node": {
+                        "type": "Var",
+                        "name": "yn"
+                       },
+                       "edge_type": "refers_to"
+                      },
+                      "var_name": "qc",
+                      "acc_name": "qacc",
+                      "init": {
+                       "type": "SetT",
+                       "items": []
+                      },
+                      "body": {
+                       "type": "Union",
+                       "a": {
+                        "type": "Var",
+                        "name": "qacc"
+                       },
+                       "b": {
+                        "type": "ReachableFrom",
+                        "node": {
+                         "type": "Var",
+                         "name": "qc"
+                        },
+                        "edge_type": "has_quale"
+                       }
+                      }
+                     },
+                     "b": {
+                      "type": "Var",
+                      "name": "steer_tq"
+                     }
+                    },
+                    "var_name": "q",
+                    "predicate": {
+                     "type": "And",
+                     "items": [
+                      {
+                       "type": "In",
+                       "member": {
+                        "type": "Attr",
+                        "node": {
+                         "type": "Var",
+                         "name": "q"
+                        },
+                        "key": "dimension"
+                       },
+                       "container": {
+                        "type": "Attr",
+                        "node": {
+                         "type": "Var",
+                         "name": "qap"
+                        },
+                        "key": "resolves"
+                       }
+                      },
+                      {
+                       "type": "Lte",
+                       "a": {
+                        "type": "Times",
+                        "items": [
+                         {
+                          "type": "Attr",
+                          "node": {
+                           "type": "Var",
+                           "name": "q"
+                          },
+                          "key": "extent"
+                         },
+                         {
+                          "type": "Lit",
+                          "value": 1000
+                         }
+                        ]
+                       },
+                       "b": {
+                        "type": "Times",
+                        "items": [
+                         {
+                          "type": "Attr",
+                          "node": {
+                           "type": "Var",
+                           "name": "qap"
+                          },
+                          "key": "max_extent_per_mille"
+                         },
+                         {
+                          "type": "Attr",
+                          "node": {
+                           "type": "Var",
+                           "name": "qix"
+                          },
+                          "key": "words"
+                         }
+                        ]
+                       }
+                      }
+                     ]
+                    }
+                   }
+                  }
+                 ]
+                }
+               }
+              },
+              "default": {
                "type": "Lit",
                "value": 0
               }
+             },
+             "body": {
+              "type": "Eq",
+              "a": {
+               "type": "Var",
+               "name": "sc"
+              },
+              "b": {
+               "type": "Argmin",
+               "source": {
+                "type": "Filter",
+                "source": {
+                 "type": "NodesOfType",
+                 "node_type": "SelfConcern"
+                },
+                "var_name": "z",
+                "predicate": {
+                 "type": "And",
+                 "items": [
+                  {
+                   "type": "Eq",
+                   "a": {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "z"
+                    },
+                    "key": "status"
+                   },
+                   "b": {
+                    "type": "Lit",
+                    "value": "noted"
+                   }
+                  },
+                  {
+                   "type": "Eq",
+                   "a": {
+                    "type": "Let",
+                    "name": "ycl",
+                    "value": {
+                     "type": "Fold",
+                     "source": {
+                      "type": "Neighbours",
+                      "node": {
+                       "type": "Var",
+                       "name": "z"
+                      },
+                      "edge_type": "has_mention"
+                     },
+                     "var_name": "yn",
+                     "acc_name": "yacc",
+                     "init": {
+                      "type": "SetT",
+                      "items": []
+                     },
+                     "body": {
+                      "type": "Union",
+                      "a": {
+                       "type": "Var",
+                       "name": "yacc"
+                      },
+                      "b": {
+                       "type": "Fold",
+                       "source": {
+                        "type": "Neighbours",
+                        "node": {
+                         "type": "Var",
+                         "name": "yn"
+                        },
+                        "edge_type": "refers_to"
+                       },
+                       "var_name": "qc",
+                       "acc_name": "qacc",
+                       "init": {
+                        "type": "SetT",
+                        "items": []
+                       },
+                       "body": {
+                        "type": "Union",
+                        "a": {
+                         "type": "Var",
+                         "name": "qacc"
+                        },
+                        "b": {
+                         "type": "ReachableFrom",
+                         "node": {
+                          "type": "Var",
+                          "name": "qc"
+                         },
+                         "edge_type": "has_quale"
+                        }
+                       }
+                      }
+                     }
+                    },
+                    "body": {
+                     "type": "Count",
+                     "source": {
+                      "type": "FilterList",
+                      "source": {
+                       "type": "Var",
+                       "name": "steer_targets"
+                      },
+                      "var_name": "mn",
+                      "predicate": {
+                       "type": "Exists",
+                       "source": {
+                        "type": "Intersect",
+                        "a": {
+                         "type": "Fold",
+                         "source": {
+                          "type": "Neighbours",
+                          "node": {
+                           "type": "Var",
+                           "name": "mn"
+                          },
+                          "edge_type": "refers_to"
+                         },
+                         "var_name": "qc",
+                         "acc_name": "qacc",
+                         "init": {
+                          "type": "SetT",
+                          "items": []
+                         },
+                         "body": {
+                          "type": "Union",
+                          "a": {
+                           "type": "Var",
+                           "name": "qacc"
+                          },
+                          "b": {
+                           "type": "ReachableFrom",
+                           "node": {
+                            "type": "Var",
+                            "name": "qc"
+                           },
+                           "edge_type": "has_quale"
+                          }
+                         }
+                        },
+                        "b": {
+                         "type": "Var",
+                         "name": "ycl"
+                        }
+                       },
+                       "var_name": "q",
+                       "predicate": {
+                        "type": "And",
+                        "items": [
+                         {
+                          "type": "In",
+                          "member": {
+                           "type": "Attr",
+                           "node": {
+                            "type": "Var",
+                            "name": "q"
+                           },
+                           "key": "dimension"
+                          },
+                          "container": {
+                           "type": "Attr",
+                           "node": {
+                            "type": "Var",
+                            "name": "qap"
+                           },
+                           "key": "resolves"
+                          }
+                         },
+                         {
+                          "type": "Lte",
+                          "a": {
+                           "type": "Times",
+                           "items": [
+                            {
+                             "type": "Attr",
+                             "node": {
+                              "type": "Var",
+                              "name": "q"
+                             },
+                             "key": "extent"
+                            },
+                            {
+                             "type": "Lit",
+                             "value": 1000
+                            }
+                           ]
+                          },
+                          "b": {
+                           "type": "Times",
+                           "items": [
+                            {
+                             "type": "Attr",
+                             "node": {
+                              "type": "Var",
+                              "name": "qap"
+                             },
+                             "key": "max_extent_per_mille"
+                            },
+                            {
+                             "type": "Attr",
+                             "node": {
+                              "type": "Var",
+                              "name": "qix"
+                             },
+                             "key": "words"
+                            }
+                           ]
+                          }
+                         }
+                        ]
+                       }
+                      }
+                     }
+                    }
+                   },
+                   "b": {
+                    "type": "Var",
+                    "name": "steer_c"
+                   }
+                  },
+                  {
+                   "type": "Eq",
+                   "a": {
+                    "type": "Count",
+                    "source": {
+                     "type": "FilterList",
+                     "source": {
+                      "type": "Neighbours",
+                      "node": {
+                       "type": "Var",
+                       "name": "z"
+                      },
+                      "edge_type": "has_mention"
+                     },
+                     "var_name": "yn",
+                     "predicate": {
+                      "type": "And",
+                      "items": [
+                       {
+                        "type": "Exists",
+                        "source": {
+                         "type": "Fold",
+                         "source": {
+                          "type": "Neighbours",
+                          "node": {
+                           "type": "Var",
+                           "name": "yn"
+                          },
+                          "edge_type": "refers_to"
+                         },
+                         "var_name": "qc",
+                         "acc_name": "qacc",
+                         "init": {
+                          "type": "SetT",
+                          "items": []
+                         },
+                         "body": {
+                          "type": "Union",
+                          "a": {
+                           "type": "Var",
+                           "name": "qacc"
+                          },
+                          "b": {
+                           "type": "ReachableFrom",
+                           "node": {
+                            "type": "Var",
+                            "name": "qc"
+                           },
+                           "edge_type": "has_quale"
+                          }
+                         }
+                        },
+                        "var_name": "q",
+                        "predicate": {
+                         "type": "And",
+                         "items": [
+                          {
+                           "type": "In",
+                           "member": {
+                            "type": "Attr",
+                            "node": {
+                             "type": "Var",
+                             "name": "q"
+                            },
+                            "key": "dimension"
+                           },
+                           "container": {
+                            "type": "Attr",
+                            "node": {
+                             "type": "Var",
+                             "name": "qap"
+                            },
+                            "key": "resolves"
+                           }
+                          },
+                          {
+                           "type": "Lte",
+                           "a": {
+                            "type": "Times",
+                            "items": [
+                             {
+                              "type": "Attr",
+                              "node": {
+                               "type": "Var",
+                               "name": "q"
+                              },
+                              "key": "extent"
+                             },
+                             {
+                              "type": "Lit",
+                              "value": 1000
+                             }
+                            ]
+                           },
+                           "b": {
+                            "type": "Times",
+                            "items": [
+                             {
+                              "type": "Attr",
+                              "node": {
+                               "type": "Var",
+                               "name": "qap"
+                              },
+                              "key": "max_extent_per_mille"
+                             },
+                             {
+                              "type": "Attr",
+                              "node": {
+                               "type": "Var",
+                               "name": "qix"
+                              },
+                              "key": "words"
+                             }
+                            ]
+                           }
+                          }
+                         ]
+                        }
+                       },
+                       {
+                        "type": "Not",
+                        "arg": {
+                         "type": "Exists",
+                         "source": {
+                          "type": "Intersect",
+                          "a": {
+                           "type": "Fold",
+                           "source": {
+                            "type": "Neighbours",
+                            "node": {
+                             "type": "Var",
+                             "name": "yn"
+                            },
+                            "edge_type": "refers_to"
+                           },
+                           "var_name": "qc",
+                           "acc_name": "qacc",
+                           "init": {
+                            "type": "SetT",
+                            "items": []
+                           },
+                           "body": {
+                            "type": "Union",
+                            "a": {
+                             "type": "Var",
+                             "name": "qacc"
+                            },
+                            "b": {
+                             "type": "ReachableFrom",
+                             "node": {
+                              "type": "Var",
+                              "name": "qc"
+                             },
+                             "edge_type": "has_quale"
+                            }
+                           }
+                          },
+                          "b": {
+                           "type": "Var",
+                           "name": "steer_tq"
+                          }
+                         },
+                         "var_name": "q",
+                         "predicate": {
+                          "type": "And",
+                          "items": [
+                           {
+                            "type": "In",
+                            "member": {
+                             "type": "Attr",
+                             "node": {
+                              "type": "Var",
+                              "name": "q"
+                             },
+                             "key": "dimension"
+                            },
+                            "container": {
+                             "type": "Attr",
+                             "node": {
+                              "type": "Var",
+                              "name": "qap"
+                             },
+                             "key": "resolves"
+                            }
+                           },
+                           {
+                            "type": "Lte",
+                            "a": {
+                             "type": "Times",
+                             "items": [
+                              {
+                               "type": "Attr",
+                               "node": {
+                                "type": "Var",
+                                "name": "q"
+                               },
+                               "key": "extent"
+                              },
+                              {
+                               "type": "Lit",
+                               "value": 1000
+                              }
+                             ]
+                            },
+                            "b": {
+                             "type": "Times",
+                             "items": [
+                              {
+                               "type": "Attr",
+                               "node": {
+                                "type": "Var",
+                                "name": "qap"
+                               },
+                               "key": "max_extent_per_mille"
+                              },
+                              {
+                               "type": "Attr",
+                               "node": {
+                                "type": "Var",
+                                "name": "qix"
+                               },
+                               "key": "words"
+                              }
+                             ]
+                            }
+                           }
+                          ]
+                         }
+                        }
+                       }
+                      ]
+                     }
+                    }
+                   },
+                   "b": {
+                    "type": "Var",
+                    "name": "steer_u"
+                   }
+                  }
+                 ]
+                }
+               },
+               "var_name": "z",
+               "value": {
+                "type": "Var",
+                "name": "z"
+               },
+               "default": null
+              }
              }
-            ]
-           }
+            }
+           ]
           }
-         ]
+         }
         }
-       },
-       "var_name": "z",
-       "value": {
-        "type": "Var",
-        "name": "z"
        }
       }
      }
@@ -1362,7 +3802,8 @@
      "sent",
      "reply"
     ]
-   ]
+   ],
+   "comment": " v2.0.0 (tranche 15): the concern is chosen by QUALIA through the lexical qualia index, not by word overlap (scripts/gen_steer_qualia_match.py)."
   },
   {
    "name": "steer_clarify_no_match",
@@ -1587,156 +4028,552 @@
       }
      },
      {
-      "type": "Not",
-      "arg": {
-       "type": "Exists",
+      "type": "Let",
+      "name": "qap",
+      "value": {
+       "type": "Argmin",
        "source": {
-        "type": "NodesOfType",
-        "node_type": "SelfConcern"
+        "type": "Filter",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "QualiaAperture"
+        },
+        "var_name": "qa",
+        "predicate": {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "qa"
+          },
+          "key": "name"
+         },
+         "b": {
+          "type": "Lit",
+          "value": "steering"
+         }
+        }
        },
-       "var_name": "sc2",
-       "predicate": {
-        "type": "And",
-        "items": [
-         {
+       "var_name": "qa",
+       "value": {
+        "type": "Lit",
+        "value": 0
+       },
+       "default": null
+      },
+      "body": {
+       "type": "Let",
+       "name": "qix",
+       "value": {
+        "type": "Argmin",
+        "source": {
+         "type": "Filter",
+         "source": {
+          "type": "NodesOfType",
+          "node_type": "QualiaIndex"
+         },
+         "var_name": "qi",
+         "predicate": {
           "type": "Eq",
           "a": {
            "type": "Attr",
            "node": {
             "type": "Var",
-            "name": "sc2"
+            "name": "qi"
            },
-           "key": "status"
+           "key": "name"
           },
           "b": {
            "type": "Lit",
-           "value": "noted"
+           "value": "lexical_qualia"
           }
-         },
-         {
-          "type": "Exists",
-          "source": {
-           "type": "Neighbours",
-           "node": {
-            "type": "Var",
-            "name": "m"
-           },
-           "edge_type": "has_mention"
+         }
+        },
+        "var_name": "qi",
+        "value": {
+         "type": "Lit",
+         "value": 0
+        },
+        "default": null
+       },
+       "body": {
+        "type": "Let",
+        "name": "steer_targets",
+        "value": {
+         "type": "FilterList",
+         "source": {
+          "type": "Neighbours",
+          "node": {
+           "type": "Var",
+           "name": "m"
           },
-          "var_name": "mn3",
-          "predicate": {
-           "type": "And",
-           "items": [
-            {
-             "type": "Not",
-             "arg": {
-              "type": "In",
-              "member": {
-               "type": "Attr",
+          "edge_type": "has_mention"
+         },
+         "var_name": "mn",
+         "predicate": {
+          "type": "And",
+          "items": [
+           {
+            "type": "Not",
+            "arg": {
+             "type": "Exists",
+             "source": {
+              "type": "Neighbours",
+              "node": {
+               "type": "Var",
+               "name": "mn"
+              },
+              "edge_type": "refers_to"
+             },
+             "var_name": "rc",
+             "predicate": {
+              "type": "Or",
+              "items": [
+               {
+                "type": "In",
+                "member": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "rc"
+                 },
+                 "key": "instruction_route"
+                },
+                "container": {
+                 "type": "Lit",
+                 "value": [
+                  "steer_promote",
+                  "steer_retire"
+                 ]
+                }
+               },
+               {
+                "type": "And",
+                "items": [
+                 {
+                  "type": "Eq",
+                  "a": {
+                   "type": "TypeOf",
+                   "node": {
+                    "type": "Var",
+                    "name": "rc"
+                   }
+                  },
+                  "b": {
+                   "type": "Lit",
+                   "value": "Concept"
+                  }
+                 },
+                 {
+                  "type": "In",
+                  "member": {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "rc"
+                   },
+                   "key": "name"
+                  },
+                  "container": {
+                   "type": "Lit",
+                   "value": [
+                    "gap",
+                    "gaps",
+                    "concern",
+                    "concerns",
+                    "limitation",
+                    "limitations",
+                    "weakness",
+                    "weaknesses",
+                    "shortcoming",
+                    "shortcomings"
+                   ]
+                  }
+                 }
+                ]
+               }
+              ]
+             }
+            }
+           },
+           {
+            "type": "Exists",
+            "source": {
+             "type": "Fold",
+             "source": {
+              "type": "Neighbours",
+              "node": {
+               "type": "Var",
+               "name": "mn"
+              },
+              "edge_type": "refers_to"
+             },
+             "var_name": "qc",
+             "acc_name": "qacc",
+             "init": {
+              "type": "SetT",
+              "items": []
+             },
+             "body": {
+              "type": "Union",
+              "a": {
+               "type": "Var",
+               "name": "qacc"
+              },
+              "b": {
+               "type": "ReachableFrom",
                "node": {
                 "type": "Var",
-                "name": "mn3"
+                "name": "qc"
                },
-               "key": "text"
-              },
-              "container": {
-               "type": "Lit",
-               "value": [
-                "the",
-                "a",
-                "an",
-                "on",
-                "to",
-                "of",
-                "in",
-                "at",
-                "for",
-                "and",
-                "or",
-                "it",
-                "its",
-                "this",
-                "that",
-                "my",
-                "your",
-                "you",
-                "yours",
-                "me",
-                "we",
-                "us",
-                "is",
-                "are",
-                "was",
-                "be",
-                "do",
-                "does",
-                "did",
-                "have",
-                "has",
-                "had",
-                "please",
-                "not",
-                "no",
-                "so",
-                "up",
-                "about",
-                "with",
-                "gap",
-                "gaps",
-                "concern",
-                "concerns",
-                "limitation",
-                "limitations",
-                "weakness",
-                "weaknesses",
-                "shortcoming",
-                "shortcomings",
-                "promote",
-                "pursue",
-                "prioritise",
-                "prioritize",
-                "work",
-                "working",
-                "focus",
-                "drop",
-                "retire",
-                "stop",
-                "abandon",
-                "dismiss"
-               ]
+               "edge_type": "has_quale"
               }
              }
             },
-            {
-             "type": "Gte",
-             "a": {
-              "type": "StringIndexOf",
-              "haystack": {
-               "type": "Attr",
-               "node": {
-                "type": "Var",
-                "name": "sc2"
+            "var_name": "q",
+            "predicate": {
+             "type": "And",
+             "items": [
+              {
+               "type": "In",
+               "member": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "q"
+                },
+                "key": "dimension"
                },
-               "key": "content"
+               "container": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "qap"
+                },
+                "key": "resolves"
+               }
               },
-              "needle": {
-               "type": "Attr",
-               "node": {
-                "type": "Var",
-                "name": "mn3"
+              {
+               "type": "Lte",
+               "a": {
+                "type": "Times",
+                "items": [
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "q"
+                  },
+                  "key": "extent"
+                 },
+                 {
+                  "type": "Lit",
+                  "value": 1000
+                 }
+                ]
                },
-               "key": "text"
+               "b": {
+                "type": "Times",
+                "items": [
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "qap"
+                  },
+                  "key": "max_extent_per_mille"
+                 },
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "qix"
+                  },
+                  "key": "words"
+                 }
+                ]
+               }
               }
+             ]
+            }
+           }
+          ]
+         }
+        },
+        "body": {
+         "type": "Let",
+         "name": "steer_tq",
+         "value": {
+          "type": "Fold",
+          "source": {
+           "type": "Var",
+           "name": "steer_targets"
+          },
+          "var_name": "mn",
+          "acc_name": "tacc",
+          "init": {
+           "type": "SetT",
+           "items": []
+          },
+          "body": {
+           "type": "Union",
+           "a": {
+            "type": "Var",
+            "name": "tacc"
+           },
+           "b": {
+            "type": "Fold",
+            "source": {
+             "type": "Neighbours",
+             "node": {
+              "type": "Var",
+              "name": "mn"
+             },
+             "edge_type": "refers_to"
+            },
+            "var_name": "qc",
+            "acc_name": "qacc",
+            "init": {
+             "type": "SetT",
+             "items": []
+            },
+            "body": {
+             "type": "Union",
+             "a": {
+              "type": "Var",
+              "name": "qacc"
+             },
+             "b": {
+              "type": "ReachableFrom",
+              "node": {
+               "type": "Var",
+               "name": "qc"
+              },
+              "edge_type": "has_quale"
+             }
+            }
+           }
+          }
+         },
+         "body": {
+          "type": "Eq",
+          "a": {
+           "type": "MaxOver",
+           "source": {
+            "type": "Filter",
+            "source": {
+             "type": "NodesOfType",
+             "node_type": "SelfConcern"
+            },
+            "var_name": "y",
+            "predicate": {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "y"
+              },
+              "key": "status"
              },
              "b": {
               "type": "Lit",
-              "value": 0
+              "value": "noted"
              }
             }
-           ]
+           },
+           "var_name": "y",
+           "value": {
+            "type": "Let",
+            "name": "ycl",
+            "value": {
+             "type": "Fold",
+             "source": {
+              "type": "Neighbours",
+              "node": {
+               "type": "Var",
+               "name": "y"
+              },
+              "edge_type": "has_mention"
+             },
+             "var_name": "yn",
+             "acc_name": "yacc",
+             "init": {
+              "type": "SetT",
+              "items": []
+             },
+             "body": {
+              "type": "Union",
+              "a": {
+               "type": "Var",
+               "name": "yacc"
+              },
+              "b": {
+               "type": "Fold",
+               "source": {
+                "type": "Neighbours",
+                "node": {
+                 "type": "Var",
+                 "name": "yn"
+                },
+                "edge_type": "refers_to"
+               },
+               "var_name": "qc",
+               "acc_name": "qacc",
+               "init": {
+                "type": "SetT",
+                "items": []
+               },
+               "body": {
+                "type": "Union",
+                "a": {
+                 "type": "Var",
+                 "name": "qacc"
+                },
+                "b": {
+                 "type": "ReachableFrom",
+                 "node": {
+                  "type": "Var",
+                  "name": "qc"
+                 },
+                 "edge_type": "has_quale"
+                }
+               }
+              }
+             }
+            },
+            "body": {
+             "type": "Count",
+             "source": {
+              "type": "FilterList",
+              "source": {
+               "type": "Var",
+               "name": "steer_targets"
+              },
+              "var_name": "mn",
+              "predicate": {
+               "type": "Exists",
+               "source": {
+                "type": "Intersect",
+                "a": {
+                 "type": "Fold",
+                 "source": {
+                  "type": "Neighbours",
+                  "node": {
+                   "type": "Var",
+                   "name": "mn"
+                  },
+                  "edge_type": "refers_to"
+                 },
+                 "var_name": "qc",
+                 "acc_name": "qacc",
+                 "init": {
+                  "type": "SetT",
+                  "items": []
+                 },
+                 "body": {
+                  "type": "Union",
+                  "a": {
+                   "type": "Var",
+                   "name": "qacc"
+                  },
+                  "b": {
+                   "type": "ReachableFrom",
+                   "node": {
+                    "type": "Var",
+                    "name": "qc"
+                   },
+                   "edge_type": "has_quale"
+                  }
+                 }
+                },
+                "b": {
+                 "type": "Var",
+                 "name": "ycl"
+                }
+               },
+               "var_name": "q",
+               "predicate": {
+                "type": "And",
+                "items": [
+                 {
+                  "type": "In",
+                  "member": {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "q"
+                   },
+                   "key": "dimension"
+                  },
+                  "container": {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "qap"
+                   },
+                   "key": "resolves"
+                  }
+                 },
+                 {
+                  "type": "Lte",
+                  "a": {
+                   "type": "Times",
+                   "items": [
+                    {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "q"
+                     },
+                     "key": "extent"
+                    },
+                    {
+                     "type": "Lit",
+                     "value": 1000
+                    }
+                   ]
+                  },
+                  "b": {
+                   "type": "Times",
+                   "items": [
+                    {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "qap"
+                     },
+                     "key": "max_extent_per_mille"
+                    },
+                    {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "qix"
+                     },
+                     "key": "words"
+                    }
+                   ]
+                  }
+                 }
+                ]
+               }
+              }
+             }
+            }
+           },
+           "default": {
+            "type": "Lit",
+            "value": 0
+           }
+          },
+          "b": {
+           "type": "Lit",
+           "value": 0
           }
          }
-        ]
+        }
        }
       }
      }
@@ -1780,7 +4617,8 @@
      "sent",
      "reply"
     ]
-   ]
+   ],
+   "comment": " v2.0.0 (tranche 15): the concern is chosen by QUALIA through the lexical qualia index, not by word overlap (scripts/gen_steer_qualia_match.py)."
   }
  ]
 }

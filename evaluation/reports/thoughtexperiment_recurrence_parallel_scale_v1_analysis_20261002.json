@@ -1,0 +1,55 @@
+{
+  "concurrent_speedup_vs_sequential": {
+    "full_copy": 0.3958993474217084,
+    "shared_pages": 1.442127513661543
+  },
+  "errors": [],
+  "gates_pass": true,
+  "schema": "ThoughtexperimentRecurrenceParallelScaleV1Analysis",
+  "summary": [
+    {
+      "backend": "full_copy",
+      "fanout": 8,
+      "median_experiments_per_second": 1.8957400593135973,
+      "median_peak_delta_pss_mib": 360.25390625,
+      "median_peak_delta_rss_mib": 360.25390625,
+      "median_sampler_count": 180,
+      "median_wall_ms": 4219.987841,
+      "mode": "sequential",
+      "repeats": 3
+    },
+    {
+      "backend": "full_copy",
+      "fanout": 8,
+      "median_experiments_per_second": 0.7505222523634439,
+      "median_peak_delta_pss_mib": 2052.984375,
+      "median_peak_delta_rss_mib": 2052.984375,
+      "median_sampler_count": 294,
+      "median_wall_ms": 10659.244246,
+      "mode": "concurrent",
+      "repeats": 3
+    },
+    {
+      "backend": "shared_pages",
+      "fanout": 8,
+      "median_experiments_per_second": 10.728444670139332,
+      "median_peak_delta_pss_mib": 141.515625,
+      "median_peak_delta_rss_mib": 141.515625,
+      "median_sampler_count": 37,
+      "median_wall_ms": 745.681247,
+      "mode": "sequential",
+      "repeats": 3
+    },
+    {
+      "backend": "shared_pages",
+      "fanout": 8,
+      "median_experiments_per_second": 15.471785237603466,
+      "median_peak_delta_pss_mib": 1128.6865234375,
+      "median_peak_delta_rss_mib": 1128.6875,
+      "median_sampler_count": 15,
+      "median_wall_ms": 517.070259,
+      "mode": "concurrent",
+      "repeats": 3
+    }
+  ]
+}

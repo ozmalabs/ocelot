@@ -1,0 +1,7 @@
+# Finite-float variable relations v1 results
+
+The source-locked 1,024-case run passed all seven independent replay gates. Each generated conjunction contains at least one variable-to-variable comparison. The independent checker found representative witnesses in 395 cases and no witness in its constructed finite set in 629 cases. The latter count is not an unrestricted unsatisfiability result. Every found witness was accepted by native Term evaluation (395/395), and the direct-unary clause solver returned unresolved on all 1,024 cases, as expected for its current fragment.
+
+The run enumerated 240,828 representative pairs and took 173.2 ms CPU/wall time on this batch. That is a small harness measurement, not a scaling claim. The result establishes conservative abstention and witness parity on this generated two-variable relation family; it does not establish complete relation solving, unsatisfiability proofs, higher-variable coverage, or prevalence on natural tasks.
+
+See the [preregistration](FINITE_FLOAT_VARIABLE_RELATIONS_V1_PREREG_20261004.md), [runner](../../../evaluation/substrate_capability/finite_float_variable_relations_v1.py), [analyzer](../../../evaluation/substrate_capability/analyze_finite_float_variable_relations_v1.py), [lock](../../../evaluation/substrate_capability/finite_float_variable_relations_v1_lock_20261004.json), [capture](../../../evaluation/reports/finite_float_variable_relations_v1_20261004.json), and [analysis](../../../evaluation/reports/finite_float_variable_relations_v1_analysis_20261004.json).

@@ -1,0 +1,755 @@
+{
+  "all_gates_pass": true,
+  "design": {
+    "acquisition_repeats": 3,
+    "application_path": "native Substrate._inner.evaluate over exact SynthEnumerate-returned Term; not reflected Program IR / ProgEval",
+    "budget": {
+      "max_candidates": 0,
+      "max_size": 15
+    },
+    "constant_pool": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      -1,
+      -2,
+      -3,
+      -4,
+      999,
+      ""
+    ],
+    "direct_repeated_search_counts": [
+      2,
+      5
+    ],
+    "operator_pool": [
+      "Concat",
+      "CaseFold",
+      "Eq",
+      "IfThenElse",
+      "Replace",
+      "Split",
+      "StrCount",
+      "Capitalize",
+      "Reverse",
+      "Slice",
+      "Str",
+      "MapList",
+      "JoinList",
+      "First",
+      "LastElem"
+    ],
+    "reuse_counts": [
+      1,
+      2,
+      5,
+      100,
+      1000,
+      10000
+    ],
+    "task_ids": [
+      "pbe_001",
+      "pbe_010",
+      "pbe_024"
+    ]
+  },
+  "environment": {
+    "native_path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+    "native_sha256": "4152737c6f6a88e44632ffb786350c5702529417b5f489d4ab5cc44bef9f20bc",
+    "platform": "Linux-6.8.0-142-generic-x86_64-with-glibc2.39",
+    "python": "3.13.5 (main, Jun 11 2025, 15:36:57) [GCC 11.4.0]"
+  },
+  "process_cpu_ns": 1850833791,
+  "provenance": {
+    "adapter_sha256": "38c8fbb9dc552afcc93bda001b5f95da39522635290947900be41bc444f3601f",
+    "dirty_worktree": true,
+    "fixture_sha256": "2aa57d29ca156c80e5519d2b488b67892d503f7b96fccc9460d7d1cbac9c0e2f",
+    "git_head": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+    "lock_sha256": "9667e27dab24d2957360739b00b232ce306e2708d30d630785571adeebfaf96d",
+    "native_sha256": "4152737c6f6a88e44632ffb786350c5702529417b5f489d4ab5cc44bef9f20bc",
+    "pbe_runner_sha256": "2023dbf32c022a4ce878d6ee6b585ae4936c1e71b656ed3efe0c7d963ce8f7a9",
+    "preregistration_sha256": "a2d6ee94e257e9c0fb180ee8827ccc76ed1f5bfde04a713f391ee4d632813491",
+    "runner_sha256": "d13a725becf1d3b4bf54ea305cb6a32167e7c3c79a54cde175d20a49311b6df1"
+  },
+  "results": [
+    {
+      "acquisition_median_cpu_ns": 82410,
+      "acquisition_median_wall_ns": 80320,
+      "acquisitions": [
+        {
+          "cpu_ns": 218720,
+          "distinct": 34,
+          "found": true,
+          "halt_reason": "solved",
+          "term": {
+            "seq": {
+              "name": "s",
+              "type": "Var"
+            },
+            "type": "Reverse"
+          },
+          "term_str": "reversed(s)",
+          "tested": 59,
+          "wall_ns": 215231
+        },
+        {
+          "cpu_ns": 82410,
+          "distinct": 34,
+          "found": true,
+          "halt_reason": "solved",
+          "term": {
+            "seq": {
+              "name": "s",
+              "type": "Var"
+            },
+            "type": "Reverse"
+          },
+          "term_str": "reversed(s)",
+          "tested": 59,
+          "wall_ns": 80320
+        },
+        {
+          "cpu_ns": 72110,
+          "distinct": 34,
+          "found": true,
+          "halt_reason": "solved",
+          "term": {
+            "seq": {
+              "name": "s",
+              "type": "Var"
+            },
+            "type": "Reverse"
+          },
+          "term_str": "reversed(s)",
+          "tested": 59,
+          "wall_ns": 70450
+        }
+      ],
+      "application_batches": [
+        {
+          "calls": 1,
+          "checksum": 8,
+          "wall_ns": 4280
+        },
+        {
+          "calls": 2,
+          "checksum": 16,
+          "wall_ns": 7050
+        },
+        {
+          "calls": 5,
+          "checksum": 40,
+          "wall_ns": 16040
+        },
+        {
+          "calls": 100,
+          "checksum": 800,
+          "wall_ns": 261652
+        },
+        {
+          "calls": 1000,
+          "checksum": 8000,
+          "wall_ns": 2604601
+        },
+        {
+          "calls": 10000,
+          "checksum": 80000,
+          "wall_ns": 26426979
+        }
+      ],
+      "canonical_term_consistent": true,
+      "held_out": {
+        "all_ok": true,
+        "n": 1,
+        "n_ok": 1,
+        "rows": [
+          {
+            "expected": "nohtyp",
+            "got": "nohtyp",
+            "inputs": {
+              "s": "python"
+            },
+            "ok": true
+          }
+        ]
+      },
+      "name": "reverse_string",
+      "repeated_acquisition_batches": [
+        {
+          "application_wall_ns": 13140,
+          "search_wall_ns": 180331,
+          "searches": 2,
+          "tested_candidates": [
+            59,
+            59
+          ],
+          "wall_ns": 330812
+        },
+        {
+          "application_wall_ns": 24260,
+          "search_wall_ns": 254901,
+          "searches": 5,
+          "tested_candidates": [
+            59,
+            59,
+            59,
+            59,
+            59
+          ],
+          "wall_ns": 457833
+        }
+      ],
+      "reuse_economics": [
+        {
+          "application_cost_per_use_ns": 4280.0,
+          "measured_repeated_search_batch": null,
+          "modeled_repeated_search_ns": 84600,
+          "one_acquisition_plus_applications_ns": 84600,
+          "uses": 1
+        },
+        {
+          "application_cost_per_use_ns": 3525.0,
+          "measured_repeated_search_batch": {
+            "application_wall_ns": 13140,
+            "search_wall_ns": 180331,
+            "searches": 2,
+            "tested_candidates": [
+              59,
+              59
+            ],
+            "wall_ns": 330812
+          },
+          "modeled_repeated_search_ns": 167690,
+          "one_acquisition_plus_applications_ns": 87370,
+          "uses": 2
+        },
+        {
+          "application_cost_per_use_ns": 3208.0,
+          "measured_repeated_search_batch": {
+            "application_wall_ns": 24260,
+            "search_wall_ns": 254901,
+            "searches": 5,
+            "tested_candidates": [
+              59,
+              59,
+              59,
+              59,
+              59
+            ],
+            "wall_ns": 457833
+          },
+          "modeled_repeated_search_ns": 417640,
+          "one_acquisition_plus_applications_ns": 96360,
+          "uses": 5
+        },
+        {
+          "application_cost_per_use_ns": 2616.52,
+          "measured_repeated_search_batch": null,
+          "modeled_repeated_search_ns": 8293652,
+          "one_acquisition_plus_applications_ns": 341972,
+          "uses": 100
+        },
+        {
+          "application_cost_per_use_ns": 2604.601,
+          "measured_repeated_search_batch": null,
+          "modeled_repeated_search_ns": 82924601,
+          "one_acquisition_plus_applications_ns": 2684921,
+          "uses": 1000
+        },
+        {
+          "application_cost_per_use_ns": 2642.6979,
+          "measured_repeated_search_batch": null,
+          "modeled_repeated_search_ns": 829626979,
+          "one_acquisition_plus_applications_ns": 26507299,
+          "uses": 10000
+        }
+      ],
+      "task_id": "pbe_001",
+      "tier": "tier1_single_op",
+      "warmup": {
+        "calls": 100,
+        "checksum": 800,
+        "wall_ns": 333803
+      }
+    },
+    {
+      "acquisition_median_cpu_ns": 72693570,
+      "acquisition_median_wall_ns": 72760276,
+      "acquisitions": [
+        {
+          "cpu_ns": 80484102,
+          "distinct": 4308,
+          "found": true,
+          "halt_reason": "solved",
+          "term": {
+            "index": {
+              "type": "Lit",
+              "value": 0
+            },
+            "seq": {
+              "sep": {
+                "type": "Lit",
+                "value": 0
+              },
+              "text": {
+                "name": "s",
+                "type": "Var"
+              },
+              "type": "Split"
+            },
+            "type": "IndexAt"
+          },
+          "term_str": "s.split(0)[0]",
+          "tested": 125344,
+          "wall_ns": 80495957
+        },
+        {
+          "cpu_ns": 72693570,
+          "distinct": 4308,
+          "found": true,
+          "halt_reason": "solved",
+          "term": {
+            "index": {
+              "type": "Lit",
+              "value": 0
+            },
+            "seq": {
+              "sep": {
+                "type": "Lit",
+                "value": 0
+              },
+              "text": {
+                "name": "s",
+                "type": "Var"
+              },
+              "type": "Split"
+            },
+            "type": "IndexAt"
+          },
+          "term_str": "s.split(0)[0]",
+          "tested": 125344,
+          "wall_ns": 72760276
+        },
+        {
+          "cpu_ns": 68550928,
+          "distinct": 4308,
+          "found": true,
+          "halt_reason": "solved",
+          "term": {
+            "index": {
+              "type": "Lit",
+              "value": 0
+            },
+            "seq": {
+              "sep": {
+                "type": "Lit",
+                "value": 0
+              },
+              "text": {
+                "name": "s",
+                "type": "Var"
+              },
+              "type": "Split"
+            },
+            "type": "IndexAt"
+          },
+          "term_str": "s.split(0)[0]",
+          "tested": 125344,
+          "wall_ns": 68550263
+        }
+      ],
+      "application_batches": [
+        {
+          "calls": 1,
+          "checksum": 5,
+          "wall_ns": 5320
+        },
+        {
+          "calls": 2,
+          "checksum": 10,
+          "wall_ns": 14210
+        },
+        {
+          "calls": 5,
+          "checksum": 25,
+          "wall_ns": 23450
+        },
+        {
+          "calls": 100,
+          "checksum": 500,
+          "wall_ns": 460704
+        },
+        {
+          "calls": 1000,
+          "checksum": 5000,
+          "wall_ns": 4466216
+        },
+        {
+          "calls": 10000,
+          "checksum": 50000,
+          "wall_ns": 44612383
+        }
+      ],
+      "canonical_term_consistent": true,
+      "held_out": {
+        "all_ok": true,
+        "n": 1,
+        "n_ok": 1,
+        "rows": [
+          {
+            "expected": "one",
+            "got": "one",
+            "inputs": {
+              "s": "one two three"
+            },
+            "ok": true
+          }
+        ]
+      },
+      "name": "first_word",
+      "repeated_acquisition_batches": [
+        {
+          "application_wall_ns": 62511,
+          "search_wall_ns": 139606856,
+          "searches": 2,
+          "tested_candidates": [
+            125344,
+            125344
+          ],
+          "wall_ns": 139884437
+        },
+        {
+          "application_wall_ns": 166282,
+          "search_wall_ns": 369373553,
+          "searches": 5,
+          "tested_candidates": [
+            125344,
+            125344,
+            125344,
+            125344,
+            125344
+          ],
+          "wall_ns": 370128041
+        }
+      ],
+      "reuse_economics": [
+        {
+          "application_cost_per_use_ns": 5320.0,
+          "measured_repeated_search_batch": null,
+          "modeled_repeated_search_ns": 72765596,
+          "one_acquisition_plus_applications_ns": 72765596,
+          "uses": 1
+        },
+        {
+          "application_cost_per_use_ns": 7105.0,
+          "measured_repeated_search_batch": {
+            "application_wall_ns": 62511,
+            "search_wall_ns": 139606856,
+            "searches": 2,
+            "tested_candidates": [
+              125344,
+              125344
+            ],
+            "wall_ns": 139884437
+          },
+          "modeled_repeated_search_ns": 145534762,
+          "one_acquisition_plus_applications_ns": 72774486,
+          "uses": 2
+        },
+        {
+          "application_cost_per_use_ns": 4690.0,
+          "measured_repeated_search_batch": {
+            "application_wall_ns": 166282,
+            "search_wall_ns": 369373553,
+            "searches": 5,
+            "tested_candidates": [
+              125344,
+              125344,
+              125344,
+              125344,
+              125344
+            ],
+            "wall_ns": 370128041
+          },
+          "modeled_repeated_search_ns": 363824830,
+          "one_acquisition_plus_applications_ns": 72783726,
+          "uses": 5
+        },
+        {
+          "application_cost_per_use_ns": 4607.04,
+          "measured_repeated_search_batch": null,
+          "modeled_repeated_search_ns": 7276488304,
+          "one_acquisition_plus_applications_ns": 73220980,
+          "uses": 100
+        },
+        {
+          "application_cost_per_use_ns": 4466.216,
+          "measured_repeated_search_batch": null,
+          "modeled_repeated_search_ns": 72764742216,
+          "one_acquisition_plus_applications_ns": 77226492,
+          "uses": 1000
+        },
+        {
+          "application_cost_per_use_ns": 4461.2383,
+          "measured_repeated_search_batch": null,
+          "modeled_repeated_search_ns": 727647372383,
+          "one_acquisition_plus_applications_ns": 117372659,
+          "uses": 10000
+        }
+      ],
+      "task_id": "pbe_010",
+      "tier": "tier2_composition",
+      "warmup": {
+        "calls": 100,
+        "checksum": 500,
+        "wall_ns": 493614
+      }
+    },
+    {
+      "acquisition_median_cpu_ns": 101578888,
+      "acquisition_median_wall_ns": 101595334,
+      "acquisitions": [
+        {
+          "cpu_ns": 105626568,
+          "distinct": 6309,
+          "found": true,
+          "halt_reason": "solved",
+          "term": {
+            "text": {
+              "seq": {
+                "seq": {
+                  "name": "s",
+                  "type": "Var"
+                },
+                "start": {
+                  "name": "s",
+                  "type": "Var"
+                },
+                "stop": {
+                  "type": "Lit",
+                  "value": 4
+                },
+                "type": "Slice"
+              },
+              "type": "Reverse"
+            },
+            "type": "Capitalize"
+          },
+          "term_str": "reversed(s[s:4]).capitalize()",
+          "tested": 198949,
+          "wall_ns": 105662647
+        },
+        {
+          "cpu_ns": 101578888,
+          "distinct": 6309,
+          "found": true,
+          "halt_reason": "solved",
+          "term": {
+            "text": {
+              "seq": {
+                "seq": {
+                  "name": "s",
+                  "type": "Var"
+                },
+                "start": {
+                  "name": "s",
+                  "type": "Var"
+                },
+                "stop": {
+                  "type": "Lit",
+                  "value": 4
+                },
+                "type": "Slice"
+              },
+              "type": "Reverse"
+            },
+            "type": "Capitalize"
+          },
+          "term_str": "reversed(s[s:4]).capitalize()",
+          "tested": 198949,
+          "wall_ns": 101595334
+        },
+        {
+          "cpu_ns": 95839586,
+          "distinct": 6309,
+          "found": true,
+          "halt_reason": "solved",
+          "term": {
+            "text": {
+              "seq": {
+                "seq": {
+                  "name": "s",
+                  "type": "Var"
+                },
+                "start": {
+                  "name": "s",
+                  "type": "Var"
+                },
+                "stop": {
+                  "type": "Lit",
+                  "value": 4
+                },
+                "type": "Slice"
+              },
+              "type": "Reverse"
+            },
+            "type": "Capitalize"
+          },
+          "term_str": "reversed(s[s:4]).capitalize()",
+          "tested": 198949,
+          "wall_ns": 96091140
+        }
+      ],
+      "application_batches": [
+        {
+          "calls": 1,
+          "checksum": 6,
+          "wall_ns": 5320
+        },
+        {
+          "calls": 2,
+          "checksum": 12,
+          "wall_ns": 12741
+        },
+        {
+          "calls": 5,
+          "checksum": 30,
+          "wall_ns": 25310
+        },
+        {
+          "calls": 100,
+          "checksum": 600,
+          "wall_ns": 497874
+        },
+        {
+          "calls": 1000,
+          "checksum": 6000,
+          "wall_ns": 5036660
+        },
+        {
+          "calls": 10000,
+          "checksum": 60000,
+          "wall_ns": 49320950
+        }
+      ],
+      "canonical_term_consistent": true,
+      "held_out": {
+        "all_ok": true,
+        "n": 1,
+        "n_ok": 1,
+        "rows": [
+          {
+            "expected": "Atad",
+            "got": "Atad",
+            "inputs": {
+              "s": "data science"
+            },
+            "ok": true
+          }
+        ]
+      },
+      "name": "trap_capitalize_reverse_slice",
+      "repeated_acquisition_batches": [
+        {
+          "application_wall_ns": 59451,
+          "search_wall_ns": 187903988,
+          "searches": 2,
+          "tested_candidates": [
+            198949,
+            198949
+          ],
+          "wall_ns": 188146749
+        },
+        {
+          "application_wall_ns": 173840,
+          "search_wall_ns": 493478046,
+          "searches": 5,
+          "tested_candidates": [
+            198949,
+            198949,
+            198949,
+            198949,
+            198949
+          ],
+          "wall_ns": 494139913
+        }
+      ],
+      "reuse_economics": [
+        {
+          "application_cost_per_use_ns": 5320.0,
+          "measured_repeated_search_batch": null,
+          "modeled_repeated_search_ns": 101600654,
+          "one_acquisition_plus_applications_ns": 101600654,
+          "uses": 1
+        },
+        {
+          "application_cost_per_use_ns": 6370.5,
+          "measured_repeated_search_batch": {
+            "application_wall_ns": 59451,
+            "search_wall_ns": 187903988,
+            "searches": 2,
+            "tested_candidates": [
+              198949,
+              198949
+            ],
+            "wall_ns": 188146749
+          },
+          "modeled_repeated_search_ns": 203203409,
+          "one_acquisition_plus_applications_ns": 101608075,
+          "uses": 2
+        },
+        {
+          "application_cost_per_use_ns": 5062.0,
+          "measured_repeated_search_batch": {
+            "application_wall_ns": 173840,
+            "search_wall_ns": 493478046,
+            "searches": 5,
+            "tested_candidates": [
+              198949,
+              198949,
+              198949,
+              198949,
+              198949
+            ],
+            "wall_ns": 494139913
+          },
+          "modeled_repeated_search_ns": 508001980,
+          "one_acquisition_plus_applications_ns": 101620644,
+          "uses": 5
+        },
+        {
+          "application_cost_per_use_ns": 4978.74,
+          "measured_repeated_search_batch": null,
+          "modeled_repeated_search_ns": 10160031274,
+          "one_acquisition_plus_applications_ns": 102093208,
+          "uses": 100
+        },
+        {
+          "application_cost_per_use_ns": 5036.66,
+          "measured_repeated_search_batch": null,
+          "modeled_repeated_search_ns": 101600370660,
+          "one_acquisition_plus_applications_ns": 106631994,
+          "uses": 1000
+        },
+        {
+          "application_cost_per_use_ns": 4932.095,
+          "measured_repeated_search_batch": null,
+          "modeled_repeated_search_ns": 1016002660950,
+          "one_acquisition_plus_applications_ns": 150916284,
+          "uses": 10000
+        }
+      ],
+      "task_id": "pbe_024",
+      "tier": "memorization_trap",
+      "warmup": {
+        "calls": 100,
+        "checksum": 600,
+        "wall_ns": 507424
+      }
+    }
+  ],
+  "run_id": "substrate-synthesis-acquisition-application-20260925-v1",
+  "schema_version": 1
+}

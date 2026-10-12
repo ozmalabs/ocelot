@@ -16,6 +16,7 @@ pytest.importorskip("substrate_rs")
 from substrate.world_adapter import WorldAdapter
 from domains import predictive_reading
 from domains import train_of_thought
+from domains import self_dialogue
 
 
 def _adapter():
@@ -59,3 +60,22 @@ def test_graph_only_self_answer_reports_path_without_surface():
     assert answer["surface"] == ""
     assert answer["graph_path"] == ["dog", "mammal"]
     assert answer["recovered"] == ["dog", "mammal"]
+
+
+def test_self_dialogue_concept_lookup_uses_live_exact_name_index():
+    wa = WorldAdapter(seeds=())
+    first = wa.s.add_node("Concept", {"name": "held_topic"})
+    assert not wa.inner.has_attr_index("Concept", "name")
+
+    assert self_dialogue._find_concept(wa.s, "held_topic") == first
+    assert wa.inner.has_attr_index("Concept", "name")
+
+    # The maintained index must see later graph writes and preserve the
+    # previous exact, case-sensitive name contract.
+    duplicate = wa.s.add_node("Concept", {"name": "held_topic"})
+    mixed_case = wa.s.add_node("Concept", {"name": "Held_Topic"})
+    later = wa.s.add_node("Concept", {"name": "later_topic"})
+    assert duplicate != first
+    assert self_dialogue._find_concept(wa.s, "held_topic") == first
+    assert self_dialogue._find_concept(wa.s, "Held_Topic") == mixed_case
+    assert self_dialogue._find_concept(wa.s, "later_topic") == later

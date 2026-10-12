@@ -1,0 +1,316 @@
+{
+  "all_gates_pass": true,
+  "analysis": "External effect compensation probe v1",
+  "gates": {
+    "all_arms_and_phases_present": true,
+    "external_only_flip_does_not_recheck_or_correct": true,
+    "final_state_matches_strategy": true,
+    "identical_worker_behavior": true,
+    "locked_inputs_match": true,
+    "negative_revision_rechecks_resource": true,
+    "positive_revision_commits_effect": true,
+    "three_workers": true
+  },
+  "interpretation": "Resource-only changes do not re-evaluate a settled predicate. After an explicit revision update, the sticky rule leaves its prior positive attr; an authored false-case rule can set an explicit negative value or delete an edge. These are explicit compensation strategies, not automatic truth maintenance.",
+  "limitations": [
+    "One rule binding and fixed four-phase resource sequence per arm.",
+    "No DelAttr effect was exercised; edge deletion and explicit value compensation are the supported representations tested.",
+    "No effects are automatically retracted when a predicate becomes false."
+  ],
+  "strategies": {
+    "compensating_attr": {
+      "callback_counts_by_worker": [
+        [
+          4,
+          3,
+          0,
+          4
+        ],
+        [
+          4,
+          3,
+          0,
+          4
+        ],
+        [
+          4,
+          3,
+          0,
+          4
+        ]
+      ],
+      "phase_markers_by_worker": [
+        [
+          {
+            "accepted_attr": 0,
+            "accepted_edge": false
+          },
+          {
+            "accepted_attr": 1,
+            "accepted_edge": false
+          },
+          {
+            "accepted_attr": 1,
+            "accepted_edge": false
+          },
+          {
+            "accepted_attr": 0,
+            "accepted_edge": false
+          }
+        ],
+        [
+          {
+            "accepted_attr": 0,
+            "accepted_edge": false
+          },
+          {
+            "accepted_attr": 1,
+            "accepted_edge": false
+          },
+          {
+            "accepted_attr": 1,
+            "accepted_edge": false
+          },
+          {
+            "accepted_attr": 0,
+            "accepted_edge": false
+          }
+        ],
+        [
+          {
+            "accepted_attr": 0,
+            "accepted_edge": false
+          },
+          {
+            "accepted_attr": 1,
+            "accepted_edge": false
+          },
+          {
+            "accepted_attr": 1,
+            "accepted_edge": false
+          },
+          {
+            "accepted_attr": 0,
+            "accepted_edge": false
+          }
+        ]
+      ],
+      "resource_hashes_by_worker": [
+        [
+          "5feceb66ffc86f38d952786c6d696c79c2dbc239dd4e91b46729d73a27fb57e9",
+          "6b86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4b",
+          "5feceb66ffc86f38d952786c6d696c79c2dbc239dd4e91b46729d73a27fb57e9",
+          "5feceb66ffc86f38d952786c6d696c79c2dbc239dd4e91b46729d73a27fb57e9"
+        ],
+        [
+          "5feceb66ffc86f38d952786c6d696c79c2dbc239dd4e91b46729d73a27fb57e9",
+          "6b86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4b",
+          "5feceb66ffc86f38d952786c6d696c79c2dbc239dd4e91b46729d73a27fb57e9",
+          "5feceb66ffc86f38d952786c6d696c79c2dbc239dd4e91b46729d73a27fb57e9"
+        ],
+        [
+          "5feceb66ffc86f38d952786c6d696c79c2dbc239dd4e91b46729d73a27fb57e9",
+          "6b86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4b",
+          "5feceb66ffc86f38d952786c6d696c79c2dbc239dd4e91b46729d73a27fb57e9",
+          "5feceb66ffc86f38d952786c6d696c79c2dbc239dd4e91b46729d73a27fb57e9"
+        ]
+      ]
+    },
+    "retractable_edge": {
+      "callback_counts_by_worker": [
+        [
+          2,
+          3,
+          0,
+          4
+        ],
+        [
+          2,
+          3,
+          0,
+          4
+        ],
+        [
+          2,
+          3,
+          0,
+          4
+        ]
+      ],
+      "phase_markers_by_worker": [
+        [
+          {
+            "accepted_attr": null,
+            "accepted_edge": false
+          },
+          {
+            "accepted_attr": null,
+            "accepted_edge": true
+          },
+          {
+            "accepted_attr": null,
+            "accepted_edge": true
+          },
+          {
+            "accepted_attr": null,
+            "accepted_edge": false
+          }
+        ],
+        [
+          {
+            "accepted_attr": null,
+            "accepted_edge": false
+          },
+          {
+            "accepted_attr": null,
+            "accepted_edge": true
+          },
+          {
+            "accepted_attr": null,
+            "accepted_edge": true
+          },
+          {
+            "accepted_attr": null,
+            "accepted_edge": false
+          }
+        ],
+        [
+          {
+            "accepted_attr": null,
+            "accepted_edge": false
+          },
+          {
+            "accepted_attr": null,
+            "accepted_edge": true
+          },
+          {
+            "accepted_attr": null,
+            "accepted_edge": true
+          },
+          {
+            "accepted_attr": null,
+            "accepted_edge": false
+          }
+        ]
+      ],
+      "resource_hashes_by_worker": [
+        [
+          "5feceb66ffc86f38d952786c6d696c79c2dbc239dd4e91b46729d73a27fb57e9",
+          "6b86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4b",
+          "5feceb66ffc86f38d952786c6d696c79c2dbc239dd4e91b46729d73a27fb57e9",
+          "5feceb66ffc86f38d952786c6d696c79c2dbc239dd4e91b46729d73a27fb57e9"
+        ],
+        [
+          "5feceb66ffc86f38d952786c6d696c79c2dbc239dd4e91b46729d73a27fb57e9",
+          "6b86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4b",
+          "5feceb66ffc86f38d952786c6d696c79c2dbc239dd4e91b46729d73a27fb57e9",
+          "5feceb66ffc86f38d952786c6d696c79c2dbc239dd4e91b46729d73a27fb57e9"
+        ],
+        [
+          "5feceb66ffc86f38d952786c6d696c79c2dbc239dd4e91b46729d73a27fb57e9",
+          "6b86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4b",
+          "5feceb66ffc86f38d952786c6d696c79c2dbc239dd4e91b46729d73a27fb57e9",
+          "5feceb66ffc86f38d952786c6d696c79c2dbc239dd4e91b46729d73a27fb57e9"
+        ]
+      ]
+    },
+    "sticky_attr": {
+      "callback_counts_by_worker": [
+        [
+          1,
+          2,
+          0,
+          1
+        ],
+        [
+          1,
+          2,
+          0,
+          1
+        ],
+        [
+          1,
+          2,
+          0,
+          1
+        ]
+      ],
+      "phase_markers_by_worker": [
+        [
+          {
+            "accepted_attr": null,
+            "accepted_edge": false
+          },
+          {
+            "accepted_attr": 1,
+            "accepted_edge": false
+          },
+          {
+            "accepted_attr": 1,
+            "accepted_edge": false
+          },
+          {
+            "accepted_attr": 1,
+            "accepted_edge": false
+          }
+        ],
+        [
+          {
+            "accepted_attr": null,
+            "accepted_edge": false
+          },
+          {
+            "accepted_attr": 1,
+            "accepted_edge": false
+          },
+          {
+            "accepted_attr": 1,
+            "accepted_edge": false
+          },
+          {
+            "accepted_attr": 1,
+            "accepted_edge": false
+          }
+        ],
+        [
+          {
+            "accepted_attr": null,
+            "accepted_edge": false
+          },
+          {
+            "accepted_attr": 1,
+            "accepted_edge": false
+          },
+          {
+            "accepted_attr": 1,
+            "accepted_edge": false
+          },
+          {
+            "accepted_attr": 1,
+            "accepted_edge": false
+          }
+        ]
+      ],
+      "resource_hashes_by_worker": [
+        [
+          "5feceb66ffc86f38d952786c6d696c79c2dbc239dd4e91b46729d73a27fb57e9",
+          "6b86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4b",
+          "5feceb66ffc86f38d952786c6d696c79c2dbc239dd4e91b46729d73a27fb57e9",
+          "5feceb66ffc86f38d952786c6d696c79c2dbc239dd4e91b46729d73a27fb57e9"
+        ],
+        [
+          "5feceb66ffc86f38d952786c6d696c79c2dbc239dd4e91b46729d73a27fb57e9",
+          "6b86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4b",
+          "5feceb66ffc86f38d952786c6d696c79c2dbc239dd4e91b46729d73a27fb57e9",
+          "5feceb66ffc86f38d952786c6d696c79c2dbc239dd4e91b46729d73a27fb57e9"
+        ],
+        [
+          "5feceb66ffc86f38d952786c6d696c79c2dbc239dd4e91b46729d73a27fb57e9",
+          "6b86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4b",
+          "5feceb66ffc86f38d952786c6d696c79c2dbc239dd4e91b46729d73a27fb57e9",
+          "5feceb66ffc86f38d952786c6d696c79c2dbc239dd4e91b46729d73a27fb57e9"
+        ]
+      ]
+    }
+  }
+}

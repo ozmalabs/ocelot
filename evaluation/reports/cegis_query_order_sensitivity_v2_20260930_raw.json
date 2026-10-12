@@ -1,0 +1,2120 @@
+{
+  "elapsed_s": 1296.1856052619987,
+  "environment": {
+    "platform": "Linux-6.8.0-142-generic-x86_64-with-glibc2.39",
+    "python": "3.13.5 (main, Jun 11 2025, 15:36:57) [GCC 11.4.0]"
+  },
+  "lock": {
+    "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+    "design": {
+      "arms": [
+        "fixed_order",
+        "seeded_permutation"
+      ],
+      "candidate_inputs": [
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12
+      ],
+      "fixed_literal_set": [
+        -1,
+        0,
+        1,
+        2,
+        3,
+        6,
+        10,
+        15,
+        21,
+        28,
+        36,
+        45,
+        55,
+        66,
+        78
+      ],
+      "holdout": [
+        17,
+        23,
+        50,
+        99,
+        100,
+        250
+      ],
+      "knowns": [
+        [
+          "n=1",
+          1
+        ]
+      ],
+      "literal_control": "override each native synthesis call with this shared set, independent of observed outputs",
+      "max_rounds": 16,
+      "max_size": 9,
+      "repetitions": 5,
+      "schedule_seed": 20260930,
+      "task": "triangular(n)=sum(0..n)",
+      "timeout_s": 120
+    },
+    "engine_provenance": {
+      "ambiguous": false,
+      "engine_source_fingerprint": "60c0e261013a7aebf60f0034e2b1166c85bfd0e00319884fd71e25890075b878",
+      "engine_tree": "/home/matt/ozmadev/ocelot",
+      "mtime": 1790759358.925161,
+      "native_path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+      "other_resolvable": [],
+      "sha256": "ba8700ec491f903a6effd93440efeed0aee8a5522489fbcb62647ed300c77c7b",
+      "short": "ba8700ec491f",
+      "source_fingerprint": "60c0e261013a7aebf60f0034e2b1166c85bfd0e00319884fd71e25890075b878",
+      "source_match": "own",
+      "stale_rust": [],
+      "this_tree": "/home/matt/ozmadev/ocelot"
+    },
+    "native_build_manifest_sha256": "1e1dfab562310378226ae55d4e42559bb60d7153776e0720094430825eecf22b",
+    "native_extension": {
+      "path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+      "sha256": "ba8700ec491f903a6effd93440efeed0aee8a5522489fbcb62647ed300c77c7b"
+    },
+    "rust_source_fingerprint": "60c0e261013a7aebf60f0034e2b1166c85bfd0e00319884fd71e25890075b878",
+    "schema_version": 1,
+    "source_sha256": {
+      "docs/research/engine_substrate/CEGIS_QUERY_ORDER_SENSITIVITY_V2_PREREG_20260930.md": "aace0be932000206dc3dd584da76a4eb2bb64ed58de5501ebdeb66b9bfb8a9e0",
+      "domains/cegis_faculty.py": "be5160faaf9cf163dad1ec6078558418a92883517cf7dc58be58d021a4f2a0fb",
+      "domains/compute_grounding.py": "8bb38cb9409ea52220fac93bc96aefa4654362f4ece9d37a86c654314c0a6f17",
+      "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+      "domains/generator.py": "742758adfa1e6e879e0e3d598531d508db113172d2367a67d5fc1e7f12d16697",
+      "domains/reason.py": "31a800c888efca6dbc4be7e1dff8b194d99794f737c64d79d08847a9efd75a0d",
+      "scripts/analyze_cegis_query_order_sensitivity_v2.py": "1e14f1330164619d10e65d79f5563c3c8ab7221feff0acdf75eada72afeecff3",
+      "scripts/cegis_faculty_on_sum_of_n.py": "3d410849ea4690d278244d2ba135232227c67dd66426f7bc05ac65d38deb0628",
+      "scripts/cegis_query_order_sensitivity_v2.py": "000e819aa5c2a0530f79c670a4c8578b5e649250b925627c18fa456063b51f88"
+    }
+  },
+  "protocol": "cegis_query_order_sensitivity_v2_20260930",
+  "schedule": [
+    [
+      "seeded_permutation",
+      1
+    ],
+    [
+      "fixed_order",
+      5
+    ],
+    [
+      "fixed_order",
+      1
+    ],
+    [
+      "seeded_permutation",
+      5
+    ],
+    [
+      "fixed_order",
+      3
+    ],
+    [
+      "fixed_order",
+      2
+    ],
+    [
+      "seeded_permutation",
+      3
+    ],
+    [
+      "seeded_permutation",
+      2
+    ],
+    [
+      "fixed_order",
+      4
+    ],
+    [
+      "seeded_permutation",
+      4
+    ]
+  ],
+  "worker_failures": [],
+  "workers": [
+    {
+      "arm": "seeded_permutation",
+      "candidate_family_oracle_calls": [
+        8,
+        8,
+        10,
+        8,
+        10,
+        11,
+        5,
+        9,
+        7,
+        2,
+        3,
+        6,
+        12,
+        4,
+        8,
+        10
+      ],
+      "candidate_order": [
+        8,
+        10,
+        11,
+        5,
+        9,
+        7,
+        2,
+        3,
+        6,
+        12,
+        4
+      ],
+      "cpu_s": 101.40333401299999,
+      "fixed_literal_set": [
+        -1,
+        0,
+        1,
+        2,
+        3,
+        6,
+        10,
+        15,
+        21,
+        28,
+        36,
+        45,
+        55,
+        66,
+        78
+      ],
+      "heldout": [
+        {
+          "exact": true,
+          "expected": 153,
+          "n": 17,
+          "predicted": 153.0
+        },
+        {
+          "exact": true,
+          "expected": 276,
+          "n": 23,
+          "predicted": 276.0
+        },
+        {
+          "exact": true,
+          "expected": 1275,
+          "n": 50,
+          "predicted": 1275.0
+        },
+        {
+          "exact": true,
+          "expected": 4950,
+          "n": 99,
+          "predicted": 4950.0
+        },
+        {
+          "exact": true,
+          "expected": 5050,
+          "n": 100,
+          "predicted": 5050.0
+        },
+        {
+          "exact": true,
+          "expected": 31375,
+          "n": 250,
+          "predicted": 31375.0
+        }
+      ],
+      "oracle_calls": [
+        1,
+        1,
+        8,
+        1,
+        8,
+        10,
+        1,
+        8,
+        10,
+        11,
+        5,
+        9,
+        7,
+        2,
+        3,
+        6,
+        12,
+        4,
+        1,
+        8,
+        10
+      ],
+      "pid": 6,
+      "replicate": 1,
+      "result": {
+        "converged": true,
+        "discriminated": [
+          "n",
+          "min(36, (n * n))"
+        ],
+        "final_size": 7,
+        "final_term": "(n * ((n + 1) / 2))",
+        "fits": true,
+        "rounds": [
+          {
+            "counterexample": "n=8",
+            "round": 0,
+            "term": "n"
+          },
+          {
+            "counterexample": "n=10",
+            "round": 1,
+            "term": "min(36, (n * n))"
+          },
+          {
+            "counterexample": null,
+            "round": 2,
+            "term": "(n * ((n + 1) / 2))"
+          }
+        ],
+        "rows": [
+          "n=1",
+          "n=8",
+          "n=10"
+        ],
+        "step0_term": "n"
+      },
+      "selected_queries": [
+        "n=8",
+        "n=10"
+      ],
+      "synthesis_calls": [
+        {
+          "elapsed_s": 0.0001,
+          "explored": 1,
+          "fits": true,
+          "halt_reason": "solved"
+        },
+        {
+          "elapsed_s": 0.0,
+          "explored": 1,
+          "fits": true,
+          "halt_reason": "solved"
+        },
+        {
+          "elapsed_s": 1.1234,
+          "explored": 68653,
+          "fits": true,
+          "halt_reason": "solved"
+        },
+        {
+          "elapsed_s": 50.5106,
+          "explored": 1353610,
+          "fits": true,
+          "halt_reason": "solved"
+        },
+        {
+          "elapsed_s": 47.8134,
+          "explored": 1353610,
+          "fits": true,
+          "halt_reason": "solved"
+        }
+      ],
+      "wall_s": 101.67086962400936,
+      "worker_error": null
+    },
+    {
+      "arm": "fixed_order",
+      "candidate_family_oracle_calls": [
+        2,
+        2,
+        3,
+        2,
+        3,
+        4,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        2,
+        3,
+        4
+      ],
+      "candidate_order": [
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12
+      ],
+      "cpu_s": 157.10788174,
+      "fixed_literal_set": [
+        -1,
+        0,
+        1,
+        2,
+        3,
+        6,
+        10,
+        15,
+        21,
+        28,
+        36,
+        45,
+        55,
+        66,
+        78
+      ],
+      "heldout": [
+        {
+          "exact": true,
+          "expected": 153,
+          "n": 17,
+          "predicted": 153.0
+        },
+        {
+          "exact": true,
+          "expected": 276,
+          "n": 23,
+          "predicted": 276.0
+        },
+        {
+          "exact": true,
+          "expected": 1275,
+          "n": 50,
+          "predicted": 1275.0
+        },
+        {
+          "exact": true,
+          "expected": 4950,
+          "n": 99,
+          "predicted": 4950.0
+        },
+        {
+          "exact": true,
+          "expected": 5050,
+          "n": 100,
+          "predicted": 5050.0
+        },
+        {
+          "exact": true,
+          "expected": 31375,
+          "n": 250,
+          "predicted": 31375.0
+        }
+      ],
+      "oracle_calls": [
+        1,
+        1,
+        2,
+        1,
+        2,
+        3,
+        1,
+        2,
+        3,
+        4,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        1,
+        2,
+        3,
+        4
+      ],
+      "pid": 7,
+      "replicate": 5,
+      "result": {
+        "converged": true,
+        "discriminated": [
+          "n",
+          "(n + (n + -1))",
+          "(n + (n - (3 > n)))"
+        ],
+        "final_size": 7,
+        "final_term": "(n * ((n + 1) / 2))",
+        "fits": true,
+        "rounds": [
+          {
+            "counterexample": "n=2",
+            "round": 0,
+            "term": "n"
+          },
+          {
+            "counterexample": "n=3",
+            "round": 1,
+            "term": "(n + (n + -1))"
+          },
+          {
+            "counterexample": "n=4",
+            "round": 2,
+            "term": "(n + (n - (3 > n)))"
+          },
+          {
+            "counterexample": null,
+            "round": 3,
+            "term": "(n * ((n + 1) / 2))"
+          }
+        ],
+        "rows": [
+          "n=1",
+          "n=2",
+          "n=3",
+          "n=4"
+        ],
+        "step0_term": "n"
+      },
+      "selected_queries": [
+        "n=2",
+        "n=3",
+        "n=4"
+      ],
+      "synthesis_calls": [
+        {
+          "elapsed_s": 0.0001,
+          "explored": 1,
+          "fits": true,
+          "halt_reason": "solved"
+        },
+        {
+          "elapsed_s": 0.0,
+          "explored": 1,
+          "fits": true,
+          "halt_reason": "solved"
+        },
+        {
+          "elapsed_s": 0.4248,
+          "explored": 11024,
+          "fits": true,
+          "halt_reason": "solved"
+        },
+        {
+          "elapsed_s": 34.3289,
+          "explored": 666737,
+          "fits": true,
+          "halt_reason": "solved"
+        },
+        {
+          "elapsed_s": 60.243,
+          "explored": 1350676,
+          "fits": true,
+          "halt_reason": "solved"
+        },
+        {
+          "elapsed_s": 59.5161,
+          "explored": 1350676,
+          "fits": true,
+          "halt_reason": "solved"
+        }
+      ],
+      "wall_s": 157.54382235003868,
+      "worker_error": null
+    },
+    {
+      "arm": "fixed_order",
+      "candidate_family_oracle_calls": [
+        2,
+        2,
+        3,
+        2,
+        3,
+        4,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        2,
+        3,
+        4
+      ],
+      "candidate_order": [
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12
+      ],
+      "cpu_s": 152.697704353,
+      "fixed_literal_set": [
+        -1,
+        0,
+        1,
+        2,
+        3,
+        6,
+        10,
+        15,
+        21,
+        28,
+        36,
+        45,
+        55,
+        66,
+        78
+      ],
+      "heldout": [
+        {
+          "exact": true,
+          "expected": 153,
+          "n": 17,
+          "predicted": 153.0
+        },
+        {
+          "exact": true,
+          "expected": 276,
+          "n": 23,
+          "predicted": 276.0
+        },
+        {
+          "exact": true,
+          "expected": 1275,
+          "n": 50,
+          "predicted": 1275.0
+        },
+        {
+          "exact": true,
+          "expected": 4950,
+          "n": 99,
+          "predicted": 4950.0
+        },
+        {
+          "exact": true,
+          "expected": 5050,
+          "n": 100,
+          "predicted": 5050.0
+        },
+        {
+          "exact": true,
+          "expected": 31375,
+          "n": 250,
+          "predicted": 31375.0
+        }
+      ],
+      "oracle_calls": [
+        1,
+        1,
+        2,
+        1,
+        2,
+        3,
+        1,
+        2,
+        3,
+        4,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        1,
+        2,
+        3,
+        4
+      ],
+      "pid": 8,
+      "replicate": 1,
+      "result": {
+        "converged": true,
+        "discriminated": [
+          "n",
+          "(n + (n + -1))",
+          "(n + (n - (3 > n)))"
+        ],
+        "final_size": 7,
+        "final_term": "(n * ((n + 1) / 2))",
+        "fits": true,
+        "rounds": [
+          {
+            "counterexample": "n=2",
+            "round": 0,
+            "term": "n"
+          },
+          {
+            "counterexample": "n=3",
+            "round": 1,
+            "term": "(n + (n + -1))"
+          },
+          {
+            "counterexample": "n=4",
+            "round": 2,
+            "term": "(n + (n - (3 > n)))"
+          },
+          {
+            "counterexample": null,
+            "round": 3,
+            "term": "(n * ((n + 1) / 2))"
+          }
+        ],
+        "rows": [
+          "n=1",
+          "n=2",
+          "n=3",
+          "n=4"
+        ],
+        "step0_term": "n"
+      },
+      "selected_queries": [
+        "n=2",
+        "n=3",
+        "n=4"
+      ],
+      "synthesis_calls": [
+        {
+          "elapsed_s": 0.0001,
+          "explored": 1,
+          "fits": true,
+          "halt_reason": "solved"
+        },
+        {
+          "elapsed_s": 0.0,
+          "explored": 1,
+          "fits": true,
+          "halt_reason": "solved"
+        },
+        {
+          "elapsed_s": 0.3551,
+          "explored": 11024,
+          "fits": true,
+          "halt_reason": "solved"
+        },
+        {
+          "elapsed_s": 33.0443,
+          "explored": 666737,
+          "fits": true,
+          "halt_reason": "solved"
+        },
+        {
+          "elapsed_s": 58.6609,
+          "explored": 1350676,
+          "fits": true,
+          "halt_reason": "solved"
+        },
+        {
+          "elapsed_s": 58.0015,
+          "explored": 1350676,
+          "fits": true,
+          "halt_reason": "solved"
+        }
+      ],
+      "wall_s": 153.07322126894724,
+      "worker_error": null
+    },
+    {
+      "arm": "seeded_permutation",
+      "candidate_family_oracle_calls": [
+        11,
+        11,
+        8,
+        11,
+        8,
+        10,
+        5,
+        3,
+        12,
+        7,
+        6,
+        4,
+        2,
+        9,
+        11,
+        8
+      ],
+      "candidate_order": [
+        11,
+        8,
+        10,
+        5,
+        3,
+        12,
+        7,
+        6,
+        4,
+        2,
+        9
+      ],
+      "cpu_s": 104.14344781,
+      "fixed_literal_set": [
+        -1,
+        0,
+        1,
+        2,
+        3,
+        6,
+        10,
+        15,
+        21,
+        28,
+        36,
+        45,
+        55,
+        66,
+        78
+      ],
+      "heldout": [
+        {
+          "exact": true,
+          "expected": 153,
+          "n": 17,
+          "predicted": 153.0
+        },
+        {
+          "exact": true,
+          "expected": 276,
+          "n": 23,
+          "predicted": 276.0
+        },
+        {
+          "exact": true,
+          "expected": 1275,
+          "n": 50,
+          "predicted": 1275.0
+        },
+        {
+          "exact": true,
+          "expected": 4950,
+          "n": 99,
+          "predicted": 4950.0
+        },
+        {
+          "exact": true,
+          "expected": 5050,
+          "n": 100,
+          "predicted": 5050.0
+        },
+        {
+          "exact": true,
+          "expected": 31375,
+          "n": 250,
+          "predicted": 31375.0
+        }
+      ],
+      "oracle_calls": [
+        1,
+        1,
+        11,
+        1,
+        11,
+        8,
+        1,
+        11,
+        8,
+        10,
+        5,
+        3,
+        12,
+        7,
+        6,
+        4,
+        2,
+        9,
+        1,
+        11,
+        8
+      ],
+      "pid": 9,
+      "replicate": 5,
+      "result": {
+        "converged": true,
+        "discriminated": [
+          "n",
+          "(n * min(n, 6))"
+        ],
+        "final_size": 7,
+        "final_term": "(n * ((n + 1) / 2))",
+        "fits": true,
+        "rounds": [
+          {
+            "counterexample": "n=11",
+            "round": 0,
+            "term": "n"
+          },
+          {
+            "counterexample": "n=8",
+            "round": 1,
+            "term": "(n * min(n, 6))"
+          },
+          {
+            "counterexample": null,
+            "round": 2,
+            "term": "(n * ((n + 1) / 2))"
+          }
+        ],
+        "rows": [
+          "n=1",
+          "n=11",
+          "n=8"
+        ],
+        "step0_term": "n"
+      },
+      "selected_queries": [
+        "n=11",
+        "n=8"
+      ],
+      "synthesis_calls": [
+        {
+          "elapsed_s": 0.0001,
+          "explored": 1,
+          "fits": true,
+          "halt_reason": "solved"
+        },
+        {
+          "elapsed_s": 0.0,
+          "explored": 1,
+          "fits": true,
+          "halt_reason": "solved"
+        },
+        {
+          "elapsed_s": 0.5998,
+          "explored": 24763,
+          "fits": true,
+          "halt_reason": "solved"
+        },
+        {
+          "elapsed_s": 51.6252,
+          "explored": 1366853,
+          "fits": true,
+          "halt_reason": "solved"
+        },
+        {
+          "elapsed_s": 50.0048,
+          "explored": 1366853,
+          "fits": true,
+          "halt_reason": "solved"
+        }
+      ],
+      "wall_s": 104.37286235298961,
+      "worker_error": null
+    },
+    {
+      "arm": "fixed_order",
+      "candidate_family_oracle_calls": [
+        2,
+        2,
+        3,
+        2,
+        3,
+        4,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        2,
+        3,
+        4
+      ],
+      "candidate_order": [
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12
+      ],
+      "cpu_s": 154.673717652,
+      "fixed_literal_set": [
+        -1,
+        0,
+        1,
+        2,
+        3,
+        6,
+        10,
+        15,
+        21,
+        28,
+        36,
+        45,
+        55,
+        66,
+        78
+      ],
+      "heldout": [
+        {
+          "exact": true,
+          "expected": 153,
+          "n": 17,
+          "predicted": 153.0
+        },
+        {
+          "exact": true,
+          "expected": 276,
+          "n": 23,
+          "predicted": 276.0
+        },
+        {
+          "exact": true,
+          "expected": 1275,
+          "n": 50,
+          "predicted": 1275.0
+        },
+        {
+          "exact": true,
+          "expected": 4950,
+          "n": 99,
+          "predicted": 4950.0
+        },
+        {
+          "exact": true,
+          "expected": 5050,
+          "n": 100,
+          "predicted": 5050.0
+        },
+        {
+          "exact": true,
+          "expected": 31375,
+          "n": 250,
+          "predicted": 31375.0
+        }
+      ],
+      "oracle_calls": [
+        1,
+        1,
+        2,
+        1,
+        2,
+        3,
+        1,
+        2,
+        3,
+        4,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        1,
+        2,
+        3,
+        4
+      ],
+      "pid": 10,
+      "replicate": 3,
+      "result": {
+        "converged": true,
+        "discriminated": [
+          "n",
+          "(n + (n + -1))",
+          "(n + (n - (3 > n)))"
+        ],
+        "final_size": 7,
+        "final_term": "(n * ((n + 1) / 2))",
+        "fits": true,
+        "rounds": [
+          {
+            "counterexample": "n=2",
+            "round": 0,
+            "term": "n"
+          },
+          {
+            "counterexample": "n=3",
+            "round": 1,
+            "term": "(n + (n + -1))"
+          },
+          {
+            "counterexample": "n=4",
+            "round": 2,
+            "term": "(n + (n - (3 > n)))"
+          },
+          {
+            "counterexample": null,
+            "round": 3,
+            "term": "(n * ((n + 1) / 2))"
+          }
+        ],
+        "rows": [
+          "n=1",
+          "n=2",
+          "n=3",
+          "n=4"
+        ],
+        "step0_term": "n"
+      },
+      "selected_queries": [
+        "n=2",
+        "n=3",
+        "n=4"
+      ],
+      "synthesis_calls": [
+        {
+          "elapsed_s": 0.0001,
+          "explored": 1,
+          "fits": true,
+          "halt_reason": "solved"
+        },
+        {
+          "elapsed_s": 0.0,
+          "explored": 1,
+          "fits": true,
+          "halt_reason": "solved"
+        },
+        {
+          "elapsed_s": 0.4256,
+          "explored": 11024,
+          "fits": true,
+          "halt_reason": "solved"
+        },
+        {
+          "elapsed_s": 33.6319,
+          "explored": 666737,
+          "fits": true,
+          "halt_reason": "solved"
+        },
+        {
+          "elapsed_s": 60.0828,
+          "explored": 1350676,
+          "fits": true,
+          "halt_reason": "solved"
+        },
+        {
+          "elapsed_s": 57.8173,
+          "explored": 1350676,
+          "fits": true,
+          "halt_reason": "solved"
+        }
+      ],
+      "wall_s": 155.01874676701846,
+      "worker_error": null
+    },
+    {
+      "arm": "fixed_order",
+      "candidate_family_oracle_calls": [
+        2,
+        2,
+        3,
+        2,
+        3,
+        4,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        2,
+        3,
+        4
+      ],
+      "candidate_order": [
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12
+      ],
+      "cpu_s": 153.870589539,
+      "fixed_literal_set": [
+        -1,
+        0,
+        1,
+        2,
+        3,
+        6,
+        10,
+        15,
+        21,
+        28,
+        36,
+        45,
+        55,
+        66,
+        78
+      ],
+      "heldout": [
+        {
+          "exact": true,
+          "expected": 153,
+          "n": 17,
+          "predicted": 153.0
+        },
+        {
+          "exact": true,
+          "expected": 276,
+          "n": 23,
+          "predicted": 276.0
+        },
+        {
+          "exact": true,
+          "expected": 1275,
+          "n": 50,
+          "predicted": 1275.0
+        },
+        {
+          "exact": true,
+          "expected": 4950,
+          "n": 99,
+          "predicted": 4950.0
+        },
+        {
+          "exact": true,
+          "expected": 5050,
+          "n": 100,
+          "predicted": 5050.0
+        },
+        {
+          "exact": true,
+          "expected": 31375,
+          "n": 250,
+          "predicted": 31375.0
+        }
+      ],
+      "oracle_calls": [
+        1,
+        1,
+        2,
+        1,
+        2,
+        3,
+        1,
+        2,
+        3,
+        4,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        1,
+        2,
+        3,
+        4
+      ],
+      "pid": 11,
+      "replicate": 2,
+      "result": {
+        "converged": true,
+        "discriminated": [
+          "n",
+          "(n + (n + -1))",
+          "(n + (n - (3 > n)))"
+        ],
+        "final_size": 7,
+        "final_term": "(n * ((n + 1) / 2))",
+        "fits": true,
+        "rounds": [
+          {
+            "counterexample": "n=2",
+            "round": 0,
+            "term": "n"
+          },
+          {
+            "counterexample": "n=3",
+            "round": 1,
+            "term": "(n + (n + -1))"
+          },
+          {
+            "counterexample": "n=4",
+            "round": 2,
+            "term": "(n + (n - (3 > n)))"
+          },
+          {
+            "counterexample": null,
+            "round": 3,
+            "term": "(n * ((n + 1) / 2))"
+          }
+        ],
+        "rows": [
+          "n=1",
+          "n=2",
+          "n=3",
+          "n=4"
+        ],
+        "step0_term": "n"
+      },
+      "selected_queries": [
+        "n=2",
+        "n=3",
+        "n=4"
+      ],
+      "synthesis_calls": [
+        {
+          "elapsed_s": 0.0001,
+          "explored": 1,
+          "fits": true,
+          "halt_reason": "solved"
+        },
+        {
+          "elapsed_s": 0.0,
+          "explored": 1,
+          "fits": true,
+          "halt_reason": "solved"
+        },
+        {
+          "elapsed_s": 0.3989,
+          "explored": 11024,
+          "fits": true,
+          "halt_reason": "solved"
+        },
+        {
+          "elapsed_s": 33.2154,
+          "explored": 666737,
+          "fits": true,
+          "halt_reason": "solved"
+        },
+        {
+          "elapsed_s": 60.2077,
+          "explored": 1350676,
+          "fits": true,
+          "halt_reason": "solved"
+        },
+        {
+          "elapsed_s": 57.386,
+          "explored": 1350676,
+          "fits": true,
+          "halt_reason": "solved"
+        }
+      ],
+      "wall_s": 154.18037033901783,
+      "worker_error": null
+    },
+    {
+      "arm": "seeded_permutation",
+      "candidate_family_oracle_calls": [
+        4,
+        4,
+        9,
+        4,
+        9,
+        12,
+        8,
+        5,
+        6,
+        2,
+        10,
+        11,
+        7,
+        3,
+        4,
+        9
+      ],
+      "candidate_order": [
+        4,
+        9,
+        12,
+        8,
+        5,
+        6,
+        2,
+        10,
+        11,
+        7,
+        3
+      ],
+      "cpu_s": 101.296891319,
+      "fixed_literal_set": [
+        -1,
+        0,
+        1,
+        2,
+        3,
+        6,
+        10,
+        15,
+        21,
+        28,
+        36,
+        45,
+        55,
+        66,
+        78
+      ],
+      "heldout": [
+        {
+          "exact": true,
+          "expected": 153,
+          "n": 17,
+          "predicted": 153.0
+        },
+        {
+          "exact": true,
+          "expected": 276,
+          "n": 23,
+          "predicted": 276.0
+        },
+        {
+          "exact": true,
+          "expected": 1275,
+          "n": 50,
+          "predicted": 1275.0
+        },
+        {
+          "exact": true,
+          "expected": 4950,
+          "n": 99,
+          "predicted": 4950.0
+        },
+        {
+          "exact": true,
+          "expected": 5050,
+          "n": 100,
+          "predicted": 5050.0
+        },
+        {
+          "exact": true,
+          "expected": 31375,
+          "n": 250,
+          "predicted": 31375.0
+        }
+      ],
+      "oracle_calls": [
+        1,
+        1,
+        4,
+        1,
+        4,
+        9,
+        1,
+        4,
+        9,
+        12,
+        8,
+        5,
+        6,
+        2,
+        10,
+        11,
+        7,
+        3,
+        1,
+        4,
+        9
+      ],
+      "pid": 12,
+      "replicate": 3,
+      "result": {
+        "converged": true,
+        "discriminated": [
+          "n",
+          "((n * 3) - 2)"
+        ],
+        "final_size": 7,
+        "final_term": "(n * ((n + 1) / 2))",
+        "fits": true,
+        "rounds": [
+          {
+            "counterexample": "n=4",
+            "round": 0,
+            "term": "n"
+          },
+          {
+            "counterexample": "n=9",
+            "round": 1,
+            "term": "((n * 3) - 2)"
+          },
+          {
+            "counterexample": null,
+            "round": 2,
+            "term": "(n * ((n + 1) / 2))"
+          }
+        ],
+        "rows": [
+          "n=1",
+          "n=4",
+          "n=9"
+        ],
+        "step0_term": "n"
+      },
+      "selected_queries": [
+        "n=4",
+        "n=9"
+      ],
+      "synthesis_calls": [
+        {
+          "elapsed_s": 0.0001,
+          "explored": 1,
+          "fits": true,
+          "halt_reason": "solved"
+        },
+        {
+          "elapsed_s": 0.0,
+          "explored": 1,
+          "fits": true,
+          "halt_reason": "solved"
+        },
+        {
+          "elapsed_s": 0.8027,
+          "explored": 45544,
+          "fits": true,
+          "halt_reason": "solved"
+        },
+        {
+          "elapsed_s": 50.3668,
+          "explored": 1353439,
+          "fits": true,
+          "halt_reason": "solved"
+        },
+        {
+          "elapsed_s": 48.1773,
+          "explored": 1353439,
+          "fits": true,
+          "halt_reason": "solved"
+        }
+      ],
+      "wall_s": 101.5098533499986,
+      "worker_error": null
+    },
+    {
+      "arm": "seeded_permutation",
+      "candidate_family_oracle_calls": [
+        10,
+        10,
+        3,
+        10,
+        3,
+        11,
+        4,
+        7,
+        9,
+        5,
+        12,
+        2,
+        8,
+        6,
+        10,
+        3
+      ],
+      "candidate_order": [
+        10,
+        3,
+        11,
+        4,
+        7,
+        9,
+        5,
+        12,
+        2,
+        8,
+        6
+      ],
+      "cpu_s": 105.692681933,
+      "fixed_literal_set": [
+        -1,
+        0,
+        1,
+        2,
+        3,
+        6,
+        10,
+        15,
+        21,
+        28,
+        36,
+        45,
+        55,
+        66,
+        78
+      ],
+      "heldout": [
+        {
+          "exact": true,
+          "expected": 153,
+          "n": 17,
+          "predicted": 153.0
+        },
+        {
+          "exact": true,
+          "expected": 276,
+          "n": 23,
+          "predicted": 276.0
+        },
+        {
+          "exact": true,
+          "expected": 1275,
+          "n": 50,
+          "predicted": 1275.0
+        },
+        {
+          "exact": true,
+          "expected": 4950,
+          "n": 99,
+          "predicted": 4950.0
+        },
+        {
+          "exact": true,
+          "expected": 5050,
+          "n": 100,
+          "predicted": 5050.0
+        },
+        {
+          "exact": true,
+          "expected": 31375,
+          "n": 250,
+          "predicted": 31375.0
+        }
+      ],
+      "oracle_calls": [
+        1,
+        1,
+        10,
+        1,
+        10,
+        3,
+        1,
+        10,
+        3,
+        11,
+        4,
+        7,
+        9,
+        5,
+        12,
+        2,
+        8,
+        6,
+        1,
+        10,
+        3
+      ],
+      "pid": 13,
+      "replicate": 2,
+      "result": {
+        "converged": true,
+        "discriminated": [
+          "n",
+          "min(55, (n * n))"
+        ],
+        "final_size": 7,
+        "final_term": "(n * ((n + 1) / 2))",
+        "fits": true,
+        "rounds": [
+          {
+            "counterexample": "n=10",
+            "round": 0,
+            "term": "n"
+          },
+          {
+            "counterexample": "n=3",
+            "round": 1,
+            "term": "min(55, (n * n))"
+          },
+          {
+            "counterexample": null,
+            "round": 2,
+            "term": "(n * ((n + 1) / 2))"
+          }
+        ],
+        "rows": [
+          "n=1",
+          "n=10",
+          "n=3"
+        ],
+        "step0_term": "n"
+      },
+      "selected_queries": [
+        "n=10",
+        "n=3"
+      ],
+      "synthesis_calls": [
+        {
+          "elapsed_s": 0.0001,
+          "explored": 1,
+          "fits": true,
+          "halt_reason": "solved"
+        },
+        {
+          "elapsed_s": 0.0,
+          "explored": 1,
+          "fits": true,
+          "halt_reason": "solved"
+        },
+        {
+          "elapsed_s": 1.1096,
+          "explored": 69471,
+          "fits": true,
+          "halt_reason": "solved"
+        },
+        {
+          "elapsed_s": 51.1727,
+          "explored": 1362824,
+          "fits": true,
+          "halt_reason": "solved"
+        },
+        {
+          "elapsed_s": 51.369,
+          "explored": 1362824,
+          "fits": true,
+          "halt_reason": "solved"
+        }
+      ],
+      "wall_s": 105.91898527601734,
+      "worker_error": null
+    },
+    {
+      "arm": "fixed_order",
+      "candidate_family_oracle_calls": [
+        2,
+        2,
+        3,
+        2,
+        3,
+        4,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        2,
+        3,
+        4
+      ],
+      "candidate_order": [
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12
+      ],
+      "cpu_s": 155.40773612,
+      "fixed_literal_set": [
+        -1,
+        0,
+        1,
+        2,
+        3,
+        6,
+        10,
+        15,
+        21,
+        28,
+        36,
+        45,
+        55,
+        66,
+        78
+      ],
+      "heldout": [
+        {
+          "exact": true,
+          "expected": 153,
+          "n": 17,
+          "predicted": 153.0
+        },
+        {
+          "exact": true,
+          "expected": 276,
+          "n": 23,
+          "predicted": 276.0
+        },
+        {
+          "exact": true,
+          "expected": 1275,
+          "n": 50,
+          "predicted": 1275.0
+        },
+        {
+          "exact": true,
+          "expected": 4950,
+          "n": 99,
+          "predicted": 4950.0
+        },
+        {
+          "exact": true,
+          "expected": 5050,
+          "n": 100,
+          "predicted": 5050.0
+        },
+        {
+          "exact": true,
+          "expected": 31375,
+          "n": 250,
+          "predicted": 31375.0
+        }
+      ],
+      "oracle_calls": [
+        1,
+        1,
+        2,
+        1,
+        2,
+        3,
+        1,
+        2,
+        3,
+        4,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        1,
+        2,
+        3,
+        4
+      ],
+      "pid": 14,
+      "replicate": 4,
+      "result": {
+        "converged": true,
+        "discriminated": [
+          "n",
+          "(n + (n + -1))",
+          "(n + (n - (3 > n)))"
+        ],
+        "final_size": 7,
+        "final_term": "(n * ((n + 1) / 2))",
+        "fits": true,
+        "rounds": [
+          {
+            "counterexample": "n=2",
+            "round": 0,
+            "term": "n"
+          },
+          {
+            "counterexample": "n=3",
+            "round": 1,
+            "term": "(n + (n + -1))"
+          },
+          {
+            "counterexample": "n=4",
+            "round": 2,
+            "term": "(n + (n - (3 > n)))"
+          },
+          {
+            "counterexample": null,
+            "round": 3,
+            "term": "(n * ((n + 1) / 2))"
+          }
+        ],
+        "rows": [
+          "n=1",
+          "n=2",
+          "n=3",
+          "n=4"
+        ],
+        "step0_term": "n"
+      },
+      "selected_queries": [
+        "n=2",
+        "n=3",
+        "n=4"
+      ],
+      "synthesis_calls": [
+        {
+          "elapsed_s": 0.0001,
+          "explored": 1,
+          "fits": true,
+          "halt_reason": "solved"
+        },
+        {
+          "elapsed_s": 0.0,
+          "explored": 1,
+          "fits": true,
+          "halt_reason": "solved"
+        },
+        {
+          "elapsed_s": 0.4588,
+          "explored": 11024,
+          "fits": true,
+          "halt_reason": "solved"
+        },
+        {
+          "elapsed_s": 34.0267,
+          "explored": 666737,
+          "fits": true,
+          "halt_reason": "solved"
+        },
+        {
+          "elapsed_s": 59.266,
+          "explored": 1350676,
+          "fits": true,
+          "halt_reason": "solved"
+        },
+        {
+          "elapsed_s": 58.856,
+          "explored": 1350676,
+          "fits": true,
+          "halt_reason": "solved"
+        }
+      ],
+      "wall_s": 155.73867187701399,
+      "worker_error": null
+    },
+    {
+      "arm": "seeded_permutation",
+      "candidate_family_oracle_calls": [
+        6,
+        6,
+        5,
+        6,
+        5,
+        11,
+        10,
+        8,
+        2,
+        9,
+        7,
+        12,
+        4,
+        3,
+        6,
+        5
+      ],
+      "candidate_order": [
+        6,
+        5,
+        11,
+        10,
+        8,
+        2,
+        9,
+        7,
+        12,
+        4,
+        3
+      ],
+      "cpu_s": 104.55584608000001,
+      "fixed_literal_set": [
+        -1,
+        0,
+        1,
+        2,
+        3,
+        6,
+        10,
+        15,
+        21,
+        28,
+        36,
+        45,
+        55,
+        66,
+        78
+      ],
+      "heldout": [
+        {
+          "exact": true,
+          "expected": 153,
+          "n": 17,
+          "predicted": 153.0
+        },
+        {
+          "exact": true,
+          "expected": 276,
+          "n": 23,
+          "predicted": 276.0
+        },
+        {
+          "exact": true,
+          "expected": 1275,
+          "n": 50,
+          "predicted": 1275.0
+        },
+        {
+          "exact": true,
+          "expected": 4950,
+          "n": 99,
+          "predicted": 4950.0
+        },
+        {
+          "exact": true,
+          "expected": 5050,
+          "n": 100,
+          "predicted": 5050.0
+        },
+        {
+          "exact": true,
+          "expected": 31375,
+          "n": 250,
+          "predicted": 31375.0
+        }
+      ],
+      "oracle_calls": [
+        1,
+        1,
+        6,
+        1,
+        6,
+        5,
+        1,
+        6,
+        5,
+        11,
+        10,
+        8,
+        2,
+        9,
+        7,
+        12,
+        4,
+        3,
+        1,
+        6,
+        5
+      ],
+      "pid": 15,
+      "replicate": 4,
+      "result": {
+        "converged": true,
+        "discriminated": [
+          "n",
+          "min(21, (n * n))"
+        ],
+        "final_size": 7,
+        "final_term": "(n * ((n + 1) / 2))",
+        "fits": true,
+        "rounds": [
+          {
+            "counterexample": "n=6",
+            "round": 0,
+            "term": "n"
+          },
+          {
+            "counterexample": "n=5",
+            "round": 1,
+            "term": "min(21, (n * n))"
+          },
+          {
+            "counterexample": null,
+            "round": 2,
+            "term": "(n * ((n + 1) / 2))"
+          }
+        ],
+        "rows": [
+          "n=1",
+          "n=6",
+          "n=5"
+        ],
+        "step0_term": "n"
+      },
+      "selected_queries": [
+        "n=6",
+        "n=5"
+      ],
+      "synthesis_calls": [
+        {
+          "elapsed_s": 0.0001,
+          "explored": 1,
+          "fits": true,
+          "halt_reason": "solved"
+        },
+        {
+          "elapsed_s": 0.0,
+          "explored": 1,
+          "fits": true,
+          "halt_reason": "solved"
+        },
+        {
+          "elapsed_s": 1.1696,
+          "explored": 67557,
+          "fits": true,
+          "halt_reason": "solved"
+        },
+        {
+          "elapsed_s": 50.8582,
+          "explored": 1343523,
+          "fits": true,
+          "halt_reason": "solved"
+        },
+        {
+          "elapsed_s": 50.5792,
+          "explored": 1343523,
+          "fits": true,
+          "halt_reason": "solved"
+        }
+      ],
+      "wall_s": 104.80652290896978,
+      "worker_error": null
+    }
+  ]
+}

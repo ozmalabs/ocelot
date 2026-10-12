@@ -1,0 +1,123 @@
+{
+  "all_integrity_gates_pass": true,
+  "analysis": "External resource invalidation probe v1",
+  "behavior_by_phase": [
+    {
+      "accepted_targets": [
+        [
+          false
+        ],
+        [
+          false
+        ],
+        [
+          false
+        ]
+      ],
+      "callback_counts": [
+        1,
+        1,
+        1
+      ],
+      "phase": "A_false_initial",
+      "progress": [
+        0,
+        0,
+        0
+      ],
+      "resource_returns": [
+        [
+          "0"
+        ],
+        [
+          "0"
+        ],
+        [
+          "0"
+        ]
+      ]
+    },
+    {
+      "accepted_targets": [
+        [
+          false
+        ],
+        [
+          false
+        ],
+        [
+          false
+        ]
+      ],
+      "callback_counts": [
+        0,
+        0,
+        0
+      ],
+      "phase": "B_resource_only_flip_true",
+      "progress": [
+        0,
+        0,
+        0
+      ],
+      "resource_returns": [
+        [],
+        [],
+        []
+      ]
+    },
+    {
+      "accepted_targets": [
+        [
+          false,
+          false
+        ],
+        [
+          false,
+          false
+        ],
+        [
+          false,
+          false
+        ]
+      ],
+      "callback_counts": [
+        2,
+        2,
+        2
+      ],
+      "phase": "C_resource_false_plus_new_graph_match",
+      "progress": [
+        0,
+        0,
+        0
+      ],
+      "resource_returns": [
+        [
+          "0",
+          "0"
+        ],
+        [
+          "0",
+          "0"
+        ],
+        [
+          "0",
+          "0"
+        ]
+      ]
+    }
+  ],
+  "gates": {
+    "identical_worker_behavior": true,
+    "phase_a_reads_false": true,
+    "phase_b_records_resource_only_response": true,
+    "phase_c_new_match_reads_current_false": true,
+    "phase_shape_complete": true,
+    "resource_values_correct": true,
+    "source_native_lock_stable": true,
+    "static_use_tool_wildcard": true,
+    "three_workers": true
+  },
+  "interpretation": "Phase B is the direct resource-only invalidation observation. Phase C shows current resource values for graph-triggered new matches. Previously committed graph effects are monotonic and are not expected to retract when external state changes."
+}

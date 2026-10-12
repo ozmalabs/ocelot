@@ -1859,6 +1859,11 @@ pub enum TermNode {
         codebook_type: Sym,
         exclude: Option<TermIdx>,
         generator_type: Sym,
+        /// Optional grain g >= 0 (tranche 2 gate 4): base and goal coordinate
+        /// slots are re-quantized to floor((v - min)/2^g) before the search,
+        /// so a held generator can explain an observation exactly at a
+        /// coarser grain. Absent = 0.
+        grain: Option<TermIdx>,
         max_dims: i64,
         field: Sym,
     },
@@ -1884,6 +1889,24 @@ pub enum TermNode {
         goal: TermIdx,
         codebook_type: Sym,
         exclude: Option<TermIdx>,
+        /// Optional graph-data scope ID; when present, only matching parts are searched.
+        scope: Option<TermIdx>,
+        /// Truthy means a missing scope fails closed with no candidates.
+        require_scope: Option<TermIdx>,
+        /// Optional runtime gate for the experimental quadratic-map solver.
+        /// Missing or false preserves the historical linear-only search.
+        quadratic_enabled: Option<TermIdx>,
+        /// Separate opt-in runtime gate for the exact 2-D linear prefilter.
+        linear_prefilter_enabled: Option<TermIdx>,
+        /// Optional grain g >= 0 (RECURSIVE_SELF_IMPROVEMENT_PLAN WP3): base and
+        /// goal coordinates are re-quantized to floor((v - min) / 2^g) before
+        /// the search, so a map can be exact at a coarser grain. Absent = 0.
+        grain: Option<TermIdx>,
+        /// Optional MDL witness gate (feature `geninfer_grain_mdl`): when no
+        /// exact map exists, accept the map minimizing matrix + outlier-row
+        /// description length if it beats the raw description; outlier rows
+        /// are reported in `outliers`.
+        mdl_enabled: Option<TermIdx>,
         max_dims: i64,
         field: Sym,
     },
@@ -3360,6 +3383,20 @@ struct SdCacheKey {
 }
 
 impl EvalCache {
+    /// Observable contents needed by the substrate checkpoint boundary.
+    /// A non-empty result means a checkpoint must preserve cache entries, not
+    /// merely their configuration and telemetry.
+    pub fn checkpoint_entry_counts(&self) -> [usize; 6] {
+        [
+            self.reachable.len(),
+            self.neighbours.len(),
+            self.filter.len(),
+            self.argmax.len(),
+            self.holds.len(),
+            self.sd_ops.len(),
+        ]
+    }
+
     pub fn clear_traversal(&mut self) {
         self.clear_reachable();
         self.neighbours.clear();
@@ -3691,6 +3728,10 @@ pub struct EvalCtx<'a> {
     pub graph: &'a TypedGraph,
     pub interner: &'a Interner,
     pub cache: Option<&'a mut EvalCache>,
+    /// Parsed codebooks shared by nested ShapeDecode evaluations in this
+    /// immutable graph read. The context lifetime guarantees graph contents
+    /// cannot mutate while these entries are live.
+    pub(crate) shape_codebooks: FxHashMap<Sym, Arc<crate::shape_decode::LoadedCodebook>>,
     pub concepts: Option<&'a ConceptResolver>,
     pub holds_depth: u32,
     /// Stack of concept Syms currently being evaluated by Holds. Used
@@ -3768,6 +3809,7 @@ impl<'a> EvalCtx<'a> {
             graph,
             interner,
             cache: None,
+            shape_codebooks: FxHashMap::default(),
             concepts: None,
             holds_depth: 0,
             holds_stack: Vec::new(),
@@ -4124,6 +4166,7 @@ fn copy_subtree(src: &TermArena, dst: &mut TermArena, idx: TermIdx) -> TermIdx {
             codebook_type,
             exclude,
             generator_type,
+            grain,
             max_dims,
             field,
         } => TermNode::DimInfer {
@@ -4131,6 +4174,7 @@ fn copy_subtree(src: &TermArena, dst: &mut TermArena, idx: TermIdx) -> TermIdx {
             codebook_type,
             exclude: exclude.map(|e| copy_subtree(src, dst, e)),
             generator_type,
+            grain: grain.map(|e| copy_subtree(src, dst, e)),
             max_dims,
             field,
         },
@@ -4138,12 +4182,24 @@ fn copy_subtree(src: &TermArena, dst: &mut TermArena, idx: TermIdx) -> TermIdx {
             goal,
             codebook_type,
             exclude,
+            scope,
+            require_scope,
+            quadratic_enabled,
+            linear_prefilter_enabled,
+            grain,
+            mdl_enabled,
             max_dims,
             field,
         } => TermNode::GenInfer {
             goal: copy_subtree(src, dst, goal),
             codebook_type,
             exclude: exclude.map(|e| copy_subtree(src, dst, e)),
+            scope: scope.map(|e| copy_subtree(src, dst, e)),
+            require_scope: require_scope.map(|e| copy_subtree(src, dst, e)),
+            quadratic_enabled: quadratic_enabled.map(|e| copy_subtree(src, dst, e)),
+            linear_prefilter_enabled: linear_prefilter_enabled.map(|e| copy_subtree(src, dst, e)),
+            grain: grain.map(|e| copy_subtree(src, dst, e)),
+            mdl_enabled: mdl_enabled.map(|e| copy_subtree(src, dst, e)),
             max_dims,
             field,
         },
@@ -10203,6 +10259,7 @@ pub fn evaluate(arena: &TermArena, idx: TermIdx, env: &mut Env, ctx: &mut EvalCt
             codebook_type,
             exclude,
             generator_type,
+            grain,
             max_dims,
             field,
         } => {
@@ -10210,9 +10267,18 @@ pub fn evaluate(arena: &TermArena, idx: TermIdx, env: &mut Env, ctx: &mut EvalCt
             let exclude_value = exclude
                 .map(|idx| evaluate(arena, idx, env, ctx))
                 .unwrap_or(Value::None);
+            let grain_int = match grain.map(|idx| evaluate(arena, idx, env, ctx)) {
+                Some(Value::Int(g)) => g.clamp(0, 16),
+                Some(Value::Float(f)) => (f as i64).clamp(0, 16),
+                _ => 0,
+            };
+            let mut key_vals = vec![goal_value, exclude_value];
+            if grain_int != 0 {
+                key_vals.push(Value::Int(grain_int));
+            }
             let key = sd_cache_key(
                 3,
-                &[goal_value, exclude_value],
+                &key_vals,
                 &[*max_dims],
                 &[*codebook_type, *generator_type],
                 ctx.graph,
@@ -10231,6 +10297,7 @@ pub fn evaluate(arena: &TermArena, idx: TermIdx, env: &mut Env, ctx: &mut EvalCt
                 *codebook_type,
                 *exclude,
                 *generator_type,
+                grain_int,
                 *max_dims,
                 Sym::default(),
                 env,
@@ -10246,16 +10313,51 @@ pub fn evaluate(arena: &TermArena, idx: TermIdx, env: &mut Env, ctx: &mut EvalCt
             goal,
             codebook_type,
             exclude,
+            scope,
+            require_scope,
+            quadratic_enabled,
+            linear_prefilter_enabled,
+            grain,
+            mdl_enabled,
             max_dims,
             field,
         } => {
+            crate::scale_audit::gen_infer_request();
             let goal_value = evaluate(arena, *goal, env, ctx);
             let exclude_value = exclude
                 .map(|idx| evaluate(arena, idx, env, ctx))
                 .unwrap_or(Value::None);
+            let scope_value = scope
+                .map(|idx| evaluate(arena, idx, env, ctx))
+                .unwrap_or(Value::None);
+            let require_scope_value = require_scope
+                .map(|idx| evaluate(arena, idx, env, ctx))
+                .unwrap_or(Value::Bool(false));
+            let quadratic_enabled_value = quadratic_enabled
+                .map(|idx| evaluate(arena, idx, env, ctx))
+                .unwrap_or(Value::Bool(false));
+            let linear_prefilter_enabled_value = linear_prefilter_enabled
+                .map(|idx| evaluate(arena, idx, env, ctx))
+                .unwrap_or(Value::Bool(false));
+            let grain_value = grain
+                .map(|idx| evaluate(arena, idx, env, ctx))
+                .unwrap_or(Value::Int(0));
+            let mdl_enabled_value = mdl_enabled
+                .map(|idx| evaluate(arena, idx, env, ctx))
+                .unwrap_or(Value::Bool(false));
+            let grain_int = match &grain_value { Value::Int(g) => (*g).clamp(0, 16), Value::Float(f) => (*f as i64).clamp(0, 16), _ => 0 };
             let key = sd_cache_key(
                 4,
-                &[goal_value, exclude_value],
+                &[
+                    goal_value,
+                    exclude_value,
+                    scope_value.clone(),
+                    require_scope_value.clone(),
+                    quadratic_enabled_value.clone(),
+                    linear_prefilter_enabled_value.clone(),
+                    Value::Int(grain_int),
+                    mdl_enabled_value.clone(),
+                ],
                 &[*max_dims],
                 &[*codebook_type],
                 ctx.graph,
@@ -10266,6 +10368,7 @@ pub fn evaluate(arena: &TermArena, idx: TermIdx, env: &mut Env, ctx: &mut EvalCt
                 .and_then(|cache| cache.sd_ops.get(&key))
                 .cloned()
             {
+                crate::scale_audit::gen_infer_cache_hit();
                 return crate::shape_decode::select_cached_field(&hit, *field, ctx.interner);
             }
             let full = crate::shape_decode::eval_gen_infer(
@@ -10273,6 +10376,12 @@ pub fn evaluate(arena: &TermArena, idx: TermIdx, env: &mut Env, ctx: &mut EvalCt
                 *goal,
                 *codebook_type,
                 *exclude,
+                scope_value,
+                require_scope_value.truthy(),
+                quadratic_enabled_value.truthy(),
+                linear_prefilter_enabled_value.truthy(),
+                grain_int,
+                mdl_enabled_value.truthy(),
                 *max_dims,
                 Sym::default(),
                 env,
@@ -11610,6 +11719,8 @@ fn render_source_node(
     if ctx.holds_depth > 256 {
         return Value::None;
     }
+    let _helper_work =
+        crate::access_trace::enter_helper_scope(crate::access_trace::HELPER_JOIN_RENDER);
     // head = source node type with the "Term." prefix stripped.
     let source_type = ctx.graph.node(src_nid).type_;
     crate::access_trace::note(3, src_nid.0, source_type.0, crate::access_trace::NO_ID);
@@ -13552,11 +13663,21 @@ fn argmin_or_argmax_over(
     // improvement, incremented on EXACT equality (`cmp_value == Equal`).
     // §13: exact equality, no epsilon, nowhere to put one.
     let mut n_at_best: usize = 0;
+    // NULL CENSUS (argmin_tie, observing only): how many candidate values were
+    // None, out of how many candidates.
+    let mut n_seen: usize = 0;
+    let mut n_null: usize = 0;
     for it_ref in snap.iter() {
         let it = it_ref.clone();
         env.push((var_name, it.clone()));
         let v = evaluate(arena, value, env, ctx);
         env.pop();
+        if tie_audit {
+            n_seen += 1;
+            if matches!(v, Value::None) {
+                n_null += 1;
+            }
+        }
         if auditing {
             n_candidates += 1;
             if first_elem.is_none() {
@@ -13625,6 +13746,11 @@ fn argmin_or_argmax_over(
         if is_tie {
             let key = crate::jsonio::term_to_json(arena, value, ctx.interner).to_string();
             argmin_tie::note_site(if want_min { "Argmin" } else { "Argmax" }, &key, true);
+        }
+        let winner_null = matches!(&best, Some((bv, _)) if matches!(bv, Value::None));
+        if let Some(obs) = argmin_tie::note_nulls(n_seen, n_null, winner_null) {
+            let key = crate::jsonio::term_to_json(arena, value, ctx.interner).to_string();
+            argmin_tie::note_null_site(if want_min { "Argmin" } else { "Argmax" }, &key, obs);
         }
     }
     if require_unique {
@@ -14363,15 +14489,46 @@ pub(crate) fn children(node: &TermNode) -> SmallVec<[TermIdx; 8]> {
             out.push(*assemblage);
             out.push(*inputs);
         }
-        TermNode::DimInfer { goal, exclude, .. } => {
+        TermNode::DimInfer { goal, exclude, grain, .. } => {
             out.push(*goal);
             if let Some(e) = exclude {
                 out.push(*e);
             }
+            if let Some(e) = grain {
+                out.push(*e);
+            }
         }
-        TermNode::GenInfer { goal, exclude, .. } => {
+        TermNode::GenInfer {
+            goal,
+            exclude,
+            scope,
+            require_scope,
+            quadratic_enabled,
+            linear_prefilter_enabled,
+            grain,
+            mdl_enabled,
+            ..
+        } => {
             out.push(*goal);
             if let Some(e) = exclude {
+                out.push(*e);
+            }
+            if let Some(e) = scope {
+                out.push(*e);
+            }
+            if let Some(e) = require_scope {
+                out.push(*e);
+            }
+            if let Some(e) = quadratic_enabled {
+                out.push(*e);
+            }
+            if let Some(e) = linear_prefilter_enabled {
+                out.push(*e);
+            }
+            if let Some(e) = grain {
+                out.push(*e);
+            }
+            if let Some(e) = mdl_enabled {
                 out.push(*e);
             }
         }

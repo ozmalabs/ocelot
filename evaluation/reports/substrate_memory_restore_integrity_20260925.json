@@ -1,0 +1,38 @@
+{
+  "probe": "substrate-memory-restore-integrity-v1",
+  "results": [
+    {
+      "mode": "writer",
+      "pid": 2033038,
+      "files": [
+        "ambiguous-key.json",
+        "bad-json.json",
+        "missing-attrs.json",
+        "unique-key.json",
+        "zz-conflict.json"
+      ]
+    },
+    {
+      "mode": "reader",
+      "pid": 2033039,
+      "known_unique": true,
+      "known_ambiguous": false,
+      "duplicate_recall_is_none": true,
+      "unique_attrs_match": true,
+      "stats": {
+        "total_records": 1,
+        "resident_in_ram": null,
+        "on_disk": 1,
+        "disk_bytes": null,
+        "restore": {
+          "indexed": 1,
+          "skipped": 2,
+          "duplicate_keys": 1
+        },
+        "index_clusters": 1
+      },
+      "nodes": 1,
+      "edges": 0
+    }
+  ]
+}

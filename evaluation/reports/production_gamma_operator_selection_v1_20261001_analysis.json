@@ -1,0 +1,261 @@
+{
+  "gates": {
+    "all_workers_present": true,
+    "current_source_native_lock": true,
+    "factorial_gap_at_native_candidate_limit": true,
+    "finite_resource_capture": true,
+    "five_workers_per_task": true,
+    "gamma_selects_mod_and_program_uses_it": true,
+    "graph_gamma_supplies_operator_list": true,
+    "locked_randomized_schedule": true,
+    "mod_is_in_native_inventory": true,
+    "modulo_heldouts_exact": true,
+    "no_explicit_operator_list": true,
+    "unique_fresh_pids": true
+  },
+  "passed": 12,
+  "schema": "SubstrateProductionGammaOperatorSelectionV1Analysis",
+  "summary": {
+    "factorial": {
+      "candidate_counts": [
+        200000,
+        200000,
+        200000,
+        200000,
+        200000
+      ],
+      "candidate_median": 200000,
+      "gamma_ops": [
+        [
+          "Plus",
+          "Times",
+          "Minus",
+          "Div",
+          "Min",
+          "Max",
+          "Abs",
+          "Neg",
+          "Gt",
+          "Lt",
+          "Eq",
+          "IfThenElse",
+          "Mod",
+          "Sqrt"
+        ],
+        [
+          "Plus",
+          "Times",
+          "Minus",
+          "Div",
+          "Min",
+          "Max",
+          "Abs",
+          "Neg",
+          "Gt",
+          "Lt",
+          "Eq",
+          "IfThenElse",
+          "Mod",
+          "Sqrt"
+        ],
+        [
+          "Plus",
+          "Times",
+          "Minus",
+          "Div",
+          "Min",
+          "Max",
+          "Abs",
+          "Neg",
+          "Gt",
+          "Lt",
+          "Eq",
+          "IfThenElse",
+          "Mod",
+          "Sqrt"
+        ],
+        [
+          "Plus",
+          "Times",
+          "Minus",
+          "Div",
+          "Min",
+          "Max",
+          "Abs",
+          "Neg",
+          "Gt",
+          "Lt",
+          "Eq",
+          "IfThenElse",
+          "Mod",
+          "Sqrt"
+        ],
+        [
+          "Plus",
+          "Times",
+          "Minus",
+          "Div",
+          "Min",
+          "Max",
+          "Abs",
+          "Neg",
+          "Gt",
+          "Lt",
+          "Eq",
+          "IfThenElse",
+          "Mod",
+          "Sqrt"
+        ]
+      ],
+      "gap_reasons": [
+        "enumerate_failed",
+        "enumerate_failed",
+        "enumerate_failed",
+        "enumerate_failed",
+        "enumerate_failed"
+      ],
+      "heldout_exact": 0,
+      "heldout_total": 0,
+      "peak_rss_median_mib": 68.62890625,
+      "programs": [
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      "pump_cpu_median_ms": 370.529641,
+      "pump_wall_median_ms": 373.598074,
+      "statuses": [
+        "gapped",
+        "gapped",
+        "gapped",
+        "gapped",
+        "gapped"
+      ],
+      "workers": 5
+    },
+    "modulo": {
+      "candidate_counts": [
+        257,
+        257,
+        257,
+        257,
+        257
+      ],
+      "candidate_median": 257,
+      "gamma_ops": [
+        [
+          "Plus",
+          "Times",
+          "Minus",
+          "Div",
+          "Min",
+          "Max",
+          "Abs",
+          "Neg",
+          "Gt",
+          "Lt",
+          "Eq",
+          "IfThenElse",
+          "Mod",
+          "Sqrt"
+        ],
+        [
+          "Plus",
+          "Times",
+          "Minus",
+          "Div",
+          "Min",
+          "Max",
+          "Abs",
+          "Neg",
+          "Gt",
+          "Lt",
+          "Eq",
+          "IfThenElse",
+          "Mod",
+          "Sqrt"
+        ],
+        [
+          "Plus",
+          "Times",
+          "Minus",
+          "Div",
+          "Min",
+          "Max",
+          "Abs",
+          "Neg",
+          "Gt",
+          "Lt",
+          "Eq",
+          "IfThenElse",
+          "Mod",
+          "Sqrt"
+        ],
+        [
+          "Plus",
+          "Times",
+          "Minus",
+          "Div",
+          "Min",
+          "Max",
+          "Abs",
+          "Neg",
+          "Gt",
+          "Lt",
+          "Eq",
+          "IfThenElse",
+          "Mod",
+          "Sqrt"
+        ],
+        [
+          "Plus",
+          "Times",
+          "Minus",
+          "Div",
+          "Min",
+          "Max",
+          "Abs",
+          "Neg",
+          "Gt",
+          "Lt",
+          "Eq",
+          "IfThenElse",
+          "Mod",
+          "Sqrt"
+        ]
+      ],
+      "gap_reasons": [
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      "heldout_exact": 40,
+      "heldout_total": 40,
+      "peak_rss_median_mib": 41.30859375,
+      "programs": [
+        "{\"type\": \"ProgSeq\", \"stmts\": [{\"type\": \"ProgDefFnParam\", \"name\": \"value\", \"default\": null}, {\"type\": \"ProgReturn\", \"value\": {\"a\": {\"name\": \"value\", \"type\": \"Var\"}, \"b\": {\"type\": \"Lit\", \"value\": 2}, \"type\": \"Mod\"}}]}",
+        "{\"type\": \"ProgSeq\", \"stmts\": [{\"type\": \"ProgDefFnParam\", \"name\": \"value\", \"default\": null}, {\"type\": \"ProgReturn\", \"value\": {\"a\": {\"name\": \"value\", \"type\": \"Var\"}, \"b\": {\"type\": \"Lit\", \"value\": 2}, \"type\": \"Mod\"}}]}",
+        "{\"type\": \"ProgSeq\", \"stmts\": [{\"type\": \"ProgDefFnParam\", \"name\": \"value\", \"default\": null}, {\"type\": \"ProgReturn\", \"value\": {\"a\": {\"name\": \"value\", \"type\": \"Var\"}, \"b\": {\"type\": \"Lit\", \"value\": 2}, \"type\": \"Mod\"}}]}",
+        "{\"type\": \"ProgSeq\", \"stmts\": [{\"type\": \"ProgDefFnParam\", \"name\": \"value\", \"default\": null}, {\"type\": \"ProgReturn\", \"value\": {\"a\": {\"name\": \"value\", \"type\": \"Var\"}, \"b\": {\"type\": \"Lit\", \"value\": 2}, \"type\": \"Mod\"}}]}",
+        "{\"type\": \"ProgSeq\", \"stmts\": [{\"type\": \"ProgDefFnParam\", \"name\": \"value\", \"default\": null}, {\"type\": \"ProgReturn\", \"value\": {\"a\": {\"name\": \"value\", \"type\": \"Var\"}, \"b\": {\"type\": \"Lit\", \"value\": 2}, \"type\": \"Mod\"}}]}"
+      ],
+      "pump_cpu_median_ms": 18.064023,
+      "pump_wall_median_ms": 18.142148,
+      "statuses": [
+        "accepted",
+        "accepted",
+        "accepted",
+        "accepted",
+        "accepted"
+      ],
+      "workers": 5
+    }
+  },
+  "total": 12,
+  "worker_count": 10,
+  "worker_errors": []
+}

@@ -272,7 +272,7 @@ def _eval_ir(sub, ir: Dict[str, Any], env: Dict[str, Any]) -> Tuple[Any, bool]:
     try:
         out = sub._inner.evaluate(psy._prog_eval_term("e", "p"), {"e": env, "p": root})
     finally:
-        sub.remove_node(root)
+        sub._inner.remove_term_subgraph(root)
     got = out.get("result")
     ok = out.get("halted") is True and out.get("trap") is None
     return got, ok

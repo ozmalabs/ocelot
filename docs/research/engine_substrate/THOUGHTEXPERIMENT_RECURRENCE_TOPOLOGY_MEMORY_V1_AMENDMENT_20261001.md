@@ -1,0 +1,5 @@
+# Recurrence topology memory v1 — confirmation amendment
+
+The initial 36-process diagnostic capture passed task semantics, primary isolation, backend parity, equal edge counts, and locked source hashes. Review found that the runner did not compare the native binary against the pre-run lock as an explicit gate. The initial raw capture and its original lock are preserved as `thoughtexperiment_recurrence_topology_memory_v1_initial_diagnostic_20261001.json` and `thoughtexperiment_recurrence_topology_memory_v1_initial_diagnostic_lock_20261001.json`; they are excluded from confirmatory claims.
+
+The runner was amended to compare the loaded native binary hash with the lock, the lock was regenerated against the amended runner, and the full 36-process panel was rerun. The confirmatory capture reports all 6/6 gates passing, including source and binary lock integrity. The results document uses only this confirmatory capture. Median values differ slightly from the diagnostic because they come from a separate fresh run.

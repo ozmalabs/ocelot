@@ -1,0 +1,99 @@
+{
+  "analyzer_sha256": "cf2de4d4dbdc5ab9755c62e977df3f5f8a4a010684248298fad84b91df860a89",
+  "case_audits": [
+    {
+      "arms": [
+        {
+          "exact_fixpoint_before_cap": false,
+          "progress": 10000,
+          "residual": 2.220446049250313e-16,
+          "variant": "global"
+        },
+        {
+          "exact_fixpoint_before_cap": false,
+          "progress": 10000,
+          "residual": 2.220446049250313e-16,
+          "variant": "root_scoped"
+        }
+      ],
+      "n_side": 3,
+      "seed": 11
+    },
+    {
+      "arms": [
+        {
+          "exact_fixpoint_before_cap": false,
+          "progress": 10000,
+          "residual": 5.551115123125783e-17,
+          "variant": "global"
+        },
+        {
+          "exact_fixpoint_before_cap": false,
+          "progress": 10000,
+          "residual": 5.551115123125783e-17,
+          "variant": "root_scoped"
+        }
+      ],
+      "n_side": 3,
+      "seed": 29
+    },
+    {
+      "arms": [
+        {
+          "exact_fixpoint_before_cap": false,
+          "progress": 10000,
+          "residual": 2.220446049250313e-16,
+          "variant": "global"
+        },
+        {
+          "exact_fixpoint_before_cap": false,
+          "progress": 10000,
+          "residual": 2.220446049250313e-16,
+          "variant": "root_scoped"
+        }
+      ],
+      "n_side": 4,
+      "seed": 11
+    },
+    {
+      "arms": [
+        {
+          "exact_fixpoint_before_cap": true,
+          "progress": 176,
+          "residual": 5.551115123125783e-17,
+          "variant": "global"
+        },
+        {
+          "exact_fixpoint_before_cap": true,
+          "progress": 176,
+          "residual": 5.551115123125783e-17,
+          "variant": "root_scoped"
+        }
+      ],
+      "n_side": 4,
+      "seed": 29
+    }
+  ],
+  "checks": {
+    "analyzer_hash_matches_lock": true,
+    "engine_matches_source": true,
+    "four_registered_pairs": true,
+    "independent_residual_within_tolerance": true,
+    "native_extension_matches_lock": true,
+    "only_settle_and_commit_retained": true,
+    "paired_progress_equal": true,
+    "paired_terminal_arrays_equal": true,
+    "root_owns_all_units": true,
+    "runner_protocol_seed_hashes_match": true,
+    "stored_residual_matches_recompute": true
+  },
+  "claim_boundary": [
+    "Four full build_sheet anatomical workloads show global and Retina-root-scoped rules produce identical states and progress counts.",
+    "Three native runs reach the 10,000-application cap; their residuals are at floating-point scale. This is numerical convergence, not exact engine termination.",
+    "No orientation task quality, multi-sheet full anatomy, or cost advantage is established."
+  ],
+  "lock_sha256": "3c59b2c5b777bf592f97c035acb884163cd6123fdc4c33a8a9ea6f2e5e337022",
+  "pass": true,
+  "raw_sha256": "2ac69d1d4c2bc63c618fe090eb3f319bedf874a80a06a93a8dc3f4bedff4e591",
+  "run_id": "vision-settle-full-sheet-scope-independent-audit-v1.2"
+}

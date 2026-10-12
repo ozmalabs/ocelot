@@ -82,7 +82,7 @@ pub struct Substrate {
     /// Per-rule dirty bit. True at install. Cleared after run_rules has
     /// given the rule a chance. Set to true by mutation methods when a
     /// rule's read set intersects the mutation's affected types.
-    rule_dirty: Vec<bool>,
+    pub(crate) rule_dirty: Vec<bool>,
     /// Per-rule accumulated cost: (micros spent in match+apply, times processed).
     /// The agent's self-instrumentation so it can DIAGNOSE ITSELF — read back which
     /// of its own rules dominates its tick, the observation its surprise/top-cause
@@ -94,7 +94,7 @@ pub struct Substrate {
     /// Set whenever ANY mutation occurs. Conservative rules (those with
     /// where_) become dirty whenever this is set. Cleared at the start
     /// of each `run_rules` outer iteration after fanning out.
-    any_mutation: bool,
+    pub(crate) any_mutation: bool,
     /// Tick-level evaluation cache (Filter memoisation, Neighbours
     /// memoisation, Holds memoisation). Persists across rules within a
     /// single `run_rules` call so derivable Term-trees referenced by
@@ -102,7 +102,7 @@ pub struct Substrate {
     /// pay graph traversal cost once per tick. Cleared whenever the
     /// graph mutates (mutation methods set `any_mutation`; the cache
     /// is wiped at the start of the next outer iteration).
-    eval_cache: crate::term::EvalCache,
+    pub(crate) eval_cache: crate::term::EvalCache,
     /// JIT'd where-clauses, indexed parallel to `rules`. `None` means
     /// the where-clause used a Term variant the JIT doesn't handle yet
     /// — matcher falls back to the interpreter for those rules.
@@ -117,11 +117,11 @@ pub struct Substrate {
     /// some intervening delete invalidated the cursor and we full
     /// re-match instead. Only 1-edge rules use this fast path today;
     /// k-edge rules with k≥2 fall through to full re-match.
-    rule_cursors: Vec<rustc_hash::FxHashMap<Sym, (usize, u64)>>,
+    pub(crate) rule_cursors: Vec<rustc_hash::FxHashMap<Sym, (usize, u64)>>,
     /// Bumps on every edge deletion (direct or via `delete_node`'s
     /// cascade). Compared against per-rule cursor state to decide
     /// whether the incremental fast path is safe.
-    edge_delete_version: u64,
+    pub(crate) edge_delete_version: u64,
 
     /// Γ-mutation epoch (Paper 1 Axiom 3). Bumped whenever the
     /// rule store changes (productions added/removed, rewrite rules
@@ -501,6 +501,9 @@ pub struct SettleReport {
     pub rounds: Vec<SettleRound>,
     pub steps: usize,
     pub areas: Vec<Sym>,
+    /// Dirty active rules remaining in each area after the call, including
+    /// areas not selected by a partial settlement call.
+    pub residual_by_area: Vec<(Sym, usize)>,
     pub hit_max_rounds: bool,
 }
 
@@ -728,6 +731,7 @@ impl Substrate {
     pub fn new(checker: ConsistencyChecker) -> Self {
         Self {
             graph: TypedGraph::new(),
+            rule_audit_store_id: crate::scale_audit::new_rule_audit_store_id(),
             interner: Interner::new(),
             checker,
             terms: TermArena::new(),
@@ -2382,6 +2386,13 @@ impl Substrate {
         } else {
             (None, smallvec::SmallVec::new())
         };
+        let (ty, keys): (Option<Sym>, smallvec::SmallVec<[Sym; 16]>) =
+            if self.precise_dirty && self.graph.has_node(nid) {
+                let n = self.graph.node(nid);
+                (Some(n.type_), n.attrs.iter().map(|(k, _)| *k).collect())
+            } else {
+                (None, smallvec::SmallVec::new())
+            };
         let precise = self.precise_dirty;
         let ok = self.graph.delete_node(nid).is_some();
         if ok {
@@ -3732,7 +3743,7 @@ impl Substrate {
             self.shape_pruned_count = self.shape_pruned_count.saturating_add(1);
             return false;
         }
-        crate::scale_audit::begin_rule_enumeration(idx.0);
+        crate::scale_audit::begin_rule_enumeration_in_store(self.rule_audit_store_id, idx.0);
         let rule = self.rules[idx.0 as usize].clone();
         crate::scale_audit::register_rule_audit_metadata(idx.0, rule.name.0, self.interner.resolve(rule.name), rule.match_edges.len());
         let Some(b) = crate::rewrite::match_rule(
@@ -3789,6 +3800,7 @@ impl Substrate {
     /// the pre-registration named a missing clear here as the single most
     /// likely source of a byte-identity failure.
     pub fn apply_rule_batch(&mut self, idx: crate::rewrite::RuleIdx) -> bool {
+        self.capture_rule_audit_store_state_if_needed();
         if (idx.0 as usize) >= self.rules.len() || !self.rules[idx.0 as usize].active {
             return false;
         }
@@ -3801,7 +3813,7 @@ impl Substrate {
             self.shape_pruned_count = self.shape_pruned_count.saturating_add(1);
             return false;
         }
-        crate::scale_audit::begin_rule_enumeration(idx.0);
+        crate::scale_audit::begin_rule_enumeration_in_store(self.rule_audit_store_id, idx.0);
         let rule = self.rules[idx.0 as usize].clone();
         crate::scale_audit::register_rule_audit_metadata(idx.0, rule.name.0, self.interner.resolve(rule.name), rule.match_edges.len());
         // CLEAR ON THE WAY IN AS WELL AS OUT. The fallback path
@@ -4372,9 +4384,19 @@ impl Substrate {
         let refused = self.interner.intern("refused");
         let ok = self.interner.intern("ok");
 
-        for patch_node in pending {
+        for (patch_node, origin_rules) in pending {
             if !self.graph.has_node(patch_node) {
                 continue;
+            }
+            let deferred_effect_origins = self.graph.take_deferred_rule_patch_effect_origins(patch_node);
+            let capture_rule_writes = self.graph.rule_write_attribution_enabled();
+            if capture_rule_writes {
+                self.graph
+                    .begin_rule_write_event_origins(&origin_rules, true);
+                self.graph.set_current_rule_deferred_effect_origins(&deferred_effect_origins);
+                if deferred_effect_origins.len() == 1 {
+                    self.graph.begin_rule_write_effect(deferred_effect_origins[0].1);
+                }
             }
             let parsed = {
                 let attrs = &self.graph.node(patch_node).attrs;
@@ -4452,6 +4474,19 @@ impl Substrate {
                     }
                 }
             }
+            if capture_rule_writes {
+                if deferred_effect_origins.len() == 1 {
+                    self.graph.finish_rule_write_effect();
+                }
+                self.graph.finish_rule_write_event(true);
+            }
+        }
+        if let Some(started) = drain_started {
+            crate::scale_audit::deferred_queue_drained(
+                "rule_patches",
+                drained_items,
+                started.elapsed().as_nanos().min(u64::MAX as u128) as u64,
+            );
         }
         if let Some(started) = drain_started {
             crate::scale_audit::deferred_queue_drained(
@@ -4507,6 +4542,7 @@ impl Substrate {
                                     self.set_attr(nid, hash_key, Value::Int(content_hash as i64));
                                 }
                                 self.any_mutation = true;
+                                edit_progressed = true;
                                 eprintln!("[self-build] minted live rule '{}'", nm);
                             }
                         }
@@ -4514,6 +4550,10 @@ impl Substrate {
                     }
                 } else {
                     eprintln!("[self-build] MintRule: payload is not a Rule node");
+                }
+                if capture_rule_writes {
+                    if deferred_effect_origin.is_some() { self.graph.finish_rule_write_effect(); }
+                    self.graph.finish_rule_write_event(edit_progressed);
                 }
                 continue;
             }
@@ -4526,6 +4566,10 @@ impl Substrate {
                 .collect();
             if matches.is_empty() {
                 eprintln!("[self-repair] SetRuleClause: no live rule named '{}'", name);
+                if capture_rule_writes {
+                    if deferred_effect_origin.is_some() { self.graph.finish_rule_write_effect(); }
+                    self.graph.finish_rule_write_event(false);
+                }
                 continue;
             }
             if matches.len() != 1 {
@@ -4535,10 +4579,18 @@ impl Substrate {
                     name,
                     matches.len(),
                 );
+                if capture_rule_writes {
+                    if deferred_effect_origin.is_some() { self.graph.finish_rule_write_effect(); }
+                    self.graph.finish_rule_write_event(false);
+                }
                 continue;
             }
             let i = matches[0];
             let target = &self.rules[i];
+            let target_uid = target.uid.0;
+            let before_revision = target.revision;
+            let before_hash = target.content_hash;
+            let field_sym = self.interner.intern(&field);
             match self.apply_rule_patch(
                 target.uid,
                 target.revision,
@@ -4546,13 +4598,38 @@ impl Substrate {
                 &field,
                 val,
             ) {
-                Ok(_) => {
+                Ok(receipt) => {
+                    if capture_rule_writes {
+                        self.graph.record_current_deferred_rule_change(crate::graph::RuleClauseMutationSnapshot {
+                            target_rule_uid: target_uid,
+                            field: field_sym,
+                            previous_revision: receipt.previous_revision,
+                            revision: receipt.revision,
+                            previous_content_hash: receipt.previous_content_hash,
+                            content_hash: receipt.content_hash,
+                            committed: true,
+                            error_code: None,
+                        });
+                    }
+                    edit_progressed = true;
                     eprintln!(
                         "[self-repair] legacy name rewrite committed for unique rule '{}' clause '{}'",
                         name, field
                     );
                 }
                 Err(error) => {
+                    if capture_rule_writes {
+                        self.graph.record_current_deferred_rule_change(crate::graph::RuleClauseMutationSnapshot {
+                            target_rule_uid: target_uid,
+                            field: field_sym,
+                            previous_revision: before_revision,
+                            revision: before_revision,
+                            previous_content_hash: before_hash,
+                            content_hash: before_hash,
+                            committed: false,
+                            error_code: Some(error.code().to_string()),
+                        });
+                    }
                     eprintln!(
                         "[self-repair] SetRuleClause: '{}' refused ({})",
                         name,
@@ -4560,6 +4637,17 @@ impl Substrate {
                     );
                 }
             }
+            if capture_rule_writes {
+                if deferred_effect_origin.is_some() { self.graph.finish_rule_write_effect(); }
+                self.graph.finish_rule_write_event(edit_progressed);
+            }
+        }
+        if let Some(started) = drain_started {
+            crate::scale_audit::deferred_queue_drained(
+                "rule_edits",
+                drained_items,
+                started.elapsed().as_nanos().min(u64::MAX as u128) as u64,
+            );
         }
         if let Some(started) = drain_started {
             crate::scale_audit::deferred_queue_drained(
@@ -4591,6 +4679,16 @@ impl Substrate {
             if let Err(e) = self.fb_sample(fb_id, game, grid_w, grid_h) {
                 eprintln!("[perception] rule-queued fb_sample(fb_id={fb_id}) failed: {e}");
             }
+            if capture_rule_writes {
+                self.graph.finish_rule_write_event(sampled.is_ok());
+            }
+        }
+        if let Some(started) = drain_started {
+            crate::scale_audit::deferred_queue_drained(
+                "fb_samples",
+                drained_items,
+                started.elapsed().as_nanos().min(u64::MAX as u128) as u64,
+            );
         }
         if let Some(started) = drain_started {
             crate::scale_audit::deferred_queue_drained(
@@ -4615,13 +4713,17 @@ impl Substrate {
         let drained_items = pending.len();
         let na_edge = self.interner.intern("net_assemblage");
         let surprise_key = self.interner.intern("surprise");
-        for (rn, input, target, eta) in pending {
+        for (rn, input, target, eta, origin_rule) in pending {
             if !self.graph.has_node(rn) {
                 continue;
             }
             let Some(&asm) = self.graph.neighbours(rn, Some(na_edge)).first() else {
                 continue;
             };
+            let capture_rule_writes = self.graph.rule_write_attribution_enabled();
+            if capture_rule_writes {
+                self.graph.begin_rule_write_event(origin_rule, true);
+            }
             let surprise = crate::net_forward::net_collapse_step(
                 &mut self.graph,
                 &self.interner,
@@ -4640,6 +4742,16 @@ impl Substrate {
             let ema = 0.85 * prev + 0.15 * surprise;
             self.graph
                 .set_node_attr(rn, surprise_key, crate::value::Value::Float(ema));
+            if capture_rule_writes {
+                self.graph.finish_rule_write_event(true);
+            }
+        }
+        if let Some(started) = drain_started {
+            crate::scale_audit::deferred_queue_drained(
+                "net_collapses",
+                drained_items,
+                started.elapsed().as_nanos().min(u64::MAX as u128) as u64,
+            );
         }
         if let Some(started) = drain_started {
             crate::scale_audit::deferred_queue_drained(
@@ -5220,12 +5332,55 @@ impl Substrate {
         drop_residual: bool,
         snapshot_round: bool,
     ) -> SettleReport {
+        self.run_rules_settle_inner(None, budget_per_area, max_rounds, drop_residual, snapshot_round)
+    }
+
+    /// Settle only rules assigned to the requested areas, carrying every
+    /// unselected dirty rule unchanged for a later full settlement call.
+    /// Mutations from selected rules may dirty either selected or unselected
+    /// rules through the ordinary read/write wakeup index.
+    pub fn run_rules_settle_selected(
+        &mut self,
+        selected_areas: &[Sym],
+        budget_per_area: usize,
+        max_rounds: usize,
+        snapshot_round: bool,
+    ) -> SettleReport {
+        self.run_rules_settle_inner(Some(selected_areas), budget_per_area, max_rounds, false, snapshot_round)
+    }
+
+    fn dirty_rule_counts_by_area(&self) -> Vec<(Sym, usize)> {
+        let mut counts: FxHashMap<Sym, usize> = FxHashMap::default();
+        for (index, dirty) in self.rule_dirty.iter().enumerate() {
+            if *dirty && self.rules.get(index).is_some_and(|rule| rule.active) {
+                *counts.entry(self.rules[index].area).or_insert(0) += 1;
+            }
+        }
+        let mut rows: Vec<(Sym, usize)> = counts.into_iter().collect();
+        rows.sort_by_key(|(area, _)| *area);
+        rows
+    }
+
+    fn run_rules_settle_inner(
+        &mut self,
+        selected_areas: Option<&[Sym]>,
+        budget_per_area: usize,
+        max_rounds: usize,
+        drop_residual: bool,
+        snapshot_round: bool,
+    ) -> SettleReport {
         // Same per-tick counter reset as the committed fixpoint.
         self.shape_pruned_count = 0;
         self.counters.derivation_shape_pruned = 0;
         self.counters.concept_shape_pruned = 0;
 
         let mut report = SettleReport::default();
+        // Keep the turn-scoped native firing receipt coherent when callers
+        // use an area scheduler in place of the committed global fixpoint.
+        // `run_rules_opts_report_filtered` records its last progressing rule;
+        // without the matching update here the host's later ledger commit
+        // silently loses the selected scheduler's progress evidence.
+        let mut last_progress_rule = None;
         let cap = if budget_per_area == 0 {
             usize::MAX
         } else {
@@ -5277,9 +5432,18 @@ impl Substrate {
             // committed fixpoint; the difference between the two arms is the
             // honest measure of how much of the fixpoint's answer depends on
             // the barrier.
+            let groups = self.area_groups();
+            if report.areas.is_empty() {
+                report.areas = groups.iter()
+                    .filter(|(area, _)| selected_areas.is_none_or(|selected| selected.contains(area)))
+                    .map(|(area, _)| *area)
+                    .collect();
+            }
+
             let snap: Option<Vec<bool>> = if snapshot_round {
                 let s: Vec<bool> = (0..self.rules.len())
-                    .map(|i| self.rule_dirty[i] && self.rules[i].active)
+                    .map(|i| self.rule_dirty[i] && self.rules[i].active &&
+                        selected_areas.is_none_or(|selected| selected.contains(&self.rules[i].area)))
                     .collect();
                 for (i, &d) in s.iter().enumerate() {
                     if d {
@@ -5291,14 +5455,12 @@ impl Substrate {
                 None
             };
 
-            let groups = self.area_groups();
-            if report.areas.is_empty() {
-                report.areas = groups.iter().map(|(a, _)| *a).collect();
-            }
-
             let mut round = SettleRound::default();
             let mut any_progress = false;
             for (area, rule_indices) in groups.iter() {
+                if selected_areas.is_some_and(|selected| !selected.contains(area)) {
+                    continue;
+                }
                 // THE AREA-GRAIN DIRTY TEST. A quiet area's ENTIRE cost is
                 // this scan of its own rule-index list; it never touches the
                 // graph. "An area with NO dirty input does NO work."
@@ -5327,11 +5489,21 @@ impl Substrate {
                     // silently retired.
                     self.rule_dirty[ri] = false;
                     attempted += 1;
-                    if self.attempt_one_rule(ri) {
+                    let rule_name = self.rules[ri].name;
+                    let capture_rule_writes = self.graph.rule_write_attribution_enabled();
+                    if capture_rule_writes {
+                        self.graph.begin_rule_write_event(rule_name, false);
+                    }
+                    let progressed = self.attempt_one_rule(ri);
+                    if capture_rule_writes {
+                        self.graph.finish_rule_write_event(progressed);
+                    }
+                    if progressed {
                         spent += 1;
                         report.steps += 1;
                         round.steps += 1;
                         any_progress = true;
+                        last_progress_rule = Some(rule_name);
                     }
                 }
                 // THE RESIDUAL — what the budget did not reach.
@@ -5372,10 +5544,14 @@ impl Substrate {
                 .count();
             report.rounds.push(round);
             if !any_progress {
+                report.residual_by_area = self.dirty_rule_counts_by_area();
+                self.capture_turn_rule_progress(last_progress_rule);
                 return report;
             }
         }
+        report.residual_by_area = self.dirty_rule_counts_by_area();
         report.hit_max_rounds = true;
+        self.capture_turn_rule_progress(last_progress_rule);
         report
     }
 
@@ -5950,8 +6126,17 @@ impl Substrate {
             self.any_mutation = false;
 
             let mut any_progress = false;
+            let capture_rule_writes = self.graph.rule_write_attribution_enabled();
             for rule_idx in to_try {
-                if self.attempt_one_rule(rule_idx) {
+                let rule_name = self.rules[rule_idx].name;
+                if capture_rule_writes {
+                    self.graph.begin_rule_write_event(rule_name, false);
+                }
+                let progressed = self.attempt_one_rule(rule_idx);
+                if capture_rule_writes {
+                    self.graph.finish_rule_write_event(progressed);
+                }
+                if progressed {
                     steps += 1;
                     any_progress = true;
                     let rule_name = self.rules[rule_idx].name;
@@ -6048,6 +6233,9 @@ impl Substrate {
             None => return self.run_rules_opts(max_steps, detect_cycles),
             Some(mt) => mt,
         };
+        self.capture_rule_audit_store_state_if_needed();
+        let work_scope = &self.graph as *const crate::graph::TypedGraph as usize;
+        let _work_operation = crate::access_trace::begin_work_operation(work_scope);
         let has_concept = self.interner.intern("has_concept");
         let owned = crate::rewrite::mt_owned_nodes(&self.graph, mt, has_concept);
         let rule_refs: Vec<(u32, &crate::rewrite::RewriteRule)> = self
@@ -6060,6 +6248,7 @@ impl Substrate {
         let has_concept = self.interner.intern("has_concept");
         crate::rewrite::run_rules_opts_scoped(
             &rule_refs,
+            self.rule_audit_store_id,
             &mut self.terms,
             &mut self.graph,
             &mut self.interner,
@@ -6875,6 +7064,10 @@ impl Substrate {
         for (prev_ids, cur_ids, feature_key, category_key, extent_key, identity_key, radius) in
             pending
         {
+            let capture_rule_writes = self.graph.rule_write_attribution_enabled();
+            if capture_rule_writes {
+                self.graph.begin_rule_write_event(origin_rule, true);
+            }
             self.track_identity(
                 &prev_ids,
                 &cur_ids,
@@ -6883,6 +7076,16 @@ impl Substrate {
                 extent_key,
                 identity_key,
                 radius,
+            );
+            if capture_rule_writes {
+                self.graph.finish_rule_write_event(true);
+            }
+        }
+        if let Some(started) = drain_started {
+            crate::scale_audit::deferred_queue_drained(
+                "track_identity",
+                drained_items,
+                started.elapsed().as_nanos().min(u64::MAX as u128) as u64,
             );
         }
         if let Some(started) = drain_started {
@@ -7158,6 +7361,81 @@ mod tests {
     }
 
     #[test]
+    fn independent_substrates_keep_overlapping_rule_indices_distinct_in_audit() {
+        let _guard = crate::scale_audit::exclusive();
+        crate::scale_audit::set_enabled(true);
+        crate::scale_audit::set_per_rule_enabled(true);
+        crate::scale_audit::reset();
+        crate::scale_audit::per_rule_reset();
+
+        let mut substrates = [empty_substrate(), empty_substrate()];
+        for substrate in &mut substrates {
+            let node_type = substrate.interner.intern("Node");
+            let link = substrate.interner.intern("link");
+            let src_var = substrate.interner.intern("src");
+            let tgt_var = substrate.interner.intern("tgt");
+            let src = substrate.graph.insert_node(node_type, FxHashMap::default());
+            let tgt = substrate.graph.insert_node(node_type, FxHashMap::default());
+            substrate
+                .graph
+                .insert_edge(src, link, tgt, FxHashMap::default())
+                .unwrap();
+            let rule = crate::rewrite::RewriteRule {
+                name: substrate.interner.intern("shared_rule"),
+                match_edges: vec![crate::rewrite::MatchEdge {
+                    src_var,
+                    edge_type: link,
+                    tgt_var,
+                }],
+                ..Default::default()
+            };
+            assert_eq!(substrate.add_rule(rule).0, 0);
+            assert!(substrate.apply_rule_once(crate::rewrite::RuleIdx(0)));
+        }
+
+        let identity_rows = crate::scale_audit::rule_audit_identity_snapshot();
+        let mut store_ids: Vec<u64> = substrates.iter().map(|s| s.rule_audit_store_id).collect();
+        store_ids.sort_unstable();
+        assert_ne!(store_ids[0], store_ids[1]);
+        let mut observed: Vec<_> = identity_rows
+            .iter()
+            .filter(|(_, store, local)| store_ids.contains(store) && *local == 0)
+            .map(|(_, store, local)| (*store, *local))
+            .collect();
+        observed.sort_unstable();
+        assert_eq!(
+            observed,
+            store_ids
+                .iter()
+                .map(|store| (*store, 0))
+                .collect::<Vec<_>>()
+        );
+
+        let global: std::collections::HashMap<String, u64> =
+            crate::scale_audit::snapshot().into_iter().collect();
+        assert_eq!(global["cand_tested_unattributed"], 0);
+        let clauses = crate::scale_audit::match_clause_candidate_snapshot();
+        assert_eq!(clauses.len(), 2);
+        assert!(clauses
+            .iter()
+            .all(|(_, position, count)| *position == 0 && *count > 0));
+        assert_eq!(
+            clauses.iter().map(|(_, _, count)| *count).sum::<u64>(),
+            global["cand_tested"]
+        );
+        assert!(crate::scale_audit::rule_audit_metadata_snapshot()
+            .iter()
+            .all(|(_, _, name, arity, ambiguous)| name == "shared_rule"
+                && *arity == 1
+                && !ambiguous));
+
+        crate::scale_audit::set_enabled(false);
+        crate::scale_audit::reset();
+        crate::scale_audit::per_rule_reset();
+        crate::scale_audit::set_per_rule_enabled(false);
+    }
+
+    #[test]
     fn rule_patch_cas_commits_and_inverse_exactly_reverts() {
         let mut s = empty_substrate();
         let rule = inert_rule(&mut s, "repair_target");
@@ -7301,9 +7579,12 @@ mod tests {
         let before_b = s.rule_metadata(b).unwrap();
         let epoch = s.gamma_epoch.current();
         let clause = term_clause(&mut s, serde_json::json!({"type": "Lit", "value": false}));
-        s.graph
-            .pending_rule_edits
-            .push(("duplicate".to_string(), "where".to_string(), clause));
+        s.graph.pending_rule_edits.push((
+            "duplicate".to_string(),
+            "where".to_string(),
+            clause,
+            s.interner.intern("test_duplicate_origin"),
+        ));
         s.apply_pending_rule_edits();
         assert_eq!(s.rule_metadata(a).unwrap(), before_a);
         assert_eq!(s.rule_metadata(b).unwrap(), before_b);
@@ -7369,7 +7650,10 @@ mod tests {
             ..Default::default()
         });
         assert!(s.apply_rule_once(dispatch));
-        assert_eq!(s.graph.pending_rule_patches, vec![patch]);
+        assert_eq!(
+            s.graph.pending_rule_patches,
+            vec![(patch, vec![s.rules[0].name])]
+        );
         s.apply_pending_rule_patches();
 
         let node = s.graph.node(patch);

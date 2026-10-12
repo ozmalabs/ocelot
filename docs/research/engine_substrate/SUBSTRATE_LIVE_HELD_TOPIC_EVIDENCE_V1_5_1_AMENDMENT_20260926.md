@@ -1,0 +1,3 @@
+# Live held-topic same-turn local-miss reuse v1.5.1 amendment (2026-09-26)
+
+The first v1.5 confirmatory capture is preserved as a source-stability failure: all 35 task/semantic checks, the reduced unknown grounder-call count, and the local-miss request lifecycle check passed, but `domains/self_model.py` changed during worker 2. V1.5.1 records the current stable source snapshot and repeats the same locked panel after that external worktree edit settled. No runner criteria, fixture, or runtime implementation changes are made relative to v1.5. The v1.5 capture remains excluded from confirmatory claims.

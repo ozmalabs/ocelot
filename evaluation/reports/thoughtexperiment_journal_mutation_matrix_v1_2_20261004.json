@@ -1,0 +1,201 @@
+{
+  "execution": {
+    "argv": [
+      "cargo",
+      "run",
+      "-j",
+      "2",
+      "--bin",
+      "thoughtexperiment_journal_mutation_matrix_v1_2",
+      "--manifest-path",
+      "runners/dsl/Cargo.toml"
+    ],
+    "cargo_stderr_sha256": "84d51bde765c9696e1c748c473be845fb57056d05767610a545f92175a81ca2f",
+    "cargo_warning_count": 49,
+    "profile": "dev",
+    "returncode": 0,
+    "rustc": "rustc 1.87.0 (17067e9ac 2025-05-09) (Homebrew)"
+  },
+  "host": {
+    "machine": "x86_64",
+    "platform": "Linux-6.8.0-142-generic-x86_64-with-glibc2.39"
+  },
+  "lock_sha256": "def9e01d28214842334a6ce0a7f54abd4d1a2743109f735e6da4b368c1a568ed",
+  "locked_inputs": {
+    "docs/research/engine_substrate/THOUGHTEXPERIMENT_JOURNAL_MUTATION_MATRIX_V1_2_PREREG_20261004.md": "8bbbec61b406c045d23019d7db5f3ce7b260923f14eb66f495336e96bde6aff2",
+    "evaluation/substrate_capability/run_thoughtexperiment_journal_mutation_matrix_v1_2.py": "584e19bbe930d815e0b1e0399f7562fdc5a4cb17446f59687f50711cfab7bf6c",
+    "runners/dsl/Cargo.lock": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+    "runners/dsl/Cargo.toml": "c4d8ffff2241352a5150b5a9937dbb8010e958b6f115235b7daeae716c1a9332",
+    "runners/dsl/src/bin/thoughtexperiment_journal_mutation_matrix_v1_2.rs": "ab4aecf284081a6e1a97a9f6cc04ec8a6e69793a87dd2a26e98fc99344d975b1",
+    "runners/dsl/src/graph.rs": "498cbc5b77093563609b7f04ddfc58d0ce415af833a991b65034c569375e43dc",
+    "runners/dsl/src/lib.rs": "10ae7645d9ed1f7c3c9d4f5fd119406928ce079e4336a5b007df307c685c0826",
+    "runners/dsl/src/persist.rs": "dfe9247a700f1d5fafd239447018c9bd25297a50f9c86ba63a9e1ce41f149986",
+    "runners/dsl/src/sym.rs": "b54f6af6e456a7095a02eb5b3cab42a73072318bd7e54ed150c787468b170d5f",
+    "runners/dsl/src/value.rs": "a345550c27549a36d5168449a04d8f0a7ff43beb31149e74463881108db9be26"
+  },
+  "result": {
+    "all_matrix_cases_match": true,
+    "divergence_control_works": true,
+    "rows": [
+      {
+        "case": "node attribute set",
+        "journal_edge_entries": 0,
+        "journal_equals_whole_graph_diff_at_capture": true,
+        "journal_node_entries": 1,
+        "operation": "set_attr",
+        "phase_journal_equals_phase_diff": true,
+        "post_capture_untracked_divergence_detected_by_global_diff": false
+      },
+      {
+        "case": "direct mutable node access",
+        "journal_edge_entries": 0,
+        "journal_equals_whole_graph_diff_at_capture": true,
+        "journal_node_entries": 1,
+        "operation": "node_mut_direct",
+        "phase_journal_equals_phase_diff": true,
+        "post_capture_untracked_divergence_detected_by_global_diff": false
+      },
+      {
+        "case": "node attribute removal",
+        "journal_edge_entries": 0,
+        "journal_equals_whole_graph_diff_at_capture": true,
+        "journal_node_entries": 1,
+        "operation": "remove_attr",
+        "phase_journal_equals_phase_diff": true,
+        "post_capture_untracked_divergence_detected_by_global_diff": false
+      },
+      {
+        "case": "node type change",
+        "journal_edge_entries": 0,
+        "journal_equals_whole_graph_diff_at_capture": true,
+        "journal_node_entries": 1,
+        "operation": "set_type",
+        "phase_journal_equals_phase_diff": true,
+        "post_capture_untracked_divergence_detected_by_global_diff": false
+      },
+      {
+        "case": "live identity restoration",
+        "journal_edge_entries": 0,
+        "journal_equals_whole_graph_diff_at_capture": true,
+        "journal_node_entries": 1,
+        "operation": "restore_live",
+        "phase_journal_equals_phase_diff": true,
+        "post_capture_untracked_divergence_detected_by_global_diff": false
+      },
+      {
+        "case": "fresh identity restoration",
+        "journal_edge_entries": 0,
+        "journal_equals_whole_graph_diff_at_capture": true,
+        "journal_node_entries": 1,
+        "operation": "restore_fresh",
+        "phase_journal_equals_phase_diff": true,
+        "post_capture_untracked_divergence_detected_by_global_diff": false
+      },
+      {
+        "case": "node deletion with incident edges",
+        "journal_edge_entries": 2,
+        "journal_equals_whole_graph_diff_at_capture": true,
+        "journal_node_entries": 1,
+        "operation": "delete_node",
+        "phase_journal_equals_phase_diff": true,
+        "post_capture_untracked_divergence_detected_by_global_diff": false
+      },
+      {
+        "case": "tombstoned identity restoration",
+        "journal_edge_entries": 2,
+        "journal_equals_whole_graph_diff_at_capture": true,
+        "journal_node_entries": 1,
+        "operation": "restore_tombstone",
+        "phase_journal_equals_phase_diff": true,
+        "post_capture_untracked_divergence_detected_by_global_diff": false
+      },
+      {
+        "case": "node insertion",
+        "journal_edge_entries": 0,
+        "journal_equals_whole_graph_diff_at_capture": true,
+        "journal_node_entries": 1,
+        "operation": "add_node",
+        "phase_journal_equals_phase_diff": true,
+        "post_capture_untracked_divergence_detected_by_global_diff": false
+      },
+      {
+        "case": "edge insertion",
+        "journal_edge_entries": 1,
+        "journal_equals_whole_graph_diff_at_capture": true,
+        "journal_node_entries": 0,
+        "operation": "insert_edge",
+        "phase_journal_equals_phase_diff": true,
+        "post_capture_untracked_divergence_detected_by_global_diff": false
+      },
+      {
+        "case": "existing edge replacement",
+        "journal_edge_entries": 1,
+        "journal_equals_whole_graph_diff_at_capture": true,
+        "journal_node_entries": 0,
+        "operation": "replace_edge",
+        "phase_journal_equals_phase_diff": true,
+        "post_capture_untracked_divergence_detected_by_global_diff": false
+      },
+      {
+        "case": "mutable edge attributes",
+        "journal_edge_entries": 1,
+        "journal_equals_whole_graph_diff_at_capture": true,
+        "journal_node_entries": 0,
+        "operation": "mutate_edge_attrs",
+        "phase_journal_equals_phase_diff": true,
+        "post_capture_untracked_divergence_detected_by_global_diff": false
+      },
+      {
+        "case": "single edge deletion",
+        "journal_edge_entries": 1,
+        "journal_equals_whole_graph_diff_at_capture": true,
+        "journal_node_entries": 0,
+        "operation": "delete_edge",
+        "phase_journal_equals_phase_diff": true,
+        "post_capture_untracked_divergence_detected_by_global_diff": false
+      },
+      {
+        "case": "batch edge deletion with duplicate index",
+        "journal_edge_entries": 2,
+        "journal_equals_whole_graph_diff_at_capture": true,
+        "journal_node_entries": 0,
+        "operation": "batch_delete_edges",
+        "phase_journal_equals_phase_diff": true,
+        "post_capture_untracked_divergence_detected_by_global_diff": false
+      },
+      {
+        "case": "repeated writes to one identity",
+        "journal_edge_entries": 0,
+        "journal_equals_whole_graph_diff_at_capture": true,
+        "journal_node_entries": 1,
+        "operation": "repeated_writes",
+        "phase_journal_equals_phase_diff": true,
+        "post_capture_untracked_divergence_detected_by_global_diff": false
+      },
+      {
+        "case": "phase checkpoint and derived writes",
+        "journal_edge_entries": 1,
+        "journal_equals_whole_graph_diff_at_capture": true,
+        "journal_node_entries": 1,
+        "operation": "phase_checkpoint",
+        "phase_journal_equals_phase_diff": true,
+        "post_capture_untracked_divergence_detected_by_global_diff": false
+      },
+      {
+        "case": "post-capture untracked divergence control",
+        "journal_edge_entries": 0,
+        "journal_equals_whole_graph_diff_at_capture": true,
+        "journal_node_entries": 1,
+        "operation": "untracked_divergence",
+        "phase_journal_equals_phase_diff": true,
+        "post_capture_untracked_divergence_detected_by_global_diff": true
+      }
+    ],
+    "schema": "ThoughtexperimentJournalMutationMatrixV1_2"
+  },
+  "runner_binary": {
+    "path": "runners/dsl/target/debug/thoughtexperiment_journal_mutation_matrix_v1_2",
+    "sha256": "3ff0fff9a93c10dddb80b8f48018e8887b4ce6451f007c8571d0666f195536d3"
+  },
+  "schema": "ThoughtexperimentJournalMutationMatrixV1_2Capture"
+}

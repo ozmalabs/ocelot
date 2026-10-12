@@ -1,0 +1,2164 @@
+{
+  "all_checks_pass": true,
+  "analysis_script_sha256": "e394c8a8200c08db292e978136f1a3e5f0ff6318f86644e94fdeecc6ac3a23be",
+  "capture_lock_sha256": "fe05486061a10f6636e912155cda470a24a0f5c7a011b50bf89c5f400a58db50",
+  "capture_summary_sha256": "9711b330ca6611101f1243460588ef444d3e51653b0b21dbecfb9e8686cb73f7",
+  "checks": {
+    "access_class_counts_reconcile": true,
+    "capture_gate_checks_pass": true,
+    "current_trace_source_matches_lock": true,
+    "observed_kinds_have_source_definitions": true,
+    "repeated_semantic_ownership_sets_match": true,
+    "request_intervals_nonempty_and_totals_reconcile": true,
+    "request_lifecycle_sets_disjoint": true,
+    "source_locked_and_stable": true,
+    "three_distinct_traced_workers": true,
+    "trace_and_plain_semantic_parity": true,
+    "zero_access_trace_drops": true
+  },
+  "claim_boundary": "Current-source paired capture of one production describe_scene route under one concurrent fixture; dynamic selected rule accesses are partial and not a complete task dependency graph or natural-task prevalence estimate.",
+  "ownership_policy": "Request lifecycle nodes are reached through each exact inbound message's Goal relation; temporary rule-minted children connected through has_subgoal/has_intent/seeks_interpretation_shadow are task-owned; has_self_concern/has_gap_recurrence mints are persistent shared side effects; the Scene+Percept input remains a shared interface.",
+  "raw_sha256": "8bebc2b826cb5098920a178ce1988202db16fa8d331b3b4de6a8f20de317bca7",
+  "rows": [
+    {
+      "base_lifecycle_graph_cut": {
+        "boundary_edge_type_counts": {
+          "about": 1,
+          "about_message": 1,
+          "described_by": 1,
+          "describes": 1,
+          "follows_event": 2,
+          "from_speaker": 3,
+          "has_closed_goal": 1,
+          "has_event": 3,
+          "has_intent": 1,
+          "has_interpretation": 1,
+          "has_mention": 4,
+          "has_speech_act": 1,
+          "has_subgoal": 3,
+          "in_channel": 1,
+          "interprets": 1,
+          "originated_in": 1,
+          "received": 1,
+          "recorded_from_message": 1,
+          "represents_message": 1,
+          "responds_to": 1,
+          "seeks_interpretation_shadow": 1,
+          "sent": 1,
+          "sent_by": 1,
+          "to_addressee": 3
+        },
+        "boundary_external_node_type_counts": {
+          "Agent": 1,
+          "Channel": 1,
+          "CommunicationInterpretation": 1,
+          "Concept": 1,
+          "DiscourseEvent": 2,
+          "DiscourseState": 1,
+          "Episode": 1,
+          "Goal": 3,
+          "Intent": 1,
+          "Interlocutor": 1,
+          "Mention": 4,
+          "Message": 1,
+          "Scene": 1,
+          "SelfConcern": 1,
+          "TeacherRequest": 1
+        },
+        "boundary_incidence_count": 36,
+        "boundary_unique_external_node_count": 21,
+        "internal_edge_count": 12,
+        "owned_induced_treewidth_upper_bound": {
+          "method": "deterministic_min_fill_upper_bound",
+          "order": [
+            25182,
+            24993,
+            25184,
+            25161,
+            25153,
+            25163,
+            25164
+          ],
+          "value": 2
+        },
+        "owned_node_count": 7
+      },
+      "owned_lifecycle_nodes": 7,
+      "persistent_shared_side_effect_nodes": 2,
+      "replicate": 1,
+      "request": "request-A",
+      "selected_access": {
+        "event_kinds_by_node_class_touch": {
+          "external_or_unclassified": {
+            "effect_attr_compare_read": 43,
+            "effect_attr_write": 362,
+            "effect_edge_upsert": 98,
+            "effect_node_mint": 23,
+            "effect_type_candidate_read": 932,
+            "effect_type_query": 208,
+            "pattern_edge": 809,
+            "term_attr_read": 1371700,
+            "term_edge_read": 4381,
+            "term_index_query": 528,
+            "term_type_read": 41106
+          },
+          "persistent_shared_side_effect": {
+            "effect_attr_write": 12,
+            "effect_edge_upsert": 3,
+            "effect_node_mint": 2,
+            "pattern_edge": 7,
+            "term_attr_read": 431,
+            "term_edge_read": 2,
+            "term_type_read": 12
+          },
+          "request_frame": {
+            "effect_attr_write": 43,
+            "effect_edge_delete": 1,
+            "effect_edge_upsert": 31,
+            "effect_node_mint": 7,
+            "pattern_edge": 101,
+            "term_attr_read": 3028,
+            "term_edge_read": 2120
+          },
+          "request_frame+persistent_shared_side_effect": {
+            "effect_edge_upsert": 1,
+            "pattern_edge": 4,
+            "term_edge_read": 4
+          },
+          "shared_scene_input": {
+            "effect_edge_upsert": 72,
+            "pattern_edge": 72,
+            "term_attr_read": 450
+          }
+        },
+        "events_by_node_class_touch": {
+          "external_or_unclassified": 1420190,
+          "persistent_shared_side_effect": 469,
+          "request_frame": 5331,
+          "request_frame+persistent_shared_side_effect": 9,
+          "shared_scene_input": 594
+        },
+        "global_index_query_count": 528,
+        "host_dispatch_count": 0,
+        "pairwise_access_counts": {
+          "external_or_global": 2185,
+          "within_request": 77
+        },
+        "request": "request-A",
+        "selected_event_total": 1426593,
+        "top_kind_resources": [
+          {
+            "count": 838676,
+            "kind_resource": "term_attr_read:name"
+          },
+          {
+            "count": 107491,
+            "kind_resource": "term_attr_read:state"
+          },
+          {
+            "count": 107491,
+            "kind_resource": "term_attr_read:is_ambivalent"
+          },
+          {
+            "count": 39455,
+            "kind_resource": "term_attr_read:kind"
+          },
+          {
+            "count": 37219,
+            "kind_resource": "term_type_read:ShapeSignature"
+          },
+          {
+            "count": 24590,
+            "kind_resource": "term_attr_read:signature"
+          },
+          {
+            "count": 14724,
+            "kind_resource": "term_attr_read:filter_value"
+          },
+          {
+            "count": 13150,
+            "kind_resource": "term_attr_read:dim_types"
+          },
+          {
+            "count": 13150,
+            "kind_resource": "term_attr_read:grid"
+          },
+          {
+            "count": 13150,
+            "kind_resource": "term_attr_read:len_bins"
+          },
+          {
+            "count": 13150,
+            "kind_resource": "term_attr_read:scale_bins"
+          },
+          {
+            "count": 13150,
+            "kind_resource": "term_attr_read:segments"
+          },
+          {
+            "count": 13150,
+            "kind_resource": "term_attr_read:turn_bins"
+          },
+          {
+            "count": 11950,
+            "kind_resource": "term_attr_read:arc_len"
+          },
+          {
+            "count": 11950,
+            "kind_resource": "term_attr_read:n_points"
+          },
+          {
+            "count": 11300,
+            "kind_resource": "term_attr_read:coarse_signature"
+          },
+          {
+            "count": 11154,
+            "kind_resource": "term_attr_read:is_axis"
+          },
+          {
+            "count": 11154,
+            "kind_resource": "term_attr_read:mf_stall"
+          },
+          {
+            "count": 10250,
+            "kind_resource": "term_attr_read:coarse_len_bins"
+          },
+          {
+            "count": 10250,
+            "kind_resource": "term_attr_read:coarse_turn_bins"
+          },
+          {
+            "count": 5650,
+            "kind_resource": "term_attr_read:prototype"
+          },
+          {
+            "count": 5570,
+            "kind_resource": "term_attr_read:status"
+          },
+          {
+            "count": 5300,
+            "kind_resource": "term_attr_read:prototype_len"
+          },
+          {
+            "count": 5150,
+            "kind_resource": "term_attr_read:migration"
+          },
+          {
+            "count": 4950,
+            "kind_resource": "term_attr_read:prototype_available"
+          },
+          {
+            "count": 3150,
+            "kind_resource": "term_attr_read:ground_template"
+          },
+          {
+            "count": 2267,
+            "kind_resource": "term_type_read:Concept"
+          },
+          {
+            "count": 2250,
+            "kind_resource": "term_attr_read:mid_len_bins"
+          },
+          {
+            "count": 2250,
+            "kind_resource": "term_attr_read:mid_signature"
+          },
+          {
+            "count": 2250,
+            "kind_resource": "term_attr_read:mid_turn_bins"
+          }
+        ],
+        "top_rules": [
+          {
+            "count": 272190,
+            "rule": "recognise_a_thing_that_moves_itself"
+          },
+          {
+            "count": 272147,
+            "rule": "recognise_a_thing_that_stays_put"
+          },
+          {
+            "count": 272147,
+            "rule": "recognise_a_counter"
+          },
+          {
+            "count": 214982,
+            "rule": "curiosity_targets_ambivalent_nodes"
+          },
+          {
+            "count": 108976,
+            "rule": "sd_decode"
+          },
+          {
+            "count": 81191,
+            "rule": "sd_infer_dimension"
+          },
+          {
+            "count": 80691,
+            "rule": "sd_transform_decode"
+          },
+          {
+            "count": 44550,
+            "rule": "gr_condition_lapse"
+          },
+          {
+            "count": 12584,
+            "rule": "mint_impasse_from_stall"
+          },
+          {
+            "count": 9724,
+            "rule": "escalate_open_on_stall"
+          },
+          {
+            "count": 6592,
+            "rule": "sd_mint_quantum"
+          },
+          {
+            "count": 3120,
+            "rule": "mine_selectional_agent"
+          },
+          {
+            "count": 2860,
+            "rule": "mine_selectional_patient"
+          },
+          {
+            "count": 2414,
+            "rule": "comprehend_familiar"
+          },
+          {
+            "count": 2376,
+            "rule": "bind_boot_anomaly_evidence"
+          },
+          {
+            "count": 2245,
+            "rule": "retire_duplicate_gap"
+          },
+          {
+            "count": 2085,
+            "rule": "arbitrate_supported_event_bound_topic_goal_answer"
+          },
+          {
+            "count": 1632,
+            "rule": "rule_intent_about_mentioned_concept"
+          },
+          {
+            "count": 1028,
+            "rule": "instruction_self_report_identity"
+          },
+          {
+            "count": 962,
+            "rule": "mint_self_improvement_concern_confident"
+          }
+        ],
+        "trace_event_rows": 52767,
+        "unclassified_event_counts": {
+          "unary_missing_node": 208
+        },
+        "unique_unary_nodes_by_class": {
+          "external_or_global": 7123,
+          "request_frame": 11,
+          "shared_scene_input": 3
+        }
+      },
+      "shared_scene_input_nodes": 4,
+      "task_descendant_edge_policy": {
+        "owned": [
+          "has_intent",
+          "has_subgoal",
+          "seeks_interpretation_shadow"
+        ],
+        "persistent": [
+          "has_gap_recurrence",
+          "has_self_concern"
+        ]
+      },
+      "task_owned_descendants_by_type": {
+        "Goal": 3,
+        "Intent": 1,
+        "TeacherRequest": 1
+      },
+      "task_owned_rule_descendants": 5
+    },
+    {
+      "base_lifecycle_graph_cut": {
+        "boundary_edge_type_counts": {
+          "about": 1,
+          "described_by": 1,
+          "describes": 1,
+          "follows_event": 1,
+          "from_speaker": 3,
+          "has_closed_goal": 1,
+          "has_event": 3,
+          "has_intent": 1,
+          "has_interpretation": 1,
+          "has_mention": 4,
+          "has_speech_act": 1,
+          "has_subgoal": 3,
+          "in_channel": 1,
+          "interprets": 1,
+          "originated_in": 1,
+          "received": 1,
+          "recorded_from_message": 1,
+          "represents_message": 1,
+          "responds_to": 1,
+          "seeks_interpretation_shadow": 1,
+          "sent_by": 1,
+          "to_addressee": 3
+        },
+        "boundary_external_node_type_counts": {
+          "Agent": 1,
+          "Channel": 1,
+          "CommunicationInterpretation": 1,
+          "Concept": 1,
+          "DiscourseEvent": 1,
+          "DiscourseState": 1,
+          "Episode": 1,
+          "Goal": 3,
+          "Intent": 1,
+          "Interlocutor": 1,
+          "Mention": 4,
+          "Message": 1,
+          "Scene": 1,
+          "TeacherRequest": 1
+        },
+        "boundary_incidence_count": 33,
+        "boundary_unique_external_node_count": 19,
+        "internal_edge_count": 11,
+        "owned_induced_treewidth_upper_bound": {
+          "method": "deterministic_min_fill_upper_bound",
+          "order": [
+            25198,
+            25234,
+            25217,
+            25213,
+            25218,
+            25219
+          ],
+          "value": 2
+        },
+        "owned_node_count": 6
+      },
+      "owned_lifecycle_nodes": 6,
+      "persistent_shared_side_effect_nodes": 0,
+      "replicate": 1,
+      "request": "request-B",
+      "selected_access": {
+        "event_kinds_by_node_class_touch": {
+          "external_or_unclassified": {
+            "effect_attr_compare_read": 27,
+            "effect_attr_write": 257,
+            "effect_edge_upsert": 153,
+            "effect_node_mint": 14,
+            "effect_type_candidate_read": 936,
+            "effect_type_query": 208,
+            "pattern_edge": 830,
+            "term_attr_read": 1366389,
+            "term_edge_read": 4939,
+            "term_index_query": 468,
+            "term_type_read": 15742
+          },
+          "other_request_frame": {
+            "effect_attr_write": 13,
+            "pattern_edge": 40,
+            "term_attr_read": 2392,
+            "term_edge_read": 1424
+          },
+          "request_frame": {
+            "effect_attr_write": 32,
+            "effect_edge_delete": 1,
+            "effect_edge_upsert": 29,
+            "effect_node_mint": 6,
+            "pattern_edge": 83,
+            "term_attr_read": 2620,
+            "term_edge_read": 2031
+          },
+          "request_frame+other_request_frame": {
+            "term_edge_read": 13
+          },
+          "shared_scene_input": {
+            "effect_edge_upsert": 60,
+            "pattern_edge": 60,
+            "term_attr_read": 380
+          }
+        },
+        "events_by_node_class_touch": {
+          "external_or_unclassified": 1389963,
+          "other_request_frame": 3869,
+          "request_frame": 4802,
+          "request_frame+other_request_frame": 13,
+          "shared_scene_input": 500
+        },
+        "global_index_query_count": 468,
+        "host_dispatch_count": 0,
+        "pairwise_access_counts": {
+          "external_or_global": 2084,
+          "other_request": 13,
+          "within_request": 60
+        },
+        "request": "request-B",
+        "selected_event_total": 1399147,
+        "top_kind_resources": [
+          {
+            "count": 1121655,
+            "kind_resource": "term_attr_read:name"
+          },
+          {
+            "count": 82199,
+            "kind_resource": "term_attr_read:state"
+          },
+          {
+            "count": 82199,
+            "kind_resource": "term_attr_read:is_ambivalent"
+          },
+          {
+            "count": 20426,
+            "kind_resource": "term_attr_read:kind"
+          },
+          {
+            "count": 11452,
+            "kind_resource": "term_attr_read:filter_value"
+          },
+          {
+            "count": 11452,
+            "kind_resource": "term_type_read:ShapeSignature"
+          },
+          {
+            "count": 7436,
+            "kind_resource": "term_attr_read:is_axis"
+          },
+          {
+            "count": 7436,
+            "kind_resource": "term_attr_read:mf_stall"
+          },
+          {
+            "count": 5738,
+            "kind_resource": "term_attr_read:status"
+          },
+          {
+            "count": 2983,
+            "kind_resource": "term_type_read:Concept"
+          },
+          {
+            "count": 2572,
+            "kind_resource": "term_edge_read:refers_to"
+          },
+          {
+            "count": 2454,
+            "kind_resource": "term_attr_read:schema"
+          },
+          {
+            "count": 2356,
+            "kind_resource": "term_attr_read:evidence_schema"
+          },
+          {
+            "count": 2303,
+            "kind_resource": "term_edge_read:about_concept"
+          },
+          {
+            "count": 2040,
+            "kind_resource": "term_attr_read:evidence_force"
+          },
+          {
+            "count": 1694,
+            "kind_resource": "term_attr_read:assessment"
+          },
+          {
+            "count": 1677,
+            "kind_resource": "term_edge_read:denotes"
+          },
+          {
+            "count": 1235,
+            "kind_resource": "term_attr_read:text"
+          },
+          {
+            "count": 1054,
+            "kind_resource": "term_attr_read:instruction_route"
+          },
+          {
+            "count": 1020,
+            "kind_resource": "term_edge_read:has_mention"
+          },
+          {
+            "count": 936,
+            "kind_resource": "term_attr_read:event"
+          },
+          {
+            "count": 936,
+            "kind_resource": "effect_type_candidate_read:SelectionalRestriction"
+          },
+          {
+            "count": 883,
+            "kind_resource": "term_attr_read:comp_predicate"
+          },
+          {
+            "count": 858,
+            "kind_resource": "term_attr_read:composed"
+          },
+          {
+            "count": 840,
+            "kind_resource": "term_attr_read:grounding_evidence_path"
+          },
+          {
+            "count": 840,
+            "kind_resource": "term_attr_read:evidence_path"
+          },
+          {
+            "count": 806,
+            "kind_resource": "term_attr_read:comp_kind"
+          },
+          {
+            "count": 746,
+            "kind_resource": "term_attr_read:recount_realize"
+          },
+          {
+            "count": 594,
+            "kind_resource": "term_attr_read:content"
+          },
+          {
+            "count": 564,
+            "kind_resource": "term_type_read:SelfConcern"
+          }
+        ],
+        "top_rules": [
+          {
+            "count": 373470,
+            "rule": "recognise_a_thing_that_moves_itself"
+          },
+          {
+            "count": 373411,
+            "rule": "recognise_a_thing_that_stays_put"
+          },
+          {
+            "count": 373411,
+            "rule": "recognise_a_counter"
+          },
+          {
+            "count": 164398,
+            "rule": "curiosity_targets_ambivalent_nodes"
+          },
+          {
+            "count": 34650,
+            "rule": "gr_condition_lapse"
+          },
+          {
+            "count": 7436,
+            "rule": "mint_impasse_from_stall"
+          },
+          {
+            "count": 7436,
+            "rule": "escalate_open_on_stall"
+          },
+          {
+            "count": 4414,
+            "rule": "arbitrate_supported_event_bound_topic_goal_answer"
+          },
+          {
+            "count": 3120,
+            "rule": "mine_selectional_agent"
+          },
+          {
+            "count": 2860,
+            "rule": "mine_selectional_patient"
+          },
+          {
+            "count": 2715,
+            "rule": "rule_intent_about_mentioned_concept"
+          },
+          {
+            "count": 2604,
+            "rule": "retire_duplicate_gap"
+          },
+          {
+            "count": 1848,
+            "rule": "bind_boot_anomaly_evidence"
+          },
+          {
+            "count": 1846,
+            "rule": "comprehend_familiar"
+          },
+          {
+            "count": 1554,
+            "rule": "mint_self_improvement_concern_confident"
+          },
+          {
+            "count": 1554,
+            "rule": "ask_clarification_self_improvement"
+          },
+          {
+            "count": 1260,
+            "rule": "steer_promote_concern"
+          },
+          {
+            "count": 1260,
+            "rule": "steer_retire_concern"
+          },
+          {
+            "count": 1176,
+            "rule": "instruction_self_report_identity"
+          },
+          {
+            "count": 1092,
+            "rule": "arbitrate_supported_selected_concept_answer"
+          }
+        ],
+        "trace_event_rows": 35720,
+        "unclassified_event_counts": {
+          "unary_missing_node": 208
+        },
+        "unique_unary_nodes_by_class": {
+          "external_or_global": 7065,
+          "request_frame": 10,
+          "shared_scene_input": 3
+        }
+      },
+      "shared_scene_input_nodes": 4,
+      "task_descendant_edge_policy": {
+        "owned": [
+          "has_intent",
+          "has_subgoal",
+          "seeks_interpretation_shadow"
+        ],
+        "persistent": [
+          "has_gap_recurrence",
+          "has_self_concern"
+        ]
+      },
+      "task_owned_descendants_by_type": {
+        "Goal": 3,
+        "Intent": 1,
+        "TeacherRequest": 1
+      },
+      "task_owned_rule_descendants": 5
+    },
+    {
+      "base_lifecycle_graph_cut": {
+        "boundary_edge_type_counts": {
+          "about": 1,
+          "about_message": 1,
+          "described_by": 1,
+          "describes": 1,
+          "follows_event": 2,
+          "from_speaker": 3,
+          "has_closed_goal": 1,
+          "has_event": 3,
+          "has_intent": 1,
+          "has_interpretation": 1,
+          "has_mention": 4,
+          "has_speech_act": 1,
+          "has_subgoal": 3,
+          "in_channel": 1,
+          "interprets": 1,
+          "originated_in": 1,
+          "received": 1,
+          "recorded_from_message": 1,
+          "represents_message": 1,
+          "responds_to": 1,
+          "seeks_interpretation_shadow": 1,
+          "sent": 1,
+          "sent_by": 1,
+          "to_addressee": 3
+        },
+        "boundary_external_node_type_counts": {
+          "Agent": 1,
+          "Channel": 1,
+          "CommunicationInterpretation": 1,
+          "Concept": 1,
+          "DiscourseEvent": 2,
+          "DiscourseState": 1,
+          "Episode": 1,
+          "Goal": 3,
+          "Intent": 1,
+          "Interlocutor": 1,
+          "Mention": 4,
+          "Message": 1,
+          "Scene": 1,
+          "SelfConcern": 1,
+          "TeacherRequest": 1
+        },
+        "boundary_incidence_count": 36,
+        "boundary_unique_external_node_count": 21,
+        "internal_edge_count": 12,
+        "owned_induced_treewidth_upper_bound": {
+          "method": "deterministic_min_fill_upper_bound",
+          "order": [
+            25182,
+            24993,
+            25184,
+            25161,
+            25153,
+            25163,
+            25164
+          ],
+          "value": 2
+        },
+        "owned_node_count": 7
+      },
+      "owned_lifecycle_nodes": 7,
+      "persistent_shared_side_effect_nodes": 2,
+      "replicate": 2,
+      "request": "request-A",
+      "selected_access": {
+        "event_kinds_by_node_class_touch": {
+          "external_or_unclassified": {
+            "effect_attr_compare_read": 43,
+            "effect_attr_write": 362,
+            "effect_edge_upsert": 98,
+            "effect_node_mint": 23,
+            "effect_type_candidate_read": 932,
+            "effect_type_query": 208,
+            "pattern_edge": 809,
+            "term_attr_read": 1371700,
+            "term_edge_read": 4381,
+            "term_index_query": 528,
+            "term_type_read": 41106
+          },
+          "persistent_shared_side_effect": {
+            "effect_attr_write": 12,
+            "effect_edge_upsert": 3,
+            "effect_node_mint": 2,
+            "pattern_edge": 7,
+            "term_attr_read": 431,
+            "term_edge_read": 2,
+            "term_type_read": 12
+          },
+          "request_frame": {
+            "effect_attr_write": 43,
+            "effect_edge_delete": 1,
+            "effect_edge_upsert": 31,
+            "effect_node_mint": 7,
+            "pattern_edge": 101,
+            "term_attr_read": 3028,
+            "term_edge_read": 2120
+          },
+          "request_frame+persistent_shared_side_effect": {
+            "effect_edge_upsert": 1,
+            "pattern_edge": 4,
+            "term_edge_read": 4
+          },
+          "shared_scene_input": {
+            "effect_edge_upsert": 72,
+            "pattern_edge": 72,
+            "term_attr_read": 450
+          }
+        },
+        "events_by_node_class_touch": {
+          "external_or_unclassified": 1420190,
+          "persistent_shared_side_effect": 469,
+          "request_frame": 5331,
+          "request_frame+persistent_shared_side_effect": 9,
+          "shared_scene_input": 594
+        },
+        "global_index_query_count": 528,
+        "host_dispatch_count": 0,
+        "pairwise_access_counts": {
+          "external_or_global": 2185,
+          "within_request": 77
+        },
+        "request": "request-A",
+        "selected_event_total": 1426593,
+        "top_kind_resources": [
+          {
+            "count": 838676,
+            "kind_resource": "term_attr_read:name"
+          },
+          {
+            "count": 107491,
+            "kind_resource": "term_attr_read:state"
+          },
+          {
+            "count": 107491,
+            "kind_resource": "term_attr_read:is_ambivalent"
+          },
+          {
+            "count": 39455,
+            "kind_resource": "term_attr_read:kind"
+          },
+          {
+            "count": 37219,
+            "kind_resource": "term_type_read:ShapeSignature"
+          },
+          {
+            "count": 24590,
+            "kind_resource": "term_attr_read:signature"
+          },
+          {
+            "count": 14724,
+            "kind_resource": "term_attr_read:filter_value"
+          },
+          {
+            "count": 13150,
+            "kind_resource": "term_attr_read:dim_types"
+          },
+          {
+            "count": 13150,
+            "kind_resource": "term_attr_read:grid"
+          },
+          {
+            "count": 13150,
+            "kind_resource": "term_attr_read:len_bins"
+          },
+          {
+            "count": 13150,
+            "kind_resource": "term_attr_read:scale_bins"
+          },
+          {
+            "count": 13150,
+            "kind_resource": "term_attr_read:segments"
+          },
+          {
+            "count": 13150,
+            "kind_resource": "term_attr_read:turn_bins"
+          },
+          {
+            "count": 11950,
+            "kind_resource": "term_attr_read:arc_len"
+          },
+          {
+            "count": 11950,
+            "kind_resource": "term_attr_read:n_points"
+          },
+          {
+            "count": 11300,
+            "kind_resource": "term_attr_read:coarse_signature"
+          },
+          {
+            "count": 11154,
+            "kind_resource": "term_attr_read:is_axis"
+          },
+          {
+            "count": 11154,
+            "kind_resource": "term_attr_read:mf_stall"
+          },
+          {
+            "count": 10250,
+            "kind_resource": "term_attr_read:coarse_len_bins"
+          },
+          {
+            "count": 10250,
+            "kind_resource": "term_attr_read:coarse_turn_bins"
+          },
+          {
+            "count": 5650,
+            "kind_resource": "term_attr_read:prototype"
+          },
+          {
+            "count": 5570,
+            "kind_resource": "term_attr_read:status"
+          },
+          {
+            "count": 5300,
+            "kind_resource": "term_attr_read:prototype_len"
+          },
+          {
+            "count": 5150,
+            "kind_resource": "term_attr_read:migration"
+          },
+          {
+            "count": 4950,
+            "kind_resource": "term_attr_read:prototype_available"
+          },
+          {
+            "count": 3150,
+            "kind_resource": "term_attr_read:ground_template"
+          },
+          {
+            "count": 2267,
+            "kind_resource": "term_type_read:Concept"
+          },
+          {
+            "count": 2250,
+            "kind_resource": "term_attr_read:mid_len_bins"
+          },
+          {
+            "count": 2250,
+            "kind_resource": "term_attr_read:mid_signature"
+          },
+          {
+            "count": 2250,
+            "kind_resource": "term_attr_read:mid_turn_bins"
+          }
+        ],
+        "top_rules": [
+          {
+            "count": 272190,
+            "rule": "recognise_a_thing_that_moves_itself"
+          },
+          {
+            "count": 272147,
+            "rule": "recognise_a_thing_that_stays_put"
+          },
+          {
+            "count": 272147,
+            "rule": "recognise_a_counter"
+          },
+          {
+            "count": 214982,
+            "rule": "curiosity_targets_ambivalent_nodes"
+          },
+          {
+            "count": 108976,
+            "rule": "sd_decode"
+          },
+          {
+            "count": 81191,
+            "rule": "sd_infer_dimension"
+          },
+          {
+            "count": 80691,
+            "rule": "sd_transform_decode"
+          },
+          {
+            "count": 44550,
+            "rule": "gr_condition_lapse"
+          },
+          {
+            "count": 12584,
+            "rule": "mint_impasse_from_stall"
+          },
+          {
+            "count": 9724,
+            "rule": "escalate_open_on_stall"
+          },
+          {
+            "count": 6592,
+            "rule": "sd_mint_quantum"
+          },
+          {
+            "count": 3120,
+            "rule": "mine_selectional_agent"
+          },
+          {
+            "count": 2860,
+            "rule": "mine_selectional_patient"
+          },
+          {
+            "count": 2414,
+            "rule": "comprehend_familiar"
+          },
+          {
+            "count": 2376,
+            "rule": "bind_boot_anomaly_evidence"
+          },
+          {
+            "count": 2245,
+            "rule": "retire_duplicate_gap"
+          },
+          {
+            "count": 2085,
+            "rule": "arbitrate_supported_event_bound_topic_goal_answer"
+          },
+          {
+            "count": 1632,
+            "rule": "rule_intent_about_mentioned_concept"
+          },
+          {
+            "count": 1028,
+            "rule": "instruction_self_report_identity"
+          },
+          {
+            "count": 962,
+            "rule": "mint_self_improvement_concern_confident"
+          }
+        ],
+        "trace_event_rows": 52767,
+        "unclassified_event_counts": {
+          "unary_missing_node": 208
+        },
+        "unique_unary_nodes_by_class": {
+          "external_or_global": 7123,
+          "request_frame": 11,
+          "shared_scene_input": 3
+        }
+      },
+      "shared_scene_input_nodes": 4,
+      "task_descendant_edge_policy": {
+        "owned": [
+          "has_intent",
+          "has_subgoal",
+          "seeks_interpretation_shadow"
+        ],
+        "persistent": [
+          "has_gap_recurrence",
+          "has_self_concern"
+        ]
+      },
+      "task_owned_descendants_by_type": {
+        "Goal": 3,
+        "Intent": 1,
+        "TeacherRequest": 1
+      },
+      "task_owned_rule_descendants": 5
+    },
+    {
+      "base_lifecycle_graph_cut": {
+        "boundary_edge_type_counts": {
+          "about": 1,
+          "described_by": 1,
+          "describes": 1,
+          "follows_event": 1,
+          "from_speaker": 3,
+          "has_closed_goal": 1,
+          "has_event": 3,
+          "has_intent": 1,
+          "has_interpretation": 1,
+          "has_mention": 4,
+          "has_speech_act": 1,
+          "has_subgoal": 3,
+          "in_channel": 1,
+          "interprets": 1,
+          "originated_in": 1,
+          "received": 1,
+          "recorded_from_message": 1,
+          "represents_message": 1,
+          "responds_to": 1,
+          "seeks_interpretation_shadow": 1,
+          "sent_by": 1,
+          "to_addressee": 3
+        },
+        "boundary_external_node_type_counts": {
+          "Agent": 1,
+          "Channel": 1,
+          "CommunicationInterpretation": 1,
+          "Concept": 1,
+          "DiscourseEvent": 1,
+          "DiscourseState": 1,
+          "Episode": 1,
+          "Goal": 3,
+          "Intent": 1,
+          "Interlocutor": 1,
+          "Mention": 4,
+          "Message": 1,
+          "Scene": 1,
+          "TeacherRequest": 1
+        },
+        "boundary_incidence_count": 33,
+        "boundary_unique_external_node_count": 19,
+        "internal_edge_count": 11,
+        "owned_induced_treewidth_upper_bound": {
+          "method": "deterministic_min_fill_upper_bound",
+          "order": [
+            25198,
+            25234,
+            25217,
+            25213,
+            25218,
+            25219
+          ],
+          "value": 2
+        },
+        "owned_node_count": 6
+      },
+      "owned_lifecycle_nodes": 6,
+      "persistent_shared_side_effect_nodes": 0,
+      "replicate": 2,
+      "request": "request-B",
+      "selected_access": {
+        "event_kinds_by_node_class_touch": {
+          "external_or_unclassified": {
+            "effect_attr_compare_read": 27,
+            "effect_attr_write": 257,
+            "effect_edge_upsert": 153,
+            "effect_node_mint": 14,
+            "effect_type_candidate_read": 936,
+            "effect_type_query": 208,
+            "pattern_edge": 830,
+            "term_attr_read": 1366389,
+            "term_edge_read": 4939,
+            "term_index_query": 468,
+            "term_type_read": 15742
+          },
+          "other_request_frame": {
+            "effect_attr_write": 13,
+            "pattern_edge": 40,
+            "term_attr_read": 2392,
+            "term_edge_read": 1424
+          },
+          "request_frame": {
+            "effect_attr_write": 32,
+            "effect_edge_delete": 1,
+            "effect_edge_upsert": 29,
+            "effect_node_mint": 6,
+            "pattern_edge": 83,
+            "term_attr_read": 2620,
+            "term_edge_read": 2031
+          },
+          "request_frame+other_request_frame": {
+            "term_edge_read": 13
+          },
+          "shared_scene_input": {
+            "effect_edge_upsert": 60,
+            "pattern_edge": 60,
+            "term_attr_read": 380
+          }
+        },
+        "events_by_node_class_touch": {
+          "external_or_unclassified": 1389963,
+          "other_request_frame": 3869,
+          "request_frame": 4802,
+          "request_frame+other_request_frame": 13,
+          "shared_scene_input": 500
+        },
+        "global_index_query_count": 468,
+        "host_dispatch_count": 0,
+        "pairwise_access_counts": {
+          "external_or_global": 2084,
+          "other_request": 13,
+          "within_request": 60
+        },
+        "request": "request-B",
+        "selected_event_total": 1399147,
+        "top_kind_resources": [
+          {
+            "count": 1121655,
+            "kind_resource": "term_attr_read:name"
+          },
+          {
+            "count": 82199,
+            "kind_resource": "term_attr_read:state"
+          },
+          {
+            "count": 82199,
+            "kind_resource": "term_attr_read:is_ambivalent"
+          },
+          {
+            "count": 20426,
+            "kind_resource": "term_attr_read:kind"
+          },
+          {
+            "count": 11452,
+            "kind_resource": "term_attr_read:filter_value"
+          },
+          {
+            "count": 11452,
+            "kind_resource": "term_type_read:ShapeSignature"
+          },
+          {
+            "count": 7436,
+            "kind_resource": "term_attr_read:is_axis"
+          },
+          {
+            "count": 7436,
+            "kind_resource": "term_attr_read:mf_stall"
+          },
+          {
+            "count": 5738,
+            "kind_resource": "term_attr_read:status"
+          },
+          {
+            "count": 2983,
+            "kind_resource": "term_type_read:Concept"
+          },
+          {
+            "count": 2572,
+            "kind_resource": "term_edge_read:refers_to"
+          },
+          {
+            "count": 2454,
+            "kind_resource": "term_attr_read:schema"
+          },
+          {
+            "count": 2356,
+            "kind_resource": "term_attr_read:evidence_schema"
+          },
+          {
+            "count": 2303,
+            "kind_resource": "term_edge_read:about_concept"
+          },
+          {
+            "count": 2040,
+            "kind_resource": "term_attr_read:evidence_force"
+          },
+          {
+            "count": 1694,
+            "kind_resource": "term_attr_read:assessment"
+          },
+          {
+            "count": 1677,
+            "kind_resource": "term_edge_read:denotes"
+          },
+          {
+            "count": 1235,
+            "kind_resource": "term_attr_read:text"
+          },
+          {
+            "count": 1054,
+            "kind_resource": "term_attr_read:instruction_route"
+          },
+          {
+            "count": 1020,
+            "kind_resource": "term_edge_read:has_mention"
+          },
+          {
+            "count": 936,
+            "kind_resource": "term_attr_read:event"
+          },
+          {
+            "count": 936,
+            "kind_resource": "effect_type_candidate_read:SelectionalRestriction"
+          },
+          {
+            "count": 883,
+            "kind_resource": "term_attr_read:comp_predicate"
+          },
+          {
+            "count": 858,
+            "kind_resource": "term_attr_read:composed"
+          },
+          {
+            "count": 840,
+            "kind_resource": "term_attr_read:grounding_evidence_path"
+          },
+          {
+            "count": 840,
+            "kind_resource": "term_attr_read:evidence_path"
+          },
+          {
+            "count": 806,
+            "kind_resource": "term_attr_read:comp_kind"
+          },
+          {
+            "count": 746,
+            "kind_resource": "term_attr_read:recount_realize"
+          },
+          {
+            "count": 594,
+            "kind_resource": "term_attr_read:content"
+          },
+          {
+            "count": 564,
+            "kind_resource": "term_type_read:SelfConcern"
+          }
+        ],
+        "top_rules": [
+          {
+            "count": 373470,
+            "rule": "recognise_a_thing_that_moves_itself"
+          },
+          {
+            "count": 373411,
+            "rule": "recognise_a_thing_that_stays_put"
+          },
+          {
+            "count": 373411,
+            "rule": "recognise_a_counter"
+          },
+          {
+            "count": 164398,
+            "rule": "curiosity_targets_ambivalent_nodes"
+          },
+          {
+            "count": 34650,
+            "rule": "gr_condition_lapse"
+          },
+          {
+            "count": 7436,
+            "rule": "mint_impasse_from_stall"
+          },
+          {
+            "count": 7436,
+            "rule": "escalate_open_on_stall"
+          },
+          {
+            "count": 4414,
+            "rule": "arbitrate_supported_event_bound_topic_goal_answer"
+          },
+          {
+            "count": 3120,
+            "rule": "mine_selectional_agent"
+          },
+          {
+            "count": 2860,
+            "rule": "mine_selectional_patient"
+          },
+          {
+            "count": 2715,
+            "rule": "rule_intent_about_mentioned_concept"
+          },
+          {
+            "count": 2604,
+            "rule": "retire_duplicate_gap"
+          },
+          {
+            "count": 1848,
+            "rule": "bind_boot_anomaly_evidence"
+          },
+          {
+            "count": 1846,
+            "rule": "comprehend_familiar"
+          },
+          {
+            "count": 1554,
+            "rule": "mint_self_improvement_concern_confident"
+          },
+          {
+            "count": 1554,
+            "rule": "ask_clarification_self_improvement"
+          },
+          {
+            "count": 1260,
+            "rule": "steer_promote_concern"
+          },
+          {
+            "count": 1260,
+            "rule": "steer_retire_concern"
+          },
+          {
+            "count": 1176,
+            "rule": "instruction_self_report_identity"
+          },
+          {
+            "count": 1092,
+            "rule": "arbitrate_supported_selected_concept_answer"
+          }
+        ],
+        "trace_event_rows": 35720,
+        "unclassified_event_counts": {
+          "unary_missing_node": 208
+        },
+        "unique_unary_nodes_by_class": {
+          "external_or_global": 7065,
+          "request_frame": 10,
+          "shared_scene_input": 3
+        }
+      },
+      "shared_scene_input_nodes": 4,
+      "task_descendant_edge_policy": {
+        "owned": [
+          "has_intent",
+          "has_subgoal",
+          "seeks_interpretation_shadow"
+        ],
+        "persistent": [
+          "has_gap_recurrence",
+          "has_self_concern"
+        ]
+      },
+      "task_owned_descendants_by_type": {
+        "Goal": 3,
+        "Intent": 1,
+        "TeacherRequest": 1
+      },
+      "task_owned_rule_descendants": 5
+    },
+    {
+      "base_lifecycle_graph_cut": {
+        "boundary_edge_type_counts": {
+          "about": 1,
+          "about_message": 1,
+          "described_by": 1,
+          "describes": 1,
+          "follows_event": 2,
+          "from_speaker": 3,
+          "has_closed_goal": 1,
+          "has_event": 3,
+          "has_intent": 1,
+          "has_interpretation": 1,
+          "has_mention": 4,
+          "has_speech_act": 1,
+          "has_subgoal": 3,
+          "in_channel": 1,
+          "interprets": 1,
+          "originated_in": 1,
+          "received": 1,
+          "recorded_from_message": 1,
+          "represents_message": 1,
+          "responds_to": 1,
+          "seeks_interpretation_shadow": 1,
+          "sent": 1,
+          "sent_by": 1,
+          "to_addressee": 3
+        },
+        "boundary_external_node_type_counts": {
+          "Agent": 1,
+          "Channel": 1,
+          "CommunicationInterpretation": 1,
+          "Concept": 1,
+          "DiscourseEvent": 2,
+          "DiscourseState": 1,
+          "Episode": 1,
+          "Goal": 3,
+          "Intent": 1,
+          "Interlocutor": 1,
+          "Mention": 4,
+          "Message": 1,
+          "Scene": 1,
+          "SelfConcern": 1,
+          "TeacherRequest": 1
+        },
+        "boundary_incidence_count": 36,
+        "boundary_unique_external_node_count": 21,
+        "internal_edge_count": 12,
+        "owned_induced_treewidth_upper_bound": {
+          "method": "deterministic_min_fill_upper_bound",
+          "order": [
+            25182,
+            24993,
+            25184,
+            25161,
+            25153,
+            25163,
+            25164
+          ],
+          "value": 2
+        },
+        "owned_node_count": 7
+      },
+      "owned_lifecycle_nodes": 7,
+      "persistent_shared_side_effect_nodes": 2,
+      "replicate": 0,
+      "request": "request-A",
+      "selected_access": {
+        "event_kinds_by_node_class_touch": {
+          "external_or_unclassified": {
+            "effect_attr_compare_read": 43,
+            "effect_attr_write": 362,
+            "effect_edge_upsert": 98,
+            "effect_node_mint": 23,
+            "effect_type_candidate_read": 932,
+            "effect_type_query": 208,
+            "pattern_edge": 809,
+            "term_attr_read": 1371700,
+            "term_edge_read": 4381,
+            "term_index_query": 528,
+            "term_type_read": 41106
+          },
+          "persistent_shared_side_effect": {
+            "effect_attr_write": 12,
+            "effect_edge_upsert": 3,
+            "effect_node_mint": 2,
+            "pattern_edge": 7,
+            "term_attr_read": 431,
+            "term_edge_read": 2,
+            "term_type_read": 12
+          },
+          "request_frame": {
+            "effect_attr_write": 43,
+            "effect_edge_delete": 1,
+            "effect_edge_upsert": 31,
+            "effect_node_mint": 7,
+            "pattern_edge": 101,
+            "term_attr_read": 3028,
+            "term_edge_read": 2120
+          },
+          "request_frame+persistent_shared_side_effect": {
+            "effect_edge_upsert": 1,
+            "pattern_edge": 4,
+            "term_edge_read": 4
+          },
+          "shared_scene_input": {
+            "effect_edge_upsert": 72,
+            "pattern_edge": 72,
+            "term_attr_read": 450
+          }
+        },
+        "events_by_node_class_touch": {
+          "external_or_unclassified": 1420190,
+          "persistent_shared_side_effect": 469,
+          "request_frame": 5331,
+          "request_frame+persistent_shared_side_effect": 9,
+          "shared_scene_input": 594
+        },
+        "global_index_query_count": 528,
+        "host_dispatch_count": 0,
+        "pairwise_access_counts": {
+          "external_or_global": 2185,
+          "within_request": 77
+        },
+        "request": "request-A",
+        "selected_event_total": 1426593,
+        "top_kind_resources": [
+          {
+            "count": 838676,
+            "kind_resource": "term_attr_read:name"
+          },
+          {
+            "count": 107491,
+            "kind_resource": "term_attr_read:state"
+          },
+          {
+            "count": 107491,
+            "kind_resource": "term_attr_read:is_ambivalent"
+          },
+          {
+            "count": 39455,
+            "kind_resource": "term_attr_read:kind"
+          },
+          {
+            "count": 37219,
+            "kind_resource": "term_type_read:ShapeSignature"
+          },
+          {
+            "count": 24590,
+            "kind_resource": "term_attr_read:signature"
+          },
+          {
+            "count": 14724,
+            "kind_resource": "term_attr_read:filter_value"
+          },
+          {
+            "count": 13150,
+            "kind_resource": "term_attr_read:dim_types"
+          },
+          {
+            "count": 13150,
+            "kind_resource": "term_attr_read:grid"
+          },
+          {
+            "count": 13150,
+            "kind_resource": "term_attr_read:len_bins"
+          },
+          {
+            "count": 13150,
+            "kind_resource": "term_attr_read:scale_bins"
+          },
+          {
+            "count": 13150,
+            "kind_resource": "term_attr_read:segments"
+          },
+          {
+            "count": 13150,
+            "kind_resource": "term_attr_read:turn_bins"
+          },
+          {
+            "count": 11950,
+            "kind_resource": "term_attr_read:arc_len"
+          },
+          {
+            "count": 11950,
+            "kind_resource": "term_attr_read:n_points"
+          },
+          {
+            "count": 11300,
+            "kind_resource": "term_attr_read:coarse_signature"
+          },
+          {
+            "count": 11154,
+            "kind_resource": "term_attr_read:is_axis"
+          },
+          {
+            "count": 11154,
+            "kind_resource": "term_attr_read:mf_stall"
+          },
+          {
+            "count": 10250,
+            "kind_resource": "term_attr_read:coarse_len_bins"
+          },
+          {
+            "count": 10250,
+            "kind_resource": "term_attr_read:coarse_turn_bins"
+          },
+          {
+            "count": 5650,
+            "kind_resource": "term_attr_read:prototype"
+          },
+          {
+            "count": 5570,
+            "kind_resource": "term_attr_read:status"
+          },
+          {
+            "count": 5300,
+            "kind_resource": "term_attr_read:prototype_len"
+          },
+          {
+            "count": 5150,
+            "kind_resource": "term_attr_read:migration"
+          },
+          {
+            "count": 4950,
+            "kind_resource": "term_attr_read:prototype_available"
+          },
+          {
+            "count": 3150,
+            "kind_resource": "term_attr_read:ground_template"
+          },
+          {
+            "count": 2267,
+            "kind_resource": "term_type_read:Concept"
+          },
+          {
+            "count": 2250,
+            "kind_resource": "term_attr_read:mid_len_bins"
+          },
+          {
+            "count": 2250,
+            "kind_resource": "term_attr_read:mid_signature"
+          },
+          {
+            "count": 2250,
+            "kind_resource": "term_attr_read:mid_turn_bins"
+          }
+        ],
+        "top_rules": [
+          {
+            "count": 272190,
+            "rule": "recognise_a_thing_that_moves_itself"
+          },
+          {
+            "count": 272147,
+            "rule": "recognise_a_thing_that_stays_put"
+          },
+          {
+            "count": 272147,
+            "rule": "recognise_a_counter"
+          },
+          {
+            "count": 214982,
+            "rule": "curiosity_targets_ambivalent_nodes"
+          },
+          {
+            "count": 108976,
+            "rule": "sd_decode"
+          },
+          {
+            "count": 81191,
+            "rule": "sd_infer_dimension"
+          },
+          {
+            "count": 80691,
+            "rule": "sd_transform_decode"
+          },
+          {
+            "count": 44550,
+            "rule": "gr_condition_lapse"
+          },
+          {
+            "count": 12584,
+            "rule": "mint_impasse_from_stall"
+          },
+          {
+            "count": 9724,
+            "rule": "escalate_open_on_stall"
+          },
+          {
+            "count": 6592,
+            "rule": "sd_mint_quantum"
+          },
+          {
+            "count": 3120,
+            "rule": "mine_selectional_agent"
+          },
+          {
+            "count": 2860,
+            "rule": "mine_selectional_patient"
+          },
+          {
+            "count": 2414,
+            "rule": "comprehend_familiar"
+          },
+          {
+            "count": 2376,
+            "rule": "bind_boot_anomaly_evidence"
+          },
+          {
+            "count": 2245,
+            "rule": "retire_duplicate_gap"
+          },
+          {
+            "count": 2085,
+            "rule": "arbitrate_supported_event_bound_topic_goal_answer"
+          },
+          {
+            "count": 1632,
+            "rule": "rule_intent_about_mentioned_concept"
+          },
+          {
+            "count": 1028,
+            "rule": "instruction_self_report_identity"
+          },
+          {
+            "count": 962,
+            "rule": "mint_self_improvement_concern_confident"
+          }
+        ],
+        "trace_event_rows": 52767,
+        "unclassified_event_counts": {
+          "unary_missing_node": 208
+        },
+        "unique_unary_nodes_by_class": {
+          "external_or_global": 7123,
+          "request_frame": 11,
+          "shared_scene_input": 3
+        }
+      },
+      "shared_scene_input_nodes": 4,
+      "task_descendant_edge_policy": {
+        "owned": [
+          "has_intent",
+          "has_subgoal",
+          "seeks_interpretation_shadow"
+        ],
+        "persistent": [
+          "has_gap_recurrence",
+          "has_self_concern"
+        ]
+      },
+      "task_owned_descendants_by_type": {
+        "Goal": 3,
+        "Intent": 1,
+        "TeacherRequest": 1
+      },
+      "task_owned_rule_descendants": 5
+    },
+    {
+      "base_lifecycle_graph_cut": {
+        "boundary_edge_type_counts": {
+          "about": 1,
+          "described_by": 1,
+          "describes": 1,
+          "follows_event": 1,
+          "from_speaker": 3,
+          "has_closed_goal": 1,
+          "has_event": 3,
+          "has_intent": 1,
+          "has_interpretation": 1,
+          "has_mention": 4,
+          "has_speech_act": 1,
+          "has_subgoal": 3,
+          "in_channel": 1,
+          "interprets": 1,
+          "originated_in": 1,
+          "received": 1,
+          "recorded_from_message": 1,
+          "represents_message": 1,
+          "responds_to": 1,
+          "seeks_interpretation_shadow": 1,
+          "sent_by": 1,
+          "to_addressee": 3
+        },
+        "boundary_external_node_type_counts": {
+          "Agent": 1,
+          "Channel": 1,
+          "CommunicationInterpretation": 1,
+          "Concept": 1,
+          "DiscourseEvent": 1,
+          "DiscourseState": 1,
+          "Episode": 1,
+          "Goal": 3,
+          "Intent": 1,
+          "Interlocutor": 1,
+          "Mention": 4,
+          "Message": 1,
+          "Scene": 1,
+          "TeacherRequest": 1
+        },
+        "boundary_incidence_count": 33,
+        "boundary_unique_external_node_count": 19,
+        "internal_edge_count": 11,
+        "owned_induced_treewidth_upper_bound": {
+          "method": "deterministic_min_fill_upper_bound",
+          "order": [
+            25198,
+            25234,
+            25217,
+            25213,
+            25218,
+            25219
+          ],
+          "value": 2
+        },
+        "owned_node_count": 6
+      },
+      "owned_lifecycle_nodes": 6,
+      "persistent_shared_side_effect_nodes": 0,
+      "replicate": 0,
+      "request": "request-B",
+      "selected_access": {
+        "event_kinds_by_node_class_touch": {
+          "external_or_unclassified": {
+            "effect_attr_compare_read": 27,
+            "effect_attr_write": 257,
+            "effect_edge_upsert": 153,
+            "effect_node_mint": 14,
+            "effect_type_candidate_read": 936,
+            "effect_type_query": 208,
+            "pattern_edge": 830,
+            "term_attr_read": 1366389,
+            "term_edge_read": 4939,
+            "term_index_query": 468,
+            "term_type_read": 15742
+          },
+          "other_request_frame": {
+            "effect_attr_write": 13,
+            "pattern_edge": 40,
+            "term_attr_read": 2392,
+            "term_edge_read": 1424
+          },
+          "request_frame": {
+            "effect_attr_write": 32,
+            "effect_edge_delete": 1,
+            "effect_edge_upsert": 29,
+            "effect_node_mint": 6,
+            "pattern_edge": 83,
+            "term_attr_read": 2620,
+            "term_edge_read": 2031
+          },
+          "request_frame+other_request_frame": {
+            "term_edge_read": 13
+          },
+          "shared_scene_input": {
+            "effect_edge_upsert": 60,
+            "pattern_edge": 60,
+            "term_attr_read": 380
+          }
+        },
+        "events_by_node_class_touch": {
+          "external_or_unclassified": 1389963,
+          "other_request_frame": 3869,
+          "request_frame": 4802,
+          "request_frame+other_request_frame": 13,
+          "shared_scene_input": 500
+        },
+        "global_index_query_count": 468,
+        "host_dispatch_count": 0,
+        "pairwise_access_counts": {
+          "external_or_global": 2084,
+          "other_request": 13,
+          "within_request": 60
+        },
+        "request": "request-B",
+        "selected_event_total": 1399147,
+        "top_kind_resources": [
+          {
+            "count": 1121655,
+            "kind_resource": "term_attr_read:name"
+          },
+          {
+            "count": 82199,
+            "kind_resource": "term_attr_read:state"
+          },
+          {
+            "count": 82199,
+            "kind_resource": "term_attr_read:is_ambivalent"
+          },
+          {
+            "count": 20426,
+            "kind_resource": "term_attr_read:kind"
+          },
+          {
+            "count": 11452,
+            "kind_resource": "term_attr_read:filter_value"
+          },
+          {
+            "count": 11452,
+            "kind_resource": "term_type_read:ShapeSignature"
+          },
+          {
+            "count": 7436,
+            "kind_resource": "term_attr_read:is_axis"
+          },
+          {
+            "count": 7436,
+            "kind_resource": "term_attr_read:mf_stall"
+          },
+          {
+            "count": 5738,
+            "kind_resource": "term_attr_read:status"
+          },
+          {
+            "count": 2983,
+            "kind_resource": "term_type_read:Concept"
+          },
+          {
+            "count": 2572,
+            "kind_resource": "term_edge_read:refers_to"
+          },
+          {
+            "count": 2454,
+            "kind_resource": "term_attr_read:schema"
+          },
+          {
+            "count": 2356,
+            "kind_resource": "term_attr_read:evidence_schema"
+          },
+          {
+            "count": 2303,
+            "kind_resource": "term_edge_read:about_concept"
+          },
+          {
+            "count": 2040,
+            "kind_resource": "term_attr_read:evidence_force"
+          },
+          {
+            "count": 1694,
+            "kind_resource": "term_attr_read:assessment"
+          },
+          {
+            "count": 1677,
+            "kind_resource": "term_edge_read:denotes"
+          },
+          {
+            "count": 1235,
+            "kind_resource": "term_attr_read:text"
+          },
+          {
+            "count": 1054,
+            "kind_resource": "term_attr_read:instruction_route"
+          },
+          {
+            "count": 1020,
+            "kind_resource": "term_edge_read:has_mention"
+          },
+          {
+            "count": 936,
+            "kind_resource": "term_attr_read:event"
+          },
+          {
+            "count": 936,
+            "kind_resource": "effect_type_candidate_read:SelectionalRestriction"
+          },
+          {
+            "count": 883,
+            "kind_resource": "term_attr_read:comp_predicate"
+          },
+          {
+            "count": 858,
+            "kind_resource": "term_attr_read:composed"
+          },
+          {
+            "count": 840,
+            "kind_resource": "term_attr_read:grounding_evidence_path"
+          },
+          {
+            "count": 840,
+            "kind_resource": "term_attr_read:evidence_path"
+          },
+          {
+            "count": 806,
+            "kind_resource": "term_attr_read:comp_kind"
+          },
+          {
+            "count": 746,
+            "kind_resource": "term_attr_read:recount_realize"
+          },
+          {
+            "count": 594,
+            "kind_resource": "term_attr_read:content"
+          },
+          {
+            "count": 564,
+            "kind_resource": "term_type_read:SelfConcern"
+          }
+        ],
+        "top_rules": [
+          {
+            "count": 373470,
+            "rule": "recognise_a_thing_that_moves_itself"
+          },
+          {
+            "count": 373411,
+            "rule": "recognise_a_thing_that_stays_put"
+          },
+          {
+            "count": 373411,
+            "rule": "recognise_a_counter"
+          },
+          {
+            "count": 164398,
+            "rule": "curiosity_targets_ambivalent_nodes"
+          },
+          {
+            "count": 34650,
+            "rule": "gr_condition_lapse"
+          },
+          {
+            "count": 7436,
+            "rule": "mint_impasse_from_stall"
+          },
+          {
+            "count": 7436,
+            "rule": "escalate_open_on_stall"
+          },
+          {
+            "count": 4414,
+            "rule": "arbitrate_supported_event_bound_topic_goal_answer"
+          },
+          {
+            "count": 3120,
+            "rule": "mine_selectional_agent"
+          },
+          {
+            "count": 2860,
+            "rule": "mine_selectional_patient"
+          },
+          {
+            "count": 2715,
+            "rule": "rule_intent_about_mentioned_concept"
+          },
+          {
+            "count": 2604,
+            "rule": "retire_duplicate_gap"
+          },
+          {
+            "count": 1848,
+            "rule": "bind_boot_anomaly_evidence"
+          },
+          {
+            "count": 1846,
+            "rule": "comprehend_familiar"
+          },
+          {
+            "count": 1554,
+            "rule": "mint_self_improvement_concern_confident"
+          },
+          {
+            "count": 1554,
+            "rule": "ask_clarification_self_improvement"
+          },
+          {
+            "count": 1260,
+            "rule": "steer_promote_concern"
+          },
+          {
+            "count": 1260,
+            "rule": "steer_retire_concern"
+          },
+          {
+            "count": 1176,
+            "rule": "instruction_self_report_identity"
+          },
+          {
+            "count": 1092,
+            "rule": "arbitrate_supported_selected_concept_answer"
+          }
+        ],
+        "trace_event_rows": 35720,
+        "unclassified_event_counts": {
+          "unary_missing_node": 208
+        },
+        "unique_unary_nodes_by_class": {
+          "external_or_global": 7065,
+          "request_frame": 10,
+          "shared_scene_input": 3
+        }
+      },
+      "shared_scene_input_nodes": 4,
+      "task_descendant_edge_policy": {
+        "owned": [
+          "has_intent",
+          "has_subgoal",
+          "seeks_interpretation_shadow"
+        ],
+        "persistent": [
+          "has_gap_recurrence",
+          "has_self_concern"
+        ]
+      },
+      "task_owned_descendants_by_type": {
+        "Goal": 3,
+        "Intent": 1,
+        "TeacherRequest": 1
+      },
+      "task_owned_rule_descendants": 5
+    }
+  ],
+  "run_id": "live-describe-scene-access-trace-v2.5-analysis-20260929",
+  "schema_version": 1,
+  "trace_source_sha256": "42794f962d898391877b33b2462b2c5978651fb1e9f44992fa93876169b0c3a9",
+  "unmeasured_dependencies": [
+    "receive-time and host callback work",
+    "scheduler work outside selected native access events",
+    "non-rule native work",
+    "specialized graph scans and omitted access callsites",
+    "factor scopes or inference semantics"
+  ]
+}

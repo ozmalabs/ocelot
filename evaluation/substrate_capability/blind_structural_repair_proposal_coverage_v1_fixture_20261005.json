@@ -1,0 +1,85 @@
+{
+  "schema": "BlindStructuralRepairProposalCoverageFixtureV1",
+  "cases": [
+    {
+      "case_id": "opaque_01",
+      "fault_kind_sealed": "comparison_flip",
+      "faulted_rule": {
+        "name": "rule_01_faulted",
+        "match": [["x", "has_task", "y"], ["y", "has_context", "z"]],
+        "where": {"type": "Lit", "value": true},
+        "effects": [["set_attr", "y", "task_pass", {"__term__": {"type": "IfThenElse", "cond": {"type": "Lt", "a": {"type": "Attr", "node": {"type": "Var", "name": "x"}, "key": "signal"}, "b": {"type": "Lit", "value": 1}}, "then": {"type": "Lit", "value": true}, "other": {"type": "Lit", "value": false}}}]]
+      },
+      "target_rule_sealed": {
+        "name": "rule_01_target",
+        "match": [["x", "has_task", "y"], ["y", "has_context", "z"]],
+        "where": {"type": "Lit", "value": true},
+        "effects": [["set_attr", "y", "task_pass", {"__term__": {"type": "IfThenElse", "cond": {"type": "Gt", "a": {"type": "Attr", "node": {"type": "Var", "name": "x"}, "key": "signal"}, "b": {"type": "Lit", "value": 1}}, "then": {"type": "Lit", "value": true}, "other": {"type": "Lit", "value": false}}}]]
+      }
+    },
+    {
+      "case_id": "opaque_02",
+      "fault_kind_sealed": "constant_shift",
+      "faulted_rule": {
+        "name": "rule_02_faulted",
+        "match": [["x", "has_task", "y"], ["y", "has_context", "z"]],
+        "where": {"type": "Lit", "value": true},
+        "effects": [["set_attr", "y", "task_pass", {"__term__": {"type": "IfThenElse", "cond": {"type": "Gte", "a": {"type": "Attr", "node": {"type": "Var", "name": "x"}, "key": "signal"}, "b": {"type": "Lit", "value": 0}}, "then": {"type": "Lit", "value": true}, "other": {"type": "Lit", "value": false}}}]]
+      },
+      "target_rule_sealed": {
+        "name": "rule_02_target",
+        "match": [["x", "has_task", "y"], ["y", "has_context", "z"]],
+        "where": {"type": "Lit", "value": true},
+        "effects": [["set_attr", "y", "task_pass", {"__term__": {"type": "IfThenElse", "cond": {"type": "Gte", "a": {"type": "Attr", "node": {"type": "Var", "name": "x"}, "key": "signal"}, "b": {"type": "Lit", "value": 1}}, "then": {"type": "Lit", "value": true}, "other": {"type": "Lit", "value": false}}}]]
+      }
+    },
+    {
+      "case_id": "opaque_03",
+      "fault_kind_sealed": "match_edge_dropped",
+      "faulted_rule": {
+        "name": "rule_03_faulted",
+        "match": [["x", "has_task", "y"]],
+        "where": {"type": "Lit", "value": true},
+        "effects": [["set_attr", "y", "task_pass", {"__term__": {"type": "Lit", "value": true}}]]
+      },
+      "target_rule_sealed": {
+        "name": "rule_03_target",
+        "match": [["x", "has_task", "y"], ["y", "has_context", "z"]],
+        "where": {"type": "Lit", "value": true},
+        "effects": [["set_attr", "y", "task_pass", {"__term__": {"type": "Lit", "value": true}}]]
+      }
+    },
+    {
+      "case_id": "opaque_04",
+      "fault_kind_sealed": "guard_added",
+      "faulted_rule": {
+        "name": "rule_04_faulted",
+        "match": [["x", "has_task", "y"], ["y", "has_context", "z"]],
+        "where": {"type": "And", "items": [{"type": "Lit", "value": true}, {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "x"}, "key": "context_ok"}, "b": {"type": "Lit", "value": 1}}]},
+        "effects": [["set_attr", "y", "task_pass", {"__term__": {"type": "Lit", "value": true}}]]
+      },
+      "target_rule_sealed": {
+        "name": "rule_04_target",
+        "match": [["x", "has_task", "y"], ["y", "has_context", "z"]],
+        "where": {"type": "Lit", "value": true},
+        "effects": [["set_attr", "y", "task_pass", {"__term__": {"type": "Lit", "value": true}}]]
+      }
+    },
+    {
+      "case_id": "opaque_05",
+      "fault_kind_sealed": "effect_substituted",
+      "faulted_rule": {
+        "name": "rule_05_faulted",
+        "match": [["x", "has_task", "y"], ["y", "has_context", "z"]],
+        "where": {"type": "Lit", "value": true},
+        "effects": [["set_attr", "y", "task_pass", {"__term__": {"type": "Lit", "value": false}}]]
+      },
+      "target_rule_sealed": {
+        "name": "rule_05_target",
+        "match": [["x", "has_task", "y"], ["y", "has_context", "z"]],
+        "where": {"type": "Lit", "value": true},
+        "effects": [["set_attr", "y", "task_pass", {"__term__": {"type": "Lit", "value": true}}]]
+      }
+    }
+  ]
+}

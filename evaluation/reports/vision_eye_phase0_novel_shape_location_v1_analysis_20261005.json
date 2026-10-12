@@ -1,0 +1,2567 @@
+{
+  "analyzer_sha256": "08ef02cb4833fc71ea2b287990ea94d1ec02610fa45d67ceb7106686348e9627",
+  "capture_sha256": "3fd3fc85b38d390d299d3b3e76fbe74465fc716fd5207cca09930dc80fe5c613",
+  "checks": {
+    "all_90_acts_reconcile": true,
+    "all_90_winners_match_recomputed_argmax": true,
+    "analyzer_stable": true,
+    "capture_gates_pass": true,
+    "frozen_fields_unchanged": true,
+    "location_novelty_cells": true,
+    "source_lock_stable": true,
+    "three_workers": true
+  },
+  "claim_limit": "three trained small spatial maps, tested on seen and unseen binary shapes at trained sites and an unseen X at two untrained sites; does not establish natural vision or semantic shape recognition.",
+  "groups": [
+    {
+      "localized_winner_count": 15,
+      "location_status": "trained",
+      "median_winner_center_distance": 0.0,
+      "median_winner_spread": 1.1547005383792517,
+      "native_act_recomputation_matches": 15,
+      "pattern": "seen_square3",
+      "probes": 15,
+      "recomputed_argmax_matches": 15
+    },
+    {
+      "localized_winner_count": 15,
+      "location_status": "trained",
+      "median_winner_center_distance": 2.5121479338940403e-15,
+      "median_winner_spread": 0.8944271909999159,
+      "native_act_recomputation_matches": 15,
+      "pattern": "seen_plus5",
+      "probes": 15,
+      "recomputed_argmax_matches": 15
+    },
+    {
+      "localized_winner_count": 30,
+      "location_status": "trained",
+      "median_winner_center_distance": 1.2560739669470201e-15,
+      "median_winner_spread": 1.0245638646895836,
+      "native_act_recomputation_matches": 30,
+      "pattern": "heldout_x5",
+      "probes": 30,
+      "recomputed_argmax_matches": 30
+    },
+    {
+      "localized_winner_count": 0,
+      "location_status": "novel",
+      "median_winner_center_distance": 5.097164095695627,
+      "median_winner_spread": 6.565884079378751,
+      "native_act_recomputation_matches": 30,
+      "pattern": "heldout_x5",
+      "probes": 30,
+      "recomputed_argmax_matches": 30
+    }
+  ],
+  "lock_sha256": "531cb207dab6afa5b65823b5ebb773fc06ed13f2ef4b64f53630b18dcc73bc78",
+  "passed": true,
+  "schema": "VisionEyeNovelShapeLocationV1Analysis",
+  "workers": [
+    {
+      "by_pattern": {
+        "heldout_x5": {
+          "act_recomputation_matches": 20,
+          "n": 20,
+          "recomputed_argmax_matches": 20,
+          "winner_localized_count": 10
+        },
+        "seen_plus5": {
+          "act_recomputation_matches": 5,
+          "n": 5,
+          "recomputed_argmax_matches": 5,
+          "winner_localized_count": 5
+        },
+        "seen_square3": {
+          "act_recomputation_matches": 5,
+          "n": 5,
+          "recomputed_argmax_matches": 5,
+          "winner_localized_count": 5
+        }
+      },
+      "probes": [
+        {
+          "act_recomputation_matches": true,
+          "location_status": "trained",
+          "native_acts": [
+            0.029287159287376404,
+            1.035939327120422e-43,
+            0.03295640623023025,
+            1.0000000000000002
+          ],
+          "native_winner": 3,
+          "pattern": "seen_square3",
+          "rep": 0,
+          "site": [
+            5,
+            5
+          ],
+          "weight_recomputed_acts": [
+            0.029287159287376404,
+            1.035939327120422e-43,
+            0.03295640623023025,
+            1.0
+          ],
+          "winner_distance": 0.0,
+          "winner_is_recomputed_argmax": true,
+          "winner_localized_for_site": true,
+          "winner_spread": 1.1547005383792517
+        },
+        {
+          "act_recomputation_matches": true,
+          "location_status": "trained",
+          "native_acts": [
+            0.026681899908916853,
+            0.9999999999999999,
+            0.01951739675871844,
+            8.094787037100468e-78
+          ],
+          "native_winner": 1,
+          "pattern": "seen_plus5",
+          "rep": 0,
+          "site": [
+            12,
+            12
+          ],
+          "weight_recomputed_acts": [
+            0.026681899908916857,
+            0.9999999999999999,
+            0.019517396758718438,
+            8.094787037100469e-78
+          ],
+          "winner_distance": 2.5121479338940403e-15,
+          "winner_is_recomputed_argmax": true,
+          "winner_localized_for_site": true,
+          "winner_spread": 0.8944271909999159
+        },
+        {
+          "act_recomputation_matches": true,
+          "location_status": "trained",
+          "native_acts": [
+            0.012493456314915087,
+            7.209827444835028e-44,
+            0.023776869837671192,
+            0.5555555555555556
+          ],
+          "native_winner": 3,
+          "pattern": "heldout_x5",
+          "rep": 0,
+          "site": [
+            5,
+            5
+          ],
+          "weight_recomputed_acts": [
+            0.012493456314915087,
+            7.209827444835028e-44,
+            0.023776869837671192,
+            0.5555555555555556
+          ],
+          "winner_distance": 0.0,
+          "winner_is_recomputed_argmax": true,
+          "winner_localized_for_site": true,
+          "winner_spread": 1.1547005383792517
+        },
+        {
+          "act_recomputation_matches": true,
+          "location_status": "trained",
+          "native_acts": [
+            0.0269748146627795,
+            0.19999999999999998,
+            0.0165862172382596,
+            5.959406925677268e-78
+          ],
+          "native_winner": 1,
+          "pattern": "heldout_x5",
+          "rep": 0,
+          "site": [
+            12,
+            12
+          ],
+          "weight_recomputed_acts": [
+            0.0269748146627795,
+            0.19999999999999998,
+            0.016586217238259603,
+            5.959406925677268e-78
+          ],
+          "winner_distance": 2.5121479338940403e-15,
+          "winner_is_recomputed_argmax": true,
+          "winner_localized_for_site": true,
+          "winner_spread": 0.8944271909999159
+        },
+        {
+          "act_recomputation_matches": true,
+          "location_status": "novel",
+          "native_acts": [
+            0.025806487428080557,
+            4.4147137202500574e-44,
+            0.019570323230338943,
+            1.2950684266321047e-77
+          ],
+          "native_winner": 0,
+          "pattern": "heldout_x5",
+          "rep": 0,
+          "site": [
+            5,
+            12
+          ],
+          "weight_recomputed_acts": [
+            0.025806487428080557,
+            4.4147137202500574e-44,
+            0.019570323230338943,
+            1.2950684266321047e-77
+          ],
+          "winner_distance": 4.9612800329930575,
+          "winner_is_recomputed_argmax": true,
+          "winner_localized_for_site": false,
+          "winner_spread": 6.577865945654632
+        },
+        {
+          "act_recomputation_matches": true,
+          "location_status": "novel",
+          "native_acts": [
+            0.03120874297148659,
+            3.96576046443971e-44,
+            0.021358747433929008,
+            4.072261782428255e-78
+          ],
+          "native_winner": 0,
+          "pattern": "heldout_x5",
+          "rep": 0,
+          "site": [
+            12,
+            5
+          ],
+          "weight_recomputed_acts": [
+            0.03120874297148659,
+            3.96576046443971e-44,
+            0.02135874743392901,
+            4.072261782428255e-78
+          ],
+          "winner_distance": 5.245717516797541,
+          "winner_is_recomputed_argmax": true,
+          "winner_localized_for_site": false,
+          "winner_spread": 6.577865945654632
+        },
+        {
+          "act_recomputation_matches": true,
+          "location_status": "trained",
+          "native_acts": [
+            0.029287159287376404,
+            1.035939327120422e-43,
+            0.03295640623023025,
+            1.0000000000000002
+          ],
+          "native_winner": 3,
+          "pattern": "seen_square3",
+          "rep": 1,
+          "site": [
+            5,
+            5
+          ],
+          "weight_recomputed_acts": [
+            0.029287159287376404,
+            1.035939327120422e-43,
+            0.03295640623023025,
+            1.0
+          ],
+          "winner_distance": 0.0,
+          "winner_is_recomputed_argmax": true,
+          "winner_localized_for_site": true,
+          "winner_spread": 1.1547005383792517
+        },
+        {
+          "act_recomputation_matches": true,
+          "location_status": "trained",
+          "native_acts": [
+            0.026681899908916853,
+            0.9999999999999999,
+            0.01951739675871844,
+            8.094787037100468e-78
+          ],
+          "native_winner": 1,
+          "pattern": "seen_plus5",
+          "rep": 1,
+          "site": [
+            12,
+            12
+          ],
+          "weight_recomputed_acts": [
+            0.026681899908916857,
+            0.9999999999999999,
+            0.019517396758718438,
+            8.094787037100469e-78
+          ],
+          "winner_distance": 2.5121479338940403e-15,
+          "winner_is_recomputed_argmax": true,
+          "winner_localized_for_site": true,
+          "winner_spread": 0.8944271909999159
+        },
+        {
+          "act_recomputation_matches": true,
+          "location_status": "trained",
+          "native_acts": [
+            0.012493456314915087,
+            7.209827444835028e-44,
+            0.023776869837671192,
+            0.5555555555555556
+          ],
+          "native_winner": 3,
+          "pattern": "heldout_x5",
+          "rep": 1,
+          "site": [
+            5,
+            5
+          ],
+          "weight_recomputed_acts": [
+            0.012493456314915087,
+            7.209827444835028e-44,
+            0.023776869837671192,
+            0.5555555555555556
+          ],
+          "winner_distance": 0.0,
+          "winner_is_recomputed_argmax": true,
+          "winner_localized_for_site": true,
+          "winner_spread": 1.1547005383792517
+        },
+        {
+          "act_recomputation_matches": true,
+          "location_status": "trained",
+          "native_acts": [
+            0.0269748146627795,
+            0.19999999999999998,
+            0.0165862172382596,
+            5.959406925677268e-78
+          ],
+          "native_winner": 1,
+          "pattern": "heldout_x5",
+          "rep": 1,
+          "site": [
+            12,
+            12
+          ],
+          "weight_recomputed_acts": [
+            0.0269748146627795,
+            0.19999999999999998,
+            0.016586217238259603,
+            5.959406925677268e-78
+          ],
+          "winner_distance": 2.5121479338940403e-15,
+          "winner_is_recomputed_argmax": true,
+          "winner_localized_for_site": true,
+          "winner_spread": 0.8944271909999159
+        },
+        {
+          "act_recomputation_matches": true,
+          "location_status": "novel",
+          "native_acts": [
+            0.025806487428080557,
+            4.4147137202500574e-44,
+            0.019570323230338943,
+            1.2950684266321047e-77
+          ],
+          "native_winner": 0,
+          "pattern": "heldout_x5",
+          "rep": 1,
+          "site": [
+            5,
+            12
+          ],
+          "weight_recomputed_acts": [
+            0.025806487428080557,
+            4.4147137202500574e-44,
+            0.019570323230338943,
+            1.2950684266321047e-77
+          ],
+          "winner_distance": 4.9612800329930575,
+          "winner_is_recomputed_argmax": true,
+          "winner_localized_for_site": false,
+          "winner_spread": 6.577865945654632
+        },
+        {
+          "act_recomputation_matches": true,
+          "location_status": "novel",
+          "native_acts": [
+            0.03120874297148659,
+            3.96576046443971e-44,
+            0.021358747433929008,
+            4.072261782428255e-78
+          ],
+          "native_winner": 0,
+          "pattern": "heldout_x5",
+          "rep": 1,
+          "site": [
+            12,
+            5
+          ],
+          "weight_recomputed_acts": [
+            0.03120874297148659,
+            3.96576046443971e-44,
+            0.02135874743392901,
+            4.072261782428255e-78
+          ],
+          "winner_distance": 5.245717516797541,
+          "winner_is_recomputed_argmax": true,
+          "winner_localized_for_site": false,
+          "winner_spread": 6.577865945654632
+        },
+        {
+          "act_recomputation_matches": true,
+          "location_status": "trained",
+          "native_acts": [
+            0.029287159287376404,
+            1.035939327120422e-43,
+            0.03295640623023025,
+            1.0000000000000002
+          ],
+          "native_winner": 3,
+          "pattern": "seen_square3",
+          "rep": 2,
+          "site": [
+            5,
+            5
+          ],
+          "weight_recomputed_acts": [
+            0.029287159287376404,
+            1.035939327120422e-43,
+            0.03295640623023025,
+            1.0
+          ],
+          "winner_distance": 0.0,
+          "winner_is_recomputed_argmax": true,
+          "winner_localized_for_site": true,
+          "winner_spread": 1.1547005383792517
+        },
+        {
+          "act_recomputation_matches": true,
+          "location_status": "trained",
+          "native_acts": [
+            0.026681899908916853,
+            0.9999999999999999,
+            0.01951739675871844,
+            8.094787037100468e-78
+          ],
+          "native_winner": 1,
+          "pattern": "seen_plus5",
+          "rep": 2,
+          "site": [
+            12,
+            12
+          ],
+          "weight_recomputed_acts": [
+            0.026681899908916857,
+            0.9999999999999999,
+            0.019517396758718438,
+            8.094787037100469e-78
+          ],
+          "winner_distance": 2.5121479338940403e-15,
+          "winner_is_recomputed_argmax": true,
+          "winner_localized_for_site": true,
+          "winner_spread": 0.8944271909999159
+        },
+        {
+          "act_recomputation_matches": true,
+          "location_status": "trained",
+          "native_acts": [
+            0.012493456314915087,
+            7.209827444835028e-44,
+            0.023776869837671192,
+            0.5555555555555556
+          ],
+          "native_winner": 3,
+          "pattern": "heldout_x5",
+          "rep": 2,
+          "site": [
+            5,
+            5
+          ],
+          "weight_recomputed_acts": [
+            0.012493456314915087,
+            7.209827444835028e-44,
+            0.023776869837671192,
+            0.5555555555555556
+          ],
+          "winner_distance": 0.0,
+          "winner_is_recomputed_argmax": true,
+          "winner_localized_for_site": true,
+          "winner_spread": 1.1547005383792517
+        },
+        {
+          "act_recomputation_matches": true,
+          "location_status": "trained",
+          "native_acts": [
+            0.0269748146627795,
+            0.19999999999999998,
+            0.0165862172382596,
+            5.959406925677268e-78
+          ],
+          "native_winner": 1,
+          "pattern": "heldout_x5",
+          "rep": 2,
+          "site": [
+            12,
+            12
+          ],
+          "weight_recomputed_acts": [
+            0.0269748146627795,
+            0.19999999999999998,
+            0.016586217238259603,
+            5.959406925677268e-78
+          ],
+          "winner_distance": 2.5121479338940403e-15,
+          "winner_is_recomputed_argmax": true,
+          "winner_localized_for_site": true,
+          "winner_spread": 0.8944271909999159
+        },
+        {
+          "act_recomputation_matches": true,
+          "location_status": "novel",
+          "native_acts": [
+            0.025806487428080557,
+            4.4147137202500574e-44,
+            0.019570323230338943,
+            1.2950684266321047e-77
+          ],
+          "native_winner": 0,
+          "pattern": "heldout_x5",
+          "rep": 2,
+          "site": [
+            5,
+            12
+          ],
+          "weight_recomputed_acts": [
+            0.025806487428080557,
+            4.4147137202500574e-44,
+            0.019570323230338943,
+            1.2950684266321047e-77
+          ],
+          "winner_distance": 4.9612800329930575,
+          "winner_is_recomputed_argmax": true,
+          "winner_localized_for_site": false,
+          "winner_spread": 6.577865945654632
+        },
+        {
+          "act_recomputation_matches": true,
+          "location_status": "novel",
+          "native_acts": [
+            0.03120874297148659,
+            3.96576046443971e-44,
+            0.021358747433929008,
+            4.072261782428255e-78
+          ],
+          "native_winner": 0,
+          "pattern": "heldout_x5",
+          "rep": 2,
+          "site": [
+            12,
+            5
+          ],
+          "weight_recomputed_acts": [
+            0.03120874297148659,
+            3.96576046443971e-44,
+            0.02135874743392901,
+            4.072261782428255e-78
+          ],
+          "winner_distance": 5.245717516797541,
+          "winner_is_recomputed_argmax": true,
+          "winner_localized_for_site": false,
+          "winner_spread": 6.577865945654632
+        },
+        {
+          "act_recomputation_matches": true,
+          "location_status": "trained",
+          "native_acts": [
+            0.029287159287376404,
+            1.035939327120422e-43,
+            0.03295640623023025,
+            1.0000000000000002
+          ],
+          "native_winner": 3,
+          "pattern": "seen_square3",
+          "rep": 3,
+          "site": [
+            5,
+            5
+          ],
+          "weight_recomputed_acts": [
+            0.029287159287376404,
+            1.035939327120422e-43,
+            0.03295640623023025,
+            1.0
+          ],
+          "winner_distance": 0.0,
+          "winner_is_recomputed_argmax": true,
+          "winner_localized_for_site": true,
+          "winner_spread": 1.1547005383792517
+        },
+        {
+          "act_recomputation_matches": true,
+          "location_status": "trained",
+          "native_acts": [
+            0.026681899908916853,
+            0.9999999999999999,
+            0.01951739675871844,
+            8.094787037100468e-78
+          ],
+          "native_winner": 1,
+          "pattern": "seen_plus5",
+          "rep": 3,
+          "site": [
+            12,
+            12
+          ],
+          "weight_recomputed_acts": [
+            0.026681899908916857,
+            0.9999999999999999,
+            0.019517396758718438,
+            8.094787037100469e-78
+          ],
+          "winner_distance": 2.5121479338940403e-15,
+          "winner_is_recomputed_argmax": true,
+          "winner_localized_for_site": true,
+          "winner_spread": 0.8944271909999159
+        },
+        {
+          "act_recomputation_matches": true,
+          "location_status": "trained",
+          "native_acts": [
+            0.012493456314915087,
+            7.209827444835028e-44,
+            0.023776869837671192,
+            0.5555555555555556
+          ],
+          "native_winner": 3,
+          "pattern": "heldout_x5",
+          "rep": 3,
+          "site": [
+            5,
+            5
+          ],
+          "weight_recomputed_acts": [
+            0.012493456314915087,
+            7.209827444835028e-44,
+            0.023776869837671192,
+            0.5555555555555556
+          ],
+          "winner_distance": 0.0,
+          "winner_is_recomputed_argmax": true,
+          "winner_localized_for_site": true,
+          "winner_spread": 1.1547005383792517
+        },
+        {
+          "act_recomputation_matches": true,
+          "location_status": "trained",
+          "native_acts": [
+            0.0269748146627795,
+            0.19999999999999998,
+            0.0165862172382596,
+            5.959406925677268e-78
+          ],
+          "native_winner": 1,
+          "pattern": "heldout_x5",
+          "rep": 3,
+          "site": [
+            12,
+            12
+          ],
+          "weight_recomputed_acts": [
+            0.0269748146627795,
+            0.19999999999999998,
+            0.016586217238259603,
+            5.959406925677268e-78
+          ],
+          "winner_distance": 2.5121479338940403e-15,
+          "winner_is_recomputed_argmax": true,
+          "winner_localized_for_site": true,
+          "winner_spread": 0.8944271909999159
+        },
+        {
+          "act_recomputation_matches": true,
+          "location_status": "novel",
+          "native_acts": [
+            0.025806487428080557,
+            4.4147137202500574e-44,
+            0.019570323230338943,
+            1.2950684266321047e-77
+          ],
+          "native_winner": 0,
+          "pattern": "heldout_x5",
+          "rep": 3,
+          "site": [
+            5,
+            12
+          ],
+          "weight_recomputed_acts": [
+            0.025806487428080557,
+            4.4147137202500574e-44,
+            0.019570323230338943,
+            1.2950684266321047e-77
+          ],
+          "winner_distance": 4.9612800329930575,
+          "winner_is_recomputed_argmax": true,
+          "winner_localized_for_site": false,
+          "winner_spread": 6.577865945654632
+        },
+        {
+          "act_recomputation_matches": true,
+          "location_status": "novel",
+          "native_acts": [
+            0.03120874297148659,
+            3.96576046443971e-44,
+            0.021358747433929008,
+            4.072261782428255e-78
+          ],
+          "native_winner": 0,
+          "pattern": "heldout_x5",
+          "rep": 3,
+          "site": [
+            12,
+            5
+          ],
+          "weight_recomputed_acts": [
+            0.03120874297148659,
+            3.96576046443971e-44,
+            0.02135874743392901,
+            4.072261782428255e-78
+          ],
+          "winner_distance": 5.245717516797541,
+          "winner_is_recomputed_argmax": true,
+          "winner_localized_for_site": false,
+          "winner_spread": 6.577865945654632
+        },
+        {
+          "act_recomputation_matches": true,
+          "location_status": "trained",
+          "native_acts": [
+            0.029287159287376404,
+            1.035939327120422e-43,
+            0.03295640623023025,
+            1.0000000000000002
+          ],
+          "native_winner": 3,
+          "pattern": "seen_square3",
+          "rep": 4,
+          "site": [
+            5,
+            5
+          ],
+          "weight_recomputed_acts": [
+            0.029287159287376404,
+            1.035939327120422e-43,
+            0.03295640623023025,
+            1.0
+          ],
+          "winner_distance": 0.0,
+          "winner_is_recomputed_argmax": true,
+          "winner_localized_for_site": true,
+          "winner_spread": 1.1547005383792517
+        },
+        {
+          "act_recomputation_matches": true,
+          "location_status": "trained",
+          "native_acts": [
+            0.026681899908916853,
+            0.9999999999999999,
+            0.01951739675871844,
+            8.094787037100468e-78
+          ],
+          "native_winner": 1,
+          "pattern": "seen_plus5",
+          "rep": 4,
+          "site": [
+            12,
+            12
+          ],
+          "weight_recomputed_acts": [
+            0.026681899908916857,
+            0.9999999999999999,
+            0.019517396758718438,
+            8.094787037100469e-78
+          ],
+          "winner_distance": 2.5121479338940403e-15,
+          "winner_is_recomputed_argmax": true,
+          "winner_localized_for_site": true,
+          "winner_spread": 0.8944271909999159
+        },
+        {
+          "act_recomputation_matches": true,
+          "location_status": "trained",
+          "native_acts": [
+            0.012493456314915087,
+            7.209827444835028e-44,
+            0.023776869837671192,
+            0.5555555555555556
+          ],
+          "native_winner": 3,
+          "pattern": "heldout_x5",
+          "rep": 4,
+          "site": [
+            5,
+            5
+          ],
+          "weight_recomputed_acts": [
+            0.012493456314915087,
+            7.209827444835028e-44,
+            0.023776869837671192,
+            0.5555555555555556
+          ],
+          "winner_distance": 0.0,
+          "winner_is_recomputed_argmax": true,
+          "winner_localized_for_site": true,
+          "winner_spread": 1.1547005383792517
+        },
+        {
+          "act_recomputation_matches": true,
+          "location_status": "trained",
+          "native_acts": [
+            0.0269748146627795,
+            0.19999999999999998,
+            0.0165862172382596,
+            5.959406925677268e-78
+          ],
+          "native_winner": 1,
+          "pattern": "heldout_x5",
+          "rep": 4,
+          "site": [
+            12,
+            12
+          ],
+          "weight_recomputed_acts": [
+            0.0269748146627795,
+            0.19999999999999998,
+            0.016586217238259603,
+            5.959406925677268e-78
+          ],
+          "winner_distance": 2.5121479338940403e-15,
+          "winner_is_recomputed_argmax": true,
+          "winner_localized_for_site": true,
+          "winner_spread": 0.8944271909999159
+        },
+        {
+          "act_recomputation_matches": true,
+          "location_status": "novel",
+          "native_acts": [
+            0.025806487428080557,
+            4.4147137202500574e-44,
+            0.019570323230338943,
+            1.2950684266321047e-77
+          ],
+          "native_winner": 0,
+          "pattern": "heldout_x5",
+          "rep": 4,
+          "site": [
+            5,
+            12
+          ],
+          "weight_recomputed_acts": [
+            0.025806487428080557,
+            4.4147137202500574e-44,
+            0.019570323230338943,
+            1.2950684266321047e-77
+          ],
+          "winner_distance": 4.9612800329930575,
+          "winner_is_recomputed_argmax": true,
+          "winner_localized_for_site": false,
+          "winner_spread": 6.577865945654632
+        },
+        {
+          "act_recomputation_matches": true,
+          "location_status": "novel",
+          "native_acts": [
+            0.03120874297148659,
+            3.96576046443971e-44,
+            0.021358747433929008,
+            4.072261782428255e-78
+          ],
+          "native_winner": 0,
+          "pattern": "heldout_x5",
+          "rep": 4,
+          "site": [
+            12,
+            5
+          ],
+          "weight_recomputed_acts": [
+            0.03120874297148659,
+            3.96576046443971e-44,
+            0.02135874743392901,
+            4.072261782428255e-78
+          ],
+          "winner_distance": 5.245717516797541,
+          "winner_is_recomputed_argmax": true,
+          "winner_localized_for_site": false,
+          "winner_spread": 6.577865945654632
+        }
+      ],
+      "seed": 9
+    },
+    {
+      "by_pattern": {
+        "heldout_x5": {
+          "act_recomputation_matches": 20,
+          "n": 20,
+          "recomputed_argmax_matches": 20,
+          "winner_localized_count": 10
+        },
+        "seen_plus5": {
+          "act_recomputation_matches": 5,
+          "n": 5,
+          "recomputed_argmax_matches": 5,
+          "winner_localized_count": 5
+        },
+        "seen_square3": {
+          "act_recomputation_matches": 5,
+          "n": 5,
+          "recomputed_argmax_matches": 5,
+          "winner_localized_count": 5
+        }
+      },
+      "probes": [
+        {
+          "act_recomputation_matches": true,
+          "location_status": "trained",
+          "native_acts": [
+            0.03323866148016819,
+            0.031757025584674914,
+            1.0000000000000002,
+            1.5172790048098284e-43
+          ],
+          "native_winner": 2,
+          "pattern": "seen_square3",
+          "rep": 0,
+          "site": [
+            5,
+            5
+          ],
+          "weight_recomputed_acts": [
+            0.03323866148016819,
+            0.03175702558467491,
+            1.0000000000000002,
+            1.5172790048098284e-43
+          ],
+          "winner_distance": 0.0,
+          "winner_is_recomputed_argmax": true,
+          "winner_localized_for_site": true,
+          "winner_spread": 1.1547005383792515
+        },
+        {
+          "act_recomputation_matches": true,
+          "location_status": "trained",
+          "native_acts": [
+            0.023816928005485447,
+            0.022231097592086392,
+            5.363931753821507e-78,
+            0.9999999999999999
+          ],
+          "native_winner": 3,
+          "pattern": "seen_plus5",
+          "rep": 0,
+          "site": [
+            12,
+            12
+          ],
+          "weight_recomputed_acts": [
+            0.02381692800548545,
+            0.02223109759208639,
+            5.363931753821507e-78,
+            0.9999999999999999
+          ],
+          "winner_distance": 2.5121479338940403e-15,
+          "winner_is_recomputed_argmax": true,
+          "winner_localized_for_site": true,
+          "winner_spread": 0.8944271909999159
+        },
+        {
+          "act_recomputation_matches": true,
+          "location_status": "trained",
+          "native_acts": [
+            0.014176512562111906,
+            0.015467607857375602,
+            0.5555555555555557,
+            7.314417085074759e-44
+          ],
+          "native_winner": 2,
+          "pattern": "heldout_x5",
+          "rep": 0,
+          "site": [
+            5,
+            5
+          ],
+          "weight_recomputed_acts": [
+            0.014176512562111906,
+            0.015467607857375602,
+            0.5555555555555556,
+            7.314417085074759e-44
+          ],
+          "winner_distance": 0.0,
+          "winner_is_recomputed_argmax": true,
+          "winner_localized_for_site": true,
+          "winner_spread": 1.1547005383792515
+        },
+        {
+          "act_recomputation_matches": true,
+          "location_status": "trained",
+          "native_acts": [
+            0.027812011541014148,
+            0.017965201791265845,
+            8.063575040054605e-78,
+            0.19999999999999998
+          ],
+          "native_winner": 3,
+          "pattern": "heldout_x5",
+          "rep": 0,
+          "site": [
+            12,
+            12
+          ],
+          "weight_recomputed_acts": [
+            0.027812011541014148,
+            0.017965201791265845,
+            8.063575040054604e-78,
+            0.19999999999999998
+          ],
+          "winner_distance": 2.5121479338940403e-15,
+          "winner_is_recomputed_argmax": true,
+          "winner_localized_for_site": true,
+          "winner_spread": 0.8944271909999159
+        },
+        {
+          "act_recomputation_matches": true,
+          "location_status": "novel",
+          "native_acts": [
+            0.02257109698618814,
+            0.021682710859078004,
+            5.616195711713385e-78,
+            7.445535402781444e-44
+          ],
+          "native_winner": 0,
+          "pattern": "heldout_x5",
+          "rep": 0,
+          "site": [
+            5,
+            12
+          ],
+          "weight_recomputed_acts": [
+            0.02257109698618814,
+            0.021682710859078004,
+            5.616195711713385e-78,
+            7.445535402781444e-44
+          ],
+          "winner_distance": 5.156549039687623,
+          "winner_is_recomputed_argmax": true,
+          "winner_localized_for_site": false,
+          "winner_spread": 6.488503729392077
+        },
+        {
+          "act_recomputation_matches": true,
+          "location_status": "novel",
+          "native_acts": [
+            0.026386850973142386,
+            0.023122671820169947,
+            7.198648048419244e-78,
+            7.100785077281877e-44
+          ],
+          "native_winner": 0,
+          "pattern": "heldout_x5",
+          "rep": 0,
+          "site": [
+            12,
+            5
+          ],
+          "weight_recomputed_acts": [
+            0.026386850973142386,
+            0.023122671820169943,
+            7.198648048419245e-78,
+            7.100785077281877e-44
+          ],
+          "winner_distance": 5.070050621805274,
+          "winner_is_recomputed_argmax": true,
+          "winner_localized_for_site": false,
+          "winner_spread": 6.488503729392077
+        },
+        {
+          "act_recomputation_matches": true,
+          "location_status": "trained",
+          "native_acts": [
+            0.03323866148016819,
+            0.031757025584674914,
+            1.0000000000000002,
+            1.5172790048098284e-43
+          ],
+          "native_winner": 2,
+          "pattern": "seen_square3",
+          "rep": 1,
+          "site": [
+            5,
+            5
+          ],
+          "weight_recomputed_acts": [
+            0.03323866148016819,
+            0.03175702558467491,
+            1.0000000000000002,
+            1.5172790048098284e-43
+          ],
+          "winner_distance": 0.0,
+          "winner_is_recomputed_argmax": true,
+          "winner_localized_for_site": true,
+          "winner_spread": 1.1547005383792515
+        },
+        {
+          "act_recomputation_matches": true,
+          "location_status": "trained",
+          "native_acts": [
+            0.023816928005485447,
+            0.022231097592086392,
+            5.363931753821507e-78,
+            0.9999999999999999
+          ],
+          "native_winner": 3,
+          "pattern": "seen_plus5",
+          "rep": 1,
+          "site": [
+            12,
+            12
+          ],
+          "weight_recomputed_acts": [
+            0.02381692800548545,
+            0.02223109759208639,
+            5.363931753821507e-78,
+            0.9999999999999999
+          ],
+          "winner_distance": 2.5121479338940403e-15,
+          "winner_is_recomputed_argmax": true,
+          "winner_localized_for_site": true,
+          "winner_spread": 0.8944271909999159
+        },
+        {
+          "act_recomputation_matches": true,
+          "location_status": "trained",
+          "native_acts": [
+            0.014176512562111906,
+            0.015467607857375602,
+            0.5555555555555557,
+            7.314417085074759e-44
+          ],
+          "native_winner": 2,
+          "pattern": "heldout_x5",
+          "rep": 1,
+          "site": [
+            5,
+            5
+          ],
+          "weight_recomputed_acts": [
+            0.014176512562111906,
+            0.015467607857375602,
+            0.5555555555555556,
+            7.314417085074759e-44
+          ],
+          "winner_distance": 0.0,
+          "winner_is_recomputed_argmax": true,
+          "winner_localized_for_site": true,
+          "winner_spread": 1.1547005383792515
+        },
+        {
+          "act_recomputation_matches": true,
+          "location_status": "trained",
+          "native_acts": [
+            0.027812011541014148,
+            0.017965201791265845,
+            8.063575040054605e-78,
+            0.19999999999999998
+          ],
+          "native_winner": 3,
+          "pattern": "heldout_x5",
+          "rep": 1,
+          "site": [
+            12,
+            12
+          ],
+          "weight_recomputed_acts": [
+            0.027812011541014148,
+            0.017965201791265845,
+            8.063575040054604e-78,
+            0.19999999999999998
+          ],
+          "winner_distance": 2.5121479338940403e-15,
+          "winner_is_recomputed_argmax": true,
+          "winner_localized_for_site": true,
+          "winner_spread": 0.8944271909999159
+        },
+        {
+          "act_recomputation_matches": true,
+          "location_status": "novel",
+          "native_acts": [
+            0.02257109698618814,
+            0.021682710859078004,
+            5.616195711713385e-78,
+            7.445535402781444e-44
+          ],
+          "native_winner": 0,
+          "pattern": "heldout_x5",
+          "rep": 1,
+          "site": [
+            5,
+            12
+          ],
+          "weight_recomputed_acts": [
+            0.02257109698618814,
+            0.021682710859078004,
+            5.616195711713385e-78,
+            7.445535402781444e-44
+          ],
+          "winner_distance": 5.156549039687623,
+          "winner_is_recomputed_argmax": true,
+          "winner_localized_for_site": false,
+          "winner_spread": 6.488503729392077
+        },
+        {
+          "act_recomputation_matches": true,
+          "location_status": "novel",
+          "native_acts": [
+            0.026386850973142386,
+            0.023122671820169947,
+            7.198648048419244e-78,
+            7.100785077281877e-44
+          ],
+          "native_winner": 0,
+          "pattern": "heldout_x5",
+          "rep": 1,
+          "site": [
+            12,
+            5
+          ],
+          "weight_recomputed_acts": [
+            0.026386850973142386,
+            0.023122671820169943,
+            7.198648048419245e-78,
+            7.100785077281877e-44
+          ],
+          "winner_distance": 5.070050621805274,
+          "winner_is_recomputed_argmax": true,
+          "winner_localized_for_site": false,
+          "winner_spread": 6.488503729392077
+        },
+        {
+          "act_recomputation_matches": true,
+          "location_status": "trained",
+          "native_acts": [
+            0.03323866148016819,
+            0.031757025584674914,
+            1.0000000000000002,
+            1.5172790048098284e-43
+          ],
+          "native_winner": 2,
+          "pattern": "seen_square3",
+          "rep": 2,
+          "site": [
+            5,
+            5
+          ],
+          "weight_recomputed_acts": [
+            0.03323866148016819,
+            0.03175702558467491,
+            1.0000000000000002,
+            1.5172790048098284e-43
+          ],
+          "winner_distance": 0.0,
+          "winner_is_recomputed_argmax": true,
+          "winner_localized_for_site": true,
+          "winner_spread": 1.1547005383792515
+        },
+        {
+          "act_recomputation_matches": true,
+          "location_status": "trained",
+          "native_acts": [
+            0.023816928005485447,
+            0.022231097592086392,
+            5.363931753821507e-78,
+            0.9999999999999999
+          ],
+          "native_winner": 3,
+          "pattern": "seen_plus5",
+          "rep": 2,
+          "site": [
+            12,
+            12
+          ],
+          "weight_recomputed_acts": [
+            0.02381692800548545,
+            0.02223109759208639,
+            5.363931753821507e-78,
+            0.9999999999999999
+          ],
+          "winner_distance": 2.5121479338940403e-15,
+          "winner_is_recomputed_argmax": true,
+          "winner_localized_for_site": true,
+          "winner_spread": 0.8944271909999159
+        },
+        {
+          "act_recomputation_matches": true,
+          "location_status": "trained",
+          "native_acts": [
+            0.014176512562111906,
+            0.015467607857375602,
+            0.5555555555555557,
+            7.314417085074759e-44
+          ],
+          "native_winner": 2,
+          "pattern": "heldout_x5",
+          "rep": 2,
+          "site": [
+            5,
+            5
+          ],
+          "weight_recomputed_acts": [
+            0.014176512562111906,
+            0.015467607857375602,
+            0.5555555555555556,
+            7.314417085074759e-44
+          ],
+          "winner_distance": 0.0,
+          "winner_is_recomputed_argmax": true,
+          "winner_localized_for_site": true,
+          "winner_spread": 1.1547005383792515
+        },
+        {
+          "act_recomputation_matches": true,
+          "location_status": "trained",
+          "native_acts": [
+            0.027812011541014148,
+            0.017965201791265845,
+            8.063575040054605e-78,
+            0.19999999999999998
+          ],
+          "native_winner": 3,
+          "pattern": "heldout_x5",
+          "rep": 2,
+          "site": [
+            12,
+            12
+          ],
+          "weight_recomputed_acts": [
+            0.027812011541014148,
+            0.017965201791265845,
+            8.063575040054604e-78,
+            0.19999999999999998
+          ],
+          "winner_distance": 2.5121479338940403e-15,
+          "winner_is_recomputed_argmax": true,
+          "winner_localized_for_site": true,
+          "winner_spread": 0.8944271909999159
+        },
+        {
+          "act_recomputation_matches": true,
+          "location_status": "novel",
+          "native_acts": [
+            0.02257109698618814,
+            0.021682710859078004,
+            5.616195711713385e-78,
+            7.445535402781444e-44
+          ],
+          "native_winner": 0,
+          "pattern": "heldout_x5",
+          "rep": 2,
+          "site": [
+            5,
+            12
+          ],
+          "weight_recomputed_acts": [
+            0.02257109698618814,
+            0.021682710859078004,
+            5.616195711713385e-78,
+            7.445535402781444e-44
+          ],
+          "winner_distance": 5.156549039687623,
+          "winner_is_recomputed_argmax": true,
+          "winner_localized_for_site": false,
+          "winner_spread": 6.488503729392077
+        },
+        {
+          "act_recomputation_matches": true,
+          "location_status": "novel",
+          "native_acts": [
+            0.026386850973142386,
+            0.023122671820169947,
+            7.198648048419244e-78,
+            7.100785077281877e-44
+          ],
+          "native_winner": 0,
+          "pattern": "heldout_x5",
+          "rep": 2,
+          "site": [
+            12,
+            5
+          ],
+          "weight_recomputed_acts": [
+            0.026386850973142386,
+            0.023122671820169943,
+            7.198648048419245e-78,
+            7.100785077281877e-44
+          ],
+          "winner_distance": 5.070050621805274,
+          "winner_is_recomputed_argmax": true,
+          "winner_localized_for_site": false,
+          "winner_spread": 6.488503729392077
+        },
+        {
+          "act_recomputation_matches": true,
+          "location_status": "trained",
+          "native_acts": [
+            0.03323866148016819,
+            0.031757025584674914,
+            1.0000000000000002,
+            1.5172790048098284e-43
+          ],
+          "native_winner": 2,
+          "pattern": "seen_square3",
+          "rep": 3,
+          "site": [
+            5,
+            5
+          ],
+          "weight_recomputed_acts": [
+            0.03323866148016819,
+            0.03175702558467491,
+            1.0000000000000002,
+            1.5172790048098284e-43
+          ],
+          "winner_distance": 0.0,
+          "winner_is_recomputed_argmax": true,
+          "winner_localized_for_site": true,
+          "winner_spread": 1.1547005383792515
+        },
+        {
+          "act_recomputation_matches": true,
+          "location_status": "trained",
+          "native_acts": [
+            0.023816928005485447,
+            0.022231097592086392,
+            5.363931753821507e-78,
+            0.9999999999999999
+          ],
+          "native_winner": 3,
+          "pattern": "seen_plus5",
+          "rep": 3,
+          "site": [
+            12,
+            12
+          ],
+          "weight_recomputed_acts": [
+            0.02381692800548545,
+            0.02223109759208639,
+            5.363931753821507e-78,
+            0.9999999999999999
+          ],
+          "winner_distance": 2.5121479338940403e-15,
+          "winner_is_recomputed_argmax": true,
+          "winner_localized_for_site": true,
+          "winner_spread": 0.8944271909999159
+        },
+        {
+          "act_recomputation_matches": true,
+          "location_status": "trained",
+          "native_acts": [
+            0.014176512562111906,
+            0.015467607857375602,
+            0.5555555555555557,
+            7.314417085074759e-44
+          ],
+          "native_winner": 2,
+          "pattern": "heldout_x5",
+          "rep": 3,
+          "site": [
+            5,
+            5
+          ],
+          "weight_recomputed_acts": [
+            0.014176512562111906,
+            0.015467607857375602,
+            0.5555555555555556,
+            7.314417085074759e-44
+          ],
+          "winner_distance": 0.0,
+          "winner_is_recomputed_argmax": true,
+          "winner_localized_for_site": true,
+          "winner_spread": 1.1547005383792515
+        },
+        {
+          "act_recomputation_matches": true,
+          "location_status": "trained",
+          "native_acts": [
+            0.027812011541014148,
+            0.017965201791265845,
+            8.063575040054605e-78,
+            0.19999999999999998
+          ],
+          "native_winner": 3,
+          "pattern": "heldout_x5",
+          "rep": 3,
+          "site": [
+            12,
+            12
+          ],
+          "weight_recomputed_acts": [
+            0.027812011541014148,
+            0.017965201791265845,
+            8.063575040054604e-78,
+            0.19999999999999998
+          ],
+          "winner_distance": 2.5121479338940403e-15,
+          "winner_is_recomputed_argmax": true,
+          "winner_localized_for_site": true,
+          "winner_spread": 0.8944271909999159
+        },
+        {
+          "act_recomputation_matches": true,
+          "location_status": "novel",
+          "native_acts": [
+            0.02257109698618814,
+            0.021682710859078004,
+            5.616195711713385e-78,
+            7.445535402781444e-44
+          ],
+          "native_winner": 0,
+          "pattern": "heldout_x5",
+          "rep": 3,
+          "site": [
+            5,
+            12
+          ],
+          "weight_recomputed_acts": [
+            0.02257109698618814,
+            0.021682710859078004,
+            5.616195711713385e-78,
+            7.445535402781444e-44
+          ],
+          "winner_distance": 5.156549039687623,
+          "winner_is_recomputed_argmax": true,
+          "winner_localized_for_site": false,
+          "winner_spread": 6.488503729392077
+        },
+        {
+          "act_recomputation_matches": true,
+          "location_status": "novel",
+          "native_acts": [
+            0.026386850973142386,
+            0.023122671820169947,
+            7.198648048419244e-78,
+            7.100785077281877e-44
+          ],
+          "native_winner": 0,
+          "pattern": "heldout_x5",
+          "rep": 3,
+          "site": [
+            12,
+            5
+          ],
+          "weight_recomputed_acts": [
+            0.026386850973142386,
+            0.023122671820169943,
+            7.198648048419245e-78,
+            7.100785077281877e-44
+          ],
+          "winner_distance": 5.070050621805274,
+          "winner_is_recomputed_argmax": true,
+          "winner_localized_for_site": false,
+          "winner_spread": 6.488503729392077
+        },
+        {
+          "act_recomputation_matches": true,
+          "location_status": "trained",
+          "native_acts": [
+            0.03323866148016819,
+            0.031757025584674914,
+            1.0000000000000002,
+            1.5172790048098284e-43
+          ],
+          "native_winner": 2,
+          "pattern": "seen_square3",
+          "rep": 4,
+          "site": [
+            5,
+            5
+          ],
+          "weight_recomputed_acts": [
+            0.03323866148016819,
+            0.03175702558467491,
+            1.0000000000000002,
+            1.5172790048098284e-43
+          ],
+          "winner_distance": 0.0,
+          "winner_is_recomputed_argmax": true,
+          "winner_localized_for_site": true,
+          "winner_spread": 1.1547005383792515
+        },
+        {
+          "act_recomputation_matches": true,
+          "location_status": "trained",
+          "native_acts": [
+            0.023816928005485447,
+            0.022231097592086392,
+            5.363931753821507e-78,
+            0.9999999999999999
+          ],
+          "native_winner": 3,
+          "pattern": "seen_plus5",
+          "rep": 4,
+          "site": [
+            12,
+            12
+          ],
+          "weight_recomputed_acts": [
+            0.02381692800548545,
+            0.02223109759208639,
+            5.363931753821507e-78,
+            0.9999999999999999
+          ],
+          "winner_distance": 2.5121479338940403e-15,
+          "winner_is_recomputed_argmax": true,
+          "winner_localized_for_site": true,
+          "winner_spread": 0.8944271909999159
+        },
+        {
+          "act_recomputation_matches": true,
+          "location_status": "trained",
+          "native_acts": [
+            0.014176512562111906,
+            0.015467607857375602,
+            0.5555555555555557,
+            7.314417085074759e-44
+          ],
+          "native_winner": 2,
+          "pattern": "heldout_x5",
+          "rep": 4,
+          "site": [
+            5,
+            5
+          ],
+          "weight_recomputed_acts": [
+            0.014176512562111906,
+            0.015467607857375602,
+            0.5555555555555556,
+            7.314417085074759e-44
+          ],
+          "winner_distance": 0.0,
+          "winner_is_recomputed_argmax": true,
+          "winner_localized_for_site": true,
+          "winner_spread": 1.1547005383792515
+        },
+        {
+          "act_recomputation_matches": true,
+          "location_status": "trained",
+          "native_acts": [
+            0.027812011541014148,
+            0.017965201791265845,
+            8.063575040054605e-78,
+            0.19999999999999998
+          ],
+          "native_winner": 3,
+          "pattern": "heldout_x5",
+          "rep": 4,
+          "site": [
+            12,
+            12
+          ],
+          "weight_recomputed_acts": [
+            0.027812011541014148,
+            0.017965201791265845,
+            8.063575040054604e-78,
+            0.19999999999999998
+          ],
+          "winner_distance": 2.5121479338940403e-15,
+          "winner_is_recomputed_argmax": true,
+          "winner_localized_for_site": true,
+          "winner_spread": 0.8944271909999159
+        },
+        {
+          "act_recomputation_matches": true,
+          "location_status": "novel",
+          "native_acts": [
+            0.02257109698618814,
+            0.021682710859078004,
+            5.616195711713385e-78,
+            7.445535402781444e-44
+          ],
+          "native_winner": 0,
+          "pattern": "heldout_x5",
+          "rep": 4,
+          "site": [
+            5,
+            12
+          ],
+          "weight_recomputed_acts": [
+            0.02257109698618814,
+            0.021682710859078004,
+            5.616195711713385e-78,
+            7.445535402781444e-44
+          ],
+          "winner_distance": 5.156549039687623,
+          "winner_is_recomputed_argmax": true,
+          "winner_localized_for_site": false,
+          "winner_spread": 6.488503729392077
+        },
+        {
+          "act_recomputation_matches": true,
+          "location_status": "novel",
+          "native_acts": [
+            0.026386850973142386,
+            0.023122671820169947,
+            7.198648048419244e-78,
+            7.100785077281877e-44
+          ],
+          "native_winner": 0,
+          "pattern": "heldout_x5",
+          "rep": 4,
+          "site": [
+            12,
+            5
+          ],
+          "weight_recomputed_acts": [
+            0.026386850973142386,
+            0.023122671820169943,
+            7.198648048419245e-78,
+            7.100785077281877e-44
+          ],
+          "winner_distance": 5.070050621805274,
+          "winner_is_recomputed_argmax": true,
+          "winner_localized_for_site": false,
+          "winner_spread": 6.488503729392077
+        }
+      ],
+      "seed": 10
+    },
+    {
+      "by_pattern": {
+        "heldout_x5": {
+          "act_recomputation_matches": 20,
+          "n": 20,
+          "recomputed_argmax_matches": 20,
+          "winner_localized_count": 10
+        },
+        "seen_plus5": {
+          "act_recomputation_matches": 5,
+          "n": 5,
+          "recomputed_argmax_matches": 5,
+          "winner_localized_count": 5
+        },
+        "seen_square3": {
+          "act_recomputation_matches": 5,
+          "n": 5,
+          "recomputed_argmax_matches": 5,
+          "winner_localized_count": 5
+        }
+      },
+      "probes": [
+        {
+          "act_recomputation_matches": true,
+          "location_status": "trained",
+          "native_acts": [
+            0.03680431925829612,
+            0.03628832079888192,
+            6.000884324082941e-42,
+            1.0000000000000002
+          ],
+          "native_winner": 3,
+          "pattern": "seen_square3",
+          "rep": 0,
+          "site": [
+            5,
+            5
+          ],
+          "weight_recomputed_acts": [
+            0.03680431925829613,
+            0.036288320798881925,
+            6.00088432408294e-42,
+            1.0
+          ],
+          "winner_distance": 0.0,
+          "winner_is_recomputed_argmax": true,
+          "winner_localized_for_site": true,
+          "winner_spread": 1.1547005383792517
+        },
+        {
+          "act_recomputation_matches": true,
+          "location_status": "trained",
+          "native_acts": [
+            0.015643368920203675,
+            0.009382147564550766,
+            0.9999999999999999,
+            6.654132113360927e-76
+          ],
+          "native_winner": 2,
+          "pattern": "seen_plus5",
+          "rep": 0,
+          "site": [
+            12,
+            12
+          ],
+          "weight_recomputed_acts": [
+            0.01564336892020367,
+            0.009382147564550766,
+            0.9999999999999999,
+            6.654132113360927e-76
+          ],
+          "winner_distance": 2.5121479338940403e-15,
+          "winner_is_recomputed_argmax": true,
+          "winner_localized_for_site": true,
+          "winner_spread": 0.8944271909999159
+        },
+        {
+          "act_recomputation_matches": true,
+          "location_status": "trained",
+          "native_acts": [
+            0.019483225836571784,
+            0.019895736081031384,
+            3.700629910956095e-42,
+            0.5555555555555556
+          ],
+          "native_winner": 3,
+          "pattern": "heldout_x5",
+          "rep": 0,
+          "site": [
+            5,
+            5
+          ],
+          "weight_recomputed_acts": [
+            0.019483225836571784,
+            0.019895736081031384,
+            3.700629910956095e-42,
+            0.5555555555555556
+          ],
+          "winner_distance": 0.0,
+          "winner_is_recomputed_argmax": true,
+          "winner_localized_for_site": true,
+          "winner_spread": 1.1547005383792517
+        },
+        {
+          "act_recomputation_matches": true,
+          "location_status": "trained",
+          "native_acts": [
+            0.018078183627965105,
+            0.020638028966898266,
+            0.19999999999999998,
+            1.4329903293924068e-76
+          ],
+          "native_winner": 2,
+          "pattern": "heldout_x5",
+          "rep": 0,
+          "site": [
+            12,
+            12
+          ],
+          "weight_recomputed_acts": [
+            0.018078183627965105,
+            0.020638028966898266,
+            0.19999999999999998,
+            1.432990329392407e-76
+          ],
+          "winner_distance": 2.5121479338940403e-15,
+          "winner_is_recomputed_argmax": true,
+          "winner_localized_for_site": true,
+          "winner_spread": 0.8944271909999159
+        },
+        {
+          "act_recomputation_matches": true,
+          "location_status": "novel",
+          "native_acts": [
+            0.02002074135804648,
+            0.016135108361543273,
+            1.2822534608978894e-42,
+            5.956411118591107e-78
+          ],
+          "native_winner": 0,
+          "pattern": "heldout_x5",
+          "rep": 0,
+          "site": [
+            5,
+            12
+          ],
+          "weight_recomputed_acts": [
+            0.02002074135804648,
+            0.016135108361543273,
+            1.2822534608978896e-42,
+            5.956411118591107e-78
+          ],
+          "winner_distance": 5.1242775695859795,
+          "winner_is_recomputed_argmax": true,
+          "winner_localized_for_site": false,
+          "winner_spread": 6.591458765781083
+        },
+        {
+          "act_recomputation_matches": true,
+          "location_status": "novel",
+          "native_acts": [
+            0.02110729672767683,
+            0.023739054361742434,
+            4.238119543190657e-42,
+            9.405648339235877e-78
+          ],
+          "native_winner": 1,
+          "pattern": "heldout_x5",
+          "rep": 0,
+          "site": [
+            12,
+            5
+          ],
+          "weight_recomputed_acts": [
+            0.021107296727676826,
+            0.023739054361742434,
+            4.238119543190657e-42,
+            9.405648339235877e-78
+          ],
+          "winner_distance": 4.926616469913144,
+          "winner_is_recomputed_argmax": true,
+          "winner_localized_for_site": false,
+          "winner_spread": 6.5539022131028695
+        },
+        {
+          "act_recomputation_matches": true,
+          "location_status": "trained",
+          "native_acts": [
+            0.03680431925829612,
+            0.03628832079888192,
+            6.000884324082941e-42,
+            1.0000000000000002
+          ],
+          "native_winner": 3,
+          "pattern": "seen_square3",
+          "rep": 1,
+          "site": [
+            5,
+            5
+          ],
+          "weight_recomputed_acts": [
+            0.03680431925829613,
+            0.036288320798881925,
+            6.00088432408294e-42,
+            1.0
+          ],
+          "winner_distance": 0.0,
+          "winner_is_recomputed_argmax": true,
+          "winner_localized_for_site": true,
+          "winner_spread": 1.1547005383792517
+        },
+        {
+          "act_recomputation_matches": true,
+          "location_status": "trained",
+          "native_acts": [
+            0.015643368920203675,
+            0.009382147564550766,
+            0.9999999999999999,
+            6.654132113360927e-76
+          ],
+          "native_winner": 2,
+          "pattern": "seen_plus5",
+          "rep": 1,
+          "site": [
+            12,
+            12
+          ],
+          "weight_recomputed_acts": [
+            0.01564336892020367,
+            0.009382147564550766,
+            0.9999999999999999,
+            6.654132113360927e-76
+          ],
+          "winner_distance": 2.5121479338940403e-15,
+          "winner_is_recomputed_argmax": true,
+          "winner_localized_for_site": true,
+          "winner_spread": 0.8944271909999159
+        },
+        {
+          "act_recomputation_matches": true,
+          "location_status": "trained",
+          "native_acts": [
+            0.019483225836571784,
+            0.019895736081031384,
+            3.700629910956095e-42,
+            0.5555555555555556
+          ],
+          "native_winner": 3,
+          "pattern": "heldout_x5",
+          "rep": 1,
+          "site": [
+            5,
+            5
+          ],
+          "weight_recomputed_acts": [
+            0.019483225836571784,
+            0.019895736081031384,
+            3.700629910956095e-42,
+            0.5555555555555556
+          ],
+          "winner_distance": 0.0,
+          "winner_is_recomputed_argmax": true,
+          "winner_localized_for_site": true,
+          "winner_spread": 1.1547005383792517
+        },
+        {
+          "act_recomputation_matches": true,
+          "location_status": "trained",
+          "native_acts": [
+            0.018078183627965105,
+            0.020638028966898266,
+            0.19999999999999998,
+            1.4329903293924068e-76
+          ],
+          "native_winner": 2,
+          "pattern": "heldout_x5",
+          "rep": 1,
+          "site": [
+            12,
+            12
+          ],
+          "weight_recomputed_acts": [
+            0.018078183627965105,
+            0.020638028966898266,
+            0.19999999999999998,
+            1.432990329392407e-76
+          ],
+          "winner_distance": 2.5121479338940403e-15,
+          "winner_is_recomputed_argmax": true,
+          "winner_localized_for_site": true,
+          "winner_spread": 0.8944271909999159
+        },
+        {
+          "act_recomputation_matches": true,
+          "location_status": "novel",
+          "native_acts": [
+            0.02002074135804648,
+            0.016135108361543273,
+            1.2822534608978894e-42,
+            5.956411118591107e-78
+          ],
+          "native_winner": 0,
+          "pattern": "heldout_x5",
+          "rep": 1,
+          "site": [
+            5,
+            12
+          ],
+          "weight_recomputed_acts": [
+            0.02002074135804648,
+            0.016135108361543273,
+            1.2822534608978896e-42,
+            5.956411118591107e-78
+          ],
+          "winner_distance": 5.1242775695859795,
+          "winner_is_recomputed_argmax": true,
+          "winner_localized_for_site": false,
+          "winner_spread": 6.591458765781083
+        },
+        {
+          "act_recomputation_matches": true,
+          "location_status": "novel",
+          "native_acts": [
+            0.02110729672767683,
+            0.023739054361742434,
+            4.238119543190657e-42,
+            9.405648339235877e-78
+          ],
+          "native_winner": 1,
+          "pattern": "heldout_x5",
+          "rep": 1,
+          "site": [
+            12,
+            5
+          ],
+          "weight_recomputed_acts": [
+            0.021107296727676826,
+            0.023739054361742434,
+            4.238119543190657e-42,
+            9.405648339235877e-78
+          ],
+          "winner_distance": 4.926616469913144,
+          "winner_is_recomputed_argmax": true,
+          "winner_localized_for_site": false,
+          "winner_spread": 6.5539022131028695
+        },
+        {
+          "act_recomputation_matches": true,
+          "location_status": "trained",
+          "native_acts": [
+            0.03680431925829612,
+            0.03628832079888192,
+            6.000884324082941e-42,
+            1.0000000000000002
+          ],
+          "native_winner": 3,
+          "pattern": "seen_square3",
+          "rep": 2,
+          "site": [
+            5,
+            5
+          ],
+          "weight_recomputed_acts": [
+            0.03680431925829613,
+            0.036288320798881925,
+            6.00088432408294e-42,
+            1.0
+          ],
+          "winner_distance": 0.0,
+          "winner_is_recomputed_argmax": true,
+          "winner_localized_for_site": true,
+          "winner_spread": 1.1547005383792517
+        },
+        {
+          "act_recomputation_matches": true,
+          "location_status": "trained",
+          "native_acts": [
+            0.015643368920203675,
+            0.009382147564550766,
+            0.9999999999999999,
+            6.654132113360927e-76
+          ],
+          "native_winner": 2,
+          "pattern": "seen_plus5",
+          "rep": 2,
+          "site": [
+            12,
+            12
+          ],
+          "weight_recomputed_acts": [
+            0.01564336892020367,
+            0.009382147564550766,
+            0.9999999999999999,
+            6.654132113360927e-76
+          ],
+          "winner_distance": 2.5121479338940403e-15,
+          "winner_is_recomputed_argmax": true,
+          "winner_localized_for_site": true,
+          "winner_spread": 0.8944271909999159
+        },
+        {
+          "act_recomputation_matches": true,
+          "location_status": "trained",
+          "native_acts": [
+            0.019483225836571784,
+            0.019895736081031384,
+            3.700629910956095e-42,
+            0.5555555555555556
+          ],
+          "native_winner": 3,
+          "pattern": "heldout_x5",
+          "rep": 2,
+          "site": [
+            5,
+            5
+          ],
+          "weight_recomputed_acts": [
+            0.019483225836571784,
+            0.019895736081031384,
+            3.700629910956095e-42,
+            0.5555555555555556
+          ],
+          "winner_distance": 0.0,
+          "winner_is_recomputed_argmax": true,
+          "winner_localized_for_site": true,
+          "winner_spread": 1.1547005383792517
+        },
+        {
+          "act_recomputation_matches": true,
+          "location_status": "trained",
+          "native_acts": [
+            0.018078183627965105,
+            0.020638028966898266,
+            0.19999999999999998,
+            1.4329903293924068e-76
+          ],
+          "native_winner": 2,
+          "pattern": "heldout_x5",
+          "rep": 2,
+          "site": [
+            12,
+            12
+          ],
+          "weight_recomputed_acts": [
+            0.018078183627965105,
+            0.020638028966898266,
+            0.19999999999999998,
+            1.432990329392407e-76
+          ],
+          "winner_distance": 2.5121479338940403e-15,
+          "winner_is_recomputed_argmax": true,
+          "winner_localized_for_site": true,
+          "winner_spread": 0.8944271909999159
+        },
+        {
+          "act_recomputation_matches": true,
+          "location_status": "novel",
+          "native_acts": [
+            0.02002074135804648,
+            0.016135108361543273,
+            1.2822534608978894e-42,
+            5.956411118591107e-78
+          ],
+          "native_winner": 0,
+          "pattern": "heldout_x5",
+          "rep": 2,
+          "site": [
+            5,
+            12
+          ],
+          "weight_recomputed_acts": [
+            0.02002074135804648,
+            0.016135108361543273,
+            1.2822534608978896e-42,
+            5.956411118591107e-78
+          ],
+          "winner_distance": 5.1242775695859795,
+          "winner_is_recomputed_argmax": true,
+          "winner_localized_for_site": false,
+          "winner_spread": 6.591458765781083
+        },
+        {
+          "act_recomputation_matches": true,
+          "location_status": "novel",
+          "native_acts": [
+            0.02110729672767683,
+            0.023739054361742434,
+            4.238119543190657e-42,
+            9.405648339235877e-78
+          ],
+          "native_winner": 1,
+          "pattern": "heldout_x5",
+          "rep": 2,
+          "site": [
+            12,
+            5
+          ],
+          "weight_recomputed_acts": [
+            0.021107296727676826,
+            0.023739054361742434,
+            4.238119543190657e-42,
+            9.405648339235877e-78
+          ],
+          "winner_distance": 4.926616469913144,
+          "winner_is_recomputed_argmax": true,
+          "winner_localized_for_site": false,
+          "winner_spread": 6.5539022131028695
+        },
+        {
+          "act_recomputation_matches": true,
+          "location_status": "trained",
+          "native_acts": [
+            0.03680431925829612,
+            0.03628832079888192,
+            6.000884324082941e-42,
+            1.0000000000000002
+          ],
+          "native_winner": 3,
+          "pattern": "seen_square3",
+          "rep": 3,
+          "site": [
+            5,
+            5
+          ],
+          "weight_recomputed_acts": [
+            0.03680431925829613,
+            0.036288320798881925,
+            6.00088432408294e-42,
+            1.0
+          ],
+          "winner_distance": 0.0,
+          "winner_is_recomputed_argmax": true,
+          "winner_localized_for_site": true,
+          "winner_spread": 1.1547005383792517
+        },
+        {
+          "act_recomputation_matches": true,
+          "location_status": "trained",
+          "native_acts": [
+            0.015643368920203675,
+            0.009382147564550766,
+            0.9999999999999999,
+            6.654132113360927e-76
+          ],
+          "native_winner": 2,
+          "pattern": "seen_plus5",
+          "rep": 3,
+          "site": [
+            12,
+            12
+          ],
+          "weight_recomputed_acts": [
+            0.01564336892020367,
+            0.009382147564550766,
+            0.9999999999999999,
+            6.654132113360927e-76
+          ],
+          "winner_distance": 2.5121479338940403e-15,
+          "winner_is_recomputed_argmax": true,
+          "winner_localized_for_site": true,
+          "winner_spread": 0.8944271909999159
+        },
+        {
+          "act_recomputation_matches": true,
+          "location_status": "trained",
+          "native_acts": [
+            0.019483225836571784,
+            0.019895736081031384,
+            3.700629910956095e-42,
+            0.5555555555555556
+          ],
+          "native_winner": 3,
+          "pattern": "heldout_x5",
+          "rep": 3,
+          "site": [
+            5,
+            5
+          ],
+          "weight_recomputed_acts": [
+            0.019483225836571784,
+            0.019895736081031384,
+            3.700629910956095e-42,
+            0.5555555555555556
+          ],
+          "winner_distance": 0.0,
+          "winner_is_recomputed_argmax": true,
+          "winner_localized_for_site": true,
+          "winner_spread": 1.1547005383792517
+        },
+        {
+          "act_recomputation_matches": true,
+          "location_status": "trained",
+          "native_acts": [
+            0.018078183627965105,
+            0.020638028966898266,
+            0.19999999999999998,
+            1.4329903293924068e-76
+          ],
+          "native_winner": 2,
+          "pattern": "heldout_x5",
+          "rep": 3,
+          "site": [
+            12,
+            12
+          ],
+          "weight_recomputed_acts": [
+            0.018078183627965105,
+            0.020638028966898266,
+            0.19999999999999998,
+            1.432990329392407e-76
+          ],
+          "winner_distance": 2.5121479338940403e-15,
+          "winner_is_recomputed_argmax": true,
+          "winner_localized_for_site": true,
+          "winner_spread": 0.8944271909999159
+        },
+        {
+          "act_recomputation_matches": true,
+          "location_status": "novel",
+          "native_acts": [
+            0.02002074135804648,
+            0.016135108361543273,
+            1.2822534608978894e-42,
+            5.956411118591107e-78
+          ],
+          "native_winner": 0,
+          "pattern": "heldout_x5",
+          "rep": 3,
+          "site": [
+            5,
+            12
+          ],
+          "weight_recomputed_acts": [
+            0.02002074135804648,
+            0.016135108361543273,
+            1.2822534608978896e-42,
+            5.956411118591107e-78
+          ],
+          "winner_distance": 5.1242775695859795,
+          "winner_is_recomputed_argmax": true,
+          "winner_localized_for_site": false,
+          "winner_spread": 6.591458765781083
+        },
+        {
+          "act_recomputation_matches": true,
+          "location_status": "novel",
+          "native_acts": [
+            0.02110729672767683,
+            0.023739054361742434,
+            4.238119543190657e-42,
+            9.405648339235877e-78
+          ],
+          "native_winner": 1,
+          "pattern": "heldout_x5",
+          "rep": 3,
+          "site": [
+            12,
+            5
+          ],
+          "weight_recomputed_acts": [
+            0.021107296727676826,
+            0.023739054361742434,
+            4.238119543190657e-42,
+            9.405648339235877e-78
+          ],
+          "winner_distance": 4.926616469913144,
+          "winner_is_recomputed_argmax": true,
+          "winner_localized_for_site": false,
+          "winner_spread": 6.5539022131028695
+        },
+        {
+          "act_recomputation_matches": true,
+          "location_status": "trained",
+          "native_acts": [
+            0.03680431925829612,
+            0.03628832079888192,
+            6.000884324082941e-42,
+            1.0000000000000002
+          ],
+          "native_winner": 3,
+          "pattern": "seen_square3",
+          "rep": 4,
+          "site": [
+            5,
+            5
+          ],
+          "weight_recomputed_acts": [
+            0.03680431925829613,
+            0.036288320798881925,
+            6.00088432408294e-42,
+            1.0
+          ],
+          "winner_distance": 0.0,
+          "winner_is_recomputed_argmax": true,
+          "winner_localized_for_site": true,
+          "winner_spread": 1.1547005383792517
+        },
+        {
+          "act_recomputation_matches": true,
+          "location_status": "trained",
+          "native_acts": [
+            0.015643368920203675,
+            0.009382147564550766,
+            0.9999999999999999,
+            6.654132113360927e-76
+          ],
+          "native_winner": 2,
+          "pattern": "seen_plus5",
+          "rep": 4,
+          "site": [
+            12,
+            12
+          ],
+          "weight_recomputed_acts": [
+            0.01564336892020367,
+            0.009382147564550766,
+            0.9999999999999999,
+            6.654132113360927e-76
+          ],
+          "winner_distance": 2.5121479338940403e-15,
+          "winner_is_recomputed_argmax": true,
+          "winner_localized_for_site": true,
+          "winner_spread": 0.8944271909999159
+        },
+        {
+          "act_recomputation_matches": true,
+          "location_status": "trained",
+          "native_acts": [
+            0.019483225836571784,
+            0.019895736081031384,
+            3.700629910956095e-42,
+            0.5555555555555556
+          ],
+          "native_winner": 3,
+          "pattern": "heldout_x5",
+          "rep": 4,
+          "site": [
+            5,
+            5
+          ],
+          "weight_recomputed_acts": [
+            0.019483225836571784,
+            0.019895736081031384,
+            3.700629910956095e-42,
+            0.5555555555555556
+          ],
+          "winner_distance": 0.0,
+          "winner_is_recomputed_argmax": true,
+          "winner_localized_for_site": true,
+          "winner_spread": 1.1547005383792517
+        },
+        {
+          "act_recomputation_matches": true,
+          "location_status": "trained",
+          "native_acts": [
+            0.018078183627965105,
+            0.020638028966898266,
+            0.19999999999999998,
+            1.4329903293924068e-76
+          ],
+          "native_winner": 2,
+          "pattern": "heldout_x5",
+          "rep": 4,
+          "site": [
+            12,
+            12
+          ],
+          "weight_recomputed_acts": [
+            0.018078183627965105,
+            0.020638028966898266,
+            0.19999999999999998,
+            1.432990329392407e-76
+          ],
+          "winner_distance": 2.5121479338940403e-15,
+          "winner_is_recomputed_argmax": true,
+          "winner_localized_for_site": true,
+          "winner_spread": 0.8944271909999159
+        },
+        {
+          "act_recomputation_matches": true,
+          "location_status": "novel",
+          "native_acts": [
+            0.02002074135804648,
+            0.016135108361543273,
+            1.2822534608978894e-42,
+            5.956411118591107e-78
+          ],
+          "native_winner": 0,
+          "pattern": "heldout_x5",
+          "rep": 4,
+          "site": [
+            5,
+            12
+          ],
+          "weight_recomputed_acts": [
+            0.02002074135804648,
+            0.016135108361543273,
+            1.2822534608978896e-42,
+            5.956411118591107e-78
+          ],
+          "winner_distance": 5.1242775695859795,
+          "winner_is_recomputed_argmax": true,
+          "winner_localized_for_site": false,
+          "winner_spread": 6.591458765781083
+        },
+        {
+          "act_recomputation_matches": true,
+          "location_status": "novel",
+          "native_acts": [
+            0.02110729672767683,
+            0.023739054361742434,
+            4.238119543190657e-42,
+            9.405648339235877e-78
+          ],
+          "native_winner": 1,
+          "pattern": "heldout_x5",
+          "rep": 4,
+          "site": [
+            12,
+            5
+          ],
+          "weight_recomputed_acts": [
+            0.021107296727676826,
+            0.023739054361742434,
+            4.238119543190657e-42,
+            9.405648339235877e-78
+          ],
+          "winner_distance": 4.926616469913144,
+          "winner_is_recomputed_argmax": true,
+          "winner_localized_for_site": false,
+          "winner_spread": 6.5539022131028695
+        }
+      ],
+      "seed": 11
+    }
+  ]
+}

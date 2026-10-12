@@ -1,0 +1,74 @@
+{
+  "all_checks_pass": true,
+  "checks": {
+    "all_lifecycle_gates_failed": true,
+    "all_source_locks_match": true,
+    "all_workers_joined": true,
+    "all_workers_selection_timeout": true,
+    "no_goal_producer_work": true,
+    "no_request_bound_goals": true,
+    "paired_graph_semantic_parity": true,
+    "six_workers": true,
+    "three_replicates_each_arm": true
+  },
+  "classification": "censored_driver_failure_no_locality_or_timing_claim",
+  "errors": [
+    [
+      "A selection timeout"
+    ],
+    [
+      "A selection timeout"
+    ],
+    [
+      "A selection timeout"
+    ],
+    [
+      "A selection timeout"
+    ],
+    [
+      "A selection timeout"
+    ],
+    [
+      "A selection timeout"
+    ]
+  ],
+  "graph_semantic_hashes": [
+    "6c6fd8259ebfa82d24079e5384e184831f573d0c1c1a3fc42dfff6c1e233f2d4",
+    "6c6fd8259ebfa82d24079e5384e184831f573d0c1c1a3fc42dfff6c1e233f2d4",
+    "6c6fd8259ebfa82d24079e5384e184831f573d0c1c1a3fc42dfff6c1e233f2d4",
+    "6c6fd8259ebfa82d24079e5384e184831f573d0c1c1a3fc42dfff6c1e233f2d4",
+    "6c6fd8259ebfa82d24079e5384e184831f573d0c1c1a3fc42dfff6c1e233f2d4",
+    "6c6fd8259ebfa82d24079e5384e184831f573d0c1c1a3fc42dfff6c1e233f2d4"
+  ],
+  "interpretation": "The six-worker run retained source locks and paired final graph semantic parity, but every worker failed before request A selection, recorded no goal-producer callback work, and had no final request-bound goals. Instrumented timing and access rows are therefore driver artifacts and are excluded from substrate performance/locality evidence.",
+  "reply_pairs": [
+    {
+      "A": "I don't know 'describe' \u2014 what does it mean?",
+      "B": "I don't know 'describe' \u2014 what does it mean?"
+    },
+    {
+      "A": "I don't know 'describe' \u2014 what does it mean?",
+      "B": "I don't know 'describe' \u2014 what does it mean?"
+    },
+    {
+      "A": "I don't know 'describe' \u2014 what does it mean?",
+      "B": "I don't know 'describe' \u2014 what does it mean?"
+    },
+    {
+      "A": "I don't know 'describe' \u2014 what does it mean?",
+      "B": "I don't know 'describe' \u2014 what does it mean?"
+    },
+    {
+      "A": "I don't know 'describe' \u2014 what does it mean?",
+      "B": "I don't know 'describe' \u2014 what does it mean?"
+    },
+    {
+      "A": "I don't know 'describe' \u2014 what does it mean?",
+      "B": "I don't know 'describe' \u2014 what does it mean?"
+    }
+  ],
+  "run_id": "substrate-live-describe-scene-access-trace-v2-3-censored-analysis-20260927",
+  "schema_version": 1,
+  "source_raw": "evaluation/reports/substrate_live_describe_scene_access_trace_v2_3_workers_raw_20260927.json",
+  "worker_count": 6
+}

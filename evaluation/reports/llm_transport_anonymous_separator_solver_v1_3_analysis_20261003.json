@@ -1,0 +1,69 @@
+{
+  "batch_comparison_by_worker": {
+    "0": {
+      "monolithic_batch_ms": 10565.117845,
+      "speed_ratio": 2.241644879141681,
+      "structural_batch_ms": 4713.109531
+    },
+    "1": {
+      "monolithic_batch_ms": 10628.522272,
+      "speed_ratio": 2.3097662552393925,
+      "structural_batch_ms": 4601.557516
+    },
+    "2": {
+      "monolithic_batch_ms": 10585.715342,
+      "speed_ratio": 2.2787621348818607,
+      "structural_batch_ms": 4645.379691
+    }
+  },
+  "by_condition": {
+    "learned": {
+      "heldout_accuracy": 0.8,
+      "median_conditioned_solver_ms": 212.3706545,
+      "median_junction_tree_ms": 532.6336395000001,
+      "n": 30
+    },
+    "shuffled": {
+      "heldout_accuracy": 0.4125,
+      "median_conditioned_solver_ms": 211.99501400000003,
+      "median_junction_tree_ms": 532.728205,
+      "n": 30
+    }
+  },
+  "checks": {
+    "anonymous_ids_and_cache_reuse": true,
+    "coverage_60": true,
+    "exact_energy_and_direct_rescore": true,
+    "exact_returned_sign_parity": true,
+    "expected_connected_graphs": true,
+    "no_failures": true,
+    "no_mutation": true,
+    "selected_candidate_energy_parity": true,
+    "selected_candidate_sign_parity": true,
+    "selected_candidate_state_valid": true,
+    "source_locks_stable": true,
+    "three_fresh_workers": true,
+    "valid_minimum_candidates": true,
+    "valid_states": true
+  },
+  "errors": [],
+  "gates_pass": true,
+  "interpretation": "Graph-only proposal uses anonymous topology and exact signature caching; one valid minimum separator is solved per topology. This remains one repeated authored K8,8 graph family.",
+  "median_batch_speed_ratio": 2.2787621348818607,
+  "proposal_cache": {
+    "amortized_over_20_cells_ms": 15.574437649999998,
+    "hits_per_worker": [
+      19,
+      19,
+      19
+    ],
+    "median_one_search_ms": 311.488753,
+    "searches_per_worker": [
+      1,
+      1,
+      1
+    ]
+  },
+  "schema": "LlmTransportAnonymousSeparatorSolverV1_3Analysis",
+  "v1_2_uncached_all_candidate_median_per_cell_ms": 738.1142175
+}

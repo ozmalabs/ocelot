@@ -13,7 +13,7 @@ ARCHITECTURE (CLAUDE.md). The store + centering state are GRAPH DATA:
 
   * ``DiscourseReferent`` nodes — one per entity in the conversation, carrying
     ``concept`` + ``category``/``animacy`` (grounded from the Concept node's
-    ``category`` attr, seeds/conceptual_categories.json), ``cognitive_status``
+    ``category`` attr, domain_data/conceptual_categories.json), ``cognitive_status``
     (givenness_hierarchy), ``recency`` (turn last mentioned), ``last_role``
     (grammatical role of last mention), and ``mentions`` (frequency).
   * ``CenteringState`` nodes — one per turn, carrying the forward_looking_centers
@@ -238,7 +238,7 @@ class DiscourseStore:
     def _category(self, concept: str) -> Optional[str]:
         """The grounded category (person/animal/object/event) of a concept,
         read off its Concept node's ``category`` attr — the same graph data
-        (seeds/conceptual_categories.json) the LanguageWorld inferer reads.
+        (domain_data/conceptual_categories.json) the LanguageWorld inferer reads.
         None when the concept has no grounded category."""
         cid = self.concept_provider.find(concept)
         if cid is None:

@@ -87,6 +87,17 @@
     "signature": "[[\"COUNT\"]]",
     "ground_template": "{\"desc\": \"returns the count of items in a list\", \"term\": {\"type\": \"Fold\", \"source\": {\"type\": \"Var\", \"name\": \"items\"}, \"var_name\": \"x\", \"acc_name\": \"acc\", \"init\": {\"type\": \"Lit\", \"value\": 0}, \"body\": {\"type\": \"Plus\", \"items\": [{\"type\": \"Var\", \"name\": \"acc\"}, {\"type\": \"Lit\", \"value\": 1}]}}, \"args\": [\"items\"], \"mode\": \"code_write\"}"
    }
+  },
+  {
+   "local_id": 9,
+   "type": "ShapeSignature",
+   "attrs": {
+    "name": "taught_square",
+    "kind": "code_write_construction",
+    "signature": "[[\"SQUARE\"]]",
+    "ground_template": "{\"desc\": \"computes an arithmetic expression, over x\", \"term\": {\"type\": \"Times\", \"items\": [{\"type\": \"Var\", \"name\": \"x\"}, {\"type\": \"Var\", \"name\": \"x\"}]}, \"args\": [\"x\"], \"mode\": \"code_write\"}",
+    "taught_from": "example"
+   }
   }
  ],
  "edges": [],

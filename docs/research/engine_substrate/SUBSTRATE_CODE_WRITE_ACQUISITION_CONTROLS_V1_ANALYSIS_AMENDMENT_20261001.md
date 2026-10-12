@@ -1,0 +1,5 @@
+# Code-write acquisition controls v1 — analysis amendment
+
+The four workers completed under the original pre-capture lock, with no worker errors and matching pre/post source fingerprints. The first analyzer attempt then failed because it looked for the taught shape under `intervention.teach.shape`; the API returns that identifier as `intervention.shape`. The raw capture was not changed. The analyzer assertion was corrected to the observed documented result shape, and the corrected analyzer independently evaluates the stored native/Python outputs against the fixed clamp oracle.
+
+The original lock is preserved as `substrate_code_write_acquisition_controls_v1_lock_20261001_pre_analysis_correction.json`. The current lock records the corrected analyzer hash. The analyzer checks that the captured lock equals its own pre/post lock and that the amended lock differs only in analyzer hash; it also checks active source and implementation tree fingerprints. No worker was rerun and no outcome data or oracle was changed. This correction is an analysis-path repair, not an experimental result change.

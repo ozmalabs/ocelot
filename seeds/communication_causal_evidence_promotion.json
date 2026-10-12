@@ -1,0 +1,71 @@
+{
+  "id": "communication_causal_evidence_promotion",
+  "version": "1.0.0",
+  "depends_on": ["communication_causal_identity_binding"],
+  "description": "Native promotion of citation-bearing P828 candidates only when both endpoints already have verified graph-resident Wikidata identities. Promotion creates provenance-linked source-claim evidence, not a canonical causal relation or an answer.",
+  "nodes": [],
+  "edges": [],
+  "productions": [],
+  "rules": [
+    {
+      "name": "stage_identity_bound_cited_causal_claim",
+      "comment": "External data remains unverified until a native rule binds both claim endpoints to independently verified graph identities and confirms the typed cited claim. This records a source claim only; it does not assert causal_influence or authorize a response.",
+      "match": [
+        ["request", "has_candidate", "candidate"],
+        ["request", "about_topic", "effect"],
+        ["request", "bound_identity", "effect_identity"],
+        ["effect", "has_external_identity", "effect_identity"],
+        ["cause", "has_external_identity", "cause_identity"]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {"type": "Eq", "a": {"type": "TypeOf", "node": {"type": "Var", "name": "effect"}}, "b": {"type": "Lit", "value": "Concept"}},
+          {"type": "Eq", "a": {"type": "TypeOf", "node": {"type": "Var", "name": "cause"}}, "b": {"type": "Lit", "value": "Concept"}},
+          {"type": "Eq", "a": {"type": "TypeOf", "node": {"type": "Var", "name": "effect_identity"}}, "b": {"type": "Lit", "value": "ExternalIdentityEvidence"}},
+          {"type": "Eq", "a": {"type": "TypeOf", "node": {"type": "Var", "name": "cause_identity"}}, "b": {"type": "Lit", "value": "ExternalIdentityEvidence"}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "effect_identity"}, "key": "schema"}, "b": {"type": "Lit", "value": "external_identity_evidence.v1"}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "cause_identity"}, "key": "schema"}, "b": {"type": "Lit", "value": "external_identity_evidence.v1"}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "effect_identity"}, "key": "provider"}, "b": {"type": "Lit", "value": "wikidata"}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "cause_identity"}, "key": "provider"}, "b": {"type": "Lit", "value": "wikidata"}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "effect_identity"}, "key": "status"}, "b": {"type": "Lit", "value": "verified"}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "cause_identity"}, "key": "status"}, "b": {"type": "Lit", "value": "verified"}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "request"}, "key": "status"}, "b": {"type": "Lit", "value": "candidates_staged"}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "candidate"}, "key": "schema"}, "b": {"type": "Lit", "value": "causal_retrieval_candidate.v1"}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "candidate"}, "key": "provider"}, "b": {"type": "Lit", "value": "wikidata"}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "candidate"}, "key": "property_id"}, "b": {"type": "Lit", "value": "P828"}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "candidate"}, "key": "epistemic_status"}, "b": {"type": "Lit", "value": "candidate_unverified"}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "candidate"}, "key": "authority"}, "b": {"type": "Lit", "value": "none"}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "candidate"}, "key": "query"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "request"}, "key": "topic"}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "candidate"}, "key": "source_entity_id"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "request"}, "key": "topic_entity_id"}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "candidate"}, "key": "source_entity_id"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "effect_identity"}, "key": "entity_id"}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "candidate"}, "key": "cause_entity_id"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "cause_identity"}, "key": "entity_id"}},
+          {"type": "Gt", "a": {"type": "Attr", "node": {"type": "Var", "name": "candidate"}, "key": "citation_count"}, "b": {"type": "Lit", "value": 0}},
+          {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Var", "name": "effect"}, "b": {"type": "Var", "name": "cause"}}},
+          {"type": "Not", "arg": {"type": "Exists", "source": {"type": "Neighbours", "node": {"type": "Var", "name": "candidate"}, "edge_type": "supports_causal_evidence"}, "var_name": "existing_evidence", "predicate": {"type": "Lit", "value": true}}}
+        ]
+      },
+      "effects": [
+        ["add_node", "evidence", "CausalClaimEvidence", {
+          "schema": "causal_claim_evidence.v1",
+          "provider": "wikidata",
+          "epistemic_status": "externally_sourced_claim",
+          "claim_relation": "causal_influence",
+          "property_id": "P828",
+          "statement_id": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "candidate"}, "key": "statement_id"}},
+          "source_entity_id": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "candidate"}, "key": "source_entity_id"}},
+          "cause_entity_id": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "candidate"}, "key": "cause_entity_id"}},
+          "source_url": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "candidate"}, "key": "source_url"}},
+          "citation_count": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "candidate"}, "key": "citation_count"}}
+        }],
+        ["add_edge", "candidate", "supports_causal_evidence", "evidence"],
+        ["add_edge", "evidence", "for_request", "request"],
+        ["add_edge", "evidence", "about_effect", "effect"],
+        ["add_edge", "evidence", "has_cause", "cause"],
+        ["set_attr", "candidate", "epistemic_status", "externally_supported"],
+        ["set_attr", "candidate", "authority", "native_identity_bound_claim"],
+        ["set_attr", "request", "status", "claims_staged"]
+      ]
+    }
+  ]
+}

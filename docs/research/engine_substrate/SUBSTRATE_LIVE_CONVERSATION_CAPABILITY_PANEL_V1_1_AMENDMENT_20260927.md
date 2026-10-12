@@ -1,0 +1,5 @@
+# Live conversation capability panel v1.1 amendment (2026-09-27)
+
+The v1 panel's transitive lock reused a scene-trace closure over `domains/`, `substrate/`, `runners/dsl/python/`, and seed JSON, but did not cover Python helpers under `scripts/` or reference assets under `data/slabs/`. Earlier route audits showed that a live action can import `scripts/collapse_engine.py` and that wordplay vocabulary can depend on slab data. Therefore v1 outcomes are retained as historical evidence but this replication adds explicit SHA-256 coverage for every Python file under `scripts/` and every regular file under `data/slabs/`.
+
+The fixed ten-worker schedule, prompts, and task contracts are unchanged. This amendment changes no source behavior and must be hashed into the new lock. The result applies only to the exact isolated snapshot and complete asset inventory in its lock. Existing prompt selection and small replicate count remain unchanged; no natural-prevalence, broad capability-rate, or general scaling claim follows.

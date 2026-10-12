@@ -1,0 +1,3 @@
+# Bounded coupled-quadratic synthesis v1.3 amendment
+
+V1.2 completed all 30 cells and captured all training and held-out predictions, but the analyzer incorrectly required every held-out prediction to equal the target. That invalidated legitimate false-transfer observations. V1.3 preserves the v1.2 task, grammar, size bound (11), candidate cap, repetition count, order seed, and corrected reuse behavior. It corrects independent replay validation to require that replay agrees with the captured prediction and that the captured exactness flag agrees with comparison to the locked target. A fresh source/native lock and capture are taken because the analyzer is part of the lock. V1 and v1.1/v1.2 artifacts remain preserved and excluded from v1.3 rates.

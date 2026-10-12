@@ -1,0 +1,1177 @@
+{
+  "host": "Linux-6.8.0-142-generic-x86_64-with-glibc2.39",
+  "lock_sha256": "5139002a6576e2f6b126824dd85465d60b81bb1f7a044b31db7975be7d4f4067",
+  "schema": "ThoughtexperimentSelfChangeBlindBaselineV1",
+  "workers": [
+    {
+      "pid": 5,
+      "rows": [
+        {
+          "abort": null,
+          "answer_key_passed": false,
+          "candidate_families": [
+            "threshold_adjustment"
+          ],
+          "candidate_scores": [
+            {
+              "blast_radius": 1,
+              "family": "threshold_adjustment",
+              "gain": 42,
+              "mdl_cost": 1,
+              "noop_gain": 0,
+              "placebo_gain": 1,
+              "protected_regressions": 0,
+              "replicated_gain": 42,
+              "replications": 3,
+              "resource_budget": 3,
+              "resource_cost": 1
+            }
+          ],
+          "case_id": "fn_threshold_001",
+          "control_gains": {
+            "noop": 0,
+            "placebo": 1
+          },
+          "harness_admissible_families": [
+            "threshold_adjustment"
+          ],
+          "opaque_case_id": "case_5403686b2fe1",
+          "selected": [
+            {
+              "family": "threshold_adjustment",
+              "mdl_cost": 1,
+              "proofs_passed": 1,
+              "status": "proposed"
+            }
+          ],
+          "selection_wall_ns": 115711,
+          "signals": {
+            "false_negative": 4,
+            "threshold_sensitivity": 1
+          }
+        },
+        {
+          "abort": null,
+          "answer_key_passed": false,
+          "candidate_families": [
+            "guard_strengthening"
+          ],
+          "candidate_scores": [
+            {
+              "blast_radius": 1,
+              "family": "guard_strengthening",
+              "gain": 35,
+              "mdl_cost": 2,
+              "noop_gain": 0,
+              "placebo_gain": -1,
+              "protected_regressions": 0,
+              "replicated_gain": 35,
+              "replications": 3,
+              "resource_budget": 3,
+              "resource_cost": 1
+            }
+          ],
+          "case_id": "fp_context_002",
+          "control_gains": {
+            "noop": 0,
+            "placebo": -1
+          },
+          "harness_admissible_families": [
+            "guard_strengthening"
+          ],
+          "opaque_case_id": "case_0ab86a1a4505",
+          "selected": [
+            {
+              "family": "guard_strengthening",
+              "mdl_cost": 2,
+              "proofs_passed": 1,
+              "status": "proposed"
+            }
+          ],
+          "selection_wall_ns": 71220,
+          "signals": {
+            "context_sensitivity": 1,
+            "false_positive": 3
+          }
+        },
+        {
+          "abort": null,
+          "answer_key_passed": false,
+          "candidate_families": [
+            "relation_addition"
+          ],
+          "candidate_scores": [
+            {
+              "blast_radius": 2,
+              "family": "relation_addition",
+              "gain": 31,
+              "mdl_cost": 3,
+              "noop_gain": 1,
+              "placebo_gain": 0,
+              "protected_regressions": 0,
+              "replicated_gain": 31,
+              "replications": 3,
+              "resource_budget": 3,
+              "resource_cost": 1
+            }
+          ],
+          "case_id": "missing_relation_003",
+          "control_gains": {
+            "noop": 1,
+            "placebo": 0
+          },
+          "harness_admissible_families": [
+            "relation_addition"
+          ],
+          "opaque_case_id": "case_4bf684a4a519",
+          "selected": [
+            {
+              "family": "relation_addition",
+              "mdl_cost": 3,
+              "proofs_passed": 1,
+              "status": "proposed"
+            }
+          ],
+          "selection_wall_ns": 66241,
+          "signals": {
+            "false_negative": 2,
+            "relation_counterfactual": 1
+          }
+        },
+        {
+          "abort": null,
+          "answer_key_passed": false,
+          "candidate_families": [
+            "effect_substitution"
+          ],
+          "candidate_scores": [
+            {
+              "blast_radius": 2,
+              "family": "effect_substitution",
+              "gain": 47,
+              "mdl_cost": 4,
+              "noop_gain": 0,
+              "placebo_gain": 2,
+              "protected_regressions": 0,
+              "replicated_gain": 47,
+              "replications": 3,
+              "resource_budget": 3,
+              "resource_cost": 1
+            }
+          ],
+          "case_id": "wrong_effect_004",
+          "control_gains": {
+            "noop": 0,
+            "placebo": 2
+          },
+          "harness_admissible_families": [
+            "effect_substitution"
+          ],
+          "opaque_case_id": "case_b0974dfb0c31",
+          "selected": [
+            {
+              "family": "effect_substitution",
+              "mdl_cost": 4,
+              "proofs_passed": 1,
+              "status": "proposed"
+            }
+          ],
+          "selection_wall_ns": 111361,
+          "signals": {
+            "effect_counterfactual": 1,
+            "outcome_mismatch": 5
+          }
+        },
+        {
+          "abort": null,
+          "answer_key_passed": false,
+          "candidate_families": [
+            "firing_budget_guard"
+          ],
+          "candidate_scores": [
+            {
+              "blast_radius": 1,
+              "family": "firing_budget_guard",
+              "gain": 55,
+              "mdl_cost": 2,
+              "noop_gain": 0,
+              "placebo_gain": 1,
+              "protected_regressions": 0,
+              "replicated_gain": 55,
+              "replications": 3,
+              "resource_budget": 3,
+              "resource_cost": 1
+            }
+          ],
+          "case_id": "runaway_noop_005",
+          "control_gains": {
+            "noop": 0,
+            "placebo": 1
+          },
+          "harness_admissible_families": [
+            "firing_budget_guard"
+          ],
+          "opaque_case_id": "case_0086640d267c",
+          "selected": [
+            {
+              "family": "firing_budget_guard",
+              "mdl_cost": 2,
+              "proofs_passed": 1,
+              "status": "proposed"
+            }
+          ],
+          "selection_wall_ns": 71250,
+          "signals": {
+            "cost_excess": 6,
+            "repeated_noop_firings": 12
+          }
+        },
+        {
+          "abort": null,
+          "answer_key_passed": false,
+          "candidate_families": [
+            "threshold_adjustment",
+            "relation_addition"
+          ],
+          "candidate_scores": [
+            {
+              "blast_radius": 1,
+              "family": "threshold_adjustment",
+              "gain": 29,
+              "mdl_cost": 1,
+              "noop_gain": 0,
+              "placebo_gain": 1,
+              "protected_regressions": 0,
+              "replicated_gain": 29,
+              "replications": 3,
+              "resource_budget": 3,
+              "resource_cost": 1
+            },
+            {
+              "blast_radius": 2,
+              "family": "relation_addition",
+              "gain": 31,
+              "mdl_cost": 3,
+              "noop_gain": 0,
+              "placebo_gain": 1,
+              "protected_regressions": 0,
+              "replicated_gain": 31,
+              "replications": 3,
+              "resource_budget": 3,
+              "resource_cost": 1
+            }
+          ],
+          "case_id": "ambiguous_minimal_006",
+          "control_gains": {
+            "noop": 0,
+            "placebo": 1
+          },
+          "harness_admissible_families": [
+            "threshold_adjustment",
+            "relation_addition"
+          ],
+          "opaque_case_id": "case_cbe5d6e66ff8",
+          "selected": [
+            {
+              "family": "threshold_adjustment",
+              "mdl_cost": 1,
+              "proofs_passed": 1,
+              "status": "proposed"
+            }
+          ],
+          "selection_wall_ns": 186471,
+          "signals": {
+            "false_negative": 3,
+            "relation_counterfactual": 1,
+            "threshold_sensitivity": 1
+          }
+        },
+        {
+          "abort": {
+            "count": 1,
+            "reason": "no_causally_supported_patch",
+            "status": "aborted"
+          },
+          "answer_key_passed": false,
+          "candidate_families": [
+            "threshold_adjustment",
+            "relation_addition"
+          ],
+          "candidate_scores": [
+            {
+              "blast_radius": 1,
+              "family": "threshold_adjustment",
+              "gain": 3,
+              "mdl_cost": 1,
+              "noop_gain": 2,
+              "placebo_gain": 3,
+              "protected_regressions": 0,
+              "replicated_gain": 3,
+              "replications": 3,
+              "resource_budget": 3,
+              "resource_cost": 1
+            },
+            {
+              "blast_radius": 2,
+              "family": "relation_addition",
+              "gain": 4,
+              "mdl_cost": 3,
+              "noop_gain": 2,
+              "placebo_gain": 3,
+              "protected_regressions": 0,
+              "replicated_gain": 4,
+              "replications": 3,
+              "resource_budget": 3,
+              "resource_cost": 1
+            }
+          ],
+          "case_id": "correlation_only_007",
+          "control_gains": {
+            "noop": 2,
+            "placebo": 3
+          },
+          "harness_admissible_families": [],
+          "opaque_case_id": "case_a46657fea8f8",
+          "selected": [],
+          "selection_wall_ns": 68021,
+          "signals": {
+            "false_negative": 2,
+            "relation_counterfactual": 1,
+            "threshold_sensitivity": 1
+          }
+        }
+      ],
+      "sources_after": {
+        "files": {
+          "docs/research/engine_substrate/THOUGHTEXPERIMENT_SELF_CHANGE_BLIND_BASELINE_V1_PREREG_20261005.md": "8c5c4bdc8f398c9d826387359ce3c7f02b8a11c0e082972ad05fa607146f6cd1",
+          "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+          "evaluation/substrate_capability/analyze_thoughtexperiment_self_change_blind_baseline_v1.py": "f4510bce1720c92251f13266791c36088c1d15c79b113cc6faf703e559cde58e",
+          "evaluation/substrate_capability/thoughtexperiment_self_change_blind_baseline_v1.py": "afb499453c8e55219f9066e8b743dfd1072a51f546af90a3b8820581ddcba746",
+          "runners/dsl/Cargo.lock": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+          "runners/dsl/Cargo.toml": "c4d8ffff2241352a5150b5a9937dbb8010e958b6f115235b7daeae716c1a9332",
+          "runners/dsl/python/substrate_rs/_native.build.json": "df72c0ddee388bae7023fc9670bab7f0e320abd3f9aca44616ad95cd41f174e3",
+          "runners/dsl/python/substrate_rs/ext.py": "36d623734bad3209dcdc8b6b894dab13276e8045b6c11cd0b64fdddd40c1109e",
+          "runners/dsl/src/graph.rs": "2c14dea3c04b3b13408690ec79fb61829c1e2760bcf4e9edf0bdde37d1c15da0",
+          "runners/dsl/src/py.rs": "905cb4eb645b597d34d5faf4bd9d0b999baf749e9c2f19e947bbbf89a0f27f39",
+          "runners/dsl/src/rewrite.rs": "ea711f28c9f8c21f119cdca6ad1d417576deb20b16a36ce6158e13a9fbafdf1b",
+          "runners/dsl/src/substrate.rs": "39f27175b2025c6c6552fd5bec8310d4ab06c6401823372f4bd8c4c13b5301e8",
+          "schemas/self_change_protocol.schema.json": "ea3006d0c2e3eadb766d25ce99b0c0fd6acc0a4648329c937b1d98b1c4a72bd6",
+          "seeds/self_change_reasoning.json": "ab1980a533b6498ae614b5b44e611d882c00189287e9f9895fbcbceb06635e98",
+          "substrate/world_adapter.py": "fffb5e21986d272b1273a092c26adf5d12f478a341e60a264d19c7b4da3a6298",
+          "tests/fixtures/self_change_blind_faults.json": "cd5bf2ebdd4d4ded715746677540290c8eec21fe8311bb2f349eab5d22a67898",
+          "tests/test_self_change_reasoning_migrated.py": "83812a4c27128059de2405cf1ae34a1a76c068d95d7b03b75e1d267a1f7621e9"
+        },
+        "native_binary": {
+          "path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+          "sha256": "d643dc758567a4d6966cbafeae247cf09163cf2b6062283ba527c56abe441f9c"
+        }
+      },
+      "sources_before": {
+        "files": {
+          "docs/research/engine_substrate/THOUGHTEXPERIMENT_SELF_CHANGE_BLIND_BASELINE_V1_PREREG_20261005.md": "8c5c4bdc8f398c9d826387359ce3c7f02b8a11c0e082972ad05fa607146f6cd1",
+          "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+          "evaluation/substrate_capability/analyze_thoughtexperiment_self_change_blind_baseline_v1.py": "f4510bce1720c92251f13266791c36088c1d15c79b113cc6faf703e559cde58e",
+          "evaluation/substrate_capability/thoughtexperiment_self_change_blind_baseline_v1.py": "afb499453c8e55219f9066e8b743dfd1072a51f546af90a3b8820581ddcba746",
+          "runners/dsl/Cargo.lock": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+          "runners/dsl/Cargo.toml": "c4d8ffff2241352a5150b5a9937dbb8010e958b6f115235b7daeae716c1a9332",
+          "runners/dsl/python/substrate_rs/_native.build.json": "df72c0ddee388bae7023fc9670bab7f0e320abd3f9aca44616ad95cd41f174e3",
+          "runners/dsl/python/substrate_rs/ext.py": "36d623734bad3209dcdc8b6b894dab13276e8045b6c11cd0b64fdddd40c1109e",
+          "runners/dsl/src/graph.rs": "2c14dea3c04b3b13408690ec79fb61829c1e2760bcf4e9edf0bdde37d1c15da0",
+          "runners/dsl/src/py.rs": "905cb4eb645b597d34d5faf4bd9d0b999baf749e9c2f19e947bbbf89a0f27f39",
+          "runners/dsl/src/rewrite.rs": "ea711f28c9f8c21f119cdca6ad1d417576deb20b16a36ce6158e13a9fbafdf1b",
+          "runners/dsl/src/substrate.rs": "39f27175b2025c6c6552fd5bec8310d4ab06c6401823372f4bd8c4c13b5301e8",
+          "schemas/self_change_protocol.schema.json": "ea3006d0c2e3eadb766d25ce99b0c0fd6acc0a4648329c937b1d98b1c4a72bd6",
+          "seeds/self_change_reasoning.json": "ab1980a533b6498ae614b5b44e611d882c00189287e9f9895fbcbceb06635e98",
+          "substrate/world_adapter.py": "fffb5e21986d272b1273a092c26adf5d12f478a341e60a264d19c7b4da3a6298",
+          "tests/fixtures/self_change_blind_faults.json": "cd5bf2ebdd4d4ded715746677540290c8eec21fe8311bb2f349eab5d22a67898",
+          "tests/test_self_change_reasoning_migrated.py": "83812a4c27128059de2405cf1ae34a1a76c068d95d7b03b75e1d267a1f7621e9"
+        },
+        "native_binary": {
+          "path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+          "sha256": "d643dc758567a4d6966cbafeae247cf09163cf2b6062283ba527c56abe441f9c"
+        }
+      },
+      "worker": 0
+    },
+    {
+      "pid": 237,
+      "rows": [
+        {
+          "abort": null,
+          "answer_key_passed": false,
+          "candidate_families": [
+            "threshold_adjustment"
+          ],
+          "candidate_scores": [
+            {
+              "blast_radius": 1,
+              "family": "threshold_adjustment",
+              "gain": 42,
+              "mdl_cost": 1,
+              "noop_gain": 0,
+              "placebo_gain": 1,
+              "protected_regressions": 0,
+              "replicated_gain": 42,
+              "replications": 3,
+              "resource_budget": 3,
+              "resource_cost": 1
+            }
+          ],
+          "case_id": "fn_threshold_001",
+          "control_gains": {
+            "noop": 0,
+            "placebo": 1
+          },
+          "harness_admissible_families": [
+            "threshold_adjustment"
+          ],
+          "opaque_case_id": "case_4409ba4521e6",
+          "selected": [
+            {
+              "family": "threshold_adjustment",
+              "mdl_cost": 1,
+              "proofs_passed": 1,
+              "status": "proposed"
+            }
+          ],
+          "selection_wall_ns": 86721,
+          "signals": {
+            "false_negative": 4,
+            "threshold_sensitivity": 1
+          }
+        },
+        {
+          "abort": null,
+          "answer_key_passed": false,
+          "candidate_families": [
+            "guard_strengthening"
+          ],
+          "candidate_scores": [
+            {
+              "blast_radius": 1,
+              "family": "guard_strengthening",
+              "gain": 35,
+              "mdl_cost": 2,
+              "noop_gain": 0,
+              "placebo_gain": -1,
+              "protected_regressions": 0,
+              "replicated_gain": 35,
+              "replications": 3,
+              "resource_budget": 3,
+              "resource_cost": 1
+            }
+          ],
+          "case_id": "fp_context_002",
+          "control_gains": {
+            "noop": 0,
+            "placebo": -1
+          },
+          "harness_admissible_families": [
+            "guard_strengthening"
+          ],
+          "opaque_case_id": "case_7622e3b32332",
+          "selected": [
+            {
+              "family": "guard_strengthening",
+              "mdl_cost": 2,
+              "proofs_passed": 1,
+              "status": "proposed"
+            }
+          ],
+          "selection_wall_ns": 109010,
+          "signals": {
+            "context_sensitivity": 1,
+            "false_positive": 3
+          }
+        },
+        {
+          "abort": null,
+          "answer_key_passed": false,
+          "candidate_families": [
+            "relation_addition"
+          ],
+          "candidate_scores": [
+            {
+              "blast_radius": 2,
+              "family": "relation_addition",
+              "gain": 31,
+              "mdl_cost": 3,
+              "noop_gain": 1,
+              "placebo_gain": 0,
+              "protected_regressions": 0,
+              "replicated_gain": 31,
+              "replications": 3,
+              "resource_budget": 3,
+              "resource_cost": 1
+            }
+          ],
+          "case_id": "missing_relation_003",
+          "control_gains": {
+            "noop": 1,
+            "placebo": 0
+          },
+          "harness_admissible_families": [
+            "relation_addition"
+          ],
+          "opaque_case_id": "case_1a2b8d4c2fd1",
+          "selected": [
+            {
+              "family": "relation_addition",
+              "mdl_cost": 3,
+              "proofs_passed": 1,
+              "status": "proposed"
+            }
+          ],
+          "selection_wall_ns": 72690,
+          "signals": {
+            "false_negative": 2,
+            "relation_counterfactual": 1
+          }
+        },
+        {
+          "abort": null,
+          "answer_key_passed": false,
+          "candidate_families": [
+            "effect_substitution"
+          ],
+          "candidate_scores": [
+            {
+              "blast_radius": 2,
+              "family": "effect_substitution",
+              "gain": 47,
+              "mdl_cost": 4,
+              "noop_gain": 0,
+              "placebo_gain": 2,
+              "protected_regressions": 0,
+              "replicated_gain": 47,
+              "replications": 3,
+              "resource_budget": 3,
+              "resource_cost": 1
+            }
+          ],
+          "case_id": "wrong_effect_004",
+          "control_gains": {
+            "noop": 0,
+            "placebo": 2
+          },
+          "harness_admissible_families": [
+            "effect_substitution"
+          ],
+          "opaque_case_id": "case_6e8de6f16f11",
+          "selected": [
+            {
+              "family": "effect_substitution",
+              "mdl_cost": 4,
+              "proofs_passed": 1,
+              "status": "proposed"
+            }
+          ],
+          "selection_wall_ns": 68210,
+          "signals": {
+            "effect_counterfactual": 1,
+            "outcome_mismatch": 5
+          }
+        },
+        {
+          "abort": null,
+          "answer_key_passed": false,
+          "candidate_families": [
+            "firing_budget_guard"
+          ],
+          "candidate_scores": [
+            {
+              "blast_radius": 1,
+              "family": "firing_budget_guard",
+              "gain": 55,
+              "mdl_cost": 2,
+              "noop_gain": 0,
+              "placebo_gain": 1,
+              "protected_regressions": 0,
+              "replicated_gain": 55,
+              "replications": 3,
+              "resource_budget": 3,
+              "resource_cost": 1
+            }
+          ],
+          "case_id": "runaway_noop_005",
+          "control_gains": {
+            "noop": 0,
+            "placebo": 1
+          },
+          "harness_admissible_families": [
+            "firing_budget_guard"
+          ],
+          "opaque_case_id": "case_269c83d74aa0",
+          "selected": [
+            {
+              "family": "firing_budget_guard",
+              "mdl_cost": 2,
+              "proofs_passed": 1,
+              "status": "proposed"
+            }
+          ],
+          "selection_wall_ns": 69191,
+          "signals": {
+            "cost_excess": 6,
+            "repeated_noop_firings": 12
+          }
+        },
+        {
+          "abort": null,
+          "answer_key_passed": false,
+          "candidate_families": [
+            "threshold_adjustment",
+            "relation_addition"
+          ],
+          "candidate_scores": [
+            {
+              "blast_radius": 1,
+              "family": "threshold_adjustment",
+              "gain": 29,
+              "mdl_cost": 1,
+              "noop_gain": 0,
+              "placebo_gain": 1,
+              "protected_regressions": 0,
+              "replicated_gain": 29,
+              "replications": 3,
+              "resource_budget": 3,
+              "resource_cost": 1
+            },
+            {
+              "blast_radius": 2,
+              "family": "relation_addition",
+              "gain": 31,
+              "mdl_cost": 3,
+              "noop_gain": 0,
+              "placebo_gain": 1,
+              "protected_regressions": 0,
+              "replicated_gain": 31,
+              "replications": 3,
+              "resource_budget": 3,
+              "resource_cost": 1
+            }
+          ],
+          "case_id": "ambiguous_minimal_006",
+          "control_gains": {
+            "noop": 0,
+            "placebo": 1
+          },
+          "harness_admissible_families": [
+            "threshold_adjustment",
+            "relation_addition"
+          ],
+          "opaque_case_id": "case_2d7223e4dab7",
+          "selected": [
+            {
+              "family": "threshold_adjustment",
+              "mdl_cost": 1,
+              "proofs_passed": 1,
+              "status": "proposed"
+            }
+          ],
+          "selection_wall_ns": 108820,
+          "signals": {
+            "false_negative": 3,
+            "relation_counterfactual": 1,
+            "threshold_sensitivity": 1
+          }
+        },
+        {
+          "abort": {
+            "count": 1,
+            "reason": "no_causally_supported_patch",
+            "status": "aborted"
+          },
+          "answer_key_passed": false,
+          "candidate_families": [
+            "threshold_adjustment",
+            "relation_addition"
+          ],
+          "candidate_scores": [
+            {
+              "blast_radius": 1,
+              "family": "threshold_adjustment",
+              "gain": 3,
+              "mdl_cost": 1,
+              "noop_gain": 2,
+              "placebo_gain": 3,
+              "protected_regressions": 0,
+              "replicated_gain": 3,
+              "replications": 3,
+              "resource_budget": 3,
+              "resource_cost": 1
+            },
+            {
+              "blast_radius": 2,
+              "family": "relation_addition",
+              "gain": 4,
+              "mdl_cost": 3,
+              "noop_gain": 2,
+              "placebo_gain": 3,
+              "protected_regressions": 0,
+              "replicated_gain": 4,
+              "replications": 3,
+              "resource_budget": 3,
+              "resource_cost": 1
+            }
+          ],
+          "case_id": "correlation_only_007",
+          "control_gains": {
+            "noop": 2,
+            "placebo": 3
+          },
+          "harness_admissible_families": [],
+          "opaque_case_id": "case_c7905642be91",
+          "selected": [],
+          "selection_wall_ns": 107141,
+          "signals": {
+            "false_negative": 2,
+            "relation_counterfactual": 1,
+            "threshold_sensitivity": 1
+          }
+        }
+      ],
+      "sources_after": {
+        "files": {
+          "docs/research/engine_substrate/THOUGHTEXPERIMENT_SELF_CHANGE_BLIND_BASELINE_V1_PREREG_20261005.md": "8c5c4bdc8f398c9d826387359ce3c7f02b8a11c0e082972ad05fa607146f6cd1",
+          "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+          "evaluation/substrate_capability/analyze_thoughtexperiment_self_change_blind_baseline_v1.py": "f4510bce1720c92251f13266791c36088c1d15c79b113cc6faf703e559cde58e",
+          "evaluation/substrate_capability/thoughtexperiment_self_change_blind_baseline_v1.py": "afb499453c8e55219f9066e8b743dfd1072a51f546af90a3b8820581ddcba746",
+          "runners/dsl/Cargo.lock": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+          "runners/dsl/Cargo.toml": "c4d8ffff2241352a5150b5a9937dbb8010e958b6f115235b7daeae716c1a9332",
+          "runners/dsl/python/substrate_rs/_native.build.json": "df72c0ddee388bae7023fc9670bab7f0e320abd3f9aca44616ad95cd41f174e3",
+          "runners/dsl/python/substrate_rs/ext.py": "36d623734bad3209dcdc8b6b894dab13276e8045b6c11cd0b64fdddd40c1109e",
+          "runners/dsl/src/graph.rs": "2c14dea3c04b3b13408690ec79fb61829c1e2760bcf4e9edf0bdde37d1c15da0",
+          "runners/dsl/src/py.rs": "905cb4eb645b597d34d5faf4bd9d0b999baf749e9c2f19e947bbbf89a0f27f39",
+          "runners/dsl/src/rewrite.rs": "ea711f28c9f8c21f119cdca6ad1d417576deb20b16a36ce6158e13a9fbafdf1b",
+          "runners/dsl/src/substrate.rs": "39f27175b2025c6c6552fd5bec8310d4ab06c6401823372f4bd8c4c13b5301e8",
+          "schemas/self_change_protocol.schema.json": "ea3006d0c2e3eadb766d25ce99b0c0fd6acc0a4648329c937b1d98b1c4a72bd6",
+          "seeds/self_change_reasoning.json": "ab1980a533b6498ae614b5b44e611d882c00189287e9f9895fbcbceb06635e98",
+          "substrate/world_adapter.py": "fffb5e21986d272b1273a092c26adf5d12f478a341e60a264d19c7b4da3a6298",
+          "tests/fixtures/self_change_blind_faults.json": "cd5bf2ebdd4d4ded715746677540290c8eec21fe8311bb2f349eab5d22a67898",
+          "tests/test_self_change_reasoning_migrated.py": "83812a4c27128059de2405cf1ae34a1a76c068d95d7b03b75e1d267a1f7621e9"
+        },
+        "native_binary": {
+          "path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+          "sha256": "d643dc758567a4d6966cbafeae247cf09163cf2b6062283ba527c56abe441f9c"
+        }
+      },
+      "sources_before": {
+        "files": {
+          "docs/research/engine_substrate/THOUGHTEXPERIMENT_SELF_CHANGE_BLIND_BASELINE_V1_PREREG_20261005.md": "8c5c4bdc8f398c9d826387359ce3c7f02b8a11c0e082972ad05fa607146f6cd1",
+          "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+          "evaluation/substrate_capability/analyze_thoughtexperiment_self_change_blind_baseline_v1.py": "f4510bce1720c92251f13266791c36088c1d15c79b113cc6faf703e559cde58e",
+          "evaluation/substrate_capability/thoughtexperiment_self_change_blind_baseline_v1.py": "afb499453c8e55219f9066e8b743dfd1072a51f546af90a3b8820581ddcba746",
+          "runners/dsl/Cargo.lock": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+          "runners/dsl/Cargo.toml": "c4d8ffff2241352a5150b5a9937dbb8010e958b6f115235b7daeae716c1a9332",
+          "runners/dsl/python/substrate_rs/_native.build.json": "df72c0ddee388bae7023fc9670bab7f0e320abd3f9aca44616ad95cd41f174e3",
+          "runners/dsl/python/substrate_rs/ext.py": "36d623734bad3209dcdc8b6b894dab13276e8045b6c11cd0b64fdddd40c1109e",
+          "runners/dsl/src/graph.rs": "2c14dea3c04b3b13408690ec79fb61829c1e2760bcf4e9edf0bdde37d1c15da0",
+          "runners/dsl/src/py.rs": "905cb4eb645b597d34d5faf4bd9d0b999baf749e9c2f19e947bbbf89a0f27f39",
+          "runners/dsl/src/rewrite.rs": "ea711f28c9f8c21f119cdca6ad1d417576deb20b16a36ce6158e13a9fbafdf1b",
+          "runners/dsl/src/substrate.rs": "39f27175b2025c6c6552fd5bec8310d4ab06c6401823372f4bd8c4c13b5301e8",
+          "schemas/self_change_protocol.schema.json": "ea3006d0c2e3eadb766d25ce99b0c0fd6acc0a4648329c937b1d98b1c4a72bd6",
+          "seeds/self_change_reasoning.json": "ab1980a533b6498ae614b5b44e611d882c00189287e9f9895fbcbceb06635e98",
+          "substrate/world_adapter.py": "fffb5e21986d272b1273a092c26adf5d12f478a341e60a264d19c7b4da3a6298",
+          "tests/fixtures/self_change_blind_faults.json": "cd5bf2ebdd4d4ded715746677540290c8eec21fe8311bb2f349eab5d22a67898",
+          "tests/test_self_change_reasoning_migrated.py": "83812a4c27128059de2405cf1ae34a1a76c068d95d7b03b75e1d267a1f7621e9"
+        },
+        "native_binary": {
+          "path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+          "sha256": "d643dc758567a4d6966cbafeae247cf09163cf2b6062283ba527c56abe441f9c"
+        }
+      },
+      "worker": 1
+    },
+    {
+      "pid": 469,
+      "rows": [
+        {
+          "abort": null,
+          "answer_key_passed": false,
+          "candidate_families": [
+            "threshold_adjustment"
+          ],
+          "candidate_scores": [
+            {
+              "blast_radius": 1,
+              "family": "threshold_adjustment",
+              "gain": 42,
+              "mdl_cost": 1,
+              "noop_gain": 0,
+              "placebo_gain": 1,
+              "protected_regressions": 0,
+              "replicated_gain": 42,
+              "replications": 3,
+              "resource_budget": 3,
+              "resource_cost": 1
+            }
+          ],
+          "case_id": "fn_threshold_001",
+          "control_gains": {
+            "noop": 0,
+            "placebo": 1
+          },
+          "harness_admissible_families": [
+            "threshold_adjustment"
+          ],
+          "opaque_case_id": "case_7a0030db2f18",
+          "selected": [
+            {
+              "family": "threshold_adjustment",
+              "mdl_cost": 1,
+              "proofs_passed": 1,
+              "status": "proposed"
+            }
+          ],
+          "selection_wall_ns": 90420,
+          "signals": {
+            "false_negative": 4,
+            "threshold_sensitivity": 1
+          }
+        },
+        {
+          "abort": null,
+          "answer_key_passed": false,
+          "candidate_families": [
+            "guard_strengthening"
+          ],
+          "candidate_scores": [
+            {
+              "blast_radius": 1,
+              "family": "guard_strengthening",
+              "gain": 35,
+              "mdl_cost": 2,
+              "noop_gain": 0,
+              "placebo_gain": -1,
+              "protected_regressions": 0,
+              "replicated_gain": 35,
+              "replications": 3,
+              "resource_budget": 3,
+              "resource_cost": 1
+            }
+          ],
+          "case_id": "fp_context_002",
+          "control_gains": {
+            "noop": 0,
+            "placebo": -1
+          },
+          "harness_admissible_families": [
+            "guard_strengthening"
+          ],
+          "opaque_case_id": "case_fe49c7365573",
+          "selected": [
+            {
+              "family": "guard_strengthening",
+              "mdl_cost": 2,
+              "proofs_passed": 1,
+              "status": "proposed"
+            }
+          ],
+          "selection_wall_ns": 114661,
+          "signals": {
+            "context_sensitivity": 1,
+            "false_positive": 3
+          }
+        },
+        {
+          "abort": null,
+          "answer_key_passed": false,
+          "candidate_families": [
+            "relation_addition"
+          ],
+          "candidate_scores": [
+            {
+              "blast_radius": 2,
+              "family": "relation_addition",
+              "gain": 31,
+              "mdl_cost": 3,
+              "noop_gain": 1,
+              "placebo_gain": 0,
+              "protected_regressions": 0,
+              "replicated_gain": 31,
+              "replications": 3,
+              "resource_budget": 3,
+              "resource_cost": 1
+            }
+          ],
+          "case_id": "missing_relation_003",
+          "control_gains": {
+            "noop": 1,
+            "placebo": 0
+          },
+          "harness_admissible_families": [
+            "relation_addition"
+          ],
+          "opaque_case_id": "case_4ce959c63220",
+          "selected": [
+            {
+              "family": "relation_addition",
+              "mdl_cost": 3,
+              "proofs_passed": 1,
+              "status": "proposed"
+            }
+          ],
+          "selection_wall_ns": 67051,
+          "signals": {
+            "false_negative": 2,
+            "relation_counterfactual": 1
+          }
+        },
+        {
+          "abort": null,
+          "answer_key_passed": false,
+          "candidate_families": [
+            "effect_substitution"
+          ],
+          "candidate_scores": [
+            {
+              "blast_radius": 2,
+              "family": "effect_substitution",
+              "gain": 47,
+              "mdl_cost": 4,
+              "noop_gain": 0,
+              "placebo_gain": 2,
+              "protected_regressions": 0,
+              "replicated_gain": 47,
+              "replications": 3,
+              "resource_budget": 3,
+              "resource_cost": 1
+            }
+          ],
+          "case_id": "wrong_effect_004",
+          "control_gains": {
+            "noop": 0,
+            "placebo": 2
+          },
+          "harness_admissible_families": [
+            "effect_substitution"
+          ],
+          "opaque_case_id": "case_4317b22d7962",
+          "selected": [
+            {
+              "family": "effect_substitution",
+              "mdl_cost": 4,
+              "proofs_passed": 1,
+              "status": "proposed"
+            }
+          ],
+          "selection_wall_ns": 68180,
+          "signals": {
+            "effect_counterfactual": 1,
+            "outcome_mismatch": 5
+          }
+        },
+        {
+          "abort": null,
+          "answer_key_passed": false,
+          "candidate_families": [
+            "firing_budget_guard"
+          ],
+          "candidate_scores": [
+            {
+              "blast_radius": 1,
+              "family": "firing_budget_guard",
+              "gain": 55,
+              "mdl_cost": 2,
+              "noop_gain": 0,
+              "placebo_gain": 1,
+              "protected_regressions": 0,
+              "replicated_gain": 55,
+              "replications": 3,
+              "resource_budget": 3,
+              "resource_cost": 1
+            }
+          ],
+          "case_id": "runaway_noop_005",
+          "control_gains": {
+            "noop": 0,
+            "placebo": 1
+          },
+          "harness_admissible_families": [
+            "firing_budget_guard"
+          ],
+          "opaque_case_id": "case_fc58958852a5",
+          "selected": [
+            {
+              "family": "firing_budget_guard",
+              "mdl_cost": 2,
+              "proofs_passed": 1,
+              "status": "proposed"
+            }
+          ],
+          "selection_wall_ns": 113740,
+          "signals": {
+            "cost_excess": 6,
+            "repeated_noop_firings": 12
+          }
+        },
+        {
+          "abort": null,
+          "answer_key_passed": false,
+          "candidate_families": [
+            "threshold_adjustment",
+            "relation_addition"
+          ],
+          "candidate_scores": [
+            {
+              "blast_radius": 1,
+              "family": "threshold_adjustment",
+              "gain": 29,
+              "mdl_cost": 1,
+              "noop_gain": 0,
+              "placebo_gain": 1,
+              "protected_regressions": 0,
+              "replicated_gain": 29,
+              "replications": 3,
+              "resource_budget": 3,
+              "resource_cost": 1
+            },
+            {
+              "blast_radius": 2,
+              "family": "relation_addition",
+              "gain": 31,
+              "mdl_cost": 3,
+              "noop_gain": 0,
+              "placebo_gain": 1,
+              "protected_regressions": 0,
+              "replicated_gain": 31,
+              "replications": 3,
+              "resource_budget": 3,
+              "resource_cost": 1
+            }
+          ],
+          "case_id": "ambiguous_minimal_006",
+          "control_gains": {
+            "noop": 0,
+            "placebo": 1
+          },
+          "harness_admissible_families": [
+            "threshold_adjustment",
+            "relation_addition"
+          ],
+          "opaque_case_id": "case_a9e6ee5c3ca0",
+          "selected": [
+            {
+              "family": "threshold_adjustment",
+              "mdl_cost": 1,
+              "proofs_passed": 1,
+              "status": "proposed"
+            }
+          ],
+          "selection_wall_ns": 122161,
+          "signals": {
+            "false_negative": 3,
+            "relation_counterfactual": 1,
+            "threshold_sensitivity": 1
+          }
+        },
+        {
+          "abort": {
+            "count": 1,
+            "reason": "no_causally_supported_patch",
+            "status": "aborted"
+          },
+          "answer_key_passed": false,
+          "candidate_families": [
+            "threshold_adjustment",
+            "relation_addition"
+          ],
+          "candidate_scores": [
+            {
+              "blast_radius": 1,
+              "family": "threshold_adjustment",
+              "gain": 3,
+              "mdl_cost": 1,
+              "noop_gain": 2,
+              "placebo_gain": 3,
+              "protected_regressions": 0,
+              "replicated_gain": 3,
+              "replications": 3,
+              "resource_budget": 3,
+              "resource_cost": 1
+            },
+            {
+              "blast_radius": 2,
+              "family": "relation_addition",
+              "gain": 4,
+              "mdl_cost": 3,
+              "noop_gain": 2,
+              "placebo_gain": 3,
+              "protected_regressions": 0,
+              "replicated_gain": 4,
+              "replications": 3,
+              "resource_budget": 3,
+              "resource_cost": 1
+            }
+          ],
+          "case_id": "correlation_only_007",
+          "control_gains": {
+            "noop": 2,
+            "placebo": 3
+          },
+          "harness_admissible_families": [],
+          "opaque_case_id": "case_88b50cb7e08f",
+          "selected": [],
+          "selection_wall_ns": 115731,
+          "signals": {
+            "false_negative": 2,
+            "relation_counterfactual": 1,
+            "threshold_sensitivity": 1
+          }
+        }
+      ],
+      "sources_after": {
+        "files": {
+          "docs/research/engine_substrate/THOUGHTEXPERIMENT_SELF_CHANGE_BLIND_BASELINE_V1_PREREG_20261005.md": "8c5c4bdc8f398c9d826387359ce3c7f02b8a11c0e082972ad05fa607146f6cd1",
+          "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+          "evaluation/substrate_capability/analyze_thoughtexperiment_self_change_blind_baseline_v1.py": "f4510bce1720c92251f13266791c36088c1d15c79b113cc6faf703e559cde58e",
+          "evaluation/substrate_capability/thoughtexperiment_self_change_blind_baseline_v1.py": "afb499453c8e55219f9066e8b743dfd1072a51f546af90a3b8820581ddcba746",
+          "runners/dsl/Cargo.lock": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+          "runners/dsl/Cargo.toml": "c4d8ffff2241352a5150b5a9937dbb8010e958b6f115235b7daeae716c1a9332",
+          "runners/dsl/python/substrate_rs/_native.build.json": "df72c0ddee388bae7023fc9670bab7f0e320abd3f9aca44616ad95cd41f174e3",
+          "runners/dsl/python/substrate_rs/ext.py": "36d623734bad3209dcdc8b6b894dab13276e8045b6c11cd0b64fdddd40c1109e",
+          "runners/dsl/src/graph.rs": "2c14dea3c04b3b13408690ec79fb61829c1e2760bcf4e9edf0bdde37d1c15da0",
+          "runners/dsl/src/py.rs": "905cb4eb645b597d34d5faf4bd9d0b999baf749e9c2f19e947bbbf89a0f27f39",
+          "runners/dsl/src/rewrite.rs": "ea711f28c9f8c21f119cdca6ad1d417576deb20b16a36ce6158e13a9fbafdf1b",
+          "runners/dsl/src/substrate.rs": "39f27175b2025c6c6552fd5bec8310d4ab06c6401823372f4bd8c4c13b5301e8",
+          "schemas/self_change_protocol.schema.json": "ea3006d0c2e3eadb766d25ce99b0c0fd6acc0a4648329c937b1d98b1c4a72bd6",
+          "seeds/self_change_reasoning.json": "ab1980a533b6498ae614b5b44e611d882c00189287e9f9895fbcbceb06635e98",
+          "substrate/world_adapter.py": "fffb5e21986d272b1273a092c26adf5d12f478a341e60a264d19c7b4da3a6298",
+          "tests/fixtures/self_change_blind_faults.json": "cd5bf2ebdd4d4ded715746677540290c8eec21fe8311bb2f349eab5d22a67898",
+          "tests/test_self_change_reasoning_migrated.py": "83812a4c27128059de2405cf1ae34a1a76c068d95d7b03b75e1d267a1f7621e9"
+        },
+        "native_binary": {
+          "path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+          "sha256": "d643dc758567a4d6966cbafeae247cf09163cf2b6062283ba527c56abe441f9c"
+        }
+      },
+      "sources_before": {
+        "files": {
+          "docs/research/engine_substrate/THOUGHTEXPERIMENT_SELF_CHANGE_BLIND_BASELINE_V1_PREREG_20261005.md": "8c5c4bdc8f398c9d826387359ce3c7f02b8a11c0e082972ad05fa607146f6cd1",
+          "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+          "evaluation/substrate_capability/analyze_thoughtexperiment_self_change_blind_baseline_v1.py": "f4510bce1720c92251f13266791c36088c1d15c79b113cc6faf703e559cde58e",
+          "evaluation/substrate_capability/thoughtexperiment_self_change_blind_baseline_v1.py": "afb499453c8e55219f9066e8b743dfd1072a51f546af90a3b8820581ddcba746",
+          "runners/dsl/Cargo.lock": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+          "runners/dsl/Cargo.toml": "c4d8ffff2241352a5150b5a9937dbb8010e958b6f115235b7daeae716c1a9332",
+          "runners/dsl/python/substrate_rs/_native.build.json": "df72c0ddee388bae7023fc9670bab7f0e320abd3f9aca44616ad95cd41f174e3",
+          "runners/dsl/python/substrate_rs/ext.py": "36d623734bad3209dcdc8b6b894dab13276e8045b6c11cd0b64fdddd40c1109e",
+          "runners/dsl/src/graph.rs": "2c14dea3c04b3b13408690ec79fb61829c1e2760bcf4e9edf0bdde37d1c15da0",
+          "runners/dsl/src/py.rs": "905cb4eb645b597d34d5faf4bd9d0b999baf749e9c2f19e947bbbf89a0f27f39",
+          "runners/dsl/src/rewrite.rs": "ea711f28c9f8c21f119cdca6ad1d417576deb20b16a36ce6158e13a9fbafdf1b",
+          "runners/dsl/src/substrate.rs": "39f27175b2025c6c6552fd5bec8310d4ab06c6401823372f4bd8c4c13b5301e8",
+          "schemas/self_change_protocol.schema.json": "ea3006d0c2e3eadb766d25ce99b0c0fd6acc0a4648329c937b1d98b1c4a72bd6",
+          "seeds/self_change_reasoning.json": "ab1980a533b6498ae614b5b44e611d882c00189287e9f9895fbcbceb06635e98",
+          "substrate/world_adapter.py": "fffb5e21986d272b1273a092c26adf5d12f478a341e60a264d19c7b4da3a6298",
+          "tests/fixtures/self_change_blind_faults.json": "cd5bf2ebdd4d4ded715746677540290c8eec21fe8311bb2f349eab5d22a67898",
+          "tests/test_self_change_reasoning_migrated.py": "83812a4c27128059de2405cf1ae34a1a76c068d95d7b03b75e1d267a1f7621e9"
+        },
+        "native_binary": {
+          "path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+          "sha256": "d643dc758567a4d6966cbafeae247cf09163cf2b6062283ba527c56abe441f9c"
+        }
+      },
+      "worker": 2
+    }
+  ]
+}

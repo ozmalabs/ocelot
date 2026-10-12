@@ -1,0 +1,5 @@
+# Thoughtexperiment v1.2.3 analyzer amendment
+
+The source-locked v1.2.3 capture is unchanged. The original analyzer reported failure because its last-writer assertion selected the first node with a changed `identity` field, which belonged to PrevPercept rather than the CurPercept on the direct/deferred conflict path. The corrected analyzer selects by the CurPercept node ID, retains the original failure report, records both analyzer hashes, and passes the source-lock, replay, closure-parity, truncation, alternating-writer, and final-value checks.
+
+The failure is a harness-analysis defect, not an engine mismatch. The raw capture remains the measurement authority; the correction narrows only the adjudication to the preregistered conflict target. See the [v1.2.3 results](THOUGHTEXPERIMENT_EVENT_VALUE_ATTRIBUTION_V1_2_3_RESULTS_20261005.md), [original failed analysis](../../../evaluation/reports/thoughtexperiment_event_value_attribution_v1_2_3_analysis_20261005.json), and [corrected analysis](../../../evaluation/reports/thoughtexperiment_event_value_attribution_v1_2_3_corrected_analysis_20261005.json).

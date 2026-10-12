@@ -1,0 +1,110 @@
+{
+  "checks": {
+    "all_residuals_recompute": true,
+    "full_and_event_residuals_zero": true,
+    "full_event_state_parity_all_topologies": true,
+    "locked_hashes_match": true,
+    "nine_arms_present": true,
+    "omission_positive_in_all_topologies": true,
+    "raw_gate_checks_true": true
+  },
+  "claim_boundary": "equation and provenance audit on an isolated directed-link fixture; no natural prevalence claim",
+  "equation": "state_i = sign(1.5 * (external_i + identity_i + sum_j weight_ij * state_j)) with strict +/- 0.5493061443340548 thresholds",
+  "lock_sha256": "5d21551dbd34bd0e88d517063fb02b922c07dd159ae3da04c87269a3316d692f",
+  "per_arm_residual_audit": [
+    {
+      "edge_count": 11,
+      "policy": "full",
+      "recomputed_residual_count": 0,
+      "residual_matches": true,
+      "runner_residual_count": 0,
+      "topology": "chain"
+    },
+    {
+      "edge_count": 11,
+      "policy": "event",
+      "recomputed_residual_count": 0,
+      "residual_matches": true,
+      "runner_residual_count": 0,
+      "topology": "chain"
+    },
+    {
+      "edge_count": 11,
+      "policy": "omission",
+      "recomputed_residual_count": 1,
+      "residual_matches": true,
+      "runner_residual_count": 1,
+      "topology": "chain"
+    },
+    {
+      "edge_count": 11,
+      "policy": "full",
+      "recomputed_residual_count": 0,
+      "residual_matches": true,
+      "runner_residual_count": 0,
+      "topology": "leaves_to_hub"
+    },
+    {
+      "edge_count": 11,
+      "policy": "event",
+      "recomputed_residual_count": 0,
+      "residual_matches": true,
+      "runner_residual_count": 0,
+      "topology": "leaves_to_hub"
+    },
+    {
+      "edge_count": 11,
+      "policy": "omission",
+      "recomputed_residual_count": 11,
+      "residual_matches": true,
+      "runner_residual_count": 11,
+      "topology": "leaves_to_hub"
+    },
+    {
+      "edge_count": 11,
+      "policy": "full",
+      "recomputed_residual_count": 0,
+      "residual_matches": true,
+      "runner_residual_count": 0,
+      "topology": "hub_to_leaves"
+    },
+    {
+      "edge_count": 11,
+      "policy": "event",
+      "recomputed_residual_count": 0,
+      "residual_matches": true,
+      "runner_residual_count": 0,
+      "topology": "hub_to_leaves"
+    },
+    {
+      "edge_count": 11,
+      "policy": "omission",
+      "recomputed_residual_count": 1,
+      "residual_matches": true,
+      "runner_residual_count": 1,
+      "topology": "hub_to_leaves"
+    }
+  ],
+  "raw_sha256": "3505f016311973af451af99268c27b24cb82b0f148e0de568d2cad754fc03663",
+  "schema_version": 1,
+  "topology_comparisons": {
+    "chain": {
+      "event_enqueues": 11,
+      "event_turns": 12,
+      "full_event_states_equal": true,
+      "omission_has_positive_residual": true
+    },
+    "hub_to_leaves": {
+      "event_enqueues": 1,
+      "event_turns": 2,
+      "full_event_states_equal": true,
+      "omission_has_positive_residual": true
+    },
+    "leaves_to_hub": {
+      "event_enqueues": 11,
+      "event_turns": 12,
+      "full_event_states_equal": true,
+      "omission_has_positive_residual": true
+    }
+  }
+}

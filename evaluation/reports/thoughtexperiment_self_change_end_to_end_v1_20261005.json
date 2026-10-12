@@ -1,0 +1,601 @@
+{
+  "host": "Linux-6.8.0-142-generic-x86_64-with-glibc2.39",
+  "lock_sha256": "779ce1d7df82c7f06f8771307b998436dff312e8a307a5be2dbc2953155feced",
+  "schema": "ThoughtexperimentSelfChangeEndToEndV1",
+  "workers": [
+    {
+      "order": [
+        "full_copy",
+        "shared_graph_pages"
+      ],
+      "pid": 6,
+      "results": [
+        {
+          "backend": "full_copy",
+          "canary_outputs": [
+            true,
+            true,
+            true,
+            false,
+            false
+          ],
+          "candidate_branch_patch_receipt": {
+            "content_hash": 4323287815104574801,
+            "inverse_clause": {
+              "type": "Lit",
+              "value": false
+            },
+            "previous_content_hash": 343302570399550442,
+            "previous_revision": 0,
+            "revision": 1,
+            "target_uid": 17
+          },
+          "candidate_families": [
+            "threshold_adjustment"
+          ],
+          "commits": 1,
+          "committed_patch_status": "committed",
+          "faultprobe_target_uid": 0,
+          "final_correct": true,
+          "final_outputs": [
+            true,
+            false
+          ],
+          "graph_status": "commit_ready",
+          "no_op_outputs": [
+            false,
+            false
+          ],
+          "placebo_outputs": [
+            false,
+            false
+          ],
+          "proposed_clause": {
+            "a": {
+              "key": "signal",
+              "node": {
+                "name": "x",
+                "type": "Var"
+              },
+              "type": "Attr"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1
+            },
+            "type": "Gte"
+          },
+          "selected_count": 1,
+          "selected_family": "threshold_adjustment",
+          "target_revision_after_commit": 1,
+          "target_revision_after_rehearsal": 0,
+          "target_uid_bound_after_selection": 17,
+          "timing_ns": {
+            "canary_rehearsal": 2498018,
+            "commit_tick": 139391,
+            "final_verification": 780486,
+            "selection_tick": 88671,
+            "training_rehearsal_candidate_noop_placebo": 2468369
+          },
+          "training_gain": 10,
+          "training_outputs": [
+            true,
+            false
+          ]
+        },
+        {
+          "backend": "shared_graph_pages",
+          "canary_outputs": [
+            true,
+            true,
+            true,
+            false,
+            false
+          ],
+          "candidate_branch_patch_receipt": {
+            "content_hash": 4323287815104574801,
+            "inverse_clause": {
+              "type": "Lit",
+              "value": false
+            },
+            "previous_content_hash": 343302570399550442,
+            "previous_revision": 0,
+            "revision": 1,
+            "target_uid": 17
+          },
+          "candidate_families": [
+            "threshold_adjustment"
+          ],
+          "commits": 1,
+          "committed_patch_status": "committed",
+          "faultprobe_target_uid": 0,
+          "final_correct": true,
+          "final_outputs": [
+            true,
+            false
+          ],
+          "graph_status": "commit_ready",
+          "no_op_outputs": [
+            false,
+            false
+          ],
+          "placebo_outputs": [
+            false,
+            false
+          ],
+          "proposed_clause": {
+            "a": {
+              "key": "signal",
+              "node": {
+                "name": "x",
+                "type": "Var"
+              },
+              "type": "Attr"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1
+            },
+            "type": "Gte"
+          },
+          "selected_count": 1,
+          "selected_family": "threshold_adjustment",
+          "target_revision_after_commit": 1,
+          "target_revision_after_rehearsal": 0,
+          "target_uid_bound_after_selection": 17,
+          "timing_ns": {
+            "canary_rehearsal": 1959094,
+            "commit_tick": 193412,
+            "final_verification": 1324219,
+            "selection_tick": 94411,
+            "training_rehearsal_candidate_noop_placebo": 3556406
+          },
+          "training_gain": 10,
+          "training_outputs": [
+            true,
+            false
+          ]
+        }
+      ],
+      "sources_after": {
+        "files": {
+          "docs/research/engine_substrate/THOUGHTEXPERIMENT_SELF_CHANGE_END_TO_END_V1_PREREG_20261005.md": "cd2c08ba867fea503b2f55c99905f02be60ef77b67f2ab7642ef0b0134dbdcd4",
+          "evaluation/substrate_capability/analyze_thoughtexperiment_self_change_end_to_end_v1.py": "d7e7d6d257c6ba5aaab44bc74b0112dd42c877d4a1b68d2f16f1042dacd10daf",
+          "evaluation/substrate_capability/thoughtexperiment_self_change_end_to_end_v1.py": "4797a1c220c91b181b986a8fe78b549fd43cb2186b4afa7b28ad987f072a1395",
+          "runners/dsl/Cargo.lock": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+          "runners/dsl/Cargo.toml": "c4d8ffff2241352a5150b5a9937dbb8010e958b6f115235b7daeae716c1a9332",
+          "runners/dsl/python/substrate_rs/_native.build.json": "df72c0ddee388bae7023fc9670bab7f0e320abd3f9aca44616ad95cd41f174e3",
+          "runners/dsl/python/substrate_rs/ext.py": "36d623734bad3209dcdc8b6b894dab13276e8045b6c11cd0b64fdddd40c1109e",
+          "runners/dsl/src/graph.rs": "2c14dea3c04b3b13408690ec79fb61829c1e2760bcf4e9edf0bdde37d1c15da0",
+          "runners/dsl/src/py.rs": "905cb4eb645b597d34d5faf4bd9d0b999baf749e9c2f19e947bbbf89a0f27f39",
+          "runners/dsl/src/rewrite.rs": "ea711f28c9f8c21f119cdca6ad1d417576deb20b16a36ce6158e13a9fbafdf1b",
+          "runners/dsl/src/substrate.rs": "39f27175b2025c6c6552fd5bec8310d4ab06c6401823372f4bd8c4c13b5301e8",
+          "seeds/self_change_reasoning.json": "ab1980a533b6498ae614b5b44e611d882c00189287e9f9895fbcbceb06635e98",
+          "substrate/world_adapter.py": "fffb5e21986d272b1273a092c26adf5d12f478a341e60a264d19c7b4da3a6298"
+        },
+        "native_binary": {
+          "path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+          "sha256": "d643dc758567a4d6966cbafeae247cf09163cf2b6062283ba527c56abe441f9c"
+        }
+      },
+      "sources_before": {
+        "files": {
+          "docs/research/engine_substrate/THOUGHTEXPERIMENT_SELF_CHANGE_END_TO_END_V1_PREREG_20261005.md": "cd2c08ba867fea503b2f55c99905f02be60ef77b67f2ab7642ef0b0134dbdcd4",
+          "evaluation/substrate_capability/analyze_thoughtexperiment_self_change_end_to_end_v1.py": "d7e7d6d257c6ba5aaab44bc74b0112dd42c877d4a1b68d2f16f1042dacd10daf",
+          "evaluation/substrate_capability/thoughtexperiment_self_change_end_to_end_v1.py": "4797a1c220c91b181b986a8fe78b549fd43cb2186b4afa7b28ad987f072a1395",
+          "runners/dsl/Cargo.lock": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+          "runners/dsl/Cargo.toml": "c4d8ffff2241352a5150b5a9937dbb8010e958b6f115235b7daeae716c1a9332",
+          "runners/dsl/python/substrate_rs/_native.build.json": "df72c0ddee388bae7023fc9670bab7f0e320abd3f9aca44616ad95cd41f174e3",
+          "runners/dsl/python/substrate_rs/ext.py": "36d623734bad3209dcdc8b6b894dab13276e8045b6c11cd0b64fdddd40c1109e",
+          "runners/dsl/src/graph.rs": "2c14dea3c04b3b13408690ec79fb61829c1e2760bcf4e9edf0bdde37d1c15da0",
+          "runners/dsl/src/py.rs": "905cb4eb645b597d34d5faf4bd9d0b999baf749e9c2f19e947bbbf89a0f27f39",
+          "runners/dsl/src/rewrite.rs": "ea711f28c9f8c21f119cdca6ad1d417576deb20b16a36ce6158e13a9fbafdf1b",
+          "runners/dsl/src/substrate.rs": "39f27175b2025c6c6552fd5bec8310d4ab06c6401823372f4bd8c4c13b5301e8",
+          "seeds/self_change_reasoning.json": "ab1980a533b6498ae614b5b44e611d882c00189287e9f9895fbcbceb06635e98",
+          "substrate/world_adapter.py": "fffb5e21986d272b1273a092c26adf5d12f478a341e60a264d19c7b4da3a6298"
+        },
+        "native_binary": {
+          "path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+          "sha256": "d643dc758567a4d6966cbafeae247cf09163cf2b6062283ba527c56abe441f9c"
+        }
+      },
+      "worker": 0
+    },
+    {
+      "order": [
+        "shared_graph_pages",
+        "full_copy"
+      ],
+      "pid": 81,
+      "results": [
+        {
+          "backend": "shared_graph_pages",
+          "canary_outputs": [
+            true,
+            true,
+            true,
+            false,
+            false
+          ],
+          "candidate_branch_patch_receipt": {
+            "content_hash": 4323287815104574801,
+            "inverse_clause": {
+              "type": "Lit",
+              "value": false
+            },
+            "previous_content_hash": 343302570399550442,
+            "previous_revision": 0,
+            "revision": 1,
+            "target_uid": 17
+          },
+          "candidate_families": [
+            "threshold_adjustment"
+          ],
+          "commits": 1,
+          "committed_patch_status": "committed",
+          "faultprobe_target_uid": 0,
+          "final_correct": true,
+          "final_outputs": [
+            true,
+            false
+          ],
+          "graph_status": "commit_ready",
+          "no_op_outputs": [
+            false,
+            false
+          ],
+          "placebo_outputs": [
+            false,
+            false
+          ],
+          "proposed_clause": {
+            "a": {
+              "key": "signal",
+              "node": {
+                "name": "x",
+                "type": "Var"
+              },
+              "type": "Attr"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1
+            },
+            "type": "Gte"
+          },
+          "selected_count": 1,
+          "selected_family": "threshold_adjustment",
+          "target_revision_after_commit": 1,
+          "target_revision_after_rehearsal": 0,
+          "target_uid_bound_after_selection": 17,
+          "timing_ns": {
+            "canary_rehearsal": 2070035,
+            "commit_tick": 131881,
+            "final_verification": 973267,
+            "selection_tick": 84961,
+            "training_rehearsal_candidate_noop_placebo": 2404498
+          },
+          "training_gain": 10,
+          "training_outputs": [
+            true,
+            false
+          ]
+        },
+        {
+          "backend": "full_copy",
+          "canary_outputs": [
+            true,
+            true,
+            true,
+            false,
+            false
+          ],
+          "candidate_branch_patch_receipt": {
+            "content_hash": 4323287815104574801,
+            "inverse_clause": {
+              "type": "Lit",
+              "value": false
+            },
+            "previous_content_hash": 343302570399550442,
+            "previous_revision": 0,
+            "revision": 1,
+            "target_uid": 17
+          },
+          "candidate_families": [
+            "threshold_adjustment"
+          ],
+          "commits": 1,
+          "committed_patch_status": "committed",
+          "faultprobe_target_uid": 0,
+          "final_correct": true,
+          "final_outputs": [
+            true,
+            false
+          ],
+          "graph_status": "commit_ready",
+          "no_op_outputs": [
+            false,
+            false
+          ],
+          "placebo_outputs": [
+            false,
+            false
+          ],
+          "proposed_clause": {
+            "a": {
+              "key": "signal",
+              "node": {
+                "name": "x",
+                "type": "Var"
+              },
+              "type": "Attr"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1
+            },
+            "type": "Gte"
+          },
+          "selected_count": 1,
+          "selected_family": "threshold_adjustment",
+          "target_revision_after_commit": 1,
+          "target_revision_after_rehearsal": 0,
+          "target_uid_bound_after_selection": 17,
+          "timing_ns": {
+            "canary_rehearsal": 3306234,
+            "commit_tick": 199601,
+            "final_verification": 1422601,
+            "selection_tick": 130951,
+            "training_rehearsal_candidate_noop_placebo": 2763350
+          },
+          "training_gain": 10,
+          "training_outputs": [
+            true,
+            false
+          ]
+        }
+      ],
+      "sources_after": {
+        "files": {
+          "docs/research/engine_substrate/THOUGHTEXPERIMENT_SELF_CHANGE_END_TO_END_V1_PREREG_20261005.md": "cd2c08ba867fea503b2f55c99905f02be60ef77b67f2ab7642ef0b0134dbdcd4",
+          "evaluation/substrate_capability/analyze_thoughtexperiment_self_change_end_to_end_v1.py": "d7e7d6d257c6ba5aaab44bc74b0112dd42c877d4a1b68d2f16f1042dacd10daf",
+          "evaluation/substrate_capability/thoughtexperiment_self_change_end_to_end_v1.py": "4797a1c220c91b181b986a8fe78b549fd43cb2186b4afa7b28ad987f072a1395",
+          "runners/dsl/Cargo.lock": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+          "runners/dsl/Cargo.toml": "c4d8ffff2241352a5150b5a9937dbb8010e958b6f115235b7daeae716c1a9332",
+          "runners/dsl/python/substrate_rs/_native.build.json": "df72c0ddee388bae7023fc9670bab7f0e320abd3f9aca44616ad95cd41f174e3",
+          "runners/dsl/python/substrate_rs/ext.py": "36d623734bad3209dcdc8b6b894dab13276e8045b6c11cd0b64fdddd40c1109e",
+          "runners/dsl/src/graph.rs": "2c14dea3c04b3b13408690ec79fb61829c1e2760bcf4e9edf0bdde37d1c15da0",
+          "runners/dsl/src/py.rs": "905cb4eb645b597d34d5faf4bd9d0b999baf749e9c2f19e947bbbf89a0f27f39",
+          "runners/dsl/src/rewrite.rs": "ea711f28c9f8c21f119cdca6ad1d417576deb20b16a36ce6158e13a9fbafdf1b",
+          "runners/dsl/src/substrate.rs": "39f27175b2025c6c6552fd5bec8310d4ab06c6401823372f4bd8c4c13b5301e8",
+          "seeds/self_change_reasoning.json": "ab1980a533b6498ae614b5b44e611d882c00189287e9f9895fbcbceb06635e98",
+          "substrate/world_adapter.py": "fffb5e21986d272b1273a092c26adf5d12f478a341e60a264d19c7b4da3a6298"
+        },
+        "native_binary": {
+          "path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+          "sha256": "d643dc758567a4d6966cbafeae247cf09163cf2b6062283ba527c56abe441f9c"
+        }
+      },
+      "sources_before": {
+        "files": {
+          "docs/research/engine_substrate/THOUGHTEXPERIMENT_SELF_CHANGE_END_TO_END_V1_PREREG_20261005.md": "cd2c08ba867fea503b2f55c99905f02be60ef77b67f2ab7642ef0b0134dbdcd4",
+          "evaluation/substrate_capability/analyze_thoughtexperiment_self_change_end_to_end_v1.py": "d7e7d6d257c6ba5aaab44bc74b0112dd42c877d4a1b68d2f16f1042dacd10daf",
+          "evaluation/substrate_capability/thoughtexperiment_self_change_end_to_end_v1.py": "4797a1c220c91b181b986a8fe78b549fd43cb2186b4afa7b28ad987f072a1395",
+          "runners/dsl/Cargo.lock": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+          "runners/dsl/Cargo.toml": "c4d8ffff2241352a5150b5a9937dbb8010e958b6f115235b7daeae716c1a9332",
+          "runners/dsl/python/substrate_rs/_native.build.json": "df72c0ddee388bae7023fc9670bab7f0e320abd3f9aca44616ad95cd41f174e3",
+          "runners/dsl/python/substrate_rs/ext.py": "36d623734bad3209dcdc8b6b894dab13276e8045b6c11cd0b64fdddd40c1109e",
+          "runners/dsl/src/graph.rs": "2c14dea3c04b3b13408690ec79fb61829c1e2760bcf4e9edf0bdde37d1c15da0",
+          "runners/dsl/src/py.rs": "905cb4eb645b597d34d5faf4bd9d0b999baf749e9c2f19e947bbbf89a0f27f39",
+          "runners/dsl/src/rewrite.rs": "ea711f28c9f8c21f119cdca6ad1d417576deb20b16a36ce6158e13a9fbafdf1b",
+          "runners/dsl/src/substrate.rs": "39f27175b2025c6c6552fd5bec8310d4ab06c6401823372f4bd8c4c13b5301e8",
+          "seeds/self_change_reasoning.json": "ab1980a533b6498ae614b5b44e611d882c00189287e9f9895fbcbceb06635e98",
+          "substrate/world_adapter.py": "fffb5e21986d272b1273a092c26adf5d12f478a341e60a264d19c7b4da3a6298"
+        },
+        "native_binary": {
+          "path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+          "sha256": "d643dc758567a4d6966cbafeae247cf09163cf2b6062283ba527c56abe441f9c"
+        }
+      },
+      "worker": 1
+    },
+    {
+      "order": [
+        "full_copy",
+        "shared_graph_pages"
+      ],
+      "pid": 156,
+      "results": [
+        {
+          "backend": "full_copy",
+          "canary_outputs": [
+            true,
+            true,
+            true,
+            false,
+            false
+          ],
+          "candidate_branch_patch_receipt": {
+            "content_hash": 4323287815104574801,
+            "inverse_clause": {
+              "type": "Lit",
+              "value": false
+            },
+            "previous_content_hash": 343302570399550442,
+            "previous_revision": 0,
+            "revision": 1,
+            "target_uid": 17
+          },
+          "candidate_families": [
+            "threshold_adjustment"
+          ],
+          "commits": 1,
+          "committed_patch_status": "committed",
+          "faultprobe_target_uid": 0,
+          "final_correct": true,
+          "final_outputs": [
+            true,
+            false
+          ],
+          "graph_status": "commit_ready",
+          "no_op_outputs": [
+            false,
+            false
+          ],
+          "placebo_outputs": [
+            false,
+            false
+          ],
+          "proposed_clause": {
+            "a": {
+              "key": "signal",
+              "node": {
+                "name": "x",
+                "type": "Var"
+              },
+              "type": "Attr"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1
+            },
+            "type": "Gte"
+          },
+          "selected_count": 1,
+          "selected_family": "threshold_adjustment",
+          "target_revision_after_commit": 1,
+          "target_revision_after_rehearsal": 0,
+          "target_uid_bound_after_selection": 17,
+          "timing_ns": {
+            "canary_rehearsal": 2801040,
+            "commit_tick": 197431,
+            "final_verification": 1349840,
+            "selection_tick": 93121,
+            "training_rehearsal_candidate_noop_placebo": 3997819
+          },
+          "training_gain": 10,
+          "training_outputs": [
+            true,
+            false
+          ]
+        },
+        {
+          "backend": "shared_graph_pages",
+          "canary_outputs": [
+            true,
+            true,
+            true,
+            false,
+            false
+          ],
+          "candidate_branch_patch_receipt": {
+            "content_hash": 4323287815104574801,
+            "inverse_clause": {
+              "type": "Lit",
+              "value": false
+            },
+            "previous_content_hash": 343302570399550442,
+            "previous_revision": 0,
+            "revision": 1,
+            "target_uid": 17
+          },
+          "candidate_families": [
+            "threshold_adjustment"
+          ],
+          "commits": 1,
+          "committed_patch_status": "committed",
+          "faultprobe_target_uid": 0,
+          "final_correct": true,
+          "final_outputs": [
+            true,
+            false
+          ],
+          "graph_status": "commit_ready",
+          "no_op_outputs": [
+            false,
+            false
+          ],
+          "placebo_outputs": [
+            false,
+            false
+          ],
+          "proposed_clause": {
+            "a": {
+              "key": "signal",
+              "node": {
+                "name": "x",
+                "type": "Var"
+              },
+              "type": "Attr"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1
+            },
+            "type": "Gte"
+          },
+          "selected_count": 1,
+          "selected_family": "threshold_adjustment",
+          "target_revision_after_commit": 1,
+          "target_revision_after_rehearsal": 0,
+          "target_uid_bound_after_selection": 17,
+          "timing_ns": {
+            "canary_rehearsal": 2573209,
+            "commit_tick": 143221,
+            "final_verification": 1075068,
+            "selection_tick": 101741,
+            "training_rehearsal_candidate_noop_placebo": 2937762
+          },
+          "training_gain": 10,
+          "training_outputs": [
+            true,
+            false
+          ]
+        }
+      ],
+      "sources_after": {
+        "files": {
+          "docs/research/engine_substrate/THOUGHTEXPERIMENT_SELF_CHANGE_END_TO_END_V1_PREREG_20261005.md": "cd2c08ba867fea503b2f55c99905f02be60ef77b67f2ab7642ef0b0134dbdcd4",
+          "evaluation/substrate_capability/analyze_thoughtexperiment_self_change_end_to_end_v1.py": "d7e7d6d257c6ba5aaab44bc74b0112dd42c877d4a1b68d2f16f1042dacd10daf",
+          "evaluation/substrate_capability/thoughtexperiment_self_change_end_to_end_v1.py": "4797a1c220c91b181b986a8fe78b549fd43cb2186b4afa7b28ad987f072a1395",
+          "runners/dsl/Cargo.lock": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+          "runners/dsl/Cargo.toml": "c4d8ffff2241352a5150b5a9937dbb8010e958b6f115235b7daeae716c1a9332",
+          "runners/dsl/python/substrate_rs/_native.build.json": "df72c0ddee388bae7023fc9670bab7f0e320abd3f9aca44616ad95cd41f174e3",
+          "runners/dsl/python/substrate_rs/ext.py": "36d623734bad3209dcdc8b6b894dab13276e8045b6c11cd0b64fdddd40c1109e",
+          "runners/dsl/src/graph.rs": "2c14dea3c04b3b13408690ec79fb61829c1e2760bcf4e9edf0bdde37d1c15da0",
+          "runners/dsl/src/py.rs": "905cb4eb645b597d34d5faf4bd9d0b999baf749e9c2f19e947bbbf89a0f27f39",
+          "runners/dsl/src/rewrite.rs": "ea711f28c9f8c21f119cdca6ad1d417576deb20b16a36ce6158e13a9fbafdf1b",
+          "runners/dsl/src/substrate.rs": "39f27175b2025c6c6552fd5bec8310d4ab06c6401823372f4bd8c4c13b5301e8",
+          "seeds/self_change_reasoning.json": "ab1980a533b6498ae614b5b44e611d882c00189287e9f9895fbcbceb06635e98",
+          "substrate/world_adapter.py": "fffb5e21986d272b1273a092c26adf5d12f478a341e60a264d19c7b4da3a6298"
+        },
+        "native_binary": {
+          "path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+          "sha256": "d643dc758567a4d6966cbafeae247cf09163cf2b6062283ba527c56abe441f9c"
+        }
+      },
+      "sources_before": {
+        "files": {
+          "docs/research/engine_substrate/THOUGHTEXPERIMENT_SELF_CHANGE_END_TO_END_V1_PREREG_20261005.md": "cd2c08ba867fea503b2f55c99905f02be60ef77b67f2ab7642ef0b0134dbdcd4",
+          "evaluation/substrate_capability/analyze_thoughtexperiment_self_change_end_to_end_v1.py": "d7e7d6d257c6ba5aaab44bc74b0112dd42c877d4a1b68d2f16f1042dacd10daf",
+          "evaluation/substrate_capability/thoughtexperiment_self_change_end_to_end_v1.py": "4797a1c220c91b181b986a8fe78b549fd43cb2186b4afa7b28ad987f072a1395",
+          "runners/dsl/Cargo.lock": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+          "runners/dsl/Cargo.toml": "c4d8ffff2241352a5150b5a9937dbb8010e958b6f115235b7daeae716c1a9332",
+          "runners/dsl/python/substrate_rs/_native.build.json": "df72c0ddee388bae7023fc9670bab7f0e320abd3f9aca44616ad95cd41f174e3",
+          "runners/dsl/python/substrate_rs/ext.py": "36d623734bad3209dcdc8b6b894dab13276e8045b6c11cd0b64fdddd40c1109e",
+          "runners/dsl/src/graph.rs": "2c14dea3c04b3b13408690ec79fb61829c1e2760bcf4e9edf0bdde37d1c15da0",
+          "runners/dsl/src/py.rs": "905cb4eb645b597d34d5faf4bd9d0b999baf749e9c2f19e947bbbf89a0f27f39",
+          "runners/dsl/src/rewrite.rs": "ea711f28c9f8c21f119cdca6ad1d417576deb20b16a36ce6158e13a9fbafdf1b",
+          "runners/dsl/src/substrate.rs": "39f27175b2025c6c6552fd5bec8310d4ab06c6401823372f4bd8c4c13b5301e8",
+          "seeds/self_change_reasoning.json": "ab1980a533b6498ae614b5b44e611d882c00189287e9f9895fbcbceb06635e98",
+          "substrate/world_adapter.py": "fffb5e21986d272b1273a092c26adf5d12f478a341e60a264d19c7b4da3a6298"
+        },
+        "native_binary": {
+          "path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+          "sha256": "d643dc758567a4d6966cbafeae247cf09163cf2b6062283ba527c56abe441f9c"
+        }
+      },
+      "worker": 2
+    }
+  ]
+}

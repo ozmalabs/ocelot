@@ -333,6 +333,10 @@ HOST_ACTION_SPECS = [
         "supervise_search_requested_topic", "search", "SearchRequest",
         Eq(A("source", "status"), L("requested"))),
     (
+        "supervise_causal_retrieval_request", "causal_retrieval",
+        "CausalRetrievalRequest",
+        Eq(A("source", "status"), L("requested"))),
+    (
         "supervise_detail_requested_topic", "detail", "DetailRequest",
         Eq(A("source", "status"), L("requested"))),
     (
@@ -503,7 +507,7 @@ RULES.append({
 
 MANIFEST = {
     "id": "cognitive_scheduler",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "self_load_only": True,
     "depends_on": ["cognitive_areas"],
     "area": "scheduler",

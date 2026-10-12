@@ -1,0 +1,5 @@
+# Shape-decoding concurrency profile v1 — GIL-release intervention amendment
+
+The v1 profile found aggregate worker CPU/wall near 1.0× at fanout 8. Source inspection then identified an explicit GIL boundary: `PySubstrate.tick_graph_then_struct` entered the native cycle while retaining the GIL, whereas the adjacent `run_rules` binding uses `py.allow_threads` around its mutex-protected native execution.
+
+For a targeted intervention, `tick_graph_then_struct` now accepts the Python token and executes the same cycle body inside `py.allow_threads`, retaining the per-Substrate mutex and cycle plan. No graph/rule semantics or Python call signature changed. The post-change v2 replay repeats the identical backend/mode/fanout/task protocol, using a new native binary lock and raw path; v1 remains the before-change control. This amendment tests whether that binding boundary explains the measured serialization. Passing semantic gates is required; any performance result remains one task and one host.

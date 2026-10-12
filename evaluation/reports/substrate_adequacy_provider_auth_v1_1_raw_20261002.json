@@ -1,0 +1,3640 @@
+{
+  "environment": {
+    "platform": "Linux-6.8.0-142-generic-x86_64-with-glibc2.39",
+    "python": "3.13.5 (main, Jun 11 2025, 15:36:57) [GCC 11.4.0]"
+  },
+  "lock": {
+    "active": {
+      "domains/adequacy_probe_selection.py": "b8d75708d4e193f16bd071861af08658a907d020281d3c9106a9582c82e8acd9",
+      "domains/adequacy_provider_auth.py": "fa8b6795af120ced16c80df5629930f0eaab53849a68423bc5106e0f6975b39f",
+      "domains/ast_to_term.py": "7ef48f9ecb67975428713ae1d2d54100fcdd39fc434dd586803059224f7cdcdb",
+      "domains/code_reading.py": "dd67d2942cf956c6e35f848aed4012c3ac072e9ac91d9e6b166e8ca44be57908",
+      "domains/code_write_growth.py": "691fd96072687baf2b99c6b3c9816cc6bb44805e35bec13f070a30061151761c",
+      "domains/code_writing.py": "4ad3148ca1796ad13f6128b9fd655e8568c7c843cd68bccee54f35cbf4ddabc9",
+      "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+      "domains/independent_adequacy.py": "33191341fdd63d16d0b9cb5203f27666da90b60fccd567ac4633306a9dcab418",
+      "domains/teach.py": "308a5f31d74dabb3ed8b24bd0c967abd5f94596a3ff76d17657330877fae2cfa",
+      "domains_tree": "2a8c06d3c161633ced141554787e3883308d37b3e30a8cf9bc4fcabd54a58900",
+      "native_binary": "3816b4fb5d5746950b4cc3bf9e904a58e675ce53530727edf44095646dd58a54",
+      "oracle": "b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+      "python_native_tree": "4d4cb4aaaed3c395638b0485fc0d871749150149aded5e81491b42c7fdeb5402",
+      "runners/dsl/python/substrate_rs/__init__.py": "1fed837a6b7e8b35e463d3b8fdca498400c9cc420a016b81279365d6406a4049",
+      "runners/dsl/python/substrate_rs/_native.build.json": "b491d348c59cbf5cd5eee1b3f900a042f31e21665b6e63212edb9ed7f3d60f47",
+      "runners/dsl/src/graph_rules.rs": "b0e9c5bf0bbb4bf278fdab03610fa3f6f82d01ad8ee898ec789982ff41812a50",
+      "runners/dsl/src/py.rs": "d6f922bd406d3f500c10cea11978f47f9612b4ce6b9a348e848a30a305881cba",
+      "runners/dsl/src/substrate.rs": "bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+      "runners/dsl/src/term.rs": "5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+      "rust_tree": "06307beca12566832d3ba7ac157ec6177abb41a87dcf3755d824729d1a55ea0f",
+      "seed_manifest_inventory": "f1098a8168c0663746dffb253eb7230435957b3f8f8aa6d5c8197d224cf946b1",
+      "substrate/boot_all.py": "2bdf46f19228e1d85dbdcf12383116ceeb72aab0efe7ddd0cc6a51d23b45d220",
+      "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+      "substrate/seed_loader.py": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27",
+      "substrate/world_adapter.py": "7aeeb3d418fade3c90dc2d28a64a2685880d0a45d9fd47e4b6c2f6b6dd649023",
+      "substrate_tree": "206c8d6c975998dae706c64fe23be1ae7af659fd749577d978aafa1c30d7fdba"
+    },
+    "design": {
+      "attacker_key_sha256": "43c2f98531595f0c074a20521eb45af7d48dd44327b883c489d583a015fb1707",
+      "cases": {
+        "correct_candidate": {
+          "name": "square",
+          "signed": "truth",
+          "source": "def square(x):\n    return x * x\n"
+        },
+        "forged_unsigned": {
+          "name": "identity",
+          "signed": "none",
+          "source": "def identity(x):\n    return x\n"
+        },
+        "honest_wrong_candidate": {
+          "name": "identity",
+          "signed": "truth",
+          "source": "def identity(x):\n    return x\n"
+        },
+        "trusted_incorrect": {
+          "name": "identity",
+          "signed": "false",
+          "source": "def identity(x):\n    return x\n"
+        }
+      },
+      "known": [
+        {
+          "expected": 0,
+          "inputs": {
+            "x": 0
+          }
+        }
+      ],
+      "probe": {
+        "x": 2
+      },
+      "provider_id": "independent-codewrite-oracle-v1:b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+      "repetitions": 3,
+      "signature": "HMAC-SHA256 over provider/request/probe/input/label/oracle identity",
+      "test_key_sha256": "cdee085de13a3f6f8499687d5e736ceeebb0920ef0a04ee9f55cc00dd600c52c"
+    },
+    "files": {
+      "docs/research/engine_substrate/SUBSTRATE_ADEQUACY_PROVIDER_AUTH_V1_1_PREREG_20261002.md": "d1bffcdb7a0c20a78b6c85adbfc055616d5590dadad7ffa50b86dac735a83c88",
+      "evaluation/substrate_capability/independent_codewrite_oracles.py": "b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+      "evaluation/substrate_capability/substrate_adequacy_provider_auth_v1_1.py": "d670d272717b0d6ff86a0e7bcc4405ba57d210e08f4f213ec0b9512b388b70d3"
+    },
+    "git_head": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+    "schema": "SubstrateAdequacyProviderAuthV1_1Lock"
+  },
+  "post_lock": {
+    "active": {
+      "domains/adequacy_probe_selection.py": "b8d75708d4e193f16bd071861af08658a907d020281d3c9106a9582c82e8acd9",
+      "domains/adequacy_provider_auth.py": "fa8b6795af120ced16c80df5629930f0eaab53849a68423bc5106e0f6975b39f",
+      "domains/ast_to_term.py": "7ef48f9ecb67975428713ae1d2d54100fcdd39fc434dd586803059224f7cdcdb",
+      "domains/code_reading.py": "dd67d2942cf956c6e35f848aed4012c3ac072e9ac91d9e6b166e8ca44be57908",
+      "domains/code_write_growth.py": "691fd96072687baf2b99c6b3c9816cc6bb44805e35bec13f070a30061151761c",
+      "domains/code_writing.py": "4ad3148ca1796ad13f6128b9fd655e8568c7c843cd68bccee54f35cbf4ddabc9",
+      "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+      "domains/independent_adequacy.py": "33191341fdd63d16d0b9cb5203f27666da90b60fccd567ac4633306a9dcab418",
+      "domains/teach.py": "308a5f31d74dabb3ed8b24bd0c967abd5f94596a3ff76d17657330877fae2cfa",
+      "domains_tree": "2a8c06d3c161633ced141554787e3883308d37b3e30a8cf9bc4fcabd54a58900",
+      "native_binary": "3816b4fb5d5746950b4cc3bf9e904a58e675ce53530727edf44095646dd58a54",
+      "oracle": "b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+      "python_native_tree": "4d4cb4aaaed3c395638b0485fc0d871749150149aded5e81491b42c7fdeb5402",
+      "runners/dsl/python/substrate_rs/__init__.py": "1fed837a6b7e8b35e463d3b8fdca498400c9cc420a016b81279365d6406a4049",
+      "runners/dsl/python/substrate_rs/_native.build.json": "b491d348c59cbf5cd5eee1b3f900a042f31e21665b6e63212edb9ed7f3d60f47",
+      "runners/dsl/src/graph_rules.rs": "b0e9c5bf0bbb4bf278fdab03610fa3f6f82d01ad8ee898ec789982ff41812a50",
+      "runners/dsl/src/py.rs": "d6f922bd406d3f500c10cea11978f47f9612b4ce6b9a348e848a30a305881cba",
+      "runners/dsl/src/substrate.rs": "bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+      "runners/dsl/src/term.rs": "5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+      "rust_tree": "06307beca12566832d3ba7ac157ec6177abb41a87dcf3755d824729d1a55ea0f",
+      "seed_manifest_inventory": "f1098a8168c0663746dffb253eb7230435957b3f8f8aa6d5c8197d224cf946b1",
+      "substrate/boot_all.py": "2bdf46f19228e1d85dbdcf12383116ceeb72aab0efe7ddd0cc6a51d23b45d220",
+      "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+      "substrate/seed_loader.py": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27",
+      "substrate/world_adapter.py": "7aeeb3d418fade3c90dc2d28a64a2685880d0a45d9fd47e4b6c2f6b6dd649023",
+      "substrate_tree": "206c8d6c975998dae706c64fe23be1ae7af659fd749577d978aafa1c30d7fdba"
+    },
+    "design": {
+      "attacker_key_sha256": "43c2f98531595f0c074a20521eb45af7d48dd44327b883c489d583a015fb1707",
+      "cases": {
+        "correct_candidate": {
+          "name": "square",
+          "signed": "truth",
+          "source": "def square(x):\n    return x * x\n"
+        },
+        "forged_unsigned": {
+          "name": "identity",
+          "signed": "none",
+          "source": "def identity(x):\n    return x\n"
+        },
+        "honest_wrong_candidate": {
+          "name": "identity",
+          "signed": "truth",
+          "source": "def identity(x):\n    return x\n"
+        },
+        "trusted_incorrect": {
+          "name": "identity",
+          "signed": "false",
+          "source": "def identity(x):\n    return x\n"
+        }
+      },
+      "known": [
+        {
+          "expected": 0,
+          "inputs": {
+            "x": 0
+          }
+        }
+      ],
+      "probe": {
+        "x": 2
+      },
+      "provider_id": "independent-codewrite-oracle-v1:b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+      "repetitions": 3,
+      "signature": "HMAC-SHA256 over provider/request/probe/input/label/oracle identity",
+      "test_key_sha256": "cdee085de13a3f6f8499687d5e736ceeebb0920ef0a04ee9f55cc00dd600c52c"
+    },
+    "files": {
+      "docs/research/engine_substrate/SUBSTRATE_ADEQUACY_PROVIDER_AUTH_V1_1_PREREG_20261002.md": "d1bffcdb7a0c20a78b6c85adbfc055616d5590dadad7ffa50b86dac735a83c88",
+      "evaluation/substrate_capability/independent_codewrite_oracles.py": "b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+      "evaluation/substrate_capability/substrate_adequacy_provider_auth_v1_1.py": "d670d272717b0d6ff86a0e7bcc4405ba57d210e08f4f213ec0b9512b388b70d3"
+    },
+    "git_head": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+    "schema": "SubstrateAdequacyProviderAuthV1_1Lock"
+  },
+  "schedule": [
+    [
+      "honest_wrong_candidate",
+      1
+    ],
+    [
+      "honest_wrong_candidate",
+      2
+    ],
+    [
+      "honest_wrong_candidate",
+      3
+    ],
+    [
+      "forged_unsigned",
+      1
+    ],
+    [
+      "forged_unsigned",
+      2
+    ],
+    [
+      "forged_unsigned",
+      3
+    ],
+    [
+      "trusted_incorrect",
+      1
+    ],
+    [
+      "trusted_incorrect",
+      2
+    ],
+    [
+      "trusted_incorrect",
+      3
+    ],
+    [
+      "correct_candidate",
+      1
+    ],
+    [
+      "correct_candidate",
+      2
+    ],
+    [
+      "correct_candidate",
+      3
+    ]
+  ],
+  "schema": "SubstrateAdequacyProviderAuthV1_1Capture",
+  "source_stable": true,
+  "workers": [
+    {
+      "active_after": {
+        "domains/adequacy_probe_selection.py": "b8d75708d4e193f16bd071861af08658a907d020281d3c9106a9582c82e8acd9",
+        "domains/adequacy_provider_auth.py": "fa8b6795af120ced16c80df5629930f0eaab53849a68423bc5106e0f6975b39f",
+        "domains/ast_to_term.py": "7ef48f9ecb67975428713ae1d2d54100fcdd39fc434dd586803059224f7cdcdb",
+        "domains/code_reading.py": "dd67d2942cf956c6e35f848aed4012c3ac072e9ac91d9e6b166e8ca44be57908",
+        "domains/code_write_growth.py": "691fd96072687baf2b99c6b3c9816cc6bb44805e35bec13f070a30061151761c",
+        "domains/code_writing.py": "4ad3148ca1796ad13f6128b9fd655e8568c7c843cd68bccee54f35cbf4ddabc9",
+        "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+        "domains/independent_adequacy.py": "33191341fdd63d16d0b9cb5203f27666da90b60fccd567ac4633306a9dcab418",
+        "domains/teach.py": "308a5f31d74dabb3ed8b24bd0c967abd5f94596a3ff76d17657330877fae2cfa",
+        "domains_tree": "2a8c06d3c161633ced141554787e3883308d37b3e30a8cf9bc4fcabd54a58900",
+        "native_binary": "3816b4fb5d5746950b4cc3bf9e904a58e675ce53530727edf44095646dd58a54",
+        "oracle": "b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+        "python_native_tree": "4d4cb4aaaed3c395638b0485fc0d871749150149aded5e81491b42c7fdeb5402",
+        "runners/dsl/python/substrate_rs/__init__.py": "1fed837a6b7e8b35e463d3b8fdca498400c9cc420a016b81279365d6406a4049",
+        "runners/dsl/python/substrate_rs/_native.build.json": "b491d348c59cbf5cd5eee1b3f900a042f31e21665b6e63212edb9ed7f3d60f47",
+        "runners/dsl/src/graph_rules.rs": "b0e9c5bf0bbb4bf278fdab03610fa3f6f82d01ad8ee898ec789982ff41812a50",
+        "runners/dsl/src/py.rs": "d6f922bd406d3f500c10cea11978f47f9612b4ce6b9a348e848a30a305881cba",
+        "runners/dsl/src/substrate.rs": "bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+        "runners/dsl/src/term.rs": "5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+        "rust_tree": "06307beca12566832d3ba7ac157ec6177abb41a87dcf3755d824729d1a55ea0f",
+        "seed_manifest_inventory": "f1098a8168c0663746dffb253eb7230435957b3f8f8aa6d5c8197d224cf946b1",
+        "substrate/boot_all.py": "2bdf46f19228e1d85dbdcf12383116ceeb72aab0efe7ddd0cc6a51d23b45d220",
+        "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+        "substrate/seed_loader.py": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27",
+        "substrate/world_adapter.py": "7aeeb3d418fade3c90dc2d28a64a2685880d0a45d9fd47e4b6c2f6b6dd649023",
+        "substrate_tree": "206c8d6c975998dae706c64fe23be1ae7af659fd749577d978aafa1c30d7fdba"
+      },
+      "boot_ns": 11877505233,
+      "candidate_id": "d2e21dfdacc6241316ca157cb1820a09bb19e1d294ec58d4b6f6e79dd5805fdb",
+      "case": "honest_wrong_candidate",
+      "claimed_label": 4,
+      "epoch_increment": 0,
+      "evidence": [
+        {
+          "inputs": {
+            "x": 2
+          },
+          "labels": [
+            {
+              "expected": 4,
+              "label_id": "e538a86fd9f8318158b177b70e6c2ddaf4c08109b11840b5a1a579f484349156",
+              "oracle_sha256": "b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+              "signature": "54479dfa1a7a50378b9705eaf861ceca61a1de878780fd0e4d255b8e84e62f59",
+              "signature_schema": "AdequacyProviderSignedLabelV1",
+              "source_id": "independent-codewrite-oracle-v1:b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac"
+            }
+          ],
+          "probe_id": "probe-1"
+        }
+      ],
+      "heldout": [],
+      "loaded_seed_count": 731,
+      "negative_controls": {
+        "empty_probe_set": {
+          "core_receipt_status": "accepted",
+          "errors": [
+            "request has no probes"
+          ],
+          "evidence_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+          "ok": false,
+          "request_id": "de418ef8c8dad30bfdea6de3aa17fae9d51c45dafeccee5668b4ac361991a9c6",
+          "verified_labels": 0
+        },
+        "replay": {
+          "errors": [
+            "provider signature mismatch"
+          ],
+          "evidence_sha256": "056e291d46cdbbcabc8304552d276e2238cd5727b62098c3a7c38fd11e266f30",
+          "ok": false,
+          "request_id": "c6951bf841f9aed49fa5c2528284e3125a3a9da13405c636011b12c5f75ddb5e",
+          "verified_labels": 0
+        },
+        "tamper": {
+          "errors": [
+            "provider signature mismatch"
+          ],
+          "evidence_sha256": "6d9187e06365489f18465403513bef22b1712761db9a4e2106686bcd2761c4ae",
+          "ok": false,
+          "request_id": "d563c2466f2cd5412a6b6020aff5e21d6783bac8eaef9ceae1c20a7854d0314b",
+          "verified_labels": 0
+        },
+        "unknown_provider": {
+          "errors": [
+            "unknown trusted provider"
+          ],
+          "evidence_sha256": "a5366b7b1d00e5c2d9f337bc804f76cedb17cd02047f2b997d111869711a1b1d",
+          "ok": false,
+          "request_id": "d563c2466f2cd5412a6b6020aff5e21d6783bac8eaef9ceae1c20a7854d0314b",
+          "verified_labels": 0
+        }
+      },
+      "pid": 7,
+      "receipt": {
+        "candidate_id": "d2e21dfdacc6241316ca157cb1820a09bb19e1d294ec58d4b6f6e79dd5805fdb",
+        "evidence_sha256": "056e291d46cdbbcabc8304552d276e2238cd5727b62098c3a7c38fd11e266f30",
+        "invalid_reasons": [],
+        "receipt_sha256": "f8b4b68d2118e3d2155717d2961c367b63a45b45cb94634aa5fa11beee875616",
+        "request_id": "d563c2466f2cd5412a6b6020aff5e21d6783bac8eaef9ceae1c20a7854d0314b",
+        "residuals": [
+          {
+            "input_sha256": "5e2b030a4a0f1582d78c0fd9924511cd6b1f2df9879e574f5ea1406c94052418",
+            "kind": "prediction_residual",
+            "labels": [
+              {
+                "expected": 4,
+                "label_id": "e538a86fd9f8318158b177b70e6c2ddaf4c08109b11840b5a1a579f484349156",
+                "oracle_sha256": "b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+                "signature": "54479dfa1a7a50378b9705eaf861ceca61a1de878780fd0e4d255b8e84e62f59",
+                "signature_schema": "AdequacyProviderSignedLabelV1",
+                "source_id": "independent-codewrite-oracle-v1:b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac"
+              }
+            ],
+            "prediction": 2,
+            "probe_id": "probe-1"
+          }
+        ],
+        "schema": "IndependentAdequacyReceiptV1",
+        "status": "rejected",
+        "term_sha256": "89ca8e44ca480b8cb514cfdf26fa4e04682bc7420e2481542d68a0c837d351dc"
+      },
+      "repetition": 1,
+      "request": {
+        "acquisition_sha256": "5ab70414b443e97747a7b1e1d5bff15a657a7b8312f75ff7b28e110b3025c2fb",
+        "candidate_id": "d2e21dfdacc6241316ca157cb1820a09bb19e1d294ec58d4b6f6e79dd5805fdb",
+        "domain_sha256": "f0a4bd210ad5b1e10a7b6de9e8dab457cf34e2308b0b7dbed03d264c1731f2de",
+        "probes": [
+          {
+            "input_sha256": "5e2b030a4a0f1582d78c0fd9924511cd6b1f2df9879e574f5ea1406c94052418",
+            "inputs": {
+              "x": 2
+            },
+            "probe_id": "probe-1"
+          }
+        ],
+        "request_id": "d563c2466f2cd5412a6b6020aff5e21d6783bac8eaef9ceae1c20a7854d0314b",
+        "schema": "IndependentAdequacyProbeRequestV1",
+        "seed": "provider-auth-fixed-request-v1.1",
+        "status": "requested",
+        "term_sha256": "89ca8e44ca480b8cb514cfdf26fa4e04682bc7420e2481542d68a0c837d351dc"
+      },
+      "state_after": {
+        "epoch": 0,
+        "shape_ids": [
+          "#4166",
+          "#4167",
+          "#4168",
+          "#4169",
+          "#4170",
+          "#4171",
+          "#4172",
+          "#4173",
+          "#6009",
+          "#6010",
+          "#6011",
+          "#15915",
+          "#15916",
+          "#15917",
+          "#15918",
+          "#15919",
+          "#15920",
+          "#15921",
+          "#15922",
+          "#15923",
+          "#15924",
+          "#15925",
+          "#15926",
+          "#15927",
+          "#15928",
+          "#15929"
+        ]
+      },
+      "state_before": {
+        "epoch": 0,
+        "shape_ids": [
+          "#4166",
+          "#4167",
+          "#4168",
+          "#4169",
+          "#4170",
+          "#4171",
+          "#4172",
+          "#4173",
+          "#6009",
+          "#6010",
+          "#6011",
+          "#15915",
+          "#15916",
+          "#15917",
+          "#15918",
+          "#15919",
+          "#15920",
+          "#15921",
+          "#15922",
+          "#15923",
+          "#15924",
+          "#15925",
+          "#15926",
+          "#15927",
+          "#15928",
+          "#15929"
+        ]
+      },
+      "teach": {
+        "candidate_id": "d2e21dfdacc6241316ca157cb1820a09bb19e1d294ec58d4b6f6e79dd5805fdb",
+        "contract_validation": {
+          "checked": [
+            {
+              "expected": 0,
+              "index": 0,
+              "inputs": {
+                "x": 0
+              },
+              "native_match": true,
+              "native_output": 0,
+              "python_match": true,
+              "python_output": 0
+            }
+          ],
+          "ok": true
+        },
+        "ok": false,
+        "provider_auth": {
+          "errors": [],
+          "evidence_sha256": "056e291d46cdbbcabc8304552d276e2238cd5727b62098c3a7c38fd11e266f30",
+          "ok": true,
+          "request_id": "d563c2466f2cd5412a6b6020aff5e21d6783bac8eaef9ceae1c20a7854d0314b",
+          "verified_labels": 1
+        },
+        "reading": {
+          "agreement": {
+            "code_only": [
+              "x"
+            ],
+            "comment_only": [],
+            "shared": [],
+            "verdict": "diverge"
+          },
+          "args": [
+            "x"
+          ],
+          "comment": {
+            "construction": null,
+            "content_words": "set()",
+            "predications": [],
+            "sentence": null
+          },
+          "construction": "learned_code_name",
+          "docstring": null,
+          "emit_error": null,
+          "minted": false,
+          "name": "identity",
+          "names": [
+            "x"
+          ],
+          "rendered_python": "x",
+          "residual": [],
+          "shape_fit": 1,
+          "skeleton": [
+            [
+              "NAME"
+            ]
+          ],
+          "term": {
+            "name": "x",
+            "type": "Var"
+          },
+          "what_does": "a name-shaped code construction, over x"
+        },
+        "reason": "independent adequacy receipt missing, invalid, or bound to another candidate",
+        "validate": {
+          "agree": true,
+          "expected": 2,
+          "observed": 2,
+          "ran": true
+        }
+      },
+      "term": {
+        "name": "x",
+        "type": "Var"
+      },
+      "true_label": 4,
+      "written_ok": false
+    },
+    {
+      "active_after": {
+        "domains/adequacy_probe_selection.py": "b8d75708d4e193f16bd071861af08658a907d020281d3c9106a9582c82e8acd9",
+        "domains/adequacy_provider_auth.py": "fa8b6795af120ced16c80df5629930f0eaab53849a68423bc5106e0f6975b39f",
+        "domains/ast_to_term.py": "7ef48f9ecb67975428713ae1d2d54100fcdd39fc434dd586803059224f7cdcdb",
+        "domains/code_reading.py": "dd67d2942cf956c6e35f848aed4012c3ac072e9ac91d9e6b166e8ca44be57908",
+        "domains/code_write_growth.py": "691fd96072687baf2b99c6b3c9816cc6bb44805e35bec13f070a30061151761c",
+        "domains/code_writing.py": "4ad3148ca1796ad13f6128b9fd655e8568c7c843cd68bccee54f35cbf4ddabc9",
+        "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+        "domains/independent_adequacy.py": "33191341fdd63d16d0b9cb5203f27666da90b60fccd567ac4633306a9dcab418",
+        "domains/teach.py": "308a5f31d74dabb3ed8b24bd0c967abd5f94596a3ff76d17657330877fae2cfa",
+        "domains_tree": "2a8c06d3c161633ced141554787e3883308d37b3e30a8cf9bc4fcabd54a58900",
+        "native_binary": "3816b4fb5d5746950b4cc3bf9e904a58e675ce53530727edf44095646dd58a54",
+        "oracle": "b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+        "python_native_tree": "4d4cb4aaaed3c395638b0485fc0d871749150149aded5e81491b42c7fdeb5402",
+        "runners/dsl/python/substrate_rs/__init__.py": "1fed837a6b7e8b35e463d3b8fdca498400c9cc420a016b81279365d6406a4049",
+        "runners/dsl/python/substrate_rs/_native.build.json": "b491d348c59cbf5cd5eee1b3f900a042f31e21665b6e63212edb9ed7f3d60f47",
+        "runners/dsl/src/graph_rules.rs": "b0e9c5bf0bbb4bf278fdab03610fa3f6f82d01ad8ee898ec789982ff41812a50",
+        "runners/dsl/src/py.rs": "d6f922bd406d3f500c10cea11978f47f9612b4ce6b9a348e848a30a305881cba",
+        "runners/dsl/src/substrate.rs": "bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+        "runners/dsl/src/term.rs": "5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+        "rust_tree": "06307beca12566832d3ba7ac157ec6177abb41a87dcf3755d824729d1a55ea0f",
+        "seed_manifest_inventory": "f1098a8168c0663746dffb253eb7230435957b3f8f8aa6d5c8197d224cf946b1",
+        "substrate/boot_all.py": "2bdf46f19228e1d85dbdcf12383116ceeb72aab0efe7ddd0cc6a51d23b45d220",
+        "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+        "substrate/seed_loader.py": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27",
+        "substrate/world_adapter.py": "7aeeb3d418fade3c90dc2d28a64a2685880d0a45d9fd47e4b6c2f6b6dd649023",
+        "substrate_tree": "206c8d6c975998dae706c64fe23be1ae7af659fd749577d978aafa1c30d7fdba"
+      },
+      "boot_ns": 11823092713,
+      "candidate_id": "d2e21dfdacc6241316ca157cb1820a09bb19e1d294ec58d4b6f6e79dd5805fdb",
+      "case": "honest_wrong_candidate",
+      "claimed_label": 4,
+      "epoch_increment": 0,
+      "evidence": [
+        {
+          "inputs": {
+            "x": 2
+          },
+          "labels": [
+            {
+              "expected": 4,
+              "label_id": "e538a86fd9f8318158b177b70e6c2ddaf4c08109b11840b5a1a579f484349156",
+              "oracle_sha256": "b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+              "signature": "54479dfa1a7a50378b9705eaf861ceca61a1de878780fd0e4d255b8e84e62f59",
+              "signature_schema": "AdequacyProviderSignedLabelV1",
+              "source_id": "independent-codewrite-oracle-v1:b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac"
+            }
+          ],
+          "probe_id": "probe-1"
+        }
+      ],
+      "heldout": [],
+      "loaded_seed_count": 731,
+      "negative_controls": {
+        "empty_probe_set": {
+          "core_receipt_status": "accepted",
+          "errors": [
+            "request has no probes"
+          ],
+          "evidence_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+          "ok": false,
+          "request_id": "de418ef8c8dad30bfdea6de3aa17fae9d51c45dafeccee5668b4ac361991a9c6",
+          "verified_labels": 0
+        },
+        "replay": {
+          "errors": [
+            "provider signature mismatch"
+          ],
+          "evidence_sha256": "056e291d46cdbbcabc8304552d276e2238cd5727b62098c3a7c38fd11e266f30",
+          "ok": false,
+          "request_id": "c6951bf841f9aed49fa5c2528284e3125a3a9da13405c636011b12c5f75ddb5e",
+          "verified_labels": 0
+        },
+        "tamper": {
+          "errors": [
+            "provider signature mismatch"
+          ],
+          "evidence_sha256": "6d9187e06365489f18465403513bef22b1712761db9a4e2106686bcd2761c4ae",
+          "ok": false,
+          "request_id": "d563c2466f2cd5412a6b6020aff5e21d6783bac8eaef9ceae1c20a7854d0314b",
+          "verified_labels": 0
+        },
+        "unknown_provider": {
+          "errors": [
+            "unknown trusted provider"
+          ],
+          "evidence_sha256": "a5366b7b1d00e5c2d9f337bc804f76cedb17cd02047f2b997d111869711a1b1d",
+          "ok": false,
+          "request_id": "d563c2466f2cd5412a6b6020aff5e21d6783bac8eaef9ceae1c20a7854d0314b",
+          "verified_labels": 0
+        }
+      },
+      "pid": 2348,
+      "receipt": {
+        "candidate_id": "d2e21dfdacc6241316ca157cb1820a09bb19e1d294ec58d4b6f6e79dd5805fdb",
+        "evidence_sha256": "056e291d46cdbbcabc8304552d276e2238cd5727b62098c3a7c38fd11e266f30",
+        "invalid_reasons": [],
+        "receipt_sha256": "f8b4b68d2118e3d2155717d2961c367b63a45b45cb94634aa5fa11beee875616",
+        "request_id": "d563c2466f2cd5412a6b6020aff5e21d6783bac8eaef9ceae1c20a7854d0314b",
+        "residuals": [
+          {
+            "input_sha256": "5e2b030a4a0f1582d78c0fd9924511cd6b1f2df9879e574f5ea1406c94052418",
+            "kind": "prediction_residual",
+            "labels": [
+              {
+                "expected": 4,
+                "label_id": "e538a86fd9f8318158b177b70e6c2ddaf4c08109b11840b5a1a579f484349156",
+                "oracle_sha256": "b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+                "signature": "54479dfa1a7a50378b9705eaf861ceca61a1de878780fd0e4d255b8e84e62f59",
+                "signature_schema": "AdequacyProviderSignedLabelV1",
+                "source_id": "independent-codewrite-oracle-v1:b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac"
+              }
+            ],
+            "prediction": 2,
+            "probe_id": "probe-1"
+          }
+        ],
+        "schema": "IndependentAdequacyReceiptV1",
+        "status": "rejected",
+        "term_sha256": "89ca8e44ca480b8cb514cfdf26fa4e04682bc7420e2481542d68a0c837d351dc"
+      },
+      "repetition": 2,
+      "request": {
+        "acquisition_sha256": "5ab70414b443e97747a7b1e1d5bff15a657a7b8312f75ff7b28e110b3025c2fb",
+        "candidate_id": "d2e21dfdacc6241316ca157cb1820a09bb19e1d294ec58d4b6f6e79dd5805fdb",
+        "domain_sha256": "f0a4bd210ad5b1e10a7b6de9e8dab457cf34e2308b0b7dbed03d264c1731f2de",
+        "probes": [
+          {
+            "input_sha256": "5e2b030a4a0f1582d78c0fd9924511cd6b1f2df9879e574f5ea1406c94052418",
+            "inputs": {
+              "x": 2
+            },
+            "probe_id": "probe-1"
+          }
+        ],
+        "request_id": "d563c2466f2cd5412a6b6020aff5e21d6783bac8eaef9ceae1c20a7854d0314b",
+        "schema": "IndependentAdequacyProbeRequestV1",
+        "seed": "provider-auth-fixed-request-v1.1",
+        "status": "requested",
+        "term_sha256": "89ca8e44ca480b8cb514cfdf26fa4e04682bc7420e2481542d68a0c837d351dc"
+      },
+      "state_after": {
+        "epoch": 0,
+        "shape_ids": [
+          "#4166",
+          "#4167",
+          "#4168",
+          "#4169",
+          "#4170",
+          "#4171",
+          "#4172",
+          "#4173",
+          "#6009",
+          "#6010",
+          "#6011",
+          "#15915",
+          "#15916",
+          "#15917",
+          "#15918",
+          "#15919",
+          "#15920",
+          "#15921",
+          "#15922",
+          "#15923",
+          "#15924",
+          "#15925",
+          "#15926",
+          "#15927",
+          "#15928",
+          "#15929"
+        ]
+      },
+      "state_before": {
+        "epoch": 0,
+        "shape_ids": [
+          "#4166",
+          "#4167",
+          "#4168",
+          "#4169",
+          "#4170",
+          "#4171",
+          "#4172",
+          "#4173",
+          "#6009",
+          "#6010",
+          "#6011",
+          "#15915",
+          "#15916",
+          "#15917",
+          "#15918",
+          "#15919",
+          "#15920",
+          "#15921",
+          "#15922",
+          "#15923",
+          "#15924",
+          "#15925",
+          "#15926",
+          "#15927",
+          "#15928",
+          "#15929"
+        ]
+      },
+      "teach": {
+        "candidate_id": "d2e21dfdacc6241316ca157cb1820a09bb19e1d294ec58d4b6f6e79dd5805fdb",
+        "contract_validation": {
+          "checked": [
+            {
+              "expected": 0,
+              "index": 0,
+              "inputs": {
+                "x": 0
+              },
+              "native_match": true,
+              "native_output": 0,
+              "python_match": true,
+              "python_output": 0
+            }
+          ],
+          "ok": true
+        },
+        "ok": false,
+        "provider_auth": {
+          "errors": [],
+          "evidence_sha256": "056e291d46cdbbcabc8304552d276e2238cd5727b62098c3a7c38fd11e266f30",
+          "ok": true,
+          "request_id": "d563c2466f2cd5412a6b6020aff5e21d6783bac8eaef9ceae1c20a7854d0314b",
+          "verified_labels": 1
+        },
+        "reading": {
+          "agreement": {
+            "code_only": [
+              "x"
+            ],
+            "comment_only": [],
+            "shared": [],
+            "verdict": "diverge"
+          },
+          "args": [
+            "x"
+          ],
+          "comment": {
+            "construction": null,
+            "content_words": "set()",
+            "predications": [],
+            "sentence": null
+          },
+          "construction": "learned_code_name",
+          "docstring": null,
+          "emit_error": null,
+          "minted": false,
+          "name": "identity",
+          "names": [
+            "x"
+          ],
+          "rendered_python": "x",
+          "residual": [],
+          "shape_fit": 1,
+          "skeleton": [
+            [
+              "NAME"
+            ]
+          ],
+          "term": {
+            "name": "x",
+            "type": "Var"
+          },
+          "what_does": "a name-shaped code construction, over x"
+        },
+        "reason": "independent adequacy receipt missing, invalid, or bound to another candidate",
+        "validate": {
+          "agree": true,
+          "expected": 2,
+          "observed": 2,
+          "ran": true
+        }
+      },
+      "term": {
+        "name": "x",
+        "type": "Var"
+      },
+      "true_label": 4,
+      "written_ok": false
+    },
+    {
+      "active_after": {
+        "domains/adequacy_probe_selection.py": "b8d75708d4e193f16bd071861af08658a907d020281d3c9106a9582c82e8acd9",
+        "domains/adequacy_provider_auth.py": "fa8b6795af120ced16c80df5629930f0eaab53849a68423bc5106e0f6975b39f",
+        "domains/ast_to_term.py": "7ef48f9ecb67975428713ae1d2d54100fcdd39fc434dd586803059224f7cdcdb",
+        "domains/code_reading.py": "dd67d2942cf956c6e35f848aed4012c3ac072e9ac91d9e6b166e8ca44be57908",
+        "domains/code_write_growth.py": "691fd96072687baf2b99c6b3c9816cc6bb44805e35bec13f070a30061151761c",
+        "domains/code_writing.py": "4ad3148ca1796ad13f6128b9fd655e8568c7c843cd68bccee54f35cbf4ddabc9",
+        "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+        "domains/independent_adequacy.py": "33191341fdd63d16d0b9cb5203f27666da90b60fccd567ac4633306a9dcab418",
+        "domains/teach.py": "308a5f31d74dabb3ed8b24bd0c967abd5f94596a3ff76d17657330877fae2cfa",
+        "domains_tree": "2a8c06d3c161633ced141554787e3883308d37b3e30a8cf9bc4fcabd54a58900",
+        "native_binary": "3816b4fb5d5746950b4cc3bf9e904a58e675ce53530727edf44095646dd58a54",
+        "oracle": "b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+        "python_native_tree": "4d4cb4aaaed3c395638b0485fc0d871749150149aded5e81491b42c7fdeb5402",
+        "runners/dsl/python/substrate_rs/__init__.py": "1fed837a6b7e8b35e463d3b8fdca498400c9cc420a016b81279365d6406a4049",
+        "runners/dsl/python/substrate_rs/_native.build.json": "b491d348c59cbf5cd5eee1b3f900a042f31e21665b6e63212edb9ed7f3d60f47",
+        "runners/dsl/src/graph_rules.rs": "b0e9c5bf0bbb4bf278fdab03610fa3f6f82d01ad8ee898ec789982ff41812a50",
+        "runners/dsl/src/py.rs": "d6f922bd406d3f500c10cea11978f47f9612b4ce6b9a348e848a30a305881cba",
+        "runners/dsl/src/substrate.rs": "bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+        "runners/dsl/src/term.rs": "5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+        "rust_tree": "06307beca12566832d3ba7ac157ec6177abb41a87dcf3755d824729d1a55ea0f",
+        "seed_manifest_inventory": "f1098a8168c0663746dffb253eb7230435957b3f8f8aa6d5c8197d224cf946b1",
+        "substrate/boot_all.py": "2bdf46f19228e1d85dbdcf12383116ceeb72aab0efe7ddd0cc6a51d23b45d220",
+        "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+        "substrate/seed_loader.py": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27",
+        "substrate/world_adapter.py": "7aeeb3d418fade3c90dc2d28a64a2685880d0a45d9fd47e4b6c2f6b6dd649023",
+        "substrate_tree": "206c8d6c975998dae706c64fe23be1ae7af659fd749577d978aafa1c30d7fdba"
+      },
+      "boot_ns": 11817378933,
+      "candidate_id": "d2e21dfdacc6241316ca157cb1820a09bb19e1d294ec58d4b6f6e79dd5805fdb",
+      "case": "honest_wrong_candidate",
+      "claimed_label": 4,
+      "epoch_increment": 0,
+      "evidence": [
+        {
+          "inputs": {
+            "x": 2
+          },
+          "labels": [
+            {
+              "expected": 4,
+              "label_id": "e538a86fd9f8318158b177b70e6c2ddaf4c08109b11840b5a1a579f484349156",
+              "oracle_sha256": "b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+              "signature": "54479dfa1a7a50378b9705eaf861ceca61a1de878780fd0e4d255b8e84e62f59",
+              "signature_schema": "AdequacyProviderSignedLabelV1",
+              "source_id": "independent-codewrite-oracle-v1:b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac"
+            }
+          ],
+          "probe_id": "probe-1"
+        }
+      ],
+      "heldout": [],
+      "loaded_seed_count": 731,
+      "negative_controls": {
+        "empty_probe_set": {
+          "core_receipt_status": "accepted",
+          "errors": [
+            "request has no probes"
+          ],
+          "evidence_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+          "ok": false,
+          "request_id": "de418ef8c8dad30bfdea6de3aa17fae9d51c45dafeccee5668b4ac361991a9c6",
+          "verified_labels": 0
+        },
+        "replay": {
+          "errors": [
+            "provider signature mismatch"
+          ],
+          "evidence_sha256": "056e291d46cdbbcabc8304552d276e2238cd5727b62098c3a7c38fd11e266f30",
+          "ok": false,
+          "request_id": "c6951bf841f9aed49fa5c2528284e3125a3a9da13405c636011b12c5f75ddb5e",
+          "verified_labels": 0
+        },
+        "tamper": {
+          "errors": [
+            "provider signature mismatch"
+          ],
+          "evidence_sha256": "6d9187e06365489f18465403513bef22b1712761db9a4e2106686bcd2761c4ae",
+          "ok": false,
+          "request_id": "d563c2466f2cd5412a6b6020aff5e21d6783bac8eaef9ceae1c20a7854d0314b",
+          "verified_labels": 0
+        },
+        "unknown_provider": {
+          "errors": [
+            "unknown trusted provider"
+          ],
+          "evidence_sha256": "a5366b7b1d00e5c2d9f337bc804f76cedb17cd02047f2b997d111869711a1b1d",
+          "ok": false,
+          "request_id": "d563c2466f2cd5412a6b6020aff5e21d6783bac8eaef9ceae1c20a7854d0314b",
+          "verified_labels": 0
+        }
+      },
+      "pid": 4689,
+      "receipt": {
+        "candidate_id": "d2e21dfdacc6241316ca157cb1820a09bb19e1d294ec58d4b6f6e79dd5805fdb",
+        "evidence_sha256": "056e291d46cdbbcabc8304552d276e2238cd5727b62098c3a7c38fd11e266f30",
+        "invalid_reasons": [],
+        "receipt_sha256": "f8b4b68d2118e3d2155717d2961c367b63a45b45cb94634aa5fa11beee875616",
+        "request_id": "d563c2466f2cd5412a6b6020aff5e21d6783bac8eaef9ceae1c20a7854d0314b",
+        "residuals": [
+          {
+            "input_sha256": "5e2b030a4a0f1582d78c0fd9924511cd6b1f2df9879e574f5ea1406c94052418",
+            "kind": "prediction_residual",
+            "labels": [
+              {
+                "expected": 4,
+                "label_id": "e538a86fd9f8318158b177b70e6c2ddaf4c08109b11840b5a1a579f484349156",
+                "oracle_sha256": "b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+                "signature": "54479dfa1a7a50378b9705eaf861ceca61a1de878780fd0e4d255b8e84e62f59",
+                "signature_schema": "AdequacyProviderSignedLabelV1",
+                "source_id": "independent-codewrite-oracle-v1:b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac"
+              }
+            ],
+            "prediction": 2,
+            "probe_id": "probe-1"
+          }
+        ],
+        "schema": "IndependentAdequacyReceiptV1",
+        "status": "rejected",
+        "term_sha256": "89ca8e44ca480b8cb514cfdf26fa4e04682bc7420e2481542d68a0c837d351dc"
+      },
+      "repetition": 3,
+      "request": {
+        "acquisition_sha256": "5ab70414b443e97747a7b1e1d5bff15a657a7b8312f75ff7b28e110b3025c2fb",
+        "candidate_id": "d2e21dfdacc6241316ca157cb1820a09bb19e1d294ec58d4b6f6e79dd5805fdb",
+        "domain_sha256": "f0a4bd210ad5b1e10a7b6de9e8dab457cf34e2308b0b7dbed03d264c1731f2de",
+        "probes": [
+          {
+            "input_sha256": "5e2b030a4a0f1582d78c0fd9924511cd6b1f2df9879e574f5ea1406c94052418",
+            "inputs": {
+              "x": 2
+            },
+            "probe_id": "probe-1"
+          }
+        ],
+        "request_id": "d563c2466f2cd5412a6b6020aff5e21d6783bac8eaef9ceae1c20a7854d0314b",
+        "schema": "IndependentAdequacyProbeRequestV1",
+        "seed": "provider-auth-fixed-request-v1.1",
+        "status": "requested",
+        "term_sha256": "89ca8e44ca480b8cb514cfdf26fa4e04682bc7420e2481542d68a0c837d351dc"
+      },
+      "state_after": {
+        "epoch": 0,
+        "shape_ids": [
+          "#4166",
+          "#4167",
+          "#4168",
+          "#4169",
+          "#4170",
+          "#4171",
+          "#4172",
+          "#4173",
+          "#6009",
+          "#6010",
+          "#6011",
+          "#15915",
+          "#15916",
+          "#15917",
+          "#15918",
+          "#15919",
+          "#15920",
+          "#15921",
+          "#15922",
+          "#15923",
+          "#15924",
+          "#15925",
+          "#15926",
+          "#15927",
+          "#15928",
+          "#15929"
+        ]
+      },
+      "state_before": {
+        "epoch": 0,
+        "shape_ids": [
+          "#4166",
+          "#4167",
+          "#4168",
+          "#4169",
+          "#4170",
+          "#4171",
+          "#4172",
+          "#4173",
+          "#6009",
+          "#6010",
+          "#6011",
+          "#15915",
+          "#15916",
+          "#15917",
+          "#15918",
+          "#15919",
+          "#15920",
+          "#15921",
+          "#15922",
+          "#15923",
+          "#15924",
+          "#15925",
+          "#15926",
+          "#15927",
+          "#15928",
+          "#15929"
+        ]
+      },
+      "teach": {
+        "candidate_id": "d2e21dfdacc6241316ca157cb1820a09bb19e1d294ec58d4b6f6e79dd5805fdb",
+        "contract_validation": {
+          "checked": [
+            {
+              "expected": 0,
+              "index": 0,
+              "inputs": {
+                "x": 0
+              },
+              "native_match": true,
+              "native_output": 0,
+              "python_match": true,
+              "python_output": 0
+            }
+          ],
+          "ok": true
+        },
+        "ok": false,
+        "provider_auth": {
+          "errors": [],
+          "evidence_sha256": "056e291d46cdbbcabc8304552d276e2238cd5727b62098c3a7c38fd11e266f30",
+          "ok": true,
+          "request_id": "d563c2466f2cd5412a6b6020aff5e21d6783bac8eaef9ceae1c20a7854d0314b",
+          "verified_labels": 1
+        },
+        "reading": {
+          "agreement": {
+            "code_only": [
+              "x"
+            ],
+            "comment_only": [],
+            "shared": [],
+            "verdict": "diverge"
+          },
+          "args": [
+            "x"
+          ],
+          "comment": {
+            "construction": null,
+            "content_words": "set()",
+            "predications": [],
+            "sentence": null
+          },
+          "construction": "learned_code_name",
+          "docstring": null,
+          "emit_error": null,
+          "minted": false,
+          "name": "identity",
+          "names": [
+            "x"
+          ],
+          "rendered_python": "x",
+          "residual": [],
+          "shape_fit": 1,
+          "skeleton": [
+            [
+              "NAME"
+            ]
+          ],
+          "term": {
+            "name": "x",
+            "type": "Var"
+          },
+          "what_does": "a name-shaped code construction, over x"
+        },
+        "reason": "independent adequacy receipt missing, invalid, or bound to another candidate",
+        "validate": {
+          "agree": true,
+          "expected": 2,
+          "observed": 2,
+          "ran": true
+        }
+      },
+      "term": {
+        "name": "x",
+        "type": "Var"
+      },
+      "true_label": 4,
+      "written_ok": false
+    },
+    {
+      "active_after": {
+        "domains/adequacy_probe_selection.py": "b8d75708d4e193f16bd071861af08658a907d020281d3c9106a9582c82e8acd9",
+        "domains/adequacy_provider_auth.py": "fa8b6795af120ced16c80df5629930f0eaab53849a68423bc5106e0f6975b39f",
+        "domains/ast_to_term.py": "7ef48f9ecb67975428713ae1d2d54100fcdd39fc434dd586803059224f7cdcdb",
+        "domains/code_reading.py": "dd67d2942cf956c6e35f848aed4012c3ac072e9ac91d9e6b166e8ca44be57908",
+        "domains/code_write_growth.py": "691fd96072687baf2b99c6b3c9816cc6bb44805e35bec13f070a30061151761c",
+        "domains/code_writing.py": "4ad3148ca1796ad13f6128b9fd655e8568c7c843cd68bccee54f35cbf4ddabc9",
+        "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+        "domains/independent_adequacy.py": "33191341fdd63d16d0b9cb5203f27666da90b60fccd567ac4633306a9dcab418",
+        "domains/teach.py": "308a5f31d74dabb3ed8b24bd0c967abd5f94596a3ff76d17657330877fae2cfa",
+        "domains_tree": "2a8c06d3c161633ced141554787e3883308d37b3e30a8cf9bc4fcabd54a58900",
+        "native_binary": "3816b4fb5d5746950b4cc3bf9e904a58e675ce53530727edf44095646dd58a54",
+        "oracle": "b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+        "python_native_tree": "4d4cb4aaaed3c395638b0485fc0d871749150149aded5e81491b42c7fdeb5402",
+        "runners/dsl/python/substrate_rs/__init__.py": "1fed837a6b7e8b35e463d3b8fdca498400c9cc420a016b81279365d6406a4049",
+        "runners/dsl/python/substrate_rs/_native.build.json": "b491d348c59cbf5cd5eee1b3f900a042f31e21665b6e63212edb9ed7f3d60f47",
+        "runners/dsl/src/graph_rules.rs": "b0e9c5bf0bbb4bf278fdab03610fa3f6f82d01ad8ee898ec789982ff41812a50",
+        "runners/dsl/src/py.rs": "d6f922bd406d3f500c10cea11978f47f9612b4ce6b9a348e848a30a305881cba",
+        "runners/dsl/src/substrate.rs": "bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+        "runners/dsl/src/term.rs": "5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+        "rust_tree": "06307beca12566832d3ba7ac157ec6177abb41a87dcf3755d824729d1a55ea0f",
+        "seed_manifest_inventory": "f1098a8168c0663746dffb253eb7230435957b3f8f8aa6d5c8197d224cf946b1",
+        "substrate/boot_all.py": "2bdf46f19228e1d85dbdcf12383116ceeb72aab0efe7ddd0cc6a51d23b45d220",
+        "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+        "substrate/seed_loader.py": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27",
+        "substrate/world_adapter.py": "7aeeb3d418fade3c90dc2d28a64a2685880d0a45d9fd47e4b6c2f6b6dd649023",
+        "substrate_tree": "206c8d6c975998dae706c64fe23be1ae7af659fd749577d978aafa1c30d7fdba"
+      },
+      "boot_ns": 11818523985,
+      "candidate_id": "d2e21dfdacc6241316ca157cb1820a09bb19e1d294ec58d4b6f6e79dd5805fdb",
+      "case": "forged_unsigned",
+      "claimed_label": 2,
+      "epoch_increment": 0,
+      "evidence": [
+        {
+          "inputs": {
+            "x": 2
+          },
+          "labels": [
+            {
+              "expected": 2,
+              "label_id": "e538a86fd9f8318158b177b70e6c2ddaf4c08109b11840b5a1a579f484349156",
+              "oracle_sha256": "b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+              "source_id": "independent-codewrite-oracle-v1:b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac"
+            }
+          ],
+          "probe_id": "probe-1"
+        }
+      ],
+      "heldout": [],
+      "loaded_seed_count": 731,
+      "negative_controls": {
+        "empty_probe_set": {
+          "core_receipt_status": "accepted",
+          "errors": [
+            "request has no probes"
+          ],
+          "evidence_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+          "ok": false,
+          "request_id": "de418ef8c8dad30bfdea6de3aa17fae9d51c45dafeccee5668b4ac361991a9c6",
+          "verified_labels": 0
+        },
+        "replay": {
+          "errors": [
+            "unsigned or unsupported label"
+          ],
+          "evidence_sha256": "9e09499fe8d514fb585dda7cf849cc2e808f247ce7f80eb01fc786904bd73504",
+          "ok": false,
+          "request_id": "c6951bf841f9aed49fa5c2528284e3125a3a9da13405c636011b12c5f75ddb5e",
+          "verified_labels": 0
+        },
+        "tamper": {
+          "errors": [
+            "unsigned or unsupported label"
+          ],
+          "evidence_sha256": "4f272911b0d10fbae96a699e3452e630fbe76d7ee0c89fc6bad23be719580613",
+          "ok": false,
+          "request_id": "d563c2466f2cd5412a6b6020aff5e21d6783bac8eaef9ceae1c20a7854d0314b",
+          "verified_labels": 0
+        },
+        "unknown_provider": {
+          "errors": [
+            "unknown trusted provider"
+          ],
+          "evidence_sha256": "4f9defc1965bcdd81f175d456ae9b707f94d95f24f1df1fa6c2c8bc3b292b1bc",
+          "ok": false,
+          "request_id": "d563c2466f2cd5412a6b6020aff5e21d6783bac8eaef9ceae1c20a7854d0314b",
+          "verified_labels": 0
+        }
+      },
+      "pid": 7030,
+      "receipt": {
+        "candidate_id": "d2e21dfdacc6241316ca157cb1820a09bb19e1d294ec58d4b6f6e79dd5805fdb",
+        "evidence_sha256": "9e09499fe8d514fb585dda7cf849cc2e808f247ce7f80eb01fc786904bd73504",
+        "invalid_reasons": [],
+        "receipt_sha256": "9d85112bd9964fd4cd459b181de550fb372d693d8bd31d482d4d23a5490e7499",
+        "request_id": "d563c2466f2cd5412a6b6020aff5e21d6783bac8eaef9ceae1c20a7854d0314b",
+        "residuals": [],
+        "schema": "IndependentAdequacyReceiptV1",
+        "status": "accepted",
+        "term_sha256": "89ca8e44ca480b8cb514cfdf26fa4e04682bc7420e2481542d68a0c837d351dc"
+      },
+      "repetition": 1,
+      "request": {
+        "acquisition_sha256": "5ab70414b443e97747a7b1e1d5bff15a657a7b8312f75ff7b28e110b3025c2fb",
+        "candidate_id": "d2e21dfdacc6241316ca157cb1820a09bb19e1d294ec58d4b6f6e79dd5805fdb",
+        "domain_sha256": "f0a4bd210ad5b1e10a7b6de9e8dab457cf34e2308b0b7dbed03d264c1731f2de",
+        "probes": [
+          {
+            "input_sha256": "5e2b030a4a0f1582d78c0fd9924511cd6b1f2df9879e574f5ea1406c94052418",
+            "inputs": {
+              "x": 2
+            },
+            "probe_id": "probe-1"
+          }
+        ],
+        "request_id": "d563c2466f2cd5412a6b6020aff5e21d6783bac8eaef9ceae1c20a7854d0314b",
+        "schema": "IndependentAdequacyProbeRequestV1",
+        "seed": "provider-auth-fixed-request-v1.1",
+        "status": "requested",
+        "term_sha256": "89ca8e44ca480b8cb514cfdf26fa4e04682bc7420e2481542d68a0c837d351dc"
+      },
+      "state_after": {
+        "epoch": 0,
+        "shape_ids": [
+          "#4166",
+          "#4167",
+          "#4168",
+          "#4169",
+          "#4170",
+          "#4171",
+          "#4172",
+          "#4173",
+          "#6009",
+          "#6010",
+          "#6011",
+          "#15915",
+          "#15916",
+          "#15917",
+          "#15918",
+          "#15919",
+          "#15920",
+          "#15921",
+          "#15922",
+          "#15923",
+          "#15924",
+          "#15925",
+          "#15926",
+          "#15927",
+          "#15928",
+          "#15929"
+        ]
+      },
+      "state_before": {
+        "epoch": 0,
+        "shape_ids": [
+          "#4166",
+          "#4167",
+          "#4168",
+          "#4169",
+          "#4170",
+          "#4171",
+          "#4172",
+          "#4173",
+          "#6009",
+          "#6010",
+          "#6011",
+          "#15915",
+          "#15916",
+          "#15917",
+          "#15918",
+          "#15919",
+          "#15920",
+          "#15921",
+          "#15922",
+          "#15923",
+          "#15924",
+          "#15925",
+          "#15926",
+          "#15927",
+          "#15928",
+          "#15929"
+        ]
+      },
+      "teach": {
+        "ok": false,
+        "provider_auth": {
+          "errors": [
+            "unsigned or unsupported label"
+          ],
+          "evidence_sha256": "9e09499fe8d514fb585dda7cf849cc2e808f247ce7f80eb01fc786904bd73504",
+          "ok": false,
+          "request_id": "d563c2466f2cd5412a6b6020aff5e21d6783bac8eaef9ceae1c20a7854d0314b",
+          "verified_labels": 0
+        },
+        "reason": "provider-authenticated adequacy evidence required"
+      },
+      "term": {
+        "name": "x",
+        "type": "Var"
+      },
+      "true_label": 4,
+      "written_ok": false
+    },
+    {
+      "active_after": {
+        "domains/adequacy_probe_selection.py": "b8d75708d4e193f16bd071861af08658a907d020281d3c9106a9582c82e8acd9",
+        "domains/adequacy_provider_auth.py": "fa8b6795af120ced16c80df5629930f0eaab53849a68423bc5106e0f6975b39f",
+        "domains/ast_to_term.py": "7ef48f9ecb67975428713ae1d2d54100fcdd39fc434dd586803059224f7cdcdb",
+        "domains/code_reading.py": "dd67d2942cf956c6e35f848aed4012c3ac072e9ac91d9e6b166e8ca44be57908",
+        "domains/code_write_growth.py": "691fd96072687baf2b99c6b3c9816cc6bb44805e35bec13f070a30061151761c",
+        "domains/code_writing.py": "4ad3148ca1796ad13f6128b9fd655e8568c7c843cd68bccee54f35cbf4ddabc9",
+        "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+        "domains/independent_adequacy.py": "33191341fdd63d16d0b9cb5203f27666da90b60fccd567ac4633306a9dcab418",
+        "domains/teach.py": "308a5f31d74dabb3ed8b24bd0c967abd5f94596a3ff76d17657330877fae2cfa",
+        "domains_tree": "2a8c06d3c161633ced141554787e3883308d37b3e30a8cf9bc4fcabd54a58900",
+        "native_binary": "3816b4fb5d5746950b4cc3bf9e904a58e675ce53530727edf44095646dd58a54",
+        "oracle": "b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+        "python_native_tree": "4d4cb4aaaed3c395638b0485fc0d871749150149aded5e81491b42c7fdeb5402",
+        "runners/dsl/python/substrate_rs/__init__.py": "1fed837a6b7e8b35e463d3b8fdca498400c9cc420a016b81279365d6406a4049",
+        "runners/dsl/python/substrate_rs/_native.build.json": "b491d348c59cbf5cd5eee1b3f900a042f31e21665b6e63212edb9ed7f3d60f47",
+        "runners/dsl/src/graph_rules.rs": "b0e9c5bf0bbb4bf278fdab03610fa3f6f82d01ad8ee898ec789982ff41812a50",
+        "runners/dsl/src/py.rs": "d6f922bd406d3f500c10cea11978f47f9612b4ce6b9a348e848a30a305881cba",
+        "runners/dsl/src/substrate.rs": "bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+        "runners/dsl/src/term.rs": "5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+        "rust_tree": "06307beca12566832d3ba7ac157ec6177abb41a87dcf3755d824729d1a55ea0f",
+        "seed_manifest_inventory": "f1098a8168c0663746dffb253eb7230435957b3f8f8aa6d5c8197d224cf946b1",
+        "substrate/boot_all.py": "2bdf46f19228e1d85dbdcf12383116ceeb72aab0efe7ddd0cc6a51d23b45d220",
+        "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+        "substrate/seed_loader.py": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27",
+        "substrate/world_adapter.py": "7aeeb3d418fade3c90dc2d28a64a2685880d0a45d9fd47e4b6c2f6b6dd649023",
+        "substrate_tree": "206c8d6c975998dae706c64fe23be1ae7af659fd749577d978aafa1c30d7fdba"
+      },
+      "boot_ns": 11729195907,
+      "candidate_id": "d2e21dfdacc6241316ca157cb1820a09bb19e1d294ec58d4b6f6e79dd5805fdb",
+      "case": "forged_unsigned",
+      "claimed_label": 2,
+      "epoch_increment": 0,
+      "evidence": [
+        {
+          "inputs": {
+            "x": 2
+          },
+          "labels": [
+            {
+              "expected": 2,
+              "label_id": "e538a86fd9f8318158b177b70e6c2ddaf4c08109b11840b5a1a579f484349156",
+              "oracle_sha256": "b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+              "source_id": "independent-codewrite-oracle-v1:b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac"
+            }
+          ],
+          "probe_id": "probe-1"
+        }
+      ],
+      "heldout": [],
+      "loaded_seed_count": 731,
+      "negative_controls": {
+        "empty_probe_set": {
+          "core_receipt_status": "accepted",
+          "errors": [
+            "request has no probes"
+          ],
+          "evidence_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+          "ok": false,
+          "request_id": "de418ef8c8dad30bfdea6de3aa17fae9d51c45dafeccee5668b4ac361991a9c6",
+          "verified_labels": 0
+        },
+        "replay": {
+          "errors": [
+            "unsigned or unsupported label"
+          ],
+          "evidence_sha256": "9e09499fe8d514fb585dda7cf849cc2e808f247ce7f80eb01fc786904bd73504",
+          "ok": false,
+          "request_id": "c6951bf841f9aed49fa5c2528284e3125a3a9da13405c636011b12c5f75ddb5e",
+          "verified_labels": 0
+        },
+        "tamper": {
+          "errors": [
+            "unsigned or unsupported label"
+          ],
+          "evidence_sha256": "4f272911b0d10fbae96a699e3452e630fbe76d7ee0c89fc6bad23be719580613",
+          "ok": false,
+          "request_id": "d563c2466f2cd5412a6b6020aff5e21d6783bac8eaef9ceae1c20a7854d0314b",
+          "verified_labels": 0
+        },
+        "unknown_provider": {
+          "errors": [
+            "unknown trusted provider"
+          ],
+          "evidence_sha256": "4f9defc1965bcdd81f175d456ae9b707f94d95f24f1df1fa6c2c8bc3b292b1bc",
+          "ok": false,
+          "request_id": "d563c2466f2cd5412a6b6020aff5e21d6783bac8eaef9ceae1c20a7854d0314b",
+          "verified_labels": 0
+        }
+      },
+      "pid": 9370,
+      "receipt": {
+        "candidate_id": "d2e21dfdacc6241316ca157cb1820a09bb19e1d294ec58d4b6f6e79dd5805fdb",
+        "evidence_sha256": "9e09499fe8d514fb585dda7cf849cc2e808f247ce7f80eb01fc786904bd73504",
+        "invalid_reasons": [],
+        "receipt_sha256": "9d85112bd9964fd4cd459b181de550fb372d693d8bd31d482d4d23a5490e7499",
+        "request_id": "d563c2466f2cd5412a6b6020aff5e21d6783bac8eaef9ceae1c20a7854d0314b",
+        "residuals": [],
+        "schema": "IndependentAdequacyReceiptV1",
+        "status": "accepted",
+        "term_sha256": "89ca8e44ca480b8cb514cfdf26fa4e04682bc7420e2481542d68a0c837d351dc"
+      },
+      "repetition": 2,
+      "request": {
+        "acquisition_sha256": "5ab70414b443e97747a7b1e1d5bff15a657a7b8312f75ff7b28e110b3025c2fb",
+        "candidate_id": "d2e21dfdacc6241316ca157cb1820a09bb19e1d294ec58d4b6f6e79dd5805fdb",
+        "domain_sha256": "f0a4bd210ad5b1e10a7b6de9e8dab457cf34e2308b0b7dbed03d264c1731f2de",
+        "probes": [
+          {
+            "input_sha256": "5e2b030a4a0f1582d78c0fd9924511cd6b1f2df9879e574f5ea1406c94052418",
+            "inputs": {
+              "x": 2
+            },
+            "probe_id": "probe-1"
+          }
+        ],
+        "request_id": "d563c2466f2cd5412a6b6020aff5e21d6783bac8eaef9ceae1c20a7854d0314b",
+        "schema": "IndependentAdequacyProbeRequestV1",
+        "seed": "provider-auth-fixed-request-v1.1",
+        "status": "requested",
+        "term_sha256": "89ca8e44ca480b8cb514cfdf26fa4e04682bc7420e2481542d68a0c837d351dc"
+      },
+      "state_after": {
+        "epoch": 0,
+        "shape_ids": [
+          "#4166",
+          "#4167",
+          "#4168",
+          "#4169",
+          "#4170",
+          "#4171",
+          "#4172",
+          "#4173",
+          "#6009",
+          "#6010",
+          "#6011",
+          "#15915",
+          "#15916",
+          "#15917",
+          "#15918",
+          "#15919",
+          "#15920",
+          "#15921",
+          "#15922",
+          "#15923",
+          "#15924",
+          "#15925",
+          "#15926",
+          "#15927",
+          "#15928",
+          "#15929"
+        ]
+      },
+      "state_before": {
+        "epoch": 0,
+        "shape_ids": [
+          "#4166",
+          "#4167",
+          "#4168",
+          "#4169",
+          "#4170",
+          "#4171",
+          "#4172",
+          "#4173",
+          "#6009",
+          "#6010",
+          "#6011",
+          "#15915",
+          "#15916",
+          "#15917",
+          "#15918",
+          "#15919",
+          "#15920",
+          "#15921",
+          "#15922",
+          "#15923",
+          "#15924",
+          "#15925",
+          "#15926",
+          "#15927",
+          "#15928",
+          "#15929"
+        ]
+      },
+      "teach": {
+        "ok": false,
+        "provider_auth": {
+          "errors": [
+            "unsigned or unsupported label"
+          ],
+          "evidence_sha256": "9e09499fe8d514fb585dda7cf849cc2e808f247ce7f80eb01fc786904bd73504",
+          "ok": false,
+          "request_id": "d563c2466f2cd5412a6b6020aff5e21d6783bac8eaef9ceae1c20a7854d0314b",
+          "verified_labels": 0
+        },
+        "reason": "provider-authenticated adequacy evidence required"
+      },
+      "term": {
+        "name": "x",
+        "type": "Var"
+      },
+      "true_label": 4,
+      "written_ok": false
+    },
+    {
+      "active_after": {
+        "domains/adequacy_probe_selection.py": "b8d75708d4e193f16bd071861af08658a907d020281d3c9106a9582c82e8acd9",
+        "domains/adequacy_provider_auth.py": "fa8b6795af120ced16c80df5629930f0eaab53849a68423bc5106e0f6975b39f",
+        "domains/ast_to_term.py": "7ef48f9ecb67975428713ae1d2d54100fcdd39fc434dd586803059224f7cdcdb",
+        "domains/code_reading.py": "dd67d2942cf956c6e35f848aed4012c3ac072e9ac91d9e6b166e8ca44be57908",
+        "domains/code_write_growth.py": "691fd96072687baf2b99c6b3c9816cc6bb44805e35bec13f070a30061151761c",
+        "domains/code_writing.py": "4ad3148ca1796ad13f6128b9fd655e8568c7c843cd68bccee54f35cbf4ddabc9",
+        "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+        "domains/independent_adequacy.py": "33191341fdd63d16d0b9cb5203f27666da90b60fccd567ac4633306a9dcab418",
+        "domains/teach.py": "308a5f31d74dabb3ed8b24bd0c967abd5f94596a3ff76d17657330877fae2cfa",
+        "domains_tree": "2a8c06d3c161633ced141554787e3883308d37b3e30a8cf9bc4fcabd54a58900",
+        "native_binary": "3816b4fb5d5746950b4cc3bf9e904a58e675ce53530727edf44095646dd58a54",
+        "oracle": "b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+        "python_native_tree": "4d4cb4aaaed3c395638b0485fc0d871749150149aded5e81491b42c7fdeb5402",
+        "runners/dsl/python/substrate_rs/__init__.py": "1fed837a6b7e8b35e463d3b8fdca498400c9cc420a016b81279365d6406a4049",
+        "runners/dsl/python/substrate_rs/_native.build.json": "b491d348c59cbf5cd5eee1b3f900a042f31e21665b6e63212edb9ed7f3d60f47",
+        "runners/dsl/src/graph_rules.rs": "b0e9c5bf0bbb4bf278fdab03610fa3f6f82d01ad8ee898ec789982ff41812a50",
+        "runners/dsl/src/py.rs": "d6f922bd406d3f500c10cea11978f47f9612b4ce6b9a348e848a30a305881cba",
+        "runners/dsl/src/substrate.rs": "bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+        "runners/dsl/src/term.rs": "5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+        "rust_tree": "06307beca12566832d3ba7ac157ec6177abb41a87dcf3755d824729d1a55ea0f",
+        "seed_manifest_inventory": "f1098a8168c0663746dffb253eb7230435957b3f8f8aa6d5c8197d224cf946b1",
+        "substrate/boot_all.py": "2bdf46f19228e1d85dbdcf12383116ceeb72aab0efe7ddd0cc6a51d23b45d220",
+        "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+        "substrate/seed_loader.py": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27",
+        "substrate/world_adapter.py": "7aeeb3d418fade3c90dc2d28a64a2685880d0a45d9fd47e4b6c2f6b6dd649023",
+        "substrate_tree": "206c8d6c975998dae706c64fe23be1ae7af659fd749577d978aafa1c30d7fdba"
+      },
+      "boot_ns": 11857267848,
+      "candidate_id": "d2e21dfdacc6241316ca157cb1820a09bb19e1d294ec58d4b6f6e79dd5805fdb",
+      "case": "forged_unsigned",
+      "claimed_label": 2,
+      "epoch_increment": 0,
+      "evidence": [
+        {
+          "inputs": {
+            "x": 2
+          },
+          "labels": [
+            {
+              "expected": 2,
+              "label_id": "e538a86fd9f8318158b177b70e6c2ddaf4c08109b11840b5a1a579f484349156",
+              "oracle_sha256": "b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+              "source_id": "independent-codewrite-oracle-v1:b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac"
+            }
+          ],
+          "probe_id": "probe-1"
+        }
+      ],
+      "heldout": [],
+      "loaded_seed_count": 731,
+      "negative_controls": {
+        "empty_probe_set": {
+          "core_receipt_status": "accepted",
+          "errors": [
+            "request has no probes"
+          ],
+          "evidence_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+          "ok": false,
+          "request_id": "de418ef8c8dad30bfdea6de3aa17fae9d51c45dafeccee5668b4ac361991a9c6",
+          "verified_labels": 0
+        },
+        "replay": {
+          "errors": [
+            "unsigned or unsupported label"
+          ],
+          "evidence_sha256": "9e09499fe8d514fb585dda7cf849cc2e808f247ce7f80eb01fc786904bd73504",
+          "ok": false,
+          "request_id": "c6951bf841f9aed49fa5c2528284e3125a3a9da13405c636011b12c5f75ddb5e",
+          "verified_labels": 0
+        },
+        "tamper": {
+          "errors": [
+            "unsigned or unsupported label"
+          ],
+          "evidence_sha256": "4f272911b0d10fbae96a699e3452e630fbe76d7ee0c89fc6bad23be719580613",
+          "ok": false,
+          "request_id": "d563c2466f2cd5412a6b6020aff5e21d6783bac8eaef9ceae1c20a7854d0314b",
+          "verified_labels": 0
+        },
+        "unknown_provider": {
+          "errors": [
+            "unknown trusted provider"
+          ],
+          "evidence_sha256": "4f9defc1965bcdd81f175d456ae9b707f94d95f24f1df1fa6c2c8bc3b292b1bc",
+          "ok": false,
+          "request_id": "d563c2466f2cd5412a6b6020aff5e21d6783bac8eaef9ceae1c20a7854d0314b",
+          "verified_labels": 0
+        }
+      },
+      "pid": 11710,
+      "receipt": {
+        "candidate_id": "d2e21dfdacc6241316ca157cb1820a09bb19e1d294ec58d4b6f6e79dd5805fdb",
+        "evidence_sha256": "9e09499fe8d514fb585dda7cf849cc2e808f247ce7f80eb01fc786904bd73504",
+        "invalid_reasons": [],
+        "receipt_sha256": "9d85112bd9964fd4cd459b181de550fb372d693d8bd31d482d4d23a5490e7499",
+        "request_id": "d563c2466f2cd5412a6b6020aff5e21d6783bac8eaef9ceae1c20a7854d0314b",
+        "residuals": [],
+        "schema": "IndependentAdequacyReceiptV1",
+        "status": "accepted",
+        "term_sha256": "89ca8e44ca480b8cb514cfdf26fa4e04682bc7420e2481542d68a0c837d351dc"
+      },
+      "repetition": 3,
+      "request": {
+        "acquisition_sha256": "5ab70414b443e97747a7b1e1d5bff15a657a7b8312f75ff7b28e110b3025c2fb",
+        "candidate_id": "d2e21dfdacc6241316ca157cb1820a09bb19e1d294ec58d4b6f6e79dd5805fdb",
+        "domain_sha256": "f0a4bd210ad5b1e10a7b6de9e8dab457cf34e2308b0b7dbed03d264c1731f2de",
+        "probes": [
+          {
+            "input_sha256": "5e2b030a4a0f1582d78c0fd9924511cd6b1f2df9879e574f5ea1406c94052418",
+            "inputs": {
+              "x": 2
+            },
+            "probe_id": "probe-1"
+          }
+        ],
+        "request_id": "d563c2466f2cd5412a6b6020aff5e21d6783bac8eaef9ceae1c20a7854d0314b",
+        "schema": "IndependentAdequacyProbeRequestV1",
+        "seed": "provider-auth-fixed-request-v1.1",
+        "status": "requested",
+        "term_sha256": "89ca8e44ca480b8cb514cfdf26fa4e04682bc7420e2481542d68a0c837d351dc"
+      },
+      "state_after": {
+        "epoch": 0,
+        "shape_ids": [
+          "#4166",
+          "#4167",
+          "#4168",
+          "#4169",
+          "#4170",
+          "#4171",
+          "#4172",
+          "#4173",
+          "#6009",
+          "#6010",
+          "#6011",
+          "#15915",
+          "#15916",
+          "#15917",
+          "#15918",
+          "#15919",
+          "#15920",
+          "#15921",
+          "#15922",
+          "#15923",
+          "#15924",
+          "#15925",
+          "#15926",
+          "#15927",
+          "#15928",
+          "#15929"
+        ]
+      },
+      "state_before": {
+        "epoch": 0,
+        "shape_ids": [
+          "#4166",
+          "#4167",
+          "#4168",
+          "#4169",
+          "#4170",
+          "#4171",
+          "#4172",
+          "#4173",
+          "#6009",
+          "#6010",
+          "#6011",
+          "#15915",
+          "#15916",
+          "#15917",
+          "#15918",
+          "#15919",
+          "#15920",
+          "#15921",
+          "#15922",
+          "#15923",
+          "#15924",
+          "#15925",
+          "#15926",
+          "#15927",
+          "#15928",
+          "#15929"
+        ]
+      },
+      "teach": {
+        "ok": false,
+        "provider_auth": {
+          "errors": [
+            "unsigned or unsupported label"
+          ],
+          "evidence_sha256": "9e09499fe8d514fb585dda7cf849cc2e808f247ce7f80eb01fc786904bd73504",
+          "ok": false,
+          "request_id": "d563c2466f2cd5412a6b6020aff5e21d6783bac8eaef9ceae1c20a7854d0314b",
+          "verified_labels": 0
+        },
+        "reason": "provider-authenticated adequacy evidence required"
+      },
+      "term": {
+        "name": "x",
+        "type": "Var"
+      },
+      "true_label": 4,
+      "written_ok": false
+    },
+    {
+      "active_after": {
+        "domains/adequacy_probe_selection.py": "b8d75708d4e193f16bd071861af08658a907d020281d3c9106a9582c82e8acd9",
+        "domains/adequacy_provider_auth.py": "fa8b6795af120ced16c80df5629930f0eaab53849a68423bc5106e0f6975b39f",
+        "domains/ast_to_term.py": "7ef48f9ecb67975428713ae1d2d54100fcdd39fc434dd586803059224f7cdcdb",
+        "domains/code_reading.py": "dd67d2942cf956c6e35f848aed4012c3ac072e9ac91d9e6b166e8ca44be57908",
+        "domains/code_write_growth.py": "691fd96072687baf2b99c6b3c9816cc6bb44805e35bec13f070a30061151761c",
+        "domains/code_writing.py": "4ad3148ca1796ad13f6128b9fd655e8568c7c843cd68bccee54f35cbf4ddabc9",
+        "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+        "domains/independent_adequacy.py": "33191341fdd63d16d0b9cb5203f27666da90b60fccd567ac4633306a9dcab418",
+        "domains/teach.py": "308a5f31d74dabb3ed8b24bd0c967abd5f94596a3ff76d17657330877fae2cfa",
+        "domains_tree": "2a8c06d3c161633ced141554787e3883308d37b3e30a8cf9bc4fcabd54a58900",
+        "native_binary": "3816b4fb5d5746950b4cc3bf9e904a58e675ce53530727edf44095646dd58a54",
+        "oracle": "b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+        "python_native_tree": "4d4cb4aaaed3c395638b0485fc0d871749150149aded5e81491b42c7fdeb5402",
+        "runners/dsl/python/substrate_rs/__init__.py": "1fed837a6b7e8b35e463d3b8fdca498400c9cc420a016b81279365d6406a4049",
+        "runners/dsl/python/substrate_rs/_native.build.json": "b491d348c59cbf5cd5eee1b3f900a042f31e21665b6e63212edb9ed7f3d60f47",
+        "runners/dsl/src/graph_rules.rs": "b0e9c5bf0bbb4bf278fdab03610fa3f6f82d01ad8ee898ec789982ff41812a50",
+        "runners/dsl/src/py.rs": "d6f922bd406d3f500c10cea11978f47f9612b4ce6b9a348e848a30a305881cba",
+        "runners/dsl/src/substrate.rs": "bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+        "runners/dsl/src/term.rs": "5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+        "rust_tree": "06307beca12566832d3ba7ac157ec6177abb41a87dcf3755d824729d1a55ea0f",
+        "seed_manifest_inventory": "f1098a8168c0663746dffb253eb7230435957b3f8f8aa6d5c8197d224cf946b1",
+        "substrate/boot_all.py": "2bdf46f19228e1d85dbdcf12383116ceeb72aab0efe7ddd0cc6a51d23b45d220",
+        "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+        "substrate/seed_loader.py": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27",
+        "substrate/world_adapter.py": "7aeeb3d418fade3c90dc2d28a64a2685880d0a45d9fd47e4b6c2f6b6dd649023",
+        "substrate_tree": "206c8d6c975998dae706c64fe23be1ae7af659fd749577d978aafa1c30d7fdba"
+      },
+      "boot_ns": 11698410950,
+      "candidate_id": "d2e21dfdacc6241316ca157cb1820a09bb19e1d294ec58d4b6f6e79dd5805fdb",
+      "case": "trusted_incorrect",
+      "claimed_label": 2,
+      "epoch_increment": 1,
+      "evidence": [
+        {
+          "inputs": {
+            "x": 2
+          },
+          "labels": [
+            {
+              "expected": 2,
+              "label_id": "e538a86fd9f8318158b177b70e6c2ddaf4c08109b11840b5a1a579f484349156",
+              "oracle_sha256": "b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+              "signature": "29293141a274f73a9856eafd416c9d0da21ece3ae24814e7f25949f93c0e2c75",
+              "signature_schema": "AdequacyProviderSignedLabelV1",
+              "source_id": "independent-codewrite-oracle-v1:b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac"
+            }
+          ],
+          "probe_id": "probe-1"
+        }
+      ],
+      "heldout": [
+        {
+          "matches": false,
+          "oracle": 9,
+          "prediction": 3,
+          "x": 3
+        },
+        {
+          "matches": false,
+          "oracle": 16,
+          "prediction": 4,
+          "x": 4
+        },
+        {
+          "matches": false,
+          "oracle": 25,
+          "prediction": 5,
+          "x": 5
+        },
+        {
+          "matches": false,
+          "oracle": 36,
+          "prediction": 6,
+          "x": 6
+        }
+      ],
+      "loaded_seed_count": 731,
+      "negative_controls": {
+        "empty_probe_set": {
+          "core_receipt_status": "accepted",
+          "errors": [
+            "request has no probes"
+          ],
+          "evidence_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+          "ok": false,
+          "request_id": "de418ef8c8dad30bfdea6de3aa17fae9d51c45dafeccee5668b4ac361991a9c6",
+          "verified_labels": 0
+        },
+        "replay": {
+          "errors": [
+            "provider signature mismatch"
+          ],
+          "evidence_sha256": "48b070e9fadfcf7329288dc8ad9826ec26117641d77f0bdc1f05d56860b14bd3",
+          "ok": false,
+          "request_id": "c6951bf841f9aed49fa5c2528284e3125a3a9da13405c636011b12c5f75ddb5e",
+          "verified_labels": 0
+        },
+        "tamper": {
+          "errors": [
+            "provider signature mismatch"
+          ],
+          "evidence_sha256": "f91687c2e309db60d7dd348ef6613e25524517a46f35f8bc0ce67a835b188b12",
+          "ok": false,
+          "request_id": "d563c2466f2cd5412a6b6020aff5e21d6783bac8eaef9ceae1c20a7854d0314b",
+          "verified_labels": 0
+        },
+        "unknown_provider": {
+          "errors": [
+            "unknown trusted provider"
+          ],
+          "evidence_sha256": "4f9defc1965bcdd81f175d456ae9b707f94d95f24f1df1fa6c2c8bc3b292b1bc",
+          "ok": false,
+          "request_id": "d563c2466f2cd5412a6b6020aff5e21d6783bac8eaef9ceae1c20a7854d0314b",
+          "verified_labels": 0
+        }
+      },
+      "pid": 14050,
+      "receipt": {
+        "candidate_id": "d2e21dfdacc6241316ca157cb1820a09bb19e1d294ec58d4b6f6e79dd5805fdb",
+        "evidence_sha256": "48b070e9fadfcf7329288dc8ad9826ec26117641d77f0bdc1f05d56860b14bd3",
+        "invalid_reasons": [],
+        "receipt_sha256": "e649cf753b70d7fe256ad9dcecdf45deef0666385b80a23de998f24bc6763a99",
+        "request_id": "d563c2466f2cd5412a6b6020aff5e21d6783bac8eaef9ceae1c20a7854d0314b",
+        "residuals": [],
+        "schema": "IndependentAdequacyReceiptV1",
+        "status": "accepted",
+        "term_sha256": "89ca8e44ca480b8cb514cfdf26fa4e04682bc7420e2481542d68a0c837d351dc"
+      },
+      "repetition": 1,
+      "request": {
+        "acquisition_sha256": "5ab70414b443e97747a7b1e1d5bff15a657a7b8312f75ff7b28e110b3025c2fb",
+        "candidate_id": "d2e21dfdacc6241316ca157cb1820a09bb19e1d294ec58d4b6f6e79dd5805fdb",
+        "domain_sha256": "f0a4bd210ad5b1e10a7b6de9e8dab457cf34e2308b0b7dbed03d264c1731f2de",
+        "probes": [
+          {
+            "input_sha256": "5e2b030a4a0f1582d78c0fd9924511cd6b1f2df9879e574f5ea1406c94052418",
+            "inputs": {
+              "x": 2
+            },
+            "probe_id": "probe-1"
+          }
+        ],
+        "request_id": "d563c2466f2cd5412a6b6020aff5e21d6783bac8eaef9ceae1c20a7854d0314b",
+        "schema": "IndependentAdequacyProbeRequestV1",
+        "seed": "provider-auth-fixed-request-v1.1",
+        "status": "requested",
+        "term_sha256": "89ca8e44ca480b8cb514cfdf26fa4e04682bc7420e2481542d68a0c837d351dc"
+      },
+      "state_after": {
+        "epoch": 1,
+        "shape_ids": [
+          "#4166",
+          "#4167",
+          "#4168",
+          "#4169",
+          "#4170",
+          "#4171",
+          "#4172",
+          "#4173",
+          "#6009",
+          "#6010",
+          "#6011",
+          "#15915",
+          "#15916",
+          "#15917",
+          "#15918",
+          "#15919",
+          "#15920",
+          "#15921",
+          "#15922",
+          "#15923",
+          "#15924",
+          "#15925",
+          "#15926",
+          "#15927",
+          "#15928",
+          "#15929",
+          "#25159"
+        ]
+      },
+      "state_before": {
+        "epoch": 0,
+        "shape_ids": [
+          "#4166",
+          "#4167",
+          "#4168",
+          "#4169",
+          "#4170",
+          "#4171",
+          "#4172",
+          "#4173",
+          "#6009",
+          "#6010",
+          "#6011",
+          "#15915",
+          "#15916",
+          "#15917",
+          "#15918",
+          "#15919",
+          "#15920",
+          "#15921",
+          "#15922",
+          "#15923",
+          "#15924",
+          "#15925",
+          "#15926",
+          "#15927",
+          "#15928",
+          "#15929"
+        ]
+      },
+      "teach": {
+        "adequacy_receipt": {
+          "candidate_id": "d2e21dfdacc6241316ca157cb1820a09bb19e1d294ec58d4b6f6e79dd5805fdb",
+          "evidence_sha256": "48b070e9fadfcf7329288dc8ad9826ec26117641d77f0bdc1f05d56860b14bd3",
+          "invalid_reasons": [],
+          "receipt_sha256": "e649cf753b70d7fe256ad9dcecdf45deef0666385b80a23de998f24bc6763a99",
+          "request_id": "d563c2466f2cd5412a6b6020aff5e21d6783bac8eaef9ceae1c20a7854d0314b",
+          "residuals": [],
+          "schema": "IndependentAdequacyReceiptV1",
+          "status": "accepted",
+          "term_sha256": "89ca8e44ca480b8cb514cfdf26fa4e04682bc7420e2481542d68a0c837d351dc"
+        },
+        "candidate_id": "d2e21dfdacc6241316ca157cb1820a09bb19e1d294ec58d4b6f6e79dd5805fdb",
+        "contract_validation": {
+          "checked": [
+            {
+              "expected": 0,
+              "index": 0,
+              "inputs": {
+                "x": 0
+              },
+              "native_match": true,
+              "native_output": 0,
+              "python_match": true,
+              "python_output": 0
+            }
+          ],
+          "ok": true
+        },
+        "ok": true,
+        "provider_auth": {
+          "errors": [],
+          "evidence_sha256": "48b070e9fadfcf7329288dc8ad9826ec26117641d77f0bdc1f05d56860b14bd3",
+          "ok": true,
+          "request_id": "d563c2466f2cd5412a6b6020aff5e21d6783bac8eaef9ceae1c20a7854d0314b",
+          "verified_labels": 1
+        },
+        "reading": {
+          "agreement": {
+            "code_only": [
+              "x"
+            ],
+            "comment_only": [],
+            "shared": [],
+            "verdict": "diverge"
+          },
+          "args": [
+            "x"
+          ],
+          "comment": {
+            "construction": null,
+            "content_words": "set()",
+            "predications": [],
+            "sentence": null
+          },
+          "construction": "learned_code_name",
+          "docstring": null,
+          "emit_error": null,
+          "minted": false,
+          "name": "identity",
+          "names": [
+            "x"
+          ],
+          "rendered_python": "x",
+          "residual": [],
+          "shape_fit": 1,
+          "skeleton": [
+            [
+              "NAME"
+            ]
+          ],
+          "term": {
+            "name": "x",
+            "type": "Var"
+          },
+          "what_does": "a name-shaped code construction, over x"
+        },
+        "shape": "taught_identity",
+        "teach": {
+          "category": "code_write_constructions",
+          "node": "#25159",
+          "persisted": false,
+          "saved": false,
+          "seed": "/home/matt/ozmadev/ocelot/seeds/code_write_constructions.json"
+        },
+        "tokens": [
+          "SQUARE",
+          "TRANSFORM"
+        ],
+        "validate": {
+          "agree": true,
+          "expected": 2,
+          "observed": 2,
+          "ran": true
+        },
+        "written_source": "def identity(x):\n    return x\n"
+      },
+      "term": {
+        "name": "x",
+        "type": "Var"
+      },
+      "true_label": 4,
+      "written_ok": true
+    },
+    {
+      "active_after": {
+        "domains/adequacy_probe_selection.py": "b8d75708d4e193f16bd071861af08658a907d020281d3c9106a9582c82e8acd9",
+        "domains/adequacy_provider_auth.py": "fa8b6795af120ced16c80df5629930f0eaab53849a68423bc5106e0f6975b39f",
+        "domains/ast_to_term.py": "7ef48f9ecb67975428713ae1d2d54100fcdd39fc434dd586803059224f7cdcdb",
+        "domains/code_reading.py": "dd67d2942cf956c6e35f848aed4012c3ac072e9ac91d9e6b166e8ca44be57908",
+        "domains/code_write_growth.py": "691fd96072687baf2b99c6b3c9816cc6bb44805e35bec13f070a30061151761c",
+        "domains/code_writing.py": "4ad3148ca1796ad13f6128b9fd655e8568c7c843cd68bccee54f35cbf4ddabc9",
+        "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+        "domains/independent_adequacy.py": "33191341fdd63d16d0b9cb5203f27666da90b60fccd567ac4633306a9dcab418",
+        "domains/teach.py": "308a5f31d74dabb3ed8b24bd0c967abd5f94596a3ff76d17657330877fae2cfa",
+        "domains_tree": "2a8c06d3c161633ced141554787e3883308d37b3e30a8cf9bc4fcabd54a58900",
+        "native_binary": "3816b4fb5d5746950b4cc3bf9e904a58e675ce53530727edf44095646dd58a54",
+        "oracle": "b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+        "python_native_tree": "4d4cb4aaaed3c395638b0485fc0d871749150149aded5e81491b42c7fdeb5402",
+        "runners/dsl/python/substrate_rs/__init__.py": "1fed837a6b7e8b35e463d3b8fdca498400c9cc420a016b81279365d6406a4049",
+        "runners/dsl/python/substrate_rs/_native.build.json": "b491d348c59cbf5cd5eee1b3f900a042f31e21665b6e63212edb9ed7f3d60f47",
+        "runners/dsl/src/graph_rules.rs": "b0e9c5bf0bbb4bf278fdab03610fa3f6f82d01ad8ee898ec789982ff41812a50",
+        "runners/dsl/src/py.rs": "d6f922bd406d3f500c10cea11978f47f9612b4ce6b9a348e848a30a305881cba",
+        "runners/dsl/src/substrate.rs": "bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+        "runners/dsl/src/term.rs": "5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+        "rust_tree": "06307beca12566832d3ba7ac157ec6177abb41a87dcf3755d824729d1a55ea0f",
+        "seed_manifest_inventory": "f1098a8168c0663746dffb253eb7230435957b3f8f8aa6d5c8197d224cf946b1",
+        "substrate/boot_all.py": "2bdf46f19228e1d85dbdcf12383116ceeb72aab0efe7ddd0cc6a51d23b45d220",
+        "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+        "substrate/seed_loader.py": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27",
+        "substrate/world_adapter.py": "7aeeb3d418fade3c90dc2d28a64a2685880d0a45d9fd47e4b6c2f6b6dd649023",
+        "substrate_tree": "206c8d6c975998dae706c64fe23be1ae7af659fd749577d978aafa1c30d7fdba"
+      },
+      "boot_ns": 11829199167,
+      "candidate_id": "d2e21dfdacc6241316ca157cb1820a09bb19e1d294ec58d4b6f6e79dd5805fdb",
+      "case": "trusted_incorrect",
+      "claimed_label": 2,
+      "epoch_increment": 1,
+      "evidence": [
+        {
+          "inputs": {
+            "x": 2
+          },
+          "labels": [
+            {
+              "expected": 2,
+              "label_id": "e538a86fd9f8318158b177b70e6c2ddaf4c08109b11840b5a1a579f484349156",
+              "oracle_sha256": "b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+              "signature": "29293141a274f73a9856eafd416c9d0da21ece3ae24814e7f25949f93c0e2c75",
+              "signature_schema": "AdequacyProviderSignedLabelV1",
+              "source_id": "independent-codewrite-oracle-v1:b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac"
+            }
+          ],
+          "probe_id": "probe-1"
+        }
+      ],
+      "heldout": [
+        {
+          "matches": false,
+          "oracle": 9,
+          "prediction": 3,
+          "x": 3
+        },
+        {
+          "matches": false,
+          "oracle": 16,
+          "prediction": 4,
+          "x": 4
+        },
+        {
+          "matches": false,
+          "oracle": 25,
+          "prediction": 5,
+          "x": 5
+        },
+        {
+          "matches": false,
+          "oracle": 36,
+          "prediction": 6,
+          "x": 6
+        }
+      ],
+      "loaded_seed_count": 731,
+      "negative_controls": {
+        "empty_probe_set": {
+          "core_receipt_status": "accepted",
+          "errors": [
+            "request has no probes"
+          ],
+          "evidence_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+          "ok": false,
+          "request_id": "de418ef8c8dad30bfdea6de3aa17fae9d51c45dafeccee5668b4ac361991a9c6",
+          "verified_labels": 0
+        },
+        "replay": {
+          "errors": [
+            "provider signature mismatch"
+          ],
+          "evidence_sha256": "48b070e9fadfcf7329288dc8ad9826ec26117641d77f0bdc1f05d56860b14bd3",
+          "ok": false,
+          "request_id": "c6951bf841f9aed49fa5c2528284e3125a3a9da13405c636011b12c5f75ddb5e",
+          "verified_labels": 0
+        },
+        "tamper": {
+          "errors": [
+            "provider signature mismatch"
+          ],
+          "evidence_sha256": "f91687c2e309db60d7dd348ef6613e25524517a46f35f8bc0ce67a835b188b12",
+          "ok": false,
+          "request_id": "d563c2466f2cd5412a6b6020aff5e21d6783bac8eaef9ceae1c20a7854d0314b",
+          "verified_labels": 0
+        },
+        "unknown_provider": {
+          "errors": [
+            "unknown trusted provider"
+          ],
+          "evidence_sha256": "4f9defc1965bcdd81f175d456ae9b707f94d95f24f1df1fa6c2c8bc3b292b1bc",
+          "ok": false,
+          "request_id": "d563c2466f2cd5412a6b6020aff5e21d6783bac8eaef9ceae1c20a7854d0314b",
+          "verified_labels": 0
+        }
+      },
+      "pid": 16391,
+      "receipt": {
+        "candidate_id": "d2e21dfdacc6241316ca157cb1820a09bb19e1d294ec58d4b6f6e79dd5805fdb",
+        "evidence_sha256": "48b070e9fadfcf7329288dc8ad9826ec26117641d77f0bdc1f05d56860b14bd3",
+        "invalid_reasons": [],
+        "receipt_sha256": "e649cf753b70d7fe256ad9dcecdf45deef0666385b80a23de998f24bc6763a99",
+        "request_id": "d563c2466f2cd5412a6b6020aff5e21d6783bac8eaef9ceae1c20a7854d0314b",
+        "residuals": [],
+        "schema": "IndependentAdequacyReceiptV1",
+        "status": "accepted",
+        "term_sha256": "89ca8e44ca480b8cb514cfdf26fa4e04682bc7420e2481542d68a0c837d351dc"
+      },
+      "repetition": 2,
+      "request": {
+        "acquisition_sha256": "5ab70414b443e97747a7b1e1d5bff15a657a7b8312f75ff7b28e110b3025c2fb",
+        "candidate_id": "d2e21dfdacc6241316ca157cb1820a09bb19e1d294ec58d4b6f6e79dd5805fdb",
+        "domain_sha256": "f0a4bd210ad5b1e10a7b6de9e8dab457cf34e2308b0b7dbed03d264c1731f2de",
+        "probes": [
+          {
+            "input_sha256": "5e2b030a4a0f1582d78c0fd9924511cd6b1f2df9879e574f5ea1406c94052418",
+            "inputs": {
+              "x": 2
+            },
+            "probe_id": "probe-1"
+          }
+        ],
+        "request_id": "d563c2466f2cd5412a6b6020aff5e21d6783bac8eaef9ceae1c20a7854d0314b",
+        "schema": "IndependentAdequacyProbeRequestV1",
+        "seed": "provider-auth-fixed-request-v1.1",
+        "status": "requested",
+        "term_sha256": "89ca8e44ca480b8cb514cfdf26fa4e04682bc7420e2481542d68a0c837d351dc"
+      },
+      "state_after": {
+        "epoch": 1,
+        "shape_ids": [
+          "#4166",
+          "#4167",
+          "#4168",
+          "#4169",
+          "#4170",
+          "#4171",
+          "#4172",
+          "#4173",
+          "#6009",
+          "#6010",
+          "#6011",
+          "#15915",
+          "#15916",
+          "#15917",
+          "#15918",
+          "#15919",
+          "#15920",
+          "#15921",
+          "#15922",
+          "#15923",
+          "#15924",
+          "#15925",
+          "#15926",
+          "#15927",
+          "#15928",
+          "#15929",
+          "#25159"
+        ]
+      },
+      "state_before": {
+        "epoch": 0,
+        "shape_ids": [
+          "#4166",
+          "#4167",
+          "#4168",
+          "#4169",
+          "#4170",
+          "#4171",
+          "#4172",
+          "#4173",
+          "#6009",
+          "#6010",
+          "#6011",
+          "#15915",
+          "#15916",
+          "#15917",
+          "#15918",
+          "#15919",
+          "#15920",
+          "#15921",
+          "#15922",
+          "#15923",
+          "#15924",
+          "#15925",
+          "#15926",
+          "#15927",
+          "#15928",
+          "#15929"
+        ]
+      },
+      "teach": {
+        "adequacy_receipt": {
+          "candidate_id": "d2e21dfdacc6241316ca157cb1820a09bb19e1d294ec58d4b6f6e79dd5805fdb",
+          "evidence_sha256": "48b070e9fadfcf7329288dc8ad9826ec26117641d77f0bdc1f05d56860b14bd3",
+          "invalid_reasons": [],
+          "receipt_sha256": "e649cf753b70d7fe256ad9dcecdf45deef0666385b80a23de998f24bc6763a99",
+          "request_id": "d563c2466f2cd5412a6b6020aff5e21d6783bac8eaef9ceae1c20a7854d0314b",
+          "residuals": [],
+          "schema": "IndependentAdequacyReceiptV1",
+          "status": "accepted",
+          "term_sha256": "89ca8e44ca480b8cb514cfdf26fa4e04682bc7420e2481542d68a0c837d351dc"
+        },
+        "candidate_id": "d2e21dfdacc6241316ca157cb1820a09bb19e1d294ec58d4b6f6e79dd5805fdb",
+        "contract_validation": {
+          "checked": [
+            {
+              "expected": 0,
+              "index": 0,
+              "inputs": {
+                "x": 0
+              },
+              "native_match": true,
+              "native_output": 0,
+              "python_match": true,
+              "python_output": 0
+            }
+          ],
+          "ok": true
+        },
+        "ok": true,
+        "provider_auth": {
+          "errors": [],
+          "evidence_sha256": "48b070e9fadfcf7329288dc8ad9826ec26117641d77f0bdc1f05d56860b14bd3",
+          "ok": true,
+          "request_id": "d563c2466f2cd5412a6b6020aff5e21d6783bac8eaef9ceae1c20a7854d0314b",
+          "verified_labels": 1
+        },
+        "reading": {
+          "agreement": {
+            "code_only": [
+              "x"
+            ],
+            "comment_only": [],
+            "shared": [],
+            "verdict": "diverge"
+          },
+          "args": [
+            "x"
+          ],
+          "comment": {
+            "construction": null,
+            "content_words": "set()",
+            "predications": [],
+            "sentence": null
+          },
+          "construction": "learned_code_name",
+          "docstring": null,
+          "emit_error": null,
+          "minted": false,
+          "name": "identity",
+          "names": [
+            "x"
+          ],
+          "rendered_python": "x",
+          "residual": [],
+          "shape_fit": 1,
+          "skeleton": [
+            [
+              "NAME"
+            ]
+          ],
+          "term": {
+            "name": "x",
+            "type": "Var"
+          },
+          "what_does": "a name-shaped code construction, over x"
+        },
+        "shape": "taught_identity",
+        "teach": {
+          "category": "code_write_constructions",
+          "node": "#25159",
+          "persisted": false,
+          "saved": false,
+          "seed": "/home/matt/ozmadev/ocelot/seeds/code_write_constructions.json"
+        },
+        "tokens": [
+          "SQUARE",
+          "TRANSFORM"
+        ],
+        "validate": {
+          "agree": true,
+          "expected": 2,
+          "observed": 2,
+          "ran": true
+        },
+        "written_source": "def identity(x):\n    return x\n"
+      },
+      "term": {
+        "name": "x",
+        "type": "Var"
+      },
+      "true_label": 4,
+      "written_ok": true
+    },
+    {
+      "active_after": {
+        "domains/adequacy_probe_selection.py": "b8d75708d4e193f16bd071861af08658a907d020281d3c9106a9582c82e8acd9",
+        "domains/adequacy_provider_auth.py": "fa8b6795af120ced16c80df5629930f0eaab53849a68423bc5106e0f6975b39f",
+        "domains/ast_to_term.py": "7ef48f9ecb67975428713ae1d2d54100fcdd39fc434dd586803059224f7cdcdb",
+        "domains/code_reading.py": "dd67d2942cf956c6e35f848aed4012c3ac072e9ac91d9e6b166e8ca44be57908",
+        "domains/code_write_growth.py": "691fd96072687baf2b99c6b3c9816cc6bb44805e35bec13f070a30061151761c",
+        "domains/code_writing.py": "4ad3148ca1796ad13f6128b9fd655e8568c7c843cd68bccee54f35cbf4ddabc9",
+        "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+        "domains/independent_adequacy.py": "33191341fdd63d16d0b9cb5203f27666da90b60fccd567ac4633306a9dcab418",
+        "domains/teach.py": "308a5f31d74dabb3ed8b24bd0c967abd5f94596a3ff76d17657330877fae2cfa",
+        "domains_tree": "2a8c06d3c161633ced141554787e3883308d37b3e30a8cf9bc4fcabd54a58900",
+        "native_binary": "3816b4fb5d5746950b4cc3bf9e904a58e675ce53530727edf44095646dd58a54",
+        "oracle": "b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+        "python_native_tree": "4d4cb4aaaed3c395638b0485fc0d871749150149aded5e81491b42c7fdeb5402",
+        "runners/dsl/python/substrate_rs/__init__.py": "1fed837a6b7e8b35e463d3b8fdca498400c9cc420a016b81279365d6406a4049",
+        "runners/dsl/python/substrate_rs/_native.build.json": "b491d348c59cbf5cd5eee1b3f900a042f31e21665b6e63212edb9ed7f3d60f47",
+        "runners/dsl/src/graph_rules.rs": "b0e9c5bf0bbb4bf278fdab03610fa3f6f82d01ad8ee898ec789982ff41812a50",
+        "runners/dsl/src/py.rs": "d6f922bd406d3f500c10cea11978f47f9612b4ce6b9a348e848a30a305881cba",
+        "runners/dsl/src/substrate.rs": "bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+        "runners/dsl/src/term.rs": "5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+        "rust_tree": "06307beca12566832d3ba7ac157ec6177abb41a87dcf3755d824729d1a55ea0f",
+        "seed_manifest_inventory": "f1098a8168c0663746dffb253eb7230435957b3f8f8aa6d5c8197d224cf946b1",
+        "substrate/boot_all.py": "2bdf46f19228e1d85dbdcf12383116ceeb72aab0efe7ddd0cc6a51d23b45d220",
+        "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+        "substrate/seed_loader.py": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27",
+        "substrate/world_adapter.py": "7aeeb3d418fade3c90dc2d28a64a2685880d0a45d9fd47e4b6c2f6b6dd649023",
+        "substrate_tree": "206c8d6c975998dae706c64fe23be1ae7af659fd749577d978aafa1c30d7fdba"
+      },
+      "boot_ns": 11731336315,
+      "candidate_id": "d2e21dfdacc6241316ca157cb1820a09bb19e1d294ec58d4b6f6e79dd5805fdb",
+      "case": "trusted_incorrect",
+      "claimed_label": 2,
+      "epoch_increment": 1,
+      "evidence": [
+        {
+          "inputs": {
+            "x": 2
+          },
+          "labels": [
+            {
+              "expected": 2,
+              "label_id": "e538a86fd9f8318158b177b70e6c2ddaf4c08109b11840b5a1a579f484349156",
+              "oracle_sha256": "b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+              "signature": "29293141a274f73a9856eafd416c9d0da21ece3ae24814e7f25949f93c0e2c75",
+              "signature_schema": "AdequacyProviderSignedLabelV1",
+              "source_id": "independent-codewrite-oracle-v1:b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac"
+            }
+          ],
+          "probe_id": "probe-1"
+        }
+      ],
+      "heldout": [
+        {
+          "matches": false,
+          "oracle": 9,
+          "prediction": 3,
+          "x": 3
+        },
+        {
+          "matches": false,
+          "oracle": 16,
+          "prediction": 4,
+          "x": 4
+        },
+        {
+          "matches": false,
+          "oracle": 25,
+          "prediction": 5,
+          "x": 5
+        },
+        {
+          "matches": false,
+          "oracle": 36,
+          "prediction": 6,
+          "x": 6
+        }
+      ],
+      "loaded_seed_count": 731,
+      "negative_controls": {
+        "empty_probe_set": {
+          "core_receipt_status": "accepted",
+          "errors": [
+            "request has no probes"
+          ],
+          "evidence_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+          "ok": false,
+          "request_id": "de418ef8c8dad30bfdea6de3aa17fae9d51c45dafeccee5668b4ac361991a9c6",
+          "verified_labels": 0
+        },
+        "replay": {
+          "errors": [
+            "provider signature mismatch"
+          ],
+          "evidence_sha256": "48b070e9fadfcf7329288dc8ad9826ec26117641d77f0bdc1f05d56860b14bd3",
+          "ok": false,
+          "request_id": "c6951bf841f9aed49fa5c2528284e3125a3a9da13405c636011b12c5f75ddb5e",
+          "verified_labels": 0
+        },
+        "tamper": {
+          "errors": [
+            "provider signature mismatch"
+          ],
+          "evidence_sha256": "f91687c2e309db60d7dd348ef6613e25524517a46f35f8bc0ce67a835b188b12",
+          "ok": false,
+          "request_id": "d563c2466f2cd5412a6b6020aff5e21d6783bac8eaef9ceae1c20a7854d0314b",
+          "verified_labels": 0
+        },
+        "unknown_provider": {
+          "errors": [
+            "unknown trusted provider"
+          ],
+          "evidence_sha256": "4f9defc1965bcdd81f175d456ae9b707f94d95f24f1df1fa6c2c8bc3b292b1bc",
+          "ok": false,
+          "request_id": "d563c2466f2cd5412a6b6020aff5e21d6783bac8eaef9ceae1c20a7854d0314b",
+          "verified_labels": 0
+        }
+      },
+      "pid": 18732,
+      "receipt": {
+        "candidate_id": "d2e21dfdacc6241316ca157cb1820a09bb19e1d294ec58d4b6f6e79dd5805fdb",
+        "evidence_sha256": "48b070e9fadfcf7329288dc8ad9826ec26117641d77f0bdc1f05d56860b14bd3",
+        "invalid_reasons": [],
+        "receipt_sha256": "e649cf753b70d7fe256ad9dcecdf45deef0666385b80a23de998f24bc6763a99",
+        "request_id": "d563c2466f2cd5412a6b6020aff5e21d6783bac8eaef9ceae1c20a7854d0314b",
+        "residuals": [],
+        "schema": "IndependentAdequacyReceiptV1",
+        "status": "accepted",
+        "term_sha256": "89ca8e44ca480b8cb514cfdf26fa4e04682bc7420e2481542d68a0c837d351dc"
+      },
+      "repetition": 3,
+      "request": {
+        "acquisition_sha256": "5ab70414b443e97747a7b1e1d5bff15a657a7b8312f75ff7b28e110b3025c2fb",
+        "candidate_id": "d2e21dfdacc6241316ca157cb1820a09bb19e1d294ec58d4b6f6e79dd5805fdb",
+        "domain_sha256": "f0a4bd210ad5b1e10a7b6de9e8dab457cf34e2308b0b7dbed03d264c1731f2de",
+        "probes": [
+          {
+            "input_sha256": "5e2b030a4a0f1582d78c0fd9924511cd6b1f2df9879e574f5ea1406c94052418",
+            "inputs": {
+              "x": 2
+            },
+            "probe_id": "probe-1"
+          }
+        ],
+        "request_id": "d563c2466f2cd5412a6b6020aff5e21d6783bac8eaef9ceae1c20a7854d0314b",
+        "schema": "IndependentAdequacyProbeRequestV1",
+        "seed": "provider-auth-fixed-request-v1.1",
+        "status": "requested",
+        "term_sha256": "89ca8e44ca480b8cb514cfdf26fa4e04682bc7420e2481542d68a0c837d351dc"
+      },
+      "state_after": {
+        "epoch": 1,
+        "shape_ids": [
+          "#4166",
+          "#4167",
+          "#4168",
+          "#4169",
+          "#4170",
+          "#4171",
+          "#4172",
+          "#4173",
+          "#6009",
+          "#6010",
+          "#6011",
+          "#15915",
+          "#15916",
+          "#15917",
+          "#15918",
+          "#15919",
+          "#15920",
+          "#15921",
+          "#15922",
+          "#15923",
+          "#15924",
+          "#15925",
+          "#15926",
+          "#15927",
+          "#15928",
+          "#15929",
+          "#25159"
+        ]
+      },
+      "state_before": {
+        "epoch": 0,
+        "shape_ids": [
+          "#4166",
+          "#4167",
+          "#4168",
+          "#4169",
+          "#4170",
+          "#4171",
+          "#4172",
+          "#4173",
+          "#6009",
+          "#6010",
+          "#6011",
+          "#15915",
+          "#15916",
+          "#15917",
+          "#15918",
+          "#15919",
+          "#15920",
+          "#15921",
+          "#15922",
+          "#15923",
+          "#15924",
+          "#15925",
+          "#15926",
+          "#15927",
+          "#15928",
+          "#15929"
+        ]
+      },
+      "teach": {
+        "adequacy_receipt": {
+          "candidate_id": "d2e21dfdacc6241316ca157cb1820a09bb19e1d294ec58d4b6f6e79dd5805fdb",
+          "evidence_sha256": "48b070e9fadfcf7329288dc8ad9826ec26117641d77f0bdc1f05d56860b14bd3",
+          "invalid_reasons": [],
+          "receipt_sha256": "e649cf753b70d7fe256ad9dcecdf45deef0666385b80a23de998f24bc6763a99",
+          "request_id": "d563c2466f2cd5412a6b6020aff5e21d6783bac8eaef9ceae1c20a7854d0314b",
+          "residuals": [],
+          "schema": "IndependentAdequacyReceiptV1",
+          "status": "accepted",
+          "term_sha256": "89ca8e44ca480b8cb514cfdf26fa4e04682bc7420e2481542d68a0c837d351dc"
+        },
+        "candidate_id": "d2e21dfdacc6241316ca157cb1820a09bb19e1d294ec58d4b6f6e79dd5805fdb",
+        "contract_validation": {
+          "checked": [
+            {
+              "expected": 0,
+              "index": 0,
+              "inputs": {
+                "x": 0
+              },
+              "native_match": true,
+              "native_output": 0,
+              "python_match": true,
+              "python_output": 0
+            }
+          ],
+          "ok": true
+        },
+        "ok": true,
+        "provider_auth": {
+          "errors": [],
+          "evidence_sha256": "48b070e9fadfcf7329288dc8ad9826ec26117641d77f0bdc1f05d56860b14bd3",
+          "ok": true,
+          "request_id": "d563c2466f2cd5412a6b6020aff5e21d6783bac8eaef9ceae1c20a7854d0314b",
+          "verified_labels": 1
+        },
+        "reading": {
+          "agreement": {
+            "code_only": [
+              "x"
+            ],
+            "comment_only": [],
+            "shared": [],
+            "verdict": "diverge"
+          },
+          "args": [
+            "x"
+          ],
+          "comment": {
+            "construction": null,
+            "content_words": "set()",
+            "predications": [],
+            "sentence": null
+          },
+          "construction": "learned_code_name",
+          "docstring": null,
+          "emit_error": null,
+          "minted": false,
+          "name": "identity",
+          "names": [
+            "x"
+          ],
+          "rendered_python": "x",
+          "residual": [],
+          "shape_fit": 1,
+          "skeleton": [
+            [
+              "NAME"
+            ]
+          ],
+          "term": {
+            "name": "x",
+            "type": "Var"
+          },
+          "what_does": "a name-shaped code construction, over x"
+        },
+        "shape": "taught_identity",
+        "teach": {
+          "category": "code_write_constructions",
+          "node": "#25159",
+          "persisted": false,
+          "saved": false,
+          "seed": "/home/matt/ozmadev/ocelot/seeds/code_write_constructions.json"
+        },
+        "tokens": [
+          "SQUARE",
+          "TRANSFORM"
+        ],
+        "validate": {
+          "agree": true,
+          "expected": 2,
+          "observed": 2,
+          "ran": true
+        },
+        "written_source": "def identity(x):\n    return x\n"
+      },
+      "term": {
+        "name": "x",
+        "type": "Var"
+      },
+      "true_label": 4,
+      "written_ok": true
+    },
+    {
+      "active_after": {
+        "domains/adequacy_probe_selection.py": "b8d75708d4e193f16bd071861af08658a907d020281d3c9106a9582c82e8acd9",
+        "domains/adequacy_provider_auth.py": "fa8b6795af120ced16c80df5629930f0eaab53849a68423bc5106e0f6975b39f",
+        "domains/ast_to_term.py": "7ef48f9ecb67975428713ae1d2d54100fcdd39fc434dd586803059224f7cdcdb",
+        "domains/code_reading.py": "dd67d2942cf956c6e35f848aed4012c3ac072e9ac91d9e6b166e8ca44be57908",
+        "domains/code_write_growth.py": "691fd96072687baf2b99c6b3c9816cc6bb44805e35bec13f070a30061151761c",
+        "domains/code_writing.py": "4ad3148ca1796ad13f6128b9fd655e8568c7c843cd68bccee54f35cbf4ddabc9",
+        "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+        "domains/independent_adequacy.py": "33191341fdd63d16d0b9cb5203f27666da90b60fccd567ac4633306a9dcab418",
+        "domains/teach.py": "308a5f31d74dabb3ed8b24bd0c967abd5f94596a3ff76d17657330877fae2cfa",
+        "domains_tree": "2a8c06d3c161633ced141554787e3883308d37b3e30a8cf9bc4fcabd54a58900",
+        "native_binary": "3816b4fb5d5746950b4cc3bf9e904a58e675ce53530727edf44095646dd58a54",
+        "oracle": "b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+        "python_native_tree": "4d4cb4aaaed3c395638b0485fc0d871749150149aded5e81491b42c7fdeb5402",
+        "runners/dsl/python/substrate_rs/__init__.py": "1fed837a6b7e8b35e463d3b8fdca498400c9cc420a016b81279365d6406a4049",
+        "runners/dsl/python/substrate_rs/_native.build.json": "b491d348c59cbf5cd5eee1b3f900a042f31e21665b6e63212edb9ed7f3d60f47",
+        "runners/dsl/src/graph_rules.rs": "b0e9c5bf0bbb4bf278fdab03610fa3f6f82d01ad8ee898ec789982ff41812a50",
+        "runners/dsl/src/py.rs": "d6f922bd406d3f500c10cea11978f47f9612b4ce6b9a348e848a30a305881cba",
+        "runners/dsl/src/substrate.rs": "bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+        "runners/dsl/src/term.rs": "5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+        "rust_tree": "06307beca12566832d3ba7ac157ec6177abb41a87dcf3755d824729d1a55ea0f",
+        "seed_manifest_inventory": "f1098a8168c0663746dffb253eb7230435957b3f8f8aa6d5c8197d224cf946b1",
+        "substrate/boot_all.py": "2bdf46f19228e1d85dbdcf12383116ceeb72aab0efe7ddd0cc6a51d23b45d220",
+        "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+        "substrate/seed_loader.py": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27",
+        "substrate/world_adapter.py": "7aeeb3d418fade3c90dc2d28a64a2685880d0a45d9fd47e4b6c2f6b6dd649023",
+        "substrate_tree": "206c8d6c975998dae706c64fe23be1ae7af659fd749577d978aafa1c30d7fdba"
+      },
+      "boot_ns": 11704994041,
+      "candidate_id": "f3eae0edc034bef6521d65b858566132254497cc8ba3f9cabf5b56416e7f52ca",
+      "case": "correct_candidate",
+      "claimed_label": 4,
+      "epoch_increment": 1,
+      "evidence": [
+        {
+          "inputs": {
+            "x": 2
+          },
+          "labels": [
+            {
+              "expected": 4,
+              "label_id": "245c6abdd7424353d56228c8cc0fa652cdc34b1e3300f404f09385abb6338e0a",
+              "oracle_sha256": "b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+              "signature": "7c8d7218847e55cba4ee7eca15d832b05a29557fdd9ffdaab202f99363e896b7",
+              "signature_schema": "AdequacyProviderSignedLabelV1",
+              "source_id": "independent-codewrite-oracle-v1:b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac"
+            }
+          ],
+          "probe_id": "probe-1"
+        }
+      ],
+      "heldout": [
+        {
+          "matches": true,
+          "oracle": 9,
+          "prediction": 9,
+          "x": 3
+        },
+        {
+          "matches": true,
+          "oracle": 16,
+          "prediction": 16,
+          "x": 4
+        },
+        {
+          "matches": true,
+          "oracle": 25,
+          "prediction": 25,
+          "x": 5
+        },
+        {
+          "matches": true,
+          "oracle": 36,
+          "prediction": 36,
+          "x": 6
+        }
+      ],
+      "loaded_seed_count": 731,
+      "negative_controls": {
+        "empty_probe_set": {
+          "core_receipt_status": "accepted",
+          "errors": [
+            "request has no probes"
+          ],
+          "evidence_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+          "ok": false,
+          "request_id": "4bf792b74b0d8f0d84a6661e04841eae1527c69c3b6914968ec7faf990e35f31",
+          "verified_labels": 0
+        },
+        "replay": {
+          "errors": [
+            "provider signature mismatch"
+          ],
+          "evidence_sha256": "6b098521ec2f88bd4cc52a866e5fb6c83648e4b196365436b9bb23c59d82a8c7",
+          "ok": false,
+          "request_id": "1cd9c038fcc6f807502918ff89a187d7c4f64198cd8d965b3bb55e60ebda7363",
+          "verified_labels": 0
+        },
+        "tamper": {
+          "errors": [
+            "provider signature mismatch"
+          ],
+          "evidence_sha256": "7dfd139b322c86c9066515c1bc0c5692dfa92df967b97689aaf219cb6c1ff268",
+          "ok": false,
+          "request_id": "0a29d983abbe16391ad387ffe182a44c82a63b28c34196898ef371545586011c",
+          "verified_labels": 0
+        },
+        "unknown_provider": {
+          "errors": [
+            "unknown trusted provider"
+          ],
+          "evidence_sha256": "89d6352b566a5589b19134f473271e89de1aa41308d1faa8f6f752ff900f4616",
+          "ok": false,
+          "request_id": "0a29d983abbe16391ad387ffe182a44c82a63b28c34196898ef371545586011c",
+          "verified_labels": 0
+        }
+      },
+      "pid": 21073,
+      "receipt": {
+        "candidate_id": "f3eae0edc034bef6521d65b858566132254497cc8ba3f9cabf5b56416e7f52ca",
+        "evidence_sha256": "6b098521ec2f88bd4cc52a866e5fb6c83648e4b196365436b9bb23c59d82a8c7",
+        "invalid_reasons": [],
+        "receipt_sha256": "5355333c5072bcca1aec955b9a7f03f2b6be75cb74364061672cd12d55a3a8b3",
+        "request_id": "0a29d983abbe16391ad387ffe182a44c82a63b28c34196898ef371545586011c",
+        "residuals": [],
+        "schema": "IndependentAdequacyReceiptV1",
+        "status": "accepted",
+        "term_sha256": "e4f0b7ba7eaf37e7414f3239344ef3959c98043a452a26542a736388ccd03c18"
+      },
+      "repetition": 1,
+      "request": {
+        "acquisition_sha256": "5ab70414b443e97747a7b1e1d5bff15a657a7b8312f75ff7b28e110b3025c2fb",
+        "candidate_id": "f3eae0edc034bef6521d65b858566132254497cc8ba3f9cabf5b56416e7f52ca",
+        "domain_sha256": "f0a4bd210ad5b1e10a7b6de9e8dab457cf34e2308b0b7dbed03d264c1731f2de",
+        "probes": [
+          {
+            "input_sha256": "5e2b030a4a0f1582d78c0fd9924511cd6b1f2df9879e574f5ea1406c94052418",
+            "inputs": {
+              "x": 2
+            },
+            "probe_id": "probe-1"
+          }
+        ],
+        "request_id": "0a29d983abbe16391ad387ffe182a44c82a63b28c34196898ef371545586011c",
+        "schema": "IndependentAdequacyProbeRequestV1",
+        "seed": "provider-auth-fixed-request-v1.1",
+        "status": "requested",
+        "term_sha256": "e4f0b7ba7eaf37e7414f3239344ef3959c98043a452a26542a736388ccd03c18"
+      },
+      "state_after": {
+        "epoch": 1,
+        "shape_ids": [
+          "#4166",
+          "#4167",
+          "#4168",
+          "#4169",
+          "#4170",
+          "#4171",
+          "#4172",
+          "#4173",
+          "#6009",
+          "#6010",
+          "#6011",
+          "#15915",
+          "#15916",
+          "#15917",
+          "#15918",
+          "#15919",
+          "#15920",
+          "#15921",
+          "#15922",
+          "#15923",
+          "#15924",
+          "#15925",
+          "#15926",
+          "#15927",
+          "#15928",
+          "#15929",
+          "#25121"
+        ]
+      },
+      "state_before": {
+        "epoch": 0,
+        "shape_ids": [
+          "#4166",
+          "#4167",
+          "#4168",
+          "#4169",
+          "#4170",
+          "#4171",
+          "#4172",
+          "#4173",
+          "#6009",
+          "#6010",
+          "#6011",
+          "#15915",
+          "#15916",
+          "#15917",
+          "#15918",
+          "#15919",
+          "#15920",
+          "#15921",
+          "#15922",
+          "#15923",
+          "#15924",
+          "#15925",
+          "#15926",
+          "#15927",
+          "#15928",
+          "#15929"
+        ]
+      },
+      "teach": {
+        "adequacy_receipt": {
+          "candidate_id": "f3eae0edc034bef6521d65b858566132254497cc8ba3f9cabf5b56416e7f52ca",
+          "evidence_sha256": "6b098521ec2f88bd4cc52a866e5fb6c83648e4b196365436b9bb23c59d82a8c7",
+          "invalid_reasons": [],
+          "receipt_sha256": "5355333c5072bcca1aec955b9a7f03f2b6be75cb74364061672cd12d55a3a8b3",
+          "request_id": "0a29d983abbe16391ad387ffe182a44c82a63b28c34196898ef371545586011c",
+          "residuals": [],
+          "schema": "IndependentAdequacyReceiptV1",
+          "status": "accepted",
+          "term_sha256": "e4f0b7ba7eaf37e7414f3239344ef3959c98043a452a26542a736388ccd03c18"
+        },
+        "candidate_id": "f3eae0edc034bef6521d65b858566132254497cc8ba3f9cabf5b56416e7f52ca",
+        "contract_validation": {
+          "checked": [
+            {
+              "expected": 0,
+              "index": 0,
+              "inputs": {
+                "x": 0
+              },
+              "native_match": true,
+              "native_output": 0,
+              "python_match": true,
+              "python_output": 0
+            }
+          ],
+          "ok": true
+        },
+        "ok": true,
+        "provider_auth": {
+          "errors": [],
+          "evidence_sha256": "6b098521ec2f88bd4cc52a866e5fb6c83648e4b196365436b9bb23c59d82a8c7",
+          "ok": true,
+          "request_id": "0a29d983abbe16391ad387ffe182a44c82a63b28c34196898ef371545586011c",
+          "verified_labels": 1
+        },
+        "reading": {
+          "agreement": {
+            "code_only": [
+              "x"
+            ],
+            "comment_only": [],
+            "shared": [],
+            "verdict": "diverge"
+          },
+          "args": [
+            "x"
+          ],
+          "comment": {
+            "construction": null,
+            "content_words": "set()",
+            "predications": [],
+            "sentence": null
+          },
+          "construction": "arithmetic_expression",
+          "docstring": null,
+          "emit_error": null,
+          "minted": false,
+          "name": "square",
+          "names": [
+            "x"
+          ],
+          "rendered_python": "(x * x)",
+          "residual": [],
+          "shape_fit": 1,
+          "skeleton": [
+            [
+              "ARITH"
+            ]
+          ],
+          "term": {
+            "items": [
+              {
+                "name": "x",
+                "type": "Var"
+              },
+              {
+                "name": "x",
+                "type": "Var"
+              }
+            ],
+            "type": "Times"
+          },
+          "what_does": "computes an arithmetic expression, over x"
+        },
+        "shape": "taught_square",
+        "teach": {
+          "category": "code_write_constructions",
+          "node": "#25121",
+          "persisted": false,
+          "saved": false,
+          "seed": "/home/matt/ozmadev/ocelot/seeds/code_write_constructions.json"
+        },
+        "tokens": [
+          "SQUARE",
+          "TRANSFORM"
+        ],
+        "validate": {
+          "agree": true,
+          "expected": 4,
+          "observed": 4,
+          "ran": true
+        },
+        "written_source": "def square(x):\n    return (x * x)\n"
+      },
+      "term": {
+        "items": [
+          {
+            "name": "x",
+            "type": "Var"
+          },
+          {
+            "name": "x",
+            "type": "Var"
+          }
+        ],
+        "type": "Times"
+      },
+      "true_label": 4,
+      "written_ok": true
+    },
+    {
+      "active_after": {
+        "domains/adequacy_probe_selection.py": "b8d75708d4e193f16bd071861af08658a907d020281d3c9106a9582c82e8acd9",
+        "domains/adequacy_provider_auth.py": "fa8b6795af120ced16c80df5629930f0eaab53849a68423bc5106e0f6975b39f",
+        "domains/ast_to_term.py": "7ef48f9ecb67975428713ae1d2d54100fcdd39fc434dd586803059224f7cdcdb",
+        "domains/code_reading.py": "dd67d2942cf956c6e35f848aed4012c3ac072e9ac91d9e6b166e8ca44be57908",
+        "domains/code_write_growth.py": "691fd96072687baf2b99c6b3c9816cc6bb44805e35bec13f070a30061151761c",
+        "domains/code_writing.py": "4ad3148ca1796ad13f6128b9fd655e8568c7c843cd68bccee54f35cbf4ddabc9",
+        "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+        "domains/independent_adequacy.py": "33191341fdd63d16d0b9cb5203f27666da90b60fccd567ac4633306a9dcab418",
+        "domains/teach.py": "308a5f31d74dabb3ed8b24bd0c967abd5f94596a3ff76d17657330877fae2cfa",
+        "domains_tree": "2a8c06d3c161633ced141554787e3883308d37b3e30a8cf9bc4fcabd54a58900",
+        "native_binary": "3816b4fb5d5746950b4cc3bf9e904a58e675ce53530727edf44095646dd58a54",
+        "oracle": "b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+        "python_native_tree": "4d4cb4aaaed3c395638b0485fc0d871749150149aded5e81491b42c7fdeb5402",
+        "runners/dsl/python/substrate_rs/__init__.py": "1fed837a6b7e8b35e463d3b8fdca498400c9cc420a016b81279365d6406a4049",
+        "runners/dsl/python/substrate_rs/_native.build.json": "b491d348c59cbf5cd5eee1b3f900a042f31e21665b6e63212edb9ed7f3d60f47",
+        "runners/dsl/src/graph_rules.rs": "b0e9c5bf0bbb4bf278fdab03610fa3f6f82d01ad8ee898ec789982ff41812a50",
+        "runners/dsl/src/py.rs": "d6f922bd406d3f500c10cea11978f47f9612b4ce6b9a348e848a30a305881cba",
+        "runners/dsl/src/substrate.rs": "bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+        "runners/dsl/src/term.rs": "5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+        "rust_tree": "06307beca12566832d3ba7ac157ec6177abb41a87dcf3755d824729d1a55ea0f",
+        "seed_manifest_inventory": "f1098a8168c0663746dffb253eb7230435957b3f8f8aa6d5c8197d224cf946b1",
+        "substrate/boot_all.py": "2bdf46f19228e1d85dbdcf12383116ceeb72aab0efe7ddd0cc6a51d23b45d220",
+        "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+        "substrate/seed_loader.py": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27",
+        "substrate/world_adapter.py": "7aeeb3d418fade3c90dc2d28a64a2685880d0a45d9fd47e4b6c2f6b6dd649023",
+        "substrate_tree": "206c8d6c975998dae706c64fe23be1ae7af659fd749577d978aafa1c30d7fdba"
+      },
+      "boot_ns": 11765393972,
+      "candidate_id": "f3eae0edc034bef6521d65b858566132254497cc8ba3f9cabf5b56416e7f52ca",
+      "case": "correct_candidate",
+      "claimed_label": 4,
+      "epoch_increment": 1,
+      "evidence": [
+        {
+          "inputs": {
+            "x": 2
+          },
+          "labels": [
+            {
+              "expected": 4,
+              "label_id": "245c6abdd7424353d56228c8cc0fa652cdc34b1e3300f404f09385abb6338e0a",
+              "oracle_sha256": "b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+              "signature": "7c8d7218847e55cba4ee7eca15d832b05a29557fdd9ffdaab202f99363e896b7",
+              "signature_schema": "AdequacyProviderSignedLabelV1",
+              "source_id": "independent-codewrite-oracle-v1:b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac"
+            }
+          ],
+          "probe_id": "probe-1"
+        }
+      ],
+      "heldout": [
+        {
+          "matches": true,
+          "oracle": 9,
+          "prediction": 9,
+          "x": 3
+        },
+        {
+          "matches": true,
+          "oracle": 16,
+          "prediction": 16,
+          "x": 4
+        },
+        {
+          "matches": true,
+          "oracle": 25,
+          "prediction": 25,
+          "x": 5
+        },
+        {
+          "matches": true,
+          "oracle": 36,
+          "prediction": 36,
+          "x": 6
+        }
+      ],
+      "loaded_seed_count": 731,
+      "negative_controls": {
+        "empty_probe_set": {
+          "core_receipt_status": "accepted",
+          "errors": [
+            "request has no probes"
+          ],
+          "evidence_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+          "ok": false,
+          "request_id": "4bf792b74b0d8f0d84a6661e04841eae1527c69c3b6914968ec7faf990e35f31",
+          "verified_labels": 0
+        },
+        "replay": {
+          "errors": [
+            "provider signature mismatch"
+          ],
+          "evidence_sha256": "6b098521ec2f88bd4cc52a866e5fb6c83648e4b196365436b9bb23c59d82a8c7",
+          "ok": false,
+          "request_id": "1cd9c038fcc6f807502918ff89a187d7c4f64198cd8d965b3bb55e60ebda7363",
+          "verified_labels": 0
+        },
+        "tamper": {
+          "errors": [
+            "provider signature mismatch"
+          ],
+          "evidence_sha256": "7dfd139b322c86c9066515c1bc0c5692dfa92df967b97689aaf219cb6c1ff268",
+          "ok": false,
+          "request_id": "0a29d983abbe16391ad387ffe182a44c82a63b28c34196898ef371545586011c",
+          "verified_labels": 0
+        },
+        "unknown_provider": {
+          "errors": [
+            "unknown trusted provider"
+          ],
+          "evidence_sha256": "89d6352b566a5589b19134f473271e89de1aa41308d1faa8f6f752ff900f4616",
+          "ok": false,
+          "request_id": "0a29d983abbe16391ad387ffe182a44c82a63b28c34196898ef371545586011c",
+          "verified_labels": 0
+        }
+      },
+      "pid": 23414,
+      "receipt": {
+        "candidate_id": "f3eae0edc034bef6521d65b858566132254497cc8ba3f9cabf5b56416e7f52ca",
+        "evidence_sha256": "6b098521ec2f88bd4cc52a866e5fb6c83648e4b196365436b9bb23c59d82a8c7",
+        "invalid_reasons": [],
+        "receipt_sha256": "5355333c5072bcca1aec955b9a7f03f2b6be75cb74364061672cd12d55a3a8b3",
+        "request_id": "0a29d983abbe16391ad387ffe182a44c82a63b28c34196898ef371545586011c",
+        "residuals": [],
+        "schema": "IndependentAdequacyReceiptV1",
+        "status": "accepted",
+        "term_sha256": "e4f0b7ba7eaf37e7414f3239344ef3959c98043a452a26542a736388ccd03c18"
+      },
+      "repetition": 2,
+      "request": {
+        "acquisition_sha256": "5ab70414b443e97747a7b1e1d5bff15a657a7b8312f75ff7b28e110b3025c2fb",
+        "candidate_id": "f3eae0edc034bef6521d65b858566132254497cc8ba3f9cabf5b56416e7f52ca",
+        "domain_sha256": "f0a4bd210ad5b1e10a7b6de9e8dab457cf34e2308b0b7dbed03d264c1731f2de",
+        "probes": [
+          {
+            "input_sha256": "5e2b030a4a0f1582d78c0fd9924511cd6b1f2df9879e574f5ea1406c94052418",
+            "inputs": {
+              "x": 2
+            },
+            "probe_id": "probe-1"
+          }
+        ],
+        "request_id": "0a29d983abbe16391ad387ffe182a44c82a63b28c34196898ef371545586011c",
+        "schema": "IndependentAdequacyProbeRequestV1",
+        "seed": "provider-auth-fixed-request-v1.1",
+        "status": "requested",
+        "term_sha256": "e4f0b7ba7eaf37e7414f3239344ef3959c98043a452a26542a736388ccd03c18"
+      },
+      "state_after": {
+        "epoch": 1,
+        "shape_ids": [
+          "#4166",
+          "#4167",
+          "#4168",
+          "#4169",
+          "#4170",
+          "#4171",
+          "#4172",
+          "#4173",
+          "#6009",
+          "#6010",
+          "#6011",
+          "#15915",
+          "#15916",
+          "#15917",
+          "#15918",
+          "#15919",
+          "#15920",
+          "#15921",
+          "#15922",
+          "#15923",
+          "#15924",
+          "#15925",
+          "#15926",
+          "#15927",
+          "#15928",
+          "#15929",
+          "#25121"
+        ]
+      },
+      "state_before": {
+        "epoch": 0,
+        "shape_ids": [
+          "#4166",
+          "#4167",
+          "#4168",
+          "#4169",
+          "#4170",
+          "#4171",
+          "#4172",
+          "#4173",
+          "#6009",
+          "#6010",
+          "#6011",
+          "#15915",
+          "#15916",
+          "#15917",
+          "#15918",
+          "#15919",
+          "#15920",
+          "#15921",
+          "#15922",
+          "#15923",
+          "#15924",
+          "#15925",
+          "#15926",
+          "#15927",
+          "#15928",
+          "#15929"
+        ]
+      },
+      "teach": {
+        "adequacy_receipt": {
+          "candidate_id": "f3eae0edc034bef6521d65b858566132254497cc8ba3f9cabf5b56416e7f52ca",
+          "evidence_sha256": "6b098521ec2f88bd4cc52a866e5fb6c83648e4b196365436b9bb23c59d82a8c7",
+          "invalid_reasons": [],
+          "receipt_sha256": "5355333c5072bcca1aec955b9a7f03f2b6be75cb74364061672cd12d55a3a8b3",
+          "request_id": "0a29d983abbe16391ad387ffe182a44c82a63b28c34196898ef371545586011c",
+          "residuals": [],
+          "schema": "IndependentAdequacyReceiptV1",
+          "status": "accepted",
+          "term_sha256": "e4f0b7ba7eaf37e7414f3239344ef3959c98043a452a26542a736388ccd03c18"
+        },
+        "candidate_id": "f3eae0edc034bef6521d65b858566132254497cc8ba3f9cabf5b56416e7f52ca",
+        "contract_validation": {
+          "checked": [
+            {
+              "expected": 0,
+              "index": 0,
+              "inputs": {
+                "x": 0
+              },
+              "native_match": true,
+              "native_output": 0,
+              "python_match": true,
+              "python_output": 0
+            }
+          ],
+          "ok": true
+        },
+        "ok": true,
+        "provider_auth": {
+          "errors": [],
+          "evidence_sha256": "6b098521ec2f88bd4cc52a866e5fb6c83648e4b196365436b9bb23c59d82a8c7",
+          "ok": true,
+          "request_id": "0a29d983abbe16391ad387ffe182a44c82a63b28c34196898ef371545586011c",
+          "verified_labels": 1
+        },
+        "reading": {
+          "agreement": {
+            "code_only": [
+              "x"
+            ],
+            "comment_only": [],
+            "shared": [],
+            "verdict": "diverge"
+          },
+          "args": [
+            "x"
+          ],
+          "comment": {
+            "construction": null,
+            "content_words": "set()",
+            "predications": [],
+            "sentence": null
+          },
+          "construction": "arithmetic_expression",
+          "docstring": null,
+          "emit_error": null,
+          "minted": false,
+          "name": "square",
+          "names": [
+            "x"
+          ],
+          "rendered_python": "(x * x)",
+          "residual": [],
+          "shape_fit": 1,
+          "skeleton": [
+            [
+              "ARITH"
+            ]
+          ],
+          "term": {
+            "items": [
+              {
+                "name": "x",
+                "type": "Var"
+              },
+              {
+                "name": "x",
+                "type": "Var"
+              }
+            ],
+            "type": "Times"
+          },
+          "what_does": "computes an arithmetic expression, over x"
+        },
+        "shape": "taught_square",
+        "teach": {
+          "category": "code_write_constructions",
+          "node": "#25121",
+          "persisted": false,
+          "saved": false,
+          "seed": "/home/matt/ozmadev/ocelot/seeds/code_write_constructions.json"
+        },
+        "tokens": [
+          "SQUARE",
+          "TRANSFORM"
+        ],
+        "validate": {
+          "agree": true,
+          "expected": 4,
+          "observed": 4,
+          "ran": true
+        },
+        "written_source": "def square(x):\n    return (x * x)\n"
+      },
+      "term": {
+        "items": [
+          {
+            "name": "x",
+            "type": "Var"
+          },
+          {
+            "name": "x",
+            "type": "Var"
+          }
+        ],
+        "type": "Times"
+      },
+      "true_label": 4,
+      "written_ok": true
+    },
+    {
+      "active_after": {
+        "domains/adequacy_probe_selection.py": "b8d75708d4e193f16bd071861af08658a907d020281d3c9106a9582c82e8acd9",
+        "domains/adequacy_provider_auth.py": "fa8b6795af120ced16c80df5629930f0eaab53849a68423bc5106e0f6975b39f",
+        "domains/ast_to_term.py": "7ef48f9ecb67975428713ae1d2d54100fcdd39fc434dd586803059224f7cdcdb",
+        "domains/code_reading.py": "dd67d2942cf956c6e35f848aed4012c3ac072e9ac91d9e6b166e8ca44be57908",
+        "domains/code_write_growth.py": "691fd96072687baf2b99c6b3c9816cc6bb44805e35bec13f070a30061151761c",
+        "domains/code_writing.py": "4ad3148ca1796ad13f6128b9fd655e8568c7c843cd68bccee54f35cbf4ddabc9",
+        "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+        "domains/independent_adequacy.py": "33191341fdd63d16d0b9cb5203f27666da90b60fccd567ac4633306a9dcab418",
+        "domains/teach.py": "308a5f31d74dabb3ed8b24bd0c967abd5f94596a3ff76d17657330877fae2cfa",
+        "domains_tree": "2a8c06d3c161633ced141554787e3883308d37b3e30a8cf9bc4fcabd54a58900",
+        "native_binary": "3816b4fb5d5746950b4cc3bf9e904a58e675ce53530727edf44095646dd58a54",
+        "oracle": "b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+        "python_native_tree": "4d4cb4aaaed3c395638b0485fc0d871749150149aded5e81491b42c7fdeb5402",
+        "runners/dsl/python/substrate_rs/__init__.py": "1fed837a6b7e8b35e463d3b8fdca498400c9cc420a016b81279365d6406a4049",
+        "runners/dsl/python/substrate_rs/_native.build.json": "b491d348c59cbf5cd5eee1b3f900a042f31e21665b6e63212edb9ed7f3d60f47",
+        "runners/dsl/src/graph_rules.rs": "b0e9c5bf0bbb4bf278fdab03610fa3f6f82d01ad8ee898ec789982ff41812a50",
+        "runners/dsl/src/py.rs": "d6f922bd406d3f500c10cea11978f47f9612b4ce6b9a348e848a30a305881cba",
+        "runners/dsl/src/substrate.rs": "bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+        "runners/dsl/src/term.rs": "5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+        "rust_tree": "06307beca12566832d3ba7ac157ec6177abb41a87dcf3755d824729d1a55ea0f",
+        "seed_manifest_inventory": "f1098a8168c0663746dffb253eb7230435957b3f8f8aa6d5c8197d224cf946b1",
+        "substrate/boot_all.py": "2bdf46f19228e1d85dbdcf12383116ceeb72aab0efe7ddd0cc6a51d23b45d220",
+        "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+        "substrate/seed_loader.py": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27",
+        "substrate/world_adapter.py": "7aeeb3d418fade3c90dc2d28a64a2685880d0a45d9fd47e4b6c2f6b6dd649023",
+        "substrate_tree": "206c8d6c975998dae706c64fe23be1ae7af659fd749577d978aafa1c30d7fdba"
+      },
+      "boot_ns": 11831647640,
+      "candidate_id": "f3eae0edc034bef6521d65b858566132254497cc8ba3f9cabf5b56416e7f52ca",
+      "case": "correct_candidate",
+      "claimed_label": 4,
+      "epoch_increment": 1,
+      "evidence": [
+        {
+          "inputs": {
+            "x": 2
+          },
+          "labels": [
+            {
+              "expected": 4,
+              "label_id": "245c6abdd7424353d56228c8cc0fa652cdc34b1e3300f404f09385abb6338e0a",
+              "oracle_sha256": "b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac",
+              "signature": "7c8d7218847e55cba4ee7eca15d832b05a29557fdd9ffdaab202f99363e896b7",
+              "signature_schema": "AdequacyProviderSignedLabelV1",
+              "source_id": "independent-codewrite-oracle-v1:b537535f3c257eb6180a1bc07e7f63431d32bf52d0d118efb2264f4afad1a8ac"
+            }
+          ],
+          "probe_id": "probe-1"
+        }
+      ],
+      "heldout": [
+        {
+          "matches": true,
+          "oracle": 9,
+          "prediction": 9,
+          "x": 3
+        },
+        {
+          "matches": true,
+          "oracle": 16,
+          "prediction": 16,
+          "x": 4
+        },
+        {
+          "matches": true,
+          "oracle": 25,
+          "prediction": 25,
+          "x": 5
+        },
+        {
+          "matches": true,
+          "oracle": 36,
+          "prediction": 36,
+          "x": 6
+        }
+      ],
+      "loaded_seed_count": 731,
+      "negative_controls": {
+        "empty_probe_set": {
+          "core_receipt_status": "accepted",
+          "errors": [
+            "request has no probes"
+          ],
+          "evidence_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+          "ok": false,
+          "request_id": "4bf792b74b0d8f0d84a6661e04841eae1527c69c3b6914968ec7faf990e35f31",
+          "verified_labels": 0
+        },
+        "replay": {
+          "errors": [
+            "provider signature mismatch"
+          ],
+          "evidence_sha256": "6b098521ec2f88bd4cc52a866e5fb6c83648e4b196365436b9bb23c59d82a8c7",
+          "ok": false,
+          "request_id": "1cd9c038fcc6f807502918ff89a187d7c4f64198cd8d965b3bb55e60ebda7363",
+          "verified_labels": 0
+        },
+        "tamper": {
+          "errors": [
+            "provider signature mismatch"
+          ],
+          "evidence_sha256": "7dfd139b322c86c9066515c1bc0c5692dfa92df967b97689aaf219cb6c1ff268",
+          "ok": false,
+          "request_id": "0a29d983abbe16391ad387ffe182a44c82a63b28c34196898ef371545586011c",
+          "verified_labels": 0
+        },
+        "unknown_provider": {
+          "errors": [
+            "unknown trusted provider"
+          ],
+          "evidence_sha256": "89d6352b566a5589b19134f473271e89de1aa41308d1faa8f6f752ff900f4616",
+          "ok": false,
+          "request_id": "0a29d983abbe16391ad387ffe182a44c82a63b28c34196898ef371545586011c",
+          "verified_labels": 0
+        }
+      },
+      "pid": 25755,
+      "receipt": {
+        "candidate_id": "f3eae0edc034bef6521d65b858566132254497cc8ba3f9cabf5b56416e7f52ca",
+        "evidence_sha256": "6b098521ec2f88bd4cc52a866e5fb6c83648e4b196365436b9bb23c59d82a8c7",
+        "invalid_reasons": [],
+        "receipt_sha256": "5355333c5072bcca1aec955b9a7f03f2b6be75cb74364061672cd12d55a3a8b3",
+        "request_id": "0a29d983abbe16391ad387ffe182a44c82a63b28c34196898ef371545586011c",
+        "residuals": [],
+        "schema": "IndependentAdequacyReceiptV1",
+        "status": "accepted",
+        "term_sha256": "e4f0b7ba7eaf37e7414f3239344ef3959c98043a452a26542a736388ccd03c18"
+      },
+      "repetition": 3,
+      "request": {
+        "acquisition_sha256": "5ab70414b443e97747a7b1e1d5bff15a657a7b8312f75ff7b28e110b3025c2fb",
+        "candidate_id": "f3eae0edc034bef6521d65b858566132254497cc8ba3f9cabf5b56416e7f52ca",
+        "domain_sha256": "f0a4bd210ad5b1e10a7b6de9e8dab457cf34e2308b0b7dbed03d264c1731f2de",
+        "probes": [
+          {
+            "input_sha256": "5e2b030a4a0f1582d78c0fd9924511cd6b1f2df9879e574f5ea1406c94052418",
+            "inputs": {
+              "x": 2
+            },
+            "probe_id": "probe-1"
+          }
+        ],
+        "request_id": "0a29d983abbe16391ad387ffe182a44c82a63b28c34196898ef371545586011c",
+        "schema": "IndependentAdequacyProbeRequestV1",
+        "seed": "provider-auth-fixed-request-v1.1",
+        "status": "requested",
+        "term_sha256": "e4f0b7ba7eaf37e7414f3239344ef3959c98043a452a26542a736388ccd03c18"
+      },
+      "state_after": {
+        "epoch": 1,
+        "shape_ids": [
+          "#4166",
+          "#4167",
+          "#4168",
+          "#4169",
+          "#4170",
+          "#4171",
+          "#4172",
+          "#4173",
+          "#6009",
+          "#6010",
+          "#6011",
+          "#15915",
+          "#15916",
+          "#15917",
+          "#15918",
+          "#15919",
+          "#15920",
+          "#15921",
+          "#15922",
+          "#15923",
+          "#15924",
+          "#15925",
+          "#15926",
+          "#15927",
+          "#15928",
+          "#15929",
+          "#25121"
+        ]
+      },
+      "state_before": {
+        "epoch": 0,
+        "shape_ids": [
+          "#4166",
+          "#4167",
+          "#4168",
+          "#4169",
+          "#4170",
+          "#4171",
+          "#4172",
+          "#4173",
+          "#6009",
+          "#6010",
+          "#6011",
+          "#15915",
+          "#15916",
+          "#15917",
+          "#15918",
+          "#15919",
+          "#15920",
+          "#15921",
+          "#15922",
+          "#15923",
+          "#15924",
+          "#15925",
+          "#15926",
+          "#15927",
+          "#15928",
+          "#15929"
+        ]
+      },
+      "teach": {
+        "adequacy_receipt": {
+          "candidate_id": "f3eae0edc034bef6521d65b858566132254497cc8ba3f9cabf5b56416e7f52ca",
+          "evidence_sha256": "6b098521ec2f88bd4cc52a866e5fb6c83648e4b196365436b9bb23c59d82a8c7",
+          "invalid_reasons": [],
+          "receipt_sha256": "5355333c5072bcca1aec955b9a7f03f2b6be75cb74364061672cd12d55a3a8b3",
+          "request_id": "0a29d983abbe16391ad387ffe182a44c82a63b28c34196898ef371545586011c",
+          "residuals": [],
+          "schema": "IndependentAdequacyReceiptV1",
+          "status": "accepted",
+          "term_sha256": "e4f0b7ba7eaf37e7414f3239344ef3959c98043a452a26542a736388ccd03c18"
+        },
+        "candidate_id": "f3eae0edc034bef6521d65b858566132254497cc8ba3f9cabf5b56416e7f52ca",
+        "contract_validation": {
+          "checked": [
+            {
+              "expected": 0,
+              "index": 0,
+              "inputs": {
+                "x": 0
+              },
+              "native_match": true,
+              "native_output": 0,
+              "python_match": true,
+              "python_output": 0
+            }
+          ],
+          "ok": true
+        },
+        "ok": true,
+        "provider_auth": {
+          "errors": [],
+          "evidence_sha256": "6b098521ec2f88bd4cc52a866e5fb6c83648e4b196365436b9bb23c59d82a8c7",
+          "ok": true,
+          "request_id": "0a29d983abbe16391ad387ffe182a44c82a63b28c34196898ef371545586011c",
+          "verified_labels": 1
+        },
+        "reading": {
+          "agreement": {
+            "code_only": [
+              "x"
+            ],
+            "comment_only": [],
+            "shared": [],
+            "verdict": "diverge"
+          },
+          "args": [
+            "x"
+          ],
+          "comment": {
+            "construction": null,
+            "content_words": "set()",
+            "predications": [],
+            "sentence": null
+          },
+          "construction": "arithmetic_expression",
+          "docstring": null,
+          "emit_error": null,
+          "minted": false,
+          "name": "square",
+          "names": [
+            "x"
+          ],
+          "rendered_python": "(x * x)",
+          "residual": [],
+          "shape_fit": 1,
+          "skeleton": [
+            [
+              "ARITH"
+            ]
+          ],
+          "term": {
+            "items": [
+              {
+                "name": "x",
+                "type": "Var"
+              },
+              {
+                "name": "x",
+                "type": "Var"
+              }
+            ],
+            "type": "Times"
+          },
+          "what_does": "computes an arithmetic expression, over x"
+        },
+        "shape": "taught_square",
+        "teach": {
+          "category": "code_write_constructions",
+          "node": "#25121",
+          "persisted": false,
+          "saved": false,
+          "seed": "/home/matt/ozmadev/ocelot/seeds/code_write_constructions.json"
+        },
+        "tokens": [
+          "SQUARE",
+          "TRANSFORM"
+        ],
+        "validate": {
+          "agree": true,
+          "expected": 4,
+          "observed": 4,
+          "ran": true
+        },
+        "written_source": "def square(x):\n    return (x * x)\n"
+      },
+      "term": {
+        "items": [
+          {
+            "name": "x",
+            "type": "Var"
+          },
+          {
+            "name": "x",
+            "type": "Var"
+          }
+        ],
+        "type": "Times"
+      },
+      "true_label": 4,
+      "written_ok": true
+    }
+  ]
+}

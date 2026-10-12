@@ -1,0 +1,3 @@
+# Episodic checkpoint recovery harness amendment — 2026-09-25
+
+The first locked invocation loaded the intact checkpoint and completed its reader queries, then failed during reader cleanup: `WorldAdapter.close()` accessed `_vision_illumination_nodes`, which `WorldAdapter.load()` had not initialized. The worker's buffered JSON result was lost, and the aggregate report was not written. The amended worker catches and records cleanup exceptions after collecting all query data, so a cleanup defect no longer discards the measured restart outcomes. The four checkpoint variants, task records, retrieval criteria, and corruption manipulations are unchanged. The original preregistration and v1 lock are retained; the amendment and v2 lock precede the scored rerun.

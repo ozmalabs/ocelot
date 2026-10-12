@@ -190,8 +190,85 @@ pub fn note_unique_term_firing() {
     UNIQUE_TERM_FIRINGS.fetch_add(1, Ordering::Relaxed);
 }
 
+// ---------------------------------------------------------------------------
+// NULL-CANDIDATE CENSUS (2026-10-10). Same instrument, same modes, behaviour
+// UNCHANGED in every mode: these counters only observe.
+//
+// `cmp_value` orders `Value::None` below every number (tag 0). So when a
+// selector's `value` Term evaluates to None for some candidates (a missing
+// attr), Argmin silently treats that cost as -inf and picks it, and Argmax
+// silently treats it as the worst. Paper 02c (finite comparison
+// specification) requires that an undefined cost make the minimum undefined,
+// never silently 0 or infinity. This census measures how often live
+// selectors are actually in that state before any behaviour is changed.
+//
+// * `NULL_MIXED`  -- firings with >=1 None-valued AND >=1 non-None candidate:
+//                    the only case where the None ordering decides anything.
+// * `NULL_WINS`   -- mixed firings whose RETURNED element's value is None
+//                    (the missing cost won).
+// * `NULL_ALL`    -- non-empty firings where EVERY candidate is None (the
+//                    whole comparison is undefined; the fold returns the
+//                    first element).
+// ---------------------------------------------------------------------------
+static NULL_MIXED: AtomicU64 = AtomicU64::new(0);
+static NULL_WINS: AtomicU64 = AtomicU64::new(0);
+static NULL_ALL: AtomicU64 = AtomicU64::new(0);
+/// `(selector, value_term_json)` -> `(mixed, wins, all_null)`. Recorded only on
+/// the null paths, so the rendering cost stays off the ordinary fold.
+static NULL_SITES: Mutex<Option<BTreeMap<String, (u64, u64, u64)>>> = Mutex::new(None);
+
+/// One observation of a non-empty selector firing. `n_null` of `n` candidate
+/// values were None; `winner_null` says whether the returned element's value
+/// was None. Returns whether the firing was on a null path (so the caller
+/// renders the site key only then).
+pub fn note_nulls(n: usize, n_null: usize, winner_null: bool) -> Option<(bool, bool, bool)> {
+    if n == 0 || n_null == 0 {
+        return None;
+    }
+    if n_null == n {
+        NULL_ALL.fetch_add(1, Ordering::Relaxed);
+        return Some((false, false, true));
+    }
+    NULL_MIXED.fetch_add(1, Ordering::Relaxed);
+    if winner_null {
+        NULL_WINS.fetch_add(1, Ordering::Relaxed);
+    }
+    Some((true, winner_null, false))
+}
+
+pub fn note_null_site(selector: &str, key: &str, obs: (bool, bool, bool)) {
+    let mut g = NULL_SITES.lock().unwrap_or_else(|e| e.into_inner());
+    let m = g.get_or_insert_with(BTreeMap::new);
+    let e = m.entry(format!("{selector}\u{1}{key}")).or_insert((0, 0, 0));
+    e.0 += obs.0 as u64;
+    e.1 += obs.1 as u64;
+    e.2 += obs.2 as u64;
+}
+
+/// Flattened `(key, mixed, wins, all_null)` rows.
+pub fn null_sites() -> Vec<(String, u64, u64, u64)> {
+    let g = NULL_SITES.lock().unwrap_or_else(|e| e.into_inner());
+    match &*g {
+        None => Vec::new(),
+        Some(m) => m.iter().map(|(k, (a, b, c))| (k.clone(), *a, *b, *c)).collect(),
+    }
+}
+
+/// `(mixed, wins, all_null)`.
+pub fn null_stats() -> (u64, u64, u64) {
+    (
+        NULL_MIXED.load(Ordering::Relaxed),
+        NULL_WINS.load(Ordering::Relaxed),
+        NULL_ALL.load(Ordering::Relaxed),
+    )
+}
+
 pub fn reset() {
     *SITES.lock().unwrap_or_else(|e| e.into_inner()) = None;
+    *NULL_SITES.lock().unwrap_or_else(|e| e.into_inner()) = None;
+    NULL_MIXED.store(0, Ordering::Relaxed);
+    NULL_WINS.store(0, Ordering::Relaxed);
+    NULL_ALL.store(0, Ordering::Relaxed);
     FIRINGS.store(0, Ordering::Relaxed);
     TIES.store(0, Ordering::Relaxed);
     EMPTIES.store(0, Ordering::Relaxed);

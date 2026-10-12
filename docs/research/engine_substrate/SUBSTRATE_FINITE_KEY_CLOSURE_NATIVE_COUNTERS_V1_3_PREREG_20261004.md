@@ -1,0 +1,11 @@
+# Native closure counter and instrumentation overhead v1.3 preregistration
+
+Date: 2026-10-04
+
+V1 and v1.1/v1.2 pilot captures are retained but not used for confirmatory count claims: v1 had incorrect formulas and order comparison; v1.1 fixed the two-enumeration assumption but BCA shows scheduler enumerations can have no candidates; v1.2 multiplied a per-enumeration formula by all enumerations and still overpredicted for some orders. V1.3 therefore validates counter attribution and conservation rather than presupposing a fixed binding count per scheduler enumeration.
+
+Run 180 paired audit-off/audit-on fixtures (360 closures): N={32,64,128,256}, circulant out-degree d={1,2,4,8,16}, orders ABC/CBA/BCA, and three fresh pairs per order. Both `link` and `rel` contain edges from each node to the next d nodes modulo N. The fixed positive finite-key A/B/C rule family is unchanged. Pair arm order alternates by replicate.
+
+Lock runner, analyzer, this protocol, finite-fragment checker, manifest helper, relevant Rust matcher/substrate/audit sources, Cargo lock, native build manifest, and loaded extension; require pre/post input equality. Gates: M=3/E=5 admission; fixed point; zero budget overshoot; progress within conservative fact bound; exact independent monotone-oracle and off/on graph parity; complete factorial; canonical rule-order invariance; zero off-arm counters; unambiguous metadata mapping of numeric audit IDs to installed rule names; no unattributed candidate/Term work; per-rule candidate_pairs sum equals global cand_enum; per-rule candidate_tests and clause snapshots conserve global cand_tested; edge candidate counts conserve per-rule candidate_pairs; candidate path and first/repeat counters conserve global cand_enum. Record full counters, per-rule/clause/edge metadata, graphs, reports, and end-to-end wall times. Report audit overhead and candidate counts by N, degree, rule name, and order descriptively.
+
+This measures counter attribution/conservation and instrumentation overhead for the controlled family. It does not prove that the counters cover all matcher cost, establish a universal candidate formula, quantify natural task prevalence, or prove general closure complexity.

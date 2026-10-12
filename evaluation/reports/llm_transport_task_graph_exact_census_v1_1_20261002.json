@@ -1,0 +1,4422 @@
+{
+  "captured_utc": "2026-10-02T11:31:22Z",
+  "checks": {
+    "connected_expected_graphs": true,
+    "exact_energy": true,
+    "exact_extraction": true,
+    "failure_free": true,
+    "fresh_pids": true,
+    "no_mutation": true,
+    "paired_conditions": true,
+    "pre_post_lock": true,
+    "ten_inputs_each": true,
+    "three_replicates": true,
+    "valid_predictions": true,
+    "width_certificates": true,
+    "worker_source_locks": true
+  },
+  "claim_boundary": "one learned Qwen3-0.6B L12-to-L13 transport, eight selected source modes, eight targets, ten heldout transitions; no broad language or natural frame-prevalence claim",
+  "configuration": {
+    "heldout_rows_per_worker": 10,
+    "modes_per_layer": 8,
+    "replicates": 3,
+    "ridge": 1.0,
+    "vocabulary": [
+      -1.0,
+      0.0,
+      1.0
+    ]
+  },
+  "failures": [],
+  "host": "Linux-6.8.0-142-generic-x86_64-with-glibc2.39",
+  "lock_sha256": "98ff5ef97278189f6efe46c93ebe0e8c11c2debea8858c7106043c3d8833e73e",
+  "post_run_sources": {
+    "analyzer": {
+      "bytes": 4829,
+      "path": "/home/matt/ozmadev/ocelot/evaluation/substrate_capability/analyze_llm_transport_task_graph_exact_census_v1_1.py",
+      "sha256": "02ad8de81d6d5ee8ecb75297946717e0ff699d725909472348d210f25ea28687"
+    },
+    "export": {
+      "bytes": 1093784,
+      "path": "/applications/data/model_graph_work/transport_L12_13.npz",
+      "sha256": "d04f14de800bff4a5015a8063b678c2167188ec90c0749308b6af8a5a864161c"
+    },
+    "mode_count": 8,
+    "native_binary": {
+      "bytes": 10599400,
+      "path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+      "sha256": "7148f66f4cd307b7b34e03970b6a0c12177973105af8e1f3c6684e2e6132a63e"
+    },
+    "native_build_manifest": {
+      "bytes": 12669,
+      "path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.build.json",
+      "sha256": "476fdf4408323867341f127b3947f5a528743ebb86ab2a7973442993447f0e82"
+    },
+    "protocol": {
+      "bytes": 3645,
+      "path": "/home/matt/ozmadev/ocelot/docs/research/engine_substrate/LLM_TRANSPORT_TASK_GRAPH_EXACT_CENSUS_V1_1_PREREG_20261002.md",
+      "sha256": "7d64e74a23bda012f9da6e9fdd20c3f3e41027a721c7b46bfbb0a069ef0a4108"
+    },
+    "replicates": 3,
+    "ridge": 1.0,
+    "runner": {
+      "bytes": 11909,
+      "path": "/home/matt/ozmadev/ocelot/evaluation/substrate_capability/llm_transport_task_graph_exact_census_v1_1.py",
+      "sha256": "9325e58681c45ce45324732cb1c876be0166e679c004fcbe1b65d09344a85607"
+    },
+    "seed": {
+      "bytes": 43983,
+      "path": "/home/matt/ozmadev/ocelot/seeds/can_native_reimplementation.json",
+      "sha256": "3b185987ae810d5e05ab2468b044ab73d8890c8e73ac86dfcaf35b734b9c61d8"
+    },
+    "shuffle_seed": 0,
+    "sources": [
+      {
+        "bytes": 29504,
+        "path": "/home/matt/ozmadev/ocelot/domains/llm_native_graph.py",
+        "sha256": "3091594306fbfcc7aa93588b2b085ab72376fbb59817cc6c952dba20a05a1809"
+      },
+      {
+        "bytes": 14856,
+        "path": "/home/matt/ozmadev/ocelot/domains/can_junction_tree.py",
+        "sha256": "e8d4aa30bfdaced52cda2739f885a56ed50a040b8419cb558b132e5e46206ba7"
+      },
+      {
+        "bytes": 9424,
+        "path": "/home/matt/ozmadev/ocelot/domains/graph_treewidth.py",
+        "sha256": "e945bea9f54b76098edb3b3dcb784ac5a0ce630de43cd63a9fb5b0f416d543e5"
+      },
+      {
+        "bytes": 23330,
+        "path": "/home/matt/ozmadev/ocelot/domains/can_native_bp.py",
+        "sha256": "67d1cec2f6147d33d66fc7e07584571852d2325e14306ea61e93591bbb90f20b"
+      }
+    ],
+    "tolerance": 1e-08,
+    "vocabulary": [
+      -1.0,
+      0.0,
+      1.0
+    ]
+  },
+  "runs": [
+    {
+      "input_count": 10,
+      "process_peak_rss_kib": 87764,
+      "replicate": 0,
+      "rows": [
+        {
+          "conditions": {
+            "learned": {
+              "bp_accuracy": 0.625,
+              "bp_prediction": [
+                1.0,
+                1.0,
+                -1.0,
+                -1.0,
+                -1.0,
+                -1.0,
+                1.0,
+                -1.0
+              ],
+              "components_connected": true,
+              "direct_rescore": -31.265723153985164,
+              "edges": 64,
+              "exact_accuracy": 0.625,
+              "exact_extraction": true,
+              "exact_prediction": [
+                1.0,
+                1.0,
+                -1.0,
+                -1.0,
+                -1.0,
+                -1.0,
+                1.0,
+                -1.0
+              ],
+              "jt_energy": -31.265723153985164,
+              "linear_accuracy": 0.625,
+              "linear_prediction": [
+                1.0,
+                1.0,
+                -1.0,
+                -1.0,
+                -1.0,
+                -1.0,
+                1.0,
+                -1.0
+              ],
+              "no_mutation": true,
+              "nodes": 16,
+              "oracle_energy": -31.265723153985164,
+              "oracle_operations": 1482783,
+              "pair_factors": 64,
+              "timing_ns": {
+                "bp": 77504804,
+                "graph_construction": 46378122,
+                "junction_tree": 3463688990,
+                "minfill_order": 438163,
+                "oracle": 793050458,
+                "runtime_extraction": 3178139
+              },
+              "traced_peak_bytes": 12624872,
+              "triangulation_width": 8,
+              "width": 8
+            },
+            "shuffled": {
+              "bp_accuracy": 0.125,
+              "bp_prediction": [
+                -1.0,
+                1.0,
+                -1.0,
+                1.0,
+                -1.0,
+                1.0,
+                -1.0,
+                -1.0
+              ],
+              "components_connected": true,
+              "direct_rescore": -32.48989308346063,
+              "edges": 64,
+              "exact_accuracy": 0.125,
+              "exact_extraction": true,
+              "exact_prediction": [
+                -1.0,
+                1.0,
+                -1.0,
+                1.0,
+                -1.0,
+                1.0,
+                -1.0,
+                -1.0
+              ],
+              "jt_energy": -32.48989308346063,
+              "linear_accuracy": 0.0,
+              "linear_prediction": [
+                -1.0,
+                1.0,
+                1.0,
+                1.0,
+                -1.0,
+                1.0,
+                -1.0,
+                -1.0
+              ],
+              "no_mutation": true,
+              "nodes": 16,
+              "oracle_energy": -32.48989308346063,
+              "oracle_operations": 1482783,
+              "pair_factors": 64,
+              "timing_ns": {
+                "bp": 78583591,
+                "graph_construction": 2835526,
+                "junction_tree": 3391896778,
+                "minfill_order": 421403,
+                "oracle": 804064354,
+                "runtime_extraction": 527233
+              },
+              "traced_peak_bytes": 12625944,
+              "triangulation_width": 8,
+              "width": 8
+            }
+          },
+          "heldout_index": 0,
+          "target_signs": [
+            1.0,
+            -1.0,
+            -1.0,
+            -1.0,
+            1.0,
+            -1.0,
+            1.0,
+            1.0
+          ]
+        },
+        {
+          "conditions": {
+            "learned": {
+              "bp_accuracy": 0.625,
+              "bp_prediction": [
+                1.0,
+                1.0,
+                -1.0,
+                -1.0,
+                -1.0,
+                -1.0,
+                1.0,
+                -1.0
+              ],
+              "components_connected": true,
+              "direct_rescore": -31.687531635201594,
+              "edges": 64,
+              "exact_accuracy": 0.625,
+              "exact_extraction": true,
+              "exact_prediction": [
+                1.0,
+                1.0,
+                -1.0,
+                -1.0,
+                -1.0,
+                -1.0,
+                1.0,
+                -1.0
+              ],
+              "jt_energy": -31.687531635201594,
+              "linear_accuracy": 0.625,
+              "linear_prediction": [
+                1.0,
+                1.0,
+                -1.0,
+                -1.0,
+                -1.0,
+                -1.0,
+                1.0,
+                -1.0
+              ],
+              "no_mutation": true,
+              "nodes": 16,
+              "oracle_energy": -31.687531635201594,
+              "oracle_operations": 1482783,
+              "pair_factors": 64,
+              "timing_ns": {
+                "bp": 78837333,
+                "graph_construction": 2626596,
+                "junction_tree": 3440484722,
+                "minfill_order": 421442,
+                "oracle": 778665906,
+                "runtime_extraction": 555723
+              },
+              "traced_peak_bytes": 12624872,
+              "triangulation_width": 8,
+              "width": 8
+            },
+            "shuffled": {
+              "bp_accuracy": 0.125,
+              "bp_prediction": [
+                -1.0,
+                1.0,
+                -1.0,
+                1.0,
+                -1.0,
+                1.0,
+                -1.0,
+                -1.0
+              ],
+              "components_connected": true,
+              "direct_rescore": -32.91170156467706,
+              "edges": 64,
+              "exact_accuracy": 0.125,
+              "exact_extraction": true,
+              "exact_prediction": [
+                -1.0,
+                1.0,
+                -1.0,
+                1.0,
+                -1.0,
+                1.0,
+                -1.0,
+                -1.0
+              ],
+              "jt_energy": -32.91170156467706,
+              "linear_accuracy": 0.125,
+              "linear_prediction": [
+                -1.0,
+                1.0,
+                -1.0,
+                1.0,
+                -1.0,
+                1.0,
+                -1.0,
+                -1.0
+              ],
+              "no_mutation": true,
+              "nodes": 16,
+              "oracle_energy": -32.91170156467706,
+              "oracle_operations": 1482783,
+              "pair_factors": 64,
+              "timing_ns": {
+                "bp": 78010468,
+                "graph_construction": 2897897,
+                "junction_tree": 3421788140,
+                "minfill_order": 430012,
+                "oracle": 778936610,
+                "runtime_extraction": 560263
+              },
+              "traced_peak_bytes": 12624872,
+              "triangulation_width": 8,
+              "width": 8
+            }
+          },
+          "heldout_index": 1,
+          "target_signs": [
+            1.0,
+            -1.0,
+            -1.0,
+            -1.0,
+            1.0,
+            -1.0,
+            1.0,
+            1.0
+          ]
+        },
+        {
+          "conditions": {
+            "learned": {
+              "bp_accuracy": 0.875,
+              "bp_prediction": [
+                1.0,
+                -1.0,
+                -1.0,
+                -1.0,
+                1.0,
+                -1.0,
+                -1.0,
+                -1.0
+              ],
+              "components_connected": true,
+              "direct_rescore": -32.204531180206686,
+              "edges": 64,
+              "exact_accuracy": 0.875,
+              "exact_extraction": true,
+              "exact_prediction": [
+                1.0,
+                -1.0,
+                -1.0,
+                -1.0,
+                1.0,
+                -1.0,
+                -1.0,
+                -1.0
+              ],
+              "jt_energy": -32.204531180206686,
+              "linear_accuracy": 0.875,
+              "linear_prediction": [
+                1.0,
+                -1.0,
+                -1.0,
+                -1.0,
+                1.0,
+                -1.0,
+                -1.0,
+                -1.0
+              ],
+              "no_mutation": true,
+              "nodes": 16,
+              "oracle_energy": -32.204531180206686,
+              "oracle_operations": 1482783,
+              "pair_factors": 64,
+              "timing_ns": {
+                "bp": 78780332,
+                "graph_construction": 2731146,
+                "junction_tree": 3486613111,
+                "minfill_order": 438212,
+                "oracle": 786996969,
+                "runtime_extraction": 593883
+              },
+              "traced_peak_bytes": 12624872,
+              "triangulation_width": 8,
+              "width": 8
+            },
+            "shuffled": {
+              "bp_accuracy": 0.5,
+              "bp_prediction": [
+                -1.0,
+                1.0,
+                -1.0,
+                1.0,
+                1.0,
+                -1.0,
+                -1.0,
+                -1.0
+              ],
+              "components_connected": true,
+              "direct_rescore": -31.559851609636098,
+              "edges": 64,
+              "exact_accuracy": 0.5,
+              "exact_extraction": true,
+              "exact_prediction": [
+                -1.0,
+                1.0,
+                -1.0,
+                1.0,
+                1.0,
+                -1.0,
+                -1.0,
+                -1.0
+              ],
+              "jt_energy": -31.559851609636098,
+              "linear_accuracy": 0.375,
+              "linear_prediction": [
+                -1.0,
+                1.0,
+                -1.0,
+                1.0,
+                1.0,
+                1.0,
+                -1.0,
+                -1.0
+              ],
+              "no_mutation": true,
+              "nodes": 16,
+              "oracle_energy": -31.559851609636098,
+              "oracle_operations": 1482783,
+              "pair_factors": 64,
+              "timing_ns": {
+                "bp": 78037238,
+                "graph_construction": 2776936,
+                "junction_tree": 3412609804,
+                "minfill_order": 420012,
+                "oracle": 782302014,
+                "runtime_extraction": 547094
+              },
+              "traced_peak_bytes": 12624872,
+              "triangulation_width": 8,
+              "width": 8
+            }
+          },
+          "heldout_index": 2,
+          "target_signs": [
+            1.0,
+            -1.0,
+            -1.0,
+            -1.0,
+            1.0,
+            -1.0,
+            1.0,
+            -1.0
+          ]
+        },
+        {
+          "conditions": {
+            "learned": {
+              "bp_accuracy": 0.875,
+              "bp_prediction": [
+                1.0,
+                1.0,
+                -1.0,
+                -1.0,
+                1.0,
+                -1.0,
+                -1.0,
+                1.0
+              ],
+              "components_connected": true,
+              "direct_rescore": -30.266287613660097,
+              "edges": 64,
+              "exact_accuracy": 0.875,
+              "exact_extraction": true,
+              "exact_prediction": [
+                1.0,
+                1.0,
+                -1.0,
+                -1.0,
+                1.0,
+                -1.0,
+                -1.0,
+                1.0
+              ],
+              "jt_energy": -30.266287613660097,
+              "linear_accuracy": 1.0,
+              "linear_prediction": [
+                1.0,
+                1.0,
+                -1.0,
+                -1.0,
+                1.0,
+                1.0,
+                -1.0,
+                1.0
+              ],
+              "no_mutation": true,
+              "nodes": 16,
+              "oracle_energy": -30.266287613660097,
+              "oracle_operations": 1482783,
+              "pair_factors": 64,
+              "timing_ns": {
+                "bp": 78589082,
+                "graph_construction": 2827437,
+                "junction_tree": 3457127554,
+                "minfill_order": 411143,
+                "oracle": 789535649,
+                "runtime_extraction": 583343
+              },
+              "traced_peak_bytes": 12624872,
+              "triangulation_width": 8,
+              "width": 8
+            },
+            "shuffled": {
+              "bp_accuracy": 0.375,
+              "bp_prediction": [
+                -1.0,
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+                -1.0
+              ],
+              "components_connected": true,
+              "direct_rescore": -31.92190448148176,
+              "edges": 64,
+              "exact_accuracy": 0.375,
+              "exact_extraction": true,
+              "exact_prediction": [
+                -1.0,
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+                -1.0
+              ],
+              "jt_energy": -31.92190448148176,
+              "linear_accuracy": 0.25,
+              "linear_prediction": [
+                -1.0,
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+                -1.0,
+                1.0,
+                -1.0
+              ],
+              "no_mutation": true,
+              "nodes": 16,
+              "oracle_energy": -31.92190448148176,
+              "oracle_operations": 1482783,
+              "pair_factors": 64,
+              "timing_ns": {
+                "bp": 78301450,
+                "graph_construction": 2793986,
+                "junction_tree": 3451998993,
+                "minfill_order": 417363,
+                "oracle": 791617393,
+                "runtime_extraction": 547013
+              },
+              "traced_peak_bytes": 12624872,
+              "triangulation_width": 8,
+              "width": 8
+            }
+          },
+          "heldout_index": 3,
+          "target_signs": [
+            1.0,
+            1.0,
+            -1.0,
+            -1.0,
+            1.0,
+            1.0,
+            -1.0,
+            1.0
+          ]
+        },
+        {
+          "conditions": {
+            "learned": {
+              "bp_accuracy": 1.0,
+              "bp_prediction": [
+                1.0,
+                1.0,
+                -1.0,
+                -1.0,
+                1.0,
+                1.0,
+                -1.0,
+                1.0
+              ],
+              "components_connected": true,
+              "direct_rescore": -27.901933659799397,
+              "edges": 64,
+              "exact_accuracy": 1.0,
+              "exact_extraction": true,
+              "exact_prediction": [
+                1.0,
+                1.0,
+                -1.0,
+                -1.0,
+                1.0,
+                1.0,
+                -1.0,
+                1.0
+              ],
+              "jt_energy": -27.901933659799397,
+              "linear_accuracy": 1.0,
+              "linear_prediction": [
+                1.0,
+                1.0,
+                -1.0,
+                -1.0,
+                1.0,
+                1.0,
+                -1.0,
+                1.0
+              ],
+              "no_mutation": true,
+              "nodes": 16,
+              "oracle_energy": -27.901933659799397,
+              "oracle_operations": 1482783,
+              "pair_factors": 64,
+              "timing_ns": {
+                "bp": 77749057,
+                "graph_construction": 2755906,
+                "junction_tree": 3475127878,
+                "minfill_order": 418063,
+                "oracle": 788437716,
+                "runtime_extraction": 562403
+              },
+              "traced_peak_bytes": 12624872,
+              "triangulation_width": 8,
+              "width": 8
+            },
+            "shuffled": {
+              "bp_accuracy": 0.625,
+              "bp_prediction": [
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+                -1.0,
+                -1.0
+              ],
+              "components_connected": true,
+              "direct_rescore": -29.494069394189864,
+              "edges": 64,
+              "exact_accuracy": 0.625,
+              "exact_extraction": true,
+              "exact_prediction": [
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+                -1.0,
+                -1.0
+              ],
+              "jt_energy": -29.494069394189864,
+              "linear_accuracy": 0.375,
+              "linear_prediction": [
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+                -1.0,
+                1.0,
+                -1.0
+              ],
+              "no_mutation": true,
+              "nodes": 16,
+              "oracle_energy": -29.494069394189864,
+              "oracle_operations": 1482783,
+              "pair_factors": 64,
+              "timing_ns": {
+                "bp": 79997810,
+                "graph_construction": 2792336,
+                "junction_tree": 3452004340,
+                "minfill_order": 428063,
+                "oracle": 794878326,
+                "runtime_extraction": 562113
+              },
+              "traced_peak_bytes": 12624872,
+              "triangulation_width": 8,
+              "width": 8
+            }
+          },
+          "heldout_index": 4,
+          "target_signs": [
+            1.0,
+            1.0,
+            -1.0,
+            -1.0,
+            1.0,
+            1.0,
+            -1.0,
+            1.0
+          ]
+        },
+        {
+          "conditions": {
+            "learned": {
+              "bp_accuracy": 0.875,
+              "bp_prediction": [
+                1.0,
+                1.0,
+                1.0,
+                -1.0,
+                1.0,
+                1.0,
+                -1.0,
+                -1.0
+              ],
+              "components_connected": true,
+              "direct_rescore": -21.635106690657267,
+              "edges": 64,
+              "exact_accuracy": 0.875,
+              "exact_extraction": true,
+              "exact_prediction": [
+                1.0,
+                1.0,
+                1.0,
+                -1.0,
+                1.0,
+                1.0,
+                -1.0,
+                -1.0
+              ],
+              "jt_energy": -21.635106690657267,
+              "linear_accuracy": 1.0,
+              "linear_prediction": [
+                1.0,
+                1.0,
+                -1.0,
+                -1.0,
+                1.0,
+                1.0,
+                -1.0,
+                -1.0
+              ],
+              "no_mutation": true,
+              "nodes": 16,
+              "oracle_energy": -21.635106690657267,
+              "oracle_operations": 1482783,
+              "pair_factors": 64,
+              "timing_ns": {
+                "bp": 76956113,
+                "graph_construction": 2909967,
+                "junction_tree": 3431622018,
+                "minfill_order": 417343,
+                "oracle": 780753345,
+                "runtime_extraction": 574404
+              },
+              "traced_peak_bytes": 12624872,
+              "triangulation_width": 8,
+              "width": 8
+            },
+            "shuffled": {
+              "bp_accuracy": 0.5,
+              "bp_prediction": [
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+                -1.0,
+                1.0,
+                1.0,
+                -1.0
+              ],
+              "components_connected": true,
+              "direct_rescore": -18.541713347658515,
+              "edges": 64,
+              "exact_accuracy": 0.5,
+              "exact_extraction": true,
+              "exact_prediction": [
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+                -1.0,
+                1.0,
+                1.0,
+                -1.0
+              ],
+              "jt_energy": -18.541713347658515,
+              "linear_accuracy": 0.625,
+              "linear_prediction": [
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+                -1.0,
+                1.0,
+                -1.0,
+                -1.0
+              ],
+              "no_mutation": true,
+              "nodes": 16,
+              "oracle_energy": -18.541713347658515,
+              "oracle_operations": 1482783,
+              "pair_factors": 64,
+              "timing_ns": {
+                "bp": 88280310,
+                "graph_construction": 2760356,
+                "junction_tree": 3451257122,
+                "minfill_order": 455543,
+                "oracle": 816840779,
+                "runtime_extraction": 535234
+              },
+              "traced_peak_bytes": 12624872,
+              "triangulation_width": 8,
+              "width": 8
+            }
+          },
+          "heldout_index": 5,
+          "target_signs": [
+            1.0,
+            1.0,
+            -1.0,
+            -1.0,
+            1.0,
+            1.0,
+            -1.0,
+            -1.0
+          ]
+        },
+        {
+          "conditions": {
+            "learned": {
+              "bp_accuracy": 0.875,
+              "bp_prediction": [
+                1.0,
+                -1.0,
+                -1.0,
+                -1.0,
+                1.0,
+                -1.0,
+                1.0,
+                1.0
+              ],
+              "components_connected": true,
+              "direct_rescore": -33.062470838856825,
+              "edges": 64,
+              "exact_accuracy": 0.875,
+              "exact_extraction": true,
+              "exact_prediction": [
+                1.0,
+                -1.0,
+                -1.0,
+                -1.0,
+                1.0,
+                -1.0,
+                1.0,
+                1.0
+              ],
+              "jt_energy": -33.062470838856825,
+              "linear_accuracy": 1.0,
+              "linear_prediction": [
+                1.0,
+                -1.0,
+                -1.0,
+                -1.0,
+                -1.0,
+                -1.0,
+                1.0,
+                1.0
+              ],
+              "no_mutation": true,
+              "nodes": 16,
+              "oracle_energy": -33.062470838856825,
+              "oracle_operations": 1482783,
+              "pair_factors": 64,
+              "timing_ns": {
+                "bp": 77521947,
+                "graph_construction": 10064399,
+                "junction_tree": 3455608965,
+                "minfill_order": 627504,
+                "oracle": 768451736,
+                "runtime_extraction": 853165
+              },
+              "traced_peak_bytes": 12624872,
+              "triangulation_width": 8,
+              "width": 8
+            },
+            "shuffled": {
+              "bp_accuracy": 0.5,
+              "bp_prediction": [
+                1.0,
+                -1.0,
+                1.0,
+                1.0,
+                -1.0,
+                -1.0,
+                -1.0,
+                -1.0
+              ],
+              "components_connected": true,
+              "direct_rescore": -32.851674598641694,
+              "edges": 64,
+              "exact_accuracy": 0.5,
+              "exact_extraction": true,
+              "exact_prediction": [
+                1.0,
+                -1.0,
+                1.0,
+                1.0,
+                -1.0,
+                -1.0,
+                -1.0,
+                -1.0
+              ],
+              "jt_energy": -32.851674598641694,
+              "linear_accuracy": 0.5,
+              "linear_prediction": [
+                1.0,
+                -1.0,
+                1.0,
+                1.0,
+                -1.0,
+                -1.0,
+                -1.0,
+                -1.0
+              ],
+              "no_mutation": true,
+              "nodes": 16,
+              "oracle_energy": -32.851674598641694,
+              "oracle_operations": 1482783,
+              "pair_factors": 64,
+              "timing_ns": {
+                "bp": 78310992,
+                "graph_construction": 2840097,
+                "junction_tree": 3414986685,
+                "minfill_order": 406752,
+                "oracle": 796170480,
+                "runtime_extraction": 560303
+              },
+              "traced_peak_bytes": 12625944,
+              "triangulation_width": 8,
+              "width": 8
+            }
+          },
+          "heldout_index": 6,
+          "target_signs": [
+            1.0,
+            -1.0,
+            -1.0,
+            -1.0,
+            -1.0,
+            -1.0,
+            1.0,
+            1.0
+          ]
+        },
+        {
+          "conditions": {
+            "learned": {
+              "bp_accuracy": 1.0,
+              "bp_prediction": [
+                1.0,
+                -1.0,
+                -1.0,
+                1.0,
+                1.0,
+                1.0,
+                -1.0,
+                -1.0
+              ],
+              "components_connected": true,
+              "direct_rescore": -24.43402127412992,
+              "edges": 64,
+              "exact_accuracy": 1.0,
+              "exact_extraction": true,
+              "exact_prediction": [
+                1.0,
+                -1.0,
+                -1.0,
+                1.0,
+                1.0,
+                1.0,
+                -1.0,
+                -1.0
+              ],
+              "jt_energy": -24.43402127412992,
+              "linear_accuracy": 1.0,
+              "linear_prediction": [
+                1.0,
+                -1.0,
+                -1.0,
+                1.0,
+                1.0,
+                1.0,
+                -1.0,
+                -1.0
+              ],
+              "no_mutation": true,
+              "nodes": 16,
+              "oracle_energy": -24.43402127412992,
+              "oracle_operations": 1482783,
+              "pair_factors": 64,
+              "timing_ns": {
+                "bp": 76057389,
+                "graph_construction": 3184569,
+                "junction_tree": 3432980738,
+                "minfill_order": 424453,
+                "oracle": 777829855,
+                "runtime_extraction": 563403
+              },
+              "traced_peak_bytes": 12624872,
+              "triangulation_width": 8,
+              "width": 8
+            },
+            "shuffled": {
+              "bp_accuracy": 0.5,
+              "bp_prediction": [
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+                -1.0,
+                -1.0,
+                -1.0,
+                -1.0
+              ],
+              "components_connected": true,
+              "direct_rescore": -22.711115860845894,
+              "edges": 64,
+              "exact_accuracy": 0.5,
+              "exact_extraction": true,
+              "exact_prediction": [
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+                -1.0,
+                -1.0,
+                -1.0,
+                -1.0
+              ],
+              "jt_energy": -22.711115860845894,
+              "linear_accuracy": 0.5,
+              "linear_prediction": [
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+                -1.0,
+                -1.0,
+                -1.0,
+                -1.0
+              ],
+              "no_mutation": true,
+              "nodes": 16,
+              "oracle_energy": -22.711115860845894,
+              "oracle_operations": 1482783,
+              "pair_factors": 64,
+              "timing_ns": {
+                "bp": 76338200,
+                "graph_construction": 2727296,
+                "junction_tree": 3415820964,
+                "minfill_order": 407132,
+                "oracle": 787687974,
+                "runtime_extraction": 577724
+              },
+              "traced_peak_bytes": 12624872,
+              "triangulation_width": 8,
+              "width": 8
+            }
+          },
+          "heldout_index": 7,
+          "target_signs": [
+            1.0,
+            -1.0,
+            -1.0,
+            1.0,
+            1.0,
+            1.0,
+            -1.0,
+            -1.0
+          ]
+        },
+        {
+          "conditions": {
+            "learned": {
+              "bp_accuracy": 0.5,
+              "bp_prediction": [
+                1.0,
+                1.0,
+                -1.0,
+                -1.0,
+                1.0,
+                -1.0,
+                -1.0,
+                1.0
+              ],
+              "components_connected": true,
+              "direct_rescore": -20.06996570713818,
+              "edges": 64,
+              "exact_accuracy": 0.5,
+              "exact_extraction": true,
+              "exact_prediction": [
+                1.0,
+                1.0,
+                -1.0,
+                -1.0,
+                1.0,
+                -1.0,
+                -1.0,
+                1.0
+              ],
+              "jt_energy": -20.06996570713818,
+              "linear_accuracy": 0.75,
+              "linear_prediction": [
+                1.0,
+                1.0,
+                -1.0,
+                -1.0,
+                1.0,
+                1.0,
+                -1.0,
+                -1.0
+              ],
+              "no_mutation": true,
+              "nodes": 16,
+              "oracle_energy": -20.06996570713818,
+              "oracle_operations": 1482783,
+              "pair_factors": 64,
+              "timing_ns": {
+                "bp": 79831441,
+                "graph_construction": 2836287,
+                "junction_tree": 3461719363,
+                "minfill_order": 420872,
+                "oracle": 791192087,
+                "runtime_extraction": 558553
+              },
+              "traced_peak_bytes": 12624872,
+              "triangulation_width": 8,
+              "width": 8
+            },
+            "shuffled": {
+              "bp_accuracy": 0.375,
+              "bp_prediction": [
+                -1.0,
+                1.0,
+                -1.0,
+                1.0,
+                1.0,
+                1.0,
+                -1.0,
+                1.0
+              ],
+              "components_connected": true,
+              "direct_rescore": -21.143081857357174,
+              "edges": 64,
+              "exact_accuracy": 0.375,
+              "exact_extraction": true,
+              "exact_prediction": [
+                -1.0,
+                1.0,
+                -1.0,
+                1.0,
+                1.0,
+                1.0,
+                -1.0,
+                1.0
+              ],
+              "jt_energy": -21.143081857357174,
+              "linear_accuracy": 0.5,
+              "linear_prediction": [
+                -1.0,
+                1.0,
+                -1.0,
+                1.0,
+                1.0,
+                1.0,
+                -1.0,
+                -1.0
+              ],
+              "no_mutation": true,
+              "nodes": 16,
+              "oracle_energy": -21.143081857357174,
+              "oracle_operations": 1482783,
+              "pair_factors": 64,
+              "timing_ns": {
+                "bp": 78179992,
+                "graph_construction": 2687346,
+                "junction_tree": 3462301575,
+                "minfill_order": 476273,
+                "oracle": 811277868,
+                "runtime_extraction": 552224
+              },
+              "traced_peak_bytes": 12624872,
+              "triangulation_width": 8,
+              "width": 8
+            }
+          },
+          "heldout_index": 8,
+          "target_signs": [
+            1.0,
+            -1.0,
+            -1.0,
+            -1.0,
+            1.0,
+            1.0,
+            1.0,
+            -1.0
+          ]
+        },
+        {
+          "conditions": {
+            "learned": {
+              "bp_accuracy": 0.75,
+              "bp_prediction": [
+                1.0,
+                1.0,
+                -1.0,
+                -1.0,
+                1.0,
+                1.0,
+                -1.0,
+                1.0
+              ],
+              "components_connected": true,
+              "direct_rescore": -17.634220898151398,
+              "edges": 64,
+              "exact_accuracy": 0.75,
+              "exact_extraction": true,
+              "exact_prediction": [
+                1.0,
+                1.0,
+                -1.0,
+                -1.0,
+                1.0,
+                1.0,
+                -1.0,
+                1.0
+              ],
+              "jt_energy": -17.634220898151398,
+              "linear_accuracy": 0.75,
+              "linear_prediction": [
+                1.0,
+                1.0,
+                -1.0,
+                -1.0,
+                1.0,
+                1.0,
+                -1.0,
+                1.0
+              ],
+              "no_mutation": true,
+              "nodes": 16,
+              "oracle_energy": -17.634220898151398,
+              "oracle_operations": 1482783,
+              "pair_factors": 64,
+              "timing_ns": {
+                "bp": 79082377,
+                "graph_construction": 2968538,
+                "junction_tree": 3452573205,
+                "minfill_order": 778284,
+                "oracle": 791375922,
+                "runtime_extraction": 569253
+              },
+              "traced_peak_bytes": 12624872,
+              "triangulation_width": 8,
+              "width": 8
+            },
+            "shuffled": {
+              "bp_accuracy": 0.5,
+              "bp_prediction": [
+                -1.0,
+                1.0,
+                -1.0,
+                1.0,
+                -1.0,
+                -1.0,
+                1.0,
+                -1.0
+              ],
+              "components_connected": true,
+              "direct_rescore": -16.46490679634735,
+              "edges": 64,
+              "exact_accuracy": 0.5,
+              "exact_extraction": true,
+              "exact_prediction": [
+                -1.0,
+                1.0,
+                -1.0,
+                1.0,
+                -1.0,
+                -1.0,
+                1.0,
+                -1.0
+              ],
+              "jt_energy": -16.46490679634735,
+              "linear_accuracy": 0.5,
+              "linear_prediction": [
+                -1.0,
+                1.0,
+                -1.0,
+                1.0,
+                -1.0,
+                -1.0,
+                1.0,
+                -1.0
+              ],
+              "no_mutation": true,
+              "nodes": 16,
+              "oracle_energy": -16.46490679634735,
+              "oracle_operations": 1482783,
+              "pair_factors": 64,
+              "timing_ns": {
+                "bp": 105325842,
+                "graph_construction": 2759947,
+                "junction_tree": 3404898961,
+                "minfill_order": 441262,
+                "oracle": 792052817,
+                "runtime_extraction": 543134
+              },
+              "traced_peak_bytes": 12624872,
+              "triangulation_width": 8,
+              "width": 8
+            }
+          },
+          "heldout_index": 9,
+          "target_signs": [
+            1.0,
+            1.0,
+            -1.0,
+            -1.0,
+            1.0,
+            -1.0,
+            1.0,
+            1.0
+          ]
+        }
+      ],
+      "source_lock_end": {
+        "analyzer": {
+          "bytes": 4829,
+          "path": "/home/matt/ozmadev/ocelot/evaluation/substrate_capability/analyze_llm_transport_task_graph_exact_census_v1_1.py",
+          "sha256": "02ad8de81d6d5ee8ecb75297946717e0ff699d725909472348d210f25ea28687"
+        },
+        "export": {
+          "bytes": 1093784,
+          "path": "/applications/data/model_graph_work/transport_L12_13.npz",
+          "sha256": "d04f14de800bff4a5015a8063b678c2167188ec90c0749308b6af8a5a864161c"
+        },
+        "mode_count": 8,
+        "native_binary": {
+          "bytes": 10599400,
+          "path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+          "sha256": "7148f66f4cd307b7b34e03970b6a0c12177973105af8e1f3c6684e2e6132a63e"
+        },
+        "native_build_manifest": {
+          "bytes": 12669,
+          "path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.build.json",
+          "sha256": "476fdf4408323867341f127b3947f5a528743ebb86ab2a7973442993447f0e82"
+        },
+        "protocol": {
+          "bytes": 3645,
+          "path": "/home/matt/ozmadev/ocelot/docs/research/engine_substrate/LLM_TRANSPORT_TASK_GRAPH_EXACT_CENSUS_V1_1_PREREG_20261002.md",
+          "sha256": "7d64e74a23bda012f9da6e9fdd20c3f3e41027a721c7b46bfbb0a069ef0a4108"
+        },
+        "replicates": 3,
+        "ridge": 1.0,
+        "runner": {
+          "bytes": 11909,
+          "path": "/home/matt/ozmadev/ocelot/evaluation/substrate_capability/llm_transport_task_graph_exact_census_v1_1.py",
+          "sha256": "9325e58681c45ce45324732cb1c876be0166e679c004fcbe1b65d09344a85607"
+        },
+        "seed": {
+          "bytes": 43983,
+          "path": "/home/matt/ozmadev/ocelot/seeds/can_native_reimplementation.json",
+          "sha256": "3b185987ae810d5e05ab2468b044ab73d8890c8e73ac86dfcaf35b734b9c61d8"
+        },
+        "shuffle_seed": 0,
+        "sources": [
+          {
+            "bytes": 29504,
+            "path": "/home/matt/ozmadev/ocelot/domains/llm_native_graph.py",
+            "sha256": "3091594306fbfcc7aa93588b2b085ab72376fbb59817cc6c952dba20a05a1809"
+          },
+          {
+            "bytes": 14856,
+            "path": "/home/matt/ozmadev/ocelot/domains/can_junction_tree.py",
+            "sha256": "e8d4aa30bfdaced52cda2739f885a56ed50a040b8419cb558b132e5e46206ba7"
+          },
+          {
+            "bytes": 9424,
+            "path": "/home/matt/ozmadev/ocelot/domains/graph_treewidth.py",
+            "sha256": "e945bea9f54b76098edb3b3dcb784ac5a0ce630de43cd63a9fb5b0f416d543e5"
+          },
+          {
+            "bytes": 23330,
+            "path": "/home/matt/ozmadev/ocelot/domains/can_native_bp.py",
+            "sha256": "67d1cec2f6147d33d66fc7e07584571852d2325e14306ea61e93591bbb90f20b"
+          }
+        ],
+        "tolerance": 1e-08,
+        "vocabulary": [
+          -1.0,
+          0.0,
+          1.0
+        ]
+      },
+      "source_lock_start": {
+        "analyzer": {
+          "bytes": 4829,
+          "path": "/home/matt/ozmadev/ocelot/evaluation/substrate_capability/analyze_llm_transport_task_graph_exact_census_v1_1.py",
+          "sha256": "02ad8de81d6d5ee8ecb75297946717e0ff699d725909472348d210f25ea28687"
+        },
+        "export": {
+          "bytes": 1093784,
+          "path": "/applications/data/model_graph_work/transport_L12_13.npz",
+          "sha256": "d04f14de800bff4a5015a8063b678c2167188ec90c0749308b6af8a5a864161c"
+        },
+        "mode_count": 8,
+        "native_binary": {
+          "bytes": 10599400,
+          "path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+          "sha256": "7148f66f4cd307b7b34e03970b6a0c12177973105af8e1f3c6684e2e6132a63e"
+        },
+        "native_build_manifest": {
+          "bytes": 12669,
+          "path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.build.json",
+          "sha256": "476fdf4408323867341f127b3947f5a528743ebb86ab2a7973442993447f0e82"
+        },
+        "protocol": {
+          "bytes": 3645,
+          "path": "/home/matt/ozmadev/ocelot/docs/research/engine_substrate/LLM_TRANSPORT_TASK_GRAPH_EXACT_CENSUS_V1_1_PREREG_20261002.md",
+          "sha256": "7d64e74a23bda012f9da6e9fdd20c3f3e41027a721c7b46bfbb0a069ef0a4108"
+        },
+        "replicates": 3,
+        "ridge": 1.0,
+        "runner": {
+          "bytes": 11909,
+          "path": "/home/matt/ozmadev/ocelot/evaluation/substrate_capability/llm_transport_task_graph_exact_census_v1_1.py",
+          "sha256": "9325e58681c45ce45324732cb1c876be0166e679c004fcbe1b65d09344a85607"
+        },
+        "seed": {
+          "bytes": 43983,
+          "path": "/home/matt/ozmadev/ocelot/seeds/can_native_reimplementation.json",
+          "sha256": "3b185987ae810d5e05ab2468b044ab73d8890c8e73ac86dfcaf35b734b9c61d8"
+        },
+        "shuffle_seed": 0,
+        "sources": [
+          {
+            "bytes": 29504,
+            "path": "/home/matt/ozmadev/ocelot/domains/llm_native_graph.py",
+            "sha256": "3091594306fbfcc7aa93588b2b085ab72376fbb59817cc6c952dba20a05a1809"
+          },
+          {
+            "bytes": 14856,
+            "path": "/home/matt/ozmadev/ocelot/domains/can_junction_tree.py",
+            "sha256": "e8d4aa30bfdaced52cda2739f885a56ed50a040b8419cb558b132e5e46206ba7"
+          },
+          {
+            "bytes": 9424,
+            "path": "/home/matt/ozmadev/ocelot/domains/graph_treewidth.py",
+            "sha256": "e945bea9f54b76098edb3b3dcb784ac5a0ce630de43cd63a9fb5b0f416d543e5"
+          },
+          {
+            "bytes": 23330,
+            "path": "/home/matt/ozmadev/ocelot/domains/can_native_bp.py",
+            "sha256": "67d1cec2f6147d33d66fc7e07584571852d2325e14306ea61e93591bbb90f20b"
+          }
+        ],
+        "tolerance": 1e-08,
+        "vocabulary": [
+          -1.0,
+          0.0,
+          1.0
+        ]
+      },
+      "worker_pid": 26
+    },
+    {
+      "input_count": 10,
+      "process_peak_rss_kib": 88040,
+      "replicate": 1,
+      "rows": [
+        {
+          "conditions": {
+            "learned": {
+              "bp_accuracy": 0.625,
+              "bp_prediction": [
+                1.0,
+                1.0,
+                -1.0,
+                -1.0,
+                -1.0,
+                -1.0,
+                1.0,
+                -1.0
+              ],
+              "components_connected": true,
+              "direct_rescore": -31.265723153985164,
+              "edges": 64,
+              "exact_accuracy": 0.625,
+              "exact_extraction": true,
+              "exact_prediction": [
+                1.0,
+                1.0,
+                -1.0,
+                -1.0,
+                -1.0,
+                -1.0,
+                1.0,
+                -1.0
+              ],
+              "jt_energy": -31.265723153985164,
+              "linear_accuracy": 0.625,
+              "linear_prediction": [
+                1.0,
+                1.0,
+                -1.0,
+                -1.0,
+                -1.0,
+                -1.0,
+                1.0,
+                -1.0
+              ],
+              "no_mutation": true,
+              "nodes": 16,
+              "oracle_energy": -31.265723153985164,
+              "oracle_operations": 1482783,
+              "pair_factors": 64,
+              "timing_ns": {
+                "bp": 77200837,
+                "graph_construction": 47120529,
+                "junction_tree": 3463995858,
+                "minfill_order": 455433,
+                "oracle": 755822426,
+                "runtime_extraction": 2801967
+              },
+              "traced_peak_bytes": 12624872,
+              "triangulation_width": 8,
+              "width": 8
+            },
+            "shuffled": {
+              "bp_accuracy": 0.125,
+              "bp_prediction": [
+                -1.0,
+                1.0,
+                -1.0,
+                1.0,
+                -1.0,
+                1.0,
+                -1.0,
+                -1.0
+              ],
+              "components_connected": true,
+              "direct_rescore": -32.48989308346063,
+              "edges": 64,
+              "exact_accuracy": 0.125,
+              "exact_extraction": true,
+              "exact_prediction": [
+                -1.0,
+                1.0,
+                -1.0,
+                1.0,
+                -1.0,
+                1.0,
+                -1.0,
+                -1.0
+              ],
+              "jt_energy": -32.48989308346063,
+              "linear_accuracy": 0.0,
+              "linear_prediction": [
+                -1.0,
+                1.0,
+                1.0,
+                1.0,
+                -1.0,
+                1.0,
+                -1.0,
+                -1.0
+              ],
+              "no_mutation": true,
+              "nodes": 16,
+              "oracle_energy": -32.48989308346063,
+              "oracle_operations": 1482783,
+              "pair_factors": 64,
+              "timing_ns": {
+                "bp": 77655139,
+                "graph_construction": 2724576,
+                "junction_tree": 3465680016,
+                "minfill_order": 413473,
+                "oracle": 770042211,
+                "runtime_extraction": 550923
+              },
+              "traced_peak_bytes": 12625944,
+              "triangulation_width": 8,
+              "width": 8
+            }
+          },
+          "heldout_index": 0,
+          "target_signs": [
+            1.0,
+            -1.0,
+            -1.0,
+            -1.0,
+            1.0,
+            -1.0,
+            1.0,
+            1.0
+          ]
+        },
+        {
+          "conditions": {
+            "learned": {
+              "bp_accuracy": 0.625,
+              "bp_prediction": [
+                1.0,
+                1.0,
+                -1.0,
+                -1.0,
+                -1.0,
+                -1.0,
+                1.0,
+                -1.0
+              ],
+              "components_connected": true,
+              "direct_rescore": -31.687531635201594,
+              "edges": 64,
+              "exact_accuracy": 0.625,
+              "exact_extraction": true,
+              "exact_prediction": [
+                1.0,
+                1.0,
+                -1.0,
+                -1.0,
+                -1.0,
+                -1.0,
+                1.0,
+                -1.0
+              ],
+              "jt_energy": -31.687531635201594,
+              "linear_accuracy": 0.625,
+              "linear_prediction": [
+                1.0,
+                1.0,
+                -1.0,
+                -1.0,
+                -1.0,
+                -1.0,
+                1.0,
+                -1.0
+              ],
+              "no_mutation": true,
+              "nodes": 16,
+              "oracle_energy": -31.687531635201594,
+              "oracle_operations": 1482783,
+              "pair_factors": 64,
+              "timing_ns": {
+                "bp": 77558909,
+                "graph_construction": 2791436,
+                "junction_tree": 3468644371,
+                "minfill_order": 427723,
+                "oracle": 789442388,
+                "runtime_extraction": 566573
+              },
+              "traced_peak_bytes": 12624872,
+              "triangulation_width": 8,
+              "width": 8
+            },
+            "shuffled": {
+              "bp_accuracy": 0.125,
+              "bp_prediction": [
+                -1.0,
+                1.0,
+                -1.0,
+                1.0,
+                -1.0,
+                1.0,
+                -1.0,
+                -1.0
+              ],
+              "components_connected": true,
+              "direct_rescore": -32.91170156467706,
+              "edges": 64,
+              "exact_accuracy": 0.125,
+              "exact_extraction": true,
+              "exact_prediction": [
+                -1.0,
+                1.0,
+                -1.0,
+                1.0,
+                -1.0,
+                1.0,
+                -1.0,
+                -1.0
+              ],
+              "jt_energy": -32.91170156467706,
+              "linear_accuracy": 0.125,
+              "linear_prediction": [
+                -1.0,
+                1.0,
+                -1.0,
+                1.0,
+                -1.0,
+                1.0,
+                -1.0,
+                -1.0
+              ],
+              "no_mutation": true,
+              "nodes": 16,
+              "oracle_energy": -32.91170156467706,
+              "oracle_operations": 1482783,
+              "pair_factors": 64,
+              "timing_ns": {
+                "bp": 78116122,
+                "graph_construction": 2662086,
+                "junction_tree": 3432829156,
+                "minfill_order": 394502,
+                "oracle": 791216679,
+                "runtime_extraction": 558184
+              },
+              "traced_peak_bytes": 12624872,
+              "triangulation_width": 8,
+              "width": 8
+            }
+          },
+          "heldout_index": 1,
+          "target_signs": [
+            1.0,
+            -1.0,
+            -1.0,
+            -1.0,
+            1.0,
+            -1.0,
+            1.0,
+            1.0
+          ]
+        },
+        {
+          "conditions": {
+            "learned": {
+              "bp_accuracy": 0.875,
+              "bp_prediction": [
+                1.0,
+                -1.0,
+                -1.0,
+                -1.0,
+                1.0,
+                -1.0,
+                -1.0,
+                -1.0
+              ],
+              "components_connected": true,
+              "direct_rescore": -32.204531180206686,
+              "edges": 64,
+              "exact_accuracy": 0.875,
+              "exact_extraction": true,
+              "exact_prediction": [
+                1.0,
+                -1.0,
+                -1.0,
+                -1.0,
+                1.0,
+                -1.0,
+                -1.0,
+                -1.0
+              ],
+              "jt_energy": -32.204531180206686,
+              "linear_accuracy": 0.875,
+              "linear_prediction": [
+                1.0,
+                -1.0,
+                -1.0,
+                -1.0,
+                1.0,
+                -1.0,
+                -1.0,
+                -1.0
+              ],
+              "no_mutation": true,
+              "nodes": 16,
+              "oracle_energy": -32.204531180206686,
+              "oracle_operations": 1482783,
+              "pair_factors": 64,
+              "timing_ns": {
+                "bp": 78929137,
+                "graph_construction": 2769567,
+                "junction_tree": 3447663541,
+                "minfill_order": 429993,
+                "oracle": 786648194,
+                "runtime_extraction": 696405
+              },
+              "traced_peak_bytes": 12624872,
+              "triangulation_width": 8,
+              "width": 8
+            },
+            "shuffled": {
+              "bp_accuracy": 0.5,
+              "bp_prediction": [
+                -1.0,
+                1.0,
+                -1.0,
+                1.0,
+                1.0,
+                -1.0,
+                -1.0,
+                -1.0
+              ],
+              "components_connected": true,
+              "direct_rescore": -31.559851609636098,
+              "edges": 64,
+              "exact_accuracy": 0.5,
+              "exact_extraction": true,
+              "exact_prediction": [
+                -1.0,
+                1.0,
+                -1.0,
+                1.0,
+                1.0,
+                -1.0,
+                -1.0,
+                -1.0
+              ],
+              "jt_energy": -31.559851609636098,
+              "linear_accuracy": 0.375,
+              "linear_prediction": [
+                -1.0,
+                1.0,
+                -1.0,
+                1.0,
+                1.0,
+                1.0,
+                -1.0,
+                -1.0
+              ],
+              "no_mutation": true,
+              "nodes": 16,
+              "oracle_energy": -31.559851609636098,
+              "oracle_operations": 1482783,
+              "pair_factors": 64,
+              "timing_ns": {
+                "bp": 78371644,
+                "graph_construction": 2833506,
+                "junction_tree": 3495431362,
+                "minfill_order": 416662,
+                "oracle": 795874660,
+                "runtime_extraction": 571813
+              },
+              "traced_peak_bytes": 12624872,
+              "triangulation_width": 8,
+              "width": 8
+            }
+          },
+          "heldout_index": 2,
+          "target_signs": [
+            1.0,
+            -1.0,
+            -1.0,
+            -1.0,
+            1.0,
+            -1.0,
+            1.0,
+            -1.0
+          ]
+        },
+        {
+          "conditions": {
+            "learned": {
+              "bp_accuracy": 0.875,
+              "bp_prediction": [
+                1.0,
+                1.0,
+                -1.0,
+                -1.0,
+                1.0,
+                -1.0,
+                -1.0,
+                1.0
+              ],
+              "components_connected": true,
+              "direct_rescore": -30.266287613660097,
+              "edges": 64,
+              "exact_accuracy": 0.875,
+              "exact_extraction": true,
+              "exact_prediction": [
+                1.0,
+                1.0,
+                -1.0,
+                -1.0,
+                1.0,
+                -1.0,
+                -1.0,
+                1.0
+              ],
+              "jt_energy": -30.266287613660097,
+              "linear_accuracy": 1.0,
+              "linear_prediction": [
+                1.0,
+                1.0,
+                -1.0,
+                -1.0,
+                1.0,
+                1.0,
+                -1.0,
+                1.0
+              ],
+              "no_mutation": true,
+              "nodes": 16,
+              "oracle_energy": -30.266287613660097,
+              "oracle_operations": 1482783,
+              "pair_factors": 64,
+              "timing_ns": {
+                "bp": 77749371,
+                "graph_construction": 2789276,
+                "junction_tree": 3448262170,
+                "minfill_order": 426443,
+                "oracle": 787581593,
+                "runtime_extraction": 543333
+              },
+              "traced_peak_bytes": 12624872,
+              "triangulation_width": 8,
+              "width": 8
+            },
+            "shuffled": {
+              "bp_accuracy": 0.375,
+              "bp_prediction": [
+                -1.0,
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+                -1.0
+              ],
+              "components_connected": true,
+              "direct_rescore": -31.92190448148176,
+              "edges": 64,
+              "exact_accuracy": 0.375,
+              "exact_extraction": true,
+              "exact_prediction": [
+                -1.0,
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+                -1.0
+              ],
+              "jt_energy": -31.92190448148176,
+              "linear_accuracy": 0.25,
+              "linear_prediction": [
+                -1.0,
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+                -1.0,
+                1.0,
+                -1.0
+              ],
+              "no_mutation": true,
+              "nodes": 16,
+              "oracle_energy": -31.92190448148176,
+              "oracle_operations": 1482783,
+              "pair_factors": 64,
+              "timing_ns": {
+                "bp": 78039692,
+                "graph_construction": 2784857,
+                "junction_tree": 3453147215,
+                "minfill_order": 422672,
+                "oracle": 774153245,
+                "runtime_extraction": 559084
+              },
+              "traced_peak_bytes": 12624872,
+              "triangulation_width": 8,
+              "width": 8
+            }
+          },
+          "heldout_index": 3,
+          "target_signs": [
+            1.0,
+            1.0,
+            -1.0,
+            -1.0,
+            1.0,
+            1.0,
+            -1.0,
+            1.0
+          ]
+        },
+        {
+          "conditions": {
+            "learned": {
+              "bp_accuracy": 1.0,
+              "bp_prediction": [
+                1.0,
+                1.0,
+                -1.0,
+                -1.0,
+                1.0,
+                1.0,
+                -1.0,
+                1.0
+              ],
+              "components_connected": true,
+              "direct_rescore": -27.901933659799397,
+              "edges": 64,
+              "exact_accuracy": 1.0,
+              "exact_extraction": true,
+              "exact_prediction": [
+                1.0,
+                1.0,
+                -1.0,
+                -1.0,
+                1.0,
+                1.0,
+                -1.0,
+                1.0
+              ],
+              "jt_energy": -27.901933659799397,
+              "linear_accuracy": 1.0,
+              "linear_prediction": [
+                1.0,
+                1.0,
+                -1.0,
+                -1.0,
+                1.0,
+                1.0,
+                -1.0,
+                1.0
+              ],
+              "no_mutation": true,
+              "nodes": 16,
+              "oracle_energy": -27.901933659799397,
+              "oracle_operations": 1482783,
+              "pair_factors": 64,
+              "timing_ns": {
+                "bp": 81318941,
+                "graph_construction": 2732606,
+                "junction_tree": 3435354958,
+                "minfill_order": 411962,
+                "oracle": 829800977,
+                "runtime_extraction": 545783
+              },
+              "traced_peak_bytes": 12624872,
+              "triangulation_width": 8,
+              "width": 8
+            },
+            "shuffled": {
+              "bp_accuracy": 0.625,
+              "bp_prediction": [
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+                -1.0,
+                -1.0
+              ],
+              "components_connected": true,
+              "direct_rescore": -29.494069394189864,
+              "edges": 64,
+              "exact_accuracy": 0.625,
+              "exact_extraction": true,
+              "exact_prediction": [
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+                -1.0,
+                -1.0
+              ],
+              "jt_energy": -29.494069394189864,
+              "linear_accuracy": 0.375,
+              "linear_prediction": [
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+                -1.0,
+                1.0,
+                -1.0
+              ],
+              "no_mutation": true,
+              "nodes": 16,
+              "oracle_energy": -29.494069394189864,
+              "oracle_operations": 1482783,
+              "pair_factors": 64,
+              "timing_ns": {
+                "bp": 78655927,
+                "graph_construction": 2743646,
+                "junction_tree": 3425998068,
+                "minfill_order": 419732,
+                "oracle": 763141394,
+                "runtime_extraction": 666983
+              },
+              "traced_peak_bytes": 12624872,
+              "triangulation_width": 8,
+              "width": 8
+            }
+          },
+          "heldout_index": 4,
+          "target_signs": [
+            1.0,
+            1.0,
+            -1.0,
+            -1.0,
+            1.0,
+            1.0,
+            -1.0,
+            1.0
+          ]
+        },
+        {
+          "conditions": {
+            "learned": {
+              "bp_accuracy": 0.875,
+              "bp_prediction": [
+                1.0,
+                1.0,
+                1.0,
+                -1.0,
+                1.0,
+                1.0,
+                -1.0,
+                -1.0
+              ],
+              "components_connected": true,
+              "direct_rescore": -21.635106690657267,
+              "edges": 64,
+              "exact_accuracy": 0.875,
+              "exact_extraction": true,
+              "exact_prediction": [
+                1.0,
+                1.0,
+                1.0,
+                -1.0,
+                1.0,
+                1.0,
+                -1.0,
+                -1.0
+              ],
+              "jt_energy": -21.635106690657267,
+              "linear_accuracy": 1.0,
+              "linear_prediction": [
+                1.0,
+                1.0,
+                -1.0,
+                -1.0,
+                1.0,
+                1.0,
+                -1.0,
+                -1.0
+              ],
+              "no_mutation": true,
+              "nodes": 16,
+              "oracle_energy": -21.635106690657267,
+              "oracle_operations": 1482783,
+              "pair_factors": 64,
+              "timing_ns": {
+                "bp": 78417265,
+                "graph_construction": 2876647,
+                "junction_tree": 3459597605,
+                "minfill_order": 429783,
+                "oracle": 762175869,
+                "runtime_extraction": 551604
+              },
+              "traced_peak_bytes": 12624872,
+              "triangulation_width": 8,
+              "width": 8
+            },
+            "shuffled": {
+              "bp_accuracy": 0.5,
+              "bp_prediction": [
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+                -1.0,
+                1.0,
+                1.0,
+                -1.0
+              ],
+              "components_connected": true,
+              "direct_rescore": -18.541713347658515,
+              "edges": 64,
+              "exact_accuracy": 0.5,
+              "exact_extraction": true,
+              "exact_prediction": [
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+                -1.0,
+                1.0,
+                1.0,
+                -1.0
+              ],
+              "jt_energy": -18.541713347658515,
+              "linear_accuracy": 0.625,
+              "linear_prediction": [
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+                -1.0,
+                1.0,
+                -1.0,
+                -1.0
+              ],
+              "no_mutation": true,
+              "nodes": 16,
+              "oracle_energy": -18.541713347658515,
+              "oracle_operations": 1482783,
+              "pair_factors": 64,
+              "timing_ns": {
+                "bp": 77634591,
+                "graph_construction": 2826277,
+                "junction_tree": 3461097951,
+                "minfill_order": 419292,
+                "oracle": 822087636,
+                "runtime_extraction": 581994
+              },
+              "traced_peak_bytes": 12624872,
+              "triangulation_width": 8,
+              "width": 8
+            }
+          },
+          "heldout_index": 5,
+          "target_signs": [
+            1.0,
+            1.0,
+            -1.0,
+            -1.0,
+            1.0,
+            1.0,
+            -1.0,
+            -1.0
+          ]
+        },
+        {
+          "conditions": {
+            "learned": {
+              "bp_accuracy": 0.875,
+              "bp_prediction": [
+                1.0,
+                -1.0,
+                -1.0,
+                -1.0,
+                1.0,
+                -1.0,
+                1.0,
+                1.0
+              ],
+              "components_connected": true,
+              "direct_rescore": -33.062470838856825,
+              "edges": 64,
+              "exact_accuracy": 0.875,
+              "exact_extraction": true,
+              "exact_prediction": [
+                1.0,
+                -1.0,
+                -1.0,
+                -1.0,
+                1.0,
+                -1.0,
+                1.0,
+                1.0
+              ],
+              "jt_energy": -33.062470838856825,
+              "linear_accuracy": 1.0,
+              "linear_prediction": [
+                1.0,
+                -1.0,
+                -1.0,
+                -1.0,
+                -1.0,
+                -1.0,
+                1.0,
+                1.0
+              ],
+              "no_mutation": true,
+              "nodes": 16,
+              "oracle_energy": -33.062470838856825,
+              "oracle_operations": 1482783,
+              "pair_factors": 64,
+              "timing_ns": {
+                "bp": 77952443,
+                "graph_construction": 3063118,
+                "junction_tree": 3449334908,
+                "minfill_order": 403772,
+                "oracle": 785991794,
+                "runtime_extraction": 594803
+              },
+              "traced_peak_bytes": 12624872,
+              "triangulation_width": 8,
+              "width": 8
+            },
+            "shuffled": {
+              "bp_accuracy": 0.5,
+              "bp_prediction": [
+                1.0,
+                -1.0,
+                1.0,
+                1.0,
+                -1.0,
+                -1.0,
+                -1.0,
+                -1.0
+              ],
+              "components_connected": true,
+              "direct_rescore": -32.851674598641694,
+              "edges": 64,
+              "exact_accuracy": 0.5,
+              "exact_extraction": true,
+              "exact_prediction": [
+                1.0,
+                -1.0,
+                1.0,
+                1.0,
+                -1.0,
+                -1.0,
+                -1.0,
+                -1.0
+              ],
+              "jt_energy": -32.851674598641694,
+              "linear_accuracy": 0.5,
+              "linear_prediction": [
+                1.0,
+                -1.0,
+                1.0,
+                1.0,
+                -1.0,
+                -1.0,
+                -1.0,
+                -1.0
+              ],
+              "no_mutation": true,
+              "nodes": 16,
+              "oracle_energy": -32.851674598641694,
+              "oracle_operations": 1482783,
+              "pair_factors": 64,
+              "timing_ns": {
+                "bp": 78309395,
+                "graph_construction": 2823527,
+                "junction_tree": 3489318782,
+                "minfill_order": 418093,
+                "oracle": 761837511,
+                "runtime_extraction": 542534
+              },
+              "traced_peak_bytes": 12625944,
+              "triangulation_width": 8,
+              "width": 8
+            }
+          },
+          "heldout_index": 6,
+          "target_signs": [
+            1.0,
+            -1.0,
+            -1.0,
+            -1.0,
+            -1.0,
+            -1.0,
+            1.0,
+            1.0
+          ]
+        },
+        {
+          "conditions": {
+            "learned": {
+              "bp_accuracy": 1.0,
+              "bp_prediction": [
+                1.0,
+                -1.0,
+                -1.0,
+                1.0,
+                1.0,
+                1.0,
+                -1.0,
+                -1.0
+              ],
+              "components_connected": true,
+              "direct_rescore": -24.43402127412992,
+              "edges": 64,
+              "exact_accuracy": 1.0,
+              "exact_extraction": true,
+              "exact_prediction": [
+                1.0,
+                -1.0,
+                -1.0,
+                1.0,
+                1.0,
+                1.0,
+                -1.0,
+                -1.0
+              ],
+              "jt_energy": -24.43402127412992,
+              "linear_accuracy": 1.0,
+              "linear_prediction": [
+                1.0,
+                -1.0,
+                -1.0,
+                1.0,
+                1.0,
+                1.0,
+                -1.0,
+                -1.0
+              ],
+              "no_mutation": true,
+              "nodes": 16,
+              "oracle_energy": -24.43402127412992,
+              "oracle_operations": 1482783,
+              "pair_factors": 64,
+              "timing_ns": {
+                "bp": 78506596,
+                "graph_construction": 2852737,
+                "junction_tree": 3531368589,
+                "minfill_order": 432533,
+                "oracle": 790129551,
+                "runtime_extraction": 551463
+              },
+              "traced_peak_bytes": 12624872,
+              "triangulation_width": 8,
+              "width": 8
+            },
+            "shuffled": {
+              "bp_accuracy": 0.5,
+              "bp_prediction": [
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+                -1.0,
+                -1.0,
+                -1.0,
+                -1.0
+              ],
+              "components_connected": true,
+              "direct_rescore": -22.711115860845894,
+              "edges": 64,
+              "exact_accuracy": 0.5,
+              "exact_extraction": true,
+              "exact_prediction": [
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+                -1.0,
+                -1.0,
+                -1.0,
+                -1.0
+              ],
+              "jt_energy": -22.711115860845894,
+              "linear_accuracy": 0.5,
+              "linear_prediction": [
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+                -1.0,
+                -1.0,
+                -1.0,
+                -1.0
+              ],
+              "no_mutation": true,
+              "nodes": 16,
+              "oracle_energy": -22.711115860845894,
+              "oracle_operations": 1482783,
+              "pair_factors": 64,
+              "timing_ns": {
+                "bp": 77792612,
+                "graph_construction": 2953327,
+                "junction_tree": 3398068084,
+                "minfill_order": 426403,
+                "oracle": 774522900,
+                "runtime_extraction": 564023
+              },
+              "traced_peak_bytes": 12624872,
+              "triangulation_width": 8,
+              "width": 8
+            }
+          },
+          "heldout_index": 7,
+          "target_signs": [
+            1.0,
+            -1.0,
+            -1.0,
+            1.0,
+            1.0,
+            1.0,
+            -1.0,
+            -1.0
+          ]
+        },
+        {
+          "conditions": {
+            "learned": {
+              "bp_accuracy": 0.5,
+              "bp_prediction": [
+                1.0,
+                1.0,
+                -1.0,
+                -1.0,
+                1.0,
+                -1.0,
+                -1.0,
+                1.0
+              ],
+              "components_connected": true,
+              "direct_rescore": -20.06996570713818,
+              "edges": 64,
+              "exact_accuracy": 0.5,
+              "exact_extraction": true,
+              "exact_prediction": [
+                1.0,
+                1.0,
+                -1.0,
+                -1.0,
+                1.0,
+                -1.0,
+                -1.0,
+                1.0
+              ],
+              "jt_energy": -20.06996570713818,
+              "linear_accuracy": 0.75,
+              "linear_prediction": [
+                1.0,
+                1.0,
+                -1.0,
+                -1.0,
+                1.0,
+                1.0,
+                -1.0,
+                -1.0
+              ],
+              "no_mutation": true,
+              "nodes": 16,
+              "oracle_energy": -20.06996570713818,
+              "oracle_operations": 1482783,
+              "pair_factors": 64,
+              "timing_ns": {
+                "bp": 77890793,
+                "graph_construction": 2668156,
+                "junction_tree": 3442642756,
+                "minfill_order": 426223,
+                "oracle": 778404984,
+                "runtime_extraction": 565234
+              },
+              "traced_peak_bytes": 12624872,
+              "triangulation_width": 8,
+              "width": 8
+            },
+            "shuffled": {
+              "bp_accuracy": 0.375,
+              "bp_prediction": [
+                -1.0,
+                1.0,
+                -1.0,
+                1.0,
+                1.0,
+                1.0,
+                -1.0,
+                1.0
+              ],
+              "components_connected": true,
+              "direct_rescore": -21.143081857357174,
+              "edges": 64,
+              "exact_accuracy": 0.375,
+              "exact_extraction": true,
+              "exact_prediction": [
+                -1.0,
+                1.0,
+                -1.0,
+                1.0,
+                1.0,
+                1.0,
+                -1.0,
+                1.0
+              ],
+              "jt_energy": -21.143081857357174,
+              "linear_accuracy": 0.5,
+              "linear_prediction": [
+                -1.0,
+                1.0,
+                -1.0,
+                1.0,
+                1.0,
+                1.0,
+                -1.0,
+                -1.0
+              ],
+              "no_mutation": true,
+              "nodes": 16,
+              "oracle_energy": -21.143081857357174,
+              "oracle_operations": 1482783,
+              "pair_factors": 64,
+              "timing_ns": {
+                "bp": 77804583,
+                "graph_construction": 2750386,
+                "junction_tree": 3467294558,
+                "minfill_order": 417852,
+                "oracle": 793294824,
+                "runtime_extraction": 539683
+              },
+              "traced_peak_bytes": 12624872,
+              "triangulation_width": 8,
+              "width": 8
+            }
+          },
+          "heldout_index": 8,
+          "target_signs": [
+            1.0,
+            -1.0,
+            -1.0,
+            -1.0,
+            1.0,
+            1.0,
+            1.0,
+            -1.0
+          ]
+        },
+        {
+          "conditions": {
+            "learned": {
+              "bp_accuracy": 0.75,
+              "bp_prediction": [
+                1.0,
+                1.0,
+                -1.0,
+                -1.0,
+                1.0,
+                1.0,
+                -1.0,
+                1.0
+              ],
+              "components_connected": true,
+              "direct_rescore": -17.634220898151398,
+              "edges": 64,
+              "exact_accuracy": 0.75,
+              "exact_extraction": true,
+              "exact_prediction": [
+                1.0,
+                1.0,
+                -1.0,
+                -1.0,
+                1.0,
+                1.0,
+                -1.0,
+                1.0
+              ],
+              "jt_energy": -17.634220898151398,
+              "linear_accuracy": 0.75,
+              "linear_prediction": [
+                1.0,
+                1.0,
+                -1.0,
+                -1.0,
+                1.0,
+                1.0,
+                -1.0,
+                1.0
+              ],
+              "no_mutation": true,
+              "nodes": 16,
+              "oracle_energy": -17.634220898151398,
+              "oracle_operations": 1482783,
+              "pair_factors": 64,
+              "timing_ns": {
+                "bp": 80116486,
+                "graph_construction": 2768006,
+                "junction_tree": 3527853005,
+                "minfill_order": 423733,
+                "oracle": 793674888,
+                "runtime_extraction": 560043
+              },
+              "traced_peak_bytes": 12624872,
+              "triangulation_width": 8,
+              "width": 8
+            },
+            "shuffled": {
+              "bp_accuracy": 0.5,
+              "bp_prediction": [
+                -1.0,
+                1.0,
+                -1.0,
+                1.0,
+                -1.0,
+                -1.0,
+                1.0,
+                -1.0
+              ],
+              "components_connected": true,
+              "direct_rescore": -16.46490679634735,
+              "edges": 64,
+              "exact_accuracy": 0.5,
+              "exact_extraction": true,
+              "exact_prediction": [
+                -1.0,
+                1.0,
+                -1.0,
+                1.0,
+                -1.0,
+                -1.0,
+                1.0,
+                -1.0
+              ],
+              "jt_energy": -16.46490679634735,
+              "linear_accuracy": 0.5,
+              "linear_prediction": [
+                -1.0,
+                1.0,
+                -1.0,
+                1.0,
+                -1.0,
+                -1.0,
+                1.0,
+                -1.0
+              ],
+              "no_mutation": true,
+              "nodes": 16,
+              "oracle_energy": -16.46490679634735,
+              "oracle_operations": 1482783,
+              "pair_factors": 64,
+              "timing_ns": {
+                "bp": 109182210,
+                "graph_construction": 2779916,
+                "junction_tree": 3510018425,
+                "minfill_order": 439883,
+                "oracle": 797233781,
+                "runtime_extraction": 542693
+              },
+              "traced_peak_bytes": 12624872,
+              "triangulation_width": 8,
+              "width": 8
+            }
+          },
+          "heldout_index": 9,
+          "target_signs": [
+            1.0,
+            1.0,
+            -1.0,
+            -1.0,
+            1.0,
+            -1.0,
+            1.0,
+            1.0
+          ]
+        }
+      ],
+      "source_lock_end": {
+        "analyzer": {
+          "bytes": 4829,
+          "path": "/home/matt/ozmadev/ocelot/evaluation/substrate_capability/analyze_llm_transport_task_graph_exact_census_v1_1.py",
+          "sha256": "02ad8de81d6d5ee8ecb75297946717e0ff699d725909472348d210f25ea28687"
+        },
+        "export": {
+          "bytes": 1093784,
+          "path": "/applications/data/model_graph_work/transport_L12_13.npz",
+          "sha256": "d04f14de800bff4a5015a8063b678c2167188ec90c0749308b6af8a5a864161c"
+        },
+        "mode_count": 8,
+        "native_binary": {
+          "bytes": 10599400,
+          "path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+          "sha256": "7148f66f4cd307b7b34e03970b6a0c12177973105af8e1f3c6684e2e6132a63e"
+        },
+        "native_build_manifest": {
+          "bytes": 12669,
+          "path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.build.json",
+          "sha256": "476fdf4408323867341f127b3947f5a528743ebb86ab2a7973442993447f0e82"
+        },
+        "protocol": {
+          "bytes": 3645,
+          "path": "/home/matt/ozmadev/ocelot/docs/research/engine_substrate/LLM_TRANSPORT_TASK_GRAPH_EXACT_CENSUS_V1_1_PREREG_20261002.md",
+          "sha256": "7d64e74a23bda012f9da6e9fdd20c3f3e41027a721c7b46bfbb0a069ef0a4108"
+        },
+        "replicates": 3,
+        "ridge": 1.0,
+        "runner": {
+          "bytes": 11909,
+          "path": "/home/matt/ozmadev/ocelot/evaluation/substrate_capability/llm_transport_task_graph_exact_census_v1_1.py",
+          "sha256": "9325e58681c45ce45324732cb1c876be0166e679c004fcbe1b65d09344a85607"
+        },
+        "seed": {
+          "bytes": 43983,
+          "path": "/home/matt/ozmadev/ocelot/seeds/can_native_reimplementation.json",
+          "sha256": "3b185987ae810d5e05ab2468b044ab73d8890c8e73ac86dfcaf35b734b9c61d8"
+        },
+        "shuffle_seed": 0,
+        "sources": [
+          {
+            "bytes": 29504,
+            "path": "/home/matt/ozmadev/ocelot/domains/llm_native_graph.py",
+            "sha256": "3091594306fbfcc7aa93588b2b085ab72376fbb59817cc6c952dba20a05a1809"
+          },
+          {
+            "bytes": 14856,
+            "path": "/home/matt/ozmadev/ocelot/domains/can_junction_tree.py",
+            "sha256": "e8d4aa30bfdaced52cda2739f885a56ed50a040b8419cb558b132e5e46206ba7"
+          },
+          {
+            "bytes": 9424,
+            "path": "/home/matt/ozmadev/ocelot/domains/graph_treewidth.py",
+            "sha256": "e945bea9f54b76098edb3b3dcb784ac5a0ce630de43cd63a9fb5b0f416d543e5"
+          },
+          {
+            "bytes": 23330,
+            "path": "/home/matt/ozmadev/ocelot/domains/can_native_bp.py",
+            "sha256": "67d1cec2f6147d33d66fc7e07584571852d2325e14306ea61e93591bbb90f20b"
+          }
+        ],
+        "tolerance": 1e-08,
+        "vocabulary": [
+          -1.0,
+          0.0,
+          1.0
+        ]
+      },
+      "source_lock_start": {
+        "analyzer": {
+          "bytes": 4829,
+          "path": "/home/matt/ozmadev/ocelot/evaluation/substrate_capability/analyze_llm_transport_task_graph_exact_census_v1_1.py",
+          "sha256": "02ad8de81d6d5ee8ecb75297946717e0ff699d725909472348d210f25ea28687"
+        },
+        "export": {
+          "bytes": 1093784,
+          "path": "/applications/data/model_graph_work/transport_L12_13.npz",
+          "sha256": "d04f14de800bff4a5015a8063b678c2167188ec90c0749308b6af8a5a864161c"
+        },
+        "mode_count": 8,
+        "native_binary": {
+          "bytes": 10599400,
+          "path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+          "sha256": "7148f66f4cd307b7b34e03970b6a0c12177973105af8e1f3c6684e2e6132a63e"
+        },
+        "native_build_manifest": {
+          "bytes": 12669,
+          "path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.build.json",
+          "sha256": "476fdf4408323867341f127b3947f5a528743ebb86ab2a7973442993447f0e82"
+        },
+        "protocol": {
+          "bytes": 3645,
+          "path": "/home/matt/ozmadev/ocelot/docs/research/engine_substrate/LLM_TRANSPORT_TASK_GRAPH_EXACT_CENSUS_V1_1_PREREG_20261002.md",
+          "sha256": "7d64e74a23bda012f9da6e9fdd20c3f3e41027a721c7b46bfbb0a069ef0a4108"
+        },
+        "replicates": 3,
+        "ridge": 1.0,
+        "runner": {
+          "bytes": 11909,
+          "path": "/home/matt/ozmadev/ocelot/evaluation/substrate_capability/llm_transport_task_graph_exact_census_v1_1.py",
+          "sha256": "9325e58681c45ce45324732cb1c876be0166e679c004fcbe1b65d09344a85607"
+        },
+        "seed": {
+          "bytes": 43983,
+          "path": "/home/matt/ozmadev/ocelot/seeds/can_native_reimplementation.json",
+          "sha256": "3b185987ae810d5e05ab2468b044ab73d8890c8e73ac86dfcaf35b734b9c61d8"
+        },
+        "shuffle_seed": 0,
+        "sources": [
+          {
+            "bytes": 29504,
+            "path": "/home/matt/ozmadev/ocelot/domains/llm_native_graph.py",
+            "sha256": "3091594306fbfcc7aa93588b2b085ab72376fbb59817cc6c952dba20a05a1809"
+          },
+          {
+            "bytes": 14856,
+            "path": "/home/matt/ozmadev/ocelot/domains/can_junction_tree.py",
+            "sha256": "e8d4aa30bfdaced52cda2739f885a56ed50a040b8419cb558b132e5e46206ba7"
+          },
+          {
+            "bytes": 9424,
+            "path": "/home/matt/ozmadev/ocelot/domains/graph_treewidth.py",
+            "sha256": "e945bea9f54b76098edb3b3dcb784ac5a0ce630de43cd63a9fb5b0f416d543e5"
+          },
+          {
+            "bytes": 23330,
+            "path": "/home/matt/ozmadev/ocelot/domains/can_native_bp.py",
+            "sha256": "67d1cec2f6147d33d66fc7e07584571852d2325e14306ea61e93591bbb90f20b"
+          }
+        ],
+        "tolerance": 1e-08,
+        "vocabulary": [
+          -1.0,
+          0.0,
+          1.0
+        ]
+      },
+      "worker_pid": 150
+    },
+    {
+      "input_count": 10,
+      "process_peak_rss_kib": 87804,
+      "replicate": 2,
+      "rows": [
+        {
+          "conditions": {
+            "learned": {
+              "bp_accuracy": 0.625,
+              "bp_prediction": [
+                1.0,
+                1.0,
+                -1.0,
+                -1.0,
+                -1.0,
+                -1.0,
+                1.0,
+                -1.0
+              ],
+              "components_connected": true,
+              "direct_rescore": -31.265723153985164,
+              "edges": 64,
+              "exact_accuracy": 0.625,
+              "exact_extraction": true,
+              "exact_prediction": [
+                1.0,
+                1.0,
+                -1.0,
+                -1.0,
+                -1.0,
+                -1.0,
+                1.0,
+                -1.0
+              ],
+              "jt_energy": -31.265723153985164,
+              "linear_accuracy": 0.625,
+              "linear_prediction": [
+                1.0,
+                1.0,
+                -1.0,
+                -1.0,
+                -1.0,
+                -1.0,
+                1.0,
+                -1.0
+              ],
+              "no_mutation": true,
+              "nodes": 16,
+              "oracle_energy": -31.265723153985164,
+              "oracle_operations": 1482783,
+              "pair_factors": 64,
+              "timing_ns": {
+                "bp": 76995939,
+                "graph_construction": 46749388,
+                "junction_tree": 3441131803,
+                "minfill_order": 450243,
+                "oracle": 795970115,
+                "runtime_extraction": 2219003
+              },
+              "traced_peak_bytes": 12624872,
+              "triangulation_width": 8,
+              "width": 8
+            },
+            "shuffled": {
+              "bp_accuracy": 0.125,
+              "bp_prediction": [
+                -1.0,
+                1.0,
+                -1.0,
+                1.0,
+                -1.0,
+                1.0,
+                -1.0,
+                -1.0
+              ],
+              "components_connected": true,
+              "direct_rescore": -32.48989308346063,
+              "edges": 64,
+              "exact_accuracy": 0.125,
+              "exact_extraction": true,
+              "exact_prediction": [
+                -1.0,
+                1.0,
+                -1.0,
+                1.0,
+                -1.0,
+                1.0,
+                -1.0,
+                -1.0
+              ],
+              "jt_energy": -32.48989308346063,
+              "linear_accuracy": 0.0,
+              "linear_prediction": [
+                -1.0,
+                1.0,
+                1.0,
+                1.0,
+                -1.0,
+                1.0,
+                -1.0,
+                -1.0
+              ],
+              "no_mutation": true,
+              "nodes": 16,
+              "oracle_energy": -32.48989308346063,
+              "oracle_operations": 1482783,
+              "pair_factors": 64,
+              "timing_ns": {
+                "bp": 74789845,
+                "graph_construction": 2676035,
+                "junction_tree": 3433588204,
+                "minfill_order": 418443,
+                "oracle": 824740708,
+                "runtime_extraction": 570573
+              },
+              "traced_peak_bytes": 12625944,
+              "triangulation_width": 8,
+              "width": 8
+            }
+          },
+          "heldout_index": 0,
+          "target_signs": [
+            1.0,
+            -1.0,
+            -1.0,
+            -1.0,
+            1.0,
+            -1.0,
+            1.0,
+            1.0
+          ]
+        },
+        {
+          "conditions": {
+            "learned": {
+              "bp_accuracy": 0.625,
+              "bp_prediction": [
+                1.0,
+                1.0,
+                -1.0,
+                -1.0,
+                -1.0,
+                -1.0,
+                1.0,
+                -1.0
+              ],
+              "components_connected": true,
+              "direct_rescore": -31.687531635201594,
+              "edges": 64,
+              "exact_accuracy": 0.625,
+              "exact_extraction": true,
+              "exact_prediction": [
+                1.0,
+                1.0,
+                -1.0,
+                -1.0,
+                -1.0,
+                -1.0,
+                1.0,
+                -1.0
+              ],
+              "jt_energy": -31.687531635201594,
+              "linear_accuracy": 0.625,
+              "linear_prediction": [
+                1.0,
+                1.0,
+                -1.0,
+                -1.0,
+                -1.0,
+                -1.0,
+                1.0,
+                -1.0
+              ],
+              "no_mutation": true,
+              "nodes": 16,
+              "oracle_energy": -31.687531635201594,
+              "oracle_operations": 1482783,
+              "pair_factors": 64,
+              "timing_ns": {
+                "bp": 76522056,
+                "graph_construction": 2708176,
+                "junction_tree": 3461194905,
+                "minfill_order": 416553,
+                "oracle": 789106837,
+                "runtime_extraction": 566624
+              },
+              "traced_peak_bytes": 12624872,
+              "triangulation_width": 8,
+              "width": 8
+            },
+            "shuffled": {
+              "bp_accuracy": 0.125,
+              "bp_prediction": [
+                -1.0,
+                1.0,
+                -1.0,
+                1.0,
+                -1.0,
+                1.0,
+                -1.0,
+                -1.0
+              ],
+              "components_connected": true,
+              "direct_rescore": -32.91170156467706,
+              "edges": 64,
+              "exact_accuracy": 0.125,
+              "exact_extraction": true,
+              "exact_prediction": [
+                -1.0,
+                1.0,
+                -1.0,
+                1.0,
+                -1.0,
+                1.0,
+                -1.0,
+                -1.0
+              ],
+              "jt_energy": -32.91170156467706,
+              "linear_accuracy": 0.125,
+              "linear_prediction": [
+                -1.0,
+                1.0,
+                -1.0,
+                1.0,
+                -1.0,
+                1.0,
+                -1.0,
+                -1.0
+              ],
+              "no_mutation": true,
+              "nodes": 16,
+              "oracle_energy": -32.91170156467706,
+              "oracle_operations": 1482783,
+              "pair_factors": 64,
+              "timing_ns": {
+                "bp": 77257380,
+                "graph_construction": 2926797,
+                "junction_tree": 3442835512,
+                "minfill_order": 422673,
+                "oracle": 793061132,
+                "runtime_extraction": 557683
+              },
+              "traced_peak_bytes": 12624872,
+              "triangulation_width": 8,
+              "width": 8
+            }
+          },
+          "heldout_index": 1,
+          "target_signs": [
+            1.0,
+            -1.0,
+            -1.0,
+            -1.0,
+            1.0,
+            -1.0,
+            1.0,
+            1.0
+          ]
+        },
+        {
+          "conditions": {
+            "learned": {
+              "bp_accuracy": 0.875,
+              "bp_prediction": [
+                1.0,
+                -1.0,
+                -1.0,
+                -1.0,
+                1.0,
+                -1.0,
+                -1.0,
+                -1.0
+              ],
+              "components_connected": true,
+              "direct_rescore": -32.204531180206686,
+              "edges": 64,
+              "exact_accuracy": 0.875,
+              "exact_extraction": true,
+              "exact_prediction": [
+                1.0,
+                -1.0,
+                -1.0,
+                -1.0,
+                1.0,
+                -1.0,
+                -1.0,
+                -1.0
+              ],
+              "jt_energy": -32.204531180206686,
+              "linear_accuracy": 0.875,
+              "linear_prediction": [
+                1.0,
+                -1.0,
+                -1.0,
+                -1.0,
+                1.0,
+                -1.0,
+                -1.0,
+                -1.0
+              ],
+              "no_mutation": true,
+              "nodes": 16,
+              "oracle_energy": -32.204531180206686,
+              "oracle_operations": 1482783,
+              "pair_factors": 64,
+              "timing_ns": {
+                "bp": 92358050,
+                "graph_construction": 2923698,
+                "junction_tree": 3487760756,
+                "minfill_order": 599193,
+                "oracle": 785657489,
+                "runtime_extraction": 549623
+              },
+              "traced_peak_bytes": 12624872,
+              "triangulation_width": 8,
+              "width": 8
+            },
+            "shuffled": {
+              "bp_accuracy": 0.5,
+              "bp_prediction": [
+                -1.0,
+                1.0,
+                -1.0,
+                1.0,
+                1.0,
+                -1.0,
+                -1.0,
+                -1.0
+              ],
+              "components_connected": true,
+              "direct_rescore": -31.559851609636098,
+              "edges": 64,
+              "exact_accuracy": 0.5,
+              "exact_extraction": true,
+              "exact_prediction": [
+                -1.0,
+                1.0,
+                -1.0,
+                1.0,
+                1.0,
+                -1.0,
+                -1.0,
+                -1.0
+              ],
+              "jt_energy": -31.559851609636098,
+              "linear_accuracy": 0.375,
+              "linear_prediction": [
+                -1.0,
+                1.0,
+                -1.0,
+                1.0,
+                1.0,
+                1.0,
+                -1.0,
+                -1.0
+              ],
+              "no_mutation": true,
+              "nodes": 16,
+              "oracle_energy": -31.559851609636098,
+              "oracle_operations": 1482783,
+              "pair_factors": 64,
+              "timing_ns": {
+                "bp": 78923411,
+                "graph_construction": 2992438,
+                "junction_tree": 3490543009,
+                "minfill_order": 422862,
+                "oracle": 788765019,
+                "runtime_extraction": 574564
+              },
+              "traced_peak_bytes": 12624872,
+              "triangulation_width": 8,
+              "width": 8
+            }
+          },
+          "heldout_index": 2,
+          "target_signs": [
+            1.0,
+            -1.0,
+            -1.0,
+            -1.0,
+            1.0,
+            -1.0,
+            1.0,
+            -1.0
+          ]
+        },
+        {
+          "conditions": {
+            "learned": {
+              "bp_accuracy": 0.875,
+              "bp_prediction": [
+                1.0,
+                1.0,
+                -1.0,
+                -1.0,
+                1.0,
+                -1.0,
+                -1.0,
+                1.0
+              ],
+              "components_connected": true,
+              "direct_rescore": -30.266287613660097,
+              "edges": 64,
+              "exact_accuracy": 0.875,
+              "exact_extraction": true,
+              "exact_prediction": [
+                1.0,
+                1.0,
+                -1.0,
+                -1.0,
+                1.0,
+                -1.0,
+                -1.0,
+                1.0
+              ],
+              "jt_energy": -30.266287613660097,
+              "linear_accuracy": 1.0,
+              "linear_prediction": [
+                1.0,
+                1.0,
+                -1.0,
+                -1.0,
+                1.0,
+                1.0,
+                -1.0,
+                1.0
+              ],
+              "no_mutation": true,
+              "nodes": 16,
+              "oracle_energy": -30.266287613660097,
+              "oracle_operations": 1482783,
+              "pair_factors": 64,
+              "timing_ns": {
+                "bp": 79635195,
+                "graph_construction": 2784897,
+                "junction_tree": 3476584791,
+                "minfill_order": 428702,
+                "oracle": 808661719,
+                "runtime_extraction": 545254
+              },
+              "traced_peak_bytes": 12624872,
+              "triangulation_width": 8,
+              "width": 8
+            },
+            "shuffled": {
+              "bp_accuracy": 0.375,
+              "bp_prediction": [
+                -1.0,
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+                -1.0
+              ],
+              "components_connected": true,
+              "direct_rescore": -31.92190448148176,
+              "edges": 64,
+              "exact_accuracy": 0.375,
+              "exact_extraction": true,
+              "exact_prediction": [
+                -1.0,
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+                -1.0
+              ],
+              "jt_energy": -31.92190448148176,
+              "linear_accuracy": 0.25,
+              "linear_prediction": [
+                -1.0,
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+                -1.0,
+                1.0,
+                -1.0
+              ],
+              "no_mutation": true,
+              "nodes": 16,
+              "oracle_energy": -31.92190448148176,
+              "oracle_operations": 1482783,
+              "pair_factors": 64,
+              "timing_ns": {
+                "bp": 77129480,
+                "graph_construction": 2771577,
+                "junction_tree": 3454780408,
+                "minfill_order": 439893,
+                "oracle": 770830475,
+                "runtime_extraction": 565544
+              },
+              "traced_peak_bytes": 12624872,
+              "triangulation_width": 8,
+              "width": 8
+            }
+          },
+          "heldout_index": 3,
+          "target_signs": [
+            1.0,
+            1.0,
+            -1.0,
+            -1.0,
+            1.0,
+            1.0,
+            -1.0,
+            1.0
+          ]
+        },
+        {
+          "conditions": {
+            "learned": {
+              "bp_accuracy": 1.0,
+              "bp_prediction": [
+                1.0,
+                1.0,
+                -1.0,
+                -1.0,
+                1.0,
+                1.0,
+                -1.0,
+                1.0
+              ],
+              "components_connected": true,
+              "direct_rescore": -27.901933659799397,
+              "edges": 64,
+              "exact_accuracy": 1.0,
+              "exact_extraction": true,
+              "exact_prediction": [
+                1.0,
+                1.0,
+                -1.0,
+                -1.0,
+                1.0,
+                1.0,
+                -1.0,
+                1.0
+              ],
+              "jt_energy": -27.901933659799397,
+              "linear_accuracy": 1.0,
+              "linear_prediction": [
+                1.0,
+                1.0,
+                -1.0,
+                -1.0,
+                1.0,
+                1.0,
+                -1.0,
+                1.0
+              ],
+              "no_mutation": true,
+              "nodes": 16,
+              "oracle_energy": -27.901933659799397,
+              "oracle_operations": 1482783,
+              "pair_factors": 64,
+              "timing_ns": {
+                "bp": 78167426,
+                "graph_construction": 2808376,
+                "junction_tree": 3461490594,
+                "minfill_order": 426323,
+                "oracle": 798880804,
+                "runtime_extraction": 559543
+              },
+              "traced_peak_bytes": 12624872,
+              "triangulation_width": 8,
+              "width": 8
+            },
+            "shuffled": {
+              "bp_accuracy": 0.625,
+              "bp_prediction": [
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+                -1.0,
+                -1.0
+              ],
+              "components_connected": true,
+              "direct_rescore": -29.494069394189864,
+              "edges": 64,
+              "exact_accuracy": 0.625,
+              "exact_extraction": true,
+              "exact_prediction": [
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+                -1.0,
+                -1.0
+              ],
+              "jt_energy": -29.494069394189864,
+              "linear_accuracy": 0.375,
+              "linear_prediction": [
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+                -1.0,
+                1.0,
+                -1.0
+              ],
+              "no_mutation": true,
+              "nodes": 16,
+              "oracle_energy": -29.494069394189864,
+              "oracle_operations": 1482783,
+              "pair_factors": 64,
+              "timing_ns": {
+                "bp": 77110970,
+                "graph_construction": 2894137,
+                "junction_tree": 3442912869,
+                "minfill_order": 449532,
+                "oracle": 807761848,
+                "runtime_extraction": 570783
+              },
+              "traced_peak_bytes": 12624872,
+              "triangulation_width": 8,
+              "width": 8
+            }
+          },
+          "heldout_index": 4,
+          "target_signs": [
+            1.0,
+            1.0,
+            -1.0,
+            -1.0,
+            1.0,
+            1.0,
+            -1.0,
+            1.0
+          ]
+        },
+        {
+          "conditions": {
+            "learned": {
+              "bp_accuracy": 0.875,
+              "bp_prediction": [
+                1.0,
+                1.0,
+                1.0,
+                -1.0,
+                1.0,
+                1.0,
+                -1.0,
+                -1.0
+              ],
+              "components_connected": true,
+              "direct_rescore": -21.635106690657267,
+              "edges": 64,
+              "exact_accuracy": 0.875,
+              "exact_extraction": true,
+              "exact_prediction": [
+                1.0,
+                1.0,
+                1.0,
+                -1.0,
+                1.0,
+                1.0,
+                -1.0,
+                -1.0
+              ],
+              "jt_energy": -21.635106690657267,
+              "linear_accuracy": 1.0,
+              "linear_prediction": [
+                1.0,
+                1.0,
+                -1.0,
+                -1.0,
+                1.0,
+                1.0,
+                -1.0,
+                -1.0
+              ],
+              "no_mutation": true,
+              "nodes": 16,
+              "oracle_energy": -21.635106690657267,
+              "oracle_operations": 1482783,
+              "pair_factors": 64,
+              "timing_ns": {
+                "bp": 76337605,
+                "graph_construction": 2959568,
+                "junction_tree": 3425585671,
+                "minfill_order": 514323,
+                "oracle": 796717144,
+                "runtime_extraction": 552143
+              },
+              "traced_peak_bytes": 12624872,
+              "triangulation_width": 8,
+              "width": 8
+            },
+            "shuffled": {
+              "bp_accuracy": 0.5,
+              "bp_prediction": [
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+                -1.0,
+                1.0,
+                1.0,
+                -1.0
+              ],
+              "components_connected": true,
+              "direct_rescore": -18.541713347658515,
+              "edges": 64,
+              "exact_accuracy": 0.5,
+              "exact_extraction": true,
+              "exact_prediction": [
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+                -1.0,
+                1.0,
+                1.0,
+                -1.0
+              ],
+              "jt_energy": -18.541713347658515,
+              "linear_accuracy": 0.625,
+              "linear_prediction": [
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+                -1.0,
+                1.0,
+                -1.0,
+                -1.0
+              ],
+              "no_mutation": true,
+              "nodes": 16,
+              "oracle_energy": -18.541713347658515,
+              "oracle_operations": 1482783,
+              "pair_factors": 64,
+              "timing_ns": {
+                "bp": 76564446,
+                "graph_construction": 2882638,
+                "junction_tree": 3428478624,
+                "minfill_order": 429122,
+                "oracle": 807105257,
+                "runtime_extraction": 553484
+              },
+              "traced_peak_bytes": 12624872,
+              "triangulation_width": 8,
+              "width": 8
+            }
+          },
+          "heldout_index": 5,
+          "target_signs": [
+            1.0,
+            1.0,
+            -1.0,
+            -1.0,
+            1.0,
+            1.0,
+            -1.0,
+            -1.0
+          ]
+        },
+        {
+          "conditions": {
+            "learned": {
+              "bp_accuracy": 0.875,
+              "bp_prediction": [
+                1.0,
+                -1.0,
+                -1.0,
+                -1.0,
+                1.0,
+                -1.0,
+                1.0,
+                1.0
+              ],
+              "components_connected": true,
+              "direct_rescore": -33.062470838856825,
+              "edges": 64,
+              "exact_accuracy": 0.875,
+              "exact_extraction": true,
+              "exact_prediction": [
+                1.0,
+                -1.0,
+                -1.0,
+                -1.0,
+                1.0,
+                -1.0,
+                1.0,
+                1.0
+              ],
+              "jt_energy": -33.062470838856825,
+              "linear_accuracy": 1.0,
+              "linear_prediction": [
+                1.0,
+                -1.0,
+                -1.0,
+                -1.0,
+                -1.0,
+                -1.0,
+                1.0,
+                1.0
+              ],
+              "no_mutation": true,
+              "nodes": 16,
+              "oracle_energy": -33.062470838856825,
+              "oracle_operations": 1482783,
+              "pair_factors": 64,
+              "timing_ns": {
+                "bp": 76973930,
+                "graph_construction": 2870018,
+                "junction_tree": 3450017798,
+                "minfill_order": 439513,
+                "oracle": 793366776,
+                "runtime_extraction": 580804
+              },
+              "traced_peak_bytes": 12624872,
+              "triangulation_width": 8,
+              "width": 8
+            },
+            "shuffled": {
+              "bp_accuracy": 0.5,
+              "bp_prediction": [
+                1.0,
+                -1.0,
+                1.0,
+                1.0,
+                -1.0,
+                -1.0,
+                -1.0,
+                -1.0
+              ],
+              "components_connected": true,
+              "direct_rescore": -32.851674598641694,
+              "edges": 64,
+              "exact_accuracy": 0.5,
+              "exact_extraction": true,
+              "exact_prediction": [
+                1.0,
+                -1.0,
+                1.0,
+                1.0,
+                -1.0,
+                -1.0,
+                -1.0,
+                -1.0
+              ],
+              "jt_energy": -32.851674598641694,
+              "linear_accuracy": 0.5,
+              "linear_prediction": [
+                1.0,
+                -1.0,
+                1.0,
+                1.0,
+                -1.0,
+                -1.0,
+                -1.0,
+                -1.0
+              ],
+              "no_mutation": true,
+              "nodes": 16,
+              "oracle_energy": -32.851674598641694,
+              "oracle_operations": 1482783,
+              "pair_factors": 64,
+              "timing_ns": {
+                "bp": 77393652,
+                "graph_construction": 2814247,
+                "junction_tree": 3426697784,
+                "minfill_order": 419413,
+                "oracle": 784790797,
+                "runtime_extraction": 571514
+              },
+              "traced_peak_bytes": 12625944,
+              "triangulation_width": 8,
+              "width": 8
+            }
+          },
+          "heldout_index": 6,
+          "target_signs": [
+            1.0,
+            -1.0,
+            -1.0,
+            -1.0,
+            -1.0,
+            -1.0,
+            1.0,
+            1.0
+          ]
+        },
+        {
+          "conditions": {
+            "learned": {
+              "bp_accuracy": 1.0,
+              "bp_prediction": [
+                1.0,
+                -1.0,
+                -1.0,
+                1.0,
+                1.0,
+                1.0,
+                -1.0,
+                -1.0
+              ],
+              "components_connected": true,
+              "direct_rescore": -24.43402127412992,
+              "edges": 64,
+              "exact_accuracy": 1.0,
+              "exact_extraction": true,
+              "exact_prediction": [
+                1.0,
+                -1.0,
+                -1.0,
+                1.0,
+                1.0,
+                1.0,
+                -1.0,
+                -1.0
+              ],
+              "jt_energy": -24.43402127412992,
+              "linear_accuracy": 1.0,
+              "linear_prediction": [
+                1.0,
+                -1.0,
+                -1.0,
+                1.0,
+                1.0,
+                1.0,
+                -1.0,
+                -1.0
+              ],
+              "no_mutation": true,
+              "nodes": 16,
+              "oracle_energy": -24.43402127412992,
+              "oracle_operations": 1482783,
+              "pair_factors": 64,
+              "timing_ns": {
+                "bp": 80730803,
+                "graph_construction": 2763577,
+                "junction_tree": 3521593877,
+                "minfill_order": 413572,
+                "oracle": 797650155,
+                "runtime_extraction": 554653
+              },
+              "traced_peak_bytes": 12624872,
+              "triangulation_width": 8,
+              "width": 8
+            },
+            "shuffled": {
+              "bp_accuracy": 0.5,
+              "bp_prediction": [
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+                -1.0,
+                -1.0,
+                -1.0,
+                -1.0
+              ],
+              "components_connected": true,
+              "direct_rescore": -22.711115860845894,
+              "edges": 64,
+              "exact_accuracy": 0.5,
+              "exact_extraction": true,
+              "exact_prediction": [
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+                -1.0,
+                -1.0,
+                -1.0,
+                -1.0
+              ],
+              "jt_energy": -22.711115860845894,
+              "linear_accuracy": 0.5,
+              "linear_prediction": [
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+                -1.0,
+                -1.0,
+                -1.0,
+                -1.0
+              ],
+              "no_mutation": true,
+              "nodes": 16,
+              "oracle_energy": -22.711115860845894,
+              "oracle_operations": 1482783,
+              "pair_factors": 64,
+              "timing_ns": {
+                "bp": 80017388,
+                "graph_construction": 2848977,
+                "junction_tree": 3469739043,
+                "minfill_order": 437062,
+                "oracle": 800513123,
+                "runtime_extraction": 586063
+              },
+              "traced_peak_bytes": 12624872,
+              "triangulation_width": 8,
+              "width": 8
+            }
+          },
+          "heldout_index": 7,
+          "target_signs": [
+            1.0,
+            -1.0,
+            -1.0,
+            1.0,
+            1.0,
+            1.0,
+            -1.0,
+            -1.0
+          ]
+        },
+        {
+          "conditions": {
+            "learned": {
+              "bp_accuracy": 0.5,
+              "bp_prediction": [
+                1.0,
+                1.0,
+                -1.0,
+                -1.0,
+                1.0,
+                -1.0,
+                -1.0,
+                1.0
+              ],
+              "components_connected": true,
+              "direct_rescore": -20.06996570713818,
+              "edges": 64,
+              "exact_accuracy": 0.5,
+              "exact_extraction": true,
+              "exact_prediction": [
+                1.0,
+                1.0,
+                -1.0,
+                -1.0,
+                1.0,
+                -1.0,
+                -1.0,
+                1.0
+              ],
+              "jt_energy": -20.06996570713818,
+              "linear_accuracy": 0.75,
+              "linear_prediction": [
+                1.0,
+                1.0,
+                -1.0,
+                -1.0,
+                1.0,
+                1.0,
+                -1.0,
+                -1.0
+              ],
+              "no_mutation": true,
+              "nodes": 16,
+              "oracle_energy": -20.06996570713818,
+              "oracle_operations": 1482783,
+              "pair_factors": 64,
+              "timing_ns": {
+                "bp": 78457448,
+                "graph_construction": 2829817,
+                "junction_tree": 3508384910,
+                "minfill_order": 446213,
+                "oracle": 819678619,
+                "runtime_extraction": 569043
+              },
+              "traced_peak_bytes": 12624872,
+              "triangulation_width": 8,
+              "width": 8
+            },
+            "shuffled": {
+              "bp_accuracy": 0.375,
+              "bp_prediction": [
+                -1.0,
+                1.0,
+                -1.0,
+                1.0,
+                1.0,
+                1.0,
+                -1.0,
+                1.0
+              ],
+              "components_connected": true,
+              "direct_rescore": -21.143081857357174,
+              "edges": 64,
+              "exact_accuracy": 0.375,
+              "exact_extraction": true,
+              "exact_prediction": [
+                -1.0,
+                1.0,
+                -1.0,
+                1.0,
+                1.0,
+                1.0,
+                -1.0,
+                1.0
+              ],
+              "jt_energy": -21.143081857357174,
+              "linear_accuracy": 0.5,
+              "linear_prediction": [
+                -1.0,
+                1.0,
+                -1.0,
+                1.0,
+                1.0,
+                1.0,
+                -1.0,
+                -1.0
+              ],
+              "no_mutation": true,
+              "nodes": 16,
+              "oracle_energy": -21.143081857357174,
+              "oracle_operations": 1482783,
+              "pair_factors": 64,
+              "timing_ns": {
+                "bp": 78982812,
+                "graph_construction": 2766446,
+                "junction_tree": 3444750436,
+                "minfill_order": 443312,
+                "oracle": 810322084,
+                "runtime_extraction": 588493
+              },
+              "traced_peak_bytes": 12624872,
+              "triangulation_width": 8,
+              "width": 8
+            }
+          },
+          "heldout_index": 8,
+          "target_signs": [
+            1.0,
+            -1.0,
+            -1.0,
+            -1.0,
+            1.0,
+            1.0,
+            1.0,
+            -1.0
+          ]
+        },
+        {
+          "conditions": {
+            "learned": {
+              "bp_accuracy": 0.75,
+              "bp_prediction": [
+                1.0,
+                1.0,
+                -1.0,
+                -1.0,
+                1.0,
+                1.0,
+                -1.0,
+                1.0
+              ],
+              "components_connected": true,
+              "direct_rescore": -17.634220898151398,
+              "edges": 64,
+              "exact_accuracy": 0.75,
+              "exact_extraction": true,
+              "exact_prediction": [
+                1.0,
+                1.0,
+                -1.0,
+                -1.0,
+                1.0,
+                1.0,
+                -1.0,
+                1.0
+              ],
+              "jt_energy": -17.634220898151398,
+              "linear_accuracy": 0.75,
+              "linear_prediction": [
+                1.0,
+                1.0,
+                -1.0,
+                -1.0,
+                1.0,
+                1.0,
+                -1.0,
+                1.0
+              ],
+              "no_mutation": true,
+              "nodes": 16,
+              "oracle_energy": -17.634220898151398,
+              "oracle_operations": 1482783,
+              "pair_factors": 64,
+              "timing_ns": {
+                "bp": 78066697,
+                "graph_construction": 2992668,
+                "junction_tree": 3474862851,
+                "minfill_order": 436563,
+                "oracle": 798122153,
+                "runtime_extraction": 576534
+              },
+              "traced_peak_bytes": 12624872,
+              "triangulation_width": 8,
+              "width": 8
+            },
+            "shuffled": {
+              "bp_accuracy": 0.5,
+              "bp_prediction": [
+                -1.0,
+                1.0,
+                -1.0,
+                1.0,
+                -1.0,
+                -1.0,
+                1.0,
+                -1.0
+              ],
+              "components_connected": true,
+              "direct_rescore": -16.46490679634735,
+              "edges": 64,
+              "exact_accuracy": 0.5,
+              "exact_extraction": true,
+              "exact_prediction": [
+                -1.0,
+                1.0,
+                -1.0,
+                1.0,
+                -1.0,
+                -1.0,
+                1.0,
+                -1.0
+              ],
+              "jt_energy": -16.46490679634735,
+              "linear_accuracy": 0.5,
+              "linear_prediction": [
+                -1.0,
+                1.0,
+                -1.0,
+                1.0,
+                -1.0,
+                -1.0,
+                1.0,
+                -1.0
+              ],
+              "no_mutation": true,
+              "nodes": 16,
+              "oracle_energy": -16.46490679634735,
+              "oracle_operations": 1482783,
+              "pair_factors": 64,
+              "timing_ns": {
+                "bp": 116315146,
+                "graph_construction": 2759726,
+                "junction_tree": 3485183738,
+                "minfill_order": 408132,
+                "oracle": 817259438,
+                "runtime_extraction": 555123
+              },
+              "traced_peak_bytes": 12624872,
+              "triangulation_width": 8,
+              "width": 8
+            }
+          },
+          "heldout_index": 9,
+          "target_signs": [
+            1.0,
+            1.0,
+            -1.0,
+            -1.0,
+            1.0,
+            -1.0,
+            1.0,
+            1.0
+          ]
+        }
+      ],
+      "source_lock_end": {
+        "analyzer": {
+          "bytes": 4829,
+          "path": "/home/matt/ozmadev/ocelot/evaluation/substrate_capability/analyze_llm_transport_task_graph_exact_census_v1_1.py",
+          "sha256": "02ad8de81d6d5ee8ecb75297946717e0ff699d725909472348d210f25ea28687"
+        },
+        "export": {
+          "bytes": 1093784,
+          "path": "/applications/data/model_graph_work/transport_L12_13.npz",
+          "sha256": "d04f14de800bff4a5015a8063b678c2167188ec90c0749308b6af8a5a864161c"
+        },
+        "mode_count": 8,
+        "native_binary": {
+          "bytes": 10599400,
+          "path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+          "sha256": "7148f66f4cd307b7b34e03970b6a0c12177973105af8e1f3c6684e2e6132a63e"
+        },
+        "native_build_manifest": {
+          "bytes": 12669,
+          "path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.build.json",
+          "sha256": "476fdf4408323867341f127b3947f5a528743ebb86ab2a7973442993447f0e82"
+        },
+        "protocol": {
+          "bytes": 3645,
+          "path": "/home/matt/ozmadev/ocelot/docs/research/engine_substrate/LLM_TRANSPORT_TASK_GRAPH_EXACT_CENSUS_V1_1_PREREG_20261002.md",
+          "sha256": "7d64e74a23bda012f9da6e9fdd20c3f3e41027a721c7b46bfbb0a069ef0a4108"
+        },
+        "replicates": 3,
+        "ridge": 1.0,
+        "runner": {
+          "bytes": 11909,
+          "path": "/home/matt/ozmadev/ocelot/evaluation/substrate_capability/llm_transport_task_graph_exact_census_v1_1.py",
+          "sha256": "9325e58681c45ce45324732cb1c876be0166e679c004fcbe1b65d09344a85607"
+        },
+        "seed": {
+          "bytes": 43983,
+          "path": "/home/matt/ozmadev/ocelot/seeds/can_native_reimplementation.json",
+          "sha256": "3b185987ae810d5e05ab2468b044ab73d8890c8e73ac86dfcaf35b734b9c61d8"
+        },
+        "shuffle_seed": 0,
+        "sources": [
+          {
+            "bytes": 29504,
+            "path": "/home/matt/ozmadev/ocelot/domains/llm_native_graph.py",
+            "sha256": "3091594306fbfcc7aa93588b2b085ab72376fbb59817cc6c952dba20a05a1809"
+          },
+          {
+            "bytes": 14856,
+            "path": "/home/matt/ozmadev/ocelot/domains/can_junction_tree.py",
+            "sha256": "e8d4aa30bfdaced52cda2739f885a56ed50a040b8419cb558b132e5e46206ba7"
+          },
+          {
+            "bytes": 9424,
+            "path": "/home/matt/ozmadev/ocelot/domains/graph_treewidth.py",
+            "sha256": "e945bea9f54b76098edb3b3dcb784ac5a0ce630de43cd63a9fb5b0f416d543e5"
+          },
+          {
+            "bytes": 23330,
+            "path": "/home/matt/ozmadev/ocelot/domains/can_native_bp.py",
+            "sha256": "67d1cec2f6147d33d66fc7e07584571852d2325e14306ea61e93591bbb90f20b"
+          }
+        ],
+        "tolerance": 1e-08,
+        "vocabulary": [
+          -1.0,
+          0.0,
+          1.0
+        ]
+      },
+      "source_lock_start": {
+        "analyzer": {
+          "bytes": 4829,
+          "path": "/home/matt/ozmadev/ocelot/evaluation/substrate_capability/analyze_llm_transport_task_graph_exact_census_v1_1.py",
+          "sha256": "02ad8de81d6d5ee8ecb75297946717e0ff699d725909472348d210f25ea28687"
+        },
+        "export": {
+          "bytes": 1093784,
+          "path": "/applications/data/model_graph_work/transport_L12_13.npz",
+          "sha256": "d04f14de800bff4a5015a8063b678c2167188ec90c0749308b6af8a5a864161c"
+        },
+        "mode_count": 8,
+        "native_binary": {
+          "bytes": 10599400,
+          "path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+          "sha256": "7148f66f4cd307b7b34e03970b6a0c12177973105af8e1f3c6684e2e6132a63e"
+        },
+        "native_build_manifest": {
+          "bytes": 12669,
+          "path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.build.json",
+          "sha256": "476fdf4408323867341f127b3947f5a528743ebb86ab2a7973442993447f0e82"
+        },
+        "protocol": {
+          "bytes": 3645,
+          "path": "/home/matt/ozmadev/ocelot/docs/research/engine_substrate/LLM_TRANSPORT_TASK_GRAPH_EXACT_CENSUS_V1_1_PREREG_20261002.md",
+          "sha256": "7d64e74a23bda012f9da6e9fdd20c3f3e41027a721c7b46bfbb0a069ef0a4108"
+        },
+        "replicates": 3,
+        "ridge": 1.0,
+        "runner": {
+          "bytes": 11909,
+          "path": "/home/matt/ozmadev/ocelot/evaluation/substrate_capability/llm_transport_task_graph_exact_census_v1_1.py",
+          "sha256": "9325e58681c45ce45324732cb1c876be0166e679c004fcbe1b65d09344a85607"
+        },
+        "seed": {
+          "bytes": 43983,
+          "path": "/home/matt/ozmadev/ocelot/seeds/can_native_reimplementation.json",
+          "sha256": "3b185987ae810d5e05ab2468b044ab73d8890c8e73ac86dfcaf35b734b9c61d8"
+        },
+        "shuffle_seed": 0,
+        "sources": [
+          {
+            "bytes": 29504,
+            "path": "/home/matt/ozmadev/ocelot/domains/llm_native_graph.py",
+            "sha256": "3091594306fbfcc7aa93588b2b085ab72376fbb59817cc6c952dba20a05a1809"
+          },
+          {
+            "bytes": 14856,
+            "path": "/home/matt/ozmadev/ocelot/domains/can_junction_tree.py",
+            "sha256": "e8d4aa30bfdaced52cda2739f885a56ed50a040b8419cb558b132e5e46206ba7"
+          },
+          {
+            "bytes": 9424,
+            "path": "/home/matt/ozmadev/ocelot/domains/graph_treewidth.py",
+            "sha256": "e945bea9f54b76098edb3b3dcb784ac5a0ce630de43cd63a9fb5b0f416d543e5"
+          },
+          {
+            "bytes": 23330,
+            "path": "/home/matt/ozmadev/ocelot/domains/can_native_bp.py",
+            "sha256": "67d1cec2f6147d33d66fc7e07584571852d2325e14306ea61e93591bbb90f20b"
+          }
+        ],
+        "tolerance": 1e-08,
+        "vocabulary": [
+          -1.0,
+          0.0,
+          1.0
+        ]
+      },
+      "worker_pid": 274
+    }
+  ],
+  "schema": "LlmTransportTaskGraphExactCensusV1_1Results",
+  "sources": {
+    "analyzer": {
+      "bytes": 4829,
+      "path": "/home/matt/ozmadev/ocelot/evaluation/substrate_capability/analyze_llm_transport_task_graph_exact_census_v1_1.py",
+      "sha256": "02ad8de81d6d5ee8ecb75297946717e0ff699d725909472348d210f25ea28687"
+    },
+    "export": {
+      "bytes": 1093784,
+      "path": "/applications/data/model_graph_work/transport_L12_13.npz",
+      "sha256": "d04f14de800bff4a5015a8063b678c2167188ec90c0749308b6af8a5a864161c"
+    },
+    "mode_count": 8,
+    "native_binary": {
+      "bytes": 10599400,
+      "path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+      "sha256": "7148f66f4cd307b7b34e03970b6a0c12177973105af8e1f3c6684e2e6132a63e"
+    },
+    "native_build_manifest": {
+      "bytes": 12669,
+      "path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.build.json",
+      "sha256": "476fdf4408323867341f127b3947f5a528743ebb86ab2a7973442993447f0e82"
+    },
+    "protocol": {
+      "bytes": 3645,
+      "path": "/home/matt/ozmadev/ocelot/docs/research/engine_substrate/LLM_TRANSPORT_TASK_GRAPH_EXACT_CENSUS_V1_1_PREREG_20261002.md",
+      "sha256": "7d64e74a23bda012f9da6e9fdd20c3f3e41027a721c7b46bfbb0a069ef0a4108"
+    },
+    "replicates": 3,
+    "ridge": 1.0,
+    "runner": {
+      "bytes": 11909,
+      "path": "/home/matt/ozmadev/ocelot/evaluation/substrate_capability/llm_transport_task_graph_exact_census_v1_1.py",
+      "sha256": "9325e58681c45ce45324732cb1c876be0166e679c004fcbe1b65d09344a85607"
+    },
+    "seed": {
+      "bytes": 43983,
+      "path": "/home/matt/ozmadev/ocelot/seeds/can_native_reimplementation.json",
+      "sha256": "3b185987ae810d5e05ab2468b044ab73d8890c8e73ac86dfcaf35b734b9c61d8"
+    },
+    "shuffle_seed": 0,
+    "sources": [
+      {
+        "bytes": 29504,
+        "path": "/home/matt/ozmadev/ocelot/domains/llm_native_graph.py",
+        "sha256": "3091594306fbfcc7aa93588b2b085ab72376fbb59817cc6c952dba20a05a1809"
+      },
+      {
+        "bytes": 14856,
+        "path": "/home/matt/ozmadev/ocelot/domains/can_junction_tree.py",
+        "sha256": "e8d4aa30bfdaced52cda2739f885a56ed50a040b8419cb558b132e5e46206ba7"
+      },
+      {
+        "bytes": 9424,
+        "path": "/home/matt/ozmadev/ocelot/domains/graph_treewidth.py",
+        "sha256": "e945bea9f54b76098edb3b3dcb784ac5a0ce630de43cd63a9fb5b0f416d543e5"
+      },
+      {
+        "bytes": 23330,
+        "path": "/home/matt/ozmadev/ocelot/domains/can_native_bp.py",
+        "sha256": "67d1cec2f6147d33d66fc7e07584571852d2325e14306ea61e93591bbb90f20b"
+      }
+    ],
+    "tolerance": 1e-08,
+    "vocabulary": [
+      -1.0,
+      0.0,
+      1.0
+    ]
+  }
+}

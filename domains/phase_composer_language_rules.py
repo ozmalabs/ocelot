@@ -110,7 +110,7 @@ form is what fits the engine cleanly.
 
 CONCEPTUAL CATEGORY ATTRS
 
-The category seed is `seeds/conceptual_categories.json` — tiny, only
+The category seed is `domain_data/conceptual_categories.json` — tiny, only
 the concepts the held-out demo touches. Real coverage of "what is
 animate / what is an object" should be self-derived (the LLM teacher
 emits a `category` per grounded concept, or the substrate derives
@@ -258,11 +258,11 @@ def _open_productions(substrate) -> None:
 
 
 def _load_category_seed(substrate) -> int:
-    """Load seeds/conceptual_categories.json into `substrate`. Idempotent
+    """Load domain_data/conceptual_categories.json into `substrate`. Idempotent
     against existing Concept nodes with the same name (we set `category`
     via SetAttr if the Concept already exists, else add it)."""
     seed_path = (Path(__file__).resolve().parent.parent
-                 / "seeds" / "conceptual_categories.json")
+                 / "domain_data" / "conceptual_categories.json")
     if not seed_path.exists():
         return 0
     with seed_path.open() as f:
@@ -334,7 +334,7 @@ def _load_category_seed(substrate) -> int:
 # `chase`{event}, `ball`{object} as genuinely-new concepts.
 #
 # All of this is graph data read by the rule:
-#   * RolePrior nodes (seeds/conceptual_categories.json) carry the generic
+#   * RolePrior nodes (domain_data/conceptual_categories.json) carry the generic
 #     slot→category prior + the proper-noun category. NodesWhere reads them.
 #   * SelectionalRestriction nodes (materialised by the rule below from
 #     grounded SemanticFrames) carry per-predicate slot→category. When the

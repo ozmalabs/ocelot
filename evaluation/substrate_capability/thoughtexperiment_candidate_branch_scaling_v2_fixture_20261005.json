@@ -1,0 +1,18 @@
+{
+  "schema": "ThoughtexperimentCandidateBranchScalingV2Fixture",
+  "topologies": ["path", "binary_tree"],
+  "background_nodes": [128, 1024, 8192],
+  "task_aperture_nodes": [2, 8, 32],
+  "separator_edges": [1, 8, 32],
+  "workers_per_cell": 3,
+  "replications_per_arm": 3,
+  "case": {
+    "signal": 0,
+    "live_threshold": 0,
+    "candidate_threshold": 1,
+    "expected_noop": true,
+    "expected_candidate": false,
+    "boundary_edge": "boundary_link",
+    "task_edge": "task_link"
+  }
+}

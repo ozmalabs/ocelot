@@ -129,7 +129,6 @@ impl P4TrustedEvaluatorAuthority {
     pub fn verify(&self, unsigned: &[u8], signature: &[u8]) -> bool {
         verify_ed25519(&self.public_key, unsigned, signature)
     }
-
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, serde::Deserialize)]
@@ -382,7 +381,10 @@ fn seal_serialized_evaluator_outcome(
     let snapshot_digest =
         text(graph, interner, s, "p4_snapshot_digest").ok_or("native_reservation_missing")?;
     if let Some(expected) = text(graph, interner, s, "p4_selection_digest") {
-        if transport.selection_digest.as_deref() != Some(expected.as_str()) || transport.arm_digest.as_deref() != text(graph, interner, s, "p4_arm_digest").as_deref() {
+        if transport.selection_digest.as_deref() != Some(expected.as_str())
+            || transport.arm_digest.as_deref()
+                != text(graph, interner, s, "p4_arm_digest").as_deref()
+        {
             return Err("evaluator_selection_binding_mismatch");
         }
     }
@@ -694,7 +696,13 @@ impl SealedObservation {
         self
     }
 
-    pub fn with_runtime_binding(mut self, selection_digest: String, fixture_record_digest: String, arm_id: String, arm_digest: String) -> Self {
+    pub fn with_runtime_binding(
+        mut self,
+        selection_digest: String,
+        fixture_record_digest: String,
+        arm_id: String,
+        arm_digest: String,
+    ) -> Self {
         self.selection_digest = Some(selection_digest);
         self.fixture_record_digest = Some(fixture_record_digest);
         self.arm_id = Some(arm_id);
@@ -867,19 +875,54 @@ pub fn advance_p4_r0(
     });
     let p = phase(graph, interner, s);
     if input.selection_digest.is_some() || input.arm_digest.is_some() || input.arm_id.is_some() {
-        let (Some(selection_digest), Some(record_digest), Some(arm_id), Some(arm_digest)) = (input.selection_digest.as_ref(), input.fixture_record_digest.as_ref(), input.arm_id.as_ref(), input.arm_digest.as_ref()) else {
-            return impasse(graph, interner, input.logical_time, "incomplete_runtime_selection");
+        let (Some(selection_digest), Some(record_digest), Some(arm_id), Some(arm_digest)) = (
+            input.selection_digest.as_ref(),
+            input.fixture_record_digest.as_ref(),
+            input.arm_id.as_ref(),
+            input.arm_digest.as_ref(),
+        ) else {
+            return impasse(
+                graph,
+                interner,
+                input.logical_time,
+                "incomplete_runtime_selection",
+            );
         };
-        if !valid_digest(selection_digest) || !valid_digest(record_digest) || !valid_digest(arm_digest) || !valid_identifier(arm_id) {
-            return impasse(graph, interner, input.logical_time, "invalid_runtime_selection");
+        if !valid_digest(selection_digest)
+            || !valid_digest(record_digest)
+            || !valid_digest(arm_digest)
+            || !valid_identifier(arm_id)
+        {
+            return impasse(
+                graph,
+                interner,
+                input.logical_time,
+                "invalid_runtime_selection",
+            );
         }
         if let Some(existing) = text(graph, interner, s, "p4_selection_digest") {
-            if existing != *selection_digest || text(graph, interner, s, "p4_fixture_record_digest") != Some(record_digest.clone()) || text(graph, interner, s, "p4_arm_digest") != Some(arm_digest.clone()) || text(graph, interner, s, "p4_arm_id") != Some(arm_id.clone()) {
-                return impasse(graph, interner, input.logical_time, "runtime_selection_mismatch");
+            if existing != *selection_digest
+                || text(graph, interner, s, "p4_fixture_record_digest")
+                    != Some(record_digest.clone())
+                || text(graph, interner, s, "p4_arm_digest") != Some(arm_digest.clone())
+                || text(graph, interner, s, "p4_arm_id") != Some(arm_id.clone())
+            {
+                return impasse(
+                    graph,
+                    interner,
+                    input.logical_time,
+                    "runtime_selection_mismatch",
+                );
             }
         } else {
             set_text(graph, interner, s, "p4_selection_digest", selection_digest);
-            set_text(graph, interner, s, "p4_fixture_record_digest", record_digest);
+            set_text(
+                graph,
+                interner,
+                s,
+                "p4_fixture_record_digest",
+                record_digest,
+            );
             set_text(graph, interner, s, "p4_arm_id", arm_id);
             set_text(graph, interner, s, "p4_arm_digest", arm_digest);
         }
@@ -969,16 +1012,34 @@ pub fn advance_p4_r0(
             if arm_id == "no_causal_model" {
                 let plan = node(graph, interner, "PlanNode", input.logical_time);
                 link(graph, interner, plan, reservation);
-                graph.set_node_attr(plan, attr(interner, "p4_candidate_projection_node"), Value::Node(candidate));
+                graph.set_node_attr(
+                    plan,
+                    attr(interner, "p4_candidate_projection_node"),
+                    Value::Node(candidate),
+                );
             } else {
                 let direct = node(graph, interner, "ReactiveTransition", input.logical_time);
                 link(graph, interner, direct, reservation);
             }
             link(graph, interner, reservation, proposal);
-            graph.set_node_attr(proposal, attr(interner, "p4_is_effect_request"), Value::Bool(true));
+            graph.set_node_attr(
+                proposal,
+                attr(interner, "p4_is_effect_request"),
+                Value::Bool(true),
+            );
             set_text(graph, interner, s, "p4_run_id", &input.run_id);
-            graph.set_node_attr(s, attr(interner, "p4_action_reservation_node"), Value::Node(reservation));
-            set_text(graph, interner, s, "p4_snapshot_digest", input.snapshot_digest.as_deref().unwrap());
+            graph.set_node_attr(
+                s,
+                attr(interner, "p4_action_reservation_node"),
+                Value::Node(reservation),
+            );
+            set_text(
+                graph,
+                interner,
+                s,
+                "p4_snapshot_digest",
+                input.snapshot_digest.as_deref().unwrap(),
+            );
             advance_stamp(graph, interner, s, &input);
             set_phase(graph, interner, s, 1);
             return P4Decision::ProposeIntervention { proposal };
@@ -1045,12 +1106,32 @@ pub fn advance_p4_r0(
         let arm_id = text(graph, interner, s, "p4_arm_id").unwrap_or_default();
         if arm_id == "reset_memory" {
             let reset = node(graph, interner, "MemoryReset", input.logical_time);
-            set_text(graph, interner, reset, "p4_reset_reason", "intervention_provenance_cleared");
+            set_text(
+                graph,
+                interner,
+                reset,
+                "p4_reset_reason",
+                "intervention_provenance_cleared",
+            );
             set_phase(graph, interner, s, 99);
-            return impasse(graph, interner, input.logical_time, "memory_reset_lost_provenance");
+            return impasse(
+                graph,
+                interner,
+                input.logical_time,
+                "memory_reset_lost_provenance",
+            );
         }
-        if (arm_id == "reactive_no_plan" || arm_id == "no_causal_model") && matches!(input.status, P4ObservationStatus::SealedInterventionOutcome) && input.parent_receipt.is_some() {
-            set_text(graph, interner, s, "p4_replan_receipt", input.parent_receipt.as_deref().unwrap());
+        if (arm_id == "reactive_no_plan" || arm_id == "no_causal_model")
+            && matches!(input.status, P4ObservationStatus::SealedInterventionOutcome)
+            && input.parent_receipt.is_some()
+        {
+            set_text(
+                graph,
+                interner,
+                s,
+                "p4_replan_receipt",
+                input.parent_receipt.as_deref().unwrap(),
+            );
             advance_stamp(graph, interner, s, &input);
             set_phase(graph, interner, s, 2);
             return P4Decision::AwaitOutcome;

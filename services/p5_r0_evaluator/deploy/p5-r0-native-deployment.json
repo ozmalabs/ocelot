@@ -1,0 +1,218 @@
+{
+  "schema": "P5R0NativeDeploymentDefinitionV1",
+  "classification": "repository_definition_only",
+  "status": "blocked_pending_reviewed_inputs",
+  "source_files": {
+    "deployment_renderer": "services/p5_r0_evaluator/deployments.py",
+    "native_closure_builder": "evaluation/p5_r0/rebuild.py",
+    "native_closure_spec": "evaluation/p5_r0/native.py",
+    "native_lock_validator": "evaluation/p5_r0/repair.py",
+    "canonical_containerfile": "evaluation/p5_r0/Containerfile.v3",
+    "deployment_policy_input": "services/p5_r0_evaluator/deploy/p5-r0-deployment-policy.json"
+  },
+  "native_closure": {
+    "image": {
+      "reference": "from:controlled_run_bindings.image_reference",
+      "digest": "from:controlled_run_bindings.image_digest"
+    },
+    "runtime": {
+      "name": "crun",
+      "path": "/usr/bin/crun",
+      "digest": "from:controlled_run_bindings.runtime_digest"
+    },
+    "execution": {
+      "network": "none",
+      "pull": "never",
+      "entrypoint": "/runtime/p5_r0_worker",
+      "user": "65532:65532",
+      "filesystem": "read-only",
+      "capabilities": "drop-all",
+      "no_new_privileges": true,
+      "namespaces": ["pid=private", "ipc=private", "uts=private"]
+    },
+    "resource_profile": {
+      "steps": 8,
+      "frame_bytes": 65536,
+      "wall_seconds": 3,
+      "memory_mb": 512,
+      "cpu": 1,
+      "pids": 32,
+      "digest": "from:controlled_run_bindings.resource_profile_digest"
+    },
+    "seccomp": {
+      "profile_path": "/usr/share/containers/seccomp.json",
+      "default_action": "SCMP_ACT_ERRNO",
+      "digest": "from:controlled_run_bindings.seccomp_digest",
+      "allowed_syscalls_digest": "from:controlled_run_bindings.allowed_syscalls_digest"
+    },
+    "argv": {
+      "program": "podman",
+      "subcommand": "run",
+      "flags": [
+        "--rm",
+        "--interactive",
+        "--runtime=crun",
+        "--pull=never",
+        "--network=none",
+        "--read-only",
+        "--cap-drop=ALL",
+        "--security-opt=no-new-privileges",
+        "--security-opt=seccomp=/usr/share/containers/seccomp.json",
+        "--user=65532:65532",
+        "--pid=private",
+        "--ipc=private",
+        "--uts=private",
+        "--pids-limit=32",
+        "--memory=512m",
+        "--cpus=1"
+      ],
+      "image_argument_index": 18,
+      "entrypoint": "/runtime/p5_r0_worker",
+      "digest": "from:controlled_run_bindings.argv_digest"
+    },
+    "host_closure": {
+      "host_runner": "evaluation/p5_r0/runner.py",
+      "host_native": "evaluation/p5_r0/native.py",
+      "host_evaluator": "evaluation/p5_r0/evaluator.py",
+      "host_worker_validator": "evaluation/p5_r0/native_worker.py",
+      "host_repair": "evaluation/p5_r0/repair.py",
+      "host_receipts": "evaluation/p5_r0/receipts.py",
+      "host_evidence": "evaluation/p5_r0/evidence.py",
+      "host_rollback": "evaluation/p5_r0/rollback.py",
+      "host_kill": "evaluation/p0a/supervisor.py",
+      "worker": "evaluation/p5_r0/native_worker_entrypoint_v3.py",
+      "containerfile": "evaluation/p5_r0/Containerfile.v3",
+      "runtime": "/usr/bin/crun",
+      "seccomp_profile": "/usr/share/containers/seccomp.json",
+      "digests": "from:controlled_run_bindings.host_digests",
+      "closure_digest": "from:controlled_run_bindings.closure_digest"
+    }
+  },
+  "deployment_policy": {
+    "renderer": "services.p5_r0_evaluator.deployments.render_deployment",
+    "validator": "services.p5_r0_evaluator.deployments.preflight_deployment",
+    "required_fields": [
+      "service_name",
+      "project_id",
+      "project_number",
+      "region",
+      "artifact_registry_repository",
+      "zone",
+      "pool",
+      "provider",
+      "issuer",
+      "caller_audience",
+      "allowed_subject",
+      "attestation_subject_prefix",
+      "bucket",
+      "prefix",
+      "kms_key_version",
+      "authority",
+      "image_digest",
+      "base_image_digest",
+      "runtime_digest",
+      "resource_profile_digest",
+      "timing_authority_id",
+      "timing_key_id",
+      "timing_ledger_id",
+      "timing_public_key_digest",
+      "timing_bridge_endpoint",
+      "timing_bridge_service_account",
+      "timing_bridge_audience",
+      "timing_bridge_freetsa_ca_pem_path",
+      "timing_bridge_freetsa_ca_pem_sha256",
+      "timing_bridge_freetsa_certificate_sha256",
+      "claim_paths",
+      "capability_service_account",
+      "debug_state",
+      "tee",
+      "workload",
+      "hardware_model",
+      "secure_boot",
+      "cpu_limit",
+      "memory_limit",
+      "attestation_audience",
+      "confidential_space_smoke"
+    ],
+    "fixed_fields": {
+      "issuer": "https://confidentialcomputing.googleapis.com",
+      "attestation_audience": "https://sts.googleapis.com",
+      "debug_state": "disabled-since-boot",
+      "tee": "CONFIDENTIAL_SPACE",
+      "workload": "evaluator",
+      "hardware_model": "GCP_AMD_SEV",
+      "secure_boot": true,
+      "cpu_limit": "1",
+      "memory_limit": "512Mi",
+      "confidential_space_smoke": false,
+      "timing_bridge_freetsa_ca_pem_path": "/app/services/p5_r0_evaluator/deploy/freetsa-cacert.pem"
+    },
+    "rendered_artifacts": [
+      "metadata",
+      "cel",
+      "vm",
+      "containerfile"
+    ]
+  },
+  "controlled_run_bindings": {
+    "artifact_registry_repository": "p5-cs",
+    "image_reference": null,
+    "image_digest": null,
+    "base_image_digest": null,
+    "runtime_digest": null,
+    "resource_profile_digest": null,
+    "seccomp_digest": null,
+    "allowed_syscalls_digest": null,
+    "argv_digest": null,
+    "closure_digest": null,
+    "host_digests": {
+      "host_runner": null,
+      "host_native": null,
+      "host_evaluator": null,
+      "host_worker_validator": null,
+      "host_repair": null,
+      "host_receipts": null,
+      "host_evidence": null,
+      "host_rollback": null,
+      "host_kill": null,
+      "worker": null,
+      "containerfile": null,
+      "runtime": null,
+      "seccomp_profile": null
+    },
+    "deployment_policy": null,
+    "authority_trust_binding": null,
+    "reviewed_token_claim_paths": null,
+    "reviewed_project_and_zone": null,
+    "reviewed_wip_provider": null,
+    "reviewed_capability_grants": null
+  },
+  "commands": {
+    "validate_definition": "PYTHONPATH=. python3 -m services.p5_r0_evaluator.deploy.definition validate --allow-blocked",
+    "render_review_artifacts": "PYTHONPATH=. python3 -m services.p5_r0_evaluator.deploy.definition render --policy services/p5_r0_evaluator/deploy/p5-r0-deployment-policy.json --output-dir var/p5-r0-rendered",
+    "validate_service_tests": "PYTHONPATH=. python3 -m pytest services/p5_r0_evaluator/tests/test_deployments.py services/p5_r0_evaluator/tests/test_definition.py -q",
+    "validate_native_tests": "PYTHONPATH=. python3 -m pytest tests/test_p5_r0_v3_rebuild.py -q",
+    "compile": "python3 -m compileall -q evaluation/p5_r0 services/p5_r0_evaluator",
+    "diff_check": "git diff --check"
+  },
+  "apply_plan": {
+    "mode": "review_only_no_execution",
+    "commands": [],
+    "steps": [
+      "Resolve project-controlled closure and environment bindings only from reviewed, exact image/runtime/seccomp/host and deployment records.",
+      "Run validate_definition without allow-blocked and require a complete, placeholder-free definition.",
+      "Run render_review_artifacts and inspect every generated artifact plus its digest commitments.",
+      "Have the master session review the proposed state and separately approve any infrastructure workflow.",
+      "Apply only through the approved repository/IaC workflow after the definition exists; this artifact never invokes gcloud, deploy, IAM, VM, image push, or credential operations."
+    ],
+    "forbidden_operations": [
+      "gcloud mutation",
+      "Cloud Run replacement",
+      "VM creation",
+      "IAM alteration",
+      "image push",
+      "credential generation"
+    ]
+  },
+  "claim_boundary": "Local repository definition and validation only; no production closure, deployment, authority custody, supervisor observation, or P5 result claim."
+}

@@ -1,0 +1,36 @@
+[Unit]
+Description=Ocelot OpenAI-compatible API (rootless Podman)
+After=network-online.target
+Wants=network-online.target
+
+[Container]
+Image=localhost/ocelot-api:local
+ContainerName=ocelot-api
+PublishPort=127.0.0.1:8790:8790
+Environment=OCELOT_API_HOST=0.0.0.0
+Environment=OCELOT_API_PORT=8790
+Environment=OCELOT_STATE_DIR=/var/lib/ocelot/api
+EnvironmentFile=%h/.config/ocelot-api.env
+Volume=%h/.local/share/ocelot-api:/var/lib/ocelot:Z
+UserNS=keep-id:uid=10001,gid=10001
+RunInit=true
+ReadOnly=true
+ReadOnlyTmpfs=true
+NoNewPrivileges=true
+DropCapability=all
+Pull=never
+HealthCmd=python3 -c 'import urllib.request; urllib.request.urlopen("http://127.0.0.1:8790/health", timeout=2)'
+HealthInterval=30s
+HealthTimeout=5s
+HealthRetries=3
+HealthStartPeriod=3m
+HealthOnFailure=kill
+
+[Service]
+Restart=on-failure
+RestartSec=5s
+TimeoutStartSec=5min
+TimeoutStopSec=40s
+
+[Install]
+WantedBy=default.target

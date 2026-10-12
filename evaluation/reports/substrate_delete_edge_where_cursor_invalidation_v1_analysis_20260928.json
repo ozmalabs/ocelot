@@ -1,0 +1,91 @@
+{
+  "all_checks_pass": true,
+  "analysis_id": "substrate-delete-edge-where-cursor-invalidation-v1-independent-analysis",
+  "cells": [
+    {
+      "arms": {
+        "incremental": {
+          "median_candidate_pairs": 8,
+          "median_post_delete_wall_ns": 15070,
+          "median_rule_enumerations": 1,
+          "open_count": 8
+        },
+        "off": {
+          "median_candidate_pairs": 8,
+          "median_post_delete_wall_ns": 30031,
+          "median_rule_enumerations": 1,
+          "open_count": 8
+        },
+        "unsound": {
+          "median_candidate_pairs": 0,
+          "median_post_delete_wall_ns": 7940,
+          "median_rule_enumerations": 1,
+          "open_count": 0
+        }
+      },
+      "n": 8,
+      "replicates": 3
+    },
+    {
+      "arms": {
+        "incremental": {
+          "median_candidate_pairs": 32,
+          "median_post_delete_wall_ns": 26520,
+          "median_rule_enumerations": 1,
+          "open_count": 32
+        },
+        "off": {
+          "median_candidate_pairs": 32,
+          "median_post_delete_wall_ns": 40670,
+          "median_rule_enumerations": 1,
+          "open_count": 32
+        },
+        "unsound": {
+          "median_candidate_pairs": 0,
+          "median_post_delete_wall_ns": 7650,
+          "median_rule_enumerations": 1,
+          "open_count": 0
+        }
+      },
+      "n": 32,
+      "replicates": 3
+    },
+    {
+      "arms": {
+        "incremental": {
+          "median_candidate_pairs": 128,
+          "median_post_delete_wall_ns": 69670,
+          "median_rule_enumerations": 1,
+          "open_count": 128
+        },
+        "off": {
+          "median_candidate_pairs": 128,
+          "median_post_delete_wall_ns": 86441,
+          "median_rule_enumerations": 1,
+          "open_count": 128
+        },
+        "unsound": {
+          "median_candidate_pairs": 0,
+          "median_post_delete_wall_ns": 8300,
+          "median_rule_enumerations": 1,
+          "open_count": 0
+        }
+      },
+      "n": 128,
+      "replicates": 3
+    }
+  ],
+  "checks": {
+    "incremental_candidate_rescans": true,
+    "manifest_success": true,
+    "off_incremental_graph_identity": true,
+    "runner_gates_pass": true,
+    "sound_reopens_all_slots": true,
+    "three_unique_processes": true,
+    "unsound_falsifier_diverges": true
+  },
+  "checks_passed": 7,
+  "checks_total": 7,
+  "claim_boundary": "One where-only edge reader after public edge-only deletion; sound type-local invalidation catches the where flip and the falsifier misses it.",
+  "raw_sha256": "b263d68db419cd6125d140a7726cf551468ba868a3ef605aa72e1999fa5d0957"
+}

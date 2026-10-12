@@ -15,13 +15,16 @@ def materialize_deliberation(agent, *, goal, candidates: Iterable[dict[str, Any]
                              epoch: int = 1, grounding_floor: float = 1.0,
                              residual_cost_gain: float = 1.0,
                              consequence_gain: float = 1.0,
-                             novelty_gain: float = 1.0) -> Any:
+                             novelty_gain: float = 1.0,
+                             valuation_mode: str = "complete_phase4_tuple") -> Any:
     """Create a graph-resident deliberation and candidate ledger.
 
     The input candidates are evidence-bearing proposals from cognition/faculty
     boundaries.  This function performs no ranking, sorting, or fallback
     selection.  Missing grounding is preserved for the native rejection rule.
     """
+    if valuation_mode not in {"complete_phase4_tuple", "authored_family_prior"}:
+        raise ValueError("unsupported deliberation valuation mode")
     candidates = list(candidates)
     d = agent.s.add_node("Deliberation", {
         "status": "proposed",
@@ -31,13 +34,19 @@ def materialize_deliberation(agent, *, goal, candidates: Iterable[dict[str, Any]
         "consequence_gain": float(consequence_gain),
         "novelty_gain": float(novelty_gain),
         "candidate_trace_complete": 0.0,
+        "valuation_mode": valuation_mode,
     })
     agent.inner.add_edge_unchecked(d, "about_goal", goal)
     for ordinal, spec in enumerate(candidates):
         if not isinstance(spec, dict):
             raise TypeError("each deliberative candidate must be an evidence mapping")
-        required = {"candidate_id", "grounding", "expected_value",
-                    "residual_cost", "consequence", "novelty"}
+        required = {"candidate_id", "grounding"}
+        if valuation_mode == "complete_phase4_tuple":
+            required.update({"expected_value", "residual_cost",
+                             "consequence", "novelty"})
+        elif set(spec).intersection({"expected_value", "residual_cost",
+                                     "consequence", "novelty"}):
+            raise ValueError("authored-prior candidates must not supply Phase 4 tuple fields")
         missing = list(required.difference(spec))
         if missing:
             raise ValueError(f"candidate missing evidence fields: {missing}")
@@ -45,10 +54,7 @@ def materialize_deliberation(agent, *, goal, candidates: Iterable[dict[str, Any]
             "candidate_id": str(spec["candidate_id"]),
             "kind": str(spec.get("kind", "unspecified")),
             "grounding": float(spec["grounding"]),
-            "expected_value": float(spec["expected_value"]),
-            "residual_cost": float(spec["residual_cost"]),
-            "consequence": float(spec["consequence"]),
-            "novelty": float(spec["novelty"]),
+            "valuation_mode": valuation_mode,
             "evidence_path": str(spec.get("evidence_path", "")),
             "source_relation": str(spec.get("source_relation", "")),
             "status": "proposed",
@@ -59,11 +65,14 @@ def materialize_deliberation(agent, *, goal, candidates: Iterable[dict[str, Any]
             "execution_ready": float(spec.get("execution_ready", 0.0)),
             "outcome_status": str(spec.get("outcome_status", "pending")),
         })
+        for field in ("expected_value", "residual_cost", "consequence", "novelty"):
+            if field in spec:
+                agent.s.set_attr(c, field, float(spec[field]))
         agent.inner.add_edge_unchecked(d, "has_candidate", c)
     return d
 
 
-def materialize_from_discourse_state(agent, *, state, epoch: int = 1,
+def materialize_from_discourse_state(agent, *, state, goal=None, epoch: int = 1,
                                      grounding_floor: float = 1.0,
                                      residual_cost_gain: float = 1.0,
                                      consequence_gain: float = 1.0,
@@ -82,6 +91,10 @@ def materialize_from_discourse_state(agent, *, state, epoch: int = 1,
         raise TypeError("candidate source must be a DiscourseState node")
 
     goals = list(agent.inner.neighbours(state, "has_active_goal"))
+    if goal is not None:
+        if goal not in goals or not agent.s.has_node(goal):
+            raise ValueError("selected goal must be active in the source state")
+        goals = [goal]
     repair_nodes = list(agent.inner.neighbours(state, "has_repair_need"))
     stance_nodes = list(agent.inner.neighbours(state, "has_residual_stance"))
     state_attrs = dict(agent.s.node(state)["attrs"])
@@ -168,7 +181,8 @@ def materialize_from_discourse_state(agent, *, state, epoch: int = 1,
         })
 
     d = materialize_deliberation(
-        agent, goal=goals[0] if goals else state, candidates=specs,
+        agent, goal=goal if goal is not None else (goals[0] if goals else state),
+        candidates=specs,
         epoch=epoch, grounding_floor=grounding_floor,
         residual_cost_gain=residual_cost_gain, consequence_gain=consequence_gain,
         novelty_gain=novelty_gain,

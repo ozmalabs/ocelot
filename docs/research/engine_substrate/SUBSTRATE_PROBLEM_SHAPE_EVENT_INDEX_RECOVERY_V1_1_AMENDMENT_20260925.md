@@ -1,0 +1,5 @@
+# V1.1 amendment: compare restored application state by stable goal identity
+
+The initial recovery run passed all arm-local invariants, but its final projection equality failed because it compared observation NodeIDs. The recovery arm intentionally deletes and recreates the derived index node; this consumes a different NodeID before later observations are minted, so observation NodeIDs shift even when the same goal receives the same observation result. Observation IDs are storage identities, not the application-visible behavior under test.
+
+The corrected equivalence projection is keyed by each stable goal ID and compares observation key, final status, coverage, and decode epoch, plus minted shapes, index contents, event counts, active ProblemShape rules, and fixed-point state. The runner will also check that each observation retains exactly one `about_goal` edge to its corresponding goal. No task order, rule behavior, checkpoint timing, or rebuild mechanism changes. Preserve the first raw diagnostic and rerun the two fresh-process arms under this explicit projection.

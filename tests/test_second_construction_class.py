@@ -1,5 +1,5 @@
 """A SECOND CONSTRUCTION CLASS FROM SEED DATA ALONE — the abstraction proven
-NOT designation-specific (domains/reading_collapse.py + seeds/reading_constructions.json).
+NOT designation-specific (domains/reading_collapse.py + domain_data/reading_constructions.json).
 
 The designation class (is_a) proved construction-learning is class-learning. This
 gate proves the SAME machinery admits a SECOND, DIFFERENT-RELATION class with ZERO

@@ -1,0 +1,3 @@
+# Spatial feature transfer v1 analysis amendment
+
+After the source-locked capture and preregistered localization analysis completed, a descriptive geometry diagnostic was added. For each target-centered unit selected by minimum center distance, it compares captured RMS receptive-field spread with the analytically computed RMS spread of the corresponding uniform binary input mask: 2.0 for the 5×5 square, `sqrt(4/3)` for the 3×3 square, and `sqrt(0.8)` for the five-cell cross. This comparison was not preregistered, adds no pass/fail gate, and does not change the capture or primary localization criterion. The analyzer records the amendment and reports the absolute errors from raw captured weights.

@@ -1,0 +1,23 @@
+# Live conversation dynamic locality v1 (2026-09-27)
+
+## Result
+
+Reanalysis of the source-locked v2.1 live describe-scene capture passes seven integrity gates: capture and raw-worker inputs match the lock, all three traced replicates are complete, weighted events reconcile to trace rows, and ownership plus trace data are identical across the three repeats. The independent analysis is [here](../../../evaluation/reports/substrate_live_conversation_dynamic_locality_v1_20260927.json); the reproducible analyzer is [here](../../../scripts/analyze_substrate_live_conversation_dynamic_locality_v1.py). No workload was rerun.
+
+The two request-owned lifecycle cores contain 7 and 6 nodes, with 12 and 11 internal edges. A deterministic min-fill elimination gives an induced-width upper bound of 2 for each owned subgraph. Their cuts are much larger than the cores: 35 and 32 boundary incidences to 20 and 18 distinct external nodes. The pair has one direct cross-task edge and six shared external nodes (Agent, Channel, Concept, DiscourseEvent, DiscourseState, and Interlocutor).
+
+The trace is not confined to those lifecycle cores. Request A has 951,567 weighted selected events; 3,481 touch its owned core and 948,086 touch neither lifecycle core. Request B has 919,200 events; 2,999 touch its own core, 2,081 touch A's core (including 12 events touching both), and 914,120 touch neither lifecycle core. The trace names thousands of node IDs outside these projections (7,286 for A and 7,235 for B). `term_attr_read` dominates both request intervals.
+
+**Projection correction:** the capture's `scene_task_nodes` function owns the inbound message, goals, their transition events, reply candidates, receipts, and outbound messages. It does not include the attached `_conv_scene` node or its `Percept` children. Those scene nodes are part of the actual task input, so “neither core” cannot be read as “unrelated/global scan”; some of it may be work local to the omitted scene frame. The cross-request touches of A lifecycle nodes remain real, but they do not by themselves establish a violation of a complete task-frame boundary. This result diagnoses that the previous frame projection is incomplete for locality analysis, rather than settling whether conversation execution is local.
+
+Attribution narrows the immediate optimization question: A's top weighted attribute readers are `curiosity_targets_ambivalent_nodes` (214,880), three scene recognition rules (about 177,000 each), then stall/shape-decode rules (roughly 25,000–30,000 each). B's top readers are the same three scene recognizers (about 221,000 each) and curiosity (151,680). These repeated accesses could be intentional whole-scene perception or broad scans; the existing trace cannot separate relevant dependency reads from candidate-scan work. The ranking gives concrete targets for causal instrumentation.
+
+## Interpretation and limits
+
+This is a second workload family beyond the synthetic two-sheet vision sweep, and it exposes a necessary measurement correction: owned lifecycle width and full task-frame width are different quantities. The capture establishes that the selected work is much broader than the lifecycle projection, but does not establish the dynamic width of the complete task frame because scene inputs were omitted. It also does not establish that all accesses outside the lifecycle projection are causally necessary.
+
+The original capture explicitly records selected native operation kinds, aggregated rows, and serialized request intervals. It is not a complete memory or dependency trace; accesses lacking a node/peer identifier also fall into the “neither core” bucket. The three replicates are deterministic repeats of one authored conversation fixture, not independent natural tasks. This result therefore does not estimate prevalence, asymptotic cost, or commodity-CPU scaling.
+
+## Next measurement
+
+First amend the task projection to include the attached Scene and its Percept input nodes, along with an explicit, auditable policy for rule-produced descendants; rerun paired traced/untraced workers under a fresh current-source lock. Then attribute dominant `term_attr_read` and `pattern_edge` operations by rule and concrete frame: distinguish owned input, shared separator state, and unrelated scans. Only after that boundary is validated should paired interventions remove or frame-scope dependencies, with exact reply, lifecycle, and whole-graph parity. Repeat on independently authored conversation fixtures. Until then, frame-local polynomial inference is an engine-side conditional, not an established property of live conversation workloads.

@@ -1,0 +1,7 @@
+# K=16 settling scope gate v1.1 amendment
+
+Date: 2026-09-25. V1's two-arm checkpoint was initially written to `evaluation/reports/substrate_vision_settle_k16_scope_gate_20260925.partial.json`, then overwritten by the corrected v1.1 checkpoint. Only the printed OSI and stage-time summary remains in the turn record; no v1 tuning arrays or provenance are recoverable, and that diagnostic is excluded from evidence.
+
+V1 had a preparation confound: the full-rescan arms loaded untagged rules, so `develop_retina` used the default DualProcess tick and did not develop the retina; tagged-tick arms did develop it. The observed OSI difference is therefore invalid as a comparison. The scoped arms also encountered a runner assertion because the two required SUnit fold substitutions apply only to `vision_settle`, not to each of the five vision manifests.
+
+V1.1 corrects both issues. All four arms now receive identical `hard_realtime` metadata clones for the five vision seed families, so the common retinal-development phase runs identically. The execution contrast applies only to adaptation/probe presentations: tagged default tick versus unfiltered full rescan. The root-scoped AST rewrite and its exactly-two-substitutions assertion are restricted to the `vision_settle` manifest. The original four-arm protocol, K=16 stimulus/readout, seeds, and pass criteria remain unchanged. Production seeds and engine source remain untouched.

@@ -1,0 +1,182 @@
+{
+  "analysis_script_sha256": "c07c98a45121c259640782bb7027789d10979d537c1e0b3e913b271147ff5e11",
+  "capture_sha256": "34eb59360dfc377c3bf6bed4f152b5e76a8be3e0fb2a1c1253385a2359337fa8",
+  "checks": {
+    "candidate_semantics_and_quiescence": true,
+    "cluster_star_full_copy_three_replicates": true,
+    "cluster_star_shared_graph_pages_three_replicates": true,
+    "correct_candidate_and_oracle_parity": true,
+    "exact_24_cell_schedule": true,
+    "exact_graph_size_and_edge_count": true,
+    "isolation_revision_and_rule_gates": true,
+    "lifecycle_instrumentation_and_conservation": true,
+    "lock_matches_recomputed_sources": true,
+    "native_build_identity_present": true,
+    "no_worker_failures_unique_processes": true,
+    "path_full_copy_three_replicates": true,
+    "path_shared_graph_pages_three_replicates": true,
+    "postrun_sources_stable": true,
+    "random_recursive_tree_full_copy_three_replicates": true,
+    "random_recursive_tree_shared_graph_pages_three_replicates": true,
+    "star_full_copy_three_replicates": true,
+    "star_shared_graph_pages_three_replicates": true,
+    "topology_setup_cost_recorded_outside_lifecycle": true
+  },
+  "claim_boundary": "100k unrelated nodes plus 99,999 background edges, four prescribed tree layouts, four frames, four supplied candidates, two snapshot backends, and three fresh workers per cell. This does not establish natural task topology prevalence, learned cuts, concurrent throughput, or a complexity law.",
+  "interpretation": "Equal node/edge counts hold graph size and mean sparsity approximately fixed while varying degree distribution and component layout. Any timing differences are descriptive for this one host and unrelated background graph; candidate semantics must still pass independently in every cell.",
+  "schema": "ThoughtexperimentFanoutEdgeTopologyV1_1Analysis",
+  "summaries": {
+    "cluster_star": {
+      "full_copy": {
+        "allocator_retained_delta_mib": 119.18431091308594,
+        "baseline_pss_mib": 191.1123046875,
+        "candidate_forks_ms": 118.38887,
+        "digest_ms": 3320.289419,
+        "graph_export_ms": 4251.086607,
+        "lifecycle_ms": 7952.756327,
+        "peak_rss_mib": 631.98046875,
+        "ratio_to_100k_sparse_baseline": {
+          "allocator_retained_delta_mib": 1.5725004685775235,
+          "candidate_forks_ms": 1.4586629468907444,
+          "digest_ms": 4.38142688525975,
+          "graph_export_ms": 1.5260157604335796,
+          "lifecycle_ms": 2.1023690185582393
+        },
+        "topology_setup_ms_two_graphs": 634.393868,
+        "workers": 3
+      },
+      "shared_graph_pages": {
+        "allocator_retained_delta_mib": 15.342300415039062,
+        "baseline_pss_mib": 191.08203125,
+        "candidate_forks_ms": 2.535225,
+        "digest_ms": 3319.125745,
+        "graph_export_ms": 4284.418263,
+        "lifecycle_ms": 7763.929524,
+        "peak_rss_mib": 527.921875,
+        "ratio_to_100k_sparse_baseline": {
+          "allocator_retained_delta_mib": 3.329303625412656,
+          "candidate_forks_ms": 3.3098401234519548,
+          "digest_ms": 4.256498354969314,
+          "graph_export_ms": 1.5814264038978956,
+          "lifecycle_ms": 2.154223890313138
+        },
+        "topology_setup_ms_two_graphs": 603.910653,
+        "workers": 3
+      }
+    },
+    "path": {
+      "full_copy": {
+        "allocator_retained_delta_mib": 126.9697265625,
+        "baseline_pss_mib": 192.072265625,
+        "candidate_forks_ms": 117.418597,
+        "digest_ms": 3257.066563,
+        "graph_export_ms": 4311.033863,
+        "lifecycle_ms": 8102.646707,
+        "peak_rss_mib": 641.44140625,
+        "ratio_to_100k_sparse_baseline": {
+          "allocator_retained_delta_mib": 1.675220110642679,
+          "candidate_forks_ms": 1.446708265057321,
+          "digest_ms": 4.297998519209439,
+          "graph_export_ms": 1.5475350720608962,
+          "lifecycle_ms": 2.141993631476663
+        },
+        "topology_setup_ms_two_graphs": 611.508456,
+        "workers": 3
+      },
+      "shared_graph_pages": {
+        "allocator_retained_delta_mib": 6.5161895751953125,
+        "baseline_pss_mib": 192.078125,
+        "candidate_forks_ms": 0.905164,
+        "digest_ms": 3453.779585,
+        "graph_export_ms": 4289.358265,
+        "lifecycle_ms": 7987.321336,
+        "peak_rss_mib": 520.92578125,
+        "ratio_to_100k_sparse_baseline": {
+          "allocator_retained_delta_mib": 1.4140235160112182,
+          "candidate_forks_ms": 1.1817286929184845,
+          "digest_ms": 4.429180528675361,
+          "graph_export_ms": 1.583249813546196,
+          "lifecycle_ms": 2.216207448616074
+        },
+        "topology_setup_ms_two_graphs": 642.983747,
+        "workers": 3
+      }
+    },
+    "random_recursive_tree": {
+      "full_copy": {
+        "allocator_retained_delta_mib": 118.14842224121094,
+        "baseline_pss_mib": 190.3359375,
+        "candidate_forks_ms": 119.069631,
+        "digest_ms": 3312.410674,
+        "graph_export_ms": 4107.376168,
+        "lifecycle_ms": 7847.601204,
+        "peak_rss_mib": 630.53515625,
+        "ratio_to_100k_sparse_baseline": {
+          "allocator_retained_delta_mib": 1.558833104060851,
+          "candidate_forks_ms": 1.4670505668282292,
+          "digest_ms": 4.3710301575023545,
+          "graph_export_ms": 1.4744279159300793,
+          "lifecycle_ms": 2.0745704964298395
+        },
+        "topology_setup_ms_two_graphs": 774.757876,
+        "workers": 3
+      },
+      "shared_graph_pages": {
+        "allocator_retained_delta_mib": 6.5184326171875,
+        "baseline_pss_mib": 190.3291015625,
+        "candidate_forks_ms": 1.098257,
+        "digest_ms": 3448.431976,
+        "graph_export_ms": 4053.425376,
+        "lifecycle_ms": 7777.643817,
+        "peak_rss_mib": 518.84765625,
+        "ratio_to_100k_sparse_baseline": {
+          "allocator_retained_delta_mib": 1.4145102596959673,
+          "candidate_forks_ms": 1.4338195167931735,
+          "digest_ms": 4.422322671920217,
+          "graph_export_ms": 1.4961643617277607,
+          "lifecycle_ms": 2.1580291357791133
+        },
+        "topology_setup_ms_two_graphs": 836.418001,
+        "workers": 3
+      }
+    },
+    "star": {
+      "full_copy": {
+        "allocator_retained_delta_mib": 117.03390502929688,
+        "baseline_pss_mib": 189.9970703125,
+        "candidate_forks_ms": 110.59073,
+        "digest_ms": 3423.359603,
+        "graph_export_ms": 4176.966171,
+        "lifecycle_ms": 8149.312754,
+        "peak_rss_mib": 628.91015625,
+        "ratio_to_100k_sparse_baseline": {
+          "allocator_retained_delta_mib": 1.5441283260196317,
+          "candidate_forks_ms": 1.362582480266926,
+          "digest_ms": 4.517437460922844,
+          "graph_export_ms": 1.4994086917090894,
+          "lifecycle_ms": 2.1543301406562914
+        },
+        "topology_setup_ms_two_graphs": 592.588043,
+        "workers": 3
+      },
+      "shared_graph_pages": {
+        "allocator_retained_delta_mib": 12.141265869140625,
+        "baseline_pss_mib": 189.966796875,
+        "candidate_forks_ms": 1.021048,
+        "digest_ms": 3113.353132,
+        "graph_export_ms": 3961.740128,
+        "lifecycle_ms": 7218.004399,
+        "peak_rss_mib": 523.94921875,
+        "ratio_to_100k_sparse_baseline": {
+          "allocator_retained_delta_mib": 2.634674030734387,
+          "candidate_forks_ms": 1.3330200034988497,
+          "digest_ms": 3.992612363288623,
+          "graph_export_ms": 1.4623223175727156,
+          "lifecycle_ms": 2.0027484109232523
+        },
+        "topology_setup_ms_two_graphs": 569.413253,
+        "workers": 3
+      }
+    }
+  }
+}

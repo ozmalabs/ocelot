@@ -1,0 +1,185 @@
+{
+  "arms": [
+    "faculty",
+    "faculty_plus_operations"
+  ],
+  "cases": [
+    {
+      "id": "B_rep1",
+      "label": "B",
+      "replicate": 1
+    },
+    {
+      "id": "B_rep2",
+      "label": "B",
+      "replicate": 2
+    },
+    {
+      "id": "B_rep3",
+      "label": "B",
+      "replicate": 3
+    },
+    {
+      "id": "C_rep1",
+      "label": "C",
+      "replicate": 1
+    },
+    {
+      "id": "C_rep2",
+      "label": "C",
+      "replicate": 2
+    },
+    {
+      "id": "C_rep3",
+      "label": "C",
+      "replicate": 3
+    }
+  ],
+  "fixtures": {
+    "B": {
+      "example": "per-bin log magnitude",
+      "faculty": "shared_family",
+      "inputs": [
+        "signal"
+      ],
+      "n_samples": 32,
+      "needed_primitive": "spectral_value",
+      "observation": [
+        [
+          "spectral_value",
+          "signal",
+          "magnitude"
+        ],
+        [
+          "log_scale",
+          "magnitude",
+          "value"
+        ]
+      ],
+      "outputs": [
+        "spectrum"
+      ],
+      "status": "perceived",
+      "test_frequencies": [
+        3,
+        7,
+        11
+      ]
+    },
+    "C": {
+      "example": "recover the signal from its magnitude spectrum",
+      "faculty": "shared_family",
+      "inputs": [
+        "magnitude_spectrum"
+      ],
+      "n_samples": 32,
+      "needed_primitive": "recover_signal",
+      "observation": [
+        [
+          "spectral_value",
+          "magnitude_spectrum",
+          "recovered_signal"
+        ],
+        [
+          "log_scale",
+          "recovered_signal",
+          "magnitude_spectrum"
+        ]
+      ],
+      "outputs": [
+        "recovered_signal"
+      ],
+      "status": "perceived",
+      "test_frequencies": [
+        3,
+        7,
+        11
+      ]
+    }
+  },
+  "git_head": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+  "n_samples": 32,
+  "protocol": {
+    "bytes": 1311,
+    "path": "docs/research/engine_substrate/SUBSTRATE_SPECTRAL_IO_ORACLE_V1_5_PREREG_20260929.md",
+    "sha256": "80d5158213805a5445008eab8b6708ba76d336cd01e99d17bd8eacf97f939e12"
+  },
+  "runner": {
+    "bytes": 8943,
+    "path": "evaluation/substrate_capability/spectral_io_oracle_v1_5.py",
+    "sha256": "b8cd12ecbf5b217a025ea4247a3d6639c561afe155437cf1b42ad7036dc8ba12"
+  },
+  "schema_version": 1,
+  "sources": [
+    {
+      "bytes": 35264,
+      "path": "domains/substrate_extension.py",
+      "sha256": "4df4ea17bd0e87a7c006886d88ad71c987a2ca160ed964b192a882c310f0b6ff"
+    },
+    {
+      "bytes": 513738,
+      "path": "domains/reflective_faculty.py",
+      "sha256": "2792e5355c2a78cc23790e7a591ba0c0cb0ef2a249743d2b2da57fefadbd4c9f"
+    },
+    {
+      "bytes": 13625,
+      "path": "domains/self_verification.py",
+      "sha256": "4cf1282b2cdfb0c6c9a0820e7b96c550059e6b3e2dafd11b0dc0eed1a378af8a"
+    },
+    {
+      "bytes": 19906,
+      "path": "domains/self_capability_collapse.py",
+      "sha256": "0f02df6eabbb786281aa29feb45f9cfc156e6f8c2b4326f4198aba2a8674cb3d"
+    },
+    {
+      "bytes": 7251,
+      "path": "substrate/boot_core.py",
+      "sha256": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb"
+    },
+    {
+      "bytes": 999897,
+      "path": "substrate/world_adapter.py",
+      "sha256": "b1c3aece2093af804f7d5a4380e0be2119250a6c663b02a43ef79ff06bfe158d"
+    },
+    {
+      "bytes": 22070,
+      "path": "substrate/graph.py",
+      "sha256": "edebfafd619d07e4755a6f189d0e3904ec096e6add311f629c88730c0d547c4f"
+    },
+    {
+      "bytes": 10438,
+      "path": "substrate/seed_loader.py",
+      "sha256": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27"
+    },
+    {
+      "bytes": 2490,
+      "path": "seeds/composer_faculty_pipeline.json",
+      "sha256": "39c2f594bd92d56669db5b647a03ae58409aae95abd3700e80040ee646338dfb"
+    },
+    {
+      "bytes": 96537,
+      "path": "seeds/shape_decode_loop.json",
+      "sha256": "3e1783cf566179061250572bbf7bc7bb54cacfafb83f8852008c4618d984a9c6"
+    },
+    {
+      "bytes": 493382,
+      "path": "runners/dsl/src/shape_decode.rs",
+      "sha256": "0e178705d0df8bef0a9d08d5a2efabd1131386b783e87546f33b8601b682ac2c"
+    },
+    {
+      "bytes": 695586,
+      "path": "runners/dsl/src/term.rs",
+      "sha256": "3dc19255f1353c683cb963ce4485fb85b36bb87bd8db8d19ac851a5f4f5b02c8"
+    },
+    {
+      "bytes": 10327104,
+      "path": "runners/dsl/python/substrate_rs/_native.abi3.so",
+      "sha256": "54a6481b26ec28a240fe8f33360a93b8e0e7e621b396a81d36e69dae0291ed1c"
+    },
+    {
+      "bytes": 11019,
+      "path": "runners/dsl/python/substrate_rs/_native.build.json",
+      "sha256": "ec39e77e757c994b923c4549c96d7bc7480ab924b158d606f3b49d8c25ecdbd5"
+    }
+  ]
+}

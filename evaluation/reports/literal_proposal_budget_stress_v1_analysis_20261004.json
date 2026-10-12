@@ -1,0 +1,67 @@
+{
+  "cartesian_product_size": 256,
+  "cells": {
+    "budgeted_64": {
+      "decision": "request_help",
+      "false_acceptance": false,
+      "generated_joint_rows": 64,
+      "holdout_scores": [
+        {
+          "id": "identity_eq",
+          "invalid": 0,
+          "mismatches": 0,
+          "n": 3089
+        },
+        {
+          "id": "noise_padded_interval_alias",
+          "invalid": 0,
+          "mismatches": 1,
+          "n": 3089
+        }
+      ],
+      "incomplete": true,
+      "labels": 0,
+      "native_evaluations": 1364,
+      "underlying_decision": "accept_behavior_class",
+      "wall_ns": 29156248
+    },
+    "exhaustive": {
+      "decision": "accept_behavior_class",
+      "false_acceptance": false,
+      "generated_joint_rows": 256,
+      "holdout_scores": [
+        {
+          "id": "identity_eq",
+          "invalid": 0,
+          "mismatches": 0,
+          "n": 3089
+        },
+        {
+          "id": "noise_padded_interval_alias",
+          "invalid": 0,
+          "mismatches": 1,
+          "n": 3089
+        }
+      ],
+      "incomplete": false,
+      "labels": 1,
+      "native_evaluations": 1605,
+      "underlying_decision": "accept_behavior_class",
+      "wall_ns": 27714780
+    }
+  },
+  "checks": {
+    "256_candidate_product": true,
+    "capped_policy_abstains_on_incomplete_slate": true,
+    "exhaustive_finds_and_rejects": true,
+    "lock_and_upstream_binding": true,
+    "proposal_replay_and_disjointness": true,
+    "selector_holdout_and_cost_replay": true,
+    "witness_is_real_counterexample": true
+  },
+  "claim_boundary": "One authored four-variable guard with contradictory literal noise demonstrates Cartesian growth and the behavior of one fail-closed proposal cap. It is not a prevalence estimate or general tractability theorem.",
+  "errors": [],
+  "generated_joint_rows": 256,
+  "passed": true,
+  "schema": "LiteralProposalBudgetStressV1Analysis"
+}

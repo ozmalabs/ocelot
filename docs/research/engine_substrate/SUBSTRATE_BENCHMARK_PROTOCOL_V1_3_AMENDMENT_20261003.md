@@ -1,0 +1,7 @@
+# Substrate benchmark protocol v1.3 amendment — structural inference provenance
+
+Date: 2026-10-03
+
+The 2026-10-03 varied-topology separator/solver sequence adds a useful structural inference result, but its confirmatory panel uses a bespoke content-hash lock and capture rather than the shared `substrate-run-manifest-v1` record required by protocol v1.2 §3. It records explicit source hashes, three worker PIDs, per-case outcomes, timings, and independent analysis, but omits the full shared hardware/toolchain/dirty-workspace manifest, CPU and RSS resource measures, and parent console-capture artifact. This is a documented protocol-conformance gap; it does not invalidate the experiment-specific preregistered correctness/cost comparison, but limits provenance and resource-economics claims.
+
+For the next structural or inference panel, keep the shared run manifest and console capture as required inputs. Record peak RSS and CPU time for each worker, preserve the parent/child streams, and independently validate the manifest's explicit input list against actual execution dependencies. Include graph size, edge count, degree distribution, minimum separator size, residual component sizes and widths in raw rows. The next workload should include task-derived graphs from distinct families and a high-coupling control, with proposal cost, factor binding, component solving, and monolithic solving reported separately.

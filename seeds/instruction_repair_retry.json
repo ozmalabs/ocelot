@@ -1,0 +1,1064 @@
+{
+ "id": "instruction_repair_retry",
+ "version": "1.4.0",
+ "depends_on": [],
+ "description": "Emit seeds/instruction_repair_retry.json (tranche 6): AGENT-INITIATED retry.\n\nThe graph decides, the daemon hook executes (the conversation_steering\nprecedent). `irr_request_retry` marks a promoted instruction SelfConcern\n`retry_requested=1` when, for its capability key, the agent's own experiments\nhave produced more non-supported verdicts (refuted/inconclusive) than retries\nalready requested, none is supported, none is still requested/running, and\nretries < InstructionRetryPolicy.max_retries. `jabberwock_daemon._concern_tick`\nexecutes a marked concern by the existing teardown + re-promote, then clears\nthe mark. A retry asks the SAME held cue_route_pick, which excludes routes\nalready refuted/inconclusive for the verb, so each retry tries a new route;\nwhen none remains the builder abstains and the loop stops on its own.\n\nv1.1.0 (tranche 7): the concern kinds a retry applies to are policy DATA\n(`concern_kinds`, default [\"instruction\"] -- unchanged behaviour). Adding\n\"reported\" opts a reported concern into the same retry; the knob_edit builder\nexcludes knobs already non-supported for the concern, so a retry moves a\ndifferent knob.\n\nv1.2.0 (tranche 10): `irr_cancel_stale_retry` clears a pending retry mark once\nany of the concern's experiments is supported. The family judges\n(knob/datum_feedback/shape_mint) override the generic judge's provisional\noutcome in the same fixpoint, so irr_request_retry could mark a retry on the\nprovisional 'inconclusive' that the family judge then turned into\n'supported'; the daemon then tore down and re-promoted an already-adopted\nconcern (measured: tranche-10 knob grain probe).\n\nv1.3.0 (tranche 11): an `abstained` experiment (the picked builder produced\nan empty delta, closed before dispatch by self_optimisation's\nclose_abstained_variant) also counts as non-supported, so the agent's own\nretry moves to another family.\n\n\nv1.4.0 (tranche 24): `irr_reopen_on_new_capability` reopens a promoted concern of a policy-listed kind (reopen_kinds) whose every experiment abstained, all at an older repertoire epoch (SeedDelta.abstain_epoch < count of Adoptions), up to max_reopens. An adoption can put a class the builder abstained on within reach (measured: tranche 23).\n",
+ "nodes": [
+  {
+   "local_id": 0,
+   "type": "InstructionRetryPolicy",
+   "attrs": {
+    "name": "instruction_repair_retry",
+    "enabled": 1,
+    "max_retries": 2,
+    "concern_kinds": [
+     "instruction"
+    ],
+    "reopen_kinds": [
+     "unanswered",
+     "comprehension"
+    ],
+    "max_reopens": 2
+   }
+  }
+ ],
+ "edges": [
+  {
+   "src": {
+    "role": "agent_root"
+   },
+   "type": "has_instruction_retry_policy",
+   "tgt": {
+    "local": 0
+   },
+   "attrs": {}
+  }
+ ],
+ "productions": [],
+ "rules": [
+  {
+   "name": "irr_request_retry",
+   "comment": "Agent-initiated retry of a promoted instruction concern whose own experiments failed (see seed description).",
+   "match": [
+    [
+     "ag",
+     "has_instruction_retry_policy",
+     "pol"
+    ],
+    [
+     "ag",
+     "has_self_concern",
+     "sc"
+    ],
+    [
+     "sc",
+     "promoted_to",
+     "st"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "pol"
+       },
+       "key": "enabled"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1
+      }
+     },
+     {
+      "type": "In",
+      "member": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "sc"
+       },
+       "key": "kind"
+      },
+      "container": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "pol"
+       },
+       "key": "concern_kinds"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "sc"
+       },
+       "key": "status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "promoted"
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "sc"
+        },
+        "key": "retry_requested"
+       },
+       "b": {
+        "type": "Lit",
+        "value": 1
+       }
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "Experiment"
+        },
+        "var_name": "e",
+        "predicate": {
+         "type": "And",
+         "items": [
+          {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "e"
+            },
+            "key": "axis_tag"
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "st"
+            },
+            "key": "name"
+           }
+          },
+          {
+           "type": "In",
+           "member": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "e"
+            },
+            "key": "outcome"
+           },
+           "container": {
+            "type": "Lit",
+            "value": [
+             "refuted",
+             "inconclusive",
+             "abstained"
+            ]
+           }
+          }
+         ]
+        }
+       }
+      },
+      "b": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "sc"
+         },
+         "key": "retry_count"
+        },
+        "b": {
+         "type": "Lit",
+         "value": null
+        }
+       },
+       "then": {
+        "type": "Lit",
+        "value": 0
+       },
+       "other": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "sc"
+        },
+        "key": "retry_count"
+       }
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "Experiment"
+        },
+        "var_name": "e",
+        "predicate": {
+         "type": "And",
+         "items": [
+          {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "e"
+            },
+            "key": "axis_tag"
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "st"
+            },
+            "key": "name"
+           }
+          },
+          {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "e"
+            },
+            "key": "outcome"
+           },
+           "b": {
+            "type": "Lit",
+            "value": "supported"
+           }
+          }
+         ]
+        }
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "Experiment"
+        },
+        "var_name": "e",
+        "predicate": {
+         "type": "And",
+         "items": [
+          {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "e"
+            },
+            "key": "axis_tag"
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "st"
+            },
+            "key": "name"
+           }
+          },
+          {
+           "type": "And",
+           "items": [
+            {
+             "type": "In",
+             "member": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "e"
+              },
+              "key": "status"
+             },
+             "container": {
+              "type": "Lit",
+              "value": [
+               "requested",
+               "running"
+              ]
+             }
+            },
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "e"
+              },
+              "key": "outcome"
+             },
+             "b": {
+              "type": "Lit",
+              "value": null
+             }
+            }
+           ]
+          }
+         ]
+        }
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "sc"
+         },
+         "key": "retry_count"
+        },
+        "b": {
+         "type": "Lit",
+         "value": null
+        }
+       },
+       "then": {
+        "type": "Lit",
+        "value": 0
+       },
+       "other": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "sc"
+        },
+        "key": "retry_count"
+       }
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "pol"
+       },
+       "key": "max_retries"
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "sc",
+     "retry_requested",
+     1
+    ],
+    [
+     "set_attr",
+     "sc",
+     "retry_count",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "IfThenElse",
+         "cond": {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "sc"
+           },
+           "key": "retry_count"
+          },
+          "b": {
+           "type": "Lit",
+           "value": null
+          }
+         },
+         "then": {
+          "type": "Lit",
+          "value": 0
+         },
+         "other": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "sc"
+          },
+          "key": "retry_count"
+         }
+        },
+        {
+         "type": "Lit",
+         "value": 1
+        }
+       ]
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "irr_cancel_stale_retry",
+   "comment": "A pending retry mark is stale once the concern has a supported experiment (a family judge overrode a provisional verdict).",
+   "match": [
+    [
+     "ag",
+     "has_instruction_retry_policy",
+     "pol"
+    ],
+    [
+     "ag",
+     "has_self_concern",
+     "sc"
+    ],
+    [
+     "sc",
+     "promoted_to",
+     "st"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "sc"
+       },
+       "key": "retry_requested"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "Experiment"
+        },
+        "var_name": "e",
+        "predicate": {
+         "type": "And",
+         "items": [
+          {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "e"
+            },
+            "key": "axis_tag"
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "st"
+            },
+            "key": "name"
+           }
+          },
+          {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "e"
+            },
+            "key": "outcome"
+           },
+           "b": {
+            "type": "Lit",
+            "value": "supported"
+           }
+          }
+         ]
+        }
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "sc",
+     "retry_requested",
+     0
+    ],
+    [
+     "set_attr",
+     "sc",
+     "retry_count",
+     {
+      "__term__": {
+       "type": "Minus",
+       "a": {
+        "type": "IfThenElse",
+        "cond": {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "sc"
+          },
+          "key": "retry_count"
+         },
+         "b": {
+          "type": "Lit",
+          "value": null
+         }
+        },
+        "then": {
+         "type": "Lit",
+         "value": 0
+        },
+        "other": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "sc"
+         },
+         "key": "retry_count"
+        }
+       },
+       "b": {
+        "type": "Lit",
+        "value": 1
+       }
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "irr_reopen_on_new_capability",
+   "comment": "tranche 24: a promoted concern whose every experiment abstained is reopened once the agent's repertoire (count of Adoptions) has changed since its last abstention.",
+   "match": [
+    [
+     "ag",
+     "has_instruction_retry_policy",
+     "pol"
+    ],
+    [
+     "ag",
+     "has_self_concern",
+     "sc"
+    ],
+    [
+     "sc",
+     "promoted_to",
+     "st"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "pol"
+       },
+       "key": "enabled"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1
+      }
+     },
+     {
+      "type": "In",
+      "member": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "sc"
+       },
+       "key": "kind"
+      },
+      "container": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "pol"
+       },
+       "key": "reopen_kinds"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "sc"
+       },
+       "key": "status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "promoted"
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "sc"
+        },
+        "key": "retry_requested"
+       },
+       "b": {
+        "type": "Lit",
+        "value": 1
+       }
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "sc"
+         },
+         "key": "reopen_count"
+        },
+        "b": {
+         "type": "Lit",
+         "value": null
+        }
+       },
+       "then": {
+        "type": "Lit",
+        "value": 0
+       },
+       "other": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "sc"
+        },
+        "key": "reopen_count"
+       }
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "pol"
+       },
+       "key": "max_reopens"
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "sc"
+        },
+        "key": "reopened_at_epoch"
+       },
+       "b": {
+        "type": "Count",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "Adoption"
+        }
+       }
+      }
+     },
+     {
+      "type": "Exists",
+      "source": {
+       "type": "NodesOfType",
+       "node_type": "Experiment"
+      },
+      "var_name": "e",
+      "predicate": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "e"
+        },
+        "key": "axis_tag"
+       },
+       "b": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "st"
+        },
+        "key": "name"
+       }
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "NodesOfType",
+        "node_type": "Experiment"
+       },
+       "var_name": "e",
+       "predicate": {
+        "type": "And",
+        "items": [
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "e"
+           },
+           "key": "axis_tag"
+          },
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "st"
+           },
+           "key": "name"
+          }
+         },
+         {
+          "type": "Not",
+          "arg": {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "e"
+            },
+            "key": "outcome"
+           },
+           "b": {
+            "type": "Lit",
+            "value": "abstained"
+           }
+          }
+         }
+        ]
+       }
+      }
+     },
+     {
+      "type": "Exists",
+      "source": {
+       "type": "NodesOfType",
+       "node_type": "SeedDelta"
+      },
+      "var_name": "rd",
+      "predicate": {
+       "type": "And",
+       "items": [
+        {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "rd"
+          },
+          "key": "concern_key"
+         },
+         "b": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "st"
+          },
+          "key": "name"
+         }
+        },
+        {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "rd"
+          },
+          "key": "variant_abstained"
+         },
+         "b": {
+          "type": "Lit",
+          "value": 1.0
+         }
+        },
+        {
+         "type": "Not",
+         "arg": {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "rd"
+           },
+           "key": "abstain_epoch"
+          },
+          "b": {
+           "type": "Lit",
+           "value": null
+          }
+         }
+        }
+       ]
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "NodesOfType",
+        "node_type": "SeedDelta"
+       },
+       "var_name": "rd",
+       "predicate": {
+        "type": "And",
+        "items": [
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "rd"
+           },
+           "key": "concern_key"
+          },
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "st"
+           },
+           "key": "name"
+          }
+         },
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "rd"
+           },
+           "key": "variant_abstained"
+          },
+          "b": {
+           "type": "Lit",
+           "value": 1.0
+          }
+         },
+         {
+          "type": "Or",
+          "items": [
+           {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "rd"
+             },
+             "key": "abstain_epoch"
+            },
+            "b": {
+             "type": "Lit",
+             "value": null
+            }
+           },
+           {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "rd"
+             },
+             "key": "abstain_epoch"
+            },
+            "b": {
+             "type": "Count",
+             "source": {
+              "type": "NodesOfType",
+              "node_type": "Adoption"
+             }
+            }
+           }
+          ]
+         }
+        ]
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "sc",
+     "retry_requested",
+     1
+    ],
+    [
+     "set_attr",
+     "sc",
+     "reopen_count",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "IfThenElse",
+         "cond": {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "sc"
+           },
+           "key": "reopen_count"
+          },
+          "b": {
+           "type": "Lit",
+           "value": null
+          }
+         },
+         "then": {
+          "type": "Lit",
+          "value": 0
+         },
+         "other": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "sc"
+          },
+          "key": "reopen_count"
+         }
+        },
+        {
+         "type": "Lit",
+         "value": 1
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "sc",
+     "reopened_at_epoch",
+     {
+      "__term__": {
+       "type": "Count",
+       "source": {
+        "type": "NodesOfType",
+        "node_type": "Adoption"
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "sc",
+     "reopen_reason",
+     "my repertoire changed (an adoption) since every variation for this concern abstained"
+    ]
+   ]
+  }
+ ]
+}

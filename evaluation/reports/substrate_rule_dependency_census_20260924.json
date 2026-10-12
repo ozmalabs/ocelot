@@ -1,0 +1,4287 @@
+{
+  "command": "PYTHONPATH=. python3 scripts/substrate_rule_dependency_census.py",
+  "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+  "definitions": {
+    "global_key_projection": "Rule i writes a resource read by rule j; attributes are matched solely by key, a high-recall overapproximation.",
+    "nodes": "Active authored rules in each seed manifest.",
+    "partition": "Recursive balanced bisection of seed rule order, or a fixed-seed permutation, until each leaf frame has at most four rules.",
+    "treewidth": "Undirected simple projection of the directed rule dependency graph; exact when rule count<=10, min-fill upper bound otherwise.",
+    "variable_role_projection": "Attribute resources are refined by the matched edge-role signature of the referenced variable; this is sensitivity analysis and may miss dependencies when runtime nodes alias across distinct roles.",
+    "wildcards": "Node deletion, value replacement, and unknown effect forms conservatively connect to every rule read set."
+  },
+  "dirty": true,
+  "environment": {
+    "PYTHONPATH": "/tmp/ocelot-native-access.YXVL5L:/home/matt/ozmadev/ocelot",
+    "platform": "Linux-6.8.0-137-generic-x86_64-with-glibc2.39",
+    "python": "3.13.5 (main, Jun 11 2025, 15:36:57) [GCC 11.4.0]"
+  },
+  "harness_sha256": "c5dd691a5a76aa66b35916ac887c743d051fc185cc6a393a5925838c72065109",
+  "limits": [
+    "Seed-level rule specifications, not dynamic runtime graph snapshots.",
+    "Native access-set comparison is source-extractor versus loaded RewriteRule::derive_access readback only; it does not capture data-dependent runtime access traces.",
+    "Dependency edges are static conservative projections; runtime aliasing, guards, scheduler state, and effect semantics can make them incomplete or overconnected.",
+    "No partitioned execution, update cost, or monolithic semantic parity is measured."
+  ],
+  "native_access_source_sha256": {
+    "py_binding": "3d6a667274c425391c13431d8559bb272da52f224e5464ba44d60ec7c3bbb3fd",
+    "rule_access_derivation": "71fe23ba0c2a64d015055c9a74d92d8555bd35c0e19ac23b63b378ff5f73bf2d"
+  },
+  "partitioner_source_sha256": "e2113af5d1a4e7e67bbdfd316893b0f7b1b9a90227c29e13737f501667fcefdf",
+  "protocol": "seed-derived rule-dependency census v2; benchmark protocol 1.1",
+  "protocol_sha256": "6386e6a619d46527d1c0522ac0e370f4067d41c1341f415b01bd7f2afe5cb624",
+  "records": [
+    {
+      "dependency_edges": [
+        {
+          "reader": "can_native_update_3state",
+          "writer": "can_native_update_3state"
+        },
+        {
+          "reader": "can_native_update_2state",
+          "writer": "can_native_update_3state"
+        },
+        {
+          "reader": "can_native_note_coactivation",
+          "writer": "can_native_update_3state"
+        },
+        {
+          "reader": "can_native_hebbian_mint",
+          "writer": "can_native_update_3state"
+        },
+        {
+          "reader": "can_native_hebbian_reweight",
+          "writer": "can_native_update_3state"
+        },
+        {
+          "reader": "can_native_update_3state",
+          "writer": "can_native_update_2state"
+        },
+        {
+          "reader": "can_native_update_2state",
+          "writer": "can_native_update_2state"
+        },
+        {
+          "reader": "can_native_note_coactivation",
+          "writer": "can_native_update_2state"
+        },
+        {
+          "reader": "can_native_hebbian_mint",
+          "writer": "can_native_update_2state"
+        },
+        {
+          "reader": "can_native_hebbian_reweight",
+          "writer": "can_native_update_2state"
+        },
+        {
+          "reader": "can_native_update_3state",
+          "writer": "can_native_basin_decode"
+        },
+        {
+          "reader": "can_native_update_2state",
+          "writer": "can_native_basin_decode"
+        },
+        {
+          "reader": "can_native_basin_decode",
+          "writer": "can_native_basin_decode"
+        },
+        {
+          "reader": "can_native_update_3state",
+          "writer": "can_native_note_coactivation"
+        },
+        {
+          "reader": "can_native_update_2state",
+          "writer": "can_native_note_coactivation"
+        },
+        {
+          "reader": "can_native_note_coactivation",
+          "writer": "can_native_note_coactivation"
+        },
+        {
+          "reader": "can_native_hebbian_mint",
+          "writer": "can_native_note_coactivation"
+        },
+        {
+          "reader": "can_native_hebbian_reweight",
+          "writer": "can_native_note_coactivation"
+        },
+        {
+          "reader": "can_native_update_3state",
+          "writer": "can_native_hebbian_mint"
+        },
+        {
+          "reader": "can_native_update_2state",
+          "writer": "can_native_hebbian_mint"
+        },
+        {
+          "reader": "can_native_note_coactivation",
+          "writer": "can_native_hebbian_mint"
+        },
+        {
+          "reader": "can_native_hebbian_mint",
+          "writer": "can_native_hebbian_mint"
+        },
+        {
+          "reader": "can_native_hebbian_reweight",
+          "writer": "can_native_hebbian_mint"
+        },
+        {
+          "reader": "can_native_update_3state",
+          "writer": "can_native_hebbian_reweight"
+        },
+        {
+          "reader": "can_native_update_2state",
+          "writer": "can_native_hebbian_reweight"
+        },
+        {
+          "reader": "can_native_hebbian_mint",
+          "writer": "can_native_hebbian_reweight"
+        },
+        {
+          "reader": "can_native_hebbian_reweight",
+          "writer": "can_native_hebbian_reweight"
+        }
+      ],
+      "dependency_projection": "global_key",
+      "directed_dependency_edges": 27,
+      "min_fill_time_ns": 44501,
+      "native_access_audit": {
+        "native_extension_path": "/tmp/ocelot-native-access.YXVL5L/substrate_rs/_native.abi3.so",
+        "native_extension_sha256": "4a6fef0d74e11ac6e0e9dacd357739bd9f597ba0d7569afd1f84dcaf514c88ba",
+        "rule_count": 6,
+        "rules": [
+          {
+            "active": true,
+            "extractor_only_reads": [],
+            "extractor_only_writes": [],
+            "extractor_read_wildcards": [
+              "wildcard:edge_attribute_read"
+            ],
+            "extractor_reads_any": true,
+            "extractor_write_wildcards": [],
+            "extractor_writes_any": false,
+            "native_only_reads": [],
+            "native_only_writes": [],
+            "native_reads": [
+              "attr:discrete_mode",
+              "attr:external_field",
+              "attr:identity_field",
+              "attr:state",
+              "attr:temperature",
+              "edge:causal_influence",
+              "edge:has_concept"
+            ],
+            "native_reads_any": true,
+            "native_term_edge_reads": [
+              "edge:causal_influence"
+            ],
+            "native_writes": [
+              "attr:state"
+            ],
+            "native_writes_any": false,
+            "reads_any_agrees": true,
+            "rule_index": 0,
+            "rule_name": "can_native_update_3state",
+            "writes_any_agrees": true
+          },
+          {
+            "active": true,
+            "extractor_only_reads": [],
+            "extractor_only_writes": [],
+            "extractor_read_wildcards": [
+              "wildcard:edge_attribute_read"
+            ],
+            "extractor_reads_any": true,
+            "extractor_write_wildcards": [],
+            "extractor_writes_any": false,
+            "native_only_reads": [],
+            "native_only_writes": [],
+            "native_reads": [
+              "attr:discrete_mode",
+              "attr:external_field",
+              "attr:identity_field",
+              "attr:state",
+              "edge:causal_influence",
+              "edge:has_concept"
+            ],
+            "native_reads_any": true,
+            "native_term_edge_reads": [
+              "edge:causal_influence"
+            ],
+            "native_writes": [
+              "attr:state"
+            ],
+            "native_writes_any": false,
+            "reads_any_agrees": true,
+            "rule_index": 1,
+            "rule_name": "can_native_update_2state",
+            "writes_any_agrees": true
+          },
+          {
+            "active": true,
+            "extractor_only_reads": [],
+            "extractor_only_writes": [],
+            "extractor_read_wildcards": [],
+            "extractor_reads_any": false,
+            "extractor_write_wildcards": [],
+            "extractor_writes_any": false,
+            "native_only_reads": [],
+            "native_only_writes": [],
+            "native_reads": [
+              "attr:decode_kind",
+              "attr:scope_name",
+              "attr:signature",
+              "attr:status",
+              "edge:observed"
+            ],
+            "native_reads_any": false,
+            "native_term_edge_reads": [],
+            "native_writes": [
+              "attr:covered_count",
+              "attr:residual",
+              "attr:status"
+            ],
+            "native_writes_any": false,
+            "reads_any_agrees": true,
+            "rule_index": 2,
+            "rule_name": "can_native_basin_decode",
+            "writes_any_agrees": true
+          },
+          {
+            "active": true,
+            "extractor_only_reads": [],
+            "extractor_only_writes": [],
+            "extractor_read_wildcards": [],
+            "extractor_reads_any": false,
+            "extractor_write_wildcards": [],
+            "extractor_writes_any": false,
+            "native_only_reads": [],
+            "native_only_writes": [],
+            "native_reads": [
+              "attr:can_tick",
+              "attr:state",
+              "edge:causal_influence",
+              "edge:coactivated_with",
+              "edge:coactivation_of",
+              "edge:has_concept"
+            ],
+            "native_reads_any": false,
+            "native_term_edge_reads": [
+              "edge:causal_influence",
+              "edge:coactivated_with",
+              "edge:coactivation_of"
+            ],
+            "native_writes": [
+              "attr:evidence_confirm",
+              "attr:evidence_disconfirm",
+              "attr:evidence_tick",
+              "attr:noted_tick",
+              "edge:coactivated_with",
+              "edge:coactivation_of",
+              "type:Coactivation"
+            ],
+            "native_writes_any": false,
+            "reads_any_agrees": true,
+            "rule_index": 3,
+            "rule_name": "can_native_note_coactivation",
+            "writes_any_agrees": true
+          },
+          {
+            "active": true,
+            "extractor_only_reads": [],
+            "extractor_only_writes": [],
+            "extractor_read_wildcards": [],
+            "extractor_reads_any": false,
+            "extractor_write_wildcards": [],
+            "extractor_writes_any": false,
+            "native_only_reads": [],
+            "native_only_writes": [],
+            "native_reads": [
+              "attr:allow_Hebbian_J",
+              "attr:can_tick",
+              "attr:evidence_confirm",
+              "attr:noted_tick",
+              "attr:plasticity_override",
+              "attr:state",
+              "attr:update_policy",
+              "edge:causal_influence",
+              "edge:coactivated_with",
+              "edge:coactivation_of",
+              "edge:has_concept"
+            ],
+            "native_reads_any": false,
+            "native_term_edge_reads": [
+              "edge:causal_influence"
+            ],
+            "native_writes": [
+              "attr:evidence_confirm",
+              "attr:evidence_tick",
+              "edge:causal_influence"
+            ],
+            "native_writes_any": false,
+            "reads_any_agrees": true,
+            "rule_index": 4,
+            "rule_name": "can_native_hebbian_mint",
+            "writes_any_agrees": true
+          },
+          {
+            "active": true,
+            "extractor_only_reads": [],
+            "extractor_only_writes": [],
+            "extractor_read_wildcards": [],
+            "extractor_reads_any": false,
+            "extractor_write_wildcards": [],
+            "extractor_writes_any": false,
+            "native_only_reads": [],
+            "native_only_writes": [],
+            "native_reads": [
+              "attr:allow_Hebbian_J",
+              "attr:can_tick",
+              "attr:evidence_confirm",
+              "attr:evidence_disconfirm",
+              "attr:evidence_tick",
+              "attr:plasticity_override",
+              "attr:state",
+              "attr:update_policy",
+              "edge:causal_influence",
+              "edge:coactivated_with",
+              "edge:coactivation_of",
+              "edge:has_concept"
+            ],
+            "native_reads_any": false,
+            "native_term_edge_reads": [
+              "edge:causal_influence"
+            ],
+            "native_writes": [
+              "attr:evidence_confirm",
+              "attr:evidence_disconfirm",
+              "attr:evidence_tick"
+            ],
+            "native_writes_any": false,
+            "reads_any_agrees": true,
+            "rule_index": 5,
+            "rule_name": "can_native_hebbian_reweight",
+            "writes_any_agrees": true
+          }
+        ],
+        "status": "compared"
+      },
+      "nodes": 6,
+      "partitions": [
+        {
+          "by_depth": [
+            {
+              "crossing_edges_total": 6,
+              "cut_count": 1,
+              "depth": 0,
+              "max_boundary_vertices": 5,
+              "max_child_aperture": 3
+            }
+          ],
+          "construction_time_ns": 51500,
+          "cross_frame_edge_count": 12,
+          "cut_rows": [
+            {
+              "boundary_vertices": 5,
+              "crossing_edges": 6,
+              "depth": 0,
+              "left_aperture": 2,
+              "left_nodes": 3,
+              "right_aperture": 3,
+              "right_nodes": 3
+            }
+          ],
+          "frame_count": 2,
+          "frame_sizes": [
+            3,
+            3
+          ],
+          "hierarchy_depth": 1,
+          "leaf_aperture_max": 3,
+          "leaf_aperture_median": 2.5,
+          "leaf_aperture_vertices": [
+            2,
+            3
+          ],
+          "partition_id": "seed_rule_order",
+          "seed": null
+        },
+        {
+          "by_depth": [
+            {
+              "crossing_edges_total": 7,
+              "cut_count": 1,
+              "depth": 0,
+              "max_boundary_vertices": 6,
+              "max_child_aperture": 3
+            }
+          ],
+          "construction_time_ns": 30611,
+          "cross_frame_edge_count": 13,
+          "cut_rows": [
+            {
+              "boundary_vertices": 6,
+              "crossing_edges": 7,
+              "depth": 0,
+              "left_aperture": 3,
+              "left_nodes": 3,
+              "right_aperture": 3,
+              "right_nodes": 3
+            }
+          ],
+          "frame_count": 2,
+          "frame_sizes": [
+            3,
+            3
+          ],
+          "hierarchy_depth": 1,
+          "leaf_aperture_max": 3,
+          "leaf_aperture_median": 3.0,
+          "leaf_aperture_vertices": [
+            3,
+            3
+          ],
+          "partition_id": "shuffled_0",
+          "seed": 72100
+        },
+        {
+          "by_depth": [
+            {
+              "crossing_edges_total": 7,
+              "cut_count": 1,
+              "depth": 0,
+              "max_boundary_vertices": 6,
+              "max_child_aperture": 3
+            }
+          ],
+          "construction_time_ns": 30680,
+          "cross_frame_edge_count": 12,
+          "cut_rows": [
+            {
+              "boundary_vertices": 6,
+              "crossing_edges": 7,
+              "depth": 0,
+              "left_aperture": 3,
+              "left_nodes": 3,
+              "right_aperture": 3,
+              "right_nodes": 3
+            }
+          ],
+          "frame_count": 2,
+          "frame_sizes": [
+            3,
+            3
+          ],
+          "hierarchy_depth": 1,
+          "leaf_aperture_max": 3,
+          "leaf_aperture_median": 3.0,
+          "leaf_aperture_vertices": [
+            3,
+            3
+          ],
+          "partition_id": "shuffled_1",
+          "seed": 72101
+        },
+        {
+          "by_depth": [
+            {
+              "crossing_edges_total": 8,
+              "cut_count": 1,
+              "depth": 0,
+              "max_boundary_vertices": 6,
+              "max_child_aperture": 3
+            }
+          ],
+          "construction_time_ns": 29550,
+          "cross_frame_edge_count": 13,
+          "cut_rows": [
+            {
+              "boundary_vertices": 6,
+              "crossing_edges": 8,
+              "depth": 0,
+              "left_aperture": 3,
+              "left_nodes": 3,
+              "right_aperture": 3,
+              "right_nodes": 3
+            }
+          ],
+          "frame_count": 2,
+          "frame_sizes": [
+            3,
+            3
+          ],
+          "hierarchy_depth": 1,
+          "leaf_aperture_max": 3,
+          "leaf_aperture_median": 3.0,
+          "leaf_aperture_vertices": [
+            3,
+            3
+          ],
+          "partition_id": "shuffled_2",
+          "seed": 72102
+        },
+        {
+          "by_depth": [
+            {
+              "crossing_edges_total": 7,
+              "cut_count": 1,
+              "depth": 0,
+              "max_boundary_vertices": 6,
+              "max_child_aperture": 3
+            }
+          ],
+          "construction_time_ns": 22990,
+          "cross_frame_edge_count": 12,
+          "cut_rows": [
+            {
+              "boundary_vertices": 6,
+              "crossing_edges": 7,
+              "depth": 0,
+              "left_aperture": 3,
+              "left_nodes": 3,
+              "right_aperture": 3,
+              "right_nodes": 3
+            }
+          ],
+          "frame_count": 2,
+          "frame_sizes": [
+            3,
+            3
+          ],
+          "hierarchy_depth": 1,
+          "leaf_aperture_max": 3,
+          "leaf_aperture_median": 3.0,
+          "leaf_aperture_vertices": [
+            3,
+            3
+          ],
+          "partition_id": "shuffled_3",
+          "seed": 72103
+        },
+        {
+          "by_depth": [
+            {
+              "crossing_edges_total": 7,
+              "cut_count": 1,
+              "depth": 0,
+              "max_boundary_vertices": 6,
+              "max_child_aperture": 3
+            }
+          ],
+          "construction_time_ns": 21531,
+          "cross_frame_edge_count": 12,
+          "cut_rows": [
+            {
+              "boundary_vertices": 6,
+              "crossing_edges": 7,
+              "depth": 0,
+              "left_aperture": 3,
+              "left_nodes": 3,
+              "right_aperture": 3,
+              "right_nodes": 3
+            }
+          ],
+          "frame_count": 2,
+          "frame_sizes": [
+            3,
+            3
+          ],
+          "hierarchy_depth": 1,
+          "leaf_aperture_max": 3,
+          "leaf_aperture_median": 3.0,
+          "leaf_aperture_vertices": [
+            3,
+            3
+          ],
+          "partition_id": "shuffled_4",
+          "seed": 72104
+        }
+      ],
+      "rule_accesses": [
+        {
+          "name": "can_native_update_3state",
+          "reads": [
+            "attr:discrete_mode",
+            "attr:external_field",
+            "attr:identity_field",
+            "attr:state",
+            "attr:temperature",
+            "edge:causal_influence",
+            "edge:has_concept",
+            "wildcard:edge_attribute_read"
+          ],
+          "unknown_effects": [],
+          "variable_roles": {
+            "c": [
+              "edge:has_concept:target"
+            ],
+            "mt": [
+              "edge:has_concept:source"
+            ]
+          },
+          "writes": [
+            "attr:state"
+          ]
+        },
+        {
+          "name": "can_native_update_2state",
+          "reads": [
+            "attr:discrete_mode",
+            "attr:external_field",
+            "attr:identity_field",
+            "attr:state",
+            "edge:causal_influence",
+            "edge:has_concept",
+            "wildcard:edge_attribute_read"
+          ],
+          "unknown_effects": [],
+          "variable_roles": {
+            "c": [
+              "edge:has_concept:target"
+            ],
+            "mt": [
+              "edge:has_concept:source"
+            ]
+          },
+          "writes": [
+            "attr:state"
+          ]
+        },
+        {
+          "name": "can_native_basin_decode",
+          "reads": [
+            "attr:decode_kind",
+            "attr:scope_name",
+            "attr:signature",
+            "attr:status",
+            "edge:observed"
+          ],
+          "unknown_effects": [],
+          "variable_roles": {
+            "ag": [
+              "edge:observed:source"
+            ],
+            "obs": [
+              "edge:observed:target"
+            ]
+          },
+          "writes": [
+            "attr:covered_count",
+            "attr:residual",
+            "attr:status"
+          ]
+        },
+        {
+          "name": "can_native_note_coactivation",
+          "reads": [
+            "attr:can_tick",
+            "attr:state",
+            "edge:causal_influence",
+            "edge:coactivated_with",
+            "edge:coactivation_of",
+            "edge:has_concept"
+          ],
+          "unknown_effects": [],
+          "variable_roles": {
+            "a": [
+              "edge:has_concept:target"
+            ],
+            "b": [
+              "edge:has_concept:target"
+            ],
+            "mt": [
+              "edge:has_concept:source"
+            ]
+          },
+          "writes": [
+            "attr:evidence_confirm",
+            "attr:evidence_disconfirm",
+            "attr:evidence_tick",
+            "attr:noted_tick",
+            "edge:coactivated_with",
+            "edge:coactivation_of",
+            "node_type:Coactivation"
+          ]
+        },
+        {
+          "name": "can_native_hebbian_mint",
+          "reads": [
+            "attr:allow_Hebbian_J",
+            "attr:can_tick",
+            "attr:evidence_confirm",
+            "attr:noted_tick",
+            "attr:plasticity_override",
+            "attr:state",
+            "attr:update_policy",
+            "edge:causal_influence",
+            "edge:coactivated_with",
+            "edge:coactivation_of",
+            "edge:has_concept"
+          ],
+          "unknown_effects": [],
+          "variable_roles": {
+            "a": [
+              "edge:coactivated_with:source",
+              "edge:has_concept:target"
+            ],
+            "b": [
+              "edge:coactivation_of:target",
+              "edge:has_concept:target"
+            ],
+            "coact": [
+              "edge:coactivated_with:target",
+              "edge:coactivation_of:source"
+            ],
+            "mt": [
+              "edge:has_concept:source"
+            ]
+          },
+          "writes": [
+            "attr:evidence_confirm",
+            "attr:evidence_tick",
+            "edge:causal_influence"
+          ]
+        },
+        {
+          "name": "can_native_hebbian_reweight",
+          "reads": [
+            "attr:allow_Hebbian_J",
+            "attr:can_tick",
+            "attr:evidence_confirm",
+            "attr:evidence_disconfirm",
+            "attr:evidence_tick",
+            "attr:plasticity_override",
+            "attr:state",
+            "attr:update_policy",
+            "edge:causal_influence",
+            "edge:coactivated_with",
+            "edge:coactivation_of",
+            "edge:has_concept"
+          ],
+          "unknown_effects": [],
+          "variable_roles": {
+            "a": [
+              "edge:coactivated_with:source",
+              "edge:has_concept:target"
+            ],
+            "b": [
+              "edge:coactivation_of:target",
+              "edge:has_concept:target"
+            ],
+            "coact": [
+              "edge:coactivated_with:target",
+              "edge:coactivation_of:source"
+            ],
+            "mt": [
+              "edge:has_concept:source"
+            ]
+          },
+          "writes": [
+            "attr:evidence_confirm",
+            "attr:evidence_disconfirm",
+            "attr:evidence_tick"
+          ]
+        }
+      ],
+      "rules_active": 6,
+      "rules_total": 6,
+      "rules_with_unknown_effects": 0,
+      "scc_sizes": [
+        5,
+        1
+      ],
+      "self_dependency_count": 6,
+      "source_seed": {
+        "path": "seeds/can_native_reimplementation.json",
+        "seed_id": "can_native_reimplementation",
+        "seed_version": "1.2.0",
+        "sha256": "3b185987ae810d5e05ab2468b044ab73d8890c8e73ac86dfcaf35b734b9c61d8"
+      },
+      "treewidth_exact": 4,
+      "treewidth_exact_time_ns": 643904,
+      "treewidth_upper_bound": 4,
+      "undirected_projection_edges": 12,
+      "workload_family": "can_discrete_inference"
+    },
+    {
+      "dependency_edges": [
+        {
+          "reader": "can_native_update_3state",
+          "writer": "can_native_update_3state"
+        },
+        {
+          "reader": "can_native_update_2state",
+          "writer": "can_native_update_3state"
+        },
+        {
+          "reader": "can_native_note_coactivation",
+          "writer": "can_native_update_3state"
+        },
+        {
+          "reader": "can_native_update_3state",
+          "writer": "can_native_update_2state"
+        },
+        {
+          "reader": "can_native_update_2state",
+          "writer": "can_native_update_2state"
+        },
+        {
+          "reader": "can_native_note_coactivation",
+          "writer": "can_native_update_2state"
+        },
+        {
+          "reader": "can_native_update_3state",
+          "writer": "can_native_basin_decode"
+        },
+        {
+          "reader": "can_native_update_2state",
+          "writer": "can_native_basin_decode"
+        },
+        {
+          "reader": "can_native_basin_decode",
+          "writer": "can_native_basin_decode"
+        },
+        {
+          "reader": "can_native_update_3state",
+          "writer": "can_native_note_coactivation"
+        },
+        {
+          "reader": "can_native_update_2state",
+          "writer": "can_native_note_coactivation"
+        },
+        {
+          "reader": "can_native_note_coactivation",
+          "writer": "can_native_note_coactivation"
+        },
+        {
+          "reader": "can_native_hebbian_mint",
+          "writer": "can_native_note_coactivation"
+        },
+        {
+          "reader": "can_native_hebbian_reweight",
+          "writer": "can_native_note_coactivation"
+        },
+        {
+          "reader": "can_native_update_3state",
+          "writer": "can_native_hebbian_mint"
+        },
+        {
+          "reader": "can_native_update_2state",
+          "writer": "can_native_hebbian_mint"
+        },
+        {
+          "reader": "can_native_note_coactivation",
+          "writer": "can_native_hebbian_mint"
+        },
+        {
+          "reader": "can_native_hebbian_mint",
+          "writer": "can_native_hebbian_mint"
+        },
+        {
+          "reader": "can_native_hebbian_reweight",
+          "writer": "can_native_hebbian_mint"
+        },
+        {
+          "reader": "can_native_update_3state",
+          "writer": "can_native_hebbian_reweight"
+        },
+        {
+          "reader": "can_native_update_2state",
+          "writer": "can_native_hebbian_reweight"
+        },
+        {
+          "reader": "can_native_hebbian_mint",
+          "writer": "can_native_hebbian_reweight"
+        },
+        {
+          "reader": "can_native_hebbian_reweight",
+          "writer": "can_native_hebbian_reweight"
+        }
+      ],
+      "dependency_projection": "variable_role",
+      "directed_dependency_edges": 23,
+      "min_fill_time_ns": 34780,
+      "native_access_audit": {
+        "native_extension_path": "/tmp/ocelot-native-access.YXVL5L/substrate_rs/_native.abi3.so",
+        "native_extension_sha256": "4a6fef0d74e11ac6e0e9dacd357739bd9f597ba0d7569afd1f84dcaf514c88ba",
+        "rule_count": 6,
+        "rules": [
+          {
+            "active": true,
+            "extractor_only_reads": [],
+            "extractor_only_writes": [],
+            "extractor_read_wildcards": [
+              "wildcard:edge_attribute_read"
+            ],
+            "extractor_reads_any": true,
+            "extractor_write_wildcards": [],
+            "extractor_writes_any": false,
+            "native_only_reads": [],
+            "native_only_writes": [],
+            "native_reads": [
+              "attr:discrete_mode",
+              "attr:external_field",
+              "attr:identity_field",
+              "attr:state",
+              "attr:temperature",
+              "edge:causal_influence",
+              "edge:has_concept"
+            ],
+            "native_reads_any": true,
+            "native_term_edge_reads": [
+              "edge:causal_influence"
+            ],
+            "native_writes": [
+              "attr:state"
+            ],
+            "native_writes_any": false,
+            "reads_any_agrees": true,
+            "rule_index": 0,
+            "rule_name": "can_native_update_3state",
+            "writes_any_agrees": true
+          },
+          {
+            "active": true,
+            "extractor_only_reads": [],
+            "extractor_only_writes": [],
+            "extractor_read_wildcards": [
+              "wildcard:edge_attribute_read"
+            ],
+            "extractor_reads_any": true,
+            "extractor_write_wildcards": [],
+            "extractor_writes_any": false,
+            "native_only_reads": [],
+            "native_only_writes": [],
+            "native_reads": [
+              "attr:discrete_mode",
+              "attr:external_field",
+              "attr:identity_field",
+              "attr:state",
+              "edge:causal_influence",
+              "edge:has_concept"
+            ],
+            "native_reads_any": true,
+            "native_term_edge_reads": [
+              "edge:causal_influence"
+            ],
+            "native_writes": [
+              "attr:state"
+            ],
+            "native_writes_any": false,
+            "reads_any_agrees": true,
+            "rule_index": 1,
+            "rule_name": "can_native_update_2state",
+            "writes_any_agrees": true
+          },
+          {
+            "active": true,
+            "extractor_only_reads": [],
+            "extractor_only_writes": [],
+            "extractor_read_wildcards": [],
+            "extractor_reads_any": false,
+            "extractor_write_wildcards": [],
+            "extractor_writes_any": false,
+            "native_only_reads": [],
+            "native_only_writes": [],
+            "native_reads": [
+              "attr:decode_kind",
+              "attr:scope_name",
+              "attr:signature",
+              "attr:status",
+              "edge:observed"
+            ],
+            "native_reads_any": false,
+            "native_term_edge_reads": [],
+            "native_writes": [
+              "attr:covered_count",
+              "attr:residual",
+              "attr:status"
+            ],
+            "native_writes_any": false,
+            "reads_any_agrees": true,
+            "rule_index": 2,
+            "rule_name": "can_native_basin_decode",
+            "writes_any_agrees": true
+          },
+          {
+            "active": true,
+            "extractor_only_reads": [],
+            "extractor_only_writes": [],
+            "extractor_read_wildcards": [],
+            "extractor_reads_any": false,
+            "extractor_write_wildcards": [],
+            "extractor_writes_any": false,
+            "native_only_reads": [],
+            "native_only_writes": [],
+            "native_reads": [
+              "attr:can_tick",
+              "attr:state",
+              "edge:causal_influence",
+              "edge:coactivated_with",
+              "edge:coactivation_of",
+              "edge:has_concept"
+            ],
+            "native_reads_any": false,
+            "native_term_edge_reads": [
+              "edge:causal_influence",
+              "edge:coactivated_with",
+              "edge:coactivation_of"
+            ],
+            "native_writes": [
+              "attr:evidence_confirm",
+              "attr:evidence_disconfirm",
+              "attr:evidence_tick",
+              "attr:noted_tick",
+              "edge:coactivated_with",
+              "edge:coactivation_of",
+              "type:Coactivation"
+            ],
+            "native_writes_any": false,
+            "reads_any_agrees": true,
+            "rule_index": 3,
+            "rule_name": "can_native_note_coactivation",
+            "writes_any_agrees": true
+          },
+          {
+            "active": true,
+            "extractor_only_reads": [],
+            "extractor_only_writes": [],
+            "extractor_read_wildcards": [],
+            "extractor_reads_any": false,
+            "extractor_write_wildcards": [],
+            "extractor_writes_any": false,
+            "native_only_reads": [],
+            "native_only_writes": [],
+            "native_reads": [
+              "attr:allow_Hebbian_J",
+              "attr:can_tick",
+              "attr:evidence_confirm",
+              "attr:noted_tick",
+              "attr:plasticity_override",
+              "attr:state",
+              "attr:update_policy",
+              "edge:causal_influence",
+              "edge:coactivated_with",
+              "edge:coactivation_of",
+              "edge:has_concept"
+            ],
+            "native_reads_any": false,
+            "native_term_edge_reads": [
+              "edge:causal_influence"
+            ],
+            "native_writes": [
+              "attr:evidence_confirm",
+              "attr:evidence_tick",
+              "edge:causal_influence"
+            ],
+            "native_writes_any": false,
+            "reads_any_agrees": true,
+            "rule_index": 4,
+            "rule_name": "can_native_hebbian_mint",
+            "writes_any_agrees": true
+          },
+          {
+            "active": true,
+            "extractor_only_reads": [],
+            "extractor_only_writes": [],
+            "extractor_read_wildcards": [],
+            "extractor_reads_any": false,
+            "extractor_write_wildcards": [],
+            "extractor_writes_any": false,
+            "native_only_reads": [],
+            "native_only_writes": [],
+            "native_reads": [
+              "attr:allow_Hebbian_J",
+              "attr:can_tick",
+              "attr:evidence_confirm",
+              "attr:evidence_disconfirm",
+              "attr:evidence_tick",
+              "attr:plasticity_override",
+              "attr:state",
+              "attr:update_policy",
+              "edge:causal_influence",
+              "edge:coactivated_with",
+              "edge:coactivation_of",
+              "edge:has_concept"
+            ],
+            "native_reads_any": false,
+            "native_term_edge_reads": [
+              "edge:causal_influence"
+            ],
+            "native_writes": [
+              "attr:evidence_confirm",
+              "attr:evidence_disconfirm",
+              "attr:evidence_tick"
+            ],
+            "native_writes_any": false,
+            "reads_any_agrees": true,
+            "rule_index": 5,
+            "rule_name": "can_native_hebbian_reweight",
+            "writes_any_agrees": true
+          }
+        ],
+        "status": "compared"
+      },
+      "nodes": 6,
+      "partitions": [
+        {
+          "by_depth": [
+            {
+              "crossing_edges_total": 6,
+              "cut_count": 1,
+              "depth": 0,
+              "max_boundary_vertices": 5,
+              "max_child_aperture": 3
+            }
+          ],
+          "construction_time_ns": 25410,
+          "cross_frame_edge_count": 8,
+          "cut_rows": [
+            {
+              "boundary_vertices": 5,
+              "crossing_edges": 6,
+              "depth": 0,
+              "left_aperture": 2,
+              "left_nodes": 3,
+              "right_aperture": 3,
+              "right_nodes": 3
+            }
+          ],
+          "frame_count": 2,
+          "frame_sizes": [
+            3,
+            3
+          ],
+          "hierarchy_depth": 1,
+          "leaf_aperture_max": 3,
+          "leaf_aperture_median": 2.5,
+          "leaf_aperture_vertices": [
+            2,
+            3
+          ],
+          "partition_id": "seed_rule_order",
+          "seed": null
+        },
+        {
+          "by_depth": [
+            {
+              "crossing_edges_total": 7,
+              "cut_count": 1,
+              "depth": 0,
+              "max_boundary_vertices": 6,
+              "max_child_aperture": 3
+            }
+          ],
+          "construction_time_ns": 22401,
+          "cross_frame_edge_count": 11,
+          "cut_rows": [
+            {
+              "boundary_vertices": 6,
+              "crossing_edges": 7,
+              "depth": 0,
+              "left_aperture": 3,
+              "left_nodes": 3,
+              "right_aperture": 3,
+              "right_nodes": 3
+            }
+          ],
+          "frame_count": 2,
+          "frame_sizes": [
+            3,
+            3
+          ],
+          "hierarchy_depth": 1,
+          "leaf_aperture_max": 3,
+          "leaf_aperture_median": 3.0,
+          "leaf_aperture_vertices": [
+            3,
+            3
+          ],
+          "partition_id": "shuffled_0",
+          "seed": 72100
+        },
+        {
+          "by_depth": [
+            {
+              "crossing_edges_total": 7,
+              "cut_count": 1,
+              "depth": 0,
+              "max_boundary_vertices": 6,
+              "max_child_aperture": 3
+            }
+          ],
+          "construction_time_ns": 20200,
+          "cross_frame_edge_count": 10,
+          "cut_rows": [
+            {
+              "boundary_vertices": 6,
+              "crossing_edges": 7,
+              "depth": 0,
+              "left_aperture": 3,
+              "left_nodes": 3,
+              "right_aperture": 3,
+              "right_nodes": 3
+            }
+          ],
+          "frame_count": 2,
+          "frame_sizes": [
+            3,
+            3
+          ],
+          "hierarchy_depth": 1,
+          "leaf_aperture_max": 3,
+          "leaf_aperture_median": 3.0,
+          "leaf_aperture_vertices": [
+            3,
+            3
+          ],
+          "partition_id": "shuffled_1",
+          "seed": 72101
+        },
+        {
+          "by_depth": [
+            {
+              "crossing_edges_total": 8,
+              "cut_count": 1,
+              "depth": 0,
+              "max_boundary_vertices": 6,
+              "max_child_aperture": 3
+            }
+          ],
+          "construction_time_ns": 26070,
+          "cross_frame_edge_count": 11,
+          "cut_rows": [
+            {
+              "boundary_vertices": 6,
+              "crossing_edges": 8,
+              "depth": 0,
+              "left_aperture": 3,
+              "left_nodes": 3,
+              "right_aperture": 3,
+              "right_nodes": 3
+            }
+          ],
+          "frame_count": 2,
+          "frame_sizes": [
+            3,
+            3
+          ],
+          "hierarchy_depth": 1,
+          "leaf_aperture_max": 3,
+          "leaf_aperture_median": 3.0,
+          "leaf_aperture_vertices": [
+            3,
+            3
+          ],
+          "partition_id": "shuffled_2",
+          "seed": 72102
+        },
+        {
+          "by_depth": [
+            {
+              "crossing_edges_total": 7,
+              "cut_count": 1,
+              "depth": 0,
+              "max_boundary_vertices": 6,
+              "max_child_aperture": 3
+            }
+          ],
+          "construction_time_ns": 22810,
+          "cross_frame_edge_count": 10,
+          "cut_rows": [
+            {
+              "boundary_vertices": 6,
+              "crossing_edges": 7,
+              "depth": 0,
+              "left_aperture": 3,
+              "left_nodes": 3,
+              "right_aperture": 3,
+              "right_nodes": 3
+            }
+          ],
+          "frame_count": 2,
+          "frame_sizes": [
+            3,
+            3
+          ],
+          "hierarchy_depth": 1,
+          "leaf_aperture_max": 3,
+          "leaf_aperture_median": 3.0,
+          "leaf_aperture_vertices": [
+            3,
+            3
+          ],
+          "partition_id": "shuffled_3",
+          "seed": 72103
+        },
+        {
+          "by_depth": [
+            {
+              "crossing_edges_total": 7,
+              "cut_count": 1,
+              "depth": 0,
+              "max_boundary_vertices": 6,
+              "max_child_aperture": 3
+            }
+          ],
+          "construction_time_ns": 26630,
+          "cross_frame_edge_count": 10,
+          "cut_rows": [
+            {
+              "boundary_vertices": 6,
+              "crossing_edges": 7,
+              "depth": 0,
+              "left_aperture": 3,
+              "left_nodes": 3,
+              "right_aperture": 3,
+              "right_nodes": 3
+            }
+          ],
+          "frame_count": 2,
+          "frame_sizes": [
+            3,
+            3
+          ],
+          "hierarchy_depth": 1,
+          "leaf_aperture_max": 3,
+          "leaf_aperture_median": 3.0,
+          "leaf_aperture_vertices": [
+            3,
+            3
+          ],
+          "partition_id": "shuffled_4",
+          "seed": 72104
+        }
+      ],
+      "rule_accesses": [
+        {
+          "name": "can_native_update_3state",
+          "reads": [
+            "attr:discrete_mode@edge:has_concept:source",
+            "attr:external_field@edge:has_concept:target",
+            "attr:identity_field@edge:has_concept:target",
+            "attr:state@edge:has_concept:target",
+            "attr:state@indirect",
+            "attr:temperature@edge:has_concept:source",
+            "edge:causal_influence",
+            "edge:has_concept",
+            "wildcard:edge_attribute_read"
+          ],
+          "unknown_effects": [],
+          "variable_roles": {
+            "c": [
+              "edge:has_concept:target"
+            ],
+            "mt": [
+              "edge:has_concept:source"
+            ]
+          },
+          "writes": [
+            "attr:state@edge:has_concept:target"
+          ]
+        },
+        {
+          "name": "can_native_update_2state",
+          "reads": [
+            "attr:discrete_mode@edge:has_concept:source",
+            "attr:external_field@edge:has_concept:target",
+            "attr:identity_field@edge:has_concept:target",
+            "attr:state@edge:has_concept:target",
+            "attr:state@indirect",
+            "edge:causal_influence",
+            "edge:has_concept",
+            "wildcard:edge_attribute_read"
+          ],
+          "unknown_effects": [],
+          "variable_roles": {
+            "c": [
+              "edge:has_concept:target"
+            ],
+            "mt": [
+              "edge:has_concept:source"
+            ]
+          },
+          "writes": [
+            "attr:state@edge:has_concept:target"
+          ]
+        },
+        {
+          "name": "can_native_basin_decode",
+          "reads": [
+            "attr:decode_kind@edge:observed:target",
+            "attr:scope_name@edge:observed:target",
+            "attr:signature@edge:observed:target",
+            "attr:status@edge:observed:target",
+            "edge:observed"
+          ],
+          "unknown_effects": [],
+          "variable_roles": {
+            "ag": [
+              "edge:observed:source"
+            ],
+            "obs": [
+              "edge:observed:target"
+            ]
+          },
+          "writes": [
+            "attr:covered_count@edge:observed:target",
+            "attr:residual@edge:observed:target",
+            "attr:status@edge:observed:target"
+          ]
+        },
+        {
+          "name": "can_native_note_coactivation",
+          "reads": [
+            "attr:can_tick@edge:has_concept:source",
+            "attr:state@edge:has_concept:target",
+            "edge:causal_influence",
+            "edge:coactivated_with",
+            "edge:coactivation_of",
+            "edge:has_concept"
+          ],
+          "unknown_effects": [],
+          "variable_roles": {
+            "a": [
+              "edge:has_concept:target"
+            ],
+            "b": [
+              "edge:has_concept:target"
+            ],
+            "mt": [
+              "edge:has_concept:source"
+            ]
+          },
+          "writes": [
+            "attr:evidence_confirm@indirect",
+            "attr:evidence_disconfirm@indirect",
+            "attr:evidence_tick@indirect",
+            "attr:noted_tick@indirect",
+            "edge:coactivated_with",
+            "edge:coactivation_of",
+            "node_type:Coactivation"
+          ]
+        },
+        {
+          "name": "can_native_hebbian_mint",
+          "reads": [
+            "attr:allow_Hebbian_J@edge:has_concept:source",
+            "attr:can_tick@edge:has_concept:source",
+            "attr:evidence_confirm@edge:coactivated_with:target+edge:coactivation_of:source",
+            "attr:noted_tick@edge:coactivated_with:target+edge:coactivation_of:source",
+            "attr:plasticity_override@edge:has_concept:source",
+            "attr:state@edge:coactivated_with:source+edge:has_concept:target",
+            "attr:state@edge:coactivation_of:target+edge:has_concept:target",
+            "attr:update_policy@edge:has_concept:source",
+            "edge:causal_influence",
+            "edge:coactivated_with",
+            "edge:coactivation_of",
+            "edge:has_concept"
+          ],
+          "unknown_effects": [],
+          "variable_roles": {
+            "a": [
+              "edge:coactivated_with:source",
+              "edge:has_concept:target"
+            ],
+            "b": [
+              "edge:coactivation_of:target",
+              "edge:has_concept:target"
+            ],
+            "coact": [
+              "edge:coactivated_with:target",
+              "edge:coactivation_of:source"
+            ],
+            "mt": [
+              "edge:has_concept:source"
+            ]
+          },
+          "writes": [
+            "attr:evidence_confirm@edge:coactivated_with:target+edge:coactivation_of:source",
+            "attr:evidence_tick@edge:coactivated_with:target+edge:coactivation_of:source",
+            "edge:causal_influence"
+          ]
+        },
+        {
+          "name": "can_native_hebbian_reweight",
+          "reads": [
+            "attr:allow_Hebbian_J@edge:has_concept:source",
+            "attr:can_tick@edge:has_concept:source",
+            "attr:evidence_confirm@edge:coactivated_with:target+edge:coactivation_of:source",
+            "attr:evidence_disconfirm@edge:coactivated_with:target+edge:coactivation_of:source",
+            "attr:evidence_tick@edge:coactivated_with:target+edge:coactivation_of:source",
+            "attr:plasticity_override@edge:has_concept:source",
+            "attr:state@edge:coactivated_with:source+edge:has_concept:target",
+            "attr:state@edge:coactivation_of:target+edge:has_concept:target",
+            "attr:update_policy@edge:has_concept:source",
+            "edge:causal_influence",
+            "edge:coactivated_with",
+            "edge:coactivation_of",
+            "edge:has_concept"
+          ],
+          "unknown_effects": [],
+          "variable_roles": {
+            "a": [
+              "edge:coactivated_with:source",
+              "edge:has_concept:target"
+            ],
+            "b": [
+              "edge:coactivation_of:target",
+              "edge:has_concept:target"
+            ],
+            "coact": [
+              "edge:coactivated_with:target",
+              "edge:coactivation_of:source"
+            ],
+            "mt": [
+              "edge:has_concept:source"
+            ]
+          },
+          "writes": [
+            "attr:evidence_confirm@edge:coactivated_with:target+edge:coactivation_of:source",
+            "attr:evidence_disconfirm@edge:coactivated_with:target+edge:coactivation_of:source",
+            "attr:evidence_tick@edge:coactivated_with:target+edge:coactivation_of:source"
+          ]
+        }
+      ],
+      "rules_active": 6,
+      "rules_total": 6,
+      "rules_with_unknown_effects": 0,
+      "scc_sizes": [
+        5,
+        1
+      ],
+      "self_dependency_count": 6,
+      "source_seed": {
+        "path": "seeds/can_native_reimplementation.json",
+        "seed_id": "can_native_reimplementation",
+        "seed_version": "1.2.0",
+        "sha256": "3b185987ae810d5e05ab2468b044ab73d8890c8e73ac86dfcaf35b734b9c61d8"
+      },
+      "treewidth_exact": 4,
+      "treewidth_exact_time_ns": 670775,
+      "treewidth_upper_bound": 4,
+      "undirected_projection_edges": 12,
+      "workload_family": "can_discrete_inference"
+    },
+    {
+      "dependency_edges": [
+        {
+          "reader": "cm4a_reject_missing_grounding",
+          "writer": "cm4a_reject_missing_grounding"
+        },
+        {
+          "reader": "cm4a_score_grounded_candidates",
+          "writer": "cm4a_reject_missing_grounding"
+        },
+        {
+          "reader": "cm4a_commit_native_collapse",
+          "writer": "cm4a_reject_missing_grounding"
+        },
+        {
+          "reader": "cm4a_trace_rejected_competitors",
+          "writer": "cm4a_reject_missing_grounding"
+        },
+        {
+          "reader": "cm4a_no_candidate",
+          "writer": "cm4a_reject_missing_grounding"
+        },
+        {
+          "reader": "cm4c_no_candidate_from_empty_discourse_state",
+          "writer": "cm4a_reject_missing_grounding"
+        },
+        {
+          "reader": "cm4a_begin_execution",
+          "writer": "cm4a_reject_missing_grounding"
+        },
+        {
+          "reader": "cm4d_no_candidate_from_empty_live_thought_manifold",
+          "writer": "cm4a_reject_missing_grounding"
+        },
+        {
+          "reader": "cm4a_settle_back_resolved",
+          "writer": "cm4a_reject_missing_grounding"
+        },
+        {
+          "reader": "cm4b_credit_grounded_rejected_alternatives",
+          "writer": "cm4a_reject_missing_grounding"
+        },
+        {
+          "reader": "cm4a_score_grounded_candidates",
+          "writer": "cm4a_score_grounded_candidates"
+        },
+        {
+          "reader": "cm4a_commit_native_collapse",
+          "writer": "cm4a_score_grounded_candidates"
+        },
+        {
+          "reader": "cm4a_no_candidate",
+          "writer": "cm4a_score_grounded_candidates"
+        },
+        {
+          "reader": "cm4b_credit_grounded_rejected_alternatives",
+          "writer": "cm4a_score_grounded_candidates"
+        },
+        {
+          "reader": "cm4a_reject_missing_grounding",
+          "writer": "cm4a_commit_native_collapse"
+        },
+        {
+          "reader": "cm4a_score_grounded_candidates",
+          "writer": "cm4a_commit_native_collapse"
+        },
+        {
+          "reader": "cm4a_commit_native_collapse",
+          "writer": "cm4a_commit_native_collapse"
+        },
+        {
+          "reader": "cm4a_trace_rejected_competitors",
+          "writer": "cm4a_commit_native_collapse"
+        },
+        {
+          "reader": "cm4a_no_candidate",
+          "writer": "cm4a_commit_native_collapse"
+        },
+        {
+          "reader": "cm4c_no_candidate_from_empty_discourse_state",
+          "writer": "cm4a_commit_native_collapse"
+        },
+        {
+          "reader": "cm4a_begin_execution",
+          "writer": "cm4a_commit_native_collapse"
+        },
+        {
+          "reader": "cm4d_no_candidate_from_empty_live_thought_manifold",
+          "writer": "cm4a_commit_native_collapse"
+        },
+        {
+          "reader": "cm4a_settle_back_resolved",
+          "writer": "cm4a_commit_native_collapse"
+        },
+        {
+          "reader": "cm4b_credit_grounded_rejected_alternatives",
+          "writer": "cm4a_commit_native_collapse"
+        },
+        {
+          "reader": "cm4a_reject_missing_grounding",
+          "writer": "cm4a_trace_rejected_competitors"
+        },
+        {
+          "reader": "cm4a_score_grounded_candidates",
+          "writer": "cm4a_trace_rejected_competitors"
+        },
+        {
+          "reader": "cm4a_commit_native_collapse",
+          "writer": "cm4a_trace_rejected_competitors"
+        },
+        {
+          "reader": "cm4a_trace_rejected_competitors",
+          "writer": "cm4a_trace_rejected_competitors"
+        },
+        {
+          "reader": "cm4a_no_candidate",
+          "writer": "cm4a_trace_rejected_competitors"
+        },
+        {
+          "reader": "cm4c_no_candidate_from_empty_discourse_state",
+          "writer": "cm4a_trace_rejected_competitors"
+        },
+        {
+          "reader": "cm4a_begin_execution",
+          "writer": "cm4a_trace_rejected_competitors"
+        },
+        {
+          "reader": "cm4d_no_candidate_from_empty_live_thought_manifold",
+          "writer": "cm4a_trace_rejected_competitors"
+        },
+        {
+          "reader": "cm4a_settle_back_resolved",
+          "writer": "cm4a_trace_rejected_competitors"
+        },
+        {
+          "reader": "cm4b_credit_grounded_rejected_alternatives",
+          "writer": "cm4a_trace_rejected_competitors"
+        },
+        {
+          "reader": "cm4a_reject_missing_grounding",
+          "writer": "cm4a_no_candidate"
+        },
+        {
+          "reader": "cm4a_score_grounded_candidates",
+          "writer": "cm4a_no_candidate"
+        },
+        {
+          "reader": "cm4a_commit_native_collapse",
+          "writer": "cm4a_no_candidate"
+        },
+        {
+          "reader": "cm4a_trace_rejected_competitors",
+          "writer": "cm4a_no_candidate"
+        },
+        {
+          "reader": "cm4a_no_candidate",
+          "writer": "cm4a_no_candidate"
+        },
+        {
+          "reader": "cm4c_no_candidate_from_empty_discourse_state",
+          "writer": "cm4a_no_candidate"
+        },
+        {
+          "reader": "cm4a_begin_execution",
+          "writer": "cm4a_no_candidate"
+        },
+        {
+          "reader": "cm4d_no_candidate_from_empty_live_thought_manifold",
+          "writer": "cm4a_no_candidate"
+        },
+        {
+          "reader": "cm4a_settle_back_resolved",
+          "writer": "cm4a_no_candidate"
+        },
+        {
+          "reader": "cm4b_credit_grounded_rejected_alternatives",
+          "writer": "cm4a_no_candidate"
+        },
+        {
+          "reader": "cm4a_reject_missing_grounding",
+          "writer": "cm4c_no_candidate_from_empty_discourse_state"
+        },
+        {
+          "reader": "cm4a_score_grounded_candidates",
+          "writer": "cm4c_no_candidate_from_empty_discourse_state"
+        },
+        {
+          "reader": "cm4a_commit_native_collapse",
+          "writer": "cm4c_no_candidate_from_empty_discourse_state"
+        },
+        {
+          "reader": "cm4a_trace_rejected_competitors",
+          "writer": "cm4c_no_candidate_from_empty_discourse_state"
+        },
+        {
+          "reader": "cm4a_no_candidate",
+          "writer": "cm4c_no_candidate_from_empty_discourse_state"
+        },
+        {
+          "reader": "cm4c_no_candidate_from_empty_discourse_state",
+          "writer": "cm4c_no_candidate_from_empty_discourse_state"
+        },
+        {
+          "reader": "cm4a_begin_execution",
+          "writer": "cm4c_no_candidate_from_empty_discourse_state"
+        },
+        {
+          "reader": "cm4d_no_candidate_from_empty_live_thought_manifold",
+          "writer": "cm4c_no_candidate_from_empty_discourse_state"
+        },
+        {
+          "reader": "cm4a_settle_back_resolved",
+          "writer": "cm4c_no_candidate_from_empty_discourse_state"
+        },
+        {
+          "reader": "cm4b_credit_grounded_rejected_alternatives",
+          "writer": "cm4c_no_candidate_from_empty_discourse_state"
+        },
+        {
+          "reader": "cm4a_reject_missing_grounding",
+          "writer": "cm4a_begin_execution"
+        },
+        {
+          "reader": "cm4a_score_grounded_candidates",
+          "writer": "cm4a_begin_execution"
+        },
+        {
+          "reader": "cm4a_commit_native_collapse",
+          "writer": "cm4a_begin_execution"
+        },
+        {
+          "reader": "cm4a_trace_rejected_competitors",
+          "writer": "cm4a_begin_execution"
+        },
+        {
+          "reader": "cm4a_no_candidate",
+          "writer": "cm4a_begin_execution"
+        },
+        {
+          "reader": "cm4c_no_candidate_from_empty_discourse_state",
+          "writer": "cm4a_begin_execution"
+        },
+        {
+          "reader": "cm4a_begin_execution",
+          "writer": "cm4a_begin_execution"
+        },
+        {
+          "reader": "cm4d_no_candidate_from_empty_live_thought_manifold",
+          "writer": "cm4a_begin_execution"
+        },
+        {
+          "reader": "cm4a_settle_back_resolved",
+          "writer": "cm4a_begin_execution"
+        },
+        {
+          "reader": "cm4b_credit_grounded_rejected_alternatives",
+          "writer": "cm4a_begin_execution"
+        },
+        {
+          "reader": "cm4a_reject_missing_grounding",
+          "writer": "cm4d_no_candidate_from_empty_live_thought_manifold"
+        },
+        {
+          "reader": "cm4a_score_grounded_candidates",
+          "writer": "cm4d_no_candidate_from_empty_live_thought_manifold"
+        },
+        {
+          "reader": "cm4a_commit_native_collapse",
+          "writer": "cm4d_no_candidate_from_empty_live_thought_manifold"
+        },
+        {
+          "reader": "cm4a_trace_rejected_competitors",
+          "writer": "cm4d_no_candidate_from_empty_live_thought_manifold"
+        },
+        {
+          "reader": "cm4a_no_candidate",
+          "writer": "cm4d_no_candidate_from_empty_live_thought_manifold"
+        },
+        {
+          "reader": "cm4c_no_candidate_from_empty_discourse_state",
+          "writer": "cm4d_no_candidate_from_empty_live_thought_manifold"
+        },
+        {
+          "reader": "cm4a_begin_execution",
+          "writer": "cm4d_no_candidate_from_empty_live_thought_manifold"
+        },
+        {
+          "reader": "cm4d_no_candidate_from_empty_live_thought_manifold",
+          "writer": "cm4d_no_candidate_from_empty_live_thought_manifold"
+        },
+        {
+          "reader": "cm4a_settle_back_resolved",
+          "writer": "cm4d_no_candidate_from_empty_live_thought_manifold"
+        },
+        {
+          "reader": "cm4b_credit_grounded_rejected_alternatives",
+          "writer": "cm4d_no_candidate_from_empty_live_thought_manifold"
+        },
+        {
+          "reader": "cm4a_reject_missing_grounding",
+          "writer": "cm4a_settle_back_resolved"
+        },
+        {
+          "reader": "cm4a_score_grounded_candidates",
+          "writer": "cm4a_settle_back_resolved"
+        },
+        {
+          "reader": "cm4a_commit_native_collapse",
+          "writer": "cm4a_settle_back_resolved"
+        },
+        {
+          "reader": "cm4a_trace_rejected_competitors",
+          "writer": "cm4a_settle_back_resolved"
+        },
+        {
+          "reader": "cm4a_no_candidate",
+          "writer": "cm4a_settle_back_resolved"
+        },
+        {
+          "reader": "cm4c_no_candidate_from_empty_discourse_state",
+          "writer": "cm4a_settle_back_resolved"
+        },
+        {
+          "reader": "cm4a_begin_execution",
+          "writer": "cm4a_settle_back_resolved"
+        },
+        {
+          "reader": "cm4d_no_candidate_from_empty_live_thought_manifold",
+          "writer": "cm4a_settle_back_resolved"
+        },
+        {
+          "reader": "cm4a_settle_back_resolved",
+          "writer": "cm4a_settle_back_resolved"
+        },
+        {
+          "reader": "cm4b_credit_grounded_rejected_alternatives",
+          "writer": "cm4a_settle_back_resolved"
+        },
+        {
+          "reader": "cm4a_reject_missing_grounding",
+          "writer": "cm4b_credit_grounded_rejected_alternatives"
+        },
+        {
+          "reader": "cm4a_score_grounded_candidates",
+          "writer": "cm4b_credit_grounded_rejected_alternatives"
+        },
+        {
+          "reader": "cm4a_commit_native_collapse",
+          "writer": "cm4b_credit_grounded_rejected_alternatives"
+        },
+        {
+          "reader": "cm4a_trace_rejected_competitors",
+          "writer": "cm4b_credit_grounded_rejected_alternatives"
+        },
+        {
+          "reader": "cm4a_no_candidate",
+          "writer": "cm4b_credit_grounded_rejected_alternatives"
+        },
+        {
+          "reader": "cm4c_no_candidate_from_empty_discourse_state",
+          "writer": "cm4b_credit_grounded_rejected_alternatives"
+        },
+        {
+          "reader": "cm4a_begin_execution",
+          "writer": "cm4b_credit_grounded_rejected_alternatives"
+        },
+        {
+          "reader": "cm4d_no_candidate_from_empty_live_thought_manifold",
+          "writer": "cm4b_credit_grounded_rejected_alternatives"
+        },
+        {
+          "reader": "cm4a_settle_back_resolved",
+          "writer": "cm4b_credit_grounded_rejected_alternatives"
+        },
+        {
+          "reader": "cm4b_credit_grounded_rejected_alternatives",
+          "writer": "cm4b_credit_grounded_rejected_alternatives"
+        }
+      ],
+      "dependency_projection": "global_key",
+      "directed_dependency_edges": 94,
+      "min_fill_time_ns": 234801,
+      "native_access_audit": {
+        "native_extension_path": "/tmp/ocelot-native-access.YXVL5L/substrate_rs/_native.abi3.so",
+        "native_extension_sha256": "4a6fef0d74e11ac6e0e9dacd357739bd9f597ba0d7569afd1f84dcaf514c88ba",
+        "rule_count": 10,
+        "rules": [
+          {
+            "active": true,
+            "extractor_only_reads": [],
+            "extractor_only_writes": [],
+            "extractor_read_wildcards": [],
+            "extractor_reads_any": false,
+            "extractor_write_wildcards": [],
+            "extractor_writes_any": false,
+            "native_only_reads": [],
+            "native_only_writes": [],
+            "native_reads": [
+              "attr:grounding",
+              "attr:grounding_floor",
+              "attr:rejection_trace",
+              "attr:status",
+              "edge:has_candidate"
+            ],
+            "native_reads_any": false,
+            "native_term_edge_reads": [],
+            "native_writes": [
+              "attr:rejection_reason",
+              "attr:rejection_trace",
+              "attr:status"
+            ],
+            "native_writes_any": false,
+            "reads_any_agrees": true,
+            "rule_index": 0,
+            "rule_name": "cm4a_reject_missing_grounding",
+            "writes_any_agrees": true
+          },
+          {
+            "active": true,
+            "extractor_only_reads": [],
+            "extractor_only_writes": [],
+            "extractor_read_wildcards": [],
+            "extractor_reads_any": false,
+            "extractor_write_wildcards": [],
+            "extractor_writes_any": false,
+            "native_only_reads": [],
+            "native_only_writes": [],
+            "native_reads": [
+              "attr:consequence",
+              "attr:consequence_gain",
+              "attr:epoch",
+              "attr:expected_value",
+              "attr:grounding",
+              "attr:grounding_floor",
+              "attr:novelty",
+              "attr:novelty_gain",
+              "attr:residual_cost",
+              "attr:residual_cost_gain",
+              "attr:score_epoch",
+              "attr:status",
+              "edge:has_candidate"
+            ],
+            "native_reads_any": false,
+            "native_term_edge_reads": [],
+            "native_writes": [
+              "attr:arbitration_score",
+              "attr:score_epoch",
+              "attr:valuation_trace"
+            ],
+            "native_writes_any": false,
+            "reads_any_agrees": true,
+            "rule_index": 1,
+            "rule_name": "cm4a_score_grounded_candidates",
+            "writes_any_agrees": true
+          },
+          {
+            "active": true,
+            "extractor_only_reads": [],
+            "extractor_only_writes": [],
+            "extractor_read_wildcards": [],
+            "extractor_reads_any": false,
+            "extractor_write_wildcards": [],
+            "extractor_writes_any": false,
+            "native_only_reads": [],
+            "native_only_writes": [],
+            "native_reads": [
+              "attr:arbitration_score",
+              "attr:candidate_id",
+              "attr:epoch",
+              "attr:score_epoch",
+              "attr:status",
+              "edge:has_candidate"
+            ],
+            "native_reads_any": false,
+            "native_term_edge_reads": [
+              "edge:has_candidate"
+            ],
+            "native_writes": [
+              "attr:candidate_trace_complete",
+              "attr:epoch",
+              "attr:selected_candidate_id",
+              "attr:status",
+              "edge:has_selection",
+              "edge:selects_candidate",
+              "type:DeliberativeSelection"
+            ],
+            "native_writes_any": false,
+            "reads_any_agrees": true,
+            "rule_index": 2,
+            "rule_name": "cm4a_commit_native_collapse",
+            "writes_any_agrees": true
+          },
+          {
+            "active": true,
+            "extractor_only_reads": [],
+            "extractor_only_writes": [],
+            "extractor_read_wildcards": [],
+            "extractor_reads_any": false,
+            "extractor_write_wildcards": [],
+            "extractor_writes_any": false,
+            "native_only_reads": [],
+            "native_only_writes": [],
+            "native_reads": [
+              "attr:rejection_trace",
+              "attr:status",
+              "edge:has_candidate",
+              "edge:has_selection",
+              "edge:selects_candidate"
+            ],
+            "native_reads_any": false,
+            "native_term_edge_reads": [],
+            "native_writes": [
+              "attr:rejection_reason",
+              "attr:rejection_trace",
+              "attr:status"
+            ],
+            "native_writes_any": false,
+            "reads_any_agrees": true,
+            "rule_index": 3,
+            "rule_name": "cm4a_trace_rejected_competitors",
+            "writes_any_agrees": true
+          },
+          {
+            "active": true,
+            "extractor_only_reads": [],
+            "extractor_only_writes": [],
+            "extractor_read_wildcards": [],
+            "extractor_reads_any": false,
+            "extractor_write_wildcards": [],
+            "extractor_writes_any": false,
+            "native_only_reads": [],
+            "native_only_writes": [],
+            "native_reads": [
+              "attr:epoch",
+              "attr:score_epoch",
+              "attr:status",
+              "edge:has_candidate"
+            ],
+            "native_reads_any": false,
+            "native_term_edge_reads": [
+              "edge:has_candidate"
+            ],
+            "native_writes": [
+              "attr:candidate_trace_complete",
+              "attr:status"
+            ],
+            "native_writes_any": false,
+            "reads_any_agrees": true,
+            "rule_index": 4,
+            "rule_name": "cm4a_no_candidate",
+            "writes_any_agrees": true
+          },
+          {
+            "active": true,
+            "extractor_only_reads": [],
+            "extractor_only_writes": [],
+            "extractor_read_wildcards": [],
+            "extractor_reads_any": false,
+            "extractor_write_wildcards": [],
+            "extractor_writes_any": false,
+            "native_only_reads": [],
+            "native_only_writes": [],
+            "native_reads": [
+              "attr:candidate_source",
+              "attr:source_candidate_count",
+              "attr:status",
+              "edge:generated_from_discourse_state"
+            ],
+            "native_reads_any": false,
+            "native_term_edge_reads": [],
+            "native_writes": [
+              "attr:candidate_trace_complete",
+              "attr:status"
+            ],
+            "native_writes_any": false,
+            "reads_any_agrees": true,
+            "rule_index": 5,
+            "rule_name": "cm4c_no_candidate_from_empty_discourse_state",
+            "writes_any_agrees": true
+          },
+          {
+            "active": true,
+            "extractor_only_reads": [],
+            "extractor_only_writes": [],
+            "extractor_read_wildcards": [],
+            "extractor_reads_any": false,
+            "extractor_write_wildcards": [],
+            "extractor_writes_any": false,
+            "native_only_reads": [],
+            "native_only_writes": [],
+            "native_reads": [
+              "attr:candidate_id",
+              "attr:execution_ready",
+              "attr:status",
+              "edge:about_goal",
+              "edge:has_selection",
+              "edge:selects_candidate"
+            ],
+            "native_reads_any": false,
+            "native_term_edge_reads": [],
+            "native_writes": [
+              "attr:candidate_id",
+              "attr:status",
+              "edge:executes_candidate",
+              "edge:for_goal",
+              "edge:has_execution_trace",
+              "type:DeliberationExecutionTrace"
+            ],
+            "native_writes_any": false,
+            "reads_any_agrees": true,
+            "rule_index": 6,
+            "rule_name": "cm4a_begin_execution",
+            "writes_any_agrees": true
+          },
+          {
+            "active": true,
+            "extractor_only_reads": [],
+            "extractor_only_writes": [],
+            "extractor_read_wildcards": [],
+            "extractor_reads_any": false,
+            "extractor_write_wildcards": [],
+            "extractor_writes_any": false,
+            "native_only_reads": [],
+            "native_only_writes": [],
+            "native_reads": [
+              "attr:candidate_source",
+              "attr:source_candidate_count",
+              "attr:status",
+              "edge:generated_from_thought_manifold"
+            ],
+            "native_reads_any": false,
+            "native_term_edge_reads": [],
+            "native_writes": [
+              "attr:candidate_trace_complete",
+              "attr:status"
+            ],
+            "native_writes_any": false,
+            "reads_any_agrees": true,
+            "rule_index": 7,
+            "rule_name": "cm4d_no_candidate_from_empty_live_thought_manifold",
+            "writes_any_agrees": true
+          },
+          {
+            "active": true,
+            "extractor_only_reads": [],
+            "extractor_only_writes": [],
+            "extractor_read_wildcards": [],
+            "extractor_reads_any": false,
+            "extractor_write_wildcards": [],
+            "extractor_writes_any": false,
+            "native_only_reads": [],
+            "native_only_writes": [],
+            "native_reads": [
+              "attr:candidate_id",
+              "attr:outcome_status",
+              "attr:status",
+              "edge:about_goal",
+              "edge:executes_candidate",
+              "edge:has_execution_trace"
+            ],
+            "native_reads_any": false,
+            "native_term_edge_reads": [],
+            "native_writes": [
+              "attr:candidate_id",
+              "attr:settle_back_trace",
+              "attr:status",
+              "edge:has_settlement",
+              "edge:returns_to_goal",
+              "edge:settles_candidate",
+              "type:DeliberationSettlement"
+            ],
+            "native_writes_any": false,
+            "reads_any_agrees": true,
+            "rule_index": 8,
+            "rule_name": "cm4a_settle_back_resolved",
+            "writes_any_agrees": true
+          },
+          {
+            "active": true,
+            "extractor_only_reads": [],
+            "extractor_only_writes": [],
+            "extractor_read_wildcards": [],
+            "extractor_reads_any": false,
+            "extractor_write_wildcards": [],
+            "extractor_writes_any": false,
+            "native_only_reads": [],
+            "native_only_writes": [],
+            "native_reads": [
+              "attr:arbitration_score",
+              "attr:candidate_id",
+              "attr:counterfactual_trace",
+              "attr:grounding",
+              "attr:grounding_floor",
+              "attr:rejection_reason",
+              "attr:status",
+              "edge:has_candidate",
+              "edge:has_selection",
+              "edge:has_settlement",
+              "edge:selects_candidate"
+            ],
+            "native_reads_any": false,
+            "native_term_edge_reads": [],
+            "native_writes": [
+              "attr:alternative_score",
+              "attr:counterfactual_credit",
+              "attr:counterfactual_status",
+              "attr:counterfactual_trace",
+              "attr:rejected_candidate_id",
+              "attr:selected_candidate_id",
+              "attr:status",
+              "attr:trace",
+              "attr:winner_margin",
+              "attr:winner_outcome",
+              "attr:winner_score",
+              "edge:compared_with_winner",
+              "edge:credit_for_candidate",
+              "edge:has_counterfactual_credit",
+              "type:CounterfactualCredit"
+            ],
+            "native_writes_any": false,
+            "reads_any_agrees": true,
+            "rule_index": 9,
+            "rule_name": "cm4b_credit_grounded_rejected_alternatives",
+            "writes_any_agrees": true
+          }
+        ],
+        "status": "compared"
+      },
+      "nodes": 10,
+      "partitions": [
+        {
+          "by_depth": [
+            {
+              "crossing_edges_total": 25,
+              "cut_count": 1,
+              "depth": 0,
+              "max_boundary_vertices": 10,
+              "max_child_aperture": 5
+            },
+            {
+              "crossing_edges_total": 12,
+              "cut_count": 2,
+              "depth": 1,
+              "max_boundary_vertices": 5,
+              "max_child_aperture": 3
+            }
+          ],
+          "construction_time_ns": 120311,
+          "cross_frame_edge_count": 69,
+          "cut_rows": [
+            {
+              "boundary_vertices": 10,
+              "crossing_edges": 25,
+              "depth": 0,
+              "left_aperture": 5,
+              "left_nodes": 5,
+              "right_aperture": 5,
+              "right_nodes": 5
+            },
+            {
+              "boundary_vertices": 5,
+              "crossing_edges": 6,
+              "depth": 1,
+              "left_aperture": 2,
+              "left_nodes": 2,
+              "right_aperture": 3,
+              "right_nodes": 3
+            },
+            {
+              "boundary_vertices": 5,
+              "crossing_edges": 6,
+              "depth": 1,
+              "left_aperture": 2,
+              "left_nodes": 2,
+              "right_aperture": 3,
+              "right_nodes": 3
+            }
+          ],
+          "frame_count": 4,
+          "frame_sizes": [
+            2,
+            3,
+            2,
+            3
+          ],
+          "hierarchy_depth": 2,
+          "leaf_aperture_max": 3,
+          "leaf_aperture_median": 2.5,
+          "leaf_aperture_vertices": [
+            2,
+            3,
+            2,
+            3
+          ],
+          "partition_id": "seed_rule_order",
+          "seed": null
+        },
+        {
+          "by_depth": [
+            {
+              "crossing_edges_total": 25,
+              "cut_count": 1,
+              "depth": 0,
+              "max_boundary_vertices": 10,
+              "max_child_aperture": 5
+            },
+            {
+              "crossing_edges_total": 12,
+              "cut_count": 2,
+              "depth": 1,
+              "max_boundary_vertices": 5,
+              "max_child_aperture": 3
+            }
+          ],
+          "construction_time_ns": 128001,
+          "cross_frame_edge_count": 69,
+          "cut_rows": [
+            {
+              "boundary_vertices": 10,
+              "crossing_edges": 25,
+              "depth": 0,
+              "left_aperture": 5,
+              "left_nodes": 5,
+              "right_aperture": 5,
+              "right_nodes": 5
+            },
+            {
+              "boundary_vertices": 5,
+              "crossing_edges": 6,
+              "depth": 1,
+              "left_aperture": 2,
+              "left_nodes": 2,
+              "right_aperture": 3,
+              "right_nodes": 3
+            },
+            {
+              "boundary_vertices": 5,
+              "crossing_edges": 6,
+              "depth": 1,
+              "left_aperture": 2,
+              "left_nodes": 2,
+              "right_aperture": 3,
+              "right_nodes": 3
+            }
+          ],
+          "frame_count": 4,
+          "frame_sizes": [
+            2,
+            3,
+            2,
+            3
+          ],
+          "hierarchy_depth": 2,
+          "leaf_aperture_max": 3,
+          "leaf_aperture_median": 2.5,
+          "leaf_aperture_vertices": [
+            2,
+            3,
+            2,
+            3
+          ],
+          "partition_id": "shuffled_0",
+          "seed": 72100
+        },
+        {
+          "by_depth": [
+            {
+              "crossing_edges_total": 25,
+              "cut_count": 1,
+              "depth": 0,
+              "max_boundary_vertices": 10,
+              "max_child_aperture": 5
+            },
+            {
+              "crossing_edges_total": 12,
+              "cut_count": 2,
+              "depth": 1,
+              "max_boundary_vertices": 5,
+              "max_child_aperture": 3
+            }
+          ],
+          "construction_time_ns": 105450,
+          "cross_frame_edge_count": 69,
+          "cut_rows": [
+            {
+              "boundary_vertices": 10,
+              "crossing_edges": 25,
+              "depth": 0,
+              "left_aperture": 5,
+              "left_nodes": 5,
+              "right_aperture": 5,
+              "right_nodes": 5
+            },
+            {
+              "boundary_vertices": 5,
+              "crossing_edges": 6,
+              "depth": 1,
+              "left_aperture": 2,
+              "left_nodes": 2,
+              "right_aperture": 3,
+              "right_nodes": 3
+            },
+            {
+              "boundary_vertices": 5,
+              "crossing_edges": 6,
+              "depth": 1,
+              "left_aperture": 2,
+              "left_nodes": 2,
+              "right_aperture": 3,
+              "right_nodes": 3
+            }
+          ],
+          "frame_count": 4,
+          "frame_sizes": [
+            2,
+            3,
+            2,
+            3
+          ],
+          "hierarchy_depth": 2,
+          "leaf_aperture_max": 3,
+          "leaf_aperture_median": 2.5,
+          "leaf_aperture_vertices": [
+            2,
+            3,
+            2,
+            3
+          ],
+          "partition_id": "shuffled_1",
+          "seed": 72101
+        },
+        {
+          "by_depth": [
+            {
+              "crossing_edges_total": 25,
+              "cut_count": 1,
+              "depth": 0,
+              "max_boundary_vertices": 10,
+              "max_child_aperture": 5
+            },
+            {
+              "crossing_edges_total": 12,
+              "cut_count": 2,
+              "depth": 1,
+              "max_boundary_vertices": 5,
+              "max_child_aperture": 3
+            }
+          ],
+          "construction_time_ns": 122090,
+          "cross_frame_edge_count": 69,
+          "cut_rows": [
+            {
+              "boundary_vertices": 10,
+              "crossing_edges": 25,
+              "depth": 0,
+              "left_aperture": 5,
+              "left_nodes": 5,
+              "right_aperture": 5,
+              "right_nodes": 5
+            },
+            {
+              "boundary_vertices": 5,
+              "crossing_edges": 6,
+              "depth": 1,
+              "left_aperture": 2,
+              "left_nodes": 2,
+              "right_aperture": 3,
+              "right_nodes": 3
+            },
+            {
+              "boundary_vertices": 5,
+              "crossing_edges": 6,
+              "depth": 1,
+              "left_aperture": 2,
+              "left_nodes": 2,
+              "right_aperture": 3,
+              "right_nodes": 3
+            }
+          ],
+          "frame_count": 4,
+          "frame_sizes": [
+            2,
+            3,
+            2,
+            3
+          ],
+          "hierarchy_depth": 2,
+          "leaf_aperture_max": 3,
+          "leaf_aperture_median": 2.5,
+          "leaf_aperture_vertices": [
+            2,
+            3,
+            2,
+            3
+          ],
+          "partition_id": "shuffled_2",
+          "seed": 72102
+        },
+        {
+          "by_depth": [
+            {
+              "crossing_edges_total": 25,
+              "cut_count": 1,
+              "depth": 0,
+              "max_boundary_vertices": 10,
+              "max_child_aperture": 5
+            },
+            {
+              "crossing_edges_total": 12,
+              "cut_count": 2,
+              "depth": 1,
+              "max_boundary_vertices": 5,
+              "max_child_aperture": 3
+            }
+          ],
+          "construction_time_ns": 95691,
+          "cross_frame_edge_count": 69,
+          "cut_rows": [
+            {
+              "boundary_vertices": 10,
+              "crossing_edges": 25,
+              "depth": 0,
+              "left_aperture": 5,
+              "left_nodes": 5,
+              "right_aperture": 5,
+              "right_nodes": 5
+            },
+            {
+              "boundary_vertices": 5,
+              "crossing_edges": 6,
+              "depth": 1,
+              "left_aperture": 2,
+              "left_nodes": 2,
+              "right_aperture": 3,
+              "right_nodes": 3
+            },
+            {
+              "boundary_vertices": 5,
+              "crossing_edges": 6,
+              "depth": 1,
+              "left_aperture": 2,
+              "left_nodes": 2,
+              "right_aperture": 3,
+              "right_nodes": 3
+            }
+          ],
+          "frame_count": 4,
+          "frame_sizes": [
+            2,
+            3,
+            2,
+            3
+          ],
+          "hierarchy_depth": 2,
+          "leaf_aperture_max": 3,
+          "leaf_aperture_median": 2.5,
+          "leaf_aperture_vertices": [
+            2,
+            3,
+            2,
+            3
+          ],
+          "partition_id": "shuffled_3",
+          "seed": 72103
+        },
+        {
+          "by_depth": [
+            {
+              "crossing_edges_total": 25,
+              "cut_count": 1,
+              "depth": 0,
+              "max_boundary_vertices": 10,
+              "max_child_aperture": 5
+            },
+            {
+              "crossing_edges_total": 12,
+              "cut_count": 2,
+              "depth": 1,
+              "max_boundary_vertices": 5,
+              "max_child_aperture": 3
+            }
+          ],
+          "construction_time_ns": 119141,
+          "cross_frame_edge_count": 68,
+          "cut_rows": [
+            {
+              "boundary_vertices": 10,
+              "crossing_edges": 25,
+              "depth": 0,
+              "left_aperture": 5,
+              "left_nodes": 5,
+              "right_aperture": 5,
+              "right_nodes": 5
+            },
+            {
+              "boundary_vertices": 5,
+              "crossing_edges": 6,
+              "depth": 1,
+              "left_aperture": 2,
+              "left_nodes": 2,
+              "right_aperture": 3,
+              "right_nodes": 3
+            },
+            {
+              "boundary_vertices": 5,
+              "crossing_edges": 6,
+              "depth": 1,
+              "left_aperture": 2,
+              "left_nodes": 2,
+              "right_aperture": 3,
+              "right_nodes": 3
+            }
+          ],
+          "frame_count": 4,
+          "frame_sizes": [
+            2,
+            3,
+            2,
+            3
+          ],
+          "hierarchy_depth": 2,
+          "leaf_aperture_max": 3,
+          "leaf_aperture_median": 2.5,
+          "leaf_aperture_vertices": [
+            2,
+            3,
+            2,
+            3
+          ],
+          "partition_id": "shuffled_4",
+          "seed": 72104
+        }
+      ],
+      "rule_accesses": [
+        {
+          "name": "cm4a_reject_missing_grounding",
+          "reads": [
+            "attr:grounding",
+            "attr:grounding_floor",
+            "attr:rejection_trace",
+            "attr:status",
+            "edge:has_candidate"
+          ],
+          "unknown_effects": [],
+          "variable_roles": {
+            "c": [
+              "edge:has_candidate:target"
+            ],
+            "d": [
+              "edge:has_candidate:source"
+            ]
+          },
+          "writes": [
+            "attr:rejection_reason",
+            "attr:rejection_trace",
+            "attr:status"
+          ]
+        },
+        {
+          "name": "cm4a_score_grounded_candidates",
+          "reads": [
+            "attr:consequence",
+            "attr:consequence_gain",
+            "attr:epoch",
+            "attr:expected_value",
+            "attr:grounding",
+            "attr:grounding_floor",
+            "attr:novelty",
+            "attr:novelty_gain",
+            "attr:residual_cost",
+            "attr:residual_cost_gain",
+            "attr:score_epoch",
+            "attr:status",
+            "edge:has_candidate"
+          ],
+          "unknown_effects": [],
+          "variable_roles": {
+            "c": [
+              "edge:has_candidate:target"
+            ],
+            "d": [
+              "edge:has_candidate:source"
+            ]
+          },
+          "writes": [
+            "attr:arbitration_score",
+            "attr:score_epoch",
+            "attr:valuation_trace"
+          ]
+        },
+        {
+          "name": "cm4a_commit_native_collapse",
+          "reads": [
+            "attr:arbitration_score",
+            "attr:candidate_id",
+            "attr:epoch",
+            "attr:score_epoch",
+            "attr:status",
+            "edge:has_candidate"
+          ],
+          "unknown_effects": [],
+          "variable_roles": {
+            "c": [
+              "edge:has_candidate:target"
+            ],
+            "d": [
+              "edge:has_candidate:source"
+            ]
+          },
+          "writes": [
+            "attr:candidate_trace_complete",
+            "attr:epoch",
+            "attr:selected_candidate_id",
+            "attr:status",
+            "edge:has_selection",
+            "edge:selects_candidate",
+            "node_type:DeliberativeSelection"
+          ]
+        },
+        {
+          "name": "cm4a_trace_rejected_competitors",
+          "reads": [
+            "attr:rejection_trace",
+            "attr:status",
+            "edge:has_candidate",
+            "edge:has_selection",
+            "edge:selects_candidate"
+          ],
+          "unknown_effects": [],
+          "variable_roles": {
+            "c": [
+              "edge:has_candidate:target"
+            ],
+            "d": [
+              "edge:has_candidate:source",
+              "edge:has_selection:source"
+            ],
+            "selection": [
+              "edge:has_selection:target",
+              "edge:selects_candidate:source"
+            ],
+            "winner": [
+              "edge:selects_candidate:target"
+            ]
+          },
+          "writes": [
+            "attr:rejection_reason",
+            "attr:rejection_trace",
+            "attr:status"
+          ]
+        },
+        {
+          "name": "cm4a_no_candidate",
+          "reads": [
+            "attr:epoch",
+            "attr:score_epoch",
+            "attr:status",
+            "edge:has_candidate"
+          ],
+          "unknown_effects": [],
+          "variable_roles": {
+            "c": [
+              "edge:has_candidate:target"
+            ],
+            "d": [
+              "edge:has_candidate:source"
+            ]
+          },
+          "writes": [
+            "attr:candidate_trace_complete",
+            "attr:status"
+          ]
+        },
+        {
+          "name": "cm4c_no_candidate_from_empty_discourse_state",
+          "reads": [
+            "attr:candidate_source",
+            "attr:source_candidate_count",
+            "attr:status",
+            "edge:generated_from_discourse_state"
+          ],
+          "unknown_effects": [],
+          "variable_roles": {
+            "d": [
+              "edge:generated_from_discourse_state:source"
+            ],
+            "state": [
+              "edge:generated_from_discourse_state:target"
+            ]
+          },
+          "writes": [
+            "attr:candidate_trace_complete",
+            "attr:status"
+          ]
+        },
+        {
+          "name": "cm4a_begin_execution",
+          "reads": [
+            "attr:candidate_id",
+            "attr:execution_ready",
+            "attr:status",
+            "edge:about_goal",
+            "edge:has_selection",
+            "edge:selects_candidate"
+          ],
+          "unknown_effects": [],
+          "variable_roles": {
+            "c": [
+              "edge:selects_candidate:target"
+            ],
+            "d": [
+              "edge:about_goal:source",
+              "edge:has_selection:source"
+            ],
+            "g": [
+              "edge:about_goal:target"
+            ],
+            "selection": [
+              "edge:has_selection:target",
+              "edge:selects_candidate:source"
+            ]
+          },
+          "writes": [
+            "attr:candidate_id",
+            "attr:status",
+            "edge:executes_candidate",
+            "edge:for_goal",
+            "edge:has_execution_trace",
+            "node_type:DeliberationExecutionTrace"
+          ]
+        },
+        {
+          "name": "cm4d_no_candidate_from_empty_live_thought_manifold",
+          "reads": [
+            "attr:candidate_source",
+            "attr:source_candidate_count",
+            "attr:status",
+            "edge:generated_from_thought_manifold"
+          ],
+          "unknown_effects": [],
+          "variable_roles": {
+            "d": [
+              "edge:generated_from_thought_manifold:source"
+            ],
+            "manifold": [
+              "edge:generated_from_thought_manifold:target"
+            ]
+          },
+          "writes": [
+            "attr:candidate_trace_complete",
+            "attr:status"
+          ]
+        },
+        {
+          "name": "cm4a_settle_back_resolved",
+          "reads": [
+            "attr:candidate_id",
+            "attr:outcome_status",
+            "attr:status",
+            "edge:about_goal",
+            "edge:executes_candidate",
+            "edge:has_execution_trace"
+          ],
+          "unknown_effects": [],
+          "variable_roles": {
+            "c": [
+              "edge:executes_candidate:target"
+            ],
+            "d": [
+              "edge:about_goal:source",
+              "edge:has_execution_trace:source"
+            ],
+            "execution": [
+              "edge:executes_candidate:source",
+              "edge:has_execution_trace:target"
+            ],
+            "g": [
+              "edge:about_goal:target"
+            ]
+          },
+          "writes": [
+            "attr:candidate_id",
+            "attr:settle_back_trace",
+            "attr:status",
+            "edge:has_settlement",
+            "edge:returns_to_goal",
+            "edge:settles_candidate",
+            "node_type:DeliberationSettlement"
+          ]
+        },
+        {
+          "name": "cm4b_credit_grounded_rejected_alternatives",
+          "reads": [
+            "attr:arbitration_score",
+            "attr:candidate_id",
+            "attr:counterfactual_trace",
+            "attr:grounding",
+            "attr:grounding_floor",
+            "attr:rejection_reason",
+            "attr:status",
+            "edge:has_candidate",
+            "edge:has_selection",
+            "edge:has_settlement",
+            "edge:selects_candidate"
+          ],
+          "unknown_effects": [],
+          "variable_roles": {
+            "c": [
+              "edge:has_candidate:target"
+            ],
+            "d": [
+              "edge:has_candidate:source",
+              "edge:has_selection:source",
+              "edge:has_settlement:source"
+            ],
+            "selection": [
+              "edge:has_selection:target",
+              "edge:selects_candidate:source"
+            ],
+            "settlement": [
+              "edge:has_settlement:target"
+            ],
+            "winner": [
+              "edge:selects_candidate:target"
+            ]
+          },
+          "writes": [
+            "attr:alternative_score",
+            "attr:counterfactual_credit",
+            "attr:counterfactual_status",
+            "attr:counterfactual_trace",
+            "attr:rejected_candidate_id",
+            "attr:selected_candidate_id",
+            "attr:status",
+            "attr:trace",
+            "attr:winner_margin",
+            "attr:winner_outcome",
+            "attr:winner_score",
+            "edge:compared_with_winner",
+            "edge:credit_for_candidate",
+            "edge:has_counterfactual_credit",
+            "node_type:CounterfactualCredit"
+          ]
+        }
+      ],
+      "rules_active": 10,
+      "rules_total": 10,
+      "rules_with_unknown_effects": 0,
+      "scc_sizes": [
+        10
+      ],
+      "self_dependency_count": 10,
+      "source_seed": {
+        "path": "seeds/conversation_deliberation_phase4a.json",
+        "seed_id": "conversation_deliberation_phase4a",
+        "seed_version": "1.0.0",
+        "sha256": "fff5e65ba7d5d1236781d0e6e41769b6ee7452edef5d75b34554e4f5d7e67bbc"
+      },
+      "treewidth_exact": 9,
+      "treewidth_exact_time_ns": 5696261299,
+      "treewidth_upper_bound": 9,
+      "undirected_projection_edges": 45,
+      "workload_family": "conversation_deliberation"
+    },
+    {
+      "dependency_edges": [
+        {
+          "reader": "cm4a_reject_missing_grounding",
+          "writer": "cm4a_reject_missing_grounding"
+        },
+        {
+          "reader": "cm4a_score_grounded_candidates",
+          "writer": "cm4a_reject_missing_grounding"
+        },
+        {
+          "reader": "cm4a_trace_rejected_competitors",
+          "writer": "cm4a_reject_missing_grounding"
+        },
+        {
+          "reader": "cm4b_credit_grounded_rejected_alternatives",
+          "writer": "cm4a_reject_missing_grounding"
+        },
+        {
+          "reader": "cm4a_score_grounded_candidates",
+          "writer": "cm4a_score_grounded_candidates"
+        },
+        {
+          "reader": "cm4b_credit_grounded_rejected_alternatives",
+          "writer": "cm4a_score_grounded_candidates"
+        },
+        {
+          "reader": "cm4a_reject_missing_grounding",
+          "writer": "cm4a_commit_native_collapse"
+        },
+        {
+          "reader": "cm4a_score_grounded_candidates",
+          "writer": "cm4a_commit_native_collapse"
+        },
+        {
+          "reader": "cm4a_commit_native_collapse",
+          "writer": "cm4a_commit_native_collapse"
+        },
+        {
+          "reader": "cm4a_trace_rejected_competitors",
+          "writer": "cm4a_commit_native_collapse"
+        },
+        {
+          "reader": "cm4a_no_candidate",
+          "writer": "cm4a_commit_native_collapse"
+        },
+        {
+          "reader": "cm4a_begin_execution",
+          "writer": "cm4a_commit_native_collapse"
+        },
+        {
+          "reader": "cm4b_credit_grounded_rejected_alternatives",
+          "writer": "cm4a_commit_native_collapse"
+        },
+        {
+          "reader": "cm4a_reject_missing_grounding",
+          "writer": "cm4a_trace_rejected_competitors"
+        },
+        {
+          "reader": "cm4a_score_grounded_candidates",
+          "writer": "cm4a_trace_rejected_competitors"
+        },
+        {
+          "reader": "cm4a_trace_rejected_competitors",
+          "writer": "cm4a_trace_rejected_competitors"
+        },
+        {
+          "reader": "cm4b_credit_grounded_rejected_alternatives",
+          "writer": "cm4a_trace_rejected_competitors"
+        },
+        {
+          "reader": "cm4a_reject_missing_grounding",
+          "writer": "cm4a_no_candidate"
+        },
+        {
+          "reader": "cm4a_score_grounded_candidates",
+          "writer": "cm4a_no_candidate"
+        },
+        {
+          "reader": "cm4a_commit_native_collapse",
+          "writer": "cm4a_no_candidate"
+        },
+        {
+          "reader": "cm4a_no_candidate",
+          "writer": "cm4a_no_candidate"
+        },
+        {
+          "reader": "cm4c_no_candidate_from_empty_discourse_state",
+          "writer": "cm4c_no_candidate_from_empty_discourse_state"
+        },
+        {
+          "reader": "cm4a_begin_execution",
+          "writer": "cm4a_begin_execution"
+        },
+        {
+          "reader": "cm4a_settle_back_resolved",
+          "writer": "cm4a_begin_execution"
+        },
+        {
+          "reader": "cm4b_credit_grounded_rejected_alternatives",
+          "writer": "cm4a_begin_execution"
+        },
+        {
+          "reader": "cm4d_no_candidate_from_empty_live_thought_manifold",
+          "writer": "cm4d_no_candidate_from_empty_live_thought_manifold"
+        },
+        {
+          "reader": "cm4a_settle_back_resolved",
+          "writer": "cm4a_settle_back_resolved"
+        },
+        {
+          "reader": "cm4b_credit_grounded_rejected_alternatives",
+          "writer": "cm4a_settle_back_resolved"
+        },
+        {
+          "reader": "cm4b_credit_grounded_rejected_alternatives",
+          "writer": "cm4b_credit_grounded_rejected_alternatives"
+        }
+      ],
+      "dependency_projection": "variable_role",
+      "directed_dependency_edges": 29,
+      "min_fill_time_ns": 117441,
+      "native_access_audit": {
+        "native_extension_path": "/tmp/ocelot-native-access.YXVL5L/substrate_rs/_native.abi3.so",
+        "native_extension_sha256": "4a6fef0d74e11ac6e0e9dacd357739bd9f597ba0d7569afd1f84dcaf514c88ba",
+        "rule_count": 10,
+        "rules": [
+          {
+            "active": true,
+            "extractor_only_reads": [],
+            "extractor_only_writes": [],
+            "extractor_read_wildcards": [],
+            "extractor_reads_any": false,
+            "extractor_write_wildcards": [],
+            "extractor_writes_any": false,
+            "native_only_reads": [],
+            "native_only_writes": [],
+            "native_reads": [
+              "attr:grounding",
+              "attr:grounding_floor",
+              "attr:rejection_trace",
+              "attr:status",
+              "edge:has_candidate"
+            ],
+            "native_reads_any": false,
+            "native_term_edge_reads": [],
+            "native_writes": [
+              "attr:rejection_reason",
+              "attr:rejection_trace",
+              "attr:status"
+            ],
+            "native_writes_any": false,
+            "reads_any_agrees": true,
+            "rule_index": 0,
+            "rule_name": "cm4a_reject_missing_grounding",
+            "writes_any_agrees": true
+          },
+          {
+            "active": true,
+            "extractor_only_reads": [],
+            "extractor_only_writes": [],
+            "extractor_read_wildcards": [],
+            "extractor_reads_any": false,
+            "extractor_write_wildcards": [],
+            "extractor_writes_any": false,
+            "native_only_reads": [],
+            "native_only_writes": [],
+            "native_reads": [
+              "attr:consequence",
+              "attr:consequence_gain",
+              "attr:epoch",
+              "attr:expected_value",
+              "attr:grounding",
+              "attr:grounding_floor",
+              "attr:novelty",
+              "attr:novelty_gain",
+              "attr:residual_cost",
+              "attr:residual_cost_gain",
+              "attr:score_epoch",
+              "attr:status",
+              "edge:has_candidate"
+            ],
+            "native_reads_any": false,
+            "native_term_edge_reads": [],
+            "native_writes": [
+              "attr:arbitration_score",
+              "attr:score_epoch",
+              "attr:valuation_trace"
+            ],
+            "native_writes_any": false,
+            "reads_any_agrees": true,
+            "rule_index": 1,
+            "rule_name": "cm4a_score_grounded_candidates",
+            "writes_any_agrees": true
+          },
+          {
+            "active": true,
+            "extractor_only_reads": [],
+            "extractor_only_writes": [],
+            "extractor_read_wildcards": [],
+            "extractor_reads_any": false,
+            "extractor_write_wildcards": [],
+            "extractor_writes_any": false,
+            "native_only_reads": [],
+            "native_only_writes": [],
+            "native_reads": [
+              "attr:arbitration_score",
+              "attr:candidate_id",
+              "attr:epoch",
+              "attr:score_epoch",
+              "attr:status",
+              "edge:has_candidate"
+            ],
+            "native_reads_any": false,
+            "native_term_edge_reads": [
+              "edge:has_candidate"
+            ],
+            "native_writes": [
+              "attr:candidate_trace_complete",
+              "attr:epoch",
+              "attr:selected_candidate_id",
+              "attr:status",
+              "edge:has_selection",
+              "edge:selects_candidate",
+              "type:DeliberativeSelection"
+            ],
+            "native_writes_any": false,
+            "reads_any_agrees": true,
+            "rule_index": 2,
+            "rule_name": "cm4a_commit_native_collapse",
+            "writes_any_agrees": true
+          },
+          {
+            "active": true,
+            "extractor_only_reads": [],
+            "extractor_only_writes": [],
+            "extractor_read_wildcards": [],
+            "extractor_reads_any": false,
+            "extractor_write_wildcards": [],
+            "extractor_writes_any": false,
+            "native_only_reads": [],
+            "native_only_writes": [],
+            "native_reads": [
+              "attr:rejection_trace",
+              "attr:status",
+              "edge:has_candidate",
+              "edge:has_selection",
+              "edge:selects_candidate"
+            ],
+            "native_reads_any": false,
+            "native_term_edge_reads": [],
+            "native_writes": [
+              "attr:rejection_reason",
+              "attr:rejection_trace",
+              "attr:status"
+            ],
+            "native_writes_any": false,
+            "reads_any_agrees": true,
+            "rule_index": 3,
+            "rule_name": "cm4a_trace_rejected_competitors",
+            "writes_any_agrees": true
+          },
+          {
+            "active": true,
+            "extractor_only_reads": [],
+            "extractor_only_writes": [],
+            "extractor_read_wildcards": [],
+            "extractor_reads_any": false,
+            "extractor_write_wildcards": [],
+            "extractor_writes_any": false,
+            "native_only_reads": [],
+            "native_only_writes": [],
+            "native_reads": [
+              "attr:epoch",
+              "attr:score_epoch",
+              "attr:status",
+              "edge:has_candidate"
+            ],
+            "native_reads_any": false,
+            "native_term_edge_reads": [
+              "edge:has_candidate"
+            ],
+            "native_writes": [
+              "attr:candidate_trace_complete",
+              "attr:status"
+            ],
+            "native_writes_any": false,
+            "reads_any_agrees": true,
+            "rule_index": 4,
+            "rule_name": "cm4a_no_candidate",
+            "writes_any_agrees": true
+          },
+          {
+            "active": true,
+            "extractor_only_reads": [],
+            "extractor_only_writes": [],
+            "extractor_read_wildcards": [],
+            "extractor_reads_any": false,
+            "extractor_write_wildcards": [],
+            "extractor_writes_any": false,
+            "native_only_reads": [],
+            "native_only_writes": [],
+            "native_reads": [
+              "attr:candidate_source",
+              "attr:source_candidate_count",
+              "attr:status",
+              "edge:generated_from_discourse_state"
+            ],
+            "native_reads_any": false,
+            "native_term_edge_reads": [],
+            "native_writes": [
+              "attr:candidate_trace_complete",
+              "attr:status"
+            ],
+            "native_writes_any": false,
+            "reads_any_agrees": true,
+            "rule_index": 5,
+            "rule_name": "cm4c_no_candidate_from_empty_discourse_state",
+            "writes_any_agrees": true
+          },
+          {
+            "active": true,
+            "extractor_only_reads": [],
+            "extractor_only_writes": [],
+            "extractor_read_wildcards": [],
+            "extractor_reads_any": false,
+            "extractor_write_wildcards": [],
+            "extractor_writes_any": false,
+            "native_only_reads": [],
+            "native_only_writes": [],
+            "native_reads": [
+              "attr:candidate_id",
+              "attr:execution_ready",
+              "attr:status",
+              "edge:about_goal",
+              "edge:has_selection",
+              "edge:selects_candidate"
+            ],
+            "native_reads_any": false,
+            "native_term_edge_reads": [],
+            "native_writes": [
+              "attr:candidate_id",
+              "attr:status",
+              "edge:executes_candidate",
+              "edge:for_goal",
+              "edge:has_execution_trace",
+              "type:DeliberationExecutionTrace"
+            ],
+            "native_writes_any": false,
+            "reads_any_agrees": true,
+            "rule_index": 6,
+            "rule_name": "cm4a_begin_execution",
+            "writes_any_agrees": true
+          },
+          {
+            "active": true,
+            "extractor_only_reads": [],
+            "extractor_only_writes": [],
+            "extractor_read_wildcards": [],
+            "extractor_reads_any": false,
+            "extractor_write_wildcards": [],
+            "extractor_writes_any": false,
+            "native_only_reads": [],
+            "native_only_writes": [],
+            "native_reads": [
+              "attr:candidate_source",
+              "attr:source_candidate_count",
+              "attr:status",
+              "edge:generated_from_thought_manifold"
+            ],
+            "native_reads_any": false,
+            "native_term_edge_reads": [],
+            "native_writes": [
+              "attr:candidate_trace_complete",
+              "attr:status"
+            ],
+            "native_writes_any": false,
+            "reads_any_agrees": true,
+            "rule_index": 7,
+            "rule_name": "cm4d_no_candidate_from_empty_live_thought_manifold",
+            "writes_any_agrees": true
+          },
+          {
+            "active": true,
+            "extractor_only_reads": [],
+            "extractor_only_writes": [],
+            "extractor_read_wildcards": [],
+            "extractor_reads_any": false,
+            "extractor_write_wildcards": [],
+            "extractor_writes_any": false,
+            "native_only_reads": [],
+            "native_only_writes": [],
+            "native_reads": [
+              "attr:candidate_id",
+              "attr:outcome_status",
+              "attr:status",
+              "edge:about_goal",
+              "edge:executes_candidate",
+              "edge:has_execution_trace"
+            ],
+            "native_reads_any": false,
+            "native_term_edge_reads": [],
+            "native_writes": [
+              "attr:candidate_id",
+              "attr:settle_back_trace",
+              "attr:status",
+              "edge:has_settlement",
+              "edge:returns_to_goal",
+              "edge:settles_candidate",
+              "type:DeliberationSettlement"
+            ],
+            "native_writes_any": false,
+            "reads_any_agrees": true,
+            "rule_index": 8,
+            "rule_name": "cm4a_settle_back_resolved",
+            "writes_any_agrees": true
+          },
+          {
+            "active": true,
+            "extractor_only_reads": [],
+            "extractor_only_writes": [],
+            "extractor_read_wildcards": [],
+            "extractor_reads_any": false,
+            "extractor_write_wildcards": [],
+            "extractor_writes_any": false,
+            "native_only_reads": [],
+            "native_only_writes": [],
+            "native_reads": [
+              "attr:arbitration_score",
+              "attr:candidate_id",
+              "attr:counterfactual_trace",
+              "attr:grounding",
+              "attr:grounding_floor",
+              "attr:rejection_reason",
+              "attr:status",
+              "edge:has_candidate",
+              "edge:has_selection",
+              "edge:has_settlement",
+              "edge:selects_candidate"
+            ],
+            "native_reads_any": false,
+            "native_term_edge_reads": [],
+            "native_writes": [
+              "attr:alternative_score",
+              "attr:counterfactual_credit",
+              "attr:counterfactual_status",
+              "attr:counterfactual_trace",
+              "attr:rejected_candidate_id",
+              "attr:selected_candidate_id",
+              "attr:status",
+              "attr:trace",
+              "attr:winner_margin",
+              "attr:winner_outcome",
+              "attr:winner_score",
+              "edge:compared_with_winner",
+              "edge:credit_for_candidate",
+              "edge:has_counterfactual_credit",
+              "type:CounterfactualCredit"
+            ],
+            "native_writes_any": false,
+            "reads_any_agrees": true,
+            "rule_index": 9,
+            "rule_name": "cm4b_credit_grounded_rejected_alternatives",
+            "writes_any_agrees": true
+          }
+        ],
+        "status": "compared"
+      },
+      "nodes": 10,
+      "partitions": [
+        {
+          "by_depth": [
+            {
+              "crossing_edges_total": 5,
+              "cut_count": 1,
+              "depth": 0,
+              "max_boundary_vertices": 6,
+              "max_child_aperture": 4
+            },
+            {
+              "crossing_edges_total": 8,
+              "cut_count": 2,
+              "depth": 1,
+              "max_boundary_vertices": 5,
+              "max_child_aperture": 3
+            }
+          ],
+          "construction_time_ns": 82790,
+          "cross_frame_edge_count": 14,
+          "cut_rows": [
+            {
+              "boundary_vertices": 6,
+              "crossing_edges": 5,
+              "depth": 0,
+              "left_aperture": 4,
+              "left_nodes": 5,
+              "right_aperture": 2,
+              "right_nodes": 5
+            },
+            {
+              "boundary_vertices": 5,
+              "crossing_edges": 6,
+              "depth": 1,
+              "left_aperture": 2,
+              "left_nodes": 2,
+              "right_aperture": 3,
+              "right_nodes": 3
+            },
+            {
+              "boundary_vertices": 3,
+              "crossing_edges": 2,
+              "depth": 1,
+              "left_aperture": 1,
+              "left_nodes": 2,
+              "right_aperture": 2,
+              "right_nodes": 3
+            }
+          ],
+          "frame_count": 4,
+          "frame_sizes": [
+            2,
+            3,
+            2,
+            3
+          ],
+          "hierarchy_depth": 2,
+          "leaf_aperture_max": 3,
+          "leaf_aperture_median": 2.0,
+          "leaf_aperture_vertices": [
+            2,
+            3,
+            1,
+            2
+          ],
+          "partition_id": "seed_rule_order",
+          "seed": null
+        },
+        {
+          "by_depth": [
+            {
+              "crossing_edges_total": 9,
+              "cut_count": 1,
+              "depth": 0,
+              "max_boundary_vertices": 7,
+              "max_child_aperture": 4
+            },
+            {
+              "crossing_edges_total": 5,
+              "cut_count": 2,
+              "depth": 1,
+              "max_boundary_vertices": 4,
+              "max_child_aperture": 3
+            }
+          ],
+          "construction_time_ns": 42061,
+          "cross_frame_edge_count": 16,
+          "cut_rows": [
+            {
+              "boundary_vertices": 7,
+              "crossing_edges": 9,
+              "depth": 0,
+              "left_aperture": 4,
+              "left_nodes": 5,
+              "right_aperture": 3,
+              "right_nodes": 5
+            },
+            {
+              "boundary_vertices": 4,
+              "crossing_edges": 3,
+              "depth": 1,
+              "left_aperture": 1,
+              "left_nodes": 2,
+              "right_aperture": 3,
+              "right_nodes": 3
+            },
+            {
+              "boundary_vertices": 3,
+              "crossing_edges": 2,
+              "depth": 1,
+              "left_aperture": 1,
+              "left_nodes": 2,
+              "right_aperture": 2,
+              "right_nodes": 3
+            }
+          ],
+          "frame_count": 4,
+          "frame_sizes": [
+            2,
+            3,
+            2,
+            3
+          ],
+          "hierarchy_depth": 2,
+          "leaf_aperture_max": 3,
+          "leaf_aperture_median": 2.0,
+          "leaf_aperture_vertices": [
+            2,
+            3,
+            1,
+            2
+          ],
+          "partition_id": "shuffled_0",
+          "seed": 72100
+        },
+        {
+          "by_depth": [
+            {
+              "crossing_edges_total": 8,
+              "cut_count": 1,
+              "depth": 0,
+              "max_boundary_vertices": 8,
+              "max_child_aperture": 5
+            },
+            {
+              "crossing_edges_total": 6,
+              "cut_count": 2,
+              "depth": 1,
+              "max_boundary_vertices": 5,
+              "max_child_aperture": 3
+            }
+          ],
+          "construction_time_ns": 41760,
+          "cross_frame_edge_count": 16,
+          "cut_rows": [
+            {
+              "boundary_vertices": 8,
+              "crossing_edges": 8,
+              "depth": 0,
+              "left_aperture": 5,
+              "left_nodes": 5,
+              "right_aperture": 3,
+              "right_nodes": 5
+            },
+            {
+              "boundary_vertices": 5,
+              "crossing_edges": 5,
+              "depth": 1,
+              "left_aperture": 2,
+              "left_nodes": 2,
+              "right_aperture": 3,
+              "right_nodes": 3
+            },
+            {
+              "boundary_vertices": 2,
+              "crossing_edges": 1,
+              "depth": 1,
+              "left_aperture": 1,
+              "left_nodes": 2,
+              "right_aperture": 1,
+              "right_nodes": 3
+            }
+          ],
+          "frame_count": 4,
+          "frame_sizes": [
+            2,
+            3,
+            2,
+            3
+          ],
+          "hierarchy_depth": 2,
+          "leaf_aperture_max": 3,
+          "leaf_aperture_median": 2.0,
+          "leaf_aperture_vertices": [
+            2,
+            3,
+            1,
+            2
+          ],
+          "partition_id": "shuffled_1",
+          "seed": 72101
+        },
+        {
+          "by_depth": [
+            {
+              "crossing_edges_total": 8,
+              "cut_count": 1,
+              "depth": 0,
+              "max_boundary_vertices": 8,
+              "max_child_aperture": 5
+            },
+            {
+              "crossing_edges_total": 5,
+              "cut_count": 2,
+              "depth": 1,
+              "max_boundary_vertices": 5,
+              "max_child_aperture": 3
+            }
+          ],
+          "construction_time_ns": 44230,
+          "cross_frame_edge_count": 15,
+          "cut_rows": [
+            {
+              "boundary_vertices": 8,
+              "crossing_edges": 8,
+              "depth": 0,
+              "left_aperture": 3,
+              "left_nodes": 5,
+              "right_aperture": 5,
+              "right_nodes": 5
+            },
+            {
+              "boundary_vertices": 0,
+              "crossing_edges": 0,
+              "depth": 1,
+              "left_aperture": 0,
+              "left_nodes": 2,
+              "right_aperture": 0,
+              "right_nodes": 3
+            },
+            {
+              "boundary_vertices": 5,
+              "crossing_edges": 5,
+              "depth": 1,
+              "left_aperture": 2,
+              "left_nodes": 2,
+              "right_aperture": 3,
+              "right_nodes": 3
+            }
+          ],
+          "frame_count": 4,
+          "frame_sizes": [
+            2,
+            3,
+            2,
+            3
+          ],
+          "hierarchy_depth": 2,
+          "leaf_aperture_max": 3,
+          "leaf_aperture_median": 2.5,
+          "leaf_aperture_vertices": [
+            0,
+            3,
+            2,
+            3
+          ],
+          "partition_id": "shuffled_2",
+          "seed": 72102
+        },
+        {
+          "by_depth": [
+            {
+              "crossing_edges_total": 8,
+              "cut_count": 1,
+              "depth": 0,
+              "max_boundary_vertices": 7,
+              "max_child_aperture": 4
+            },
+            {
+              "crossing_edges_total": 4,
+              "cut_count": 2,
+              "depth": 1,
+              "max_boundary_vertices": 3,
+              "max_child_aperture": 2
+            }
+          ],
+          "construction_time_ns": 51061,
+          "cross_frame_edge_count": 13,
+          "cut_rows": [
+            {
+              "boundary_vertices": 7,
+              "crossing_edges": 8,
+              "depth": 0,
+              "left_aperture": 4,
+              "left_nodes": 5,
+              "right_aperture": 3,
+              "right_nodes": 5
+            },
+            {
+              "boundary_vertices": 3,
+              "crossing_edges": 2,
+              "depth": 1,
+              "left_aperture": 2,
+              "left_nodes": 2,
+              "right_aperture": 1,
+              "right_nodes": 3
+            },
+            {
+              "boundary_vertices": 3,
+              "crossing_edges": 2,
+              "depth": 1,
+              "left_aperture": 1,
+              "left_nodes": 2,
+              "right_aperture": 2,
+              "right_nodes": 3
+            }
+          ],
+          "frame_count": 4,
+          "frame_sizes": [
+            2,
+            3,
+            2,
+            3
+          ],
+          "hierarchy_depth": 2,
+          "leaf_aperture_max": 2,
+          "leaf_aperture_median": 2.0,
+          "leaf_aperture_vertices": [
+            2,
+            2,
+            1,
+            2
+          ],
+          "partition_id": "shuffled_3",
+          "seed": 72103
+        },
+        {
+          "by_depth": [
+            {
+              "crossing_edges_total": 10,
+              "cut_count": 1,
+              "depth": 0,
+              "max_boundary_vertices": 8,
+              "max_child_aperture": 5
+            },
+            {
+              "crossing_edges_total": 5,
+              "cut_count": 2,
+              "depth": 1,
+              "max_boundary_vertices": 5,
+              "max_child_aperture": 3
+            }
+          ],
+          "construction_time_ns": 36490,
+          "cross_frame_edge_count": 17,
+          "cut_rows": [
+            {
+              "boundary_vertices": 8,
+              "crossing_edges": 10,
+              "depth": 0,
+              "left_aperture": 3,
+              "left_nodes": 5,
+              "right_aperture": 5,
+              "right_nodes": 5
+            },
+            {
+              "boundary_vertices": 2,
+              "crossing_edges": 1,
+              "depth": 1,
+              "left_aperture": 1,
+              "left_nodes": 2,
+              "right_aperture": 1,
+              "right_nodes": 3
+            },
+            {
+              "boundary_vertices": 5,
+              "crossing_edges": 4,
+              "depth": 1,
+              "left_aperture": 2,
+              "left_nodes": 2,
+              "right_aperture": 3,
+              "right_nodes": 3
+            }
+          ],
+          "frame_count": 4,
+          "frame_sizes": [
+            2,
+            3,
+            2,
+            3
+          ],
+          "hierarchy_depth": 2,
+          "leaf_aperture_max": 3,
+          "leaf_aperture_median": 2.0,
+          "leaf_aperture_vertices": [
+            1,
+            2,
+            2,
+            3
+          ],
+          "partition_id": "shuffled_4",
+          "seed": 72104
+        }
+      ],
+      "rule_accesses": [
+        {
+          "name": "cm4a_reject_missing_grounding",
+          "reads": [
+            "attr:grounding@edge:has_candidate:target",
+            "attr:grounding_floor@edge:has_candidate:source",
+            "attr:rejection_trace@edge:has_candidate:target",
+            "attr:status@edge:has_candidate:source",
+            "edge:has_candidate"
+          ],
+          "unknown_effects": [],
+          "variable_roles": {
+            "c": [
+              "edge:has_candidate:target"
+            ],
+            "d": [
+              "edge:has_candidate:source"
+            ]
+          },
+          "writes": [
+            "attr:rejection_reason@edge:has_candidate:target",
+            "attr:rejection_trace@edge:has_candidate:target",
+            "attr:status@edge:has_candidate:target"
+          ]
+        },
+        {
+          "name": "cm4a_score_grounded_candidates",
+          "reads": [
+            "attr:consequence@edge:has_candidate:target",
+            "attr:consequence_gain@edge:has_candidate:source",
+            "attr:epoch@edge:has_candidate:source",
+            "attr:expected_value@edge:has_candidate:target",
+            "attr:grounding@edge:has_candidate:target",
+            "attr:grounding_floor@edge:has_candidate:source",
+            "attr:novelty@edge:has_candidate:target",
+            "attr:novelty_gain@edge:has_candidate:source",
+            "attr:residual_cost@edge:has_candidate:target",
+            "attr:residual_cost_gain@edge:has_candidate:source",
+            "attr:score_epoch@edge:has_candidate:target",
+            "attr:status@edge:has_candidate:source",
+            "attr:status@edge:has_candidate:target",
+            "edge:has_candidate"
+          ],
+          "unknown_effects": [],
+          "variable_roles": {
+            "c": [
+              "edge:has_candidate:target"
+            ],
+            "d": [
+              "edge:has_candidate:source"
+            ]
+          },
+          "writes": [
+            "attr:arbitration_score@edge:has_candidate:target",
+            "attr:score_epoch@edge:has_candidate:target",
+            "attr:valuation_trace@edge:has_candidate:target"
+          ]
+        },
+        {
+          "name": "cm4a_commit_native_collapse",
+          "reads": [
+            "attr:arbitration_score@unanchored",
+            "attr:candidate_id@edge:has_candidate:target",
+            "attr:epoch@edge:has_candidate:source",
+            "attr:score_epoch@unanchored",
+            "attr:status@edge:has_candidate:source",
+            "edge:has_candidate"
+          ],
+          "unknown_effects": [],
+          "variable_roles": {
+            "c": [
+              "edge:has_candidate:target"
+            ],
+            "d": [
+              "edge:has_candidate:source"
+            ]
+          },
+          "writes": [
+            "attr:candidate_trace_complete@edge:has_candidate:source",
+            "attr:epoch@indirect",
+            "attr:selected_candidate_id@indirect",
+            "attr:status@edge:has_candidate:source",
+            "attr:status@edge:has_candidate:target",
+            "attr:status@indirect",
+            "edge:has_selection",
+            "edge:selects_candidate",
+            "node_type:DeliberativeSelection"
+          ]
+        },
+        {
+          "name": "cm4a_trace_rejected_competitors",
+          "reads": [
+            "attr:rejection_trace@edge:has_candidate:target",
+            "attr:status@edge:has_candidate:source+edge:has_selection:source",
+            "edge:has_candidate",
+            "edge:has_selection",
+            "edge:selects_candidate"
+          ],
+          "unknown_effects": [],
+          "variable_roles": {
+            "c": [
+              "edge:has_candidate:target"
+            ],
+            "d": [
+              "edge:has_candidate:source",
+              "edge:has_selection:source"
+            ],
+            "selection": [
+              "edge:has_selection:target",
+              "edge:selects_candidate:source"
+            ],
+            "winner": [
+              "edge:selects_candidate:target"
+            ]
+          },
+          "writes": [
+            "attr:rejection_reason@edge:has_candidate:target",
+            "attr:rejection_trace@edge:has_candidate:target",
+            "attr:status@edge:has_candidate:target"
+          ]
+        },
+        {
+          "name": "cm4a_no_candidate",
+          "reads": [
+            "attr:epoch@edge:has_candidate:source",
+            "attr:score_epoch@unanchored",
+            "attr:status@edge:has_candidate:source",
+            "attr:status@unanchored",
+            "edge:has_candidate"
+          ],
+          "unknown_effects": [],
+          "variable_roles": {
+            "c": [
+              "edge:has_candidate:target"
+            ],
+            "d": [
+              "edge:has_candidate:source"
+            ]
+          },
+          "writes": [
+            "attr:candidate_trace_complete@edge:has_candidate:source",
+            "attr:status@edge:has_candidate:source"
+          ]
+        },
+        {
+          "name": "cm4c_no_candidate_from_empty_discourse_state",
+          "reads": [
+            "attr:candidate_source@edge:generated_from_discourse_state:source",
+            "attr:source_candidate_count@edge:generated_from_discourse_state:source",
+            "attr:status@edge:generated_from_discourse_state:source",
+            "edge:generated_from_discourse_state"
+          ],
+          "unknown_effects": [],
+          "variable_roles": {
+            "d": [
+              "edge:generated_from_discourse_state:source"
+            ],
+            "state": [
+              "edge:generated_from_discourse_state:target"
+            ]
+          },
+          "writes": [
+            "attr:candidate_trace_complete@edge:generated_from_discourse_state:source",
+            "attr:status@edge:generated_from_discourse_state:source"
+          ]
+        },
+        {
+          "name": "cm4a_begin_execution",
+          "reads": [
+            "attr:candidate_id@edge:selects_candidate:target",
+            "attr:execution_ready@edge:selects_candidate:target",
+            "attr:status@edge:about_goal:source+edge:has_selection:source",
+            "attr:status@edge:selects_candidate:target",
+            "edge:about_goal",
+            "edge:has_selection",
+            "edge:selects_candidate"
+          ],
+          "unknown_effects": [],
+          "variable_roles": {
+            "c": [
+              "edge:selects_candidate:target"
+            ],
+            "d": [
+              "edge:about_goal:source",
+              "edge:has_selection:source"
+            ],
+            "g": [
+              "edge:about_goal:target"
+            ],
+            "selection": [
+              "edge:has_selection:target",
+              "edge:selects_candidate:source"
+            ]
+          },
+          "writes": [
+            "attr:candidate_id@indirect",
+            "attr:status@edge:about_goal:source+edge:has_selection:source",
+            "attr:status@edge:selects_candidate:target",
+            "attr:status@indirect",
+            "edge:executes_candidate",
+            "edge:for_goal",
+            "edge:has_execution_trace",
+            "node_type:DeliberationExecutionTrace"
+          ]
+        },
+        {
+          "name": "cm4d_no_candidate_from_empty_live_thought_manifold",
+          "reads": [
+            "attr:candidate_source@edge:generated_from_thought_manifold:source",
+            "attr:source_candidate_count@edge:generated_from_thought_manifold:source",
+            "attr:status@edge:generated_from_thought_manifold:source",
+            "edge:generated_from_thought_manifold"
+          ],
+          "unknown_effects": [],
+          "variable_roles": {
+            "d": [
+              "edge:generated_from_thought_manifold:source"
+            ],
+            "manifold": [
+              "edge:generated_from_thought_manifold:target"
+            ]
+          },
+          "writes": [
+            "attr:candidate_trace_complete@edge:generated_from_thought_manifold:source",
+            "attr:status@edge:generated_from_thought_manifold:source"
+          ]
+        },
+        {
+          "name": "cm4a_settle_back_resolved",
+          "reads": [
+            "attr:candidate_id@edge:executes_candidate:target",
+            "attr:outcome_status@edge:executes_candidate:target",
+            "attr:status@edge:about_goal:source+edge:has_execution_trace:source",
+            "attr:status@edge:executes_candidate:source+edge:has_execution_trace:target",
+            "attr:status@edge:executes_candidate:target",
+            "edge:about_goal",
+            "edge:executes_candidate",
+            "edge:has_execution_trace"
+          ],
+          "unknown_effects": [],
+          "variable_roles": {
+            "c": [
+              "edge:executes_candidate:target"
+            ],
+            "d": [
+              "edge:about_goal:source",
+              "edge:has_execution_trace:source"
+            ],
+            "execution": [
+              "edge:executes_candidate:source",
+              "edge:has_execution_trace:target"
+            ],
+            "g": [
+              "edge:about_goal:target"
+            ]
+          },
+          "writes": [
+            "attr:candidate_id@indirect",
+            "attr:settle_back_trace@edge:about_goal:source+edge:has_execution_trace:source",
+            "attr:settle_back_trace@indirect",
+            "attr:status@edge:about_goal:source+edge:has_execution_trace:source",
+            "attr:status@edge:executes_candidate:source+edge:has_execution_trace:target",
+            "attr:status@edge:executes_candidate:target",
+            "attr:status@indirect",
+            "edge:has_settlement",
+            "edge:returns_to_goal",
+            "edge:settles_candidate",
+            "node_type:DeliberationSettlement"
+          ]
+        },
+        {
+          "name": "cm4b_credit_grounded_rejected_alternatives",
+          "reads": [
+            "attr:arbitration_score@edge:has_candidate:target",
+            "attr:arbitration_score@edge:selects_candidate:target",
+            "attr:candidate_id@edge:has_candidate:target",
+            "attr:candidate_id@edge:selects_candidate:target",
+            "attr:counterfactual_trace@edge:has_candidate:target",
+            "attr:grounding@edge:has_candidate:target",
+            "attr:grounding_floor@edge:has_candidate:source+edge:has_selection:source+edge:has_settlement:source",
+            "attr:rejection_reason@edge:has_candidate:target",
+            "attr:status@edge:has_candidate:source+edge:has_selection:source+edge:has_settlement:source",
+            "attr:status@edge:has_candidate:target",
+            "attr:status@edge:has_settlement:target",
+            "attr:status@edge:selects_candidate:target",
+            "edge:has_candidate",
+            "edge:has_selection",
+            "edge:has_settlement",
+            "edge:selects_candidate"
+          ],
+          "unknown_effects": [],
+          "variable_roles": {
+            "c": [
+              "edge:has_candidate:target"
+            ],
+            "d": [
+              "edge:has_candidate:source",
+              "edge:has_selection:source",
+              "edge:has_settlement:source"
+            ],
+            "selection": [
+              "edge:has_selection:target",
+              "edge:selects_candidate:source"
+            ],
+            "settlement": [
+              "edge:has_settlement:target"
+            ],
+            "winner": [
+              "edge:selects_candidate:target"
+            ]
+          },
+          "writes": [
+            "attr:alternative_score@indirect",
+            "attr:counterfactual_credit@indirect",
+            "attr:counterfactual_status@indirect",
+            "attr:counterfactual_trace@edge:has_candidate:target",
+            "attr:rejected_candidate_id@indirect",
+            "attr:selected_candidate_id@indirect",
+            "attr:status@indirect",
+            "attr:trace@indirect",
+            "attr:winner_margin@indirect",
+            "attr:winner_outcome@indirect",
+            "attr:winner_score@indirect",
+            "edge:compared_with_winner",
+            "edge:credit_for_candidate",
+            "edge:has_counterfactual_credit",
+            "node_type:CounterfactualCredit"
+          ]
+        }
+      ],
+      "rules_active": 10,
+      "rules_total": 10,
+      "rules_with_unknown_effects": 0,
+      "scc_sizes": [
+        2,
+        2,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "self_dependency_count": 10,
+      "source_seed": {
+        "path": "seeds/conversation_deliberation_phase4a.json",
+        "seed_id": "conversation_deliberation_phase4a",
+        "seed_version": "1.0.0",
+        "sha256": "fff5e65ba7d5d1236781d0e6e41769b6ee7452edef5d75b34554e4f5d7e67bbc"
+      },
+      "treewidth_exact": 4,
+      "treewidth_exact_time_ns": 6120026893,
+      "treewidth_upper_bound": 4,
+      "undirected_projection_edges": 17,
+      "workload_family": "conversation_deliberation"
+    }
+  ],
+  "run_state": "pilot",
+  "runtime_paths": {
+    "can_discrete_inference": [
+      "tests/test_can_native_reimplementation.py",
+      "domains/can_native_orchestration.py"
+    ],
+    "conversation_deliberation": [
+      "substrate/boot_profiles.py",
+      "substrate/world_adapter.py",
+      "tests/test_conversation_deliberation_phase4a.py"
+    ]
+  },
+  "source_seeds": {
+    "can_discrete_inference": {
+      "path": "seeds/can_native_reimplementation.json",
+      "seed_id": "can_native_reimplementation",
+      "seed_version": "1.2.0",
+      "sha256": "3b185987ae810d5e05ab2468b044ab73d8890c8e73ac86dfcaf35b734b9c61d8"
+    },
+    "conversation_deliberation": {
+      "path": "seeds/conversation_deliberation_phase4a.json",
+      "seed_id": "conversation_deliberation_phase4a",
+      "seed_version": "1.0.0",
+      "sha256": "fff5e65ba7d5d1236781d0e6e41769b6ee7452edef5d75b34554e4f5d7e67bbc"
+    }
+  },
+  "tracked_patch_sha256": "88e091315b058ab2c1b15e2c75b635b3640135a4c17d2848501787f71f27a9f3",
+  "treewidth_source_sha256": "e945bea9f54b76098edb3b3dcb784ac5a0ce630de43cd63a9fb5b0f416d543e5"
+}

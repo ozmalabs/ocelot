@@ -1,0 +1,64 @@
+{
+  "admitted": true,
+  "gates": {
+    "daemon_full_seed_profile_has_expected_partial_load": true,
+    "four_locked_turns_completed": true,
+    "meta_shape_growth_path_present": true,
+    "no_shape_observation_or_meta_shape_delta": true,
+    "no_teach_hint_or_teacher_evidence_delta": true,
+    "persistence_guard_active": true,
+    "source_lock_matches_capture": true,
+    "turns_returned_replies": true
+  },
+  "interpretation": "The source-locked full-profile public-conversation probe completed four turns with persistence disabled. None added ShapeObservation, MetaShape, TaughtHint, or TeacherEvidence nodes. The measured ordinary conversation route did not reach the MetaShape observation/growth path on this fixed utterance sequence. Timings are one process and one short authored sequence; v1 call-traced timings are excluded.",
+  "limitations": [
+    "One full boot and four fixed authored turns, not natural interaction prevalence.",
+    "No external teacher or explicit TeacherRequest was supplied.",
+    "The 11 full-boot seed failures are present in raw capture.",
+    "Single-run timing is descriptive only."
+  ],
+  "observed": {
+    "baseline_counts": {
+      "MetaShape": 11,
+      "ShapeObservation": 0,
+      "TaughtHint": 34,
+      "TeacherEvidence": 0
+    },
+    "boot_elapsed_ms": 12212.391153,
+    "failed_seed_count": 11,
+    "turn_count_deltas": [
+      {
+        "MetaShape": 0,
+        "ShapeObservation": 0,
+        "TaughtHint": 0,
+        "TeacherEvidence": 0
+      },
+      {
+        "MetaShape": 0,
+        "ShapeObservation": 0,
+        "TaughtHint": 0,
+        "TeacherEvidence": 0
+      },
+      {
+        "MetaShape": 0,
+        "ShapeObservation": 0,
+        "TaughtHint": 0,
+        "TeacherEvidence": 0
+      },
+      {
+        "MetaShape": 0,
+        "ShapeObservation": 0,
+        "TaughtHint": 0,
+        "TeacherEvidence": 0
+      }
+    ],
+    "turn_elapsed_ms": [
+      254.715069,
+      85.754382,
+      77.117522,
+      76.312946
+    ]
+  },
+  "run_id": "substrate-daemon-conversation-metashape-bridge-v1.1-20260926",
+  "schema_version": 1
+}

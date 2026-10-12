@@ -1,0 +1,99 @@
+{
+  "active": {
+    "domains/adequacy_probe_selection.py": "b8d75708d4e193f16bd071861af08658a907d020281d3c9106a9582c82e8acd9",
+    "domains/adequacy_provider_auth.py": "a5388de538b1af3303babcd0c382a46b3d2819796819be7741b603ca679e4768",
+    "domains/code_reading.py": "dd67d2942cf956c6e35f848aed4012c3ac072e9ac91d9e6b166e8ca44be57908",
+    "domains/code_write_growth.py": "d4a2460f9e41bb8370dc9f352cec2d46ff596d1872e329d7e05d0f33af219079",
+    "domains/code_writing.py": "4ad3148ca1796ad13f6128b9fd655e8568c7c843cd68bccee54f35cbf4ddabc9",
+    "domains/independent_adequacy.py": "33191341fdd63d16d0b9cb5203f27666da90b60fccd567ac4633306a9dcab418",
+    "domains/teach.py": "308a5f31d74dabb3ed8b24bd0c967abd5f94596a3ff76d17657330877fae2cfa",
+    "domains_tree": "dd5870b35b92c94818af18b0d8b3ef55aa3eed0bce927417bbde8a4a55bb5f4e",
+    "native_binary": "3816b4fb5d5746950b4cc3bf9e904a58e675ce53530727edf44095646dd58a54",
+    "runners/dsl/python/substrate_rs/__init__.py": "1fed837a6b7e8b35e463d3b8fdca498400c9cc420a016b81279365d6406a4049",
+    "runners/dsl/python/substrate_rs/_native.build.json": "b491d348c59cbf5cd5eee1b3f900a042f31e21665b6e63212edb9ed7f3d60f47",
+    "runners/dsl/src/py.rs": "d6f922bd406d3f500c10cea11978f47f9612b4ce6b9a348e848a30a305881cba",
+    "runners/dsl/src/substrate.rs": "bf98c6676600a75c56f7cbedacbc5f81feb8853afeb9ac4615d08effd02116f3",
+    "runners/dsl/src/term.rs": "5e77c1c58941ead02fc6186fed1c7cd46f44db323db82d8438297842a4a5e0e1",
+    "rust_tree": "06307beca12566832d3ba7ac157ec6177abb41a87dcf3755d824729d1a55ea0f",
+    "seed_manifest_inventory": "7a35d6b5c0ca4fa74708a34b40fba7304d95b8065cf4e931d36c50f44c0813e3",
+    "substrate/world_adapter.py": "e5850e4df2ff28d8c941cc3c0d12a840ab230ce627833421a88c3b354f65027c",
+    "substrate_tree": "0fd9dee0bc92c33d541854fce3122826fa1fb21769ab3422aad001b42486bf96"
+  },
+  "design": {
+    "cases": {
+      "alias_zero_entropy": {
+        "challenger": "def square(x):\n    return x * x\n",
+        "challenger_name": "square",
+        "domain": [
+          {
+            "x": 0
+          }
+        ],
+        "label": 0,
+        "name": "identity",
+        "source": "def identity(x):\n    return x\n"
+      },
+      "distinguishing_identity_truth": {
+        "challenger": "def square(x):\n    return x * x\n",
+        "challenger_name": "square",
+        "domain": [
+          {
+            "x": 0
+          },
+          {
+            "x": 2
+          }
+        ],
+        "label": 4,
+        "name": "identity",
+        "source": "def identity(x):\n    return x\n"
+      },
+      "honest_selected_square": {
+        "challenger": "def identity(x):\n    return x\n",
+        "challenger_name": "identity",
+        "domain": [
+          {
+            "x": 0
+          },
+          {
+            "x": 2
+          }
+        ],
+        "label": 4,
+        "name": "square",
+        "source": "def square(x):\n    return x * x\n"
+      },
+      "selected_wrong_signer": {
+        "challenger": "def square(x):\n    return x * x\n",
+        "challenger_name": "square",
+        "domain": [
+          {
+            "x": 0
+          },
+          {
+            "x": 2
+          }
+        ],
+        "label": 2,
+        "name": "identity",
+        "source": "def identity(x):\n    return x\n"
+      }
+    },
+    "heldout": [
+      3,
+      4,
+      5
+    ],
+    "oracle_sha256": "b5cf3292b45c1e49d0e544719aed863c620cf4a85bb420c2b58ae52e529d66f7",
+    "provider": "oracle-a",
+    "repeats": 3,
+    "selector": "maximum Shannon entropy over candidate plus supplied challenger Terms",
+    "test_key_sha256": "ca9f6d5d296162bfaae9f1cf6c8d32580b829d887af33b60f43fa80a01c9e71c"
+  },
+  "files": {
+    "docs/research/engine_substrate/SUBSTRATE_ADEQUACY_SELECTED_PROBE_ADOPTION_V1_PREREG_20261002.md": "1225f4eea35804630b6d0a49fe1e512d85415f608ea53bce567864a55d7fa367",
+    "evaluation/substrate_capability/substrate_adequacy_selected_probe_adoption_v1.py": "99f59071af84db2732a889d46cafe1c684eeb392066ef963e32a9c412adb21e3"
+  },
+  "git_head": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+  "schema": "SubstrateAdequacySelectedProbeAdoptionV1Lock"
+}

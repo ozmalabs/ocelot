@@ -1,0 +1,45 @@
+{
+  "admitted": true,
+  "gates": {
+    "dependency_closure_loads_cleanly": true,
+    "negative_control_has_residual_status": true,
+    "negative_control_refused_by_minted_shape": true,
+    "persistence_guard_active": true,
+    "positive_holdout_uses_minted_shape": true,
+    "source_and_protocol_lock_match": true,
+    "training_pair_mints_one_support_two_shape": true
+  },
+  "interpretation": "The minted experiment-summary MetaShape transfers to one new supported summary and refuses one refuted summary whose fixed answer field differs. This is one support-2 schema-specific positive/negative pair, not a general false-positive rate or evidence that experiment conclusions are valid.",
+  "limitations": [
+    "One minted pattern and one positive plus one negative holdout.",
+    "Support/refutation labels are authored by the harness; no outcome adjudication is tested.",
+    "No transfer to ordinary conversation or other node schemas is claimed."
+  ],
+  "observed": {
+    "minted_shape": "ms_act_rule_varied_act_shift_answer_axis_tag_hypothesis_is_a_skip_seed_id_topic",
+    "negative_covered_by": null,
+    "negative_residual": [
+      [
+        "answer",
+        "refuted"
+      ],
+      [
+        "axis_tag",
+        "bridge_d"
+      ],
+      [
+        "topic",
+        "self-experiment for bridge_d"
+      ]
+    ],
+    "negative_status": "residual",
+    "positive_covered_by": "ms_act_rule_varied_act_shift_answer_axis_tag_hypothesis_is_a_skip_seed_id_topic",
+    "positive_status": "recognized",
+    "training_statuses": [
+      "recognized",
+      "recognized"
+    ]
+  },
+  "run_id": "substrate-metashape-experiment-heldout-discrimination-v1-20260926",
+  "schema_version": 1
+}

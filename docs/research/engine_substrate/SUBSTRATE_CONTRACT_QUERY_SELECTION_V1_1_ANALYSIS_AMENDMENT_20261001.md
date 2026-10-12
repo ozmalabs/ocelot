@@ -1,0 +1,5 @@
+# Contract query selection v1.1 — analysis amendment
+
+The eight workers completed without worker errors and with stable source fingerprints. The first analyzer replay failed only for the random-control sequences in the added `coded_eight` family. The worker seeds each task's random baseline using its declaration-order index; the analyzer mistakenly used the lexicographically sorted order produced by the JSON lock serialization. The selector histories were not implicated. The analyzer now uses and asserts the task declaration order recorded in the locked runner (`curvature`, `direction`, `polynomial`, `coded_eight`) and exactly replays the captured random counts.
+
+Raw capture and worker execution are unchanged. The original lock is preserved as `substrate_contract_query_selection_v1_1_lock_20261001_pre_analysis_correction.json`; the current lock records the corrected analyzer hash and verifies unchanged runner, protocol, native runtime, and active source fingerprints. This is a baseline replay correction, not a change to the random control or observed worker outputs.

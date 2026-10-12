@@ -1,0 +1,112 @@
+{
+  "all_preregistered_gates_pass": true,
+  "capture_integrity_pass": true,
+  "case_results": {
+    "clamp_0_5": {
+      "accepted": 5,
+      "candidate_tests": {
+        "max": 8230,
+        "median": 8230,
+        "min": 8230
+      },
+      "exact_holdout_points": 30,
+      "exact_transfer_workers": 5,
+      "explicit_operator_lists": [
+        "[]"
+      ],
+      "false_accept_workers": 0,
+      "gapped": 0,
+      "holdout_points": 30,
+      "max_peak_rss_bytes": 43810816,
+      "n": 5,
+      "programs": [
+        "{\"type\": \"ProgSeq\", \"stmts\": [{\"type\": \"ProgDefFnParam\", \"name\": \"value\", \"default\": null}, {\"type\": \"ProgReturn\", \"value\": {\"items\": [{\"type\": \"Lit\", \"value\": 5}, {\"items\": [{\"name\": \"value\", \"type\": \"Var\"}, {\"type\": \"Lit\", \"value\": 0}], \"type\": \"Max\"}], \"type\": \"Min\"}}]}"
+      ],
+      "pump_cpu_ms": {
+        "median": 36.6813
+      },
+      "pump_wall_ms": {
+        "max": 43.127267,
+        "median": 34.17011,
+        "min": 31.159361
+      },
+      "selected_shapes": [
+        "None"
+      ]
+    },
+    "clamp_neg2_4": {
+      "accepted": 5,
+      "candidate_tests": {
+        "max": 6663,
+        "median": 6663,
+        "min": 6663
+      },
+      "exact_holdout_points": 30,
+      "exact_transfer_workers": 5,
+      "explicit_operator_lists": [
+        "[]"
+      ],
+      "false_accept_workers": 0,
+      "gapped": 0,
+      "holdout_points": 30,
+      "max_peak_rss_bytes": 43819008,
+      "n": 5,
+      "programs": [
+        "{\"type\": \"ProgSeq\", \"stmts\": [{\"type\": \"ProgDefFnParam\", \"name\": \"value\", \"default\": null}, {\"type\": \"ProgReturn\", \"value\": {\"items\": [{\"type\": \"Lit\", \"value\": 4}, {\"items\": [{\"name\": \"value\", \"type\": \"Var\"}, {\"type\": \"Lit\", \"value\": -2}], \"type\": \"Max\"}], \"type\": \"Min\"}}]}"
+      ],
+      "pump_cpu_ms": {
+        "median": 29.513967
+      },
+      "pump_wall_ms": {
+        "max": 31.523195,
+        "median": 26.988021,
+        "min": 26.521897
+      },
+      "selected_shapes": [
+        "None"
+      ]
+    }
+  },
+  "integrity_checks": {
+    "accepted_programs_have_six_holdout_rows": true,
+    "all_workers_reach_rung3_and_terminal": true,
+    "all_workers_source_stable": true,
+    "complete_unique_10_worker_matrix": true,
+    "current_sources_and_native_match_lock": true,
+    "footer_lock_unchanged": true,
+    "locked_schedule_header_footer": true,
+    "no_operator_shape_or_explicit_ops_selected": true,
+    "no_worker_failures": true
+  },
+  "interpretation": "Tests default-grammar acquisition and holdout transfer on two fixed scalar clamp instances without an operator-shape selection. It does not establish broad task-family generalization or scaling.",
+  "lock_sha256": "222fba23c9292774fd910823a0a630f25e311f01d77f6e378cddeca76ce45f91",
+  "native_matches_lock": true,
+  "passed_integrity_checks": 9,
+  "raw_sha256": "32430a24e73d987cfca31187669078e9b0b7cbd8d655ed4ed9b87702b4780990",
+  "run_id": "synthesis_unshaped_clamp_transfer_v1_20260929",
+  "source_file_matches": {
+    "domains/code_writing.py": true,
+    "domains/engine_provenance.py": true,
+    "domains/prog_retrieval.py": true,
+    "domains/prog_synthesis.py": true,
+    "runners/dsl/python/substrate_rs/__init__.py": true,
+    "runners/dsl/python/substrate_rs/_native.build.json": true,
+    "runners/dsl/src/graph_rules.rs": true,
+    "runners/dsl/src/prog_eval.rs": true,
+    "runners/dsl/src/py.rs": true,
+    "runners/dsl/src/substrate.rs": true,
+    "runners/dsl/src/synth_enumerate.rs": true,
+    "runners/dsl/src/term.rs": true,
+    "seeds/code_write_request_cues.json": true,
+    "seeds/exact_families.json": true,
+    "seeds/program_synthesis.json": true,
+    "seeds/program_synthesis_grounding.json": true,
+    "seeds/program_synthesis_opgrammar.json": true
+  },
+  "total_integrity_checks": 9,
+  "transfer_gates": {
+    "clamp_0_5_exact_transfer_at_least_4_of_5": true,
+    "clamp_neg2_4_exact_transfer_at_least_4_of_5": true
+  },
+  "transfer_pass": true
+}

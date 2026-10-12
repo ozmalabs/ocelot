@@ -1,0 +1,15 @@
+# Exploratory residual-family divergence census against the v1.3 prefilter (no v1.4 guards).
+# Transcribed from the console output of
+#   cargo test --lib --features geninfer_linear_exact_prefilter \
+#     shape_decode::tests::exact_linear_prefilter_residual_family -- --ignored --nocapture
+# run 2026-10-06 (debug build, 1418.13 s) on the then-current test body: three two-predicate,
+# id-bearing point sets, all nonsingular integer 2x2 matrices in [-2,2], max_dims=2.
+# The test body was subsequently extended (single-predicate control sets, per-class reporting)
+# and re-run against the v1.4 guards; see geninfer_prefilter_v1_4_guard_census_20261006.log.
+GENINFER_PREFILTER_RESIDUAL_CENSUS family=exact cases=1488 agree=1235 diverge=253 solved=1488 no_fit=0 fallback=0 enumerator_accepts=1486 first_divergence=set 0 M=[-2,-2,-1,-2] expected=Some(([-2, -2, -1, 1], 2)) actual=Some(([-2, -2, -1, -2], 2))
+GENINFER_PREFILTER_RESIDUAL_CENSUS family=global_translate cases=1488 agree=1258 diverge=230 solved=1488 no_fit=0 fallback=0 enumerator_accepts=1486 first_divergence=set 0 M=[-2,-2,-2,-1] expected=Some(([-2, -2, -2, 0], 2)) actual=Some(([-2, -2, -2, -1], 2))
+GENINFER_PREFILTER_RESIDUAL_CENSUS family=pred1_shift_r cases=1488 agree=787 diverge=701 solved=496 no_fit=992 fallback=0 enumerator_accepts=1050 first_divergence=set 0 M=[-2,-2,-1,-2] expected=Some(([-2, -1, -1, 1], 2)) actual=Some(([-2, -1, -1, -2], 2))
+GENINFER_PREFILTER_RESIDUAL_CENSUS family=pred1_shift_c cases=1488 agree=788 diverge=700 solved=496 no_fit=992 fallback=0 enumerator_accepts=1050 first_divergence=set 0 M=[-1,-2,-2,-2] expected=Some(([-1, 1, -2, -1], 2)) actual=Some(([-1, -2, -2, -1], 2))
+GENINFER_PREFILTER_RESIDUAL_CENSUS family=single_row_r cases=1488 agree=1211 diverge=277 solved=0 no_fit=1488 fallback=0 enumerator_accepts=277 first_divergence=set 2 M=[-2,-2,0,1] expected=Some(([-2, -2, 0, 1], 2)) actual=None
+GENINFER_PREFILTER_RESIDUAL_CENSUS family=id_swap cases=1488 agree=1343 diverge=145 solved=0 no_fit=1488 fallback=0 enumerator_accepts=145 first_divergence=set 2 M=[-2,-2,0,1] expected=Some(([2, 0, 0, 1], 2)) actual=None
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 850 filtered out; finished in 1418.13s

@@ -1,0 +1,22 @@
+FROM python:3.12.8-slim-bookworm@sha256:2199a62885a12290dc9c5be3ca0681d367576ab7bf037da120e564723292a2f0
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PYTHONHASHSEED=0 \
+    PORT=8080 \
+    P5R0_BRIDGE_FREETSA_CA_PEM_PATH=/run/secrets/freetsa-ca.pem
+WORKDIR /app
+
+# Dependencies are exact-pinned in the repository; no CA or key material is
+# downloaded or copied during the image build.
+COPY services /app/services
+COPY evaluation /app/evaluation
+COPY schemas /app/schemas
+RUN pip install --no-cache-dir -r /app/services/p5_r0_evaluator/requirements.txt
+
+# Mount a reviewed public CA PEM at the path above and provide its digest via
+# P5R0_BRIDGE_FREETSA_CA_PEM_SHA256 at runtime.
+VOLUME ["/run/secrets"]
+USER 65532:65532
+EXPOSE 8080
+ENTRYPOINT ["gunicorn", "--bind", ":8080", "--workers", "1", "--threads", "4", "--timeout", "30", "services.p5_r0_evaluator.timing_bridge_entrypoint:application"]

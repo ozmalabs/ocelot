@@ -1,0 +1,98 @@
+{
+  "analyzer_sha256": "5d1abf12280145c08373910cd67828dc356a218d727d92740590041c55c6eba7",
+  "capture_sha256": "348b9103080e07812cdd431a9644fef9c7a175dfc7b1ec231101abdd090e08a9",
+  "checks": {
+    "all_mode_measurements_present": true,
+    "analyzer_hash_matches_lock": true,
+    "complete_fixture_values_complete": true,
+    "event_assignments_independently_recomputed": true,
+    "event_before_values_match_ordered_replay": true,
+    "event_replay_details": {
+      "byte_cap": {
+        "complete": false,
+        "event_before_values_match_ordered_replay": true,
+        "replayed_final_edges_match": true,
+        "replayed_final_nodes_match": false
+      },
+      "deferred": {
+        "complete": true,
+        "event_before_values_match_ordered_replay": true,
+        "replayed_final_edges_match": true,
+        "replayed_final_nodes_match": true
+      },
+      "direct": {
+        "complete": true,
+        "event_before_values_match_ordered_replay": true,
+        "replayed_final_edges_match": true,
+        "replayed_final_nodes_match": true
+      },
+      "object_cap": {
+        "complete": false,
+        "event_before_values_match_ordered_replay": true,
+        "replayed_final_edges_match": true,
+        "replayed_final_nodes_match": false
+      },
+      "overlap": {
+        "complete": true,
+        "event_before_values_match_ordered_replay": true,
+        "replayed_final_edges_match": true,
+        "replayed_final_nodes_match": true
+      }
+    },
+    "event_replay_matches_final_graph": true,
+    "event_snapshot_json_measured": true,
+    "expected_direct_and_deferred_writers_observed": true,
+    "fixture_set_exact": true,
+    "independent_analyzer_stable": true,
+    "lock_matches_capture": true,
+    "no_events_dropped": true,
+    "object_cap_truncates_explicitly": true,
+    "ordinary_traced_exact_modes_match": true,
+    "overlap_last_writer_identified": true,
+    "overlap_transition_detail": [
+      [
+        "writer_one",
+        0,
+        1
+      ],
+      [
+        "writer_two",
+        1,
+        2
+      ]
+    ],
+    "overlap_value_chain_exact": true,
+    "oversized_value_fails_closed": true,
+    "reported_budget_metadata_consistent": true,
+    "runner_hash_matches_lock": true,
+    "schema_correct": true,
+    "snapshot_field_deltas_independently_recomputed": true,
+    "source_lock_stable": true,
+    "three_distinct_workers": true,
+    "workers_semantically_replicate": true
+  },
+  "claim_limit": "Independent graph-snapshot reconstruction and target-event matching are validated for these bounded fixtures. Ambiguous overlaps remain unresolved; this is not native event-local attribution, causal necessity, diagnosis, or general self-repair.",
+  "lock_sha256": "1029d4ccdd9156d17f30699b2a083bc1f079f9a598c72ca97bb7472396f49676",
+  "passed": true,
+  "schema": "ThoughtexperimentEventValueAttributionV1_2_2Analysis",
+  "summary": {
+    "all_fields_uniquely_attributed": false,
+    "ambiguous_fields": 1,
+    "changed_fields": 530,
+    "distinct_pids": 3,
+    "fixtures": 5,
+    "observed_writers": [
+      "direct_writer",
+      "many_object_writer",
+      "oversize_writer",
+      "trace_direct_control",
+      "trans_frame_identity_assignment",
+      "writer_one",
+      "writer_two"
+    ],
+    "progress_budget": 3,
+    "uncovered_fields": 0,
+    "uniquely_attributed_fields": 529,
+    "workers": 3
+  }
+}

@@ -27,6 +27,16 @@ STATES = {"answer", "act", "repair", "defer", "learn", "blocked", "error"}
 EVIDENCE_KINDS = {"graph_path", "lexical_syntactic", "discourse_state",
                   "addressee_model", "explicit_uncertainty",
                   "explicit_failure"}
+NEUTRAL_COMMUNICATIVE_ACTS = {
+    "greeting", "thanks", "farewell", "polar_question",
+    "information_question", "action_request", "assertion",
+    "acknowledgement", "refusal", "inability_action",
+    "ability_action_offer", "nonunderstanding_report",
+}
+NEUTRAL_ACT_FORCES = {
+    "information_request", "action_request", "assertion_or_correction",
+    "repair_or_defer", "social_action", "acknowledgement", "refusal",
+}
 
 # Candidate/lifecycle evidence is conditional.  The Phase 0 corpus is a
 # communication-event corpus; an event does not acquire a deliberative
@@ -113,6 +123,30 @@ def validate_corpus(payload: dict) -> list[str]:
                     errors.append(f"{prefix}.evidence contains invalid kind {item!r}")
         if event.get("event_mode") == "turn_compatible" and not event.get("turn_id"):
             errors.append(f"{prefix} turn_compatible event needs turn_id")
+        if "communicative_acts" in event:
+            acts = event.get("communicative_acts")
+            if not isinstance(acts, list) or not acts:
+                errors.append(f"{prefix}.communicative_acts must be a non-empty list")
+            else:
+                for act_index, act in enumerate(acts):
+                    if not isinstance(act, dict):
+                        errors.append(
+                            f"{prefix}.communicative_acts[{act_index}] must be an object")
+                        continue
+                    if act.get("act_type") not in NEUTRAL_COMMUNICATIVE_ACTS:
+                        errors.append(
+                            f"{prefix}.communicative_acts[{act_index}].act_type is invalid")
+                    if act.get("force") not in NEUTRAL_ACT_FORCES:
+                        errors.append(
+                            f"{prefix}.communicative_acts[{act_index}].force is invalid")
+        if "expected_released_semantic_events" in event:
+            expected_events = event.get("expected_released_semantic_events")
+            if (not isinstance(expected_events, list) or not expected_events
+                    or any(not isinstance(item, str) or not item.strip()
+                           for item in expected_events)
+                    or len(set(expected_events)) != len(expected_events)):
+                errors.append(
+                    f"{prefix}.expected_released_semantic_events must be a unique non-empty list of strings")
     return errors
 
 

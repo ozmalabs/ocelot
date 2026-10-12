@@ -1,0 +1,998 @@
+{
+  "design": "18 generated string tasks in six strata, four revealed and three held out; two adversarial near-retrieval families, two operator controls, and two compositions",
+  "generation_seed_rule": "per-task random.Random(920260925 + one_based_index * 6151)",
+  "suite_id": "substrate-string-pbe-contrast-v1",
+  "task_count": 18,
+  "tasks": [
+    {
+      "example_rows": [
+        {
+          "expected": "xzxdyDx",
+          "inputs": {
+            "s": "xzxdyDa"
+          }
+        },
+        {
+          "expected": "!_-zCxA,C!x",
+          "inputs": {
+            "s": "!_-zCxA,C!a"
+          }
+        },
+        {
+          "expected": "xeAy!A?x",
+          "inputs": {
+            "s": "xeAy!A?a"
+          }
+        },
+        {
+          "expected": "zezEE?__BB-dx",
+          "inputs": {
+            "s": "zezEE?__BB-da"
+          }
+        }
+      ],
+      "family": "replace_first",
+      "held_out_rows": [
+        {
+          "expected": "?EA,, C!_ECe,?,x_a",
+          "inputs": {
+            "s": "?EA,, C!_ECe,?,a_a"
+          }
+        },
+        {
+          "expected": "D E!cx_a",
+          "inputs": {
+            "s": "D E!ca_a"
+          }
+        },
+        {
+          "expected": "BcEe y-dDB?x_a",
+          "inputs": {
+            "s": "BcEe y-dDB?a_a"
+          }
+        }
+      ],
+      "id": "contrast_replace_first_01",
+      "request_text": "Write a function that replaces only the first occurrence of 'a' with 'x'."
+    },
+    {
+      "example_rows": [
+        {
+          "expected": "D xD!q",
+          "inputs": {
+            "s": "D xD!e"
+          }
+        },
+        {
+          "expected": "!!yCa Bz_Eq",
+          "inputs": {
+            "s": "!!yCa Bz_Ee"
+          }
+        },
+        {
+          "expected": " A,C!q",
+          "inputs": {
+            "s": " A,C!e"
+          }
+        },
+        {
+          "expected": "D!z,aD!b_AC,Eq",
+          "inputs": {
+            "s": "D!z,aD!b_AC,Ee"
+          }
+        }
+      ],
+      "family": "replace_first",
+      "held_out_rows": [
+        {
+          "expected": "?zbCbCBycq_e",
+          "inputs": {
+            "s": "?zbCbCByce_e"
+          }
+        },
+        {
+          "expected": " A? EDAq_e",
+          "inputs": {
+            "s": " A? EDAe_e"
+          }
+        },
+        {
+          "expected": ",B!CBEDE dc?,?q_e",
+          "inputs": {
+            "s": ",B!CBEDE dc?,?e_e"
+          }
+        }
+      ],
+      "id": "contrast_replace_first_02",
+      "request_text": "Write a function that replaces only the first occurrence of 'e' with 'q'."
+    },
+    {
+      "example_rows": [
+        {
+          "expected": ",eAEEb_Ez?_",
+          "inputs": {
+            "s": ",eAEEb_Ez?-"
+          }
+        },
+        {
+          "expected": "xe_dey axB!?ya_",
+          "inputs": {
+            "s": "xe_dey axB!?ya-"
+          }
+        },
+        {
+          "expected": "d xBEae,aC cc_",
+          "inputs": {
+            "s": "d xBEae,aC cc-"
+          }
+        },
+        {
+          "expected": "eaBCAd,xzEc_",
+          "inputs": {
+            "s": "eaBCAd,xzEc-"
+          }
+        }
+      ],
+      "family": "replace_first",
+      "held_out_rows": [
+        {
+          "expected": "bay?bba___-",
+          "inputs": {
+            "s": "bay?bba_-_-"
+          }
+        },
+        {
+          "expected": "e?ABE__-",
+          "inputs": {
+            "s": "e?ABE-_-"
+          }
+        },
+        {
+          "expected": "_A, E?x ybeax__-",
+          "inputs": {
+            "s": "_A, E?x ybeax-_-"
+          }
+        }
+      ],
+      "id": "contrast_replace_first_03",
+      "request_text": "Write a function that replaces only the first occurrence of '-' with '_'."
+    },
+    {
+      "example_rows": [
+        {
+          "expected": [
+            "YXXa",
+            "YXXa"
+          ],
+          "inputs": {
+            "s": "YXXa|YXXa"
+          }
+        },
+        {
+          "expected": [
+            "dacZ",
+            "dacZ"
+          ],
+          "inputs": {
+            "s": "dacZ|dacZ"
+          }
+        },
+        {
+          "expected": [
+            "deZf",
+            "deZf"
+          ],
+          "inputs": {
+            "s": "deZf|deZf"
+          }
+        },
+        {
+          "expected": [
+            "ZYZd",
+            "ZYZd"
+          ],
+          "inputs": {
+            "s": "ZYZd|ZYZd"
+          }
+        }
+      ],
+      "family": "reverse_split",
+      "held_out_rows": [
+        {
+          "expected": [
+            "afXfX",
+            "ZdXd",
+            "Xee"
+          ],
+          "inputs": {
+            "s": "Xee|ZdXd|afXfX"
+          }
+        },
+        {
+          "expected": [
+            "Yaadf",
+            "aaaa",
+            "YZc"
+          ],
+          "inputs": {
+            "s": "YZc|aaaa|Yaadf"
+          }
+        },
+        {
+          "expected": [
+            "XZZXf",
+            "dfdb",
+            "ZaZ"
+          ],
+          "inputs": {
+            "s": "ZaZ|dfdb|XZZXf"
+          }
+        }
+      ],
+      "id": "contrast_reverse_split_01",
+      "request_text": "Write a function that splits a string on '|' and returns the parts in reverse order."
+    },
+    {
+      "example_rows": [
+        {
+          "expected": [
+            "XcaX",
+            "XcaX"
+          ],
+          "inputs": {
+            "s": "XcaX,XcaX"
+          }
+        },
+        {
+          "expected": [
+            "fZab",
+            "fZab"
+          ],
+          "inputs": {
+            "s": "fZab,fZab"
+          }
+        },
+        {
+          "expected": [
+            "cZca",
+            "cZca"
+          ],
+          "inputs": {
+            "s": "cZca,cZca"
+          }
+        },
+        {
+          "expected": [
+            "YXYf",
+            "YXYf"
+          ],
+          "inputs": {
+            "s": "YXYf,YXYf"
+          }
+        }
+      ],
+      "family": "reverse_split",
+      "held_out_rows": [
+        {
+          "expected": [
+            "ffceb",
+            "dbZY",
+            "dYf"
+          ],
+          "inputs": {
+            "s": "dYf,dbZY,ffceb"
+          }
+        },
+        {
+          "expected": [
+            "edZYc",
+            "befZ",
+            "YXb"
+          ],
+          "inputs": {
+            "s": "YXb,befZ,edZYc"
+          }
+        },
+        {
+          "expected": [
+            "YbZZX",
+            "dXYX",
+            "eYd"
+          ],
+          "inputs": {
+            "s": "eYd,dXYX,YbZZX"
+          }
+        }
+      ],
+      "id": "contrast_reverse_split_02",
+      "request_text": "Write a function that splits a string on ',' and returns the parts in reverse order."
+    },
+    {
+      "example_rows": [
+        {
+          "expected": [
+            "bXdb",
+            "bXdb"
+          ],
+          "inputs": {
+            "s": "bXdb;bXdb"
+          }
+        },
+        {
+          "expected": [
+            "Xcad",
+            "Xcad"
+          ],
+          "inputs": {
+            "s": "Xcad;Xcad"
+          }
+        },
+        {
+          "expected": [
+            "XYZb",
+            "XYZb"
+          ],
+          "inputs": {
+            "s": "XYZb;XYZb"
+          }
+        },
+        {
+          "expected": [
+            "cdbY",
+            "cdbY"
+          ],
+          "inputs": {
+            "s": "cdbY;cdbY"
+          }
+        }
+      ],
+      "family": "reverse_split",
+      "held_out_rows": [
+        {
+          "expected": [
+            "bfdbe",
+            "aYcc",
+            "Zbe"
+          ],
+          "inputs": {
+            "s": "Zbe;aYcc;bfdbe"
+          }
+        },
+        {
+          "expected": [
+            "fbXce",
+            "edac",
+            "dXZ"
+          ],
+          "inputs": {
+            "s": "dXZ;edac;fbXce"
+          }
+        },
+        {
+          "expected": [
+            "Yeaaf",
+            "cfca",
+            "ZXb"
+          ],
+          "inputs": {
+            "s": "ZXb;cfca;Yeaaf"
+          }
+        }
+      ],
+      "id": "contrast_reverse_split_03",
+      "request_text": "Write a function that splits a string on ';' and returns the parts in reverse order."
+    },
+    {
+      "example_rows": [
+        {
+          "expected": "E e ByE,Bx_x",
+          "inputs": {
+            "s": "E e ByE,Ba_a"
+          }
+        },
+        {
+          "expected": "yzCcBbz?_ ,e BBzx_x",
+          "inputs": {
+            "s": "yzCcBbz?_ ,e BBza_a"
+          }
+        },
+        {
+          "expected": "C-D!D,?Cxx_x",
+          "inputs": {
+            "s": "C-D!D,?Cxa_a"
+          }
+        },
+        {
+          "expected": "Ac-e b!zx_x",
+          "inputs": {
+            "s": "Ac-e b!za_a"
+          }
+        }
+      ],
+      "family": "replace_all",
+      "held_out_rows": [
+        {
+          "expected": "bxBdDE??b-C!!d?zx_x",
+          "inputs": {
+            "s": "bxBdDE??b-C!!d?za_a"
+          }
+        },
+        {
+          "expected": "DB,A_?eex_x",
+          "inputs": {
+            "s": "DB,A_?eea_a"
+          }
+        },
+        {
+          "expected": "-B!,_ DcDx_x",
+          "inputs": {
+            "s": "-B!,_ DcDa_a"
+          }
+        }
+      ],
+      "id": "contrast_replace_all_01",
+      "request_text": "Write a function that replaces every occurrence of 'a' with 'x'."
+    },
+    {
+      "example_rows": [
+        {
+          "expected": "D,y-!q_q",
+          "inputs": {
+            "s": "D,y-!e_e"
+          }
+        },
+        {
+          "expected": "?Bd--cbBzD? Cq_q",
+          "inputs": {
+            "s": "?Bd--cbBzD? Ce_e"
+          }
+        },
+        {
+          "expected": "- A_y!ca-BDAq_q",
+          "inputs": {
+            "s": "- A_y!ca-BDAe_e"
+          }
+        },
+        {
+          "expected": "zx!,-dc, a-b-q_q",
+          "inputs": {
+            "s": "zx!,-dc, a-b-e_e"
+          }
+        }
+      ],
+      "family": "replace_all",
+      "held_out_rows": [
+        {
+          "expected": "BD!xba CyEAAd-q_q",
+          "inputs": {
+            "s": "BD!xba CyEAAd-e_e"
+          }
+        },
+        {
+          "expected": "d,bCA ,dx!EbD Cq_q",
+          "inputs": {
+            "s": "d,bCA ,dx!EbD Ce_e"
+          }
+        },
+        {
+          "expected": " !C_DEE?,!c _!q_q",
+          "inputs": {
+            "s": " !C_DEE?,!c _!e_e"
+          }
+        }
+      ],
+      "id": "contrast_replace_all_02",
+      "request_text": "Write a function that replaces every occurrence of 'e' with 'q'."
+    },
+    {
+      "example_rows": [
+        {
+          "expected": "ydaAcx_?,c___",
+          "inputs": {
+            "s": "ydaAcx_?,c-_-"
+          }
+        },
+        {
+          "expected": ",Bz,Accz?e!___",
+          "inputs": {
+            "s": ",Bz,Accz?e!-_-"
+          }
+        },
+        {
+          "expected": "d,!cB___",
+          "inputs": {
+            "s": "d,!cB-_-"
+          }
+        },
+        {
+          "expected": "aDCe,dB!dCB!d___",
+          "inputs": {
+            "s": "aDCe,dB!dCB!d-_-"
+          }
+        }
+      ],
+      "family": "replace_all",
+      "held_out_rows": [
+        {
+          "expected": "!e!_AbEyxcd?,___",
+          "inputs": {
+            "s": "!e!_AbEyxcd?,-_-"
+          }
+        },
+        {
+          "expected": "BxxDcCD?ad___",
+          "inputs": {
+            "s": "BxxDcCD?ad-_-"
+          }
+        },
+        {
+          "expected": "z? az_zcaAzaC___",
+          "inputs": {
+            "s": "z? az_zcaAzaC-_-"
+          }
+        }
+      ],
+      "id": "contrast_replace_all_03",
+      "request_text": "Write a function that replaces every occurrence of '-' with '_'."
+    },
+    {
+      "example_rows": [
+        {
+          "expected": "BC_eEc_d",
+          "inputs": {
+            "s": "d_cEe_CB"
+          }
+        },
+        {
+          "expected": "Bx-xz-",
+          "inputs": {
+            "s": "-zx-xB"
+          }
+        },
+        {
+          "expected": " c!bddB",
+          "inputs": {
+            "s": "Bddb!c "
+          }
+        },
+        {
+          "expected": "-cEdBb? !yy_",
+          "inputs": {
+            "s": "_yy! ?bBdEc-"
+          }
+        }
+      ],
+      "family": "reverse_string",
+      "held_out_rows": [
+        {
+          "expected": "ABy!E!Eab",
+          "inputs": {
+            "s": "baE!E!yBA"
+          }
+        },
+        {
+          "expected": "y_zyxec-xBCA? b?",
+          "inputs": {
+            "s": "?b ?ACBx-cexyz_y"
+          }
+        },
+        {
+          "expected": "eEdacxE b",
+          "inputs": {
+            "s": "b ExcadEe"
+          }
+        }
+      ],
+      "id": "contrast_reverse_string_01",
+      "request_text": "Write a function that returns the string in reverse order."
+    },
+    {
+      "example_rows": [
+        {
+          "expected": "!AxeDe?",
+          "inputs": {
+            "s": "?eDexA!"
+          }
+        },
+        {
+          "expected": "-E_C eA!EAz E",
+          "inputs": {
+            "s": "E zAE!Ae C_E-"
+          }
+        },
+        {
+          "expected": "z aBe yE,-Dc-",
+          "inputs": {
+            "s": "-cD-,Ey eBa z"
+          }
+        },
+        {
+          "expected": "-ddDe-!?-CA ",
+          "inputs": {
+            "s": " AC-?!-eDdd-"
+          }
+        }
+      ],
+      "family": "reverse_string",
+      "held_out_rows": [
+        {
+          "expected": "CdBzB!b,B !y!",
+          "inputs": {
+            "s": "!y! B,b!BzBdC"
+          }
+        },
+        {
+          "expected": " CAxE _Byc_D",
+          "inputs": {
+            "s": "D_cyB_ ExAC "
+          }
+        },
+        {
+          "expected": "AB cDdza-,dDz-",
+          "inputs": {
+            "s": "-zDd,-azdDc BA"
+          }
+        }
+      ],
+      "id": "contrast_reverse_string_02",
+      "request_text": "Write a function that returns the string in reverse order."
+    },
+    {
+      "example_rows": [
+        {
+          "expected": "z-BaDB,bcb--x",
+          "inputs": {
+            "s": "x--bcb,BDaB-z"
+          }
+        },
+        {
+          "expected": "Ab_z-EB",
+          "inputs": {
+            "s": "BE-z_bA"
+          }
+        },
+        {
+          "expected": "ed_DDDEx",
+          "inputs": {
+            "s": "xEDDD_de"
+          }
+        },
+        {
+          "expected": "-Cayze,c ?",
+          "inputs": {
+            "s": "? c,ezyaC-"
+          }
+        }
+      ],
+      "family": "reverse_string",
+      "held_out_rows": [
+        {
+          "expected": "b E_??!",
+          "inputs": {
+            "s": "!??_E b"
+          }
+        },
+        {
+          "expected": "BxBa_cdzaEc",
+          "inputs": {
+            "s": "cEazdc_aBxB"
+          }
+        },
+        {
+          "expected": " zzbA_-A,-x!",
+          "inputs": {
+            "s": "!x-,A-_Abzz "
+          }
+        }
+      ],
+      "id": "contrast_reverse_string_03",
+      "request_text": "Write a function that returns the string in reverse order."
+    },
+    {
+      "example_rows": [
+        {
+          "expected": "daa-_!",
+          "inputs": {
+            "s": "daA-_"
+          }
+        },
+        {
+          "expected": "zcy-a,d y, _bzba!",
+          "inputs": {
+            "s": "zCy-A,d y, _BzbA"
+          }
+        },
+        {
+          "expected": "b?e cdabc z?x-!",
+          "inputs": {
+            "s": "b?E CDaBC z?x-"
+          }
+        },
+        {
+          "expected": "cddbz!yexd,a!",
+          "inputs": {
+            "s": "CDDBz!yExD,a"
+          }
+        }
+      ],
+      "family": "fold_suffix",
+      "held_out_rows": [
+        {
+          "expected": "c-?_c-eca,ayxee!",
+          "inputs": {
+            "s": "c-?_C-ECA,ayxee"
+          }
+        },
+        {
+          "expected": "da-ab?ba!",
+          "inputs": {
+            "s": "Da-Ab?Ba"
+          }
+        },
+        {
+          "expected": "xaed!b xed!",
+          "inputs": {
+            "s": "xAeD!B xed"
+          }
+        }
+      ],
+      "id": "contrast_fold_suffix_01",
+      "request_text": "Write a function that converts the string to lowercase and then appends '!'."
+    },
+    {
+      "example_rows": [
+        {
+          "expected": "!_ e?b-ba  bd::",
+          "inputs": {
+            "s": "!_ E?b-Ba  bD"
+          }
+        },
+        {
+          "expected": "!bbxb_cb,da::",
+          "inputs": {
+            "s": "!Bbxb_CB,dA"
+          }
+        },
+        {
+          "expected": "adzdbba::",
+          "inputs": {
+            "s": "AdzDbBA"
+          }
+        },
+        {
+          "expected": "-?dy_::",
+          "inputs": {
+            "s": "-?dy_"
+          }
+        }
+      ],
+      "family": "fold_suffix",
+      "held_out_rows": [
+        {
+          "expected": "ee ecaxye,xd::",
+          "inputs": {
+            "s": "EE EcAxye,xd"
+          }
+        },
+        {
+          "expected": "c_b!d?ycc-::",
+          "inputs": {
+            "s": "c_B!D?yCc-"
+          }
+        },
+        {
+          "expected": "xz _axd-::",
+          "inputs": {
+            "s": "xz _AxD-"
+          }
+        }
+      ],
+      "id": "contrast_fold_suffix_02",
+      "request_text": "Write a function that converts the string to lowercase and then appends '::'."
+    },
+    {
+      "example_rows": [
+        {
+          "expected": "x cece!y_,,y_done",
+          "inputs": {
+            "s": "x CEce!y_,,y"
+          }
+        },
+        {
+          "expected": "ebz bbzc_done",
+          "inputs": {
+            "s": "EBz bBzc"
+          }
+        },
+        {
+          "expected": "c_ ddaa ! ,!ce_done",
+          "inputs": {
+            "s": "C_ ddAA ! ,!ce"
+          }
+        },
+        {
+          "expected": "ba_?x_-a-?!x_ca-_done",
+          "inputs": {
+            "s": "BA_?x_-a-?!x_ca-"
+          }
+        }
+      ],
+      "family": "fold_suffix",
+      "held_out_rows": [
+        {
+          "expected": "ca?acz aeeadd_done",
+          "inputs": {
+            "s": "CA?ACz AEEaDd"
+          }
+        },
+        {
+          "expected": "a?c,a,y!- d?ex?a_done",
+          "inputs": {
+            "s": "A?C,a,y!- D?Ex?a"
+          }
+        },
+        {
+          "expected": "bxd?dye?ebe_bd? _done",
+          "inputs": {
+            "s": "bxD?DyE?EbE_BD? "
+          }
+        }
+      ],
+      "id": "contrast_fold_suffix_03",
+      "request_text": "Write a function that converts the string to lowercase and then appends '_done'."
+    },
+    {
+      "example_rows": [
+        {
+          "expected": "?xc_bxxceyx",
+          "inputs": {
+            "s": "?Ac_BAAcEyA"
+          }
+        },
+        {
+          "expected": "_!?!?dycx",
+          "inputs": {
+            "s": "_!?!?dyCA"
+          }
+        },
+        {
+          "expected": "_b_czy?!bx",
+          "inputs": {
+            "s": "_B_Czy?!bA"
+          }
+        },
+        {
+          "expected": "cbzb_?dx x",
+          "inputs": {
+            "s": "cBzb_?dA A"
+          }
+        }
+      ],
+      "family": "fold_replace",
+      "held_out_rows": [
+        {
+          "expected": "ee? xzcx",
+          "inputs": {
+            "s": "Ee? AzcA"
+          }
+        },
+        {
+          "expected": "deebxc_-x",
+          "inputs": {
+            "s": "deeBAC_-A"
+          }
+        },
+        {
+          "expected": "bcxx-b?x",
+          "inputs": {
+            "s": "bcAx-b?A"
+          }
+        }
+      ],
+      "id": "contrast_fold_replace_01",
+      "request_text": "Write a function that converts the string to lowercase and then replaces 'a' with 'x'."
+    },
+    {
+      "example_rows": [
+        {
+          "expected": "?axa-ycq",
+          "inputs": {
+            "s": "?Axa-ycE"
+          }
+        },
+        {
+          "expected": "bqy  b cbzy--qxq",
+          "inputs": {
+            "s": "bEy  B CBzy--ExE"
+          }
+        },
+        {
+          "expected": "!bx?bq",
+          "inputs": {
+            "s": "!bx?bE"
+          }
+        },
+        {
+          "expected": "bc-adqb?cda,adq",
+          "inputs": {
+            "s": "BC-AdEb?cDa,ADE"
+          }
+        }
+      ],
+      "family": "fold_replace",
+      "held_out_rows": [
+        {
+          "expected": "ccbbx-!dx,ddqxq",
+          "inputs": {
+            "s": "ccbbx-!dx,ddExE"
+          }
+        },
+        {
+          "expected": "cc?z,ab q",
+          "inputs": {
+            "s": "Cc?z,ab E"
+          }
+        },
+        {
+          "expected": "a?,xzbq",
+          "inputs": {
+            "s": "a?,xzbE"
+          }
+        }
+      ],
+      "id": "contrast_fold_replace_02",
+      "request_text": "Write a function that converts the string to lowercase and then replaces 'e' with 'q'."
+    },
+    {
+      "example_rows": [
+        {
+          "expected": "eyabeyccaaa_",
+          "inputs": {
+            "s": "eyaBEycCaAA-"
+          }
+        },
+        {
+          "expected": "ad_y, y_",
+          "inputs": {
+            "s": "ad_y, y-"
+          }
+        },
+        {
+          "expected": " dcayyadya_",
+          "inputs": {
+            "s": " dCayyADya-"
+          }
+        },
+        {
+          "expected": "b deebx? dc_",
+          "inputs": {
+            "s": "b DEeBx? dC-"
+          }
+        }
+      ],
+      "family": "fold_replace",
+      "held_out_rows": [
+        {
+          "expected": "z _xe_",
+          "inputs": {
+            "s": "z _xE-"
+          }
+        },
+        {
+          "expected": "d_cccc!?_ec_",
+          "inputs": {
+            "s": "d_cCcc!?_Ec-"
+          }
+        },
+        {
+          "expected": "a!b, e_  bd_",
+          "inputs": {
+            "s": "a!b, e_  bd-"
+          }
+        }
+      ],
+      "id": "contrast_fold_replace_03",
+      "request_text": "Write a function that converts the string to lowercase and then replaces '-' with '_'."
+    }
+  ]
+}

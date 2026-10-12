@@ -1,0 +1,23 @@
+{
+  "claim_boundary": [
+    "Same deterministic two-rule insertion workload as the typed_edge_insert case in substrate_term_edge_wakeup_20260924.json.",
+    "The old native binary is identified by SHA-256, but its complete corresponding Rust source snapshot was not retained; this is a diagnostic baseline, not a reproducible source build.",
+    "One failure case only; no broad scheduler claim."
+  ],
+  "command": "PYTHONPATH=/tmp/ocelot-native-access.sXyEc7:. python3 <inline two-rule wakeup probe>",
+  "native_extension_path_at_run": "/tmp/ocelot-native-access.sXyEc7/substrate_rs/_native.abi3.so",
+  "native_extension_sha256": "65896b2b94c3d7a47ccf98746f18c93ffc6ed671e7dad4379db2d3d01269a372",
+  "result": {
+    "causal_edge_count_oracle": 1,
+    "progress_count": 2,
+    "reader_observed_count": 0,
+    "settled_correctly": false
+  },
+  "run_state": "exploratory_pre_fix_binary_diagnostic",
+  "source_snapshot_retained": false,
+  "workload": {
+    "initial_graph": "Two Thing nodes joined by trigger.",
+    "reader": "On trigger(x,y), set y.observed_count = Count(Edges(x, causal)).",
+    "writer": "On trigger(x,y), add causal(x,y)."
+  }
+}

@@ -1,0 +1,1177 @@
+{
+  "arm": "decode_through_tom",
+  "n_snippets": 52,
+  "gold_distribution": {
+    "up": 26,
+    "down": 19,
+    "none": 7
+  },
+  "overall_accuracy": 0.846,
+  "per_class": {
+    "up": {
+      "precision": 0.88,
+      "recall": 0.846,
+      "f1": 0.863,
+      "support": 26
+    },
+    "down": {
+      "precision": 1.0,
+      "recall": 0.789,
+      "f1": 0.882,
+      "support": 19
+    },
+    "none": {
+      "precision": 0.583,
+      "recall": 1.0,
+      "f1": 0.737,
+      "support": 7
+    }
+  },
+  "confusion_ascii": "gold\\pred |    up  down  none\n-----------------------------\n       up |    22     0     4\n     down |     3    15     1\n     none |     0     0     7",
+  "directional": {
+    "n_directional": 45,
+    "usable_directional_recall": 0.822,
+    "wrong_direction_rate": 0.067,
+    "abstain_rate": 0.111,
+    "n_correct": 37,
+    "n_wrong": 3,
+    "n_abstain": 5
+  },
+  "by_doc_type": {
+    "fomc_statement": {
+      "correct": 36,
+      "n": 41,
+      "acc": 0.878
+    },
+    "macro_release": {
+      "correct": 0,
+      "n": 2,
+      "acc": 0.0
+    },
+    "cb_speech": {
+      "correct": 6,
+      "n": 7,
+      "acc": 0.857
+    },
+    "corporate_8k": {
+      "correct": 1,
+      "n": 1,
+      "acc": 1.0
+    },
+    "positioning_report": {
+      "correct": 1,
+      "n": 1,
+      "acc": 1.0
+    }
+  },
+  "headline_non_fomc": {
+    "tom_decode": {
+      "correct": 8,
+      "n": 11,
+      "acc": 0.727
+    },
+    "cue_lexicon": {
+      "correct": 3,
+      "n": 11,
+      "acc": 0.273
+    }
+  },
+  "fomc": {
+    "tom_decode": {
+      "correct": 36,
+      "n": 41,
+      "acc": 0.878
+    },
+    "cue_lexicon": {
+      "correct": 34,
+      "n": 41,
+      "acc": 0.829
+    }
+  },
+  "lexicon_by_doc_type": {
+    "fomc_statement": {
+      "correct": 34,
+      "n": 41,
+      "acc": 0.829
+    },
+    "macro_release": {
+      "correct": 0,
+      "n": 2,
+      "acc": 0.0
+    },
+    "cb_speech": {
+      "correct": 3,
+      "n": 7,
+      "acc": 0.429
+    },
+    "corporate_8k": {
+      "correct": 0,
+      "n": 1,
+      "acc": 0.0
+    },
+    "positioning_report": {
+      "correct": 0,
+      "n": 1,
+      "acc": 0.0
+    }
+  },
+  "per_snippet": [
+    {
+      "id": "s01",
+      "gold": "up",
+      "pred": "none",
+      "doc_type": "fomc_statement",
+      "unit": "t2-F1-hawkish-cut-2024",
+      "trap": false,
+      "marginal": 0.0,
+      "grounding_weight": 0.0,
+      "reached": false,
+      "hops": null,
+      "grounding_gap": false,
+      "shift": 0.0,
+      "frame_hits": []
+    },
+    {
+      "id": "s02",
+      "gold": "down",
+      "pred": "down",
+      "doc_type": "fomc_statement",
+      "unit": "t2-F1-hawkish-cut-2024",
+      "trap": false,
+      "marginal": 1.0,
+      "grounding_weight": 0.3333333333333333,
+      "reached": true,
+      "hops": 3,
+      "grounding_gap": false,
+      "shift": -0.3333333333333333,
+      "frame_hits": [
+        [
+          "policy_rate_path",
+          "fall"
+        ]
+      ]
+    },
+    {
+      "id": "s03",
+      "gold": "up",
+      "pred": "none",
+      "doc_type": "macro_release",
+      "unit": "t2-F1-hawkish-cut-2024",
+      "trap": false,
+      "marginal": 0.0,
+      "grounding_weight": 0.0,
+      "reached": false,
+      "hops": null,
+      "grounding_gap": false,
+      "shift": 0.0,
+      "frame_hits": []
+    },
+    {
+      "id": "s04",
+      "gold": "up",
+      "pred": "up",
+      "doc_type": "fomc_statement",
+      "unit": "t2-F1-liftoff-telegraph-2015",
+      "trap": false,
+      "marginal": 1.0,
+      "grounding_weight": 0.3333333333333333,
+      "reached": true,
+      "hops": 3,
+      "grounding_gap": false,
+      "shift": 0.3333333333333333,
+      "frame_hits": [
+        [
+          "policy_rate_path",
+          "rise"
+        ]
+      ]
+    },
+    {
+      "id": "s05",
+      "gold": "up",
+      "pred": "up",
+      "doc_type": "fomc_statement",
+      "unit": "t2-F1-liftoff-telegraph-2015",
+      "trap": false,
+      "marginal": 1.0,
+      "grounding_weight": 0.3333333333333333,
+      "reached": true,
+      "hops": 3,
+      "grounding_gap": false,
+      "shift": 0.3333333333333333,
+      "frame_hits": [
+        [
+          "forward_guidance",
+          "firm"
+        ],
+        [
+          "policy_rate_path",
+          "rise"
+        ]
+      ]
+    },
+    {
+      "id": "s06",
+      "gold": "up",
+      "pred": "up",
+      "doc_type": "fomc_statement",
+      "unit": "t2-F1-patient-dropped-2015",
+      "trap": false,
+      "marginal": 1.0,
+      "grounding_weight": 0.3333333333333333,
+      "reached": true,
+      "hops": 3,
+      "grounding_gap": false,
+      "shift": 0.3333333333333333,
+      "frame_hits": [
+        [
+          "policy_rate_path",
+          "rise"
+        ]
+      ]
+    },
+    {
+      "id": "s07",
+      "gold": "down",
+      "pred": "up",
+      "doc_type": "fomc_statement",
+      "unit": "t2-F1-patient-dropped-2015",
+      "trap": false,
+      "marginal": 1.0,
+      "grounding_weight": 0.3333333333333333,
+      "reached": true,
+      "hops": 3,
+      "grounding_gap": false,
+      "shift": 0.3333333333333333,
+      "frame_hits": [
+        [
+          "policy_rate_path",
+          "rise"
+        ]
+      ]
+    },
+    {
+      "id": "s08",
+      "gold": "up",
+      "pred": "up",
+      "doc_type": "fomc_statement",
+      "unit": "t2-F1-patient-dropped-2015",
+      "trap": false,
+      "marginal": 1.0,
+      "grounding_weight": 0.3333333333333333,
+      "reached": true,
+      "hops": 3,
+      "grounding_gap": false,
+      "shift": 0.3333333333333333,
+      "frame_hits": [
+        [
+          "policy_rate_path",
+          "rise"
+        ],
+        [
+          "forward_guidance",
+          "firm"
+        ]
+      ]
+    },
+    {
+      "id": "s09",
+      "gold": "down",
+      "pred": "up",
+      "doc_type": "fomc_statement",
+      "unit": "t2-F1-patient-dropped-2015",
+      "trap": false,
+      "marginal": 1.0,
+      "grounding_weight": 0.3333333333333333,
+      "reached": true,
+      "hops": 3,
+      "grounding_gap": false,
+      "shift": 0.3333333333333333,
+      "frame_hits": [
+        [
+          "policy_rate_path",
+          "fall"
+        ],
+        [
+          "policy_rate_path",
+          "rise"
+        ],
+        [
+          "forward_guidance",
+          "ease"
+        ]
+      ]
+    },
+    {
+      "id": "s10",
+      "gold": "down",
+      "pred": "down",
+      "doc_type": "fomc_statement",
+      "unit": "t2-F1-third-cut-2019",
+      "trap": false,
+      "marginal": 1.0,
+      "grounding_weight": 0.3333333333333333,
+      "reached": true,
+      "hops": 3,
+      "grounding_gap": false,
+      "shift": -0.3333333333333333,
+      "frame_hits": [
+        [
+          "policy_rate_path",
+          "fall"
+        ]
+      ]
+    },
+    {
+      "id": "s11",
+      "gold": "up",
+      "pred": "up",
+      "doc_type": "fomc_statement",
+      "unit": "t2-F1-pause-2006",
+      "trap": false,
+      "marginal": 1.0,
+      "grounding_weight": 0.3333333333333333,
+      "reached": true,
+      "hops": 3,
+      "grounding_gap": false,
+      "shift": 0.3333333333333333,
+      "frame_hits": [
+        [
+          "policy_rate_path",
+          "rise"
+        ]
+      ]
+    },
+    {
+      "id": "s12",
+      "gold": "down",
+      "pred": "up",
+      "doc_type": "fomc_statement",
+      "unit": "t2-F1-pause-2006",
+      "trap": false,
+      "marginal": 1.0,
+      "grounding_weight": 0.3333333333333333,
+      "reached": true,
+      "hops": 3,
+      "grounding_gap": false,
+      "shift": 0.3333333333333333,
+      "frame_hits": [
+        [
+          "policy_rate_path",
+          "rise"
+        ]
+      ]
+    },
+    {
+      "id": "s13",
+      "gold": "up",
+      "pred": "up",
+      "doc_type": "fomc_statement",
+      "unit": "t2-F1-measured-pace-2004",
+      "trap": false,
+      "marginal": 1.0,
+      "grounding_weight": 0.3333333333333333,
+      "reached": true,
+      "hops": 3,
+      "grounding_gap": false,
+      "shift": 0.3333333333333333,
+      "frame_hits": [
+        [
+          "policy_rate_path",
+          "rise"
+        ]
+      ]
+    },
+    {
+      "id": "s14",
+      "gold": "down",
+      "pred": "down",
+      "doc_type": "fomc_statement",
+      "unit": "t2-F1-considerable-period-2003",
+      "trap": false,
+      "marginal": 1.0,
+      "grounding_weight": 0.3333333333333333,
+      "reached": true,
+      "hops": 3,
+      "grounding_gap": false,
+      "shift": -0.3333333333333333,
+      "frame_hits": [
+        [
+          "forward_guidance",
+          "commit"
+        ]
+      ]
+    },
+    {
+      "id": "s15",
+      "gold": "none",
+      "pred": "none",
+      "doc_type": "fomc_statement",
+      "unit": "t2-F1-considerable-period-2003",
+      "trap": false,
+      "marginal": 0.0,
+      "grounding_weight": 0.0,
+      "reached": false,
+      "hops": null,
+      "grounding_gap": false,
+      "shift": 0.0,
+      "frame_hits": [
+        [
+          "policy_rate_path",
+          "hold"
+        ]
+      ]
+    },
+    {
+      "id": "s16",
+      "gold": "up",
+      "pred": "up",
+      "doc_type": "fomc_statement",
+      "unit": "t2-F2-taper-begins-2013",
+      "trap": false,
+      "marginal": 1.0,
+      "grounding_weight": 0.3333333333333333,
+      "reached": true,
+      "hops": 3,
+      "grounding_gap": false,
+      "shift": 0.3333333333333333,
+      "frame_hits": [
+        [
+          "balance_sheet",
+          "contract"
+        ]
+      ]
+    },
+    {
+      "id": "s17",
+      "gold": "down",
+      "pred": "down",
+      "doc_type": "fomc_statement",
+      "unit": "t2-F2-taper-begins-2013",
+      "trap": false,
+      "marginal": 1.0,
+      "grounding_weight": 0.3333333333333333,
+      "reached": true,
+      "hops": 3,
+      "grounding_gap": false,
+      "shift": -0.3333333333333333,
+      "frame_hits": [
+        [
+          "policy_rate_path",
+          "hold"
+        ],
+        [
+          "forward_guidance",
+          "commit"
+        ]
+      ]
+    },
+    {
+      "id": "s18",
+      "gold": "up",
+      "pred": "up",
+      "doc_type": "cb_speech",
+      "unit": "t2-F2-taper-testimony-2013",
+      "trap": false,
+      "marginal": 1.0,
+      "grounding_weight": 0.3333333333333333,
+      "reached": true,
+      "hops": 3,
+      "grounding_gap": false,
+      "shift": 0.3333333333333333,
+      "frame_hits": [
+        [
+          "balance_sheet",
+          "expand"
+        ],
+        [
+          "balance_sheet",
+          "contract"
+        ]
+      ]
+    },
+    {
+      "id": "s19",
+      "gold": "down",
+      "pred": "none",
+      "doc_type": "cb_speech",
+      "unit": "t2-F2-taper-testimony-2013",
+      "trap": false,
+      "marginal": 0.0,
+      "grounding_weight": 0.0,
+      "reached": false,
+      "hops": null,
+      "grounding_gap": false,
+      "shift": 0.0,
+      "frame_hits": []
+    },
+    {
+      "id": "s20",
+      "gold": "up",
+      "pred": "up",
+      "doc_type": "fomc_statement",
+      "unit": "t2-F2-higher-for-longer-2023",
+      "trap": false,
+      "marginal": 1.0,
+      "grounding_weight": 0.3333333333333333,
+      "reached": true,
+      "hops": 3,
+      "grounding_gap": false,
+      "shift": 0.3333333333333333,
+      "frame_hits": [
+        [
+          "policy_rate_path",
+          "rise"
+        ]
+      ]
+    },
+    {
+      "id": "s21",
+      "gold": "up",
+      "pred": "none",
+      "doc_type": "fomc_statement",
+      "unit": "t2-F2-higher-for-longer-2023",
+      "trap": false,
+      "marginal": 0.0,
+      "grounding_weight": 0.0,
+      "reached": false,
+      "hops": null,
+      "grounding_gap": false,
+      "shift": 0.0,
+      "frame_hits": [
+        [
+          "policy_rate_path",
+          "hold"
+        ]
+      ]
+    },
+    {
+      "id": "s22",
+      "gold": "down",
+      "pred": "down",
+      "doc_type": "cb_speech",
+      "unit": "t2-F2-whatever-it-takes-2012",
+      "trap": false,
+      "marginal": 1.0,
+      "grounding_weight": 0.3333333333333333,
+      "reached": true,
+      "hops": 3,
+      "grounding_gap": false,
+      "shift": -0.3333333333333333,
+      "frame_hits": [
+        [
+          "backstop_commitment",
+          "commit"
+        ]
+      ]
+    },
+    {
+      "id": "s23",
+      "gold": "down",
+      "pred": "down",
+      "doc_type": "cb_speech",
+      "unit": "t2-F2-whatever-it-takes-2012",
+      "trap": false,
+      "marginal": 1.0,
+      "grounding_weight": 0.3333333333333333,
+      "reached": true,
+      "hops": 3,
+      "grounding_gap": false,
+      "shift": -0.3333333333333333,
+      "frame_hits": [
+        [
+          "backstop_commitment",
+          "commit"
+        ]
+      ]
+    },
+    {
+      "id": "s24",
+      "gold": "up",
+      "pred": "up",
+      "doc_type": "cb_speech",
+      "unit": "t2-F2-eur-parity-2022",
+      "trap": false,
+      "marginal": 1.0,
+      "grounding_weight": 0.3333333333333333,
+      "reached": true,
+      "hops": 3,
+      "grounding_gap": false,
+      "shift": 0.3333333333333333,
+      "frame_hits": [
+        [
+          "policy_rate_path",
+          "rise"
+        ]
+      ]
+    },
+    {
+      "id": "s25",
+      "gold": "up",
+      "pred": "up",
+      "doc_type": "cb_speech",
+      "unit": "t2-F2-eur-parity-2022",
+      "trap": false,
+      "marginal": 1.0,
+      "grounding_weight": 0.3333333333333333,
+      "reached": true,
+      "hops": 3,
+      "grounding_gap": false,
+      "shift": 0.3333333333333333,
+      "frame_hits": [
+        [
+          "policy_rate_path",
+          "rise"
+        ]
+      ]
+    },
+    {
+      "id": "s26",
+      "gold": "up",
+      "pred": "up",
+      "doc_type": "cb_speech",
+      "unit": "t2-F2-eur-parity-2022",
+      "trap": false,
+      "marginal": 1.0,
+      "grounding_weight": 0.3333333333333333,
+      "reached": true,
+      "hops": 3,
+      "grounding_gap": false,
+      "shift": 0.3333333333333333,
+      "frame_hits": [
+        [
+          "policy_rate_path",
+          "rise"
+        ]
+      ]
+    },
+    {
+      "id": "s27",
+      "gold": "up",
+      "pred": "up",
+      "doc_type": "fomc_statement",
+      "unit": "t2-F2-powell-pivot-2019",
+      "trap": false,
+      "marginal": 1.0,
+      "grounding_weight": 0.3333333333333333,
+      "reached": true,
+      "hops": 3,
+      "grounding_gap": false,
+      "shift": 0.3333333333333333,
+      "frame_hits": [
+        [
+          "policy_rate_path",
+          "rise"
+        ]
+      ]
+    },
+    {
+      "id": "s28",
+      "gold": "up",
+      "pred": "up",
+      "doc_type": "fomc_statement",
+      "unit": "t2-F2-powell-pivot-2019",
+      "trap": false,
+      "marginal": 1.0,
+      "grounding_weight": 0.3333333333333333,
+      "reached": true,
+      "hops": 3,
+      "grounding_gap": false,
+      "shift": 0.3333333333333333,
+      "frame_hits": [
+        [
+          "policy_rate_path",
+          "rise"
+        ]
+      ]
+    },
+    {
+      "id": "s29",
+      "gold": "down",
+      "pred": "down",
+      "doc_type": "fomc_statement",
+      "unit": "t2-F2-cut-sizing-2024",
+      "trap": false,
+      "marginal": 1.0,
+      "grounding_weight": 0.3333333333333333,
+      "reached": true,
+      "hops": 3,
+      "grounding_gap": false,
+      "shift": -0.3333333333333333,
+      "frame_hits": [
+        [
+          "forward_guidance",
+          "ease"
+        ],
+        [
+          "policy_rate_path",
+          "fall"
+        ],
+        [
+          "inflation_target_credibility",
+          "ease"
+        ]
+      ]
+    },
+    {
+      "id": "s30",
+      "gold": "down",
+      "pred": "down",
+      "doc_type": "fomc_statement",
+      "unit": "t2-F2-cut-sizing-2024",
+      "trap": false,
+      "marginal": 1.0,
+      "grounding_weight": 0.3333333333333333,
+      "reached": true,
+      "hops": 3,
+      "grounding_gap": false,
+      "shift": -0.3333333333333333,
+      "frame_hits": [
+        [
+          "inflation_target_credibility",
+          "ease"
+        ]
+      ]
+    },
+    {
+      "id": "s31",
+      "gold": "down",
+      "pred": "down",
+      "doc_type": "fomc_statement",
+      "unit": "t2-F2-time-has-come-2024",
+      "trap": false,
+      "marginal": 1.0,
+      "grounding_weight": 0.3333333333333333,
+      "reached": true,
+      "hops": 3,
+      "grounding_gap": false,
+      "shift": -0.3333333333333333,
+      "frame_hits": [
+        [
+          "forward_guidance",
+          "ease"
+        ],
+        [
+          "policy_rate_path",
+          "fall"
+        ],
+        [
+          "inflation_target_credibility",
+          "ease"
+        ]
+      ]
+    },
+    {
+      "id": "s32",
+      "gold": "down",
+      "pred": "down",
+      "doc_type": "fomc_statement",
+      "unit": "t2-F2-abenomics-2012",
+      "trap": false,
+      "marginal": 1.0,
+      "grounding_weight": 0.3333333333333333,
+      "reached": true,
+      "hops": 3,
+      "grounding_gap": false,
+      "shift": -0.3333333333333333,
+      "frame_hits": [
+        [
+          "balance_sheet",
+          "expand"
+        ]
+      ]
+    },
+    {
+      "id": "s33",
+      "gold": "down",
+      "pred": "down",
+      "doc_type": "fomc_statement",
+      "unit": "t2-F2-draghi-precommit-2014",
+      "trap": false,
+      "marginal": 1.0,
+      "grounding_weight": 0.3333333333333333,
+      "reached": true,
+      "hops": 3,
+      "grounding_gap": false,
+      "shift": -0.3333333333333333,
+      "frame_hits": [
+        [
+          "policy_rate_path",
+          "hold"
+        ],
+        [
+          "forward_guidance",
+          "commit"
+        ]
+      ]
+    },
+    {
+      "id": "s34",
+      "gold": "up",
+      "pred": "up",
+      "doc_type": "fomc_statement",
+      "unit": "t2-F2-draghi-precommit-2014",
+      "trap": false,
+      "marginal": 1.0,
+      "grounding_weight": 0.3333333333333333,
+      "reached": true,
+      "hops": 3,
+      "grounding_gap": false,
+      "shift": 0.3333333333333333,
+      "frame_hits": [
+        [
+          "balance_sheet",
+          "contract"
+        ]
+      ]
+    },
+    {
+      "id": "s35",
+      "gold": "up",
+      "pred": "up",
+      "doc_type": "fomc_statement",
+      "unit": "t2-F2-some-pain-2022",
+      "trap": false,
+      "marginal": 1.0,
+      "grounding_weight": 0.3333333333333333,
+      "reached": true,
+      "hops": 3,
+      "grounding_gap": false,
+      "shift": 0.3333333333333333,
+      "frame_hits": [
+        [
+          "policy_rate_path",
+          "rise"
+        ]
+      ]
+    },
+    {
+      "id": "s36",
+      "gold": "up",
+      "pred": "up",
+      "doc_type": "fomc_statement",
+      "unit": "t2-F4-powell-december-2018",
+      "trap": false,
+      "marginal": 1.0,
+      "grounding_weight": 0.3333333333333333,
+      "reached": true,
+      "hops": 3,
+      "grounding_gap": false,
+      "shift": 0.3333333333333333,
+      "frame_hits": [
+        [
+          "policy_rate_path",
+          "rise"
+        ]
+      ]
+    },
+    {
+      "id": "s37",
+      "gold": "none",
+      "pred": "none",
+      "doc_type": "fomc_statement",
+      "unit": "t2-F4-powell-december-2018",
+      "trap": false,
+      "marginal": 0.0,
+      "grounding_weight": 0.0,
+      "reached": false,
+      "hops": null,
+      "grounding_gap": false,
+      "shift": 0.0,
+      "frame_hits": [
+        [
+          "policy_rate_path",
+          "hold"
+        ]
+      ]
+    },
+    {
+      "id": "s38",
+      "gold": "up",
+      "pred": "up",
+      "doc_type": "fomc_statement",
+      "unit": "t2-F4-svb-whiplash-2023",
+      "trap": false,
+      "marginal": 1.0,
+      "grounding_weight": 0.3333333333333333,
+      "reached": true,
+      "hops": 3,
+      "grounding_gap": false,
+      "shift": 0.3333333333333333,
+      "frame_hits": [
+        [
+          "policy_rate_path",
+          "rise"
+        ]
+      ]
+    },
+    {
+      "id": "s39",
+      "gold": "down",
+      "pred": "down",
+      "doc_type": "corporate_8k",
+      "unit": "t2-F4-svb-whiplash-2023",
+      "trap": false,
+      "marginal": 1.0,
+      "grounding_weight": 0.3333333333333333,
+      "reached": true,
+      "hops": 3,
+      "grounding_gap": false,
+      "shift": -0.3333333333333333,
+      "frame_hits": [
+        [
+          "funding_stress",
+          "shock"
+        ]
+      ]
+    },
+    {
+      "id": "s40",
+      "gold": "down",
+      "pred": "down",
+      "doc_type": "fomc_statement",
+      "unit": "t2-F4-taper-warning-2013",
+      "trap": false,
+      "marginal": 1.0,
+      "grounding_weight": 0.3333333333333333,
+      "reached": true,
+      "hops": 3,
+      "grounding_gap": false,
+      "shift": -0.3333333333333333,
+      "frame_hits": [
+        [
+          "forward_guidance",
+          "commit"
+        ]
+      ]
+    },
+    {
+      "id": "s41",
+      "gold": "up",
+      "pred": "up",
+      "doc_type": "fomc_statement",
+      "unit": "t2-F4-cpi-friday-2022",
+      "trap": false,
+      "marginal": 1.0,
+      "grounding_weight": 0.3333333333333333,
+      "reached": true,
+      "hops": 3,
+      "grounding_gap": false,
+      "shift": 0.3333333333333333,
+      "frame_hits": [
+        [
+          "balance_sheet",
+          "contract"
+        ]
+      ]
+    },
+    {
+      "id": "s42",
+      "gold": "none",
+      "pred": "none",
+      "doc_type": "fomc_statement",
+      "unit": "t2-F4-covid-rates-2020",
+      "trap": false,
+      "marginal": 0.0,
+      "grounding_weight": 0.0,
+      "reached": false,
+      "hops": null,
+      "grounding_gap": false,
+      "shift": 0.0,
+      "frame_hits": [
+        [
+          "policy_rate_path",
+          "hold"
+        ]
+      ]
+    },
+    {
+      "id": "s43",
+      "gold": "none",
+      "pred": "none",
+      "doc_type": "fomc_statement",
+      "unit": "t2-F4-covid-rates-2020",
+      "trap": false,
+      "marginal": 0.0,
+      "grounding_weight": 0.0,
+      "reached": false,
+      "hops": null,
+      "grounding_gap": false,
+      "shift": 0.0,
+      "frame_hits": []
+    },
+    {
+      "id": "s44",
+      "gold": "up",
+      "pred": "up",
+      "doc_type": "fomc_statement",
+      "unit": "t2-F4-jpy-carry-2007",
+      "trap": false,
+      "marginal": 1.0,
+      "grounding_weight": 0.3333333333333333,
+      "reached": true,
+      "hops": 3,
+      "grounding_gap": false,
+      "shift": 0.3333333333333333,
+      "frame_hits": [
+        [
+          "inflation_target_credibility",
+          "firm"
+        ]
+      ]
+    },
+    {
+      "id": "s45",
+      "gold": "none",
+      "pred": "none",
+      "doc_type": "fomc_statement",
+      "unit": "t2-F4-jpy-carry-2007",
+      "trap": false,
+      "marginal": 0.0,
+      "grounding_weight": 0.0,
+      "reached": false,
+      "hops": null,
+      "grounding_gap": false,
+      "shift": 0.0,
+      "frame_hits": [
+        [
+          "policy_rate_path",
+          "hold"
+        ]
+      ]
+    },
+    {
+      "id": "s46",
+      "gold": "down",
+      "pred": "down",
+      "doc_type": "positioning_report",
+      "unit": "t2-F4-jpy-carry-2007",
+      "trap": false,
+      "marginal": 1.0,
+      "grounding_weight": 0.3333333333333333,
+      "reached": true,
+      "hops": 3,
+      "grounding_gap": false,
+      "shift": -0.3333333333333333,
+      "frame_hits": [
+        [
+          "carry_positioning",
+          "crowded"
+        ]
+      ]
+    },
+    {
+      "id": "s47",
+      "gold": "down",
+      "pred": "down",
+      "doc_type": "fomc_statement",
+      "unit": "t2-F1-greater-confidence-2024",
+      "trap": false,
+      "marginal": 1.0,
+      "grounding_weight": 0.3333333333333333,
+      "reached": true,
+      "hops": 3,
+      "grounding_gap": false,
+      "shift": -0.3333333333333333,
+      "frame_hits": [
+        [
+          "forward_guidance",
+          "ease"
+        ],
+        [
+          "policy_rate_path",
+          "fall"
+        ],
+        [
+          "inflation_target_credibility",
+          "ease"
+        ]
+      ]
+    },
+    {
+      "id": "s48",
+      "gold": "none",
+      "pred": "none",
+      "doc_type": "fomc_statement",
+      "unit": "t2-F2-taper-begins-2013",
+      "trap": false,
+      "marginal": 0.0,
+      "grounding_weight": 0.0,
+      "reached": false,
+      "hops": null,
+      "grounding_gap": false,
+      "shift": 0.0,
+      "frame_hits": []
+    },
+    {
+      "id": "s49",
+      "gold": "up",
+      "pred": "up",
+      "doc_type": "fomc_statement",
+      "unit": "t2-F1-measured-pace-2004",
+      "trap": false,
+      "marginal": 1.0,
+      "grounding_weight": 0.3333333333333333,
+      "reached": true,
+      "hops": 3,
+      "grounding_gap": false,
+      "shift": 0.3333333333333333,
+      "frame_hits": [
+        [
+          "policy_rate_path",
+          "rise"
+        ]
+      ]
+    },
+    {
+      "id": "s50",
+      "gold": "up",
+      "pred": "up",
+      "doc_type": "fomc_statement",
+      "unit": "t2-F2-some-pain-2022",
+      "trap": false,
+      "marginal": 1.0,
+      "grounding_weight": 0.3333333333333333,
+      "reached": true,
+      "hops": 3,
+      "grounding_gap": false,
+      "shift": 0.3333333333333333,
+      "frame_hits": [
+        [
+          "balance_sheet",
+          "contract"
+        ]
+      ]
+    },
+    {
+      "id": "s51",
+      "gold": "none",
+      "pred": "none",
+      "doc_type": "fomc_statement",
+      "unit": "t2-F1-considerable-period-2003",
+      "trap": false,
+      "marginal": 0.0,
+      "grounding_weight": 0.0,
+      "reached": false,
+      "hops": null,
+      "grounding_gap": false,
+      "shift": 0.0,
+      "frame_hits": []
+    },
+    {
+      "id": "s52",
+      "gold": "up",
+      "pred": "none",
+      "doc_type": "macro_release",
+      "unit": "t2-F2-higher-for-longer-2023",
+      "trap": false,
+      "marginal": 0.0,
+      "grounding_weight": 0.0,
+      "reached": false,
+      "hops": null,
+      "grounding_gap": false,
+      "shift": 0.0,
+      "frame_hits": []
+    }
+  ]
+}

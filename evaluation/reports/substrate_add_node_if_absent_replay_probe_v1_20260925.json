@@ -1,0 +1,224 @@
+{
+  "cases": [
+    {
+      "after_count": 2,
+      "after_values": [
+        0,
+        7
+      ],
+      "before_count": 1,
+      "before_values": [
+        0
+      ],
+      "expected_after_count": 2,
+      "expected_after_values": [
+        0,
+        7
+      ],
+      "graph_after_rescan": {
+        "edges": [
+          {
+            "attrs": {},
+            "src": 0,
+            "tgt": 1,
+            "type": "trigger"
+          }
+        ],
+        "next_id": 4,
+        "nodes": [
+          {
+            "attrs": {
+              "watched": 7
+            },
+            "id": 0,
+            "type": "ReplayRoot"
+          },
+          {
+            "attrs": {},
+            "id": 1,
+            "type": "ReplayTarget"
+          },
+          {
+            "attrs": {
+              "value": 0
+            },
+            "id": 2,
+            "type": "ReplayBorn"
+          },
+          {
+            "attrs": {
+              "value": 7
+            },
+            "id": 3,
+            "type": "ReplayBorn"
+          }
+        ]
+      },
+      "graph_before_rescan": {
+        "edges": [
+          {
+            "attrs": {},
+            "src": 0,
+            "tgt": 1,
+            "type": "trigger"
+          }
+        ],
+        "next_id": 3,
+        "nodes": [
+          {
+            "attrs": {
+              "watched": 7
+            },
+            "id": 0,
+            "type": "ReplayRoot"
+          },
+          {
+            "attrs": {},
+            "id": 1,
+            "type": "ReplayTarget"
+          },
+          {
+            "attrs": {
+              "value": 0
+            },
+            "id": 2,
+            "type": "ReplayBorn"
+          }
+        ]
+      },
+      "identity_mode": "value_in_dedup_key",
+      "initial_progress": 1,
+      "rescan_matches_declared_oracle": true,
+      "rescan_progress": 1,
+      "stage_a_compare": {
+        "compared_drains": 0,
+        "diverged_drains": 0,
+        "diverged_rules": [],
+        "unsound_drains": 0,
+        "unsound_rules": []
+      },
+      "terminal_progress": 0,
+      "writer_progress": 1
+    },
+    {
+      "after_count": 1,
+      "after_values": [
+        7
+      ],
+      "before_count": 1,
+      "before_values": [
+        0
+      ],
+      "expected_after_count": 1,
+      "expected_after_values": [
+        7
+      ],
+      "graph_after_rescan": {
+        "edges": [
+          {
+            "attrs": {},
+            "src": 0,
+            "tgt": 1,
+            "type": "trigger"
+          }
+        ],
+        "next_id": 3,
+        "nodes": [
+          {
+            "attrs": {
+              "watched": 7
+            },
+            "id": 0,
+            "type": "ReplayRoot"
+          },
+          {
+            "attrs": {},
+            "id": 1,
+            "type": "ReplayTarget"
+          },
+          {
+            "attrs": {
+              "identity": "root-1",
+              "value": 7
+            },
+            "id": 2,
+            "type": "ReplayBorn"
+          }
+        ]
+      },
+      "graph_before_rescan": {
+        "edges": [
+          {
+            "attrs": {},
+            "src": 0,
+            "tgt": 1,
+            "type": "trigger"
+          }
+        ],
+        "next_id": 3,
+        "nodes": [
+          {
+            "attrs": {
+              "watched": 7
+            },
+            "id": 0,
+            "type": "ReplayRoot"
+          },
+          {
+            "attrs": {},
+            "id": 1,
+            "type": "ReplayTarget"
+          },
+          {
+            "attrs": {
+              "identity": "root-1",
+              "value": 0
+            },
+            "id": 2,
+            "type": "ReplayBorn"
+          }
+        ]
+      },
+      "identity_mode": "stable_key_then_set_attr",
+      "initial_progress": 1,
+      "rescan_matches_declared_oracle": true,
+      "rescan_progress": 1,
+      "stage_a_compare": {
+        "compared_drains": 0,
+        "diverged_drains": 0,
+        "diverged_rules": [],
+        "unsound_drains": 0,
+        "unsound_rules": []
+      },
+      "terminal_progress": 0,
+      "writer_progress": 1
+    }
+  ],
+  "checks": {
+    "both_cases_reach_terminal_probe": true,
+    "stable_identity_reuses_node_and_refreshes_value": true,
+    "stage_a_compare_admission_is_zero_and_reports_no_divergence": true,
+    "value_dependent_dedup_key_mints_duplicate_on_changed_value": true
+  },
+  "claim_boundary": "Mechanism probe for two authored identity policies. Does not establish a general replay contract, arbitrary dedup-key safety, workload frequency, or frame locality.",
+  "environment": {
+    "platform": "Linux-6.8.0-142-generic-x86_64-with-glibc2.39",
+    "python": "3.13.5 (main, Jun 11 2025, 15:36:57) [GCC 11.4.0]"
+  },
+  "provenance": {
+    "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+    "dirty_worktree": true,
+    "native_extension_path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+    "native_extension_sha256": "b451c4b965c6ee8e6d29ef572f0ffd565f34b2df4eaa909a34a08c08c16041df",
+    "source_sha256": {
+      "harness": "a6cde7bd54fd9bdf4d1731c333f4b91f6fd317df06bcd596895092775ee553f0",
+      "native_build_manifest": "53c64eca21550e1ec990f804cbed94baf1779630c1c00aae0628bc8577413a40",
+      "py_binding": "10c9f81ae7a69c3dce7dd04bbcb19febb660a442765730bcb56d329d4c02dc3c",
+      "rewrite": "e6f4aa0407fd4c7feb57c5c4d2ad0ffeef5c4de916b96a45633e34af0ba742e8",
+      "substrate": "0608a8f6cbcfe1e937745f06805e37df6c9e0e0a0c47f37167769df54990237c"
+    }
+  },
+  "run_id": "substrate-add-node-if-absent-replay-probe-v1-20260925",
+  "schema_version": 1,
+  "scope": "two controlled single-binding AddNodeIfAbsent readers under full dirty rescan"
+}

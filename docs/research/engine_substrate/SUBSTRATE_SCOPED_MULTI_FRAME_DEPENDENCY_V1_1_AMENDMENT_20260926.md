@@ -1,0 +1,5 @@
+# Multi-frame dependency probe v1.1 amendment
+
+**Recorded before the corrected confirmatory capture, 2026-09-26.** The initial preregistered pilot failed event/full parity: the mint rule's two target-frame variables were not distinguished by the fixture, so full closure admitted both B/C assignments and minted two bridges, while one scoped pass selected one assignment. The owner notifications were still `{A,B,C}`, but the pilot does not support a queue-parity conclusion. The failed raw capture is retained at `evaluation/reports/substrate_scoped_multi_frame_dependency_probe_v1_20260926_pilot_failure.json`.
+
+For confirmatory v1.1, add explicit immutable role attributes (`A`, `B`, `C`) to the three Microtheory roots and add role-equality guards to the mint rule and B-target deletion match. This removes the fixture's symmetric binding ambiguity while preserving its intended causal structure: one bridge, two cross-frame influence edges, two downstream state consumers, and node deletion removing both edges. No pass criterion, queue policy, operation limit, outcome projection, or claim boundary changes. Report both the failed pilot and amended confirmatory result.

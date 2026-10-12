@@ -54,7 +54,6 @@ counter — every raw id held across a call boundary is `has_node`-guarded.
 """
 from __future__ import annotations
 
-import urllib.request
 from html.parser import HTMLParser
 from urllib.parse import urlsplit
 
@@ -113,6 +112,11 @@ def _plain_http_get(url: str, *, timeout: int, max_bytes: int) -> dict:
     effector, but STREAMS a hard byte cap (`resp.read(max_bytes + 1)`) —
     unlike the materialized effector's emitted source, which has no cap
     parameter and always reads the whole body."""
+    # urllib is only needed when materializing or invoking the authored
+    # effector fails; keep that optional fallback out of the profile import
+    # closure when the primary transport is available.
+    import urllib.request
+
     req = urllib.request.Request(url, headers={"User-Agent": _FALLBACK_USER_AGENT},
                                  method="GET")
     with urllib.request.urlopen(req, timeout=timeout) as resp:
@@ -260,7 +264,7 @@ def mint_search_request(agent, query: str, purpose: str = "",
 
 
 def scan_and_search(agent, *, http_get=None, timeout: int = 15,
-                    log=lambda *a: None) -> list:
+                    request_ids=None, log=lambda *a: None) -> list:
     """Find every REQUESTED SearchRequest, resolve query→title→summary and ground
     the TOPIC (phrase-level, via `domains.topic_grounding.resolve_and_ground`:
     local Wikipedia library first, then a live Wikipedia REST lookup over HTTPS),
@@ -275,9 +279,15 @@ def scan_and_search(agent, *, http_get=None, timeout: int = 15,
     otherwise `topic_grounding`'s own http machinery is used."""
     from domains import topic_grounding as _tg
     S, I = agent.s, agent.inner
+    allowed_ids = (None if request_ids is None else {
+        int(value.value) if hasattr(value, "value") else int(value)
+        for value in request_ids
+    })
     touched: list = []
     for req in list(S.nodes("SearchRequest")):
         if not I.has_node(req):
+            continue
+        if allowed_ids is not None and int(req.value) not in allowed_ids:
             continue
         a = S.node(req)["attrs"]
         if a.get("status") != "requested":
@@ -347,15 +357,22 @@ def scan_and_search(agent, *, http_get=None, timeout: int = 15,
     return touched
 
 
-def scan_and_sync_ground(agent, *, log=lambda *a: None) -> list:
+def scan_and_sync_ground(agent, *, request_ids=None, allow_web: bool = True,
+                         log=lambda *a: None) -> list:
     """Fulfil every REQUESTED GroundRequest via the synchronous phrase grounder
     (domains.topic_grounding.ground_topic / ground_topic_aspect). The graph's
     topic_sync_ground seed mints these; this is mechanical I/O only."""
     from domains import topic_grounding as _tg
     S, I = agent.s, agent.inner
+    allowed_ids = (None if request_ids is None else {
+        int(value.value) if hasattr(value, "value") else int(value)
+        for value in request_ids
+    })
     touched: list = []
     for req in list(S.nodes("GroundRequest")):
         if not I.has_node(req):
+            continue
+        if allowed_ids is not None and int(req.value) not in allowed_ids:
             continue
         a = S.node(req)["attrs"]
         if a.get("status") != "requested":
@@ -369,11 +386,27 @@ def scan_and_sync_ground(agent, *, log=lambda *a: None) -> list:
             I.set_attr(req, "error", "empty query")
             log("sync ground refused: empty query")
             continue
+        inbound = getattr(agent, "_last_turn_inbound", None)
+        inbound_id = (str(int(inbound.value)) if hasattr(inbound, "value")
+                      else str(inbound) if inbound is not None else None)
+        # A synchronous answer-topic readback may already have completed the
+        # same-turn local-only lookup before this authored GroundRequest was
+        # dispatched. Consume that explicit miss instead of probing the same
+        # local source twice. This applies only when the request is still
+        # handled local-only; a web-enabled request must run its own fallback.
+        if (not allow_web
+                and a.get("local_grounding_outcome") == "miss"
+                and a.get("local_grounding_turn_id") == inbound_id):
+            I.set_attr(req, "status", "failed")
+            I.set_attr(req, "error", "no answer")
+            log(f"sync ground reused same-turn local miss: {query!r}")
+            continue
         try:
             if aspect and str(aspect).strip():
-                ans = _tg.ground_topic_aspect(agent, query, str(aspect).strip())
+                ans = _tg.ground_topic_aspect(
+                    agent, query, str(aspect).strip(), allow_web=allow_web)
             else:
-                ans = _tg.ground_topic(agent, query)
+                ans = _tg.ground_topic(agent, query, allow_web=allow_web)
         except Exception as e:  # noqa: BLE001
             I.set_attr(req, "status", "failed")
             I.set_attr(req, "error", f"{type(e).__name__}: {e}")
@@ -386,6 +419,20 @@ def scan_and_sync_ground(agent, *, log=lambda *a: None) -> list:
             continue
         I.set_attr(req, "answer", _cap_text(str(ans), 4000))
         I.set_attr(req, "status", "done")
+        # A successful graph-selected grounding (especially an aspect such as
+        # composition) is more specific than the parallel generic topic search
+        # minted for the same answer_topic goal. Do not let the latter fetch a
+        # broad summary and overwrite the answer just grounded. On failure the
+        # SearchRequest deliberately remains requested as the fallback.
+        for search_req in S.nodes("SearchRequest"):
+            if not I.has_node(search_req):
+                continue
+            search_attrs = S.node(search_req)["attrs"]
+            if (search_attrs.get("status") in ("requested", "running", "io_pending")
+                    and str(search_attrs.get("query") or "").strip().lower()
+                    == query.lower()):
+                I.set_attr(search_req, "status", "superseded")
+                I.add_edge_unchecked(search_req, "superseded_by", req)
         log(f"sync grounded {query!r} ({len(str(ans))} chars)")
     return touched
 
@@ -457,8 +504,14 @@ def _ingest_detail_chain(agent, topic_name: str, chunks: list) -> int:
     return added
 
 
+def commit_detail_payload(agent, topic: str, chunks: list) -> int:
+    """Commit detail chunks on the graph owner; the payload contains no nodes."""
+    return _ingest_detail_chain(agent, str(topic), list(chunks or []))
+
+
 def scan_and_ingest_detail(agent, *, http_get=None, timeout: int = 8,
-                           allow_web: bool = True, log=lambda *a: None) -> list:
+                           allow_web: bool = True, request_ids=None,
+                           log=lambda *a: None) -> list:
     """Find every REQUESTED DetailRequest, fetch its topic's progressive-detail
     chunks (`domains.topic_grounding.topic_detail`: local wiki sections, else the
     live Wikipedia extracts API over HTTPS), ingest them as a graph CHAIN, and
@@ -474,9 +527,15 @@ def scan_and_ingest_detail(agent, *, http_get=None, timeout: int = 8,
     resolver)."""
     from domains import topic_grounding as _tg
     S, I = agent.s, agent.inner
+    allowed_ids = (None if request_ids is None else {
+        int(value.value) if hasattr(value, "value") else int(value)
+        for value in request_ids
+    })
     touched: list = []
     for req in list(S.nodes("DetailRequest")):
         if not I.has_node(req):
+            continue
+        if allowed_ids is not None and int(req.value) not in allowed_ids:
             continue
         a = S.node(req)["attrs"]
         if a.get("status") != "requested":
@@ -507,7 +566,7 @@ def scan_and_ingest_detail(agent, *, http_get=None, timeout: int = 8,
             continue
 
         try:
-            added = _ingest_detail_chain(agent, str(topic), chunks)
+            added = commit_detail_payload(agent, str(topic), chunks)
         except Exception as e:  # noqa: BLE001 -- ingestion failure -> failed, not a crash
             I.set_attr(req, "status", "failed")
             I.set_attr(req, "error", f"ingest {type(e).__name__}: {e}")

@@ -1,0 +1,3 @@
+# Sequential location transfer v1 analysis amendment — 2026-10-04
+
+The first post-capture analyzer invocation expected `training_order` as a worker-level field, while the locked runner records the order through the two stage rows. That invocation exited before writing an analysis artifact. The analyzer was corrected to derive each target from the captured `trained_center` fields; the raw capture, protocol, runner, and source lock were unchanged. The amended analyzer records its own SHA-256 and source-stability gate and passes all eight analysis checks. This is an analysis-code correction, not a change to scoring thresholds or the registered procedure. The original traceback is retained in the execution log; no failed semantic case was dropped or altered.

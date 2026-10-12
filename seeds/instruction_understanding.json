@@ -1,6 +1,6 @@
 {
   "id": "instruction_understanding",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "depends_on": ["intent"],
   "description": "Graph-native instruction understanding and teacher learning. A routed imperative whose grammar parser left as a statement is repaired by a graph rule: its first Mention must resolve to a held instruction-route Concept. This is extensible graph data, not a host verb list; a declarative whose first word is not a route-bearing verb remains a statement. An InstructionInterpretation is always minted before activation; ambiguity holds it and requests clarification; a local grounded interpretation verifies without a teacher. An unresolved residual originates a structured TeacherRequest, ordered held knowledge -> dictionary -> Wikipedia -> LLM. Teacher evidence is never a Message: it is staged as a LessonCandidate, tested by a replay, then adopted through the existing graph-native goal/task seam. All counters and scores are integers.",
   "microtheory": {
@@ -126,7 +126,7 @@
         {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "message"}, "key": "from"}, "b": {"type": "Lit", "value": "interlocutor"}},
         {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "predicate_mention"}, "key": "text"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "message"}, "key": "comp_predicate"}},
         {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "predicate_concept"}, "key": "instruction_route"}, "b": {"type": "Lit", "value": null}}},
-        {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "predicate_concept"}, "key": "instruction_route"}, "b": {"type": "Lit", "value": "self_report"}}},
+        {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "predicate_concept"}, "key": "instruction_route"}, "b": {"type": "Lit", "value": "self_report"}}}, {"type": "Or", "items": [{"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "predicate_concept"}, "key": "route_object_scope"}, "b": {"type": "Lit", "value": "other"}}}, {"type": "Not", "arg": {"type": "Exists", "source": {"type": "Neighbours", "node": {"type": "Var", "name": "message"}, "edge_type": "has_mention"}, "var_name": "sm", "predicate": {"type": "Exists", "source": {"type": "Neighbours", "node": {"type": "Var", "name": "sm"}, "edge_type": "refers_to"}, "var_name": "sc", "predicate": {"type": "And", "items": [{"type": "Eq", "a": {"type": "TypeOf", "node": {"type": "Var", "name": "sc"}}, "b": {"type": "Lit", "value": "Concept"}}, {"type": "In", "member": {"type": "Attr", "node": {"type": "Var", "name": "sc"}, "key": "name"}, "container": {"type": "Lit", "value": ["yourself", "yourselves"]}}]}}}}]},
         {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "message"}, "key": "instruction_interpreted"}, "b": {"type": "Lit", "value": 1}}}
       ]},
       "effects": [

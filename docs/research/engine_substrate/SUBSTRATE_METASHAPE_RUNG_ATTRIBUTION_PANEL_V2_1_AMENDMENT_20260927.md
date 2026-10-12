@@ -1,0 +1,5 @@
+# MetaShape rung-attribution panel v2.1 amendment (2026-09-27)
+
+The initial v2 run is retained as a censored diagnostic. Its source gate detected a mid-run edit to `substrate/boot_all.py`: one FrameBinding replicate ran before the change and the other seven workers ran after it. No pooled or per-family outcome claim is drawn from that mixed-source capture.
+
+This v2.1 replication runs the same preregistered four-family schedule on a frozen copy containing the post-change source and native build. The snapshot records its parent worktree commit plus exact source/runtime hashes. To avoid rehashing 2.5 GB of locked assets in every child, each source file and directory is made read-only; the orchestrator computes and verifies the complete lock immediately before and after the worker batch. Each worker records that it used the orchestrator's immutable snapshot lock. No code, seed, prompt, or outcome threshold is changed. The initial v2 outcome has been inspected; v2.1 is therefore reported as a source-stable replication, not a fresh confirmatory sample.

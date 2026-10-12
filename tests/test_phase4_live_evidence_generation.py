@@ -24,7 +24,7 @@ def _event_goal(agent, text):
 def test_grounded_live_event_materializes_native_candidate_lifecycle_and_trace():
     agent = _agent()
     mid, state, event, goal = _event_goal(agent, "The gate is open.")
-    grounded = agent.s.add_node("Concept", {
+    grounded = agent.s.add_node("ThoughtManifold", {
         "name": "gate-open-grounded",
         "candidate_id": "grounded-gate",
         "grounding": 1.0,
@@ -36,7 +36,7 @@ def test_grounded_live_event_materializes_native_candidate_lifecycle_and_trace()
         "outcome_status": "resolved",
         "evidence_path": "grounded_concept->relation->event",
     })
-    unsupported = agent.s.add_node("Relation", {
+    unsupported = agent.s.add_node("ThoughtManifold", {
         "name": "unresolved-alternative",
         "candidate_id": "unsupported-alternative",
         "grounding": 0.0,
@@ -97,4 +97,30 @@ def test_unsupported_live_event_remains_native_no_candidate_without_defaults():
     assert attrs["source_candidate_count"] == 0.0
     assert attrs["status"] == "no_candidate"
     assert attrs["candidate_trace_complete"] == 1.0
+    assert not list(agent.inner.neighbours(deliberations[0], "has_candidate"))
+
+
+def test_complete_tuple_on_generic_concept_is_not_approved_live_evidence():
+    agent = _agent()
+    mid, state, event, goal = _event_goal(agent, "The gate is open.")
+    unapproved = agent.s.add_node("Concept", {
+        "name": "unapproved-gate-evidence",
+        "candidate_id": "generic-concept-tuple",
+        "grounding": 1.0,
+        "expected_value": 0.9,
+        "residual_cost": 0.0,
+        "consequence": 0.9,
+        "novelty": 0.9,
+    })
+    agent.inner.add_edge_unchecked(event, "grounded_in", unapproved)
+
+    agent._bind_live_goals_and_deliberation(mid)
+
+    deliberations = [d for d in agent.s.nodes("Deliberation")
+                     if goal in agent.inner.neighbours(d, "about_goal")]
+    assert len(deliberations) == 1
+    attrs = agent.s.node(deliberations[0])["attrs"]
+    assert attrs["candidate_source"] == "discourse_state"
+    assert attrs["source_candidate_count"] == 0.0
+    assert attrs["status"] == "no_candidate"
     assert not list(agent.inner.neighbours(deliberations[0], "has_candidate"))

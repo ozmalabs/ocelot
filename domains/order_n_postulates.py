@@ -252,6 +252,22 @@ def _property_text(text: str) -> str:
     return (text or "").lower()
 
 
+def _shape_owner_candidates(shape: dict) -> list[tuple[str, object]]:
+    """Return all declared source Microtheories, preserving ambiguity."""
+    pairs: set[tuple[str, object]] = set()
+    for candidate in shape.get("source_mt_candidates") or ():
+        if isinstance(candidate, dict):
+            name = str(candidate.get("name") or "").strip()
+            owner_id = candidate.get("id")
+            if name or owner_id is not None:
+                pairs.add((name, owner_id))
+    name = str(shape.get("source_mt") or "").strip()
+    owner_id = shape.get("source_mt_id")
+    if name or owner_id is not None:
+        pairs.add((name, owner_id))
+    return sorted(pairs, key=lambda pair: (pair[0], str(pair[1])))
+
+
 # ---------------------------------------------------------------------------
 # The DERIVATIVE — order k -> k+1 by structural transfer (the agent's move).
 # ---------------------------------------------------------------------------
@@ -326,10 +342,9 @@ def differentiate(property_text: str, articulate=None, shapes=None,
             if not postulate_mt_lineage:
                 fired = False
             else:
-                src_mt = str(sh.get("source_mt", "")).strip()
-                src_mt_id = sh.get("source_mt_id")
-                fired = (bool(src_mt) and src_mt in postulate_mt_lineage) or (
-                    src_mt_id is not None and src_mt_id in postulate_mt_lineage)
+                fired = any((bool(src_mt) and src_mt in postulate_mt_lineage) or
+                    (src_mt_id is not None and src_mt_id in postulate_mt_lineage)
+                    for src_mt, src_mt_id in _shape_owner_candidates(sh))
         elif sh.get("match_mode") == "shape" and "target_shape" in sh:
             if postulate_shape is None or substrate is None:
                 fired = False
@@ -369,26 +384,29 @@ def differentiate(property_text: str, articulate=None, shapes=None,
         if (substantive_structural and not relevance_active and not fired
                 and sh.get("kind") not in ("concept_graph", None)
                 and sh.get("kind") != "concept_graph"):
-            s_mt = str(sh.get("source_mt", "") or "").strip()
-            s_id = sh.get("source_mt_id")
+            source_owners = _shape_owner_candidates(sh)
             # drop broad/near-root domain Mts as sources (reuse brick-2's gate).
             broad = structural_broad_mts or set()
-            is_broad = (s_mt and s_mt in broad) or (s_id is not None
-                                                    and s_id in broad)
-            if (s_mt or s_id is not None) and not is_broad:
+            viable_owners = [(s_mt, s_id) for s_mt, s_id in source_owners
+                if not ((s_mt and s_mt in broad) or
+                        (s_id is not None and s_id in broad))]
+            if viable_owners:
                 if structural_max_hops is not None and structural_max_hops < 0:
                     # LOOSEST: anywhere in the lineage set (brick-2 reach).
                     if postulate_mt_lineage:
-                        fired = (s_mt and s_mt in postulate_mt_lineage) or (
-                            s_id is not None and s_id in postulate_mt_lineage)
+                        fired = any((s_mt and s_mt in postulate_mt_lineage) or
+                            (s_id is not None and s_id in postulate_mt_lineage)
+                            for s_mt, s_id in viable_owners)
                 elif postulate_mt_hops:
                     # SAME-Mt (0) / N-hop: the shape's domain Mt must be within
                     # structural_max_hops genlMt steps of the postulate's own Mt.
-                    hop = postulate_mt_hops.get(s_mt)
-                    if hop is None and s_id is not None:
-                        hop = postulate_mt_hops.get(s_id)
-                    if hop is not None and hop <= (structural_max_hops or 0):
-                        fired = True
+                    for s_mt, s_id in viable_owners:
+                        hop = postulate_mt_hops.get(s_mt)
+                        if hop is None and s_id is not None:
+                            hop = postulate_mt_hops.get(s_id)
+                        if hop is not None and hop <= (structural_max_hops or 0):
+                            fired = True
+                            break
         # BRICK 4 — RELEVANCE firing for SUBSTANTIVE shapes. This REPLACES brick
         # 3's "domain Mt in the postulate's lineage" gate (which over-fired: a
         # postulate inherited a domain's shapes merely by sharing an ancestor Mt,
@@ -415,14 +433,15 @@ def differentiate(property_text: str, articulate=None, shapes=None,
                 if relevance_mode == "property_and_lineage":
                     # ALSO require the shape's domain Mt in the postulate's reach
                     # (and not a broad/near-root hub) — property AND lineage.
-                    s_mt = str(sh.get("source_mt", "") or "").strip()
-                    s_id = sh.get("source_mt_id")
+                    source_owners = _shape_owner_candidates(sh)
                     broad = structural_broad_mts or set()
-                    is_broad = (s_mt and s_mt in broad) or (
-                        s_id is not None and s_id in broad)
-                    if not is_broad and postulate_mt_lineage:
-                        fired = (s_mt and s_mt in postulate_mt_lineage) or (
-                            s_id is not None and s_id in postulate_mt_lineage)
+                    viable_owners = [(s_mt, s_id) for s_mt, s_id in source_owners
+                        if not ((s_mt and s_mt in broad) or
+                                (s_id is not None and s_id in broad))]
+                    if viable_owners and postulate_mt_lineage:
+                        fired = any((s_mt and s_mt in postulate_mt_lineage) or
+                            (s_id is not None and s_id in postulate_mt_lineage)
+                            for s_mt, s_id in viable_owners)
                 else:
                     # property-only: the postulate genuinely exhibits the
                     # structural property the consequence presupposes.
@@ -819,7 +838,8 @@ def synthesize_gaps(substrate, postulate_name: str, max_order: int = 3,
                     structural_max_hops: int = 0,
                     structural_broad_mts=None,
                     relevance_active: bool = False,
-                    relevance_mode: str = "property") -> list:
+                    relevance_mode: str = "property",
+                    covered_keywords=None) -> list:
     """Run the order-N-postulate operator over ONE held postulate, by name.
 
     Recursively differentiates (order 0 -> 1 -> … -> max_order), following each
@@ -850,7 +870,11 @@ def synthesize_gaps(substrate, postulate_name: str, max_order: int = 3,
     if postulate_name not in posts:
         return []
     cid0, text0 = posts[postulate_name]
-    covered_kw = _covered_keywords(substrate)
+    # Batch evaluators that hold the graph fixed may compute this corpus-wide
+    # selector index once and share it across postulates. The caller owns the
+    # freshness invariant; ordinary callers retain the safe recompute default.
+    covered_kw = (_covered_keywords(substrate) if covered_keywords is None
+                  else set(covered_keywords))
     shape_lib, _mode = _resolve_shapes(substrate, shapes)
     # BRICK 2: precompute the postulate concept's genlMt lineage ONCE — the
     # structural join the mt_lineage concept-graph shapes fire on (graph

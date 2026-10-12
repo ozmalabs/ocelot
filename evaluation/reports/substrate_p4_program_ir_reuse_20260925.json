@@ -1,0 +1,732 @@
+{
+  "all_gates_pass": true,
+  "design": {
+    "acquisition_repeats": 3,
+    "application_counts": [
+      100,
+      1000,
+      10000
+    ],
+    "application_path": "P4 accepted ps_ir reflected into native term graph and evaluated via ProgEval",
+    "boot_and_seed_setup_timed_separately": true,
+    "root_remove_cycle_counts": [
+      1,
+      10,
+      100
+    ],
+    "task_id": "contrast_reverse_string_01"
+  },
+  "environment": {
+    "native_path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+    "native_sha256": "4152737c6f6a88e44632ffb786350c5702529417b5f489d4ab5cc44bef9f20bc",
+    "platform": "Linux-6.8.0-142-generic-x86_64-with-glibc2.39",
+    "python": "3.13.5 (main, Jun 11 2025, 15:36:57) [GCC 11.4.0]"
+  },
+  "provenance": {
+    "dirty_worktree": true,
+    "git_head": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+    "lock_sha256": "fc9ae68c164af5a0b6624031b46bfe257fa9116926258003d5e1e96b77ae0144",
+    "locked_inputs": {
+      "adapter_sha256": "38c8fbb9dc552afcc93bda001b5f95da39522635290947900be41bc444f3601f",
+      "fixture_sha256": "4986ae9ee2b12d242871c7c4c0e39b72b3365157a904214d3b653da407834c88",
+      "native_sha256": "4152737c6f6a88e44632ffb786350c5702529417b5f489d4ab5cc44bef9f20bc",
+      "p4_runner_sha256": "0cdaf29c0db08c36ac50e18a1a99e5c2eaed77a26cd68e5e5952a451a94b3df5",
+      "preregistration_sha256": "e0718e5f34cd66ff95592a67de172eae85c307acd175d47bd2cd60aa73ab50e8",
+      "retrieval_sha256": "265f5cd8edd9b43915cafc7ad86ae9c3be04c7fa2bed9008bb155be5e945023b",
+      "runner_sha256": "e8803cb54f680e7dfdcd83e45ddcb4cb81e5ce680b84e425b7c22d0652a50e68",
+      "seed_sha256": "9d657f4409e470626f3bb9adc1236b7c6c59976a7a1b16b38e566813324916bd"
+    },
+    "preregistration_sha256": "e0718e5f34cd66ff95592a67de172eae85c307acd175d47bd2cd60aa73ab50e8"
+  },
+  "run_id": "substrate-p4-program-ir-reuse-20260925-v1",
+  "runs": [
+    {
+      "acquisition_total_cpu_ns": 99145186,
+      "acquisition_total_wall_ns": 59317009,
+      "application_batches": [
+        {
+          "calls": 100,
+          "cpu_ns": 4758661,
+          "wall_ns": 4757821
+        },
+        {
+          "calls": 1000,
+          "cpu_ns": 47715853,
+          "wall_ns": 47750020
+        },
+        {
+          "calls": 10000,
+          "cpu_ns": 496373234,
+          "wall_ns": 498221857
+        }
+      ],
+      "boot_cpu_ns": 41811672,
+      "boot_wall_ns": 42072451,
+      "construction": "retrieved_exemplar",
+      "ir_export_cpu_ns": 7610,
+      "ir_export_wall_ns": 7590,
+      "ir_native_node_delta": 5,
+      "ir_remove_node_delta": 4,
+      "ir_restore_cpu_ns": 21310,
+      "ir_restore_wall_ns": 21030,
+      "ir_roundtrip_stable": true,
+      "ir_serialized_bytes": 161,
+      "ir_sha256": "9d218f1938c492c97b0d6babfccdcac955f7b2b6ba4e6f568dcee4b0cef4fdfc",
+      "native_node_count_after_remove": 3392,
+      "native_node_count_before_ir": 3388,
+      "native_node_count_with_ir": 3393,
+      "peak_rss_kib": 99584,
+      "remove_cycle_batches": {
+        "baseline_current_rss_kib": 67588,
+        "baseline_graph_json_bytes": 545973,
+        "baseline_nodes": 3397,
+        "points": [
+          {
+            "current_rss_kib": 67588,
+            "cycle_cpu_ns": 44930,
+            "cycle_wall_ns": 46430,
+            "cycles_total": 1,
+            "graph_export_wall_ns": 19605638,
+            "graph_json_bytes": 546289,
+            "graph_json_growth_bytes": 316,
+            "graph_nodes": 3401,
+            "node_growth": 4,
+            "rss_growth_kib": 0
+          },
+          {
+            "current_rss_kib": 67740,
+            "cycle_cpu_ns": 114790,
+            "cycle_wall_ns": 116181,
+            "cycles_total": 10,
+            "graph_export_wall_ns": 21090191,
+            "graph_json_bytes": 549133,
+            "graph_json_growth_bytes": 3160,
+            "graph_nodes": 3437,
+            "node_growth": 40,
+            "rss_growth_kib": 152
+          },
+          {
+            "current_rss_kib": 67892,
+            "cycle_cpu_ns": 642571,
+            "cycle_wall_ns": 643455,
+            "cycles_total": 100,
+            "graph_export_wall_ns": 23769054,
+            "graph_json_bytes": 577573,
+            "graph_json_growth_bytes": 31600,
+            "graph_nodes": 3797,
+            "node_growth": 400,
+            "rss_growth_kib": 304
+          }
+        ]
+      },
+      "restored_verification_cpu_ns": 349580,
+      "restored_verification_rows": [
+        {
+          "expected": "BC_eEc_d",
+          "got": "BC_eEc_d",
+          "group": "revealed",
+          "halted": true,
+          "ok": true,
+          "row": 0,
+          "trap": null
+        },
+        {
+          "expected": "Bx-xz-",
+          "got": "Bx-xz-",
+          "group": "revealed",
+          "halted": true,
+          "ok": true,
+          "row": 1,
+          "trap": null
+        },
+        {
+          "expected": " c!bddB",
+          "got": " c!bddB",
+          "group": "revealed",
+          "halted": true,
+          "ok": true,
+          "row": 2,
+          "trap": null
+        },
+        {
+          "expected": "-cEdBb? !yy_",
+          "got": "-cEdBb? !yy_",
+          "group": "revealed",
+          "halted": true,
+          "ok": true,
+          "row": 3,
+          "trap": null
+        },
+        {
+          "expected": "ABy!E!Eab",
+          "got": "ABy!E!Eab",
+          "group": "held_out",
+          "halted": true,
+          "ok": true,
+          "row": 0,
+          "trap": null
+        },
+        {
+          "expected": "y_zyxec-xBCA? b?",
+          "got": "y_zyxec-xBCA? b?",
+          "group": "held_out",
+          "halted": true,
+          "ok": true,
+          "row": 1,
+          "trap": null
+        },
+        {
+          "expected": "eEdacxE b",
+          "got": "eEdacxE b",
+          "group": "held_out",
+          "halted": true,
+          "ok": true,
+          "row": 2,
+          "trap": null
+        }
+      ],
+      "restored_verification_wall_ns": 349103,
+      "route_cpu_ns": 57333514,
+      "route_rungs": {
+        "codebook": null,
+        "descend": null,
+        "enumerate": null,
+        "exact": null,
+        "lattice": null
+      },
+      "route_wall_ns": 17244558,
+      "status": "accepted",
+      "verification_cpu_ns": 432490,
+      "verification_rows": [
+        {
+          "expected": "BC_eEc_d",
+          "got": "BC_eEc_d",
+          "group": "revealed",
+          "halted": true,
+          "ok": true,
+          "row": 0,
+          "trap": null
+        },
+        {
+          "expected": "Bx-xz-",
+          "got": "Bx-xz-",
+          "group": "revealed",
+          "halted": true,
+          "ok": true,
+          "row": 1,
+          "trap": null
+        },
+        {
+          "expected": " c!bddB",
+          "got": " c!bddB",
+          "group": "revealed",
+          "halted": true,
+          "ok": true,
+          "row": 2,
+          "trap": null
+        },
+        {
+          "expected": "-cEdBb? !yy_",
+          "got": "-cEdBb? !yy_",
+          "group": "revealed",
+          "halted": true,
+          "ok": true,
+          "row": 3,
+          "trap": null
+        },
+        {
+          "expected": "ABy!E!Eab",
+          "got": "ABy!E!Eab",
+          "group": "held_out",
+          "halted": true,
+          "ok": true,
+          "row": 0,
+          "trap": null
+        },
+        {
+          "expected": "y_zyxec-xBCA? b?",
+          "got": "y_zyxec-xBCA? b?",
+          "group": "held_out",
+          "halted": true,
+          "ok": true,
+          "row": 1,
+          "trap": null
+        },
+        {
+          "expected": "eEdacxE b",
+          "got": "eEdacxE b",
+          "group": "held_out",
+          "halted": true,
+          "ok": true,
+          "row": 2,
+          "trap": null
+        }
+      ],
+      "verification_wall_ns": 432094,
+      "warmup": {
+        "calls": 100,
+        "cpu_ns": 4879911,
+        "wall_ns": 4762101
+      }
+    },
+    {
+      "acquisition_total_cpu_ns": 81804212,
+      "acquisition_total_wall_ns": 45476401,
+      "application_batches": [
+        {
+          "calls": 100,
+          "cpu_ns": 4952771,
+          "wall_ns": 4956662
+        },
+        {
+          "calls": 1000,
+          "cpu_ns": 47301313,
+          "wall_ns": 47299056
+        },
+        {
+          "calls": 10000,
+          "cpu_ns": 474025598,
+          "wall_ns": 474076219
+        }
+      ],
+      "boot_cpu_ns": 29881948,
+      "boot_wall_ns": 29751716,
+      "construction": "retrieved_exemplar",
+      "ir_export_cpu_ns": 9840,
+      "ir_export_wall_ns": 9800,
+      "ir_native_node_delta": 5,
+      "ir_remove_node_delta": 4,
+      "ir_restore_cpu_ns": 22910,
+      "ir_restore_wall_ns": 22720,
+      "ir_roundtrip_stable": true,
+      "ir_serialized_bytes": 161,
+      "ir_sha256": "9d218f1938c492c97b0d6babfccdcac955f7b2b6ba4e6f568dcee4b0cef4fdfc",
+      "native_node_count_after_remove": 3392,
+      "native_node_count_before_ir": 3388,
+      "native_node_count_with_ir": 3393,
+      "peak_rss_kib": 99584,
+      "remove_cycle_batches": {
+        "baseline_current_rss_kib": 72644,
+        "baseline_graph_json_bytes": 545973,
+        "baseline_nodes": 3397,
+        "points": [
+          {
+            "current_rss_kib": 72644,
+            "cycle_cpu_ns": 57120,
+            "cycle_wall_ns": 58040,
+            "cycles_total": 1,
+            "graph_export_wall_ns": 15679095,
+            "graph_json_bytes": 546289,
+            "graph_json_growth_bytes": 316,
+            "graph_nodes": 3401,
+            "node_growth": 4,
+            "rss_growth_kib": 0
+          },
+          {
+            "current_rss_kib": 72644,
+            "cycle_cpu_ns": 88820,
+            "cycle_wall_ns": 90020,
+            "cycles_total": 10,
+            "graph_export_wall_ns": 16966386,
+            "graph_json_bytes": 549133,
+            "graph_json_growth_bytes": 3160,
+            "graph_nodes": 3437,
+            "node_growth": 40,
+            "rss_growth_kib": 0
+          },
+          {
+            "current_rss_kib": 72644,
+            "cycle_cpu_ns": 659110,
+            "cycle_wall_ns": 659725,
+            "cycles_total": 100,
+            "graph_export_wall_ns": 16499792,
+            "graph_json_bytes": 577573,
+            "graph_json_growth_bytes": 31600,
+            "graph_nodes": 3797,
+            "node_growth": 400,
+            "rss_growth_kib": 0
+          }
+        ]
+      },
+      "restored_verification_cpu_ns": 358290,
+      "restored_verification_rows": [
+        {
+          "expected": "BC_eEc_d",
+          "got": "BC_eEc_d",
+          "group": "revealed",
+          "halted": true,
+          "ok": true,
+          "row": 0,
+          "trap": null
+        },
+        {
+          "expected": "Bx-xz-",
+          "got": "Bx-xz-",
+          "group": "revealed",
+          "halted": true,
+          "ok": true,
+          "row": 1,
+          "trap": null
+        },
+        {
+          "expected": " c!bddB",
+          "got": " c!bddB",
+          "group": "revealed",
+          "halted": true,
+          "ok": true,
+          "row": 2,
+          "trap": null
+        },
+        {
+          "expected": "-cEdBb? !yy_",
+          "got": "-cEdBb? !yy_",
+          "group": "revealed",
+          "halted": true,
+          "ok": true,
+          "row": 3,
+          "trap": null
+        },
+        {
+          "expected": "ABy!E!Eab",
+          "got": "ABy!E!Eab",
+          "group": "held_out",
+          "halted": true,
+          "ok": true,
+          "row": 0,
+          "trap": null
+        },
+        {
+          "expected": "y_zyxec-xBCA? b?",
+          "got": "y_zyxec-xBCA? b?",
+          "group": "held_out",
+          "halted": true,
+          "ok": true,
+          "row": 1,
+          "trap": null
+        },
+        {
+          "expected": "eEdacxE b",
+          "got": "eEdacxE b",
+          "group": "held_out",
+          "halted": true,
+          "ok": true,
+          "row": 2,
+          "trap": null
+        }
+      ],
+      "restored_verification_wall_ns": 357943,
+      "route_cpu_ns": 51922264,
+      "route_rungs": {
+        "codebook": null,
+        "descend": null,
+        "enumerate": null,
+        "exact": null,
+        "lattice": null
+      },
+      "route_wall_ns": 15724685,
+      "status": "accepted",
+      "verification_cpu_ns": 459480,
+      "verification_rows": [
+        {
+          "expected": "BC_eEc_d",
+          "got": "BC_eEc_d",
+          "group": "revealed",
+          "halted": true,
+          "ok": true,
+          "row": 0,
+          "trap": null
+        },
+        {
+          "expected": "Bx-xz-",
+          "got": "Bx-xz-",
+          "group": "revealed",
+          "halted": true,
+          "ok": true,
+          "row": 1,
+          "trap": null
+        },
+        {
+          "expected": " c!bddB",
+          "got": " c!bddB",
+          "group": "revealed",
+          "halted": true,
+          "ok": true,
+          "row": 2,
+          "trap": null
+        },
+        {
+          "expected": "-cEdBb? !yy_",
+          "got": "-cEdBb? !yy_",
+          "group": "revealed",
+          "halted": true,
+          "ok": true,
+          "row": 3,
+          "trap": null
+        },
+        {
+          "expected": "ABy!E!Eab",
+          "got": "ABy!E!Eab",
+          "group": "held_out",
+          "halted": true,
+          "ok": true,
+          "row": 0,
+          "trap": null
+        },
+        {
+          "expected": "y_zyxec-xBCA? b?",
+          "got": "y_zyxec-xBCA? b?",
+          "group": "held_out",
+          "halted": true,
+          "ok": true,
+          "row": 1,
+          "trap": null
+        },
+        {
+          "expected": "eEdacxE b",
+          "got": "eEdacxE b",
+          "group": "held_out",
+          "halted": true,
+          "ok": true,
+          "row": 2,
+          "trap": null
+        }
+      ],
+      "verification_wall_ns": 437103,
+      "warmup": {
+        "calls": 100,
+        "cpu_ns": 4754141,
+        "wall_ns": 4753721
+      }
+    },
+    {
+      "acquisition_total_cpu_ns": 81830132,
+      "acquisition_total_wall_ns": 43601305,
+      "application_batches": [
+        {
+          "calls": 100,
+          "cpu_ns": 4890581,
+          "wall_ns": 4894942
+        },
+        {
+          "calls": 1000,
+          "cpu_ns": 49689083,
+          "wall_ns": 49729126
+        },
+        {
+          "calls": 10000,
+          "cpu_ns": 499098246,
+          "wall_ns": 499412766
+        }
+      ],
+      "boot_cpu_ns": 27791028,
+      "boot_wall_ns": 27597517,
+      "construction": "retrieved_exemplar",
+      "ir_export_cpu_ns": 13560,
+      "ir_export_wall_ns": 7450,
+      "ir_native_node_delta": 5,
+      "ir_remove_node_delta": 4,
+      "ir_restore_cpu_ns": 21560,
+      "ir_restore_wall_ns": 21490,
+      "ir_roundtrip_stable": true,
+      "ir_serialized_bytes": 161,
+      "ir_sha256": "9d218f1938c492c97b0d6babfccdcac955f7b2b6ba4e6f568dcee4b0cef4fdfc",
+      "native_node_count_after_remove": 3392,
+      "native_node_count_before_ir": 3388,
+      "native_node_count_with_ir": 3393,
+      "peak_rss_kib": 99584,
+      "remove_cycle_batches": {
+        "baseline_current_rss_kib": 72712,
+        "baseline_graph_json_bytes": 545973,
+        "baseline_nodes": 3397,
+        "points": [
+          {
+            "current_rss_kib": 72712,
+            "cycle_cpu_ns": 41120,
+            "cycle_wall_ns": 41960,
+            "cycles_total": 1,
+            "graph_export_wall_ns": 15982397,
+            "graph_json_bytes": 546289,
+            "graph_json_growth_bytes": 316,
+            "graph_nodes": 3401,
+            "node_growth": 4,
+            "rss_growth_kib": 0
+          },
+          {
+            "current_rss_kib": 72712,
+            "cycle_cpu_ns": 93730,
+            "cycle_wall_ns": 94631,
+            "cycles_total": 10,
+            "graph_export_wall_ns": 15773335,
+            "graph_json_bytes": 549133,
+            "graph_json_growth_bytes": 3160,
+            "graph_nodes": 3437,
+            "node_growth": 40,
+            "rss_growth_kib": 0
+          },
+          {
+            "current_rss_kib": 72712,
+            "cycle_cpu_ns": 667991,
+            "cycle_wall_ns": 668476,
+            "cycles_total": 100,
+            "graph_export_wall_ns": 17942874,
+            "graph_json_bytes": 577573,
+            "graph_json_growth_bytes": 31600,
+            "graph_nodes": 3797,
+            "node_growth": 400,
+            "rss_growth_kib": 0
+          }
+        ]
+      },
+      "restored_verification_cpu_ns": 341670,
+      "restored_verification_rows": [
+        {
+          "expected": "BC_eEc_d",
+          "got": "BC_eEc_d",
+          "group": "revealed",
+          "halted": true,
+          "ok": true,
+          "row": 0,
+          "trap": null
+        },
+        {
+          "expected": "Bx-xz-",
+          "got": "Bx-xz-",
+          "group": "revealed",
+          "halted": true,
+          "ok": true,
+          "row": 1,
+          "trap": null
+        },
+        {
+          "expected": " c!bddB",
+          "got": " c!bddB",
+          "group": "revealed",
+          "halted": true,
+          "ok": true,
+          "row": 2,
+          "trap": null
+        },
+        {
+          "expected": "-cEdBb? !yy_",
+          "got": "-cEdBb? !yy_",
+          "group": "revealed",
+          "halted": true,
+          "ok": true,
+          "row": 3,
+          "trap": null
+        },
+        {
+          "expected": "ABy!E!Eab",
+          "got": "ABy!E!Eab",
+          "group": "held_out",
+          "halted": true,
+          "ok": true,
+          "row": 0,
+          "trap": null
+        },
+        {
+          "expected": "y_zyxec-xBCA? b?",
+          "got": "y_zyxec-xBCA? b?",
+          "group": "held_out",
+          "halted": true,
+          "ok": true,
+          "row": 1,
+          "trap": null
+        },
+        {
+          "expected": "eEdacxE b",
+          "got": "eEdacxE b",
+          "group": "held_out",
+          "halted": true,
+          "ok": true,
+          "row": 2,
+          "trap": null
+        }
+      ],
+      "restored_verification_wall_ns": 341333,
+      "route_cpu_ns": 54039104,
+      "route_rungs": {
+        "codebook": null,
+        "descend": null,
+        "enumerate": null,
+        "exact": null,
+        "lattice": null
+      },
+      "route_wall_ns": 16003788,
+      "status": "accepted",
+      "verification_cpu_ns": 492880,
+      "verification_rows": [
+        {
+          "expected": "BC_eEc_d",
+          "got": "BC_eEc_d",
+          "group": "revealed",
+          "halted": true,
+          "ok": true,
+          "row": 0,
+          "trap": null
+        },
+        {
+          "expected": "Bx-xz-",
+          "got": "Bx-xz-",
+          "group": "revealed",
+          "halted": true,
+          "ok": true,
+          "row": 1,
+          "trap": null
+        },
+        {
+          "expected": " c!bddB",
+          "got": " c!bddB",
+          "group": "revealed",
+          "halted": true,
+          "ok": true,
+          "row": 2,
+          "trap": null
+        },
+        {
+          "expected": "-cEdBb? !yy_",
+          "got": "-cEdBb? !yy_",
+          "group": "revealed",
+          "halted": true,
+          "ok": true,
+          "row": 3,
+          "trap": null
+        },
+        {
+          "expected": "ABy!E!Eab",
+          "got": "ABy!E!Eab",
+          "group": "held_out",
+          "halted": true,
+          "ok": true,
+          "row": 0,
+          "trap": null
+        },
+        {
+          "expected": "y_zyxec-xBCA? b?",
+          "got": "y_zyxec-xBCA? b?",
+          "group": "held_out",
+          "halted": true,
+          "ok": true,
+          "row": 1,
+          "trap": null
+        },
+        {
+          "expected": "eEdacxE b",
+          "got": "eEdacxE b",
+          "group": "held_out",
+          "halted": true,
+          "ok": true,
+          "row": 2,
+          "trap": null
+        }
+      ],
+      "verification_wall_ns": 397964,
+      "warmup": {
+        "calls": 100,
+        "cpu_ns": 5004752,
+        "wall_ns": 5009403
+      }
+    }
+  ],
+  "schema_version": 1
+}

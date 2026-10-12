@@ -1,0 +1,4431 @@
+{
+  "checks": {
+    "18_workers_unique_pids": true,
+    "all_identity_and_parity_gates_pass": true,
+    "complete_matrix": true
+  },
+  "claim_boundary": "Production materializer and Phase 4A native trace producer tested on generated independent Goals; runner-authored frames; not natural task prevalence or general locality.",
+  "environment": {
+    "platform": "Linux-6.8.0-142-generic-x86_64-with-glibc2.39",
+    "python": "3.13.5 (main, Jun 11 2025, 15:36:57) [GCC 11.4.0]"
+  },
+  "lock_sha256": "e773d22c191fee7c067269824820a12a87ffec4085ba254456d2ac878a8dd2db",
+  "locked_inputs": {
+    "amendment_sha256": "11f46cac10871baa8f2c7a0d7c9a70b938925b6b69f52ec36a37266ee5906dbf",
+    "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+    "materializer_sha256": "9cfc234f886f785eff8da0244812fd20ff56cc490f76002ecbb62a321eb686f7",
+    "native_build_manifest_sha256": "2d10ff9cc7f9832d91d1603c74dd0a0e0c4c5d3080a618a33575e9d5400ae871",
+    "native_extension_sha256": "f5543ca015278bad6c65506a0d7d9acb85b33252e7121cdda1a56df63e8ad27b",
+    "protocol_sha256": "92e0092d2bc00428f9fc23f342f3294cd0b5ba5632cb8fc98ff88dc3968badf9",
+    "runner_sha256": "53f7bcf2ee798653d4697f527faa55607e8be787ab8031583c6ab5c0dd0e74e1",
+    "rust_py_sha256": "034e606b055938e952fd5ff42cda66c563a37ca89a50761b62f6662282499ca9",
+    "rust_rewrite_sha256": "4b7aa6ada5d555357795b94277dbac46c16cd39ab67ad666e1acfb8db463839c",
+    "rust_substrate_sha256": "cfd2d8aebe01be73780a326334ec011b42a144dfe175883a0216e86ef4531c19",
+    "seed_sha256": "fff5e65ba7d5d1236781d0e6e41769b6ee7452edef5d75b34554e4f5d7e67bbc"
+  },
+  "replicate_gates": {
+    "2": {
+      "0": {
+        "both_task_oracles": true,
+        "exact_full_scoped_projection": true,
+        "full_complete": true,
+        "producer_source_provenance": true,
+        "scoped_complete": true
+      },
+      "1": {
+        "both_task_oracles": true,
+        "exact_full_scoped_projection": true,
+        "full_complete": true,
+        "producer_source_provenance": true,
+        "scoped_complete": true
+      },
+      "2": {
+        "both_task_oracles": true,
+        "exact_full_scoped_projection": true,
+        "full_complete": true,
+        "producer_source_provenance": true,
+        "scoped_complete": true
+      }
+    },
+    "4": {
+      "0": {
+        "both_task_oracles": true,
+        "exact_full_scoped_projection": true,
+        "full_complete": true,
+        "producer_source_provenance": true,
+        "scoped_complete": true
+      },
+      "1": {
+        "both_task_oracles": true,
+        "exact_full_scoped_projection": true,
+        "full_complete": true,
+        "producer_source_provenance": true,
+        "scoped_complete": true
+      },
+      "2": {
+        "both_task_oracles": true,
+        "exact_full_scoped_projection": true,
+        "full_complete": true,
+        "producer_source_provenance": true,
+        "scoped_complete": true
+      }
+    },
+    "8": {
+      "0": {
+        "both_task_oracles": true,
+        "exact_full_scoped_projection": true,
+        "full_complete": true,
+        "producer_source_provenance": true,
+        "scoped_complete": true
+      },
+      "1": {
+        "both_task_oracles": true,
+        "exact_full_scoped_projection": true,
+        "full_complete": true,
+        "producer_source_provenance": true,
+        "scoped_complete": true
+      },
+      "2": {
+        "both_task_oracles": true,
+        "exact_full_scoped_projection": true,
+        "full_complete": true,
+        "producer_source_provenance": true,
+        "scoped_complete": true
+      }
+    }
+  },
+  "run_id": "substrate-phase4a-produced-goal-identity-v1-20260926",
+  "runs": [
+    {
+      "arm": "full",
+      "complete": true,
+      "construction_ns": 525633,
+      "counters": {
+        "apply_probe_rollbacks": 0,
+        "bindings_cloned": 32,
+        "cand_enum": 184,
+        "cand_enum_apply_once": 0,
+        "cand_enum_first": 120,
+        "cand_enum_hinted": 0,
+        "cand_enum_local": 48,
+        "cand_enum_repeat": 64,
+        "cand_enum_scan": 136,
+        "cand_reject_bound": 0,
+        "cand_tested": 184,
+        "dim_infer_arg_calls": 0,
+        "dim_infer_arg_distinct_ordered": 0,
+        "dim_infer_arg_distinct_unordered": 0,
+        "epochs": 1,
+        "epochs_apply_once": 0,
+        "ffi_calls": 1,
+        "ffi_items": 1,
+        "ffi_pyobjects": 0,
+        "graph_writes": 0,
+        "leaf_visits": 32,
+        "pushdown_evals": 80,
+        "pushdown_prunes": 32,
+        "rule_effect_attr_set_attempts": 96,
+        "rule_effect_edge_deletes": 0,
+        "rule_effect_edge_insert_attempts": 64,
+        "rule_effect_node_delete_attempts": 0,
+        "rule_effect_node_inserts": 24,
+        "rule_effect_replace_edge_deletes": 0,
+        "rule_effect_replace_edge_insert_attempts": 0,
+        "rule_enumerations": 20,
+        "rule_enumerations_repeat": 10,
+        "scoped_full_fallback_rule_matches": 0,
+        "scoped_local_rule_matches": 0,
+        "scoped_mt_seeded_rule_matches": 0,
+        "term_eval:And": 80,
+        "term_eval:Argmax": 8,
+        "term_eval:Attr": 368,
+        "term_eval:Eq": 224,
+        "term_eval:Filter": 8,
+        "term_eval:Gte": 8,
+        "term_eval:Lit": 208,
+        "term_eval:Lt": 8,
+        "term_eval:Minus": 8,
+        "term_eval:Neighbours": 8,
+        "term_eval:Not": 8,
+        "term_eval:Plus": 8,
+        "term_eval:Times": 24,
+        "term_eval:Var": 384,
+        "term_evals_total": 1352,
+        "term_units_total": 0,
+        "term_units_unattributed": 0,
+        "var_collisions": 8,
+        "where_evals": 112,
+        "where_evals_first": 72,
+        "where_evals_repeat": 40,
+        "where_rejects": 64
+      },
+      "cpu_ns": 189930,
+      "expected_projection": true,
+      "graph_digest": "1b0234d1c0217fe3708958b347212b78592b4046689d262a512bf460659d2343",
+      "native_extension_sha256": "f5543ca015278bad6c65506a0d7d9acb85b33252e7121cdda1a56df63e8ad27b",
+      "peak_rss_kib": 36684,
+      "pid": 1881847,
+      "projection": [
+        {
+          "deliberation_status": "resolved",
+          "execution_traces_for_goal": [
+            {
+              "candidate": "has_goal_evidence:answer_0",
+              "status": "resolved"
+            }
+          ],
+          "goal_status": "active",
+          "selection": [
+            "has_goal_evidence:answer_0"
+          ],
+          "settlements": [
+            {
+              "candidate": "has_goal_evidence:answer_0",
+              "goal_link": true
+            }
+          ],
+          "source_link": true,
+          "task": 0
+        },
+        {
+          "deliberation_status": "resolved",
+          "execution_traces_for_goal": [
+            {
+              "candidate": "has_goal_evidence:answer_1",
+              "status": "resolved"
+            }
+          ],
+          "goal_status": "active",
+          "selection": [
+            "has_goal_evidence:answer_1"
+          ],
+          "settlements": [
+            {
+              "candidate": "has_goal_evidence:answer_1",
+              "goal_link": true
+            }
+          ],
+          "source_link": true,
+          "task": 1
+        },
+        {
+          "deliberation_status": "resolved",
+          "execution_traces_for_goal": [
+            {
+              "candidate": "has_goal_evidence:answer_2",
+              "status": "resolved"
+            }
+          ],
+          "goal_status": "active",
+          "selection": [
+            "has_goal_evidence:answer_2"
+          ],
+          "settlements": [
+            {
+              "candidate": "has_goal_evidence:answer_2",
+              "goal_link": true
+            }
+          ],
+          "source_link": true,
+          "task": 2
+        },
+        {
+          "deliberation_status": "resolved",
+          "execution_traces_for_goal": [
+            {
+              "candidate": "has_goal_evidence:answer_3",
+              "status": "resolved"
+            }
+          ],
+          "goal_status": "active",
+          "selection": [
+            "has_goal_evidence:answer_3"
+          ],
+          "settlements": [
+            {
+              "candidate": "has_goal_evidence:answer_3",
+              "goal_link": true
+            }
+          ],
+          "source_link": true,
+          "task": 3
+        },
+        {
+          "deliberation_status": "resolved",
+          "execution_traces_for_goal": [
+            {
+              "candidate": "has_goal_evidence:answer_4",
+              "status": "resolved"
+            }
+          ],
+          "goal_status": "active",
+          "selection": [
+            "has_goal_evidence:answer_4"
+          ],
+          "settlements": [
+            {
+              "candidate": "has_goal_evidence:answer_4",
+              "goal_link": true
+            }
+          ],
+          "source_link": true,
+          "task": 4
+        },
+        {
+          "deliberation_status": "resolved",
+          "execution_traces_for_goal": [
+            {
+              "candidate": "has_goal_evidence:answer_5",
+              "status": "resolved"
+            }
+          ],
+          "goal_status": "active",
+          "selection": [
+            "has_goal_evidence:answer_5"
+          ],
+          "settlements": [
+            {
+              "candidate": "has_goal_evidence:answer_5",
+              "goal_link": true
+            }
+          ],
+          "source_link": true,
+          "task": 5
+        },
+        {
+          "deliberation_status": "resolved",
+          "execution_traces_for_goal": [
+            {
+              "candidate": "has_goal_evidence:answer_6",
+              "status": "resolved"
+            }
+          ],
+          "goal_status": "active",
+          "selection": [
+            "has_goal_evidence:answer_6"
+          ],
+          "settlements": [
+            {
+              "candidate": "has_goal_evidence:answer_6",
+              "goal_link": true
+            }
+          ],
+          "source_link": true,
+          "task": 6
+        },
+        {
+          "deliberation_status": "resolved",
+          "execution_traces_for_goal": [
+            {
+              "candidate": "has_goal_evidence:answer_7",
+              "status": "resolved"
+            }
+          ],
+          "goal_status": "active",
+          "selection": [
+            "has_goal_evidence:answer_7"
+          ],
+          "settlements": [
+            {
+              "candidate": "has_goal_evidence:answer_7",
+              "goal_link": true
+            }
+          ],
+          "source_link": true,
+          "task": 7
+        }
+      ],
+      "replicate": 1,
+      "reports": [
+        {
+          "progress_steps": 4,
+          "status": "fixed_point"
+        }
+      ],
+      "size": 8,
+      "source_provenance_all_tasks": true,
+      "turns": 0,
+      "wall_ns": 190961
+    },
+    {
+      "arm": "full",
+      "complete": true,
+      "construction_ns": 293711,
+      "counters": {
+        "apply_probe_rollbacks": 0,
+        "bindings_cloned": 16,
+        "cand_enum": 92,
+        "cand_enum_apply_once": 0,
+        "cand_enum_first": 60,
+        "cand_enum_hinted": 0,
+        "cand_enum_local": 24,
+        "cand_enum_repeat": 32,
+        "cand_enum_scan": 68,
+        "cand_reject_bound": 0,
+        "cand_tested": 92,
+        "dim_infer_arg_calls": 0,
+        "dim_infer_arg_distinct_ordered": 0,
+        "dim_infer_arg_distinct_unordered": 0,
+        "epochs": 1,
+        "epochs_apply_once": 0,
+        "ffi_calls": 1,
+        "ffi_items": 1,
+        "ffi_pyobjects": 0,
+        "graph_writes": 0,
+        "leaf_visits": 16,
+        "pushdown_evals": 40,
+        "pushdown_prunes": 16,
+        "rule_effect_attr_set_attempts": 48,
+        "rule_effect_edge_deletes": 0,
+        "rule_effect_edge_insert_attempts": 32,
+        "rule_effect_node_delete_attempts": 0,
+        "rule_effect_node_inserts": 12,
+        "rule_effect_replace_edge_deletes": 0,
+        "rule_effect_replace_edge_insert_attempts": 0,
+        "rule_enumerations": 20,
+        "rule_enumerations_repeat": 10,
+        "scoped_full_fallback_rule_matches": 0,
+        "scoped_local_rule_matches": 0,
+        "scoped_mt_seeded_rule_matches": 0,
+        "term_eval:And": 40,
+        "term_eval:Argmax": 4,
+        "term_eval:Attr": 184,
+        "term_eval:Eq": 112,
+        "term_eval:Filter": 4,
+        "term_eval:Gte": 4,
+        "term_eval:Lit": 104,
+        "term_eval:Lt": 4,
+        "term_eval:Minus": 4,
+        "term_eval:Neighbours": 4,
+        "term_eval:Not": 4,
+        "term_eval:Plus": 4,
+        "term_eval:Times": 12,
+        "term_eval:Var": 192,
+        "term_evals_total": 676,
+        "term_units_total": 0,
+        "term_units_unattributed": 0,
+        "var_collisions": 4,
+        "where_evals": 56,
+        "where_evals_first": 36,
+        "where_evals_repeat": 20,
+        "where_rejects": 32
+      },
+      "cpu_ns": 149330,
+      "expected_projection": true,
+      "graph_digest": "88149df0d8ec7626904e23ac885b86084e8a8438b3d43a45db35a45e22d056f0",
+      "native_extension_sha256": "f5543ca015278bad6c65506a0d7d9acb85b33252e7121cdda1a56df63e8ad27b",
+      "peak_rss_kib": 36844,
+      "pid": 1881860,
+      "projection": [
+        {
+          "deliberation_status": "resolved",
+          "execution_traces_for_goal": [
+            {
+              "candidate": "has_goal_evidence:answer_0",
+              "status": "resolved"
+            }
+          ],
+          "goal_status": "active",
+          "selection": [
+            "has_goal_evidence:answer_0"
+          ],
+          "settlements": [
+            {
+              "candidate": "has_goal_evidence:answer_0",
+              "goal_link": true
+            }
+          ],
+          "source_link": true,
+          "task": 0
+        },
+        {
+          "deliberation_status": "resolved",
+          "execution_traces_for_goal": [
+            {
+              "candidate": "has_goal_evidence:answer_1",
+              "status": "resolved"
+            }
+          ],
+          "goal_status": "active",
+          "selection": [
+            "has_goal_evidence:answer_1"
+          ],
+          "settlements": [
+            {
+              "candidate": "has_goal_evidence:answer_1",
+              "goal_link": true
+            }
+          ],
+          "source_link": true,
+          "task": 1
+        },
+        {
+          "deliberation_status": "resolved",
+          "execution_traces_for_goal": [
+            {
+              "candidate": "has_goal_evidence:answer_2",
+              "status": "resolved"
+            }
+          ],
+          "goal_status": "active",
+          "selection": [
+            "has_goal_evidence:answer_2"
+          ],
+          "settlements": [
+            {
+              "candidate": "has_goal_evidence:answer_2",
+              "goal_link": true
+            }
+          ],
+          "source_link": true,
+          "task": 2
+        },
+        {
+          "deliberation_status": "resolved",
+          "execution_traces_for_goal": [
+            {
+              "candidate": "has_goal_evidence:answer_3",
+              "status": "resolved"
+            }
+          ],
+          "goal_status": "active",
+          "selection": [
+            "has_goal_evidence:answer_3"
+          ],
+          "settlements": [
+            {
+              "candidate": "has_goal_evidence:answer_3",
+              "goal_link": true
+            }
+          ],
+          "source_link": true,
+          "task": 3
+        }
+      ],
+      "replicate": 0,
+      "reports": [
+        {
+          "progress_steps": 4,
+          "status": "fixed_point"
+        }
+      ],
+      "size": 4,
+      "source_provenance_all_tasks": true,
+      "turns": 0,
+      "wall_ns": 149971
+    },
+    {
+      "arm": "scoped",
+      "complete": true,
+      "construction_ns": 304812,
+      "counters": {
+        "apply_probe_rollbacks": 0,
+        "bindings_cloned": 0,
+        "cand_enum": 394,
+        "cand_enum_apply_once": 0,
+        "cand_enum_first": 220,
+        "cand_enum_hinted": 0,
+        "cand_enum_local": 216,
+        "cand_enum_repeat": 174,
+        "cand_enum_scan": 178,
+        "cand_reject_bound": 0,
+        "cand_tested": 394,
+        "dim_infer_arg_calls": 0,
+        "dim_infer_arg_distinct_ordered": 0,
+        "dim_infer_arg_distinct_unordered": 0,
+        "epochs": 8,
+        "epochs_apply_once": 0,
+        "ffi_calls": 8,
+        "ffi_items": 8,
+        "ffi_pyobjects": 0,
+        "graph_writes": 0,
+        "leaf_visits": 24,
+        "pushdown_evals": 212,
+        "pushdown_prunes": 166,
+        "rule_effect_attr_set_attempts": 48,
+        "rule_effect_edge_deletes": 0,
+        "rule_effect_edge_insert_attempts": 32,
+        "rule_effect_node_delete_attempts": 0,
+        "rule_effect_node_inserts": 12,
+        "rule_effect_replace_edge_deletes": 0,
+        "rule_effect_replace_edge_insert_attempts": 0,
+        "rule_enumerations": 164,
+        "rule_enumerations_repeat": 84,
+        "scoped_full_fallback_rule_matches": 52,
+        "scoped_local_rule_matches": 112,
+        "scoped_mt_seeded_rule_matches": 0,
+        "term_eval:And": 192,
+        "term_eval:Argmax": 8,
+        "term_eval:Attr": 596,
+        "term_eval:Eq": 464,
+        "term_eval:Filter": 8,
+        "term_eval:Gte": 16,
+        "term_eval:Lit": 440,
+        "term_eval:Lt": 16,
+        "term_eval:Minus": 4,
+        "term_eval:Neighbours": 4,
+        "term_eval:Not": 16,
+        "term_eval:Plus": 4,
+        "term_eval:Times": 12,
+        "term_eval:Var": 608,
+        "term_evals_total": 2388,
+        "term_units_total": 0,
+        "term_units_unattributed": 0,
+        "var_collisions": 4,
+        "where_evals": 208,
+        "where_evals_first": 96,
+        "where_evals_repeat": 112,
+        "where_rejects": 176
+      },
+      "cpu_ns": 308340,
+      "expected_projection": true,
+      "graph_digest": "59849e4f6068e6ea2a9a14ce55c14aceffea7abbd38839c8c97172305df7f777",
+      "native_extension_sha256": "f5543ca015278bad6c65506a0d7d9acb85b33252e7121cdda1a56df63e8ad27b",
+      "peak_rss_kib": 36700,
+      "pid": 1881863,
+      "projection": [
+        {
+          "deliberation_status": "resolved",
+          "execution_traces_for_goal": [
+            {
+              "candidate": "has_goal_evidence:answer_0",
+              "status": "resolved"
+            }
+          ],
+          "goal_status": "active",
+          "selection": [
+            "has_goal_evidence:answer_0"
+          ],
+          "settlements": [
+            {
+              "candidate": "has_goal_evidence:answer_0",
+              "goal_link": true
+            }
+          ],
+          "source_link": true,
+          "task": 0
+        },
+        {
+          "deliberation_status": "resolved",
+          "execution_traces_for_goal": [
+            {
+              "candidate": "has_goal_evidence:answer_1",
+              "status": "resolved"
+            }
+          ],
+          "goal_status": "active",
+          "selection": [
+            "has_goal_evidence:answer_1"
+          ],
+          "settlements": [
+            {
+              "candidate": "has_goal_evidence:answer_1",
+              "goal_link": true
+            }
+          ],
+          "source_link": true,
+          "task": 1
+        },
+        {
+          "deliberation_status": "resolved",
+          "execution_traces_for_goal": [
+            {
+              "candidate": "has_goal_evidence:answer_2",
+              "status": "resolved"
+            }
+          ],
+          "goal_status": "active",
+          "selection": [
+            "has_goal_evidence:answer_2"
+          ],
+          "settlements": [
+            {
+              "candidate": "has_goal_evidence:answer_2",
+              "goal_link": true
+            }
+          ],
+          "source_link": true,
+          "task": 2
+        },
+        {
+          "deliberation_status": "resolved",
+          "execution_traces_for_goal": [
+            {
+              "candidate": "has_goal_evidence:answer_3",
+              "status": "resolved"
+            }
+          ],
+          "goal_status": "active",
+          "selection": [
+            "has_goal_evidence:answer_3"
+          ],
+          "settlements": [
+            {
+              "candidate": "has_goal_evidence:answer_3",
+              "goal_link": true
+            }
+          ],
+          "source_link": true,
+          "task": 3
+        }
+      ],
+      "replicate": 2,
+      "reports": [
+        {
+          "affected_microtheories": [
+            14
+          ],
+          "deferred_effects_pending": false,
+          "hit_progress_budget": false,
+          "progress_steps": 4
+        },
+        {
+          "affected_microtheories": [
+            20
+          ],
+          "deferred_effects_pending": false,
+          "hit_progress_budget": false,
+          "progress_steps": 4
+        },
+        {
+          "affected_microtheories": [
+            26
+          ],
+          "deferred_effects_pending": false,
+          "hit_progress_budget": false,
+          "progress_steps": 4
+        },
+        {
+          "affected_microtheories": [
+            32
+          ],
+          "deferred_effects_pending": false,
+          "hit_progress_budget": false,
+          "progress_steps": 4
+        },
+        {
+          "affected_microtheories": [],
+          "deferred_effects_pending": false,
+          "hit_progress_budget": false,
+          "progress_steps": 0
+        },
+        {
+          "affected_microtheories": [],
+          "deferred_effects_pending": false,
+          "hit_progress_budget": false,
+          "progress_steps": 0
+        },
+        {
+          "affected_microtheories": [],
+          "deferred_effects_pending": false,
+          "hit_progress_budget": false,
+          "progress_steps": 0
+        },
+        {
+          "affected_microtheories": [],
+          "deferred_effects_pending": false,
+          "hit_progress_budget": false,
+          "progress_steps": 0
+        }
+      ],
+      "size": 4,
+      "source_provenance_all_tasks": true,
+      "turns": 8,
+      "wall_ns": 309081
+    },
+    {
+      "arm": "full",
+      "complete": true,
+      "construction_ns": 170600,
+      "counters": {
+        "apply_probe_rollbacks": 0,
+        "bindings_cloned": 8,
+        "cand_enum": 46,
+        "cand_enum_apply_once": 0,
+        "cand_enum_first": 30,
+        "cand_enum_hinted": 0,
+        "cand_enum_local": 12,
+        "cand_enum_repeat": 16,
+        "cand_enum_scan": 34,
+        "cand_reject_bound": 0,
+        "cand_tested": 46,
+        "dim_infer_arg_calls": 0,
+        "dim_infer_arg_distinct_ordered": 0,
+        "dim_infer_arg_distinct_unordered": 0,
+        "epochs": 1,
+        "epochs_apply_once": 0,
+        "ffi_calls": 1,
+        "ffi_items": 1,
+        "ffi_pyobjects": 0,
+        "graph_writes": 0,
+        "leaf_visits": 8,
+        "pushdown_evals": 20,
+        "pushdown_prunes": 8,
+        "rule_effect_attr_set_attempts": 24,
+        "rule_effect_edge_deletes": 0,
+        "rule_effect_edge_insert_attempts": 16,
+        "rule_effect_node_delete_attempts": 0,
+        "rule_effect_node_inserts": 6,
+        "rule_effect_replace_edge_deletes": 0,
+        "rule_effect_replace_edge_insert_attempts": 0,
+        "rule_enumerations": 20,
+        "rule_enumerations_repeat": 10,
+        "scoped_full_fallback_rule_matches": 0,
+        "scoped_local_rule_matches": 0,
+        "scoped_mt_seeded_rule_matches": 0,
+        "term_eval:And": 20,
+        "term_eval:Argmax": 2,
+        "term_eval:Attr": 92,
+        "term_eval:Eq": 56,
+        "term_eval:Filter": 2,
+        "term_eval:Gte": 2,
+        "term_eval:Lit": 52,
+        "term_eval:Lt": 2,
+        "term_eval:Minus": 2,
+        "term_eval:Neighbours": 2,
+        "term_eval:Not": 2,
+        "term_eval:Plus": 2,
+        "term_eval:Times": 6,
+        "term_eval:Var": 96,
+        "term_evals_total": 338,
+        "term_units_total": 0,
+        "term_units_unattributed": 0,
+        "var_collisions": 2,
+        "where_evals": 28,
+        "where_evals_first": 18,
+        "where_evals_repeat": 10,
+        "where_rejects": 16
+      },
+      "cpu_ns": 130230,
+      "expected_projection": true,
+      "graph_digest": "9a77315788bb3c8fa4e93b84fb4f439929f4951b94da72ba4ae205b19a8af507",
+      "native_extension_sha256": "f5543ca015278bad6c65506a0d7d9acb85b33252e7121cdda1a56df63e8ad27b",
+      "peak_rss_kib": 36452,
+      "pid": 1881925,
+      "projection": [
+        {
+          "deliberation_status": "resolved",
+          "execution_traces_for_goal": [
+            {
+              "candidate": "has_goal_evidence:answer_0",
+              "status": "resolved"
+            }
+          ],
+          "goal_status": "active",
+          "selection": [
+            "has_goal_evidence:answer_0"
+          ],
+          "settlements": [
+            {
+              "candidate": "has_goal_evidence:answer_0",
+              "goal_link": true
+            }
+          ],
+          "source_link": true,
+          "task": 0
+        },
+        {
+          "deliberation_status": "resolved",
+          "execution_traces_for_goal": [
+            {
+              "candidate": "has_goal_evidence:answer_1",
+              "status": "resolved"
+            }
+          ],
+          "goal_status": "active",
+          "selection": [
+            "has_goal_evidence:answer_1"
+          ],
+          "settlements": [
+            {
+              "candidate": "has_goal_evidence:answer_1",
+              "goal_link": true
+            }
+          ],
+          "source_link": true,
+          "task": 1
+        }
+      ],
+      "replicate": 2,
+      "reports": [
+        {
+          "progress_steps": 4,
+          "status": "fixed_point"
+        }
+      ],
+      "size": 2,
+      "source_provenance_all_tasks": true,
+      "turns": 0,
+      "wall_ns": 131690
+    },
+    {
+      "arm": "scoped",
+      "complete": true,
+      "construction_ns": 309241,
+      "counters": {
+        "apply_probe_rollbacks": 0,
+        "bindings_cloned": 0,
+        "cand_enum": 394,
+        "cand_enum_apply_once": 0,
+        "cand_enum_first": 220,
+        "cand_enum_hinted": 0,
+        "cand_enum_local": 216,
+        "cand_enum_repeat": 174,
+        "cand_enum_scan": 178,
+        "cand_reject_bound": 0,
+        "cand_tested": 394,
+        "dim_infer_arg_calls": 0,
+        "dim_infer_arg_distinct_ordered": 0,
+        "dim_infer_arg_distinct_unordered": 0,
+        "epochs": 8,
+        "epochs_apply_once": 0,
+        "ffi_calls": 8,
+        "ffi_items": 8,
+        "ffi_pyobjects": 0,
+        "graph_writes": 0,
+        "leaf_visits": 24,
+        "pushdown_evals": 212,
+        "pushdown_prunes": 166,
+        "rule_effect_attr_set_attempts": 48,
+        "rule_effect_edge_deletes": 0,
+        "rule_effect_edge_insert_attempts": 32,
+        "rule_effect_node_delete_attempts": 0,
+        "rule_effect_node_inserts": 12,
+        "rule_effect_replace_edge_deletes": 0,
+        "rule_effect_replace_edge_insert_attempts": 0,
+        "rule_enumerations": 164,
+        "rule_enumerations_repeat": 84,
+        "scoped_full_fallback_rule_matches": 52,
+        "scoped_local_rule_matches": 112,
+        "scoped_mt_seeded_rule_matches": 0,
+        "term_eval:And": 192,
+        "term_eval:Argmax": 8,
+        "term_eval:Attr": 596,
+        "term_eval:Eq": 464,
+        "term_eval:Filter": 8,
+        "term_eval:Gte": 16,
+        "term_eval:Lit": 440,
+        "term_eval:Lt": 16,
+        "term_eval:Minus": 4,
+        "term_eval:Neighbours": 4,
+        "term_eval:Not": 16,
+        "term_eval:Plus": 4,
+        "term_eval:Times": 12,
+        "term_eval:Var": 608,
+        "term_evals_total": 2388,
+        "term_units_total": 0,
+        "term_units_unattributed": 0,
+        "var_collisions": 4,
+        "where_evals": 208,
+        "where_evals_first": 96,
+        "where_evals_repeat": 112,
+        "where_rejects": 176
+      },
+      "cpu_ns": 304010,
+      "expected_projection": true,
+      "graph_digest": "59849e4f6068e6ea2a9a14ce55c14aceffea7abbd38839c8c97172305df7f777",
+      "native_extension_sha256": "f5543ca015278bad6c65506a0d7d9acb85b33252e7121cdda1a56df63e8ad27b",
+      "peak_rss_kib": 35996,
+      "pid": 1881929,
+      "projection": [
+        {
+          "deliberation_status": "resolved",
+          "execution_traces_for_goal": [
+            {
+              "candidate": "has_goal_evidence:answer_0",
+              "status": "resolved"
+            }
+          ],
+          "goal_status": "active",
+          "selection": [
+            "has_goal_evidence:answer_0"
+          ],
+          "settlements": [
+            {
+              "candidate": "has_goal_evidence:answer_0",
+              "goal_link": true
+            }
+          ],
+          "source_link": true,
+          "task": 0
+        },
+        {
+          "deliberation_status": "resolved",
+          "execution_traces_for_goal": [
+            {
+              "candidate": "has_goal_evidence:answer_1",
+              "status": "resolved"
+            }
+          ],
+          "goal_status": "active",
+          "selection": [
+            "has_goal_evidence:answer_1"
+          ],
+          "settlements": [
+            {
+              "candidate": "has_goal_evidence:answer_1",
+              "goal_link": true
+            }
+          ],
+          "source_link": true,
+          "task": 1
+        },
+        {
+          "deliberation_status": "resolved",
+          "execution_traces_for_goal": [
+            {
+              "candidate": "has_goal_evidence:answer_2",
+              "status": "resolved"
+            }
+          ],
+          "goal_status": "active",
+          "selection": [
+            "has_goal_evidence:answer_2"
+          ],
+          "settlements": [
+            {
+              "candidate": "has_goal_evidence:answer_2",
+              "goal_link": true
+            }
+          ],
+          "source_link": true,
+          "task": 2
+        },
+        {
+          "deliberation_status": "resolved",
+          "execution_traces_for_goal": [
+            {
+              "candidate": "has_goal_evidence:answer_3",
+              "status": "resolved"
+            }
+          ],
+          "goal_status": "active",
+          "selection": [
+            "has_goal_evidence:answer_3"
+          ],
+          "settlements": [
+            {
+              "candidate": "has_goal_evidence:answer_3",
+              "goal_link": true
+            }
+          ],
+          "source_link": true,
+          "task": 3
+        }
+      ],
+      "replicate": 0,
+      "reports": [
+        {
+          "affected_microtheories": [
+            14
+          ],
+          "deferred_effects_pending": false,
+          "hit_progress_budget": false,
+          "progress_steps": 4
+        },
+        {
+          "affected_microtheories": [
+            20
+          ],
+          "deferred_effects_pending": false,
+          "hit_progress_budget": false,
+          "progress_steps": 4
+        },
+        {
+          "affected_microtheories": [
+            26
+          ],
+          "deferred_effects_pending": false,
+          "hit_progress_budget": false,
+          "progress_steps": 4
+        },
+        {
+          "affected_microtheories": [
+            32
+          ],
+          "deferred_effects_pending": false,
+          "hit_progress_budget": false,
+          "progress_steps": 4
+        },
+        {
+          "affected_microtheories": [],
+          "deferred_effects_pending": false,
+          "hit_progress_budget": false,
+          "progress_steps": 0
+        },
+        {
+          "affected_microtheories": [],
+          "deferred_effects_pending": false,
+          "hit_progress_budget": false,
+          "progress_steps": 0
+        },
+        {
+          "affected_microtheories": [],
+          "deferred_effects_pending": false,
+          "hit_progress_budget": false,
+          "progress_steps": 0
+        },
+        {
+          "affected_microtheories": [],
+          "deferred_effects_pending": false,
+          "hit_progress_budget": false,
+          "progress_steps": 0
+        }
+      ],
+      "size": 4,
+      "source_provenance_all_tasks": true,
+      "turns": 8,
+      "wall_ns": 304452
+    },
+    {
+      "arm": "full",
+      "complete": true,
+      "construction_ns": 520372,
+      "counters": {
+        "apply_probe_rollbacks": 0,
+        "bindings_cloned": 32,
+        "cand_enum": 184,
+        "cand_enum_apply_once": 0,
+        "cand_enum_first": 120,
+        "cand_enum_hinted": 0,
+        "cand_enum_local": 48,
+        "cand_enum_repeat": 64,
+        "cand_enum_scan": 136,
+        "cand_reject_bound": 0,
+        "cand_tested": 184,
+        "dim_infer_arg_calls": 0,
+        "dim_infer_arg_distinct_ordered": 0,
+        "dim_infer_arg_distinct_unordered": 0,
+        "epochs": 1,
+        "epochs_apply_once": 0,
+        "ffi_calls": 1,
+        "ffi_items": 1,
+        "ffi_pyobjects": 0,
+        "graph_writes": 0,
+        "leaf_visits": 32,
+        "pushdown_evals": 80,
+        "pushdown_prunes": 32,
+        "rule_effect_attr_set_attempts": 96,
+        "rule_effect_edge_deletes": 0,
+        "rule_effect_edge_insert_attempts": 64,
+        "rule_effect_node_delete_attempts": 0,
+        "rule_effect_node_inserts": 24,
+        "rule_effect_replace_edge_deletes": 0,
+        "rule_effect_replace_edge_insert_attempts": 0,
+        "rule_enumerations": 20,
+        "rule_enumerations_repeat": 10,
+        "scoped_full_fallback_rule_matches": 0,
+        "scoped_local_rule_matches": 0,
+        "scoped_mt_seeded_rule_matches": 0,
+        "term_eval:And": 80,
+        "term_eval:Argmax": 8,
+        "term_eval:Attr": 368,
+        "term_eval:Eq": 224,
+        "term_eval:Filter": 8,
+        "term_eval:Gte": 8,
+        "term_eval:Lit": 208,
+        "term_eval:Lt": 8,
+        "term_eval:Minus": 8,
+        "term_eval:Neighbours": 8,
+        "term_eval:Not": 8,
+        "term_eval:Plus": 8,
+        "term_eval:Times": 24,
+        "term_eval:Var": 384,
+        "term_evals_total": 1352,
+        "term_units_total": 0,
+        "term_units_unattributed": 0,
+        "var_collisions": 8,
+        "where_evals": 112,
+        "where_evals_first": 72,
+        "where_evals_repeat": 40,
+        "where_rejects": 64
+      },
+      "cpu_ns": 188280,
+      "expected_projection": true,
+      "graph_digest": "1b0234d1c0217fe3708958b347212b78592b4046689d262a512bf460659d2343",
+      "native_extension_sha256": "f5543ca015278bad6c65506a0d7d9acb85b33252e7121cdda1a56df63e8ad27b",
+      "peak_rss_kib": 37228,
+      "pid": 1881957,
+      "projection": [
+        {
+          "deliberation_status": "resolved",
+          "execution_traces_for_goal": [
+            {
+              "candidate": "has_goal_evidence:answer_0",
+              "status": "resolved"
+            }
+          ],
+          "goal_status": "active",
+          "selection": [
+            "has_goal_evidence:answer_0"
+          ],
+          "settlements": [
+            {
+              "candidate": "has_goal_evidence:answer_0",
+              "goal_link": true
+            }
+          ],
+          "source_link": true,
+          "task": 0
+        },
+        {
+          "deliberation_status": "resolved",
+          "execution_traces_for_goal": [
+            {
+              "candidate": "has_goal_evidence:answer_1",
+              "status": "resolved"
+            }
+          ],
+          "goal_status": "active",
+          "selection": [
+            "has_goal_evidence:answer_1"
+          ],
+          "settlements": [
+            {
+              "candidate": "has_goal_evidence:answer_1",
+              "goal_link": true
+            }
+          ],
+          "source_link": true,
+          "task": 1
+        },
+        {
+          "deliberation_status": "resolved",
+          "execution_traces_for_goal": [
+            {
+              "candidate": "has_goal_evidence:answer_2",
+              "status": "resolved"
+            }
+          ],
+          "goal_status": "active",
+          "selection": [
+            "has_goal_evidence:answer_2"
+          ],
+          "settlements": [
+            {
+              "candidate": "has_goal_evidence:answer_2",
+              "goal_link": true
+            }
+          ],
+          "source_link": true,
+          "task": 2
+        },
+        {
+          "deliberation_status": "resolved",
+          "execution_traces_for_goal": [
+            {
+              "candidate": "has_goal_evidence:answer_3",
+              "status": "resolved"
+            }
+          ],
+          "goal_status": "active",
+          "selection": [
+            "has_goal_evidence:answer_3"
+          ],
+          "settlements": [
+            {
+              "candidate": "has_goal_evidence:answer_3",
+              "goal_link": true
+            }
+          ],
+          "source_link": true,
+          "task": 3
+        },
+        {
+          "deliberation_status": "resolved",
+          "execution_traces_for_goal": [
+            {
+              "candidate": "has_goal_evidence:answer_4",
+              "status": "resolved"
+            }
+          ],
+          "goal_status": "active",
+          "selection": [
+            "has_goal_evidence:answer_4"
+          ],
+          "settlements": [
+            {
+              "candidate": "has_goal_evidence:answer_4",
+              "goal_link": true
+            }
+          ],
+          "source_link": true,
+          "task": 4
+        },
+        {
+          "deliberation_status": "resolved",
+          "execution_traces_for_goal": [
+            {
+              "candidate": "has_goal_evidence:answer_5",
+              "status": "resolved"
+            }
+          ],
+          "goal_status": "active",
+          "selection": [
+            "has_goal_evidence:answer_5"
+          ],
+          "settlements": [
+            {
+              "candidate": "has_goal_evidence:answer_5",
+              "goal_link": true
+            }
+          ],
+          "source_link": true,
+          "task": 5
+        },
+        {
+          "deliberation_status": "resolved",
+          "execution_traces_for_goal": [
+            {
+              "candidate": "has_goal_evidence:answer_6",
+              "status": "resolved"
+            }
+          ],
+          "goal_status": "active",
+          "selection": [
+            "has_goal_evidence:answer_6"
+          ],
+          "settlements": [
+            {
+              "candidate": "has_goal_evidence:answer_6",
+              "goal_link": true
+            }
+          ],
+          "source_link": true,
+          "task": 6
+        },
+        {
+          "deliberation_status": "resolved",
+          "execution_traces_for_goal": [
+            {
+              "candidate": "has_goal_evidence:answer_7",
+              "status": "resolved"
+            }
+          ],
+          "goal_status": "active",
+          "selection": [
+            "has_goal_evidence:answer_7"
+          ],
+          "settlements": [
+            {
+              "candidate": "has_goal_evidence:answer_7",
+              "goal_link": true
+            }
+          ],
+          "source_link": true,
+          "task": 7
+        }
+      ],
+      "replicate": 0,
+      "reports": [
+        {
+          "progress_steps": 4,
+          "status": "fixed_point"
+        }
+      ],
+      "size": 8,
+      "source_provenance_all_tasks": true,
+      "turns": 0,
+      "wall_ns": 189561
+    },
+    {
+      "arm": "scoped",
+      "complete": true,
+      "construction_ns": 507263,
+      "counters": {
+        "apply_probe_rollbacks": 0,
+        "bindings_cloned": 0,
+        "cand_enum": 1124,
+        "cand_enum_apply_once": 0,
+        "cand_enum_first": 664,
+        "cand_enum_hinted": 0,
+        "cand_enum_local": 432,
+        "cand_enum_repeat": 460,
+        "cand_enum_scan": 692,
+        "cand_reject_bound": 0,
+        "cand_tested": 1124,
+        "dim_infer_arg_calls": 0,
+        "dim_infer_arg_distinct_ordered": 0,
+        "dim_infer_arg_distinct_unordered": 0,
+        "epochs": 16,
+        "epochs_apply_once": 0,
+        "ffi_calls": 16,
+        "ffi_items": 16,
+        "ffi_pyobjects": 0,
+        "graph_writes": 0,
+        "leaf_visits": 48,
+        "pushdown_evals": 808,
+        "pushdown_prunes": 668,
+        "rule_effect_attr_set_attempts": 96,
+        "rule_effect_edge_deletes": 0,
+        "rule_effect_edge_insert_attempts": 64,
+        "rule_effect_node_delete_attempts": 0,
+        "rule_effect_node_inserts": 24,
+        "rule_effect_replace_edge_deletes": 0,
+        "rule_effect_replace_edge_insert_attempts": 0,
+        "rule_enumerations": 328,
+        "rule_enumerations_repeat": 168,
+        "scoped_full_fallback_rule_matches": 104,
+        "scoped_local_rule_matches": 224,
+        "scoped_mt_seeded_rule_matches": 0,
+        "term_eval:And": 384,
+        "term_eval:Argmax": 16,
+        "term_eval:Attr": 1576,
+        "term_eval:Eq": 1312,
+        "term_eval:Filter": 16,
+        "term_eval:Gte": 32,
+        "term_eval:Lit": 1264,
+        "term_eval:Lt": 32,
+        "term_eval:Minus": 8,
+        "term_eval:Neighbours": 8,
+        "term_eval:Not": 32,
+        "term_eval:Plus": 8,
+        "term_eval:Times": 24,
+        "term_eval:Var": 1600,
+        "term_evals_total": 6312,
+        "term_units_total": 0,
+        "term_units_unattributed": 0,
+        "var_collisions": 8,
+        "where_evals": 416,
+        "where_evals_first": 192,
+        "where_evals_repeat": 224,
+        "where_rejects": 352
+      },
+      "cpu_ns": 551070,
+      "expected_projection": true,
+      "graph_digest": "c60fbd40eee73ee03657a35ca431a2f6b5948e62ad7d68c976e29a6ed87ddbcc",
+      "native_extension_sha256": "f5543ca015278bad6c65506a0d7d9acb85b33252e7121cdda1a56df63e8ad27b",
+      "peak_rss_kib": 36836,
+      "pid": 1881981,
+      "projection": [
+        {
+          "deliberation_status": "resolved",
+          "execution_traces_for_goal": [
+            {
+              "candidate": "has_goal_evidence:answer_0",
+              "status": "resolved"
+            }
+          ],
+          "goal_status": "active",
+          "selection": [
+            "has_goal_evidence:answer_0"
+          ],
+          "settlements": [
+            {
+              "candidate": "has_goal_evidence:answer_0",
+              "goal_link": true
+            }
+          ],
+          "source_link": true,
+          "task": 0
+        },
+        {
+          "deliberation_status": "resolved",
+          "execution_traces_for_goal": [
+            {
+              "candidate": "has_goal_evidence:answer_1",
+              "status": "resolved"
+            }
+          ],
+          "goal_status": "active",
+          "selection": [
+            "has_goal_evidence:answer_1"
+          ],
+          "settlements": [
+            {
+              "candidate": "has_goal_evidence:answer_1",
+              "goal_link": true
+            }
+          ],
+          "source_link": true,
+          "task": 1
+        },
+        {
+          "deliberation_status": "resolved",
+          "execution_traces_for_goal": [
+            {
+              "candidate": "has_goal_evidence:answer_2",
+              "status": "resolved"
+            }
+          ],
+          "goal_status": "active",
+          "selection": [
+            "has_goal_evidence:answer_2"
+          ],
+          "settlements": [
+            {
+              "candidate": "has_goal_evidence:answer_2",
+              "goal_link": true
+            }
+          ],
+          "source_link": true,
+          "task": 2
+        },
+        {
+          "deliberation_status": "resolved",
+          "execution_traces_for_goal": [
+            {
+              "candidate": "has_goal_evidence:answer_3",
+              "status": "resolved"
+            }
+          ],
+          "goal_status": "active",
+          "selection": [
+            "has_goal_evidence:answer_3"
+          ],
+          "settlements": [
+            {
+              "candidate": "has_goal_evidence:answer_3",
+              "goal_link": true
+            }
+          ],
+          "source_link": true,
+          "task": 3
+        },
+        {
+          "deliberation_status": "resolved",
+          "execution_traces_for_goal": [
+            {
+              "candidate": "has_goal_evidence:answer_4",
+              "status": "resolved"
+            }
+          ],
+          "goal_status": "active",
+          "selection": [
+            "has_goal_evidence:answer_4"
+          ],
+          "settlements": [
+            {
+              "candidate": "has_goal_evidence:answer_4",
+              "goal_link": true
+            }
+          ],
+          "source_link": true,
+          "task": 4
+        },
+        {
+          "deliberation_status": "resolved",
+          "execution_traces_for_goal": [
+            {
+              "candidate": "has_goal_evidence:answer_5",
+              "status": "resolved"
+            }
+          ],
+          "goal_status": "active",
+          "selection": [
+            "has_goal_evidence:answer_5"
+          ],
+          "settlements": [
+            {
+              "candidate": "has_goal_evidence:answer_5",
+              "goal_link": true
+            }
+          ],
+          "source_link": true,
+          "task": 5
+        },
+        {
+          "deliberation_status": "resolved",
+          "execution_traces_for_goal": [
+            {
+              "candidate": "has_goal_evidence:answer_6",
+              "status": "resolved"
+            }
+          ],
+          "goal_status": "active",
+          "selection": [
+            "has_goal_evidence:answer_6"
+          ],
+          "settlements": [
+            {
+              "candidate": "has_goal_evidence:answer_6",
+              "goal_link": true
+            }
+          ],
+          "source_link": true,
+          "task": 6
+        },
+        {
+          "deliberation_status": "resolved",
+          "execution_traces_for_goal": [
+            {
+              "candidate": "has_goal_evidence:answer_7",
+              "status": "resolved"
+            }
+          ],
+          "goal_status": "active",
+          "selection": [
+            "has_goal_evidence:answer_7"
+          ],
+          "settlements": [
+            {
+              "candidate": "has_goal_evidence:answer_7",
+              "goal_link": true
+            }
+          ],
+          "source_link": true,
+          "task": 7
+        }
+      ],
+      "replicate": 0,
+      "reports": [
+        {
+          "affected_microtheories": [
+            14
+          ],
+          "deferred_effects_pending": false,
+          "hit_progress_budget": false,
+          "progress_steps": 4
+        },
+        {
+          "affected_microtheories": [
+            20
+          ],
+          "deferred_effects_pending": false,
+          "hit_progress_budget": false,
+          "progress_steps": 4
+        },
+        {
+          "affected_microtheories": [
+            26
+          ],
+          "deferred_effects_pending": false,
+          "hit_progress_budget": false,
+          "progress_steps": 4
+        },
+        {
+          "affected_microtheories": [
+            32
+          ],
+          "deferred_effects_pending": false,
+          "hit_progress_budget": false,
+          "progress_steps": 4
+        },
+        {
+          "affected_microtheories": [
+            38
+          ],
+          "deferred_effects_pending": false,
+          "hit_progress_budget": false,
+          "progress_steps": 4
+        },
+        {
+          "affected_microtheories": [
+            44
+          ],
+          "deferred_effects_pending": false,
+          "hit_progress_budget": false,
+          "progress_steps": 4
+        },
+        {
+          "affected_microtheories": [
+            50
+          ],
+          "deferred_effects_pending": false,
+          "hit_progress_budget": false,
+          "progress_steps": 4
+        },
+        {
+          "affected_microtheories": [
+            56
+          ],
+          "deferred_effects_pending": false,
+          "hit_progress_budget": false,
+          "progress_steps": 4
+        },
+        {
+          "affected_microtheories": [],
+          "deferred_effects_pending": false,
+          "hit_progress_budget": false,
+          "progress_steps": 0
+        },
+        {
+          "affected_microtheories": [],
+          "deferred_effects_pending": false,
+          "hit_progress_budget": false,
+          "progress_steps": 0
+        },
+        {
+          "affected_microtheories": [],
+          "deferred_effects_pending": false,
+          "hit_progress_budget": false,
+          "progress_steps": 0
+        },
+        {
+          "affected_microtheories": [],
+          "deferred_effects_pending": false,
+          "hit_progress_budget": false,
+          "progress_steps": 0
+        },
+        {
+          "affected_microtheories": [],
+          "deferred_effects_pending": false,
+          "hit_progress_budget": false,
+          "progress_steps": 0
+        },
+        {
+          "affected_microtheories": [],
+          "deferred_effects_pending": false,
+          "hit_progress_budget": false,
+          "progress_steps": 0
+        },
+        {
+          "affected_microtheories": [],
+          "deferred_effects_pending": false,
+          "hit_progress_budget": false,
+          "progress_steps": 0
+        },
+        {
+          "affected_microtheories": [],
+          "deferred_effects_pending": false,
+          "hit_progress_budget": false,
+          "progress_steps": 0
+        }
+      ],
+      "size": 8,
+      "source_provenance_all_tasks": true,
+      "turns": 16,
+      "wall_ns": 551793
+    },
+    {
+      "arm": "scoped",
+      "complete": true,
+      "construction_ns": 176511,
+      "counters": {
+        "apply_probe_rollbacks": 0,
+        "bindings_cloned": 0,
+        "cand_enum": 155,
+        "cand_enum_apply_once": 0,
+        "cand_enum_first": 82,
+        "cand_enum_hinted": 0,
+        "cand_enum_local": 108,
+        "cand_enum_repeat": 73,
+        "cand_enum_scan": 47,
+        "cand_reject_bound": 0,
+        "cand_tested": 155,
+        "dim_infer_arg_calls": 0,
+        "dim_infer_arg_distinct_ordered": 0,
+        "dim_infer_arg_distinct_unordered": 0,
+        "epochs": 4,
+        "epochs_apply_once": 0,
+        "ffi_calls": 4,
+        "ffi_items": 4,
+        "ffi_pyobjects": 0,
+        "graph_writes": 0,
+        "leaf_visits": 12,
+        "pushdown_evals": 58,
+        "pushdown_prunes": 41,
+        "rule_effect_attr_set_attempts": 24,
+        "rule_effect_edge_deletes": 0,
+        "rule_effect_edge_insert_attempts": 16,
+        "rule_effect_node_delete_attempts": 0,
+        "rule_effect_node_inserts": 6,
+        "rule_effect_replace_edge_deletes": 0,
+        "rule_effect_replace_edge_insert_attempts": 0,
+        "rule_enumerations": 82,
+        "rule_enumerations_repeat": 42,
+        "scoped_full_fallback_rule_matches": 26,
+        "scoped_local_rule_matches": 56,
+        "scoped_mt_seeded_rule_matches": 0,
+        "term_eval:And": 96,
+        "term_eval:Argmax": 4,
+        "term_eval:Attr": 250,
+        "term_eval:Eq": 184,
+        "term_eval:Filter": 4,
+        "term_eval:Gte": 8,
+        "term_eval:Lit": 172,
+        "term_eval:Lt": 8,
+        "term_eval:Minus": 2,
+        "term_eval:Neighbours": 2,
+        "term_eval:Not": 8,
+        "term_eval:Plus": 2,
+        "term_eval:Times": 6,
+        "term_eval:Var": 256,
+        "term_evals_total": 1002,
+        "term_units_total": 0,
+        "term_units_unattributed": 0,
+        "var_collisions": 2,
+        "where_evals": 104,
+        "where_evals_first": 48,
+        "where_evals_repeat": 56,
+        "where_rejects": 88
+      },
+      "cpu_ns": 193941,
+      "expected_projection": true,
+      "graph_digest": "23c094ed9285a8845fd33f374b679a74a2b3837277e9c4df82334d3d99bc91dc",
+      "native_extension_sha256": "f5543ca015278bad6c65506a0d7d9acb85b33252e7121cdda1a56df63e8ad27b",
+      "peak_rss_kib": 36380,
+      "pid": 1881991,
+      "projection": [
+        {
+          "deliberation_status": "resolved",
+          "execution_traces_for_goal": [
+            {
+              "candidate": "has_goal_evidence:answer_0",
+              "status": "resolved"
+            }
+          ],
+          "goal_status": "active",
+          "selection": [
+            "has_goal_evidence:answer_0"
+          ],
+          "settlements": [
+            {
+              "candidate": "has_goal_evidence:answer_0",
+              "goal_link": true
+            }
+          ],
+          "source_link": true,
+          "task": 0
+        },
+        {
+          "deliberation_status": "resolved",
+          "execution_traces_for_goal": [
+            {
+              "candidate": "has_goal_evidence:answer_1",
+              "status": "resolved"
+            }
+          ],
+          "goal_status": "active",
+          "selection": [
+            "has_goal_evidence:answer_1"
+          ],
+          "settlements": [
+            {
+              "candidate": "has_goal_evidence:answer_1",
+              "goal_link": true
+            }
+          ],
+          "source_link": true,
+          "task": 1
+        }
+      ],
+      "replicate": 2,
+      "reports": [
+        {
+          "affected_microtheories": [
+            14
+          ],
+          "deferred_effects_pending": false,
+          "hit_progress_budget": false,
+          "progress_steps": 4
+        },
+        {
+          "affected_microtheories": [
+            20
+          ],
+          "deferred_effects_pending": false,
+          "hit_progress_budget": false,
+          "progress_steps": 4
+        },
+        {
+          "affected_microtheories": [],
+          "deferred_effects_pending": false,
+          "hit_progress_budget": false,
+          "progress_steps": 0
+        },
+        {
+          "affected_microtheories": [],
+          "deferred_effects_pending": false,
+          "hit_progress_budget": false,
+          "progress_steps": 0
+        }
+      ],
+      "size": 2,
+      "source_provenance_all_tasks": true,
+      "turns": 4,
+      "wall_ns": 194221
+    },
+    {
+      "arm": "full",
+      "complete": true,
+      "construction_ns": 509722,
+      "counters": {
+        "apply_probe_rollbacks": 0,
+        "bindings_cloned": 32,
+        "cand_enum": 184,
+        "cand_enum_apply_once": 0,
+        "cand_enum_first": 120,
+        "cand_enum_hinted": 0,
+        "cand_enum_local": 48,
+        "cand_enum_repeat": 64,
+        "cand_enum_scan": 136,
+        "cand_reject_bound": 0,
+        "cand_tested": 184,
+        "dim_infer_arg_calls": 0,
+        "dim_infer_arg_distinct_ordered": 0,
+        "dim_infer_arg_distinct_unordered": 0,
+        "epochs": 1,
+        "epochs_apply_once": 0,
+        "ffi_calls": 1,
+        "ffi_items": 1,
+        "ffi_pyobjects": 0,
+        "graph_writes": 0,
+        "leaf_visits": 32,
+        "pushdown_evals": 80,
+        "pushdown_prunes": 32,
+        "rule_effect_attr_set_attempts": 96,
+        "rule_effect_edge_deletes": 0,
+        "rule_effect_edge_insert_attempts": 64,
+        "rule_effect_node_delete_attempts": 0,
+        "rule_effect_node_inserts": 24,
+        "rule_effect_replace_edge_deletes": 0,
+        "rule_effect_replace_edge_insert_attempts": 0,
+        "rule_enumerations": 20,
+        "rule_enumerations_repeat": 10,
+        "scoped_full_fallback_rule_matches": 0,
+        "scoped_local_rule_matches": 0,
+        "scoped_mt_seeded_rule_matches": 0,
+        "term_eval:And": 80,
+        "term_eval:Argmax": 8,
+        "term_eval:Attr": 368,
+        "term_eval:Eq": 224,
+        "term_eval:Filter": 8,
+        "term_eval:Gte": 8,
+        "term_eval:Lit": 208,
+        "term_eval:Lt": 8,
+        "term_eval:Minus": 8,
+        "term_eval:Neighbours": 8,
+        "term_eval:Not": 8,
+        "term_eval:Plus": 8,
+        "term_eval:Times": 24,
+        "term_eval:Var": 384,
+        "term_evals_total": 1352,
+        "term_units_total": 0,
+        "term_units_unattributed": 0,
+        "var_collisions": 8,
+        "where_evals": 112,
+        "where_evals_first": 72,
+        "where_evals_repeat": 40,
+        "where_rejects": 64
+      },
+      "cpu_ns": 195400,
+      "expected_projection": true,
+      "graph_digest": "1b0234d1c0217fe3708958b347212b78592b4046689d262a512bf460659d2343",
+      "native_extension_sha256": "f5543ca015278bad6c65506a0d7d9acb85b33252e7121cdda1a56df63e8ad27b",
+      "peak_rss_kib": 37268,
+      "pid": 1881996,
+      "projection": [
+        {
+          "deliberation_status": "resolved",
+          "execution_traces_for_goal": [
+            {
+              "candidate": "has_goal_evidence:answer_0",
+              "status": "resolved"
+            }
+          ],
+          "goal_status": "active",
+          "selection": [
+            "has_goal_evidence:answer_0"
+          ],
+          "settlements": [
+            {
+              "candidate": "has_goal_evidence:answer_0",
+              "goal_link": true
+            }
+          ],
+          "source_link": true,
+          "task": 0
+        },
+        {
+          "deliberation_status": "resolved",
+          "execution_traces_for_goal": [
+            {
+              "candidate": "has_goal_evidence:answer_1",
+              "status": "resolved"
+            }
+          ],
+          "goal_status": "active",
+          "selection": [
+            "has_goal_evidence:answer_1"
+          ],
+          "settlements": [
+            {
+              "candidate": "has_goal_evidence:answer_1",
+              "goal_link": true
+            }
+          ],
+          "source_link": true,
+          "task": 1
+        },
+        {
+          "deliberation_status": "resolved",
+          "execution_traces_for_goal": [
+            {
+              "candidate": "has_goal_evidence:answer_2",
+              "status": "resolved"
+            }
+          ],
+          "goal_status": "active",
+          "selection": [
+            "has_goal_evidence:answer_2"
+          ],
+          "settlements": [
+            {
+              "candidate": "has_goal_evidence:answer_2",
+              "goal_link": true
+            }
+          ],
+          "source_link": true,
+          "task": 2
+        },
+        {
+          "deliberation_status": "resolved",
+          "execution_traces_for_goal": [
+            {
+              "candidate": "has_goal_evidence:answer_3",
+              "status": "resolved"
+            }
+          ],
+          "goal_status": "active",
+          "selection": [
+            "has_goal_evidence:answer_3"
+          ],
+          "settlements": [
+            {
+              "candidate": "has_goal_evidence:answer_3",
+              "goal_link": true
+            }
+          ],
+          "source_link": true,
+          "task": 3
+        },
+        {
+          "deliberation_status": "resolved",
+          "execution_traces_for_goal": [
+            {
+              "candidate": "has_goal_evidence:answer_4",
+              "status": "resolved"
+            }
+          ],
+          "goal_status": "active",
+          "selection": [
+            "has_goal_evidence:answer_4"
+          ],
+          "settlements": [
+            {
+              "candidate": "has_goal_evidence:answer_4",
+              "goal_link": true
+            }
+          ],
+          "source_link": true,
+          "task": 4
+        },
+        {
+          "deliberation_status": "resolved",
+          "execution_traces_for_goal": [
+            {
+              "candidate": "has_goal_evidence:answer_5",
+              "status": "resolved"
+            }
+          ],
+          "goal_status": "active",
+          "selection": [
+            "has_goal_evidence:answer_5"
+          ],
+          "settlements": [
+            {
+              "candidate": "has_goal_evidence:answer_5",
+              "goal_link": true
+            }
+          ],
+          "source_link": true,
+          "task": 5
+        },
+        {
+          "deliberation_status": "resolved",
+          "execution_traces_for_goal": [
+            {
+              "candidate": "has_goal_evidence:answer_6",
+              "status": "resolved"
+            }
+          ],
+          "goal_status": "active",
+          "selection": [
+            "has_goal_evidence:answer_6"
+          ],
+          "settlements": [
+            {
+              "candidate": "has_goal_evidence:answer_6",
+              "goal_link": true
+            }
+          ],
+          "source_link": true,
+          "task": 6
+        },
+        {
+          "deliberation_status": "resolved",
+          "execution_traces_for_goal": [
+            {
+              "candidate": "has_goal_evidence:answer_7",
+              "status": "resolved"
+            }
+          ],
+          "goal_status": "active",
+          "selection": [
+            "has_goal_evidence:answer_7"
+          ],
+          "settlements": [
+            {
+              "candidate": "has_goal_evidence:answer_7",
+              "goal_link": true
+            }
+          ],
+          "source_link": true,
+          "task": 7
+        }
+      ],
+      "replicate": 2,
+      "reports": [
+        {
+          "progress_steps": 4,
+          "status": "fixed_point"
+        }
+      ],
+      "size": 8,
+      "source_provenance_all_tasks": true,
+      "turns": 0,
+      "wall_ns": 196761
+    },
+    {
+      "arm": "scoped",
+      "complete": true,
+      "construction_ns": 532543,
+      "counters": {
+        "apply_probe_rollbacks": 0,
+        "bindings_cloned": 0,
+        "cand_enum": 1124,
+        "cand_enum_apply_once": 0,
+        "cand_enum_first": 664,
+        "cand_enum_hinted": 0,
+        "cand_enum_local": 432,
+        "cand_enum_repeat": 460,
+        "cand_enum_scan": 692,
+        "cand_reject_bound": 0,
+        "cand_tested": 1124,
+        "dim_infer_arg_calls": 0,
+        "dim_infer_arg_distinct_ordered": 0,
+        "dim_infer_arg_distinct_unordered": 0,
+        "epochs": 16,
+        "epochs_apply_once": 0,
+        "ffi_calls": 16,
+        "ffi_items": 16,
+        "ffi_pyobjects": 0,
+        "graph_writes": 0,
+        "leaf_visits": 48,
+        "pushdown_evals": 808,
+        "pushdown_prunes": 668,
+        "rule_effect_attr_set_attempts": 96,
+        "rule_effect_edge_deletes": 0,
+        "rule_effect_edge_insert_attempts": 64,
+        "rule_effect_node_delete_attempts": 0,
+        "rule_effect_node_inserts": 24,
+        "rule_effect_replace_edge_deletes": 0,
+        "rule_effect_replace_edge_insert_attempts": 0,
+        "rule_enumerations": 328,
+        "rule_enumerations_repeat": 168,
+        "scoped_full_fallback_rule_matches": 104,
+        "scoped_local_rule_matches": 224,
+        "scoped_mt_seeded_rule_matches": 0,
+        "term_eval:And": 384,
+        "term_eval:Argmax": 16,
+        "term_eval:Attr": 1576,
+        "term_eval:Eq": 1312,
+        "term_eval:Filter": 16,
+        "term_eval:Gte": 32,
+        "term_eval:Lit": 1264,
+        "term_eval:Lt": 32,
+        "term_eval:Minus": 8,
+        "term_eval:Neighbours": 8,
+        "term_eval:Not": 32,
+        "term_eval:Plus": 8,
+        "term_eval:Times": 24,
+        "term_eval:Var": 1600,
+        "term_evals_total": 6312,
+        "term_units_total": 0,
+        "term_units_unattributed": 0,
+        "var_collisions": 8,
+        "where_evals": 416,
+        "where_evals_first": 192,
+        "where_evals_repeat": 224,
+        "where_rejects": 352
+      },
+      "cpu_ns": 581390,
+      "expected_projection": true,
+      "graph_digest": "c60fbd40eee73ee03657a35ca431a2f6b5948e62ad7d68c976e29a6ed87ddbcc",
+      "native_extension_sha256": "f5543ca015278bad6c65506a0d7d9acb85b33252e7121cdda1a56df63e8ad27b",
+      "peak_rss_kib": 36852,
+      "pid": 1881998,
+      "projection": [
+        {
+          "deliberation_status": "resolved",
+          "execution_traces_for_goal": [
+            {
+              "candidate": "has_goal_evidence:answer_0",
+              "status": "resolved"
+            }
+          ],
+          "goal_status": "active",
+          "selection": [
+            "has_goal_evidence:answer_0"
+          ],
+          "settlements": [
+            {
+              "candidate": "has_goal_evidence:answer_0",
+              "goal_link": true
+            }
+          ],
+          "source_link": true,
+          "task": 0
+        },
+        {
+          "deliberation_status": "resolved",
+          "execution_traces_for_goal": [
+            {
+              "candidate": "has_goal_evidence:answer_1",
+              "status": "resolved"
+            }
+          ],
+          "goal_status": "active",
+          "selection": [
+            "has_goal_evidence:answer_1"
+          ],
+          "settlements": [
+            {
+              "candidate": "has_goal_evidence:answer_1",
+              "goal_link": true
+            }
+          ],
+          "source_link": true,
+          "task": 1
+        },
+        {
+          "deliberation_status": "resolved",
+          "execution_traces_for_goal": [
+            {
+              "candidate": "has_goal_evidence:answer_2",
+              "status": "resolved"
+            }
+          ],
+          "goal_status": "active",
+          "selection": [
+            "has_goal_evidence:answer_2"
+          ],
+          "settlements": [
+            {
+              "candidate": "has_goal_evidence:answer_2",
+              "goal_link": true
+            }
+          ],
+          "source_link": true,
+          "task": 2
+        },
+        {
+          "deliberation_status": "resolved",
+          "execution_traces_for_goal": [
+            {
+              "candidate": "has_goal_evidence:answer_3",
+              "status": "resolved"
+            }
+          ],
+          "goal_status": "active",
+          "selection": [
+            "has_goal_evidence:answer_3"
+          ],
+          "settlements": [
+            {
+              "candidate": "has_goal_evidence:answer_3",
+              "goal_link": true
+            }
+          ],
+          "source_link": true,
+          "task": 3
+        },
+        {
+          "deliberation_status": "resolved",
+          "execution_traces_for_goal": [
+            {
+              "candidate": "has_goal_evidence:answer_4",
+              "status": "resolved"
+            }
+          ],
+          "goal_status": "active",
+          "selection": [
+            "has_goal_evidence:answer_4"
+          ],
+          "settlements": [
+            {
+              "candidate": "has_goal_evidence:answer_4",
+              "goal_link": true
+            }
+          ],
+          "source_link": true,
+          "task": 4
+        },
+        {
+          "deliberation_status": "resolved",
+          "execution_traces_for_goal": [
+            {
+              "candidate": "has_goal_evidence:answer_5",
+              "status": "resolved"
+            }
+          ],
+          "goal_status": "active",
+          "selection": [
+            "has_goal_evidence:answer_5"
+          ],
+          "settlements": [
+            {
+              "candidate": "has_goal_evidence:answer_5",
+              "goal_link": true
+            }
+          ],
+          "source_link": true,
+          "task": 5
+        },
+        {
+          "deliberation_status": "resolved",
+          "execution_traces_for_goal": [
+            {
+              "candidate": "has_goal_evidence:answer_6",
+              "status": "resolved"
+            }
+          ],
+          "goal_status": "active",
+          "selection": [
+            "has_goal_evidence:answer_6"
+          ],
+          "settlements": [
+            {
+              "candidate": "has_goal_evidence:answer_6",
+              "goal_link": true
+            }
+          ],
+          "source_link": true,
+          "task": 6
+        },
+        {
+          "deliberation_status": "resolved",
+          "execution_traces_for_goal": [
+            {
+              "candidate": "has_goal_evidence:answer_7",
+              "status": "resolved"
+            }
+          ],
+          "goal_status": "active",
+          "selection": [
+            "has_goal_evidence:answer_7"
+          ],
+          "settlements": [
+            {
+              "candidate": "has_goal_evidence:answer_7",
+              "goal_link": true
+            }
+          ],
+          "source_link": true,
+          "task": 7
+        }
+      ],
+      "replicate": 1,
+      "reports": [
+        {
+          "affected_microtheories": [
+            14
+          ],
+          "deferred_effects_pending": false,
+          "hit_progress_budget": false,
+          "progress_steps": 4
+        },
+        {
+          "affected_microtheories": [
+            20
+          ],
+          "deferred_effects_pending": false,
+          "hit_progress_budget": false,
+          "progress_steps": 4
+        },
+        {
+          "affected_microtheories": [
+            26
+          ],
+          "deferred_effects_pending": false,
+          "hit_progress_budget": false,
+          "progress_steps": 4
+        },
+        {
+          "affected_microtheories": [
+            32
+          ],
+          "deferred_effects_pending": false,
+          "hit_progress_budget": false,
+          "progress_steps": 4
+        },
+        {
+          "affected_microtheories": [
+            38
+          ],
+          "deferred_effects_pending": false,
+          "hit_progress_budget": false,
+          "progress_steps": 4
+        },
+        {
+          "affected_microtheories": [
+            44
+          ],
+          "deferred_effects_pending": false,
+          "hit_progress_budget": false,
+          "progress_steps": 4
+        },
+        {
+          "affected_microtheories": [
+            50
+          ],
+          "deferred_effects_pending": false,
+          "hit_progress_budget": false,
+          "progress_steps": 4
+        },
+        {
+          "affected_microtheories": [
+            56
+          ],
+          "deferred_effects_pending": false,
+          "hit_progress_budget": false,
+          "progress_steps": 4
+        },
+        {
+          "affected_microtheories": [],
+          "deferred_effects_pending": false,
+          "hit_progress_budget": false,
+          "progress_steps": 0
+        },
+        {
+          "affected_microtheories": [],
+          "deferred_effects_pending": false,
+          "hit_progress_budget": false,
+          "progress_steps": 0
+        },
+        {
+          "affected_microtheories": [],
+          "deferred_effects_pending": false,
+          "hit_progress_budget": false,
+          "progress_steps": 0
+        },
+        {
+          "affected_microtheories": [],
+          "deferred_effects_pending": false,
+          "hit_progress_budget": false,
+          "progress_steps": 0
+        },
+        {
+          "affected_microtheories": [],
+          "deferred_effects_pending": false,
+          "hit_progress_budget": false,
+          "progress_steps": 0
+        },
+        {
+          "affected_microtheories": [],
+          "deferred_effects_pending": false,
+          "hit_progress_budget": false,
+          "progress_steps": 0
+        },
+        {
+          "affected_microtheories": [],
+          "deferred_effects_pending": false,
+          "hit_progress_budget": false,
+          "progress_steps": 0
+        },
+        {
+          "affected_microtheories": [],
+          "deferred_effects_pending": false,
+          "hit_progress_budget": false,
+          "progress_steps": 0
+        }
+      ],
+      "size": 8,
+      "source_provenance_all_tasks": true,
+      "turns": 16,
+      "wall_ns": 581733
+    },
+    {
+      "arm": "full",
+      "complete": true,
+      "construction_ns": 290791,
+      "counters": {
+        "apply_probe_rollbacks": 0,
+        "bindings_cloned": 16,
+        "cand_enum": 92,
+        "cand_enum_apply_once": 0,
+        "cand_enum_first": 60,
+        "cand_enum_hinted": 0,
+        "cand_enum_local": 24,
+        "cand_enum_repeat": 32,
+        "cand_enum_scan": 68,
+        "cand_reject_bound": 0,
+        "cand_tested": 92,
+        "dim_infer_arg_calls": 0,
+        "dim_infer_arg_distinct_ordered": 0,
+        "dim_infer_arg_distinct_unordered": 0,
+        "epochs": 1,
+        "epochs_apply_once": 0,
+        "ffi_calls": 1,
+        "ffi_items": 1,
+        "ffi_pyobjects": 0,
+        "graph_writes": 0,
+        "leaf_visits": 16,
+        "pushdown_evals": 40,
+        "pushdown_prunes": 16,
+        "rule_effect_attr_set_attempts": 48,
+        "rule_effect_edge_deletes": 0,
+        "rule_effect_edge_insert_attempts": 32,
+        "rule_effect_node_delete_attempts": 0,
+        "rule_effect_node_inserts": 12,
+        "rule_effect_replace_edge_deletes": 0,
+        "rule_effect_replace_edge_insert_attempts": 0,
+        "rule_enumerations": 20,
+        "rule_enumerations_repeat": 10,
+        "scoped_full_fallback_rule_matches": 0,
+        "scoped_local_rule_matches": 0,
+        "scoped_mt_seeded_rule_matches": 0,
+        "term_eval:And": 40,
+        "term_eval:Argmax": 4,
+        "term_eval:Attr": 184,
+        "term_eval:Eq": 112,
+        "term_eval:Filter": 4,
+        "term_eval:Gte": 4,
+        "term_eval:Lit": 104,
+        "term_eval:Lt": 4,
+        "term_eval:Minus": 4,
+        "term_eval:Neighbours": 4,
+        "term_eval:Not": 4,
+        "term_eval:Plus": 4,
+        "term_eval:Times": 12,
+        "term_eval:Var": 192,
+        "term_evals_total": 676,
+        "term_units_total": 0,
+        "term_units_unattributed": 0,
+        "var_collisions": 4,
+        "where_evals": 56,
+        "where_evals_first": 36,
+        "where_evals_repeat": 20,
+        "where_rejects": 32
+      },
+      "cpu_ns": 145790,
+      "expected_projection": true,
+      "graph_digest": "88149df0d8ec7626904e23ac885b86084e8a8438b3d43a45db35a45e22d056f0",
+      "native_extension_sha256": "f5543ca015278bad6c65506a0d7d9acb85b33252e7121cdda1a56df63e8ad27b",
+      "peak_rss_kib": 36404,
+      "pid": 1882025,
+      "projection": [
+        {
+          "deliberation_status": "resolved",
+          "execution_traces_for_goal": [
+            {
+              "candidate": "has_goal_evidence:answer_0",
+              "status": "resolved"
+            }
+          ],
+          "goal_status": "active",
+          "selection": [
+            "has_goal_evidence:answer_0"
+          ],
+          "settlements": [
+            {
+              "candidate": "has_goal_evidence:answer_0",
+              "goal_link": true
+            }
+          ],
+          "source_link": true,
+          "task": 0
+        },
+        {
+          "deliberation_status": "resolved",
+          "execution_traces_for_goal": [
+            {
+              "candidate": "has_goal_evidence:answer_1",
+              "status": "resolved"
+            }
+          ],
+          "goal_status": "active",
+          "selection": [
+            "has_goal_evidence:answer_1"
+          ],
+          "settlements": [
+            {
+              "candidate": "has_goal_evidence:answer_1",
+              "goal_link": true
+            }
+          ],
+          "source_link": true,
+          "task": 1
+        },
+        {
+          "deliberation_status": "resolved",
+          "execution_traces_for_goal": [
+            {
+              "candidate": "has_goal_evidence:answer_2",
+              "status": "resolved"
+            }
+          ],
+          "goal_status": "active",
+          "selection": [
+            "has_goal_evidence:answer_2"
+          ],
+          "settlements": [
+            {
+              "candidate": "has_goal_evidence:answer_2",
+              "goal_link": true
+            }
+          ],
+          "source_link": true,
+          "task": 2
+        },
+        {
+          "deliberation_status": "resolved",
+          "execution_traces_for_goal": [
+            {
+              "candidate": "has_goal_evidence:answer_3",
+              "status": "resolved"
+            }
+          ],
+          "goal_status": "active",
+          "selection": [
+            "has_goal_evidence:answer_3"
+          ],
+          "settlements": [
+            {
+              "candidate": "has_goal_evidence:answer_3",
+              "goal_link": true
+            }
+          ],
+          "source_link": true,
+          "task": 3
+        }
+      ],
+      "replicate": 2,
+      "reports": [
+        {
+          "progress_steps": 4,
+          "status": "fixed_point"
+        }
+      ],
+      "size": 4,
+      "source_provenance_all_tasks": true,
+      "turns": 0,
+      "wall_ns": 147211
+    },
+    {
+      "arm": "scoped",
+      "complete": true,
+      "construction_ns": 537593,
+      "counters": {
+        "apply_probe_rollbacks": 0,
+        "bindings_cloned": 0,
+        "cand_enum": 1124,
+        "cand_enum_apply_once": 0,
+        "cand_enum_first": 664,
+        "cand_enum_hinted": 0,
+        "cand_enum_local": 432,
+        "cand_enum_repeat": 460,
+        "cand_enum_scan": 692,
+        "cand_reject_bound": 0,
+        "cand_tested": 1124,
+        "dim_infer_arg_calls": 0,
+        "dim_infer_arg_distinct_ordered": 0,
+        "dim_infer_arg_distinct_unordered": 0,
+        "epochs": 16,
+        "epochs_apply_once": 0,
+        "ffi_calls": 16,
+        "ffi_items": 16,
+        "ffi_pyobjects": 0,
+        "graph_writes": 0,
+        "leaf_visits": 48,
+        "pushdown_evals": 808,
+        "pushdown_prunes": 668,
+        "rule_effect_attr_set_attempts": 96,
+        "rule_effect_edge_deletes": 0,
+        "rule_effect_edge_insert_attempts": 64,
+        "rule_effect_node_delete_attempts": 0,
+        "rule_effect_node_inserts": 24,
+        "rule_effect_replace_edge_deletes": 0,
+        "rule_effect_replace_edge_insert_attempts": 0,
+        "rule_enumerations": 328,
+        "rule_enumerations_repeat": 168,
+        "scoped_full_fallback_rule_matches": 104,
+        "scoped_local_rule_matches": 224,
+        "scoped_mt_seeded_rule_matches": 0,
+        "term_eval:And": 384,
+        "term_eval:Argmax": 16,
+        "term_eval:Attr": 1576,
+        "term_eval:Eq": 1312,
+        "term_eval:Filter": 16,
+        "term_eval:Gte": 32,
+        "term_eval:Lit": 1264,
+        "term_eval:Lt": 32,
+        "term_eval:Minus": 8,
+        "term_eval:Neighbours": 8,
+        "term_eval:Not": 32,
+        "term_eval:Plus": 8,
+        "term_eval:Times": 24,
+        "term_eval:Var": 1600,
+        "term_evals_total": 6312,
+        "term_units_total": 0,
+        "term_units_unattributed": 0,
+        "var_collisions": 8,
+        "where_evals": 416,
+        "where_evals_first": 192,
+        "where_evals_repeat": 224,
+        "where_rejects": 352
+      },
+      "cpu_ns": 565700,
+      "expected_projection": true,
+      "graph_digest": "c60fbd40eee73ee03657a35ca431a2f6b5948e62ad7d68c976e29a6ed87ddbcc",
+      "native_extension_sha256": "f5543ca015278bad6c65506a0d7d9acb85b33252e7121cdda1a56df63e8ad27b",
+      "peak_rss_kib": 36188,
+      "pid": 1882027,
+      "projection": [
+        {
+          "deliberation_status": "resolved",
+          "execution_traces_for_goal": [
+            {
+              "candidate": "has_goal_evidence:answer_0",
+              "status": "resolved"
+            }
+          ],
+          "goal_status": "active",
+          "selection": [
+            "has_goal_evidence:answer_0"
+          ],
+          "settlements": [
+            {
+              "candidate": "has_goal_evidence:answer_0",
+              "goal_link": true
+            }
+          ],
+          "source_link": true,
+          "task": 0
+        },
+        {
+          "deliberation_status": "resolved",
+          "execution_traces_for_goal": [
+            {
+              "candidate": "has_goal_evidence:answer_1",
+              "status": "resolved"
+            }
+          ],
+          "goal_status": "active",
+          "selection": [
+            "has_goal_evidence:answer_1"
+          ],
+          "settlements": [
+            {
+              "candidate": "has_goal_evidence:answer_1",
+              "goal_link": true
+            }
+          ],
+          "source_link": true,
+          "task": 1
+        },
+        {
+          "deliberation_status": "resolved",
+          "execution_traces_for_goal": [
+            {
+              "candidate": "has_goal_evidence:answer_2",
+              "status": "resolved"
+            }
+          ],
+          "goal_status": "active",
+          "selection": [
+            "has_goal_evidence:answer_2"
+          ],
+          "settlements": [
+            {
+              "candidate": "has_goal_evidence:answer_2",
+              "goal_link": true
+            }
+          ],
+          "source_link": true,
+          "task": 2
+        },
+        {
+          "deliberation_status": "resolved",
+          "execution_traces_for_goal": [
+            {
+              "candidate": "has_goal_evidence:answer_3",
+              "status": "resolved"
+            }
+          ],
+          "goal_status": "active",
+          "selection": [
+            "has_goal_evidence:answer_3"
+          ],
+          "settlements": [
+            {
+              "candidate": "has_goal_evidence:answer_3",
+              "goal_link": true
+            }
+          ],
+          "source_link": true,
+          "task": 3
+        },
+        {
+          "deliberation_status": "resolved",
+          "execution_traces_for_goal": [
+            {
+              "candidate": "has_goal_evidence:answer_4",
+              "status": "resolved"
+            }
+          ],
+          "goal_status": "active",
+          "selection": [
+            "has_goal_evidence:answer_4"
+          ],
+          "settlements": [
+            {
+              "candidate": "has_goal_evidence:answer_4",
+              "goal_link": true
+            }
+          ],
+          "source_link": true,
+          "task": 4
+        },
+        {
+          "deliberation_status": "resolved",
+          "execution_traces_for_goal": [
+            {
+              "candidate": "has_goal_evidence:answer_5",
+              "status": "resolved"
+            }
+          ],
+          "goal_status": "active",
+          "selection": [
+            "has_goal_evidence:answer_5"
+          ],
+          "settlements": [
+            {
+              "candidate": "has_goal_evidence:answer_5",
+              "goal_link": true
+            }
+          ],
+          "source_link": true,
+          "task": 5
+        },
+        {
+          "deliberation_status": "resolved",
+          "execution_traces_for_goal": [
+            {
+              "candidate": "has_goal_evidence:answer_6",
+              "status": "resolved"
+            }
+          ],
+          "goal_status": "active",
+          "selection": [
+            "has_goal_evidence:answer_6"
+          ],
+          "settlements": [
+            {
+              "candidate": "has_goal_evidence:answer_6",
+              "goal_link": true
+            }
+          ],
+          "source_link": true,
+          "task": 6
+        },
+        {
+          "deliberation_status": "resolved",
+          "execution_traces_for_goal": [
+            {
+              "candidate": "has_goal_evidence:answer_7",
+              "status": "resolved"
+            }
+          ],
+          "goal_status": "active",
+          "selection": [
+            "has_goal_evidence:answer_7"
+          ],
+          "settlements": [
+            {
+              "candidate": "has_goal_evidence:answer_7",
+              "goal_link": true
+            }
+          ],
+          "source_link": true,
+          "task": 7
+        }
+      ],
+      "replicate": 2,
+      "reports": [
+        {
+          "affected_microtheories": [
+            14
+          ],
+          "deferred_effects_pending": false,
+          "hit_progress_budget": false,
+          "progress_steps": 4
+        },
+        {
+          "affected_microtheories": [
+            20
+          ],
+          "deferred_effects_pending": false,
+          "hit_progress_budget": false,
+          "progress_steps": 4
+        },
+        {
+          "affected_microtheories": [
+            26
+          ],
+          "deferred_effects_pending": false,
+          "hit_progress_budget": false,
+          "progress_steps": 4
+        },
+        {
+          "affected_microtheories": [
+            32
+          ],
+          "deferred_effects_pending": false,
+          "hit_progress_budget": false,
+          "progress_steps": 4
+        },
+        {
+          "affected_microtheories": [
+            38
+          ],
+          "deferred_effects_pending": false,
+          "hit_progress_budget": false,
+          "progress_steps": 4
+        },
+        {
+          "affected_microtheories": [
+            44
+          ],
+          "deferred_effects_pending": false,
+          "hit_progress_budget": false,
+          "progress_steps": 4
+        },
+        {
+          "affected_microtheories": [
+            50
+          ],
+          "deferred_effects_pending": false,
+          "hit_progress_budget": false,
+          "progress_steps": 4
+        },
+        {
+          "affected_microtheories": [
+            56
+          ],
+          "deferred_effects_pending": false,
+          "hit_progress_budget": false,
+          "progress_steps": 4
+        },
+        {
+          "affected_microtheories": [],
+          "deferred_effects_pending": false,
+          "hit_progress_budget": false,
+          "progress_steps": 0
+        },
+        {
+          "affected_microtheories": [],
+          "deferred_effects_pending": false,
+          "hit_progress_budget": false,
+          "progress_steps": 0
+        },
+        {
+          "affected_microtheories": [],
+          "deferred_effects_pending": false,
+          "hit_progress_budget": false,
+          "progress_steps": 0
+        },
+        {
+          "affected_microtheories": [],
+          "deferred_effects_pending": false,
+          "hit_progress_budget": false,
+          "progress_steps": 0
+        },
+        {
+          "affected_microtheories": [],
+          "deferred_effects_pending": false,
+          "hit_progress_budget": false,
+          "progress_steps": 0
+        },
+        {
+          "affected_microtheories": [],
+          "deferred_effects_pending": false,
+          "hit_progress_budget": false,
+          "progress_steps": 0
+        },
+        {
+          "affected_microtheories": [],
+          "deferred_effects_pending": false,
+          "hit_progress_budget": false,
+          "progress_steps": 0
+        },
+        {
+          "affected_microtheories": [],
+          "deferred_effects_pending": false,
+          "hit_progress_budget": false,
+          "progress_steps": 0
+        }
+      ],
+      "size": 8,
+      "source_provenance_all_tasks": true,
+      "turns": 16,
+      "wall_ns": 566803
+    },
+    {
+      "arm": "full",
+      "complete": true,
+      "construction_ns": 291052,
+      "counters": {
+        "apply_probe_rollbacks": 0,
+        "bindings_cloned": 16,
+        "cand_enum": 92,
+        "cand_enum_apply_once": 0,
+        "cand_enum_first": 60,
+        "cand_enum_hinted": 0,
+        "cand_enum_local": 24,
+        "cand_enum_repeat": 32,
+        "cand_enum_scan": 68,
+        "cand_reject_bound": 0,
+        "cand_tested": 92,
+        "dim_infer_arg_calls": 0,
+        "dim_infer_arg_distinct_ordered": 0,
+        "dim_infer_arg_distinct_unordered": 0,
+        "epochs": 1,
+        "epochs_apply_once": 0,
+        "ffi_calls": 1,
+        "ffi_items": 1,
+        "ffi_pyobjects": 0,
+        "graph_writes": 0,
+        "leaf_visits": 16,
+        "pushdown_evals": 40,
+        "pushdown_prunes": 16,
+        "rule_effect_attr_set_attempts": 48,
+        "rule_effect_edge_deletes": 0,
+        "rule_effect_edge_insert_attempts": 32,
+        "rule_effect_node_delete_attempts": 0,
+        "rule_effect_node_inserts": 12,
+        "rule_effect_replace_edge_deletes": 0,
+        "rule_effect_replace_edge_insert_attempts": 0,
+        "rule_enumerations": 20,
+        "rule_enumerations_repeat": 10,
+        "scoped_full_fallback_rule_matches": 0,
+        "scoped_local_rule_matches": 0,
+        "scoped_mt_seeded_rule_matches": 0,
+        "term_eval:And": 40,
+        "term_eval:Argmax": 4,
+        "term_eval:Attr": 184,
+        "term_eval:Eq": 112,
+        "term_eval:Filter": 4,
+        "term_eval:Gte": 4,
+        "term_eval:Lit": 104,
+        "term_eval:Lt": 4,
+        "term_eval:Minus": 4,
+        "term_eval:Neighbours": 4,
+        "term_eval:Not": 4,
+        "term_eval:Plus": 4,
+        "term_eval:Times": 12,
+        "term_eval:Var": 192,
+        "term_evals_total": 676,
+        "term_units_total": 0,
+        "term_units_unattributed": 0,
+        "var_collisions": 4,
+        "where_evals": 56,
+        "where_evals_first": 36,
+        "where_evals_repeat": 20,
+        "where_rejects": 32
+      },
+      "cpu_ns": 153690,
+      "expected_projection": true,
+      "graph_digest": "88149df0d8ec7626904e23ac885b86084e8a8438b3d43a45db35a45e22d056f0",
+      "native_extension_sha256": "f5543ca015278bad6c65506a0d7d9acb85b33252e7121cdda1a56df63e8ad27b",
+      "peak_rss_kib": 36588,
+      "pid": 1882052,
+      "projection": [
+        {
+          "deliberation_status": "resolved",
+          "execution_traces_for_goal": [
+            {
+              "candidate": "has_goal_evidence:answer_0",
+              "status": "resolved"
+            }
+          ],
+          "goal_status": "active",
+          "selection": [
+            "has_goal_evidence:answer_0"
+          ],
+          "settlements": [
+            {
+              "candidate": "has_goal_evidence:answer_0",
+              "goal_link": true
+            }
+          ],
+          "source_link": true,
+          "task": 0
+        },
+        {
+          "deliberation_status": "resolved",
+          "execution_traces_for_goal": [
+            {
+              "candidate": "has_goal_evidence:answer_1",
+              "status": "resolved"
+            }
+          ],
+          "goal_status": "active",
+          "selection": [
+            "has_goal_evidence:answer_1"
+          ],
+          "settlements": [
+            {
+              "candidate": "has_goal_evidence:answer_1",
+              "goal_link": true
+            }
+          ],
+          "source_link": true,
+          "task": 1
+        },
+        {
+          "deliberation_status": "resolved",
+          "execution_traces_for_goal": [
+            {
+              "candidate": "has_goal_evidence:answer_2",
+              "status": "resolved"
+            }
+          ],
+          "goal_status": "active",
+          "selection": [
+            "has_goal_evidence:answer_2"
+          ],
+          "settlements": [
+            {
+              "candidate": "has_goal_evidence:answer_2",
+              "goal_link": true
+            }
+          ],
+          "source_link": true,
+          "task": 2
+        },
+        {
+          "deliberation_status": "resolved",
+          "execution_traces_for_goal": [
+            {
+              "candidate": "has_goal_evidence:answer_3",
+              "status": "resolved"
+            }
+          ],
+          "goal_status": "active",
+          "selection": [
+            "has_goal_evidence:answer_3"
+          ],
+          "settlements": [
+            {
+              "candidate": "has_goal_evidence:answer_3",
+              "goal_link": true
+            }
+          ],
+          "source_link": true,
+          "task": 3
+        }
+      ],
+      "replicate": 1,
+      "reports": [
+        {
+          "progress_steps": 4,
+          "status": "fixed_point"
+        }
+      ],
+      "size": 4,
+      "source_provenance_all_tasks": true,
+      "turns": 0,
+      "wall_ns": 154351
+    },
+    {
+      "arm": "scoped",
+      "complete": true,
+      "construction_ns": 171091,
+      "counters": {
+        "apply_probe_rollbacks": 0,
+        "bindings_cloned": 0,
+        "cand_enum": 155,
+        "cand_enum_apply_once": 0,
+        "cand_enum_first": 82,
+        "cand_enum_hinted": 0,
+        "cand_enum_local": 108,
+        "cand_enum_repeat": 73,
+        "cand_enum_scan": 47,
+        "cand_reject_bound": 0,
+        "cand_tested": 155,
+        "dim_infer_arg_calls": 0,
+        "dim_infer_arg_distinct_ordered": 0,
+        "dim_infer_arg_distinct_unordered": 0,
+        "epochs": 4,
+        "epochs_apply_once": 0,
+        "ffi_calls": 4,
+        "ffi_items": 4,
+        "ffi_pyobjects": 0,
+        "graph_writes": 0,
+        "leaf_visits": 12,
+        "pushdown_evals": 58,
+        "pushdown_prunes": 41,
+        "rule_effect_attr_set_attempts": 24,
+        "rule_effect_edge_deletes": 0,
+        "rule_effect_edge_insert_attempts": 16,
+        "rule_effect_node_delete_attempts": 0,
+        "rule_effect_node_inserts": 6,
+        "rule_effect_replace_edge_deletes": 0,
+        "rule_effect_replace_edge_insert_attempts": 0,
+        "rule_enumerations": 82,
+        "rule_enumerations_repeat": 42,
+        "scoped_full_fallback_rule_matches": 26,
+        "scoped_local_rule_matches": 56,
+        "scoped_mt_seeded_rule_matches": 0,
+        "term_eval:And": 96,
+        "term_eval:Argmax": 4,
+        "term_eval:Attr": 250,
+        "term_eval:Eq": 184,
+        "term_eval:Filter": 4,
+        "term_eval:Gte": 8,
+        "term_eval:Lit": 172,
+        "term_eval:Lt": 8,
+        "term_eval:Minus": 2,
+        "term_eval:Neighbours": 2,
+        "term_eval:Not": 8,
+        "term_eval:Plus": 2,
+        "term_eval:Times": 6,
+        "term_eval:Var": 256,
+        "term_evals_total": 1002,
+        "term_units_total": 0,
+        "term_units_unattributed": 0,
+        "var_collisions": 2,
+        "where_evals": 104,
+        "where_evals_first": 48,
+        "where_evals_repeat": 56,
+        "where_rejects": 88
+      },
+      "cpu_ns": 194090,
+      "expected_projection": true,
+      "graph_digest": "23c094ed9285a8845fd33f374b679a74a2b3837277e9c4df82334d3d99bc91dc",
+      "native_extension_sha256": "f5543ca015278bad6c65506a0d7d9acb85b33252e7121cdda1a56df63e8ad27b",
+      "peak_rss_kib": 36844,
+      "pid": 1882060,
+      "projection": [
+        {
+          "deliberation_status": "resolved",
+          "execution_traces_for_goal": [
+            {
+              "candidate": "has_goal_evidence:answer_0",
+              "status": "resolved"
+            }
+          ],
+          "goal_status": "active",
+          "selection": [
+            "has_goal_evidence:answer_0"
+          ],
+          "settlements": [
+            {
+              "candidate": "has_goal_evidence:answer_0",
+              "goal_link": true
+            }
+          ],
+          "source_link": true,
+          "task": 0
+        },
+        {
+          "deliberation_status": "resolved",
+          "execution_traces_for_goal": [
+            {
+              "candidate": "has_goal_evidence:answer_1",
+              "status": "resolved"
+            }
+          ],
+          "goal_status": "active",
+          "selection": [
+            "has_goal_evidence:answer_1"
+          ],
+          "settlements": [
+            {
+              "candidate": "has_goal_evidence:answer_1",
+              "goal_link": true
+            }
+          ],
+          "source_link": true,
+          "task": 1
+        }
+      ],
+      "replicate": 1,
+      "reports": [
+        {
+          "affected_microtheories": [
+            14
+          ],
+          "deferred_effects_pending": false,
+          "hit_progress_budget": false,
+          "progress_steps": 4
+        },
+        {
+          "affected_microtheories": [
+            20
+          ],
+          "deferred_effects_pending": false,
+          "hit_progress_budget": false,
+          "progress_steps": 4
+        },
+        {
+          "affected_microtheories": [],
+          "deferred_effects_pending": false,
+          "hit_progress_budget": false,
+          "progress_steps": 0
+        },
+        {
+          "affected_microtheories": [],
+          "deferred_effects_pending": false,
+          "hit_progress_budget": false,
+          "progress_steps": 0
+        }
+      ],
+      "size": 2,
+      "source_provenance_all_tasks": true,
+      "turns": 4,
+      "wall_ns": 194781
+    },
+    {
+      "arm": "scoped",
+      "complete": true,
+      "construction_ns": 284602,
+      "counters": {
+        "apply_probe_rollbacks": 0,
+        "bindings_cloned": 0,
+        "cand_enum": 394,
+        "cand_enum_apply_once": 0,
+        "cand_enum_first": 220,
+        "cand_enum_hinted": 0,
+        "cand_enum_local": 216,
+        "cand_enum_repeat": 174,
+        "cand_enum_scan": 178,
+        "cand_reject_bound": 0,
+        "cand_tested": 394,
+        "dim_infer_arg_calls": 0,
+        "dim_infer_arg_distinct_ordered": 0,
+        "dim_infer_arg_distinct_unordered": 0,
+        "epochs": 8,
+        "epochs_apply_once": 0,
+        "ffi_calls": 8,
+        "ffi_items": 8,
+        "ffi_pyobjects": 0,
+        "graph_writes": 0,
+        "leaf_visits": 24,
+        "pushdown_evals": 212,
+        "pushdown_prunes": 166,
+        "rule_effect_attr_set_attempts": 48,
+        "rule_effect_edge_deletes": 0,
+        "rule_effect_edge_insert_attempts": 32,
+        "rule_effect_node_delete_attempts": 0,
+        "rule_effect_node_inserts": 12,
+        "rule_effect_replace_edge_deletes": 0,
+        "rule_effect_replace_edge_insert_attempts": 0,
+        "rule_enumerations": 164,
+        "rule_enumerations_repeat": 84,
+        "scoped_full_fallback_rule_matches": 52,
+        "scoped_local_rule_matches": 112,
+        "scoped_mt_seeded_rule_matches": 0,
+        "term_eval:And": 192,
+        "term_eval:Argmax": 8,
+        "term_eval:Attr": 596,
+        "term_eval:Eq": 464,
+        "term_eval:Filter": 8,
+        "term_eval:Gte": 16,
+        "term_eval:Lit": 440,
+        "term_eval:Lt": 16,
+        "term_eval:Minus": 4,
+        "term_eval:Neighbours": 4,
+        "term_eval:Not": 16,
+        "term_eval:Plus": 4,
+        "term_eval:Times": 12,
+        "term_eval:Var": 608,
+        "term_evals_total": 2388,
+        "term_units_total": 0,
+        "term_units_unattributed": 0,
+        "var_collisions": 4,
+        "where_evals": 208,
+        "where_evals_first": 96,
+        "where_evals_repeat": 112,
+        "where_rejects": 176
+      },
+      "cpu_ns": 311031,
+      "expected_projection": true,
+      "graph_digest": "59849e4f6068e6ea2a9a14ce55c14aceffea7abbd38839c8c97172305df7f777",
+      "native_extension_sha256": "f5543ca015278bad6c65506a0d7d9acb85b33252e7121cdda1a56df63e8ad27b",
+      "peak_rss_kib": 36280,
+      "pid": 1882090,
+      "projection": [
+        {
+          "deliberation_status": "resolved",
+          "execution_traces_for_goal": [
+            {
+              "candidate": "has_goal_evidence:answer_0",
+              "status": "resolved"
+            }
+          ],
+          "goal_status": "active",
+          "selection": [
+            "has_goal_evidence:answer_0"
+          ],
+          "settlements": [
+            {
+              "candidate": "has_goal_evidence:answer_0",
+              "goal_link": true
+            }
+          ],
+          "source_link": true,
+          "task": 0
+        },
+        {
+          "deliberation_status": "resolved",
+          "execution_traces_for_goal": [
+            {
+              "candidate": "has_goal_evidence:answer_1",
+              "status": "resolved"
+            }
+          ],
+          "goal_status": "active",
+          "selection": [
+            "has_goal_evidence:answer_1"
+          ],
+          "settlements": [
+            {
+              "candidate": "has_goal_evidence:answer_1",
+              "goal_link": true
+            }
+          ],
+          "source_link": true,
+          "task": 1
+        },
+        {
+          "deliberation_status": "resolved",
+          "execution_traces_for_goal": [
+            {
+              "candidate": "has_goal_evidence:answer_2",
+              "status": "resolved"
+            }
+          ],
+          "goal_status": "active",
+          "selection": [
+            "has_goal_evidence:answer_2"
+          ],
+          "settlements": [
+            {
+              "candidate": "has_goal_evidence:answer_2",
+              "goal_link": true
+            }
+          ],
+          "source_link": true,
+          "task": 2
+        },
+        {
+          "deliberation_status": "resolved",
+          "execution_traces_for_goal": [
+            {
+              "candidate": "has_goal_evidence:answer_3",
+              "status": "resolved"
+            }
+          ],
+          "goal_status": "active",
+          "selection": [
+            "has_goal_evidence:answer_3"
+          ],
+          "settlements": [
+            {
+              "candidate": "has_goal_evidence:answer_3",
+              "goal_link": true
+            }
+          ],
+          "source_link": true,
+          "task": 3
+        }
+      ],
+      "replicate": 1,
+      "reports": [
+        {
+          "affected_microtheories": [
+            14
+          ],
+          "deferred_effects_pending": false,
+          "hit_progress_budget": false,
+          "progress_steps": 4
+        },
+        {
+          "affected_microtheories": [
+            20
+          ],
+          "deferred_effects_pending": false,
+          "hit_progress_budget": false,
+          "progress_steps": 4
+        },
+        {
+          "affected_microtheories": [
+            26
+          ],
+          "deferred_effects_pending": false,
+          "hit_progress_budget": false,
+          "progress_steps": 4
+        },
+        {
+          "affected_microtheories": [
+            32
+          ],
+          "deferred_effects_pending": false,
+          "hit_progress_budget": false,
+          "progress_steps": 4
+        },
+        {
+          "affected_microtheories": [],
+          "deferred_effects_pending": false,
+          "hit_progress_budget": false,
+          "progress_steps": 0
+        },
+        {
+          "affected_microtheories": [],
+          "deferred_effects_pending": false,
+          "hit_progress_budget": false,
+          "progress_steps": 0
+        },
+        {
+          "affected_microtheories": [],
+          "deferred_effects_pending": false,
+          "hit_progress_budget": false,
+          "progress_steps": 0
+        },
+        {
+          "affected_microtheories": [],
+          "deferred_effects_pending": false,
+          "hit_progress_budget": false,
+          "progress_steps": 0
+        }
+      ],
+      "size": 4,
+      "source_provenance_all_tasks": true,
+      "turns": 8,
+      "wall_ns": 311671
+    },
+    {
+      "arm": "full",
+      "complete": true,
+      "construction_ns": 176041,
+      "counters": {
+        "apply_probe_rollbacks": 0,
+        "bindings_cloned": 8,
+        "cand_enum": 46,
+        "cand_enum_apply_once": 0,
+        "cand_enum_first": 30,
+        "cand_enum_hinted": 0,
+        "cand_enum_local": 12,
+        "cand_enum_repeat": 16,
+        "cand_enum_scan": 34,
+        "cand_reject_bound": 0,
+        "cand_tested": 46,
+        "dim_infer_arg_calls": 0,
+        "dim_infer_arg_distinct_ordered": 0,
+        "dim_infer_arg_distinct_unordered": 0,
+        "epochs": 1,
+        "epochs_apply_once": 0,
+        "ffi_calls": 1,
+        "ffi_items": 1,
+        "ffi_pyobjects": 0,
+        "graph_writes": 0,
+        "leaf_visits": 8,
+        "pushdown_evals": 20,
+        "pushdown_prunes": 8,
+        "rule_effect_attr_set_attempts": 24,
+        "rule_effect_edge_deletes": 0,
+        "rule_effect_edge_insert_attempts": 16,
+        "rule_effect_node_delete_attempts": 0,
+        "rule_effect_node_inserts": 6,
+        "rule_effect_replace_edge_deletes": 0,
+        "rule_effect_replace_edge_insert_attempts": 0,
+        "rule_enumerations": 20,
+        "rule_enumerations_repeat": 10,
+        "scoped_full_fallback_rule_matches": 0,
+        "scoped_local_rule_matches": 0,
+        "scoped_mt_seeded_rule_matches": 0,
+        "term_eval:And": 20,
+        "term_eval:Argmax": 2,
+        "term_eval:Attr": 92,
+        "term_eval:Eq": 56,
+        "term_eval:Filter": 2,
+        "term_eval:Gte": 2,
+        "term_eval:Lit": 52,
+        "term_eval:Lt": 2,
+        "term_eval:Minus": 2,
+        "term_eval:Neighbours": 2,
+        "term_eval:Not": 2,
+        "term_eval:Plus": 2,
+        "term_eval:Times": 6,
+        "term_eval:Var": 96,
+        "term_evals_total": 338,
+        "term_units_total": 0,
+        "term_units_unattributed": 0,
+        "var_collisions": 2,
+        "where_evals": 28,
+        "where_evals_first": 18,
+        "where_evals_repeat": 10,
+        "where_rejects": 16
+      },
+      "cpu_ns": 133510,
+      "expected_projection": true,
+      "graph_digest": "9a77315788bb3c8fa4e93b84fb4f439929f4951b94da72ba4ae205b19a8af507",
+      "native_extension_sha256": "f5543ca015278bad6c65506a0d7d9acb85b33252e7121cdda1a56df63e8ad27b",
+      "peak_rss_kib": 36188,
+      "pid": 1882094,
+      "projection": [
+        {
+          "deliberation_status": "resolved",
+          "execution_traces_for_goal": [
+            {
+              "candidate": "has_goal_evidence:answer_0",
+              "status": "resolved"
+            }
+          ],
+          "goal_status": "active",
+          "selection": [
+            "has_goal_evidence:answer_0"
+          ],
+          "settlements": [
+            {
+              "candidate": "has_goal_evidence:answer_0",
+              "goal_link": true
+            }
+          ],
+          "source_link": true,
+          "task": 0
+        },
+        {
+          "deliberation_status": "resolved",
+          "execution_traces_for_goal": [
+            {
+              "candidate": "has_goal_evidence:answer_1",
+              "status": "resolved"
+            }
+          ],
+          "goal_status": "active",
+          "selection": [
+            "has_goal_evidence:answer_1"
+          ],
+          "settlements": [
+            {
+              "candidate": "has_goal_evidence:answer_1",
+              "goal_link": true
+            }
+          ],
+          "source_link": true,
+          "task": 1
+        }
+      ],
+      "replicate": 0,
+      "reports": [
+        {
+          "progress_steps": 4,
+          "status": "fixed_point"
+        }
+      ],
+      "size": 2,
+      "source_provenance_all_tasks": true,
+      "turns": 0,
+      "wall_ns": 134571
+    },
+    {
+      "arm": "scoped",
+      "complete": true,
+      "construction_ns": 319471,
+      "counters": {
+        "apply_probe_rollbacks": 0,
+        "bindings_cloned": 0,
+        "cand_enum": 155,
+        "cand_enum_apply_once": 0,
+        "cand_enum_first": 82,
+        "cand_enum_hinted": 0,
+        "cand_enum_local": 108,
+        "cand_enum_repeat": 73,
+        "cand_enum_scan": 47,
+        "cand_reject_bound": 0,
+        "cand_tested": 155,
+        "dim_infer_arg_calls": 0,
+        "dim_infer_arg_distinct_ordered": 0,
+        "dim_infer_arg_distinct_unordered": 0,
+        "epochs": 4,
+        "epochs_apply_once": 0,
+        "ffi_calls": 4,
+        "ffi_items": 4,
+        "ffi_pyobjects": 0,
+        "graph_writes": 0,
+        "leaf_visits": 12,
+        "pushdown_evals": 58,
+        "pushdown_prunes": 41,
+        "rule_effect_attr_set_attempts": 24,
+        "rule_effect_edge_deletes": 0,
+        "rule_effect_edge_insert_attempts": 16,
+        "rule_effect_node_delete_attempts": 0,
+        "rule_effect_node_inserts": 6,
+        "rule_effect_replace_edge_deletes": 0,
+        "rule_effect_replace_edge_insert_attempts": 0,
+        "rule_enumerations": 82,
+        "rule_enumerations_repeat": 42,
+        "scoped_full_fallback_rule_matches": 26,
+        "scoped_local_rule_matches": 56,
+        "scoped_mt_seeded_rule_matches": 0,
+        "term_eval:And": 96,
+        "term_eval:Argmax": 4,
+        "term_eval:Attr": 250,
+        "term_eval:Eq": 184,
+        "term_eval:Filter": 4,
+        "term_eval:Gte": 8,
+        "term_eval:Lit": 172,
+        "term_eval:Lt": 8,
+        "term_eval:Minus": 2,
+        "term_eval:Neighbours": 2,
+        "term_eval:Not": 8,
+        "term_eval:Plus": 2,
+        "term_eval:Times": 6,
+        "term_eval:Var": 256,
+        "term_evals_total": 1002,
+        "term_units_total": 0,
+        "term_units_unattributed": 0,
+        "var_collisions": 2,
+        "where_evals": 104,
+        "where_evals_first": 48,
+        "where_evals_repeat": 56,
+        "where_rejects": 88
+      },
+      "cpu_ns": 316540,
+      "expected_projection": true,
+      "graph_digest": "23c094ed9285a8845fd33f374b679a74a2b3837277e9c4df82334d3d99bc91dc",
+      "native_extension_sha256": "f5543ca015278bad6c65506a0d7d9acb85b33252e7121cdda1a56df63e8ad27b",
+      "peak_rss_kib": 36284,
+      "pid": 1882097,
+      "projection": [
+        {
+          "deliberation_status": "resolved",
+          "execution_traces_for_goal": [
+            {
+              "candidate": "has_goal_evidence:answer_0",
+              "status": "resolved"
+            }
+          ],
+          "goal_status": "active",
+          "selection": [
+            "has_goal_evidence:answer_0"
+          ],
+          "settlements": [
+            {
+              "candidate": "has_goal_evidence:answer_0",
+              "goal_link": true
+            }
+          ],
+          "source_link": true,
+          "task": 0
+        },
+        {
+          "deliberation_status": "resolved",
+          "execution_traces_for_goal": [
+            {
+              "candidate": "has_goal_evidence:answer_1",
+              "status": "resolved"
+            }
+          ],
+          "goal_status": "active",
+          "selection": [
+            "has_goal_evidence:answer_1"
+          ],
+          "settlements": [
+            {
+              "candidate": "has_goal_evidence:answer_1",
+              "goal_link": true
+            }
+          ],
+          "source_link": true,
+          "task": 1
+        }
+      ],
+      "replicate": 0,
+      "reports": [
+        {
+          "affected_microtheories": [
+            14
+          ],
+          "deferred_effects_pending": false,
+          "hit_progress_budget": false,
+          "progress_steps": 4
+        },
+        {
+          "affected_microtheories": [
+            20
+          ],
+          "deferred_effects_pending": false,
+          "hit_progress_budget": false,
+          "progress_steps": 4
+        },
+        {
+          "affected_microtheories": [],
+          "deferred_effects_pending": false,
+          "hit_progress_budget": false,
+          "progress_steps": 0
+        },
+        {
+          "affected_microtheories": [],
+          "deferred_effects_pending": false,
+          "hit_progress_budget": false,
+          "progress_steps": 0
+        }
+      ],
+      "size": 2,
+      "source_provenance_all_tasks": true,
+      "turns": 4,
+      "wall_ns": 317202
+    },
+    {
+      "arm": "full",
+      "complete": true,
+      "construction_ns": 187991,
+      "counters": {
+        "apply_probe_rollbacks": 0,
+        "bindings_cloned": 8,
+        "cand_enum": 46,
+        "cand_enum_apply_once": 0,
+        "cand_enum_first": 30,
+        "cand_enum_hinted": 0,
+        "cand_enum_local": 12,
+        "cand_enum_repeat": 16,
+        "cand_enum_scan": 34,
+        "cand_reject_bound": 0,
+        "cand_tested": 46,
+        "dim_infer_arg_calls": 0,
+        "dim_infer_arg_distinct_ordered": 0,
+        "dim_infer_arg_distinct_unordered": 0,
+        "epochs": 1,
+        "epochs_apply_once": 0,
+        "ffi_calls": 1,
+        "ffi_items": 1,
+        "ffi_pyobjects": 0,
+        "graph_writes": 0,
+        "leaf_visits": 8,
+        "pushdown_evals": 20,
+        "pushdown_prunes": 8,
+        "rule_effect_attr_set_attempts": 24,
+        "rule_effect_edge_deletes": 0,
+        "rule_effect_edge_insert_attempts": 16,
+        "rule_effect_node_delete_attempts": 0,
+        "rule_effect_node_inserts": 6,
+        "rule_effect_replace_edge_deletes": 0,
+        "rule_effect_replace_edge_insert_attempts": 0,
+        "rule_enumerations": 20,
+        "rule_enumerations_repeat": 10,
+        "scoped_full_fallback_rule_matches": 0,
+        "scoped_local_rule_matches": 0,
+        "scoped_mt_seeded_rule_matches": 0,
+        "term_eval:And": 20,
+        "term_eval:Argmax": 2,
+        "term_eval:Attr": 92,
+        "term_eval:Eq": 56,
+        "term_eval:Filter": 2,
+        "term_eval:Gte": 2,
+        "term_eval:Lit": 52,
+        "term_eval:Lt": 2,
+        "term_eval:Minus": 2,
+        "term_eval:Neighbours": 2,
+        "term_eval:Not": 2,
+        "term_eval:Plus": 2,
+        "term_eval:Times": 6,
+        "term_eval:Var": 96,
+        "term_evals_total": 338,
+        "term_units_total": 0,
+        "term_units_unattributed": 0,
+        "var_collisions": 2,
+        "where_evals": 28,
+        "where_evals_first": 18,
+        "where_evals_repeat": 10,
+        "where_rejects": 16
+      },
+      "cpu_ns": 128810,
+      "expected_projection": true,
+      "graph_digest": "9a77315788bb3c8fa4e93b84fb4f439929f4951b94da72ba4ae205b19a8af507",
+      "native_extension_sha256": "f5543ca015278bad6c65506a0d7d9acb85b33252e7121cdda1a56df63e8ad27b",
+      "peak_rss_kib": 36572,
+      "pid": 1882132,
+      "projection": [
+        {
+          "deliberation_status": "resolved",
+          "execution_traces_for_goal": [
+            {
+              "candidate": "has_goal_evidence:answer_0",
+              "status": "resolved"
+            }
+          ],
+          "goal_status": "active",
+          "selection": [
+            "has_goal_evidence:answer_0"
+          ],
+          "settlements": [
+            {
+              "candidate": "has_goal_evidence:answer_0",
+              "goal_link": true
+            }
+          ],
+          "source_link": true,
+          "task": 0
+        },
+        {
+          "deliberation_status": "resolved",
+          "execution_traces_for_goal": [
+            {
+              "candidate": "has_goal_evidence:answer_1",
+              "status": "resolved"
+            }
+          ],
+          "goal_status": "active",
+          "selection": [
+            "has_goal_evidence:answer_1"
+          ],
+          "settlements": [
+            {
+              "candidate": "has_goal_evidence:answer_1",
+              "goal_link": true
+            }
+          ],
+          "source_link": true,
+          "task": 1
+        }
+      ],
+      "replicate": 1,
+      "reports": [
+        {
+          "progress_steps": 4,
+          "status": "fixed_point"
+        }
+      ],
+      "size": 2,
+      "source_provenance_all_tasks": true,
+      "turns": 0,
+      "wall_ns": 130081
+    }
+  ],
+  "schedule": [
+    [
+      8,
+      1,
+      "full"
+    ],
+    [
+      4,
+      0,
+      "full"
+    ],
+    [
+      4,
+      2,
+      "scoped"
+    ],
+    [
+      2,
+      2,
+      "full"
+    ],
+    [
+      4,
+      0,
+      "scoped"
+    ],
+    [
+      8,
+      0,
+      "full"
+    ],
+    [
+      8,
+      0,
+      "scoped"
+    ],
+    [
+      2,
+      2,
+      "scoped"
+    ],
+    [
+      8,
+      2,
+      "full"
+    ],
+    [
+      8,
+      1,
+      "scoped"
+    ],
+    [
+      4,
+      2,
+      "full"
+    ],
+    [
+      8,
+      2,
+      "scoped"
+    ],
+    [
+      4,
+      1,
+      "full"
+    ],
+    [
+      2,
+      1,
+      "scoped"
+    ],
+    [
+      4,
+      1,
+      "scoped"
+    ],
+    [
+      2,
+      0,
+      "full"
+    ],
+    [
+      2,
+      0,
+      "scoped"
+    ],
+    [
+      2,
+      1,
+      "full"
+    ]
+  ],
+  "schema_version": 1,
+  "summary": {
+    "2": {
+      "full": {
+        "candidate_pairs_median": 46,
+        "candidate_pairs_range": [
+          46,
+          46
+        ],
+        "construction_ns_median": 176041,
+        "construction_ns_range": [
+          170600,
+          187991
+        ],
+        "cpu_ns_median": 130230,
+        "cpu_ns_range": [
+          128810,
+          133510
+        ],
+        "peak_rss_kib_median": 36452,
+        "peak_rss_kib_range": [
+          36188,
+          36572
+        ],
+        "per_replicate": [
+          {
+            "candidate_pairs": 46,
+            "construction_ns": 176041,
+            "cpu_ns": 133510,
+            "peak_rss_kib": 36188,
+            "replicate": 0,
+            "term_evaluations": 338,
+            "turns": 0,
+            "wall_ns": 134571
+          },
+          {
+            "candidate_pairs": 46,
+            "construction_ns": 187991,
+            "cpu_ns": 128810,
+            "peak_rss_kib": 36572,
+            "replicate": 1,
+            "term_evaluations": 338,
+            "turns": 0,
+            "wall_ns": 130081
+          },
+          {
+            "candidate_pairs": 46,
+            "construction_ns": 170600,
+            "cpu_ns": 130230,
+            "peak_rss_kib": 36452,
+            "replicate": 2,
+            "term_evaluations": 338,
+            "turns": 0,
+            "wall_ns": 131690
+          }
+        ],
+        "term_evaluations_median": 338,
+        "term_evaluations_range": [
+          338,
+          338
+        ],
+        "turns_median": 0,
+        "turns_range": [
+          0,
+          0
+        ],
+        "wall_ns_median": 131690,
+        "wall_ns_range": [
+          130081,
+          134571
+        ]
+      },
+      "scoped": {
+        "candidate_pairs_median": 155,
+        "candidate_pairs_range": [
+          155,
+          155
+        ],
+        "construction_ns_median": 176511,
+        "construction_ns_range": [
+          171091,
+          319471
+        ],
+        "cpu_ns_median": 194090,
+        "cpu_ns_range": [
+          193941,
+          316540
+        ],
+        "peak_rss_kib_median": 36380,
+        "peak_rss_kib_range": [
+          36284,
+          36844
+        ],
+        "per_replicate": [
+          {
+            "candidate_pairs": 155,
+            "construction_ns": 319471,
+            "cpu_ns": 316540,
+            "peak_rss_kib": 36284,
+            "replicate": 0,
+            "term_evaluations": 1002,
+            "turns": 4,
+            "wall_ns": 317202
+          },
+          {
+            "candidate_pairs": 155,
+            "construction_ns": 171091,
+            "cpu_ns": 194090,
+            "peak_rss_kib": 36844,
+            "replicate": 1,
+            "term_evaluations": 1002,
+            "turns": 4,
+            "wall_ns": 194781
+          },
+          {
+            "candidate_pairs": 155,
+            "construction_ns": 176511,
+            "cpu_ns": 193941,
+            "peak_rss_kib": 36380,
+            "replicate": 2,
+            "term_evaluations": 1002,
+            "turns": 4,
+            "wall_ns": 194221
+          }
+        ],
+        "term_evaluations_median": 1002,
+        "term_evaluations_range": [
+          1002,
+          1002
+        ],
+        "turns_median": 4,
+        "turns_range": [
+          4,
+          4
+        ],
+        "wall_ns_median": 194781,
+        "wall_ns_range": [
+          194221,
+          317202
+        ]
+      },
+      "scoped_over_full_candidate_ratio": 3.369565217391304,
+      "scoped_over_full_wall_ratio": 1.4790872503606955
+    },
+    "4": {
+      "full": {
+        "candidate_pairs_median": 92,
+        "candidate_pairs_range": [
+          92,
+          92
+        ],
+        "construction_ns_median": 291052,
+        "construction_ns_range": [
+          290791,
+          293711
+        ],
+        "cpu_ns_median": 149330,
+        "cpu_ns_range": [
+          145790,
+          153690
+        ],
+        "peak_rss_kib_median": 36588,
+        "peak_rss_kib_range": [
+          36404,
+          36844
+        ],
+        "per_replicate": [
+          {
+            "candidate_pairs": 92,
+            "construction_ns": 293711,
+            "cpu_ns": 149330,
+            "peak_rss_kib": 36844,
+            "replicate": 0,
+            "term_evaluations": 676,
+            "turns": 0,
+            "wall_ns": 149971
+          },
+          {
+            "candidate_pairs": 92,
+            "construction_ns": 291052,
+            "cpu_ns": 153690,
+            "peak_rss_kib": 36588,
+            "replicate": 1,
+            "term_evaluations": 676,
+            "turns": 0,
+            "wall_ns": 154351
+          },
+          {
+            "candidate_pairs": 92,
+            "construction_ns": 290791,
+            "cpu_ns": 145790,
+            "peak_rss_kib": 36404,
+            "replicate": 2,
+            "term_evaluations": 676,
+            "turns": 0,
+            "wall_ns": 147211
+          }
+        ],
+        "term_evaluations_median": 676,
+        "term_evaluations_range": [
+          676,
+          676
+        ],
+        "turns_median": 0,
+        "turns_range": [
+          0,
+          0
+        ],
+        "wall_ns_median": 149971,
+        "wall_ns_range": [
+          147211,
+          154351
+        ]
+      },
+      "scoped": {
+        "candidate_pairs_median": 394,
+        "candidate_pairs_range": [
+          394,
+          394
+        ],
+        "construction_ns_median": 304812,
+        "construction_ns_range": [
+          284602,
+          309241
+        ],
+        "cpu_ns_median": 308340,
+        "cpu_ns_range": [
+          304010,
+          311031
+        ],
+        "peak_rss_kib_median": 36280,
+        "peak_rss_kib_range": [
+          35996,
+          36700
+        ],
+        "per_replicate": [
+          {
+            "candidate_pairs": 394,
+            "construction_ns": 309241,
+            "cpu_ns": 304010,
+            "peak_rss_kib": 35996,
+            "replicate": 0,
+            "term_evaluations": 2388,
+            "turns": 8,
+            "wall_ns": 304452
+          },
+          {
+            "candidate_pairs": 394,
+            "construction_ns": 284602,
+            "cpu_ns": 311031,
+            "peak_rss_kib": 36280,
+            "replicate": 1,
+            "term_evaluations": 2388,
+            "turns": 8,
+            "wall_ns": 311671
+          },
+          {
+            "candidate_pairs": 394,
+            "construction_ns": 304812,
+            "cpu_ns": 308340,
+            "peak_rss_kib": 36700,
+            "replicate": 2,
+            "term_evaluations": 2388,
+            "turns": 8,
+            "wall_ns": 309081
+          }
+        ],
+        "term_evaluations_median": 2388,
+        "term_evaluations_range": [
+          2388,
+          2388
+        ],
+        "turns_median": 8,
+        "turns_range": [
+          8,
+          8
+        ],
+        "wall_ns_median": 309081,
+        "wall_ns_range": [
+          304452,
+          311671
+        ]
+      },
+      "scoped_over_full_candidate_ratio": 4.282608695652174,
+      "scoped_over_full_wall_ratio": 2.060938448099966
+    },
+    "8": {
+      "full": {
+        "candidate_pairs_median": 184,
+        "candidate_pairs_range": [
+          184,
+          184
+        ],
+        "construction_ns_median": 520372,
+        "construction_ns_range": [
+          509722,
+          525633
+        ],
+        "cpu_ns_median": 189930,
+        "cpu_ns_range": [
+          188280,
+          195400
+        ],
+        "peak_rss_kib_median": 37228,
+        "peak_rss_kib_range": [
+          36684,
+          37268
+        ],
+        "per_replicate": [
+          {
+            "candidate_pairs": 184,
+            "construction_ns": 520372,
+            "cpu_ns": 188280,
+            "peak_rss_kib": 37228,
+            "replicate": 0,
+            "term_evaluations": 1352,
+            "turns": 0,
+            "wall_ns": 189561
+          },
+          {
+            "candidate_pairs": 184,
+            "construction_ns": 525633,
+            "cpu_ns": 189930,
+            "peak_rss_kib": 36684,
+            "replicate": 1,
+            "term_evaluations": 1352,
+            "turns": 0,
+            "wall_ns": 190961
+          },
+          {
+            "candidate_pairs": 184,
+            "construction_ns": 509722,
+            "cpu_ns": 195400,
+            "peak_rss_kib": 37268,
+            "replicate": 2,
+            "term_evaluations": 1352,
+            "turns": 0,
+            "wall_ns": 196761
+          }
+        ],
+        "term_evaluations_median": 1352,
+        "term_evaluations_range": [
+          1352,
+          1352
+        ],
+        "turns_median": 0,
+        "turns_range": [
+          0,
+          0
+        ],
+        "wall_ns_median": 190961,
+        "wall_ns_range": [
+          189561,
+          196761
+        ]
+      },
+      "scoped": {
+        "candidate_pairs_median": 1124,
+        "candidate_pairs_range": [
+          1124,
+          1124
+        ],
+        "construction_ns_median": 532543,
+        "construction_ns_range": [
+          507263,
+          537593
+        ],
+        "cpu_ns_median": 565700,
+        "cpu_ns_range": [
+          551070,
+          581390
+        ],
+        "peak_rss_kib_median": 36836,
+        "peak_rss_kib_range": [
+          36188,
+          36852
+        ],
+        "per_replicate": [
+          {
+            "candidate_pairs": 1124,
+            "construction_ns": 507263,
+            "cpu_ns": 551070,
+            "peak_rss_kib": 36836,
+            "replicate": 0,
+            "term_evaluations": 6312,
+            "turns": 16,
+            "wall_ns": 551793
+          },
+          {
+            "candidate_pairs": 1124,
+            "construction_ns": 532543,
+            "cpu_ns": 581390,
+            "peak_rss_kib": 36852,
+            "replicate": 1,
+            "term_evaluations": 6312,
+            "turns": 16,
+            "wall_ns": 581733
+          },
+          {
+            "candidate_pairs": 1124,
+            "construction_ns": 537593,
+            "cpu_ns": 565700,
+            "peak_rss_kib": 36188,
+            "replicate": 2,
+            "term_evaluations": 6312,
+            "turns": 16,
+            "wall_ns": 566803
+          }
+        ],
+        "term_evaluations_median": 6312,
+        "term_evaluations_range": [
+          6312,
+          6312
+        ],
+        "turns_median": 16,
+        "turns_range": [
+          16,
+          16
+        ],
+        "wall_ns_median": 566803,
+        "wall_ns_range": [
+          551793,
+          581733
+        ]
+      },
+      "scoped_over_full_candidate_ratio": 6.108695652173913,
+      "scoped_over_full_wall_ratio": 2.968161038117731
+    }
+  }
+}

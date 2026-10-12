@@ -1,0 +1,241 @@
+{
+  "captured_utc": "2026-10-01T06:19:33.443138+00:00",
+  "gates": {
+    "same_all_domain_surface": true,
+    "source_stable": true,
+    "stable_boot_and_verdicts": true,
+    "three_fresh_pids": true
+  },
+  "platform": "Linux-6.8.0-142-generic-x86_64-with-glibc2.39",
+  "protocol": "THOUGHTEXPERIMENT_SELECTOR_DOMAIN_SURFACE_V1_PREREG_20261001.md",
+  "source_after": {
+    "domain_digest": "f95aa62f9d4775619a29e53ac1a04ed5209ca3633a1d5109424cdc330e18ad8c",
+    "domain_file_count": 806,
+    "files": {
+      "docs/research/engine_substrate/THOUGHTEXPERIMENT_SELECTOR_CALIBRATION_V1_PREREG_20261001.md": "e5426615296fd053166a26c8f966e8c57352912637229b5c7ee70a42ead2635c",
+      "docs/research/engine_substrate/THOUGHTEXPERIMENT_SELECTOR_DOMAIN_SURFACE_V1_PREREG_20261001.md": "80e368bc4d21b13e19a036644c42fb204f0e5ce09c79f903bb6d4b2848eb66fb",
+      "domains/order_n_postulates.py": "075f22c0a1bc21124d0c87abe73b44f1f9d52801a86336aa3bfbb72e722bf510",
+      "domains/speech_science.py": "a2238b64385c4cb51d9a1d6851e029a81dae46b4387d46df7d2b33f681211f74",
+      "evaluation/substrate_capability/thoughtexperiment_selector_calibration_v1.py": "4d7cf4706057dc0e7c32d138992c24e8609763a68f2af7d1d0b4358439ef2ffc",
+      "evaluation/substrate_capability/thoughtexperiment_selector_domain_surface_v1.py": "5ef2476de7fdfef23533f5f786e618f0e3900e38a5025e4c1c0ace5a0c3c2993",
+      "runners/dsl/python/substrate_rs/_native.abi3.so": "b9f398c75ceb12a5d519235efb6b3ec403d1b153a576aad6def528c2d48a7617",
+      "substrate/boot_all.py": "2bdf46f19228e1d85dbdcf12383116ceeb72aab0efe7ddd0cc6a51d23b45d220",
+      "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+      "substrate/world_adapter.py": "7aeeb3d418fade3c90dc2d28a64a2685880d0a45d9fd47e4b6c2f6b6dd649023"
+    }
+  },
+  "source_before": {
+    "domain_digest": "f95aa62f9d4775619a29e53ac1a04ed5209ca3633a1d5109424cdc330e18ad8c",
+    "domain_file_count": 806,
+    "files": {
+      "docs/research/engine_substrate/THOUGHTEXPERIMENT_SELECTOR_CALIBRATION_V1_PREREG_20261001.md": "e5426615296fd053166a26c8f966e8c57352912637229b5c7ee70a42ead2635c",
+      "docs/research/engine_substrate/THOUGHTEXPERIMENT_SELECTOR_DOMAIN_SURFACE_V1_PREREG_20261001.md": "80e368bc4d21b13e19a036644c42fb204f0e5ce09c79f903bb6d4b2848eb66fb",
+      "domains/order_n_postulates.py": "075f22c0a1bc21124d0c87abe73b44f1f9d52801a86336aa3bfbb72e722bf510",
+      "domains/speech_science.py": "a2238b64385c4cb51d9a1d6851e029a81dae46b4387d46df7d2b33f681211f74",
+      "evaluation/substrate_capability/thoughtexperiment_selector_calibration_v1.py": "4d7cf4706057dc0e7c32d138992c24e8609763a68f2af7d1d0b4358439ef2ffc",
+      "evaluation/substrate_capability/thoughtexperiment_selector_domain_surface_v1.py": "5ef2476de7fdfef23533f5f786e618f0e3900e38a5025e4c1c0ace5a0c3c2993",
+      "runners/dsl/python/substrate_rs/_native.abi3.so": "b9f398c75ceb12a5d519235efb6b3ec403d1b153a576aad6def528c2d48a7617",
+      "substrate/boot_all.py": "2bdf46f19228e1d85dbdcf12383116ceeb72aab0efe7ddd0cc6a51d23b45d220",
+      "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+      "substrate/world_adapter.py": "7aeeb3d418fade3c90dc2d28a64a2685880d0a45d9fd47e4b6c2f6b6dd649023"
+    }
+  },
+  "source_stable": true,
+  "workers": [
+    {
+      "boot_failed_count": 11,
+      "boot_loaded": 731,
+      "cases": [
+        {
+          "case": "speaker_scale_normalization",
+          "expected": "covered",
+          "name_keys": [
+            "speaker normalization",
+            "formant ratio",
+            "vocal-tract-length normalization",
+            "f2/f1"
+          ],
+          "verdict": {
+            "covered_by": "/home/matt/ozmadev/ocelot/domains/agent_frontend.py",
+            "is_gap": false,
+            "reason": "already in speech codebase"
+          }
+        },
+        {
+          "case": "reliability_weighted_cue_fusion",
+          "expected": "covered",
+          "name_keys": [
+            "reliability-weighted cue fusion",
+            "multi-cue integration",
+            "audiovisual fusion estimate"
+          ],
+          "verdict": {
+            "covered_by": "/home/matt/ozmadev/ocelot/domains/combinatorial_recognizer.py",
+            "is_gap": false,
+            "reason": "already in speech codebase"
+          }
+        },
+        {
+          "case": "denoising_diffusion_image_generation",
+          "expected": "open",
+          "name_keys": [
+            "denoising diffusion image generation",
+            "noise-conditioned image synthesis"
+          ],
+          "verdict": {
+            "covered_by": null,
+            "is_gap": true,
+            "reason": "follows by transfer + un-realized + new capability axis"
+          }
+        },
+        {
+          "case": "variational_autoencoder_latent_image_reconstruction",
+          "expected": "open",
+          "name_keys": [
+            "variational autoencoder latent image reconstruction",
+            "probabilistic latent-image decoder"
+          ],
+          "verdict": {
+            "covered_by": null,
+            "is_gap": true,
+            "reason": "follows by transfer + un-realized + new capability axis"
+          }
+        }
+      ],
+      "covered_keyword_count": 0,
+      "pid": 3,
+      "scan_file_count": 806,
+      "scan_includes_combinatorial_recognizer": true
+    },
+    {
+      "boot_failed_count": 11,
+      "boot_loaded": 731,
+      "cases": [
+        {
+          "case": "speaker_scale_normalization",
+          "expected": "covered",
+          "name_keys": [
+            "speaker normalization",
+            "formant ratio",
+            "vocal-tract-length normalization",
+            "f2/f1"
+          ],
+          "verdict": {
+            "covered_by": "/home/matt/ozmadev/ocelot/domains/agent_frontend.py",
+            "is_gap": false,
+            "reason": "already in speech codebase"
+          }
+        },
+        {
+          "case": "reliability_weighted_cue_fusion",
+          "expected": "covered",
+          "name_keys": [
+            "reliability-weighted cue fusion",
+            "multi-cue integration",
+            "audiovisual fusion estimate"
+          ],
+          "verdict": {
+            "covered_by": "/home/matt/ozmadev/ocelot/domains/combinatorial_recognizer.py",
+            "is_gap": false,
+            "reason": "already in speech codebase"
+          }
+        },
+        {
+          "case": "denoising_diffusion_image_generation",
+          "expected": "open",
+          "name_keys": [
+            "denoising diffusion image generation",
+            "noise-conditioned image synthesis"
+          ],
+          "verdict": {
+            "covered_by": null,
+            "is_gap": true,
+            "reason": "follows by transfer + un-realized + new capability axis"
+          }
+        },
+        {
+          "case": "variational_autoencoder_latent_image_reconstruction",
+          "expected": "open",
+          "name_keys": [
+            "variational autoencoder latent image reconstruction",
+            "probabilistic latent-image decoder"
+          ],
+          "verdict": {
+            "covered_by": null,
+            "is_gap": true,
+            "reason": "follows by transfer + un-realized + new capability axis"
+          }
+        }
+      ],
+      "covered_keyword_count": 0,
+      "pid": 2318,
+      "scan_file_count": 806,
+      "scan_includes_combinatorial_recognizer": true
+    },
+    {
+      "boot_failed_count": 11,
+      "boot_loaded": 731,
+      "cases": [
+        {
+          "case": "speaker_scale_normalization",
+          "expected": "covered",
+          "name_keys": [
+            "speaker normalization",
+            "formant ratio",
+            "vocal-tract-length normalization",
+            "f2/f1"
+          ],
+          "verdict": {
+            "covered_by": "/home/matt/ozmadev/ocelot/domains/agent_frontend.py",
+            "is_gap": false,
+            "reason": "already in speech codebase"
+          }
+        },
+        {
+          "case": "reliability_weighted_cue_fusion",
+          "expected": "covered",
+          "name_keys": [
+            "reliability-weighted cue fusion",
+            "multi-cue integration",
+            "audiovisual fusion estimate"
+          ],
+          "verdict": {
+            "covered_by": "/home/matt/ozmadev/ocelot/domains/combinatorial_recognizer.py",
+            "is_gap": false,
+            "reason": "already in speech codebase"
+          }
+        },
+        {
+          "case": "denoising_diffusion_image_generation",
+          "expected": "open",
+          "name_keys": [
+            "denoising diffusion image generation",
+            "noise-conditioned image synthesis"
+          ],
+          "verdict": {
+            "covered_by": null,
+            "is_gap": true,
+            "reason": "follows by transfer + un-realized + new capability axis"
+          }
+        },
+        {
+          "case": "variational_autoencoder_latent_image_reconstruction",
+          "expected": "open",
+          "name_keys": [
+            "variational autoencoder latent image reconstruction",
+            "probabilistic latent-image decoder"
+          ],
+          "verdict": {
+            "covered_by": null,
+            "is_gap": true,
+            "reason": "follows by transfer + un-realized + new capability axis"
+          }
+        }
+      ],
+      "covered_keyword_count": 0,
+      "pid": 4633,
+      "scan_file_count": 806,
+      "scan_includes_combinatorial_recognizer": true
+    }
+  ]
+}

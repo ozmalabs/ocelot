@@ -1,0 +1,15 @@
+{
+  "checks": {
+    "conversation_goal_lifecycle_and_reply": true,
+    "raw_lock_matches": true,
+    "repeated_semantic_shape": true,
+    "three_source_stable_workers": true,
+    "tick_completed_and_threads_clean": true,
+    "tick_waited_for_conversation_transaction": true
+  },
+  "finding": "A public WorldAdapter.tick call attempts the same per-instance lock while a describe-scene converse transaction is paused. It does not enter the protected method body until conversation finishes. Across three source-stable workers, the conversation lifecycle and baseline reply remain intact, tick completes, and neither thread raises.",
+  "limits": "One public-method pair and schedule only. Direct native object access, other adapter methods, multi-adapter sharing, autonomous workers, other schedules, and performance impact remain unverified.",
+  "lock_sha256": "c8d22a1ffb134780125b5b4b413704f2fb34837cc381f814ea1af41fe9b12b28",
+  "raw_sha256": "18504463304059d39db0ebb3cd33de8bff9f12661403ca34175adb19180309ae",
+  "schema_version": 1
+}

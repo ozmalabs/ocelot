@@ -1,0 +1,3 @@
+# Thoughtexperiment same-event repeated-write v1.2.8 amendment
+
+The v1.2.8 capture establishes endpoint-only event snapshots for multiple writes in one rule invocation: 0→1→2 is observed as 0→2. It does not capture per-effect intermediate transitions or assign them to effect indices. The attribution and exact thoughtexperiment journals still cannot be enabled together through the public report API, so combined logger cost is not measured. Preserve the raw event and independent analysis as evidence of these boundaries; do not infer that no intermediate writes occurred. See [results](THOUGHTEXPERIMENT_EVENT_VALUE_ATTRIBUTION_V1_2_8_RESULTS_20261005.md) and [protocol](THOUGHTEXPERIMENT_EVENT_VALUE_ATTRIBUTION_V1_2_8_PREREG_20261005.md).

@@ -1,15 +1,16 @@
 {
  "id": "conversation_self_concern",
- "version": "2.1.0",
+ "version": "2.2.3",
  "depends_on": [
-  "intent"
+  "intent",
+  "conversation_steering"
  ],
  "capability_keys": [
   "self_improvement_concern",
   "clarify_uncertain_instruction"
  ],
- "_verbs_as_data_note": "v2.1.0: the self-improvement verb inventory is GRAPH DATA -- Concept{name:<verb>, instruction_route:'self_improvement'} nodes seeded below -- and both rules match the predicate Mention resolving (intent's rule_mention_resolves_to_concept) to a route-carrying Concept, instead of an in-body verb list. Duplicate same-name Concepts from other seeds are harmless (the referent rule wires the Mention to every same-named Concept; the Exists finds the route-carrying one). EXTENSIBLE AT RUNTIME: teach(agent, 'Concept', {'name': 'recalibrate', 'instruction_route': 'self_improvement'}) extends coverage with no rule edit. NOTE both rules exclude ANY route-carrying instruction-verb Concept from counting as the grounded TARGET (instruction_route == null in the confidence Exists), so seeding the verb inventories does not fabricate confidence.",
- "description": "PHASE 3 (safe, bounded seam) of the graph-native conversation migration: the CONNECTION POINT between a chat instruction and the agent's self-improvement spine, established graph-natively and gated by the agent's OWN COMPREHENSION CONFIDENCE. v2.0.0 (creator directive: 'it should check its parsing, the context, and then mint something if confident, and ask for clarification otherwise -- graph-native, not Python'): a self-directed instruction (predicate improve/fix/correct/learn/change/update/adjust/refine) is handled by TWO mutually-exclusive rules that key on the agent's own referent resolution (seeds/intent.json wires Mention -refers_to-> Concept when a mention matches a held Concept's name, and Intent -about_concept-> it). CONFIDENCE is graph-native: did a CONTENT mention resolve to a held Concept -- one that is NEITHER the predicate verb NOR a second-person word (you/your/yourself/...)? (The verb and 'your' are themselves held Concepts and always resolve, so they are excluded as data literals in the where; what remains is a genuinely-grounded TARGET.) mint_self_improvement_concern_confident: a grounded target resolved -> the agent understood WHAT to work on -> mint Goal{kind:self_improvement} + SelfConcern{status:'noted'} (the human-gated seam into the existing, denylist+human-approval-gated self-improvement pipeline; NEVER 'pending', so nothing auto-runs) + a confident reply. ask_clarification_self_improvement: NO grounded target resolved -> the agent is NOT confident it understands the request -> it asks for clarification and mints NOTHING (no goal, no concern) -- exactly the 'ask otherwise' behaviour. Both use the agent -received-> m single-anchor match (the sd 'agent observed obs' pattern, never ['agent','is_a','Agent'] which over-fires) + the comprehended fixpoint guard. The decision (confident vs clarify) is the graph's, from the graph's own comprehension state -- no Python classifier.",
+ "_verbs_as_data_note": "v2.2.2: adds `focus` to the graph-resident self-improvement route inventory, matching the existing concern-framing faculty. Confidence excludes held function words and pronouns as well as predicate verbs, so incidental resolution of 'on'/'the' cannot ground an otherwise unknown target. Focus directives with a grounded content target now use the same confidence-gated, human-gated SelfConcern path as improve/fix/learn; no automatic promotion occurs. The inventory remains GRAPH DATA -- Concept{name:<verb>, instruction_route:'self_improvement'} nodes -- and both rules match the predicate Mention resolving (intent's rule_mention_resolves_to_concept) to a route-carrying Concept, instead of an in-body verb list. Duplicate same-name Concepts from other seeds are harmless. EXTENSIBLE AT RUNTIME: teach(agent, 'Concept', {'name': 'recalibrate', 'instruction_route': 'self_improvement'}) extends coverage with no rule edit. Both rules exclude ANY route-carrying instruction-verb Concept from counting as the grounded TARGET (instruction_route == null in the confidence Exists), so seeding verb inventory does not fabricate confidence. Each branch writes a typed `self_improvement_route` onto the inbound Message so the production adapter can release its exact rule-authored response without re-running action choice.",
+ "description": "PHASE 3 (safe, bounded seam) of the graph-native conversation migration: the CONNECTION POINT between a chat instruction and the agent's self-improvement spine, established graph-natively and gated by the agent's OWN COMPREHENSION CONFIDENCE. A self-directed instruction (predicate improve/fix/correct/learn/change/update/adjust/refine/focus) is handled by TWO mutually-exclusive rules that key on the agent's own referent resolution (seeds/intent.json wires Mention -refers_to-> Concept when a mention matches a held Concept's name). CONFIDENCE is graph-native: did a CONTENT mention resolve to a held Concept -- one that is NEITHER the predicate verb NOR a second-person word (you/your/yourself/...)? (The verb and 'your' are themselves held Concepts and always resolve, so they are excluded as data literals in the where; what remains is a genuinely-grounded TARGET.) mint_self_improvement_concern_confident: a grounded target resolved -> mint Goal{kind:self_improvement} + SelfConcern{status:'noted'} (the human-gated seam into the existing, denylist+human-approval-gated self-improvement pipeline; NEVER 'pending', so nothing auto-runs) + a confident reply. ask_clarification_self_improvement: NO grounded target resolved -> clarification and no goal/concern. Both use the agent -received-> m single-anchor match + the comprehended fixpoint guard. The decision (confident vs clarify) is the graph's, from the graph's own comprehension state -- no Python classifier.",
  "nodes": [
   {
    "local_id": 1,
@@ -81,6 +82,15 @@
     "name": "refine",
     "instruction_route": "self_improvement",
     "description": "instruction verb: self-directed improvement request"
+   }
+  },
+  {
+   "local_id": 9,
+   "type": "Concept",
+   "attrs": {
+    "name": "focus",
+    "instruction_route": "self_improvement",
+    "description": "instruction verb: attention or concern framing; file for human review"
    }
   }
  ],
@@ -324,7 +334,25 @@
              "my",
              "it",
              "this",
-             "that"
+             "that",
+             "a",
+             "an",
+             "the",
+             "on",
+             "in",
+             "at",
+             "to",
+             "of",
+             "for",
+             "from",
+             "with",
+             "by",
+             "and",
+             "or",
+             "but",
+             "as",
+             "is",
+             "are"
             ]
            }
           }
@@ -341,6 +369,12 @@
      "m",
      "comprehended",
      1.0
+    ],
+    [
+     "set_attr",
+     "m",
+     "self_improvement_route",
+     "filed_concern"
     ],
     [
      "add_node",
@@ -724,7 +758,25 @@
               "my",
               "it",
               "this",
-              "that"
+             "that",
+             "a",
+             "an",
+             "the",
+             "on",
+             "in",
+             "at",
+             "to",
+             "of",
+             "for",
+             "from",
+             "with",
+             "by",
+             "and",
+             "or",
+             "but",
+             "as",
+             "is",
+             "are"
              ]
             }
            }
@@ -742,6 +794,12 @@
      "m",
      "comprehended",
      1.0
+    ],
+    [
+     "set_attr",
+     "m",
+     "self_improvement_route",
+     "clarify"
     ],
     [
      "add_node",

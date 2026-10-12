@@ -1,0 +1,37 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ocelot.local/schemas/problem-shape-checkpoint-v1.json",
+  "title": "Prepared-goal ProblemShape continuation checkpoint",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "contract", "agent_id", "graph", "productions", "rules", "goal_ids"],
+  "properties": {
+    "schema_version": {"const": 1},
+    "contract": {"const": "prepared_goal_problem_shape_continuation_v1"},
+    "agent_id": {"type": "integer", "minimum": 0},
+    "goal_ids": {"type": "array", "items": {"type": "integer", "minimum": 0}, "minItems": 1, "uniqueItems": true},
+    "graph": {
+      "type": "object", "additionalProperties": false,
+      "required": ["next_id", "nodes", "edges"],
+      "properties": {
+        "next_id": {"type": "integer", "minimum": 0},
+        "nodes": {"type": "array", "items": {"$ref": "#/$defs/node"}},
+        "edges": {"type": "array", "items": {"$ref": "#/$defs/edge"}}
+      }
+    },
+    "productions": {"type": "array", "items": {"type": "object"}, "minItems": 1},
+    "rules": {"type": "array", "items": {"type": "object"}, "minItems": 5}
+  },
+  "$defs": {
+    "node": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "type", "attrs"],
+      "properties": {"id": {"type": "integer", "minimum": 0}, "type": {"type": "string"}, "attrs": {"type": "object"}}
+    },
+    "edge": {
+      "type": "object", "additionalProperties": false,
+      "required": ["src", "type", "tgt", "attrs"],
+      "properties": {"src": {"type": "integer", "minimum": 0}, "type": {"type": "string"}, "tgt": {"type": "integer", "minimum": 0}, "attrs": {"type": "object"}}
+    }
+  }
+}

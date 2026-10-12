@@ -1,0 +1,90 @@
+{
+  "schema": "P5R0ProductionBundleDefinitionV1",
+  "classification": "repository_definition_only",
+  "status": "blocked_pending_reviewed_inputs",
+  "source_files": {
+    "bundle_validator": "services/p5_r0_evaluator/deploy/bundle_definition.py",
+    "native_definition": "services/p5_r0_evaluator/deploy/definition.py",
+    "manifest_validator": "evaluation/p5_r0/fixture_generator.py",
+    "lock_validator": "evaluation/p5_r0/repair.py",
+    "worker_contract_source": "evaluation/p5_r0/fixture_generator.py",
+    "policy_source": "evaluation/p5_r0/repair.py",
+    "task_split_source": "evaluation/p5_r0/split.py",
+    "evaluator_service": "services/p5_r0_evaluator/production_runner.py"
+  },
+  "canonical_digest": {
+    "algorithm": "sha256",
+    "encoding": "canonical-json",
+    "implementation": "evaluation.p0a.canonical.digest"
+  },
+  "input_locations": {
+    "manifest": null,
+    "private_store": null,
+    "lock": null,
+    "authority_trust_binding": null,
+    "kms_authority_binding": null,
+    "worker_contract": null,
+    "evaluator_contract": null,
+    "policy": null,
+    "task_set": null,
+    "input_builder_binding": null,
+    "time_seed_algorithm_binding": null
+  },
+  "expected_commitments": {
+    "manifest_digest": null,
+    "index_digest": null,
+    "truth_digest": null,
+    "store_digest": null,
+    "lock_digest": null,
+    "authority_digest": null,
+    "kms_authority_binding_digest": null,
+    "worker_contract_digest": null,
+    "evaluator_contract_digest": null,
+    "policy_digest": null,
+    "task_set_digest": null,
+    "input_builder_binding_digest": null,
+    "time_seed_algorithm_binding_digest": null
+  },
+  "blocked_inputs": {
+    "authorized_tasks": null,
+    "candidate_digests": null,
+    "private_truth": null,
+    "signature_material": null,
+    "p5_results": null
+  },
+  "assembly": {
+    "mode": "review_only_no_production_outputs",
+    "input_order": [
+      "manifest",
+      "private_store",
+      "lock",
+      "authority_trust_binding",
+      "kms_authority_binding",
+      "worker_contract",
+      "evaluator_contract",
+      "policy",
+      "task_set",
+      "input_builder_binding",
+      "time_seed_algorithm_binding"
+    ],
+    "output": null,
+    "writes_controlled_run_inputs": false
+  },
+  "commands": {
+    "prepare": "PYTHONPATH=. python3 -m services.p5_r0_evaluator.deploy.bundle_definition prepare --allow-blocked --audit-output var/p5-r0-bundle-preparation.json",
+    "validate": "PYTHONPATH=. python3 -m services.p5_r0_evaluator.deploy.bundle_definition validate --allow-blocked"
+  },
+  "apply_plan": {
+    "mode": "review_only_no_execution",
+    "commands": [],
+    "forbidden_operations": [
+      "gcloud mutation",
+      "deploy",
+      "VM creation",
+      "IAM alteration",
+      "secret access",
+      "external timing endpoint"
+    ]
+  },
+  "claim_boundary": "Local re-runnable definition and validator only; no production authority, private truth, authorized task release, candidate digest, signature, or P5 result claim."
+}

@@ -1,0 +1,16 @@
+{
+ "id": "improvement_integrity",
+ "version": "1.0.0",
+ "depends_on": [],
+ "description": "IMPROVEMENT INTEGRITY (tranche 19): the self-improvement loop may not vary or adopt changes to the self-improvement loop itself. Measured on the tranche-18 tree (evaluation/substrate_capability/improvement_integrity_census_v1.py): 16 active rules that file, promote, retire or retry the loop's own concerns and experiments were candidates of a variation family AND passed the adoption gate. Among them was steer_promote_concern, the rule that carries the human promotion gate: a reported concern 'you promote concerns too eagerly ...' built an adoptable variant of it. Its own concern-filing rules (note_recurring_speech_act_divergence, note_reported_gap, ...) were exposed the same way. A rule is LOOP MACHINERY iff its rule JSON names one of `protected_node_types` below. This is a structural read of the rule (match, where and effects), conservative by construction: it reads or writes the loop's own records or policies. domains/reflective_faculty stamps the rule's RuleSummary improvement_machinery=1.0 and skippable=0.0, so every variation family's candidate filter (skippable==1) excludes it; _rule_denylisted denies replacing it; and an adoption whose installed rule names a protected type is denied. This seed is in boot_all._FROZEN_SEED_IDS, so the loop cannot ablate or edit the list that protects it. Editing this list is a human decision.",
+ "nodes": [
+  {"local_id": 0, "type": "ImprovementIntegrity", "attrs": {
+   "name": "improvement_loop",
+   "protected_node_types": ["SelfConcern", "StandingConcern", "CapabilityAxis", "Experiment", "SeedDelta",
+                            "VariationOp", "VariationPolicy", "VariationCredit", "Adoption",
+                            "InstructionRetryPolicy", "QualiaAperture", "ImprovementIntegrity"],
+   "description": "Node types whose records and policies ARE the self-improvement loop: its goal intake (SelfConcern, StandingConcern, CapabilityAxis), its trials (Experiment, SeedDelta), its choice of what to try (VariationOp, VariationPolicy, VariationCredit), its self-changes (Adoption), its retry policy, the steering aperture that maps a human's steer to a concern, and this node."}}
+ ],
+ "edges": [],
+ "rules": []
+}

@@ -1,0 +1,63 @@
+{
+  "id": "communication_social_reply",
+  "version": "1.0.0",
+  "depends_on": ["communication_intent_arbitration", "conversation_reply"],
+  "capability_keys": ["communication_social_reply"],
+  "description": "Graph-owned reply-plan production for a natively selected addressed-attention social act. The graph selects an acknowledgment adjacency; the host only realizes and gates that exact selected speech act.",
+  "nodes": [],
+  "edges": [],
+  "productions": [],
+  "rules": [
+    {
+      "name": "reply_to_compound_greeting_coact",
+      "comment": "A greeting co-act receives its own graph-selected second-pair-part even when another act determines the event-level disposition. The independent response plan is later composed only after its own production receipt releases.",
+      "match": [
+        ["agent", "holds_interpretation", "i"],
+        ["i", "interprets", "m"],
+        ["i", "has_communication_act_evidence", "greeting"]
+      ],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "schema"}, "b": {"type": "Lit", "value": "communication_interpretation.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_schema"}, "b": {"type": "Lit", "value": "communication_evidence.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "greeting"}, "key": "act_type"}, "b": {"type": "Lit", "value": "greeting"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "greeting"}, "key": "communicative_force"}, "b": {"type": "Lit", "value": "social_action"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "greeting"}, "key": "sequence_index"}, "b": {"type": "Lit", "value": 0}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "cognitive_disposition"}, "b": {"type": "Lit", "value": "repair"}},
+        {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "compound_greeting_reply_minted"}, "b": {"type": "Lit", "value": 1}}}
+      ]},
+      "effects": [
+        ["set_attr", "m", "compound_greeting_reply_minted", 1],
+        ["add_node", "reply", "Message", {"from": "agent", "native_compound_greeting_plan": 1}],
+        ["add_node", "reply_act", "Concept", {"name": "greeting", "description": "returns the independently evidenced greeting co-act"}],
+        ["add_edge", "reply", "has_speech_act", "reply_act"],
+        ["add_edge", "reply", "responds_to", "m"],
+        ["add_edge", "agent", "sent", "reply"]
+      ]
+    },
+    {
+      "name": "reply_to_natively_selected_attention_request",
+      "comment": "When native arbitration selected social_action/answer for an addressed-attention request, mint one acknowledgment second-pair-part. The surface remains the production faculty's responsibility.",
+      "match": [
+        ["agent", "holds_interpretation", "i"],
+        ["i", "interprets", "m"]
+      ],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "schema"}, "b": {"type": "Lit", "value": "communication_interpretation.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_schema"}, "b": {"type": "Lit", "value": "communication_evidence.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "communicative_force"}, "b": {"type": "Lit", "value": "social_action"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "cognitive_disposition"}, "b": {"type": "Lit", "value": "answer"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "cognitive_goal"}, "b": {"type": "Lit", "value": "coordinate_socially"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "arbitration_basis"}, "b": {"type": "Lit", "value": "addressed_attention_request"}},
+        {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "m"}, "key": "social_reply_minted"}, "b": {"type": "Lit", "value": 1}}}
+      ]},
+      "effects": [
+        ["set_attr", "m", "social_reply_minted", 1],
+        ["add_node", "reply_act", "Concept", {"name": "acknowledgment", "description": "registers receipt of a prior turn"}],
+        ["add_node", "reply", "Message", {"from": "agent", "native_social_reply_plan": "attention_acknowledgment"}],
+        ["add_edge", "reply", "has_speech_act", "reply_act"],
+        ["add_edge", "reply", "responds_to", "m"],
+        ["add_edge", "agent", "sent", "reply"]
+      ]
+    }
+  ]
+}

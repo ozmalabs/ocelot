@@ -1,0 +1,579 @@
+{
+  "checks": {
+    "B_serialized_until_A_finishes": true,
+    "all_threads_joined_without_errors": true,
+    "baseline_reply_parity": true,
+    "event_order_and_identity": true,
+    "normalized_shape_repeats": true,
+    "source_stable_workers_and_postrun": true,
+    "three_distinct_processes": true
+  },
+  "claim_boundary": "Two live threads on one WorldAdapter overlap with B completing while A waits after selection; ownership and terminal lifecycle are measured. This is controlled route-specific concurrency, not arbitrary adapter/thread safety.",
+  "environment": {
+    "platform": "Linux-6.8.0-142-generic-x86_64-with-glibc2.39",
+    "python": "3.13.5 (main, Jun 11 2025, 15:36:57) [GCC 11.4.0]"
+  },
+  "lock_sha256": "7eb719711985806c4ebfcbc8e9765fe729b5214ebfd18eb776263d4066cc4d56",
+  "locked_inputs": {
+    "amendment_sha256": "c3c82322671765b17016d106bb489ab204f649bf14c090c86ba6a86bae9b7f58",
+    "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+    "native_build_manifest_sha256": "2d10ff9cc7f9832d91d1603c74dd0a0e0c4c5d3080a618a33575e9d5400ae871",
+    "native_extension_sha256": "f5543ca015278bad6c65506a0d7d9acb85b33252e7121cdda1a56df63e8ad27b",
+    "protocol_sha256": "a084aacb585a3a48e9bf83d055b07c0e0bc895105f2a44d9ee8350c2fb69dc6c",
+    "runner_sha256": "1db6f5abe2bbf6950a29680b1d94b0b61e42e8a231067fabf9cb6db7dad8cdbc",
+    "source_sha256": {
+      "arc_self_report": "798ef87c9a0ef8bd25e139fbf992428f000b8e95c4ace900f8491ec8931f1fc0",
+      "boot_all": "cb3645106e9f3cd056b900f507e5f4dbea36849d0568189545c73de698713d27",
+      "conversation_action": "f580ec11415d91bb54e86a8d33cefd216b31c6a9b8531815ef717070a37165c6",
+      "discourse_seed": "0dc367275203b8abcfd0be63b3c0dbe0308de50e25bd869c3ac2c88f622c8823",
+      "discourse_state": "774686588b3d9c979be330d55d739561caa4cba97b5b8f5bf082c4eed54bb05e",
+      "native_py": "034e606b055938e952fd5ff42cda66c563a37ca89a50761b62f6662282499ca9",
+      "reflective_faculty": "498ea851a851dfc80d96f48c1d0444ac249c91ff7eea4056df20f17db00d1284",
+      "world_adapter": "d7fc2a197f275e2c020b95cfe59b74d5af784ff2f4b44df7c183f2d3528c9912"
+    }
+  },
+  "post_run_inputs": {
+    "amendment_sha256": "c3c82322671765b17016d106bb489ab204f649bf14c090c86ba6a86bae9b7f58",
+    "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+    "native_build_manifest_sha256": "2d10ff9cc7f9832d91d1603c74dd0a0e0c4c5d3080a618a33575e9d5400ae871",
+    "native_extension_sha256": "f5543ca015278bad6c65506a0d7d9acb85b33252e7121cdda1a56df63e8ad27b",
+    "protocol_sha256": "a084aacb585a3a48e9bf83d055b07c0e0bc895105f2a44d9ee8350c2fb69dc6c",
+    "runner_sha256": "1db6f5abe2bbf6950a29680b1d94b0b61e42e8a231067fabf9cb6db7dad8cdbc",
+    "source_sha256": {
+      "arc_self_report": "798ef87c9a0ef8bd25e139fbf992428f000b8e95c4ace900f8491ec8931f1fc0",
+      "boot_all": "cb3645106e9f3cd056b900f507e5f4dbea36849d0568189545c73de698713d27",
+      "conversation_action": "f580ec11415d91bb54e86a8d33cefd216b31c6a9b8531815ef717070a37165c6",
+      "discourse_seed": "0dc367275203b8abcfd0be63b3c0dbe0308de50e25bd869c3ac2c88f622c8823",
+      "discourse_state": "774686588b3d9c979be330d55d739561caa4cba97b5b8f5bf082c4eed54bb05e",
+      "native_py": "034e606b055938e952fd5ff42cda66c563a37ca89a50761b62f6662282499ca9",
+      "reflective_faculty": "498ea851a851dfc80d96f48c1d0444ac249c91ff7eea4056df20f17db00d1284",
+      "world_adapter": "d7fc2a197f275e2c020b95cfe59b74d5af784ff2f4b44df7c183f2d3528c9912"
+    }
+  },
+  "run_id": "substrate-live-describe-scene-threaded-interleaving-v1_2-20260926",
+  "runs": [
+    {
+      "a_pause": {
+        "active": true,
+        "child_count": 3,
+        "closed": false,
+        "goal_id": 25050,
+        "message_ids": [
+          24890
+        ],
+        "origin_ids": [
+          24900
+        ],
+        "status": "selected",
+        "transition_event_ids": [
+          25058
+        ],
+        "transition_kinds": [
+          "selection"
+        ]
+      },
+      "b_completed_while_a_blocked": false,
+      "b_was_serialized": true,
+      "boot_ns": 14020285454,
+      "errors": [],
+      "event_order_gate": true,
+      "event_rows": [
+        {
+          "for_goal_ids": [],
+          "kind": "instruction"
+        },
+        {
+          "for_goal_ids": [
+            25050
+          ],
+          "kind": "selection"
+        },
+        {
+          "for_goal_ids": [
+            25050
+          ],
+          "kind": "execution"
+        },
+        {
+          "for_goal_ids": [
+            25050
+          ],
+          "kind": "action_result"
+        },
+        {
+          "for_goal_ids": [],
+          "kind": "instruction"
+        },
+        {
+          "for_goal_ids": [
+            25106
+          ],
+          "kind": "selection"
+        },
+        {
+          "for_goal_ids": [
+            25106
+          ],
+          "kind": "execution"
+        },
+        {
+          "for_goal_ids": [
+            25106
+          ],
+          "kind": "action_result"
+        }
+      ],
+      "final": {
+        "a": [
+          {
+            "active": false,
+            "child_count": 3,
+            "closed": true,
+            "goal_id": 25050,
+            "message_ids": [
+              24890
+            ],
+            "origin_ids": [
+              24900
+            ],
+            "status": "resolved",
+            "transition_event_ids": [
+              25058,
+              25060,
+              25061
+            ],
+            "transition_kinds": [
+              "selection",
+              "execution",
+              "action_result"
+            ]
+          }
+        ],
+        "b": [
+          {
+            "active": false,
+            "child_count": 3,
+            "closed": true,
+            "goal_id": 25106,
+            "message_ids": [
+              25091
+            ],
+            "origin_ids": [
+              25097
+            ],
+            "status": "resolved",
+            "transition_event_ids": [
+              25110,
+              25111,
+              25112
+            ],
+            "transition_kinds": [
+              "selection",
+              "execution",
+              "action_result"
+            ]
+          }
+        ]
+      },
+      "identity_gate": true,
+      "lifecycle_gate": true,
+      "pause_gate": true,
+      "pid": 4,
+      "replicate": 1,
+      "replies": {
+        "A": "I see the grey thing stays, the yellow counter, and the blue thing moves.",
+        "B": "I see the grey thing stays, the yellow counter, and the blue thing moves."
+      },
+      "reply_parity": true,
+      "threads_joined": true,
+      "worker_finished_inputs": {
+        "amendment_sha256": "c3c82322671765b17016d106bb489ab204f649bf14c090c86ba6a86bae9b7f58",
+        "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+        "native_build_manifest_sha256": "2d10ff9cc7f9832d91d1603c74dd0a0e0c4c5d3080a618a33575e9d5400ae871",
+        "native_extension_sha256": "f5543ca015278bad6c65506a0d7d9acb85b33252e7121cdda1a56df63e8ad27b",
+        "protocol_sha256": "a084aacb585a3a48e9bf83d055b07c0e0bc895105f2a44d9ee8350c2fb69dc6c",
+        "runner_sha256": "1db6f5abe2bbf6950a29680b1d94b0b61e42e8a231067fabf9cb6db7dad8cdbc",
+        "source_sha256": {
+          "arc_self_report": "798ef87c9a0ef8bd25e139fbf992428f000b8e95c4ace900f8491ec8931f1fc0",
+          "boot_all": "cb3645106e9f3cd056b900f507e5f4dbea36849d0568189545c73de698713d27",
+          "conversation_action": "f580ec11415d91bb54e86a8d33cefd216b31c6a9b8531815ef717070a37165c6",
+          "discourse_seed": "0dc367275203b8abcfd0be63b3c0dbe0308de50e25bd869c3ac2c88f622c8823",
+          "discourse_state": "774686588b3d9c979be330d55d739561caa4cba97b5b8f5bf082c4eed54bb05e",
+          "native_py": "034e606b055938e952fd5ff42cda66c563a37ca89a50761b62f6662282499ca9",
+          "reflective_faculty": "498ea851a851dfc80d96f48c1d0444ac249c91ff7eea4056df20f17db00d1284",
+          "world_adapter": "d7fc2a197f275e2c020b95cfe59b74d5af784ff2f4b44df7c183f2d3528c9912"
+        }
+      },
+      "worker_started_inputs": {
+        "amendment_sha256": "c3c82322671765b17016d106bb489ab204f649bf14c090c86ba6a86bae9b7f58",
+        "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+        "native_build_manifest_sha256": "2d10ff9cc7f9832d91d1603c74dd0a0e0c4c5d3080a618a33575e9d5400ae871",
+        "native_extension_sha256": "f5543ca015278bad6c65506a0d7d9acb85b33252e7121cdda1a56df63e8ad27b",
+        "protocol_sha256": "a084aacb585a3a48e9bf83d055b07c0e0bc895105f2a44d9ee8350c2fb69dc6c",
+        "runner_sha256": "1db6f5abe2bbf6950a29680b1d94b0b61e42e8a231067fabf9cb6db7dad8cdbc",
+        "source_sha256": {
+          "arc_self_report": "798ef87c9a0ef8bd25e139fbf992428f000b8e95c4ace900f8491ec8931f1fc0",
+          "boot_all": "cb3645106e9f3cd056b900f507e5f4dbea36849d0568189545c73de698713d27",
+          "conversation_action": "f580ec11415d91bb54e86a8d33cefd216b31c6a9b8531815ef717070a37165c6",
+          "discourse_seed": "0dc367275203b8abcfd0be63b3c0dbe0308de50e25bd869c3ac2c88f622c8823",
+          "discourse_state": "774686588b3d9c979be330d55d739561caa4cba97b5b8f5bf082c4eed54bb05e",
+          "native_py": "034e606b055938e952fd5ff42cda66c563a37ca89a50761b62f6662282499ca9",
+          "reflective_faculty": "498ea851a851dfc80d96f48c1d0444ac249c91ff7eea4056df20f17db00d1284",
+          "world_adapter": "d7fc2a197f275e2c020b95cfe59b74d5af784ff2f4b44df7c183f2d3528c9912"
+        }
+      }
+    },
+    {
+      "a_pause": {
+        "active": true,
+        "child_count": 3,
+        "closed": false,
+        "goal_id": 25050,
+        "message_ids": [
+          24890
+        ],
+        "origin_ids": [
+          24900
+        ],
+        "status": "selected",
+        "transition_event_ids": [
+          25058
+        ],
+        "transition_kinds": [
+          "selection"
+        ]
+      },
+      "b_completed_while_a_blocked": false,
+      "b_was_serialized": true,
+      "boot_ns": 12338031236,
+      "errors": [],
+      "event_order_gate": true,
+      "event_rows": [
+        {
+          "for_goal_ids": [],
+          "kind": "instruction"
+        },
+        {
+          "for_goal_ids": [
+            25050
+          ],
+          "kind": "selection"
+        },
+        {
+          "for_goal_ids": [
+            25050
+          ],
+          "kind": "execution"
+        },
+        {
+          "for_goal_ids": [
+            25050
+          ],
+          "kind": "action_result"
+        },
+        {
+          "for_goal_ids": [],
+          "kind": "instruction"
+        },
+        {
+          "for_goal_ids": [
+            25106
+          ],
+          "kind": "selection"
+        },
+        {
+          "for_goal_ids": [
+            25106
+          ],
+          "kind": "execution"
+        },
+        {
+          "for_goal_ids": [
+            25106
+          ],
+          "kind": "action_result"
+        }
+      ],
+      "final": {
+        "a": [
+          {
+            "active": false,
+            "child_count": 3,
+            "closed": true,
+            "goal_id": 25050,
+            "message_ids": [
+              24890
+            ],
+            "origin_ids": [
+              24900
+            ],
+            "status": "resolved",
+            "transition_event_ids": [
+              25058,
+              25060,
+              25061
+            ],
+            "transition_kinds": [
+              "selection",
+              "execution",
+              "action_result"
+            ]
+          }
+        ],
+        "b": [
+          {
+            "active": false,
+            "child_count": 3,
+            "closed": true,
+            "goal_id": 25106,
+            "message_ids": [
+              25091
+            ],
+            "origin_ids": [
+              25097
+            ],
+            "status": "resolved",
+            "transition_event_ids": [
+              25110,
+              25111,
+              25112
+            ],
+            "transition_kinds": [
+              "selection",
+              "execution",
+              "action_result"
+            ]
+          }
+        ]
+      },
+      "identity_gate": true,
+      "lifecycle_gate": true,
+      "pause_gate": true,
+      "pid": 5831,
+      "replicate": 2,
+      "replies": {
+        "A": "I see the grey thing stays, the yellow counter, and the blue thing moves.",
+        "B": "I see the grey thing stays, the yellow counter, and the blue thing moves."
+      },
+      "reply_parity": true,
+      "threads_joined": true,
+      "worker_finished_inputs": {
+        "amendment_sha256": "c3c82322671765b17016d106bb489ab204f649bf14c090c86ba6a86bae9b7f58",
+        "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+        "native_build_manifest_sha256": "2d10ff9cc7f9832d91d1603c74dd0a0e0c4c5d3080a618a33575e9d5400ae871",
+        "native_extension_sha256": "f5543ca015278bad6c65506a0d7d9acb85b33252e7121cdda1a56df63e8ad27b",
+        "protocol_sha256": "a084aacb585a3a48e9bf83d055b07c0e0bc895105f2a44d9ee8350c2fb69dc6c",
+        "runner_sha256": "1db6f5abe2bbf6950a29680b1d94b0b61e42e8a231067fabf9cb6db7dad8cdbc",
+        "source_sha256": {
+          "arc_self_report": "798ef87c9a0ef8bd25e139fbf992428f000b8e95c4ace900f8491ec8931f1fc0",
+          "boot_all": "cb3645106e9f3cd056b900f507e5f4dbea36849d0568189545c73de698713d27",
+          "conversation_action": "f580ec11415d91bb54e86a8d33cefd216b31c6a9b8531815ef717070a37165c6",
+          "discourse_seed": "0dc367275203b8abcfd0be63b3c0dbe0308de50e25bd869c3ac2c88f622c8823",
+          "discourse_state": "774686588b3d9c979be330d55d739561caa4cba97b5b8f5bf082c4eed54bb05e",
+          "native_py": "034e606b055938e952fd5ff42cda66c563a37ca89a50761b62f6662282499ca9",
+          "reflective_faculty": "498ea851a851dfc80d96f48c1d0444ac249c91ff7eea4056df20f17db00d1284",
+          "world_adapter": "d7fc2a197f275e2c020b95cfe59b74d5af784ff2f4b44df7c183f2d3528c9912"
+        }
+      },
+      "worker_started_inputs": {
+        "amendment_sha256": "c3c82322671765b17016d106bb489ab204f649bf14c090c86ba6a86bae9b7f58",
+        "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+        "native_build_manifest_sha256": "2d10ff9cc7f9832d91d1603c74dd0a0e0c4c5d3080a618a33575e9d5400ae871",
+        "native_extension_sha256": "f5543ca015278bad6c65506a0d7d9acb85b33252e7121cdda1a56df63e8ad27b",
+        "protocol_sha256": "a084aacb585a3a48e9bf83d055b07c0e0bc895105f2a44d9ee8350c2fb69dc6c",
+        "runner_sha256": "1db6f5abe2bbf6950a29680b1d94b0b61e42e8a231067fabf9cb6db7dad8cdbc",
+        "source_sha256": {
+          "arc_self_report": "798ef87c9a0ef8bd25e139fbf992428f000b8e95c4ace900f8491ec8931f1fc0",
+          "boot_all": "cb3645106e9f3cd056b900f507e5f4dbea36849d0568189545c73de698713d27",
+          "conversation_action": "f580ec11415d91bb54e86a8d33cefd216b31c6a9b8531815ef717070a37165c6",
+          "discourse_seed": "0dc367275203b8abcfd0be63b3c0dbe0308de50e25bd869c3ac2c88f622c8823",
+          "discourse_state": "774686588b3d9c979be330d55d739561caa4cba97b5b8f5bf082c4eed54bb05e",
+          "native_py": "034e606b055938e952fd5ff42cda66c563a37ca89a50761b62f6662282499ca9",
+          "reflective_faculty": "498ea851a851dfc80d96f48c1d0444ac249c91ff7eea4056df20f17db00d1284",
+          "world_adapter": "d7fc2a197f275e2c020b95cfe59b74d5af784ff2f4b44df7c183f2d3528c9912"
+        }
+      }
+    },
+    {
+      "a_pause": {
+        "active": true,
+        "child_count": 3,
+        "closed": false,
+        "goal_id": 25050,
+        "message_ids": [
+          24890
+        ],
+        "origin_ids": [
+          24900
+        ],
+        "status": "selected",
+        "transition_event_ids": [
+          25058
+        ],
+        "transition_kinds": [
+          "selection"
+        ]
+      },
+      "b_completed_while_a_blocked": false,
+      "b_was_serialized": true,
+      "boot_ns": 12404617819,
+      "errors": [],
+      "event_order_gate": true,
+      "event_rows": [
+        {
+          "for_goal_ids": [],
+          "kind": "instruction"
+        },
+        {
+          "for_goal_ids": [
+            25050
+          ],
+          "kind": "selection"
+        },
+        {
+          "for_goal_ids": [
+            25050
+          ],
+          "kind": "execution"
+        },
+        {
+          "for_goal_ids": [
+            25050
+          ],
+          "kind": "action_result"
+        },
+        {
+          "for_goal_ids": [],
+          "kind": "instruction"
+        },
+        {
+          "for_goal_ids": [
+            25106
+          ],
+          "kind": "selection"
+        },
+        {
+          "for_goal_ids": [
+            25106
+          ],
+          "kind": "execution"
+        },
+        {
+          "for_goal_ids": [
+            25106
+          ],
+          "kind": "action_result"
+        }
+      ],
+      "final": {
+        "a": [
+          {
+            "active": false,
+            "child_count": 3,
+            "closed": true,
+            "goal_id": 25050,
+            "message_ids": [
+              24890
+            ],
+            "origin_ids": [
+              24900
+            ],
+            "status": "resolved",
+            "transition_event_ids": [
+              25058,
+              25060,
+              25061
+            ],
+            "transition_kinds": [
+              "selection",
+              "execution",
+              "action_result"
+            ]
+          }
+        ],
+        "b": [
+          {
+            "active": false,
+            "child_count": 3,
+            "closed": true,
+            "goal_id": 25106,
+            "message_ids": [
+              25091
+            ],
+            "origin_ids": [
+              25097
+            ],
+            "status": "resolved",
+            "transition_event_ids": [
+              25110,
+              25111,
+              25112
+            ],
+            "transition_kinds": [
+              "selection",
+              "execution",
+              "action_result"
+            ]
+          }
+        ]
+      },
+      "identity_gate": true,
+      "lifecycle_gate": true,
+      "pause_gate": true,
+      "pid": 11658,
+      "replicate": 0,
+      "replies": {
+        "A": "I see the grey thing stays, the yellow counter, and the blue thing moves.",
+        "B": "I see the grey thing stays, the yellow counter, and the blue thing moves."
+      },
+      "reply_parity": true,
+      "threads_joined": true,
+      "worker_finished_inputs": {
+        "amendment_sha256": "c3c82322671765b17016d106bb489ab204f649bf14c090c86ba6a86bae9b7f58",
+        "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+        "native_build_manifest_sha256": "2d10ff9cc7f9832d91d1603c74dd0a0e0c4c5d3080a618a33575e9d5400ae871",
+        "native_extension_sha256": "f5543ca015278bad6c65506a0d7d9acb85b33252e7121cdda1a56df63e8ad27b",
+        "protocol_sha256": "a084aacb585a3a48e9bf83d055b07c0e0bc895105f2a44d9ee8350c2fb69dc6c",
+        "runner_sha256": "1db6f5abe2bbf6950a29680b1d94b0b61e42e8a231067fabf9cb6db7dad8cdbc",
+        "source_sha256": {
+          "arc_self_report": "798ef87c9a0ef8bd25e139fbf992428f000b8e95c4ace900f8491ec8931f1fc0",
+          "boot_all": "cb3645106e9f3cd056b900f507e5f4dbea36849d0568189545c73de698713d27",
+          "conversation_action": "f580ec11415d91bb54e86a8d33cefd216b31c6a9b8531815ef717070a37165c6",
+          "discourse_seed": "0dc367275203b8abcfd0be63b3c0dbe0308de50e25bd869c3ac2c88f622c8823",
+          "discourse_state": "774686588b3d9c979be330d55d739561caa4cba97b5b8f5bf082c4eed54bb05e",
+          "native_py": "034e606b055938e952fd5ff42cda66c563a37ca89a50761b62f6662282499ca9",
+          "reflective_faculty": "498ea851a851dfc80d96f48c1d0444ac249c91ff7eea4056df20f17db00d1284",
+          "world_adapter": "d7fc2a197f275e2c020b95cfe59b74d5af784ff2f4b44df7c183f2d3528c9912"
+        }
+      },
+      "worker_started_inputs": {
+        "amendment_sha256": "c3c82322671765b17016d106bb489ab204f649bf14c090c86ba6a86bae9b7f58",
+        "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+        "native_build_manifest_sha256": "2d10ff9cc7f9832d91d1603c74dd0a0e0c4c5d3080a618a33575e9d5400ae871",
+        "native_extension_sha256": "f5543ca015278bad6c65506a0d7d9acb85b33252e7121cdda1a56df63e8ad27b",
+        "protocol_sha256": "a084aacb585a3a48e9bf83d055b07c0e0bc895105f2a44d9ee8350c2fb69dc6c",
+        "runner_sha256": "1db6f5abe2bbf6950a29680b1d94b0b61e42e8a231067fabf9cb6db7dad8cdbc",
+        "source_sha256": {
+          "arc_self_report": "798ef87c9a0ef8bd25e139fbf992428f000b8e95c4ace900f8491ec8931f1fc0",
+          "boot_all": "cb3645106e9f3cd056b900f507e5f4dbea36849d0568189545c73de698713d27",
+          "conversation_action": "f580ec11415d91bb54e86a8d33cefd216b31c6a9b8531815ef717070a37165c6",
+          "discourse_seed": "0dc367275203b8abcfd0be63b3c0dbe0308de50e25bd869c3ac2c88f622c8823",
+          "discourse_state": "774686588b3d9c979be330d55d739561caa4cba97b5b8f5bf082c4eed54bb05e",
+          "native_py": "034e606b055938e952fd5ff42cda66c563a37ca89a50761b62f6662282499ca9",
+          "reflective_faculty": "498ea851a851dfc80d96f48c1d0444ac249c91ff7eea4056df20f17db00d1284",
+          "world_adapter": "d7fc2a197f275e2c020b95cfe59b74d5af784ff2f4b44df7c183f2d3528c9912"
+        }
+      }
+    }
+  ],
+  "schedule": [
+    1,
+    2,
+    0
+  ],
+  "schema_version": 1,
+  "summary": {
+    "boot_ns_median": 12404617819,
+    "replicates": 3
+  }
+}

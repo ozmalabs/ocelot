@@ -1,0 +1,5 @@
+# Generated-pool active query versus iterative resynthesis v1.4 amendment
+
+The v1.3 capture has five randomized blocks and stable semantic outcomes, but its timing instrumentation mixed evaluator-only held-out checks into pool-arm worker time and omitted prediction/filter work for fixed/random pool policies from their selection timer. Its raw records remain a useful semantic pilot; its arm timing ratios are not used as learner-cost estimates.
+
+The v1.4 replay separates task/oracle setup, learner work, and evaluator-only held-out checks. It times descriptor preparation and synthesis, query selection plus hypothesis prediction/filtering for every policy, and all labeled training/candidate oracle calls. Held-out target-support checks and final held-out scoring receive separate evaluator timers. The primary learner cost is synthesis + selection/filter + charged labeled oracle wall time; parent-observed process wall remains a secondary cold-process measure. Keep five randomized paired blocks and all prior gates unchanged. The new lock and raw capture use a distinct v1.4 stem; v1.3 data are not overwritten.

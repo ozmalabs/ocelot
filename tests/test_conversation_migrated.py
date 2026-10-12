@@ -74,6 +74,10 @@ def test_seed_load_is_idempotent():
     ("hello", "greeting"),
     ("thanks", "thanks"),
     ("read foo.txt", "request"),
+    ("Check the pressure.", "request"),
+    ("When ready, close the hatch.", "request"),
+    ("I check the pressure.", "statement"),
+    ("When does the hatch close?", "question"),
     ("", "statement"),
 ])
 def test_classify_speech_act(text, kind):

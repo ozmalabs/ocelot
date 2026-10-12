@@ -1,10 +1,10 @@
 {
  "id": "conversation_topic_tracking",
- "version": "1.2.0",
+ "version": "1.2.2",
  "depends_on": [
   "conversation_topic_route"
  ],
- "description": "Graph-native TOPIC TRACKING for LLM-like conversation: after route_question_to_topic answers about a topic X, the adapter mechanically records X as the conversation's current topic (agent -current_topic-> CurrentTopic{name:X}). These rules then RESOLVE follow-ups against that tracked topic -- the DECISION is graph-native, not Python. (1) resolve_anaphor_to_current_topic: a follow-up whose topic reference is a bare pronoun/possessive ('tell me more about IT', 'how big is it', 'what about ITS mass') carries comp_anaphor=1.0 (written by world_adapter._topic_facts); this rule mints Goal{kind:answer_topic, concept:<current_topic.name>} -- resolving `it`/`that`/`they` to the tracked topic. (2) resolve_elliptical_shift_to_topic: a verbless elliptical topic fragment ('and the three body problem?', 'what about volcanoes?') carries comp_topic + topic_followup=1.0; this rule shifts to the new topic, minting Goal{kind:answer_topic, concept:<comp_topic>}. BOTH are gated on already being in a topic conversation (they JOIN on agent -current_topic-> ct, so with no tracked topic no follow-up fires and the honest path handles the turn). Both are single-anchor on agent -received-> m (the sd 'agent observed obs' pattern, never ['agent','is_a','Agent']) JOINed to the current-topic hub; comprehended=1.0 is the mint-once fixpoint guard. The adapter renders the minted goal via _answer_topic_reply (self-heal on a miss), and updates the current topic to the answered concept. ELABORATION PRECEDENCE (v1.1): resolve_anaphor_to_current_topic carries a guard that DEFERS a continuation follow-up ('tell me more'/'elaborate'/'go on' -- a has_mention resolving to a continuation-cue Concept) to the conversation_elaborate seed's progressive-disclosure rules, but ONLY when detail chunks have already been ingested for the current topic (a DetailChunk with topic == ct.name exists). With no detail ingested, a continuation follow-up still resolves to the summary re-answer here, unchanged; a plain anaphor with no cue ('how big is it') is never deferred.",
+ "description": "Graph-native TOPIC TRACKING for LLM-like conversation: after route_question_to_topic answers about a topic X, the adapter mechanically records X as the conversation's current topic (agent -current_topic-> CurrentTopic{name:X}). These rules then RESOLVE follow-ups against that tracked topic -- the DECISION is graph-native, not Python. (1) resolve_anaphor_to_current_topic: a follow-up whose topic reference is a bare pronoun/possessive ('tell me more about IT', 'how big is it', 'what about ITS mass') carries comp_anaphor=1.0 (written by world_adapter._topic_facts); this rule mints Goal{kind:answer_topic, concept:<current_topic.name>} -- resolving `it`/`that`/`they` to the tracked topic. (2) resolve_elliptical_shift_to_topic: a verbless elliptical topic fragment ('and the three body problem?', 'what about volcanoes?') carries comp_topic + topic_followup=1.0; this rule shifts to the new topic, minting Goal{kind:answer_topic, concept:<comp_topic>}, except when the graph has classified the message as an instruction. This prevents action clauses from becoming answer-topic requests merely because their object resembles a topic. BOTH are gated on already being in a topic conversation (they JOIN on agent -current_topic-> ct, so with no tracked topic no follow-up fires and the honest path handles the turn). Both are single-anchor on agent -received-> m (the sd 'agent observed obs' pattern, never ['agent','is_a','Agent']) JOINed to the current-topic hub; comprehended=1.0 is the mint-once fixpoint guard. The adapter renders the minted goal via _answer_topic_reply (self-heal on a miss), and updates the current topic to the answered concept. ELABORATION PRECEDENCE (v1.1): resolve_anaphor_to_current_topic carries a guard that DEFERS a continuation follow-up ('tell me more'/'elaborate'/'go on' -- a has_mention resolving to a continuation-cue Concept) to the conversation_elaborate seed's progressive-disclosure rules, but ONLY when detail chunks have already been ingested for the current topic (a DetailChunk with topic == ct.name exists). With no detail ingested, a continuation follow-up still resolves to the summary re-answer here, unchanged; a plain anaphor with no cue ('how big is it') is never deferred.",
  "nodes": [],
  "edges": [],
  "productions": [],
@@ -27,6 +27,15 @@
     "type": "And",
     "items": [
      {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {"type": "Neighbours", "node": {"type": "Var", "name": "m"}, "edge_type": "has_interpretation"},
+       "var_name": "partial_i",
+       "predicate": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "partial_i"}, "key": "literal_form"}, "b": {"type": "Lit", "value": "fragment"}}
+      }
+     },
+     {
       "type": "Eq",
       "a": {
        "type": "Attr",
@@ -36,11 +45,11 @@
        },
        "key": "comp_anaphor"
       },
-      "b": {
-       "type": "Lit",
-       "value": 1.0
-      }
-     },
+     "b": {
+      "type": "Lit",
+      "value": 1.0
+     }
+    },
      {
       "type": "Not",
       "arg": {
@@ -192,10 +201,19 @@
     ]
    ],
    "where": {
-    "type": "And",
-    "items": [
-     {
-      "type": "Eq",
+   "type": "And",
+   "items": [
+    {
+     "type": "Not",
+     "arg": {
+      "type": "Exists",
+      "source": {"type": "Neighbours", "node": {"type": "Var", "name": "m"}, "edge_type": "has_interpretation"},
+      "var_name": "partial_i",
+      "predicate": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "partial_i"}, "key": "literal_form"}, "b": {"type": "Lit", "value": "fragment"}}
+     }
+    },
+    {
+     "type": "Eq",
       "a": {
        "type": "Attr",
        "node": {
@@ -209,6 +227,24 @@
        "value": 1.0
       }
      },
+    {
+     "type": "Not",
+     "arg": {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "m"
+       },
+       "key": "comp_kind"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "instruction"
+      }
+     }
+    },
      {
       "type": "Not",
       "arg": {

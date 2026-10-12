@@ -1,0 +1,1785 @@
+{
+  "captured_utc": "2026-10-02T23:54:43Z",
+  "orders_sha256": "28a724637e3b633c648d1a5bb0717e0d85c6521dc5122ad019e52e15c65aa9ee",
+  "schema": "ThoughtexperimentA8ProposalBridgeV1_3Scores",
+  "source_after": {
+    "docs/research/engine_substrate/MAC_FAC_A8_RESULTS.md": "511ee14bc1160041219419c9acfcebdb452f305f53a5686d3a1b6ac1bd33edb8",
+    "docs/research/engine_substrate/THOUGHTEXPERIMENT_A8_PROPOSAL_BRIDGE_V1_1_RESULTS_20261002.md": "285fd97a374f799407e1597694065d70d366c1f29e5e95fcbde4a48a4755cbce",
+    "docs/research/engine_substrate/THOUGHTEXPERIMENT_A8_PROPOSAL_BRIDGE_V1_2_RESULTS_20261002.md": "6fffcaa7d8fa66cabdd4f467b4aa668e7ef6ec2e662b02ce6182fcf7f22b2b02",
+    "docs/research/engine_substrate/THOUGHTEXPERIMENT_A8_PROPOSAL_BRIDGE_V1_3_AMENDMENT_20261003.md": "557f2154d5ac027abf98783ec4c8447f5e043630b7cb8147f7308cbf43a75a5e",
+    "docs/research/engine_substrate/THOUGHTEXPERIMENT_A8_PROPOSAL_BRIDGE_V1_PREREG_20261002.md": "19e4a40cd03117e16016417a0df85882c9870aa0c08d1e7bf1528032ac39b809",
+    "docs/research/engine_substrate/THOUGHTEXPERIMENT_A8_PROPOSAL_BRIDGE_V1_RESULTS_20261002.md": "bdf2ce782e112f0d4a07ec356167b18d4d4b7eb74c3c058363acd4d65b34b74e",
+    "docs/research/engine_substrate/THOUGHTEXPERIMENT_BLINDED_PROPOSAL_UTILITY_V1_2_RESULTS_20261002.md": "842baf009a96f6bef57e8d7161eb8ab8aea7faf24538474722cd511a56ac6242",
+    "docs/research/engine_substrate/THOUGHTEXPERIMENT_NAVIGATION_POLARITY_REPAIR_V1_1_RESULTS_20261002.md": "d62d334e219c001d8346a45d4905d8d091b7d7ccf200cd3174b601db9ddf80b4",
+    "domains/edit_ops.py": "308c401e992f8512308b3abb2b32acd6708bfebbb90255d7c5c9f4ea36c73a0d",
+    "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+    "domains/reflective_faculty.py": "57f05995c454443665e75eacbfec60bc0096ac34cd203fb0b10848af4691903e",
+    "domains/self_correct_dispatch.py": "6aa0759fb39c7b6ff754b669f1699d6badeb90beb48e90e5f7e5b3d1f8a5464f",
+    "domains/self_correction.py": "7c4f28e21afc4c334328d03146c56d5c46c80a9ec5c21aa22e1ee29f12deb2dd",
+    "evaluation/substrate_capability/analyze_thoughtexperiment_a8_proposal_bridge_v1_3.py": "796beca34987f49e4d46b1d7232046429775238ad7cd1878ba860d33108c0926",
+    "evaluation/substrate_capability/thoughtexperiment_a8_proposal_bridge_v1_3.py": "520a334b643285a0266f27664d226084c7116cf863f75fc8615d5a66de230caa",
+    "evaluation/substrate_capability/thoughtexperiment_blinded_panel_adapters_v1.py": "6354a6f9e34cf2f1108311be3a082b37f47390b2eb6949c0283ab43172ffd82d",
+    "evaluation/substrate_capability/thoughtexperiment_navigation_polarity_repair_v1_1.py": "9c0ec48a32d68a51eb1743f87b1f3b3bfacab213058b9cf4fdcac16577c66afe",
+    "loaded_native_binary": "a4c30df0aff2e8e0723a3d957142e4e9a5bc321592d40295ec863310ca2c5af8",
+    "runners/dsl/Cargo.lock": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+    "runners/dsl/Cargo.toml": "c4d8ffff2241352a5150b5a9937dbb8010e958b6f115235b7daeae716c1a9332",
+    "runners/dsl/python/substrate_rs/__init__.py": "4e338797786071822b2e3d919ca1da3a266bda60c3ce0e29e13213a9d37454b4",
+    "runners/dsl/src/grammar.rs": "aaf6f571bf8e8761584c7473d3fe3130c5a6e395bff7f2b63f1cdcf6046b73f6",
+    "runners/dsl/src/graph.rs": "39c4fb983db934cf7350c28d168d0ad9d3049efba1cdb3847f23b55a0d488c66",
+    "runners/dsl/src/graph_rules.rs": "c02b4f7499f40348395f9ef0394c8799c6d0664d1d8296bf780f3745d3299246",
+    "runners/dsl/src/lib.rs": "10ae7645d9ed1f7c3c9d4f5fd119406928ce079e4336a5b007df307c685c0826",
+    "runners/dsl/src/persist.rs": "dfe9247a700f1d5fafd239447018c9bd25297a50f9c86ba63a9e1ce41f149986",
+    "runners/dsl/src/py.rs": "40e07774aaf04740ae08a42ca725ca0465a8b855754d5a596c8d67ca4c699cd8",
+    "runners/dsl/src/substrate.rs": "c8790f285532a7494089bcbff1eb5ed4917cefd23a8eab420408bb3187f51744",
+    "runners/dsl/src/sym.rs": "b54f6af6e456a7095a02eb5b3cab42a73072318bd7e54ed150c787468b170d5f",
+    "runners/dsl/src/term.rs": "bccd6976f38d837cdbce786138d0b55235deab62512ce83a35c003fa28620d53",
+    "seeds/autonomy.json": "5eb18e0b06de6243ac1abae5a51bdc146e78d4d5a13ec863a9baa20f9ede9dfe",
+    "seeds/composer_dispatch.json": "a167c0ef5fba47ef9c46a3c87db972e5a85f444f9a930e761a7ef40d25b9a09a",
+    "seeds/composer_experiment_graph.json": "f6f8200b6955fb6f7f4b2766d5e9feb50db87ceada6f36b9523bd66b36e1ff95",
+    "seeds/grid_navigation.json": "bebbf9fa41a93a5973aa705da6ae9bc1b26f622b19fbdee516fa41d27eeadd48",
+    "seeds/relation_vocabulary.json": "781e89f27c5d31c214d57eb521deb6dab04c34ef51413b7a14739dd98861d90a",
+    "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+    "substrate/seed_loader.py": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27"
+  },
+  "source_before": {
+    "docs/research/engine_substrate/MAC_FAC_A8_RESULTS.md": "511ee14bc1160041219419c9acfcebdb452f305f53a5686d3a1b6ac1bd33edb8",
+    "docs/research/engine_substrate/THOUGHTEXPERIMENT_A8_PROPOSAL_BRIDGE_V1_1_RESULTS_20261002.md": "285fd97a374f799407e1597694065d70d366c1f29e5e95fcbde4a48a4755cbce",
+    "docs/research/engine_substrate/THOUGHTEXPERIMENT_A8_PROPOSAL_BRIDGE_V1_2_RESULTS_20261002.md": "6fffcaa7d8fa66cabdd4f467b4aa668e7ef6ec2e662b02ce6182fcf7f22b2b02",
+    "docs/research/engine_substrate/THOUGHTEXPERIMENT_A8_PROPOSAL_BRIDGE_V1_3_AMENDMENT_20261003.md": "557f2154d5ac027abf98783ec4c8447f5e043630b7cb8147f7308cbf43a75a5e",
+    "docs/research/engine_substrate/THOUGHTEXPERIMENT_A8_PROPOSAL_BRIDGE_V1_PREREG_20261002.md": "19e4a40cd03117e16016417a0df85882c9870aa0c08d1e7bf1528032ac39b809",
+    "docs/research/engine_substrate/THOUGHTEXPERIMENT_A8_PROPOSAL_BRIDGE_V1_RESULTS_20261002.md": "bdf2ce782e112f0d4a07ec356167b18d4d4b7eb74c3c058363acd4d65b34b74e",
+    "docs/research/engine_substrate/THOUGHTEXPERIMENT_BLINDED_PROPOSAL_UTILITY_V1_2_RESULTS_20261002.md": "842baf009a96f6bef57e8d7161eb8ab8aea7faf24538474722cd511a56ac6242",
+    "docs/research/engine_substrate/THOUGHTEXPERIMENT_NAVIGATION_POLARITY_REPAIR_V1_1_RESULTS_20261002.md": "d62d334e219c001d8346a45d4905d8d091b7d7ccf200cd3174b601db9ddf80b4",
+    "domains/edit_ops.py": "308c401e992f8512308b3abb2b32acd6708bfebbb90255d7c5c9f4ea36c73a0d",
+    "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+    "domains/reflective_faculty.py": "57f05995c454443665e75eacbfec60bc0096ac34cd203fb0b10848af4691903e",
+    "domains/self_correct_dispatch.py": "6aa0759fb39c7b6ff754b669f1699d6badeb90beb48e90e5f7e5b3d1f8a5464f",
+    "domains/self_correction.py": "7c4f28e21afc4c334328d03146c56d5c46c80a9ec5c21aa22e1ee29f12deb2dd",
+    "evaluation/substrate_capability/analyze_thoughtexperiment_a8_proposal_bridge_v1_3.py": "796beca34987f49e4d46b1d7232046429775238ad7cd1878ba860d33108c0926",
+    "evaluation/substrate_capability/thoughtexperiment_a8_proposal_bridge_v1_3.py": "520a334b643285a0266f27664d226084c7116cf863f75fc8615d5a66de230caa",
+    "evaluation/substrate_capability/thoughtexperiment_blinded_panel_adapters_v1.py": "6354a6f9e34cf2f1108311be3a082b37f47390b2eb6949c0283ab43172ffd82d",
+    "evaluation/substrate_capability/thoughtexperiment_navigation_polarity_repair_v1_1.py": "9c0ec48a32d68a51eb1743f87b1f3b3bfacab213058b9cf4fdcac16577c66afe",
+    "loaded_native_binary": "a4c30df0aff2e8e0723a3d957142e4e9a5bc321592d40295ec863310ca2c5af8",
+    "runners/dsl/Cargo.lock": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+    "runners/dsl/Cargo.toml": "c4d8ffff2241352a5150b5a9937dbb8010e958b6f115235b7daeae716c1a9332",
+    "runners/dsl/python/substrate_rs/__init__.py": "4e338797786071822b2e3d919ca1da3a266bda60c3ce0e29e13213a9d37454b4",
+    "runners/dsl/src/grammar.rs": "aaf6f571bf8e8761584c7473d3fe3130c5a6e395bff7f2b63f1cdcf6046b73f6",
+    "runners/dsl/src/graph.rs": "39c4fb983db934cf7350c28d168d0ad9d3049efba1cdb3847f23b55a0d488c66",
+    "runners/dsl/src/graph_rules.rs": "c02b4f7499f40348395f9ef0394c8799c6d0664d1d8296bf780f3745d3299246",
+    "runners/dsl/src/lib.rs": "10ae7645d9ed1f7c3c9d4f5fd119406928ce079e4336a5b007df307c685c0826",
+    "runners/dsl/src/persist.rs": "dfe9247a700f1d5fafd239447018c9bd25297a50f9c86ba63a9e1ce41f149986",
+    "runners/dsl/src/py.rs": "40e07774aaf04740ae08a42ca725ca0465a8b855754d5a596c8d67ca4c699cd8",
+    "runners/dsl/src/substrate.rs": "c8790f285532a7494089bcbff1eb5ed4917cefd23a8eab420408bb3187f51744",
+    "runners/dsl/src/sym.rs": "b54f6af6e456a7095a02eb5b3cab42a73072318bd7e54ed150c787468b170d5f",
+    "runners/dsl/src/term.rs": "bccd6976f38d837cdbce786138d0b55235deab62512ce83a35c003fa28620d53",
+    "seeds/autonomy.json": "5eb18e0b06de6243ac1abae5a51bdc146e78d4d5a13ec863a9baa20f9ede9dfe",
+    "seeds/composer_dispatch.json": "a167c0ef5fba47ef9c46a3c87db972e5a85f444f9a930e761a7ef40d25b9a09a",
+    "seeds/composer_experiment_graph.json": "f6f8200b6955fb6f7f4b2766d5e9feb50db87ceada6f36b9523bd66b36e1ff95",
+    "seeds/grid_navigation.json": "bebbf9fa41a93a5973aa705da6ae9bc1b26f622b19fbdee516fa41d27eeadd48",
+    "seeds/relation_vocabulary.json": "781e89f27c5d31c214d57eb521deb6dab04c34ef51413b7a14739dd98861d90a",
+    "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+    "substrate/seed_loader.py": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27"
+  },
+  "workers": [
+    {
+      "fault_rule_control": {
+        "applied_rules": [
+          "hop_descend_gradient"
+        ],
+        "cost_ns": {
+          "adoption_verification_ns": 6429234,
+          "branch_creation_ns": 655993,
+          "candidate_patch_ns": 423903,
+          "candidate_trial_ns": 23789927,
+          "task_scoring_ns": 463552
+        },
+        "digest": "sha256:92b4bc37291601782f12a241c33b78e0aa1bb564f65fbd6aa38a8e93d3d55007",
+        "family": "navigation",
+        "label": "fault_rule_control",
+        "oracle_pass": false,
+        "primary_preserved": true,
+        "receipt_verified": true,
+        "split": "heldout",
+        "task_cases": [
+          {
+            "actual": "Up",
+            "case": "down",
+            "closure_work": 4,
+            "expected": "Down",
+            "pass": false
+          },
+          {
+            "actual": "Left",
+            "case": "right",
+            "closure_work": 4,
+            "expected": "Right",
+            "pass": false
+          }
+        ],
+        "utility": 0.0,
+        "worker": 0
+      },
+      "heldout_context_setup_ns": 45724203,
+      "heldout_reference_enumeration_ns": 10859718,
+      "host_candidate_outcomes": [
+        {
+          "applied_rules": [
+            "hop_descend_gradient"
+          ],
+          "cost_ns": {
+            "adoption_verification_ns": 6969587,
+            "branch_creation_ns": 475092,
+            "candidate_patch_ns": 466763,
+            "candidate_trial_ns": 20388998,
+            "task_scoring_ns": 561113
+          },
+          "digest": "sha256:e635e33a0e8b035267fb7633a4e419751559acf5abbc020d6128f7b9536f1c9c",
+          "family": "navigation",
+          "label": "flip_comparison",
+          "oracle_pass": true,
+          "primary_preserved": true,
+          "receipt_verified": true,
+          "split": "heldout",
+          "task_cases": [
+            {
+              "actual": "Down",
+              "case": "down",
+              "closure_work": 4,
+              "expected": "Down",
+              "pass": true
+            },
+            {
+              "actual": "Right",
+              "case": "right",
+              "closure_work": 4,
+              "expected": "Right",
+              "pass": true
+            }
+          ],
+          "utility": 1.0,
+          "worker": 0
+        },
+        {
+          "applied_rules": [
+            "hop_descend_gradient"
+          ],
+          "cost_ns": {
+            "adoption_verification_ns": 6210693,
+            "branch_creation_ns": 445993,
+            "candidate_patch_ns": 463402,
+            "candidate_trial_ns": 21871676,
+            "task_scoring_ns": 451503
+          },
+          "digest": "sha256:9e821cfe20736b4500e5fcb63d96c35cc9a3262dabd7e515f6b037abd2cefa2e",
+          "family": "navigation",
+          "label": "add_match_guard(control)",
+          "oracle_pass": false,
+          "primary_preserved": true,
+          "receipt_verified": true,
+          "split": "heldout",
+          "task_cases": [
+            {
+              "actual": null,
+              "case": "down",
+              "closure_work": 3,
+              "expected": "Down",
+              "pass": false
+            },
+            {
+              "actual": null,
+              "case": "right",
+              "closure_work": 3,
+              "expected": "Right",
+              "pass": false
+            }
+          ],
+          "utility": 0.0,
+          "worker": 0
+        },
+        {
+          "applied_rules": [
+            "hop_descend_gradient"
+          ],
+          "cost_ns": {
+            "adoption_verification_ns": 6640845,
+            "branch_creation_ns": 818985,
+            "candidate_patch_ns": 430052,
+            "candidate_trial_ns": 21677965,
+            "task_scoring_ns": 522713
+          },
+          "digest": "sha256:f567e2973e1cd9268339713eda7310c3a758adb6792c5a592c415b6c32656d60",
+          "family": "navigation",
+          "label": "swap_term_leaf:_adist->_dist",
+          "oracle_pass": false,
+          "primary_preserved": true,
+          "receipt_verified": true,
+          "split": "heldout",
+          "task_cases": [
+            {
+              "actual": "",
+              "case": "down",
+              "closure_work": 4,
+              "expected": "Down",
+              "pass": false
+            },
+            {
+              "actual": "",
+              "case": "right",
+              "closure_work": 4,
+              "expected": "Right",
+              "pass": false
+            }
+          ],
+          "utility": 0.0,
+          "worker": 0
+        },
+        {
+          "applied_rules": [
+            "hop_descend_gradient"
+          ],
+          "cost_ns": {
+            "adoption_verification_ns": 8753947,
+            "branch_creation_ns": 1285956,
+            "candidate_patch_ns": 537703,
+            "candidate_trial_ns": 28597003,
+            "task_scoring_ns": 514183
+          },
+          "digest": "sha256:be07a7304dcfdc6368e33eb12b5151dc210a49aa3dc6362f8c925388d23c1e8e",
+          "family": "navigation",
+          "label": "swap_term_leaf:_adist->_epoch",
+          "oracle_pass": false,
+          "primary_preserved": true,
+          "receipt_verified": true,
+          "split": "heldout",
+          "task_cases": [
+            {
+              "actual": "",
+              "case": "down",
+              "closure_work": 4,
+              "expected": "Down",
+              "pass": false
+            },
+            {
+              "actual": "",
+              "case": "right",
+              "closure_work": 4,
+              "expected": "Right",
+              "pass": false
+            }
+          ],
+          "utility": 0.0,
+          "worker": 0
+        },
+        {
+          "applied_rules": [
+            "hop_descend_gradient"
+          ],
+          "cost_ns": {
+            "adoption_verification_ns": 9442160,
+            "branch_creation_ns": 1669739,
+            "candidate_patch_ns": 759224,
+            "candidate_trial_ns": 36083472,
+            "task_scoring_ns": 825735
+          },
+          "digest": "sha256:2ba1d71ae738998af2bfa4bf4c4f8730cf26082a88f0d04af72e0c45e8710eaf",
+          "family": "navigation",
+          "label": "swap_term_leaf:_adist->col",
+          "oracle_pass": false,
+          "primary_preserved": true,
+          "receipt_verified": true,
+          "split": "heldout",
+          "task_cases": [
+            {
+              "actual": "",
+              "case": "down",
+              "closure_work": 4,
+              "expected": "Down",
+              "pass": false
+            },
+            {
+              "actual": "",
+              "case": "right",
+              "closure_work": 4,
+              "expected": "Right",
+              "pass": false
+            }
+          ],
+          "utility": 0.0,
+          "worker": 0
+        },
+        {
+          "applied_rules": [
+            "hop_descend_gradient"
+          ],
+          "cost_ns": {
+            "adoption_verification_ns": 6603655,
+            "branch_creation_ns": 811155,
+            "candidate_patch_ns": 479562,
+            "candidate_trial_ns": 21678635,
+            "task_scoring_ns": 499133
+          },
+          "digest": "sha256:da58503940a5e37ecfd6fb90497f42bb648e9ffad5d5319f8b5ea82680c5a743",
+          "family": "navigation",
+          "label": "swap_term_leaf:_adist->flood_epoch",
+          "oracle_pass": false,
+          "primary_preserved": true,
+          "receipt_verified": true,
+          "split": "heldout",
+          "task_cases": [
+            {
+              "actual": "",
+              "case": "down",
+              "closure_work": 4,
+              "expected": "Down",
+              "pass": false
+            },
+            {
+              "actual": "",
+              "case": "right",
+              "closure_work": 4,
+              "expected": "Right",
+              "pass": false
+            }
+          ],
+          "utility": 0.0,
+          "worker": 0
+        }
+      ],
+      "pid": 3,
+      "prompted_graph_proposal_outcome": {
+        "digest_match": false,
+        "outcome": {
+          "applied_rules": [
+            "hop_descend_gradient"
+          ],
+          "cost_ns": {
+            "adoption_verification_ns": 6920607,
+            "branch_creation_ns": 430772,
+            "candidate_patch_ns": 542703,
+            "candidate_trial_ns": 20440029,
+            "task_scoring_ns": 479603
+          },
+          "digest": "sha256:f0feb22d2ace8ec8310513ed17f464915b048af41a04d2e917d9b1509f116855",
+          "family": "navigation",
+          "label": "a8_graph_flip_comparison",
+          "oracle_pass": true,
+          "primary_preserved": true,
+          "receipt_verified": true,
+          "split": "heldout",
+          "task_cases": [
+            {
+              "actual": "Down",
+              "case": "down",
+              "closure_work": 4,
+              "expected": "Down",
+              "pass": true
+            },
+            {
+              "actual": "Right",
+              "case": "right",
+              "closure_work": 4,
+              "expected": "Right",
+              "pass": true
+            }
+          ],
+          "utility": 1.0,
+          "worker": 0
+        },
+        "reused_host_candidate_label": null
+      },
+      "source_after": {
+        "docs/research/engine_substrate/MAC_FAC_A8_RESULTS.md": "511ee14bc1160041219419c9acfcebdb452f305f53a5686d3a1b6ac1bd33edb8",
+        "docs/research/engine_substrate/THOUGHTEXPERIMENT_A8_PROPOSAL_BRIDGE_V1_1_RESULTS_20261002.md": "285fd97a374f799407e1597694065d70d366c1f29e5e95fcbde4a48a4755cbce",
+        "docs/research/engine_substrate/THOUGHTEXPERIMENT_A8_PROPOSAL_BRIDGE_V1_2_RESULTS_20261002.md": "6fffcaa7d8fa66cabdd4f467b4aa668e7ef6ec2e662b02ce6182fcf7f22b2b02",
+        "docs/research/engine_substrate/THOUGHTEXPERIMENT_A8_PROPOSAL_BRIDGE_V1_3_AMENDMENT_20261003.md": "557f2154d5ac027abf98783ec4c8447f5e043630b7cb8147f7308cbf43a75a5e",
+        "docs/research/engine_substrate/THOUGHTEXPERIMENT_A8_PROPOSAL_BRIDGE_V1_PREREG_20261002.md": "19e4a40cd03117e16016417a0df85882c9870aa0c08d1e7bf1528032ac39b809",
+        "docs/research/engine_substrate/THOUGHTEXPERIMENT_A8_PROPOSAL_BRIDGE_V1_RESULTS_20261002.md": "bdf2ce782e112f0d4a07ec356167b18d4d4b7eb74c3c058363acd4d65b34b74e",
+        "docs/research/engine_substrate/THOUGHTEXPERIMENT_BLINDED_PROPOSAL_UTILITY_V1_2_RESULTS_20261002.md": "842baf009a96f6bef57e8d7161eb8ab8aea7faf24538474722cd511a56ac6242",
+        "docs/research/engine_substrate/THOUGHTEXPERIMENT_NAVIGATION_POLARITY_REPAIR_V1_1_RESULTS_20261002.md": "d62d334e219c001d8346a45d4905d8d091b7d7ccf200cd3174b601db9ddf80b4",
+        "domains/edit_ops.py": "308c401e992f8512308b3abb2b32acd6708bfebbb90255d7c5c9f4ea36c73a0d",
+        "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+        "domains/reflective_faculty.py": "57f05995c454443665e75eacbfec60bc0096ac34cd203fb0b10848af4691903e",
+        "domains/self_correct_dispatch.py": "6aa0759fb39c7b6ff754b669f1699d6badeb90beb48e90e5f7e5b3d1f8a5464f",
+        "domains/self_correction.py": "7c4f28e21afc4c334328d03146c56d5c46c80a9ec5c21aa22e1ee29f12deb2dd",
+        "evaluation/substrate_capability/analyze_thoughtexperiment_a8_proposal_bridge_v1_3.py": "796beca34987f49e4d46b1d7232046429775238ad7cd1878ba860d33108c0926",
+        "evaluation/substrate_capability/thoughtexperiment_a8_proposal_bridge_v1_3.py": "520a334b643285a0266f27664d226084c7116cf863f75fc8615d5a66de230caa",
+        "evaluation/substrate_capability/thoughtexperiment_blinded_panel_adapters_v1.py": "6354a6f9e34cf2f1108311be3a082b37f47390b2eb6949c0283ab43172ffd82d",
+        "evaluation/substrate_capability/thoughtexperiment_navigation_polarity_repair_v1_1.py": "9c0ec48a32d68a51eb1743f87b1f3b3bfacab213058b9cf4fdcac16577c66afe",
+        "loaded_native_binary": "a4c30df0aff2e8e0723a3d957142e4e9a5bc321592d40295ec863310ca2c5af8",
+        "runners/dsl/Cargo.lock": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+        "runners/dsl/Cargo.toml": "c4d8ffff2241352a5150b5a9937dbb8010e958b6f115235b7daeae716c1a9332",
+        "runners/dsl/python/substrate_rs/__init__.py": "4e338797786071822b2e3d919ca1da3a266bda60c3ce0e29e13213a9d37454b4",
+        "runners/dsl/src/grammar.rs": "aaf6f571bf8e8761584c7473d3fe3130c5a6e395bff7f2b63f1cdcf6046b73f6",
+        "runners/dsl/src/graph.rs": "39c4fb983db934cf7350c28d168d0ad9d3049efba1cdb3847f23b55a0d488c66",
+        "runners/dsl/src/graph_rules.rs": "c02b4f7499f40348395f9ef0394c8799c6d0664d1d8296bf780f3745d3299246",
+        "runners/dsl/src/lib.rs": "10ae7645d9ed1f7c3c9d4f5fd119406928ce079e4336a5b007df307c685c0826",
+        "runners/dsl/src/persist.rs": "dfe9247a700f1d5fafd239447018c9bd25297a50f9c86ba63a9e1ce41f149986",
+        "runners/dsl/src/py.rs": "40e07774aaf04740ae08a42ca725ca0465a8b855754d5a596c8d67ca4c699cd8",
+        "runners/dsl/src/substrate.rs": "c8790f285532a7494089bcbff1eb5ed4917cefd23a8eab420408bb3187f51744",
+        "runners/dsl/src/sym.rs": "b54f6af6e456a7095a02eb5b3cab42a73072318bd7e54ed150c787468b170d5f",
+        "runners/dsl/src/term.rs": "bccd6976f38d837cdbce786138d0b55235deab62512ce83a35c003fa28620d53",
+        "seeds/autonomy.json": "5eb18e0b06de6243ac1abae5a51bdc146e78d4d5a13ec863a9baa20f9ede9dfe",
+        "seeds/composer_dispatch.json": "a167c0ef5fba47ef9c46a3c87db972e5a85f444f9a930e761a7ef40d25b9a09a",
+        "seeds/composer_experiment_graph.json": "f6f8200b6955fb6f7f4b2766d5e9feb50db87ceada6f36b9523bd66b36e1ff95",
+        "seeds/grid_navigation.json": "bebbf9fa41a93a5973aa705da6ae9bc1b26f622b19fbdee516fa41d27eeadd48",
+        "seeds/relation_vocabulary.json": "781e89f27c5d31c214d57eb521deb6dab04c34ef51413b7a14739dd98861d90a",
+        "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+        "substrate/seed_loader.py": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27"
+      },
+      "source_before": {
+        "docs/research/engine_substrate/MAC_FAC_A8_RESULTS.md": "511ee14bc1160041219419c9acfcebdb452f305f53a5686d3a1b6ac1bd33edb8",
+        "docs/research/engine_substrate/THOUGHTEXPERIMENT_A8_PROPOSAL_BRIDGE_V1_1_RESULTS_20261002.md": "285fd97a374f799407e1597694065d70d366c1f29e5e95fcbde4a48a4755cbce",
+        "docs/research/engine_substrate/THOUGHTEXPERIMENT_A8_PROPOSAL_BRIDGE_V1_2_RESULTS_20261002.md": "6fffcaa7d8fa66cabdd4f467b4aa668e7ef6ec2e662b02ce6182fcf7f22b2b02",
+        "docs/research/engine_substrate/THOUGHTEXPERIMENT_A8_PROPOSAL_BRIDGE_V1_3_AMENDMENT_20261003.md": "557f2154d5ac027abf98783ec4c8447f5e043630b7cb8147f7308cbf43a75a5e",
+        "docs/research/engine_substrate/THOUGHTEXPERIMENT_A8_PROPOSAL_BRIDGE_V1_PREREG_20261002.md": "19e4a40cd03117e16016417a0df85882c9870aa0c08d1e7bf1528032ac39b809",
+        "docs/research/engine_substrate/THOUGHTEXPERIMENT_A8_PROPOSAL_BRIDGE_V1_RESULTS_20261002.md": "bdf2ce782e112f0d4a07ec356167b18d4d4b7eb74c3c058363acd4d65b34b74e",
+        "docs/research/engine_substrate/THOUGHTEXPERIMENT_BLINDED_PROPOSAL_UTILITY_V1_2_RESULTS_20261002.md": "842baf009a96f6bef57e8d7161eb8ab8aea7faf24538474722cd511a56ac6242",
+        "docs/research/engine_substrate/THOUGHTEXPERIMENT_NAVIGATION_POLARITY_REPAIR_V1_1_RESULTS_20261002.md": "d62d334e219c001d8346a45d4905d8d091b7d7ccf200cd3174b601db9ddf80b4",
+        "domains/edit_ops.py": "308c401e992f8512308b3abb2b32acd6708bfebbb90255d7c5c9f4ea36c73a0d",
+        "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+        "domains/reflective_faculty.py": "57f05995c454443665e75eacbfec60bc0096ac34cd203fb0b10848af4691903e",
+        "domains/self_correct_dispatch.py": "6aa0759fb39c7b6ff754b669f1699d6badeb90beb48e90e5f7e5b3d1f8a5464f",
+        "domains/self_correction.py": "7c4f28e21afc4c334328d03146c56d5c46c80a9ec5c21aa22e1ee29f12deb2dd",
+        "evaluation/substrate_capability/analyze_thoughtexperiment_a8_proposal_bridge_v1_3.py": "796beca34987f49e4d46b1d7232046429775238ad7cd1878ba860d33108c0926",
+        "evaluation/substrate_capability/thoughtexperiment_a8_proposal_bridge_v1_3.py": "520a334b643285a0266f27664d226084c7116cf863f75fc8615d5a66de230caa",
+        "evaluation/substrate_capability/thoughtexperiment_blinded_panel_adapters_v1.py": "6354a6f9e34cf2f1108311be3a082b37f47390b2eb6949c0283ab43172ffd82d",
+        "evaluation/substrate_capability/thoughtexperiment_navigation_polarity_repair_v1_1.py": "9c0ec48a32d68a51eb1743f87b1f3b3bfacab213058b9cf4fdcac16577c66afe",
+        "loaded_native_binary": "a4c30df0aff2e8e0723a3d957142e4e9a5bc321592d40295ec863310ca2c5af8",
+        "runners/dsl/Cargo.lock": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+        "runners/dsl/Cargo.toml": "c4d8ffff2241352a5150b5a9937dbb8010e958b6f115235b7daeae716c1a9332",
+        "runners/dsl/python/substrate_rs/__init__.py": "4e338797786071822b2e3d919ca1da3a266bda60c3ce0e29e13213a9d37454b4",
+        "runners/dsl/src/grammar.rs": "aaf6f571bf8e8761584c7473d3fe3130c5a6e395bff7f2b63f1cdcf6046b73f6",
+        "runners/dsl/src/graph.rs": "39c4fb983db934cf7350c28d168d0ad9d3049efba1cdb3847f23b55a0d488c66",
+        "runners/dsl/src/graph_rules.rs": "c02b4f7499f40348395f9ef0394c8799c6d0664d1d8296bf780f3745d3299246",
+        "runners/dsl/src/lib.rs": "10ae7645d9ed1f7c3c9d4f5fd119406928ce079e4336a5b007df307c685c0826",
+        "runners/dsl/src/persist.rs": "dfe9247a700f1d5fafd239447018c9bd25297a50f9c86ba63a9e1ce41f149986",
+        "runners/dsl/src/py.rs": "40e07774aaf04740ae08a42ca725ca0465a8b855754d5a596c8d67ca4c699cd8",
+        "runners/dsl/src/substrate.rs": "c8790f285532a7494089bcbff1eb5ed4917cefd23a8eab420408bb3187f51744",
+        "runners/dsl/src/sym.rs": "b54f6af6e456a7095a02eb5b3cab42a73072318bd7e54ed150c787468b170d5f",
+        "runners/dsl/src/term.rs": "bccd6976f38d837cdbce786138d0b55235deab62512ce83a35c003fa28620d53",
+        "seeds/autonomy.json": "5eb18e0b06de6243ac1abae5a51bdc146e78d4d5a13ec863a9baa20f9ede9dfe",
+        "seeds/composer_dispatch.json": "a167c0ef5fba47ef9c46a3c87db972e5a85f444f9a930e761a7ef40d25b9a09a",
+        "seeds/composer_experiment_graph.json": "f6f8200b6955fb6f7f4b2766d5e9feb50db87ceada6f36b9523bd66b36e1ff95",
+        "seeds/grid_navigation.json": "bebbf9fa41a93a5973aa705da6ae9bc1b26f622b19fbdee516fa41d27eeadd48",
+        "seeds/relation_vocabulary.json": "781e89f27c5d31c214d57eb521deb6dab04c34ef51413b7a14739dd98861d90a",
+        "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+        "substrate/seed_loader.py": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27"
+      },
+      "source_rule_control": {
+        "applied_rules": [
+          "hop_descend_gradient"
+        ],
+        "cost_ns": {
+          "adoption_verification_ns": 8015483,
+          "branch_creation_ns": 502923,
+          "candidate_patch_ns": 447342,
+          "candidate_trial_ns": 21824826,
+          "task_scoring_ns": 477232
+        },
+        "digest": "sha256:2d9a8daec39c71fc1ddd459cb8332c4cf6f8a55088241ad3d7aa0c73fe17ef3f",
+        "family": "navigation",
+        "label": "source_rule_control",
+        "oracle_pass": true,
+        "primary_preserved": true,
+        "receipt_verified": true,
+        "split": "heldout",
+        "task_cases": [
+          {
+            "actual": "Down",
+            "case": "down",
+            "closure_work": 4,
+            "expected": "Down",
+            "pass": true
+          },
+          {
+            "actual": "Right",
+            "case": "right",
+            "closure_work": 4,
+            "expected": "Right",
+            "pass": true
+          }
+        ],
+        "utility": 1.0,
+        "worker": 0
+      },
+      "source_stable": true,
+      "unprompted_graph_proposal_outcome": null,
+      "worker": 0
+    },
+    {
+      "fault_rule_control": {
+        "applied_rules": [
+          "hop_descend_gradient"
+        ],
+        "cost_ns": {
+          "adoption_verification_ns": 6054253,
+          "branch_creation_ns": 662733,
+          "candidate_patch_ns": 481083,
+          "candidate_trial_ns": 19312483,
+          "task_scoring_ns": 471562
+        },
+        "digest": "sha256:92b4bc37291601782f12a241c33b78e0aa1bb564f65fbd6aa38a8e93d3d55007",
+        "family": "navigation",
+        "label": "fault_rule_control",
+        "oracle_pass": false,
+        "primary_preserved": true,
+        "receipt_verified": true,
+        "split": "heldout",
+        "task_cases": [
+          {
+            "actual": "Up",
+            "case": "down",
+            "closure_work": 4,
+            "expected": "Down",
+            "pass": false
+          },
+          {
+            "actual": "Left",
+            "case": "right",
+            "closure_work": 4,
+            "expected": "Right",
+            "pass": false
+          }
+        ],
+        "utility": 0.0,
+        "worker": 1
+      },
+      "heldout_context_setup_ns": 46084085,
+      "heldout_reference_enumeration_ns": 11434501,
+      "host_candidate_outcomes": [
+        {
+          "applied_rules": [
+            "hop_descend_gradient"
+          ],
+          "cost_ns": {
+            "adoption_verification_ns": 7349959,
+            "branch_creation_ns": 524682,
+            "candidate_patch_ns": 488033,
+            "candidate_trial_ns": 21308803,
+            "task_scoring_ns": 619633
+          },
+          "digest": "sha256:e635e33a0e8b035267fb7633a4e419751559acf5abbc020d6128f7b9536f1c9c",
+          "family": "navigation",
+          "label": "flip_comparison",
+          "oracle_pass": true,
+          "primary_preserved": true,
+          "receipt_verified": true,
+          "split": "heldout",
+          "task_cases": [
+            {
+              "actual": "Down",
+              "case": "down",
+              "closure_work": 4,
+              "expected": "Down",
+              "pass": true
+            },
+            {
+              "actual": "Right",
+              "case": "right",
+              "closure_work": 4,
+              "expected": "Right",
+              "pass": true
+            }
+          ],
+          "utility": 1.0,
+          "worker": 1
+        },
+        {
+          "applied_rules": [
+            "hop_descend_gradient"
+          ],
+          "cost_ns": {
+            "adoption_verification_ns": 9903333,
+            "branch_creation_ns": 579283,
+            "candidate_patch_ns": 1365868,
+            "candidate_trial_ns": 30934625,
+            "task_scoring_ns": 640063
+          },
+          "digest": "sha256:9e821cfe20736b4500e5fcb63d96c35cc9a3262dabd7e515f6b037abd2cefa2e",
+          "family": "navigation",
+          "label": "add_match_guard(control)",
+          "oracle_pass": false,
+          "primary_preserved": true,
+          "receipt_verified": true,
+          "split": "heldout",
+          "task_cases": [
+            {
+              "actual": null,
+              "case": "down",
+              "closure_work": 3,
+              "expected": "Down",
+              "pass": false
+            },
+            {
+              "actual": null,
+              "case": "right",
+              "closure_work": 3,
+              "expected": "Right",
+              "pass": false
+            }
+          ],
+          "utility": 0.0,
+          "worker": 1
+        },
+        {
+          "applied_rules": [
+            "hop_descend_gradient"
+          ],
+          "cost_ns": {
+            "adoption_verification_ns": 10017464,
+            "branch_creation_ns": 992185,
+            "candidate_patch_ns": 1154357,
+            "candidate_trial_ns": 31613029,
+            "task_scoring_ns": 719643
+          },
+          "digest": "sha256:f567e2973e1cd9268339713eda7310c3a758adb6792c5a592c415b6c32656d60",
+          "family": "navigation",
+          "label": "swap_term_leaf:_adist->_dist",
+          "oracle_pass": false,
+          "primary_preserved": true,
+          "receipt_verified": true,
+          "split": "heldout",
+          "task_cases": [
+            {
+              "actual": "",
+              "case": "down",
+              "closure_work": 4,
+              "expected": "Down",
+              "pass": false
+            },
+            {
+              "actual": "",
+              "case": "right",
+              "closure_work": 4,
+              "expected": "Right",
+              "pass": false
+            }
+          ],
+          "utility": 0.0,
+          "worker": 1
+        },
+        {
+          "applied_rules": [
+            "hop_descend_gradient"
+          ],
+          "cost_ns": {
+            "adoption_verification_ns": 8476415,
+            "branch_creation_ns": 905905,
+            "candidate_patch_ns": 666153,
+            "candidate_trial_ns": 27800158,
+            "task_scoring_ns": 560633
+          },
+          "digest": "sha256:be07a7304dcfdc6368e33eb12b5151dc210a49aa3dc6362f8c925388d23c1e8e",
+          "family": "navigation",
+          "label": "swap_term_leaf:_adist->_epoch",
+          "oracle_pass": false,
+          "primary_preserved": true,
+          "receipt_verified": true,
+          "split": "heldout",
+          "task_cases": [
+            {
+              "actual": "",
+              "case": "down",
+              "closure_work": 4,
+              "expected": "Down",
+              "pass": false
+            },
+            {
+              "actual": "",
+              "case": "right",
+              "closure_work": 4,
+              "expected": "Right",
+              "pass": false
+            }
+          ],
+          "utility": 0.0,
+          "worker": 1
+        },
+        {
+          "applied_rules": [
+            "hop_descend_gradient"
+          ],
+          "cost_ns": {
+            "adoption_verification_ns": 6522155,
+            "branch_creation_ns": 795425,
+            "candidate_patch_ns": 381392,
+            "candidate_trial_ns": 20296428,
+            "task_scoring_ns": 487572
+          },
+          "digest": "sha256:2ba1d71ae738998af2bfa4bf4c4f8730cf26082a88f0d04af72e0c45e8710eaf",
+          "family": "navigation",
+          "label": "swap_term_leaf:_adist->col",
+          "oracle_pass": false,
+          "primary_preserved": true,
+          "receipt_verified": true,
+          "split": "heldout",
+          "task_cases": [
+            {
+              "actual": "",
+              "case": "down",
+              "closure_work": 4,
+              "expected": "Down",
+              "pass": false
+            },
+            {
+              "actual": "",
+              "case": "right",
+              "closure_work": 4,
+              "expected": "Right",
+              "pass": false
+            }
+          ],
+          "utility": 0.0,
+          "worker": 1
+        },
+        {
+          "applied_rules": [
+            "hop_descend_gradient"
+          ],
+          "cost_ns": {
+            "adoption_verification_ns": 8818347,
+            "branch_creation_ns": 620843,
+            "candidate_patch_ns": 358692,
+            "candidate_trial_ns": 23819377,
+            "task_scoring_ns": 472763
+          },
+          "digest": "sha256:da58503940a5e37ecfd6fb90497f42bb648e9ffad5d5319f8b5ea82680c5a743",
+          "family": "navigation",
+          "label": "swap_term_leaf:_adist->flood_epoch",
+          "oracle_pass": false,
+          "primary_preserved": true,
+          "receipt_verified": true,
+          "split": "heldout",
+          "task_cases": [
+            {
+              "actual": "",
+              "case": "down",
+              "closure_work": 4,
+              "expected": "Down",
+              "pass": false
+            },
+            {
+              "actual": "",
+              "case": "right",
+              "closure_work": 4,
+              "expected": "Right",
+              "pass": false
+            }
+          ],
+          "utility": 0.0,
+          "worker": 1
+        }
+      ],
+      "pid": 182,
+      "prompted_graph_proposal_outcome": {
+        "digest_match": false,
+        "outcome": {
+          "applied_rules": [
+            "hop_descend_gradient"
+          ],
+          "cost_ns": {
+            "adoption_verification_ns": 6641145,
+            "branch_creation_ns": 493063,
+            "candidate_patch_ns": 475332,
+            "candidate_trial_ns": 21019612,
+            "task_scoring_ns": 481643
+          },
+          "digest": "sha256:f0feb22d2ace8ec8310513ed17f464915b048af41a04d2e917d9b1509f116855",
+          "family": "navigation",
+          "label": "a8_graph_flip_comparison",
+          "oracle_pass": true,
+          "primary_preserved": true,
+          "receipt_verified": true,
+          "split": "heldout",
+          "task_cases": [
+            {
+              "actual": "Down",
+              "case": "down",
+              "closure_work": 4,
+              "expected": "Down",
+              "pass": true
+            },
+            {
+              "actual": "Right",
+              "case": "right",
+              "closure_work": 4,
+              "expected": "Right",
+              "pass": true
+            }
+          ],
+          "utility": 1.0,
+          "worker": 1
+        },
+        "reused_host_candidate_label": null
+      },
+      "source_after": {
+        "docs/research/engine_substrate/MAC_FAC_A8_RESULTS.md": "511ee14bc1160041219419c9acfcebdb452f305f53a5686d3a1b6ac1bd33edb8",
+        "docs/research/engine_substrate/THOUGHTEXPERIMENT_A8_PROPOSAL_BRIDGE_V1_1_RESULTS_20261002.md": "285fd97a374f799407e1597694065d70d366c1f29e5e95fcbde4a48a4755cbce",
+        "docs/research/engine_substrate/THOUGHTEXPERIMENT_A8_PROPOSAL_BRIDGE_V1_2_RESULTS_20261002.md": "6fffcaa7d8fa66cabdd4f467b4aa668e7ef6ec2e662b02ce6182fcf7f22b2b02",
+        "docs/research/engine_substrate/THOUGHTEXPERIMENT_A8_PROPOSAL_BRIDGE_V1_3_AMENDMENT_20261003.md": "557f2154d5ac027abf98783ec4c8447f5e043630b7cb8147f7308cbf43a75a5e",
+        "docs/research/engine_substrate/THOUGHTEXPERIMENT_A8_PROPOSAL_BRIDGE_V1_PREREG_20261002.md": "19e4a40cd03117e16016417a0df85882c9870aa0c08d1e7bf1528032ac39b809",
+        "docs/research/engine_substrate/THOUGHTEXPERIMENT_A8_PROPOSAL_BRIDGE_V1_RESULTS_20261002.md": "bdf2ce782e112f0d4a07ec356167b18d4d4b7eb74c3c058363acd4d65b34b74e",
+        "docs/research/engine_substrate/THOUGHTEXPERIMENT_BLINDED_PROPOSAL_UTILITY_V1_2_RESULTS_20261002.md": "842baf009a96f6bef57e8d7161eb8ab8aea7faf24538474722cd511a56ac6242",
+        "docs/research/engine_substrate/THOUGHTEXPERIMENT_NAVIGATION_POLARITY_REPAIR_V1_1_RESULTS_20261002.md": "d62d334e219c001d8346a45d4905d8d091b7d7ccf200cd3174b601db9ddf80b4",
+        "domains/edit_ops.py": "308c401e992f8512308b3abb2b32acd6708bfebbb90255d7c5c9f4ea36c73a0d",
+        "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+        "domains/reflective_faculty.py": "57f05995c454443665e75eacbfec60bc0096ac34cd203fb0b10848af4691903e",
+        "domains/self_correct_dispatch.py": "6aa0759fb39c7b6ff754b669f1699d6badeb90beb48e90e5f7e5b3d1f8a5464f",
+        "domains/self_correction.py": "7c4f28e21afc4c334328d03146c56d5c46c80a9ec5c21aa22e1ee29f12deb2dd",
+        "evaluation/substrate_capability/analyze_thoughtexperiment_a8_proposal_bridge_v1_3.py": "796beca34987f49e4d46b1d7232046429775238ad7cd1878ba860d33108c0926",
+        "evaluation/substrate_capability/thoughtexperiment_a8_proposal_bridge_v1_3.py": "520a334b643285a0266f27664d226084c7116cf863f75fc8615d5a66de230caa",
+        "evaluation/substrate_capability/thoughtexperiment_blinded_panel_adapters_v1.py": "6354a6f9e34cf2f1108311be3a082b37f47390b2eb6949c0283ab43172ffd82d",
+        "evaluation/substrate_capability/thoughtexperiment_navigation_polarity_repair_v1_1.py": "9c0ec48a32d68a51eb1743f87b1f3b3bfacab213058b9cf4fdcac16577c66afe",
+        "loaded_native_binary": "a4c30df0aff2e8e0723a3d957142e4e9a5bc321592d40295ec863310ca2c5af8",
+        "runners/dsl/Cargo.lock": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+        "runners/dsl/Cargo.toml": "c4d8ffff2241352a5150b5a9937dbb8010e958b6f115235b7daeae716c1a9332",
+        "runners/dsl/python/substrate_rs/__init__.py": "4e338797786071822b2e3d919ca1da3a266bda60c3ce0e29e13213a9d37454b4",
+        "runners/dsl/src/grammar.rs": "aaf6f571bf8e8761584c7473d3fe3130c5a6e395bff7f2b63f1cdcf6046b73f6",
+        "runners/dsl/src/graph.rs": "39c4fb983db934cf7350c28d168d0ad9d3049efba1cdb3847f23b55a0d488c66",
+        "runners/dsl/src/graph_rules.rs": "c02b4f7499f40348395f9ef0394c8799c6d0664d1d8296bf780f3745d3299246",
+        "runners/dsl/src/lib.rs": "10ae7645d9ed1f7c3c9d4f5fd119406928ce079e4336a5b007df307c685c0826",
+        "runners/dsl/src/persist.rs": "dfe9247a700f1d5fafd239447018c9bd25297a50f9c86ba63a9e1ce41f149986",
+        "runners/dsl/src/py.rs": "40e07774aaf04740ae08a42ca725ca0465a8b855754d5a596c8d67ca4c699cd8",
+        "runners/dsl/src/substrate.rs": "c8790f285532a7494089bcbff1eb5ed4917cefd23a8eab420408bb3187f51744",
+        "runners/dsl/src/sym.rs": "b54f6af6e456a7095a02eb5b3cab42a73072318bd7e54ed150c787468b170d5f",
+        "runners/dsl/src/term.rs": "bccd6976f38d837cdbce786138d0b55235deab62512ce83a35c003fa28620d53",
+        "seeds/autonomy.json": "5eb18e0b06de6243ac1abae5a51bdc146e78d4d5a13ec863a9baa20f9ede9dfe",
+        "seeds/composer_dispatch.json": "a167c0ef5fba47ef9c46a3c87db972e5a85f444f9a930e761a7ef40d25b9a09a",
+        "seeds/composer_experiment_graph.json": "f6f8200b6955fb6f7f4b2766d5e9feb50db87ceada6f36b9523bd66b36e1ff95",
+        "seeds/grid_navigation.json": "bebbf9fa41a93a5973aa705da6ae9bc1b26f622b19fbdee516fa41d27eeadd48",
+        "seeds/relation_vocabulary.json": "781e89f27c5d31c214d57eb521deb6dab04c34ef51413b7a14739dd98861d90a",
+        "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+        "substrate/seed_loader.py": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27"
+      },
+      "source_before": {
+        "docs/research/engine_substrate/MAC_FAC_A8_RESULTS.md": "511ee14bc1160041219419c9acfcebdb452f305f53a5686d3a1b6ac1bd33edb8",
+        "docs/research/engine_substrate/THOUGHTEXPERIMENT_A8_PROPOSAL_BRIDGE_V1_1_RESULTS_20261002.md": "285fd97a374f799407e1597694065d70d366c1f29e5e95fcbde4a48a4755cbce",
+        "docs/research/engine_substrate/THOUGHTEXPERIMENT_A8_PROPOSAL_BRIDGE_V1_2_RESULTS_20261002.md": "6fffcaa7d8fa66cabdd4f467b4aa668e7ef6ec2e662b02ce6182fcf7f22b2b02",
+        "docs/research/engine_substrate/THOUGHTEXPERIMENT_A8_PROPOSAL_BRIDGE_V1_3_AMENDMENT_20261003.md": "557f2154d5ac027abf98783ec4c8447f5e043630b7cb8147f7308cbf43a75a5e",
+        "docs/research/engine_substrate/THOUGHTEXPERIMENT_A8_PROPOSAL_BRIDGE_V1_PREREG_20261002.md": "19e4a40cd03117e16016417a0df85882c9870aa0c08d1e7bf1528032ac39b809",
+        "docs/research/engine_substrate/THOUGHTEXPERIMENT_A8_PROPOSAL_BRIDGE_V1_RESULTS_20261002.md": "bdf2ce782e112f0d4a07ec356167b18d4d4b7eb74c3c058363acd4d65b34b74e",
+        "docs/research/engine_substrate/THOUGHTEXPERIMENT_BLINDED_PROPOSAL_UTILITY_V1_2_RESULTS_20261002.md": "842baf009a96f6bef57e8d7161eb8ab8aea7faf24538474722cd511a56ac6242",
+        "docs/research/engine_substrate/THOUGHTEXPERIMENT_NAVIGATION_POLARITY_REPAIR_V1_1_RESULTS_20261002.md": "d62d334e219c001d8346a45d4905d8d091b7d7ccf200cd3174b601db9ddf80b4",
+        "domains/edit_ops.py": "308c401e992f8512308b3abb2b32acd6708bfebbb90255d7c5c9f4ea36c73a0d",
+        "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+        "domains/reflective_faculty.py": "57f05995c454443665e75eacbfec60bc0096ac34cd203fb0b10848af4691903e",
+        "domains/self_correct_dispatch.py": "6aa0759fb39c7b6ff754b669f1699d6badeb90beb48e90e5f7e5b3d1f8a5464f",
+        "domains/self_correction.py": "7c4f28e21afc4c334328d03146c56d5c46c80a9ec5c21aa22e1ee29f12deb2dd",
+        "evaluation/substrate_capability/analyze_thoughtexperiment_a8_proposal_bridge_v1_3.py": "796beca34987f49e4d46b1d7232046429775238ad7cd1878ba860d33108c0926",
+        "evaluation/substrate_capability/thoughtexperiment_a8_proposal_bridge_v1_3.py": "520a334b643285a0266f27664d226084c7116cf863f75fc8615d5a66de230caa",
+        "evaluation/substrate_capability/thoughtexperiment_blinded_panel_adapters_v1.py": "6354a6f9e34cf2f1108311be3a082b37f47390b2eb6949c0283ab43172ffd82d",
+        "evaluation/substrate_capability/thoughtexperiment_navigation_polarity_repair_v1_1.py": "9c0ec48a32d68a51eb1743f87b1f3b3bfacab213058b9cf4fdcac16577c66afe",
+        "loaded_native_binary": "a4c30df0aff2e8e0723a3d957142e4e9a5bc321592d40295ec863310ca2c5af8",
+        "runners/dsl/Cargo.lock": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+        "runners/dsl/Cargo.toml": "c4d8ffff2241352a5150b5a9937dbb8010e958b6f115235b7daeae716c1a9332",
+        "runners/dsl/python/substrate_rs/__init__.py": "4e338797786071822b2e3d919ca1da3a266bda60c3ce0e29e13213a9d37454b4",
+        "runners/dsl/src/grammar.rs": "aaf6f571bf8e8761584c7473d3fe3130c5a6e395bff7f2b63f1cdcf6046b73f6",
+        "runners/dsl/src/graph.rs": "39c4fb983db934cf7350c28d168d0ad9d3049efba1cdb3847f23b55a0d488c66",
+        "runners/dsl/src/graph_rules.rs": "c02b4f7499f40348395f9ef0394c8799c6d0664d1d8296bf780f3745d3299246",
+        "runners/dsl/src/lib.rs": "10ae7645d9ed1f7c3c9d4f5fd119406928ce079e4336a5b007df307c685c0826",
+        "runners/dsl/src/persist.rs": "dfe9247a700f1d5fafd239447018c9bd25297a50f9c86ba63a9e1ce41f149986",
+        "runners/dsl/src/py.rs": "40e07774aaf04740ae08a42ca725ca0465a8b855754d5a596c8d67ca4c699cd8",
+        "runners/dsl/src/substrate.rs": "c8790f285532a7494089bcbff1eb5ed4917cefd23a8eab420408bb3187f51744",
+        "runners/dsl/src/sym.rs": "b54f6af6e456a7095a02eb5b3cab42a73072318bd7e54ed150c787468b170d5f",
+        "runners/dsl/src/term.rs": "bccd6976f38d837cdbce786138d0b55235deab62512ce83a35c003fa28620d53",
+        "seeds/autonomy.json": "5eb18e0b06de6243ac1abae5a51bdc146e78d4d5a13ec863a9baa20f9ede9dfe",
+        "seeds/composer_dispatch.json": "a167c0ef5fba47ef9c46a3c87db972e5a85f444f9a930e761a7ef40d25b9a09a",
+        "seeds/composer_experiment_graph.json": "f6f8200b6955fb6f7f4b2766d5e9feb50db87ceada6f36b9523bd66b36e1ff95",
+        "seeds/grid_navigation.json": "bebbf9fa41a93a5973aa705da6ae9bc1b26f622b19fbdee516fa41d27eeadd48",
+        "seeds/relation_vocabulary.json": "781e89f27c5d31c214d57eb521deb6dab04c34ef51413b7a14739dd98861d90a",
+        "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+        "substrate/seed_loader.py": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27"
+      },
+      "source_rule_control": {
+        "applied_rules": [
+          "hop_descend_gradient"
+        ],
+        "cost_ns": {
+          "adoption_verification_ns": 9499091,
+          "branch_creation_ns": 674154,
+          "candidate_patch_ns": 610013,
+          "candidate_trial_ns": 27263005,
+          "task_scoring_ns": 656653
+        },
+        "digest": "sha256:2d9a8daec39c71fc1ddd459cb8332c4cf6f8a55088241ad3d7aa0c73fe17ef3f",
+        "family": "navigation",
+        "label": "source_rule_control",
+        "oracle_pass": true,
+        "primary_preserved": true,
+        "receipt_verified": true,
+        "split": "heldout",
+        "task_cases": [
+          {
+            "actual": "Down",
+            "case": "down",
+            "closure_work": 4,
+            "expected": "Down",
+            "pass": true
+          },
+          {
+            "actual": "Right",
+            "case": "right",
+            "closure_work": 4,
+            "expected": "Right",
+            "pass": true
+          }
+        ],
+        "utility": 1.0,
+        "worker": 1
+      },
+      "source_stable": true,
+      "unprompted_graph_proposal_outcome": null,
+      "worker": 1
+    },
+    {
+      "fault_rule_control": {
+        "applied_rules": [
+          "hop_descend_gradient"
+        ],
+        "cost_ns": {
+          "adoption_verification_ns": 6152783,
+          "branch_creation_ns": 629114,
+          "candidate_patch_ns": 497973,
+          "candidate_trial_ns": 20330619,
+          "task_scoring_ns": 451682
+        },
+        "digest": "sha256:92b4bc37291601782f12a241c33b78e0aa1bb564f65fbd6aa38a8e93d3d55007",
+        "family": "navigation",
+        "label": "fault_rule_control",
+        "oracle_pass": false,
+        "primary_preserved": true,
+        "receipt_verified": true,
+        "split": "heldout",
+        "task_cases": [
+          {
+            "actual": "Up",
+            "case": "down",
+            "closure_work": 4,
+            "expected": "Down",
+            "pass": false
+          },
+          {
+            "actual": "Left",
+            "case": "right",
+            "closure_work": 4,
+            "expected": "Right",
+            "pass": false
+          }
+        ],
+        "utility": 0.0,
+        "worker": 2
+      },
+      "heldout_context_setup_ns": 45198631,
+      "heldout_reference_enumeration_ns": 11065919,
+      "host_candidate_outcomes": [
+        {
+          "applied_rules": [
+            "hop_descend_gradient"
+          ],
+          "cost_ns": {
+            "adoption_verification_ns": 6946637,
+            "branch_creation_ns": 443412,
+            "candidate_patch_ns": 487463,
+            "candidate_trial_ns": 19862465,
+            "task_scoring_ns": 535242
+          },
+          "digest": "sha256:e635e33a0e8b035267fb7633a4e419751559acf5abbc020d6128f7b9536f1c9c",
+          "family": "navigation",
+          "label": "flip_comparison",
+          "oracle_pass": true,
+          "primary_preserved": true,
+          "receipt_verified": true,
+          "split": "heldout",
+          "task_cases": [
+            {
+              "actual": "Down",
+              "case": "down",
+              "closure_work": 4,
+              "expected": "Down",
+              "pass": true
+            },
+            {
+              "actual": "Right",
+              "case": "right",
+              "closure_work": 4,
+              "expected": "Right",
+              "pass": true
+            }
+          ],
+          "utility": 1.0,
+          "worker": 2
+        },
+        {
+          "applied_rules": [
+            "hop_descend_gradient"
+          ],
+          "cost_ns": {
+            "adoption_verification_ns": 6127963,
+            "branch_creation_ns": 392492,
+            "candidate_patch_ns": 395792,
+            "candidate_trial_ns": 19164312,
+            "task_scoring_ns": 451122
+          },
+          "digest": "sha256:9e821cfe20736b4500e5fcb63d96c35cc9a3262dabd7e515f6b037abd2cefa2e",
+          "family": "navigation",
+          "label": "add_match_guard(control)",
+          "oracle_pass": false,
+          "primary_preserved": true,
+          "receipt_verified": true,
+          "split": "heldout",
+          "task_cases": [
+            {
+              "actual": null,
+              "case": "down",
+              "closure_work": 3,
+              "expected": "Down",
+              "pass": false
+            },
+            {
+              "actual": null,
+              "case": "right",
+              "closure_work": 3,
+              "expected": "Right",
+              "pass": false
+            }
+          ],
+          "utility": 0.0,
+          "worker": 2
+        },
+        {
+          "applied_rules": [
+            "hop_descend_gradient"
+          ],
+          "cost_ns": {
+            "adoption_verification_ns": 5937821,
+            "branch_creation_ns": 621783,
+            "candidate_patch_ns": 436692,
+            "candidate_trial_ns": 19778886,
+            "task_scoring_ns": 463673
+          },
+          "digest": "sha256:f567e2973e1cd9268339713eda7310c3a758adb6792c5a592c415b6c32656d60",
+          "family": "navigation",
+          "label": "swap_term_leaf:_adist->_dist",
+          "oracle_pass": false,
+          "primary_preserved": true,
+          "receipt_verified": true,
+          "split": "heldout",
+          "task_cases": [
+            {
+              "actual": "",
+              "case": "down",
+              "closure_work": 4,
+              "expected": "Down",
+              "pass": false
+            },
+            {
+              "actual": "",
+              "case": "right",
+              "closure_work": 4,
+              "expected": "Right",
+              "pass": false
+            }
+          ],
+          "utility": 0.0,
+          "worker": 2
+        },
+        {
+          "applied_rules": [
+            "hop_descend_gradient"
+          ],
+          "cost_ns": {
+            "adoption_verification_ns": 6948257,
+            "branch_creation_ns": 664253,
+            "candidate_patch_ns": 393582,
+            "candidate_trial_ns": 21350684,
+            "task_scoring_ns": 504683
+          },
+          "digest": "sha256:be07a7304dcfdc6368e33eb12b5151dc210a49aa3dc6362f8c925388d23c1e8e",
+          "family": "navigation",
+          "label": "swap_term_leaf:_adist->_epoch",
+          "oracle_pass": false,
+          "primary_preserved": true,
+          "receipt_verified": true,
+          "split": "heldout",
+          "task_cases": [
+            {
+              "actual": "",
+              "case": "down",
+              "closure_work": 4,
+              "expected": "Down",
+              "pass": false
+            },
+            {
+              "actual": "",
+              "case": "right",
+              "closure_work": 4,
+              "expected": "Right",
+              "pass": false
+            }
+          ],
+          "utility": 0.0,
+          "worker": 2
+        },
+        {
+          "applied_rules": [
+            "hop_descend_gradient"
+          ],
+          "cost_ns": {
+            "adoption_verification_ns": 6324303,
+            "branch_creation_ns": 662004,
+            "candidate_patch_ns": 407742,
+            "candidate_trial_ns": 19111452,
+            "task_scoring_ns": 527723
+          },
+          "digest": "sha256:2ba1d71ae738998af2bfa4bf4c4f8730cf26082a88f0d04af72e0c45e8710eaf",
+          "family": "navigation",
+          "label": "swap_term_leaf:_adist->col",
+          "oracle_pass": false,
+          "primary_preserved": true,
+          "receipt_verified": true,
+          "split": "heldout",
+          "task_cases": [
+            {
+              "actual": "",
+              "case": "down",
+              "closure_work": 4,
+              "expected": "Down",
+              "pass": false
+            },
+            {
+              "actual": "",
+              "case": "right",
+              "closure_work": 4,
+              "expected": "Right",
+              "pass": false
+            }
+          ],
+          "utility": 0.0,
+          "worker": 2
+        },
+        {
+          "applied_rules": [
+            "hop_descend_gradient"
+          ],
+          "cost_ns": {
+            "adoption_verification_ns": 6228203,
+            "branch_creation_ns": 643943,
+            "candidate_patch_ns": 476852,
+            "candidate_trial_ns": 19385903,
+            "task_scoring_ns": 457433
+          },
+          "digest": "sha256:da58503940a5e37ecfd6fb90497f42bb648e9ffad5d5319f8b5ea82680c5a743",
+          "family": "navigation",
+          "label": "swap_term_leaf:_adist->flood_epoch",
+          "oracle_pass": false,
+          "primary_preserved": true,
+          "receipt_verified": true,
+          "split": "heldout",
+          "task_cases": [
+            {
+              "actual": "",
+              "case": "down",
+              "closure_work": 4,
+              "expected": "Down",
+              "pass": false
+            },
+            {
+              "actual": "",
+              "case": "right",
+              "closure_work": 4,
+              "expected": "Right",
+              "pass": false
+            }
+          ],
+          "utility": 0.0,
+          "worker": 2
+        }
+      ],
+      "pid": 361,
+      "prompted_graph_proposal_outcome": {
+        "digest_match": false,
+        "outcome": {
+          "applied_rules": [
+            "hop_descend_gradient"
+          ],
+          "cost_ns": {
+            "adoption_verification_ns": 6021212,
+            "branch_creation_ns": 414402,
+            "candidate_patch_ns": 470282,
+            "candidate_trial_ns": 19006041,
+            "task_scoring_ns": 582404
+          },
+          "digest": "sha256:f0feb22d2ace8ec8310513ed17f464915b048af41a04d2e917d9b1509f116855",
+          "family": "navigation",
+          "label": "a8_graph_flip_comparison",
+          "oracle_pass": true,
+          "primary_preserved": true,
+          "receipt_verified": true,
+          "split": "heldout",
+          "task_cases": [
+            {
+              "actual": "Down",
+              "case": "down",
+              "closure_work": 4,
+              "expected": "Down",
+              "pass": true
+            },
+            {
+              "actual": "Right",
+              "case": "right",
+              "closure_work": 4,
+              "expected": "Right",
+              "pass": true
+            }
+          ],
+          "utility": 1.0,
+          "worker": 2
+        },
+        "reused_host_candidate_label": null
+      },
+      "source_after": {
+        "docs/research/engine_substrate/MAC_FAC_A8_RESULTS.md": "511ee14bc1160041219419c9acfcebdb452f305f53a5686d3a1b6ac1bd33edb8",
+        "docs/research/engine_substrate/THOUGHTEXPERIMENT_A8_PROPOSAL_BRIDGE_V1_1_RESULTS_20261002.md": "285fd97a374f799407e1597694065d70d366c1f29e5e95fcbde4a48a4755cbce",
+        "docs/research/engine_substrate/THOUGHTEXPERIMENT_A8_PROPOSAL_BRIDGE_V1_2_RESULTS_20261002.md": "6fffcaa7d8fa66cabdd4f467b4aa668e7ef6ec2e662b02ce6182fcf7f22b2b02",
+        "docs/research/engine_substrate/THOUGHTEXPERIMENT_A8_PROPOSAL_BRIDGE_V1_3_AMENDMENT_20261003.md": "557f2154d5ac027abf98783ec4c8447f5e043630b7cb8147f7308cbf43a75a5e",
+        "docs/research/engine_substrate/THOUGHTEXPERIMENT_A8_PROPOSAL_BRIDGE_V1_PREREG_20261002.md": "19e4a40cd03117e16016417a0df85882c9870aa0c08d1e7bf1528032ac39b809",
+        "docs/research/engine_substrate/THOUGHTEXPERIMENT_A8_PROPOSAL_BRIDGE_V1_RESULTS_20261002.md": "bdf2ce782e112f0d4a07ec356167b18d4d4b7eb74c3c058363acd4d65b34b74e",
+        "docs/research/engine_substrate/THOUGHTEXPERIMENT_BLINDED_PROPOSAL_UTILITY_V1_2_RESULTS_20261002.md": "842baf009a96f6bef57e8d7161eb8ab8aea7faf24538474722cd511a56ac6242",
+        "docs/research/engine_substrate/THOUGHTEXPERIMENT_NAVIGATION_POLARITY_REPAIR_V1_1_RESULTS_20261002.md": "d62d334e219c001d8346a45d4905d8d091b7d7ccf200cd3174b601db9ddf80b4",
+        "domains/edit_ops.py": "308c401e992f8512308b3abb2b32acd6708bfebbb90255d7c5c9f4ea36c73a0d",
+        "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+        "domains/reflective_faculty.py": "57f05995c454443665e75eacbfec60bc0096ac34cd203fb0b10848af4691903e",
+        "domains/self_correct_dispatch.py": "6aa0759fb39c7b6ff754b669f1699d6badeb90beb48e90e5f7e5b3d1f8a5464f",
+        "domains/self_correction.py": "7c4f28e21afc4c334328d03146c56d5c46c80a9ec5c21aa22e1ee29f12deb2dd",
+        "evaluation/substrate_capability/analyze_thoughtexperiment_a8_proposal_bridge_v1_3.py": "796beca34987f49e4d46b1d7232046429775238ad7cd1878ba860d33108c0926",
+        "evaluation/substrate_capability/thoughtexperiment_a8_proposal_bridge_v1_3.py": "520a334b643285a0266f27664d226084c7116cf863f75fc8615d5a66de230caa",
+        "evaluation/substrate_capability/thoughtexperiment_blinded_panel_adapters_v1.py": "6354a6f9e34cf2f1108311be3a082b37f47390b2eb6949c0283ab43172ffd82d",
+        "evaluation/substrate_capability/thoughtexperiment_navigation_polarity_repair_v1_1.py": "9c0ec48a32d68a51eb1743f87b1f3b3bfacab213058b9cf4fdcac16577c66afe",
+        "loaded_native_binary": "a4c30df0aff2e8e0723a3d957142e4e9a5bc321592d40295ec863310ca2c5af8",
+        "runners/dsl/Cargo.lock": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+        "runners/dsl/Cargo.toml": "c4d8ffff2241352a5150b5a9937dbb8010e958b6f115235b7daeae716c1a9332",
+        "runners/dsl/python/substrate_rs/__init__.py": "4e338797786071822b2e3d919ca1da3a266bda60c3ce0e29e13213a9d37454b4",
+        "runners/dsl/src/grammar.rs": "aaf6f571bf8e8761584c7473d3fe3130c5a6e395bff7f2b63f1cdcf6046b73f6",
+        "runners/dsl/src/graph.rs": "39c4fb983db934cf7350c28d168d0ad9d3049efba1cdb3847f23b55a0d488c66",
+        "runners/dsl/src/graph_rules.rs": "c02b4f7499f40348395f9ef0394c8799c6d0664d1d8296bf780f3745d3299246",
+        "runners/dsl/src/lib.rs": "10ae7645d9ed1f7c3c9d4f5fd119406928ce079e4336a5b007df307c685c0826",
+        "runners/dsl/src/persist.rs": "dfe9247a700f1d5fafd239447018c9bd25297a50f9c86ba63a9e1ce41f149986",
+        "runners/dsl/src/py.rs": "40e07774aaf04740ae08a42ca725ca0465a8b855754d5a596c8d67ca4c699cd8",
+        "runners/dsl/src/substrate.rs": "c8790f285532a7494089bcbff1eb5ed4917cefd23a8eab420408bb3187f51744",
+        "runners/dsl/src/sym.rs": "b54f6af6e456a7095a02eb5b3cab42a73072318bd7e54ed150c787468b170d5f",
+        "runners/dsl/src/term.rs": "bccd6976f38d837cdbce786138d0b55235deab62512ce83a35c003fa28620d53",
+        "seeds/autonomy.json": "5eb18e0b06de6243ac1abae5a51bdc146e78d4d5a13ec863a9baa20f9ede9dfe",
+        "seeds/composer_dispatch.json": "a167c0ef5fba47ef9c46a3c87db972e5a85f444f9a930e761a7ef40d25b9a09a",
+        "seeds/composer_experiment_graph.json": "f6f8200b6955fb6f7f4b2766d5e9feb50db87ceada6f36b9523bd66b36e1ff95",
+        "seeds/grid_navigation.json": "bebbf9fa41a93a5973aa705da6ae9bc1b26f622b19fbdee516fa41d27eeadd48",
+        "seeds/relation_vocabulary.json": "781e89f27c5d31c214d57eb521deb6dab04c34ef51413b7a14739dd98861d90a",
+        "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+        "substrate/seed_loader.py": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27"
+      },
+      "source_before": {
+        "docs/research/engine_substrate/MAC_FAC_A8_RESULTS.md": "511ee14bc1160041219419c9acfcebdb452f305f53a5686d3a1b6ac1bd33edb8",
+        "docs/research/engine_substrate/THOUGHTEXPERIMENT_A8_PROPOSAL_BRIDGE_V1_1_RESULTS_20261002.md": "285fd97a374f799407e1597694065d70d366c1f29e5e95fcbde4a48a4755cbce",
+        "docs/research/engine_substrate/THOUGHTEXPERIMENT_A8_PROPOSAL_BRIDGE_V1_2_RESULTS_20261002.md": "6fffcaa7d8fa66cabdd4f467b4aa668e7ef6ec2e662b02ce6182fcf7f22b2b02",
+        "docs/research/engine_substrate/THOUGHTEXPERIMENT_A8_PROPOSAL_BRIDGE_V1_3_AMENDMENT_20261003.md": "557f2154d5ac027abf98783ec4c8447f5e043630b7cb8147f7308cbf43a75a5e",
+        "docs/research/engine_substrate/THOUGHTEXPERIMENT_A8_PROPOSAL_BRIDGE_V1_PREREG_20261002.md": "19e4a40cd03117e16016417a0df85882c9870aa0c08d1e7bf1528032ac39b809",
+        "docs/research/engine_substrate/THOUGHTEXPERIMENT_A8_PROPOSAL_BRIDGE_V1_RESULTS_20261002.md": "bdf2ce782e112f0d4a07ec356167b18d4d4b7eb74c3c058363acd4d65b34b74e",
+        "docs/research/engine_substrate/THOUGHTEXPERIMENT_BLINDED_PROPOSAL_UTILITY_V1_2_RESULTS_20261002.md": "842baf009a96f6bef57e8d7161eb8ab8aea7faf24538474722cd511a56ac6242",
+        "docs/research/engine_substrate/THOUGHTEXPERIMENT_NAVIGATION_POLARITY_REPAIR_V1_1_RESULTS_20261002.md": "d62d334e219c001d8346a45d4905d8d091b7d7ccf200cd3174b601db9ddf80b4",
+        "domains/edit_ops.py": "308c401e992f8512308b3abb2b32acd6708bfebbb90255d7c5c9f4ea36c73a0d",
+        "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+        "domains/reflective_faculty.py": "57f05995c454443665e75eacbfec60bc0096ac34cd203fb0b10848af4691903e",
+        "domains/self_correct_dispatch.py": "6aa0759fb39c7b6ff754b669f1699d6badeb90beb48e90e5f7e5b3d1f8a5464f",
+        "domains/self_correction.py": "7c4f28e21afc4c334328d03146c56d5c46c80a9ec5c21aa22e1ee29f12deb2dd",
+        "evaluation/substrate_capability/analyze_thoughtexperiment_a8_proposal_bridge_v1_3.py": "796beca34987f49e4d46b1d7232046429775238ad7cd1878ba860d33108c0926",
+        "evaluation/substrate_capability/thoughtexperiment_a8_proposal_bridge_v1_3.py": "520a334b643285a0266f27664d226084c7116cf863f75fc8615d5a66de230caa",
+        "evaluation/substrate_capability/thoughtexperiment_blinded_panel_adapters_v1.py": "6354a6f9e34cf2f1108311be3a082b37f47390b2eb6949c0283ab43172ffd82d",
+        "evaluation/substrate_capability/thoughtexperiment_navigation_polarity_repair_v1_1.py": "9c0ec48a32d68a51eb1743f87b1f3b3bfacab213058b9cf4fdcac16577c66afe",
+        "loaded_native_binary": "a4c30df0aff2e8e0723a3d957142e4e9a5bc321592d40295ec863310ca2c5af8",
+        "runners/dsl/Cargo.lock": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+        "runners/dsl/Cargo.toml": "c4d8ffff2241352a5150b5a9937dbb8010e958b6f115235b7daeae716c1a9332",
+        "runners/dsl/python/substrate_rs/__init__.py": "4e338797786071822b2e3d919ca1da3a266bda60c3ce0e29e13213a9d37454b4",
+        "runners/dsl/src/grammar.rs": "aaf6f571bf8e8761584c7473d3fe3130c5a6e395bff7f2b63f1cdcf6046b73f6",
+        "runners/dsl/src/graph.rs": "39c4fb983db934cf7350c28d168d0ad9d3049efba1cdb3847f23b55a0d488c66",
+        "runners/dsl/src/graph_rules.rs": "c02b4f7499f40348395f9ef0394c8799c6d0664d1d8296bf780f3745d3299246",
+        "runners/dsl/src/lib.rs": "10ae7645d9ed1f7c3c9d4f5fd119406928ce079e4336a5b007df307c685c0826",
+        "runners/dsl/src/persist.rs": "dfe9247a700f1d5fafd239447018c9bd25297a50f9c86ba63a9e1ce41f149986",
+        "runners/dsl/src/py.rs": "40e07774aaf04740ae08a42ca725ca0465a8b855754d5a596c8d67ca4c699cd8",
+        "runners/dsl/src/substrate.rs": "c8790f285532a7494089bcbff1eb5ed4917cefd23a8eab420408bb3187f51744",
+        "runners/dsl/src/sym.rs": "b54f6af6e456a7095a02eb5b3cab42a73072318bd7e54ed150c787468b170d5f",
+        "runners/dsl/src/term.rs": "bccd6976f38d837cdbce786138d0b55235deab62512ce83a35c003fa28620d53",
+        "seeds/autonomy.json": "5eb18e0b06de6243ac1abae5a51bdc146e78d4d5a13ec863a9baa20f9ede9dfe",
+        "seeds/composer_dispatch.json": "a167c0ef5fba47ef9c46a3c87db972e5a85f444f9a930e761a7ef40d25b9a09a",
+        "seeds/composer_experiment_graph.json": "f6f8200b6955fb6f7f4b2766d5e9feb50db87ceada6f36b9523bd66b36e1ff95",
+        "seeds/grid_navigation.json": "bebbf9fa41a93a5973aa705da6ae9bc1b26f622b19fbdee516fa41d27eeadd48",
+        "seeds/relation_vocabulary.json": "781e89f27c5d31c214d57eb521deb6dab04c34ef51413b7a14739dd98861d90a",
+        "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+        "substrate/seed_loader.py": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27"
+      },
+      "source_rule_control": {
+        "applied_rules": [
+          "hop_descend_gradient"
+        ],
+        "cost_ns": {
+          "adoption_verification_ns": 7619420,
+          "branch_creation_ns": 471282,
+          "candidate_patch_ns": 515863,
+          "candidate_trial_ns": 21475284,
+          "task_scoring_ns": 480443
+        },
+        "digest": "sha256:2d9a8daec39c71fc1ddd459cb8332c4cf6f8a55088241ad3d7aa0c73fe17ef3f",
+        "family": "navigation",
+        "label": "source_rule_control",
+        "oracle_pass": true,
+        "primary_preserved": true,
+        "receipt_verified": true,
+        "split": "heldout",
+        "task_cases": [
+          {
+            "actual": "Down",
+            "case": "down",
+            "closure_work": 4,
+            "expected": "Down",
+            "pass": true
+          },
+          {
+            "actual": "Right",
+            "case": "right",
+            "closure_work": 4,
+            "expected": "Right",
+            "pass": true
+          }
+        ],
+        "utility": 1.0,
+        "worker": 2
+      },
+      "source_stable": true,
+      "unprompted_graph_proposal_outcome": null,
+      "worker": 2
+    },
+    {
+      "fault_rule_control": {
+        "applied_rules": [
+          "hop_descend_gradient"
+        ],
+        "cost_ns": {
+          "adoption_verification_ns": 6100503,
+          "branch_creation_ns": 651434,
+          "candidate_patch_ns": 485942,
+          "candidate_trial_ns": 19346243,
+          "task_scoring_ns": 457523
+        },
+        "digest": "sha256:92b4bc37291601782f12a241c33b78e0aa1bb564f65fbd6aa38a8e93d3d55007",
+        "family": "navigation",
+        "label": "fault_rule_control",
+        "oracle_pass": false,
+        "primary_preserved": true,
+        "receipt_verified": true,
+        "split": "heldout",
+        "task_cases": [
+          {
+            "actual": "Up",
+            "case": "down",
+            "closure_work": 4,
+            "expected": "Down",
+            "pass": false
+          },
+          {
+            "actual": "Left",
+            "case": "right",
+            "closure_work": 4,
+            "expected": "Right",
+            "pass": false
+          }
+        ],
+        "utility": 0.0,
+        "worker": 3
+      },
+      "heldout_context_setup_ns": 45490023,
+      "heldout_reference_enumeration_ns": 10783257,
+      "host_candidate_outcomes": [
+        {
+          "applied_rules": [
+            "hop_descend_gradient"
+          ],
+          "cost_ns": {
+            "adoption_verification_ns": 8041973,
+            "branch_creation_ns": 485732,
+            "candidate_patch_ns": 507753,
+            "candidate_trial_ns": 25328325,
+            "task_scoring_ns": 560063
+          },
+          "digest": "sha256:e635e33a0e8b035267fb7633a4e419751559acf5abbc020d6128f7b9536f1c9c",
+          "family": "navigation",
+          "label": "flip_comparison",
+          "oracle_pass": true,
+          "primary_preserved": true,
+          "receipt_verified": true,
+          "split": "heldout",
+          "task_cases": [
+            {
+              "actual": "Down",
+              "case": "down",
+              "closure_work": 4,
+              "expected": "Down",
+              "pass": true
+            },
+            {
+              "actual": "Right",
+              "case": "right",
+              "closure_work": 4,
+              "expected": "Right",
+              "pass": true
+            }
+          ],
+          "utility": 1.0,
+          "worker": 3
+        },
+        {
+          "applied_rules": [
+            "hop_descend_gradient"
+          ],
+          "cost_ns": {
+            "adoption_verification_ns": 8755307,
+            "branch_creation_ns": 527903,
+            "candidate_patch_ns": 468252,
+            "candidate_trial_ns": 25631537,
+            "task_scoring_ns": 535533
+          },
+          "digest": "sha256:9e821cfe20736b4500e5fcb63d96c35cc9a3262dabd7e515f6b037abd2cefa2e",
+          "family": "navigation",
+          "label": "add_match_guard(control)",
+          "oracle_pass": false,
+          "primary_preserved": true,
+          "receipt_verified": true,
+          "split": "heldout",
+          "task_cases": [
+            {
+              "actual": null,
+              "case": "down",
+              "closure_work": 3,
+              "expected": "Down",
+              "pass": false
+            },
+            {
+              "actual": null,
+              "case": "right",
+              "closure_work": 3,
+              "expected": "Right",
+              "pass": false
+            }
+          ],
+          "utility": 0.0,
+          "worker": 3
+        },
+        {
+          "applied_rules": [
+            "hop_descend_gradient"
+          ],
+          "cost_ns": {
+            "adoption_verification_ns": 6996587,
+            "branch_creation_ns": 753664,
+            "candidate_patch_ns": 428252,
+            "candidate_trial_ns": 21297644,
+            "task_scoring_ns": 508663
+          },
+          "digest": "sha256:f567e2973e1cd9268339713eda7310c3a758adb6792c5a592c415b6c32656d60",
+          "family": "navigation",
+          "label": "swap_term_leaf:_adist->_dist",
+          "oracle_pass": false,
+          "primary_preserved": true,
+          "receipt_verified": true,
+          "split": "heldout",
+          "task_cases": [
+            {
+              "actual": "",
+              "case": "down",
+              "closure_work": 4,
+              "expected": "Down",
+              "pass": false
+            },
+            {
+              "actual": "",
+              "case": "right",
+              "closure_work": 4,
+              "expected": "Right",
+              "pass": false
+            }
+          ],
+          "utility": 0.0,
+          "worker": 3
+        },
+        {
+          "applied_rules": [
+            "hop_descend_gradient"
+          ],
+          "cost_ns": {
+            "adoption_verification_ns": 7653921,
+            "branch_creation_ns": 720064,
+            "candidate_patch_ns": 485272,
+            "candidate_trial_ns": 26453232,
+            "task_scoring_ns": 486133
+          },
+          "digest": "sha256:be07a7304dcfdc6368e33eb12b5151dc210a49aa3dc6362f8c925388d23c1e8e",
+          "family": "navigation",
+          "label": "swap_term_leaf:_adist->_epoch",
+          "oracle_pass": false,
+          "primary_preserved": true,
+          "receipt_verified": true,
+          "split": "heldout",
+          "task_cases": [
+            {
+              "actual": "",
+              "case": "down",
+              "closure_work": 4,
+              "expected": "Down",
+              "pass": false
+            },
+            {
+              "actual": "",
+              "case": "right",
+              "closure_work": 4,
+              "expected": "Right",
+              "pass": false
+            }
+          ],
+          "utility": 0.0,
+          "worker": 3
+        },
+        {
+          "applied_rules": [
+            "hop_descend_gradient"
+          ],
+          "cost_ns": {
+            "adoption_verification_ns": 9826373,
+            "branch_creation_ns": 917235,
+            "candidate_patch_ns": 626994,
+            "candidate_trial_ns": 30518933,
+            "task_scoring_ns": 675793
+          },
+          "digest": "sha256:2ba1d71ae738998af2bfa4bf4c4f8730cf26082a88f0d04af72e0c45e8710eaf",
+          "family": "navigation",
+          "label": "swap_term_leaf:_adist->col",
+          "oracle_pass": false,
+          "primary_preserved": true,
+          "receipt_verified": true,
+          "split": "heldout",
+          "task_cases": [
+            {
+              "actual": "",
+              "case": "down",
+              "closure_work": 4,
+              "expected": "Down",
+              "pass": false
+            },
+            {
+              "actual": "",
+              "case": "right",
+              "closure_work": 4,
+              "expected": "Right",
+              "pass": false
+            }
+          ],
+          "utility": 0.0,
+          "worker": 3
+        },
+        {
+          "applied_rules": [
+            "hop_descend_gradient"
+          ],
+          "cost_ns": {
+            "adoption_verification_ns": 15512102,
+            "branch_creation_ns": 1082646,
+            "candidate_patch_ns": 3572929,
+            "candidate_trial_ns": 41220049,
+            "task_scoring_ns": 868995
+          },
+          "digest": "sha256:da58503940a5e37ecfd6fb90497f42bb648e9ffad5d5319f8b5ea82680c5a743",
+          "family": "navigation",
+          "label": "swap_term_leaf:_adist->flood_epoch",
+          "oracle_pass": false,
+          "primary_preserved": true,
+          "receipt_verified": true,
+          "split": "heldout",
+          "task_cases": [
+            {
+              "actual": "",
+              "case": "down",
+              "closure_work": 4,
+              "expected": "Down",
+              "pass": false
+            },
+            {
+              "actual": "",
+              "case": "right",
+              "closure_work": 4,
+              "expected": "Right",
+              "pass": false
+            }
+          ],
+          "utility": 0.0,
+          "worker": 3
+        }
+      ],
+      "pid": 540,
+      "prompted_graph_proposal_outcome": {
+        "digest_match": false,
+        "outcome": {
+          "applied_rules": [
+            "hop_descend_gradient"
+          ],
+          "cost_ns": {
+            "adoption_verification_ns": 6409565,
+            "branch_creation_ns": 483093,
+            "candidate_patch_ns": 508103,
+            "candidate_trial_ns": 20279248,
+            "task_scoring_ns": 496872
+          },
+          "digest": "sha256:f0feb22d2ace8ec8310513ed17f464915b048af41a04d2e917d9b1509f116855",
+          "family": "navigation",
+          "label": "a8_graph_flip_comparison",
+          "oracle_pass": true,
+          "primary_preserved": true,
+          "receipt_verified": true,
+          "split": "heldout",
+          "task_cases": [
+            {
+              "actual": "Down",
+              "case": "down",
+              "closure_work": 4,
+              "expected": "Down",
+              "pass": true
+            },
+            {
+              "actual": "Right",
+              "case": "right",
+              "closure_work": 4,
+              "expected": "Right",
+              "pass": true
+            }
+          ],
+          "utility": 1.0,
+          "worker": 3
+        },
+        "reused_host_candidate_label": null
+      },
+      "source_after": {
+        "docs/research/engine_substrate/MAC_FAC_A8_RESULTS.md": "511ee14bc1160041219419c9acfcebdb452f305f53a5686d3a1b6ac1bd33edb8",
+        "docs/research/engine_substrate/THOUGHTEXPERIMENT_A8_PROPOSAL_BRIDGE_V1_1_RESULTS_20261002.md": "285fd97a374f799407e1597694065d70d366c1f29e5e95fcbde4a48a4755cbce",
+        "docs/research/engine_substrate/THOUGHTEXPERIMENT_A8_PROPOSAL_BRIDGE_V1_2_RESULTS_20261002.md": "6fffcaa7d8fa66cabdd4f467b4aa668e7ef6ec2e662b02ce6182fcf7f22b2b02",
+        "docs/research/engine_substrate/THOUGHTEXPERIMENT_A8_PROPOSAL_BRIDGE_V1_3_AMENDMENT_20261003.md": "557f2154d5ac027abf98783ec4c8447f5e043630b7cb8147f7308cbf43a75a5e",
+        "docs/research/engine_substrate/THOUGHTEXPERIMENT_A8_PROPOSAL_BRIDGE_V1_PREREG_20261002.md": "19e4a40cd03117e16016417a0df85882c9870aa0c08d1e7bf1528032ac39b809",
+        "docs/research/engine_substrate/THOUGHTEXPERIMENT_A8_PROPOSAL_BRIDGE_V1_RESULTS_20261002.md": "bdf2ce782e112f0d4a07ec356167b18d4d4b7eb74c3c058363acd4d65b34b74e",
+        "docs/research/engine_substrate/THOUGHTEXPERIMENT_BLINDED_PROPOSAL_UTILITY_V1_2_RESULTS_20261002.md": "842baf009a96f6bef57e8d7161eb8ab8aea7faf24538474722cd511a56ac6242",
+        "docs/research/engine_substrate/THOUGHTEXPERIMENT_NAVIGATION_POLARITY_REPAIR_V1_1_RESULTS_20261002.md": "d62d334e219c001d8346a45d4905d8d091b7d7ccf200cd3174b601db9ddf80b4",
+        "domains/edit_ops.py": "308c401e992f8512308b3abb2b32acd6708bfebbb90255d7c5c9f4ea36c73a0d",
+        "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+        "domains/reflective_faculty.py": "57f05995c454443665e75eacbfec60bc0096ac34cd203fb0b10848af4691903e",
+        "domains/self_correct_dispatch.py": "6aa0759fb39c7b6ff754b669f1699d6badeb90beb48e90e5f7e5b3d1f8a5464f",
+        "domains/self_correction.py": "7c4f28e21afc4c334328d03146c56d5c46c80a9ec5c21aa22e1ee29f12deb2dd",
+        "evaluation/substrate_capability/analyze_thoughtexperiment_a8_proposal_bridge_v1_3.py": "796beca34987f49e4d46b1d7232046429775238ad7cd1878ba860d33108c0926",
+        "evaluation/substrate_capability/thoughtexperiment_a8_proposal_bridge_v1_3.py": "520a334b643285a0266f27664d226084c7116cf863f75fc8615d5a66de230caa",
+        "evaluation/substrate_capability/thoughtexperiment_blinded_panel_adapters_v1.py": "6354a6f9e34cf2f1108311be3a082b37f47390b2eb6949c0283ab43172ffd82d",
+        "evaluation/substrate_capability/thoughtexperiment_navigation_polarity_repair_v1_1.py": "9c0ec48a32d68a51eb1743f87b1f3b3bfacab213058b9cf4fdcac16577c66afe",
+        "loaded_native_binary": "a4c30df0aff2e8e0723a3d957142e4e9a5bc321592d40295ec863310ca2c5af8",
+        "runners/dsl/Cargo.lock": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+        "runners/dsl/Cargo.toml": "c4d8ffff2241352a5150b5a9937dbb8010e958b6f115235b7daeae716c1a9332",
+        "runners/dsl/python/substrate_rs/__init__.py": "4e338797786071822b2e3d919ca1da3a266bda60c3ce0e29e13213a9d37454b4",
+        "runners/dsl/src/grammar.rs": "aaf6f571bf8e8761584c7473d3fe3130c5a6e395bff7f2b63f1cdcf6046b73f6",
+        "runners/dsl/src/graph.rs": "39c4fb983db934cf7350c28d168d0ad9d3049efba1cdb3847f23b55a0d488c66",
+        "runners/dsl/src/graph_rules.rs": "c02b4f7499f40348395f9ef0394c8799c6d0664d1d8296bf780f3745d3299246",
+        "runners/dsl/src/lib.rs": "10ae7645d9ed1f7c3c9d4f5fd119406928ce079e4336a5b007df307c685c0826",
+        "runners/dsl/src/persist.rs": "dfe9247a700f1d5fafd239447018c9bd25297a50f9c86ba63a9e1ce41f149986",
+        "runners/dsl/src/py.rs": "40e07774aaf04740ae08a42ca725ca0465a8b855754d5a596c8d67ca4c699cd8",
+        "runners/dsl/src/substrate.rs": "c8790f285532a7494089bcbff1eb5ed4917cefd23a8eab420408bb3187f51744",
+        "runners/dsl/src/sym.rs": "b54f6af6e456a7095a02eb5b3cab42a73072318bd7e54ed150c787468b170d5f",
+        "runners/dsl/src/term.rs": "bccd6976f38d837cdbce786138d0b55235deab62512ce83a35c003fa28620d53",
+        "seeds/autonomy.json": "5eb18e0b06de6243ac1abae5a51bdc146e78d4d5a13ec863a9baa20f9ede9dfe",
+        "seeds/composer_dispatch.json": "a167c0ef5fba47ef9c46a3c87db972e5a85f444f9a930e761a7ef40d25b9a09a",
+        "seeds/composer_experiment_graph.json": "f6f8200b6955fb6f7f4b2766d5e9feb50db87ceada6f36b9523bd66b36e1ff95",
+        "seeds/grid_navigation.json": "bebbf9fa41a93a5973aa705da6ae9bc1b26f622b19fbdee516fa41d27eeadd48",
+        "seeds/relation_vocabulary.json": "781e89f27c5d31c214d57eb521deb6dab04c34ef51413b7a14739dd98861d90a",
+        "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+        "substrate/seed_loader.py": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27"
+      },
+      "source_before": {
+        "docs/research/engine_substrate/MAC_FAC_A8_RESULTS.md": "511ee14bc1160041219419c9acfcebdb452f305f53a5686d3a1b6ac1bd33edb8",
+        "docs/research/engine_substrate/THOUGHTEXPERIMENT_A8_PROPOSAL_BRIDGE_V1_1_RESULTS_20261002.md": "285fd97a374f799407e1597694065d70d366c1f29e5e95fcbde4a48a4755cbce",
+        "docs/research/engine_substrate/THOUGHTEXPERIMENT_A8_PROPOSAL_BRIDGE_V1_2_RESULTS_20261002.md": "6fffcaa7d8fa66cabdd4f467b4aa668e7ef6ec2e662b02ce6182fcf7f22b2b02",
+        "docs/research/engine_substrate/THOUGHTEXPERIMENT_A8_PROPOSAL_BRIDGE_V1_3_AMENDMENT_20261003.md": "557f2154d5ac027abf98783ec4c8447f5e043630b7cb8147f7308cbf43a75a5e",
+        "docs/research/engine_substrate/THOUGHTEXPERIMENT_A8_PROPOSAL_BRIDGE_V1_PREREG_20261002.md": "19e4a40cd03117e16016417a0df85882c9870aa0c08d1e7bf1528032ac39b809",
+        "docs/research/engine_substrate/THOUGHTEXPERIMENT_A8_PROPOSAL_BRIDGE_V1_RESULTS_20261002.md": "bdf2ce782e112f0d4a07ec356167b18d4d4b7eb74c3c058363acd4d65b34b74e",
+        "docs/research/engine_substrate/THOUGHTEXPERIMENT_BLINDED_PROPOSAL_UTILITY_V1_2_RESULTS_20261002.md": "842baf009a96f6bef57e8d7161eb8ab8aea7faf24538474722cd511a56ac6242",
+        "docs/research/engine_substrate/THOUGHTEXPERIMENT_NAVIGATION_POLARITY_REPAIR_V1_1_RESULTS_20261002.md": "d62d334e219c001d8346a45d4905d8d091b7d7ccf200cd3174b601db9ddf80b4",
+        "domains/edit_ops.py": "308c401e992f8512308b3abb2b32acd6708bfebbb90255d7c5c9f4ea36c73a0d",
+        "domains/engine_provenance.py": "a4f8b06288645770fc21afdc4454d905adcb594743b08d1a1151df1c517a6ce8",
+        "domains/reflective_faculty.py": "57f05995c454443665e75eacbfec60bc0096ac34cd203fb0b10848af4691903e",
+        "domains/self_correct_dispatch.py": "6aa0759fb39c7b6ff754b669f1699d6badeb90beb48e90e5f7e5b3d1f8a5464f",
+        "domains/self_correction.py": "7c4f28e21afc4c334328d03146c56d5c46c80a9ec5c21aa22e1ee29f12deb2dd",
+        "evaluation/substrate_capability/analyze_thoughtexperiment_a8_proposal_bridge_v1_3.py": "796beca34987f49e4d46b1d7232046429775238ad7cd1878ba860d33108c0926",
+        "evaluation/substrate_capability/thoughtexperiment_a8_proposal_bridge_v1_3.py": "520a334b643285a0266f27664d226084c7116cf863f75fc8615d5a66de230caa",
+        "evaluation/substrate_capability/thoughtexperiment_blinded_panel_adapters_v1.py": "6354a6f9e34cf2f1108311be3a082b37f47390b2eb6949c0283ab43172ffd82d",
+        "evaluation/substrate_capability/thoughtexperiment_navigation_polarity_repair_v1_1.py": "9c0ec48a32d68a51eb1743f87b1f3b3bfacab213058b9cf4fdcac16577c66afe",
+        "loaded_native_binary": "a4c30df0aff2e8e0723a3d957142e4e9a5bc321592d40295ec863310ca2c5af8",
+        "runners/dsl/Cargo.lock": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+        "runners/dsl/Cargo.toml": "c4d8ffff2241352a5150b5a9937dbb8010e958b6f115235b7daeae716c1a9332",
+        "runners/dsl/python/substrate_rs/__init__.py": "4e338797786071822b2e3d919ca1da3a266bda60c3ce0e29e13213a9d37454b4",
+        "runners/dsl/src/grammar.rs": "aaf6f571bf8e8761584c7473d3fe3130c5a6e395bff7f2b63f1cdcf6046b73f6",
+        "runners/dsl/src/graph.rs": "39c4fb983db934cf7350c28d168d0ad9d3049efba1cdb3847f23b55a0d488c66",
+        "runners/dsl/src/graph_rules.rs": "c02b4f7499f40348395f9ef0394c8799c6d0664d1d8296bf780f3745d3299246",
+        "runners/dsl/src/lib.rs": "10ae7645d9ed1f7c3c9d4f5fd119406928ce079e4336a5b007df307c685c0826",
+        "runners/dsl/src/persist.rs": "dfe9247a700f1d5fafd239447018c9bd25297a50f9c86ba63a9e1ce41f149986",
+        "runners/dsl/src/py.rs": "40e07774aaf04740ae08a42ca725ca0465a8b855754d5a596c8d67ca4c699cd8",
+        "runners/dsl/src/substrate.rs": "c8790f285532a7494089bcbff1eb5ed4917cefd23a8eab420408bb3187f51744",
+        "runners/dsl/src/sym.rs": "b54f6af6e456a7095a02eb5b3cab42a73072318bd7e54ed150c787468b170d5f",
+        "runners/dsl/src/term.rs": "bccd6976f38d837cdbce786138d0b55235deab62512ce83a35c003fa28620d53",
+        "seeds/autonomy.json": "5eb18e0b06de6243ac1abae5a51bdc146e78d4d5a13ec863a9baa20f9ede9dfe",
+        "seeds/composer_dispatch.json": "a167c0ef5fba47ef9c46a3c87db972e5a85f444f9a930e761a7ef40d25b9a09a",
+        "seeds/composer_experiment_graph.json": "f6f8200b6955fb6f7f4b2766d5e9feb50db87ceada6f36b9523bd66b36e1ff95",
+        "seeds/grid_navigation.json": "bebbf9fa41a93a5973aa705da6ae9bc1b26f622b19fbdee516fa41d27eeadd48",
+        "seeds/relation_vocabulary.json": "781e89f27c5d31c214d57eb521deb6dab04c34ef51413b7a14739dd98861d90a",
+        "substrate/boot_core.py": "9bf02e3c86f4b0d550b785132c038fc3133363759f117ef09417a9fc222a91eb",
+        "substrate/seed_loader.py": "5ce41953acbed4bb95345efd3691bb115e16a8462901a96c4d7eae0b96a6dc27"
+      },
+      "source_rule_control": {
+        "applied_rules": [
+          "hop_descend_gradient"
+        ],
+        "cost_ns": {
+          "adoption_verification_ns": 7436450,
+          "branch_creation_ns": 471103,
+          "candidate_patch_ns": 491093,
+          "candidate_trial_ns": 20632730,
+          "task_scoring_ns": 485482
+        },
+        "digest": "sha256:2d9a8daec39c71fc1ddd459cb8332c4cf6f8a55088241ad3d7aa0c73fe17ef3f",
+        "family": "navigation",
+        "label": "source_rule_control",
+        "oracle_pass": true,
+        "primary_preserved": true,
+        "receipt_verified": true,
+        "split": "heldout",
+        "task_cases": [
+          {
+            "actual": "Down",
+            "case": "down",
+            "closure_work": 4,
+            "expected": "Down",
+            "pass": true
+          },
+          {
+            "actual": "Right",
+            "case": "right",
+            "closure_work": 4,
+            "expected": "Right",
+            "pass": true
+          }
+        ],
+        "utility": 1.0,
+        "worker": 3
+      },
+      "source_stable": true,
+      "unprompted_graph_proposal_outcome": null,
+      "worker": 3
+    }
+  ]
+}

@@ -1,0 +1,254 @@
+{
+  "binary": {
+    "path": "/home/matt/ozmadev/ocelot/runners/dsl/target/release/typed_graph_cow_graph_pages_probe",
+    "sha256": "sha256:e09ee5bbf598f3609d51776617d73bcd3552dbe09ed822a3d07cacaecb1feda1"
+  },
+  "host": {
+    "machine": "x86_64",
+    "platform": "Linux-6.8.0-142-generic-x86_64-with-glibc2.39"
+  },
+  "implementation_status": "experimental graph route shares CowPagedVec node/edge and top-level adjacency pages plus sharded typed out/in bucket indexes; remaining hash indexes and Substrate fields are eager copies",
+  "protocol": {
+    "arms": [
+      "eager clone",
+      "shared node/edge record slabs with copied adjacency",
+      "shared node/edge and top-level adjacency pages"
+    ],
+    "measured_repeats_per_cell": 25,
+    "mutations": [
+      "one inserted edge",
+      "ceil(1% of nodes) inserted edges with spaced sources"
+    ],
+    "scope_limits": [
+      "typed out/in bucket indexes are shard-shared; edge attributes, type buckets, high-degree target maps, declared attribute indexes, and remaining Substrate fields are copied eagerly",
+      "no allocation or RSS/PSS capture",
+      "synthetic topologies only",
+      "does not run full Substrate thoughtexperiments"
+    ],
+    "semantic_gate": "new edge queries and counts match across all arms; primary remains unchanged; two shared graph-page siblings add distinct edges independently",
+    "sizes": [
+      771,
+      1771,
+      10771,
+      50771
+    ],
+    "timing": "arm order rotates each repetition; fixture construction and semantic checks are outside timed regions; median microseconds",
+    "topologies": [
+      "path",
+      "star",
+      "grid"
+    ]
+  },
+  "rows": [
+    {
+      "base_edges": 770,
+      "eager_clone_one_edge_us": 167.121,
+      "eager_clone_one_percent_edges_us": 169.101,
+      "eager_clone_us": 165.47099999999998,
+      "exact_edge_query_and_sibling_isolation": true,
+      "nodes": 771,
+      "repeats": 25,
+      "shared_graph_pages_clone_one_edge_us": 3.9600000000000004,
+      "shared_graph_pages_clone_one_percent_edges_us": 12.18,
+      "shared_graph_pages_clone_us": 2.34,
+      "shared_records_clone_one_edge_us": 114.641,
+      "shared_records_clone_one_percent_edges_us": 116.57000000000001,
+      "shared_records_clone_us": 113.651,
+      "topology": "path"
+    },
+    {
+      "base_edges": 770,
+      "eager_clone_one_edge_us": 140.631,
+      "eager_clone_one_percent_edges_us": 143.37099999999998,
+      "eager_clone_us": 139.391,
+      "exact_edge_query_and_sibling_isolation": true,
+      "nodes": 771,
+      "repeats": 25,
+      "shared_graph_pages_clone_one_edge_us": 3.89,
+      "shared_graph_pages_clone_one_percent_edges_us": 10.35,
+      "shared_graph_pages_clone_us": 1.88,
+      "shared_records_clone_one_edge_us": 88.62100000000001,
+      "shared_records_clone_one_percent_edges_us": 90.331,
+      "shared_records_clone_us": 88.451,
+      "topology": "star"
+    },
+    {
+      "base_edges": 1486,
+      "eager_clone_one_edge_us": 305.382,
+      "eager_clone_one_percent_edges_us": 306.982,
+      "eager_clone_us": 300.932,
+      "exact_edge_query_and_sibling_isolation": true,
+      "nodes": 771,
+      "repeats": 25,
+      "shared_graph_pages_clone_one_edge_us": 6.58,
+      "shared_graph_pages_clone_one_percent_edges_us": 17.751,
+      "shared_graph_pages_clone_us": 1.31,
+      "shared_records_clone_one_edge_us": 176.411,
+      "shared_records_clone_one_percent_edges_us": 178.77100000000002,
+      "shared_records_clone_us": 174.28199999999998,
+      "topology": "grid"
+    },
+    {
+      "base_edges": 1770,
+      "eager_clone_one_edge_us": 678.565,
+      "eager_clone_one_percent_edges_us": 714.4449999999999,
+      "eager_clone_us": 700.906,
+      "exact_edge_query_and_sibling_isolation": true,
+      "nodes": 1771,
+      "repeats": 25,
+      "shared_graph_pages_clone_one_edge_us": 8.91,
+      "shared_graph_pages_clone_one_percent_edges_us": 46.02,
+      "shared_graph_pages_clone_us": 2.38,
+      "shared_records_clone_one_edge_us": 431.523,
+      "shared_records_clone_one_percent_edges_us": 436.114,
+      "shared_records_clone_us": 419.26300000000003,
+      "topology": "path"
+    },
+    {
+      "base_edges": 1770,
+      "eager_clone_one_edge_us": 392.343,
+      "eager_clone_one_percent_edges_us": 388.903,
+      "eager_clone_us": 383.593,
+      "exact_edge_query_and_sibling_isolation": true,
+      "nodes": 1771,
+      "repeats": 25,
+      "shared_graph_pages_clone_one_edge_us": 7.91,
+      "shared_graph_pages_clone_one_percent_edges_us": 23.47,
+      "shared_graph_pages_clone_us": 2.44,
+      "shared_records_clone_one_edge_us": 229.96200000000002,
+      "shared_records_clone_one_percent_edges_us": 242.752,
+      "shared_records_clone_us": 225.032,
+      "topology": "star"
+    },
+    {
+      "base_edges": 3457,
+      "eager_clone_one_edge_us": 481.75399999999996,
+      "eager_clone_one_percent_edges_us": 485.334,
+      "eager_clone_us": 479.493,
+      "exact_edge_query_and_sibling_isolation": true,
+      "nodes": 1771,
+      "repeats": 25,
+      "shared_graph_pages_clone_one_edge_us": 5.84,
+      "shared_graph_pages_clone_one_percent_edges_us": 32.629999999999995,
+      "shared_graph_pages_clone_us": 1.9,
+      "shared_records_clone_one_edge_us": 270.242,
+      "shared_records_clone_one_percent_edges_us": 287.312,
+      "shared_records_clone_us": 273.59200000000004,
+      "topology": "grid"
+    },
+    {
+      "base_edges": 10770,
+      "eager_clone_one_edge_us": 2682.66,
+      "eager_clone_one_percent_edges_us": 2858.8709999999996,
+      "eager_clone_us": 2606.329,
+      "exact_edge_query_and_sibling_isolation": true,
+      "nodes": 10771,
+      "repeats": 25,
+      "shared_graph_pages_clone_one_edge_us": 13.47,
+      "shared_graph_pages_clone_one_percent_edges_us": 236.49200000000002,
+      "shared_graph_pages_clone_us": 5.0200000000000005,
+      "shared_records_clone_one_edge_us": 1694.5230000000001,
+      "shared_records_clone_one_percent_edges_us": 1741.793,
+      "shared_records_clone_us": 1692.982,
+      "topology": "path"
+    },
+    {
+      "base_edges": 10770,
+      "eager_clone_one_edge_us": 2113.4359999999997,
+      "eager_clone_one_percent_edges_us": 2668.859,
+      "eager_clone_us": 2928.8019999999997,
+      "exact_edge_query_and_sibling_isolation": true,
+      "nodes": 10771,
+      "repeats": 25,
+      "shared_graph_pages_clone_one_edge_us": 18.44,
+      "shared_graph_pages_clone_one_percent_edges_us": 162.772,
+      "shared_graph_pages_clone_us": 11.63,
+      "shared_records_clone_one_edge_us": 1358.61,
+      "shared_records_clone_one_percent_edges_us": 1524.761,
+      "shared_records_clone_us": 1378.64,
+      "topology": "star"
+    },
+    {
+      "base_edges": 21334,
+      "eager_clone_one_edge_us": 3026.772,
+      "eager_clone_one_percent_edges_us": 3047.863,
+      "eager_clone_us": 3160.9120000000003,
+      "exact_edge_query_and_sibling_isolation": true,
+      "nodes": 10771,
+      "repeats": 25,
+      "shared_graph_pages_clone_one_edge_us": 18.11,
+      "shared_graph_pages_clone_one_percent_edges_us": 270.47200000000004,
+      "shared_graph_pages_clone_us": 7.52,
+      "shared_records_clone_one_edge_us": 1716.682,
+      "shared_records_clone_one_percent_edges_us": 1764.143,
+      "shared_records_clone_us": 1790.553,
+      "topology": "grid"
+    },
+    {
+      "base_edges": 50770,
+      "eager_clone_one_edge_us": 17047.244,
+      "eager_clone_one_percent_edges_us": 17148.165,
+      "eager_clone_us": 14166.342999999999,
+      "exact_edge_query_and_sibling_isolation": true,
+      "nodes": 50771,
+      "repeats": 25,
+      "shared_graph_pages_clone_one_edge_us": 53.5,
+      "shared_graph_pages_clone_one_percent_edges_us": 1422.651,
+      "shared_graph_pages_clone_us": 39.141,
+      "shared_records_clone_one_edge_us": 9440.819,
+      "shared_records_clone_one_percent_edges_us": 8907.535,
+      "shared_records_clone_us": 9241.587000000001,
+      "topology": "path"
+    },
+    {
+      "base_edges": 50770,
+      "eager_clone_one_edge_us": 10220.864,
+      "eager_clone_one_percent_edges_us": 10700.037,
+      "eager_clone_us": 11207.602,
+      "exact_edge_query_and_sibling_isolation": true,
+      "nodes": 50771,
+      "repeats": 25,
+      "shared_graph_pages_clone_one_edge_us": 70.361,
+      "shared_graph_pages_clone_one_percent_edges_us": 705.4449999999999,
+      "shared_graph_pages_clone_us": 82.521,
+      "shared_records_clone_one_edge_us": 7069.621,
+      "shared_records_clone_one_percent_edges_us": 6940.85,
+      "shared_records_clone_us": 6235.966,
+      "topology": "star"
+    },
+    {
+      "base_edges": 101091,
+      "eager_clone_one_edge_us": 16470.82,
+      "eager_clone_one_percent_edges_us": 18864.236999999997,
+      "eager_clone_us": 15776.063999999998,
+      "exact_edge_query_and_sibling_isolation": true,
+      "nodes": 50771,
+      "repeats": 25,
+      "shared_graph_pages_clone_one_edge_us": 93.801,
+      "shared_graph_pages_clone_one_percent_edges_us": 1828.163,
+      "shared_graph_pages_clone_us": 53.041000000000004,
+      "shared_records_clone_one_edge_us": 8377.16,
+      "shared_records_clone_one_percent_edges_us": 9939.262,
+      "shared_records_clone_us": 8318.351,
+      "topology": "grid"
+    }
+  ],
+  "runner": {
+    "path": "/home/matt/ozmadev/ocelot/evaluation/substrate_capability/typed_graph_cow_graph_pages_probe_v1.py",
+    "sha256": "sha256:ad68f3b7028ba7a6a7c9218fe3972021c99ca187b8767817b1a620d586010be3"
+  },
+  "schema": "TypedGraphCowGraphPagesProbeV1",
+  "sources": {
+    "runners/dsl/Cargo.lock": "sha256:409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+    "runners/dsl/Cargo.toml": "sha256:c4d8ffff2241352a5150b5a9937dbb8010e958b6f115235b7daeae716c1a9332",
+    "runners/dsl/src/bin/typed_graph_cow_graph_pages_probe.rs": "sha256:61cd21aba8dda597b5c40fd216fcaa30d9d84ace8c8973d1f55f10a51310f4c5",
+    "runners/dsl/src/cow_paged_vec.rs": "sha256:4b180c6aeb3cf9ee4391e65ba3aa50110b255da5697a909b46e7f4ec852939e4",
+    "runners/dsl/src/cow_sharded_map.rs": "sha256:b5f9cd600be3c395356cbe361bc4df37f21b28396305bc2f14973f99e17cbe37",
+    "runners/dsl/src/graph.rs": "sha256:cf8ef01bbf49d35a217e3032a7cb7091e6d6a2ddd0712cde1197283fe57cadbd",
+    "runners/dsl/src/lib.rs": "sha256:f8c5ae707046db8347438227913a737faf78a184b294c8e339a9008e71fab36c"
+  },
+  "toolchain": {
+    "cargo": "cargo 1.87.0 (Homebrew)",
+    "rustc": "rustc 1.87.0 (17067e9ac 2025-05-09) (Homebrew)"
+  }
+}

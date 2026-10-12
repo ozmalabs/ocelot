@@ -26,7 +26,7 @@ This module makes reading the substrate's OWN core loop pointed at language:
      explained away as a transform of a held construction.
 
   2. CONSTRUCTION CODEBOOK = held `ShapeSignature{kind:"construction"}` nodes
-     (`seeds/reading_constructions.json`), one per predication construction
+     (`domain_data/reading_constructions.json`), one per predication construction
      (definitional / enumeration / causal / comparative / conditional /
      attributive / event). Each carries its distinctive marker skeleton as its
      `signature` and a construction-GENERAL `ground_template`.
@@ -73,7 +73,7 @@ from domains import preposition_roles as pr
 from domains import reflective_faculty as rf
 
 _ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-_CODEBOOK_SEED = os.path.join(_ROOT, "seeds", "reading_constructions.json")
+_CODEBOOK_SEED = os.path.join(_ROOT, "domain_data", "reading_constructions.json")
 
 # Marker classes that CONTRIBUTE to a construction's identity skeleton (the
 # construction-distinctive markers). Determiners / list-conjunctions are role
@@ -82,7 +82,7 @@ _SKELETON = {"COP", "INCL", "SUCH", "AS", "IF", "THEN", "REL", "OF", "TO", "FOR"
              "WITH", "BY", "FROM", "CAUSE_SUB", "CAUSE_V", "UNLIKE", "LIKE", "THAN",
              "DESIGNATE", "POSSESS", "PPART",
              # in-situ definition boundary markers (_ground_insitu_definition) --
-             # mirrored here (not just in seeds/reading_constructions.json's
+             # mirrored here (not just in domain_data/reading_constructions.json's
              # ReadingRoles node) so the FIRST-EVER `ensure_codebook` call on a
              # fresh agent (whose `_refresh_lexicon` runs BEFORE that call's own
              # seed install) already recognises them -- else only the SECOND
@@ -109,7 +109,7 @@ def _resolve(agent):
 
 def _refresh_lexicon(sub) -> None:
     """Populate the closed-class + marker-role caches FROM THE GRAPH (the
-    `ClosedClass` / `ReadingRoles` nodes in seeds/reading_constructions.json). The
+    `ClosedClass` / `ReadingRoles` nodes in domain_data/reading_constructions.json). The
     GRAPH is the source of truth; these module names are a performance cache
     (CLAUDE.md permits Python caching of graph-resident data). Falls back to the
     in-code default per role when a node is absent (an older seed), so behaviour is
@@ -242,7 +242,7 @@ def _marker_lexicon(sub) -> dict[str, str]:
 #  should head the clause; 'of' is a nested-PP relation inside the object NP,
 #  not the clause's own skeleton marker). The DECIDING fact — that OF yields
 #  precedence to an already-seen finite verb — is HELD DATA on the OF
-#  MarkerClass (`yields_to_finite_verb`, seeds/reading_constructions.json),
+#  MarkerClass (`yields_to_finite_verb`, domain_data/reading_constructions.json),
 #  read by `_of_yields_to_finite_verb` below: absent that taught fact (an
 #  older/ablated seed), the guard in `_skeleton_from_words` never fires and
 #  every 'of' reads exactly as it did before this phase. Mirrors the QUANTIFIER
@@ -1508,7 +1508,7 @@ def _install_construction(agent, skeleton: list, roles: list) -> dict:
 #  THE DECISION — whether a comma/paren-flanked span IS an in-situ
 #  definition — is the ShapeDecode collapse's, over the TAUGHT
 #  `appositive_definition` / `parenthetical_definition` ShapeSignatures
-#  (seeds/reading_constructions.json, authored via `domains.teach.teach`).
+#  (domain_data/reading_constructions.json, authored via `domains.teach.teach`).
 #  This module only recognises the MECHANICAL FACT a boundary rests on — is
 #  the region it flanks DET-led? — via the SAME held `MarkerClass` lookup
 #  `_skeleton_from_words` already performs on every word — and encodes that
@@ -1870,15 +1870,15 @@ def _clean_head(surface: str, language: str = "en") -> str:
     if head_i is None:
         head_i = len(core) - 1
     # (4) longest held lexical compound ending at the head, else the bare head.
+    #     The persisted sense table (domains/wordnet_table) reproduces NLTK's
+    #     wn.synsets exactly, without loading the in-process corpus (tranche 18).
     try:
-        from nltk.corpus import wordnet as wn
-        for start in range(0, head_i + 1):
-            key = "_".join(core[start:head_i + 1])
-            try:
-                if wn.synsets(key):
+        from domains import wordnet_table as wt
+        if wt.available():
+            for start in range(0, head_i + 1):
+                key = "_".join(core[start:head_i + 1])
+                if wt.synsets(key):
                     return key
-            except Exception:
-                break
     except Exception:
         pass
     return core[head_i]
@@ -3119,14 +3119,14 @@ def _is_complementizer_that(region: list, wi: int) -> bool:
 #  case, just missing its trigger token. The DECIDING fact -- that a REPORT/
 #  communication verb (say/said/wrote/announced/...) ALSO opens an embedded
 #  finite clause even with NO complementizer present -- is HELD DATA
-#  (`MarkerClass{cls:'REPORT'}`, seeds/reading_constructions.json), read by
+#  (`MarkerClass{cls:'REPORT'}`, domain_data/reading_constructions.json), read by
 #  `report_membership` below: absent that class (an older/ablated seed), this
 #  never fires and every report-verb sentence reads exactly as it did before
 #  this phase (see the ablation test).
 # --------------------------------------------------------------------------- #
 def _report_class_node(sub):
     """The `ReportClass{cls:'REPORT'}` node, or None. A DEDICATED node type (not
-    `MarkerClass`) on purpose -- see the seed note in seeds/reading_constructions.json:
+    `MarkerClass`) on purpose -- see the seed note in domain_data/reading_constructions.json:
     `_marker_lexicon` iterates `MarkerClass` nodes only and its `c = lex.get(word)`
     check runs BEFORE any class's own adjacency join, so a literal REPORT seed member
     living in that shared dict would silently pre-empt another class's (e.g.

@@ -1,0 +1,4881 @@
+{
+  "all_static_sources_match_capture_or_native_build": true,
+  "analyzer_sha256": "46c0f51b67afa2c24fca838adc4d2e9372fa78909d69a6803b3bcf56a2c40736",
+  "capture_commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+  "capture_lock_file_matches_embedded": true,
+  "capture_lock_path": "evaluation/substrate_capability/preoutcome_task_frame_capture_v1_20261005_lock.json",
+  "capture_lock_sha256": "6b3b2a3578847b9198f3b1cbfe32347e3e5771f1642b23be72c222e9370bba4c",
+  "capture_path": "evaluation/reports/preoutcome_task_frame_capture_v1_20261005/capture.json.gz",
+  "capture_sha256": "a711f9e5c1665d5fe7956ca867eab591ee9a28df09afa4a946f382c674e3bc17",
+  "hotspot_findings": {
+    "curiosity_rule_outside_access_counts": [
+      107491,
+      75876,
+      75876,
+      75876,
+      63230,
+      75876,
+      75876
+    ],
+    "first_turn_shape_decode_family_access_count": 57057,
+    "first_turn_slang_node_dedup_candidate_reads": 107460,
+    "first_turn_slang_rule_match_edges": 15,
+    "first_turn_top_three_named_rules_access_count": 345701,
+    "goal_residual_lapse_outside_access_counts": [
+      23137,
+      19806,
+      19806,
+      19806,
+      26408,
+      19806,
+      19806
+    ],
+    "later_turn_slang_outside_access_counts": [
+      90,
+      90,
+      90,
+      90,
+      90,
+      90
+    ],
+    "slang_candidates_per_rule_match": 7164
+  },
+  "limitations": [
+    "Access-event counts are mechanism work counters, not elapsed time or CPU cost.",
+    "Events outside the declared ingress cut may be background supervision or shared global state; they are not thereby necessary task dependencies.",
+    "The trace covers native rule accesses after the checkpoint, not every host-side read or operation.",
+    "The seven prompts are one authored task family and three worker replicates, not a natural-task sample."
+  ],
+  "native_build_manifest_matches_capture": true,
+  "native_build_manifest_sha256": "c854af97c90788e09619ca5ac40dbce1ef9398f7d346bd3590845e4caea4e16e",
+  "native_extension_matches_capture": true,
+  "native_extension_sha256": "sha256:4263559da92c17cb1b84e33a79b1659ad3cb122db03c8347440630ab063ca95b",
+  "per_prompt_worker_trace_profiles_repeat": true,
+  "per_turn": [
+    {
+      "all_rule_access_count_per_worker": 440129,
+      "audited_rules": {
+        "curiosity_targets_ambivalent_nodes": {
+          "operation_counts_per_worker": {
+            "effect_attr_compare_read": 6323,
+            "effect_attr_write": 6323,
+            "pattern_edge": 6323,
+            "term_attr_read": 88522
+          },
+          "outside_cut_access_count_per_worker": 107491,
+          "resource_counts_per_worker": [
+            {
+              "count": 44261,
+              "kind": "term_attr_read",
+              "resource": "state"
+            },
+            {
+              "count": 44261,
+              "kind": "term_attr_read",
+              "resource": "is_ambivalent"
+            },
+            {
+              "count": 6323,
+              "kind": "pattern_edge",
+              "resource": "has_concept"
+            },
+            {
+              "count": 6323,
+              "kind": "effect_attr_write",
+              "resource": "is_ambivalent"
+            },
+            {
+              "count": 6323,
+              "kind": "effect_attr_compare_read",
+              "resource": "is_ambivalent"
+            }
+          ]
+        },
+        "gr_condition_lapse": {
+          "operation_counts_per_worker": {
+            "effect_attr_compare_read": 5,
+            "effect_attr_write": 5,
+            "pattern_edge": 5,
+            "term_attr_read": 11642,
+            "term_nodes_of_type_candidate": 5740,
+            "term_type_read": 5740
+          },
+          "outside_cut_access_count_per_worker": 23137,
+          "resource_counts_per_worker": [
+            {
+              "count": 5740,
+              "kind": "term_attr_read",
+              "resource": "kind"
+            },
+            {
+              "count": 5740,
+              "kind": "term_attr_read",
+              "resource": "filter_value"
+            },
+            {
+              "count": 5740,
+              "kind": "term_type_read",
+              "resource": "ShapeSignature"
+            },
+            {
+              "count": 5740,
+              "kind": "term_nodes_of_type_candidate",
+              "resource": "ShapeSignature"
+            },
+            {
+              "count": 57,
+              "kind": "term_attr_read",
+              "resource": "ckind"
+            },
+            {
+              "count": 49,
+              "kind": "term_attr_read",
+              "resource": "stale"
+            },
+            {
+              "count": 42,
+              "kind": "term_attr_read",
+              "resource": "keywords"
+            },
+            {
+              "count": 14,
+              "kind": "term_attr_read",
+              "resource": "expected"
+            },
+            {
+              "count": 5,
+              "kind": "pattern_edge",
+              "resource": "holds_under"
+            },
+            {
+              "count": 5,
+              "kind": "effect_attr_write",
+              "resource": "stale"
+            },
+            {
+              "count": 5,
+              "kind": "effect_attr_compare_read",
+              "resource": "stale"
+            }
+          ]
+        },
+        "sd_decode": {
+          "operation_counts_per_worker": {
+            "effect_attr_compare_read": 5,
+            "effect_attr_write": 5,
+            "pattern_edge": 1,
+            "term_attr_read": 20077,
+            "term_type_read": 1711,
+            "term_typed_population_candidate": 1230
+          },
+          "outside_cut_access_count_per_worker": 23029,
+          "resource_counts_per_worker": [
+            {
+              "count": 1711,
+              "kind": "term_attr_read",
+              "resource": "name"
+            },
+            {
+              "count": 1644,
+              "kind": "term_attr_read",
+              "resource": "signature"
+            },
+            {
+              "count": 1640,
+              "kind": "term_attr_read",
+              "resource": "kind"
+            },
+            {
+              "count": 1640,
+              "kind": "term_type_read",
+              "resource": "ShapeSignature"
+            },
+            {
+              "count": 1230,
+              "kind": "term_typed_population_candidate",
+              "resource": "ShapeSignature"
+            },
+            {
+              "count": 1052,
+              "kind": "term_attr_read",
+              "resource": "dim_types"
+            },
+            {
+              "count": 1052,
+              "kind": "term_attr_read",
+              "resource": "grid"
+            },
+            {
+              "count": 1052,
+              "kind": "term_attr_read",
+              "resource": "len_bins"
+            },
+            {
+              "count": 1052,
+              "kind": "term_attr_read",
+              "resource": "scale_bins"
+            },
+            {
+              "count": 1052,
+              "kind": "term_attr_read",
+              "resource": "segments"
+            },
+            {
+              "count": 1052,
+              "kind": "term_attr_read",
+              "resource": "turn_bins"
+            },
+            {
+              "count": 956,
+              "kind": "term_attr_read",
+              "resource": "arc_len"
+            }
+          ]
+        },
+        "sd_infer_dimension": {
+          "operation_counts_per_worker": {
+            "effect_attr_compare_read": 3,
+            "effect_attr_write": 3,
+            "pattern_edge": 1,
+            "term_attr_read": 14982,
+            "term_type_read": 1248,
+            "term_typed_population_candidate": 832
+          },
+          "outside_cut_access_count_per_worker": 17069,
+          "resource_counts_per_worker": [
+            {
+              "count": 1248,
+              "kind": "term_attr_read",
+              "resource": "name"
+            },
+            {
+              "count": 1248,
+              "kind": "term_attr_read",
+              "resource": "kind"
+            },
+            {
+              "count": 1233,
+              "kind": "term_attr_read",
+              "resource": "signature"
+            },
+            {
+              "count": 1230,
+              "kind": "term_type_read",
+              "resource": "ShapeSignature"
+            },
+            {
+              "count": 820,
+              "kind": "term_typed_population_candidate",
+              "resource": "ShapeSignature"
+            },
+            {
+              "count": 789,
+              "kind": "term_attr_read",
+              "resource": "dim_types"
+            },
+            {
+              "count": 789,
+              "kind": "term_attr_read",
+              "resource": "grid"
+            },
+            {
+              "count": 789,
+              "kind": "term_attr_read",
+              "resource": "len_bins"
+            },
+            {
+              "count": 789,
+              "kind": "term_attr_read",
+              "resource": "scale_bins"
+            },
+            {
+              "count": 789,
+              "kind": "term_attr_read",
+              "resource": "segments"
+            },
+            {
+              "count": 789,
+              "kind": "term_attr_read",
+              "resource": "turn_bins"
+            },
+            {
+              "count": 717,
+              "kind": "term_attr_read",
+              "resource": "arc_len"
+            }
+          ]
+        },
+        "sd_transform_decode": {
+          "operation_counts_per_worker": {
+            "effect_attr_compare_read": 3,
+            "effect_attr_write": 3,
+            "pattern_edge": 1,
+            "term_attr_read": 14902,
+            "term_type_read": 1230,
+            "term_typed_population_candidate": 820
+          },
+          "outside_cut_access_count_per_worker": 16959,
+          "resource_counts_per_worker": [
+            {
+              "count": 1233,
+              "kind": "term_attr_read",
+              "resource": "signature"
+            },
+            {
+              "count": 1230,
+              "kind": "term_attr_read",
+              "resource": "name"
+            },
+            {
+              "count": 1230,
+              "kind": "term_attr_read",
+              "resource": "kind"
+            },
+            {
+              "count": 1230,
+              "kind": "term_type_read",
+              "resource": "ShapeSignature"
+            },
+            {
+              "count": 820,
+              "kind": "term_typed_population_candidate",
+              "resource": "ShapeSignature"
+            },
+            {
+              "count": 789,
+              "kind": "term_attr_read",
+              "resource": "dim_types"
+            },
+            {
+              "count": 789,
+              "kind": "term_attr_read",
+              "resource": "grid"
+            },
+            {
+              "count": 789,
+              "kind": "term_attr_read",
+              "resource": "len_bins"
+            },
+            {
+              "count": 789,
+              "kind": "term_attr_read",
+              "resource": "scale_bins"
+            },
+            {
+              "count": 789,
+              "kind": "term_attr_read",
+              "resource": "segments"
+            },
+            {
+              "count": 789,
+              "kind": "term_attr_read",
+              "resource": "turn_bins"
+            },
+            {
+              "count": 717,
+              "kind": "term_attr_read",
+              "resource": "arc_len"
+            }
+          ]
+        },
+        "slang_variant_bind_denotes": {
+          "operation_counts_per_worker": {
+            "effect_attr_compare_read": 107460,
+            "effect_edge_compare_read": 15,
+            "effect_edge_upsert": 15,
+            "effect_node_mint": 3,
+            "effect_type_candidate_read": 107460,
+            "pattern_edge": 15,
+            "term_attr_read": 15,
+            "term_edge_read": 90
+          },
+          "outside_cut_access_count_per_worker": 215073,
+          "resource_counts_per_worker": [
+            {
+              "count": 107460,
+              "kind": "effect_type_candidate_read",
+              "resource": "Concept"
+            },
+            {
+              "count": 107460,
+              "kind": "effect_attr_compare_read",
+              "resource": "name"
+            },
+            {
+              "count": 90,
+              "kind": "term_edge_read",
+              "resource": "denotes"
+            },
+            {
+              "count": 15,
+              "kind": "pattern_edge",
+              "resource": "knows_variant"
+            },
+            {
+              "count": 15,
+              "kind": "term_attr_read",
+              "resource": "denotes_name"
+            },
+            {
+              "count": 15,
+              "kind": "effect_edge_upsert",
+              "resource": "denotes"
+            },
+            {
+              "count": 15,
+              "kind": "effect_edge_compare_read",
+              "resource": "denotes"
+            },
+            {
+              "count": 3,
+              "kind": "effect_node_mint",
+              "resource": "Concept"
+            }
+          ]
+        }
+      },
+      "outside_cut_access_count_per_worker": 435616,
+      "outside_cut_rule_count": 242,
+      "prompt": "What do you know about copper?",
+      "top_rules": [
+        {
+          "operation_counts_per_worker": {
+            "effect_attr_compare_read": 107460,
+            "effect_edge_compare_read": 15,
+            "effect_edge_upsert": 15,
+            "effect_node_mint": 3,
+            "effect_type_candidate_read": 107460,
+            "pattern_edge": 15,
+            "term_attr_read": 15,
+            "term_edge_read": 90
+          },
+          "outside_cut_access_count_per_worker": 215073,
+          "resource_counts_per_worker": [
+            {
+              "count": 107460,
+              "kind": "effect_type_candidate_read",
+              "resource": "Concept"
+            },
+            {
+              "count": 107460,
+              "kind": "effect_attr_compare_read",
+              "resource": "name"
+            },
+            {
+              "count": 90,
+              "kind": "term_edge_read",
+              "resource": "denotes"
+            },
+            {
+              "count": 15,
+              "kind": "pattern_edge",
+              "resource": "knows_variant"
+            },
+            {
+              "count": 15,
+              "kind": "term_attr_read",
+              "resource": "denotes_name"
+            },
+            {
+              "count": 15,
+              "kind": "effect_edge_upsert",
+              "resource": "denotes"
+            },
+            {
+              "count": 15,
+              "kind": "effect_edge_compare_read",
+              "resource": "denotes"
+            },
+            {
+              "count": 3,
+              "kind": "effect_node_mint",
+              "resource": "Concept"
+            }
+          ],
+          "rule_name": "slang_variant_bind_denotes",
+          "share_of_outside_cut_accesses": 0.493722,
+          "source_definition": {
+            "effects": [
+              [
+                "add_node_if_absent",
+                "c",
+                "Concept",
+                {
+                  "name": {
+                    "__term__": {
+                      "key": "denotes_name",
+                      "node": {
+                        "name": "v",
+                        "type": "Var"
+                      },
+                      "type": "Attr"
+                    }
+                  }
+                }
+              ],
+              [
+                "add_edge",
+                "v",
+                "denotes",
+                "c"
+              ]
+            ],
+            "match": [
+              [
+                "agent",
+                "knows_variant",
+                "v"
+              ]
+            ],
+            "match_type": "SlangVariant",
+            "source": "seeds/slang_lexicon.json",
+            "source_line": 314,
+            "source_sha256": "0ef18f64436fa47140d8a1eb35a5534a37766877085748a1766e2e4591627359",
+            "where_term_types": [
+              "Attr",
+              "Exists",
+              "Lit",
+              "Neighbours",
+              "Not",
+              "Var"
+            ]
+          }
+        },
+        {
+          "operation_counts_per_worker": {
+            "effect_attr_compare_read": 6323,
+            "effect_attr_write": 6323,
+            "pattern_edge": 6323,
+            "term_attr_read": 88522
+          },
+          "outside_cut_access_count_per_worker": 107491,
+          "resource_counts_per_worker": [
+            {
+              "count": 44261,
+              "kind": "term_attr_read",
+              "resource": "state"
+            },
+            {
+              "count": 44261,
+              "kind": "term_attr_read",
+              "resource": "is_ambivalent"
+            },
+            {
+              "count": 6323,
+              "kind": "pattern_edge",
+              "resource": "has_concept"
+            },
+            {
+              "count": 6323,
+              "kind": "effect_attr_write",
+              "resource": "is_ambivalent"
+            },
+            {
+              "count": 6323,
+              "kind": "effect_attr_compare_read",
+              "resource": "is_ambivalent"
+            }
+          ],
+          "rule_name": "curiosity_targets_ambivalent_nodes",
+          "share_of_outside_cut_accesses": 0.246756,
+          "source_definition": {
+            "effects": [
+              [
+                "set_attr",
+                "c",
+                "is_ambivalent",
+                1
+              ]
+            ],
+            "match": [
+              [
+                "mt",
+                "has_concept",
+                "c"
+              ]
+            ],
+            "match_type": "Concept",
+            "source": "seeds/causal_attitude_networks.json",
+            "source_line": 721,
+            "source_sha256": "ca5ff96dc9a54d7a2bc9e2e800402b8d84bcb1b96b90ca3928435299bcf5fd97",
+            "where_term_types": [
+              "Abs",
+              "And",
+              "Attr",
+              "Eq",
+              "Lit",
+              "Lt",
+              "Not",
+              "Var"
+            ]
+          }
+        },
+        {
+          "operation_counts_per_worker": {
+            "effect_attr_compare_read": 5,
+            "effect_attr_write": 5,
+            "pattern_edge": 5,
+            "term_attr_read": 11642,
+            "term_nodes_of_type_candidate": 5740,
+            "term_type_read": 5740
+          },
+          "outside_cut_access_count_per_worker": 23137,
+          "resource_counts_per_worker": [
+            {
+              "count": 5740,
+              "kind": "term_attr_read",
+              "resource": "kind"
+            },
+            {
+              "count": 5740,
+              "kind": "term_attr_read",
+              "resource": "filter_value"
+            },
+            {
+              "count": 5740,
+              "kind": "term_type_read",
+              "resource": "ShapeSignature"
+            },
+            {
+              "count": 5740,
+              "kind": "term_nodes_of_type_candidate",
+              "resource": "ShapeSignature"
+            },
+            {
+              "count": 57,
+              "kind": "term_attr_read",
+              "resource": "ckind"
+            },
+            {
+              "count": 49,
+              "kind": "term_attr_read",
+              "resource": "stale"
+            },
+            {
+              "count": 42,
+              "kind": "term_attr_read",
+              "resource": "keywords"
+            },
+            {
+              "count": 14,
+              "kind": "term_attr_read",
+              "resource": "expected"
+            },
+            {
+              "count": 5,
+              "kind": "pattern_edge",
+              "resource": "holds_under"
+            },
+            {
+              "count": 5,
+              "kind": "effect_attr_write",
+              "resource": "stale"
+            }
+          ],
+          "rule_name": "gr_condition_lapse",
+          "share_of_outside_cut_accesses": 0.053113,
+          "source_definition": {
+            "effects": [
+              [
+                "set_attr",
+                "r",
+                "stale",
+                1.0
+              ]
+            ],
+            "match": [
+              [
+                "r",
+                "holds_under",
+                "c"
+              ]
+            ],
+            "match_type": null,
+            "source": "seeds/goal_residuals.json",
+            "source_line": 787,
+            "source_sha256": "199a90a48b645a739c452c55e04f3659ef43d936d3c431046b60b7a09f2b4148",
+            "where_term_types": [
+              "And",
+              "Attr",
+              "Count",
+              "Eq",
+              "Filter",
+              "Lit",
+              "NodesOfType",
+              "Not",
+              "Or",
+              "Var"
+            ]
+          }
+        },
+        {
+          "operation_counts_per_worker": {
+            "effect_attr_compare_read": 5,
+            "effect_attr_write": 5,
+            "pattern_edge": 1,
+            "term_attr_read": 20077,
+            "term_type_read": 1711,
+            "term_typed_population_candidate": 1230
+          },
+          "outside_cut_access_count_per_worker": 23029,
+          "resource_counts_per_worker": [
+            {
+              "count": 1711,
+              "kind": "term_attr_read",
+              "resource": "name"
+            },
+            {
+              "count": 1644,
+              "kind": "term_attr_read",
+              "resource": "signature"
+            },
+            {
+              "count": 1640,
+              "kind": "term_attr_read",
+              "resource": "kind"
+            },
+            {
+              "count": 1640,
+              "kind": "term_type_read",
+              "resource": "ShapeSignature"
+            },
+            {
+              "count": 1230,
+              "kind": "term_typed_population_candidate",
+              "resource": "ShapeSignature"
+            },
+            {
+              "count": 1052,
+              "kind": "term_attr_read",
+              "resource": "dim_types"
+            },
+            {
+              "count": 1052,
+              "kind": "term_attr_read",
+              "resource": "grid"
+            },
+            {
+              "count": 1052,
+              "kind": "term_attr_read",
+              "resource": "len_bins"
+            },
+            {
+              "count": 1052,
+              "kind": "term_attr_read",
+              "resource": "scale_bins"
+            },
+            {
+              "count": 1052,
+              "kind": "term_attr_read",
+              "resource": "segments"
+            }
+          ],
+          "rule_name": "sd_decode",
+          "share_of_outside_cut_accesses": 0.052865,
+          "source_definition": {
+            "effects": [
+              [
+                "set_attr",
+                "obs",
+                "decode",
+                {
+                  "__term__": {
+                    "beam": 3,
+                    "cand_k": 3,
+                    "goal": {
+                      "key": "signature",
+                      "node": {
+                        "name": "obs",
+                        "type": "Var"
+                      },
+                      "type": "Attr"
+                    },
+                    "max_steps": 8,
+                    "type": "ShapeDecode",
+                    "wild_objects": false
+                  }
+                }
+              ],
+              [
+                "set_attr",
+                "obs",
+                "residual",
+                {
+                  "__term__": {
+                    "beam": 3,
+                    "cand_k": 3,
+                    "field": "residual",
+                    "goal": {
+                      "key": "signature",
+                      "node": {
+                        "name": "obs",
+                        "type": "Var"
+                      },
+                      "type": "Attr"
+                    },
+                    "max_steps": 8,
+                    "type": "ShapeDecode",
+                    "wild_objects": false
+                  }
+                }
+              ],
+              [
+                "set_attr",
+                "obs",
+                "covered_count",
+                {
+                  "__term__": {
+                    "beam": 3,
+                    "cand_k": 3,
+                    "field": "covered_count",
+                    "goal": {
+                      "key": "signature",
+                      "node": {
+                        "name": "obs",
+                        "type": "Var"
+                      },
+                      "type": "Attr"
+                    },
+                    "max_steps": 8,
+                    "type": "ShapeDecode",
+                    "wild_objects": false
+                  }
+                }
+              ],
+              [
+                "set_attr",
+                "obs",
+                "decoded_epoch",
+                {
+                  "__term__": {
+                    "key": "codebook_epoch",
+                    "node": {
+                      "name": "ag",
+                      "type": "Var"
+                    },
+                    "type": "Attr"
+                  }
+                }
+              ],
+              [
+                "set_attr",
+                "obs",
+                "status",
+                "decoded"
+              ]
+            ],
+            "match": [
+              [
+                "ag",
+                "observed",
+                "obs"
+              ]
+            ],
+            "match_type": "Observation",
+            "source": "seeds/shape_decode_loop.json",
+            "source_line": 127,
+            "source_sha256": "0fb6e5206c6e901d1bae254dc7558c1f9f9171d2dfc8e3e0295593f27c3efa1e",
+            "where_term_types": [
+              "Attr",
+              "Eq",
+              "Lit",
+              "ShapeDecode",
+              "Var"
+            ]
+          }
+        },
+        {
+          "operation_counts_per_worker": {
+            "effect_attr_compare_read": 3,
+            "effect_attr_write": 3,
+            "pattern_edge": 1,
+            "term_attr_read": 14982,
+            "term_type_read": 1248,
+            "term_typed_population_candidate": 832
+          },
+          "outside_cut_access_count_per_worker": 17069,
+          "resource_counts_per_worker": [
+            {
+              "count": 1248,
+              "kind": "term_attr_read",
+              "resource": "name"
+            },
+            {
+              "count": 1248,
+              "kind": "term_attr_read",
+              "resource": "kind"
+            },
+            {
+              "count": 1233,
+              "kind": "term_attr_read",
+              "resource": "signature"
+            },
+            {
+              "count": 1230,
+              "kind": "term_type_read",
+              "resource": "ShapeSignature"
+            },
+            {
+              "count": 820,
+              "kind": "term_typed_population_candidate",
+              "resource": "ShapeSignature"
+            },
+            {
+              "count": 789,
+              "kind": "term_attr_read",
+              "resource": "dim_types"
+            },
+            {
+              "count": 789,
+              "kind": "term_attr_read",
+              "resource": "grid"
+            },
+            {
+              "count": 789,
+              "kind": "term_attr_read",
+              "resource": "len_bins"
+            },
+            {
+              "count": 789,
+              "kind": "term_attr_read",
+              "resource": "scale_bins"
+            },
+            {
+              "count": 789,
+              "kind": "term_attr_read",
+              "resource": "segments"
+            }
+          ],
+          "rule_name": "sd_infer_dimension",
+          "share_of_outside_cut_accesses": 0.039184,
+          "source_definition": {
+            "effects": [
+              [
+                "set_attr",
+                "obs",
+                "dim_infer",
+                {
+                  "__term__": {
+                    "goal": {
+                      "key": "signature",
+                      "node": {
+                        "name": "obs",
+                        "type": "Var"
+                      },
+                      "type": "Attr"
+                    },
+                    "max_dims": 2,
+                    "type": "DimInfer"
+                  }
+                }
+              ],
+              [
+                "set_attr",
+                "obs",
+                "dim_explained",
+                {
+                  "__term__": {
+                    "field": "explained",
+                    "goal": {
+                      "key": "signature",
+                      "node": {
+                        "name": "obs",
+                        "type": "Var"
+                      },
+                      "type": "Attr"
+                    },
+                    "max_dims": 2,
+                    "type": "DimInfer"
+                  }
+                }
+              ],
+              [
+                "set_attr",
+                "obs",
+                "dim_checked",
+                1
+              ]
+            ],
+            "match": [
+              [
+                "ag",
+                "observed",
+                "obs"
+              ]
+            ],
+            "match_type": "Observation",
+            "source": "seeds/shape_decode_loop.json",
+            "source_line": 360,
+            "source_sha256": "0fb6e5206c6e901d1bae254dc7558c1f9f9171d2dfc8e3e0295593f27c3efa1e",
+            "where_term_types": [
+              "And",
+              "Attr",
+              "Count",
+              "DimInfer",
+              "Eq",
+              "Gt",
+              "Lit",
+              "Not",
+              "Var"
+            ]
+          }
+        },
+        {
+          "operation_counts_per_worker": {
+            "effect_attr_compare_read": 3,
+            "effect_attr_write": 3,
+            "pattern_edge": 1,
+            "term_attr_read": 14902,
+            "term_type_read": 1230,
+            "term_typed_population_candidate": 820
+          },
+          "outside_cut_access_count_per_worker": 16959,
+          "resource_counts_per_worker": [
+            {
+              "count": 1233,
+              "kind": "term_attr_read",
+              "resource": "signature"
+            },
+            {
+              "count": 1230,
+              "kind": "term_attr_read",
+              "resource": "name"
+            },
+            {
+              "count": 1230,
+              "kind": "term_attr_read",
+              "resource": "kind"
+            },
+            {
+              "count": 1230,
+              "kind": "term_type_read",
+              "resource": "ShapeSignature"
+            },
+            {
+              "count": 820,
+              "kind": "term_typed_population_candidate",
+              "resource": "ShapeSignature"
+            },
+            {
+              "count": 789,
+              "kind": "term_attr_read",
+              "resource": "dim_types"
+            },
+            {
+              "count": 789,
+              "kind": "term_attr_read",
+              "resource": "grid"
+            },
+            {
+              "count": 789,
+              "kind": "term_attr_read",
+              "resource": "len_bins"
+            },
+            {
+              "count": 789,
+              "kind": "term_attr_read",
+              "resource": "scale_bins"
+            },
+            {
+              "count": 789,
+              "kind": "term_attr_read",
+              "resource": "segments"
+            }
+          ],
+          "rule_name": "sd_transform_decode",
+          "share_of_outside_cut_accesses": 0.038931,
+          "source_definition": {
+            "effects": [
+              [
+                "set_attr",
+                "obs",
+                "transform",
+                {
+                  "__term__": {
+                    "goal": {
+                      "key": "signature",
+                      "node": {
+                        "name": "obs",
+                        "type": "Var"
+                      },
+                      "type": "Attr"
+                    },
+                    "max_dims": 2,
+                    "type": "TransformDecode"
+                  }
+                }
+              ],
+              [
+                "set_attr",
+                "obs",
+                "transform_explained",
+                {
+                  "__term__": {
+                    "field": "explained",
+                    "goal": {
+                      "key": "signature",
+                      "node": {
+                        "name": "obs",
+                        "type": "Var"
+                      },
+                      "type": "Attr"
+                    },
+                    "max_dims": 2,
+                    "type": "TransformDecode"
+                  }
+                }
+              ],
+              [
+                "set_attr",
+                "obs",
+                "transform_checked",
+                1
+              ]
+            ],
+            "match": [
+              [
+                "ag",
+                "observed",
+                "obs"
+              ]
+            ],
+            "match_type": "Observation",
+            "source": "seeds/shape_decode_loop.json",
+            "source_line": 245,
+            "source_sha256": "0fb6e5206c6e901d1bae254dc7558c1f9f9171d2dfc8e3e0295593f27c3efa1e",
+            "where_term_types": [
+              "And",
+              "Attr",
+              "Count",
+              "Eq",
+              "Gt",
+              "Lit",
+              "Not",
+              "TransformDecode",
+              "Var"
+            ]
+          }
+        },
+        {
+          "operation_counts_per_worker": {
+            "effect_attr_compare_read": 363,
+            "effect_attr_write": 363,
+            "pattern_edge": 242,
+            "term_attr_read": 5596,
+            "term_edge_read": 2662
+          },
+          "outside_cut_access_count_per_worker": 9226,
+          "resource_counts_per_worker": [
+            {
+              "count": 5566,
+              "kind": "term_attr_read",
+              "resource": "gap_identity"
+            },
+            {
+              "count": 2662,
+              "kind": "term_edge_read",
+              "resource": "has_self_concern"
+            },
+            {
+              "count": 121,
+              "kind": "pattern_edge",
+              "resource": "has_self_concern"
+            },
+            {
+              "count": 121,
+              "kind": "pattern_edge",
+              "resource": "has_gap_recurrence"
+            },
+            {
+              "count": 121,
+              "kind": "effect_attr_write",
+              "resource": "recurrence_counted"
+            },
+            {
+              "count": 121,
+              "kind": "effect_attr_write",
+              "resource": "priority"
+            },
+            {
+              "count": 121,
+              "kind": "effect_attr_write",
+              "resource": "recurrence_count"
+            },
+            {
+              "count": 121,
+              "kind": "effect_attr_compare_read",
+              "resource": "recurrence_counted"
+            },
+            {
+              "count": 121,
+              "kind": "effect_attr_compare_read",
+              "resource": "priority"
+            },
+            {
+              "count": 121,
+              "kind": "effect_attr_compare_read",
+              "resource": "recurrence_count"
+            }
+          ],
+          "rule_name": "register_recurrent_gap_identity",
+          "share_of_outside_cut_accesses": 0.021179,
+          "source_definition": null
+        },
+        {
+          "operation_counts_per_worker": {
+            "term_attr_read": 4940
+          },
+          "outside_cut_access_count_per_worker": 4940,
+          "resource_counts_per_worker": [
+            {
+              "count": 2470,
+              "kind": "term_attr_read",
+              "resource": "is_axis"
+            },
+            {
+              "count": 2470,
+              "kind": "term_attr_read",
+              "resource": "mf_stall"
+            }
+          ],
+          "rule_name": "mint_impasse_from_stall",
+          "share_of_outside_cut_accesses": 0.01134,
+          "source_definition": null
+        },
+        {
+          "operation_counts_per_worker": {
+            "term_attr_read": 4368
+          },
+          "outside_cut_access_count_per_worker": 4368,
+          "resource_counts_per_worker": [
+            {
+              "count": 2184,
+              "kind": "term_attr_read",
+              "resource": "is_axis"
+            },
+            {
+              "count": 2184,
+              "kind": "term_attr_read",
+              "resource": "mf_stall"
+            }
+          ],
+          "rule_name": "escalate_open_on_stall",
+          "share_of_outside_cut_accesses": 0.010027,
+          "source_definition": null
+        },
+        {
+          "operation_counts_per_worker": {
+            "effect_attr_compare_read": 10,
+            "effect_attr_write": 10,
+            "effect_edge_compare_read": 10,
+            "effect_edge_delete": 10,
+            "pattern_edge": 10,
+            "term_attr_read": 1292,
+            "term_nodes_of_type_candidate": 209,
+            "term_type_read": 209
+          },
+          "outside_cut_access_count_per_worker": 1760,
+          "resource_counts_per_worker": [
+            {
+              "count": 418,
+              "kind": "term_attr_read",
+              "resource": "kind"
+            },
+            {
+              "count": 418,
+              "kind": "term_attr_read",
+              "resource": "content"
+            },
+            {
+              "count": 228,
+              "kind": "term_attr_read",
+              "resource": "status"
+            },
+            {
+              "count": 228,
+              "kind": "term_attr_read",
+              "resource": "source"
+            },
+            {
+              "count": 209,
+              "kind": "term_type_read",
+              "resource": "SelfConcern"
+            },
+            {
+              "count": 209,
+              "kind": "term_nodes_of_type_candidate",
+              "resource": "SelfConcern"
+            },
+            {
+              "count": 10,
+              "kind": "pattern_edge",
+              "resource": "has_self_concern"
+            },
+            {
+              "count": 10,
+              "kind": "effect_attr_write",
+              "resource": "status"
+            },
+            {
+              "count": 10,
+              "kind": "effect_edge_delete",
+              "resource": "has_self_concern"
+            },
+            {
+              "count": 10,
+              "kind": "effect_attr_compare_read",
+              "resource": "status"
+            }
+          ],
+          "rule_name": "retire_duplicate_gap",
+          "share_of_outside_cut_accesses": 0.00404,
+          "source_definition": null
+        }
+      ]
+    },
+    {
+      "all_rule_access_count_per_worker": 123816,
+      "audited_rules": {
+        "curiosity_targets_ambivalent_nodes": {
+          "operation_counts_per_worker": {
+            "term_attr_read": 75876
+          },
+          "outside_cut_access_count_per_worker": 75876,
+          "resource_counts_per_worker": [
+            {
+              "count": 37938,
+              "kind": "term_attr_read",
+              "resource": "state"
+            },
+            {
+              "count": 37938,
+              "kind": "term_attr_read",
+              "resource": "is_ambivalent"
+            }
+          ]
+        },
+        "gr_condition_lapse": {
+          "operation_counts_per_worker": {
+            "term_attr_read": 9966,
+            "term_nodes_of_type_candidate": 4920,
+            "term_type_read": 4920
+          },
+          "outside_cut_access_count_per_worker": 19806,
+          "resource_counts_per_worker": [
+            {
+              "count": 4920,
+              "kind": "term_attr_read",
+              "resource": "kind"
+            },
+            {
+              "count": 4920,
+              "kind": "term_attr_read",
+              "resource": "filter_value"
+            },
+            {
+              "count": 4920,
+              "kind": "term_type_read",
+              "resource": "ShapeSignature"
+            },
+            {
+              "count": 4920,
+              "kind": "term_nodes_of_type_candidate",
+              "resource": "ShapeSignature"
+            },
+            {
+              "count": 42,
+              "kind": "term_attr_read",
+              "resource": "stale"
+            },
+            {
+              "count": 36,
+              "kind": "term_attr_read",
+              "resource": "keywords"
+            },
+            {
+              "count": 36,
+              "kind": "term_attr_read",
+              "resource": "ckind"
+            },
+            {
+              "count": 12,
+              "kind": "term_attr_read",
+              "resource": "expected"
+            }
+          ]
+        },
+        "sd_decode": {
+          "operation_counts_per_worker": {
+            "term_attr_read": 10
+          },
+          "outside_cut_access_count_per_worker": 10,
+          "resource_counts_per_worker": [
+            {
+              "count": 10,
+              "kind": "term_attr_read",
+              "resource": "status"
+            }
+          ]
+        },
+        "sd_infer_dimension": {
+          "operation_counts_per_worker": {
+            "term_attr_read": 10
+          },
+          "outside_cut_access_count_per_worker": 10,
+          "resource_counts_per_worker": [
+            {
+              "count": 10,
+              "kind": "term_attr_read",
+              "resource": "status"
+            }
+          ]
+        },
+        "sd_transform_decode": {
+          "operation_counts_per_worker": {
+            "term_attr_read": 10
+          },
+          "outside_cut_access_count_per_worker": 10,
+          "resource_counts_per_worker": [
+            {
+              "count": 10,
+              "kind": "term_attr_read",
+              "resource": "status"
+            }
+          ]
+        },
+        "slang_variant_bind_denotes": {
+          "operation_counts_per_worker": {
+            "term_edge_read": 90
+          },
+          "outside_cut_access_count_per_worker": 90,
+          "resource_counts_per_worker": [
+            {
+              "count": 90,
+              "kind": "term_edge_read",
+              "resource": "denotes"
+            }
+          ]
+        }
+      },
+      "outside_cut_access_count_per_worker": 119167,
+      "outside_cut_rule_count": 336,
+      "prompt": "What do you know about basalt?",
+      "top_rules": [
+        {
+          "operation_counts_per_worker": {
+            "term_attr_read": 75876
+          },
+          "outside_cut_access_count_per_worker": 75876,
+          "resource_counts_per_worker": [
+            {
+              "count": 37938,
+              "kind": "term_attr_read",
+              "resource": "state"
+            },
+            {
+              "count": 37938,
+              "kind": "term_attr_read",
+              "resource": "is_ambivalent"
+            }
+          ],
+          "rule_name": "curiosity_targets_ambivalent_nodes",
+          "share_of_outside_cut_accesses": 0.63672,
+          "source_definition": {
+            "effects": [
+              [
+                "set_attr",
+                "c",
+                "is_ambivalent",
+                1
+              ]
+            ],
+            "match": [
+              [
+                "mt",
+                "has_concept",
+                "c"
+              ]
+            ],
+            "match_type": "Concept",
+            "source": "seeds/causal_attitude_networks.json",
+            "source_line": 721,
+            "source_sha256": "ca5ff96dc9a54d7a2bc9e2e800402b8d84bcb1b96b90ca3928435299bcf5fd97",
+            "where_term_types": [
+              "Abs",
+              "And",
+              "Attr",
+              "Eq",
+              "Lit",
+              "Lt",
+              "Not",
+              "Var"
+            ]
+          }
+        },
+        {
+          "operation_counts_per_worker": {
+            "term_attr_read": 9966,
+            "term_nodes_of_type_candidate": 4920,
+            "term_type_read": 4920
+          },
+          "outside_cut_access_count_per_worker": 19806,
+          "resource_counts_per_worker": [
+            {
+              "count": 4920,
+              "kind": "term_attr_read",
+              "resource": "kind"
+            },
+            {
+              "count": 4920,
+              "kind": "term_attr_read",
+              "resource": "filter_value"
+            },
+            {
+              "count": 4920,
+              "kind": "term_type_read",
+              "resource": "ShapeSignature"
+            },
+            {
+              "count": 4920,
+              "kind": "term_nodes_of_type_candidate",
+              "resource": "ShapeSignature"
+            },
+            {
+              "count": 42,
+              "kind": "term_attr_read",
+              "resource": "stale"
+            },
+            {
+              "count": 36,
+              "kind": "term_attr_read",
+              "resource": "keywords"
+            },
+            {
+              "count": 36,
+              "kind": "term_attr_read",
+              "resource": "ckind"
+            },
+            {
+              "count": 12,
+              "kind": "term_attr_read",
+              "resource": "expected"
+            }
+          ],
+          "rule_name": "gr_condition_lapse",
+          "share_of_outside_cut_accesses": 0.166204,
+          "source_definition": {
+            "effects": [
+              [
+                "set_attr",
+                "r",
+                "stale",
+                1.0
+              ]
+            ],
+            "match": [
+              [
+                "r",
+                "holds_under",
+                "c"
+              ]
+            ],
+            "match_type": null,
+            "source": "seeds/goal_residuals.json",
+            "source_line": 787,
+            "source_sha256": "199a90a48b645a739c452c55e04f3659ef43d936d3c431046b60b7a09f2b4148",
+            "where_term_types": [
+              "And",
+              "Attr",
+              "Count",
+              "Eq",
+              "Filter",
+              "Lit",
+              "NodesOfType",
+              "Not",
+              "Or",
+              "Var"
+            ]
+          }
+        },
+        {
+          "operation_counts_per_worker": {
+            "term_attr_read": 3900
+          },
+          "outside_cut_access_count_per_worker": 3900,
+          "resource_counts_per_worker": [
+            {
+              "count": 1950,
+              "kind": "term_attr_read",
+              "resource": "is_axis"
+            },
+            {
+              "count": 1950,
+              "kind": "term_attr_read",
+              "resource": "mf_stall"
+            }
+          ],
+          "rule_name": "escalate_open_on_stall",
+          "share_of_outside_cut_accesses": 0.032727,
+          "source_definition": null
+        },
+        {
+          "operation_counts_per_worker": {
+            "term_attr_read": 3874
+          },
+          "outside_cut_access_count_per_worker": 3874,
+          "resource_counts_per_worker": [
+            {
+              "count": 1937,
+              "kind": "term_attr_read",
+              "resource": "is_axis"
+            },
+            {
+              "count": 1937,
+              "kind": "term_attr_read",
+              "resource": "mf_stall"
+            }
+          ],
+          "rule_name": "mint_impasse_from_stall",
+          "share_of_outside_cut_accesses": 0.032509,
+          "source_definition": null
+        },
+        {
+          "operation_counts_per_worker": {
+            "effect_edge_compare_read": 1,
+            "effect_edge_upsert": 1,
+            "effect_node_mint": 1,
+            "term_attr_read": 304,
+            "term_edge_read": 59,
+            "term_nodes_of_type_candidate": 313,
+            "term_type_read": 313
+          },
+          "outside_cut_access_count_per_worker": 992,
+          "resource_counts_per_worker": [
+            {
+              "count": 187,
+              "kind": "term_type_read",
+              "resource": "CapabilityAxis"
+            },
+            {
+              "count": 187,
+              "kind": "term_nodes_of_type_candidate",
+              "resource": "CapabilityAxis"
+            },
+            {
+              "count": 170,
+              "kind": "term_attr_read",
+              "resource": "kind"
+            },
+            {
+              "count": 126,
+              "kind": "term_attr_read",
+              "resource": "form"
+            },
+            {
+              "count": 126,
+              "kind": "term_type_read",
+              "resource": "FunctionWord"
+            },
+            {
+              "count": 126,
+              "kind": "term_nodes_of_type_candidate",
+              "resource": "FunctionWord"
+            },
+            {
+              "count": 42,
+              "kind": "term_edge_read",
+              "resource": "refers_to"
+            },
+            {
+              "count": 17,
+              "kind": "term_edge_read",
+              "resource": "about_mention"
+            },
+            {
+              "count": 8,
+              "kind": "term_attr_read",
+              "resource": "word"
+            },
+            {
+              "count": 1,
+              "kind": "effect_edge_upsert",
+              "resource": "about_mention"
+            }
+          ],
+          "rule_name": "mint_frontier_from_unresolved_mention",
+          "share_of_outside_cut_accesses": 0.008324,
+          "source_definition": null
+        },
+        {
+          "operation_counts_per_worker": {
+            "effect_attr_compare_read": 84,
+            "effect_attr_write": 84,
+            "pattern_edge": 84,
+            "term_edge_read": 684
+          },
+          "outside_cut_access_count_per_worker": 936,
+          "resource_counts_per_worker": [
+            {
+              "count": 684,
+              "kind": "term_edge_read",
+              "resource": "denotes"
+            },
+            {
+              "count": 84,
+              "kind": "pattern_edge",
+              "resource": "denotes"
+            },
+            {
+              "count": 84,
+              "kind": "effect_attr_write",
+              "resource": "familiar"
+            },
+            {
+              "count": 84,
+              "kind": "effect_attr_compare_read",
+              "resource": "familiar"
+            }
+          ],
+          "rule_name": "comprehend_familiar",
+          "share_of_outside_cut_accesses": 0.007855,
+          "source_definition": null
+        },
+        {
+          "operation_counts_per_worker": {
+            "term_attr_read": 612,
+            "term_nodes_of_type_candidate": 99,
+            "term_type_read": 99
+          },
+          "outside_cut_access_count_per_worker": 810,
+          "resource_counts_per_worker": [
+            {
+              "count": 198,
+              "kind": "term_attr_read",
+              "resource": "kind"
+            },
+            {
+              "count": 198,
+              "kind": "term_attr_read",
+              "resource": "content"
+            },
+            {
+              "count": 108,
+              "kind": "term_attr_read",
+              "resource": "status"
+            },
+            {
+              "count": 108,
+              "kind": "term_attr_read",
+              "resource": "source"
+            },
+            {
+              "count": 99,
+              "kind": "term_type_read",
+              "resource": "SelfConcern"
+            },
+            {
+              "count": 99,
+              "kind": "term_nodes_of_type_candidate",
+              "resource": "SelfConcern"
+            }
+          ],
+          "rule_name": "retire_duplicate_gap",
+          "share_of_outside_cut_accesses": 0.006797,
+          "source_definition": null
+        },
+        {
+          "operation_counts_per_worker": {
+            "term_attr_read": 792
+          },
+          "outside_cut_access_count_per_worker": 792,
+          "resource_counts_per_worker": [
+            {
+              "count": 726,
+              "kind": "term_attr_read",
+              "resource": "assessment"
+            },
+            {
+              "count": 66,
+              "kind": "term_attr_read",
+              "resource": "kind"
+            }
+          ],
+          "rule_name": "bind_boot_anomaly_evidence",
+          "share_of_outside_cut_accesses": 0.006646,
+          "source_definition": null
+        },
+        {
+          "operation_counts_per_worker": {
+            "term_attr_read": 540,
+            "term_edge_read": 42
+          },
+          "outside_cut_access_count_per_worker": 582,
+          "resource_counts_per_worker": [
+            {
+              "count": 360,
+              "kind": "term_attr_read",
+              "resource": "form"
+            },
+            {
+              "count": 180,
+              "kind": "term_attr_read",
+              "resource": "text"
+            },
+            {
+              "count": 42,
+              "kind": "term_edge_read",
+              "resource": "refers_to"
+            }
+          ],
+          "rule_name": "resolve_slang_variant",
+          "share_of_outside_cut_accesses": 0.004884,
+          "source_definition": null
+        },
+        {
+          "operation_counts_per_worker": {
+            "term_attr_read": 345,
+            "term_edge_read": 156
+          },
+          "outside_cut_access_count_per_worker": 501,
+          "resource_counts_per_worker": [
+            {
+              "count": 156,
+              "kind": "term_attr_read",
+              "resource": "topic"
+            },
+            {
+              "count": 156,
+              "kind": "term_attr_read",
+              "resource": "concept"
+            },
+            {
+              "count": 156,
+              "kind": "term_edge_read",
+              "resource": "holds_answer"
+            },
+            {
+              "count": 21,
+              "kind": "term_attr_read",
+              "resource": "kind"
+            },
+            {
+              "count": 12,
+              "kind": "term_attr_read",
+              "resource": "sync_grounded"
+            }
+          ],
+          "rule_name": "sync_ground_request_from_answer_topic",
+          "share_of_outside_cut_accesses": 0.004204,
+          "source_definition": null
+        }
+      ]
+    },
+    {
+      "all_rule_access_count_per_worker": 131397,
+      "audited_rules": {
+        "curiosity_targets_ambivalent_nodes": {
+          "operation_counts_per_worker": {
+            "term_attr_read": 75876
+          },
+          "outside_cut_access_count_per_worker": 75876,
+          "resource_counts_per_worker": [
+            {
+              "count": 37938,
+              "kind": "term_attr_read",
+              "resource": "state"
+            },
+            {
+              "count": 37938,
+              "kind": "term_attr_read",
+              "resource": "is_ambivalent"
+            }
+          ]
+        },
+        "gr_condition_lapse": {
+          "operation_counts_per_worker": {
+            "term_attr_read": 9966,
+            "term_nodes_of_type_candidate": 4920,
+            "term_type_read": 4920
+          },
+          "outside_cut_access_count_per_worker": 19806,
+          "resource_counts_per_worker": [
+            {
+              "count": 4920,
+              "kind": "term_attr_read",
+              "resource": "kind"
+            },
+            {
+              "count": 4920,
+              "kind": "term_attr_read",
+              "resource": "filter_value"
+            },
+            {
+              "count": 4920,
+              "kind": "term_type_read",
+              "resource": "ShapeSignature"
+            },
+            {
+              "count": 4920,
+              "kind": "term_nodes_of_type_candidate",
+              "resource": "ShapeSignature"
+            },
+            {
+              "count": 42,
+              "kind": "term_attr_read",
+              "resource": "stale"
+            },
+            {
+              "count": 36,
+              "kind": "term_attr_read",
+              "resource": "keywords"
+            },
+            {
+              "count": 36,
+              "kind": "term_attr_read",
+              "resource": "ckind"
+            },
+            {
+              "count": 12,
+              "kind": "term_attr_read",
+              "resource": "expected"
+            }
+          ]
+        },
+        "sd_decode": {
+          "operation_counts_per_worker": {
+            "term_attr_read": 10
+          },
+          "outside_cut_access_count_per_worker": 10,
+          "resource_counts_per_worker": [
+            {
+              "count": 10,
+              "kind": "term_attr_read",
+              "resource": "status"
+            }
+          ]
+        },
+        "sd_infer_dimension": {
+          "operation_counts_per_worker": {
+            "term_attr_read": 10
+          },
+          "outside_cut_access_count_per_worker": 10,
+          "resource_counts_per_worker": [
+            {
+              "count": 10,
+              "kind": "term_attr_read",
+              "resource": "status"
+            }
+          ]
+        },
+        "sd_transform_decode": {
+          "operation_counts_per_worker": {
+            "term_attr_read": 10
+          },
+          "outside_cut_access_count_per_worker": 10,
+          "resource_counts_per_worker": [
+            {
+              "count": 10,
+              "kind": "term_attr_read",
+              "resource": "status"
+            }
+          ]
+        },
+        "slang_variant_bind_denotes": {
+          "operation_counts_per_worker": {
+            "term_edge_read": 90
+          },
+          "outside_cut_access_count_per_worker": 90,
+          "resource_counts_per_worker": [
+            {
+              "count": 90,
+              "kind": "term_edge_read",
+              "resource": "denotes"
+            }
+          ]
+        }
+      },
+      "outside_cut_access_count_per_worker": 126691,
+      "outside_cut_rule_count": 387,
+      "prompt": "What do you know about hexagon?",
+      "top_rules": [
+        {
+          "operation_counts_per_worker": {
+            "term_attr_read": 75876
+          },
+          "outside_cut_access_count_per_worker": 75876,
+          "resource_counts_per_worker": [
+            {
+              "count": 37938,
+              "kind": "term_attr_read",
+              "resource": "state"
+            },
+            {
+              "count": 37938,
+              "kind": "term_attr_read",
+              "resource": "is_ambivalent"
+            }
+          ],
+          "rule_name": "curiosity_targets_ambivalent_nodes",
+          "share_of_outside_cut_accesses": 0.598906,
+          "source_definition": {
+            "effects": [
+              [
+                "set_attr",
+                "c",
+                "is_ambivalent",
+                1
+              ]
+            ],
+            "match": [
+              [
+                "mt",
+                "has_concept",
+                "c"
+              ]
+            ],
+            "match_type": "Concept",
+            "source": "seeds/causal_attitude_networks.json",
+            "source_line": 721,
+            "source_sha256": "ca5ff96dc9a54d7a2bc9e2e800402b8d84bcb1b96b90ca3928435299bcf5fd97",
+            "where_term_types": [
+              "Abs",
+              "And",
+              "Attr",
+              "Eq",
+              "Lit",
+              "Lt",
+              "Not",
+              "Var"
+            ]
+          }
+        },
+        {
+          "operation_counts_per_worker": {
+            "term_attr_read": 9966,
+            "term_nodes_of_type_candidate": 4920,
+            "term_type_read": 4920
+          },
+          "outside_cut_access_count_per_worker": 19806,
+          "resource_counts_per_worker": [
+            {
+              "count": 4920,
+              "kind": "term_attr_read",
+              "resource": "kind"
+            },
+            {
+              "count": 4920,
+              "kind": "term_attr_read",
+              "resource": "filter_value"
+            },
+            {
+              "count": 4920,
+              "kind": "term_type_read",
+              "resource": "ShapeSignature"
+            },
+            {
+              "count": 4920,
+              "kind": "term_nodes_of_type_candidate",
+              "resource": "ShapeSignature"
+            },
+            {
+              "count": 42,
+              "kind": "term_attr_read",
+              "resource": "stale"
+            },
+            {
+              "count": 36,
+              "kind": "term_attr_read",
+              "resource": "keywords"
+            },
+            {
+              "count": 36,
+              "kind": "term_attr_read",
+              "resource": "ckind"
+            },
+            {
+              "count": 12,
+              "kind": "term_attr_read",
+              "resource": "expected"
+            }
+          ],
+          "rule_name": "gr_condition_lapse",
+          "share_of_outside_cut_accesses": 0.156333,
+          "source_definition": {
+            "effects": [
+              [
+                "set_attr",
+                "r",
+                "stale",
+                1.0
+              ]
+            ],
+            "match": [
+              [
+                "r",
+                "holds_under",
+                "c"
+              ]
+            ],
+            "match_type": null,
+            "source": "seeds/goal_residuals.json",
+            "source_line": 787,
+            "source_sha256": "199a90a48b645a739c452c55e04f3659ef43d936d3c431046b60b7a09f2b4148",
+            "where_term_types": [
+              "And",
+              "Attr",
+              "Count",
+              "Eq",
+              "Filter",
+              "Lit",
+              "NodesOfType",
+              "Not",
+              "Or",
+              "Var"
+            ]
+          }
+        },
+        {
+          "operation_counts_per_worker": {
+            "term_attr_read": 4056
+          },
+          "outside_cut_access_count_per_worker": 4056,
+          "resource_counts_per_worker": [
+            {
+              "count": 2028,
+              "kind": "term_attr_read",
+              "resource": "is_axis"
+            },
+            {
+              "count": 2028,
+              "kind": "term_attr_read",
+              "resource": "mf_stall"
+            }
+          ],
+          "rule_name": "escalate_open_on_stall",
+          "share_of_outside_cut_accesses": 0.032015,
+          "source_definition": null
+        },
+        {
+          "operation_counts_per_worker": {
+            "term_attr_read": 4030
+          },
+          "outside_cut_access_count_per_worker": 4030,
+          "resource_counts_per_worker": [
+            {
+              "count": 2015,
+              "kind": "term_attr_read",
+              "resource": "is_axis"
+            },
+            {
+              "count": 2015,
+              "kind": "term_attr_read",
+              "resource": "mf_stall"
+            }
+          ],
+          "rule_name": "mint_impasse_from_stall",
+          "share_of_outside_cut_accesses": 0.03181,
+          "source_definition": null
+        },
+        {
+          "operation_counts_per_worker": {
+            "effect_edge_compare_read": 1,
+            "effect_edge_upsert": 1,
+            "effect_node_mint": 1,
+            "term_attr_read": 678,
+            "term_edge_read": 89,
+            "term_nodes_of_type_candidate": 595,
+            "term_type_read": 595
+          },
+          "outside_cut_access_count_per_worker": 1960,
+          "resource_counts_per_worker": [
+            {
+              "count": 361,
+              "kind": "term_type_read",
+              "resource": "CapabilityAxis"
+            },
+            {
+              "count": 361,
+              "kind": "term_nodes_of_type_candidate",
+              "resource": "CapabilityAxis"
+            },
+            {
+              "count": 315,
+              "kind": "term_attr_read",
+              "resource": "kind"
+            },
+            {
+              "count": 234,
+              "kind": "term_attr_read",
+              "resource": "form"
+            },
+            {
+              "count": 234,
+              "kind": "term_type_read",
+              "resource": "FunctionWord"
+            },
+            {
+              "count": 234,
+              "kind": "term_nodes_of_type_candidate",
+              "resource": "FunctionWord"
+            },
+            {
+              "count": 114,
+              "kind": "term_attr_read",
+              "resource": "text"
+            },
+            {
+              "count": 66,
+              "kind": "term_edge_read",
+              "resource": "refers_to"
+            },
+            {
+              "count": 23,
+              "kind": "term_edge_read",
+              "resource": "about_mention"
+            },
+            {
+              "count": 15,
+              "kind": "term_attr_read",
+              "resource": "word"
+            }
+          ],
+          "rule_name": "mint_frontier_from_unresolved_mention",
+          "share_of_outside_cut_accesses": 0.015471,
+          "source_definition": null
+        },
+        {
+          "operation_counts_per_worker": {
+            "term_attr_read": 900,
+            "term_edge_read": 66
+          },
+          "outside_cut_access_count_per_worker": 966,
+          "resource_counts_per_worker": [
+            {
+              "count": 540,
+              "kind": "term_attr_read",
+              "resource": "form"
+            },
+            {
+              "count": 360,
+              "kind": "term_attr_read",
+              "resource": "text"
+            },
+            {
+              "count": 66,
+              "kind": "term_edge_read",
+              "resource": "refers_to"
+            }
+          ],
+          "rule_name": "resolve_slang_variant",
+          "share_of_outside_cut_accesses": 0.007625,
+          "source_definition": null
+        },
+        {
+          "operation_counts_per_worker": {
+            "effect_attr_compare_read": 84,
+            "effect_attr_write": 84,
+            "pattern_edge": 84,
+            "term_edge_read": 684
+          },
+          "outside_cut_access_count_per_worker": 936,
+          "resource_counts_per_worker": [
+            {
+              "count": 684,
+              "kind": "term_edge_read",
+              "resource": "denotes"
+            },
+            {
+              "count": 84,
+              "kind": "pattern_edge",
+              "resource": "denotes"
+            },
+            {
+              "count": 84,
+              "kind": "effect_attr_write",
+              "resource": "familiar"
+            },
+            {
+              "count": 84,
+              "kind": "effect_attr_compare_read",
+              "resource": "familiar"
+            }
+          ],
+          "rule_name": "comprehend_familiar",
+          "share_of_outside_cut_accesses": 0.007388,
+          "source_definition": null
+        },
+        {
+          "operation_counts_per_worker": {
+            "term_attr_read": 612,
+            "term_nodes_of_type_candidate": 99,
+            "term_type_read": 99
+          },
+          "outside_cut_access_count_per_worker": 810,
+          "resource_counts_per_worker": [
+            {
+              "count": 198,
+              "kind": "term_attr_read",
+              "resource": "kind"
+            },
+            {
+              "count": 198,
+              "kind": "term_attr_read",
+              "resource": "content"
+            },
+            {
+              "count": 108,
+              "kind": "term_attr_read",
+              "resource": "status"
+            },
+            {
+              "count": 108,
+              "kind": "term_attr_read",
+              "resource": "source"
+            },
+            {
+              "count": 99,
+              "kind": "term_type_read",
+              "resource": "SelfConcern"
+            },
+            {
+              "count": 99,
+              "kind": "term_nodes_of_type_candidate",
+              "resource": "SelfConcern"
+            }
+          ],
+          "rule_name": "retire_duplicate_gap",
+          "share_of_outside_cut_accesses": 0.006394,
+          "source_definition": null
+        },
+        {
+          "operation_counts_per_worker": {
+            "term_attr_read": 792
+          },
+          "outside_cut_access_count_per_worker": 792,
+          "resource_counts_per_worker": [
+            {
+              "count": 726,
+              "kind": "term_attr_read",
+              "resource": "assessment"
+            },
+            {
+              "count": 66,
+              "kind": "term_attr_read",
+              "resource": "kind"
+            }
+          ],
+          "rule_name": "bind_boot_anomaly_evidence",
+          "share_of_outside_cut_accesses": 0.006251,
+          "source_definition": null
+        },
+        {
+          "operation_counts_per_worker": {
+            "term_attr_read": 519,
+            "term_edge_read": 234
+          },
+          "outside_cut_access_count_per_worker": 753,
+          "resource_counts_per_worker": [
+            {
+              "count": 234,
+              "kind": "term_attr_read",
+              "resource": "topic"
+            },
+            {
+              "count": 234,
+              "kind": "term_attr_read",
+              "resource": "concept"
+            },
+            {
+              "count": 234,
+              "kind": "term_edge_read",
+              "resource": "holds_answer"
+            },
+            {
+              "count": 33,
+              "kind": "term_attr_read",
+              "resource": "kind"
+            },
+            {
+              "count": 18,
+              "kind": "term_attr_read",
+              "resource": "sync_grounded"
+            }
+          ],
+          "rule_name": "sync_ground_request_from_answer_topic",
+          "share_of_outside_cut_accesses": 0.005944,
+          "source_definition": null
+        }
+      ]
+    },
+    {
+      "all_rule_access_count_per_worker": 138583,
+      "audited_rules": {
+        "curiosity_targets_ambivalent_nodes": {
+          "operation_counts_per_worker": {
+            "term_attr_read": 75876
+          },
+          "outside_cut_access_count_per_worker": 75876,
+          "resource_counts_per_worker": [
+            {
+              "count": 37938,
+              "kind": "term_attr_read",
+              "resource": "state"
+            },
+            {
+              "count": 37938,
+              "kind": "term_attr_read",
+              "resource": "is_ambivalent"
+            }
+          ]
+        },
+        "gr_condition_lapse": {
+          "operation_counts_per_worker": {
+            "term_attr_read": 9966,
+            "term_nodes_of_type_candidate": 4920,
+            "term_type_read": 4920
+          },
+          "outside_cut_access_count_per_worker": 19806,
+          "resource_counts_per_worker": [
+            {
+              "count": 4920,
+              "kind": "term_attr_read",
+              "resource": "kind"
+            },
+            {
+              "count": 4920,
+              "kind": "term_attr_read",
+              "resource": "filter_value"
+            },
+            {
+              "count": 4920,
+              "kind": "term_type_read",
+              "resource": "ShapeSignature"
+            },
+            {
+              "count": 4920,
+              "kind": "term_nodes_of_type_candidate",
+              "resource": "ShapeSignature"
+            },
+            {
+              "count": 42,
+              "kind": "term_attr_read",
+              "resource": "stale"
+            },
+            {
+              "count": 36,
+              "kind": "term_attr_read",
+              "resource": "keywords"
+            },
+            {
+              "count": 36,
+              "kind": "term_attr_read",
+              "resource": "ckind"
+            },
+            {
+              "count": 12,
+              "kind": "term_attr_read",
+              "resource": "expected"
+            }
+          ]
+        },
+        "sd_decode": {
+          "operation_counts_per_worker": {
+            "term_attr_read": 10
+          },
+          "outside_cut_access_count_per_worker": 10,
+          "resource_counts_per_worker": [
+            {
+              "count": 10,
+              "kind": "term_attr_read",
+              "resource": "status"
+            }
+          ]
+        },
+        "sd_infer_dimension": {
+          "operation_counts_per_worker": {
+            "term_attr_read": 10
+          },
+          "outside_cut_access_count_per_worker": 10,
+          "resource_counts_per_worker": [
+            {
+              "count": 10,
+              "kind": "term_attr_read",
+              "resource": "status"
+            }
+          ]
+        },
+        "sd_transform_decode": {
+          "operation_counts_per_worker": {
+            "term_attr_read": 10
+          },
+          "outside_cut_access_count_per_worker": 10,
+          "resource_counts_per_worker": [
+            {
+              "count": 10,
+              "kind": "term_attr_read",
+              "resource": "status"
+            }
+          ]
+        },
+        "slang_variant_bind_denotes": {
+          "operation_counts_per_worker": {
+            "term_edge_read": 90
+          },
+          "outside_cut_access_count_per_worker": 90,
+          "resource_counts_per_worker": [
+            {
+              "count": 90,
+              "kind": "term_edge_read",
+              "resource": "denotes"
+            }
+          ]
+        }
+      },
+      "outside_cut_access_count_per_worker": 134078,
+      "outside_cut_rule_count": 387,
+      "prompt": "What is copper?",
+      "top_rules": [
+        {
+          "operation_counts_per_worker": {
+            "term_attr_read": 75876
+          },
+          "outside_cut_access_count_per_worker": 75876,
+          "resource_counts_per_worker": [
+            {
+              "count": 37938,
+              "kind": "term_attr_read",
+              "resource": "state"
+            },
+            {
+              "count": 37938,
+              "kind": "term_attr_read",
+              "resource": "is_ambivalent"
+            }
+          ],
+          "rule_name": "curiosity_targets_ambivalent_nodes",
+          "share_of_outside_cut_accesses": 0.565909,
+          "source_definition": {
+            "effects": [
+              [
+                "set_attr",
+                "c",
+                "is_ambivalent",
+                1
+              ]
+            ],
+            "match": [
+              [
+                "mt",
+                "has_concept",
+                "c"
+              ]
+            ],
+            "match_type": "Concept",
+            "source": "seeds/causal_attitude_networks.json",
+            "source_line": 721,
+            "source_sha256": "ca5ff96dc9a54d7a2bc9e2e800402b8d84bcb1b96b90ca3928435299bcf5fd97",
+            "where_term_types": [
+              "Abs",
+              "And",
+              "Attr",
+              "Eq",
+              "Lit",
+              "Lt",
+              "Not",
+              "Var"
+            ]
+          }
+        },
+        {
+          "operation_counts_per_worker": {
+            "term_attr_read": 9966,
+            "term_nodes_of_type_candidate": 4920,
+            "term_type_read": 4920
+          },
+          "outside_cut_access_count_per_worker": 19806,
+          "resource_counts_per_worker": [
+            {
+              "count": 4920,
+              "kind": "term_attr_read",
+              "resource": "kind"
+            },
+            {
+              "count": 4920,
+              "kind": "term_attr_read",
+              "resource": "filter_value"
+            },
+            {
+              "count": 4920,
+              "kind": "term_type_read",
+              "resource": "ShapeSignature"
+            },
+            {
+              "count": 4920,
+              "kind": "term_nodes_of_type_candidate",
+              "resource": "ShapeSignature"
+            },
+            {
+              "count": 42,
+              "kind": "term_attr_read",
+              "resource": "stale"
+            },
+            {
+              "count": 36,
+              "kind": "term_attr_read",
+              "resource": "keywords"
+            },
+            {
+              "count": 36,
+              "kind": "term_attr_read",
+              "resource": "ckind"
+            },
+            {
+              "count": 12,
+              "kind": "term_attr_read",
+              "resource": "expected"
+            }
+          ],
+          "rule_name": "gr_condition_lapse",
+          "share_of_outside_cut_accesses": 0.14772,
+          "source_definition": {
+            "effects": [
+              [
+                "set_attr",
+                "r",
+                "stale",
+                1.0
+              ]
+            ],
+            "match": [
+              [
+                "r",
+                "holds_under",
+                "c"
+              ]
+            ],
+            "match_type": null,
+            "source": "seeds/goal_residuals.json",
+            "source_line": 787,
+            "source_sha256": "199a90a48b645a739c452c55e04f3659ef43d936d3c431046b60b7a09f2b4148",
+            "where_term_types": [
+              "And",
+              "Attr",
+              "Count",
+              "Eq",
+              "Filter",
+              "Lit",
+              "NodesOfType",
+              "Not",
+              "Or",
+              "Var"
+            ]
+          }
+        },
+        {
+          "operation_counts_per_worker": {
+            "term_attr_read": 4212
+          },
+          "outside_cut_access_count_per_worker": 4212,
+          "resource_counts_per_worker": [
+            {
+              "count": 2106,
+              "kind": "term_attr_read",
+              "resource": "is_axis"
+            },
+            {
+              "count": 2106,
+              "kind": "term_attr_read",
+              "resource": "mf_stall"
+            }
+          ],
+          "rule_name": "escalate_open_on_stall",
+          "share_of_outside_cut_accesses": 0.031415,
+          "source_definition": null
+        },
+        {
+          "operation_counts_per_worker": {
+            "term_attr_read": 4186
+          },
+          "outside_cut_access_count_per_worker": 4186,
+          "resource_counts_per_worker": [
+            {
+              "count": 2093,
+              "kind": "term_attr_read",
+              "resource": "is_axis"
+            },
+            {
+              "count": 2093,
+              "kind": "term_attr_read",
+              "resource": "mf_stall"
+            }
+          ],
+          "rule_name": "mint_impasse_from_stall",
+          "share_of_outside_cut_accesses": 0.031221,
+          "source_definition": null
+        },
+        {
+          "operation_counts_per_worker": {
+            "effect_edge_compare_read": 1,
+            "effect_edge_upsert": 1,
+            "effect_node_mint": 1,
+            "term_attr_read": 1064,
+            "term_edge_read": 107,
+            "term_nodes_of_type_candidate": 889,
+            "term_type_read": 889
+          },
+          "outside_cut_access_count_per_worker": 2952,
+          "resource_counts_per_worker": [
+            {
+              "count": 547,
+              "kind": "term_type_read",
+              "resource": "CapabilityAxis"
+            },
+            {
+              "count": 547,
+              "kind": "term_nodes_of_type_candidate",
+              "resource": "CapabilityAxis"
+            },
+            {
+              "count": 466,
+              "kind": "term_attr_read",
+              "resource": "kind"
+            },
+            {
+              "count": 342,
+              "kind": "term_attr_read",
+              "resource": "form"
+            },
+            {
+              "count": 342,
+              "kind": "term_type_read",
+              "resource": "FunctionWord"
+            },
+            {
+              "count": 342,
+              "kind": "term_nodes_of_type_candidate",
+              "resource": "FunctionWord"
+            },
+            {
+              "count": 228,
+              "kind": "term_attr_read",
+              "resource": "text"
+            },
+            {
+              "count": 78,
+              "kind": "term_edge_read",
+              "resource": "refers_to"
+            },
+            {
+              "count": 29,
+              "kind": "term_edge_read",
+              "resource": "about_mention"
+            },
+            {
+              "count": 28,
+              "kind": "term_attr_read",
+              "resource": "word"
+            }
+          ],
+          "rule_name": "mint_frontier_from_unresolved_mention",
+          "share_of_outside_cut_accesses": 0.022017,
+          "source_definition": null
+        },
+        {
+          "operation_counts_per_worker": {
+            "term_attr_read": 1260,
+            "term_edge_read": 78
+          },
+          "outside_cut_access_count_per_worker": 1338,
+          "resource_counts_per_worker": [
+            {
+              "count": 720,
+              "kind": "term_attr_read",
+              "resource": "form"
+            },
+            {
+              "count": 540,
+              "kind": "term_attr_read",
+              "resource": "text"
+            },
+            {
+              "count": 78,
+              "kind": "term_edge_read",
+              "resource": "refers_to"
+            }
+          ],
+          "rule_name": "resolve_slang_variant",
+          "share_of_outside_cut_accesses": 0.009979,
+          "source_definition": null
+        },
+        {
+          "operation_counts_per_worker": {
+            "term_attr_read": 693,
+            "term_edge_read": 312
+          },
+          "outside_cut_access_count_per_worker": 1005,
+          "resource_counts_per_worker": [
+            {
+              "count": 312,
+              "kind": "term_attr_read",
+              "resource": "topic"
+            },
+            {
+              "count": 312,
+              "kind": "term_attr_read",
+              "resource": "concept"
+            },
+            {
+              "count": 312,
+              "kind": "term_edge_read",
+              "resource": "holds_answer"
+            },
+            {
+              "count": 45,
+              "kind": "term_attr_read",
+              "resource": "kind"
+            },
+            {
+              "count": 24,
+              "kind": "term_attr_read",
+              "resource": "sync_grounded"
+            }
+          ],
+          "rule_name": "sync_ground_request_from_answer_topic",
+          "share_of_outside_cut_accesses": 0.007496,
+          "source_definition": null
+        },
+        {
+          "operation_counts_per_worker": {
+            "term_attr_read": 669,
+            "term_edge_read": 312
+          },
+          "outside_cut_access_count_per_worker": 981,
+          "resource_counts_per_worker": [
+            {
+              "count": 312,
+              "kind": "term_attr_read",
+              "resource": "topic"
+            },
+            {
+              "count": 312,
+              "kind": "term_attr_read",
+              "resource": "concept"
+            },
+            {
+              "count": 312,
+              "kind": "term_edge_read",
+              "resource": "holds_answer"
+            },
+            {
+              "count": 45,
+              "kind": "term_attr_read",
+              "resource": "kind"
+            }
+          ],
+          "rule_name": "search_request_from_answer_topic",
+          "share_of_outside_cut_accesses": 0.007317,
+          "source_definition": null
+        },
+        {
+          "operation_counts_per_worker": {
+            "effect_attr_compare_read": 84,
+            "effect_attr_write": 84,
+            "pattern_edge": 84,
+            "term_edge_read": 684
+          },
+          "outside_cut_access_count_per_worker": 936,
+          "resource_counts_per_worker": [
+            {
+              "count": 684,
+              "kind": "term_edge_read",
+              "resource": "denotes"
+            },
+            {
+              "count": 84,
+              "kind": "pattern_edge",
+              "resource": "denotes"
+            },
+            {
+              "count": 84,
+              "kind": "effect_attr_write",
+              "resource": "familiar"
+            },
+            {
+              "count": 84,
+              "kind": "effect_attr_compare_read",
+              "resource": "familiar"
+            }
+          ],
+          "rule_name": "comprehend_familiar",
+          "share_of_outside_cut_accesses": 0.006981,
+          "source_definition": null
+        },
+        {
+          "operation_counts_per_worker": {
+            "pattern_edge": 4,
+            "term_attr_read": 841
+          },
+          "outside_cut_access_count_per_worker": 845,
+          "resource_counts_per_worker": [
+            {
+              "count": 195,
+              "kind": "term_attr_read",
+              "resource": "kind"
+            },
+            {
+              "count": 117,
+              "kind": "term_attr_read",
+              "resource": "status"
+            },
+            {
+              "count": 105,
+              "kind": "term_attr_read",
+              "resource": "concept"
+            },
+            {
+              "count": 91,
+              "kind": "term_attr_read",
+              "resource": "topic"
+            },
+            {
+              "count": 53,
+              "kind": "term_attr_read",
+              "resource": "grounding_status"
+            },
+            {
+              "count": 52,
+              "kind": "term_attr_read",
+              "resource": "grounding_evidence_path"
+            },
+            {
+              "count": 52,
+              "kind": "term_attr_read",
+              "resource": "evidence_path"
+            },
+            {
+              "count": 27,
+              "kind": "term_attr_read",
+              "resource": "cognitive_disposition"
+            },
+            {
+              "count": 27,
+              "kind": "term_attr_read",
+              "resource": "schema"
+            },
+            {
+              "count": 27,
+              "kind": "term_attr_read",
+              "resource": "evidence_schema"
+            }
+          ],
+          "rule_name": "arbitrate_supported_event_bound_topic_goal_answer",
+          "share_of_outside_cut_accesses": 0.006302,
+          "source_definition": null
+        }
+      ]
+    },
+    {
+      "all_rule_access_count_per_worker": 138300,
+      "audited_rules": {
+        "curiosity_targets_ambivalent_nodes": {
+          "operation_counts_per_worker": {
+            "term_attr_read": 63230
+          },
+          "outside_cut_access_count_per_worker": 63230,
+          "resource_counts_per_worker": [
+            {
+              "count": 31615,
+              "kind": "term_attr_read",
+              "resource": "state"
+            },
+            {
+              "count": 31615,
+              "kind": "term_attr_read",
+              "resource": "is_ambivalent"
+            }
+          ]
+        },
+        "gr_condition_lapse": {
+          "operation_counts_per_worker": {
+            "term_attr_read": 13288,
+            "term_nodes_of_type_candidate": 6560,
+            "term_type_read": 6560
+          },
+          "outside_cut_access_count_per_worker": 26408,
+          "resource_counts_per_worker": [
+            {
+              "count": 6560,
+              "kind": "term_attr_read",
+              "resource": "kind"
+            },
+            {
+              "count": 6560,
+              "kind": "term_attr_read",
+              "resource": "filter_value"
+            },
+            {
+              "count": 6560,
+              "kind": "term_type_read",
+              "resource": "ShapeSignature"
+            },
+            {
+              "count": 6560,
+              "kind": "term_nodes_of_type_candidate",
+              "resource": "ShapeSignature"
+            },
+            {
+              "count": 56,
+              "kind": "term_attr_read",
+              "resource": "stale"
+            },
+            {
+              "count": 48,
+              "kind": "term_attr_read",
+              "resource": "keywords"
+            },
+            {
+              "count": 48,
+              "kind": "term_attr_read",
+              "resource": "ckind"
+            },
+            {
+              "count": 16,
+              "kind": "term_attr_read",
+              "resource": "expected"
+            }
+          ]
+        },
+        "sd_decode": {
+          "operation_counts_per_worker": {
+            "term_attr_read": 11
+          },
+          "outside_cut_access_count_per_worker": 11,
+          "resource_counts_per_worker": [
+            {
+              "count": 11,
+              "kind": "term_attr_read",
+              "resource": "status"
+            }
+          ]
+        },
+        "sd_infer_dimension": {
+          "operation_counts_per_worker": {
+            "term_attr_read": 11
+          },
+          "outside_cut_access_count_per_worker": 11,
+          "resource_counts_per_worker": [
+            {
+              "count": 11,
+              "kind": "term_attr_read",
+              "resource": "status"
+            }
+          ]
+        },
+        "sd_transform_decode": {
+          "operation_counts_per_worker": {
+            "term_attr_read": 11
+          },
+          "outside_cut_access_count_per_worker": 11,
+          "resource_counts_per_worker": [
+            {
+              "count": 11,
+              "kind": "term_attr_read",
+              "resource": "status"
+            }
+          ]
+        },
+        "slang_variant_bind_denotes": {
+          "operation_counts_per_worker": {
+            "term_edge_read": 90
+          },
+          "outside_cut_access_count_per_worker": 90,
+          "resource_counts_per_worker": [
+            {
+              "count": 90,
+              "kind": "term_edge_read",
+              "resource": "denotes"
+            }
+          ]
+        }
+      },
+      "outside_cut_access_count_per_worker": 133310,
+      "outside_cut_rule_count": 387,
+      "prompt": "Can you tell me about copper?",
+      "top_rules": [
+        {
+          "operation_counts_per_worker": {
+            "term_attr_read": 63230
+          },
+          "outside_cut_access_count_per_worker": 63230,
+          "resource_counts_per_worker": [
+            {
+              "count": 31615,
+              "kind": "term_attr_read",
+              "resource": "state"
+            },
+            {
+              "count": 31615,
+              "kind": "term_attr_read",
+              "resource": "is_ambivalent"
+            }
+          ],
+          "rule_name": "curiosity_targets_ambivalent_nodes",
+          "share_of_outside_cut_accesses": 0.474308,
+          "source_definition": {
+            "effects": [
+              [
+                "set_attr",
+                "c",
+                "is_ambivalent",
+                1
+              ]
+            ],
+            "match": [
+              [
+                "mt",
+                "has_concept",
+                "c"
+              ]
+            ],
+            "match_type": "Concept",
+            "source": "seeds/causal_attitude_networks.json",
+            "source_line": 721,
+            "source_sha256": "ca5ff96dc9a54d7a2bc9e2e800402b8d84bcb1b96b90ca3928435299bcf5fd97",
+            "where_term_types": [
+              "Abs",
+              "And",
+              "Attr",
+              "Eq",
+              "Lit",
+              "Lt",
+              "Not",
+              "Var"
+            ]
+          }
+        },
+        {
+          "operation_counts_per_worker": {
+            "term_attr_read": 13288,
+            "term_nodes_of_type_candidate": 6560,
+            "term_type_read": 6560
+          },
+          "outside_cut_access_count_per_worker": 26408,
+          "resource_counts_per_worker": [
+            {
+              "count": 6560,
+              "kind": "term_attr_read",
+              "resource": "kind"
+            },
+            {
+              "count": 6560,
+              "kind": "term_attr_read",
+              "resource": "filter_value"
+            },
+            {
+              "count": 6560,
+              "kind": "term_type_read",
+              "resource": "ShapeSignature"
+            },
+            {
+              "count": 6560,
+              "kind": "term_nodes_of_type_candidate",
+              "resource": "ShapeSignature"
+            },
+            {
+              "count": 56,
+              "kind": "term_attr_read",
+              "resource": "stale"
+            },
+            {
+              "count": 48,
+              "kind": "term_attr_read",
+              "resource": "keywords"
+            },
+            {
+              "count": 48,
+              "kind": "term_attr_read",
+              "resource": "ckind"
+            },
+            {
+              "count": 16,
+              "kind": "term_attr_read",
+              "resource": "expected"
+            }
+          ],
+          "rule_name": "gr_condition_lapse",
+          "share_of_outside_cut_accesses": 0.198095,
+          "source_definition": {
+            "effects": [
+              [
+                "set_attr",
+                "r",
+                "stale",
+                1.0
+              ]
+            ],
+            "match": [
+              [
+                "r",
+                "holds_under",
+                "c"
+              ]
+            ],
+            "match_type": null,
+            "source": "seeds/goal_residuals.json",
+            "source_line": 787,
+            "source_sha256": "199a90a48b645a739c452c55e04f3659ef43d936d3c431046b60b7a09f2b4148",
+            "where_term_types": [
+              "And",
+              "Attr",
+              "Count",
+              "Eq",
+              "Filter",
+              "Lit",
+              "NodesOfType",
+              "Not",
+              "Or",
+              "Var"
+            ]
+          }
+        },
+        {
+          "operation_counts_per_worker": {
+            "term_attr_read": 3510
+          },
+          "outside_cut_access_count_per_worker": 3510,
+          "resource_counts_per_worker": [
+            {
+              "count": 1755,
+              "kind": "term_attr_read",
+              "resource": "is_axis"
+            },
+            {
+              "count": 1755,
+              "kind": "term_attr_read",
+              "resource": "mf_stall"
+            }
+          ],
+          "rule_name": "mint_impasse_from_stall",
+          "share_of_outside_cut_accesses": 0.02633,
+          "source_definition": null
+        },
+        {
+          "operation_counts_per_worker": {
+            "term_attr_read": 3510
+          },
+          "outside_cut_access_count_per_worker": 3510,
+          "resource_counts_per_worker": [
+            {
+              "count": 1755,
+              "kind": "term_attr_read",
+              "resource": "is_axis"
+            },
+            {
+              "count": 1755,
+              "kind": "term_attr_read",
+              "resource": "mf_stall"
+            }
+          ],
+          "rule_name": "escalate_open_on_stall",
+          "share_of_outside_cut_accesses": 0.02633,
+          "source_definition": null
+        },
+        {
+          "operation_counts_per_worker": {
+            "term_attr_read": 744,
+            "term_edge_read": 144,
+            "term_nodes_of_type_candidate": 564,
+            "term_type_read": 564
+          },
+          "outside_cut_access_count_per_worker": 2016,
+          "resource_counts_per_worker": [
+            {
+              "count": 348,
+              "kind": "term_type_read",
+              "resource": "CapabilityAxis"
+            },
+            {
+              "count": 348,
+              "kind": "term_nodes_of_type_candidate",
+              "resource": "CapabilityAxis"
+            },
+            {
+              "count": 288,
+              "kind": "term_attr_read",
+              "resource": "kind"
+            },
+            {
+              "count": 228,
+              "kind": "term_attr_read",
+              "resource": "text"
+            },
+            {
+              "count": 216,
+              "kind": "term_attr_read",
+              "resource": "form"
+            },
+            {
+              "count": 216,
+              "kind": "term_type_read",
+              "resource": "FunctionWord"
+            },
+            {
+              "count": 216,
+              "kind": "term_nodes_of_type_candidate",
+              "resource": "FunctionWord"
+            },
+            {
+              "count": 120,
+              "kind": "term_edge_read",
+              "resource": "refers_to"
+            },
+            {
+              "count": 24,
+              "kind": "term_edge_read",
+              "resource": "about_mention"
+            },
+            {
+              "count": 12,
+              "kind": "term_attr_read",
+              "resource": "word"
+            }
+          ],
+          "rule_name": "mint_frontier_from_unresolved_mention",
+          "share_of_outside_cut_accesses": 0.015123,
+          "source_definition": null
+        },
+        {
+          "operation_counts_per_worker": {
+            "term_attr_read": 968,
+            "term_nodes_of_type_candidate": 227,
+            "term_type_read": 227
+          },
+          "outside_cut_access_count_per_worker": 1422,
+          "resource_counts_per_worker": [
+            {
+              "count": 454,
+              "kind": "term_attr_read",
+              "resource": "kind"
+            },
+            {
+              "count": 238,
+              "kind": "term_attr_read",
+              "resource": "content"
+            },
+            {
+              "count": 227,
+              "kind": "term_type_read",
+              "resource": "SelfConcern"
+            },
+            {
+              "count": 227,
+              "kind": "term_nodes_of_type_candidate",
+              "resource": "SelfConcern"
+            },
+            {
+              "count": 138,
+              "kind": "term_attr_read",
+              "resource": "status"
+            },
+            {
+              "count": 138,
+              "kind": "term_attr_read",
+              "resource": "source"
+            }
+          ],
+          "rule_name": "retire_duplicate_gap",
+          "share_of_outside_cut_accesses": 0.010667,
+          "source_definition": null
+        },
+        {
+          "operation_counts_per_worker": {
+            "term_attr_read": 867,
+            "term_edge_read": 390
+          },
+          "outside_cut_access_count_per_worker": 1257,
+          "resource_counts_per_worker": [
+            {
+              "count": 390,
+              "kind": "term_attr_read",
+              "resource": "topic"
+            },
+            {
+              "count": 390,
+              "kind": "term_attr_read",
+              "resource": "concept"
+            },
+            {
+              "count": 390,
+              "kind": "term_edge_read",
+              "resource": "holds_answer"
+            },
+            {
+              "count": 57,
+              "kind": "term_attr_read",
+              "resource": "kind"
+            },
+            {
+              "count": 30,
+              "kind": "term_attr_read",
+              "resource": "sync_grounded"
+            }
+          ],
+          "rule_name": "sync_ground_request_from_answer_topic",
+          "share_of_outside_cut_accesses": 0.009429,
+          "source_definition": null
+        },
+        {
+          "operation_counts_per_worker": {
+            "term_attr_read": 837,
+            "term_edge_read": 390
+          },
+          "outside_cut_access_count_per_worker": 1227,
+          "resource_counts_per_worker": [
+            {
+              "count": 390,
+              "kind": "term_attr_read",
+              "resource": "topic"
+            },
+            {
+              "count": 390,
+              "kind": "term_attr_read",
+              "resource": "concept"
+            },
+            {
+              "count": 390,
+              "kind": "term_edge_read",
+              "resource": "holds_answer"
+            },
+            {
+              "count": 57,
+              "kind": "term_attr_read",
+              "resource": "kind"
+            }
+          ],
+          "rule_name": "search_request_from_answer_topic",
+          "share_of_outside_cut_accesses": 0.009204,
+          "source_definition": null
+        },
+        {
+          "operation_counts_per_worker": {
+            "term_attr_read": 1080,
+            "term_edge_read": 120
+          },
+          "outside_cut_access_count_per_worker": 1200,
+          "resource_counts_per_worker": [
+            {
+              "count": 540,
+              "kind": "term_attr_read",
+              "resource": "form"
+            },
+            {
+              "count": 540,
+              "kind": "term_attr_read",
+              "resource": "text"
+            },
+            {
+              "count": 120,
+              "kind": "term_edge_read",
+              "resource": "refers_to"
+            }
+          ],
+          "rule_name": "resolve_slang_variant",
+          "share_of_outside_cut_accesses": 0.009002,
+          "source_definition": null
+        },
+        {
+          "operation_counts_per_worker": {
+            "term_attr_read": 975
+          },
+          "outside_cut_access_count_per_worker": 975,
+          "resource_counts_per_worker": [
+            {
+              "count": 420,
+              "kind": "term_attr_read",
+              "resource": "concept"
+            },
+            {
+              "count": 390,
+              "kind": "term_attr_read",
+              "resource": "topic"
+            },
+            {
+              "count": 57,
+              "kind": "term_attr_read",
+              "resource": "kind"
+            },
+            {
+              "count": 30,
+              "kind": "term_attr_read",
+              "resource": "grounding_status"
+            },
+            {
+              "count": 30,
+              "kind": "term_attr_read",
+              "resource": "grounding_referent"
+            },
+            {
+              "count": 30,
+              "kind": "term_attr_read",
+              "resource": "grounding_evidence_path"
+            },
+            {
+              "count": 18,
+              "kind": "term_attr_read",
+              "resource": "topic_replied"
+            }
+          ],
+          "rule_name": "reply_topic_from_held_answer",
+          "share_of_outside_cut_accesses": 0.007314,
+          "source_definition": null
+        }
+      ]
+    },
+    {
+      "all_rule_access_count_per_worker": 156628,
+      "audited_rules": {
+        "curiosity_targets_ambivalent_nodes": {
+          "operation_counts_per_worker": {
+            "term_attr_read": 75876
+          },
+          "outside_cut_access_count_per_worker": 75876,
+          "resource_counts_per_worker": [
+            {
+              "count": 37938,
+              "kind": "term_attr_read",
+              "resource": "state"
+            },
+            {
+              "count": 37938,
+              "kind": "term_attr_read",
+              "resource": "is_ambivalent"
+            }
+          ]
+        },
+        "gr_condition_lapse": {
+          "operation_counts_per_worker": {
+            "term_attr_read": 9966,
+            "term_nodes_of_type_candidate": 4920,
+            "term_type_read": 4920
+          },
+          "outside_cut_access_count_per_worker": 19806,
+          "resource_counts_per_worker": [
+            {
+              "count": 4920,
+              "kind": "term_attr_read",
+              "resource": "kind"
+            },
+            {
+              "count": 4920,
+              "kind": "term_attr_read",
+              "resource": "filter_value"
+            },
+            {
+              "count": 4920,
+              "kind": "term_type_read",
+              "resource": "ShapeSignature"
+            },
+            {
+              "count": 4920,
+              "kind": "term_nodes_of_type_candidate",
+              "resource": "ShapeSignature"
+            },
+            {
+              "count": 42,
+              "kind": "term_attr_read",
+              "resource": "stale"
+            },
+            {
+              "count": 36,
+              "kind": "term_attr_read",
+              "resource": "keywords"
+            },
+            {
+              "count": 36,
+              "kind": "term_attr_read",
+              "resource": "ckind"
+            },
+            {
+              "count": 12,
+              "kind": "term_attr_read",
+              "resource": "expected"
+            }
+          ]
+        },
+        "sd_decode": {
+          "operation_counts_per_worker": {
+            "term_attr_read": 10
+          },
+          "outside_cut_access_count_per_worker": 10,
+          "resource_counts_per_worker": [
+            {
+              "count": 10,
+              "kind": "term_attr_read",
+              "resource": "status"
+            }
+          ]
+        },
+        "sd_infer_dimension": {
+          "operation_counts_per_worker": {
+            "term_attr_read": 10
+          },
+          "outside_cut_access_count_per_worker": 10,
+          "resource_counts_per_worker": [
+            {
+              "count": 10,
+              "kind": "term_attr_read",
+              "resource": "status"
+            }
+          ]
+        },
+        "sd_transform_decode": {
+          "operation_counts_per_worker": {
+            "term_attr_read": 10
+          },
+          "outside_cut_access_count_per_worker": 10,
+          "resource_counts_per_worker": [
+            {
+              "count": 10,
+              "kind": "term_attr_read",
+              "resource": "status"
+            }
+          ]
+        },
+        "slang_variant_bind_denotes": {
+          "operation_counts_per_worker": {
+            "term_edge_read": 90
+          },
+          "outside_cut_access_count_per_worker": 90,
+          "resource_counts_per_worker": [
+            {
+              "count": 90,
+              "kind": "term_edge_read",
+              "resource": "denotes"
+            }
+          ]
+        }
+      },
+      "outside_cut_access_count_per_worker": 151686,
+      "outside_cut_rule_count": 387,
+      "prompt": "What do you know about unobtainium?",
+      "top_rules": [
+        {
+          "operation_counts_per_worker": {
+            "term_attr_read": 75876
+          },
+          "outside_cut_access_count_per_worker": 75876,
+          "resource_counts_per_worker": [
+            {
+              "count": 37938,
+              "kind": "term_attr_read",
+              "resource": "state"
+            },
+            {
+              "count": 37938,
+              "kind": "term_attr_read",
+              "resource": "is_ambivalent"
+            }
+          ],
+          "rule_name": "curiosity_targets_ambivalent_nodes",
+          "share_of_outside_cut_accesses": 0.500218,
+          "source_definition": {
+            "effects": [
+              [
+                "set_attr",
+                "c",
+                "is_ambivalent",
+                1
+              ]
+            ],
+            "match": [
+              [
+                "mt",
+                "has_concept",
+                "c"
+              ]
+            ],
+            "match_type": "Concept",
+            "source": "seeds/causal_attitude_networks.json",
+            "source_line": 721,
+            "source_sha256": "ca5ff96dc9a54d7a2bc9e2e800402b8d84bcb1b96b90ca3928435299bcf5fd97",
+            "where_term_types": [
+              "Abs",
+              "And",
+              "Attr",
+              "Eq",
+              "Lit",
+              "Lt",
+              "Not",
+              "Var"
+            ]
+          }
+        },
+        {
+          "operation_counts_per_worker": {
+            "term_attr_read": 9966,
+            "term_nodes_of_type_candidate": 4920,
+            "term_type_read": 4920
+          },
+          "outside_cut_access_count_per_worker": 19806,
+          "resource_counts_per_worker": [
+            {
+              "count": 4920,
+              "kind": "term_attr_read",
+              "resource": "kind"
+            },
+            {
+              "count": 4920,
+              "kind": "term_attr_read",
+              "resource": "filter_value"
+            },
+            {
+              "count": 4920,
+              "kind": "term_type_read",
+              "resource": "ShapeSignature"
+            },
+            {
+              "count": 4920,
+              "kind": "term_nodes_of_type_candidate",
+              "resource": "ShapeSignature"
+            },
+            {
+              "count": 42,
+              "kind": "term_attr_read",
+              "resource": "stale"
+            },
+            {
+              "count": 36,
+              "kind": "term_attr_read",
+              "resource": "keywords"
+            },
+            {
+              "count": 36,
+              "kind": "term_attr_read",
+              "resource": "ckind"
+            },
+            {
+              "count": 12,
+              "kind": "term_attr_read",
+              "resource": "expected"
+            }
+          ],
+          "rule_name": "gr_condition_lapse",
+          "share_of_outside_cut_accesses": 0.130572,
+          "source_definition": {
+            "effects": [
+              [
+                "set_attr",
+                "r",
+                "stale",
+                1.0
+              ]
+            ],
+            "match": [
+              [
+                "r",
+                "holds_under",
+                "c"
+              ]
+            ],
+            "match_type": null,
+            "source": "seeds/goal_residuals.json",
+            "source_line": 787,
+            "source_sha256": "199a90a48b645a739c452c55e04f3659ef43d936d3c431046b60b7a09f2b4148",
+            "where_term_types": [
+              "And",
+              "Attr",
+              "Count",
+              "Eq",
+              "Filter",
+              "Lit",
+              "NodesOfType",
+              "Not",
+              "Or",
+              "Var"
+            ]
+          }
+        },
+        {
+          "operation_counts_per_worker": {
+            "term_attr_read": 4693
+          },
+          "outside_cut_access_count_per_worker": 4693,
+          "resource_counts_per_worker": [
+            {
+              "count": 1456,
+              "kind": "term_attr_read",
+              "resource": "kind"
+            },
+            {
+              "count": 806,
+              "kind": "term_attr_read",
+              "resource": "status"
+            },
+            {
+              "count": 779,
+              "kind": "term_attr_read",
+              "resource": "concept"
+            },
+            {
+              "count": 689,
+              "kind": "term_attr_read",
+              "resource": "topic"
+            },
+            {
+              "count": 234,
+              "kind": "term_attr_read",
+              "resource": "grounding_evidence_path"
+            },
+            {
+              "count": 234,
+              "kind": "term_attr_read",
+              "resource": "evidence_path"
+            },
+            {
+              "count": 162,
+              "kind": "term_attr_read",
+              "resource": "grounding_status"
+            },
+            {
+              "count": 45,
+              "kind": "term_attr_read",
+              "resource": "grounding_referent"
+            },
+            {
+              "count": 45,
+              "kind": "term_attr_read",
+              "resource": "referent"
+            },
+            {
+              "count": 45,
+              "kind": "term_attr_read",
+              "resource": "schema"
+            }
+          ],
+          "rule_name": "arbitrate_supported_event_bound_topic_goal_answer",
+          "share_of_outside_cut_accesses": 0.030939,
+          "source_definition": null
+        },
+        {
+          "operation_counts_per_worker": {
+            "term_attr_read": 4368
+          },
+          "outside_cut_access_count_per_worker": 4368,
+          "resource_counts_per_worker": [
+            {
+              "count": 2184,
+              "kind": "term_attr_read",
+              "resource": "is_axis"
+            },
+            {
+              "count": 2184,
+              "kind": "term_attr_read",
+              "resource": "mf_stall"
+            }
+          ],
+          "rule_name": "escalate_open_on_stall",
+          "share_of_outside_cut_accesses": 0.028796,
+          "source_definition": null
+        },
+        {
+          "operation_counts_per_worker": {
+            "term_attr_read": 4342
+          },
+          "outside_cut_access_count_per_worker": 4342,
+          "resource_counts_per_worker": [
+            {
+              "count": 2171,
+              "kind": "term_attr_read",
+              "resource": "is_axis"
+            },
+            {
+              "count": 2171,
+              "kind": "term_attr_read",
+              "resource": "mf_stall"
+            }
+          ],
+          "rule_name": "mint_impasse_from_stall",
+          "share_of_outside_cut_accesses": 0.028625,
+          "source_definition": null
+        },
+        {
+          "operation_counts_per_worker": {
+            "effect_edge_compare_read": 1,
+            "effect_edge_upsert": 1,
+            "effect_node_mint": 1,
+            "term_attr_read": 1054,
+            "term_edge_read": 179,
+            "term_nodes_of_type_candidate": 908,
+            "term_type_read": 908
+          },
+          "outside_cut_access_count_per_worker": 3052,
+          "resource_counts_per_worker": [
+            {
+              "count": 566,
+              "kind": "term_type_read",
+              "resource": "CapabilityAxis"
+            },
+            {
+              "count": 566,
+              "kind": "term_nodes_of_type_candidate",
+              "resource": "CapabilityAxis"
+            },
+            {
+              "count": 461,
+              "kind": "term_attr_read",
+              "resource": "kind"
+            },
+            {
+              "count": 342,
+              "kind": "term_attr_read",
+              "resource": "form"
+            },
+            {
+              "count": 342,
+              "kind": "term_type_read",
+              "resource": "FunctionWord"
+            },
+            {
+              "count": 342,
+              "kind": "term_nodes_of_type_candidate",
+              "resource": "FunctionWord"
+            },
+            {
+              "count": 228,
+              "kind": "term_attr_read",
+              "resource": "text"
+            },
+            {
+              "count": 150,
+              "kind": "term_edge_read",
+              "resource": "refers_to"
+            },
+            {
+              "count": 29,
+              "kind": "term_edge_read",
+              "resource": "about_mention"
+            },
+            {
+              "count": 23,
+              "kind": "term_attr_read",
+              "resource": "word"
+            }
+          ],
+          "rule_name": "mint_frontier_from_unresolved_mention",
+          "share_of_outside_cut_accesses": 0.020121,
+          "source_definition": null
+        },
+        {
+          "operation_counts_per_worker": {
+            "term_attr_read": 1236,
+            "term_nodes_of_type_candidate": 336,
+            "term_type_read": 336
+          },
+          "outside_cut_access_count_per_worker": 1908,
+          "resource_counts_per_worker": [
+            {
+              "count": 672,
+              "kind": "term_attr_read",
+              "resource": "kind"
+            },
+            {
+              "count": 336,
+              "kind": "term_type_read",
+              "resource": "SelfConcern"
+            },
+            {
+              "count": 336,
+              "kind": "term_nodes_of_type_candidate",
+              "resource": "SelfConcern"
+            },
+            {
+              "count": 264,
+              "kind": "term_attr_read",
+              "resource": "content"
+            },
+            {
+              "count": 158,
+              "kind": "term_attr_read",
+              "resource": "source"
+            },
+            {
+              "count": 142,
+              "kind": "term_attr_read",
+              "resource": "status"
+            }
+          ],
+          "rule_name": "retire_duplicate_gap",
+          "share_of_outside_cut_accesses": 0.012579,
+          "source_definition": null
+        },
+        {
+          "operation_counts_per_worker": {
+            "effect_attr_compare_read": 1,
+            "effect_attr_write": 1,
+            "effect_edge_compare_read": 1,
+            "effect_edge_upsert": 1,
+            "effect_node_mint": 1,
+            "pattern_edge": 1,
+            "term_attr_read": 1012,
+            "term_edge_read": 468
+          },
+          "outside_cut_access_count_per_worker": 1486,
+          "resource_counts_per_worker": [
+            {
+              "count": 469,
+              "kind": "term_attr_read",
+              "resource": "concept"
+            },
+            {
+              "count": 468,
+              "kind": "term_attr_read",
+              "resource": "topic"
+            },
+            {
+              "count": 468,
+              "kind": "term_edge_read",
+              "resource": "holds_answer"
+            },
+            {
+              "count": 69,
+              "kind": "term_attr_read",
+              "resource": "kind"
+            },
+            {
+              "count": 6,
+              "kind": "term_attr_read",
+              "resource": "searched"
+            },
+            {
+              "count": 1,
+              "kind": "pattern_edge",
+              "resource": "has_goal"
+            },
+            {
+              "count": 1,
+              "kind": "effect_attr_write",
+              "resource": "searched"
+            },
+            {
+              "count": 1,
+              "kind": "effect_edge_upsert",
+              "resource": "search_request"
+            },
+            {
+              "count": 1,
+              "kind": "effect_node_mint",
+              "resource": "SearchRequest"
+            },
+            {
+              "count": 1,
+              "kind": "effect_attr_compare_read",
+              "resource": "searched"
+            }
+          ],
+          "rule_name": "search_request_from_answer_topic",
+          "share_of_outside_cut_accesses": 0.009797,
+          "source_definition": null
+        },
+        {
+          "operation_counts_per_worker": {
+            "term_attr_read": 1260,
+            "term_edge_read": 150
+          },
+          "outside_cut_access_count_per_worker": 1410,
+          "resource_counts_per_worker": [
+            {
+              "count": 720,
+              "kind": "term_attr_read",
+              "resource": "form"
+            },
+            {
+              "count": 540,
+              "kind": "term_attr_read",
+              "resource": "text"
+            },
+            {
+              "count": 150,
+              "kind": "term_edge_read",
+              "resource": "refers_to"
+            }
+          ],
+          "rule_name": "resolve_slang_variant",
+          "share_of_outside_cut_accesses": 0.009296,
+          "source_definition": null
+        },
+        {
+          "operation_counts_per_worker": {
+            "effect_attr_compare_read": 1,
+            "effect_attr_write": 1,
+            "effect_edge_compare_read": 1,
+            "effect_edge_upsert": 1,
+            "effect_node_mint": 1,
+            "pattern_edge": 2,
+            "term_attr_read": 912,
+            "term_edge_read": 403
+          },
+          "outside_cut_access_count_per_worker": 1322,
+          "resource_counts_per_worker": [
+            {
+              "count": 404,
+              "kind": "term_attr_read",
+              "resource": "concept"
+            },
+            {
+              "count": 403,
+              "kind": "term_attr_read",
+              "resource": "topic"
+            },
+            {
+              "count": 403,
+              "kind": "term_edge_read",
+              "resource": "holds_answer"
+            },
+            {
+              "count": 69,
+              "kind": "term_attr_read",
+              "resource": "kind"
+            },
+            {
+              "count": 36,
+              "kind": "term_attr_read",
+              "resource": "sync_grounded"
+            },
+            {
+              "count": 1,
+              "kind": "pattern_edge",
+              "resource": "has_goal"
+            },
+            {
+              "count": 1,
+              "kind": "pattern_edge",
+              "resource": "comprehends"
+            },
+            {
+              "count": 1,
+              "kind": "effect_attr_write",
+              "resource": "sync_grounded"
+            },
+            {
+              "count": 1,
+              "kind": "effect_edge_upsert",
+              "resource": "ground_request"
+            },
+            {
+              "count": 1,
+              "kind": "effect_node_mint",
+              "resource": "GroundRequest"
+            }
+          ],
+          "rule_name": "sync_ground_request_from_answer_topic",
+          "share_of_outside_cut_accesses": 0.008715,
+          "source_definition": null
+        }
+      ]
+    },
+    {
+      "all_rule_access_count_per_worker": 166542,
+      "audited_rules": {
+        "curiosity_targets_ambivalent_nodes": {
+          "operation_counts_per_worker": {
+            "term_attr_read": 75876
+          },
+          "outside_cut_access_count_per_worker": 75876,
+          "resource_counts_per_worker": [
+            {
+              "count": 37938,
+              "kind": "term_attr_read",
+              "resource": "state"
+            },
+            {
+              "count": 37938,
+              "kind": "term_attr_read",
+              "resource": "is_ambivalent"
+            }
+          ]
+        },
+        "gr_condition_lapse": {
+          "operation_counts_per_worker": {
+            "term_attr_read": 9966,
+            "term_nodes_of_type_candidate": 4920,
+            "term_type_read": 4920
+          },
+          "outside_cut_access_count_per_worker": 19806,
+          "resource_counts_per_worker": [
+            {
+              "count": 4920,
+              "kind": "term_attr_read",
+              "resource": "kind"
+            },
+            {
+              "count": 4920,
+              "kind": "term_attr_read",
+              "resource": "filter_value"
+            },
+            {
+              "count": 4920,
+              "kind": "term_type_read",
+              "resource": "ShapeSignature"
+            },
+            {
+              "count": 4920,
+              "kind": "term_nodes_of_type_candidate",
+              "resource": "ShapeSignature"
+            },
+            {
+              "count": 42,
+              "kind": "term_attr_read",
+              "resource": "stale"
+            },
+            {
+              "count": 36,
+              "kind": "term_attr_read",
+              "resource": "keywords"
+            },
+            {
+              "count": 36,
+              "kind": "term_attr_read",
+              "resource": "ckind"
+            },
+            {
+              "count": 12,
+              "kind": "term_attr_read",
+              "resource": "expected"
+            }
+          ]
+        },
+        "sd_decode": {
+          "operation_counts_per_worker": {
+            "term_attr_read": 10
+          },
+          "outside_cut_access_count_per_worker": 10,
+          "resource_counts_per_worker": [
+            {
+              "count": 10,
+              "kind": "term_attr_read",
+              "resource": "status"
+            }
+          ]
+        },
+        "sd_infer_dimension": {
+          "operation_counts_per_worker": {
+            "term_attr_read": 10
+          },
+          "outside_cut_access_count_per_worker": 10,
+          "resource_counts_per_worker": [
+            {
+              "count": 10,
+              "kind": "term_attr_read",
+              "resource": "status"
+            }
+          ]
+        },
+        "sd_transform_decode": {
+          "operation_counts_per_worker": {
+            "term_attr_read": 10
+          },
+          "outside_cut_access_count_per_worker": 10,
+          "resource_counts_per_worker": [
+            {
+              "count": 10,
+              "kind": "term_attr_read",
+              "resource": "status"
+            }
+          ]
+        },
+        "slang_variant_bind_denotes": {
+          "operation_counts_per_worker": {
+            "term_edge_read": 90
+          },
+          "outside_cut_access_count_per_worker": 90,
+          "resource_counts_per_worker": [
+            {
+              "count": 90,
+              "kind": "term_edge_read",
+              "resource": "denotes"
+            }
+          ]
+        }
+      },
+      "outside_cut_access_count_per_worker": 162256,
+      "outside_cut_rule_count": 387,
+      "prompt": "What do you know about localhitium?",
+      "top_rules": [
+        {
+          "operation_counts_per_worker": {
+            "term_attr_read": 75876
+          },
+          "outside_cut_access_count_per_worker": 75876,
+          "resource_counts_per_worker": [
+            {
+              "count": 37938,
+              "kind": "term_attr_read",
+              "resource": "state"
+            },
+            {
+              "count": 37938,
+              "kind": "term_attr_read",
+              "resource": "is_ambivalent"
+            }
+          ],
+          "rule_name": "curiosity_targets_ambivalent_nodes",
+          "share_of_outside_cut_accesses": 0.467631,
+          "source_definition": {
+            "effects": [
+              [
+                "set_attr",
+                "c",
+                "is_ambivalent",
+                1
+              ]
+            ],
+            "match": [
+              [
+                "mt",
+                "has_concept",
+                "c"
+              ]
+            ],
+            "match_type": "Concept",
+            "source": "seeds/causal_attitude_networks.json",
+            "source_line": 721,
+            "source_sha256": "ca5ff96dc9a54d7a2bc9e2e800402b8d84bcb1b96b90ca3928435299bcf5fd97",
+            "where_term_types": [
+              "Abs",
+              "And",
+              "Attr",
+              "Eq",
+              "Lit",
+              "Lt",
+              "Not",
+              "Var"
+            ]
+          }
+        },
+        {
+          "operation_counts_per_worker": {
+            "term_attr_read": 9966,
+            "term_nodes_of_type_candidate": 4920,
+            "term_type_read": 4920
+          },
+          "outside_cut_access_count_per_worker": 19806,
+          "resource_counts_per_worker": [
+            {
+              "count": 4920,
+              "kind": "term_attr_read",
+              "resource": "kind"
+            },
+            {
+              "count": 4920,
+              "kind": "term_attr_read",
+              "resource": "filter_value"
+            },
+            {
+              "count": 4920,
+              "kind": "term_type_read",
+              "resource": "ShapeSignature"
+            },
+            {
+              "count": 4920,
+              "kind": "term_nodes_of_type_candidate",
+              "resource": "ShapeSignature"
+            },
+            {
+              "count": 42,
+              "kind": "term_attr_read",
+              "resource": "stale"
+            },
+            {
+              "count": 36,
+              "kind": "term_attr_read",
+              "resource": "keywords"
+            },
+            {
+              "count": 36,
+              "kind": "term_attr_read",
+              "resource": "ckind"
+            },
+            {
+              "count": 12,
+              "kind": "term_attr_read",
+              "resource": "expected"
+            }
+          ],
+          "rule_name": "gr_condition_lapse",
+          "share_of_outside_cut_accesses": 0.122066,
+          "source_definition": {
+            "effects": [
+              [
+                "set_attr",
+                "r",
+                "stale",
+                1.0
+              ]
+            ],
+            "match": [
+              [
+                "r",
+                "holds_under",
+                "c"
+              ]
+            ],
+            "match_type": null,
+            "source": "seeds/goal_residuals.json",
+            "source_line": 787,
+            "source_sha256": "199a90a48b645a739c452c55e04f3659ef43d936d3c431046b60b7a09f2b4148",
+            "where_term_types": [
+              "And",
+              "Attr",
+              "Count",
+              "Eq",
+              "Filter",
+              "Lit",
+              "NodesOfType",
+              "Not",
+              "Or",
+              "Var"
+            ]
+          }
+        },
+        {
+          "operation_counts_per_worker": {
+            "pattern_edge": 4,
+            "term_attr_read": 6805
+          },
+          "outside_cut_access_count_per_worker": 6809,
+          "resource_counts_per_worker": [
+            {
+              "count": 2172,
+              "kind": "term_attr_read",
+              "resource": "kind"
+            },
+            {
+              "count": 1190,
+              "kind": "term_attr_read",
+              "resource": "status"
+            },
+            {
+              "count": 1166,
+              "kind": "term_attr_read",
+              "resource": "concept"
+            },
+            {
+              "count": 1038,
+              "kind": "term_attr_read",
+              "resource": "topic"
+            },
+            {
+              "count": 304,
+              "kind": "term_attr_read",
+              "resource": "grounding_evidence_path"
+            },
+            {
+              "count": 304,
+              "kind": "term_attr_read",
+              "resource": "evidence_path"
+            },
+            {
+              "count": 206,
+              "kind": "term_attr_read",
+              "resource": "grounding_status"
+            },
+            {
+              "count": 64,
+              "kind": "term_attr_read",
+              "resource": "grounding_referent"
+            },
+            {
+              "count": 64,
+              "kind": "term_attr_read",
+              "resource": "referent"
+            },
+            {
+              "count": 54,
+              "kind": "term_attr_read",
+              "resource": "schema"
+            }
+          ],
+          "rule_name": "arbitrate_supported_event_bound_topic_goal_answer",
+          "share_of_outside_cut_accesses": 0.041965,
+          "source_definition": null
+        },
+        {
+          "operation_counts_per_worker": {
+            "term_attr_read": 4524
+          },
+          "outside_cut_access_count_per_worker": 4524,
+          "resource_counts_per_worker": [
+            {
+              "count": 2262,
+              "kind": "term_attr_read",
+              "resource": "is_axis"
+            },
+            {
+              "count": 2262,
+              "kind": "term_attr_read",
+              "resource": "mf_stall"
+            }
+          ],
+          "rule_name": "escalate_open_on_stall",
+          "share_of_outside_cut_accesses": 0.027882,
+          "source_definition": null
+        },
+        {
+          "operation_counts_per_worker": {
+            "term_attr_read": 4498
+          },
+          "outside_cut_access_count_per_worker": 4498,
+          "resource_counts_per_worker": [
+            {
+              "count": 2249,
+              "kind": "term_attr_read",
+              "resource": "is_axis"
+            },
+            {
+              "count": 2249,
+              "kind": "term_attr_read",
+              "resource": "mf_stall"
+            }
+          ],
+          "rule_name": "mint_impasse_from_stall",
+          "share_of_outside_cut_accesses": 0.027722,
+          "source_definition": null
+        },
+        {
+          "operation_counts_per_worker": {
+            "effect_edge_compare_read": 1,
+            "effect_edge_upsert": 1,
+            "effect_node_mint": 1,
+            "term_attr_read": 1428,
+            "term_edge_read": 209,
+            "term_nodes_of_type_candidate": 1220,
+            "term_type_read": 1220
+          },
+          "outside_cut_access_count_per_worker": 4080,
+          "resource_counts_per_worker": [
+            {
+              "count": 770,
+              "kind": "term_type_read",
+              "resource": "CapabilityAxis"
+            },
+            {
+              "count": 770,
+              "kind": "term_nodes_of_type_candidate",
+              "resource": "CapabilityAxis"
+            },
+            {
+              "count": 606,
+              "kind": "term_attr_read",
+              "resource": "kind"
+            },
+            {
+              "count": 450,
+              "kind": "term_attr_read",
+              "resource": "form"
+            },
+            {
+              "count": 450,
+              "kind": "term_type_read",
+              "resource": "FunctionWord"
+            },
+            {
+              "count": 450,
+              "kind": "term_nodes_of_type_candidate",
+              "resource": "FunctionWord"
+            },
+            {
+              "count": 342,
+              "kind": "term_attr_read",
+              "resource": "text"
+            },
+            {
+              "count": 174,
+              "kind": "term_edge_read",
+              "resource": "refers_to"
+            },
+            {
+              "count": 35,
+              "kind": "term_edge_read",
+              "resource": "about_mention"
+            },
+            {
+              "count": 30,
+              "kind": "term_attr_read",
+              "resource": "word"
+            }
+          ],
+          "rule_name": "mint_frontier_from_unresolved_mention",
+          "share_of_outside_cut_accesses": 0.025145,
+          "source_definition": null
+        },
+        {
+          "operation_counts_per_worker": {
+            "term_attr_read": 1278,
+            "term_nodes_of_type_candidate": 351,
+            "term_type_read": 351
+          },
+          "outside_cut_access_count_per_worker": 1980,
+          "resource_counts_per_worker": [
+            {
+              "count": 702,
+              "kind": "term_attr_read",
+              "resource": "kind"
+            },
+            {
+              "count": 351,
+              "kind": "term_type_read",
+              "resource": "SelfConcern"
+            },
+            {
+              "count": 351,
+              "kind": "term_nodes_of_type_candidate",
+              "resource": "SelfConcern"
+            },
+            {
+              "count": 270,
+              "kind": "term_attr_read",
+              "resource": "content"
+            },
+            {
+              "count": 162,
+              "kind": "term_attr_read",
+              "resource": "source"
+            },
+            {
+              "count": 144,
+              "kind": "term_attr_read",
+              "resource": "status"
+            }
+          ],
+          "rule_name": "retire_duplicate_gap",
+          "share_of_outside_cut_accesses": 0.012203,
+          "source_definition": null
+        },
+        {
+          "operation_counts_per_worker": {
+            "effect_attr_compare_read": 1,
+            "effect_attr_write": 1,
+            "effect_edge_compare_read": 1,
+            "effect_edge_upsert": 1,
+            "effect_node_mint": 1,
+            "pattern_edge": 1,
+            "term_attr_read": 1251,
+            "term_edge_read": 581
+          },
+          "outside_cut_access_count_per_worker": 1838,
+          "resource_counts_per_worker": [
+            {
+              "count": 582,
+              "kind": "term_attr_read",
+              "resource": "concept"
+            },
+            {
+              "count": 581,
+              "kind": "term_attr_read",
+              "resource": "topic"
+            },
+            {
+              "count": 581,
+              "kind": "term_edge_read",
+              "resource": "holds_answer"
+            },
+            {
+              "count": 81,
+              "kind": "term_attr_read",
+              "resource": "kind"
+            },
+            {
+              "count": 7,
+              "kind": "term_attr_read",
+              "resource": "searched"
+            },
+            {
+              "count": 1,
+              "kind": "pattern_edge",
+              "resource": "has_goal"
+            },
+            {
+              "count": 1,
+              "kind": "effect_attr_write",
+              "resource": "searched"
+            },
+            {
+              "count": 1,
+              "kind": "effect_edge_upsert",
+              "resource": "search_request"
+            },
+            {
+              "count": 1,
+              "kind": "effect_node_mint",
+              "resource": "SearchRequest"
+            },
+            {
+              "count": 1,
+              "kind": "effect_attr_compare_read",
+              "resource": "searched"
+            }
+          ],
+          "rule_name": "search_request_from_answer_topic",
+          "share_of_outside_cut_accesses": 0.011328,
+          "source_definition": null
+        },
+        {
+          "operation_counts_per_worker": {
+            "term_attr_read": 1620,
+            "term_edge_read": 174
+          },
+          "outside_cut_access_count_per_worker": 1794,
+          "resource_counts_per_worker": [
+            {
+              "count": 900,
+              "kind": "term_attr_read",
+              "resource": "form"
+            },
+            {
+              "count": 720,
+              "kind": "term_attr_read",
+              "resource": "text"
+            },
+            {
+              "count": 174,
+              "kind": "term_edge_read",
+              "resource": "refers_to"
+            }
+          ],
+          "rule_name": "resolve_slang_variant",
+          "share_of_outside_cut_accesses": 0.011057,
+          "source_definition": null
+        },
+        {
+          "operation_counts_per_worker": {
+            "term_attr_read": 996,
+            "term_edge_read": 738
+          },
+          "outside_cut_access_count_per_worker": 1734,
+          "resource_counts_per_worker": [
+            {
+              "count": 282,
+              "kind": "term_edge_read",
+              "resource": "responds_to"
+            },
+            {
+              "count": 276,
+              "kind": "term_attr_read",
+              "resource": "from"
+            },
+            {
+              "count": 240,
+              "kind": "term_attr_read",
+              "resource": "text"
+            },
+            {
+              "count": 210,
+              "kind": "term_attr_read",
+              "resource": "name"
+            },
+            {
+              "count": 210,
+              "kind": "term_edge_read",
+              "resource": "has_speech_act"
+            },
+            {
+              "count": 162,
+              "kind": "term_attr_read",
+              "resource": "kind"
+            },
+            {
+              "count": 162,
+              "kind": "term_edge_read",
+              "resource": "has_goal"
+            },
+            {
+              "count": 84,
+              "kind": "term_edge_read",
+              "resource": "comprehends"
+            },
+            {
+              "count": 72,
+              "kind": "term_attr_read",
+              "resource": "adjacency_replied_act"
+            },
+            {
+              "count": 36,
+              "kind": "term_attr_read",
+              "resource": "honest_floor_replied"
+            }
+          ],
+          "rule_name": "reply_honest_floor",
+          "share_of_outside_cut_accesses": 0.010687,
+          "source_definition": null
+        }
+      ]
+    }
+  ],
+  "replication_checks": {
+    "Can you tell me about copper?": true,
+    "What do you know about basalt?": true,
+    "What do you know about copper?": true,
+    "What do you know about hexagon?": true,
+    "What do you know about localhitium?": true,
+    "What do you know about unobtainium?": true,
+    "What is copper?": true
+  },
+  "schema_version": 1,
+  "source_hashes": {
+    "runners/dsl/src/graph.rs": {
+      "actual_sha256": "2c14dea3c04b3b13408690ec79fb61829c1e2760bcf4e9edf0bdde37d1c15da0",
+      "matches_native_build": true,
+      "native_build_sha256": "2c14dea3c04b3b13408690ec79fb61829c1e2760bcf4e9edf0bdde37d1c15da0"
+    },
+    "runners/dsl/src/graph_rules.rs": {
+      "actual_sha256": "b3c63c1b9cd5713b69918792950701141ced7f01ddd061dc2b1e14673da34542",
+      "matches_native_build": true,
+      "native_build_sha256": "b3c63c1b9cd5713b69918792950701141ced7f01ddd061dc2b1e14673da34542"
+    },
+    "runners/dsl/src/py.rs": {
+      "actual_sha256": "905cb4eb645b597d34d5faf4bd9d0b999baf749e9c2f19e947bbbf89a0f27f39",
+      "matches_native_build": true,
+      "native_build_sha256": "905cb4eb645b597d34d5faf4bd9d0b999baf749e9c2f19e947bbbf89a0f27f39"
+    },
+    "runners/dsl/src/rewrite.rs": {
+      "actual_sha256": "ea711f28c9f8c21f119cdca6ad1d417576deb20b16a36ce6158e13a9fbafdf1b",
+      "matches_native_build": true,
+      "native_build_sha256": "ea711f28c9f8c21f119cdca6ad1d417576deb20b16a36ce6158e13a9fbafdf1b"
+    },
+    "runners/dsl/src/substrate.rs": {
+      "actual_sha256": "39f27175b2025c6c6552fd5bec8310d4ab06c6401823372f4bd8c4c13b5301e8",
+      "matches_native_build": true,
+      "native_build_sha256": "39f27175b2025c6c6552fd5bec8310d4ab06c6401823372f4bd8c4c13b5301e8"
+    },
+    "runners/dsl/src/term.rs": {
+      "actual_sha256": "13225eba5735e14ad1354408a77f9a7fcd612d5f7686a450b09198e31b7133f3",
+      "matches_native_build": true,
+      "native_build_sha256": "13225eba5735e14ad1354408a77f9a7fcd612d5f7686a450b09198e31b7133f3"
+    },
+    "seeds/causal_attitude_networks.json": {
+      "actual_sha256": "ca5ff96dc9a54d7a2bc9e2e800402b8d84bcb1b96b90ca3928435299bcf5fd97",
+      "capture_locked_sha256": "ca5ff96dc9a54d7a2bc9e2e800402b8d84bcb1b96b90ca3928435299bcf5fd97",
+      "matches_capture_lock": true
+    },
+    "seeds/goal_residuals.json": {
+      "actual_sha256": "199a90a48b645a739c452c55e04f3659ef43d936d3c431046b60b7a09f2b4148",
+      "capture_locked_sha256": "199a90a48b645a739c452c55e04f3659ef43d936d3c431046b60b7a09f2b4148",
+      "matches_capture_lock": true
+    },
+    "seeds/shape_decode_loop.json": {
+      "actual_sha256": "0fb6e5206c6e901d1bae254dc7558c1f9f9171d2dfc8e3e0295593f27c3efa1e",
+      "capture_locked_sha256": "0fb6e5206c6e901d1bae254dc7558c1f9f9171d2dfc8e3e0295593f27c3efa1e",
+      "matches_capture_lock": true
+    },
+    "seeds/slang_lexicon.json": {
+      "actual_sha256": "0ef18f64436fa47140d8a1eb35a5534a37766877085748a1766e2e4591627359",
+      "capture_locked_sha256": "0ef18f64436fa47140d8a1eb35a5534a37766877085748a1766e2e4591627359",
+      "matches_capture_lock": true
+    },
+    "substrate/world_adapter.py": {
+      "actual_sha256": "fffb5e21986d272b1273a092c26adf5d12f478a341e60a264d19c7b4da3a6298",
+      "capture_locked_sha256": "fffb5e21986d272b1273a092c26adf5d12f478a341e60a264d19c7b4da3a6298",
+      "matches_capture_lock": true
+    }
+  }
+}

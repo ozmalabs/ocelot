@@ -1,0 +1,220 @@
+{
+  "claim_boundary": "Source-linked counter semantics and justified counter distinctions; no dynamic calibration, runtime coverage percentage, or completeness claim.",
+  "counters": [
+    {
+      "anchors": [
+        {
+          "anchor": "pub fn candidates(",
+          "line": 976,
+          "path": "runners/dsl/src/scale_audit.rs"
+        },
+        {
+          "anchor": "crate::scale_audit::candidates(candidates.len() as u64, cand_path);",
+          "line": 1675,
+          "path": "runners/dsl/src/rewrite.rs"
+        }
+      ],
+      "equation": "sum(candidates(n,path))",
+      "meaning": "Pairs materialized by one match-edge expansion, classified by local/hinted/full-scan path; candidates may later fail bound checks.",
+      "name": "candidate_pairs_enumerated",
+      "not_equivalent_to": [
+        "candidate_tests",
+        "successful bindings",
+        "unique graph edges"
+      ]
+    },
+    {
+      "anchors": [
+        {
+          "anchor": "pub fn cand_tested(",
+          "line": 998,
+          "path": "runners/dsl/src/scale_audit.rs"
+        },
+        {
+          "anchor": "crate::scale_audit::cand_tested(i, rule.name.0, rule.match_edges.len());",
+          "line": 1678,
+          "path": "runners/dsl/src/rewrite.rs"
+        }
+      ],
+      "equation": "candidate_tests = candidate_loop_iterations",
+      "meaning": "One increment per pair entering the extend_each candidate loop, before bound-source/target rejection.",
+      "name": "candidate_tests",
+      "not_equivalent_to": [
+        "successful pattern_edge events",
+        "Term evaluations",
+        "full graph accesses"
+      ]
+    },
+    {
+      "anchors": [
+        {
+          "anchor": "pub fn cand_reject_bound()",
+          "line": 1023,
+          "path": "runners/dsl/src/scale_audit.rs"
+        },
+        {
+          "anchor": "crate::scale_audit::cand_reject_bound();",
+          "line": 1681,
+          "path": "runners/dsl/src/rewrite.rs"
+        }
+      ],
+      "equation": "bound_rejections <= candidate_tests",
+      "meaning": "Subset of candidate-loop iterations rejected by already-bound endpoint equality checks.",
+      "name": "bound_rejections",
+      "not_equivalent_to": [
+        "all failed matches",
+        "where rejections"
+      ]
+    },
+    {
+      "anchors": [
+        {
+          "anchor": "pub fn where_eval(passed: bool)",
+          "line": 1030,
+          "path": "runners/dsl/src/scale_audit.rs"
+        },
+        {
+          "anchor": "crate::scale_audit::where_eval(ok);",
+          "line": 1513,
+          "path": "runners/dsl/src/rewrite.rs"
+        }
+      ],
+      "equation": "where_evaluations = interpreted/JIT whole-where and remaining-conjunct evaluations",
+      "meaning": "Calls to a where expression or an unpruned conjunct, counted after boolean evaluation; pushdown evaluations use a separate counter.",
+      "name": "where_evaluations",
+      "not_equivalent_to": [
+        "candidate_tests",
+        "all predicate work",
+        "pushdown evaluations"
+      ]
+    },
+    {
+      "anchors": [
+        {
+          "anchor": "crate::scale_audit::leaf_visit();",
+          "line": 1566,
+          "path": "runners/dsl/src/rewrite.rs"
+        },
+        {
+          "anchor": "crate::scale_audit::binding_cloned();",
+          "line": 2936,
+          "path": "runners/dsl/src/rewrite.rs"
+        }
+      ],
+      "equation": "leaf_visits = successful match leaves reaching the visitor",
+      "meaning": "A match leaf after distinct-variable and where checks; cloned-binding counts are recorded on the cold-path consumer, not as a general matcher identity count.",
+      "name": "successful_bindings",
+      "not_equivalent_to": [
+        "candidate_tests",
+        "rule firings",
+        "effects committed"
+      ]
+    },
+    {
+      "anchors": [
+        {
+          "anchor": "pub fn scheduler_plan_completed(",
+          "line": 287,
+          "path": "runners/dsl/src/scale_audit.rs"
+        },
+        {
+          "anchor": "crate::access_trace::note_work(20,",
+          "line": 294,
+          "path": "runners/dsl/src/scale_audit.rs"
+        },
+        {
+          "anchor": "pub struct WorkEvent",
+          "line": 35,
+          "path": "runners/dsl/src/access_trace.rs"
+        }
+      ],
+      "equation": "work_trace[kind 20..23] = scheduler_plan_completed arguments",
+      "meaning": "Monolithic run_rules scheduler slot counts: external poll, fixed-point probe, dirty-vector scan, and selected-rule count. Work events are emitted outside RuleUID attribution.",
+      "name": "scheduler_work",
+      "not_equivalent_to": [
+        "rule matcher work",
+        "host adapter work",
+        "all scheduler work in the process"
+      ]
+    },
+    {
+      "anchors": [
+        {
+          "anchor": "pub fn deferred_queue_enqueued(",
+          "line": 329,
+          "path": "runners/dsl/src/scale_audit.rs"
+        },
+        {
+          "anchor": "pub fn deferred_queue_drained(",
+          "line": 356,
+          "path": "runners/dsl/src/scale_audit.rs"
+        }
+      ],
+      "equation": "enqueue_total and drained_item_total are separate; equality is not guaranteed across pending queues or early exits",
+      "meaning": "Recognized enqueue counts and between-pass drain batches/items; drained items include stale or rejected records.",
+      "name": "deferred_queue_work",
+      "not_equivalent_to": [
+        "host callbacks",
+        "all post-rule effects",
+        "successful mutations"
+      ]
+    },
+    {
+      "anchors": [
+        {
+          "anchor": "crate::access_trace::note(1, src.0, edge.edge_type.0, tgt.0)",
+          "line": 1563,
+          "path": "runners/dsl/src/rewrite.rs"
+        },
+        {
+          "anchor": "pub const NO_ID: u32 = u32::MAX;",
+          "line": 16,
+          "path": "runners/dsl/src/access_trace.rs"
+        }
+      ],
+      "equation": "no exact equation to candidate_tests; candidate rejects and failed edge identities are not represented by successful pattern_edge rows",
+      "meaning": "Selected access/effect rows with concrete graph identities; successful match-edge rows occur only after a complete successful binding.",
+      "name": "concrete_access_events",
+      "not_equivalent_to": [
+        "complete dynamic dependency set",
+        "candidate_tests",
+        "all Term/helper graph reads"
+      ]
+    },
+    {
+      "anchors": [
+        {
+          "anchor": "crate::tools::call_tool(name, &arg_vals, ctx.interner)",
+          "line": 7018,
+          "path": "runners/dsl/src/term.rs"
+        }
+      ],
+      "equation": "requires an explicit host-side invocation/result counter; no equation is available from native access rows alone",
+      "meaning": "UseTool dispatch crosses into a registered Python callback; callback reads, writes, and external effects are not native concrete graph-access events.",
+      "name": "host_callback_work",
+      "not_equivalent_to": [
+        "graph mutations",
+        "rule progress",
+        "native trace event count"
+      ]
+    }
+  ],
+  "next_dynamic_gate": "Use controlled graphs with independently known candidate, where, binding, scheduler-slot, queue, and callback counts; verify each counter separately, include negative/no-op/rejected controls, and capture uninstrumented semantic parity. Keep host/scheduler totals outside RuleUID traces.",
+  "run_id": "substrate_counter_semantics_v1_20260928",
+  "schema_version": 1,
+  "source_sha256": {
+    "access_trace": "42794f962d898391877b33b2462b2c5978651fb1e9f44992fa93876169b0c3a9",
+    "rewrite": "58cea7eaa595c804f4f0265c4003231105011dc2493bea8ca30dea6bb6246c34",
+    "scale_audit": "08ce34f2457a9d7a38727c04250240574e47166bf67890859f9f8a97c648133c",
+    "term": "3dc19255f1353c683cb963ce4485fb85b36bb87bd8db8d19ac851a5f4f5b02c8",
+    "world_adapter": "88d504c82466e1b884ddfd38d5d7e04056fef79672794e99ee311073b91892eb"
+  },
+  "uncovered_cost_classes": [
+    "host callbacks and callback-internal reads/writes",
+    "adapter/boot work outside the captured run_rules operation",
+    "failed matcher identities and rejected-edge dependencies",
+    "some specialized Term scans and helper-mediated graph reads",
+    "unchanged SetAttrIfDifferent old-value reads",
+    "post-rule effects without a recognized deferred-queue hook"
+  ]
+}

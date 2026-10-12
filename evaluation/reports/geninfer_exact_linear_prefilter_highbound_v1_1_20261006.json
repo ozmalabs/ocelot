@@ -1,0 +1,735 @@
+{
+  "build_command": "CARGO_TARGET_DIR=/tmp/ocelot-prefilter-target cargo build --release --lib --features geninfer_quadratic_map_solver,geninfer_linear_exact_prefilter",
+  "comparison": "same prefilter-enabled binary; runtime gate on; audit-off timing and audit-on counter worker",
+  "condition": "cubic_out_of_family",
+  "native_binary": {
+    "path": "/tmp/ocelot-prefilter-highbound-v1_1.so",
+    "sha256": "2d57086c640a0cbb1b8170ca261df4a40c0ba463800b9b73bc6263e3ccdbaec1"
+  },
+  "platform": "Linux-6.8.0-142-generic-x86_64-with-glibc2.39",
+  "rustc": "rustc 1.87.0 (17067e9ac 2025-05-09) (Homebrew)",
+  "schema": "GenInferExactLinearPrefilterHighBoundV1_1",
+  "sources_sha256": {
+    "docs/research/engine_substrate/SUBSTRATE_GENINFER_EXACT_LINEAR_PREFILTER_V1_1_AMENDMENT_20261006.md": "50bcc77a085bfbf7b9c14c8c77d2cfd3334ae98ba5564b3d0ceb4d2560464fb0",
+    "docs/research/engine_substrate/SUBSTRATE_GENINFER_EXACT_LINEAR_PREFILTER_V1_PREREG_20261006.md": "18d02e82d656a4b2c812e754fca58481bcd650c7487a22914994ee1eb60b393b",
+    "evaluation/substrate_capability/geninfer_exact_linear_prefilter_highbound_v1_1.py": "ccdf4e794110097a7af3d0a4a19386f41ac348663c5096e51cf33b9fe384fd3e",
+    "evaluation/substrate_capability/nonlinear_quadratic_geninfer_v2_2.py": "272c7037521b0f236c796698294e935cc27d1c85cf8fb2c966038aefbb67e0e5",
+    "runners/dsl/Cargo.lock": "409b6e31eed316fb379d18466caf856f6e4d821b271c74fba8828b734ea60ce9",
+    "runners/dsl/Cargo.toml": "1d6e89964e8c5caf39956d63ff10921e4aa8ed2f4fba4cc580199f11aeddf8f7",
+    "runners/dsl/src/jsonio.rs": "e8620cdd2cf9731a3bd88f44a42ea369b9562ff773737ea2d7e0cd45cfcf55a4",
+    "runners/dsl/src/reflect.rs": "e19cd26cee45f537d17a8eb546a8329558d27378823cf20f1217072306719bdd",
+    "runners/dsl/src/scale_audit.rs": "ba79de8a081b1159481ff3cb580227e61d77ffc18b1cc51ee6997f02af4ab55a",
+    "runners/dsl/src/shape_decode.rs": "5b3e4037b153c51c13e3c623249d406d5047cd09d088d9382b504e7ef7814fc3",
+    "runners/dsl/src/term.rs": "e995dbe38594e983b5fe0fef212def329f7c498c69ef8377147cf9de1390c92d",
+    "seeds/shape_decode_loop.json": "de539ce227b34e3ae1d4eada722f9a8ff926ce34a0214d1cbe3991afc595137c"
+  },
+  "status": "raw_capture",
+  "timeout_seconds_per_worker": 300,
+  "workers": [
+    {
+      "audit": false,
+      "elapsed_ns": 320799678,
+      "exit_code": 0,
+      "stderr": "",
+      "worker": {
+        "audit": false,
+        "condition": "cubic_out_of_family",
+        "cpu_system_s": 0.049058,
+        "cpu_user_s": 0.207473,
+        "feature": "on",
+        "heldout": {
+          "base": [
+            [
+              "cell",
+              "held_0",
+              2,
+              1,
+              "red"
+            ],
+            [
+              "cell",
+              "held_1",
+              1,
+              3,
+              "red"
+            ],
+            [
+              "cell",
+              "held_2",
+              3,
+              2,
+              "red"
+            ],
+            [
+              "cell",
+              "held_3",
+              2,
+              3,
+              "red"
+            ],
+            [
+              "cell",
+              "held_4",
+              5,
+              1,
+              "red"
+            ],
+            [
+              "cell",
+              "held_5",
+              3,
+              3,
+              "red"
+            ]
+          ],
+          "closure_ns": 666494,
+          "counters": {},
+          "dim_infer": {
+            "base": null,
+            "checked": 0,
+            "dims": [],
+            "explained": false,
+            "generator": null,
+            "generators": [],
+            "identity": false,
+            "k": null,
+            "ks": [],
+            "latent_name": null,
+            "length": 0,
+            "transforms": []
+          },
+          "generator_payloads": [],
+          "observed_target": [
+            [
+              "cell",
+              "held_0",
+              1,
+              1,
+              "red"
+            ],
+            [
+              "cell",
+              "held_1",
+              0,
+              2,
+              "red"
+            ],
+            [
+              "cell",
+              "held_2",
+              2,
+              9,
+              "red"
+            ],
+            [
+              "cell",
+              "held_3",
+              1,
+              3,
+              "red"
+            ],
+            [
+              "cell",
+              "held_4",
+              4,
+              64,
+              "red"
+            ],
+            [
+              "cell",
+              "held_5",
+              2,
+              10,
+              "red"
+            ]
+          ],
+          "quanta_added": 1,
+          "residual": [
+            [
+              "cell",
+              "held_0",
+              1,
+              1,
+              "red"
+            ],
+            [
+              "cell",
+              "held_1",
+              0,
+              2,
+              "red"
+            ],
+            [
+              "cell",
+              "held_2",
+              2,
+              9,
+              "red"
+            ],
+            [
+              "cell",
+              "held_3",
+              1,
+              3,
+              "red"
+            ],
+            [
+              "cell",
+              "held_4",
+              4,
+              64,
+              "red"
+            ],
+            [
+              "cell",
+              "held_5",
+              2,
+              10,
+              "red"
+            ]
+          ],
+          "rule_work": 4,
+          "status": "minted",
+          "transform_receipts": []
+        },
+        "initial_generator_payloads": [],
+        "native_module_path": "/tmp/qgeninfer-v22-prefilter_highbound_v11_a0-5ve9ur5a/substrate_rs/_native.abi3.so",
+        "native_sha256": "2d57086c640a0cbb1b8170ca261df4a40c0ba463800b9b73bc6263e3ccdbaec1",
+        "process_peak_rss_kib": 40868,
+        "reload": {
+          "agent_node_id_preserved": true,
+          "generator_payloads": [],
+          "serialized_edge_count": 743,
+          "serialized_node_count": 772
+        },
+        "repeat": 1,
+        "training": {
+          "closure_ns": 1126637,
+          "counters": {},
+          "generator_payloads": [],
+          "quanta_added": 1,
+          "residual": [
+            [
+              "cell",
+              "train_0",
+              1,
+              1,
+              "red"
+            ],
+            [
+              "cell",
+              "train_1",
+              2,
+              8,
+              "red"
+            ],
+            [
+              "cell",
+              "train_2",
+              0,
+              1,
+              "red"
+            ],
+            [
+              "cell",
+              "train_3",
+              0,
+              2,
+              "red"
+            ],
+            [
+              "cell",
+              "train_4",
+              1,
+              2,
+              "red"
+            ],
+            [
+              "cell",
+              "train_5",
+              3,
+              28,
+              "red"
+            ],
+            [
+              "cell",
+              "train_6",
+              4,
+              65,
+              "red"
+            ]
+          ],
+          "rule_work": 4,
+          "status": "minted"
+        },
+        "worker_id": "prefilter_highbound_v11_a0",
+        "worker_wall_ns": 130049360
+      }
+    },
+    {
+      "audit": true,
+      "elapsed_ns": 296038470,
+      "exit_code": 0,
+      "stderr": "",
+      "worker": {
+        "audit": true,
+        "condition": "cubic_out_of_family",
+        "cpu_system_s": 0.046036,
+        "cpu_user_s": 0.210165,
+        "feature": "on",
+        "heldout": {
+          "base": [
+            [
+              "cell",
+              "held_0",
+              2,
+              1,
+              "red"
+            ],
+            [
+              "cell",
+              "held_1",
+              1,
+              3,
+              "red"
+            ],
+            [
+              "cell",
+              "held_2",
+              3,
+              2,
+              "red"
+            ],
+            [
+              "cell",
+              "held_3",
+              2,
+              3,
+              "red"
+            ],
+            [
+              "cell",
+              "held_4",
+              5,
+              1,
+              "red"
+            ],
+            [
+              "cell",
+              "held_5",
+              3,
+              3,
+              "red"
+            ]
+          ],
+          "closure_ns": 711064,
+          "counters": {
+            "apply_probe_rollbacks": 1,
+            "bindings_cloned": 5,
+            "cand_enum": 69,
+            "cand_enum_apply_once": 0,
+            "cand_enum_first": 37,
+            "cand_enum_hinted": 0,
+            "cand_enum_local": 0,
+            "cand_enum_repeat": 32,
+            "cand_enum_scan": 69,
+            "cand_reject_bound": 0,
+            "cand_tested": 69,
+            "cand_tested_unattributed": 0,
+            "dim_infer_arg_calls": 1,
+            "dim_infer_arg_distinct_ordered": 1,
+            "dim_infer_arg_distinct_unordered": 1,
+            "epochs": 1,
+            "epochs_apply_once": 0,
+            "ffi_calls": 18,
+            "ffi_items": 18,
+            "ffi_pyobjects": 64,
+            "gen_infer_apply_rejects": 0,
+            "gen_infer_bases_by_bound:63": 2,
+            "gen_infer_cache_hits": 0,
+            "gen_infer_candidate_rejects": 0,
+            "gen_infer_candidate_survivors": 0,
+            "gen_infer_eligible_bases": 2,
+            "gen_infer_full_rank_apply_rejects": 0,
+            "gen_infer_full_rank_attempts": 0,
+            "gen_infer_full_rank_bases": 0,
+            "gen_infer_full_rank_candidate_rejects": 0,
+            "gen_infer_full_rank_refusals": 0,
+            "gen_infer_full_rank_residual_rejects": 0,
+            "gen_infer_full_rank_survivors": 0,
+            "gen_infer_kernel_calls": 1,
+            "gen_infer_matrix_attempts": 0,
+            "gen_infer_prefilter_attempts": 2,
+            "gen_infer_prefilter_fallback": 0,
+            "gen_infer_prefilter_input_relations": 25,
+            "gen_infer_prefilter_proven_no_fit": 2,
+            "gen_infer_prefilter_solved": 0,
+            "gen_infer_quadratic_attempts": 2,
+            "gen_infer_quadratic_enabled_calls": 1,
+            "gen_infer_quadratic_refusal:unsupported_shape": 2,
+            "gen_infer_quadratic_survivors": 0,
+            "gen_infer_quadratic_validation_rejects": 0,
+            "gen_infer_requests": 1,
+            "gen_infer_residual_rejects": 0,
+            "graph_writes": 9,
+            "leaf_visits": 5,
+            "pushdown_evals": 0,
+            "pushdown_prunes": 0,
+            "rule_effect_attr_set_attempts": 10,
+            "rule_effect_edge_deletes": 0,
+            "rule_effect_edge_insert_attempts": 1,
+            "rule_effect_node_delete_attempts": 0,
+            "rule_effect_node_inserts": 1,
+            "rule_effect_replace_edge_deletes": 0,
+            "rule_effect_replace_edge_insert_attempts": 0,
+            "rule_enumerations": 286,
+            "rule_enumerations_repeat": 126,
+            "scheduler_dirty_vector_slots": 320,
+            "scheduler_external_poll_slots": 320,
+            "scheduler_fixedpoint_probe_slots": 3,
+            "scheduler_passes": 2,
+            "scheduler_plan_ns": 31120,
+            "scheduler_selected_rules": 286,
+            "scoped_anchor_rejected_rule_matches": 0,
+            "scoped_declared_anchor_rule_matches": 0,
+            "scoped_full_fallback_rule_matches": 0,
+            "scoped_local_rule_matches": 0,
+            "scoped_mt_seeded_rule_matches": 0,
+            "term_eval:And": 66,
+            "term_eval:AntiUnify": 19,
+            "term_eval:Argmax": 1,
+            "term_eval:Attr": 206,
+            "term_eval:Count": 29,
+            "term_eval:DimInfer": 2,
+            "term_eval:Eq": 139,
+            "term_eval:Exists": 1,
+            "term_eval:Filter": 13,
+            "term_eval:FixedCount": 19,
+            "term_eval:GenInfer": 1,
+            "term_eval:Gt": 12,
+            "term_eval:Gte": 1,
+            "term_eval:IfThenElse": 1,
+            "term_eval:IndexAt": 6,
+            "term_eval:Lit": 173,
+            "term_eval:Lt": 14,
+            "term_eval:MapList": 1,
+            "term_eval:Neighbours": 3,
+            "term_eval:NodesOfType": 9,
+            "term_eval:Not": 29,
+            "term_eval:Or": 2,
+            "term_eval:SetT": 19,
+            "term_eval:TransformDecode": 2,
+            "term_eval:Var": 214,
+            "term_evals_total": 982,
+            "term_evals_unattributed": 0,
+            "term_evals_unattributed_ambiguous": 0,
+            "term_evals_unattributed_host_api": 0,
+            "term_evals_unattributed_no_rule": 0,
+            "term_unit:Exists": 2,
+            "term_unit:NodesOfType": 21,
+            "term_unit:TransformDecode": 30,
+            "term_units_total": 53,
+            "term_units_unattributed": 0,
+            "var_collisions": 0,
+            "where_evals": 69,
+            "where_evals_first": 37,
+            "where_evals_repeat": 32,
+            "where_rejects": 64
+          },
+          "dim_infer": {
+            "base": null,
+            "checked": 0,
+            "dims": [],
+            "explained": false,
+            "generator": null,
+            "generators": [],
+            "identity": false,
+            "k": null,
+            "ks": [],
+            "latent_name": null,
+            "length": 0,
+            "transforms": []
+          },
+          "generator_payloads": [],
+          "observed_target": [
+            [
+              "cell",
+              "held_0",
+              1,
+              1,
+              "red"
+            ],
+            [
+              "cell",
+              "held_1",
+              0,
+              2,
+              "red"
+            ],
+            [
+              "cell",
+              "held_2",
+              2,
+              9,
+              "red"
+            ],
+            [
+              "cell",
+              "held_3",
+              1,
+              3,
+              "red"
+            ],
+            [
+              "cell",
+              "held_4",
+              4,
+              64,
+              "red"
+            ],
+            [
+              "cell",
+              "held_5",
+              2,
+              10,
+              "red"
+            ]
+          ],
+          "quanta_added": 1,
+          "residual": [
+            [
+              "cell",
+              "held_0",
+              1,
+              1,
+              "red"
+            ],
+            [
+              "cell",
+              "held_1",
+              0,
+              2,
+              "red"
+            ],
+            [
+              "cell",
+              "held_2",
+              2,
+              9,
+              "red"
+            ],
+            [
+              "cell",
+              "held_3",
+              1,
+              3,
+              "red"
+            ],
+            [
+              "cell",
+              "held_4",
+              4,
+              64,
+              "red"
+            ],
+            [
+              "cell",
+              "held_5",
+              2,
+              10,
+              "red"
+            ]
+          ],
+          "rule_work": 4,
+          "status": "minted",
+          "transform_receipts": []
+        },
+        "initial_generator_payloads": [],
+        "native_module_path": "/tmp/qgeninfer-v22-prefilter_highbound_v11_a1-gtxouhbv/substrate_rs/_native.abi3.so",
+        "native_sha256": "2d57086c640a0cbb1b8170ca261df4a40c0ba463800b9b73bc6263e3ccdbaec1",
+        "process_peak_rss_kib": 40148,
+        "reload": {
+          "agent_node_id_preserved": true,
+          "generator_payloads": [],
+          "serialized_edge_count": 743,
+          "serialized_node_count": 772
+        },
+        "repeat": 1,
+        "training": {
+          "closure_ns": 831775,
+          "counters": {
+            "apply_probe_rollbacks": 1,
+            "bindings_cloned": 5,
+            "cand_enum": 35,
+            "cand_enum_apply_once": 0,
+            "cand_enum_first": 19,
+            "cand_enum_hinted": 0,
+            "cand_enum_local": 0,
+            "cand_enum_repeat": 16,
+            "cand_enum_scan": 35,
+            "cand_reject_bound": 0,
+            "cand_tested": 35,
+            "cand_tested_unattributed": 0,
+            "dim_infer_arg_calls": 1,
+            "dim_infer_arg_distinct_ordered": 1,
+            "dim_infer_arg_distinct_unordered": 1,
+            "epochs": 1,
+            "epochs_apply_once": 0,
+            "ffi_calls": 16,
+            "ffi_items": 16,
+            "ffi_pyobjects": 81,
+            "gen_infer_apply_rejects": 0,
+            "gen_infer_bases_by_bound:64": 2,
+            "gen_infer_cache_hits": 0,
+            "gen_infer_candidate_rejects": 0,
+            "gen_infer_candidate_survivors": 0,
+            "gen_infer_eligible_bases": 2,
+            "gen_infer_full_rank_apply_rejects": 0,
+            "gen_infer_full_rank_attempts": 0,
+            "gen_infer_full_rank_bases": 0,
+            "gen_infer_full_rank_candidate_rejects": 0,
+            "gen_infer_full_rank_refusals": 0,
+            "gen_infer_full_rank_residual_rejects": 0,
+            "gen_infer_full_rank_survivors": 0,
+            "gen_infer_kernel_calls": 1,
+            "gen_infer_matrix_attempts": 0,
+            "gen_infer_prefilter_attempts": 2,
+            "gen_infer_prefilter_fallback": 0,
+            "gen_infer_prefilter_input_relations": 27,
+            "gen_infer_prefilter_proven_no_fit": 2,
+            "gen_infer_prefilter_solved": 0,
+            "gen_infer_quadratic_attempts": 2,
+            "gen_infer_quadratic_enabled_calls": 1,
+            "gen_infer_quadratic_refusal:residual_mismatch": 1,
+            "gen_infer_quadratic_refusal:unsupported_shape": 1,
+            "gen_infer_quadratic_survivors": 0,
+            "gen_infer_quadratic_validation_rejects": 0,
+            "gen_infer_requests": 1,
+            "gen_infer_residual_rejects": 0,
+            "graph_writes": 4,
+            "leaf_visits": 5,
+            "pushdown_evals": 0,
+            "pushdown_prunes": 0,
+            "rule_effect_attr_set_attempts": 10,
+            "rule_effect_edge_deletes": 0,
+            "rule_effect_edge_insert_attempts": 1,
+            "rule_effect_node_delete_attempts": 0,
+            "rule_effect_node_inserts": 1,
+            "rule_effect_replace_edge_deletes": 0,
+            "rule_effect_replace_edge_insert_attempts": 0,
+            "rule_enumerations": 286,
+            "rule_enumerations_repeat": 126,
+            "scheduler_dirty_vector_slots": 320,
+            "scheduler_external_poll_slots": 320,
+            "scheduler_fixedpoint_probe_slots": 3,
+            "scheduler_passes": 2,
+            "scheduler_plan_ns": 8120,
+            "scheduler_selected_rules": 286,
+            "scoped_anchor_rejected_rule_matches": 0,
+            "scoped_declared_anchor_rule_matches": 0,
+            "scoped_full_fallback_rule_matches": 0,
+            "scoped_local_rule_matches": 0,
+            "scoped_mt_seeded_rule_matches": 0,
+            "term_eval:And": 33,
+            "term_eval:AntiUnify": 19,
+            "term_eval:Argmax": 1,
+            "term_eval:Attr": 167,
+            "term_eval:Count": 23,
+            "term_eval:DimInfer": 2,
+            "term_eval:Eq": 103,
+            "term_eval:Exists": 1,
+            "term_eval:Filter": 7,
+            "term_eval:FixedCount": 19,
+            "term_eval:GenInfer": 1,
+            "term_eval:Gt": 12,
+            "term_eval:Gte": 1,
+            "term_eval:IfThenElse": 1,
+            "term_eval:IndexAt": 7,
+            "term_eval:Lit": 133,
+            "term_eval:Lt": 7,
+            "term_eval:MapList": 1,
+            "term_eval:Neighbours": 3,
+            "term_eval:NodesOfType": 9,
+            "term_eval:Not": 29,
+            "term_eval:Or": 1,
+            "term_eval:SetT": 19,
+            "term_eval:TransformDecode": 2,
+            "term_eval:Var": 176,
+            "term_evals_total": 777,
+            "term_evals_unattributed": 0,
+            "term_evals_unattributed_ambiguous": 0,
+            "term_evals_unattributed_host_api": 0,
+            "term_evals_unattributed_no_rule": 0,
+            "term_unit:Exists": 1,
+            "term_unit:NodesOfType": 20,
+            "term_unit:TransformDecode": 35,
+            "term_units_total": 56,
+            "term_units_unattributed": 0,
+            "var_collisions": 0,
+            "where_evals": 35,
+            "where_evals_first": 19,
+            "where_evals_repeat": 16,
+            "where_rejects": 30
+          },
+          "generator_payloads": [],
+          "quanta_added": 1,
+          "residual": [
+            [
+              "cell",
+              "train_0",
+              1,
+              1,
+              "red"
+            ],
+            [
+              "cell",
+              "train_1",
+              2,
+              8,
+              "red"
+            ],
+            [
+              "cell",
+              "train_2",
+              0,
+              1,
+              "red"
+            ],
+            [
+              "cell",
+              "train_3",
+              0,
+              2,
+              "red"
+            ],
+            [
+              "cell",
+              "train_4",
+              1,
+              2,
+              "red"
+            ],
+            [
+              "cell",
+              "train_5",
+              3,
+              28,
+              "red"
+            ],
+            [
+              "cell",
+              "train_6",
+              4,
+              65,
+              "red"
+            ]
+          ],
+          "rule_work": 4,
+          "status": "minted"
+        },
+        "worker_id": "prefilter_highbound_v11_a1",
+        "worker_wall_ns": 106805322
+      }
+    }
+  ]
+}

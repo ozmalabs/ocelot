@@ -139,8 +139,9 @@ def ingest_ast(substrate, source: str, *, root_label: str = "") -> Dict[str, Any
                         substrate.add_edge(nid, "child", cid)
         return nid
 
-    _ingest(tree, "", -1)
-    return {"tree": tree, "func_roots": func_roots, "n_nodes": n_nodes}
+    module_root = _ingest(tree, "", -1)
+    return {"tree": tree, "root": module_root, "func_roots": func_roots,
+            "n_nodes": n_nodes}
 
 
 # ===========================================================================
@@ -152,6 +153,7 @@ def ingest_ast(substrate, source: str, *, root_label: str = "") -> Dict[str, Any
 # THE MAP (node-type -> Term-type), fixed for all faculties:
 #   BinOp:Add  -> Plus        BinOp:Sub  -> Minus     BinOp:Mult -> Times
 #   BinOp:Div  -> Div         BinOp:FloorDiv -> Div   BinOp:Pow  -> Pow
+#   BinOp:BitAnd/BitOr/BitXor -> matching native bitwise Term (concrete i64 gate)
 #   UnaryOp:USub -> Neg       Constant   -> Lit       Name       -> Var
 #   Call(<held-leaf>, args)        -> UseTool (the held leaf, Rust dispatch)
 #   Call(sum, [GeneratorExp/...])  -> Sum  (the alternating-fold over range)
@@ -163,6 +165,7 @@ def ingest_ast(substrate, source: str, *, root_label: str = "") -> Dict[str, Any
 _BINOP = {
     "Add": "Plus", "Sub": "Minus", "Mult": "Times",
     "Div": "Div", "FloorDiv": "Div", "Pow": "Pow", "Mod": "Mod",
+    "BitAnd": "BitAnd", "BitOr": "BitOr", "BitXor": "BitXor",
 }
 # the binary Term-types take (a, b); the variadic take (items,).
 _VARIADIC = {"Plus", "Times", "And", "Or"}
@@ -192,19 +195,40 @@ class AstTermEmitter:
     """The agent's graph machinery applying the FIXED AST->Term map over an ingested
     AST-graph. `held_leaves` = the leaf-quantity names whose Call maps to a held
     UseTool (e.g. {'betti_number': 'betti'}). `faculties` = names of OTHER emitted
-    faculties whose Call splices their built Term-tree (the recursive floor)."""
+    faculties whose Call splices their built Term-tree (the recursive floor).
+    When a complete module root is supplied, a narrow module-scope index also
+    permits unique integer literals and bounded expansion of pure local helpers;
+    arbitrary module execution and unbounded/dynamic lookup remain residuals."""
 
     def __init__(self, substrate, *, held_leaves: Dict[str, str],
                  faculties: Optional[Dict[str, "AstTermEmitter"]] = None,
-                 range_bind: Optional[Dict[str, int]] = None):
+                 range_bind: Optional[Dict[str, int]] = None,
+                 input_types: Optional[Dict[str, str]] = None,
+                 input_values: Optional[Dict[str, Any]] = None,
+                 module_root: Optional[int] = None):
         self.s = substrate
         self.held_leaves = dict(held_leaves)
         self.faculties = dict(faculties or {})
         # concrete integer binds for any range(...) upper bound the genexp ranges
         # over (the iteration domain materialises to a SetT of Lits). Mechanical.
         self.range_bind = dict(range_bind or {})
+        # Concrete call-site type names are used only as a refusal gate for
+        # operations whose Python semantics require a specific input type.
+        self.input_types = dict(input_types or {})
+        self.input_values = dict(input_values or {})
+        self.module_root = module_root
+        self.module_constants: Dict[str, int] = {}
+        self.module_functions: Dict[str, int] = {}
+        self._ambiguous_module_names: set[str] = set()
+        self._bound_names: set[str] = set()
+        self._name_terms: Dict[str, Dict[str, Any]] = {}
+        self._name_types: Dict[str, Optional[str]] = {}
+        self._name_values: Dict[str, Any] = {}
+        self._module_helper_stack: List[str] = []
+        self._max_module_helper_depth = 4
         self.parts: List[str] = []     # the Term-types the emitter produced (provenance)
         self.leaf_calls: List[str] = []
+        self._index_module_scope()
 
     # ---- the ingested-graph accessors (read the AstNode substrate nodes) ----
 
@@ -228,11 +252,155 @@ class AstTermEmitter:
         out.sort()
         return [c for _, c in out]
 
+    def _index_module_scope(self) -> None:
+        """Index unique top-level integer literals and undecorated function defs.
+
+        Any duplicate/reassignment or dynamic top-level write makes that name
+        unavailable. This deliberately favors a named residual over guessing
+        which module binding Python leaves visible at a call site.
+        """
+        if self.module_root is None:
+            return
+
+        seen: set[str] = set()
+        dynamic_scope = False
+
+        def invalidate(name: Optional[str]) -> None:
+            if not name:
+                return
+            self.module_constants.pop(name, None)
+            self.module_functions.pop(name, None)
+            self._ambiguous_module_names.add(name)
+            seen.add(name)
+
+        def bind(name: Optional[str], *, kind: str, node: int) -> None:
+            if not name:
+                return
+            if name in seen or dynamic_scope:
+                invalidate(name)
+                return
+            seen.add(name)
+            if kind == "constant":
+                self.module_constants[name] = self._attrs(node).get("value")
+            elif kind == "function":
+                self.module_functions[name] = node
+            else:
+                invalidate(name)
+
+        def stored_names(node: int) -> set[str]:
+            result: set[str] = set()
+
+            def walk(current: int, *, top: bool = False) -> None:
+                attrs = self._attrs(current)
+                kind = attrs.get("ast_type", "")
+                if kind in ("FunctionDef", "AsyncFunctionDef", "ClassDef", "Lambda") and not top:
+                    return
+                if kind == "Name":
+                    ctx = self._child_by_field(current, "ctx")
+                    ctx_type = self._attrs(ctx).get("ast_type") if ctx is not None else None
+                    if ctx_type in ("Store", "Del") and attrs.get("id"):
+                        result.add(attrs["id"])
+                for child in self._children(current):
+                    walk(child)
+
+            walk(node, top=True)
+            return result
+
+        for item in self._children_of_field(self.module_root, "body"):
+            attrs = self._attrs(item)
+            kind = attrs.get("ast_type")
+            if kind == "Assign":
+                targets = self._children_of_field(item, "targets")
+                value = self._child_by_field(item, "value")
+                value_attrs = self._attrs(value) if value is not None else {}
+                if (len(targets) == 1 and self._attrs(targets[0]).get("ast_type") == "Name"
+                        and value_attrs.get("ast_type") == "Constant"
+                        and type(value_attrs.get("value")) is int):
+                    bind(self._attrs(targets[0]).get("id"), kind="constant", node=value)
+                    continue
+                for name in stored_names(item):
+                    invalidate(name)
+            elif kind == "FunctionDef":
+                bind(attrs.get("name"), kind="function", node=item)
+            elif kind == "ClassDef":
+                invalidate(attrs.get("name"))
+            elif kind in ("Import", "ImportFrom"):
+                aliases = self._children_of_field(item, "names")
+                for alias in aliases:
+                    alias_attrs = self._attrs(alias)
+                    import_name = alias_attrs.get("name", "")
+                    alias_name = alias_attrs.get("asname")
+                    if import_name == "*":
+                        dynamic_scope = True
+                        for existing in tuple(seen):
+                            invalidate(existing)
+                        self.module_constants.clear()
+                        self.module_functions.clear()
+                    else:
+                        bound_name = alias_name or (import_name.split(".", 1)[0]
+                                                    if kind == "Import" else import_name)
+                        invalidate(bound_name)
+            else:
+                for name in stored_names(item):
+                    invalidate(name)
+
+    def _known_type(self, nid: int) -> Optional[str]:
+        attrs = self._attrs(nid)
+        kind = attrs.get("ast_type", "")
+        if kind == "Constant":
+            return type(attrs.get("value")).__name__
+        if kind == "Name":
+            name = attrs.get("id")
+            if name in self._name_types:
+                return self._name_types[name]
+            if name in self._bound_names:
+                return self.input_types.get(name)
+            if name in self.module_constants:
+                return "int"
+        return None
+
+    def _known_int_value(self, nid: int) -> Optional[int]:
+        attrs = self._attrs(nid)
+        kind = attrs.get("ast_type", "")
+        if kind == "Constant":
+            value = attrs.get("value")
+            return value if type(value) is int else None
+        if kind == "Name":
+            name = attrs.get("id")
+            if name in self._name_values:
+                value = self._name_values[name]
+                return value if type(value) is int else None
+            if name in self._bound_names:
+                value = self.input_values.get(name)
+                return value if type(value) is int else None
+            if name in self.module_constants:
+                return self.module_constants[name]
+        return None
+
+    def _require_bounded_integer_bitwise(self, nid: int) -> None:
+        """Require exact Python ints representable in the native signed-i64 domain."""
+        if self._known_type(nid) != "int":
+            raise EmitError("bitwise Term emission requires an exact int operand")
+        value = self._known_int_value(nid)
+        if value is None or value < -(1 << 63) or value > (1 << 63) - 1:
+            raise EmitError("bitwise Term emission requires a concrete signed-i64 operand")
+
+    def prepare_function(self, func_root: int) -> None:
+        """Establish parameter scope before any direct AST-node emission."""
+        args_node = self._child_by_field(func_root, "args")
+        self._bound_names = ({self._attrs(arg).get("arg")
+                              for arg in self._children_of_field(args_node, "args")}
+                             if args_node is not None else set())
+        self._name_terms = {}
+        self._name_types = {}
+        self._name_values = {}
+
     # ---- the entry: emit a function's compute-core (its single Return) ----
 
     def emit_function(self, func_root: int) -> Dict[str, Any]:
         """Emit the native Term-tree for a FunctionDef AstNode: locate its single
         `Return` body node and emit that expression. Returns the Term-JSON dict."""
+        self.prepare_function(func_root)
         body = self._children_of_field(func_root, "body")
         ret = None
         for b in body:
@@ -272,8 +440,21 @@ class AstTermEmitter:
 
         # Name -> Var (the bound iteration variable / parameter)
         if t == "Name":
+            name = a.get("id")
+            if name in self._name_terms:
+                import copy
+                self.parts.append("Bound")
+                return copy.deepcopy(self._name_terms[name])
+            if name in self._bound_names:
+                self.parts.append("Var")
+                return {"type": "Var", "name": name}
+            if name in self._ambiguous_module_names:
+                raise EmitError(f"module name {name!r} has an ambiguous or dynamic binding")
+            if name in self.module_constants:
+                self.parts.append("Lit")
+                return {"type": "Lit", "value": self.module_constants[name]}
             self.parts.append("Var")
-            return {"type": "Var", "name": a.get("id")}
+            return {"type": "Var", "name": name}
 
         # UnaryOp:<op> -> Neg / Not (CODE-1 had only USub; Not is additive,
         # same one-child `arg` shape so one dispatch covers both).
@@ -294,6 +475,9 @@ class AstTermEmitter:
                 raise EmitError(f"no Term for BinOp {opname!r}")
             left = self._child_by_field(nid, "left")
             right = self._child_by_field(nid, "right")
+            if opname in ("BitAnd", "BitOr", "BitXor"):
+                self._require_bounded_integer_bitwise(left)
+                self._require_bounded_integer_bitwise(right)
             self.parts.append(term_t)
             if term_t in _VARIADIC:
                 return {"type": term_t,
@@ -418,9 +602,81 @@ class AstTermEmitter:
             self.parts.append(f"<{fname}>")
             return self.faculties[fname].last_term
 
+        # Expand only bounded, pure, module-local helpers. This composes the
+        # helper's ingested AST graph into the caller's native Term without
+        # executing arbitrary Python.
+        if fname in self.module_functions:
+            return self._emit_module_helper(fname, args, nid)
+
         raise EmitError(f"Call to {fname!r} is neither a held leaf, the sum-fold, "
                         f"nor an emitted faculty (un-translatable: the held DSL "
                         f"lacks a leaf for it — the named residual)")
+
+    def _emit_module_helper(self, name: str, args: List[int], call_nid: int) -> Dict[str, Any]:
+        if self._children_of_field(call_nid, "keywords"):
+            raise EmitError("module helper expansion refuses keyword arguments")
+        if name in self._module_helper_stack:
+            raise EmitError(f"recursive module helper {name!r} is outside the bounded fragment")
+        if len(self._module_helper_stack) >= self._max_module_helper_depth:
+            raise EmitError("module helper expansion exceeded the fixed depth limit")
+
+        fn_root = self.module_functions[name]
+        if self._children_of_field(fn_root, "decorator_list"):
+            raise EmitError("decorated module helpers are outside the bounded fragment")
+        args_node = self._child_by_field(fn_root, "args")
+        if args_node is None:
+            raise EmitError("module helper has no explicit argument record")
+        positional_only = self._children_of_field(args_node, "posonlyargs")
+        parameters = self._children_of_field(args_node, "args")
+        kwonly = self._children_of_field(args_node, "kwonlyargs")
+        defaults = (self._children_of_field(args_node, "defaults")
+                    + self._children_of_field(args_node, "kw_defaults"))
+        if positional_only or kwonly or defaults:
+            raise EmitError("module helper requires undecorated required positional parameters")
+        if (self._child_by_field(args_node, "vararg") is not None
+                or self._child_by_field(args_node, "kwarg") is not None):
+            raise EmitError("variadic module helpers are outside the bounded fragment")
+        if len(args) != len(parameters):
+            raise EmitError("module helper call arity does not match its positional signature")
+
+        body = self._children_of_field(fn_root, "body")
+        if body and self._attrs(body[0]).get("ast_type") == "Expr":
+            doc_value = self._child_by_field(body[0], "value")
+            doc_attrs = self._attrs(doc_value) if doc_value is not None else {}
+            if doc_attrs.get("ast_type") == "Constant" and isinstance(doc_attrs.get("value"), str):
+                body = body[1:]
+        if len(body) != 1 or self._attrs(body[0]).get("ast_type") != "Return":
+            raise EmitError("module helper must contain one return after its docstring")
+        return_value = self._child_by_field(body[0], "value")
+        if return_value is None:
+            raise EmitError("module helper return has no value")
+
+        self._module_helper_stack.append(name)
+        try:
+            arg_types = [self._known_type(arg) for arg in args]
+            arg_values = [self._known_int_value(arg) for arg in args]
+            arg_terms = [self.emit_term(arg) for arg in args]
+            old_terms, old_types, old_values, old_bound = (
+                self._name_terms, self._name_types, self._name_values, self._bound_names)
+            self._name_terms = dict(old_terms)
+            self._name_types = dict(old_types)
+            self._name_values = dict(old_values)
+            self._bound_names = set(old_bound)
+            try:
+                for parameter, term, typ, value in zip(parameters, arg_terms, arg_types, arg_values):
+                    parameter_name = self._attrs(parameter).get("arg")
+                    if not parameter_name:
+                        raise EmitError("module helper parameter has no name")
+                    self._name_terms[parameter_name] = term
+                    self._name_types[parameter_name] = typ
+                    self._name_values[parameter_name] = value
+                    self._bound_names.add(parameter_name)
+                return self.emit_term(return_value)
+            finally:
+                self._name_terms, self._name_types, self._name_values, self._bound_names = (
+                    old_terms, old_types, old_values, old_bound)
+        finally:
+            self._module_helper_stack.pop()
 
     # the object parameter name (the complex / presentation the leaf closes over).
     _object_param_name = "complex"
@@ -765,6 +1021,71 @@ class AstTermEmitter:
                 "non-Return branch statement, or a fall-through with no "
                 "final else) -- named residual, never partially translated")
         return self._emit_if_chain(stmts[0])
+
+    def is_string_find_branch(self, func_root: int) -> bool:
+        """Recognize exactly `n = arg.find(<literal str>); if n < 0: return x;
+        return y` or the corresponding `n == 0` branch. This is a mechanical
+        structural predicate; Term emission below separately requires a
+        concrete `str` input type and the safe comparison boundary."""
+        stmts=self.body_statements(func_root)
+        if len(stmts)!=3 or [self._attrs(s).get("ast_type") for s in stmts] != ["Assign","If","Return"]:
+            return False
+        assign,branch,tail=stmts
+        targets=self._children_of_field(assign,"targets")
+        if len(targets)!=1 or self._attrs(targets[0]).get("ast_type")!="Name": return False
+        target=self._attrs(targets[0]).get("id"); call=self._child_by_field(assign,"value")
+        if self._attrs(call).get("ast_type")!="Call": return False
+        fn=self._child_by_field(call,"func"); args=self._children_of_field(call,"args")
+        if self._attrs(fn).get("ast_type")!="Attribute" or self._attrs(fn).get("attr")!="find" or len(args)!=1: return False
+        base=self._child_by_field(fn,"value")
+        if self._attrs(base).get("ast_type")!="Name" or self._attrs(args[0]).get("ast_type")!="Constant" or type(self._attrs(args[0]).get("value")) is not str: return False
+        if self._children_of_field(call,"keywords"): return False
+        test=self._child_by_field(branch,"test")
+        if self._attrs(test).get("ast_type")!="Compare": return False
+        left=self._child_by_field(test,"left"); ops=self._children_of_field(test,"ops"); comps=self._children_of_field(test,"comparators")
+        if len(ops)!=1 or len(comps)!=1 or self._attrs(left).get("ast_type")!="Name" or self._attrs(left).get("id")!=target: return False
+        op=self._attrs(ops[0]).get("ast_type")
+        if op not in ("Lt","Eq") or self._attrs(comps[0]).get("ast_type")!="Constant" or type(self._attrs(comps[0]).get("value")) is not int or self._attrs(comps[0]).get("value")!=0: return False
+        branch_body=self._children_of_field(branch,"body")
+        if len(branch_body)!=1 or self._attrs(branch_body[0]).get("ast_type")!="Return" or self._children_of_field(branch,"orelse"): return False
+        if self._attrs(tail).get("ast_type")!="Return": return False
+        # The byte offset from native StringIndexOf is observationally
+        # equivalent to Python's Unicode-code-point offset only for tests of
+        # presence (< 0) or start position (== 0); prevent any other use of n.
+        ret_values=[self._child_by_field(branch_body[0],"value"),self._child_by_field(tail,"value")]
+        if any(v is None for v in ret_values): return False
+        def uses_target(nid):
+            if self._attrs(nid).get("ast_type")=="Name" and self._attrs(nid).get("id")==target: return True
+            return any(uses_target(c) for c in self._children(nid))
+        return not any(uses_target(v) for v in ret_values)
+
+    def emit_string_find_branch(self, func_root: int) -> Dict[str, Any]:
+        """Lower the validated string-find early-return form to existing
+        StringIndexOf + Let + IfThenElse Terms. `find` is emitted only when
+        the concrete call binds the receiver to a Python `str`; otherwise
+        Python's TypeError could not be preserved by the native operation."""
+        if not self.is_string_find_branch(func_root):
+            raise EmitError("not the supported string-find early-return shape")
+        assign,branch,tail=self.body_statements(func_root)
+        target=self._children_of_field(assign,"targets")[0]
+        target_name=self._attrs(target).get("id")
+        call=self._child_by_field(assign,"value"); fn=self._child_by_field(call,"func")
+        base=self._child_by_field(fn,"value"); base_name=self._attrs(base).get("id")
+        args_node=self._child_by_field(func_root,"args")
+        parameter_names={self._attrs(n).get("arg") for n in self._children_of_field(args_node,"args")} if args_node is not None else set()
+        if base_name not in parameter_names:
+            raise EmitError("string-find receiver must be a declared function parameter")
+        if self.input_types.get(base_name)!="str":
+            raise EmitError("string-find lowering requires a concrete str input bind")
+        needle=self._children_of_field(call,"args")[0]
+        find_term={"type":"StringIndexOf","haystack":{"type":"Var","name":base_name},"needle":{"type":"Lit","value":self._attrs(needle).get("value")}}
+        self.parts.extend(["StringIndexOf","Let","IfThenElse"])
+        branch_ret=self._children_of_field(branch,"body")[0]
+        cond=self.emit_term(self._child_by_field(branch,"test"))
+        then=self.emit_term(self._child_by_field(branch_ret,"value"))
+        other=self.emit_term(self._child_by_field(tail,"value"))
+        return {"type":"Let","name":target_name,"value":find_term,
+                "body":{"type":"IfThenElse","cond":cond,"then":then,"other":other}}
 
     def _emit_iterable(self, it_nid: int) -> Dict[str, Any]:
         """The accumulation loop's iterable: a bare Name (Fold's `source` is

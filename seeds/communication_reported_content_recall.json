@@ -1,0 +1,80 @@
+{
+  "id": "communication_reported_content_recall",
+  "version": "1.0.0",
+  "depends_on": ["communication_intent_arbitration", "conversation_reply"],
+  "capability_keys": ["communication_reported_content_recall"],
+  "description": "Event-scoped, attributed recall of an immediately preceding reported relation. It answers what the interlocutor said, never whether that claim is true.",
+  "nodes": [],
+  "edges": [],
+  "productions": [],
+  "rules": [
+    {
+      "name": "answer_from_immediately_preceding_reported_relation",
+      "order": 1,
+      "comment": "A content question may retrieve the object of an immediately preceding same-speaker report only when both selected parses share their adapter-normalized predicate identity and exact subject role. Cognition compares neutral relation slots; the answer is attributed to the source utterance and carries no world-grounding authority.",
+      "match": [
+        ["agent", "holds_interpretation", "i"],
+        ["i", "interprets", "m"],
+        ["current_event", "represents_message", "m"],
+        ["current_event", "follows_event", "source_event"],
+        ["current_event", "from_speaker", "speaker"],
+        ["source_event", "from_speaker", "speaker"],
+        ["source_event", "represents_message", "source_m"],
+        ["source_event", "has_interpretation", "source_i"],
+        ["source_i", "interprets", "source_m"]
+      ],
+      "where": {"type": "And", "items": [
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "schema"}, "b": {"type": "Lit", "value": "communication_interpretation.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "evidence_force"}, "b": {"type": "Lit", "value": "information_request"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "kind"}, "b": {"type": "Lit", "value": "question"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "parsed_relation_status"}, "b": {"type": "Lit", "value": "selected_parse_unverified"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "interaction_relation"}, "b": {"type": "Lit", "value": "continuation"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "relation_focus"}, "b": {"type": "Lit", "value": "thing"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "parsed_object"}, "b": {"type": "Lit", "value": null}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "anaphor"}, "b": {"type": "Lit", "value": 0}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "parsed_relation_schema"}, "b": {"type": "Lit", "value": "communication_relation_projection.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "parsed_predicate_lemma"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "source_i"}, "key": "parsed_predicate_lemma"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "source_i"}, "key": "parsed_relation_schema"}, "b": {"type": "Lit", "value": "communication_relation_projection.v1"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "source_i"}, "key": "parsed_relation_status"}, "b": {"type": "Lit", "value": "selected_parse_unverified"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "parsed_subject"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "source_i"}, "key": "parsed_subject"}},
+        {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "parsed_subject"}, "b": {"type": "Lit", "value": null}}},
+        {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "source_i"}, "key": "parsed_object"}, "b": {"type": "Lit", "value": null}}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "source_i"}, "key": "evidence_force"}, "b": {"type": "Lit", "value": "assertion_or_correction"}},
+        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "source_i"}, "key": "reported_content_recall_minted"}, "b": {"type": "Lit", "value": null}},
+        {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "i"}, "key": "reported_content_recall_minted"}, "b": {"type": "Lit", "value": 1.0}}}
+      ]},
+      "effects": [
+        ["set_attr", "i", "reported_content_recall_minted", 1.0],
+        ["set_attr", "i", "cognitive_disposition", "answer"],
+        ["set_attr", "i", "cognitive_goal", "answer_or_learn"],
+        ["set_attr", "i", "communicative_force", "information_request"],
+        ["set_attr", "i", "arbitration_basis", "event_bound_reported_content_recall"],
+        ["set_attr", "i", "reported_content_epistemic_status", "attributed_source_utterance"],
+        ["add_node", "evidence", "ReportedContentEvidence", {
+          "schema": "reported_content_evidence.v1",
+          "status": "selected",
+          "epistemic_status": "attributed_source_utterance",
+          "relation": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "source_i"}, "key": "parsed_predicate_lemma"}},
+          "subject": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "source_i"}, "key": "parsed_subject"}},
+          "content": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "source_i"}, "key": "parsed_object"}},
+          "source_text": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "source_m"}, "key": "text"}}
+        }],
+        ["add_edge", "evidence", "for_request", "m"],
+        ["add_edge", "evidence", "from_source_event", "source_event"],
+        ["add_edge", "evidence", "from_source_message", "source_m"],
+        ["add_edge", "i", "has_reported_content_evidence", "evidence"],
+        ["add_node", "reply", "Message", {
+          "from": "agent",
+          "native_reported_content_recall": 1.0,
+          "text": {"__term__": {"type": "StringConcat", "parts": [
+            {"type": "Lit", "value": "Earlier, you said: "},
+            {"type": "Attr", "node": {"type": "Var", "name": "source_m"}, "key": "text"}
+          ]}}
+        }],
+        ["add_edge", "reply", "supported_by_reported_content", "evidence"],
+        ["add_edge", "reply", "responds_to", "m"],
+        ["add_edge", "agent", "sent", "reply"]
+      ]
+    }
+  ]
+}

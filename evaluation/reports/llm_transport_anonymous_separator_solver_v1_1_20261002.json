@@ -1,0 +1,245 @@
+{
+  "checks": {
+    "all_candidate_energy_parity": true,
+    "all_candidate_sign_parity": true,
+    "all_candidate_state_valid": true,
+    "anonymous_ids_per_cell": true,
+    "coverage_60": true,
+    "exact_energy_and_direct_rescore": true,
+    "exact_returned_sign_parity": true,
+    "expected_connected_graphs": true,
+    "no_failures": false,
+    "no_mutation": true,
+    "source_locks_stable": true,
+    "three_fresh_workers": false,
+    "valid_minimum_candidates": true,
+    "valid_states": true
+  },
+  "failures": [
+    {
+      "error": "Traceback (most recent call last):\n  File \"/home/matt/ozmadev/ocelot/evaluation/substrate_capability/llm_transport_anonymous_separator_solver_v1.py\", line 142, in <module>\n    if __name__=='__main__':raise SystemExit(main())\n                                             ~~~~^^\n  File \"/home/matt/ozmadev/ocelot/evaluation/substrate_capability/llm_transport_anonymous_separator_solver_v1.py\", line 112, in main\n    if args[:1]==['--worker']:print(json.dumps(worker(int(args[1])),sort_keys=True,separators=(',',':')));return 0\n                                               ~~~~~~^^^^^^^^^^^^^^\n  File \"/home/matt/ozmadev/ocelot/evaluation/substrate_capability/llm_transport_anonymous_separator_solver_v1.py\", line 96, in worker\n    s,e,dt=conditioned(nodes,edges,u,p,candidate['separator'],candidate['components'])\n           ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/matt/ozmadev/ocelot/evaluation/substrate_capability/llm_transport_anonymous_separator_solver_v1.py\", line 68, in conditioned\n    else:e-=w*assignment[b]*fixed[a]\n              ~~~~~~~~~~^^^\nKeyError: 6\n",
+      "replicate": 0
+    },
+    {
+      "error": "Traceback (most recent call last):\n  File \"/home/matt/ozmadev/ocelot/evaluation/substrate_capability/llm_transport_anonymous_separator_solver_v1.py\", line 142, in <module>\n    if __name__=='__main__':raise SystemExit(main())\n                                             ~~~~^^\n  File \"/home/matt/ozmadev/ocelot/evaluation/substrate_capability/llm_transport_anonymous_separator_solver_v1.py\", line 112, in main\n    if args[:1]==['--worker']:print(json.dumps(worker(int(args[1])),sort_keys=True,separators=(',',':')));return 0\n                                               ~~~~~~^^^^^^^^^^^^^^\n  File \"/home/matt/ozmadev/ocelot/evaluation/substrate_capability/llm_transport_anonymous_separator_solver_v1.py\", line 96, in worker\n    s,e,dt=conditioned(nodes,edges,u,p,candidate['separator'],candidate['components'])\n           ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/matt/ozmadev/ocelot/evaluation/substrate_capability/llm_transport_anonymous_separator_solver_v1.py\", line 68, in conditioned\n    else:e-=w*assignment[b]*fixed[a]\n              ~~~~~~~~~~^^^\nKeyError: 5\n",
+      "replicate": 1
+    },
+    {
+      "error": "Traceback (most recent call last):\n  File \"/home/matt/ozmadev/ocelot/evaluation/substrate_capability/llm_transport_anonymous_separator_solver_v1.py\", line 142, in <module>\n    if __name__=='__main__':raise SystemExit(main())\n                                             ~~~~^^\n  File \"/home/matt/ozmadev/ocelot/evaluation/substrate_capability/llm_transport_anonymous_separator_solver_v1.py\", line 112, in main\n    if args[:1]==['--worker']:print(json.dumps(worker(int(args[1])),sort_keys=True,separators=(',',':')));return 0\n                                               ~~~~~~^^^^^^^^^^^^^^\n  File \"/home/matt/ozmadev/ocelot/evaluation/substrate_capability/llm_transport_anonymous_separator_solver_v1.py\", line 96, in worker\n    s,e,dt=conditioned(nodes,edges,u,p,candidate['separator'],candidate['components'])\n           ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/matt/ozmadev/ocelot/evaluation/substrate_capability/llm_transport_anonymous_separator_solver_v1.py\", line 68, in conditioned\n    else:e-=w*assignment[b]*fixed[a]\n              ~~~~~~~~~~^^^\nKeyError: 6\n",
+      "replicate": 2
+    }
+  ],
+  "lock_sha256": "c098ff01330bfac23ef0354931fde45c01c218a7ac2bb0f9db2da110477a390d",
+  "post_run_sources": {
+    "analyzer": {
+      "bytes": 5218,
+      "path": "/home/matt/ozmadev/ocelot/evaluation/substrate_capability/analyze_llm_transport_anonymous_separator_solver_v1.py",
+      "sha256": "f1050a4b0e5c325a2f306d215b1050d47cc1e4147250d122f8c16ac6379b0930"
+    },
+    "anonymization_seed_formula": "20261002 + replicate*1000 + row*2 + condition_index",
+    "base_protocol": {
+      "bytes": 2600,
+      "path": "/home/matt/ozmadev/ocelot/docs/research/engine_substrate/LLM_TRANSPORT_ANONYMOUS_SEPARATOR_SOLVER_V1_PREREG_20261002.md",
+      "sha256": "4917eb230e4627cc4a87253ce17f2ed17b890cfe2b865978f7153633b6a8c674"
+    },
+    "conditions": [
+      "learned",
+      "shuffled"
+    ],
+    "export": {
+      "bytes": 1093784,
+      "path": "/applications/data/model_graph_work/transport_L12_13.npz",
+      "sha256": "d04f14de800bff4a5015a8063b678c2167188ec90c0749308b6af8a5a864161c"
+    },
+    "heldout_rows": 10,
+    "k": 8,
+    "native": {
+      "bytes": 10599400,
+      "path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+      "sha256": "7148f66f4cd307b7b34e03970b6a0c12177973105af8e1f3c6684e2e6132a63e"
+    },
+    "native_manifest": {
+      "bytes": 12669,
+      "path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.build.json",
+      "sha256": "476fdf4408323867341f127b3947f5a528743ebb86ab2a7973442993447f0e82"
+    },
+    "pilot_capture": {
+      "bytes": 507883,
+      "path": "/home/matt/ozmadev/ocelot/evaluation/reports/llm_transport_anonymous_separator_solver_v1_20261002.json",
+      "sha256": "06165fc1c7916aae809031abf83884586902e1310800dc0e9f58c01376ae2eb4"
+    },
+    "prior_capture": {
+      "bytes": 130187,
+      "path": "/home/matt/ozmadev/ocelot/evaluation/reports/llm_transport_task_graph_exact_census_v1_1_20261002.json",
+      "sha256": "b70d35060c2c177391b7022b781e832a53d016cf37393b1ffa0e7d4307164008"
+    },
+    "prior_lock": {
+      "bytes": 2710,
+      "path": "/home/matt/ozmadev/ocelot/evaluation/substrate_capability/llm_transport_task_graph_exact_census_v1_1_lock_20261002.json",
+      "sha256": "98ff5ef97278189f6efe46c93ebe0e8c11c2debea8858c7106043c3d8833e73e"
+    },
+    "replicates": 3,
+    "ridge": 1.0,
+    "role_analysis": {
+      "bytes": 4989,
+      "path": "/home/matt/ozmadev/ocelot/evaluation/reports/llm_transport_role_separator_v1_2_analysis_20261002.json",
+      "sha256": "966dad4db480271b34d131111688550f2848a94348305ea62acd8c9bac4bdb23"
+    },
+    "role_capture": {
+      "bytes": 125268,
+      "path": "/home/matt/ozmadev/ocelot/evaluation/reports/llm_transport_role_separator_v1_2_20261002.json",
+      "sha256": "7c72adc235f3d32f432cf767af4d7a827d848afab8528f9eb1c6b72a3b64251f"
+    },
+    "role_lock": {
+      "bytes": 4002,
+      "path": "/home/matt/ozmadev/ocelot/evaluation/substrate_capability/llm_transport_role_separator_v1_2_lock_20261002.json",
+      "sha256": "089106e4ef8d51d42514227da884c35f1e3642c24e4580d44cf6f516c5f3961e"
+    },
+    "runner": {
+      "bytes": 13328,
+      "path": "/home/matt/ozmadev/ocelot/evaluation/substrate_capability/llm_transport_anonymous_separator_solver_v1.py",
+      "sha256": "25bde65e123f9e45bc7469d617b161be1caaff4e936534422650ca56bf88eb72"
+    },
+    "seed": {
+      "bytes": 43983,
+      "path": "/home/matt/ozmadev/ocelot/seeds/can_native_reimplementation.json",
+      "sha256": "3b185987ae810d5e05ab2468b044ab73d8890c8e73ac86dfcaf35b734b9c61d8"
+    },
+    "shuffle_seed": 0,
+    "sources": [
+      {
+        "bytes": 29504,
+        "path": "/home/matt/ozmadev/ocelot/domains/llm_native_graph.py",
+        "sha256": "3091594306fbfcc7aa93588b2b085ab72376fbb59817cc6c952dba20a05a1809"
+      },
+      {
+        "bytes": 14856,
+        "path": "/home/matt/ozmadev/ocelot/domains/can_junction_tree.py",
+        "sha256": "e8d4aa30bfdaced52cda2739f885a56ed50a040b8419cb558b132e5e46206ba7"
+      },
+      {
+        "bytes": 9424,
+        "path": "/home/matt/ozmadev/ocelot/domains/graph_treewidth.py",
+        "sha256": "e945bea9f54b76098edb3b3dcb784ac5a0ce630de43cd63a9fb5b0f416d543e5"
+      }
+    ],
+    "tolerance": 1e-08,
+    "v1_1_amendment": {
+      "bytes": 743,
+      "path": "/home/matt/ozmadev/ocelot/docs/research/engine_substrate/LLM_TRANSPORT_ANONYMOUS_SEPARATOR_SOLVER_V1_1_AMENDMENT_20261002.md",
+      "sha256": "5a4c2c13d6318184ac149a3ad46e31a6d869c1ddf102aa9ec8840a4f19f3c2bf"
+    },
+    "vocab": [
+      -1.0,
+      0.0,
+      1.0
+    ]
+  },
+  "runs": [],
+  "schema": "LlmTransportAnonymousSeparatorSolverV1_1Capture",
+  "sources": {
+    "analyzer": {
+      "bytes": 5218,
+      "path": "/home/matt/ozmadev/ocelot/evaluation/substrate_capability/analyze_llm_transport_anonymous_separator_solver_v1.py",
+      "sha256": "f1050a4b0e5c325a2f306d215b1050d47cc1e4147250d122f8c16ac6379b0930"
+    },
+    "anonymization_seed_formula": "20261002 + replicate*1000 + row*2 + condition_index",
+    "base_protocol": {
+      "bytes": 2600,
+      "path": "/home/matt/ozmadev/ocelot/docs/research/engine_substrate/LLM_TRANSPORT_ANONYMOUS_SEPARATOR_SOLVER_V1_PREREG_20261002.md",
+      "sha256": "4917eb230e4627cc4a87253ce17f2ed17b890cfe2b865978f7153633b6a8c674"
+    },
+    "conditions": [
+      "learned",
+      "shuffled"
+    ],
+    "export": {
+      "bytes": 1093784,
+      "path": "/applications/data/model_graph_work/transport_L12_13.npz",
+      "sha256": "d04f14de800bff4a5015a8063b678c2167188ec90c0749308b6af8a5a864161c"
+    },
+    "heldout_rows": 10,
+    "k": 8,
+    "native": {
+      "bytes": 10599400,
+      "path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+      "sha256": "7148f66f4cd307b7b34e03970b6a0c12177973105af8e1f3c6684e2e6132a63e"
+    },
+    "native_manifest": {
+      "bytes": 12669,
+      "path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.build.json",
+      "sha256": "476fdf4408323867341f127b3947f5a528743ebb86ab2a7973442993447f0e82"
+    },
+    "pilot_capture": {
+      "bytes": 507883,
+      "path": "/home/matt/ozmadev/ocelot/evaluation/reports/llm_transport_anonymous_separator_solver_v1_20261002.json",
+      "sha256": "06165fc1c7916aae809031abf83884586902e1310800dc0e9f58c01376ae2eb4"
+    },
+    "prior_capture": {
+      "bytes": 130187,
+      "path": "/home/matt/ozmadev/ocelot/evaluation/reports/llm_transport_task_graph_exact_census_v1_1_20261002.json",
+      "sha256": "b70d35060c2c177391b7022b781e832a53d016cf37393b1ffa0e7d4307164008"
+    },
+    "prior_lock": {
+      "bytes": 2710,
+      "path": "/home/matt/ozmadev/ocelot/evaluation/substrate_capability/llm_transport_task_graph_exact_census_v1_1_lock_20261002.json",
+      "sha256": "98ff5ef97278189f6efe46c93ebe0e8c11c2debea8858c7106043c3d8833e73e"
+    },
+    "replicates": 3,
+    "ridge": 1.0,
+    "role_analysis": {
+      "bytes": 4989,
+      "path": "/home/matt/ozmadev/ocelot/evaluation/reports/llm_transport_role_separator_v1_2_analysis_20261002.json",
+      "sha256": "966dad4db480271b34d131111688550f2848a94348305ea62acd8c9bac4bdb23"
+    },
+    "role_capture": {
+      "bytes": 125268,
+      "path": "/home/matt/ozmadev/ocelot/evaluation/reports/llm_transport_role_separator_v1_2_20261002.json",
+      "sha256": "7c72adc235f3d32f432cf767af4d7a827d848afab8528f9eb1c6b72a3b64251f"
+    },
+    "role_lock": {
+      "bytes": 4002,
+      "path": "/home/matt/ozmadev/ocelot/evaluation/substrate_capability/llm_transport_role_separator_v1_2_lock_20261002.json",
+      "sha256": "089106e4ef8d51d42514227da884c35f1e3642c24e4580d44cf6f516c5f3961e"
+    },
+    "runner": {
+      "bytes": 13328,
+      "path": "/home/matt/ozmadev/ocelot/evaluation/substrate_capability/llm_transport_anonymous_separator_solver_v1.py",
+      "sha256": "25bde65e123f9e45bc7469d617b161be1caaff4e936534422650ca56bf88eb72"
+    },
+    "seed": {
+      "bytes": 43983,
+      "path": "/home/matt/ozmadev/ocelot/seeds/can_native_reimplementation.json",
+      "sha256": "3b185987ae810d5e05ab2468b044ab73d8890c8e73ac86dfcaf35b734b9c61d8"
+    },
+    "shuffle_seed": 0,
+    "sources": [
+      {
+        "bytes": 29504,
+        "path": "/home/matt/ozmadev/ocelot/domains/llm_native_graph.py",
+        "sha256": "3091594306fbfcc7aa93588b2b085ab72376fbb59817cc6c952dba20a05a1809"
+      },
+      {
+        "bytes": 14856,
+        "path": "/home/matt/ozmadev/ocelot/domains/can_junction_tree.py",
+        "sha256": "e8d4aa30bfdaced52cda2739f885a56ed50a040b8419cb558b132e5e46206ba7"
+      },
+      {
+        "bytes": 9424,
+        "path": "/home/matt/ozmadev/ocelot/domains/graph_treewidth.py",
+        "sha256": "e945bea9f54b76098edb3b3dcb784ac5a0ce630de43cd63a9fb5b0f416d543e5"
+      }
+    ],
+    "tolerance": 1e-08,
+    "v1_1_amendment": {
+      "bytes": 743,
+      "path": "/home/matt/ozmadev/ocelot/docs/research/engine_substrate/LLM_TRANSPORT_ANONYMOUS_SEPARATOR_SOLVER_V1_1_AMENDMENT_20261002.md",
+      "sha256": "5a4c2c13d6318184ac149a3ad46e31a6d869c1ddf102aa9ec8840a4f19f3c2bf"
+    },
+    "vocab": [
+      -1.0,
+      0.0,
+      1.0
+    ]
+  }
+}

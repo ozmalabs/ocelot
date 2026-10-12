@@ -1,0 +1,734 @@
+{
+  "analyzer_sha256": "321255570dbe10e28f58aee10d3408623fc88f9d092307b3212853fc0da8a63d",
+  "claim_boundary": "One binding, two identical predicates, opposing attribute effects. Measures insertion order and structured cycle/budget termination only for this deterministic fixture.",
+  "lock_sha256": "976eef5dd7613ceb09decf39ac033f08a45194940b9a9966b0ca6ae09683eeba",
+  "locked_inputs": {
+    "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+    "native_build_manifest_sha256": "425e086594e50335ca917e330206fec9bd8c778d4e58d2c5dd0d06cc61bc41ee",
+    "native_extension_path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+    "native_extension_sha256": "260cf6063acbfb2fb83a7bfbe8b0bbe35afa951d3142539fbd868edf331d3afa",
+    "source_sha256": {
+      "docs/research/engine_substrate/SUBSTRATE_OVERLAPPING_RULE_CONFLICT_PROBE_V1_PREREG_20260928.md": "8a20127750998bcdc4402b2de644b003d5e598493edc49268820b27dffb65137",
+      "runners/dsl/python/substrate_rs/__init__.py": "6ec0316afae414329e36d3f121fc56b556e7315f17b93aab911ca09a29726694",
+      "runners/dsl/src/py.rs": "68347817627387a7730c86ff3ff0f69d45788fe0754227914437dd7d8207a576",
+      "runners/dsl/src/rewrite.rs": "58cea7eaa595c804f4f0265c4003231105011dc2493bea8ca30dea6bb6246c34",
+      "runners/dsl/src/substrate.rs": "7548e63870c676a46232469717739db03c3e8e19e0557aeabf17a42b29068f86",
+      "runners/dsl/src/term.rs": "0b91be836a6a7fe4587fb2ec3a944fdd6fb461838ca25151b1358c2158705fce",
+      "scripts/analyze_overlapping_rule_conflict_probe_v1.py": "321255570dbe10e28f58aee10d3408623fc88f9d092307b3212853fc0da8a63d",
+      "scripts/substrate_overlapping_rule_conflict_probe_v1.py": "55526ade6f28802200624beda36b57e1eef1e48ffab8630aa0ac2a67ecf328ae"
+    }
+  },
+  "max_steps": 12,
+  "protocol_sha256": "8a20127750998bcdc4402b2de644b003d5e598493edc49268820b27dffb65137",
+  "run_id": "overlapping_rule_conflict_probe_v1_20260928",
+  "runs": [
+    {
+      "cells": [
+        {
+          "callback_arguments": [
+            "same",
+            "same",
+            "same",
+            "same",
+            "same",
+            "same",
+            "same",
+            "same",
+            "same",
+            "same",
+            "same",
+            "same"
+          ],
+          "callback_count": 12,
+          "detect_cycles": false,
+          "final_accepted": 2,
+          "graph": {
+            "edges": [
+              {
+                "attrs": {},
+                "src": 0,
+                "tgt": 1,
+                "type": "trigger"
+              }
+            ],
+            "next_id": 2,
+            "nodes": [
+              {
+                "attrs": {},
+                "id": 0,
+                "type": "ConflictProbe"
+              },
+              {
+                "attrs": {
+                  "accepted": 2
+                },
+                "id": 1,
+                "type": "ConflictProbe"
+              }
+            ]
+          },
+          "order": "A_then_B",
+          "rule_sequence": [
+            "A",
+            "B"
+          ],
+          "termination": {
+            "budget_overshoot": 0,
+            "cycle_detection_enabled": false,
+            "passes_completed": 6,
+            "progress_steps": 12,
+            "requested_progress_budget": 12,
+            "status": "progress_budget_reached"
+          }
+        },
+        {
+          "callback_arguments": [
+            "same",
+            "same",
+            "same",
+            "same"
+          ],
+          "callback_count": 4,
+          "detect_cycles": true,
+          "final_accepted": 2,
+          "graph": {
+            "edges": [
+              {
+                "attrs": {},
+                "src": 0,
+                "tgt": 1,
+                "type": "trigger"
+              }
+            ],
+            "next_id": 2,
+            "nodes": [
+              {
+                "attrs": {},
+                "id": 0,
+                "type": "ConflictProbe"
+              },
+              {
+                "attrs": {
+                  "accepted": 2
+                },
+                "id": 1,
+                "type": "ConflictProbe"
+              }
+            ]
+          },
+          "order": "A_then_B",
+          "rule_sequence": [
+            "A",
+            "B"
+          ],
+          "termination": {
+            "budget_overshoot": 0,
+            "cycle_detection_enabled": true,
+            "passes_completed": 2,
+            "progress_steps": 4,
+            "requested_progress_budget": 12,
+            "status": "repeated_graph_state"
+          }
+        },
+        {
+          "callback_arguments": [
+            "same",
+            "same",
+            "same",
+            "same",
+            "same",
+            "same",
+            "same",
+            "same",
+            "same",
+            "same",
+            "same",
+            "same"
+          ],
+          "callback_count": 12,
+          "detect_cycles": false,
+          "final_accepted": 1,
+          "graph": {
+            "edges": [
+              {
+                "attrs": {},
+                "src": 0,
+                "tgt": 1,
+                "type": "trigger"
+              }
+            ],
+            "next_id": 2,
+            "nodes": [
+              {
+                "attrs": {},
+                "id": 0,
+                "type": "ConflictProbe"
+              },
+              {
+                "attrs": {
+                  "accepted": 1
+                },
+                "id": 1,
+                "type": "ConflictProbe"
+              }
+            ]
+          },
+          "order": "B_then_A",
+          "rule_sequence": [
+            "B",
+            "A"
+          ],
+          "termination": {
+            "budget_overshoot": 0,
+            "cycle_detection_enabled": false,
+            "passes_completed": 6,
+            "progress_steps": 12,
+            "requested_progress_budget": 12,
+            "status": "progress_budget_reached"
+          }
+        },
+        {
+          "callback_arguments": [
+            "same",
+            "same",
+            "same",
+            "same"
+          ],
+          "callback_count": 4,
+          "detect_cycles": true,
+          "final_accepted": 1,
+          "graph": {
+            "edges": [
+              {
+                "attrs": {},
+                "src": 0,
+                "tgt": 1,
+                "type": "trigger"
+              }
+            ],
+            "next_id": 2,
+            "nodes": [
+              {
+                "attrs": {},
+                "id": 0,
+                "type": "ConflictProbe"
+              },
+              {
+                "attrs": {
+                  "accepted": 1
+                },
+                "id": 1,
+                "type": "ConflictProbe"
+              }
+            ]
+          },
+          "order": "B_then_A",
+          "rule_sequence": [
+            "B",
+            "A"
+          ],
+          "termination": {
+            "budget_overshoot": 0,
+            "cycle_detection_enabled": true,
+            "passes_completed": 2,
+            "progress_steps": 4,
+            "requested_progress_budget": 12,
+            "status": "repeated_graph_state"
+          }
+        }
+      ],
+      "pid": 8,
+      "platform": "Linux-6.8.0-142-generic-x86_64-with-glibc2.39",
+      "python": "3.13.5 (main, Jun 11 2025, 15:36:57) [GCC 11.4.0]",
+      "started_inputs": {
+        "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+        "native_build_manifest_sha256": "425e086594e50335ca917e330206fec9bd8c778d4e58d2c5dd0d06cc61bc41ee",
+        "native_extension_path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+        "native_extension_sha256": "260cf6063acbfb2fb83a7bfbe8b0bbe35afa951d3142539fbd868edf331d3afa",
+        "source_sha256": {
+          "docs/research/engine_substrate/SUBSTRATE_OVERLAPPING_RULE_CONFLICT_PROBE_V1_PREREG_20260928.md": "8a20127750998bcdc4402b2de644b003d5e598493edc49268820b27dffb65137",
+          "runners/dsl/python/substrate_rs/__init__.py": "6ec0316afae414329e36d3f121fc56b556e7315f17b93aab911ca09a29726694",
+          "runners/dsl/src/py.rs": "68347817627387a7730c86ff3ff0f69d45788fe0754227914437dd7d8207a576",
+          "runners/dsl/src/rewrite.rs": "58cea7eaa595c804f4f0265c4003231105011dc2493bea8ca30dea6bb6246c34",
+          "runners/dsl/src/substrate.rs": "7548e63870c676a46232469717739db03c3e8e19e0557aeabf17a42b29068f86",
+          "runners/dsl/src/term.rs": "0b91be836a6a7fe4587fb2ec3a944fdd6fb461838ca25151b1358c2158705fce",
+          "scripts/analyze_overlapping_rule_conflict_probe_v1.py": "321255570dbe10e28f58aee10d3408623fc88f9d092307b3212853fc0da8a63d",
+          "scripts/substrate_overlapping_rule_conflict_probe_v1.py": "55526ade6f28802200624beda36b57e1eef1e48ffab8630aa0ac2a67ecf328ae"
+        }
+      },
+      "worker_id": 1
+    },
+    {
+      "cells": [
+        {
+          "callback_arguments": [
+            "same",
+            "same",
+            "same",
+            "same",
+            "same",
+            "same",
+            "same",
+            "same",
+            "same",
+            "same",
+            "same",
+            "same"
+          ],
+          "callback_count": 12,
+          "detect_cycles": false,
+          "final_accepted": 2,
+          "graph": {
+            "edges": [
+              {
+                "attrs": {},
+                "src": 0,
+                "tgt": 1,
+                "type": "trigger"
+              }
+            ],
+            "next_id": 2,
+            "nodes": [
+              {
+                "attrs": {},
+                "id": 0,
+                "type": "ConflictProbe"
+              },
+              {
+                "attrs": {
+                  "accepted": 2
+                },
+                "id": 1,
+                "type": "ConflictProbe"
+              }
+            ]
+          },
+          "order": "A_then_B",
+          "rule_sequence": [
+            "A",
+            "B"
+          ],
+          "termination": {
+            "budget_overshoot": 0,
+            "cycle_detection_enabled": false,
+            "passes_completed": 6,
+            "progress_steps": 12,
+            "requested_progress_budget": 12,
+            "status": "progress_budget_reached"
+          }
+        },
+        {
+          "callback_arguments": [
+            "same",
+            "same",
+            "same",
+            "same"
+          ],
+          "callback_count": 4,
+          "detect_cycles": true,
+          "final_accepted": 2,
+          "graph": {
+            "edges": [
+              {
+                "attrs": {},
+                "src": 0,
+                "tgt": 1,
+                "type": "trigger"
+              }
+            ],
+            "next_id": 2,
+            "nodes": [
+              {
+                "attrs": {},
+                "id": 0,
+                "type": "ConflictProbe"
+              },
+              {
+                "attrs": {
+                  "accepted": 2
+                },
+                "id": 1,
+                "type": "ConflictProbe"
+              }
+            ]
+          },
+          "order": "A_then_B",
+          "rule_sequence": [
+            "A",
+            "B"
+          ],
+          "termination": {
+            "budget_overshoot": 0,
+            "cycle_detection_enabled": true,
+            "passes_completed": 2,
+            "progress_steps": 4,
+            "requested_progress_budget": 12,
+            "status": "repeated_graph_state"
+          }
+        },
+        {
+          "callback_arguments": [
+            "same",
+            "same",
+            "same",
+            "same",
+            "same",
+            "same",
+            "same",
+            "same",
+            "same",
+            "same",
+            "same",
+            "same"
+          ],
+          "callback_count": 12,
+          "detect_cycles": false,
+          "final_accepted": 1,
+          "graph": {
+            "edges": [
+              {
+                "attrs": {},
+                "src": 0,
+                "tgt": 1,
+                "type": "trigger"
+              }
+            ],
+            "next_id": 2,
+            "nodes": [
+              {
+                "attrs": {},
+                "id": 0,
+                "type": "ConflictProbe"
+              },
+              {
+                "attrs": {
+                  "accepted": 1
+                },
+                "id": 1,
+                "type": "ConflictProbe"
+              }
+            ]
+          },
+          "order": "B_then_A",
+          "rule_sequence": [
+            "B",
+            "A"
+          ],
+          "termination": {
+            "budget_overshoot": 0,
+            "cycle_detection_enabled": false,
+            "passes_completed": 6,
+            "progress_steps": 12,
+            "requested_progress_budget": 12,
+            "status": "progress_budget_reached"
+          }
+        },
+        {
+          "callback_arguments": [
+            "same",
+            "same",
+            "same",
+            "same"
+          ],
+          "callback_count": 4,
+          "detect_cycles": true,
+          "final_accepted": 1,
+          "graph": {
+            "edges": [
+              {
+                "attrs": {},
+                "src": 0,
+                "tgt": 1,
+                "type": "trigger"
+              }
+            ],
+            "next_id": 2,
+            "nodes": [
+              {
+                "attrs": {},
+                "id": 0,
+                "type": "ConflictProbe"
+              },
+              {
+                "attrs": {
+                  "accepted": 1
+                },
+                "id": 1,
+                "type": "ConflictProbe"
+              }
+            ]
+          },
+          "order": "B_then_A",
+          "rule_sequence": [
+            "B",
+            "A"
+          ],
+          "termination": {
+            "budget_overshoot": 0,
+            "cycle_detection_enabled": true,
+            "passes_completed": 2,
+            "progress_steps": 4,
+            "requested_progress_budget": 12,
+            "status": "repeated_graph_state"
+          }
+        }
+      ],
+      "pid": 19,
+      "platform": "Linux-6.8.0-142-generic-x86_64-with-glibc2.39",
+      "python": "3.13.5 (main, Jun 11 2025, 15:36:57) [GCC 11.4.0]",
+      "started_inputs": {
+        "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+        "native_build_manifest_sha256": "425e086594e50335ca917e330206fec9bd8c778d4e58d2c5dd0d06cc61bc41ee",
+        "native_extension_path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+        "native_extension_sha256": "260cf6063acbfb2fb83a7bfbe8b0bbe35afa951d3142539fbd868edf331d3afa",
+        "source_sha256": {
+          "docs/research/engine_substrate/SUBSTRATE_OVERLAPPING_RULE_CONFLICT_PROBE_V1_PREREG_20260928.md": "8a20127750998bcdc4402b2de644b003d5e598493edc49268820b27dffb65137",
+          "runners/dsl/python/substrate_rs/__init__.py": "6ec0316afae414329e36d3f121fc56b556e7315f17b93aab911ca09a29726694",
+          "runners/dsl/src/py.rs": "68347817627387a7730c86ff3ff0f69d45788fe0754227914437dd7d8207a576",
+          "runners/dsl/src/rewrite.rs": "58cea7eaa595c804f4f0265c4003231105011dc2493bea8ca30dea6bb6246c34",
+          "runners/dsl/src/substrate.rs": "7548e63870c676a46232469717739db03c3e8e19e0557aeabf17a42b29068f86",
+          "runners/dsl/src/term.rs": "0b91be836a6a7fe4587fb2ec3a944fdd6fb461838ca25151b1358c2158705fce",
+          "scripts/analyze_overlapping_rule_conflict_probe_v1.py": "321255570dbe10e28f58aee10d3408623fc88f9d092307b3212853fc0da8a63d",
+          "scripts/substrate_overlapping_rule_conflict_probe_v1.py": "55526ade6f28802200624beda36b57e1eef1e48ffab8630aa0ac2a67ecf328ae"
+        }
+      },
+      "worker_id": 2
+    },
+    {
+      "cells": [
+        {
+          "callback_arguments": [
+            "same",
+            "same",
+            "same",
+            "same",
+            "same",
+            "same",
+            "same",
+            "same",
+            "same",
+            "same",
+            "same",
+            "same"
+          ],
+          "callback_count": 12,
+          "detect_cycles": false,
+          "final_accepted": 2,
+          "graph": {
+            "edges": [
+              {
+                "attrs": {},
+                "src": 0,
+                "tgt": 1,
+                "type": "trigger"
+              }
+            ],
+            "next_id": 2,
+            "nodes": [
+              {
+                "attrs": {},
+                "id": 0,
+                "type": "ConflictProbe"
+              },
+              {
+                "attrs": {
+                  "accepted": 2
+                },
+                "id": 1,
+                "type": "ConflictProbe"
+              }
+            ]
+          },
+          "order": "A_then_B",
+          "rule_sequence": [
+            "A",
+            "B"
+          ],
+          "termination": {
+            "budget_overshoot": 0,
+            "cycle_detection_enabled": false,
+            "passes_completed": 6,
+            "progress_steps": 12,
+            "requested_progress_budget": 12,
+            "status": "progress_budget_reached"
+          }
+        },
+        {
+          "callback_arguments": [
+            "same",
+            "same",
+            "same",
+            "same"
+          ],
+          "callback_count": 4,
+          "detect_cycles": true,
+          "final_accepted": 2,
+          "graph": {
+            "edges": [
+              {
+                "attrs": {},
+                "src": 0,
+                "tgt": 1,
+                "type": "trigger"
+              }
+            ],
+            "next_id": 2,
+            "nodes": [
+              {
+                "attrs": {},
+                "id": 0,
+                "type": "ConflictProbe"
+              },
+              {
+                "attrs": {
+                  "accepted": 2
+                },
+                "id": 1,
+                "type": "ConflictProbe"
+              }
+            ]
+          },
+          "order": "A_then_B",
+          "rule_sequence": [
+            "A",
+            "B"
+          ],
+          "termination": {
+            "budget_overshoot": 0,
+            "cycle_detection_enabled": true,
+            "passes_completed": 2,
+            "progress_steps": 4,
+            "requested_progress_budget": 12,
+            "status": "repeated_graph_state"
+          }
+        },
+        {
+          "callback_arguments": [
+            "same",
+            "same",
+            "same",
+            "same",
+            "same",
+            "same",
+            "same",
+            "same",
+            "same",
+            "same",
+            "same",
+            "same"
+          ],
+          "callback_count": 12,
+          "detect_cycles": false,
+          "final_accepted": 1,
+          "graph": {
+            "edges": [
+              {
+                "attrs": {},
+                "src": 0,
+                "tgt": 1,
+                "type": "trigger"
+              }
+            ],
+            "next_id": 2,
+            "nodes": [
+              {
+                "attrs": {},
+                "id": 0,
+                "type": "ConflictProbe"
+              },
+              {
+                "attrs": {
+                  "accepted": 1
+                },
+                "id": 1,
+                "type": "ConflictProbe"
+              }
+            ]
+          },
+          "order": "B_then_A",
+          "rule_sequence": [
+            "B",
+            "A"
+          ],
+          "termination": {
+            "budget_overshoot": 0,
+            "cycle_detection_enabled": false,
+            "passes_completed": 6,
+            "progress_steps": 12,
+            "requested_progress_budget": 12,
+            "status": "progress_budget_reached"
+          }
+        },
+        {
+          "callback_arguments": [
+            "same",
+            "same",
+            "same",
+            "same"
+          ],
+          "callback_count": 4,
+          "detect_cycles": true,
+          "final_accepted": 1,
+          "graph": {
+            "edges": [
+              {
+                "attrs": {},
+                "src": 0,
+                "tgt": 1,
+                "type": "trigger"
+              }
+            ],
+            "next_id": 2,
+            "nodes": [
+              {
+                "attrs": {},
+                "id": 0,
+                "type": "ConflictProbe"
+              },
+              {
+                "attrs": {
+                  "accepted": 1
+                },
+                "id": 1,
+                "type": "ConflictProbe"
+              }
+            ]
+          },
+          "order": "B_then_A",
+          "rule_sequence": [
+            "B",
+            "A"
+          ],
+          "termination": {
+            "budget_overshoot": 0,
+            "cycle_detection_enabled": true,
+            "passes_completed": 2,
+            "progress_steps": 4,
+            "requested_progress_budget": 12,
+            "status": "repeated_graph_state"
+          }
+        }
+      ],
+      "pid": 30,
+      "platform": "Linux-6.8.0-142-generic-x86_64-with-glibc2.39",
+      "python": "3.13.5 (main, Jun 11 2025, 15:36:57) [GCC 11.4.0]",
+      "started_inputs": {
+        "commit": "8bac3e90b39ca7eca12e88f856a9bc4b350add87",
+        "native_build_manifest_sha256": "425e086594e50335ca917e330206fec9bd8c778d4e58d2c5dd0d06cc61bc41ee",
+        "native_extension_path": "/home/matt/ozmadev/ocelot/runners/dsl/python/substrate_rs/_native.abi3.so",
+        "native_extension_sha256": "260cf6063acbfb2fb83a7bfbe8b0bbe35afa951d3142539fbd868edf331d3afa",
+        "source_sha256": {
+          "docs/research/engine_substrate/SUBSTRATE_OVERLAPPING_RULE_CONFLICT_PROBE_V1_PREREG_20260928.md": "8a20127750998bcdc4402b2de644b003d5e598493edc49268820b27dffb65137",
+          "runners/dsl/python/substrate_rs/__init__.py": "6ec0316afae414329e36d3f121fc56b556e7315f17b93aab911ca09a29726694",
+          "runners/dsl/src/py.rs": "68347817627387a7730c86ff3ff0f69d45788fe0754227914437dd7d8207a576",
+          "runners/dsl/src/rewrite.rs": "58cea7eaa595c804f4f0265c4003231105011dc2493bea8ca30dea6bb6246c34",
+          "runners/dsl/src/substrate.rs": "7548e63870c676a46232469717739db03c3e8e19e0557aeabf17a42b29068f86",
+          "runners/dsl/src/term.rs": "0b91be836a6a7fe4587fb2ec3a944fdd6fb461838ca25151b1358c2158705fce",
+          "scripts/analyze_overlapping_rule_conflict_probe_v1.py": "321255570dbe10e28f58aee10d3408623fc88f9d092307b3212853fc0da8a63d",
+          "scripts/substrate_overlapping_rule_conflict_probe_v1.py": "55526ade6f28802200624beda36b57e1eef1e48ffab8630aa0ac2a67ecf328ae"
+        }
+      },
+      "worker_id": 3
+    }
+  ]
+}
