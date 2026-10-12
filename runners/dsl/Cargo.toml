@@ -9,7 +9,12 @@ name = "substrate_rs"
 crate-type = ["cdylib", "rlib"]
 
 [dependencies]
-pyo3 = { version = "0.22", features = ["extension-module", "abi3-py39"] }
+# `extension-module` (do not link libpython: the interpreter that loads the
+# cdylib provides the symbols) is the DEFAULT feature below, so the engine
+# build is unchanged. Test binaries are executables that must link libpython;
+# run them without it: scripts/engine_cargo_test.sh (= cargo test
+# --no-default-features + the interpreter's LIBDIR for the runtime loader).
+pyo3 = { version = "0.22", features = ["abi3-py39"] }
 smallvec = { version = "1.13", features = ["union"] }
 rustc-hash = "2.0"
 serde = { version = "1.0", features = ["derive"] }
@@ -58,7 +63,9 @@ libc = "0.2"
 memmap2 = "0.5"
 
 [features]
-default = []
+default = ["extension-module"]
+# Python extension build (engine_build.sh, maturin): libpython is NOT linked.
+extension-module = ["pyo3/extension-module"]
 # Build with the un-tuned baseline CABAC renorm loop. Used to
 # measure the hand-tune speedup head-to-head. Off in production.
 cabac_baseline = []
