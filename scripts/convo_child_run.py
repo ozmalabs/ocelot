@@ -270,10 +270,21 @@ def read_corpus(agent) -> list:
         probes.append({"turn_id": int(m.value), "text": text, "reply": recorded,
                        "speech_act": act or "statement",
                        "flagged": int(m.value) in flagged_ids,
+                       # the turn's own literal form (communication
+                       # interpretation): ReplyQuality's imperative input
+                       "literal_form": _interp_attr(S, I, m, "literal_form"),
                        "in_scope": (a.get("speech_act_divergence") == 1.0
                                     and (a.get("comp_kind"), a.get("shadow_speech_act"),
                                          _first_role(S, I, m)) in scope_pairs)})
     return probes
+
+
+def _interp_attr(S, I, mid, key):
+    """`key` of the turn's communication interpretation (None if absent)."""
+    for i in I.in_neighbours(mid, "interprets"):
+        if I.has_node(i) and S.node(i)["attrs"].get("schema") == "communication_interpretation.v1":
+            return S.node(i)["attrs"].get(key)
+    return None
 
 
 def _first_role(S, I, mid):
@@ -576,6 +587,77 @@ def _warm_reading_path(delta: dict) -> None:
         pass
 
 
+QUALITY_MIN_FIX = 1   # judge v2 (plan P1): a flagged fix must be at least acceptable-minimal
+
+
+def score_probes(probes, control, stats, q_control, q_variant, trace_fp=None) -> dict:
+    """SCORE -- TWO BASELINES (module docstring): a flagged probe's
+    `flagged_changed` is checked against the RECORDED reply ("did the one
+    flagged turn change"); an unflagged probe's `regressed` is checked against
+    the PAIRED CONTROL reply for the SAME probe.
+
+    JUDGE V2 (plan P1, 2026-10-10): reply quality (domains/reply_quality.py,
+    0 inappropriate / 1 acceptable-minimal / 2 appropriate) gates two paths.
+    A changed flagged turn counts as a fix only if the new reply's quality is
+    at least QUALITY_MIN_FIX; otherwise it is a broken fix (e.g. a receipt for
+    a question). An unflagged turn may count as `repaired` only if its quality
+    did not decrease against the paired control; otherwise it is a
+    regression."""
+    def _is_broken(txt, err):
+        return (not str(txt or "").strip()
+                or str(txt).strip() == _CONVERSATION_ERROR_SURFACE or bool(err))
+    out = {"score": 0, "flagged": 0, "flagged_changed": 0, "broken_fixes": 0,
+           "regressions": 0, "repaired": 0, "quality_vetoed_fixes": 0}
+    for i, probe in enumerate(probes):
+        replayed = stats["replies"][i]
+        if probe["flagged"]:
+            out["flagged"] += 1
+            baseline, baseline_text = "recorded", probe["reply"]
+            # fixed only if the DELTA changed it (differs from the recording
+            # AND from the paired control replay; tranche 6)
+            changed = (replayed != baseline_text and replayed != control["replies"][i])
+            # broken only if the DELTA broke it (the paired control is not
+            # already broken; tranches 4-5)
+            broken = (_is_broken(replayed, stats["errors"][i])
+                      and not _is_broken(control["replies"][i], control["errors"][i]))
+            if changed and _is_broken(replayed, stats["errors"][i]) and not broken:
+                changed = False      # neither fixed nor broken by the delta
+            if changed and not broken and q_variant[i] < QUALITY_MIN_FIX:
+                broken = True        # judge v2: a fix below acceptable-minimal is no fix
+                out["quality_vetoed_fixes"] += 1
+                baseline = "recorded (quality below minimal)"
+            if changed and broken:
+                out["broken_fixes"] += 1
+                out["score"] -= 1
+            elif changed:
+                out["flagged_changed"] += 1
+                out["score"] += 1
+        else:
+            baseline, baseline_text = "control", control["replies"][i]
+            changed = replayed != baseline_text
+            # REPAIRED, not regressed (tranches 22-23): error -> reply, or a
+            # turn in the concern's own disagreement class answered
+            # differently. Judge v2: only if quality did not decrease.
+            if changed and not _is_broken(replayed, stats["errors"][i]) and (
+                    _is_broken(baseline_text, control["errors"][i]) or probe.get("in_scope")) \
+                    and q_variant[i] >= q_control[i]:
+                out["repaired"] += 1
+                changed = False
+                baseline = "control (repaired)"
+            if changed:
+                out["regressions"] += 1
+                out["score"] -= 1
+        if trace_fp is not None:
+            reasoning = (f"turn {probe['turn_id']} "
+                         f"{'FLAGGED' if probe['flagged'] else 'unflagged'} "
+                         f"{'changed' if changed else 'unchanged'} vs {baseline}: {probe['text']!r}"
+                         + (f" [probe error: {stats['errors'][i]}]" if stats["errors"][i] else ""))
+            trace_fp.write(json.dumps({"frame": i, "action": "reply", "score": out["score"],
+                                       "reasoning": reasoning, "turn_ms": stats["turn_ms"][i],
+                                       "self_report": replayed[:400]}) + "\n")
+    return out
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(
         description="conversation child runner — replays one dispatched Experiment's corpus")
@@ -685,92 +767,29 @@ def main() -> int:
         # for the SAME probe (the fix — the recorded reply is no longer a
         # valid regression baseline once replay is known to be
         # state-dependent).
+        # REPLY QUALITY: the same probes scored for FIT on both passes
+        # (domains/reply_quality.py). Since judge v2 (plan P1, gate Q0 passed
+        # on agent labels) it also gates what counts as a fix -- see
+        # score_probes.
+        from domains import reply_quality as _rq
+        q_control = [_rq.assess(p["text"], control["replies"][i], p.get("literal_form"))["score"]
+                     for i, p in enumerate(probes)]
+        q_variant = [_rq.assess(p["text"], stats["replies"][i], p.get("literal_form"))["score"]
+                     for i, p in enumerate(probes)]
         trace_fp = open(trace_path, "w")
-        score = 0
-        flagged_n = 0
-        flagged_changed = 0
-        broken_fixes = 0
-        regressions = 0
-        repaired = 0
-
-        def _is_broken_reply(txt, err):
-            return (not str(txt or "").strip()
-                    or str(txt).strip() == _CONVERSATION_ERROR_SURFACE or bool(err))
-        for i, probe in enumerate(probes):
-            replayed = stats["replies"][i]
-            if probe["flagged"]:
-                flagged_n += 1
-                baseline, baseline_text = "recorded", probe["reply"]
-                # Fixed only if the DELTA changed it: the variant must differ
-                # from the recorded bad reply AND from the paired control
-                # replay. A reply that drifted from the recording under replay
-                # state alone (control == variant) is no fix (tranche 6:
-                # a no-op cue delta scored 'supported' this way).
-                changed = (replayed != baseline_text
-                           and replayed != control["replies"][i])
-                # A change only FIXES the flagged turn if the new reply is a
-                # real communicative surface: an empty reply, the adapter's
-                # fixed error surface, or a probe that raised is a BROKEN fix
-                # (it fails the turn harder than the flagged reply did), and
-                # scores like a regression (tranche 4).
-                _is_broken = lambda txt, err: (not str(txt or "").strip()
-                                               or str(txt).strip() == _CONVERSATION_ERROR_SURFACE
-                                               or bool(err))
-                # Broken only if the DELTA broke it: when the paired control
-                # replay of the same probe is already broken (replay-state
-                # drift, independent of the delta), the variant's failure is
-                # not the delta's doing (tranche 5).
-                broken = (_is_broken(replayed, stats["errors"][i])
-                          and not _is_broken(control["replies"][i], control["errors"][i]))
-                if changed and _is_broken(replayed, stats["errors"][i]) and not broken:
-                    changed = False      # neither fixed nor broken by the delta
-                if changed and broken:
-                    broken_fixes += 1
-                    score -= 1
-                elif changed:
-                    flagged_changed += 1
-                    score += 1
-            else:
-                baseline, baseline_text = "control", control["replies"][i]
-                changed = replayed != baseline_text
-                # REPAIRED, not regressed (tranche 22): an unflagged turn the
-                # CONTROL answered with the error floor (or nothing) and the
-                # VARIANT answers with a real surface was not broken by the
-                # delta -- measured: a generalised receipt also answered a
-                # second same-class unanswered turn, and the old scorer
-                # counted that as a regression. Scored 0 (no credit claimed,
-                # no penalty); reported as `repaired`.
-                if changed and not _is_broken_reply(replayed, stats["errors"][i]) and (
-                        _is_broken_reply(baseline_text, control["errors"][i]) or probe.get("in_scope")):
-                    # error -> reply, or a turn in the concern's own
-                    # disagreement class answered differently (tranche 23)
-                    repaired += 1
-                    changed = False
-                    baseline = "control (repaired)"
-                if changed:
-                    regressions += 1
-                    score -= 1
-            reasoning = (f"turn {probe['turn_id']} "
-                         f"{'FLAGGED' if probe['flagged'] else 'unflagged'} "
-                         f"{'changed' if changed else 'unchanged'} vs {baseline}: {probe['text']!r}"
-                         + (f" [probe error: {stats['errors'][i]}]" if stats["errors"][i] else ""))
-            trace_fp.write(json.dumps({"frame": i, "action": "reply", "score": score,
-                                       "reasoning": reasoning, "turn_ms": stats["turn_ms"][i],
-                                       "self_report": replayed[:400]}) + "\n")
+        sc = score_probes(probes, control, stats, q_control, q_variant, trace_fp)
+        score, flagged_n, flagged_changed = sc["score"], sc["flagged"], sc["flagged_changed"]
+        broken_fixes, regressions, repaired = sc["broken_fixes"], sc["regressions"], sc["repaired"]
+        quality_vetoed_fixes = sc["quality_vetoed_fixes"]
         trace_fp.flush()
 
-        # REPLY QUALITY (P0, report-only -- domains/reply_quality.py): the
-        # same probes scored for FIT on both passes. Reported, never scored:
-        # gate Q0 must first show the measure agrees with human labels.
-        from domains import reply_quality as _rq
-        q_control = [_rq.assess(p["text"], control["replies"][i])["score"] for i, p in enumerate(probes)]
-        q_variant = [_rq.assess(p["text"], stats["replies"][i])["score"] for i, p in enumerate(probes)]
 
         result = {"status": "done", "frames": len(probes), "score": score,
                   "won": score > 0, "over": True, "boot_mode": boot_mode,
                   "removed_rules": removed_rules,
                   "flagged": flagged_n, "flagged_changed": flagged_changed,
                   "broken_fixes": broken_fixes, "regressions": regressions, "repaired": repaired,
+                  "quality_vetoed_fixes": quality_vetoed_fixes,
                   "avg_turn_ms": stats["avg_turn_ms"],
                   "quality_control_mean": _rq.summarise(q_control)["mean"],
                   "quality_variant_mean": _rq.summarise(q_variant)["mean"],

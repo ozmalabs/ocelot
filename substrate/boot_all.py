@@ -1309,6 +1309,10 @@ _FROZEN_SEED_IDS = frozenset({
     # whose rules ARE the self-improvement loop (seeds/improvement_integrity
     # .json). The loop must not ablate or edit the list that protects it.
     "improvement_integrity",
+    # (6) JUDGE V2 (plan P1, 2026-10-10) -- the adoption vetoes (regression,
+    # overridden verdict, reply-quality drop). The loop must not ablate the
+    # gate it is judged by; a human authored and froze it.
+    "adoption_safety",
 })
 
 _SEED_SUMMARY_TYPE = "SeedSummary"

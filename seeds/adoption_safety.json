@@ -1,12 +1,12 @@
 {
   "id": "adoption_safety",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "depends_on": [],
   "capability_keys": [
     "adoption_safety",
     "regression_veto"
   ],
-  "description": "THE AGENT-SIDE ADOPTION SAFETY GATE (Wave 6). The conversation experiment world's judge nets its score (flagged_changed - regressions), so a variant that fixes the flagged turn but breaks one other previously-working turn can still judge 'supported' (+2-1=+1) and reach mark_adopt_ready. This seed closes that hole AS GRAPH DATA the agent can inspect and repair: the dispatched child already reports `regressions` in result.json, the dispatch ingest (domains/experiment_dispatch.py::_ingest_result) mechanically carries it onto the Experiment node, and the rule below VETOES adoption of any Experiment whose own child reported regressions > 0 -- it sets `adopt_denied` (which perform_adoptions honours unconditionally: a denied Experiment is never folded back) plus an honest `adopt_denied_reason` the self_improvement_status reader surfaces over NL ('what are you working on?'). Chosen over a stricter mark_adopt_ready where-clause deliberately: the authored mark_adopt_ready_* bodies stay byte-identical (graph-meta oracle parity with seeds/composer_experiment_graph.json's wants_experiment_adopt_rule is preserved untouched), the veto applies uniformly to every experiment family that reports regressions (today: conversation replay), and an ARC child reports no `regressions` key at all, so the attr is never written there and this rule can never bind an ARC experiment. The veto fires in the same run_rules fixpoint as the judge/mark_adopt_ready rules (the regressions attr is written at ingest, before that tick), so perform_adoptions -- host I/O that only runs between ticks -- always sees the denial before it could adopt. || v1.1.0 (2026-10-10): adopt_denied_on_overridden_verdict -- an adopt-ready Experiment whose outcome a family judge has since overridden away from 'supported' is vetoed (measured: tranche 23 smoke run, adopted=True with outcome='refuted'; scripts/gen_adoption_overridden_verdict_veto.py).",
+  "description": "THE AGENT-SIDE ADOPTION SAFETY GATE (Wave 6). The conversation experiment world's judge nets its score (flagged_changed - regressions), so a variant that fixes the flagged turn but breaks one other previously-working turn can still judge 'supported' (+2-1=+1) and reach mark_adopt_ready. This seed closes that hole AS GRAPH DATA the agent can inspect and repair: the dispatched child already reports `regressions` in result.json, the dispatch ingest (domains/experiment_dispatch.py::_ingest_result) mechanically carries it onto the Experiment node, and the rule below VETOES adoption of any Experiment whose own child reported regressions > 0 -- it sets `adopt_denied` (which perform_adoptions honours unconditionally: a denied Experiment is never folded back) plus an honest `adopt_denied_reason` the self_improvement_status reader surfaces over NL ('what are you working on?'). Chosen over a stricter mark_adopt_ready where-clause deliberately: the authored mark_adopt_ready_* bodies stay byte-identical (graph-meta oracle parity with seeds/composer_experiment_graph.json's wants_experiment_adopt_rule is preserved untouched), the veto applies uniformly to every experiment family that reports regressions (today: conversation replay), and an ARC child reports no `regressions` key at all, so the attr is never written there and this rule can never bind an ARC experiment. The veto fires in the same run_rules fixpoint as the judge/mark_adopt_ready rules (the regressions attr is written at ingest, before that tick), so perform_adoptions -- host I/O that only runs between ticks -- always sees the denial before it could adopt. || v1.1.0 (2026-10-10): adopt_denied_on_overridden_verdict -- an adopt-ready Experiment whose outcome a family judge has since overridden away from 'supported' is vetoed (measured: tranche 23 smoke run, adopted=True with outcome='refuted'; scripts/gen_adoption_overridden_verdict_veto.py). || v1.2.0 (2026-10-10, plan P1 judge v2): adopt_denied_on_quality_drop vetoes adoption when the child's ReplyQuality report shows any turn's quality fell or the mean fell (scripts/gen_adoption_quality_veto.py).",
   "microtheory": {
     "name": "adoption_safety",
     "description": "a supported-but-regressing variant is never adopted: regressions == 0 is a hard adopt-readiness requirement, held as an inspectable seed rule."
@@ -156,6 +156,125 @@
           "exp",
           "adopt_denied_reason",
           "the experiment was marked adopt-ready on a provisional 'supported' verdict that a later judge overrode: a change the agent's own final verdict does not support is never adopted"
+        ]
+      ]
+    },
+    {
+      "name": "adopt_denied_on_quality_drop",
+      "comment": "Judge v2 (plan P1): a variant that lowers any replayed turn's reply quality, or the mean, is never adopted.",
+      "match": [
+        [
+          "exp",
+          "has_delta",
+          "delta"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "exp"
+                },
+                "key": "quality_drops"
+              },
+              "b": {
+                "type": "Lit",
+                "value": null
+              }
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "exp"
+                },
+                "key": "quality_delta"
+              },
+              "b": {
+                "type": "Lit",
+                "value": null
+              }
+            }
+          },
+          {
+            "type": "Or",
+            "items": [
+              {
+                "type": "Gt",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "exp"
+                  },
+                  "key": "quality_drops"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": 0
+                }
+              },
+              {
+                "type": "Lt",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "exp"
+                  },
+                  "key": "quality_delta"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": 0.0
+                }
+              }
+            ]
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "exp"
+                },
+                "key": "adopt_denied"
+              },
+              "b": {
+                "type": "Lit",
+                "value": true
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "exp",
+          "adopt_denied",
+          true
+        ],
+        [
+          "set_attr",
+          "exp",
+          "adopt_denied_reason",
+          "judge v2: the dispatched child reported a reply-quality drop (quality_drops > 0 or quality_delta < 0): a variant that makes a reply worse is never adopted"
         ]
       ]
     }
