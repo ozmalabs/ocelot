@@ -85,6 +85,9 @@ CONVERSATION_SELF_IMPROVEMENT_ANCHORS = frozenset({
     "reply_feedback_gap",
     # plan P4: variation families as held Programs (VariationOp.builder_program)
     "family_programs",
+    # plan P5: operator authorship (propose-only): the mutation grammar over
+    # the held FamilyPrograms and the frozen qualification rule
+    "operator_authorship",
 })
 CONVERSATION_SEED_ANCHORS = CONVERSATION_SEED_ANCHORS | CONVERSATION_SELF_IMPROVEMENT_ANCHORS
 

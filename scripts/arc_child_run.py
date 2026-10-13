@@ -114,7 +114,11 @@ def _load_delta(path) -> dict:
             "datum_feedback_belief_attr": d.get("datum_feedback_belief_attr") or "",
             "shape_mint_edit": float(d.get("shape_mint_edit") or 0.0),
             "shape_mint_name": d.get("shape_mint_name") or "",
-            "shape_mint_party": d.get("shape_mint_party") or ""}
+            "shape_mint_party": d.get("shape_mint_party") or "",
+            # plan P5 meta-evaluation (convo_child_run.read_corpus): the turns
+            # to flag, overriding the snapshot's concerns; None = not set
+            "flagged_turn_ids": (list(d["flagged_turn_ids"]) if d.get("flagged_turn_ids") is not None
+                                 else None)}
 
 
 def apply_concept_delta(agent, delta: dict) -> list:

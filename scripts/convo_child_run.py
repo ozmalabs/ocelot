@@ -190,12 +190,18 @@ def _load_snapshot_agent(snapshot: str) -> WorldAdapter:
     return agent
 
 
-def read_corpus(agent) -> list:
+def read_corpus(agent, flagged_override=None) -> list:
     """Mechanical graph read: the recorded conversation as replayable probes.
     One probe per interlocutor Message with a recorded reply (comp_reply_text,
     written by converse()'s _finish_turn_reply), in node-id (insertion) order;
     `flagged` iff some reply_fix SelfConcern points at the turn. Pure query —
-    no decisions."""
+    no decisions.
+
+    `flagged_override` (plan P5 meta-evaluation, the delta's
+    `flagged_turn_ids`): exactly those turns are flagged, whatever concerns the
+    snapshot holds, and a flagged turn that got NO reply is still a probe
+    (recorded reply ''), so a delta that makes the agent answer it can be
+    measured. Without the option nothing changes."""
     S, I = agent.s, agent.inner
     flagged_ids = set()
     steering_ids = set()
@@ -261,7 +267,9 @@ def read_corpus(agent) -> list:
                 if I.has_node(r) and S.node(r)["attrs"].get("terminal_outcome") == "explicit_error":
                     recorded = (S.node(r)["attrs"].get("text") or "").strip()
                     break
-        if not text or not recorded:
+        if flagged_override is not None and int(m.value) in flagged_override and text:
+            pass             # a flagged no-reply turn is a probe under the override
+        elif not text or not recorded:
             continue
         act = None
         for c in I.neighbours(m, "has_speech_act"):
@@ -270,7 +278,8 @@ def read_corpus(agent) -> list:
                 break
         probes.append({"turn_id": int(m.value), "text": text, "reply": recorded,
                        "speech_act": act or "statement",
-                       "flagged": int(m.value) in flagged_ids,
+                       "flagged": (int(m.value) in flagged_ids if flagged_override is None
+                                   else int(m.value) in flagged_override),
                        # the turn's own literal form (communication
                        # interpretation): ReplyQuality's imperative input
                        "literal_form": _interp_attr(S, I, m, "literal_form"),
@@ -591,6 +600,11 @@ def _warm_reading_path(delta: dict) -> None:
 QUALITY_MIN_FIX = 1   # judge v2 (plan P1): a flagged fix must be at least acceptable-minimal
 
 
+def _flag_override(delta):
+    ids = delta.get("flagged_turn_ids") if isinstance(delta, dict) else None
+    return None if ids is None else {int(x) for x in ids}
+
+
 def score_probes(probes, control, stats, q_control, q_variant, trace_fp=None) -> dict:
     """SCORE -- TWO BASELINES (module docstring): a flagged probe's
     `flagged_changed` is checked against the RECORDED reply ("did the one
@@ -608,7 +622,7 @@ def score_probes(probes, control, stats, q_control, q_variant, trace_fp=None) ->
         return (not str(txt or "").strip()
                 or str(txt).strip() == _CONVERSATION_ERROR_SURFACE or bool(err))
     out = {"score": 0, "flagged": 0, "flagged_changed": 0, "broken_fixes": 0,
-           "regressions": 0, "repaired": 0, "quality_vetoed_fixes": 0}
+           "regressions": 0, "repaired": 0, "quality_vetoed_fixes": 0, "flagged_outcomes": {}}
     for i, probe in enumerate(probes):
         replayed = stats["replies"][i]
         if probe["flagged"]:
@@ -633,6 +647,8 @@ def score_probes(probes, control, stats, q_control, q_variant, trace_fp=None) ->
             elif changed:
                 out["flagged_changed"] += 1
                 out["score"] += 1
+            out["flagged_outcomes"][str(probe["turn_id"])] = (
+                "broken" if changed and broken else "fixed" if changed else "unchanged")
         else:
             baseline, baseline_text = "control", control["replies"][i]
             changed = replayed != baseline_text
@@ -711,7 +727,7 @@ def main() -> int:
             # freed immediately (memory discipline — three full-seed boots
             # would otherwise be live in this family, never at once).
             corpus_agent = _load_snapshot_agent(args.snapshot)
-            probes = read_corpus(corpus_agent)
+            probes = read_corpus(corpus_agent, _flag_override(delta))
             del corpus_agent
             gc.collect()
             # CONTROL = "no delta" for this family means the FULL seed set —
@@ -725,7 +741,7 @@ def main() -> int:
             # corpus off it before its own replay mutates it): one fewer
             # full-seed boot per child than a naive 3-boot implementation.
             control_agent = _load_snapshot_agent(args.snapshot)
-            probes = read_corpus(control_agent)
+            probes = read_corpus(control_agent, _flag_override(delta))
         result["boot_mode"] = boot_mode
         _warm_reading_path(delta)
         _arm_parent_fidelity(control_agent, delta)
@@ -782,6 +798,7 @@ def main() -> int:
         score, flagged_n, flagged_changed = sc["score"], sc["flagged"], sc["flagged_changed"]
         broken_fixes, regressions, repaired = sc["broken_fixes"], sc["regressions"], sc["repaired"]
         quality_vetoed_fixes = sc["quality_vetoed_fixes"]
+        q_drop_turns = [p["turn_id"] for p, a, b in zip(probes, q_control, q_variant) if b < a]
         trace_fp.flush()
 
 
@@ -797,6 +814,10 @@ def main() -> int:
                   "quality_delta": (round((sum(q_variant) - sum(q_control)) / len(probes), 4) if probes else 0.0),
                   "quality_drops": sum(1 for a, b in zip(q_control, q_variant) if b < a),
                   "quality_gains": sum(1 for a, b in zip(q_control, q_variant) if b > a)}
+        if _flag_override(delta) is not None:
+            # P5 meta-evaluation: per flagged turn, and which turns lost quality
+            result["flagged_outcomes"] = sc["flagged_outcomes"]
+            result["quality_drop_turns"] = q_drop_turns
         if knob_probe:
             result["control_reforms"] = int(control["reforms"])
             result["variant_reforms"] = int(stats["reforms"])

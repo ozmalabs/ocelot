@@ -1287,6 +1287,10 @@ _FROZEN_SEED_IDS = frozenset({
     "self_repair", "clause_synthesis", "repair_escalation",
     "self_change_reasoning", "program_self_modification",
     "autonomy",
+    # plan P5 (2026-10-10): the operator-authorship meta-evaluation, its
+    # mutation grammar and its qualification rule are frozen -- the loop may
+    # not vary how a new variation family is judged
+    "operator_authorship",
     # (4) SELF-OPTIMISATION (Wave: 2026-07-10) — `intent` is the Message/Mention/
     # referent-resolution foundation EVERY conversation-replay experiment probe
     # depends on (comprehension_health.json, gap_awareness.json, and every

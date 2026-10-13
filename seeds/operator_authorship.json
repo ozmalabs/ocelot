@@ -1,0 +1,547 @@
+{
+ "id": "operator_authorship",
+ "version": "1.0.0",
+ "depends_on": [],
+ "description": "Emit seeds/operator_authorship.json (plan P5, 2026-10-10): OPERATOR\nAUTHORSHIP, propose-only.\n\nThe agent proposes NEW variation families by bounded mutation of the families\nit holds as Programs (seeds/family_programs.json). The grammar is data:\n\n  * OperatorAuthorshipPolicy -- enabled, propose_only, k_fix (concerns a\n    candidate must fix), max_candidates, max_size (mutations per candidate),\n    bank_max_quality (a held-out turn joins the bank when its production\n    ReplyQuality datum is at most this);\n  * FamilyMutation{program, site, values} -- a parameter site of a held\n    FamilyProgram (its `parameter_sites` attr names the path) and the values\n    the proposer may set it to. A candidate is a set of (site, value) edits on\n    one program, applied with the engine's EditAt; candidates are enumerated in\n    MDL order (fewest edits first) by domains/operator_authorship.py.\n\nMeta-evaluation (mechanical, domains/operator_authorship.py): each candidate\nbuilds its deltas for every bank turn, each delta is replayed by the\nconversation child (scripts/convo_child_run.py, judge v2) with the bank turns\nflagged, and the measurements are written onto a FamilyProposal node. The\nrules below DECIDE: a candidate qualifies only if it fixed at least k_fix bank\nturns, did no harm (0 regressions, 0 broken fixes, 0 quality drops in every\nreplay), and fixed at least one class no held family fixes. Propose-only: a\nqualifying proposal is marked install_blocked -- installing an agent-authored\nVariationOp needs the narrow improvement_integrity exception, a human\ndecision (plan P5).\n\nThis seed is frozen (substrate/boot_all._FROZEN_SEED_IDS) and its node types\nare protected (seeds/improvement_integrity.json), so the loop cannot vary how\na new family is judged. Idempotent.\n",
+ "nodes": [
+  {
+   "local_id": 0,
+   "type": "OperatorAuthorshipPolicy",
+   "attrs": {
+    "name": "operator_authorship",
+    "enabled": 1,
+    "propose_only": 1,
+    "k_fix": 2,
+    "max_candidates": 12,
+    "max_size": 2,
+    "bank_max_quality": 0.0,
+    "description": "Agent-held policy for proposing new variation families (plan P5): how many bank turns a candidate must fix, how many candidates and edits per candidate, which held-out turns form the bank. Propose-only until a human decides."
+   }
+  },
+  {
+   "local_id": 1,
+   "type": "FamilyMutation",
+   "attrs": {
+    "program": "family_disposition_generalise",
+    "site": "p_max_miss",
+    "values": "[2]",
+    "description": "relax two guards instead of one"
+   }
+  },
+  {
+   "local_id": 2,
+   "type": "FamilyMutation",
+   "attrs": {
+    "program": "family_disposition_generalise",
+    "site": "p_source_role",
+    "values": "[\"realiser\"]",
+    "description": "choose the source rule by a different criterion: the reply rule that realises the turn's own basis"
+   }
+  },
+  {
+   "local_id": 3,
+   "type": "FamilyMutation",
+   "attrs": {
+    "program": "family_deep_reader_correct",
+    "site": "p_held_reply",
+    "values": "[\"reply_to_deferred_typed_response_acknowledgement\", \"reply_to_blocked_unavailable_action_response\"]",
+    "description": "realise the deep-reader receipt with a different held neutral-receipt reply rule"
+   }
+  }
+ ],
+ "edges": [
+  {
+   "src": {
+    "role": "agent_root"
+   },
+   "type": "has_operator_authorship_policy",
+   "tgt": {
+    "local": 0
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 0
+   },
+   "type": "has_family_mutation",
+   "tgt": {
+    "local": 1
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 0
+   },
+   "type": "has_family_mutation",
+   "tgt": {
+    "local": 2
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 0
+   },
+   "type": "has_family_mutation",
+   "tgt": {
+    "local": 3
+   },
+   "attrs": {}
+  }
+ ],
+ "productions": [],
+ "rules": [
+  {
+   "name": "family_proposal_held_baseline",
+   "comment": "A size-0 candidate is a held family, measured on the same bank as the baseline for novelty.",
+   "match": [
+    [
+     "agent",
+     "has_operator_authorship_policy",
+     "pol"
+    ],
+    [
+     "pol",
+     "has_family_proposal",
+     "p"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "p"
+         },
+         "key": "status"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "measured"
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "p"
+         },
+         "key": "verdict"
+        },
+        "b": {
+         "type": "Lit",
+         "value": null
+        }
+       }
+      ]
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "p"
+       },
+       "key": "size"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "p",
+     "verdict",
+     "held_baseline"
+    ]
+   ]
+  },
+  {
+   "name": "family_proposal_qualifies",
+   "comment": "Gate A5a's criterion as data: >= k_fix bank turns fixed, zero harm in every replay, and a fixed class no held family fixes.",
+   "match": [
+    [
+     "agent",
+     "has_operator_authorship_policy",
+     "pol"
+    ],
+    [
+     "pol",
+     "has_family_proposal",
+     "p"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "p"
+         },
+         "key": "status"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "measured"
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "p"
+         },
+         "key": "verdict"
+        },
+        "b": {
+         "type": "Lit",
+         "value": null
+        }
+       }
+      ]
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "p"
+       },
+       "key": "size"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "pol"
+       },
+       "key": "enabled"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1
+      }
+     },
+     {
+      "type": "Gte",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "p"
+       },
+       "key": "fixed"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "pol"
+       },
+       "key": "k_fix"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "p"
+       },
+       "key": "harm"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "p"
+       },
+       "key": "novel_fixed"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "p",
+     "verdict",
+     "qualifies"
+    ],
+    [
+     "set_attr",
+     "p",
+     "qualifies",
+     1
+    ]
+   ]
+  },
+  {
+   "name": "family_proposal_does_not_qualify",
+   "comment": "Any one of: too few fixes, any harm, or nothing a held family does not already fix.",
+   "match": [
+    [
+     "agent",
+     "has_operator_authorship_policy",
+     "pol"
+    ],
+    [
+     "pol",
+     "has_family_proposal",
+     "p"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "p"
+         },
+         "key": "status"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "measured"
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "p"
+         },
+         "key": "verdict"
+        },
+        "b": {
+         "type": "Lit",
+         "value": null
+        }
+       }
+      ]
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "p"
+       },
+       "key": "size"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     },
+     {
+      "type": "Or",
+      "items": [
+       {
+        "type": "Gt",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "pol"
+         },
+         "key": "k_fix"
+        },
+        "b": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "p"
+         },
+         "key": "fixed"
+        }
+       },
+       {
+        "type": "Gt",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "p"
+         },
+         "key": "harm"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "p"
+         },
+         "key": "novel_fixed"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "p",
+     "verdict",
+     "does_not_qualify"
+    ],
+    [
+     "set_attr",
+     "p",
+     "qualifies",
+     0
+    ]
+   ]
+  },
+  {
+   "name": "family_proposal_propose_only",
+   "comment": "Propose-only: installing an agent-authored VariationOp needs the human-approved improvement_integrity exception (plan P5).",
+   "match": [
+    [
+     "agent",
+     "has_operator_authorship_policy",
+     "pol"
+    ],
+    [
+     "pol",
+     "has_family_proposal",
+     "p"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "p"
+       },
+       "key": "verdict"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "qualifies"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "pol"
+       },
+       "key": "propose_only"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "p"
+        },
+        "key": "install_blocked"
+       },
+       "b": {
+        "type": "Lit",
+        "value": 1
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "p",
+     "install_blocked",
+     1
+    ],
+    [
+     "set_attr",
+     "p",
+     "install_blocked_reason",
+     "propose-only: an agent-authored variation family is installed only after a human adds the narrow operator_authorship exception to improvement_integrity"
+    ]
+   ]
+  }
+ ]
+}
