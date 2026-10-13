@@ -1,6 +1,6 @@
 {
  "id": "self_promotion",
- "version": "1.2.0",
+ "version": "1.3.0",
  "depends_on": [
   "gap_awareness"
  ],
@@ -15,11 +15,12 @@
     "eligible_kinds": [
      "instruction",
      "comprehension",
-     "unanswered"
+     "unanswered",
+     "reply_quality"
     ],
     "max_promotions": 1000,
     "promoted_count": 0,
-    "description": "Agent-held policy: which of its own concern kinds it may promote without a human, and how many in total. v1.1.0 default: kinds whose promotion takes the CONVERSATION replay pipeline with an exact judge. Excluded after the tranche-20 v1 run: 'self_improvement' (its ARC bundle mints a world-game Experiment that cannot dispatch when no world is attached; measured: it held the loop busy for the rest of the stream) and 'performance' (its judge compares wall-clock mean turn latency without a quantised grain, so a variant can be 'supported' by timing noise; measured: it adopted an ablation of reply_held_capability, a rule that never fired in the replay). Knowledge gaps stay on the comprehend-first learning path. v1.2.0 (tranche 22): 'unanswered' -- the agent's own recurring unanswered turn class (seeds/unanswered_gap.json), judged by the production-path conversation replay."
+    "description": "Agent-held policy: which of its own concern kinds it may promote without a human, and how many in total. v1.1.0 default: kinds whose promotion takes the CONVERSATION replay pipeline with an exact judge. Excluded after the tranche-20 v1 run: 'self_improvement' (its ARC bundle mints a world-game Experiment that cannot dispatch when no world is attached; measured: it held the loop busy for the rest of the stream) and 'performance' (its judge compares wall-clock mean turn latency without a quantised grain, so a variant can be 'supported' by timing noise; measured: it adopted an ablation of reply_held_capability, a rule that never fired in the replay). Knowledge gaps stay on the comprehend-first learning path. v1.2.0 (tranche 22): 'unanswered' -- the agent's own recurring unanswered turn class (seeds/unanswered_gap.json), judged by the production-path conversation replay. v1.3.0 (plan P2): 'reply_quality' -- the agent's own recurring bad-reply class (seeds/reply_feedback_gap.json), enabled only now that judge v2 (adoption_safety v1.2.0) refuses fixes that lower reply quality."
    }
   }
  ],

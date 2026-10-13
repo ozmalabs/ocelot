@@ -218,7 +218,8 @@ def read_corpus(agent) -> list:
                 if I.has_node(mid):
                     at0 = S.node(mid)["attrs"]
                     scope_pairs.add((at0.get("comp_kind"), at0.get("shadow_speech_act"), _first_role(S, I, mid)))
-        if S.node(sc)["attrs"].get("kind") in ("reply_fix", "instruction", "unanswered", "comprehension"):
+        if S.node(sc)["attrs"].get("kind") in ("reply_fix", "instruction", "unanswered", "comprehension",
+                                               "reply_quality"):
             for mid in I.neighbours(sc, "about_message"):
                 if I.has_node(mid):
                     flagged_ids.add(int(mid.value))

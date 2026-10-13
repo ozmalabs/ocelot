@@ -1,0 +1,1664 @@
+{
+ "id": "reply_feedback_gap",
+ "version": "1.0.0",
+ "depends_on": [
+  "gap_awareness",
+  "conversation_turn_ring"
+ ],
+ "description": "Emit seeds/reply_feedback_gap.json (plan P2, 2026-10-10): the agent files\nits own BAD REPLIES as concerns -- not only its unanswered turns.\n\nUntil P2 the loop's supply was the agent's own error floor\n(seeds/unanswered_gap.json), reader disagreements (comprehension_health) and\nhuman flags. A reply that was produced but did not fit -- a goal-take for a\nstatement, a receipt for a question, a dictionary definition for \"what do you\nlike to do for fun?\" -- filed nothing. Two kinds of evidence now do:\n\n  * ACT MISMATCH, measured in production. WorldAdapter.record_turn_outcome\n    writes the turn's ReplyQuality (domains/reply_quality.py, the measure\n    judge v2 uses) as a datum: reply_quality_score / _reason / _reply_class.\n    A score of 0 on a reply that is not the error floor or silence (those\n    are unanswered_gap's) is evidence.\n  * THE INTERLOCUTOR'S NEXT TURN. A turn that follows the agent's reply with\n    other-initiated repair (\"what?\", \"huh?\", \"I don't understand\") or a\n    rejection aimed at the reply (\"that's not what I asked\", \"no, I meant\")\n    -- held ReplyFeedbackCue nodes, agent-editable data -- or that asks the\n    SAME question again within the attended turn ring, is evidence about the\n    PREVIOUS turn's reply (WorldAdapter.receive_utterance links each inbound\n    turn to the previous one with `follows_turn`).\n\nEvidence is held as TurnShape{shape_kind:'reply_feedback', sig_signal,\nsig_reason} (the conversation turn ring's conceptual tier): signal is\nact_mismatch / repair / rejection / repeat, reason the ReplyQuality class pair\nof the turn whose reply drew it (\"statement->goal_take\"). A class files one\nSelfConcern{kind:'reply_quality'} once it recurs min_recurrence times\n(ReplyFeedbackPolicy), pointing about_message at the class's oldest turn --\nthe turn whose reply the experiment must change; the feedback turn itself is\nlinked by `drew_feedback`, never about_message. Idempotent.\n",
+ "nodes": [
+  {
+   "local_id": 0,
+   "type": "ReplyFeedbackPolicy",
+   "attrs": {
+    "name": "reply_feedback_gap",
+    "enabled": 1,
+    "min_recurrence": 2,
+    "description": "Agent-held policy: how many bad replies of one evidence class (signal x ReplyQuality class pair) make a reply_quality concern."
+   }
+  },
+  {
+   "local_id": 1,
+   "type": "ReplyFeedbackCue",
+   "attrs": {
+    "phrase": "what",
+    "match_mode": "whole",
+    "feedback_class": "repair"
+   }
+  },
+  {
+   "local_id": 2,
+   "type": "ReplyFeedbackCue",
+   "attrs": {
+    "phrase": "huh",
+    "match_mode": "whole",
+    "feedback_class": "repair"
+   }
+  },
+  {
+   "local_id": 3,
+   "type": "ReplyFeedbackCue",
+   "attrs": {
+    "phrase": "sorry",
+    "match_mode": "whole",
+    "feedback_class": "repair"
+   }
+  },
+  {
+   "local_id": 4,
+   "type": "ReplyFeedbackCue",
+   "attrs": {
+    "phrase": "pardon",
+    "match_mode": "whole",
+    "feedback_class": "repair"
+   }
+  },
+  {
+   "local_id": 5,
+   "type": "ReplyFeedbackCue",
+   "attrs": {
+    "phrase": "what do you mean",
+    "match_mode": "prefix",
+    "feedback_class": "repair"
+   }
+  },
+  {
+   "local_id": 6,
+   "type": "ReplyFeedbackCue",
+   "attrs": {
+    "phrase": "i don't understand",
+    "match_mode": "prefix",
+    "feedback_class": "repair"
+   }
+  },
+  {
+   "local_id": 7,
+   "type": "ReplyFeedbackCue",
+   "attrs": {
+    "phrase": "i do not understand",
+    "match_mode": "prefix",
+    "feedback_class": "repair"
+   }
+  },
+  {
+   "local_id": 8,
+   "type": "ReplyFeedbackCue",
+   "attrs": {
+    "phrase": "that doesn't make sense",
+    "match_mode": "prefix",
+    "feedback_class": "repair"
+   }
+  },
+  {
+   "local_id": 9,
+   "type": "ReplyFeedbackCue",
+   "attrs": {
+    "phrase": "that makes no sense",
+    "match_mode": "prefix",
+    "feedback_class": "repair"
+   }
+  },
+  {
+   "local_id": 10,
+   "type": "ReplyFeedbackCue",
+   "attrs": {
+    "phrase": "that's not what i asked",
+    "match_mode": "prefix",
+    "feedback_class": "rejection"
+   }
+  },
+  {
+   "local_id": 11,
+   "type": "ReplyFeedbackCue",
+   "attrs": {
+    "phrase": "that is not what i asked",
+    "match_mode": "prefix",
+    "feedback_class": "rejection"
+   }
+  },
+  {
+   "local_id": 12,
+   "type": "ReplyFeedbackCue",
+   "attrs": {
+    "phrase": "that's not what i meant",
+    "match_mode": "prefix",
+    "feedback_class": "rejection"
+   }
+  },
+  {
+   "local_id": 13,
+   "type": "ReplyFeedbackCue",
+   "attrs": {
+    "phrase": "no, i meant",
+    "match_mode": "prefix",
+    "feedback_class": "rejection"
+   }
+  },
+  {
+   "local_id": 14,
+   "type": "ReplyFeedbackCue",
+   "attrs": {
+    "phrase": "no i meant",
+    "match_mode": "prefix",
+    "feedback_class": "rejection"
+   }
+  },
+  {
+   "local_id": 15,
+   "type": "ReplyFeedbackCue",
+   "attrs": {
+    "phrase": "you didn't answer",
+    "match_mode": "prefix",
+    "feedback_class": "rejection"
+   }
+  },
+  {
+   "local_id": 16,
+   "type": "ReplyFeedbackCue",
+   "attrs": {
+    "phrase": "that's not an answer",
+    "match_mode": "prefix",
+    "feedback_class": "rejection"
+   }
+  },
+  {
+   "local_id": 17,
+   "type": "ReplyFeedbackCue",
+   "attrs": {
+    "phrase": "that's wrong",
+    "match_mode": "prefix",
+    "feedback_class": "rejection"
+   }
+  }
+ ],
+ "edges": [
+  {
+   "src": {
+    "role": "agent_root"
+   },
+   "type": "has_reply_feedback_policy",
+   "tgt": {
+    "local": 0
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 0
+   },
+   "type": "has_feedback_cue",
+   "tgt": {
+    "local": 1
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 0
+   },
+   "type": "has_feedback_cue",
+   "tgt": {
+    "local": 2
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 0
+   },
+   "type": "has_feedback_cue",
+   "tgt": {
+    "local": 3
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 0
+   },
+   "type": "has_feedback_cue",
+   "tgt": {
+    "local": 4
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 0
+   },
+   "type": "has_feedback_cue",
+   "tgt": {
+    "local": 5
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 0
+   },
+   "type": "has_feedback_cue",
+   "tgt": {
+    "local": 6
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 0
+   },
+   "type": "has_feedback_cue",
+   "tgt": {
+    "local": 7
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 0
+   },
+   "type": "has_feedback_cue",
+   "tgt": {
+    "local": 8
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 0
+   },
+   "type": "has_feedback_cue",
+   "tgt": {
+    "local": 9
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 0
+   },
+   "type": "has_feedback_cue",
+   "tgt": {
+    "local": 10
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 0
+   },
+   "type": "has_feedback_cue",
+   "tgt": {
+    "local": 11
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 0
+   },
+   "type": "has_feedback_cue",
+   "tgt": {
+    "local": 12
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 0
+   },
+   "type": "has_feedback_cue",
+   "tgt": {
+    "local": 13
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 0
+   },
+   "type": "has_feedback_cue",
+   "tgt": {
+    "local": 14
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 0
+   },
+   "type": "has_feedback_cue",
+   "tgt": {
+    "local": 15
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 0
+   },
+   "type": "has_feedback_cue",
+   "tgt": {
+    "local": 16
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "local": 0
+   },
+   "type": "has_feedback_cue",
+   "tgt": {
+    "local": 17
+   },
+   "attrs": {}
+  }
+ ],
+ "productions": [],
+ "rules": [
+  {
+   "name": "tally_reply_act_mismatch",
+   "comment": "An attended turn whose produced reply scored inappropriate in production (not the error floor or silence) joins its class shape.",
+   "match": [
+    [
+     "agent",
+     "received",
+     "m"
+    ],
+    [
+     "agent",
+     "has_reply_feedback_policy",
+     "pol"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "pol"
+       },
+       "key": "enabled"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "m"
+       },
+       "key": "from"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "interlocutor"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "m"
+       },
+       "key": "reply_quality_score"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.0
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "In",
+       "member": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "m"
+        },
+        "key": "reply_quality_reply_class"
+       },
+       "container": {
+        "type": "Lit",
+        "value": [
+         "error",
+         "none"
+        ]
+       }
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "m"
+        },
+        "key": "reply_mismatch_tallied"
+       },
+       "b": {
+        "type": "Lit",
+        "value": 1
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node_if_absent",
+     "sh",
+     "TurnShape",
+     {
+      "shape_kind": "reply_feedback",
+      "sig_signal": {
+       "__term__": {
+        "type": "Lit",
+        "value": "act_mismatch"
+       }
+      },
+      "sig_reason": {
+       "__term__": {
+        "type": "IfThenElse",
+        "cond": {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "m"
+          },
+          "key": "reply_quality_reason"
+         },
+         "b": {
+          "type": "Lit",
+          "value": null
+         }
+        },
+        "then": {
+         "type": "Lit",
+         "value": ""
+        },
+        "other": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "m"
+         },
+         "key": "reply_quality_reason"
+        }
+       }
+      }
+     }
+    ],
+    [
+     "add_edge",
+     "agent",
+     "has_turn_shape",
+     "sh"
+    ],
+    [
+     "add_edge",
+     "sh",
+     "has_member",
+     "m"
+    ],
+    [
+     "add_edge",
+     "m",
+     "member_of",
+     "sh"
+    ],
+    [
+     "set_attr",
+     "m",
+     "reply_mismatch_tallied",
+     1
+    ]
+   ]
+  },
+  {
+   "name": "tally_reply_feedback_cue",
+   "comment": "The interlocutor's next turn repairs or rejects the agent's reply (a held ReplyFeedbackCue): evidence about the previous turn.",
+   "match": [
+    [
+     "agent",
+     "received",
+     "m2"
+    ],
+    [
+     "m2",
+     "follows_turn",
+     "m1"
+    ],
+    [
+     "pol",
+     "has_feedback_cue",
+     "c"
+    ],
+    [
+     "agent",
+     "has_reply_feedback_policy",
+     "pol"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "pol"
+       },
+       "key": "enabled"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "m2"
+       },
+       "key": "from"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "interlocutor"
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "m2"
+        },
+        "key": "feedback_cue_tallied"
+       },
+       "b": {
+        "type": "Lit",
+        "value": 1
+       }
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "m1"
+        },
+        "key": "turn_outcome"
+       },
+       "b": {
+        "type": "Lit",
+        "value": null
+       }
+      }
+     },
+     {
+      "type": "Let",
+      "name": "b",
+      "value": {
+       "type": "Replace",
+       "text": {
+        "type": "Replace",
+        "text": {
+         "type": "Replace",
+         "text": {
+          "type": "CaseFold",
+          "text": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "m2"
+           },
+           "key": "text"
+          }
+         },
+         "old": {
+          "type": "Lit",
+          "value": "?"
+         },
+         "new": {
+          "type": "Lit",
+          "value": ""
+         }
+        },
+        "old": {
+         "type": "Lit",
+         "value": "!"
+        },
+        "new": {
+         "type": "Lit",
+         "value": ""
+        }
+       },
+       "old": {
+        "type": "Lit",
+        "value": "."
+       },
+       "new": {
+        "type": "Lit",
+        "value": ""
+       }
+      },
+      "body": {
+       "type": "Or",
+       "items": [
+        {
+         "type": "And",
+         "items": [
+          {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "c"
+            },
+            "key": "match_mode"
+           },
+           "b": {
+            "type": "Lit",
+            "value": "whole"
+           }
+          },
+          {
+           "type": "Eq",
+           "a": {
+            "type": "Var",
+            "name": "b"
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "c"
+            },
+            "key": "phrase"
+           }
+          }
+         ]
+        },
+        {
+         "type": "And",
+         "items": [
+          {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "c"
+            },
+            "key": "match_mode"
+           },
+           "b": {
+            "type": "Lit",
+            "value": "prefix"
+           }
+          },
+          {
+           "type": "Eq",
+           "a": {
+            "type": "StringIndexOf",
+            "haystack": {
+             "type": "Var",
+             "name": "b"
+            },
+            "needle": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "c"
+             },
+             "key": "phrase"
+            }
+           },
+           "b": {
+            "type": "Lit",
+            "value": 0
+           }
+          }
+         ]
+        }
+       ]
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node_if_absent",
+     "sh",
+     "TurnShape",
+     {
+      "shape_kind": "reply_feedback",
+      "sig_signal": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "c"
+        },
+        "key": "feedback_class"
+       }
+      },
+      "sig_reason": {
+       "__term__": {
+        "type": "IfThenElse",
+        "cond": {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "m1"
+          },
+          "key": "reply_quality_reason"
+         },
+         "b": {
+          "type": "Lit",
+          "value": null
+         }
+        },
+        "then": {
+         "type": "Lit",
+         "value": ""
+        },
+        "other": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "m1"
+         },
+         "key": "reply_quality_reason"
+        }
+       }
+      }
+     }
+    ],
+    [
+     "add_edge",
+     "agent",
+     "has_turn_shape",
+     "sh"
+    ],
+    [
+     "add_edge",
+     "sh",
+     "has_member",
+     "m1"
+    ],
+    [
+     "add_edge",
+     "m1",
+     "member_of",
+     "sh"
+    ],
+    [
+     "add_edge",
+     "m1",
+     "drew_feedback",
+     "m2"
+    ],
+    [
+     "set_attr",
+     "m2",
+     "feedback_cue_tallied",
+     1
+    ]
+   ]
+  },
+  {
+   "name": "tally_repeated_question",
+   "comment": "The interlocutor asks an attended earlier question again: the earlier turn's reply did not answer it.",
+   "match": [
+    [
+     "agent",
+     "received",
+     "m2"
+    ],
+    [
+     "agent",
+     "received",
+     "m1"
+    ],
+    [
+     "agent",
+     "has_reply_feedback_policy",
+     "pol"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "pol"
+       },
+       "key": "enabled"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "m2"
+       },
+       "key": "from"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "interlocutor"
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "m2"
+        },
+        "key": "repeat_tallied"
+       },
+       "b": {
+        "type": "Lit",
+        "value": 1
+       }
+      }
+     },
+     {
+      "type": "Gte",
+      "a": {
+       "type": "StringIndexOf",
+       "haystack": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "m2"
+        },
+        "key": "text"
+       },
+       "needle": {
+        "type": "Lit",
+        "value": "?"
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "m1"
+       },
+       "key": "from"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "interlocutor"
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Var",
+       "name": "m1"
+      },
+      "b": {
+       "type": "Var",
+       "name": "m2"
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "m1"
+        },
+        "key": "turn_outcome"
+       },
+       "b": {
+        "type": "Lit",
+        "value": null
+       }
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Replace",
+       "text": {
+        "type": "Replace",
+        "text": {
+         "type": "Replace",
+         "text": {
+          "type": "CaseFold",
+          "text": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "m1"
+           },
+           "key": "text"
+          }
+         },
+         "old": {
+          "type": "Lit",
+          "value": "?"
+         },
+         "new": {
+          "type": "Lit",
+          "value": ""
+         }
+        },
+        "old": {
+         "type": "Lit",
+         "value": "!"
+        },
+        "new": {
+         "type": "Lit",
+         "value": ""
+        }
+       },
+       "old": {
+        "type": "Lit",
+        "value": "."
+       },
+       "new": {
+        "type": "Lit",
+        "value": ""
+       }
+      },
+      "b": {
+       "type": "Replace",
+       "text": {
+        "type": "Replace",
+        "text": {
+         "type": "Replace",
+         "text": {
+          "type": "CaseFold",
+          "text": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "m2"
+           },
+           "key": "text"
+          }
+         },
+         "old": {
+          "type": "Lit",
+          "value": "?"
+         },
+         "new": {
+          "type": "Lit",
+          "value": ""
+         }
+        },
+        "old": {
+         "type": "Lit",
+         "value": "!"
+        },
+        "new": {
+         "type": "Lit",
+         "value": ""
+        }
+       },
+       "old": {
+        "type": "Lit",
+        "value": "."
+       },
+       "new": {
+        "type": "Lit",
+        "value": ""
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node_if_absent",
+     "sh",
+     "TurnShape",
+     {
+      "shape_kind": "reply_feedback",
+      "sig_signal": "repeat",
+      "sig_reason": {
+       "__term__": {
+        "type": "IfThenElse",
+        "cond": {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "m1"
+          },
+          "key": "reply_quality_reason"
+         },
+         "b": {
+          "type": "Lit",
+          "value": null
+         }
+        },
+        "then": {
+         "type": "Lit",
+         "value": ""
+        },
+        "other": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "m1"
+         },
+         "key": "reply_quality_reason"
+        }
+       }
+      }
+     }
+    ],
+    [
+     "add_edge",
+     "agent",
+     "has_turn_shape",
+     "sh"
+    ],
+    [
+     "add_edge",
+     "sh",
+     "has_member",
+     "m1"
+    ],
+    [
+     "add_edge",
+     "m1",
+     "member_of",
+     "sh"
+    ],
+    [
+     "add_edge",
+     "m1",
+     "drew_feedback",
+     "m2"
+    ],
+    [
+     "set_attr",
+     "m2",
+     "repeat_tallied",
+     1
+    ]
+   ]
+  },
+  {
+   "name": "mark_reply_feedback_shape_first_member",
+   "comment": "The oldest member of a reply_feedback TurnShape is its first_member (the turn the concern names), marked while it is attended.",
+   "match": [
+    [
+     "agent",
+     "received",
+     "m"
+    ],
+    [
+     "m",
+     "member_of",
+     "sh"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "sh"
+       },
+       "key": "shape_kind"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "reply_feedback"
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "sh"
+        },
+        "edge_type": "first_member"
+       },
+       "var_name": "_f",
+       "predicate": {
+        "type": "Lit",
+        "value": true
+       }
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Var",
+       "name": "m"
+      },
+      "b": {
+       "type": "Argmin",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "sh"
+        },
+        "edge_type": "has_member"
+       },
+       "var_name": "x",
+       "value": {
+        "type": "Var",
+        "name": "x"
+       },
+       "default": null
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_edge",
+     "sh",
+     "first_member",
+     "m"
+    ]
+   ]
+  },
+  {
+   "name": "note_reply_quality_gap",
+   "comment": "File a recurring bad-reply class as the agent's own experiment-eligible concern (see seed description).",
+   "match": [
+    [
+     "agent",
+     "has_turn_shape",
+     "sh"
+    ],
+    [
+     "sh",
+     "first_member",
+     "m"
+    ],
+    [
+     "agent",
+     "has_reply_feedback_policy",
+     "pol"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "pol"
+       },
+       "key": "enabled"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "sh"
+       },
+       "key": "shape_kind"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "reply_feedback"
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "sh"
+        },
+        "key": "reply_quality_noted"
+       },
+       "b": {
+        "type": "Lit",
+        "value": 1
+       }
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "NodesOfType",
+        "node_type": "SelfConcern"
+       },
+       "var_name": "sc2",
+       "predicate": {
+        "type": "And",
+        "items": [
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "sc2"
+           },
+           "key": "kind"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "reply_quality"
+          }
+         },
+         {
+          "type": "Eq",
+          "a": {
+           "type": "IfThenElse",
+           "cond": {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "sc2"
+             },
+             "key": "sig_signal"
+            },
+            "b": {
+             "type": "Lit",
+             "value": null
+            }
+           },
+           "then": {
+            "type": "Lit",
+            "value": ""
+           },
+           "other": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "sc2"
+            },
+            "key": "sig_signal"
+           }
+          },
+          "b": {
+           "type": "IfThenElse",
+           "cond": {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "sh"
+             },
+             "key": "sig_signal"
+            },
+            "b": {
+             "type": "Lit",
+             "value": null
+            }
+           },
+           "then": {
+            "type": "Lit",
+            "value": ""
+           },
+           "other": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "sh"
+            },
+            "key": "sig_signal"
+           }
+          }
+         },
+         {
+          "type": "Eq",
+          "a": {
+           "type": "IfThenElse",
+           "cond": {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "sc2"
+             },
+             "key": "sig_reason"
+            },
+            "b": {
+             "type": "Lit",
+             "value": null
+            }
+           },
+           "then": {
+            "type": "Lit",
+            "value": ""
+           },
+           "other": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "sc2"
+            },
+            "key": "sig_reason"
+           }
+          },
+          "b": {
+           "type": "IfThenElse",
+           "cond": {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "sh"
+             },
+             "key": "sig_reason"
+            },
+            "b": {
+             "type": "Lit",
+             "value": null
+            }
+           },
+           "then": {
+            "type": "Lit",
+            "value": ""
+           },
+           "other": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "sh"
+            },
+            "key": "sig_reason"
+           }
+          }
+         }
+        ]
+       }
+      }
+     },
+     {
+      "type": "Gte",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "sh"
+        },
+        "edge_type": "has_member"
+       }
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "pol"
+       },
+       "key": "min_recurrence"
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "sh",
+     "reply_quality_noted",
+     1
+    ],
+    [
+     "add_node",
+     "sc",
+     "SelfConcern",
+     {
+      "status": "noted",
+      "source": "implicit",
+      "kind": "reply_quality",
+      "content": {
+       "__term__": {
+        "type": "StringConcat",
+        "parts": [
+         {
+          "type": "Lit",
+          "value": "my reply to a "
+         },
+         {
+          "type": "IfThenElse",
+          "cond": {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "sh"
+            },
+            "key": "sig_reason"
+           },
+           "b": {
+            "type": "Lit",
+            "value": null
+           }
+          },
+          "then": {
+           "type": "Lit",
+           "value": ""
+          },
+          "other": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "sh"
+           },
+           "key": "sig_reason"
+          }
+         },
+         {
+          "type": "Lit",
+          "value": " turn drew "
+         },
+         {
+          "type": "IfThenElse",
+          "cond": {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "sh"
+            },
+            "key": "sig_signal"
+           },
+           "b": {
+            "type": "Lit",
+            "value": null
+           }
+          },
+          "then": {
+           "type": "Lit",
+           "value": ""
+          },
+          "other": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "sh"
+           },
+           "key": "sig_signal"
+          }
+         },
+         {
+          "type": "Lit",
+          "value": ", e.g. \""
+         },
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "m"
+          },
+          "key": "text"
+         },
+         {
+          "type": "Lit",
+          "value": "\" -> \""
+         },
+         {
+          "type": "IfThenElse",
+          "cond": {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "m"
+            },
+            "key": "comp_reply_text"
+           },
+           "b": {
+            "type": "Lit",
+            "value": null
+           }
+          },
+          "then": {
+           "type": "Lit",
+           "value": ""
+          },
+          "other": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "m"
+           },
+           "key": "comp_reply_text"
+          }
+         },
+         {
+          "type": "Lit",
+          "value": "\""
+         }
+        ]
+       }
+      },
+      "sig_signal": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "sh"
+        },
+        "key": "sig_signal"
+       }
+      },
+      "sig_reason": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "sh"
+        },
+        "key": "sig_reason"
+       }
+      }
+     }
+    ],
+    [
+     "add_edge",
+     "agent",
+     "has_self_concern",
+     "sc"
+    ],
+    [
+     "add_edge",
+     "sc",
+     "about_message",
+     "m"
+    ]
+   ]
+  }
+ ]
+}

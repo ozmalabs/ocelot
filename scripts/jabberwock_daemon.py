@@ -851,6 +851,7 @@ _REFRESHABLE_SEEDS = frozenset({
     "improvement_integrity",
     "self_promotion",
     "unanswered_gap",
+    "reply_feedback_gap",
     "variation_ops",
     "adoption_safety",
     "literary_analysis_driving",
@@ -2443,7 +2444,8 @@ def _promote_relations_for_concern(kind: str, content_words: list, tag: str) -> 
         for w in content_words[:4]:
             relations.append([w, "TARGET", "of", "READ"])
         return relations, "prog_read"
-    want_experiment = (kind in ("self_improvement", "instruction", "performance", "comprehension", "unanswered")
+    want_experiment = (kind in ("self_improvement", "instruction", "performance", "comprehension", "unanswered",
+                                "reply_quality")
                        or _content_suggests_experiment(content_words))
     if want_experiment:
         # RESIDUAL-CLOSURE wave: a 'reported' concern (gap_awareness's
@@ -2454,7 +2456,7 @@ def _promote_relations_for_concern(kind: str, content_words: list, tag: str) -> 
         # this is what lets a reported held-threshold gap reach the knob_edit
         # family + the replay world instead of a meaningless ARC episode.
         if kind in ("reply_fix", "knowledge", "instruction", "performance",
-                    "comprehension", "reported", "unanswered"):
+                    "comprehension", "reported", "unanswered", "reply_quality"):
             relations = [
                 ["test", "HYPOTHESIS", "about", tag],
                 ["replay", "TURN", "in", "CONVERSATION"],

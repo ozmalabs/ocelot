@@ -25,6 +25,8 @@ Rules (graph decisions; Python only executes):
 Each shape-owning seed marks its own shapes' first_member (the oldest
 member, while it is attended) right after its tally, because rules run in
 load order within a pass and the ring loads before the shape seeds.
+v1.1.0 (plan P2): a turn is also folded only once a bad produced reply has
+joined seeds/reply_feedback_gap.json's act-mismatch shape.
 Idempotent.
 """
 import json
@@ -60,6 +62,14 @@ DIVERGENCE_FOLDED = Or(
     Eq(A("m", "divergence_tallied"), L(1)),
     Not(Any("HealthNorm")))
 
+# plan P2 (v1.1.0): a produced reply that scored inappropriate in production
+# is folded into seeds/reply_feedback_gap.json's act-mismatch shape first
+REPLY_FEEDBACK_FOLDED = Or(
+    Not(Eq(A("m", "reply_quality_score"), L(0.0))),
+    {"type": "In", "member": A("m", "reply_quality_reply_class"), "container": L(["error", "none"])},
+    Eq(A("m", "reply_mismatch_tallied"), L(1)),
+    Not(Any("ReplyFeedbackPolicy")))
+
 SALIENCE = {
     "name": "turn_salience_from_outcome",
     "comment": "A concluded, shape-folded interlocutor turn gets its ring-retention salience from the held TurnRingPolicy weights (see seed description).",
@@ -69,7 +79,7 @@ SALIENCE = {
         Eq(A("m", "from"), L("interlocutor")),
         Not(Eq(A("m", "turn_outcome"), L(None))),
         Eq(A("m", "turn_salience"), L(None)),
-        UNANSWERED_FOLDED, DIVERGENCE_FOLDED),
+        UNANSWERED_FOLDED, DIVERGENCE_FOLDED, REPLY_FEEDBACK_FOLDED),
     "effects": [["set_attr", "m", "turn_salience", T(
         Ite(Eq(A("m", "turn_outcome"), L("explicit_error")), A("pol", "salience_unanswered"),
             Ite(Eq(A("m", "speech_act_divergence"), L(1.0)), A("pol", "salience_divergent"),
@@ -95,7 +105,7 @@ WIDEN = {
 
 seed = {
     "id": "conversation_turn_ring",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "depends_on": ["reading_aperture"],
     "description": __doc__,
     "nodes": [

@@ -1922,6 +1922,14 @@ class WorldAdapter:
         prev = getattr(self, "_last_message", None)
         if prev is not None:
             self.inner.add_edge_unchecked(mid, "responds_to", prev)
+        # Interlocutor turn spine (plan P2): this turn follows the previous
+        # interlocutor turn. `responds_to` may point at the agent's outbound
+        # reply or at the previous turn itself (graph-native replies do not
+        # move _last_message), so feedback rules read this edge instead.
+        prev_inbound = getattr(self, "_last_interlocutor_message", None)
+        if prev_inbound is not None and self.s.has_node(prev_inbound):
+            self.inner.add_edge_unchecked(mid, "follows_turn", prev_inbound)
+        self._last_interlocutor_message = mid
         self._last_message = mid
         self._last_turn_inbound = mid
         # Tokenise the text into Mention nodes (mechanical text->graph at the
@@ -9096,6 +9104,7 @@ class WorldAdapter:
                 mid = srs.NodeID(mid)
             if mid is not None and self.s.has_node(mid):
                 self.inner.set_attr(mid, "turn_outcome", str(status))
+                self._record_reply_quality(mid, status)
                 # the conversation TURN RING (domains/conversation_aperture.py,
                 # the reading ring applied to turns): bound the attended turns
                 # to N. Mechanical: eligibility and salience are graph data;
@@ -9110,6 +9119,35 @@ class WorldAdapter:
         except Exception:  # noqa: BLE001 -- a datum write never breaks a turn
             pass
         return False
+
+    def _record_reply_quality(self, mid, status):
+        """MECHANICAL production datum (plan P2): ReplyQuality
+        (domains/reply_quality.py, criteria as data) of the reply this turn
+        actually got, written onto the inbound Message as reply_quality_score
+        / reply_quality_reason / reply_quality_reply_class. The measure is the
+        same one the child replay and judge v2 use; what to do about a low
+        score is decided by graph rules (seeds/reply_feedback_gap.json)."""
+        try:
+            at = self.s.node(mid)["attrs"]
+            if at.get("from") != "interlocutor":
+                return
+            surface = at.get("comp_reply_text") or at.get("turn_reply_surface") or ""
+            if not str(surface).strip() and str(status) == "explicit_error":
+                surface = _CONVERSATION_ERROR_SURFACE
+            literal_form = None
+            for i in self.inner.in_neighbours(mid, "interprets"):
+                if self.s.has_node(i):
+                    ia = self.s.node(i)["attrs"]
+                    if ia.get("schema") == "communication_interpretation.v1":
+                        literal_form = ia.get("literal_form")
+                        break
+            from domains import reply_quality as _rq
+            q = _rq.assess(str(at.get("text") or ""), str(surface or ""), literal_form)
+            self.inner.set_attr(mid, "reply_quality_score", float(q["score"]))
+            self.inner.set_attr(mid, "reply_quality_reason", f"{q['inbound_class']}->{q['reply_class']}")
+            self.inner.set_attr(mid, "reply_quality_reply_class", str(q["reply_class"]))
+        except Exception:  # noqa: BLE001 -- a datum write never breaks a turn
+            pass
 
     def graph_turn_reply_outcome(self, mid):
         """Read graph terminality without treating an explicit error as success."""

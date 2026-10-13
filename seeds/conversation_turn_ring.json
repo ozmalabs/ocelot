@@ -1,10 +1,10 @@
 {
  "id": "conversation_turn_ring",
- "version": "1.0.0",
+ "version": "1.1.0",
  "depends_on": [
   "reading_aperture"
  ],
- "description": "Emit seeds/conversation_turn_ring.json: the reading aperture applied to\nconversation turns (the ring, its retention salience and its one-shot widen).\n\nThe conversation keeps the last N concluded interlocutor turns ATTENDED\n(`agent received m`), N from the conversational ApertureBudget row's\nturn_capacity_* attrs via the SAME held reading_derive_trace_capacity\nProgram the reading ring uses (domains/reading_norms.effective_turn_capacity,\nseeds/reading_aperture.json v1.3.0). domains/conversation_aperture.\nenforce_turn_buffer (mechanical, the reading_scope.enforce_trace_buffer twin)\nevicts the lowest-salience, oldest eligible turn: `received` is replaced by\n`agent remembers m`, nothing else changes. Older turns survive conceptually\nin the TurnShape tier, which the shape-owning seeds build and read\n(unanswered_gap, comprehension_health).\n\nRules (graph decisions; Python only executes):\n  * turn_salience_from_outcome -- a concluded turn's retention salience, from\n    held TurnRingPolicy weights (unanswered > reader disagreement > other).\n    It is written only once the turn has been folded into its shapes, so a\n    turn is never evicted before the shape tier holds it. A turn with no\n    salience is never evicted.\n  * conversation_widen_turn_capacity_once -- the reading ladder's rung 1: an\n    eviction at or above the held turn_widen_salience_threshold widens the\n    ring once (TurnRing.capacity_widened).\nEach shape-owning seed marks its own shapes' first_member (the oldest\nmember, while it is attended) right after its tally, because rules run in\nload order within a pass and the ring loads before the shape seeds.\nIdempotent.\n",
+ "description": "Emit seeds/conversation_turn_ring.json: the reading aperture applied to\nconversation turns (the ring, its retention salience and its one-shot widen).\n\nThe conversation keeps the last N concluded interlocutor turns ATTENDED\n(`agent received m`), N from the conversational ApertureBudget row's\nturn_capacity_* attrs via the SAME held reading_derive_trace_capacity\nProgram the reading ring uses (domains/reading_norms.effective_turn_capacity,\nseeds/reading_aperture.json v1.3.0). domains/conversation_aperture.\nenforce_turn_buffer (mechanical, the reading_scope.enforce_trace_buffer twin)\nevicts the lowest-salience, oldest eligible turn: `received` is replaced by\n`agent remembers m`, nothing else changes. Older turns survive conceptually\nin the TurnShape tier, which the shape-owning seeds build and read\n(unanswered_gap, comprehension_health).\n\nRules (graph decisions; Python only executes):\n  * turn_salience_from_outcome -- a concluded turn's retention salience, from\n    held TurnRingPolicy weights (unanswered > reader disagreement > other).\n    It is written only once the turn has been folded into its shapes, so a\n    turn is never evicted before the shape tier holds it. A turn with no\n    salience is never evicted.\n  * conversation_widen_turn_capacity_once -- the reading ladder's rung 1: an\n    eviction at or above the held turn_widen_salience_threshold widens the\n    ring once (TurnRing.capacity_widened).\nEach shape-owning seed marks its own shapes' first_member (the oldest\nmember, while it is attended) right after its tally, because rules run in\nload order within a pass and the ring loads before the shape seeds.\nv1.1.0 (plan P2): a turn is also folded only once a bad produced reply has\njoined seeds/reply_feedback_gap.json's act-mismatch shape.\nIdempotent.\n",
  "nodes": [
   {
    "local_id": 0,
@@ -258,6 +258,77 @@
          "source": {
           "type": "NodesOfType",
           "node_type": "HealthNorm"
+         },
+         "var_name": "_any",
+         "predicate": {
+          "type": "Lit",
+          "value": true
+         }
+        }
+       }
+      ]
+     },
+     {
+      "type": "Or",
+      "items": [
+       {
+        "type": "Not",
+        "arg": {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "m"
+          },
+          "key": "reply_quality_score"
+         },
+         "b": {
+          "type": "Lit",
+          "value": 0.0
+         }
+        }
+       },
+       {
+        "type": "In",
+        "member": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "m"
+         },
+         "key": "reply_quality_reply_class"
+        },
+        "container": {
+         "type": "Lit",
+         "value": [
+          "error",
+          "none"
+         ]
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "m"
+         },
+         "key": "reply_mismatch_tallied"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 1
+        }
+       },
+       {
+        "type": "Not",
+        "arg": {
+         "type": "Exists",
+         "source": {
+          "type": "NodesOfType",
+          "node_type": "ReplyFeedbackPolicy"
          },
          "var_name": "_any",
          "predicate": {

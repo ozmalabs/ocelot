@@ -80,6 +80,9 @@ CONVERSATION_SELF_IMPROVEMENT_ANCHORS = frozenset({
     "comprehension_health",
     # tranche 22: the agent's own recurring unanswered turns as concerns
     "unanswered_gap",
+    # plan P2: the agent's own bad replies (production ReplyQuality, the
+    # interlocutor's next-turn repair / rejection / repeat) as concerns
+    "reply_feedback_gap",
 })
 CONVERSATION_SEED_ANCHORS = CONVERSATION_SEED_ANCHORS | CONVERSATION_SELF_IMPROVEMENT_ANCHORS
 
