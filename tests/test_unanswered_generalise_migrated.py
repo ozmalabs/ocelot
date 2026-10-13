@@ -72,6 +72,9 @@ def test_generalised_pair_answers_the_class_on_the_production_path(st):
     assert rep["source_rule"] == "defer_response_assertion_without_proposition_uptake"
     assert rep["guard"] == "interaction_relation"
     assert all(r["name"].endswith("_generalised") for r in rep["rules"]) and len(rep["rules"]) == 2
+    # plan P4: the held FamilyProgram builds the identical variant
+    prog = rf._compose_from_program(a, "family_disposition_generalise", ["t22_probe"], "t22")
+    assert rf.family_report_signature(prog) == rf.family_report_signature(rep)
     before_bake = E.say(st, "Bake the cake.")[1]
     for r in rep["rules"]:
         a.inner.add_rule(r)

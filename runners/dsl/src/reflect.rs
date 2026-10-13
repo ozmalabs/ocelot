@@ -3937,6 +3937,30 @@ fn describe(node: &TermNode) -> (&'static str, Vec<FieldValue<'_>>) {
                 child: *text,
             }],
         ),
+        TermNode::EditAt { tree, path, op, arg } => (
+            "EditAt",
+            vec![
+                Child { name: "tree", child: *tree },
+                Child { name: "path", child: *path },
+                Child { name: "op", child: *op },
+                Child { name: "arg", child: *arg },
+            ],
+        ),
+        TermNode::CharRunSub { text, keep, repl } => (
+            "CharRunSub",
+            vec![
+                Child { name: "text", child: *text },
+                Child { name: "keep", child: *keep },
+                Child { name: "repl", child: *repl },
+            ],
+        ),
+        TermNode::StripChars { text, chars } => (
+            "StripChars",
+            vec![
+                Child { name: "text", child: *text },
+                Child { name: "chars", child: *chars },
+            ],
+        ),
         TermNode::SynthEnumerate {
             examples,
             ops,
@@ -5254,6 +5278,21 @@ fn reconstruct(
         },
         "CaseFold" => TermNode::CaseFold {
             text: take_child!("text"),
+        },
+        "EditAt" => TermNode::EditAt {
+            tree: take_child!("tree"),
+            path: take_child!("path"),
+            op: take_child!("op"),
+            arg: take_child!("arg"),
+        },
+        "CharRunSub" => TermNode::CharRunSub {
+            text: take_child!("text"),
+            keep: take_child!("keep"),
+            repl: take_child!("repl"),
+        },
+        "StripChars" => TermNode::StripChars {
+            text: take_child!("text"),
+            chars: take_child!("chars"),
         },
         "SynthEnumerate" => TermNode::SynthEnumerate {
             examples: take_child!("examples"),

@@ -4874,6 +4874,116 @@ _VARIATION_REGISTRY = {
 
 
 # ---------------------------------------------------------------------------
+# FAMILY PROGRAMS (plan P4, 2026-10-10). A VariationOp may name a held
+# Program (`builder_program`, seeds/family_programs.json) that builds its
+# variant as graph data: the Program reads the concern context from the graph
+# and returns the builder's report as a value. `_compose_from_program` is the
+# one generic interpreter: it hands the Program the held rule set (and two
+# mechanical indexes) and normalises the returned value to plain JSON. When
+# the op names no held Program, the Python registry entry is used.
+#
+# OZMA_FAMILY_PROGRAM_PARITY=1 runs BOTH and records every comparison on the
+# agent (`_family_program_parity`) -- gate F4's production check -- while the
+# Python builder's report is the one used. By default (gate F4 passed) a held
+# Program is the builder; OZMA_FAMILY_PROGRAM_PYTHON=1 restores the Python
+# builder for a ported family (comparison runs only).
+# ---------------------------------------------------------------------------
+def _variation_op_program(sub, op_name):
+    for n in sub.nodes("VariationOp"):
+        at = sub.node(n)["attrs"]
+        if at.get("name") == op_name and at.get("builder_program"):
+            return str(at["builder_program"])
+    return None
+
+
+def _family_program_env(agent, keys, tag):
+    sub, native, _ag = _resolve_agent(agent)
+    rules = [r for r in native.export_rules() if isinstance(r, dict) and r.get("active", True)]
+    names = sorted({str(r.get("name", "")) for r in rules})
+    return {"key": str(keys[0]) if keys else "", "tag": str(tag),
+            "rules": rules, "seed_of": dict(_rule_seed_map(sub)),
+            "name_rank": {n: i for i, n in enumerate(names)}}
+
+
+def _plain(value):
+    """A Program's returned value as plain JSON (tuples -> lists, sorted keys
+    are irrelevant to dict equality)."""
+    import json as _json
+    return _json.loads(_json.dumps(value, default=str))
+
+
+def _load_family_program(sub, name):
+    """The held FamilyProgram Term-tree by name (seeds/family_programs.json)."""
+    import json as _json
+    try:
+        for n in sub.nodes("FamilyProgram"):
+            at = sub.node(n)["attrs"]
+            if at.get("name") == name and at.get("program"):
+                return _json.loads(at["program"])
+    except Exception:  # noqa: BLE001
+        pass
+    return None
+
+
+def _compose_from_program(agent, program_name, keys, tag) -> dict:
+    sub, native, _ag = _resolve_agent(agent)
+    prog = _load_family_program(sub, program_name)
+    if prog is None:
+        return {"built": False, "wall": f"family Program {program_name!r} is not held"}
+    try:
+        val = native.evaluate(prog, _family_program_env(agent, keys, tag))
+    except Exception as e:  # noqa: BLE001 -- an unevaluable Program is an honest abstain
+        return {"built": False, "wall": f"family Program {program_name!r} failed: {type(e).__name__}: {e}"}
+    if not isinstance(val, dict):
+        return {"built": False, "wall": f"family Program {program_name!r} returned no report"}
+    return _plain(val)
+
+
+_PARITY_KEYS = ("built", "rules", "removed_rule", "source_rule", "guard", "new_value", "basis",
+                "shallow", "deep")
+
+
+def family_report_signature(report: dict) -> dict:
+    """The delta-relevant part of a builder report (what reaches the SeedDelta)."""
+    if not report.get("built"):
+        return {"built": False}
+    return _plain({k: report[k] for k in _PARITY_KEYS if k in report})
+
+
+def _builder_for(agent, variation_op):
+    """The builder for the picked family: its held Program when the op names
+    one, else the Python registry entry (see the block comment above)."""
+    import os as _os
+    py = _VARIATION_REGISTRY.get(variation_op) if variation_op else None
+    if not variation_op:
+        return None
+    sub, _n, _a = _resolve_agent(agent)
+    prog = _variation_op_program(sub, variation_op)
+    if prog is None or _load_family_program(sub, prog) is None:
+        return py
+    if _os.environ.get("OZMA_FAMILY_PROGRAM_PARITY") == "1" and py is not None:
+        def both(agent_, keys, tag, _py=py, _prog=prog, _op=variation_op):
+            a = _py(agent_, keys, tag)
+            b = _compose_from_program(agent_, _prog, keys, tag)
+            rec = {"op": _op, "key": str(keys[0]) if keys else "", "python": family_report_signature(a),
+                   "program": family_report_signature(b)}
+            rec["equal"] = rec["python"] == rec["program"]
+            log = getattr(agent_, "_family_program_parity", None)
+            if log is None:
+                log = []
+                try:
+                    setattr(agent_, "_family_program_parity", log)
+                except Exception:  # noqa: BLE001
+                    pass
+            log.append(rec)
+            return a
+        return both
+    if _os.environ.get("OZMA_FAMILY_PROGRAM_PYTHON") == "1" and py is not None:
+        return py
+    return lambda agent_, keys, tag, _prog=prog: _compose_from_program(agent_, _prog, keys, tag)
+
+
+# ---------------------------------------------------------------------------
 # STRUCTURAL VARIANT ALGEBRA — widens the acting-variant range from THRESHOLD
 # SHIFTS (_compose_acting_variant: same rule shape, shifted magnitude) to
 # STRUCTURAL EDITS (this: a DIFFERENT rule shape — flipped comparison, dropped
@@ -5572,7 +5682,7 @@ def _compose_experiment_rule(agent, keys, rels) -> dict[str, Any]:
         # delta. Editing a VariationOp node changes which family runs — the
         # agent's own repairable choice, no rule/Python edit.
         variation_op = _pick_variation_op(agent, rp, keys[0] if keys else "")
-        variation_builder = _VARIATION_REGISTRY.get(variation_op) if variation_op else None
+        variation_builder = _builder_for(agent, variation_op)
         # ABSTAIN RECORD (tranche 11): remember the picked builder's own report so
         # an honest abstain (built=False) is stamped on the delta below. A graph
         # rule (seeds/self_optimisation.json close_abstained_variant) then

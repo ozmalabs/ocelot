@@ -391,6 +391,9 @@ fn variant_name(node: &TermNode) -> &'static str {
         TermNode::ProgEval { .. } => "ProgEval",
         TermNode::SnakeCase { .. } => "SnakeCase",
         TermNode::CaseFold { .. } => "CaseFold",
+        TermNode::EditAt { .. } => "EditAt",
+        TermNode::CharRunSub { .. } => "CharRunSub",
+        TermNode::StripChars { .. } => "StripChars",
         TermNode::SynthEnumerate { .. } => "SynthEnumerate",
         TermNode::Call { .. } => "Call",
         TermNode::ParetoDominates { .. } => "ParetoDominates",
@@ -1660,6 +1663,21 @@ fn write_fields(node: &TermNode, arena: &TermArena, interner: &Interner, m: &mut
         }
         TermNode::CaseFold { text } => {
             m.insert("text".into(), child(*text, arena, interner));
+        }
+        TermNode::EditAt { tree, path, op, arg } => {
+            m.insert("tree".into(), child(*tree, arena, interner));
+            m.insert("path".into(), child(*path, arena, interner));
+            m.insert("op".into(), child(*op, arena, interner));
+            m.insert("arg".into(), child(*arg, arena, interner));
+        }
+        TermNode::CharRunSub { text, keep, repl } => {
+            m.insert("text".into(), child(*text, arena, interner));
+            m.insert("keep".into(), child(*keep, arena, interner));
+            m.insert("repl".into(), child(*repl, arena, interner));
+        }
+        TermNode::StripChars { text, chars } => {
+            m.insert("text".into(), child(*text, arena, interner));
+            m.insert("chars".into(), child(*chars, arena, interner));
         }
         TermNode::SynthEnumerate {
             examples,
@@ -3023,6 +3041,21 @@ fn read_term(
         },
         "CaseFold" => TermNode::CaseFold {
             text: child_of("text", obj, arena, interner, variant)?,
+        },
+        "EditAt" => TermNode::EditAt {
+            tree: child_of("tree", obj, arena, interner, variant)?,
+            path: child_of("path", obj, arena, interner, variant)?,
+            op: child_of("op", obj, arena, interner, variant)?,
+            arg: child_of("arg", obj, arena, interner, variant)?,
+        },
+        "CharRunSub" => TermNode::CharRunSub {
+            text: child_of("text", obj, arena, interner, variant)?,
+            keep: child_of("keep", obj, arena, interner, variant)?,
+            repl: child_of("repl", obj, arena, interner, variant)?,
+        },
+        "StripChars" => TermNode::StripChars {
+            text: child_of("text", obj, arena, interner, variant)?,
+            chars: child_of("chars", obj, arena, interner, variant)?,
         },
         "SynthEnumerate" => TermNode::SynthEnumerate {
             examples: child_of("examples", obj, arena, interner, variant)?,

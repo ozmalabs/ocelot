@@ -12,7 +12,7 @@
 
 use crate::term::TermNode;
 
-pub const NUM_TERM_VARIANTS: usize = 237;
+pub const NUM_TERM_VARIANTS: usize = 240;
 
 /// Variant names in DECLARATION ORDER. Index == `variant_index()`.
 pub static TERM_VARIANT_NAMES: [&str; NUM_TERM_VARIANTS] = [
@@ -247,6 +247,9 @@ pub static TERM_VARIANT_NAMES: [&str; NUM_TERM_VARIANTS] = [
     "ProgEval",
     "SnakeCase",
     "CaseFold",
+    "EditAt",
+    "CharRunSub",
+    "StripChars",
     "Call",
     "SynthEnumerate",
     "ParetoDominates",
@@ -492,12 +495,15 @@ impl TermNode {
             TermNode::ProgEval { .. } => 228,
             TermNode::SnakeCase { .. } => 229,
             TermNode::CaseFold { .. } => 230,
-            TermNode::Call { .. } => 231,
-            TermNode::SynthEnumerate { .. } => 232,
-            TermNode::ParetoDominates { .. } => 233,
-            TermNode::FutureManifoldProjection { .. } => 234,
-            TermNode::FutureManifoldSelection { .. } => 235,
-            TermNode::LogQuantum { .. } => 236,
+            TermNode::EditAt { .. } => 231,
+            TermNode::CharRunSub { .. } => 232,
+            TermNode::StripChars { .. } => 233,
+            TermNode::Call { .. } => 234,
+            TermNode::SynthEnumerate { .. } => 235,
+            TermNode::ParetoDominates { .. } => 236,
+            TermNode::FutureManifoldProjection { .. } => 237,
+            TermNode::FutureManifoldSelection { .. } => 238,
+            TermNode::LogQuantum { .. } => 239,
         }
     }
 }

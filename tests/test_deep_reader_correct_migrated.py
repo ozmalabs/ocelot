@@ -79,6 +79,14 @@ def built(st, misread):
     return rf._compose_deep_reader_correct(a, ["t23_probe"], "t23")
 
 
+def test_family_program_builds_the_identical_correction(st, built):
+    # plan P4: the held FamilyProgram (seeds/family_programs.json) builds the
+    # same variant the Python builder does
+    prog = rf._compose_from_program(st.adapter, "family_deep_reader_correct", ["t23_probe"], "t23")
+    assert prog["built"], prog
+    assert rf.family_report_signature(prog) == rf.family_report_signature(built)
+
+
 def test_builder_replaces_the_misreading_arbitration(built):
     assert built["built"], built
     assert built["removed_rule"] == "arbitrate_instruction_as_action_request"

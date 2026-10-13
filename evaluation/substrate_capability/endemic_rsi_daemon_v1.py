@@ -257,6 +257,8 @@ def main():
         "reply_quality": quality,
         **{k: v for k, v in live.items() if k != "experiments"},
         "experiments_n": len(live["experiments"]),
+        # plan P4: OZMA_FAMILY_PROGRAM_PARITY=1 records Program-vs-Python builder comparisons
+        "family_program_parity": getattr(st.adapter, "_family_program_parity", None),
         "experiments_by_op_outcome": dict(collections.Counter(
             f"{x['op']}:{x['outcome'] or x['status']}" for x in live["experiments"])),
     }

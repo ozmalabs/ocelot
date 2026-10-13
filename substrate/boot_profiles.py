@@ -83,6 +83,8 @@ CONVERSATION_SELF_IMPROVEMENT_ANCHORS = frozenset({
     # plan P2: the agent's own bad replies (production ReplyQuality, the
     # interlocutor's next-turn repair / rejection / repeat) as concerns
     "reply_feedback_gap",
+    # plan P4: variation families as held Programs (VariationOp.builder_program)
+    "family_programs",
 })
 CONVERSATION_SEED_ANCHORS = CONVERSATION_SEED_ANCHORS | CONVERSATION_SELF_IMPROVEMENT_ANCHORS
 

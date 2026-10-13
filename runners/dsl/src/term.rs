@@ -3093,6 +3093,40 @@ pub enum TermNode {
     CaseFold {
         text: TermIdx,
     },
+    /// P4 RULE-EDIT PRIMITIVE (2026-10-10, OPEN_ENDED_SELF_IMPROVEMENT_PLAN P4):
+    /// a pure, path-addressed edit of a Value tree (a rule's JSON parsed by
+    /// `FromJsonString`, or a rule dict handed in by the host). `path` is a
+    /// Tuple/List of steps: a string-like step is a Dict key, an Int step a
+    /// sequence index (negative counts from the end). `op` is one of:
+    ///   "set"    -- replace the value at `path` with `arg` (a missing FINAL
+    ///               Dict key is inserted; a missing index is inert);
+    ///   "append" -- the value at `path` is a sequence: append `arg`
+    ///               (List/Tuple kind preserved);
+    ///   "drop"   -- remove the Dict key / sequence element at `path`.
+    /// Returns the edited COPY, or `Value::None` when the edit is inert (the
+    /// path does not resolve, the op does not apply). Never fabricates.
+    EditAt {
+        tree: TermIdx,
+        path: TermIdx,
+        op: TermIdx,
+        arg: TermIdx,
+    },
+    /// P4: replace every maximal run of characters NOT in `keep` with `repl`
+    /// -- Python's `re.sub(r"[^<keep>]+", repl, text)` for a literal
+    /// character class (e.g. keep = "abcdefghijklmnopqrstuvwxyz0123456789",
+    /// the identifier slug the variation families build names from).
+    /// Str/Surface(Text) in -> Surface(Text) out; other -> None.
+    CharRunSub {
+        text: TermIdx,
+        keep: TermIdx,
+        repl: TermIdx,
+    },
+    /// P4: Python `text.strip(chars)` (`chars` None -> whitespace).
+    /// Str/Surface(Text) in -> Surface(Text) out; other -> None.
+    StripChars {
+        text: TermIdx,
+        chars: TermIdx,
+    },
 
     // --- Program synthesis (P4-A) ---
     /// `Call{name,args}` — dispatch to a registry-resident, named,
@@ -5174,6 +5208,21 @@ fn copy_subtree(src: &TermArena, dst: &mut TermArena, idx: TermIdx) -> TermIdx {
         TermNode::CaseFold { text } => TermNode::CaseFold {
             text: copy_subtree(src, dst, text),
         },
+        TermNode::EditAt { tree, path, op, arg } => TermNode::EditAt {
+            tree: copy_subtree(src, dst, tree),
+            path: copy_subtree(src, dst, path),
+            op: copy_subtree(src, dst, op),
+            arg: copy_subtree(src, dst, arg),
+        },
+        TermNode::CharRunSub { text, keep, repl } => TermNode::CharRunSub {
+            text: copy_subtree(src, dst, text),
+            keep: copy_subtree(src, dst, keep),
+            repl: copy_subtree(src, dst, repl),
+        },
+        TermNode::StripChars { text, chars } => TermNode::StripChars {
+            text: copy_subtree(src, dst, text),
+            chars: copy_subtree(src, dst, chars),
+        },
         TermNode::Call { name, args } => TermNode::Call {
             name,
             args: args.iter().map(|a| copy_subtree(src, dst, *a)).collect(),
@@ -6278,6 +6327,87 @@ fn json_to_value(j: &serde_json::Value) -> Value {
             pairs.sort_by(|a, b| cmp_value(&a.0, &b.0));
             Value::Dict(Arc::from(pairs))
         }
+    }
+}
+
+/// `EditAt`'s path walk (P4). See the Term's doc comment for the contract.
+fn edit_at_path(v: &Value, steps: &[Value], op: &str, arg: &Value, interner: &Interner) -> Option<Value> {
+    if steps.is_empty() {
+        return match op {
+            "set" => Some(arg.clone()),
+            "append" => match v {
+                Value::Tuple(items) => {
+                    let mut out: SmallVec<[Value; 4]> = items.iter().cloned().collect();
+                    out.push(arg.clone());
+                    Some(Value::Tuple(Arc::new(out)))
+                }
+                Value::List(items) => {
+                    let mut out: SmallVec<[Value; 4]> = items.iter().cloned().collect();
+                    out.push(arg.clone());
+                    Some(Value::List(Arc::new(out)))
+                }
+                _ => None,
+            },
+            _ => None,
+        };
+    }
+    let head = &steps[0];
+    let rest = &steps[1..];
+    match v {
+        Value::Dict(pairs) => {
+            let key = str_like_owned(head, interner)?;
+            let pos = pairs.iter().position(|(k, _)| {
+                str_like_owned(k, interner).map_or(false, |ks| ks == key)
+            });
+            match pos {
+                Some(i) => {
+                    if rest.is_empty() && op == "drop" {
+                        let out: Vec<(Value, Value)> = pairs
+                            .iter()
+                            .enumerate()
+                            .filter(|(j, _)| *j != i)
+                            .map(|(_, p)| p.clone())
+                            .collect();
+                        return Some(Value::Dict(Arc::from(out)));
+                    }
+                    let child = edit_at_path(&pairs[i].1, rest, op, arg, interner)?;
+                    let mut out: Vec<(Value, Value)> = pairs.iter().cloned().collect();
+                    out[i].1 = child;
+                    Some(Value::Dict(Arc::from(out)))
+                }
+                None => {
+                    if rest.is_empty() && op == "set" {
+                        let mut out: Vec<(Value, Value)> = pairs.iter().cloned().collect();
+                        out.push((head.clone(), arg.clone()));
+                        out.sort_by(|a, b| cmp_value(&a.0, &b.0));
+                        Some(Value::Dict(Arc::from(out)))
+                    } else {
+                        None
+                    }
+                }
+            }
+        }
+        Value::Tuple(items) | Value::List(items) => {
+            let Value::Int(raw) = head else {
+                return None;
+            };
+            let n = items.len() as i64;
+            let i = if *raw < 0 { *raw + n } else { *raw };
+            if i < 0 || i >= n {
+                return None;
+            }
+            let i = i as usize;
+            let out: SmallVec<[Value; 4]> = if rest.is_empty() && op == "drop" {
+                items.iter().enumerate().filter(|(j, _)| *j != i).map(|(_, x)| x.clone()).collect()
+            } else {
+                let child = edit_at_path(&items[i], rest, op, arg, interner)?;
+                let mut o: SmallVec<[Value; 4]> = items.iter().cloned().collect();
+                o[i] = child;
+                o
+            };
+            Some(if matches!(v, Value::List(_)) { Value::List(Arc::new(out)) } else { Value::Tuple(Arc::new(out)) })
+        }
+        _ => None,
     }
 }
 
@@ -9060,6 +9190,58 @@ pub fn evaluate(arena: &TermArena, idx: TermIdx, env: &mut Env, ctx: &mut EvalCt
                 None => Value::None,
             }
         }
+        TermNode::EditAt { tree, path, op, arg } => {
+            let tv = evaluate(arena, *tree, env, ctx);
+            let pv = evaluate(arena, *path, env, ctx);
+            let opv = evaluate(arena, *op, env, ctx);
+            let av = evaluate(arena, *arg, env, ctx);
+            let Some(op_s) = str_like_owned(&opv, ctx.interner) else {
+                return Value::None;
+            };
+            if !matches!(pv, Value::Tuple(_) | Value::List(_)) {
+                return Value::None;
+            }
+            let steps = pv.snapshot();
+            edit_at_path(&tv, &steps, &op_s, &av, ctx.interner).unwrap_or(Value::None)
+        }
+        TermNode::CharRunSub { text, keep, repl } => {
+            let tv = evaluate(arena, *text, env, ctx);
+            let kv = evaluate(arena, *keep, env, ctx);
+            let rv = evaluate(arena, *repl, env, ctx);
+            match (
+                str_like_owned(&tv, ctx.interner),
+                str_like_owned(&kv, ctx.interner),
+                str_like_owned(&rv, ctx.interner),
+            ) {
+                (Some(s), Some(k), Some(r)) => {
+                    let mut out = String::with_capacity(s.len());
+                    let mut in_run = false;
+                    for ch in s.chars() {
+                        if k.contains(ch) {
+                            out.push(ch);
+                            in_run = false;
+                        } else if !in_run {
+                            out.push_str(&r);
+                            in_run = true;
+                        }
+                    }
+                    Value::Surface(SurfaceKind::Text, std::sync::Arc::from(out.into_bytes().into_boxed_slice()))
+                }
+                _ => Value::None,
+            }
+        }
+        TermNode::StripChars { text, chars } => {
+            let tv = evaluate(arena, *text, env, ctx);
+            let cv = evaluate(arena, *chars, env, ctx);
+            let Some(s) = str_like_owned(&tv, ctx.interner) else {
+                return Value::None;
+            };
+            let out = match str_like_owned(&cv, ctx.interner) {
+                Some(c) => s.trim_matches(|ch: char| c.contains(ch)).to_string(),
+                None => s.trim().to_string(),
+            };
+            Value::Surface(SurfaceKind::Text, std::sync::Arc::from(out.into_bytes().into_boxed_slice()))
+        }
 
         TermNode::BitsAt {
             buffer,
@@ -11684,8 +11866,18 @@ fn python_repr(v: &Value, interner: &Interner) -> Option<String> {
                 }
             }
         }
-        Value::Str(sym) => {
-            let text = interner.resolve(*sym);
+        // P4 (2026-10-10): a built string (StringConcat / CharRunSub return
+        // Surface(Text)) has the same Python repr as an interned one
+        Value::Str(_) | Value::Surface(SurfaceKind::Text, _) => {
+            let owned;
+            let text: &str = match v {
+                Value::Str(sym) => interner.resolve(*sym),
+                Value::Surface(_, b) => {
+                    owned = String::from_utf8_lossy(b).into_owned();
+                    &owned
+                }
+                _ => unreachable!(),
+            };
             let quote = if text.contains('\'') && !text.contains('"') {
                 '"'
             } else {
@@ -14813,6 +15005,21 @@ pub(crate) fn children(node: &TermNode) -> SmallVec<[TermIdx; 8]> {
             }
         }
         TermNode::SnakeCase { text } | TermNode::CaseFold { text } => out.push(*text),
+        TermNode::EditAt { tree, path, op, arg } => {
+            out.push(*tree);
+            out.push(*path);
+            out.push(*op);
+            out.push(*arg);
+        }
+        TermNode::CharRunSub { text, keep, repl } => {
+            out.push(*text);
+            out.push(*keep);
+            out.push(*repl);
+        }
+        TermNode::StripChars { text, chars } => {
+            out.push(*text);
+            out.push(*chars);
+        }
         TermNode::Call { args, .. } => out.extend(args.iter().copied()),
         TermNode::SynthEnumerate {
             examples,
