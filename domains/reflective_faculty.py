@@ -4888,6 +4888,23 @@ _VARIATION_REGISTRY = {
 # Program is the builder; OZMA_FAMILY_PROGRAM_PYTHON=1 restores the Python
 # builder for a ported family (comparison runs only).
 # ---------------------------------------------------------------------------
+def _variation_op_family(agent, op_name):
+    """The picked op's `family` attr for the two program-built families an
+    agent-authored op may descend from; any other op keeps its own name (its
+    branch in _compose_experiment_rule is keyed by name, as before)."""
+    if not op_name:
+        return None
+    sub, _n, _a = _resolve_agent(agent)
+    for n in sub.nodes("VariationOp"):
+        at = sub.node(n)["attrs"]
+        if at.get("name") == op_name:
+            fam = at.get("family")
+            if fam in ("disposition_generalise", "deep_reader_correct"):
+                return fam
+            break
+    return op_name
+
+
 def _variation_op_program(sub, op_name):
     for n in sub.nodes("VariationOp"):
         at = sub.node(n)["attrs"]
@@ -5683,6 +5700,10 @@ def _compose_experiment_rule(agent, keys, rels) -> dict[str, Any]:
         # agent's own repairable choice, no rule/Python edit.
         variation_op = _pick_variation_op(agent, rp, keys[0] if keys else "")
         variation_builder = _builder_for(agent, variation_op)
+        # plan P5b: an agent-authored family (seeds/operator_authorship.json
+        # install rule) carries its parent's `family`; its delta is wired
+        # exactly like the parent's (the report shape is the parent's)
+        variation_family = _variation_op_family(agent, variation_op)
         # ABSTAIN RECORD (tranche 11): remember the picked builder's own report so
         # an honest abstain (built=False) is stamped on the delta below. A graph
         # rule (seeds/self_optimisation.json close_abstained_variant) then
@@ -5812,7 +5833,7 @@ def _compose_experiment_rule(agent, keys, rels) -> dict[str, Any]:
                 delta_attrs["datum_feedback_edit"] = 1.0
                 delta_attrs["datum_feedback_datum_attr"] = datum_report["datum_attr"]
                 delta_attrs["datum_feedback_belief_attr"] = datum_report["belief_attr"]
-        elif variation_op == "disposition_generalise" and variation_builder is not None:
+        elif variation_family == "disposition_generalise" and variation_builder is not None:
             # THE DISPOSITION-GENERALISATION VARIANT (tranche 22) -- see
             # _compose_disposition_generalise: ADD-ONLY copies of a held
             # arbitration rule + its reply rule(s), one guard relaxed to the
@@ -5825,7 +5846,7 @@ def _compose_experiment_rule(agent, keys, rels) -> dict[str, Any]:
                 delta_attrs["generalise_source_rule"] = gen_report["source_rule"]
                 delta_attrs["generalise_guard"] = gen_report["guard"]
                 delta_attrs["generalise_basis"] = gen_report["basis"]
-        elif variation_op == "deep_reader_correct" and variation_builder is not None:
+        elif variation_family == "deep_reader_correct" and variation_builder is not None:
             # THE DEEP-READER CORRECTION (tranche 23) -- see _compose_deep_reader_correct:
             # replace the misreading arbitration rule with a deep-reader-guarded copy
             # and ADD the receipt arbitration + reply. `deep_reader_edit` marks the

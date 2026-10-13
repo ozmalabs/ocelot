@@ -1,8 +1,8 @@
 {
  "id": "operator_authorship",
- "version": "1.0.0",
+ "version": "1.1.0",
  "depends_on": [],
- "description": "Emit seeds/operator_authorship.json (plan P5, 2026-10-10): OPERATOR\nAUTHORSHIP, propose-only.\n\nThe agent proposes NEW variation families by bounded mutation of the families\nit holds as Programs (seeds/family_programs.json). The grammar is data:\n\n  * OperatorAuthorshipPolicy -- enabled, propose_only, k_fix (concerns a\n    candidate must fix), max_candidates, max_size (mutations per candidate),\n    bank_max_quality (a held-out turn joins the bank when its production\n    ReplyQuality datum is at most this);\n  * FamilyMutation{program, site, values} -- a parameter site of a held\n    FamilyProgram (its `parameter_sites` attr names the path) and the values\n    the proposer may set it to. A candidate is a set of (site, value) edits on\n    one program, applied with the engine's EditAt; candidates are enumerated in\n    MDL order (fewest edits first) by domains/operator_authorship.py.\n\nMeta-evaluation (mechanical, domains/operator_authorship.py): each candidate\nbuilds its deltas for every bank turn, each delta is replayed by the\nconversation child (scripts/convo_child_run.py, judge v2) with the bank turns\nflagged, and the measurements are written onto a FamilyProposal node. The\nrules below DECIDE: a candidate qualifies only if it fixed at least k_fix bank\nturns, did no harm (0 regressions, 0 broken fixes, 0 quality drops in every\nreplay), and fixed at least one class no held family fixes. Propose-only: a\nqualifying proposal is marked install_blocked -- installing an agent-authored\nVariationOp needs the narrow improvement_integrity exception, a human\ndecision (plan P5).\n\nThis seed is frozen (substrate/boot_all._FROZEN_SEED_IDS) and its node types\nare protected (seeds/improvement_integrity.json), so the loop cannot vary how\na new family is judged. Idempotent.\n",
+ "description": "Emit seeds/operator_authorship.json (plan P5, 2026-10-10): OPERATOR\nAUTHORSHIP -- the agent proposes, judges and installs its own variation\nfamilies.\n\nThe agent proposes NEW variation families by bounded mutation of the families\nit holds as Programs (seeds/family_programs.json). The grammar is data:\n\n  * OperatorAuthorshipPolicy -- enabled, propose_only, k_fix, harm_weight,\n    min_gain, max_candidates, max_size, bank_max_quality, and the probation\n    knobs (priority_offset, probation_trials, probation_min_rate);\n  * FamilyMutation{program, site, values} -- a parameter site of a held\n    FamilyProgram (its `parameter_sites` attr names the path) and the values\n    the proposer may set it to. A candidate is a set of (site, value) edits on\n    one program, applied with the engine's EditAt, enumerated in MDL order\n    (fewest edits first) by domains/operator_authorship.py. A REFINEMENT\n    (v1.1.0) adds `p_exclude_sources`: the source rules whose own deltas did\n    net harm on the bank -- the family is changed where it does harm rather\n    than rejected whole.\n\nMeta-evaluation (mechanical, domains/operator_authorship.py +\nevaluation/substrate_capability/operator_authorship_meta_v2.py): each\ncandidate builds its deltas for every bank turn, each delta is replayed by the\nconversation child (judge v2) with the bank turns flagged, and the\nmeasurements land on a FamilyProposal node. The rules below DECIDE.\n\nv1.1.0 (2026-10-10, P5b -- the human decision): installation is allowed, and\nthe criterion is RELATIVE, not absolute. Nothing is protected by a zero:\n  * net = fixed - harm_weight * harm;\n  * a candidate qualifies when it fixes at least k_fix bank turns, its net is\n    positive, and it improves on the held family it was derived from by at\n    least min_gain (net - parent_net) -- a better tradeoff than its parent,\n    not a harm-free one;\n  * the best qualifying candidate per program (highest net, then MDL rank) is\n    INSTALLED by a rule: a FamilyProgram holding its edited Term and a\n    VariationOp{provenance:'agent_authored', probation:1} with its parent's\n    family, cue heads and concern kind, at the parent's priority minus\n    priority_offset -- it measured the better tradeoff, so it is tried first\n    and the parent remains the fallback;\n  * the harm it still does is not hidden: every turn it harmed on the bank,\n    and every bank turn left to a source it excludes, is filed as a\n    SelfConcern{kind:'family_residual'} -- the residual is moved, not erased;\n  * on probation the family is judged by its own L0 trials: after\n    probation_trials judged experiments, a support rate below\n    probation_min_rate retires it (cue_head 'retired', so variation_pick no\n    longer sees it and the parent takes over); at or above it, it graduates\n    (probation 0).\n\nThis seed is frozen (substrate/boot_all._FROZEN_SEED_IDS) and its node types\nare protected (seeds/improvement_integrity.json): a delta cannot install or\nedit a family; only these rules can, and only on measured proposals. That is\nthe narrow exception recorded on ImprovementIntegrity.authorship_exception.\nIdempotent.\n",
  "nodes": [
   {
    "local_id": 0,
@@ -10,12 +10,18 @@
    "attrs": {
     "name": "operator_authorship",
     "enabled": 1,
-    "propose_only": 1,
+    "propose_only": 0,
     "k_fix": 2,
+    "harm_weight": 1.0,
+    "min_gain": 1,
     "max_candidates": 12,
     "max_size": 2,
     "bank_max_quality": 0.0,
-    "description": "Agent-held policy for proposing new variation families (plan P5): how many bank turns a candidate must fix, how many candidates and edits per candidate, which held-out turns form the bank. Propose-only until a human decides."
+    "refine": 1,
+    "priority_offset": 0.5,
+    "probation_trials": 3,
+    "probation_min_rate": 0.34,
+    "description": "Agent-held policy for authoring variation families (plan P5): the bank, the candidate caps, the relative criterion (net = fixed - harm_weight * harm, beating the parent by min_gain), and probation. propose_only 0 since the human decision of 2026-10-10."
    }
   },
   {
@@ -94,8 +100,100 @@
  "productions": [],
  "rules": [
   {
+   "name": "family_proposal_net",
+   "comment": "v1.1.0: net = fixed - harm_weight * harm. Harm is a cost to weigh, not a veto.",
+   "match": [
+    [
+     "agent",
+     "has_operator_authorship_policy",
+     "pol"
+    ],
+    [
+     "pol",
+     "has_family_proposal",
+     "p"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "p"
+       },
+       "key": "status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "measured"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "p"
+       },
+       "key": "net"
+      },
+      "b": {
+       "type": "Lit",
+       "value": null
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "p",
+     "net",
+     {
+      "__term__": {
+       "type": "Minus",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "p"
+        },
+        "key": "fixed"
+       },
+       "b": {
+        "type": "Times",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "p"
+          },
+          "key": "harm"
+         },
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "pol"
+          },
+          "key": "harm_weight"
+         }
+        ]
+       }
+      }
+     }
+    ]
+   ]
+  },
+  {
    "name": "family_proposal_held_baseline",
-   "comment": "A size-0 candidate is a held family, measured on the same bank as the baseline for novelty.",
+   "comment": "A size-0 candidate is a held family, measured on the same banks: the parent a candidate must beat.",
    "match": [
     [
      "agent",
@@ -142,6 +240,24 @@
         "b": {
          "type": "Lit",
          "value": null
+        }
+       },
+       {
+        "type": "Not",
+        "arg": {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "p"
+          },
+          "key": "net"
+         },
+         "b": {
+          "type": "Lit",
+          "value": null
+         }
         }
        }
       ]
@@ -174,7 +290,7 @@
   },
   {
    "name": "family_proposal_qualifies",
-   "comment": "Gate A5a's criterion as data: >= k_fix bank turns fixed, zero harm in every replay, and a fixed class no held family fixes.",
+   "comment": "v1.1.0, relative: >= k_fix fixes, positive net, and a net at least min_gain above the parent's.",
    "match": [
     [
      "agent",
@@ -221,6 +337,24 @@
         "b": {
          "type": "Lit",
          "value": null
+        }
+       },
+       {
+        "type": "Not",
+        "arg": {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "p"
+          },
+          "key": "net"
+         },
+         "b": {
+          "type": "Lit",
+          "value": null
+         }
         }
        }
       ]
@@ -256,53 +390,233 @@
       }
      },
      {
-      "type": "Gte",
-      "a": {
-       "type": "Attr",
-       "node": {
-        "type": "Var",
-        "name": "p"
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Argmin",
+         "source": {
+          "type": "Filter",
+          "source": {
+           "type": "NodesOfType",
+           "node_type": "FamilyProposal"
+          },
+          "var_name": "q",
+          "predicate": {
+           "type": "And",
+           "items": [
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "q"
+              },
+              "key": "program"
+             },
+             "b": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "p"
+              },
+              "key": "program"
+             }
+            },
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "q"
+              },
+              "key": "size"
+             },
+             "b": {
+              "type": "Lit",
+              "value": 0
+             }
+            },
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "q"
+              },
+              "key": "bank_set"
+             },
+             "b": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "p"
+              },
+              "key": "bank_set"
+             }
+            }
+           ]
+          }
+         },
+         "var_name": "_x",
+         "value": {
+          "type": "Lit",
+          "value": 0
+         },
+         "default": null
+        },
+        "key": "net"
        },
-       "key": "fixed"
-      },
-      "b": {
-       "type": "Attr",
-       "node": {
-        "type": "Var",
-        "name": "pol"
-       },
-       "key": "k_fix"
+       "b": {
+        "type": "Lit",
+        "value": null
+       }
       }
      },
      {
-      "type": "Eq",
-      "a": {
-       "type": "Attr",
-       "node": {
-        "type": "Var",
-        "name": "p"
+      "type": "And",
+      "items": [
+       {
+        "type": "Gte",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "p"
+         },
+         "key": "fixed"
+        },
+        "b": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "pol"
+         },
+         "key": "k_fix"
+        }
        },
-       "key": "harm"
-      },
-      "b": {
-       "type": "Lit",
-       "value": 0
-      }
-     },
-     {
-      "type": "Gt",
-      "a": {
-       "type": "Attr",
-       "node": {
-        "type": "Var",
-        "name": "p"
+       {
+        "type": "Gt",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "p"
+         },
+         "key": "net"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0
+        }
        },
-       "key": "novel_fixed"
-      },
-      "b": {
-       "type": "Lit",
-       "value": 0
-      }
+       {
+        "type": "Gte",
+        "a": {
+         "type": "Minus",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "p"
+          },
+          "key": "net"
+         },
+         "b": {
+          "type": "Attr",
+          "node": {
+           "type": "Argmin",
+           "source": {
+            "type": "Filter",
+            "source": {
+             "type": "NodesOfType",
+             "node_type": "FamilyProposal"
+            },
+            "var_name": "q",
+            "predicate": {
+             "type": "And",
+             "items": [
+              {
+               "type": "Eq",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "q"
+                },
+                "key": "program"
+               },
+               "b": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "p"
+                },
+                "key": "program"
+               }
+              },
+              {
+               "type": "Eq",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "q"
+                },
+                "key": "size"
+               },
+               "b": {
+                "type": "Lit",
+                "value": 0
+               }
+              },
+              {
+               "type": "Eq",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "q"
+                },
+                "key": "bank_set"
+               },
+               "b": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "p"
+                },
+                "key": "bank_set"
+               }
+              }
+             ]
+            }
+           },
+           "var_name": "_x",
+           "value": {
+            "type": "Lit",
+            "value": 0
+           },
+           "default": null
+          },
+          "key": "net"
+         }
+        },
+        "b": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "pol"
+         },
+         "key": "min_gain"
+        }
+       }
+      ]
      }
     ]
    },
@@ -318,12 +632,109 @@
      "p",
      "qualifies",
      1
+    ],
+    [
+     "set_attr",
+     "p",
+     "gain",
+     {
+      "__term__": {
+       "type": "Minus",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "p"
+        },
+        "key": "net"
+       },
+       "b": {
+        "type": "Attr",
+        "node": {
+         "type": "Argmin",
+         "source": {
+          "type": "Filter",
+          "source": {
+           "type": "NodesOfType",
+           "node_type": "FamilyProposal"
+          },
+          "var_name": "q",
+          "predicate": {
+           "type": "And",
+           "items": [
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "q"
+              },
+              "key": "program"
+             },
+             "b": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "p"
+              },
+              "key": "program"
+             }
+            },
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "q"
+              },
+              "key": "size"
+             },
+             "b": {
+              "type": "Lit",
+              "value": 0
+             }
+            },
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "q"
+              },
+              "key": "bank_set"
+             },
+             "b": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "p"
+              },
+              "key": "bank_set"
+             }
+            }
+           ]
+          }
+         },
+         "var_name": "_x",
+         "value": {
+          "type": "Lit",
+          "value": 0
+         },
+         "default": null
+        },
+        "key": "net"
+       }
+      }
+     }
     ]
    ]
   },
   {
    "name": "family_proposal_does_not_qualify",
-   "comment": "Any one of: too few fixes, any harm, or nothing a held family does not already fix.",
+   "comment": "Too few fixes, a non-positive net, or no better a tradeoff than the parent.",
    "match": [
     [
      "agent",
@@ -371,6 +782,24 @@
          "type": "Lit",
          "value": null
         }
+       },
+       {
+        "type": "Not",
+        "arg": {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "p"
+          },
+          "key": "net"
+         },
+         "b": {
+          "type": "Lit",
+          "value": null
+         }
+        }
        }
       ]
      },
@@ -390,58 +819,236 @@
       }
      },
      {
-      "type": "Or",
-      "items": [
-       {
-        "type": "Gt",
-        "a": {
-         "type": "Attr",
-         "node": {
-          "type": "Var",
-          "name": "pol"
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Argmin",
+         "source": {
+          "type": "Filter",
+          "source": {
+           "type": "NodesOfType",
+           "node_type": "FamilyProposal"
+          },
+          "var_name": "q",
+          "predicate": {
+           "type": "And",
+           "items": [
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "q"
+              },
+              "key": "program"
+             },
+             "b": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "p"
+              },
+              "key": "program"
+             }
+            },
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "q"
+              },
+              "key": "size"
+             },
+             "b": {
+              "type": "Lit",
+              "value": 0
+             }
+            },
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "q"
+              },
+              "key": "bank_set"
+             },
+             "b": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "p"
+              },
+              "key": "bank_set"
+             }
+            }
+           ]
+          }
          },
-         "key": "k_fix"
+         "var_name": "_x",
+         "value": {
+          "type": "Lit",
+          "value": 0
+         },
+         "default": null
         },
-        "b": {
-         "type": "Attr",
-         "node": {
-          "type": "Var",
-          "name": "p"
-         },
-         "key": "fixed"
-        }
+        "key": "net"
        },
-       {
-        "type": "Gt",
-        "a": {
-         "type": "Attr",
-         "node": {
-          "type": "Var",
-          "name": "p"
-         },
-         "key": "harm"
-        },
-        "b": {
-         "type": "Lit",
-         "value": 0
-        }
-       },
-       {
-        "type": "Eq",
-        "a": {
-         "type": "Attr",
-         "node": {
-          "type": "Var",
-          "name": "p"
-         },
-         "key": "novel_fixed"
-        },
-        "b": {
-         "type": "Lit",
-         "value": 0
-        }
+       "b": {
+        "type": "Lit",
+        "value": null
        }
-      ]
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "And",
+       "items": [
+        {
+         "type": "Gte",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "p"
+          },
+          "key": "fixed"
+         },
+         "b": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "pol"
+          },
+          "key": "k_fix"
+         }
+        },
+        {
+         "type": "Gt",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "p"
+          },
+          "key": "net"
+         },
+         "b": {
+          "type": "Lit",
+          "value": 0
+         }
+        },
+        {
+         "type": "Gte",
+         "a": {
+          "type": "Minus",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "p"
+           },
+           "key": "net"
+          },
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "Argmin",
+            "source": {
+             "type": "Filter",
+             "source": {
+              "type": "NodesOfType",
+              "node_type": "FamilyProposal"
+             },
+             "var_name": "q",
+             "predicate": {
+              "type": "And",
+              "items": [
+               {
+                "type": "Eq",
+                "a": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "q"
+                 },
+                 "key": "program"
+                },
+                "b": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "p"
+                 },
+                 "key": "program"
+                }
+               },
+               {
+                "type": "Eq",
+                "a": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "q"
+                 },
+                 "key": "size"
+                },
+                "b": {
+                 "type": "Lit",
+                 "value": 0
+                }
+               },
+               {
+                "type": "Eq",
+                "a": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "q"
+                 },
+                 "key": "bank_set"
+                },
+                "b": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "p"
+                 },
+                 "key": "bank_set"
+                }
+               }
+              ]
+             }
+            },
+            "var_name": "_x",
+            "value": {
+             "type": "Lit",
+             "value": 0
+            },
+            "default": null
+           },
+           "key": "net"
+          }
+         },
+         "b": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "pol"
+          },
+          "key": "min_gain"
+         }
+        }
+       ]
+      }
      }
     ]
    },
@@ -457,12 +1064,109 @@
      "p",
      "qualifies",
      0
+    ],
+    [
+     "set_attr",
+     "p",
+     "gain",
+     {
+      "__term__": {
+       "type": "Minus",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "p"
+        },
+        "key": "net"
+       },
+       "b": {
+        "type": "Attr",
+        "node": {
+         "type": "Argmin",
+         "source": {
+          "type": "Filter",
+          "source": {
+           "type": "NodesOfType",
+           "node_type": "FamilyProposal"
+          },
+          "var_name": "q",
+          "predicate": {
+           "type": "And",
+           "items": [
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "q"
+              },
+              "key": "program"
+             },
+             "b": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "p"
+              },
+              "key": "program"
+             }
+            },
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "q"
+              },
+              "key": "size"
+             },
+             "b": {
+              "type": "Lit",
+              "value": 0
+             }
+            },
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "q"
+              },
+              "key": "bank_set"
+             },
+             "b": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "p"
+              },
+              "key": "bank_set"
+             }
+            }
+           ]
+          }
+         },
+         "var_name": "_x",
+         "value": {
+          "type": "Lit",
+          "value": 0
+         },
+         "default": null
+        },
+        "key": "net"
+       }
+      }
+     }
     ]
    ]
   },
   {
    "name": "family_proposal_propose_only",
-   "comment": "Propose-only: installing an agent-authored VariationOp needs the human-approved improvement_integrity exception (plan P5).",
+   "comment": "While the policy is propose-only, a qualifying proposal is recorded and not installed.",
    "match": [
     [
      "agent",
@@ -539,7 +1243,1554 @@
      "set_attr",
      "p",
      "install_blocked_reason",
-     "propose-only: an agent-authored variation family is installed only after a human adds the narrow operator_authorship exception to improvement_integrity"
+     "the operator-authorship policy is propose-only"
+    ]
+   ]
+  },
+  {
+   "name": "family_proposal_install",
+   "comment": "v1.1.0: the best qualifying candidate of a program (highest net, then MDL rank) is installed as a FamilyProgram + VariationOp on probation, wired as its parent family.",
+   "match": [
+    [
+     "agent",
+     "has_operator_authorship_policy",
+     "pol"
+    ],
+    [
+     "pol",
+     "has_family_proposal",
+     "p"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "p"
+       },
+       "key": "verdict"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "qualifies"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "pol"
+       },
+       "key": "propose_only"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "pol"
+       },
+       "key": "enabled"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "p"
+        },
+        "key": "installed"
+       },
+       "b": {
+        "type": "Lit",
+        "value": 1
+       }
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "NodesOfType",
+        "node_type": "FamilyProposal"
+       },
+       "var_name": "o",
+       "predicate": {
+        "type": "And",
+        "items": [
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "o"
+           },
+           "key": "verdict"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "qualifies"
+          }
+         },
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "o"
+           },
+           "key": "program"
+          },
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "p"
+           },
+           "key": "program"
+          }
+         },
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "o"
+           },
+           "key": "bank_set"
+          },
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "p"
+           },
+           "key": "bank_set"
+          }
+         },
+         {
+          "type": "Or",
+          "items": [
+           {
+            "type": "Gt",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "o"
+             },
+             "key": "net"
+            },
+            "b": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "p"
+             },
+             "key": "net"
+            }
+           },
+           {
+            "type": "And",
+            "items": [
+             {
+              "type": "Eq",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "o"
+               },
+               "key": "net"
+              },
+              "b": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "p"
+               },
+               "key": "net"
+              }
+             },
+             {
+              "type": "Lt",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "o"
+               },
+               "key": "mdl_rank"
+              },
+              "b": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "p"
+               },
+               "key": "mdl_rank"
+              }
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       }
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Argmin",
+        "source": {
+         "type": "Filter",
+         "source": {
+          "type": "NodesOfType",
+          "node_type": "VariationOp"
+         },
+         "var_name": "v",
+         "predicate": {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "v"
+           },
+           "key": "name"
+          },
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "p"
+           },
+           "key": "parent_op"
+          }
+         }
+        },
+        "var_name": "_x",
+        "value": {
+         "type": "Lit",
+         "value": 0
+        },
+        "default": null
+       },
+       "b": {
+        "type": "Lit",
+        "value": null
+       }
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "p"
+        },
+        "key": "program_json"
+       },
+       "b": {
+        "type": "Lit",
+        "value": null
+       }
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "NodesOfType",
+        "node_type": "VariationOp"
+       },
+       "var_name": "w",
+       "predicate": {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "w"
+         },
+         "key": "name"
+        },
+        "b": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "p"
+         },
+         "key": "op_name"
+        }
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "fp",
+     "FamilyProgram",
+     {
+      "name": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "p"
+        },
+        "key": "family_name"
+       }
+      },
+      "program": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "p"
+        },
+        "key": "program_json"
+       }
+      },
+      "parameter_sites": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Argmin",
+         "source": {
+          "type": "Filter",
+          "source": {
+           "type": "NodesOfType",
+           "node_type": "FamilyProgram"
+          },
+          "var_name": "f",
+          "predicate": {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "f"
+            },
+            "key": "name"
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "p"
+            },
+            "key": "program"
+           }
+          }
+         },
+         "var_name": "_x",
+         "value": {
+          "type": "Lit",
+          "value": 0
+         },
+         "default": null
+        },
+        "key": "parameter_sites"
+       }
+      },
+      "kind": "variation_family_builder",
+      "provenance": "agent_authored",
+      "parent_program": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "p"
+        },
+        "key": "program"
+       }
+      },
+      "edits": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "p"
+        },
+        "key": "edits"
+       }
+      },
+      "description": {
+       "__term__": {
+        "type": "StringConcat",
+        "parts": [
+         {
+          "type": "Lit",
+          "value": "agent-authored (operator_authorship): "
+         },
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "p"
+          },
+          "key": "program"
+         },
+         {
+          "type": "Lit",
+          "value": " with "
+         },
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "p"
+          },
+          "key": "edits"
+         }
+        ]
+       }
+      }
+     }
+    ],
+    [
+     "add_node",
+     "op",
+     "VariationOp",
+     {
+      "name": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "p"
+        },
+        "key": "op_name"
+       }
+      },
+      "builder_program": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "p"
+        },
+        "key": "family_name"
+       }
+      },
+      "family": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Argmin",
+         "source": {
+          "type": "Filter",
+          "source": {
+           "type": "NodesOfType",
+           "node_type": "VariationOp"
+          },
+          "var_name": "v",
+          "predicate": {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "v"
+            },
+            "key": "name"
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "p"
+            },
+            "key": "parent_op"
+           }
+          }
+         },
+         "var_name": "_x",
+         "value": {
+          "type": "Lit",
+          "value": 0
+         },
+         "default": null
+        },
+        "key": "family"
+       }
+      },
+      "priority": {
+       "__term__": {
+        "type": "Minus",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Argmin",
+          "source": {
+           "type": "Filter",
+           "source": {
+            "type": "NodesOfType",
+            "node_type": "VariationOp"
+           },
+           "var_name": "v",
+           "predicate": {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "v"
+             },
+             "key": "name"
+            },
+            "b": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "p"
+             },
+             "key": "parent_op"
+            }
+           }
+          },
+          "var_name": "_x",
+          "value": {
+           "type": "Lit",
+           "value": 0
+          },
+          "default": null
+         },
+         "key": "priority"
+        },
+        "b": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "pol"
+         },
+         "key": "priority_offset"
+        }
+       }
+      },
+      "cue_head": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Argmin",
+         "source": {
+          "type": "Filter",
+          "source": {
+           "type": "NodesOfType",
+           "node_type": "VariationOp"
+          },
+          "var_name": "v",
+          "predicate": {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "v"
+            },
+            "key": "name"
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "p"
+            },
+            "key": "parent_op"
+           }
+          }
+         },
+         "var_name": "_x",
+         "value": {
+          "type": "Lit",
+          "value": 0
+         },
+         "default": null
+        },
+        "key": "cue_head"
+       }
+      },
+      "also_head": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Argmin",
+         "source": {
+          "type": "Filter",
+          "source": {
+           "type": "NodesOfType",
+           "node_type": "VariationOp"
+          },
+          "var_name": "v",
+          "predicate": {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "v"
+            },
+            "key": "name"
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "p"
+            },
+            "key": "parent_op"
+           }
+          }
+         },
+         "var_name": "_x",
+         "value": {
+          "type": "Lit",
+          "value": 0
+         },
+         "default": null
+        },
+        "key": "also_head"
+       }
+      },
+      "requires_kind": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Argmin",
+         "source": {
+          "type": "Filter",
+          "source": {
+           "type": "NodesOfType",
+           "node_type": "VariationOp"
+          },
+          "var_name": "v",
+          "predicate": {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "v"
+            },
+            "key": "name"
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "p"
+            },
+            "key": "parent_op"
+           }
+          }
+         },
+         "var_name": "_x",
+         "value": {
+          "type": "Lit",
+          "value": 0
+         },
+         "default": null
+        },
+        "key": "requires_kind"
+       }
+      },
+      "keywords_text": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Argmin",
+         "source": {
+          "type": "Filter",
+          "source": {
+           "type": "NodesOfType",
+           "node_type": "VariationOp"
+          },
+          "var_name": "v",
+          "predicate": {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "v"
+            },
+            "key": "name"
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "p"
+            },
+            "key": "parent_op"
+           }
+          }
+         },
+         "var_name": "_x",
+         "value": {
+          "type": "Lit",
+          "value": 0
+         },
+         "default": null
+        },
+        "key": "keywords_text"
+       }
+      },
+      "provenance": "agent_authored",
+      "probation": 1,
+      "parent_op": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "p"
+        },
+        "key": "parent_op"
+       }
+      }
+     }
+    ],
+    [
+     "add_edge",
+     "p",
+     "installed_as",
+     "op"
+    ],
+    [
+     "add_edge",
+     "p",
+     "installed_program",
+     "fp"
+    ],
+    [
+     "add_edge",
+     "pol",
+     "installed_family",
+     "op"
+    ],
+    [
+     "set_attr",
+     "p",
+     "installed",
+     1
+    ]
+   ]
+  },
+  {
+   "name": "family_proposal_files_residual",
+   "comment": "v1.1.0: what an installed family still harms, or leaves to a source it excludes, is filed as the agent's own concern -- the residual moves elsewhere; it is not erased.",
+   "match": [
+    [
+     "agent",
+     "has_operator_authorship_policy",
+     "pol"
+    ],
+    [
+     "pol",
+     "has_family_proposal",
+     "p"
+    ],
+    [
+     "p",
+     "residual_turn",
+     "m"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "p"
+       },
+       "key": "installed"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "InNeighbours",
+        "node": {
+         "type": "Var",
+         "name": "m"
+        },
+        "edge_type": "about_message"
+       },
+       "var_name": "c",
+       "predicate": {
+        "type": "And",
+        "items": [
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "c"
+           },
+           "key": "kind"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "family_residual"
+          }
+         },
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "c"
+           },
+           "key": "family"
+          },
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "p"
+           },
+           "key": "op_name"
+          }
+         }
+        ]
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "rc",
+     "SelfConcern",
+     {
+      "status": "noted",
+      "source": "operator_authorship",
+      "kind": "family_residual",
+      "family": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "p"
+        },
+        "key": "op_name"
+       }
+      },
+      "content": {
+       "__term__": {
+        "type": "StringConcat",
+        "parts": [
+         {
+          "type": "Lit",
+          "value": "the authored family "
+         },
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "p"
+          },
+          "key": "op_name"
+         },
+         {
+          "type": "Lit",
+          "value": " trades this turn away (harmed or excluded on its bank)"
+         }
+        ]
+       }
+      }
+     }
+    ],
+    [
+     "add_edge",
+     "agent",
+     "has_self_concern",
+     "rc"
+    ],
+    [
+     "add_edge",
+     "rc",
+     "about_message",
+     "m"
+    ]
+   ]
+  },
+  {
+   "name": "authored_family_retires_on_credit",
+   "comment": "v1.1.0: on probation, a family whose own judged trials support at a rate below probation_min_rate is retired (variation_pick never selects cue_head 'retired').",
+   "match": [
+    [
+     "agent",
+     "has_operator_authorship_policy",
+     "pol"
+    ],
+    [
+     "pol",
+     "installed_family",
+     "op"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "op"
+         },
+         "key": "probation"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 1
+        }
+       },
+       {
+        "type": "Not",
+        "arg": {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "op"
+          },
+          "key": "retired"
+         },
+         "b": {
+          "type": "Lit",
+          "value": 1
+         }
+        }
+       },
+       {
+        "type": "Gte",
+        "a": {
+         "type": "Count",
+         "source": {
+          "type": "Filter",
+          "source": {
+           "type": "NodesOfType",
+           "node_type": "SeedDelta"
+          },
+          "var_name": "d",
+          "predicate": {
+           "type": "And",
+           "items": [
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "d"
+              },
+              "key": "variation_op"
+             },
+             "b": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "op"
+              },
+              "key": "name"
+             }
+            },
+            {
+             "type": "Exists",
+             "source": {
+              "type": "InNeighbours",
+              "node": {
+               "type": "Var",
+               "name": "d"
+              },
+              "edge_type": "has_delta"
+             },
+             "var_name": "x",
+             "predicate": {
+              "type": "In",
+              "member": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "x"
+               },
+               "key": "outcome"
+              },
+              "container": {
+               "type": "Lit",
+               "value": [
+                "supported",
+                "refuted",
+                "inconclusive"
+               ]
+              }
+             }
+            }
+           ]
+          }
+         }
+        },
+        "b": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "pol"
+         },
+         "key": "probation_trials"
+        }
+       }
+      ]
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Div",
+       "a": {
+        "type": "Times",
+        "items": [
+         {
+          "type": "Count",
+          "source": {
+           "type": "Filter",
+           "source": {
+            "type": "NodesOfType",
+            "node_type": "SeedDelta"
+           },
+           "var_name": "d",
+           "predicate": {
+            "type": "And",
+            "items": [
+             {
+              "type": "Eq",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "d"
+               },
+               "key": "variation_op"
+              },
+              "b": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "op"
+               },
+               "key": "name"
+              }
+             },
+             {
+              "type": "Exists",
+              "source": {
+               "type": "InNeighbours",
+               "node": {
+                "type": "Var",
+                "name": "d"
+               },
+               "edge_type": "has_delta"
+              },
+              "var_name": "x",
+              "predicate": {
+               "type": "In",
+               "member": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "x"
+                },
+                "key": "outcome"
+               },
+               "container": {
+                "type": "Lit",
+                "value": [
+                 "supported"
+                ]
+               }
+              }
+             }
+            ]
+           }
+          }
+         },
+         {
+          "type": "Lit",
+          "value": 1.0
+         }
+        ]
+       },
+       "b": {
+        "type": "Count",
+        "source": {
+         "type": "Filter",
+         "source": {
+          "type": "NodesOfType",
+          "node_type": "SeedDelta"
+         },
+         "var_name": "d",
+         "predicate": {
+          "type": "And",
+          "items": [
+           {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "d"
+             },
+             "key": "variation_op"
+            },
+            "b": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "op"
+             },
+             "key": "name"
+            }
+           },
+           {
+            "type": "Exists",
+            "source": {
+             "type": "InNeighbours",
+             "node": {
+              "type": "Var",
+              "name": "d"
+             },
+             "edge_type": "has_delta"
+            },
+            "var_name": "x",
+            "predicate": {
+             "type": "In",
+             "member": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "x"
+              },
+              "key": "outcome"
+             },
+             "container": {
+              "type": "Lit",
+              "value": [
+               "supported",
+               "refuted",
+               "inconclusive"
+              ]
+             }
+            }
+           }
+          ]
+         }
+        }
+       }
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "pol"
+       },
+       "key": "probation_min_rate"
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "op",
+     "retired",
+     1
+    ],
+    [
+     "set_attr",
+     "op",
+     "retired_cue_head",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "op"
+       },
+       "key": "cue_head"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "op",
+     "cue_head",
+     "retired"
+    ],
+    [
+     "set_attr",
+     "op",
+     "retired_reason",
+     {
+      "__term__": {
+       "type": "StringConcat",
+       "parts": [
+        {
+         "type": "Lit",
+         "value": "probation: support rate below the policy's minimum over its judged trials"
+        }
+       ]
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "authored_family_graduates_on_credit",
+   "comment": "v1.1.0: at or above the rate over its judged trials it leaves probation.",
+   "match": [
+    [
+     "agent",
+     "has_operator_authorship_policy",
+     "pol"
+    ],
+    [
+     "pol",
+     "installed_family",
+     "op"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "op"
+         },
+         "key": "probation"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 1
+        }
+       },
+       {
+        "type": "Not",
+        "arg": {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "op"
+          },
+          "key": "retired"
+         },
+         "b": {
+          "type": "Lit",
+          "value": 1
+         }
+        }
+       },
+       {
+        "type": "Gte",
+        "a": {
+         "type": "Count",
+         "source": {
+          "type": "Filter",
+          "source": {
+           "type": "NodesOfType",
+           "node_type": "SeedDelta"
+          },
+          "var_name": "d",
+          "predicate": {
+           "type": "And",
+           "items": [
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "d"
+              },
+              "key": "variation_op"
+             },
+             "b": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "op"
+              },
+              "key": "name"
+             }
+            },
+            {
+             "type": "Exists",
+             "source": {
+              "type": "InNeighbours",
+              "node": {
+               "type": "Var",
+               "name": "d"
+              },
+              "edge_type": "has_delta"
+             },
+             "var_name": "x",
+             "predicate": {
+              "type": "In",
+              "member": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "x"
+               },
+               "key": "outcome"
+              },
+              "container": {
+               "type": "Lit",
+               "value": [
+                "supported",
+                "refuted",
+                "inconclusive"
+               ]
+              }
+             }
+            }
+           ]
+          }
+         }
+        },
+        "b": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "pol"
+         },
+         "key": "probation_trials"
+        }
+       }
+      ]
+     },
+     {
+      "type": "Gte",
+      "a": {
+       "type": "Div",
+       "a": {
+        "type": "Times",
+        "items": [
+         {
+          "type": "Count",
+          "source": {
+           "type": "Filter",
+           "source": {
+            "type": "NodesOfType",
+            "node_type": "SeedDelta"
+           },
+           "var_name": "d",
+           "predicate": {
+            "type": "And",
+            "items": [
+             {
+              "type": "Eq",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "d"
+               },
+               "key": "variation_op"
+              },
+              "b": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "op"
+               },
+               "key": "name"
+              }
+             },
+             {
+              "type": "Exists",
+              "source": {
+               "type": "InNeighbours",
+               "node": {
+                "type": "Var",
+                "name": "d"
+               },
+               "edge_type": "has_delta"
+              },
+              "var_name": "x",
+              "predicate": {
+               "type": "In",
+               "member": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "x"
+                },
+                "key": "outcome"
+               },
+               "container": {
+                "type": "Lit",
+                "value": [
+                 "supported"
+                ]
+               }
+              }
+             }
+            ]
+           }
+          }
+         },
+         {
+          "type": "Lit",
+          "value": 1.0
+         }
+        ]
+       },
+       "b": {
+        "type": "Count",
+        "source": {
+         "type": "Filter",
+         "source": {
+          "type": "NodesOfType",
+          "node_type": "SeedDelta"
+         },
+         "var_name": "d",
+         "predicate": {
+          "type": "And",
+          "items": [
+           {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "d"
+             },
+             "key": "variation_op"
+            },
+            "b": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "op"
+             },
+             "key": "name"
+            }
+           },
+           {
+            "type": "Exists",
+            "source": {
+             "type": "InNeighbours",
+             "node": {
+              "type": "Var",
+              "name": "d"
+             },
+             "edge_type": "has_delta"
+            },
+            "var_name": "x",
+            "predicate": {
+             "type": "In",
+             "member": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "x"
+              },
+              "key": "outcome"
+             },
+             "container": {
+              "type": "Lit",
+              "value": [
+               "supported",
+               "refuted",
+               "inconclusive"
+              ]
+             }
+            }
+           }
+          ]
+         }
+        }
+       }
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "pol"
+       },
+       "key": "probation_min_rate"
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "op",
+     "probation",
+     0
     ]
    ]
   }

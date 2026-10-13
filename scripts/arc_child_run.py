@@ -115,6 +115,10 @@ def _load_delta(path) -> dict:
             "shape_mint_edit": float(d.get("shape_mint_edit") or 0.0),
             "shape_mint_name": d.get("shape_mint_name") or "",
             "shape_mint_party": d.get("shape_mint_party") or "",
+            # plan P3b: the declared witness (seeds/self_optimisation.json
+            # declare_witness_*); dropped here before P5b, so the child always
+            # used its fallback marker mapping (the same mapping)
+            "witness_kind": str(d.get("witness_kind") or ""),
             # plan P5 meta-evaluation (convo_child_run.read_corpus): the turns
             # to flag, overriding the snapshot's concerns; None = not set
             "flagged_turn_ids": (list(d["flagged_turn_ids"]) if d.get("flagged_turn_ids") is not None

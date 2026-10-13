@@ -149,8 +149,42 @@ def delta_of(report: dict) -> dict:
             "remove_rules": [report["removed_rule"]] if report.get("removed_rule") else []}
 
 
-def mint_proposal(agent, attrs: dict):
-    """A FamilyProposal under the policy, status 'measured', for the rules."""
+def source_of(report: dict) -> str:
+    """The held rule a built report copied (generalise) or replaced (deep reader)."""
+    return str(report.get("source_rule") or report.get("removed_rule") or "")
+
+
+def parent_op_of(agent, program: str):
+    """The held (not agent-authored) VariationOp whose builder is `program`."""
+    sub, _n = _resolve(agent)
+    for n in sub.nodes("VariationOp"):
+        at = sub.node(n)["attrs"]
+        if at.get("builder_program") == program and at.get("provenance") != "agent_authored":
+            return str(at.get("name"))
+    return None
+
+
+def refined(cand: dict, exclude) -> dict:
+    """P5b refinement: the candidate with `p_exclude_sources` set to the
+    sources whose own deltas did net harm on the bank (one more edit)."""
+    edits = [e for e in cand["edits"] if e[0] != "p_exclude_sources"]
+    edits.append(["p_exclude_sources", sorted(exclude)])
+    cid = cand["program"] + "#" + "+".join(f"{s}={v}" for s, v in edits)
+    return {"id": cid, "program": cand["program"], "edits": edits, "size": len(edits), "refines": cand["id"]}
+
+
+def authored_names(cand: dict, parent_op: str) -> tuple:
+    """(family_name, op_name): content-addressed, so the same candidate always
+    names the same family."""
+    import hashlib
+    h = hashlib.sha1(json.dumps([cand["program"], cand["edits"]], sort_keys=True).encode()).hexdigest()[:8]
+    return f"family_authored_{h}", f"authored_{parent_op}_{h}"
+
+
+def mint_proposal(agent, attrs: dict, residual_turns=()):
+    """A FamilyProposal under the policy, status 'measured', for the rules.
+    `residual_turns` (Message node ids) are linked by `residual_turn`: the
+    turns this candidate harmed, or left to a source it excludes."""
     sub, native = _resolve(agent)
     pn, _pol = policy(agent)
     clean = {k: (json.dumps(v) if isinstance(v, (list, dict)) else v) for k, v in attrs.items()}
@@ -158,4 +192,36 @@ def mint_proposal(agent, attrs: dict):
     p = sub.add_node("FamilyProposal", clean)
     if pn is not None:
         native.add_edge_unchecked(pn, "has_family_proposal", p)
+    import substrate_rs as srs
+    for t in residual_turns:
+        m = t if hasattr(t, "value") else srs.NodeID(int(t))
+        if sub.has_node(m):
+            native.add_edge_unchecked(p, "residual_turn", m)
     return p
+
+
+def mint_measured(agent, report: dict) -> list:
+    """Re-mint a meta-evaluation's measured proposals (operator_authorship_meta_v2
+    report) into this agent, so the frozen rules decide -- and install -- from
+    the same measurements. The bank turns belong to the bank's own graph, so
+    no residual edges are linked here. Returns the installed authored ops."""
+    import json as _json
+    sub, native = _resolve(agent)
+    bank_set = "+".join(sorted((report.get("banks") or {}).keys())) or "imported"
+    programs = report.get("programs") or {}
+    for i, m in enumerate(report.get("candidates") or []):     # report order is MDL rank order
+        parent_op = parent_op_of(agent, m["program"])
+        attrs = {"candidate": m["id"], "program": m["program"], "parent_op": parent_op, "edits": m["edits"],
+                 "size": m["size"], "mdl_rank": m.get("mdl_rank", i), "fixed": m["fixed"], "harm": m["harm"],
+                 "fixed_classes": m.get("fixed_classes") or [], "bank_set": bank_set,
+                 "provenance": "agent_authored" if m["size"] else "held"}
+        if m["size"] and m["id"] in programs:
+            fam, opn = authored_names(m, parent_op or "op")
+            attrs.update(family_name=fam, op_name=opn,
+                         program_json=_json.dumps(programs[m["id"]], separators=(",", ":")))
+        mint_proposal(agent, attrs)
+    for _ in range(4):
+        native.run_rules()
+    return [{k: sub.node(n)["attrs"].get(k) for k in ("name", "family", "priority", "requires_kind", "probation",
+                                                     "builder_program")}
+            for n in sub.nodes("VariationOp") if sub.node(n)["attrs"].get("provenance") == "agent_authored"]

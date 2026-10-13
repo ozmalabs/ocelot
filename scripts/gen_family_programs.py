@@ -302,6 +302,7 @@ def generalise_candidate(r):
         Ite(set_value(r, "cognitive_disposition"), L(True), L(False)),
         is_str(set_value(r, "arbitration_basis")),
         Not(tried(name)),
+        Not(In(name, V("p_exclude_sources"))),
         Not(protected(r)),
         Or(In(DG(SEED_OF, name), V("adoptable")), ends_with(name, "_generalised")),
         has_guards(DG(r, "where")),
@@ -321,6 +322,7 @@ def realiser_candidate(r):
             Eq(gkey(V(g)), L("arbitration_basis")), Eq(gval(V(g)), A(V("interp"), "arbitration_basis")),
             Not(neg(V(g))))),
         Not(tried(name)),
+        Not(In(name, V("p_exclude_sources"))),
         Not(protected(r)),
         Or(In(DG(SEED_OF, name), V("adoptable")), ends_with(name, "_generalised")),
         Let(m, misses(r, V("interp")), misses_ok(V(m))))
@@ -402,8 +404,11 @@ def realiser_build():
                "basis", A(V("interp"), "arbitration_basis"))))
 
 
-GENERALISE_PARAMS = (("p_max_miss", 1), ("p_source_role", "arbitration"))
-DEEP_READER_PARAMS = (("p_held_reply", "reply_to_deferred_response_assertion"),)
+# p_exclude_sources (P5b): source rules the family may not copy -- the
+# refinement a proposer derives from its own meta-evaluation (sources whose
+# deltas did net harm on the bank)
+GENERALISE_PARAMS = (("p_max_miss", 1), ("p_source_role", "arbitration"), ("p_exclude_sources", []))
+DEEP_READER_PARAMS = (("p_held_reply", "reply_to_deferred_response_assertion"), ("p_exclude_sources", []))
 
 
 def with_params(params, body):
@@ -523,7 +528,8 @@ def deep_reader_program():
                                     "b": {"type": "Lit", "value": 1}}}]},
         "effects": t(concat_lists(Vec(Vec(L("set_attr"), L("m"), flag, L(1))), kept))})
     x, ee = fresh("x"), fresh("e")
-    arb_pick = FilterList(RULES, x, And(match_i(V(x)), Exists(DG(V(x), "effects"), ee, And(
+    arb_pick = FilterList(RULES, x, And(match_i(V(x)), Not(In(DG(V(x), "name"), V("p_exclude_sources"))),
+                                        Exists(DG(V(x), "effects"), ee, And(
         Eq(Count(V(ee)), L(4)), Eq(IndexAt(V(ee), 0), L("set_attr")), Eq(IndexAt(V(ee), 1), L("i")),
         Eq(IndexAt(V(ee), 2), L("arbitration_basis")), Eq(IndexAt(V(ee), 3), basis)))))
     y, z = fresh("y"), fresh("z")
@@ -580,7 +586,7 @@ PROGRAMS = {
 
 seed = {
     "id": "family_programs",
-    "version": "1.1.0",
+    "version": "1.2.0",
     "depends_on": [],
     "description": __doc__,
     "nodes": [{"local_id": k, "type": "FamilyProgram", "attrs": {

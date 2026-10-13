@@ -10,8 +10,11 @@ Pinned claims:
     variant as the held family where a one-guard variant exists);
   * the realiser source role builds a one-rule variant for a short agreement
     the held reply rule misses on one guard, and installed it answers the turn;
-  * the frozen rules decide the verdict; a qualifying proposal is
-    install_blocked (propose-only).
+  * v1.1.0 (P5b): the frozen rules weigh harm relatively (net against the
+    parent family), install the best qualifying candidate on probation wired
+    as its parent, file its residual turns as concerns, and retire or
+    graduate it on its own judged trials; p_exclude_sources refines a family
+    where it does harm.
 The gate itself (A5a) is evaluation/substrate_capability/operator_authorship_a5a_v1.py.
 """
 from __future__ import annotations
@@ -119,18 +122,96 @@ def test_realiser_source_answers_a_short_agreement(st):
     assert (reply2 or "").strip(), _status
 
 
-def test_frozen_rules_decide_and_block_install(st):
+def _held_op(a, name):
+    for n in a.s.nodes("VariationOp"):
+        if a.s.node(n)["attrs"].get("name") == name:
+            return n
+    raise AssertionError(name)
+
+
+def test_relative_rules_decide_install_and_file_residual(st):
+    """v1.1.0: harm is weighed, not vetoed; the best candidate beating its
+    parent is installed on probation, wired as the parent; what it still
+    harms is filed as the agent's own concern."""
     a = st.adapter
-    rows = {"held": dict(size=0, fixed=3, harm=0, novel_fixed=0),
-            "good": dict(size=1, fixed=2, harm=0, novel_fixed=1),
-            "harmful": dict(size=1, fixed=5, harm=1, novel_fixed=1),
-            "few": dict(size=1, fixed=1, harm=0, novel_fixed=1),
-            "not_new": dict(size=2, fixed=4, harm=0, novel_fixed=0)}
-    nodes = {k: OA.mint_proposal(a, dict(v, candidate=k)) for k, v in rows.items()}
-    for _ in range(3):
+    S = a.s
+    prog = OA.candidate_program(a, {"program": "family_disposition_generalise", "edits": [["p_max_miss", 2]]})
+    turn = _turn(a, "That would be fun!")
+    base = dict(program="family_disposition_generalise", parent_op="disposition_generalise", bank_set="t")
+
+    def cand(k, rank, **kw):
+        attrs = dict(base, candidate=k, mdl_rank=rank, edits=[["p_max_miss", 2]], size=1,
+                     family_name=f"family_authored_{k}", op_name=f"authored_{k}",
+                     program_json=json.dumps(prog), **kw)
+        return attrs
+    rows = {"held": dict(base, candidate="held", size=0, mdl_rank=0, fixed=16, harm=15),     # net 1
+            "better": cand("better", 2, fixed=18, harm=4),          # net 14, gain 13: harm weighed, not vetoed
+            "best": cand("best", 3, fixed=16, harm=0),              # net 16: installed
+            "worse": cand("worse", 1, fixed=18, harm=31),           # net -13
+            "same": cand("same", 4, fixed=17, harm=16),             # gain 0 < min_gain
+            "few": cand("few", 5, fixed=1, harm=0)}                 # below k_fix
+    nodes = {k: OA.mint_proposal(a, v, [turn] if k == "best" else []) for k, v in rows.items()}
+    for _ in range(4):
         a.inner.run_rules()
-    got = {k: a.s.node(n)["attrs"].get("verdict") for k, n in nodes.items()}
-    assert got == {"held": "held_baseline", "good": "qualifies", "harmful": "does_not_qualify",
-                   "few": "does_not_qualify", "not_new": "does_not_qualify"}
-    assert a.s.node(nodes["good"])["attrs"].get("install_blocked") == 1
-    assert not a.s.node(nodes["harmful"])["attrs"].get("install_blocked")
+    got = {k: S.node(n)["attrs"].get("verdict") for k, n in nodes.items()}
+    assert got == {"held": "held_baseline", "better": "qualifies", "best": "qualifies",
+                   "worse": "does_not_qualify", "same": "does_not_qualify", "few": "does_not_qualify"}
+    assert S.node(nodes["best"])["attrs"]["net"] == 16 and S.node(nodes["best"])["attrs"]["gain"] == 15
+    assert S.node(nodes["best"])["attrs"].get("installed") == 1
+    assert not S.node(nodes["better"])["attrs"].get("installed")          # one per program: the best
+    op = _held_op(a, "authored_best")
+    at = S.node(op)["attrs"]
+    parent = S.node(_held_op(a, "disposition_generalise"))["attrs"]
+    assert at["provenance"] == "agent_authored" and at["probation"] == 1
+    assert at["family"] == "disposition_generalise" and at["requires_kind"] == parent["requires_kind"]
+    assert at["cue_head"] == parent["cue_head"] and at["priority"] == parent["priority"] - 0.5
+    assert rf._load_family_program(S, "family_authored_best") == prog
+    assert rf._variation_op_family(a, "authored_best") == "disposition_generalise"
+    assert rf._builder_for(a, "authored_best") is not None                # a held-Program builder
+    res = [n for n in S.nodes("SelfConcern") if S.node(n)["attrs"].get("kind") == "family_residual"]
+    assert len(res) == 1 and list(a.inner.neighbours(res[0], "about_message")) == [turn]
+    for _ in range(2):
+        a.inner.run_rules()
+    assert len([n for n in S.nodes("SelfConcern") if S.node(n)["attrs"].get("kind") == "family_residual"]) == 1
+
+
+def _trial(a, op_name, outcome):
+    S, I = a.s, a.inner
+    exp = S.add_node("Experiment", {"status": "done", "outcome": outcome, "axis_tag": "probation_probe"})
+    d = S.add_node("SeedDelta", {"variation_op": op_name})
+    I.add_edge_unchecked(exp, "has_delta", d)
+
+
+def test_probation_retires_or_graduates_on_own_trials(st):
+    a = st.adapter
+    S = a.s
+    op = _held_op(a, "authored_best")
+    for o in ("refuted", "inconclusive"):
+        _trial(a, "authored_best", o)
+    a.inner.run_rules()
+    assert S.node(op)["attrs"].get("probation") == 1 and not S.node(op)["attrs"].get("retired")   # 2 < trials
+    _trial(a, "authored_best", "refuted")
+    a.inner.run_rules()
+    at = S.node(op)["attrs"]
+    assert at["retired"] == 1 and at["cue_head"] == "retired" and at["retired_cue_head"] == "replay"
+    # a second authored op that earns its keep leaves probation
+    pol, _p = OA.policy(a)
+    op2 = S.add_node("VariationOp", {"name": "authored_good", "parent_op": "disposition_generalise",
+                                     "probation": 1, "priority": 9.5, "cue_head": "replay",
+                                     "provenance": "agent_authored"})
+    a.inner.add_edge_unchecked(pol, "installed_family", op2)
+    for o in ("supported", "refuted", "supported"):
+        _trial(a, "authored_good", o)
+    a.inner.run_rules()
+    at2 = S.node(op2)["attrs"]
+    assert at2["probation"] == 0 and at2["priority"] == 9.5 and not at2.get("retired")
+
+
+def test_exclusion_site_refines_a_family(st):
+    a = st.adapter
+    m = _turn(a, "That would be fun!")
+    held = OA.build_on_turn(a, rf._load_family_program(a.s, "family_disposition_generalise"), m, "t3")
+    assert held["built"]
+    ref = OA.refined({"id": "x", "program": "family_disposition_generalise", "edits": []}, [held["source_rule"]])
+    rep = OA.build_on_turn(a, OA.candidate_program(a, ref), m, "t3")
+    assert rep.get("source_rule") != held["source_rule"]                 # changed where it harmed

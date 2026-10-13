@@ -622,7 +622,8 @@ def score_probes(probes, control, stats, q_control, q_variant, trace_fp=None) ->
         return (not str(txt or "").strip()
                 or str(txt).strip() == _CONVERSATION_ERROR_SURFACE or bool(err))
     out = {"score": 0, "flagged": 0, "flagged_changed": 0, "broken_fixes": 0,
-           "regressions": 0, "repaired": 0, "quality_vetoed_fixes": 0, "flagged_outcomes": {}}
+           "regressions": 0, "repaired": 0, "quality_vetoed_fixes": 0, "flagged_outcomes": {},
+           "regressed_turns": []}
     for i, probe in enumerate(probes):
         replayed = stats["replies"][i]
         if probe["flagged"]:
@@ -664,6 +665,7 @@ def score_probes(probes, control, stats, q_control, q_variant, trace_fp=None) ->
             if changed:
                 out["regressions"] += 1
                 out["score"] -= 1
+                out["regressed_turns"].append(probe["turn_id"])
         if trace_fp is not None:
             reasoning = (f"turn {probe['turn_id']} "
                          f"{'FLAGGED' if probe['flagged'] else 'unflagged'} "
@@ -818,6 +820,7 @@ def main() -> int:
             # P5 meta-evaluation: per flagged turn, and which turns lost quality
             result["flagged_outcomes"] = sc["flagged_outcomes"]
             result["quality_drop_turns"] = q_drop_turns
+            result["regressed_turns"] = sc["regressed_turns"]
         if knob_probe:
             result["control_reforms"] = int(control["reforms"])
             result["variant_reforms"] = int(stats["reforms"])

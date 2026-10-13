@@ -149,6 +149,11 @@ def stream_turns(kind, n):
     if kind == "requests":
         reqs = json.loads((ROOT / "evaluation/fixtures/endemic_requests_v1.json").read_text())["requests"]
         return [r["text"] for r in reqs][:n]
+    if kind.startswith("persona50_"):
+        # plan P5b: persona_chat_50 dialogue ranges, e.g. persona50_30_39 (A5b's held-out stream)
+        lo, hi = (int(x) for x in kind.split("_")[1:3])
+        d = json.loads((ROOT / "data/corpus/persona_chat_50.json").read_text())
+        return [t for dlg in d[lo:hi + 1] for spk, t in dlg["turns"] if spk == "User 1"][:n]
     d = json.loads((ROOT / "data/corpus/persona_chat_20.json").read_text())
     out = [t for dlg in d for spk, t in dlg["turns"] if spk == "User 1"]
     return out[:n]
@@ -193,6 +198,7 @@ def main():
     n = int(sys.argv[3]) if len(sys.argv) > 3 else 10 ** 6
     arm = "_off" if os.environ.get("ERSI_SELF_PROMOTION") == "0" else ""
     arm += "_noreopen" if os.environ.get("ERSI_REOPEN") == "0" else ""
+    arm += "_authored" if os.environ.get("ERSI_AUTHORED") else ""
     label = os.environ.get("ERSI_LABEL", "")
     out = ROOT / (f"evaluation/reports/endemic_rsi_daemon_v1_{kind}_{shadow_arm}{'' if n >= 10**6 else f'_n{n}'}"
                   f"{arm}{('_' + label) if label else ''}_20261010.json")
@@ -201,6 +207,14 @@ def main():
     shadow = shadow_arm == "shadow"
     turns = stream_turns(kind, n)
     st = boot(shadow)
+    authored = None
+    if os.environ.get("ERSI_AUTHORED"):
+        # plan P5b (A5b arm): the measured proposals of an operator-authorship
+        # meta-evaluation are minted into this boot; the frozen rules decide
+        # and install again from the same measurements
+        from domains import operator_authorship as OA
+        authored = OA.mint_measured(st.adapter, json.loads(Path(os.environ["ERSI_AUTHORED"]).read_text()))
+        print("AUTHORED", json.dumps(authored), flush=True)
     t0 = time.time()
     rows = []
     say(st, "Hello.")
@@ -259,6 +273,12 @@ def main():
         "experiments_n": len(live["experiments"]),
         # plan P4: OZMA_FAMILY_PROGRAM_PARITY=1 records Program-vs-Python builder comparisons
         "family_program_parity": getattr(st.adapter, "_family_program_parity", None),
+        # plan P5b: the families installed at boot, and their state after the run
+        "authored_installed": authored,
+        "authored_after": [{k: st.adapter.s.node(n)["attrs"].get(k)
+                            for k in ("name", "priority", "probation", "retired", "cue_head")}
+                           for n in st.adapter.s.nodes("VariationOp")
+                           if st.adapter.s.node(n)["attrs"].get("provenance") == "agent_authored"],
         "experiments_by_op_outcome": dict(collections.Counter(
             f"{x['op']}:{x['outcome'] or x['status']}" for x in live["experiments"])),
     }

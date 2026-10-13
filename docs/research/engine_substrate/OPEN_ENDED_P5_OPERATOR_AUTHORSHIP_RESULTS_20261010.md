@@ -107,7 +107,9 @@ Reports: `evaluation/reports/operator_authorship_a5a_v1_n80_20261010.json` and `
 - the cost of a production run with the seed loaded. The seed holds rules over FamilyProposal nodes only, and none exist in a normal run.
 - Rust tests: the engine source did not change.
 
-**Observed, not fixed.** `arc_child_run._load_delta` drops the P3b `witness_kind` key. The child therefore always uses its fallback marker mapping. This is harmless today because the two mappings are the same, but the declared witness never reaches the child.
+**Observed, not fixed here.** `arc_child_run._load_delta` drops the P3b `witness_kind` key. The child therefore always uses its fallback marker mapping. This is harmless today because the two mappings are the same. Fixed in P5b.
+
+**Superseded the same day:** the human decision to allow installation, with a relative criterion, is in [P5b](OPEN_ENDED_P5B_AUTHORED_FAMILY_INSTALL_RESULTS_20261010.md).
 
 ## Next
 
