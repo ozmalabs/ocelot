@@ -1,45 +1,740 @@
 {
   "id": "adoption_safety",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "depends_on": [],
   "capability_keys": [
     "adoption_safety",
     "regression_veto"
   ],
-  "description": "THE AGENT-SIDE ADOPTION SAFETY GATE (Wave 6). The conversation experiment world's judge nets its score (flagged_changed - regressions), so a variant that fixes the flagged turn but breaks one other previously-working turn can still judge 'supported' (+2-1=+1) and reach mark_adopt_ready. This seed closes that hole AS GRAPH DATA the agent can inspect and repair: the dispatched child already reports `regressions` in result.json, the dispatch ingest (domains/experiment_dispatch.py::_ingest_result) mechanically carries it onto the Experiment node, and the rule below VETOES adoption of any Experiment whose own child reported regressions > 0 -- it sets `adopt_denied` (which perform_adoptions honours unconditionally: a denied Experiment is never folded back) plus an honest `adopt_denied_reason` the self_improvement_status reader surfaces over NL ('what are you working on?'). Chosen over a stricter mark_adopt_ready where-clause deliberately: the authored mark_adopt_ready_* bodies stay byte-identical (graph-meta oracle parity with seeds/composer_experiment_graph.json's wants_experiment_adopt_rule is preserved untouched), the veto applies uniformly to every experiment family that reports regressions (today: conversation replay), and an ARC child reports no `regressions` key at all, so the attr is never written there and this rule can never bind an ARC experiment. The veto fires in the same run_rules fixpoint as the judge/mark_adopt_ready rules (the regressions attr is written at ingest, before that tick), so perform_adoptions -- host I/O that only runs between ticks -- always sees the denial before it could adopt. || v1.1.0 (2026-10-10): adopt_denied_on_overridden_verdict -- an adopt-ready Experiment whose outcome a family judge has since overridden away from 'supported' is vetoed (measured: tranche 23 smoke run, adopted=True with outcome='refuted'; scripts/gen_adoption_overridden_verdict_veto.py). || v1.2.0 (2026-10-10, plan P1 judge v2): adopt_denied_on_quality_drop vetoes adoption when the child's ReplyQuality report shows any turn's quality fell or the mean fell (scripts/gen_adoption_quality_veto.py).",
+  "description": "THE AGENT-SIDE ADOPTION SAFETY GATE (Wave 6). The conversation experiment world's judge nets its score (flagged_changed - regressions), so a variant that fixes the flagged turn but breaks one other previously-working turn can still judge 'supported' (+2-1=+1) and reach mark_adopt_ready. This seed closes that hole AS GRAPH DATA the agent can inspect and repair: the dispatched child already reports `regressions` in result.json, the dispatch ingest (domains/experiment_dispatch.py::_ingest_result) mechanically carries it onto the Experiment node, and the rule below VETOES adoption of any Experiment whose own child reported regressions > 0 -- it sets `adopt_denied` (which perform_adoptions honours unconditionally: a denied Experiment is never folded back) plus an honest `adopt_denied_reason` the self_improvement_status reader surfaces over NL ('what are you working on?'). Chosen over a stricter mark_adopt_ready where-clause deliberately: the authored mark_adopt_ready_* bodies stay byte-identical (graph-meta oracle parity with seeds/composer_experiment_graph.json's wants_experiment_adopt_rule is preserved untouched), the veto applies uniformly to every experiment family that reports regressions (today: conversation replay), and an ARC child reports no `regressions` key at all, so the attr is never written there and this rule can never bind an ARC experiment. The veto fires in the same run_rules fixpoint as the judge/mark_adopt_ready rules (the regressions attr is written at ingest, before that tick), so perform_adoptions -- host I/O that only runs between ticks -- always sees the denial before it could adopt. || v1.1.0 (2026-10-10): adopt_denied_on_overridden_verdict -- an adopt-ready Experiment whose outcome a family judge has since overridden away from 'supported' is vetoed (measured: tranche 23 smoke run, adopted=True with outcome='refuted'; scripts/gen_adoption_overridden_verdict_veto.py). || v1.2.0 (2026-10-10, plan P1 judge v2): adopt_denied_on_quality_drop vetoes adoption when the child's ReplyQuality report shows any turn's quality fell or the mean fell (scripts/gen_adoption_quality_veto.py). || v1.3.0 (2026-10-10, plan P5c, human decision: everything is weighed): the absolute regression and quality-drop vetoes are replaced by a weighed net over the child's frame-relative report (fixes, improved, regressions = worse in the quality frame or now failing, lateral = same quality, different text) with AdoptionWeighing exchange rates (scripts/gen_weighed_adoption.py).",
   "microtheory": {
     "name": "adoption_safety",
-    "description": "a supported-but-regressing variant is never adopted: regressions == 0 is a hard adopt-readiness requirement, held as an inspectable seed rule."
+    "description": "a trial is adopted when what it fixes outweighs what it harms, in the frame it is measured in; the exchange rates are held as data"
   },
-  "nodes": [],
+  "nodes": [
+    {
+      "local_id": 0,
+      "type": "AdoptionWeighing",
+      "attrs": {
+        "name": "adoption_weighing",
+        "fix_weight": 1.0,
+        "gain_weight": 0.5,
+        "harm_weight": 1.5,
+        "lateral_weight": 0.25,
+        "min_net": 1.0,
+        "description": "The exchange rates the adoption gate weighs a trial by (plan P5c): a fixed flagged turn (or a declared witness moving the right way) is worth fix_weight; an unflagged turn made better gain_weight; a turn made worse in the quality frame, or a broken fix, costs harm_weight; a lateral change (same quality, different text -- the frame cannot see it) costs lateral_weight. A trial is adopted only if its net reaches min_net."
+      }
+    }
+  ],
   "edges": [],
   "productions": [],
   "rules": [
     {
-      "name": "adopt_denied_on_regression",
-      "match": [["exp", "has_delta", "delta"]],
+      "name": "adopt_weighed_net",
+      "comment": "P5c: every judged conversation trial carries its weighed net (inspectable).",
+      "match": [
+        [
+          "exp",
+          "has_delta",
+          "delta"
+        ]
+      ],
       "where": {
         "type": "And",
         "items": [
           {
-            "type": "Gt",
-            "a": {"type": "Attr", "node": {"type": "Var", "name": "exp"}, "key": "regressions"},
-            "b": {"type": "Lit", "value": 0}
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "exp"
+                },
+                "key": "regressions"
+              },
+              "b": {
+                "type": "Lit",
+                "value": null
+              }
+            }
           },
           {
             "type": "Not",
             "arg": {
               "type": "Eq",
-              "a": {"type": "Attr", "node": {"type": "Var", "name": "exp"}, "key": "adopt_denied"},
-              "b": {"type": "Lit", "value": true}
+              "a": {
+                "type": "Argmin",
+                "source": {
+                  "type": "Filter",
+                  "source": {
+                    "type": "NodesOfType",
+                    "node_type": "AdoptionWeighing"
+                  },
+                  "var_name": "w",
+                  "predicate": {
+                    "type": "Lit",
+                    "value": true
+                  }
+                },
+                "var_name": "_x",
+                "value": {
+                  "type": "Lit",
+                  "value": 0
+                },
+                "default": null
+              },
+              "b": {
+                "type": "Lit",
+                "value": null
+              }
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "delta"
+              },
+              "key": "witness_kind"
+            },
+            "b": {
+              "type": "Lit",
+              "value": null
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "exp"
+                },
+                "key": "adopted"
+              },
+              "b": {
+                "type": "Lit",
+                "value": true
+              }
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "exp"
+                },
+                "key": "adopt_denied"
+              },
+              "b": {
+                "type": "Lit",
+                "value": true
+              }
             }
           }
         ]
       },
       "effects": [
-        ["set_attr", "exp", "adopt_denied", true],
-        ["set_attr", "exp", "adopt_denied_reason",
-         "the dispatched child reported regressions > 0: a variant that breaks a previously-working turn is never adopted, even when its net score judges supported"]
+        [
+          "set_attr_if_different",
+          "exp",
+          "weighed_net",
+          {
+            "__term__": {
+              "type": "Let",
+              "name": "aw",
+              "value": {
+                "type": "Argmin",
+                "source": {
+                  "type": "Filter",
+                  "source": {
+                    "type": "NodesOfType",
+                    "node_type": "AdoptionWeighing"
+                  },
+                  "var_name": "w",
+                  "predicate": {
+                    "type": "Lit",
+                    "value": true
+                  }
+                },
+                "var_name": "_x",
+                "value": {
+                  "type": "Lit",
+                  "value": 0
+                },
+                "default": null
+              },
+              "body": {
+                "type": "Minus",
+                "a": {
+                  "type": "Plus",
+                  "items": [
+                    {
+                      "type": "Times",
+                      "items": [
+                        {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "aw"
+                          },
+                          "key": "fix_weight"
+                        },
+                        {
+                          "type": "IfThenElse",
+                          "cond": {
+                            "type": "Eq",
+                            "a": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "exp"
+                              },
+                              "key": "flagged_changed"
+                            },
+                            "b": {
+                              "type": "Lit",
+                              "value": null
+                            }
+                          },
+                          "then": {
+                            "type": "Lit",
+                            "value": 0
+                          },
+                          "other": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "exp"
+                            },
+                            "key": "flagged_changed"
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "type": "Times",
+                      "items": [
+                        {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "aw"
+                          },
+                          "key": "gain_weight"
+                        },
+                        {
+                          "type": "IfThenElse",
+                          "cond": {
+                            "type": "Eq",
+                            "a": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "exp"
+                              },
+                              "key": "improved_changes"
+                            },
+                            "b": {
+                              "type": "Lit",
+                              "value": null
+                            }
+                          },
+                          "then": {
+                            "type": "Lit",
+                            "value": 0
+                          },
+                          "other": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "exp"
+                            },
+                            "key": "improved_changes"
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                },
+                "b": {
+                  "type": "Plus",
+                  "items": [
+                    {
+                      "type": "Times",
+                      "items": [
+                        {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "aw"
+                          },
+                          "key": "harm_weight"
+                        },
+                        {
+                          "type": "IfThenElse",
+                          "cond": {
+                            "type": "Eq",
+                            "a": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "exp"
+                              },
+                              "key": "regressions"
+                            },
+                            "b": {
+                              "type": "Lit",
+                              "value": null
+                            }
+                          },
+                          "then": {
+                            "type": "Lit",
+                            "value": 0
+                          },
+                          "other": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "exp"
+                            },
+                            "key": "regressions"
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "type": "Times",
+                      "items": [
+                        {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "aw"
+                          },
+                          "key": "lateral_weight"
+                        },
+                        {
+                          "type": "IfThenElse",
+                          "cond": {
+                            "type": "Eq",
+                            "a": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "exp"
+                              },
+                              "key": "lateral_changes"
+                            },
+                            "b": {
+                              "type": "Lit",
+                              "value": null
+                            }
+                          },
+                          "then": {
+                            "type": "Lit",
+                            "value": 0
+                          },
+                          "other": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "exp"
+                            },
+                            "key": "lateral_changes"
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        ]
+      ]
+    },
+    {
+      "name": "adopt_denied_on_weighed_net",
+      "comment": "P5c: a trial whose weighed net is below min_net is not adopted -- harm is weighed against what the trial fixed, not vetoed by its mere presence.",
+      "match": [
+        [
+          "exp",
+          "has_delta",
+          "delta"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "And",
+            "items": [
+              {
+                "type": "Not",
+                "arg": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "exp"
+                    },
+                    "key": "regressions"
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": null
+                  }
+                }
+              },
+              {
+                "type": "Not",
+                "arg": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Argmin",
+                    "source": {
+                      "type": "Filter",
+                      "source": {
+                        "type": "NodesOfType",
+                        "node_type": "AdoptionWeighing"
+                      },
+                      "var_name": "w",
+                      "predicate": {
+                        "type": "Lit",
+                        "value": true
+                      }
+                    },
+                    "var_name": "_x",
+                    "value": {
+                      "type": "Lit",
+                      "value": 0
+                    },
+                    "default": null
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": null
+                  }
+                }
+              },
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "delta"
+                  },
+                  "key": "witness_kind"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": null
+                }
+              },
+              {
+                "type": "Not",
+                "arg": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "exp"
+                    },
+                    "key": "adopted"
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": true
+                  }
+                }
+              },
+              {
+                "type": "Not",
+                "arg": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "exp"
+                    },
+                    "key": "adopt_denied"
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": true
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "type": "Lt",
+            "a": {
+              "type": "Let",
+              "name": "aw",
+              "value": {
+                "type": "Argmin",
+                "source": {
+                  "type": "Filter",
+                  "source": {
+                    "type": "NodesOfType",
+                    "node_type": "AdoptionWeighing"
+                  },
+                  "var_name": "w",
+                  "predicate": {
+                    "type": "Lit",
+                    "value": true
+                  }
+                },
+                "var_name": "_x",
+                "value": {
+                  "type": "Lit",
+                  "value": 0
+                },
+                "default": null
+              },
+              "body": {
+                "type": "Minus",
+                "a": {
+                  "type": "Plus",
+                  "items": [
+                    {
+                      "type": "Times",
+                      "items": [
+                        {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "aw"
+                          },
+                          "key": "fix_weight"
+                        },
+                        {
+                          "type": "IfThenElse",
+                          "cond": {
+                            "type": "Eq",
+                            "a": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "exp"
+                              },
+                              "key": "flagged_changed"
+                            },
+                            "b": {
+                              "type": "Lit",
+                              "value": null
+                            }
+                          },
+                          "then": {
+                            "type": "Lit",
+                            "value": 0
+                          },
+                          "other": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "exp"
+                            },
+                            "key": "flagged_changed"
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "type": "Times",
+                      "items": [
+                        {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "aw"
+                          },
+                          "key": "gain_weight"
+                        },
+                        {
+                          "type": "IfThenElse",
+                          "cond": {
+                            "type": "Eq",
+                            "a": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "exp"
+                              },
+                              "key": "improved_changes"
+                            },
+                            "b": {
+                              "type": "Lit",
+                              "value": null
+                            }
+                          },
+                          "then": {
+                            "type": "Lit",
+                            "value": 0
+                          },
+                          "other": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "exp"
+                            },
+                            "key": "improved_changes"
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                },
+                "b": {
+                  "type": "Plus",
+                  "items": [
+                    {
+                      "type": "Times",
+                      "items": [
+                        {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "aw"
+                          },
+                          "key": "harm_weight"
+                        },
+                        {
+                          "type": "IfThenElse",
+                          "cond": {
+                            "type": "Eq",
+                            "a": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "exp"
+                              },
+                              "key": "regressions"
+                            },
+                            "b": {
+                              "type": "Lit",
+                              "value": null
+                            }
+                          },
+                          "then": {
+                            "type": "Lit",
+                            "value": 0
+                          },
+                          "other": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "exp"
+                            },
+                            "key": "regressions"
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "type": "Times",
+                      "items": [
+                        {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "aw"
+                          },
+                          "key": "lateral_weight"
+                        },
+                        {
+                          "type": "IfThenElse",
+                          "cond": {
+                            "type": "Eq",
+                            "a": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "exp"
+                              },
+                              "key": "lateral_changes"
+                            },
+                            "b": {
+                              "type": "Lit",
+                              "value": null
+                            }
+                          },
+                          "then": {
+                            "type": "Lit",
+                            "value": 0
+                          },
+                          "other": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "exp"
+                            },
+                            "key": "lateral_changes"
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Argmin",
+                "source": {
+                  "type": "Filter",
+                  "source": {
+                    "type": "NodesOfType",
+                    "node_type": "AdoptionWeighing"
+                  },
+                  "var_name": "w",
+                  "predicate": {
+                    "type": "Lit",
+                    "value": true
+                  }
+                },
+                "var_name": "_x",
+                "value": {
+                  "type": "Lit",
+                  "value": 0
+                },
+                "default": null
+              },
+              "key": "min_net"
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "exp",
+          "adopt_denied",
+          true
+        ],
+        [
+          "set_attr",
+          "exp",
+          "adopt_denied_reason",
+          "the trial's weighed net (fixes and improvements against regressions and lateral changes, seeds/adoption_safety.json AdoptionWeighing) is below the minimum"
+        ]
       ]
     },
     {
@@ -156,125 +851,6 @@
           "exp",
           "adopt_denied_reason",
           "the experiment was marked adopt-ready on a provisional 'supported' verdict that a later judge overrode: a change the agent's own final verdict does not support is never adopted"
-        ]
-      ]
-    },
-    {
-      "name": "adopt_denied_on_quality_drop",
-      "comment": "Judge v2 (plan P1): a variant that lowers any replayed turn's reply quality, or the mean, is never adopted.",
-      "match": [
-        [
-          "exp",
-          "has_delta",
-          "delta"
-        ]
-      ],
-      "where": {
-        "type": "And",
-        "items": [
-          {
-            "type": "Not",
-            "arg": {
-              "type": "Eq",
-              "a": {
-                "type": "Attr",
-                "node": {
-                  "type": "Var",
-                  "name": "exp"
-                },
-                "key": "quality_drops"
-              },
-              "b": {
-                "type": "Lit",
-                "value": null
-              }
-            }
-          },
-          {
-            "type": "Not",
-            "arg": {
-              "type": "Eq",
-              "a": {
-                "type": "Attr",
-                "node": {
-                  "type": "Var",
-                  "name": "exp"
-                },
-                "key": "quality_delta"
-              },
-              "b": {
-                "type": "Lit",
-                "value": null
-              }
-            }
-          },
-          {
-            "type": "Or",
-            "items": [
-              {
-                "type": "Gt",
-                "a": {
-                  "type": "Attr",
-                  "node": {
-                    "type": "Var",
-                    "name": "exp"
-                  },
-                  "key": "quality_drops"
-                },
-                "b": {
-                  "type": "Lit",
-                  "value": 0
-                }
-              },
-              {
-                "type": "Lt",
-                "a": {
-                  "type": "Attr",
-                  "node": {
-                    "type": "Var",
-                    "name": "exp"
-                  },
-                  "key": "quality_delta"
-                },
-                "b": {
-                  "type": "Lit",
-                  "value": 0.0
-                }
-              }
-            ]
-          },
-          {
-            "type": "Not",
-            "arg": {
-              "type": "Eq",
-              "a": {
-                "type": "Attr",
-                "node": {
-                  "type": "Var",
-                  "name": "exp"
-                },
-                "key": "adopt_denied"
-              },
-              "b": {
-                "type": "Lit",
-                "value": true
-              }
-            }
-          }
-        ]
-      },
-      "effects": [
-        [
-          "set_attr",
-          "exp",
-          "adopt_denied",
-          true
-        ],
-        [
-          "set_attr",
-          "exp",
-          "adopt_denied_reason",
-          "judge v2: the dispatched child reported a reply-quality drop (quality_drops > 0 or quality_delta < 0): a variant that makes a reply worse is never adopted"
         ]
       ]
     }

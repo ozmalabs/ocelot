@@ -617,13 +617,20 @@ def score_probes(probes, control, stats, q_control, q_variant, trace_fp=None) ->
     at least QUALITY_MIN_FIX; otherwise it is a broken fix (e.g. a receipt for
     a question). An unflagged turn may count as `repaired` only if its quality
     did not decrease against the paired control; otherwise it is a
-    regression."""
+    regression.
+
+    P5c (2026-10-10): an unflagged change is a regression only if it is worse
+    in that frame (quality fell, or a working turn now fails); a better one is
+    an `improved_change` and an equal-quality one a `lateral_change`, both
+    reported for the adoption gate to weigh (seeds/adoption_safety.json
+    v1.3.0). The score counts fixes, broken fixes and regressions as before.
+    `changed_unflagged` is the pre-P5c regression count."""
     def _is_broken(txt, err):
         return (not str(txt or "").strip()
                 or str(txt).strip() == _CONVERSATION_ERROR_SURFACE or bool(err))
     out = {"score": 0, "flagged": 0, "flagged_changed": 0, "broken_fixes": 0,
            "regressions": 0, "repaired": 0, "quality_vetoed_fixes": 0, "flagged_outcomes": {},
-           "regressed_turns": []}
+           "regressed_turns": [], "lateral_changes": 0, "improved_changes": 0, "changed_unflagged": 0}
     for i, probe in enumerate(probes):
         replayed = stats["replies"][i]
         if probe["flagged"]:
@@ -663,9 +670,27 @@ def score_probes(probes, control, stats, q_control, q_variant, trace_fp=None) ->
                 changed = False
                 baseline = "control (repaired)"
             if changed:
-                out["regressions"] += 1
-                out["score"] -= 1
-                out["regressed_turns"].append(probe["turn_id"])
+                # REGRESSION IS RELATIVE TO THE FRAME (P5c, 2026-10-10): a
+                # changed reply is not by itself a harm. In the frame the agent
+                # holds (ReplyQuality, plus the error floor) it either got
+                # WORSE (a regression: quality fell, or a working turn now
+                # fails), BETTER (an improvement), or moved LATERALLY (same
+                # quality, different text: the frame cannot tell -- an
+                # uncertainty, weighed at adoption, not a verdict here).
+                out["changed_unflagged"] += 1
+                now_broken = (_is_broken(replayed, stats["errors"][i])
+                              and not _is_broken(baseline_text, control["errors"][i]))
+                if now_broken or q_variant[i] < q_control[i]:
+                    out["regressions"] += 1
+                    out["score"] -= 1
+                    out["regressed_turns"].append(probe["turn_id"])
+                    baseline = "control (worse)"
+                elif q_variant[i] > q_control[i]:
+                    out["improved_changes"] += 1
+                    baseline = "control (better)"
+                else:
+                    out["lateral_changes"] += 1
+                    baseline = "control (lateral)"
         if trace_fp is not None:
             reasoning = (f"turn {probe['turn_id']} "
                          f"{'FLAGGED' if probe['flagged'] else 'unflagged'} "
@@ -810,6 +835,8 @@ def main() -> int:
                   "flagged": flagged_n, "flagged_changed": flagged_changed,
                   "broken_fixes": broken_fixes, "regressions": regressions, "repaired": repaired,
                   "quality_vetoed_fixes": quality_vetoed_fixes,
+                  "lateral_changes": sc["lateral_changes"], "improved_changes": sc["improved_changes"],
+                  "changed_unflagged": sc["changed_unflagged"],
                   "avg_turn_ms": stats["avg_turn_ms"],
                   "quality_control_mean": _rq.summarise(q_control)["mean"],
                   "quality_variant_mean": _rq.summarise(q_variant)["mean"],

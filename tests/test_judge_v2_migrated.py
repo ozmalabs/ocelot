@@ -4,8 +4,10 @@
     if its new reply is at least acceptable-minimal (a receipt for a question
     is a broken fix); an unflagged turn is `repaired` only if its quality did
     not decrease;
-  * seeds/adoption_safety.json v1.2.0 adopt_denied_on_quality_drop denies an
+  * seeds/adoption_safety.json v1.2.0 adopt_denied_on_quality_drop denied an
     Experiment whose child reported quality_drops > 0 or quality_delta < 0;
+    v1.3.0 (P5c) replaces it, and the regression veto, with a weighed net,
+    and an unflagged change is a regression only if worse in the frame;
   * adoption_safety is frozen (boot_all._FROZEN_SEED_IDS).
 """
 from __future__ import annotations
@@ -74,6 +76,8 @@ def test_repair_requires_quality_not_to_drop():
 def _veto_agent():
     a = WorldAdapter(seeds=())
     seed = json.load(open(os.path.join(ROOT, "seeds", "adoption_safety.json")))
+    for n in seed["nodes"]:                  # v1.3.0: the AdoptionWeighing exchange rates
+        a.s.add_node(n["type"], dict(n["attrs"]))
     for r in seed["rules"]:
         a.inner.add_rule(r)
     return a
@@ -86,26 +90,48 @@ def _exp(a, **attrs):
     return exp
 
 
-def test_quality_drop_vetoes_adoption():
+def test_adoption_weighs_fixes_against_harm():
+    """P5c (adoption_safety v1.3.0): no absolute veto. net = 1.0*fixes +
+    0.5*improved - 1.5*regressions - 0.25*lateral; adopted only at net >= 1."""
     a = _veto_agent()
-    dropped = _exp(a, quality_drops=1, quality_delta=0.1, regressions=0)
-    worse = _exp(a, quality_drops=0, quality_delta=-0.05, regressions=0)
-    fine = _exp(a, quality_drops=0, quality_delta=0.2, regressions=0)
-    unreported = _exp(a, regressions=0)
+    cases = {"clean": dict(flagged_changed=1, regressions=0),                       # 1.0
+             "one_regression": dict(flagged_changed=2, regressions=1),              # 0.5 -> denied
+             "outweighed": dict(flagged_changed=3, regressions=1),                  # 1.5 -> adopted
+             "laterals": dict(flagged_changed=2, regressions=0, lateral_changes=3),  # 1.25 -> adopted
+             "many_laterals": dict(flagged_changed=1, regressions=0, lateral_changes=1),   # 0.75 -> denied
+             "improved": dict(flagged_changed=1, regressions=1, improved_changes=3),        # 1.0 -> adopted
+             "nothing": dict(flagged_changed=0, regressions=0)}                     # 0 -> denied
+    exps = {k: _exp(a, **v) for k, v in cases.items()}
+    refuted = _exp(a, outcome="refuted", flagged_changed=0, regressions=3)
+    unreported = _exp(a)
     a.inner.run_rules()
     at = lambda n: a.s.node(n)["attrs"]
-    assert at(dropped).get("adopt_denied") is True and "quality" in at(dropped)["adopt_denied_reason"]
-    assert at(worse).get("adopt_denied") is True
-    assert not at(fine).get("adopt_denied")
-    assert not at(unreported).get("adopt_denied"), "no quality report: the veto stays silent"
+    denied = {k for k, n in exps.items() if at(n).get("adopt_denied")}
+    assert denied == {"one_regression", "many_laterals", "nothing"}, denied
+    assert at(exps["outweighed"])["weighed_net"] == 1.5 and at(exps["one_regression"])["weighed_net"] == 0.5
+    assert "weighed net" in at(exps["one_regression"])["adopt_denied_reason"]
+    assert at(refuted).get("adopt_denied") and at(refuted)["weighed_net"] == -4.5   # weighed at ingest, any verdict
+    assert not at(unreported).get("adopt_denied"), "no child report (an ARC trial): the gate stays silent"
+
+
+def test_unflagged_change_is_a_regression_only_if_worse_in_the_frame():
+    # same quality, different text: lateral, not a regression
+    out, qc, qv = _score({"text": "I like to garden.", "flagged": False}, "got it", "Noted.")
+    assert qc == qv and out["regressions"] == 0 and out["lateral_changes"] == 1 and out["changed_unflagged"] == 1
+    # better quality: an improvement
+    out, qc, qv = _score({"text": "What is your name?", "flagged": False}, "got it", "My name is Ocelot.")
+    assert qv > qc and out["regressions"] == 0 and out["improved_changes"] == 1
+    # a working turn that now fails: a regression even when both score 0 (the simple case)
+    out, qc, qv = _score({"text": "What is a cat?", "flagged": False}, "got it", ERR)
+    assert out["regressions"] == 1 and out["score"] == -1
 
 
 def test_adoption_safety_is_frozen_and_machinery():
     from substrate.boot_all import _FROZEN_SEED_IDS
     assert "adoption_safety" in _FROZEN_SEED_IDS
     seed = json.load(open(os.path.join(ROOT, "seeds", "adoption_safety.json")))
-    assert seed["version"] == "1.2.0"
-    rule = next(r for r in seed["rules"] if r["name"] == "adopt_denied_on_quality_drop")
+    assert seed["version"] == "1.3.0"
+    rule = next(r for r in seed["rules"] if r["name"] == "adopt_denied_on_weighed_net")
     assert rule["effects"][0] == ["set_attr", "exp", "adopt_denied", True]
     # the veto matches on has_delta and names no protected type, so what keeps
     # the loop from varying it is the frozen seed: its rules' RuleSummary is

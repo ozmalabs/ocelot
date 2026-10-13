@@ -305,11 +305,20 @@ def _ingest_result(agent, exp, run_dir: Path) -> None:
     # OWN rules can read it (seeds/adoption_safety.json's regression veto).
     # Mechanical copy of what the child already decided/reported: only keys
     # actually present in result.json are carried, no defaults invented.
-    for key in ("flagged", "flagged_changed", "broken_fixes", "regressions", "integrity_refused"):
+    for key in ("flagged", "flagged_changed", "broken_fixes", "regressions", "integrity_refused",
+                "lateral_changes", "improved_changes", "changed_unflagged"):
         if key in result:
             try:
                 I.set_attr(run, key, int(result.get(key) or 0))
             except Exception:  # noqa: BLE001 — a malformed extra never blocks ingest
+                pass
+    # P5c: what the weighed adoption gate (seeds/adoption_safety.json v1.3.0)
+    # weighs, carried onto the Experiment like `regressions`
+    for key in ("flagged_changed", "lateral_changes", "improved_changes"):
+        if key in result:
+            try:
+                I.set_attr(exp, key, int(result.get(key) or 0))
+            except Exception:  # noqa: BLE001
                 pass
     if "integrity_refused" in result:
         # plan P3: the child refused part of the delta (it touches the loop);
@@ -596,7 +605,9 @@ def restart_experiment(agent, id_str: str) -> dict:
                        ("knob_judged", ""),
                        ("control_belief", ""), ("variant_belief", ""),
                        ("datum_feedback_judged", ""), ("shape_mint_judged", ""),
-                       ("witness_judged", "")):   # self_optimisation v1.7.0 (plan P3b)
+                       ("witness_judged", ""),    # self_optimisation v1.7.0 (plan P3b)
+                       # P5c weighed adoption inputs (ints, compared numerically)
+                       ("flagged_changed", 0), ("lateral_changes", 0), ("improved_changes", 0)):
         try:
             I.set_attr(exp, key, blank)
         except Exception:  # noqa: BLE001

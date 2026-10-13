@@ -65,14 +65,18 @@ def agent():
 
 
 def _experiment(a, *, avg_turn_ms, baseline_ms, score=1, perf=True):
-    exp = a.s.add_node("Experiment", {"status": "done", "game": "conversation", "axis_tag": "ovr_probe",
-                                      "regressions": 0, "avg_turn_ms": avg_turn_ms})
+    exp = a.s.add_node("Experiment", {"status": "done", "game": "conversation", "axis_tag": "ovr_probe"})
     attrs = {"act_rule_varied": "reply_self_identity", "add_rules": "[]", "remove_rules": "[]"}
     if perf:
         attrs.update({"performance_objective": 1.0, "baseline_avg_turn_ms": baseline_ms})
     delta = a.s.add_node("SeedDelta", attrs)
-    run = a.s.add_node("Run", {"status": "done", "score": score, "frames": 1})
     a.inner.add_edge_unchecked(exp, "has_delta", delta)
+    # production order (P5c): the experiment is minted (its witness declared)
+    # before its child runs; the child's report is ingested afterwards
+    a.inner.run_rules()
+    a.s.set_attr(exp, "regressions", 0)
+    a.s.set_attr(exp, "avg_turn_ms", avg_turn_ms)
+    run = a.s.add_node("Run", {"status": "done", "score": score, "frames": 1})
     a.inner.add_edge_unchecked(exp, "produced", run)
     a.inner.run_rules()
     return exp

@@ -106,3 +106,29 @@ def test_declaration_is_graph_data_and_a_declared_delta_needs_no_marker():
                              "witness_variant_attr": "v_x"},
                       {"c_x": 4.0, "v_x": 1.0, "regressions": 0})
     assert out == "supported"
+
+
+def _weighed_outcome(exp_attrs):
+    """P5c (self_optimisation v1.8.0): with the AdoptionWeighing exchange rates
+    held, the witness move counts as one fix and the trial's harm is weighed."""
+    a = WorldAdapter(seeds=())
+    seed = json.load(open(os.path.join(ROOT, "seeds", "adoption_safety.json")))
+    for n in seed["nodes"]:
+        a.s.add_node(n["type"], dict(n["attrs"]))
+    for r in _NEW:
+        a.inner.add_rule(r)
+    exp = a.s.add_node("Experiment", dict(exp_attrs, outcome="generic", control_reforms=1, variant_reforms=3))
+    delta = a.s.add_node("SeedDelta", {"knob_edit": 1.0, "knob_direction": "increase_fires"})
+    run = a.s.add_node("Run", {"status": "done"})
+    a.inner.add_edge_unchecked(exp, "has_delta", delta)
+    a.inner.add_edge_unchecked(exp, "produced", run)
+    a.inner.add_edge_unchecked(exp, "analysed", run)
+    a.inner.run_rules()
+    return a.s.node(exp)["attrs"].get("outcome")
+
+
+def test_witness_verdict_weighs_harm_when_exchange_rates_are_held():
+    assert _weighed_outcome({"regressions": 0}) == "supported"                       # 1.0
+    assert _weighed_outcome({"regressions": 1}) == "refuted"                         # -0.5: outweighed
+    assert _weighed_outcome({"regressions": 0, "lateral_changes": 1}) == "refuted"   # 0.75
+    assert _weighed_outcome({"regressions": 1, "improved_changes": 3}) == "supported"   # 1.0

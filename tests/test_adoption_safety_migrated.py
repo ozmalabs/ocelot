@@ -1,6 +1,12 @@
 """Wave 6 gate: THE AGENT-SIDE ADOPTION SAFETY GATE — a supported-but-
 regressing variant is never adopted.
 
+P5c (2026-10-10, adoption_safety v1.3.0): the veto described below is now a
+WEIGHED net (fixes and improvements against regressions and lateral changes,
+AdoptionWeighing exchange rates), and a regression is a change that is worse
+in the quality frame. The headline test pins a supported trial whose net is
+outweighed by its lateral changes.
+
 The hole this closes: the conversation judge nets its score
 (flagged_changed − regressions), so a variant that fixes the flagged turns
 but breaks one previously-working turn can still judge 'supported'
@@ -186,13 +192,14 @@ def _replacement_identity_rule():
                     ["add_edge", "reply", "responds_to", "m"], ["add_edge", "agent", "sent", "reply"]],
     }
 
-def test_net_positive_but_regressing_variant_is_not_adopted(agent, tmp_path):
-    # Corpus: three identity turns; flag 1+2, leave 3 unflagged. Ablating the
-    # identity reply changes all three -> +2 (flagged fixed) − 1 (regression)
-    # = net +1: judged supported, and EXACTLY the case that must not adopt.
+def test_net_positive_but_outweighed_variant_is_not_adopted(agent, tmp_path):
+    # Corpus: three identity turns; flag 1, leave 2+3 unflagged. Replacing the
+    # identity reply changes all three. P5c (adoption_safety v1.3.0): the two
+    # unflagged changes keep their reply quality, so they are LATERAL changes,
+    # not regressions -- score +1, judged supported -- and the weighed net
+    # (1.0 * 1 fix - 0.25 * 2 lateral = 0.5) is below min_net 1.0: not adopted.
     turns = _identity_corpus(agent, 3)
     _flag(agent, turns[0], "identity reply rule wrong: probe one")
-    _flag(agent, turns[1], "identity reply rule wrong: probe two")
 
     exp = mint_experiment(agent, "net-positive-but-regressing ablation", "conversation",
                           remove_rules=["reply_self_identity"],
@@ -208,16 +215,18 @@ def test_net_positive_but_regressing_variant_is_not_adopted(agent, tmp_path):
     status = _dispatch_until(agent, tmp_path / "runs", exp)
     assert status == "done", (status, agent.s.node(exp)["attrs"].get("error"))
 
-    # the child's own accounting: net positive WITH a regression
+    # the child's own accounting, in the quality frame: one fix, two lateral changes
     child = json.load(open(os.path.join(agent.s.node(exp)["attrs"]["run_dir"], "result.json")))
-    assert child["flagged"] == 2 and child["flagged_changed"] == 2
-    assert child["regressions"] == 1 and child["score"] == 1
+    assert child["flagged"] == 1 and child["flagged_changed"] == 1
+    assert child["regressions"] == 0 and child["lateral_changes"] == 2 and child["changed_unflagged"] == 2
+    assert child["score"] == 1
 
     # ingest carried the accounting onto the graph (Run AND Experiment)
     run = next(r for r in agent.inner.neighbours(exp, "produced") if agent.s.has_node(r))
     ra = agent.s.node(run)["attrs"]
-    assert ra.get("regressions") == 1 and ra.get("flagged") == 2 and ra.get("flagged_changed") == 2
-    assert agent.s.node(exp)["attrs"].get("regressions") == 1
+    assert ra.get("regressions") == 0 and ra.get("flagged") == 1 and ra.get("lateral_changes") == 2
+    ea = agent.s.node(exp)["attrs"]
+    assert ea.get("regressions") == 0 and ea.get("lateral_changes") == 2 and ea.get("flagged_changed") == 1
 
     # judge + adopt-candidate rules fire UNCHANGED (supported, adopt_ready) —
     # proving the safety gate is the veto, not a narrowed candidate rule —
@@ -227,8 +236,9 @@ def test_net_positive_but_regressing_variant_is_not_adopted(agent, tmp_path):
     assert at.get("outcome") == "supported", at
     assert at.get("adopt_ready") is True
     assert at.get("adopt_denied") is True, \
-        "adopt_denied_on_regression (seeds/adoption_safety.json) must veto regressions > 0"
-    assert "regressions" in str(at.get("adopt_denied_reason") or "")
+        "adopt_denied_on_weighed_net (seeds/adoption_safety.json) must deny a net below min_net"
+    assert at.get("weighed_net") == 0.5
+    assert "weighed net" in str(at.get("adopt_denied_reason") or "")
 
     # perform_adoptions honours the denial: nothing folds back into the parent
     rf.close_experiment_loop(agent)
@@ -285,20 +295,21 @@ def test_zero_regression_variant_is_not_vetoed(agent, tmp_path):
 def test_adoption_safety_seed_loads_and_round_trips(agent):
     # full boot holds the veto rule exactly once
     live = [r for r in agent.inner.export_rules()
-            if r.get("active") and r.get("name") == "adopt_denied_on_regression"]
+            if r.get("active") and r.get("name") == "adopt_denied_on_weighed_net"]
     assert len(live) == 1, "seeds/adoption_safety.json must load exactly once on a full boot"
 
     # the rule round-trips canonically (the _REFRESHABLE_SEEDS contract: an
     # unchanged rule is never churned by the resume refresh path)
     seed = json.load(open(os.path.join(ROOT, "seeds", "adoption_safety.json")))
-    # v1.2.0 (plan P1 judge v2) adds the reply-quality veto
+    # v1.3.0 (plan P5c): the absolute regression and quality vetoes became a weighed net
     assert seed["id"] == "adoption_safety" and len(seed["rules"]) == 3
-    assert [r["name"] for r in seed["rules"]] == ["adopt_denied_on_regression",
-                                                  "adopt_denied_on_overridden_verdict",
-                                                  "adopt_denied_on_quality_drop"]
-    file_canon = jd._canon_rule_body(seed["rules"][0])
+    assert [r["name"] for r in seed["rules"]] == ["adopt_weighed_net",
+                                                  "adopt_denied_on_weighed_net",
+                                                  "adopt_denied_on_overridden_verdict"]
+    assert [n["type"] for n in seed["nodes"]] == ["AdoptionWeighing"]
+    file_canon = jd._canon_rule_body(seed["rules"][1])
     live_canon = jd._canon_rule_body(live[0])
     assert file_canon and file_canon == live_canon, \
-        "adopt_denied_on_regression must round-trip byte-identically through the engine"
+        "adopt_denied_on_weighed_net must round-trip byte-identically through the engine"
     assert "adoption_safety" in jd._REFRESHABLE_SEEDS, \
         "edit-the-seed/restart/it-applies must cover the safety rule"
