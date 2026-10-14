@@ -141,9 +141,8 @@ def assess(inbound: str, reply: str, literal_form: Optional[str] = None,
         # a first-person answer to a question addressed to the agent fits its
         # addressee even without shared content words (v1 cannot check that it
         # answers THIS question; the Q0 labels measure how often that misleads)
-        return {"score": 2, "inbound_class": ic, "reply_class": rc, "on_topic": on_topic,
-                "addressed_to_agent": to_agent, "reason": reason + " +self_answer"}
-    if score == 1 and rc in c["upgrades"]["on_topic_classes"] and on_topic:
+        score, reason = 2, reason + " +self_answer"
+    elif score == 1 and rc in c["upgrades"]["on_topic_classes"] and on_topic:
         if rc == "definition":
             if not (to_agent or first_person_in):
                 score, reason = 2, reason + " +on_topic"
@@ -151,6 +150,18 @@ def assess(inbound: str, reply: str, literal_form: Optional[str] = None,
             pass        # a non-self content reply to a question about the agent stays minimal
         else:
             score, reason = 2, reason + " +on_topic"
+    # CAPS (plan P6 criterion grammar, criteria >= 1.2.0): a held cap lowers a
+    # (inbound, reply) class pair's score when its condition holds. Absent in
+    # criteria 1.1.0, so the measure is unchanged until a human adopts one.
+    person_turn = to_agent or first_person_in
+    for cap in c.get("caps") or []:
+        if rc not in cap.get("reply_classes", ()) or ic not in cap.get("inbound_classes", ()):
+            continue
+        cond = cap.get("when", "always")
+        holds = (cond == "always" or (cond == "off_topic" and not on_topic)
+                 or (cond == "addressed_to_agent" and to_agent) or (cond == "person_turn" and person_turn))
+        if holds and score > int(cap.get("to", 0)):
+            score, reason = int(cap.get("to", 0)), reason + f" -{cap.get('name', 'cap')}"
     return {"score": score, "inbound_class": ic, "reply_class": rc, "on_topic": on_topic,
             "addressed_to_agent": to_agent, "reason": reason}
 

@@ -205,7 +205,7 @@ Concerns are keyed by evidence class with a recurrence threshold, as `unanswered
 ## 4. Invariants (checked at every gate)
 
 - **I1.** No level is judged by a criterion it can modify.
-- **I2.** No adoption, at any level, when regressions > 0, quality drops > 0, or the verdict was overridden.
+- **I2.** No adoption, at any level, when regressions > 0, quality drops > 0, or the verdict was overridden. *Revised 2026-10-10 by human decision (P5b/P5c): harm is weighed, not vetoed. A regression is a change that is worse in the frame it is measured in. Adoption needs a weighed net of fixes against harm (`AdoptionWeighing`), and the overridden-verdict check stays. An authored family qualifies by beating its parent's net.*
 - **I3.** No rule or delta that reads or writes protected types is adopted through L0 or L1. Node-attribute and typed-node deltas are covered too (from P3).
 - **I4.** Every adoption records its full prior state and can be reverted. Post-adoption audit (P2) can revert automatically.
 - **I5.** `improvement_integrity`, `adoption_safety`, the judges and `operator_authorship` are frozen. Their contents change only by human edit.

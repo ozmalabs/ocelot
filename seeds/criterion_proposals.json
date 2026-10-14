@@ -1,0 +1,1238 @@
+{
+ "id": "criterion_proposals",
+ "version": "1.0.0",
+ "depends_on": [],
+ "description": "Emit seeds/criterion_proposals.json (plan P6, 2026-10-10): the agent\nproposes changes to its reply-quality criterion; a human adopts.\n\nCriterionPolicy holds the bar a proposal must clear on HELD-OUT labels (the\nodd-dialogue TEST split; the even DEV split only chooses candidates). The\nmeasurements are written by domains/criterion_proposals.py; these rules\nDECIDE:\n  * recommended: TEST kappa gain >= min_gain, TEST precision of the machine 0\n    >= min_precision0, and a positive DEV gain (chosen on DEV, confirmed on\n    TEST);\n  * goodhart_rejected: it raises loop_success (the mean score the criterion\n    gives the agent's own recent replies -- what the loop would count as\n    progress) without raising TEST agreement;\n  * not_recommended: anything else.\nA recommended proposal waits for a human (status awaiting_human); a human's\ndecision (domains/criterion_proposals.decide) moves it to approved or\ndenied. Nothing here edits the criterion: the plan keeps criterion adoption\nhuman-only (I1: no level is judged by a criterion it can modify). Frozen\n(substrate/boot_all._FROZEN_SEED_IDS); its types are protected. Idempotent.\n",
+ "nodes": [
+  {
+   "local_id": 0,
+   "type": "CriterionPolicy",
+   "attrs": {
+    "name": "reply_quality_criterion",
+    "enabled": 1,
+    "min_gain": 0.005,
+    "min_precision0": 0.8,
+    "top_k": 5,
+    "description": "The bar a proposed change to the reply-quality criterion must clear on held-out labels (plan P6). Adoption is a human decision."
+   }
+  }
+ ],
+ "edges": [
+  {
+   "src": {
+    "role": "agent_root"
+   },
+   "type": "has_criterion_policy",
+   "tgt": {
+    "local": 0
+   },
+   "attrs": {}
+  }
+ ],
+ "productions": [],
+ "rules": [
+  {
+   "name": "criterion_proposal_recommended",
+   "comment": "Chosen on DEV, confirmed on held-out TEST labels, without losing precision on what it calls bad.",
+   "match": [
+    [
+     "agent",
+     "has_criterion_policy",
+     "pol"
+    ],
+    [
+     "pol",
+     "has_criterion_proposal",
+     "p"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "p"
+         },
+         "key": "status"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "measured"
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "p"
+         },
+         "key": "verdict"
+        },
+        "b": {
+         "type": "Lit",
+         "value": null
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "pol"
+         },
+         "key": "enabled"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 1
+        }
+       },
+       {
+        "type": "Not",
+        "arg": {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "p"
+          },
+          "key": "test_gain"
+         },
+         "b": {
+          "type": "Lit",
+          "value": null
+         }
+        }
+       },
+       {
+        "type": "Not",
+        "arg": {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "p"
+          },
+          "key": "dev_gain"
+         },
+         "b": {
+          "type": "Lit",
+          "value": null
+         }
+        }
+       }
+      ]
+     },
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Gte",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "p"
+         },
+         "key": "test_gain"
+        },
+        "b": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "pol"
+         },
+         "key": "min_gain"
+        }
+       },
+       {
+        "type": "Gt",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "p"
+         },
+         "key": "dev_gain"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0
+        }
+       },
+       {
+        "type": "Not",
+        "arg": {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "p"
+          },
+          "key": "test_precision0"
+         },
+         "b": {
+          "type": "Lit",
+          "value": null
+         }
+        }
+       },
+       {
+        "type": "Gte",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "p"
+         },
+         "key": "test_precision0"
+        },
+        "b": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "pol"
+         },
+         "key": "min_precision0"
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "p",
+     "verdict",
+     "recommended"
+    ],
+    [
+     "set_attr",
+     "p",
+     "status",
+     "awaiting_human"
+    ]
+   ]
+  },
+  {
+   "name": "criterion_proposal_goodhart_rejected",
+   "comment": "Raises what the loop would count as progress without raising agreement with held-out labels: the measurement rejects it.",
+   "match": [
+    [
+     "agent",
+     "has_criterion_policy",
+     "pol"
+    ],
+    [
+     "pol",
+     "has_criterion_proposal",
+     "p"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "p"
+         },
+         "key": "status"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "measured"
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "p"
+         },
+         "key": "verdict"
+        },
+        "b": {
+         "type": "Lit",
+         "value": null
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "pol"
+         },
+         "key": "enabled"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 1
+        }
+       },
+       {
+        "type": "Not",
+        "arg": {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "p"
+          },
+          "key": "test_gain"
+         },
+         "b": {
+          "type": "Lit",
+          "value": null
+         }
+        }
+       },
+       {
+        "type": "Not",
+        "arg": {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "p"
+          },
+          "key": "dev_gain"
+         },
+         "b": {
+          "type": "Lit",
+          "value": null
+         }
+        }
+       }
+      ]
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "And",
+       "items": [
+        {
+         "type": "Gte",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "p"
+          },
+          "key": "test_gain"
+         },
+         "b": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "pol"
+          },
+          "key": "min_gain"
+         }
+        },
+        {
+         "type": "Gt",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "p"
+          },
+          "key": "dev_gain"
+         },
+         "b": {
+          "type": "Lit",
+          "value": 0
+         }
+        },
+        {
+         "type": "Not",
+         "arg": {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "p"
+           },
+           "key": "test_precision0"
+          },
+          "b": {
+           "type": "Lit",
+           "value": null
+          }
+         }
+        },
+        {
+         "type": "Gte",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "p"
+          },
+          "key": "test_precision0"
+         },
+         "b": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "pol"
+          },
+          "key": "min_precision0"
+         }
+        }
+       ]
+      }
+     },
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Gt",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "p"
+         },
+         "key": "success_delta"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0
+        }
+       },
+       {
+        "type": "Not",
+        "arg": {
+         "type": "Gt",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "p"
+          },
+          "key": "test_gain"
+         },
+         "b": {
+          "type": "Lit",
+          "value": 0
+         }
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "p",
+     "verdict",
+     "goodhart_rejected"
+    ],
+    [
+     "set_attr",
+     "p",
+     "status",
+     "closed"
+    ]
+   ]
+  },
+  {
+   "name": "criterion_proposal_not_recommended",
+   "match": [
+    [
+     "agent",
+     "has_criterion_policy",
+     "pol"
+    ],
+    [
+     "pol",
+     "has_criterion_proposal",
+     "p"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "p"
+         },
+         "key": "status"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "measured"
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "p"
+         },
+         "key": "verdict"
+        },
+        "b": {
+         "type": "Lit",
+         "value": null
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "pol"
+         },
+         "key": "enabled"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 1
+        }
+       },
+       {
+        "type": "Not",
+        "arg": {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "p"
+          },
+          "key": "test_gain"
+         },
+         "b": {
+          "type": "Lit",
+          "value": null
+         }
+        }
+       },
+       {
+        "type": "Not",
+        "arg": {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "p"
+          },
+          "key": "dev_gain"
+         },
+         "b": {
+          "type": "Lit",
+          "value": null
+         }
+        }
+       }
+      ]
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "And",
+       "items": [
+        {
+         "type": "Gte",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "p"
+          },
+          "key": "test_gain"
+         },
+         "b": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "pol"
+          },
+          "key": "min_gain"
+         }
+        },
+        {
+         "type": "Gt",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "p"
+          },
+          "key": "dev_gain"
+         },
+         "b": {
+          "type": "Lit",
+          "value": 0
+         }
+        },
+        {
+         "type": "Not",
+         "arg": {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "p"
+           },
+           "key": "test_precision0"
+          },
+          "b": {
+           "type": "Lit",
+           "value": null
+          }
+         }
+        },
+        {
+         "type": "Gte",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "p"
+          },
+          "key": "test_precision0"
+         },
+         "b": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "pol"
+          },
+          "key": "min_precision0"
+         }
+        }
+       ]
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "And",
+       "items": [
+        {
+         "type": "Gt",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "p"
+          },
+          "key": "success_delta"
+         },
+         "b": {
+          "type": "Lit",
+          "value": 0
+         }
+        },
+        {
+         "type": "Not",
+         "arg": {
+          "type": "Gt",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "p"
+           },
+           "key": "test_gain"
+          },
+          "b": {
+           "type": "Lit",
+           "value": 0
+          }
+         }
+        }
+       ]
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "p",
+     "verdict",
+     "not_recommended"
+    ],
+    [
+     "set_attr",
+     "p",
+     "status",
+     "closed"
+    ]
+   ]
+  },
+  {
+   "name": "criterion_proposal_preferred",
+   "comment": "The one recommended proposal put to the human first (MDL order); the others stay awaiting.",
+   "match": [
+    [
+     "agent",
+     "has_criterion_policy",
+     "pol"
+    ],
+    [
+     "pol",
+     "has_criterion_proposal",
+     "p"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "p"
+       },
+       "key": "verdict"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "recommended"
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "p"
+        },
+        "key": "preferred"
+       },
+       "b": {
+        "type": "Lit",
+        "value": 1
+       }
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "NodesOfType",
+        "node_type": "CriterionProposal"
+       },
+       "var_name": "o",
+       "predicate": {
+        "type": "And",
+        "items": [
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "o"
+           },
+           "key": "verdict"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "recommended"
+          }
+         },
+         {
+          "type": "Not",
+          "arg": {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "o"
+            },
+            "key": "candidate"
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "p"
+            },
+            "key": "candidate"
+           }
+          }
+         },
+         {
+          "type": "Or",
+          "items": [
+           {
+            "type": "Gt",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "o"
+             },
+             "key": "test_gain"
+            },
+            "b": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "p"
+             },
+             "key": "test_gain"
+            }
+           },
+           {
+            "type": "And",
+            "items": [
+             {
+              "type": "Eq",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "o"
+               },
+               "key": "test_gain"
+              },
+              "b": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "p"
+               },
+               "key": "test_gain"
+              }
+             },
+             {
+              "type": "Lt",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "o"
+               },
+               "key": "size"
+              },
+              "b": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "p"
+               },
+               "key": "size"
+              }
+             }
+            ]
+           },
+           {
+            "type": "And",
+            "items": [
+             {
+              "type": "Eq",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "o"
+               },
+               "key": "test_gain"
+              },
+              "b": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "p"
+               },
+               "key": "test_gain"
+              }
+             },
+             {
+              "type": "Eq",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "o"
+               },
+               "key": "size"
+              },
+              "b": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "p"
+               },
+               "key": "size"
+              }
+             },
+             {
+              "type": "Lt",
+              "a": {
+               "type": "IfThenElse",
+               "cond": {
+                "type": "Lt",
+                "a": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "o"
+                 },
+                 "key": "success_delta"
+                },
+                "b": {
+                 "type": "Lit",
+                 "value": 0
+                }
+               },
+               "then": {
+                "type": "Minus",
+                "a": {
+                 "type": "Lit",
+                 "value": 0
+                },
+                "b": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "o"
+                 },
+                 "key": "success_delta"
+                }
+               },
+               "other": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "o"
+                },
+                "key": "success_delta"
+               }
+              },
+              "b": {
+               "type": "IfThenElse",
+               "cond": {
+                "type": "Lt",
+                "a": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "p"
+                 },
+                 "key": "success_delta"
+                },
+                "b": {
+                 "type": "Lit",
+                 "value": 0
+                }
+               },
+               "then": {
+                "type": "Minus",
+                "a": {
+                 "type": "Lit",
+                 "value": 0
+                },
+                "b": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "p"
+                 },
+                 "key": "success_delta"
+                }
+               },
+               "other": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "p"
+                },
+                "key": "success_delta"
+               }
+              }
+             }
+            ]
+           },
+           {
+            "type": "And",
+            "items": [
+             {
+              "type": "Eq",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "o"
+               },
+               "key": "test_gain"
+              },
+              "b": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "p"
+               },
+               "key": "test_gain"
+              }
+             },
+             {
+              "type": "Eq",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "o"
+               },
+               "key": "size"
+              },
+              "b": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "p"
+               },
+               "key": "size"
+              }
+             },
+             {
+              "type": "Eq",
+              "a": {
+               "type": "IfThenElse",
+               "cond": {
+                "type": "Lt",
+                "a": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "o"
+                 },
+                 "key": "success_delta"
+                },
+                "b": {
+                 "type": "Lit",
+                 "value": 0
+                }
+               },
+               "then": {
+                "type": "Minus",
+                "a": {
+                 "type": "Lit",
+                 "value": 0
+                },
+                "b": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "o"
+                 },
+                 "key": "success_delta"
+                }
+               },
+               "other": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "o"
+                },
+                "key": "success_delta"
+               }
+              },
+              "b": {
+               "type": "IfThenElse",
+               "cond": {
+                "type": "Lt",
+                "a": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "p"
+                 },
+                 "key": "success_delta"
+                },
+                "b": {
+                 "type": "Lit",
+                 "value": 0
+                }
+               },
+               "then": {
+                "type": "Minus",
+                "a": {
+                 "type": "Lit",
+                 "value": 0
+                },
+                "b": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "p"
+                 },
+                 "key": "success_delta"
+                }
+               },
+               "other": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "p"
+                },
+                "key": "success_delta"
+               }
+              }
+             },
+             {
+              "type": "Lt",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "o"
+               },
+               "key": "rank"
+              },
+              "b": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "p"
+               },
+               "key": "rank"
+              }
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "p",
+     "preferred",
+     1
+    ]
+   ]
+  },
+  {
+   "name": "criterion_proposal_human_decided",
+   "comment": "Adoption is human-only: only a recorded human decision moves an awaiting proposal.",
+   "match": [
+    [
+     "agent",
+     "has_criterion_policy",
+     "pol"
+    ],
+    [
+     "pol",
+     "has_criterion_proposal",
+     "p"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "p"
+       },
+       "key": "status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "awaiting_human"
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "p"
+        },
+        "key": "human_decision"
+       },
+       "b": {
+        "type": "Lit",
+        "value": null
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "p",
+     "status",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "p"
+       },
+       "key": "human_decision"
+      }
+     }
+    ]
+   ]
+  }
+ ]
+}

@@ -88,6 +88,8 @@ CONVERSATION_SELF_IMPROVEMENT_ANCHORS = frozenset({
     # plan P5: operator authorship (propose-only): the mutation grammar over
     # the held FamilyPrograms and the frozen qualification rule
     "operator_authorship",
+    # plan P6: criterion proposals (human-only adoption)
+    "criterion_proposals",
 })
 CONVERSATION_SEED_ANCHORS = CONVERSATION_SEED_ANCHORS | CONVERSATION_SELF_IMPROVEMENT_ANCHORS
 

@@ -1291,6 +1291,8 @@ _FROZEN_SEED_IDS = frozenset({
     # mutation grammar and its qualification rule are frozen -- the loop may
     # not vary how a new variation family is judged
     "operator_authorship",
+    # plan P6: the criterion-proposal bar and its human-only adoption rules
+    "criterion_proposals",
     # (4) SELF-OPTIMISATION (Wave: 2026-07-10) — `intent` is the Message/Mention/
     # referent-resolution foundation EVERY conversation-replay experiment probe
     # depends on (comprehension_health.json, gap_awareness.json, and every
