@@ -1293,6 +1293,9 @@ _FROZEN_SEED_IDS = frozenset({
     "operator_authorship",
     # plan P6: the criterion-proposal bar and its human-only adoption rules
     "criterion_proposals",
+    # 2026-10-10: the prediction world's self-improvement loop (how the agent
+    # judges a change to its own predictor)
+    "prediction_self_improvement",
     # (4) SELF-OPTIMISATION (Wave: 2026-07-10) — `intent` is the Message/Mention/
     # referent-resolution foundation EVERY conversation-replay experiment probe
     # depends on (comprehension_health.json, gap_awareness.json, and every

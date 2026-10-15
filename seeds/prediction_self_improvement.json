@@ -1,0 +1,2138 @@
+{
+ "id": "prediction_self_improvement",
+ "version": "1.0.0",
+ "depends_on": [],
+ "description": "Emit the prediction world (2026-10-10): a graded, closed world in which to\ndemonstrate ENDEMIC self-improvement -- the agent improving itself from its\nown operation, judged by its own criterion, with an off arm.\n\nThe world (domains/prediction_world.py, mechanical): bodies move in a box;\neach frame the agent observes their positions and its PREDICTOR -- graph\nrules -- predicts where each will be next. Its criterion is its own surprise:\nthe distance between where it predicted a body would be and where it was.\nLevels get harder: 1 drift (constant velocity), 2 bounce (walls), 3 fall\n(gravity), 4 glide (damping), 5 bounce under gravity.\n\nseeds/prediction_world.json (skippable; the part the agent changes)\n  * Predictor{form, reflect}: the agent's held model of motion. `form` is\n    velocity (x + dx), acceleration (x + 2dx - pdx: a constant change in\n    displacement) or ratio (x + dx*dx/pdx: a constant ratio of\n    displacements); `reflect` folds a prediction that leaves the box back in.\n  * PredictorCandidate{form, reflect, rank}: the space of models the agent\n    may try, in MDL order (fewest parts first). A human wrote this grammar;\n    which model to try, when, and whether to keep it is the agent's.\n  * predict_body_next: the predictor itself, one Term per axis.\n\nseeds/prediction_self_improvement.json (frozen; the loop -- the agent may not\nchange how it judges itself)\n  * PredictionCurriculum{current_level, max_level, last_change_seq} and\n    PredictionPolicy{self_improvement, surprise_floor, window, min_gain,\n    min_abs_gain}.\n  * pw_advance_level: `window` consecutive episodes at the level at or under\n    the floor -> the next level.\n  * pw_file_surprise_concern: `window` episodes since the predictor last\n    changed, none under the floor -> SelfConcern{kind:'prediction_surprise'}.\n    Endemic: nothing but the agent's own surprise files it.\n  * pw_propose_predictor_edit: an open concern, self-improvement on -> one\n    Experiment + SeedDelta per candidate not yet tried against the current\n    model for this concern.\n  * pw_concern_exhausted: no candidate left -> the concern says so.\n  * pw_judge_predictor_edit: the replay's variant surprise against its control\n    surprise, on the agent's own recorded episodes at the level AND on its\n    recorded episodes of the levels it has already mastered (retention):\n    supported only when it is lower at the level by min_gain (relative) and\n    its gain, net of retention_weight x the surprise it adds on mastered\n    levels (summed per level, so one level's regression is neither diluted nor\n    traded against another's improvement), reaches min_abs_gain. Weighed,\n    not vetoed.\n  * pw_adopt_predictor_edit: once every trial is judged, the supported trial\n    with the best weighed net (ties: the simpler model) is adopted in the\n    graph -- the Predictor takes the candidate's form -- and the concern is\n    resolved.\nIdempotent.\n",
+ "nodes": [
+  {
+   "local_id": 0,
+   "type": "PredictionCurriculum",
+   "attrs": {
+    "name": "prediction_curriculum",
+    "current_level": 1,
+    "max_level": 5,
+    "last_change_seq": -1
+   }
+  },
+  {
+   "local_id": 1,
+   "type": "PredictionPolicy",
+   "attrs": {
+    "name": "prediction_policy",
+    "self_improvement": 1,
+    "surprise_floor": 0.15,
+    "window": 3,
+    "min_gain": 0.2,
+    "min_abs_gain": 0.05,
+    "retention_weight": 1.0,
+    "description": "The agent's own bar: mean surprise per body-frame (cells) at or under the floor masters a level; a model must cut it by 20%, and by 0.05 cells net of any surprise it adds on the levels already mastered, to be adopted."
+   }
+  }
+ ],
+ "edges": [
+  {
+   "src": {
+    "role": "agent_root"
+   },
+   "type": "has_prediction_curriculum",
+   "tgt": {
+    "local": 0
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "role": "agent_root"
+   },
+   "type": "has_prediction_policy",
+   "tgt": {
+    "local": 1
+   },
+   "attrs": {}
+  }
+ ],
+ "productions": [],
+ "rules": [
+  {
+   "name": "pw_advance_level",
+   "comment": "`window` consecutive episodes at the level at or under the floor: the level is mastered.",
+   "match": [
+    [
+     "agent",
+     "has_prediction_curriculum",
+     "cur"
+    ],
+    [
+     "agent",
+     "has_prediction_policy",
+     "pol"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "cur"
+       },
+       "key": "current_level"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "cur"
+       },
+       "key": "max_level"
+      }
+     },
+     {
+      "type": "Gte",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "PredictionEpisode"
+        },
+        "var_name": "e",
+        "predicate": {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "e"
+          },
+          "key": "level"
+         },
+         "b": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "cur"
+          },
+          "key": "current_level"
+         }
+        }
+       }
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "pol"
+       },
+       "key": "window"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "Filter",
+         "source": {
+          "type": "Filter",
+          "source": {
+           "type": "NodesOfType",
+           "node_type": "PredictionEpisode"
+          },
+          "var_name": "e",
+          "predicate": {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "e"
+            },
+            "key": "level"
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "cur"
+            },
+            "key": "current_level"
+           }
+          }
+         },
+         "var_name": "e",
+         "predicate": {
+          "type": "Gt",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "e"
+           },
+           "key": "level_index"
+          },
+          "b": {
+           "type": "Minus",
+           "a": {
+            "type": "Count",
+            "source": {
+             "type": "Filter",
+             "source": {
+              "type": "NodesOfType",
+              "node_type": "PredictionEpisode"
+             },
+             "var_name": "e",
+             "predicate": {
+              "type": "Eq",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "e"
+               },
+               "key": "level"
+              },
+              "b": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "cur"
+               },
+               "key": "current_level"
+              }
+             }
+            }
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "pol"
+            },
+            "key": "window"
+           }
+          }
+         }
+        },
+        "var_name": "u",
+        "predicate": {
+         "type": "Lte",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "u"
+          },
+          "key": "mean_surprise"
+         },
+         "b": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "pol"
+          },
+          "key": "surprise_floor"
+         }
+        }
+       }
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "pol"
+       },
+       "key": "window"
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "cur",
+     "mastered_through",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "cur"
+       },
+       "key": "current_level"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "cur",
+     "current_level",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "cur"
+         },
+         "key": "current_level"
+        },
+        {
+         "type": "Lit",
+         "value": 1
+        }
+       ]
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "pw_file_surprise_concern",
+   "comment": "Endemic supply: `window` episodes since the predictor last changed, none under the floor, files the agent's own concern. Nothing but its surprise decides this.",
+   "match": [
+    [
+     "agent",
+     "has_prediction_curriculum",
+     "cur"
+    ],
+    [
+     "agent",
+     "has_prediction_policy",
+     "pol"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gte",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "Filter",
+         "source": {
+          "type": "NodesOfType",
+          "node_type": "PredictionEpisode"
+         },
+         "var_name": "e",
+         "predicate": {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "e"
+           },
+           "key": "level"
+          },
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "cur"
+           },
+           "key": "current_level"
+          }
+         }
+        },
+        "var_name": "e",
+        "predicate": {
+         "type": "Gt",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "e"
+          },
+          "key": "seq"
+         },
+         "b": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "cur"
+          },
+          "key": "last_change_seq"
+         }
+        }
+       }
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "pol"
+       },
+       "key": "window"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "Filter",
+         "source": {
+          "type": "Filter",
+          "source": {
+           "type": "NodesOfType",
+           "node_type": "PredictionEpisode"
+          },
+          "var_name": "e",
+          "predicate": {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "e"
+            },
+            "key": "level"
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "cur"
+            },
+            "key": "current_level"
+           }
+          }
+         },
+         "var_name": "e",
+         "predicate": {
+          "type": "Gt",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "e"
+           },
+           "key": "seq"
+          },
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "cur"
+           },
+           "key": "last_change_seq"
+          }
+         }
+        },
+        "var_name": "u",
+        "predicate": {
+         "type": "Lte",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "u"
+          },
+          "key": "mean_surprise"
+         },
+         "b": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "pol"
+          },
+          "key": "surprise_floor"
+         }
+        }
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "NodesOfType",
+        "node_type": "SelfConcern"
+       },
+       "var_name": "c",
+       "predicate": {
+        "type": "And",
+        "items": [
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "c"
+           },
+           "key": "kind"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "prediction_surprise"
+          }
+         },
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "c"
+           },
+           "key": "level"
+          },
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "cur"
+           },
+           "key": "current_level"
+          }
+         },
+         {
+          "type": "Or",
+          "items": [
+           {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "c"
+             },
+             "key": "status"
+            },
+            "b": {
+             "type": "Lit",
+             "value": "open"
+            }
+           },
+           {
+            "type": "And",
+            "items": [
+             {
+              "type": "Eq",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "c"
+               },
+               "key": "status"
+              },
+              "b": {
+               "type": "Lit",
+               "value": "exhausted"
+              }
+             },
+             {
+              "type": "Eq",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "c"
+               },
+               "key": "filed_change_seq"
+              },
+              "b": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "cur"
+               },
+               "key": "last_change_seq"
+              }
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "sc",
+     "SelfConcern",
+     {
+      "kind": "prediction_surprise",
+      "status": "open",
+      "source": "prediction_world",
+      "level": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "cur"
+        },
+        "key": "current_level"
+       }
+      },
+      "filed_change_seq": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "cur"
+        },
+        "key": "last_change_seq"
+       }
+      },
+      "content": {
+       "__term__": {
+        "type": "StringConcat",
+        "parts": [
+         {
+          "type": "Lit",
+          "value": "my predictions keep missing at level "
+         },
+         {
+          "type": "Str",
+          "value": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "cur"
+           },
+           "key": "current_level"
+          }
+         }
+        ]
+       }
+      }
+     }
+    ],
+    [
+     "add_edge",
+     "agent",
+     "has_self_concern",
+     "sc"
+    ]
+   ]
+  },
+  {
+   "name": "pw_propose_predictor_edit",
+   "comment": "The agent's own trials for its concern: every candidate model it has not yet tried against its current one, each in its own experiment, so the alternatives are weighed against each other.",
+   "match": [
+    [
+     "agent",
+     "has_prediction_curriculum",
+     "cur"
+    ],
+    [
+     "agent",
+     "has_prediction_policy",
+     "pol"
+    ],
+    [
+     "agent",
+     "has_self_concern",
+     "sc"
+    ],
+    [
+     "agent",
+     "has_predictor",
+     "p"
+    ],
+    [
+     "agent",
+     "has_predictor_candidate",
+     "k"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "sc"
+         },
+         "key": "kind"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "prediction_surprise"
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "sc"
+         },
+         "key": "status"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "open"
+        }
+       }
+      ]
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "pol"
+       },
+       "key": "self_improvement"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "And",
+       "items": [
+        {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "k"
+          },
+          "key": "form"
+         },
+         "b": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "p"
+          },
+          "key": "form"
+         }
+        },
+        {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "k"
+          },
+          "key": "reflect"
+         },
+         "b": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "p"
+          },
+          "key": "reflect"
+         }
+        }
+       ]
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "sc"
+        },
+        "edge_type": "tested_by"
+       },
+       "var_name": "x",
+       "predicate": {
+        "type": "Exists",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "x"
+         },
+         "edge_type": "has_delta"
+        },
+        "var_name": "d",
+        "predicate": {
+         "type": "And",
+         "items": [
+          {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "d"
+            },
+            "key": "candidate_form"
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "k"
+            },
+            "key": "form"
+           }
+          },
+          {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "d"
+            },
+            "key": "candidate_reflect"
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "k"
+            },
+            "key": "reflect"
+           }
+          },
+          {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "d"
+            },
+            "key": "control_form"
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "p"
+            },
+            "key": "form"
+           }
+          },
+          {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "d"
+            },
+            "key": "control_reflect"
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "p"
+            },
+            "key": "reflect"
+           }
+          }
+         ]
+        }
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "exp",
+     "Experiment",
+     {
+      "game": "prediction_world",
+      "status": "requested",
+      "level": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "sc"
+        },
+        "key": "level"
+       }
+      },
+      "hypothesis": {
+       "__term__": {
+        "type": "StringConcat",
+        "parts": [
+         {
+          "type": "Lit",
+          "value": "predicting with the "
+         },
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "k"
+          },
+          "key": "form"
+         },
+         {
+          "type": "Lit",
+          "value": " model (reflect "
+         },
+         {
+          "type": "Str",
+          "value": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "k"
+           },
+           "key": "reflect"
+          }
+         },
+         {
+          "type": "Lit",
+          "value": ") lowers my surprise"
+         }
+        ]
+       }
+      }
+     }
+    ],
+    [
+     "add_node",
+     "delta",
+     "SeedDelta",
+     {
+      "variation_op": "predictor_edit",
+      "candidate_form": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "k"
+        },
+        "key": "form"
+       }
+      },
+      "candidate_reflect": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "k"
+        },
+        "key": "reflect"
+       }
+      },
+      "candidate_rank": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "k"
+        },
+        "key": "rank"
+       }
+      },
+      "control_form": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "p"
+        },
+        "key": "form"
+       }
+      },
+      "control_reflect": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "p"
+        },
+        "key": "reflect"
+       }
+      }
+     }
+    ],
+    [
+     "add_edge",
+     "exp",
+     "has_delta",
+     "delta"
+    ],
+    [
+     "add_edge",
+     "sc",
+     "tested_by",
+     "exp"
+    ]
+   ]
+  },
+  {
+   "name": "pw_concern_exhausted",
+   "comment": "Every candidate model has been tried against the current one and none was supported: the concern says so honestly.",
+   "match": [
+    [
+     "agent",
+     "has_prediction_curriculum",
+     "cur"
+    ],
+    [
+     "agent",
+     "has_prediction_policy",
+     "pol"
+    ],
+    [
+     "agent",
+     "has_self_concern",
+     "sc"
+    ],
+    [
+     "agent",
+     "has_predictor",
+     "p"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "sc"
+         },
+         "key": "kind"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "prediction_surprise"
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "sc"
+         },
+         "key": "status"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "open"
+        }
+       }
+      ]
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "sc"
+        },
+        "edge_type": "tested_by"
+       },
+       "var_name": "x",
+       "predicate": {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "x"
+         },
+         "key": "outcome"
+        },
+        "b": {
+         "type": "Lit",
+         "value": null
+        }
+       }
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "PredictorCandidate"
+        },
+        "var_name": "k",
+        "predicate": {
+         "type": "And",
+         "items": [
+          {
+           "type": "Not",
+           "arg": {
+            "type": "And",
+            "items": [
+             {
+              "type": "Eq",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "k"
+               },
+               "key": "form"
+              },
+              "b": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "p"
+               },
+               "key": "form"
+              }
+             },
+             {
+              "type": "Eq",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "k"
+               },
+               "key": "reflect"
+              },
+              "b": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "p"
+               },
+               "key": "reflect"
+              }
+             }
+            ]
+           }
+          },
+          {
+           "type": "Not",
+           "arg": {
+            "type": "Exists",
+            "source": {
+             "type": "Neighbours",
+             "node": {
+              "type": "Var",
+              "name": "sc"
+             },
+             "edge_type": "tested_by"
+            },
+            "var_name": "x",
+            "predicate": {
+             "type": "Exists",
+             "source": {
+              "type": "Neighbours",
+              "node": {
+               "type": "Var",
+               "name": "x"
+              },
+              "edge_type": "has_delta"
+             },
+             "var_name": "d",
+             "predicate": {
+              "type": "And",
+              "items": [
+               {
+                "type": "Eq",
+                "a": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "d"
+                 },
+                 "key": "candidate_form"
+                },
+                "b": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "k"
+                 },
+                 "key": "form"
+                }
+               },
+               {
+                "type": "Eq",
+                "a": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "d"
+                 },
+                 "key": "candidate_reflect"
+                },
+                "b": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "k"
+                 },
+                 "key": "reflect"
+                }
+               },
+               {
+                "type": "Eq",
+                "a": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "d"
+                 },
+                 "key": "control_form"
+                },
+                "b": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "p"
+                 },
+                 "key": "form"
+                }
+               },
+               {
+                "type": "Eq",
+                "a": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "d"
+                 },
+                 "key": "control_reflect"
+                },
+                "b": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "p"
+                 },
+                 "key": "reflect"
+                }
+               }
+              ]
+             }
+            }
+           }
+          }
+         ]
+        }
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "sc"
+        },
+        "edge_type": "tested_by"
+       },
+       "var_name": "o",
+       "predicate": {
+        "type": "And",
+        "items": [
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "o"
+           },
+           "key": "outcome"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "supported"
+          }
+         },
+         {
+          "type": "Not",
+          "arg": {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "o"
+            },
+            "key": "adopted"
+           },
+           "b": {
+            "type": "Lit",
+            "value": 1
+           }
+          }
+         },
+         {
+          "type": "Exists",
+          "source": {
+           "type": "Neighbours",
+           "node": {
+            "type": "Var",
+            "name": "o"
+           },
+           "edge_type": "has_delta"
+          },
+          "var_name": "od",
+          "predicate": {
+           "type": "And",
+           "items": [
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "od"
+              },
+              "key": "control_form"
+             },
+             "b": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "p"
+              },
+              "key": "form"
+             }
+            },
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "od"
+              },
+              "key": "control_reflect"
+             },
+             "b": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "p"
+              },
+              "key": "reflect"
+             }
+            }
+           ]
+          }
+         }
+        ]
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "sc",
+     "status",
+     "exhausted"
+    ]
+   ]
+  },
+  {
+   "name": "pw_judge_predictor_edit",
+   "comment": "The agent's own criterion on its own recorded episodes, weighed: the variant must lower surprise at the level by min_gain (relative), and its gain, net of any surprise it adds on levels already mastered (retention_weight), must reach min_abs_gain.",
+   "match": [
+    [
+     "agent",
+     "has_prediction_policy",
+     "pol"
+    ],
+    [
+     "sc",
+     "tested_by",
+     "exp"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "exp"
+       },
+       "key": "game"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "prediction_world"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "exp"
+       },
+       "key": "status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "done"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "exp"
+       },
+       "key": "outcome"
+      },
+      "b": {
+       "type": "Lit",
+       "value": null
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "exp"
+        },
+        "key": "control_surprise"
+       },
+       "b": {
+        "type": "Lit",
+        "value": null
+       }
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "exp"
+        },
+        "key": "variant_surprise"
+       },
+       "b": {
+        "type": "Lit",
+        "value": null
+       }
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "exp"
+        },
+        "key": "retention_harm"
+       },
+       "b": {
+        "type": "Lit",
+        "value": null
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "exp",
+     "weighed_net",
+     {
+      "__term__": {
+       "type": "Minus",
+       "a": {
+        "type": "Minus",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "exp"
+         },
+         "key": "control_surprise"
+        },
+        "b": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "exp"
+         },
+         "key": "variant_surprise"
+        }
+       },
+       "b": {
+        "type": "Times",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "pol"
+          },
+          "key": "retention_weight"
+         },
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "exp"
+          },
+          "key": "retention_harm"
+         }
+        ]
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "exp",
+     "outcome",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "And",
+        "items": [
+         {
+          "type": "Lte",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "exp"
+           },
+           "key": "variant_surprise"
+          },
+          "b": {
+           "type": "Times",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "exp"
+             },
+             "key": "control_surprise"
+            },
+            {
+             "type": "Minus",
+             "a": {
+              "type": "Lit",
+              "value": 1.0
+             },
+             "b": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "pol"
+              },
+              "key": "min_gain"
+             }
+            }
+           ]
+          }
+         },
+         {
+          "type": "Gte",
+          "a": {
+           "type": "Minus",
+           "a": {
+            "type": "Minus",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "exp"
+             },
+             "key": "control_surprise"
+            },
+            "b": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "exp"
+             },
+             "key": "variant_surprise"
+            }
+           },
+           "b": {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "pol"
+              },
+              "key": "retention_weight"
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "exp"
+              },
+              "key": "retention_harm"
+             }
+            ]
+           }
+          },
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "pol"
+           },
+           "key": "min_abs_gain"
+          }
+         }
+        ]
+       },
+       "then": {
+        "type": "Lit",
+        "value": "supported"
+       },
+       "other": {
+        "type": "Lit",
+        "value": "refuted"
+       }
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "pw_adopt_predictor_edit",
+   "comment": "Once every trial is judged, the best supported trade is adopted in the graph: the Predictor takes the candidate model, the concern is resolved, and the episodes since are counted afresh.",
+   "match": [
+    [
+     "agent",
+     "has_prediction_curriculum",
+     "cur"
+    ],
+    [
+     "agent",
+     "has_prediction_policy",
+     "pol"
+    ],
+    [
+     "agent",
+     "has_predictor",
+     "p"
+    ],
+    [
+     "sc",
+     "tested_by",
+     "exp"
+    ],
+    [
+     "exp",
+     "has_delta",
+     "delta"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "exp"
+       },
+       "key": "outcome"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "supported"
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "exp"
+        },
+        "key": "adopted"
+       },
+       "b": {
+        "type": "Lit",
+        "value": 1
+       }
+      }
+     },
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "delta"
+         },
+         "key": "control_form"
+        },
+        "b": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "p"
+         },
+         "key": "form"
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "delta"
+         },
+         "key": "control_reflect"
+        },
+        "b": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "p"
+         },
+         "key": "reflect"
+        }
+       }
+      ]
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "sc"
+        },
+        "edge_type": "tested_by"
+       },
+       "var_name": "x",
+       "predicate": {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "x"
+         },
+         "key": "outcome"
+        },
+        "b": {
+         "type": "Lit",
+         "value": null
+        }
+       }
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "sc"
+        },
+        "edge_type": "tested_by"
+       },
+       "var_name": "o",
+       "predicate": {
+        "type": "And",
+        "items": [
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "o"
+           },
+           "key": "outcome"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "supported"
+          }
+         },
+         {
+          "type": "Not",
+          "arg": {
+           "type": "Eq",
+           "a": {
+            "type": "Var",
+            "name": "o"
+           },
+           "b": {
+            "type": "Var",
+            "name": "exp"
+           }
+          }
+         },
+         {
+          "type": "Exists",
+          "source": {
+           "type": "Neighbours",
+           "node": {
+            "type": "Var",
+            "name": "o"
+           },
+           "edge_type": "has_delta"
+          },
+          "var_name": "od",
+          "predicate": {
+           "type": "And",
+           "items": [
+            {
+             "type": "And",
+             "items": [
+              {
+               "type": "Eq",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "od"
+                },
+                "key": "control_form"
+               },
+               "b": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "p"
+                },
+                "key": "form"
+               }
+              },
+              {
+               "type": "Eq",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "od"
+                },
+                "key": "control_reflect"
+               },
+               "b": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "p"
+                },
+                "key": "reflect"
+               }
+              }
+             ]
+            },
+            {
+             "type": "Or",
+             "items": [
+              {
+               "type": "Gt",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "o"
+                },
+                "key": "weighed_net"
+               },
+               "b": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "exp"
+                },
+                "key": "weighed_net"
+               }
+              },
+              {
+               "type": "And",
+               "items": [
+                {
+                 "type": "Eq",
+                 "a": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "o"
+                  },
+                  "key": "weighed_net"
+                 },
+                 "b": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "exp"
+                  },
+                  "key": "weighed_net"
+                 }
+                },
+                {
+                 "type": "Lt",
+                 "a": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "od"
+                  },
+                  "key": "candidate_rank"
+                 },
+                 "b": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "delta"
+                  },
+                  "key": "candidate_rank"
+                 }
+                }
+               ]
+              }
+             ]
+            }
+           ]
+          }
+         }
+        ]
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "p",
+     "form",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "delta"
+       },
+       "key": "candidate_form"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "p",
+     "reflect",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "delta"
+       },
+       "key": "candidate_reflect"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "exp",
+     "adopted",
+     1
+    ],
+    [
+     "set_attr",
+     "sc",
+     "status",
+     "resolved"
+    ],
+    [
+     "set_attr",
+     "cur",
+     "last_change_seq",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Argmax",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "PredictionEpisode"
+        },
+        "var_name": "q",
+        "value": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "q"
+         },
+         "key": "seq"
+        },
+        "default": null
+       },
+       "key": "seq"
+      }
+     }
+    ],
+    [
+     "add_node",
+     "ad",
+     "Adoption",
+     {
+      "kind": "predictor_edit",
+      "rule_added": "",
+      "rule_removed": "",
+      "from_form": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "delta"
+        },
+        "key": "control_form"
+       }
+      },
+      "from_reflect": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "delta"
+        },
+        "key": "control_reflect"
+       }
+      },
+      "to_form": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "delta"
+        },
+        "key": "candidate_form"
+       }
+      },
+      "to_reflect": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "delta"
+        },
+        "key": "candidate_reflect"
+       }
+      },
+      "level": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "exp"
+        },
+        "key": "level"
+       }
+      }
+     }
+    ],
+    [
+     "add_edge",
+     "exp",
+     "adopted_as",
+     "ad"
+    ]
+   ]
+  }
+ ]
+}

@@ -1,0 +1,825 @@
+{
+ "id": "prediction_world",
+ "version": "1.0.0",
+ "depends_on": [],
+ "description": "The prediction world's predictor (see scripts/gen_prediction_world.py): the held Predictor model, the candidate models in MDL order, and the prediction rule. This is the part of the agent its self-improvement loop changes.",
+ "nodes": [
+  {
+   "local_id": 0,
+   "type": "Predictor",
+   "attrs": {
+    "name": "motion_predictor",
+    "form": "velocity",
+    "reflect": 0,
+    "description": "The agent's held model of how bodies move (the newborn prior: constant velocity)."
+   }
+  },
+  {
+   "local_id": 1,
+   "type": "PredictorCandidate",
+   "attrs": {
+    "form": "velocity",
+    "reflect": 0,
+    "rank": 0
+   }
+  },
+  {
+   "local_id": 2,
+   "type": "PredictorCandidate",
+   "attrs": {
+    "form": "velocity",
+    "reflect": 1,
+    "rank": 1
+   }
+  },
+  {
+   "local_id": 3,
+   "type": "PredictorCandidate",
+   "attrs": {
+    "form": "acceleration",
+    "reflect": 0,
+    "rank": 2
+   }
+  },
+  {
+   "local_id": 4,
+   "type": "PredictorCandidate",
+   "attrs": {
+    "form": "acceleration",
+    "reflect": 1,
+    "rank": 3
+   }
+  },
+  {
+   "local_id": 5,
+   "type": "PredictorCandidate",
+   "attrs": {
+    "form": "ratio",
+    "reflect": 0,
+    "rank": 4
+   }
+  },
+  {
+   "local_id": 6,
+   "type": "PredictorCandidate",
+   "attrs": {
+    "form": "ratio",
+    "reflect": 1,
+    "rank": 5
+   }
+  }
+ ],
+ "edges": [
+  {
+   "src": {
+    "role": "agent_root"
+   },
+   "type": "has_predictor",
+   "tgt": {
+    "local": 0
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "role": "agent_root"
+   },
+   "type": "has_predictor_candidate",
+   "tgt": {
+    "local": 1
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "role": "agent_root"
+   },
+   "type": "has_predictor_candidate",
+   "tgt": {
+    "local": 2
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "role": "agent_root"
+   },
+   "type": "has_predictor_candidate",
+   "tgt": {
+    "local": 3
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "role": "agent_root"
+   },
+   "type": "has_predictor_candidate",
+   "tgt": {
+    "local": 4
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "role": "agent_root"
+   },
+   "type": "has_predictor_candidate",
+   "tgt": {
+    "local": 5
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "role": "agent_root"
+   },
+   "type": "has_predictor_candidate",
+   "tgt": {
+    "local": 6
+   },
+   "attrs": {}
+  }
+ ],
+ "productions": [],
+ "rules": [
+  {
+   "name": "predict_body_next",
+   "comment": "The agent's predictor: where each observed body will be next frame, from the held Predictor model (form, reflect).",
+   "match": [
+    [
+     "agent",
+     "has_predictor",
+     "p"
+    ],
+    [
+     "agent",
+     "observes",
+     "b"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "b"
+        },
+        "key": "obs_frame"
+       },
+       "b": {
+        "type": "Lit",
+        "value": null
+       }
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "b"
+        },
+        "key": "pred_frame"
+       },
+       "b": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "b"
+        },
+        "key": "obs_frame"
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "b",
+     "pred_x",
+     {
+      "__term__": {
+       "type": "Let",
+       "name": "raw",
+       "value": {
+        "type": "IfThenElse",
+        "cond": {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "p"
+          },
+          "key": "form"
+         },
+         "b": {
+          "type": "Lit",
+          "value": "acceleration"
+         }
+        },
+        "then": {
+         "type": "Minus",
+         "a": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "b"
+            },
+            "key": "x"
+           },
+           {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Lit",
+              "value": 2.0
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "b"
+              },
+              "key": "dx"
+             }
+            ]
+           }
+          ]
+         },
+         "b": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "b"
+          },
+          "key": "pdx"
+         }
+        },
+        "other": {
+         "type": "IfThenElse",
+         "cond": {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "p"
+           },
+           "key": "form"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "ratio"
+          }
+         },
+         "then": {
+          "type": "IfThenElse",
+          "cond": {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "b"
+            },
+            "key": "pdx"
+           },
+           "b": {
+            "type": "Lit",
+            "value": 0.0
+           }
+          },
+          "then": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "b"
+             },
+             "key": "x"
+            },
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "b"
+             },
+             "key": "dx"
+            }
+           ]
+          },
+          "other": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "b"
+             },
+             "key": "x"
+            },
+            {
+             "type": "Div",
+             "a": {
+              "type": "Times",
+              "items": [
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "b"
+                },
+                "key": "dx"
+               },
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "b"
+                },
+                "key": "dx"
+               }
+              ]
+             },
+             "b": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "b"
+              },
+              "key": "pdx"
+             }
+            }
+           ]
+          }
+         },
+         "other": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "b"
+            },
+            "key": "x"
+           },
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "b"
+            },
+            "key": "dx"
+           }
+          ]
+         }
+        }
+       },
+       "body": {
+        "type": "IfThenElse",
+        "cond": {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "p"
+          },
+          "key": "reflect"
+         },
+         "b": {
+          "type": "Lit",
+          "value": 1
+         }
+        },
+        "then": {
+         "type": "IfThenElse",
+         "cond": {
+          "type": "Lt",
+          "a": {
+           "type": "Var",
+           "name": "raw"
+          },
+          "b": {
+           "type": "Lit",
+           "value": 0.0
+          }
+         },
+         "then": {
+          "type": "Minus",
+          "a": {
+           "type": "Lit",
+           "value": 0.0
+          },
+          "b": {
+           "type": "Var",
+           "name": "raw"
+          }
+         },
+         "other": {
+          "type": "IfThenElse",
+          "cond": {
+           "type": "Gt",
+           "a": {
+            "type": "Var",
+            "name": "raw"
+           },
+           "b": {
+            "type": "Minus",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "b"
+             },
+             "key": "w"
+            },
+            "b": {
+             "type": "Lit",
+             "value": 1.0
+            }
+           }
+          },
+          "then": {
+           "type": "Minus",
+           "a": {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Lit",
+              "value": 2.0
+             },
+             {
+              "type": "Minus",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "b"
+               },
+               "key": "w"
+              },
+              "b": {
+               "type": "Lit",
+               "value": 1.0
+              }
+             }
+            ]
+           },
+           "b": {
+            "type": "Var",
+            "name": "raw"
+           }
+          },
+          "other": {
+           "type": "Var",
+           "name": "raw"
+          }
+         }
+        },
+        "other": {
+         "type": "Var",
+         "name": "raw"
+        }
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "b",
+     "pred_y",
+     {
+      "__term__": {
+       "type": "Let",
+       "name": "raw",
+       "value": {
+        "type": "IfThenElse",
+        "cond": {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "p"
+          },
+          "key": "form"
+         },
+         "b": {
+          "type": "Lit",
+          "value": "acceleration"
+         }
+        },
+        "then": {
+         "type": "Minus",
+         "a": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "b"
+            },
+            "key": "y"
+           },
+           {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Lit",
+              "value": 2.0
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "b"
+              },
+              "key": "dy"
+             }
+            ]
+           }
+          ]
+         },
+         "b": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "b"
+          },
+          "key": "pdy"
+         }
+        },
+        "other": {
+         "type": "IfThenElse",
+         "cond": {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "p"
+           },
+           "key": "form"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "ratio"
+          }
+         },
+         "then": {
+          "type": "IfThenElse",
+          "cond": {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "b"
+            },
+            "key": "pdy"
+           },
+           "b": {
+            "type": "Lit",
+            "value": 0.0
+           }
+          },
+          "then": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "b"
+             },
+             "key": "y"
+            },
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "b"
+             },
+             "key": "dy"
+            }
+           ]
+          },
+          "other": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "b"
+             },
+             "key": "y"
+            },
+            {
+             "type": "Div",
+             "a": {
+              "type": "Times",
+              "items": [
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "b"
+                },
+                "key": "dy"
+               },
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "b"
+                },
+                "key": "dy"
+               }
+              ]
+             },
+             "b": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "b"
+              },
+              "key": "pdy"
+             }
+            }
+           ]
+          }
+         },
+         "other": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "b"
+            },
+            "key": "y"
+           },
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "b"
+            },
+            "key": "dy"
+           }
+          ]
+         }
+        }
+       },
+       "body": {
+        "type": "IfThenElse",
+        "cond": {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "p"
+          },
+          "key": "reflect"
+         },
+         "b": {
+          "type": "Lit",
+          "value": 1
+         }
+        },
+        "then": {
+         "type": "IfThenElse",
+         "cond": {
+          "type": "Lt",
+          "a": {
+           "type": "Var",
+           "name": "raw"
+          },
+          "b": {
+           "type": "Lit",
+           "value": 0.0
+          }
+         },
+         "then": {
+          "type": "Minus",
+          "a": {
+           "type": "Lit",
+           "value": 0.0
+          },
+          "b": {
+           "type": "Var",
+           "name": "raw"
+          }
+         },
+         "other": {
+          "type": "IfThenElse",
+          "cond": {
+           "type": "Gt",
+           "a": {
+            "type": "Var",
+            "name": "raw"
+           },
+           "b": {
+            "type": "Minus",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "b"
+             },
+             "key": "h"
+            },
+            "b": {
+             "type": "Lit",
+             "value": 1.0
+            }
+           }
+          },
+          "then": {
+           "type": "Minus",
+           "a": {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Lit",
+              "value": 2.0
+             },
+             {
+              "type": "Minus",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "b"
+               },
+               "key": "h"
+              },
+              "b": {
+               "type": "Lit",
+               "value": 1.0
+              }
+             }
+            ]
+           },
+           "b": {
+            "type": "Var",
+            "name": "raw"
+           }
+          },
+          "other": {
+           "type": "Var",
+           "name": "raw"
+          }
+         }
+        },
+        "other": {
+         "type": "Var",
+         "name": "raw"
+        }
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "b",
+     "pred_frame",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "b"
+       },
+       "key": "obs_frame"
+      }
+     }
+    ]
+   ]
+  }
+ ]
+}
