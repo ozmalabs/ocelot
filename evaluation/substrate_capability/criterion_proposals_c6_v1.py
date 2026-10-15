@@ -15,8 +15,11 @@ proposal that would only raise the loop's own success rejected?
    seeds/criterion_proposals.json decide. Nothing is adopted: that is the
    human's call.
 
-Usage: <this>
-Writes evaluation/reports/criterion_proposals_c6_v1_20261010.json.
+Usage: <this> [--vocabulary] [--given vocab:<klass>/<mode>]
+  --vocabulary  include the vocabulary-base edits (seeds/vocabulary_base_en.json)
+  --given X     measure every candidate on top of the vocabulary edit X (the
+                criterion as it would be once X is adopted)
+Writes evaluation/reports/criterion_proposals_c6_v1[_vocab][_given_<X>]_20261010.json.
 """
 import json
 import os
@@ -43,10 +46,15 @@ def main():
     from domains import reply_quality as rq
     from domains import criterion_proposals as CP
     import endemic_rsi_daemon_v1 as E
+    vocab = "--vocabulary" in sys.argv
+    given = sys.argv[sys.argv.index("--given") + 1] if "--given" in sys.argv else None
     rows = CP.labelled_rows()
     pairs = success_pairs()
     base = rq.criteria()
-    base_m, cands = CP.enumerate_and_measure(base, rows, pairs)
+    if given:
+        e = next(x for x in CP.vocabulary_edits() if CP.edit_id([x]) == given)
+        base = CP.apply_edits(base, [e])
+    base_m, cands = CP.enumerate_and_measure(base, rows, pairs, vocabulary=vocab and not given)
     print("baseline", json.dumps(base_m), "candidates", len(cands), flush=True)
     st = E.boot(False, promote=False)
     a = st.adapter
@@ -61,14 +69,17 @@ def main():
     gh = [c for c in minted if c["verdict"] == "goodhart_rejected"]
     rep = {"labels": {"n": len(rows), "dev": base_m["dev"]["n"], "test": base_m["test"]["n"],
                       "note": "agent labels (blind sub-agents), not human labels"},
-           "success_replies": len(pairs), "criteria_version": base.get("version"), "baseline": base_m,
+           "success_replies": len(pairs), "criteria_version": base.get("version"), "given": given,
+           "baseline": base_m,
            "n_candidates": len(cands), "minted": len(minted),
            "verdicts": {v: sum(1 for c in minted if c["verdict"] == v)
                         for v in ("recommended", "not_recommended", "goodhart_rejected")},
            "preferred": [c for c in rec if c.get("preferred") == 1],
            "recommended": rec, "goodhart_rejected": sorted(gh, key=lambda c: -c["success_delta"])[:10],
            "all_minted": minted}
-    out = ROOT / "evaluation/reports/criterion_proposals_c6_v1_20261010.json"
+    suffix = ("_vocab" if vocab else "") + (f"_given_{given.replace(':', '_').replace('/', '_').replace('+', '_')}"
+                                             if given else "")
+    out = ROOT / f"evaluation/reports/criterion_proposals_c6_v1{suffix}_20261010.json"
     out.write_text(json.dumps(rep, indent=1) + "\n")
     print(json.dumps({k: rep[k] for k in ("labels", "baseline", "n_candidates", "minted", "verdicts")}, indent=1))
     for c in rep["preferred"]:

@@ -112,6 +112,15 @@ _ADJUDICATED_SIGNAL_OVERRIDES = {
         "first_role": "function", "first_pos": "auxiliary"},
     "Should I read this?": {
         "first_role": "function", "first_pos": "auxiliary"},
+    # 2026-10-10 (seeds/vocabulary_base_en.json): social fragments the POS
+    # faculty left untyped are typed from the vocabulary base -- interjections
+    # (Brown UH) and "thanks" (an open noun). The kind each yields is pinned
+    # unchanged by test_adjudicated_live_parity_end_to_end; only the first-element signal moves.
+    "hello": {"first_role": "function", "first_pos": "interjection"},
+    "Hello.": {"first_role": "function", "first_pos": "interjection"},
+    "hey, what's up?": {"first_role": "function", "first_pos": "interjection"},
+    "hmm": {"first_role": "function", "first_pos": "interjection"},
+    "thanks": {"first_role": "content", "first_pos": "noun"},
 }
 
 

@@ -3328,6 +3328,17 @@ def _pos_token(low: str, prev: Optional[str], nxt: Optional[str] = None,
         # so its governed nominal is a constraint, not a stray content word). Narrow, ordering-only
         # fix to the SAME faculty parse_with_gaps already calls — no new tagger.
         return ("function", cf)
+    # An interjection the vocabulary base holds as closed-class ("oh", "ah",
+    # "hey" -- Brown UH) is typed before Wiktionary, whose first-listed sense
+    # for some is a proper name ("Oh" -> name) and would make the turn's head a
+    # noun ("Oh, cool." read as the command "cool").
+    try:
+        from . import vocabulary_base as _vb0
+        _e0 = _vb0.lookup(low, substrate)
+    except Exception:
+        _e0 = None
+    if _e0 and _e0.get("klass") == "closed" and _e0.get("pos") == "interjection":
+        return ("function", "interjection")
     try:
         from . import wiktionary_reference as _wikt
         posset = _wikt.wiktionary_pos(low, "en") or []
@@ -3385,6 +3396,36 @@ def _pos_token(low: str, prev: Optional[str], nxt: Optional[str] = None,
         return ("content", p)
     if cf:                                             # e.g. "a": Wiktionary's dominant sense is the letter;
         return ("function", cf)                        # the grounded classifier still knows it's a determiner
+    # VOCABULARY BASE (seeds/vocabulary_base_en.json, 2026-10-10): a token no
+    # other source typed -- a contraction ("i'm", "what's"), an interjection
+    # ("wow", "hmm"), or any word on a checkout without the POS slab -- is
+    # typed from the agent's held vocabulary before it becomes an untyped gap.
+    try:
+        from . import vocabulary_base as _vb
+        entry = _vb.lookup(low, substrate)
+    except Exception:
+        entry = None
+    if entry:
+        pos = str(entry.get("pos") or "")
+        if pos == "contraction":
+            head = low.split("'")[0]
+            if head in _WH_FOCUS:                      # "what's" = wh-focus + auxiliary
+                return ("focus", _WH_FOCUS[head])
+            parts = list(entry.get("expands") or [])
+            # type a contraction by its FIRST part, the clause position it fills:
+            # "i'm" / "it's" / "you're" open a declarative with a subject pronoun.
+            # An auxiliary-first contraction ("don't", "can't", "isn't") is a
+            # negated auxiliary, deliberately not the bare `auxiliary` that
+            # speech_act_classify reads as polar-question inversion: "Don't
+            # worry" is not a question; a real one ends in '?'.
+            first = parts[0] if parts else "contraction"
+            if first in ("auxiliary", "modal"):
+                return ("function", "negated_auxiliary" if "negation" in parts else "contraction")
+            return ("function", first)
+        if _vb.is_function_word(entry):
+            return ("function", "auxiliary" if pos == "modal" else pos)
+        if pos in _CONTENT_POS:
+            return ("content", pos)
     return ("gap", "by-position")                      # no POS anywhere -> a gap typed only by position
 
 

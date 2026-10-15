@@ -45,8 +45,22 @@ def _tokens(text: str) -> list:
     return _WORD.findall(_norm(text))
 
 
+def _stopset(c: dict) -> frozenset:
+    """The criterion's function words: its own stopword list, and -- when the
+    criterion names one (`function_words`, criteria >= 1.2.0) -- the closed
+    class of the vocabulary base (seeds/vocabulary_base_en.json), unioned with
+    or replacing the hand list."""
+    fw = c.get("function_words")
+    own = frozenset(c["stopwords"])
+    if not fw:
+        return own
+    from domains import vocabulary_base as _vb
+    base = _vb.function_words(tuple(fw.get("klass") or ("closed",)))
+    return base if fw.get("mode") == "replace" else own | base
+
+
 def _content_words(text: str, c: dict) -> set:
-    stop = set(c["stopwords"])
+    stop = _stopset(c)
     out = set()
     for t in _tokens(text):
         t = t.strip("'")

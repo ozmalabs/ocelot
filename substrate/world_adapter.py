@@ -2704,6 +2704,18 @@ class WorldAdapter:
         if low_c in cls._FAREWELL_FORMS or low_c in {
                 "i am leaving now", "i'm leaving now"}:
             return "farewell"
+        # A turn made only of interjections ("hmm", "wow!", "haha") is a
+        # backchannel: typed as the acknowledgment act the graph already
+        # handles. Read from the vocabulary base (seeds/vocabulary_base_en.json),
+        # not a hand list; one with content after it stays a statement.
+        try:
+            from domains import vocabulary_base as _vb
+            toks = [t.strip(_punct) for t in low.split() if t.strip(_punct)]
+            if toks and all((e := _vb.lookup(t)) and e.get("klass") == "closed"
+                            and e.get("pos") == "interjection" for t in toks):
+                return "acknowledgment"
+        except Exception:
+            pass
         # A temporal/subordinate lead ("When ready, ...") is not itself a
         # question. Read the existing language faculty's verb-head measurement
         # on the clause after the comma so a fronted condition can carry
@@ -2753,6 +2765,15 @@ class WorldAdapter:
         head = words[0].strip(".,!?;:…")
         if not head:
             return False
+        try:
+            # an interjection head ("hmm", "wow") is not an imperative verb even
+            # when a dictionary lists a verb sense (vocabulary base, 2026-10-10)
+            from domains import vocabulary_base as _vb
+            entry = _vb.lookup(head)
+            if entry and entry.get("klass") == "closed" and entry.get("pos") == "interjection":
+                return False
+        except Exception:
+            pass
         try:
             from domains.instruction_reading import is_verb_headed
             return bool(is_verb_headed(head))

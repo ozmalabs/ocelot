@@ -68,6 +68,9 @@ def apply_edits(base: dict, edits) -> dict:
     for e in edits:
         if e["op"] == "cell":
             c["score_table"][e["inbound"]][e["reply"]] = int(e["value"])
+        elif e["op"] == "vocabulary":
+            # the criterion's function words from the vocabulary base (P6 vocabulary op)
+            c["function_words"] = {"source": "vocabulary_base_en", "klass": list(e["klass"]), "mode": e["mode"]}
         elif e["op"] == "cap":
             c.setdefault("caps", []).append({
                 "name": f"cap_{e['inbound']}_{e['reply']}_{e['when']}", "inbound_classes": [e["inbound"]],
@@ -106,20 +109,32 @@ def single_edits(base: dict) -> list:
     return out
 
 
+def vocabulary_edits() -> list:
+    """The vocabulary edits: the base's closed class (or closed + mixed)
+    unioned with, or replacing, the criterion's hand stoplist."""
+    return [{"op": "vocabulary", "klass": k, "mode": m}
+            for k in (["closed"], ["closed", "mixed"]) for m in ("union", "replace")]
+
+
 def edit_id(edits) -> str:
     def one(e):
+        if e["op"] == "vocabulary":
+            return f"vocab:{'+'.join(e['klass'])}/{e['mode']}"
         if e["op"] == "cell":
             return f"cell:{e['inbound']}->{e['reply']}={e['value']}"
         return f"cap:{e['inbound']}->{e['reply']}|{e['when']}<={e['to']}"
     return "+".join(one(e) for e in edits)
 
 
-def enumerate_and_measure(base: dict, rows, success_pairs, top_k=5) -> tuple:
+def enumerate_and_measure(base: dict, rows, success_pairs, top_k=5, vocabulary=False) -> tuple:
     """(baseline measurement, [candidate measurements]) -- singles, then
     pairs of the top_k singles by DEV kappa gain (DEV only chooses)."""
     base_m = measure(base, rows, success_pairs)
     cands = []
-    for e in single_edits(base):
+    singles = single_edits(base)
+    if vocabulary:
+        singles = vocabulary_edits() + singles
+    for e in singles:
         m = measure(apply_edits(base, [e]), rows, success_pairs)
         cands.append({"id": edit_id([e]), "edits": [e], "size": 1, **m})
 

@@ -91,6 +91,10 @@ CONVERSATION_SELF_IMPROVEMENT_ANCHORS = frozenset({
     # plan P6: criterion proposals (human-only adoption)
     "criterion_proposals",
 })
+# 2026-10-10: the English vocabulary base the POS faculty types otherwise
+# untyped tokens from (contractions, interjections; any word when the POS slab
+# is absent) -- seeds/vocabulary_base_en.json
+CONVERSATION_SEED_ANCHORS = CONVERSATION_SEED_ANCHORS | frozenset({"vocabulary_base_en"})
 CONVERSATION_SEED_ANCHORS = CONVERSATION_SEED_ANCHORS | CONVERSATION_SELF_IMPROVEMENT_ANCHORS
 
 # Runtime modules observed in the fixed production-shaped conversation profile.
