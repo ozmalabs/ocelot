@@ -95,6 +95,9 @@ CONVERSATION_SELF_IMPROVEMENT_ANCHORS = frozenset({
 # untyped tokens from (contractions, interjections; any word when the POS slab
 # is absent) -- seeds/vocabulary_base_en.json
 CONVERSATION_SEED_ANCHORS = CONVERSATION_SEED_ANCHORS | frozenset({"vocabulary_base_en"})
+# 2026-10-10: honest self-account replies to questions about the agent's own
+# preferences (seeds/self_account_reply.json)
+CONVERSATION_SEED_ANCHORS = CONVERSATION_SEED_ANCHORS | frozenset({"self_account_reply"})
 CONVERSATION_SEED_ANCHORS = CONVERSATION_SEED_ANCHORS | CONVERSATION_SELF_IMPROVEMENT_ANCHORS
 
 # Runtime modules observed in the fixed production-shaped conversation profile.

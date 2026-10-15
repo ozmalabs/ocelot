@@ -4938,6 +4938,18 @@ class WorldAdapter:
             # hijacked into grounding a self-word. A genuine EXTERNAL topic under
             # the same meta dispatch ("what do you know about the moon") has a
             # non-self topic head, so it is unaffected and still routes.
+            # SELF-ACCOUNT EVIDENCE (2026-10-10, domains/self_account.py): a
+            # question about the agent's own preferences or pastimes. Language
+            # evidence only; seeds/self_account_reply.json decides the reply and
+            # route_question_to_topic declines the definition lookup.
+            try:
+                from domains import self_account as _sa
+                _sa_ev = _sa.evidence(raw, facts.get("topic"), self)
+                if _sa_ev:
+                    for _k, _v in _sa_ev.items():
+                        self.inner.set_attr(mid, _k, _v)
+            except Exception:  # noqa: BLE001 -- no evidence: the turn routes as before
+                pass
             _path = (getattr(comp, "dispatch", None) or {}).get("path")
             _topic = facts.get("topic")
             _topic_head = _topic.split()[0] if _topic else None
@@ -9839,6 +9851,9 @@ class WorldAdapter:
         text = self.release_graph_selected_context_repair_reply(mid)
         if text is not None:
             return text
+        text = self.release_graph_selected_self_account_reply(mid)
+        if text is not None:
+            return text
         text = self.release_graph_selected_grounded_topic_reply(mid)
         if text is not None:
             return text
@@ -9862,6 +9877,33 @@ class WorldAdapter:
             incoming_social = False
         if native_social or incoming_social:
             return self.release_graph_selected_social_reply(mid)
+        return None
+
+    def release_graph_selected_self_account_reply(self, mid):
+        """Release the self-account reply native arbitration selected
+        (seeds/self_account_reply.json: basis `self_account`). Mechanical: the
+        rule already minted the reply Message; this reads it back and closes
+        the turn through the same terminal path as every other faculty."""
+        if isinstance(mid, int):
+            import substrate_rs as srs
+            mid = srs.NodeID(mid)
+        if mid is None or not self.s.has_node(mid):
+            return None
+        interpretation_id = self.s.node(mid)["attrs"].get(
+            "communication_interpretation_id")
+        if interpretation_id is None or not self.s.has_node(interpretation_id):
+            return None
+        if self.s.node(interpretation_id)["attrs"].get("arbitration_basis") != "self_account":
+            return None
+        for reply in self.inner.in_neighbours(mid, "responds_to"):
+            if not self.s.has_node(reply):
+                continue
+            ra = self.s.node(reply)["attrs"]
+            if ra.get("self_account_reply") == 1 and str(ra.get("text") or "").strip():
+                text = str(ra["text"])
+                self.inner.set_attr(mid, "communication_route", "self_account_graph")
+                self._form_reply_intent_for_text("answer", text)
+                return self._finish_turn_reply(mid, text, source="agent")
         return None
 
     def release_graph_selected_reported_content_reply(self, mid):
