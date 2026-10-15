@@ -24,24 +24,30 @@ from domains import criterion_proposals as CP     # noqa: E402
 from domains import reply_quality as rq           # noqa: E402
 from substrate.world_adapter import WorldAdapter   # noqa: E402
 
-Q = "What else do you like to do for fun?"
-DEF = 'Fun is defined by the Oxford English Dictionary as "light-hearted pleasure".'
-
 
 def test_caps_are_inert_until_held_and_narrow_when_held():
     base = rq.criteria()
     assert not base.get("caps")
-    assert rq.assess(Q, DEF)["score"] == 1
-    c = CP.apply_edits(base, [{"op": "cap", "inbound": "question", "reply": "definition",
+    clar_q, clar = "What else do you like to do for fun?", "what should I use to answer that?"
+    assert rq.assess(clar_q, clar)["score"] == 1
+    c = CP.apply_edits(base, [{"op": "cap", "inbound": "question", "reply": "clarification",
                                "when": "addressed_to_agent", "to": 0}])
-    got = rq.assess(Q, DEF, None, c)
-    assert got["score"] == 0 and "-cap_question_definition_addressed_to_agent" in got["reason"]
+    got = rq.assess(clar_q, clar, None, c)
+    assert got["score"] == 0 and "-cap_question_clarification_addressed_to_agent" in got["reason"]
     # not addressed to the agent: untouched; other pairs: untouched
-    assert rq.assess("What is fun?", DEF, None, c)["score"] == rq.assess("What is fun?", DEF)["score"]
+    assert rq.assess("What is fun?", clar, None, c)["score"] == rq.assess("What is fun?", clar)["score"]
     assert rq.assess("I like to garden.", "got it", None, c)["score"] == 1
     cell = CP.apply_edits(base, [{"op": "cell", "inbound": "statement", "reply": "greeting", "value": 2}])
     assert rq.assess("Hello, my name is someone.", "good day", None, cell)["score"] == 2
     assert base["score_table"]["statement"]["greeting"] == 1              # pure
+
+
+def test_adopted_criterion_records_the_human_decision():
+    base = rq.criteria()
+    assert all(base["score_table"][ic]["definition"] == 0 for ic in base["score_table"])
+    adopted = base["adopted_proposals"]
+    assert adopted[0]["candidate"] == "cell:question->definition=0" and adopted[0]["test_gain"] > 0
+    assert adopted[1]["human_authored"] is True and adopted[1]["approved_by"].startswith("human")
 
 
 def _agent():

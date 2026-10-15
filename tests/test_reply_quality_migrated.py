@@ -24,11 +24,12 @@ ERR = "ERROR: no communicative response could be generated."
 
 @pytest.mark.parametrize("inbound,reply,score,reason", [
     ("What's your favorite book?", "got it", 0, "question->receipt"),
-    ("What do you do for fun?", 'Fun is defined by the Oxford English Dictionary as "pleasure".', 1, "question->definition"),
+    # criteria 1.2.0/1.3.0 (human decision, 2026-10-10): a dictionary definition is never a reply
+    ("What do you do for fun?", 'Fun is defined by the Oxford English Dictionary as "pleasure".', 0, "question->definition"),
     ("What do you do for a living?", "I talk with people for a living.", 2, "question->self_content +self_answer"),
     ("What kind of music do they play?", "Pink Floyd play progressive rock music.", 2, "question->content +on_topic"),
     ("I like to watch movies and TV shows.", "got it", 1, "statement->receipt"),
-    ("I like to watch movies and TV shows.", "Television (TV) is a medium for moving images.", 1, "statement->definition"),
+    ("I like to watch movies and TV shows.", "Television (TV) is a medium for moving images.", 0, "statement->definition"),
     ("I like to play video games too!", "I took on the goal to play the video games, but I have no world.", 0,
      "statement->goal_take"),
     ("Hi! I'm someone.", "hey!", 2, "greeting->greeting"),

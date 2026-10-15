@@ -83,3 +83,25 @@ Separately, every edit that would raise the loop's success without raising held-
 - **The human decision on the preferred proposal.** If approved, re-run Q0 on the new criterion and re-score the P5c runs.
 - **Frames for lateral changes (from P5c).** Once a frame is held, this machinery can measure it the same way a proposal is measured.
 - **More labels.** The labelled set is the limiting resource. Proposals in the current grammar can only fix 13 disagreements; that is the whole room.
+
+## Adopted (2026-10-10, human decision)
+
+After the [vocabulary base](VOCABULARY_BASE_RESULTS_20261010.md) showed that the off-topic cap depended on the hand stoplist, the human approved the definition proposal. Their reason: "A dictionary definition is not something anyone would give, ever … so 0, yes."
+
+`scripts/apply_criterion_proposal.py` applied two edits. Both are recorded in the criterion's `adopted_proposals`.
+- **1.2.0:** the agent's recommended proposal `cell:question->definition=0`. Its measurements are kept with it: DEV +0.0106, TEST +0.0177, precision0 0.9926, loop success −0.075.
+- **1.3.0:** a human-authored generalisation of the same principle, `statement->definition=0` and `imperative->definition=0`. The greeting cell was already 0. It is recorded as `human_authored` with its rationale. TEST κ is 0.9369 before and after, so it is neutral on the labels: none of them pairs a definition with a statement or imperative.
+
+**Gate C6 is met.**
+- A proposal improved agreement with held-out labels and was approved.
+- Proposals that only raise loop success were rejected by the measurement.
+
+**Q0 on criteria 1.3.0:** κ 0.9367 → 0.9512 on all 409 labels, precision0 0.9958. The gate still passes.
+
+**Re-scored post-run retests** (vocabulary tranche runs):
+- persona: 0.617 off, 0.683 on;
+- persona50_40_49: 0.633 off, 0.775 on.
+
+The 16 and 10 dictionary-definition replies in the on arms now score 0. They are what the loop sees next.
+
+**Still pending:** the vocabulary edit to the criterion (`vocab:closed+mixed/replace`). It is κ-neutral and was not decided.

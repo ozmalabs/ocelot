@@ -21,12 +21,36 @@ CRITERIA = ROOT / "domains/reply_quality_criteria_v1.json"
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("report")
-    ap.add_argument("candidate")
+    ap.add_argument("report", nargs="?")
+    ap.add_argument("candidate", nargs="?")
     ap.add_argument("--by", required=True)
     ap.add_argument("--dry", action="store_true")
+    ap.add_argument("--human-edits", default=None,
+                    help="JSON list of edits a human authored directly (not an agent proposal); "
+                         "measured here and recorded as human_authored")
+    ap.add_argument("--rationale", default="")
     args = ap.parse_args()
-    from domains.criterion_proposals import apply_edits
+    from domains.criterion_proposals import apply_edits, edit_id, labelled_rows, measure
+    if args.human_edits:
+        base = json.loads(CRITERIA.read_text())
+        edits = json.loads(args.human_edits)
+        new = apply_edits(base, edits)
+        rows = labelled_rows()
+        before, after = measure(base, rows, []), measure(new, rows, [])
+        major, minor, _patch = (int(x) for x in base["version"].split("."))
+        new["version"] = f"{major}.{minor + 1}.0"
+        new.setdefault("adopted_proposals", []).append({
+            "candidate": edit_id(edits), "edits": edits, "approved_by": args.by, "human_authored": True,
+            "rationale": args.rationale, "from_version": base["version"],
+            "test_kappa_before": before["test"]["kappa"], "test_kappa_after": after["test"]["kappa"],
+            "test_precision0_after": after["test"]["precision0"]})
+        print(json.dumps({"from": base["version"], "to": new["version"], "edits": edits,
+                          "test_kappa": [before["test"]["kappa"], after["test"]["kappa"]]}))
+        if not args.dry:
+            CRITERIA.write_text(json.dumps(new, indent=1) + "\n")
+        return
+    if not (args.report and args.candidate):
+        raise SystemExit("give <report> <candidate>, or --human-edits")
     rep = json.loads(Path(args.report).read_text())
     cand = next((c for c in rep["all_minted"] if c["id"] == args.candidate), None)
     if cand is None:
