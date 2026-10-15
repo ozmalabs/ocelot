@@ -1,8 +1,8 @@
 {
  "id": "prediction_self_improvement",
- "version": "1.0.0",
+ "version": "1.1.0",
  "depends_on": [],
- "description": "Emit the prediction world (2026-10-10): a graded, closed world in which to\ndemonstrate ENDEMIC self-improvement -- the agent improving itself from its\nown operation, judged by its own criterion, with an off arm.\n\nThe world (domains/prediction_world.py, mechanical): bodies move in a box;\neach frame the agent observes their positions and its PREDICTOR -- graph\nrules -- predicts where each will be next. Its criterion is its own surprise:\nthe distance between where it predicted a body would be and where it was.\nLevels get harder: 1 drift (constant velocity), 2 bounce (walls), 3 fall\n(gravity), 4 glide (damping), 5 bounce under gravity.\n\nseeds/prediction_world.json (skippable; the part the agent changes)\n  * Predictor{form, reflect}: the agent's held model of motion. `form` is\n    velocity (x + dx), acceleration (x + 2dx - pdx: a constant change in\n    displacement) or ratio (x + dx*dx/pdx: a constant ratio of\n    displacements); `reflect` folds a prediction that leaves the box back in.\n  * PredictorCandidate{form, reflect, rank}: the space of models the agent\n    may try, in MDL order (fewest parts first). A human wrote this grammar;\n    which model to try, when, and whether to keep it is the agent's.\n  * predict_body_next: the predictor itself, one Term per axis.\n\nseeds/prediction_self_improvement.json (frozen; the loop -- the agent may not\nchange how it judges itself)\n  * PredictionCurriculum{current_level, max_level, last_change_seq} and\n    PredictionPolicy{self_improvement, surprise_floor, window, min_gain,\n    min_abs_gain}.\n  * pw_advance_level: `window` consecutive episodes at the level at or under\n    the floor -> the next level.\n  * pw_file_surprise_concern: `window` episodes since the predictor last\n    changed, none under the floor -> SelfConcern{kind:'prediction_surprise'}.\n    Endemic: nothing but the agent's own surprise files it.\n  * pw_propose_predictor_edit: an open concern, self-improvement on -> one\n    Experiment + SeedDelta per candidate not yet tried against the current\n    model for this concern.\n  * pw_concern_exhausted: no candidate left -> the concern says so.\n  * pw_judge_predictor_edit: the replay's variant surprise against its control\n    surprise, on the agent's own recorded episodes at the level AND on its\n    recorded episodes of the levels it has already mastered (retention):\n    supported only when it is lower at the level by min_gain (relative) and\n    its gain, net of retention_weight x the surprise it adds on mastered\n    levels (summed per level, so one level's regression is neither diluted nor\n    traded against another's improvement), reaches min_abs_gain. Weighed,\n    not vetoed.\n  * pw_adopt_predictor_edit: once every trial is judged, the supported trial\n    with the best weighed net (ties: the simpler model) is adopted in the\n    graph -- the Predictor takes the candidate's form -- and the concern is\n    resolved.\nIdempotent.\n",
+ "description": "Emit the prediction world (2026-10-10): a graded, closed world in which to\ndemonstrate ENDEMIC self-improvement -- the agent improving itself from its\nown operation, judged by its own criterion, with an off arm.\n\nThe world (domains/prediction_world.py, mechanical): bodies move in a box;\neach frame the agent observes their positions and its PREDICTOR -- graph\nrules -- predicts where each will be next. Its criterion is its own surprise:\nthe distance between where it predicted a body would be and where it was.\nLevels get harder: 1 drift (constant velocity), 2 bounce (walls), 3 fall\n(gravity), 4 glide (damping), 5 bounce under gravity.\n\nseeds/prediction_world.json (skippable; the part the agent changes)\n  * Six base models, rank k = form_index*2 + reflect: velocity (x + dx),\n    acceleration (x + 2dx - pdx: a constant change in displacement) or ratio\n    (x + dx*dx/pdx: a constant ratio of displacements), each with or without\n    `reflect` (fold a prediction that leaves the box back in).\n  * Predictor{mask, model}: the agent's held model -- the set of base models\n    it composes (bit k). One bit is a base model; more is a composite that\n    uses, per body and axis, whichever component predicted that body best\n    last frame (1.1.0).\n  * PredictorCandidate{mask, name, rank, authored}: the models the agent may\n    try, in MDL order. The six base models and the composition operator are\n    human-written; which model to try, when, which composites to author, and\n    whether to keep one is the agent's.\n  * predict_body_next: the predictor itself.\n\nseeds/prediction_self_improvement.json (frozen; the loop -- the agent may not\nchange how it judges itself)\n  * PredictionCurriculum{current_level, max_level, last_change_seq} and\n    PredictionPolicy{self_improvement, surprise_floor, window, min_gain,\n    min_abs_gain}.\n  * pw_advance_level: `window` consecutive episodes at the level at or under\n    the floor -> the next level.\n  * pw_file_surprise_concern: `window` episodes since the predictor last\n    changed, none under the floor -> SelfConcern{kind:'prediction_surprise'}.\n    Endemic: nothing but the agent's own surprise files it.\n  * pw_propose_predictor_edit: an open concern, self-improvement on -> one\n    Experiment + SeedDelta per candidate not yet tried against the current\n    model for this concern.\n  * pw_concern_exhausted: no candidate left -> the concern says so.\n  * pw_author_composite_predictor (1.1.0): an exhausted concern whose best\n    local trial cleared the bar at the level and was refuted only on its\n    retention cost -> the agent authors a new candidate, its current model\n    composed with that winner, and reopens the concern. Composites compose\n    further; one it already holds is not re-authored, so it terminates.\n  * pw_judge_predictor_edit: the replay's variant surprise against its control\n    surprise, on the agent's own recorded episodes at the level AND on its\n    recorded episodes of the levels it has already mastered (retention):\n    supported only when it is lower at the level by min_gain (relative) and\n    its gain, net of retention_weight x the surprise it adds on mastered\n    levels (summed per level, so one level's regression is neither diluted nor\n    traded against another's improvement), reaches min_abs_gain. Weighed,\n    not vetoed.\n  * pw_adopt_predictor_edit: once every trial is judged, the supported trial\n    with the best weighed net (ties: the simpler model) is adopted in the\n    graph -- the Predictor takes the candidate's form -- and the concern is\n    resolved.\nIdempotent.\n",
  "nodes": [
   {
    "local_id": 0,
@@ -718,47 +718,23 @@
      {
       "type": "Not",
       "arg": {
-       "type": "And",
-       "items": [
-        {
-         "type": "Eq",
-         "a": {
-          "type": "Attr",
-          "node": {
-           "type": "Var",
-           "name": "k"
-          },
-          "key": "form"
-         },
-         "b": {
-          "type": "Attr",
-          "node": {
-           "type": "Var",
-           "name": "p"
-          },
-          "key": "form"
-         }
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "k"
         },
-        {
-         "type": "Eq",
-         "a": {
-          "type": "Attr",
-          "node": {
-           "type": "Var",
-           "name": "k"
-          },
-          "key": "reflect"
-         },
-         "b": {
-          "type": "Attr",
-          "node": {
-           "type": "Var",
-           "name": "p"
-          },
-          "key": "reflect"
-         }
-        }
-       ]
+        "key": "mask"
+       },
+       "b": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "p"
+        },
+        "key": "mask"
+       }
       }
      },
      {
@@ -796,7 +772,7 @@
              "type": "Var",
              "name": "d"
             },
-            "key": "candidate_form"
+            "key": "candidate_mask"
            },
            "b": {
             "type": "Attr",
@@ -804,7 +780,7 @@
              "type": "Var",
              "name": "k"
             },
-            "key": "form"
+            "key": "mask"
            }
           },
           {
@@ -815,26 +791,7 @@
              "type": "Var",
              "name": "d"
             },
-            "key": "candidate_reflect"
-           },
-           "b": {
-            "type": "Attr",
-            "node": {
-             "type": "Var",
-             "name": "k"
-            },
-            "key": "reflect"
-           }
-          },
-          {
-           "type": "Eq",
-           "a": {
-            "type": "Attr",
-            "node": {
-             "type": "Var",
-             "name": "d"
-            },
-            "key": "control_form"
+            "key": "control_mask"
            },
            "b": {
             "type": "Attr",
@@ -842,26 +799,7 @@
              "type": "Var",
              "name": "p"
             },
-            "key": "form"
-           }
-          },
-          {
-           "type": "Eq",
-           "a": {
-            "type": "Attr",
-            "node": {
-             "type": "Var",
-             "name": "d"
-            },
-            "key": "control_reflect"
-           },
-           "b": {
-            "type": "Attr",
-            "node": {
-             "type": "Var",
-             "name": "p"
-            },
-            "key": "reflect"
+            "key": "mask"
            }
           }
          ]
@@ -903,28 +841,43 @@
            "type": "Var",
            "name": "k"
           },
-          "key": "form"
+          "key": "name"
          },
          {
           "type": "Lit",
-          "value": " model (reflect "
-         },
-         {
-          "type": "Str",
-          "value": {
-           "type": "Attr",
-           "node": {
-            "type": "Var",
-            "name": "k"
-           },
-           "key": "reflect"
-          }
-         },
-         {
-          "type": "Lit",
-          "value": ") lowers my surprise"
+          "value": " model lowers my surprise"
          }
         ]
+       }
+      },
+      "candidate_mask": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "k"
+        },
+        "key": "mask"
+       }
+      },
+      "control_mask": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "p"
+        },
+        "key": "mask"
+       }
+      },
+      "candidate_name": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "k"
+        },
+        "key": "name"
        }
       }
      }
@@ -965,6 +918,26 @@
         "key": "rank"
        }
       },
+      "candidate_mask": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "k"
+        },
+        "key": "mask"
+       }
+      },
+      "candidate_name": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "k"
+        },
+        "key": "name"
+       }
+      },
       "control_form": {
        "__term__": {
         "type": "Attr",
@@ -983,6 +956,26 @@
          "name": "p"
         },
         "key": "reflect"
+       }
+      },
+      "control_mask": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "p"
+        },
+        "key": "mask"
+       }
+      },
+      "control_name": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "p"
+        },
+        "key": "model"
        }
       }
      }
@@ -1111,47 +1104,23 @@
           {
            "type": "Not",
            "arg": {
-            "type": "And",
-            "items": [
-             {
-              "type": "Eq",
-              "a": {
-               "type": "Attr",
-               "node": {
-                "type": "Var",
-                "name": "k"
-               },
-               "key": "form"
-              },
-              "b": {
-               "type": "Attr",
-               "node": {
-                "type": "Var",
-                "name": "p"
-               },
-               "key": "form"
-              }
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "k"
              },
-             {
-              "type": "Eq",
-              "a": {
-               "type": "Attr",
-               "node": {
-                "type": "Var",
-                "name": "k"
-               },
-               "key": "reflect"
-              },
-              "b": {
-               "type": "Attr",
-               "node": {
-                "type": "Var",
-                "name": "p"
-               },
-               "key": "reflect"
-              }
-             }
-            ]
+             "key": "mask"
+            },
+            "b": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "p"
+             },
+             "key": "mask"
+            }
            }
           },
           {
@@ -1189,7 +1158,7 @@
                   "type": "Var",
                   "name": "d"
                  },
-                 "key": "candidate_form"
+                 "key": "candidate_mask"
                 },
                 "b": {
                  "type": "Attr",
@@ -1197,7 +1166,7 @@
                   "type": "Var",
                   "name": "k"
                  },
-                 "key": "form"
+                 "key": "mask"
                 }
                },
                {
@@ -1208,26 +1177,7 @@
                   "type": "Var",
                   "name": "d"
                  },
-                 "key": "candidate_reflect"
-                },
-                "b": {
-                 "type": "Attr",
-                 "node": {
-                  "type": "Var",
-                  "name": "k"
-                 },
-                 "key": "reflect"
-                }
-               },
-               {
-                "type": "Eq",
-                "a": {
-                 "type": "Attr",
-                 "node": {
-                  "type": "Var",
-                  "name": "d"
-                 },
-                 "key": "control_form"
+                 "key": "control_mask"
                 },
                 "b": {
                  "type": "Attr",
@@ -1235,26 +1185,7 @@
                   "type": "Var",
                   "name": "p"
                  },
-                 "key": "form"
-                }
-               },
-               {
-                "type": "Eq",
-                "a": {
-                 "type": "Attr",
-                 "node": {
-                  "type": "Var",
-                  "name": "d"
-                 },
-                 "key": "control_reflect"
-                },
-                "b": {
-                 "type": "Attr",
-                 "node": {
-                  "type": "Var",
-                  "name": "p"
-                 },
-                 "key": "reflect"
+                 "key": "mask"
                 }
                }
               ]
@@ -1332,47 +1263,23 @@
           },
           "var_name": "od",
           "predicate": {
-           "type": "And",
-           "items": [
-            {
-             "type": "Eq",
-             "a": {
-              "type": "Attr",
-              "node": {
-               "type": "Var",
-               "name": "od"
-              },
-              "key": "control_form"
-             },
-             "b": {
-              "type": "Attr",
-              "node": {
-               "type": "Var",
-               "name": "p"
-              },
-              "key": "form"
-             }
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "od"
             },
-            {
-             "type": "Eq",
-             "a": {
-              "type": "Attr",
-              "node": {
-               "type": "Var",
-               "name": "od"
-              },
-              "key": "control_reflect"
-             },
-             "b": {
-              "type": "Attr",
-              "node": {
-               "type": "Var",
-               "name": "p"
-              },
-              "key": "reflect"
-             }
-            }
-           ]
+            "key": "control_mask"
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "p"
+            },
+            "key": "mask"
+           }
           }
          }
         ]
@@ -1387,6 +1294,636 @@
      "sc",
      "status",
      "exhausted"
+    ]
+   ]
+  },
+  {
+   "name": "pw_author_composite_predictor",
+   "comment": "An exhausted concern whose best local trial was refuted only on its retention cost: the agent authors a new model -- its current model and that winner, composed (per body and axis, whichever component predicted best last frame) -- adds it to its own candidate space and reopens the concern to try it. Composites compose further; a composite it already holds is not re-authored, so the concern stays exhausted when composition has nothing new to offer.",
+   "match": [
+    [
+     "agent",
+     "has_prediction_curriculum",
+     "cur"
+    ],
+    [
+     "agent",
+     "has_prediction_policy",
+     "pol"
+    ],
+    [
+     "agent",
+     "has_self_concern",
+     "sc"
+    ],
+    [
+     "agent",
+     "has_predictor",
+     "p"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "sc"
+       },
+       "key": "kind"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "prediction_surprise"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "sc"
+       },
+       "key": "status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "exhausted"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "sc"
+       },
+       "key": "level"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "cur"
+       },
+       "key": "current_level"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "pol"
+       },
+       "key": "self_improvement"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1
+      }
+     },
+     {
+      "type": "Let",
+      "name": "w",
+      "value": {
+       "type": "Argmin",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "sc"
+         },
+         "edge_type": "tested_by"
+        },
+        "var_name": "lw",
+        "predicate": {
+         "type": "And",
+         "items": [
+          {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "lw"
+            },
+            "key": "control_mask"
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "p"
+            },
+            "key": "mask"
+           }
+          },
+          {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "lw"
+            },
+            "key": "outcome"
+           },
+           "b": {
+            "type": "Lit",
+            "value": "refuted"
+           }
+          },
+          {
+           "type": "Lte",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "lw"
+            },
+            "key": "variant_surprise"
+           },
+           "b": {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "lw"
+              },
+              "key": "control_surprise"
+             },
+             {
+              "type": "Minus",
+              "a": {
+               "type": "Lit",
+               "value": 1.0
+              },
+              "b": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "pol"
+               },
+               "key": "min_gain"
+              }
+             }
+            ]
+           }
+          }
+         ]
+        }
+       },
+       "var_name": "lw",
+       "value": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "lw"
+        },
+        "key": "variant_surprise"
+       },
+       "default": null
+      },
+      "body": {
+       "type": "And",
+       "items": [
+        {
+         "type": "Not",
+         "arg": {
+          "type": "Eq",
+          "a": {
+           "type": "Var",
+           "name": "w"
+          },
+          "b": {
+           "type": "Lit",
+           "value": null
+          }
+         }
+        },
+        {
+         "type": "Not",
+         "arg": {
+          "type": "Exists",
+          "source": {
+           "type": "NodesOfType",
+           "node_type": "PredictorCandidate"
+          },
+          "var_name": "q",
+          "predicate": {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "q"
+            },
+            "key": "mask"
+           },
+           "b": {
+            "type": "Minus",
+            "a": {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "p"
+               },
+               "key": "mask"
+              },
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "w"
+               },
+               "key": "candidate_mask"
+              }
+             ]
+            },
+            "b": {
+             "type": "BitAnd",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "p"
+              },
+              "key": "mask"
+             },
+             "b": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "w"
+              },
+              "key": "candidate_mask"
+             }
+            }
+           }
+          }
+         }
+        }
+       ]
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "k",
+     "PredictorCandidate",
+     {
+      "form": "select",
+      "reflect": -1,
+      "authored": 1,
+      "authored_level": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "sc"
+        },
+        "key": "level"
+       }
+      },
+      "mask": {
+       "__term__": {
+        "type": "Let",
+        "name": "w",
+        "value": {
+         "type": "Argmin",
+         "source": {
+          "type": "Filter",
+          "source": {
+           "type": "Neighbours",
+           "node": {
+            "type": "Var",
+            "name": "sc"
+           },
+           "edge_type": "tested_by"
+          },
+          "var_name": "lw",
+          "predicate": {
+           "type": "And",
+           "items": [
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "lw"
+              },
+              "key": "control_mask"
+             },
+             "b": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "p"
+              },
+              "key": "mask"
+             }
+            },
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "lw"
+              },
+              "key": "outcome"
+             },
+             "b": {
+              "type": "Lit",
+              "value": "refuted"
+             }
+            },
+            {
+             "type": "Lte",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "lw"
+              },
+              "key": "variant_surprise"
+             },
+             "b": {
+              "type": "Times",
+              "items": [
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "lw"
+                },
+                "key": "control_surprise"
+               },
+               {
+                "type": "Minus",
+                "a": {
+                 "type": "Lit",
+                 "value": 1.0
+                },
+                "b": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "pol"
+                 },
+                 "key": "min_gain"
+                }
+               }
+              ]
+             }
+            }
+           ]
+          }
+         },
+         "var_name": "lw",
+         "value": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "lw"
+          },
+          "key": "variant_surprise"
+         },
+         "default": null
+        },
+        "body": {
+         "type": "Minus",
+         "a": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "p"
+            },
+            "key": "mask"
+           },
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "w"
+            },
+            "key": "candidate_mask"
+           }
+          ]
+         },
+         "b": {
+          "type": "BitAnd",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "p"
+           },
+           "key": "mask"
+          },
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "w"
+           },
+           "key": "candidate_mask"
+          }
+         }
+        }
+       }
+      },
+      "rank": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Lit",
+          "value": 6
+         },
+         {
+          "type": "Count",
+          "source": {
+           "type": "NodesOfType",
+           "node_type": "PredictorCandidate"
+          }
+         }
+        ]
+       }
+      },
+      "name": {
+       "__term__": {
+        "type": "Let",
+        "name": "w",
+        "value": {
+         "type": "Argmin",
+         "source": {
+          "type": "Filter",
+          "source": {
+           "type": "Neighbours",
+           "node": {
+            "type": "Var",
+            "name": "sc"
+           },
+           "edge_type": "tested_by"
+          },
+          "var_name": "lw",
+          "predicate": {
+           "type": "And",
+           "items": [
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "lw"
+              },
+              "key": "control_mask"
+             },
+             "b": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "p"
+              },
+              "key": "mask"
+             }
+            },
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "lw"
+              },
+              "key": "outcome"
+             },
+             "b": {
+              "type": "Lit",
+              "value": "refuted"
+             }
+            },
+            {
+             "type": "Lte",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "lw"
+              },
+              "key": "variant_surprise"
+             },
+             "b": {
+              "type": "Times",
+              "items": [
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "lw"
+                },
+                "key": "control_surprise"
+               },
+               {
+                "type": "Minus",
+                "a": {
+                 "type": "Lit",
+                 "value": 1.0
+                },
+                "b": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "pol"
+                 },
+                 "key": "min_gain"
+                }
+               }
+              ]
+             }
+            }
+           ]
+          }
+         },
+         "var_name": "lw",
+         "value": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "lw"
+          },
+          "key": "variant_surprise"
+         },
+         "default": null
+        },
+        "body": {
+         "type": "StringConcat",
+         "parts": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "p"
+           },
+           "key": "model"
+          },
+          {
+           "type": "Lit",
+           "value": " | "
+          },
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "w"
+           },
+           "key": "candidate_name"
+          }
+         ]
+        }
+       }
+      }
+     }
+    ],
+    [
+     "add_edge",
+     "agent",
+     "has_predictor_candidate",
+     "k"
+    ],
+    [
+     "add_edge",
+     "sc",
+     "authored",
+     "k"
+    ],
+    [
+     "set_attr",
+     "sc",
+     "status",
+     "open"
     ]
    ]
   },
@@ -1745,47 +2282,23 @@
       }
      },
      {
-      "type": "And",
-      "items": [
-       {
-        "type": "Eq",
-        "a": {
-         "type": "Attr",
-         "node": {
-          "type": "Var",
-          "name": "delta"
-         },
-         "key": "control_form"
-        },
-        "b": {
-         "type": "Attr",
-         "node": {
-          "type": "Var",
-          "name": "p"
-         },
-         "key": "form"
-        }
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "delta"
        },
-       {
-        "type": "Eq",
-        "a": {
-         "type": "Attr",
-         "node": {
-          "type": "Var",
-          "name": "delta"
-         },
-         "key": "control_reflect"
-        },
-        "b": {
-         "type": "Attr",
-         "node": {
-          "type": "Var",
-          "name": "p"
-         },
-         "key": "reflect"
-        }
-       }
-      ]
+       "key": "control_mask"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "p"
+       },
+       "key": "mask"
+      }
      },
      {
       "type": "Not",
@@ -1877,47 +2390,23 @@
            "type": "And",
            "items": [
             {
-             "type": "And",
-             "items": [
-              {
-               "type": "Eq",
-               "a": {
-                "type": "Attr",
-                "node": {
-                 "type": "Var",
-                 "name": "od"
-                },
-                "key": "control_form"
-               },
-               "b": {
-                "type": "Attr",
-                "node": {
-                 "type": "Var",
-                 "name": "p"
-                },
-                "key": "form"
-               }
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "od"
               },
-              {
-               "type": "Eq",
-               "a": {
-                "type": "Attr",
-                "node": {
-                 "type": "Var",
-                 "name": "od"
-                },
-                "key": "control_reflect"
-               },
-               "b": {
-                "type": "Attr",
-                "node": {
-                 "type": "Var",
-                 "name": "p"
-                },
-                "key": "reflect"
-               }
-              }
-             ]
+              "key": "control_mask"
+             },
+             "b": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "p"
+              },
+              "key": "mask"
+             }
             },
             {
              "type": "Or",
@@ -2028,6 +2517,36 @@
     ],
     [
      "set_attr",
+     "p",
+     "mask",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "delta"
+       },
+       "key": "candidate_mask"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "p",
+     "model",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "delta"
+       },
+       "key": "candidate_name"
+      }
+     }
+    ],
+    [
+     "set_attr",
      "exp",
      "adopted",
      1
@@ -2112,6 +2631,26 @@
          "name": "delta"
         },
         "key": "candidate_reflect"
+       }
+      },
+      "from_model": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "delta"
+        },
+        "key": "control_name"
+       }
+      },
+      "to_model": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "delta"
+        },
+        "key": "candidate_name"
        }
       },
       "level": {

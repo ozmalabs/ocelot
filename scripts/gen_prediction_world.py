@@ -11,14 +11,19 @@ Levels get harder: 1 drift (constant velocity), 2 bounce (walls), 3 fall
 (gravity), 4 glide (damping), 5 bounce under gravity.
 
 seeds/prediction_world.json (skippable; the part the agent changes)
-  * Predictor{form, reflect}: the agent's held model of motion. `form` is
-    velocity (x + dx), acceleration (x + 2dx - pdx: a constant change in
-    displacement) or ratio (x + dx*dx/pdx: a constant ratio of
-    displacements); `reflect` folds a prediction that leaves the box back in.
-  * PredictorCandidate{form, reflect, rank}: the space of models the agent
-    may try, in MDL order (fewest parts first). A human wrote this grammar;
-    which model to try, when, and whether to keep it is the agent's.
-  * predict_body_next: the predictor itself, one Term per axis.
+  * Six base models, rank k = form_index*2 + reflect: velocity (x + dx),
+    acceleration (x + 2dx - pdx: a constant change in displacement) or ratio
+    (x + dx*dx/pdx: a constant ratio of displacements), each with or without
+    `reflect` (fold a prediction that leaves the box back in).
+  * Predictor{mask, model}: the agent's held model -- the set of base models
+    it composes (bit k). One bit is a base model; more is a composite that
+    uses, per body and axis, whichever component predicted that body best
+    last frame (1.1.0).
+  * PredictorCandidate{mask, name, rank, authored}: the models the agent may
+    try, in MDL order. The six base models and the composition operator are
+    human-written; which model to try, when, which composites to author, and
+    whether to keep one is the agent's.
+  * predict_body_next: the predictor itself.
 
 seeds/prediction_self_improvement.json (frozen; the loop -- the agent may not
 change how it judges itself)
@@ -34,6 +39,11 @@ change how it judges itself)
     Experiment + SeedDelta per candidate not yet tried against the current
     model for this concern.
   * pw_concern_exhausted: no candidate left -> the concern says so.
+  * pw_author_composite_predictor (1.1.0): an exhausted concern whose best
+    local trial cleared the bar at the level and was refuted only on its
+    retention cost -> the agent authors a new candidate, its current model
+    composed with that winner, and reopens the concern. Composites compose
+    further; one it already holds is not re-authored, so it terminates.
   * pw_judge_predictor_edit: the replay's variant surprise against its control
     surprise, on the agent's own recorded episodes at the level AND on its
     recorded episodes of the levels it has already mastered (retention):
@@ -86,44 +96,81 @@ def T(x): return {"__term__": x}
 
 
 # ---------------------------------------------------------------- the predictor
-def axis_prediction(pos, disp, prev, size):
+FORMS = ("velocity", "acceleration", "ratio")
+N_BASE = len(FORMS) * 2
+
+
+def base_prediction(k, pos, disp, prev, size):
+    """Base model k (rank k = form_index*2 + reflect) on one axis."""
     x, dx, pdx, w = A("b", pos), A("b", disp), A("b", prev), A("b", size)
-    form = A("p", "form")
-    raw = Ite(Eq(form, L("acceleration")), Minus(Plus(x, Times(L(2.0), dx)), pdx),
-              Ite(Eq(form, L("ratio")),
-                  Ite(Eq(pdx, L(0.0)), Plus(x, dx), Plus(x, Div(Times(dx, dx), pdx))),
-                  Plus(x, dx)))
+    form, reflect = FORMS[k // 2], k % 2
+    if form == "acceleration":
+        raw = Minus(Plus(x, Times(L(2.0), dx)), pdx)
+    elif form == "ratio":
+        raw = Ite(Eq(pdx, L(0.0)), Plus(x, dx), Plus(x, Div(Times(dx, dx), pdx)))
+    else:
+        raw = Plus(x, dx)
+    if not reflect:
+        return raw
     edge = Minus(w, L(1.0))
-    folded = Ite(Lt(V("raw"), L(0.0)), Minus(L(0.0), V("raw")),
-                 Ite(Gt(V("raw"), edge), Minus(Times(L(2.0), edge), V("raw")), V("raw")))
-    return Let("raw", raw, Ite(Eq(A("p", "reflect"), L(1)), folded, V("raw")))
+    return Let("raw", raw, Ite(Lt(V("raw"), L(0.0)), Minus(L(0.0), V("raw")),
+                               Ite(Gt(V("raw"), edge), Minus(Times(L(2.0), edge), V("raw")), V("raw"))))
+
+
+def in_mask(k):
+    return Not(Eq({"type": "BitAnd", "a": A("p", "mask"), "b": L(1 << k)}, L(0)))
+
+
+def axis_effects(pos, disp, prev, size):
+    """Per axis: (1) the error each base model's last prediction made on this
+    observation; (2) the prediction of the held model -- among its components
+    (Predictor.mask), the one whose last error on this body and axis was
+    lowest (ties: the simpler); (3) every base model's prediction, kept for
+    the next frame's errors. Effects are evaluated in order."""
+    eff = []
+    for k in range(N_BASE):
+        last = A("b", f"c{pos}{k}")
+        eff.append(["set_attr", "b", f"e{pos}{k}", T(Ite(NN(last), {"type": "Abs", "arg": Minus(last, A("b", pos))},
+                                                          L(0.0)))])
+    # score: error for a component, a huge number otherwise; the rank breaks ties
+    score = lambda k: Ite(in_mask(k), Plus(A("b", f"e{pos}{k}"), L(k * 1e-9)), L(1e18))
+    best = {"type": "Min", "items": [score(k) for k in range(N_BASE)]}
+    pick = base_prediction(N_BASE - 1, pos, disp, prev, size)
+    for k in reversed(range(N_BASE - 1)):
+        pick = Ite(Eq(score(k), V("best")), base_prediction(k, pos, disp, prev, size), pick)
+    eff.append(["set_attr", "b", f"pred_{pos}", T(Let("best", best, pick))])
+    for k in range(N_BASE):
+        eff.append(["set_attr", "b", f"c{pos}{k}", T(base_prediction(k, pos, disp, prev, size))])
+    return eff
 
 
 PREDICT = {
     "name": "predict_body_next",
     "comment": "The agent's predictor: where each observed body will be next frame, from the held Predictor "
-               "model (form, reflect).",
+               "model -- one base model, or a composite the agent authored that uses, per body and axis, "
+               "whichever of its components predicted that body best last frame.",
     "match": [["agent", "has_predictor", "p"], ["agent", "observes", "b"]],
     "where": And(NN(A("b", "obs_frame")), Not(Eq(A("b", "pred_frame"), A("b", "obs_frame")))),
-    "effects": [["set_attr", "b", "pred_x", T(axis_prediction("x", "dx", "pdx", "w"))],
-                ["set_attr", "b", "pred_y", T(axis_prediction("y", "dy", "pdy", "h"))],
-                ["set_attr", "b", "pred_frame", T(A("b", "obs_frame"))]],
+    "effects": axis_effects("x", "dx", "pdx", "w") + axis_effects("y", "dy", "pdy", "h")
+               + [["set_attr", "b", "pred_frame", T(A("b", "obs_frame"))]],
 }
 
-FORMS = ("velocity", "acceleration", "ratio")
 candidates = []
 for fi, form in enumerate(FORMS):
     for reflect in (0, 1):
-        candidates.append({"form": form, "reflect": reflect, "rank": fi * 2 + reflect})
+        rank = fi * 2 + reflect
+        candidates.append({"form": form, "reflect": reflect, "rank": rank, "mask": 1 << rank,
+                           "name": form + ("+reflect" if reflect else ""), "authored": 0})
 world_nodes = [{"local_id": 0, "type": "Predictor", "attrs": {
-    "name": "motion_predictor", "form": "velocity", "reflect": 0,
-    "description": "The agent's held model of how bodies move (the newborn prior: constant velocity)."}}]
+    "name": "motion_predictor", "form": "velocity", "reflect": 0, "mask": 1, "model": "velocity",
+    "description": "The agent's held model of how bodies move (the newborn prior: constant velocity). `mask` "
+                   "is the set of base models it composes (bit k = base model of rank k)."}}]
 world_edges = [{"src": {"role": "agent_root"}, "type": "has_predictor", "tgt": {"local": 0}, "attrs": {}}]
 for i, c in enumerate(candidates, start=1):
     world_nodes.append({"local_id": i, "type": "PredictorCandidate", "attrs": c})
     world_edges.append({"src": {"role": "agent_root"}, "type": "has_predictor_candidate", "tgt": {"local": i},
                         "attrs": {}})
-world = {"id": "prediction_world", "version": "1.0.0", "depends_on": [],
+world = {"id": "prediction_world", "version": "1.1.0", "depends_on": [],
          "description": "The prediction world's predictor (see scripts/gen_prediction_world.py): the held Predictor "
                         "model, the candidate models in MDL order, and the prediction rule. This is the part of "
                         "the agent its self-improvement loop changes.",
@@ -166,9 +213,8 @@ FILE = {
 
 # candidates not yet tried for this concern against the current model, and not the current model itself
 TRIED = lambda c: Exists(Nb("sc", "tested_by"), "x", Exists(Nb(V("x"), "has_delta"), "d", And(
-    Eq(A("d", "candidate_form"), A(c, "form")), Eq(A("d", "candidate_reflect"), A(c, "reflect")),
-    Eq(A("d", "control_form"), A("p", "form")), Eq(A("d", "control_reflect"), A("p", "reflect")))))
-IS_CURRENT = lambda c: And(Eq(A(c, "form"), A("p", "form")), Eq(A(c, "reflect"), A("p", "reflect")))
+    Eq(A("d", "candidate_mask"), A(c, "mask")), Eq(A("d", "control_mask"), A("p", "mask")))))
+IS_CURRENT = lambda c: Eq(A(c, "mask"), A("p", "mask"))
 UNTRIED = Filter(Nodes("PredictorCandidate"), "k", And(Not(IS_CURRENT(V("k"))), Not(TRIED(V("k")))))
 PENDING = Exists(Nb("sc", "tested_by"), "x", Eq(A("x", "outcome"), L(None)))
 CONCERN_MATCH = CUR + [["agent", "has_self_concern", "sc"], ["agent", "has_predictor", "p"]]
@@ -185,16 +231,19 @@ PROPOSE = {
         ["add_node", "exp", "Experiment", {
             "game": "prediction_world", "status": "requested", "level": T(A("sc", "level")),
             "hypothesis": T({"type": "StringConcat", "parts": [
-                L("predicting with the "), A("k", "form"), L(" model (reflect "),
-                {"type": "Str", "value": A("k", "reflect")}, L(") lowers my surprise")]})}],
+                L("predicting with the "), A("k", "name"), L(" model lowers my surprise")]}),
+            "candidate_mask": T(A("k", "mask")), "control_mask": T(A("p", "mask")),
+            "candidate_name": T(A("k", "name"))}],
         ["add_node", "delta", "SeedDelta", {
             "variation_op": "predictor_edit", "candidate_form": T(A("k", "form")),
             "candidate_reflect": T(A("k", "reflect")), "candidate_rank": T(A("k", "rank")),
-            "control_form": T(A("p", "form")), "control_reflect": T(A("p", "reflect"))}],
+            "candidate_mask": T(A("k", "mask")), "candidate_name": T(A("k", "name")),
+            "control_form": T(A("p", "form")), "control_reflect": T(A("p", "reflect")),
+            "control_mask": T(A("p", "mask")), "control_name": T(A("p", "model"))}],
         ["add_edge", "exp", "has_delta", "delta"],
         ["add_edge", "sc", "tested_by", "exp"]],
 }
-SAME_CONTROL = lambda d: And(Eq(A(d, "control_form"), A("p", "form")), Eq(A(d, "control_reflect"), A("p", "reflect")))
+SAME_CONTROL = lambda d: Eq(A(d, "control_mask"), A("p", "mask"))
 SUPPORTED_OPEN = Exists(Nb("sc", "tested_by"), "o", And(
     Eq(A("o", "outcome"), L("supported")), Not(Eq(A("o", "adopted"), L(1))),
     Exists(Nb(V("o"), "has_delta"), "od", SAME_CONTROL(V("od")))))
@@ -205,6 +254,37 @@ EXHAUSTED = {
     "match": CONCERN_MATCH,
     "where": And(CONCERN_OPEN, Not(PENDING), Eq(Count(UNTRIED), L(0)), Not(SUPPORTED_OPEN)),
     "effects": [["set_attr", "sc", "status", "exhausted"]],
+}
+# The local winner: this concern's refuted trial (against the current model) that cleared the bar AT the level
+# -- it was refuted only on what it cost the levels already mastered -- with the lowest surprise there.
+LOCAL_WINNER = Argmin(Filter(Nb("sc", "tested_by"), "lw", And(
+    Eq(A("lw", "control_mask"), A("p", "mask")), Eq(A("lw", "outcome"), L("refuted")),
+    Lte(A("lw", "variant_surprise"), Times(A("lw", "control_surprise"), Minus(L(1.0), A("pol", "min_gain")))))),
+    "lw", A("lw", "variant_surprise"))
+W_MASK = A("w", "candidate_mask")
+UNION = Minus(Plus(A("p", "mask"), W_MASK), {"type": "BitAnd", "a": A("p", "mask"), "b": W_MASK})
+AUTHOR = {
+    "name": "pw_author_composite_predictor",
+    "comment": "An exhausted concern whose best local trial was refuted only on its retention cost: the agent "
+               "authors a new model -- its current model and that winner, composed (per body and axis, whichever "
+               "component predicted best last frame) -- adds it to its own candidate space and reopens the "
+               "concern to try it. Composites compose further; a composite it already holds is not re-authored, "
+               "so the concern stays exhausted when composition has nothing new to offer.",
+    "match": CONCERN_MATCH,
+    "where": And(Eq(A("sc", "kind"), L("prediction_surprise")), Eq(A("sc", "status"), L("exhausted")),
+                 Eq(A("sc", "level"), A("cur", "current_level")), Eq(A("pol", "self_improvement"), L(1)),
+                 Let("w", LOCAL_WINNER, And(NN(V("w")), Not(Exists(Nodes("PredictorCandidate"), "q",
+                                                                    Eq(A("q", "mask"), UNION)))))),
+    "effects": [
+        ["add_node", "k", "PredictorCandidate", {
+            "form": "select", "reflect": -1, "authored": 1, "authored_level": T(A("sc", "level")),
+            "mask": T(Let("w", LOCAL_WINNER, UNION)),
+            "rank": T(Plus(L(N_BASE), Count(Nodes("PredictorCandidate")))),
+            "name": T(Let("w", LOCAL_WINNER, {"type": "StringConcat", "parts": [
+                A("p", "model"), L(" | "), A("w", "candidate_name")]}))}],
+        ["add_edge", "agent", "has_predictor_candidate", "k"],
+        ["add_edge", "sc", "authored", "k"],
+        ["set_attr", "sc", "status", "open"]],
 }
 RET_HARM = A("exp", "retention_harm")
 NET = Minus(Minus(A("exp", "control_surprise"), A("exp", "variant_surprise")),
@@ -242,6 +322,8 @@ ADOPT = {
     "effects": [
         ["set_attr", "p", "form", T(A("delta", "candidate_form"))],
         ["set_attr", "p", "reflect", T(A("delta", "candidate_reflect"))],
+        ["set_attr", "p", "mask", T(A("delta", "candidate_mask"))],
+        ["set_attr", "p", "model", T(A("delta", "candidate_name"))],
         ["set_attr", "exp", "adopted", 1],
         ["set_attr", "sc", "status", "resolved"],
         ["set_attr", "cur", "last_change_seq", T(A(Argmax(Nodes("PredictionEpisode"), "q", A("q", "seq")), "seq"))],
@@ -249,6 +331,7 @@ ADOPT = {
             "kind": "predictor_edit", "rule_added": "", "rule_removed": "",
             "from_form": T(A("delta", "control_form")), "from_reflect": T(A("delta", "control_reflect")),
             "to_form": T(A("delta", "candidate_form")), "to_reflect": T(A("delta", "candidate_reflect")),
+            "from_model": T(A("delta", "control_name")), "to_model": T(A("delta", "candidate_name")),
             "level": T(A("exp", "level"))}],
         ["add_edge", "exp", "adopted_as", "ad"]],
 }
@@ -266,9 +349,9 @@ loop_edges = [{"src": {"role": "agent_root"}, "type": "has_prediction_curriculum
               {"src": {"role": "agent_root"}, "type": "has_prediction_policy", "tgt": {"local": 1}, "attrs": {}}]
 # no depends_on: the loop reads the predictor's nodes at run time, and a dependency
 # would freeze the predictor seed by closure (it is the part the agent changes)
-loop = {"id": "prediction_self_improvement", "version": "1.0.0", "depends_on": [],
+loop = {"id": "prediction_self_improvement", "version": "1.1.0", "depends_on": [],
         "description": __doc__, "nodes": loop_nodes, "edges": loop_edges, "productions": [],
-        "rules": [ADVANCE, FILE, PROPOSE, EXHAUSTED, JUDGE, ADOPT]}
+        "rules": [ADVANCE, FILE, PROPOSE, EXHAUSTED, AUTHOR, JUDGE, ADOPT]}
 
 P_WORLD.write_text(json.dumps(world, indent=1, ensure_ascii=True) + "\n")
 P_LOOP.write_text(json.dumps(loop, indent=1, ensure_ascii=True) + "\n")

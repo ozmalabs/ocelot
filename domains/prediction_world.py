@@ -122,14 +122,13 @@ def run_episode(agent, seed: int) -> dict:
     return {"seq": seq, "level": level, "mean_surprise": mean}
 
 
-def replay(trace, form: str, reflect: int) -> float:
+def replay(trace, mask: int) -> float:
     """The agent's predictor rule, in a fresh agent holding only the predictor
-    seed with the given model, over a recorded trace."""
+    seed with the given model (its component mask), over a recorded trace."""
     from substrate.world_adapter import WorldAdapter
     child = WorldAdapter(seeds=("prediction_world",))
     p = child.s.nodes("Predictor")[0]
-    child.inner.set_attr(p, "form", str(form))
-    child.inner.set_attr(p, "reflect", int(reflect))
+    child.inner.set_attr(p, "mask", int(mask))
     mean, _n = _feed(child, trace)
     return mean
 
@@ -152,8 +151,8 @@ def run_experiments(agent, window: int | None = None) -> list:
         eps = sorted((e for e in S.nodes("PredictionEpisode") if S.node(e)["attrs"].get("level") == level),
                      key=lambda e: S.node(e)["attrs"]["seq"])[-k:]
         traces = [json.loads(S.node(e)["attrs"]["trace"]) for e in eps]
-        control = sum(replay(t, da["control_form"], da["control_reflect"]) for t in traces) / len(traces)
-        variant = sum(replay(t, da["candidate_form"], da["candidate_reflect"]) for t in traces) / len(traces)
+        control = sum(replay(t, da["control_mask"]) for t in traces) / len(traces)
+        variant = sum(replay(t, da["candidate_mask"]) for t in traces) / len(traces)
         # retention: per level below this one, its most recent `window`
         # episodes; harm = the sum over those levels of the surprise the
         # variant adds (an improvement on one level does not offset another)
@@ -163,8 +162,8 @@ def run_experiments(agent, window: int | None = None) -> list:
                             key=lambda e: S.node(e)["attrs"]["seq"])[-(k // 2):]
             ts = [json.loads(S.node(e)["attrs"]["trace"]) for e in lv_eps]
             if ts:
-                c = sum(replay(t, da["control_form"], da["control_reflect"]) for t in ts) / len(ts)
-                v = sum(replay(t, da["candidate_form"], da["candidate_reflect"]) for t in ts) / len(ts)
+                c = sum(replay(t, da["control_mask"]) for t in ts) / len(ts)
+                v = sum(replay(t, da["candidate_mask"]) for t in ts) / len(ts)
                 per_level[lv] = [round(c, 6), round(v, 6)]
         harm = sum(max(0.0, v - c) for c, v in per_level.values())
         I.set_attr(exp, "retention_by_level", json.dumps(per_level))
@@ -173,7 +172,7 @@ def run_experiments(agent, window: int | None = None) -> list:
         I.set_attr(exp, "variant_surprise", round(variant, 6))
         I.set_attr(exp, "replayed_episodes", len(traces))
         I.set_attr(exp, "status", "done")
-        out.append({"level": level, "candidate": [da["candidate_form"], da["candidate_reflect"]],
+        out.append({"level": level, "candidate": da.get("candidate_name"),
                     "control": control, "variant": variant, "retention_harm": harm})
     if out:
         I.run_rules()

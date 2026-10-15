@@ -45,7 +45,7 @@ def arm(n, self_improvement, seed_base=1000):
         ep = pw.run_episode(a, seed=seed_base + i)
         trials += [dict(r, episode=i) for r in pw.run_experiments(a)]
         p = S.node(S.nodes("Predictor")[0])["attrs"]
-        curve.append({**ep, "model": [p["form"], p["reflect"]],
+        curve.append({**ep, "model": p["model"],
                       "level_after": S.node(S.nodes("PredictionCurriculum")[0])["attrs"]["current_level"]})
     cur = S.node(S.nodes("PredictionCurriculum")[0])["attrs"]
     p = S.node(S.nodes("Predictor")[0])["attrs"]
@@ -55,17 +55,18 @@ def arm(n, self_improvement, seed_base=1000):
     for x in S.nodes("Experiment"):
         at = S.node(x)["attrs"]
         d = S.node(list(a.inner.neighbours(x, "has_delta"))[0])["attrs"]
-        exps.append({"level": at.get("level"), "candidate": [d["candidate_form"], d["candidate_reflect"]],
-                     "control_model": [d["control_form"], d["control_reflect"]],
+        exps.append({"level": at.get("level"), "candidate": d["candidate_name"], "control_model": d["control_name"],
                      **{k: at.get(k) for k in ("control_surprise", "variant_surprise", "retention_harm",
                                                "retention_by_level", "weighed_net", "outcome", "adopted")}})
-    adoptions = [{k: S.node(x)["attrs"].get(k) for k in ("level", "from_form", "from_reflect", "to_form", "to_reflect")}
+    adoptions = [{k: S.node(x)["attrs"].get(k) for k in ("level", "from_model", "to_model")}
                  for x in S.nodes("Adoption")]
-    final = {lv: round(sum(pw.replay(pw.simulate(lv, 9000 + s), p["form"], p["reflect"]) for s in range(5)) / 5, 4)
+    authored = [{k: S.node(x)["attrs"].get(k) for k in ("name", "mask", "rank", "authored_level")}
+                for x in S.nodes("PredictorCandidate") if S.node(x)["attrs"].get("authored") == 1]
+    final = {lv: round(sum(pw.replay(pw.simulate(lv, 10**6 + s), p["mask"]) for s in range(5)) / 5, 4)
              for lv in pw.LEVELS}
     return {"self_improvement": self_improvement, "episodes": n, "elapsed_s": round(time.time() - t0, 1),
             "final_level": cur["current_level"], "mastered_through": cur.get("mastered_through"),
-            "final_model": [p["form"], p["reflect"]], "concerns": concerns, "experiments": exps,
+            "final_model": p["model"], "authored_candidates": authored, "concerns": concerns, "experiments": exps,
             "adoptions": adoptions, "final_model_surprise_by_level": final, "curve": curve}
 
 
@@ -77,9 +78,10 @@ def main():
     out.write_text(json.dumps(rep, indent=1) + "\n")
     for name, r in rep["arms"].items():
         print(f"\n== {name}: final level {r['final_level']}, mastered through {r['mastered_through']}, "
-              f"model {r['final_model']}, {len(r['experiments'])} experiments, {len(r['adoptions'])} adoptions, "
+              f"model {r['final_model']}, {len(r['experiments'])} experiments, {len(r['adoptions'])} adoptions, {len(r['authored_candidates'])} authored, "
               f"{r['elapsed_s']}s")
         print("   concerns", r["concerns"])
+        print("   authored", r["authored_candidates"])
         for x in r["experiments"]:
             print("   exp", x["level"], x["control_model"], "->", x["candidate"], "ctl", x["control_surprise"],
                   "var", x["variant_surprise"], "ret_harm", x["retention_harm"],
