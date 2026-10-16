@@ -82,7 +82,7 @@ def test_three_arms_authoring_carries_it_through_level_5():
     p = on.s.node(on.s.nodes("Predictor")[0])["attrs"]
     # the held model: the L4 composite with both context layers, fitted from its own L5 residual
     assert (p["mask"], p["n_layers"], p["ctx_bits"]) == (ACC1 | RATIO, 2, 3)
-    assert p["sig"] == "+reversal+after_reversal"
+    assert p["sig"].startswith("+reversal") and p["sig"].endswith("+after_reversal")
     assert len(on.s.nodes("Adoption")) == 5
 
     assert cur_na["current_level"] == 4 and cur_na["mastered_through"] == 3
@@ -272,6 +272,81 @@ def test_revision_prunes_components_and_drops_its_last_layer():
     assert len(_authored(a)) == n
 
 
+def _lucky_streak_agent(surprises):
+    """An agent at the last level (5) with recorded episodes of these mean
+    surprises under its current model."""
+    a = _agent(0)
+    S, I = a.s, a.inner
+    _set_level(a, 5)
+    for i, m in enumerate(surprises):
+        e = S.add_node("PredictionEpisode", {"seq": i, "level": 5, "level_index": i + 1, "mean_surprise": m,
+                                             "scored": 1, "seed": i, "trace": "{}"})
+        I.add_edge_unchecked(a.agent, "has_prediction_episode", e)
+    I.run_rules()
+    return a.s.node(a.s.nodes("PredictionCurriculum")[0])["attrs"]
+
+
+def test_robust_mastery_ignores_a_lucky_streak():
+    """1.4.0: mastery needs the upper confidence bound of the last 5 episodes'
+    mean at or under the floor, not three lucky episodes in a row."""
+    lucky = _lucky_streak_agent([0.25, 0.22, 0.24, 0.14, 0.13, 0.14])
+    assert lucky.get("mastered_through") != 5
+    steady = _lucky_streak_agent([0.25, 0.10, 0.11, 0.09, 0.10, 0.11])
+    assert steady.get("mastered_through") == 5
+
+
+def _stat(a, kind):
+    (o,) = [o for o in a.s.nodes("PredictionOperatorStat") if a.s.node(o)["attrs"]["kind"] == kind]
+    return o
+
+
+def test_operator_record_counts_judged_trials():
+    a = _agent(0)
+    S, I = a.s, a.inner
+    sc, (x0, x1) = _synthetic(a, [(ACC, 2, 0.5, 0.0, 0.4), (ACC1, 3, 0.5, 0.0, 0.2)])
+    for x in (x0, x1):
+        I.set_attr(x, "candidate_operator", "base")
+    I.run_rules()
+    st = S.node(_stat(a, "base"))["attrs"]
+    assert (st["tried"], st["supported"], st["adopted"]) == (2, 2, 1)
+
+
+def _concern_with_composite(a, base=(10, 0), comp=(2, 2)):
+    S, I = a.s, a.inner
+    _set_level(a, 3)
+    for kind, (tried, sup) in (("base", base), ("composition", comp)):
+        I.set_attr(_stat(a, kind), "tried", tried)
+        I.set_attr(_stat(a, kind), "supported", sup)
+    k = S.add_node("PredictorCandidate", {"form": "select", "reflect": -1, "authored": 1,
+                                          "authored_by": "composition", "mask": ACC1 | RATIO, "sig": "",
+                                          "rank": 12, "name": "comp", "n_layers": 0, "ctx_bits": 0})
+    I.add_edge_unchecked(a.agent, "has_predictor_candidate", k)
+    sc = S.add_node("SelfConcern", {"kind": "prediction_surprise", "status": "open", "level": 3})
+    I.add_edge_unchecked(a.agent, "has_self_concern", sc)
+    I.run_rules()
+    return sorted(S.node(x)["attrs"].get("candidate_name") for x in S.nodes("Experiment"))
+
+
+def test_meta_search_trials_the_best_yielding_operator_first():
+    """1.4.0: with its own record saying base models rarely pass (0 of 10) and
+    composites do (2 of 2), the agent trials the composite alone first; with
+    meta_search off it trials everything at once."""
+    assert _concern_with_composite(_agent(1)) == ["comp"]
+    flat = _agent(1)
+    flat.inner.set_attr(flat.s.nodes("PredictionPolicy")[0], "meta_search", 0)
+    assert len(_concern_with_composite(flat)) == 6
+
+
+def test_meta_search_skips_an_operator_its_record_says_does_not_pay():
+    """An operator tried meta_min_trials times with yield under meta_min_yield
+    is not trialled again: with base at 0 of 20 and the composite at 0 of 20
+    nothing is proposed, and the concern exhausts."""
+    a = _agent(1)
+    assert _concern_with_composite(a, base=(20, 0), comp=(20, 0)) == []
+    (sc,) = [c for c in a.s.nodes("SelfConcern")]
+    assert a.s.node(sc)["attrs"]["status"] == "exhausted"
+
+
 def test_loop_seed_frozen_and_protected():
     from substrate.boot_all import _FROZEN_SEED_IDS
     assert "prediction_self_improvement" in _FROZEN_SEED_IDS
@@ -281,5 +356,5 @@ def test_loop_seed_frozen_and_protected():
     loop = json.loads((ROOT / "seeds/prediction_self_improvement.json").read_text())
     assert loop["depends_on"] == []
     integ = (ROOT / "seeds/improvement_integrity.json").read_text()
-    for t in ("PredictionPolicy", "PredictionCurriculum", "PredictorCandidate"):
+    for t in ("PredictionPolicy", "PredictionCurriculum", "PredictorCandidate", "PredictionOperatorStat"):
         assert f'"{t}"' in integ

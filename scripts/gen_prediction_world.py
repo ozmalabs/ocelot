@@ -63,6 +63,16 @@ change how it judges itself)
     pw_author_pruned_component (the model minus one base component) and
     pw_author_dropped_layer (minus its last layer); layers gain a fifth term,
     the body's running acceleration estimate on the axis.
+  * Robust mastery (1.4.0): the one-sided 95% upper confidence bound of the
+    mean surprise of the last `mastery_window` (5) episodes under the current
+    model at or under the floor; concerns filed on the mean of the last
+    `window` episodes since the change, or after 2*mastery_window episodes
+    without robust mastery.
+  * Meta search (1.4.0): PredictionOperatorStat per authoring operator
+    (tried / supported / adopted, updated by pw_count_operator_trial and
+    pw_count_operator_adoption); with meta_search on, trials go in batches by
+    operator yield (supported+1)/(tried+2), best first, and an operator tried
+    meta_min_trials times with yield under meta_min_yield is skipped.
   * pw_judge_predictor_edit: the replay's variant surprise against its control
     surprise, on the agent's own recorded episodes at the level AND on its
     recorded episodes of the levels it has already mastered (retention):
@@ -238,7 +248,7 @@ for i, c in enumerate(candidates, start=1):
     world_nodes.append({"local_id": i, "type": "PredictorCandidate", "attrs": c})
     world_edges.append({"src": {"role": "agent_root"}, "type": "has_predictor_candidate", "tgt": {"local": i},
                         "attrs": {}})
-world = {"id": "prediction_world", "version": "1.3.0", "depends_on": [],
+world = {"id": "prediction_world", "version": "1.4.0", "depends_on": [],
          "description": "The prediction world's predictor (see scripts/gen_prediction_world.py): the held Predictor "
                         "model, the candidate models in MDL order, and the prediction rule. This is the part of "
                         "the agent its self-improvement loop changes.",
@@ -251,6 +261,20 @@ SINCE = Filter(LVL_EPS, "e", Gt(A("e", "seq"), A("cur", "last_change_seq")))
 UNDER = lambda src: Count(Filter(src, "u", Lte(A("u", "mean_surprise"), A("pol", "surprise_floor"))))
 N_LVL = Count(LVL_EPS)
 RECENT = Filter(LVL_EPS, "e", Gt(A("e", "level_index"), Minus(N_LVL, A("pol", "window"))))
+# (1.4.0) robust mastery: the last `mastery_window` episodes at the level, all under the current model, with
+# the one-sided upper confidence bound of their mean surprise (mean + mastery_z * sd / sqrt(n)) at or under the
+# floor -- so a lucky streak on a model whose true surprise is above the floor does not count.
+MW = A("pol", "mastery_window")
+LAST_M = Filter(LVL_EPS, "e", Gt(A("e", "level_index"), Minus(N_LVL, MW)))
+M_MEAN = Div({"type": "Sum", "source": LAST_M, "var_name": "e", "value": A("e", "mean_surprise")}, MW)
+M_VAR = Div({"type": "Sum", "source": LAST_M, "var_name": "e", "value": {"type": "Pow", "a": Minus(
+    A("e", "mean_surprise"), V("mm")), "b": L(2.0)}}, Minus(MW, L(1)))
+M_UCB = Let("mm", M_MEAN, Plus(V("mm"), Times(A("pol", "mastery_z"), {"type": "Sqrt", "arg": Div(M_VAR, MW)})))
+MASTERED = And(Gte(N_LVL, MW), Eq(Count(Filter(LAST_M, "e", Lte(A("e", "seq"), A("cur", "last_change_seq")))), L(0)),
+               Lte(M_UCB, A("pol", "surprise_floor")))
+LAST_W_SINCE = Filter(SINCE, "e", Gt(A("e", "level_index"), Minus(N_LVL, A("pol", "window"))))
+W_MEAN = Div({"type": "Sum", "source": LAST_W_SINCE, "var_name": "e", "value": A("e", "mean_surprise")},
+             A("pol", "window"))
 OPEN_CONCERN = Exists(Nodes("SelfConcern"), "c", And(
     Eq(A("c", "kind"), L("prediction_surprise")), Eq(A("c", "level"), A("cur", "current_level")),
     Or(Eq(A("c", "status"), L("open")),
@@ -258,20 +282,18 @@ OPEN_CONCERN = Exists(Nodes("SelfConcern"), "c", And(
 
 ADVANCE = {
     "name": "pw_advance_level",
-    "comment": "`window` consecutive episodes at the level at or under the floor: the level is mastered.",
+    "comment": "The level is mastered (1.4.0: robustly -- the upper confidence bound of the mean surprise of "
+               "the last `mastery_window` episodes under the current model at or under the floor).",
     "match": CUR,
-    "where": And(Lt(A("cur", "current_level"), A("cur", "max_level")), Gte(N_LVL, A("pol", "window")),
-                 Eq(UNDER(RECENT), A("pol", "window"))),
+    "where": And(Lt(A("cur", "current_level"), A("cur", "max_level")), MASTERED),
     "effects": [["set_attr", "cur", "mastered_through", T(A("cur", "current_level"))],
                 ["set_attr", "cur", "current_level", T(Plus(A("cur", "current_level"), L(1)))]],
 }
 MASTER_LAST = {
     "name": "pw_master_last_level",
-    "comment": "The last level is mastered the same way (`window` consecutive episodes at or under the floor); "
-               "there is nowhere to advance to.",
+    "comment": "The last level is mastered the same way; there is nowhere to advance to.",
     "match": CUR,
-    "where": And(Eq(A("cur", "current_level"), A("cur", "max_level")), Gte(N_LVL, A("pol", "window")),
-                 Eq(UNDER(RECENT), A("pol", "window")),
+    "where": And(Eq(A("cur", "current_level"), A("cur", "max_level")), MASTERED,
                  Not(Eq(A("cur", "mastered_through"), A("cur", "max_level")))),
     "effects": [["set_attr", "cur", "mastered_through", T(A("cur", "max_level"))]],
 }
@@ -282,7 +304,12 @@ FILE = {
                "concern. Nothing but its surprise decides this. (1.2.0: was 'none under the floor', which one "
                "lucky episode blocked forever.)",
     "match": CUR,
-    "where": And(Gte(Count(SINCE), A("pol", "window")), Lt(UNDER(RECENT), A("pol", "window")), Not(OPEN_CONCERN)),
+    # 1.4.0: the evidence of a miss is the mean of the last `window` episodes since the change above the floor;
+    # or, after 2*mastery_window episodes, a level still not robustly mastered
+    "where": And(Gte(Count(SINCE), A("pol", "window")), Not(OPEN_CONCERN),
+                 Not(Eq(A("cur", "mastered_through"), A("cur", "current_level"))),
+                 Or(Gt(W_MEAN, A("pol", "surprise_floor")),
+                    And(Gte(Count(SINCE), Times(L(2), MW)), Not(MASTERED)))),
     "effects": [["add_node", "sc", "SelfConcern", {
         "kind": "prediction_surprise", "status": "open", "source": "prediction_world",
         "level": T(A("cur", "current_level")), "filed_change_seq": T(A("cur", "last_change_seq")),
@@ -299,6 +326,20 @@ TRIED = lambda c: Exists(Nb("sc", "tested_by"), "x", Exists(Nb(V("x"), "has_delt
     SAME(A("d", "candidate_mask"), A("d", "candidate_sig"), A(c, "mask"), A(c, "sig")), IS_P("d", "control_"))))
 IS_CURRENT = lambda c: IS_P(c)
 UNTRIED = Filter(Nodes("PredictorCandidate"), "k", And(Not(IS_CURRENT(V("k"))), Not(TRIED(V("k")))))
+# (1.4.0) the agent's record of its own search: per authoring operator, how many of its candidates were
+# tried and how many the judge supported; a candidate's operator is how it was authored ('base' if born-with)
+OP_KIND = lambda c: Ite(Eq(A(c, "authored"), L(1)), A(c, "authored_by"), L("base"))
+OP_STAT = lambda c: Argmax(Filter(Nodes("PredictionOperatorStat"), "os", Eq(A("os", "kind"), OP_KIND(c))),
+                           "os", L(0))
+YIELD = lambda c: Let("st", OP_STAT(c), Ite(NN(V("st")), Div(Plus(A("st", "supported"), L(1.0)),
+                                                            Plus(A("st", "tried"), L(2.0))), L(0.5)))
+OP_TRIED = lambda c: Let("st", OP_STAT(c), Ite(NN(V("st")), A("st", "tried"), L(0)))
+# with meta_search on, a candidate is not worth a trial when its operator has been tried meta_min_trials times
+# and its yield is under meta_min_yield
+VIABLE = lambda c: Or(Not(Eq(A("pol", "meta_search"), L(1))),
+                      Not(And(Gte(OP_TRIED(c), A("pol", "meta_min_trials")),
+                              Lt(YIELD(c), A("pol", "meta_min_yield")))))
+UNTRIED_VIABLE = Filter(UNTRIED, "uv", VIABLE(V("uv")))
 PENDING = Exists(Nb("sc", "tested_by"), "x", Eq(A("x", "outcome"), L(None)))
 CONCERN_MATCH = CUR + [["agent", "has_self_concern", "sc"], ["agent", "has_predictor", "p"]]
 CONCERN_OPEN = And(Eq(A("sc", "kind"), L("prediction_surprise")), Eq(A("sc", "status"), L("open")))
@@ -317,6 +358,7 @@ PROPOSE = {
                 L("predicting with the "), A("k", "name"), L(" model lowers my surprise")]}),
             "candidate_mask": T(A("k", "mask")), "control_mask": T(A("p", "mask")),
             "candidate_sig": T(A("k", "sig")), "control_sig": T(A("p", "sig")),
+            "candidate_operator": T(OP_KIND("k")),
             "candidate_name": T(A("k", "name"))}],
         ["add_node", "delta", "SeedDelta", {
             "variation_op": "predictor_edit", "candidate_form": T(A("k", "form")),
@@ -333,12 +375,43 @@ SAME_CONTROL = lambda d: IS_P(d, "control_")
 SUPPORTED_OPEN = Exists(Nb("sc", "tested_by"), "o", And(
     Eq(A("o", "outcome"), L("supported")), Not(Eq(A("o", "adopted"), L(1))),
     Exists(Nb(V("o"), "has_delta"), "od", SAME_CONTROL(V("od")))))
+# (1.4.0) meta search: with meta_search on, trials go in batches -- only the untried candidates whose operator
+# has the best yield so far, and the next batch only once this one is judged with nothing to adopt
+BEST_YIELD = {"type": "MaxOver", "source": UNTRIED_VIABLE, "var_name": "u", "value": YIELD("u"), "default": L(0.0)}
+PROPOSE["where"] = And(CONCERN_OPEN, Eq(A("pol", "self_improvement"), L(1)), Not(IS_CURRENT(V("k"))),
+                       Not(TRIED(V("k"))), VIABLE(V("k")),
+                       Or(Not(Eq(A("pol", "meta_search"), L(1))),
+                          And(Not(PENDING), Not(SUPPORTED_OPEN), Gte(YIELD("k"), BEST_YIELD))))
+PROPOSE["comment"] += (" 1.4.0: with meta_search on, in batches by the yield of the operator that authored "
+                       "each candidate (its own record), best first.")
+STAT_MATCH = [["agent", "has_operator_stat", "os"], ["sc", "tested_by", "exp"]]
+COUNT_TRIAL = {
+    "name": "pw_count_operator_trial",
+    "comment": "The agent's record of its own search: a judged trial counts against the operator that authored "
+               "its candidate (tried, and supported if the judge supported it).",
+    "match": STAT_MATCH,
+    "where": And(NN(A("exp", "outcome")), Not(Eq(A("exp", "op_counted"), L(1))),
+                 Eq(A("os", "kind"), A("exp", "candidate_operator"))),
+    "effects": [["set_attr", "os", "tried", T(Plus(A("os", "tried"), L(1)))],
+                ["set_attr", "os", "supported", T(Plus(A("os", "supported"),
+                                                       Ite(Eq(A("exp", "outcome"), L("supported")), L(1), L(0))))],
+                ["set_attr", "exp", "op_counted", 1]],
+}
+COUNT_ADOPT = {
+    "name": "pw_count_operator_adoption",
+    "comment": "An adopted trial also counts as an adoption for its operator.",
+    "match": STAT_MATCH,
+    "where": And(Eq(A("exp", "adopted"), L(1)), Not(Eq(A("exp", "op_adopt_counted"), L(1))),
+                 Eq(A("os", "kind"), A("exp", "candidate_operator"))),
+    "effects": [["set_attr", "os", "adopted", T(Plus(A("os", "adopted"), L(1)))],
+                ["set_attr", "exp", "op_adopt_counted", 1]],
+}
 EXHAUSTED = {
     "name": "pw_concern_exhausted",
     "comment": "Every candidate model has been tried against the current one and none was supported: the concern "
                "says so honestly.",
     "match": CONCERN_MATCH,
-    "where": And(CONCERN_OPEN, Not(PENDING), Eq(Count(UNTRIED), L(0)), Not(SUPPORTED_OPEN)),
+    "where": And(CONCERN_OPEN, Not(PENDING), Eq(Count(UNTRIED_VIABLE), L(0)), Not(SUPPORTED_OPEN)),
     "effects": [["set_attr", "sc", "status", "exhausted"]],
 }
 # The local winner: this concern's refuted trial (against the current model) that cleared the bar AT the level
@@ -565,16 +638,24 @@ loop_nodes = [
     {"local_id": 1, "type": "PredictionPolicy", "attrs": {
         "name": "prediction_policy", "self_improvement": 1, "surprise_floor": 0.15, "window": 3,
         "min_gain": 0.2, "min_abs_gain": 0.05, "retention_weight": 1.0, "authoring": 1,
+        "mastery_window": 5, "mastery_z": 1.645, "meta_search": 1,
+        "meta_min_trials": 8, "meta_min_yield": 0.15,
         "description": "The agent's own bar: mean surprise per body-frame (cells) at or under the floor masters a "
                        "level; a model must cut it by 20%, and by 0.05 cells net of any surprise it adds on the "
                        "levels already mastered, to be adopted."}}]
 loop_edges = [{"src": {"role": "agent_root"}, "type": "has_prediction_curriculum", "tgt": {"local": 0}, "attrs": {}},
               {"src": {"role": "agent_root"}, "type": "has_prediction_policy", "tgt": {"local": 1}, "attrs": {}}]
+OPERATOR_KINDS = ("base", "composition", "residual_fit", "residual_refit", "residual_refit_all", "prune_component",
+                  "drop_layer")
+for j, kind in enumerate(OPERATOR_KINDS, start=2):
+    loop_nodes.append({"local_id": j, "type": "PredictionOperatorStat",
+                       "attrs": {"kind": kind, "tried": 0, "supported": 0, "adopted": 0}})
+    loop_edges.append({"src": {"role": "agent_root"}, "type": "has_operator_stat", "tgt": {"local": j}, "attrs": {}})
 # no depends_on: the loop reads the predictor's nodes at run time, and a dependency
 # would freeze the predictor seed by closure (it is the part the agent changes)
-loop = {"id": "prediction_self_improvement", "version": "1.3.0", "depends_on": [],
+loop = {"id": "prediction_self_improvement", "version": "1.4.0", "depends_on": [],
         "description": __doc__, "nodes": loop_nodes, "edges": loop_edges, "productions": [],
-        "rules": [ADVANCE, MASTER_LAST, FILE, PROPOSE, EXHAUSTED, AUTHOR, REQUEST_FIT, AUTHOR_LAYER, PRUNE_COMPONENT, DROP_LAYER, JUDGE, ADOPT]}
+        "rules": [ADVANCE, MASTER_LAST, FILE, PROPOSE, EXHAUSTED, AUTHOR, REQUEST_FIT, AUTHOR_LAYER, PRUNE_COMPONENT, DROP_LAYER, JUDGE, ADOPT, COUNT_TRIAL, COUNT_ADOPT]}
 
 P_WORLD.write_text(json.dumps(world, indent=1, ensure_ascii=True) + "\n")
 P_LOOP.write_text(json.dumps(loop, indent=1, ensure_ascii=True) + "\n")
