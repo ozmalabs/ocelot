@@ -160,3 +160,72 @@ So most of v2's trained-vs-newborn gap was already there before revision. This d
 - More draws, to settle the trained-vs-newborn question statistically.
 - A mastery criterion robust to lucky streaks.
 - Then the meta-level: let the agent change parts of its own search, and measure the cost of improvement on fresh draws.
+
+
+---
+
+# v3: many draws, robust mastery, learned search (loop 1.4.0)
+
+The protocol is `PREDICTION_WORLD_HELDOUT_PROTOCOL_V3_20261010.md`, frozen at `c06ac6e48700c93ae69f76c7e8c7fd41e254365c`. There were 6 fresh draws × 8 levels × 4 seed bases, giving 192 pairs and 768 runs. Nothing was changed after the commit.
+
+To reproduce:
+
+```
+evaluation/substrate_capability/prediction_world_heldout_v2.py c06ac6e48700c93ae69f76c7e8c7fd41e254365c 6
+```
+
+This takes about 30 minutes on 12 workers.
+
+## Pre-registered outcome
+
+| arm | robust mastery | mean final surprise | mean experiments/run | adoptions |
+|---|---|---|---|---|
+| `on_trained` (own record) | 128/192 | 0.162 | **11.0** | 29 |
+| `on_trained_reset` (record zeroed) | 129/192 | 0.159 | 15.5 | 30 |
+| `on_trained_flat` (meta search off) | 129/192 | 0.159 | 17.6 | 30 |
+| `on_naive` | 122/192 | 0.187 | 12.1 | 220 |
+
+**H4: supported (the agent's own record makes later improvement cheaper, at no cost in quality).**
+- **(a)** The learned record used fewer experiments than the reset record in 79 pairs, and more in none. The other 113 pairs needed no trials at all. The sign test gives p < 10⁻²³.
+  - Over the 79 pairs with trials: 2,110 experiments vs 2,970 reset (−29%) and 3,372 flat (−37%).
+- **(b)** Mean final-surprise difference, learned − reset: +0.0023, within the +0.01 margin.
+  - That whole difference is one pair (see below). Of the other 191 pairs, 190 are identical.
+- **H4b (vs no meta search): the same picture.** 79 vs 0 on experiments; surprise difference +0.0022, with 186 of 192 pairs tied.
+
+**H3: falsified (trained vs newborn).** The trained agent had lower final surprise in 87 pairs and the newborn in 93, with 12 ties (p = 0.71).
+- The mean favours the trained agent (−0.025), because it wins by large margins on hard levels. But pair for pair it does not beat the newborn.
+- Robust mastery is 128 vs 122, also not significant (17 vs 11 discordant pairs, p = 0.34).
+
+## What produced it (post-hoc analysis)
+
+**The cost of learned search.**
+- In the curriculum, base models were supported 3 times in 35 trials. So on new levels the agent skips them (the skip rule: tried at least 8 times, yield under 0.15).
+- That removes trials whose answer would have been "refuted" anyway. That is the 29–37% saving.
+- In one pair (draw 4, level 139: open space, g 0.76, gx 0.30; seed 1000), it also removed the one useful path:
+  - the composition operator builds from a refuted base trial;
+  - with base trials skipped, it never formed `current | acceleration`;
+  - the reset and flat arms did form it, and reached 0.025;
+  - the learned arm stayed at 0.466.
+- The skip rule treats operators as independent, and they are not. One pair in 192 is cheap on average, but it is a real failure mode, not noise.
+
+**Why the trained agent does not beat a newborn.**
+- The trained agent adopted something new in only 26 of 192 runs (29 adoptions, about 73 experiments per adoption). The newborn adopted 220 times, about 11 experiments per adoption.
+- The trained agent starts closer (initial surprise 0.196 vs the newborn's 0.553), but it improves little at the level: 0.196 → 0.161. The newborn goes 0.553 → 0.187.
+- Every change the trained agent considers is weighed against five mastered levels (retention). On the levels it does change, it ends lower than the newborn on average (0.486 vs 0.577). Where it does not change, the newborn, free of retention, often fits the new physics more closely in small steps.
+- Draws differ: trained wins draws 2 and 5 on pair counts, the newborn wins 1 and 3, and 0 and 4 are close. Eight-level single-draw verdicts (v1, v2) were not reliable, as v2's write-up warned.
+
+## Where the whole line stands
+
+**Established, pre-registered and blind to tuning:**
+1. **The object-level loop works on unseen physics.** Agents that may change themselves beat ablations that may not (v1, v2).
+2. **The improver's behaviour improves with its own experience** (v3, H4). The record of what paid off in the curriculum makes its search on new levels a third cheaper, with no change in outcome in 191 of 192 cases.
+   - This is the first evidence in this line at the meta level.
+   - The meta rules are human-written and frozen; what is learned is the record that steers them.
+
+**Not established:**
+- **That earlier object-level improvement leaves the agent better placed than a newborn** (H3 falsified over 192 pairs). The retention trade, which is correct by the agent's own criterion, makes the experienced agent conservative on new physics.
+- **Open-ended recursive self-improvement.** The agent re-weights operators it has. It cannot invent a new way to search, and the skip rule's independence assumption is a human design error the agent cannot see or fix.
+
+**Next, if this line continues:**
+- Let the record see dependencies between operators, e.g. count a composition's adoption as credit for the base trial it was built from. Better still, let the agent propose changes to its own meta rules under the same pre-registered, many-draw judge.
+- Make retention scope-aware, so a model change can be confined to the frames it was fitted on. This is the likely route to an experienced agent that is not out-learned by a newborn.
