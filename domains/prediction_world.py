@@ -39,6 +39,30 @@ N_BODIES = 3
 WARMUP = 2          # the first frames carry no displacement history to predict from
 
 
+def heldout_levels(draw_seed: int, k: int = 8, first_id: int = 101) -> dict:
+    """K held-out level specs drawn from a physics family broader than the
+    curriculum: open space or a box (15-40 cells), downward and sideways
+    gravity, damping, and bounces that lose energy (restitution < 1), in any
+    combination. The draw seed is fixed by the pre-registration protocol
+    (docs/research/engine_substrate/PREDICTION_WORLD_HELDOUT_PROTOCOL_20261010.md),
+    not chosen by whoever runs it."""
+    rnd = random.Random(draw_seed)
+    out = {}
+    for j in range(k):
+        walls = rnd.random() < 0.6
+        size = float(rnd.randint(15, 40)) if walls else 1000.0
+        spec = {"name": f"heldout_{j}", "w": size, "h": size, "walls": walls,
+                "gravity": round(rnd.uniform(0.1, 0.8), 3) if rnd.random() < 0.6 else 0.0,
+                "gravity_x": round(rnd.choice([-1, 1]) * rnd.uniform(0.05, 0.4), 3) if rnd.random() < 0.3 else 0.0,
+                "damping": round(rnd.uniform(0.05, 0.35), 3) if rnd.random() < 0.4 else 0.0,
+                "restitution": round(rnd.uniform(0.6, 0.95), 3) if walls and rnd.random() < 0.5 else 1.0,
+                "frames": rnd.randint(20, 40)}
+        if spec["damping"] and rnd.random() < 0.5:
+            spec["speed"] = (4.0, 8.0)
+        out[first_id + j] = spec
+    return out
+
+
 def simulate(level: int, seed: int) -> dict:
     """{w, h, frames: [[(x, y) per body] per frame]} for one episode."""
     spec = LEVELS[level]
@@ -57,15 +81,22 @@ def simulate(level: int, seed: int) -> dict:
     for _t in range(spec["frames"]):
         frames.append([(round(b[0], 6), round(b[1], 6)) for b in bodies])
         for b in bodies:
+            b[2] += spec.get("gravity_x", 0.0)
             b[3] += spec["gravity"]
             b[0] += b[2]
             b[1] += b[3]
             if spec["walls"]:
+                e = spec.get("restitution", 1.0)
                 for i, (vi, size) in ((0, (2, w)), (1, (3, h))):
-                    if b[i] < 0:
-                        b[i], b[vi] = -b[i], -b[vi]
+                    if e == 1.0:
+                        if b[i] < 0:
+                            b[i], b[vi] = -b[i], -b[vi]
+                        elif b[i] > size - 1:
+                            b[i], b[vi] = 2 * (size - 1) - b[i], -b[vi]
+                    elif b[i] < 0:      # a bounce that loses energy: overshoot and speed scaled by e
+                        b[i], b[vi] = -e * b[i], -e * b[vi]
                     elif b[i] > size - 1:
-                        b[i], b[vi] = 2 * (size - 1) - b[i], -b[vi]
+                        b[i], b[vi] = (size - 1) - e * (b[i] - (size - 1)), -e * b[vi]
             b[2] *= (1.0 - spec["damping"])
             b[3] *= (1.0 - spec["damping"])
     return {"w": w, "h": h, "frames": frames}
