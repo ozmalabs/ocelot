@@ -229,3 +229,73 @@ This takes about 30 minutes on 12 workers.
 **Next, if this line continues:**
 - Let the record see dependencies between operators, e.g. count a composition's adoption as credit for the base trial it was built from. Better still, let the agent propose changes to its own meta rules under the same pre-registered, many-draw judge.
 - Make retention scope-aware, so a model change can be confined to the frames it was fitted on. This is the likely route to an experienced agent that is not out-learned by a newborn.
+
+
+---
+
+# v4: experts, provenance credit, self-proposed policy (loop 1.5.0)
+
+The protocol is `PREDICTION_WORLD_HELDOUT_PROTOCOL_V4_20261010.md`, frozen at `37decde1b9f6f4ac0f536b88496d67211fb81a7a`. There were 6 fresh draws × 8 levels × 4 seed bases, giving 192 pairs and 960 runs, plus the practice phase. Nothing was changed after the commit.
+
+To reproduce:
+
+```
+evaluation/substrate_capability/prediction_world_heldout_v3.py 37decde1b9f6f4ac0f536b88496d67211fb81a7a 6
+```
+
+## Pre-registered outcome
+
+| arm | robust mastery | mean final surprise | mean retention harm | mean experiments |
+|---|---|---|---|---|
+| `on_trained` | 134/192 | 0.116 | 0.010 | 17.2 |
+| `on_trained_noexperts` | 132/192 | 0.118 | 0.010 | 16.6 |
+| `on_trained_reset` | 134/192 | 0.116 | 0.010 | 17.2 |
+| `on_trained_meta` | 134/192 | 0.119 | 0.009 | 16.6 |
+| `on_naive` | 138/192 | 0.146 | 0 | 10.5 |
+
+**H3: supported on this draw set, but not because of 1.5.0.**
+- Trained vs newborn: 105 vs 71 with 16 ties (p = 0.013).
+- Counterfactual (not pre-registered): loop 1.4.0 on the same draws gives 106 vs 70 (p = 0.008). The difference from v3 (87 vs 93) is the draws.
+- Pooled over v3 and v4 for loop 1.4.0: 193 vs 163, p = 0.12, not significant.
+- Draws vary: in v4, trained wins draws 0, 1 and 5 clearly, ties 2 and 4, and loses 3.
+
+**H6: falsified, narrowly.**
+- Experts lowered final surprise in 5 pairs and raised it in none (p = 0.0625 against α = 0.05).
+- Retention harm was unchanged.
+- Each of the 5 is a real improvement: 0.184 → 0.118, 0.087 → 0.062, 0.168 → 0.116, 0.169 → 0.104, 0.167 → 0.105. But experts are authored only as a last resort, so they rarely act.
+
+**H4: falsified.**
+- Learned vs reset record: identical in all 192 pairs.
+- 1.5.0's two fixes to the skip rule removed the saving v3 found:
+  - credit through provenance gives base models `enabled` credit in every curriculum, so they are never skipped;
+  - skipping became a last resort.
+- 1.4.0 on the same draws keeps the saving: 76 vs 0 pairs, −4.4 experiments per run, identical outcome.
+- So 1.5.0 traded v3's 29% saving for not repeating v3's one bad skip. On the v4 draws, 1.5.0's trained agent used 64% more experiments than 1.4.0's (17.2 vs 10.5). In exchange it was better in 5 pairs (the expert wins) and worse in none.
+
+**H5: falsified.**
+- The agent adopted a policy change on only 1 of 4 seed bases: base 1000, `retention_weight` ×2, practice net +0.083. The practice judge refuted every other proposal, so the other bases are ties by construction.
+- On the held-out draws that change was worse in 3 pairs and better in none (p = 0.25). A heavier retention weight made the agent more conservative: on those levels final surprise rose by 0.16–0.25, while retention harm fell by about 0.08.
+- Its own practice evidence (6 levels, with most of the net from one level) did not transfer.
+
+## Where the whole line stands now
+
+**Holds, pre-registered:**
+- The self-improvement loop beats ablations that cannot change themselves (v1, v2).
+- The agent's own operator record made its search a third cheaper without changing outcomes (v3, loop 1.4.0). This was replicated on the v4 draws by the 1.4.0 counterfactual: 76 vs 0 pairs.
+
+**Does not hold, or is not established:**
+- **Trained vs newborn.** Draw-dependent. v3 and v4 point opposite ways, and the pooled result is not significant.
+- **Experts as scope-confined change.** Each use helps, but they are too rarely used to pass a test (5/192).
+- **The agent's own policy proposals.** One round, from 6 practice levels, adopted on 1 of 4 bases, and it did not transfer.
+- **v4 lost the v3 saving.** Making the skip rule safe removed it. Safety and cost trade against each other here, and both v3 and v4 measured one side of that trade.
+
+**Recursive self-improvement.** The tests have now reached the meta level twice:
+- v3: a learned record steering a fixed search. That passed.
+- v4: self-chosen policy changes. That failed to transfer.
+
+The part that passed is the shallow one. The agent improving its way of improving, in a way that holds on unseen worlds, has not been shown.
+
+**What I would do next, if this line continues:**
+- **Separate the safety question from the saving.** For example, skip an operator only when no other operator has ever built on it *in a world of the same kind*.
+- **More practice and more rounds for self-proposed policy.** Several rounds, each judged on practice levels never reused. The current single round on 6 levels is too thin to learn from.
+- **Stop using one sign test per hypothesis per draw set.** Use a pooled, pre-declared sequential analysis across draw sets. The draw-to-draw variance seen here is larger than most of the effects being tested.
