@@ -71,9 +71,11 @@ def simulate(level: int, seed: int) -> dict:
     return {"w": w, "h": h, "frames": frames}
 
 
-def _feed(agent, trace) -> tuple:
+def _feed(agent, trace, collect=None) -> tuple:
     """Run the agent's predictor over an observation trace. Returns (mean
-    surprise, scored count)."""
+    surprise, scored count). With `collect`, appends one row per scored body,
+    axis and frame: the context and history the prediction was made from,
+    and its error (for a ResidualFit)."""
     S, I = agent.s, agent.inner
     n = len(trace["frames"][0])
     bodies = []
@@ -83,6 +85,7 @@ def _feed(agent, trace) -> tuple:
         bodies.append(b)
     prev = [None] * n
     prev_d = [(0.0, 0.0)] * n
+    prev_pd = [(0.0, 0.0)] * n
     total, count = 0.0, 0
     for t, obs in enumerate(trace["frames"]):
         for i, b in enumerate(bodies):
@@ -92,11 +95,19 @@ def _feed(agent, trace) -> tuple:
                 if at.get("pred_frame") == t - 1:
                     total += math.hypot(float(at["pred_x"]) - x, float(at["pred_y"]) - y)
                     count += 1
+                    if collect is not None:
+                        for ax, nxt in (("x", x), ("y", y)):
+                            h = {"x": ("dx", "pdx", "ppdx"), "y": ("dy", "pdy", "ppdy")}[ax]
+                            collect.append({"axis": ax, "ctx": int(at.get(f"ctx_{ax}") or 0),
+                                            "pos": float(at[ax]), "hist": [float(at[k]) for k in h],
+                                            "size": float(at["w" if ax == "x" else "h"]), "next": nxt,
+                                            "err": abs(float(at[f"pred_{ax}"]) - nxt)})
             d = (x - prev[i][0], y - prev[i][1]) if prev[i] is not None else (0.0, 0.0)
             for k, v in (("x", x), ("y", y), ("dx", d[0]), ("dy", d[1]), ("pdx", prev_d[i][0]),
-                         ("pdy", prev_d[i][1]), ("obs_frame", t)):
+                         ("pdy", prev_d[i][1]), ("ppdx", prev_pd[i][0]), ("ppdy", prev_pd[i][1]),
+                         ("obs_frame", t)):
                 I.set_attr(b, k, float(v) if k != "obs_frame" else int(v))
-            prev[i], prev_d[i] = (x, y), d
+            prev[i], prev_d[i], prev_pd[i] = (x, y), d, prev_d[i]
         I.run_rules()
     for b in bodies:
         remover = getattr(I, "remove_node", None) or S.remove_node
@@ -122,14 +133,28 @@ def run_episode(agent, seed: int) -> dict:
     return {"seq": seq, "level": level, "mean_surprise": mean}
 
 
-def replay(trace, mask: int) -> float:
+# the Predictor attributes that define a model (mirrors scripts/gen_prediction_world.py SLOT_KEYS)
+N_SLOTS = 2
+MODEL_KEYS = ["mask", "n_layers", "ctx_bits", "sig"] + [f"l{i}_bit" for i in range(N_SLOTS)] + [
+    f"l{i}_{ax}{c}" for i in range(N_SLOTS) for ax in "xy" for c in "0123"]
+
+
+def model_of(attrs: dict, prefix: str = "") -> dict:
+    """The model a node holds (a Predictor, a PredictorCandidate, or the
+    candidate_/control_ side of a SeedDelta)."""
+    return {k: attrs.get(prefix + k) for k in MODEL_KEYS if attrs.get(prefix + k) is not None}
+
+
+def replay(trace, model, collect=None) -> float:
     """The agent's predictor rule, in a fresh agent holding only the predictor
-    seed with the given model (its component mask), over a recorded trace."""
+    seed with the given model (a mask, or a model_of dict), over a recorded
+    trace."""
     from substrate.world_adapter import WorldAdapter
     child = WorldAdapter(seeds=("prediction_world",))
     p = child.s.nodes("Predictor")[0]
-    child.inner.set_attr(p, "mask", int(mask))
-    mean, _n = _feed(child, trace)
+    for k, v in ({"mask": int(model)} if isinstance(model, int) else model).items():
+        child.inner.set_attr(p, k, v)
+    mean, _n = _feed(child, trace, collect)
     return mean
 
 
@@ -151,8 +176,8 @@ def run_experiments(agent, window: int | None = None) -> list:
         eps = sorted((e for e in S.nodes("PredictionEpisode") if S.node(e)["attrs"].get("level") == level),
                      key=lambda e: S.node(e)["attrs"]["seq"])[-k:]
         traces = [json.loads(S.node(e)["attrs"]["trace"]) for e in eps]
-        control = sum(replay(t, da["control_mask"]) for t in traces) / len(traces)
-        variant = sum(replay(t, da["candidate_mask"]) for t in traces) / len(traces)
+        control = sum(replay(t, model_of(da, "control_")) for t in traces) / len(traces)
+        variant = sum(replay(t, model_of(da, "candidate_")) for t in traces) / len(traces)
         # retention: per level below this one, its most recent `window`
         # episodes; harm = the sum over those levels of the surprise the
         # variant adds (an improvement on one level does not offset another)
@@ -162,8 +187,8 @@ def run_experiments(agent, window: int | None = None) -> list:
                             key=lambda e: S.node(e)["attrs"]["seq"])[-(k // 2):]
             ts = [json.loads(S.node(e)["attrs"]["trace"]) for e in lv_eps]
             if ts:
-                c = sum(replay(t, da["control_mask"]) for t in ts) / len(ts)
-                v = sum(replay(t, da["candidate_mask"]) for t in ts) / len(ts)
+                c = sum(replay(t, model_of(da, "control_")) for t in ts) / len(ts)
+                v = sum(replay(t, model_of(da, "candidate_")) for t in ts) / len(ts)
                 per_level[lv] = [round(c, 6), round(v, 6)]
         harm = sum(max(0.0, v - c) for c, v in per_level.values())
         I.set_attr(exp, "retention_by_level", json.dumps(per_level))
@@ -174,6 +199,71 @@ def run_experiments(agent, window: int | None = None) -> list:
         I.set_attr(exp, "status", "done")
         out.append({"level": level, "candidate": da.get("candidate_name"),
                     "control": control, "variant": variant, "retention_harm": harm})
+    if out:
+        I.run_rules()
+    return out
+
+
+CONTEXT_ATOMS = ((1, "reversal"), (2, "after_reversal"))   # mirrors the generator
+MIN_FIT_ROWS = 8
+
+
+def run_residual_fits(agent, window: int | None = None) -> list:
+    """Run every requested ResidualFit: replay the agent's recorded episodes at
+    the level with its current model, and for each context atom the model
+    does not already condition on, write a ResidualCell -- the summed error
+    of the frames where it holds (and no existing layer applies), and per axis
+    the least-squares fit x' - x = c0*dx + c1*pdx + c2*ppdx + c3 over them,
+    with its in-sample gain. Which atom to take, and whether to keep the
+    resulting model, is the graph's."""
+    import numpy as np
+    S, I = agent.s, agent.inner
+    pol = S.node(S.nodes("PredictionPolicy")[0])["attrs"]
+    k = int(window or pol.get("window") or 3) * 2
+    model = model_of(S.node(S.nodes("Predictor")[0])["attrs"])
+    out = []
+    for rf in S.nodes("ResidualFit"):
+        at = S.node(rf)["attrs"]
+        if at.get("status") != "requested":
+            continue
+        level = int(at["level"])
+        eps = sorted((e for e in S.nodes("PredictionEpisode") if S.node(e)["attrs"].get("level") == level),
+                     key=lambda e: S.node(e)["attrs"]["seq"])[-k:]
+        rows = []
+        for e in eps:
+            replay(json.loads(S.node(e)["attrs"]["trace"]), model, rows)
+        used = int(model.get("ctx_bits") or 0)
+        for bit, name in CONTEXT_ATOMS:
+            if used & bit:
+                continue
+            cell = {"ctx_bit": bit, "atom": name, "n": 0, "residual_sum": 0.0, "fit_sum": 0.0}
+            for ax in "xy":
+                R = [r for r in rows if r["axis"] == ax and r["ctx"] & bit and not (r["ctx"] & used)]
+                resid = sum(r["err"] for r in R)
+                coef, fit = [0.0, 0.0, 0.0, 0.0], resid
+                if len(R) >= MIN_FIT_ROWS:
+                    X = np.array([r["hist"] + [1.0] for r in R])
+                    y = np.array([r["next"] - r["pos"] for r in R])
+                    coef = [round(float(c), 6) for c in np.linalg.lstsq(X, y, rcond=None)[0]]
+                    fit = 0.0
+                    for r in R:
+                        e = r["size"] - 1.0
+                        raw = r["pos"] + sum(c * h for c, h in zip(coef, r["hist"])) + coef[3]
+                        raw = -raw if raw < 0 else (2 * e - raw if raw > e else raw)
+                        fit += abs(raw - r["next"])
+                cell["n"] += len(R)
+                cell["residual_sum"] += resid
+                cell["fit_sum"] += fit
+                for j, c in enumerate(coef):
+                    cell[f"{ax}{j}"] = c
+            cell["residual_sum"] = round(cell["residual_sum"], 6)
+            cell["fit_sum"] = round(cell["fit_sum"], 6)
+            cell["fit_gain"] = round(cell["residual_sum"] - cell["fit_sum"], 6)
+            node = S.add_node("ResidualCell", cell)
+            I.add_edge_unchecked(rf, "has_cell", node)
+            out.append(cell)
+        I.set_attr(rf, "replayed_episodes", len(eps))
+        I.set_attr(rf, "status", "done")
     if out:
         I.run_rules()
     return out

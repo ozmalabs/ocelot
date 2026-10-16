@@ -1,6 +1,6 @@
 {
  "id": "prediction_world",
- "version": "1.1.0",
+ "version": "1.2.0",
  "depends_on": [],
  "description": "The prediction world's predictor (see scripts/gen_prediction_world.py): the held Predictor model, the candidate models in MDL order, and the prediction rule. This is the part of the agent its self-improvement loop changes.",
  "nodes": [
@@ -13,6 +13,27 @@
     "reflect": 0,
     "mask": 1,
     "model": "velocity",
+    "n_layers": 0,
+    "ctx_bits": 0,
+    "sig": "",
+    "l0_bit": 0,
+    "l1_bit": 0,
+    "l0_x0": 0.0,
+    "l0_x1": 0.0,
+    "l0_x2": 0.0,
+    "l0_x3": 0.0,
+    "l0_y0": 0.0,
+    "l0_y1": 0.0,
+    "l0_y2": 0.0,
+    "l0_y3": 0.0,
+    "l1_x0": 0.0,
+    "l1_x1": 0.0,
+    "l1_x2": 0.0,
+    "l1_x3": 0.0,
+    "l1_y0": 0.0,
+    "l1_y1": 0.0,
+    "l1_y2": 0.0,
+    "l1_y3": 0.0,
     "description": "The agent's held model of how bodies move (the newborn prior: constant velocity). `mask` is the set of base models it composes (bit k = base model of rank k)."
    }
   },
@@ -25,7 +46,28 @@
     "rank": 0,
     "mask": 1,
     "name": "velocity",
-    "authored": 0
+    "authored": 0,
+    "n_layers": 0,
+    "ctx_bits": 0,
+    "sig": "",
+    "l0_bit": 0,
+    "l1_bit": 0,
+    "l0_x0": 0.0,
+    "l0_x1": 0.0,
+    "l0_x2": 0.0,
+    "l0_x3": 0.0,
+    "l0_y0": 0.0,
+    "l0_y1": 0.0,
+    "l0_y2": 0.0,
+    "l0_y3": 0.0,
+    "l1_x0": 0.0,
+    "l1_x1": 0.0,
+    "l1_x2": 0.0,
+    "l1_x3": 0.0,
+    "l1_y0": 0.0,
+    "l1_y1": 0.0,
+    "l1_y2": 0.0,
+    "l1_y3": 0.0
    }
   },
   {
@@ -37,7 +79,28 @@
     "rank": 1,
     "mask": 2,
     "name": "velocity+reflect",
-    "authored": 0
+    "authored": 0,
+    "n_layers": 0,
+    "ctx_bits": 0,
+    "sig": "",
+    "l0_bit": 0,
+    "l1_bit": 0,
+    "l0_x0": 0.0,
+    "l0_x1": 0.0,
+    "l0_x2": 0.0,
+    "l0_x3": 0.0,
+    "l0_y0": 0.0,
+    "l0_y1": 0.0,
+    "l0_y2": 0.0,
+    "l0_y3": 0.0,
+    "l1_x0": 0.0,
+    "l1_x1": 0.0,
+    "l1_x2": 0.0,
+    "l1_x3": 0.0,
+    "l1_y0": 0.0,
+    "l1_y1": 0.0,
+    "l1_y2": 0.0,
+    "l1_y3": 0.0
    }
   },
   {
@@ -49,7 +112,28 @@
     "rank": 2,
     "mask": 4,
     "name": "acceleration",
-    "authored": 0
+    "authored": 0,
+    "n_layers": 0,
+    "ctx_bits": 0,
+    "sig": "",
+    "l0_bit": 0,
+    "l1_bit": 0,
+    "l0_x0": 0.0,
+    "l0_x1": 0.0,
+    "l0_x2": 0.0,
+    "l0_x3": 0.0,
+    "l0_y0": 0.0,
+    "l0_y1": 0.0,
+    "l0_y2": 0.0,
+    "l0_y3": 0.0,
+    "l1_x0": 0.0,
+    "l1_x1": 0.0,
+    "l1_x2": 0.0,
+    "l1_x3": 0.0,
+    "l1_y0": 0.0,
+    "l1_y1": 0.0,
+    "l1_y2": 0.0,
+    "l1_y3": 0.0
    }
   },
   {
@@ -61,7 +145,28 @@
     "rank": 3,
     "mask": 8,
     "name": "acceleration+reflect",
-    "authored": 0
+    "authored": 0,
+    "n_layers": 0,
+    "ctx_bits": 0,
+    "sig": "",
+    "l0_bit": 0,
+    "l1_bit": 0,
+    "l0_x0": 0.0,
+    "l0_x1": 0.0,
+    "l0_x2": 0.0,
+    "l0_x3": 0.0,
+    "l0_y0": 0.0,
+    "l0_y1": 0.0,
+    "l0_y2": 0.0,
+    "l0_y3": 0.0,
+    "l1_x0": 0.0,
+    "l1_x1": 0.0,
+    "l1_x2": 0.0,
+    "l1_x3": 0.0,
+    "l1_y0": 0.0,
+    "l1_y1": 0.0,
+    "l1_y2": 0.0,
+    "l1_y3": 0.0
    }
   },
   {
@@ -73,7 +178,28 @@
     "rank": 4,
     "mask": 16,
     "name": "ratio",
-    "authored": 0
+    "authored": 0,
+    "n_layers": 0,
+    "ctx_bits": 0,
+    "sig": "",
+    "l0_bit": 0,
+    "l1_bit": 0,
+    "l0_x0": 0.0,
+    "l0_x1": 0.0,
+    "l0_x2": 0.0,
+    "l0_x3": 0.0,
+    "l0_y0": 0.0,
+    "l0_y1": 0.0,
+    "l0_y2": 0.0,
+    "l0_y3": 0.0,
+    "l1_x0": 0.0,
+    "l1_x1": 0.0,
+    "l1_x2": 0.0,
+    "l1_x3": 0.0,
+    "l1_y0": 0.0,
+    "l1_y1": 0.0,
+    "l1_y2": 0.0,
+    "l1_y3": 0.0
    }
   },
   {
@@ -85,7 +211,28 @@
     "rank": 5,
     "mask": 32,
     "name": "ratio+reflect",
-    "authored": 0
+    "authored": 0,
+    "n_layers": 0,
+    "ctx_bits": 0,
+    "sig": "",
+    "l0_bit": 0,
+    "l1_bit": 0,
+    "l0_x0": 0.0,
+    "l0_x1": 0.0,
+    "l0_x2": 0.0,
+    "l0_x3": 0.0,
+    "l0_y0": 0.0,
+    "l0_y1": 0.0,
+    "l0_y2": 0.0,
+    "l0_y3": 0.0,
+    "l1_x0": 0.0,
+    "l1_x1": 0.0,
+    "l1_x2": 0.0,
+    "l1_x3": 0.0,
+    "l1_y0": 0.0,
+    "l1_y1": 0.0,
+    "l1_y2": 0.0,
+    "l1_y3": 0.0
    }
   }
  ],
@@ -165,7 +312,7 @@
  "rules": [
   {
    "name": "predict_body_next",
-   "comment": "The agent's predictor: where each observed body will be next frame, from the held Predictor model -- one base model, or a composite the agent authored that uses, per body and axis, whichever of its components predicted that body best last frame.",
+   "comment": "The agent's predictor: where each observed body will be next frame, from the held Predictor model -- a context layer the agent fitted, where its context holds; else one base model, or a composite the agent authored that uses, per body and axis, whichever of its components predicted that body best last frame.",
    "match": [
     [
      "agent",
@@ -551,369 +698,171 @@
     [
      "set_attr",
      "b",
+     "ctx_x",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "IfThenElse",
+         "cond": {
+          "type": "Lt",
+          "a": {
+           "type": "Times",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "b"
+             },
+             "key": "dx"
+            },
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "b"
+             },
+             "key": "pdx"
+            }
+           ]
+          },
+          "b": {
+           "type": "Lit",
+           "value": 0.0
+          }
+         },
+         "then": {
+          "type": "Lit",
+          "value": 1
+         },
+         "other": {
+          "type": "Lit",
+          "value": 0
+         }
+        },
+        {
+         "type": "IfThenElse",
+         "cond": {
+          "type": "Lt",
+          "a": {
+           "type": "Times",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "b"
+             },
+             "key": "pdx"
+            },
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "b"
+             },
+             "key": "ppdx"
+            }
+           ]
+          },
+          "b": {
+           "type": "Lit",
+           "value": 0.0
+          }
+         },
+         "then": {
+          "type": "Lit",
+          "value": 2
+         },
+         "other": {
+          "type": "Lit",
+          "value": 0
+         }
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "b",
      "pred_x",
      {
       "__term__": {
-       "type": "Let",
-       "name": "best",
-       "value": {
-        "type": "Min",
+       "type": "IfThenElse",
+       "cond": {
+        "type": "And",
         "items": [
          {
-          "type": "IfThenElse",
-          "cond": {
-           "type": "Not",
-           "arg": {
-            "type": "Eq",
-            "a": {
-             "type": "BitAnd",
-             "a": {
-              "type": "Attr",
-              "node": {
-               "type": "Var",
-               "name": "p"
-              },
-              "key": "mask"
-             },
-             "b": {
-              "type": "Lit",
-              "value": 1
-             }
+          "type": "Not",
+          "arg": {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "p"
             },
-            "b": {
-             "type": "Lit",
-             "value": 0
-            }
+            "key": "l0_bit"
+           },
+           "b": {
+            "type": "Lit",
+            "value": null
            }
-          },
-          "then": {
-           "type": "Plus",
-           "items": [
-            {
-             "type": "Attr",
-             "node": {
-              "type": "Var",
-              "name": "b"
-             },
-             "key": "ex0"
-            },
-            {
-             "type": "Lit",
-             "value": 0.0
-            }
-           ]
-          },
-          "other": {
-           "type": "Lit",
-           "value": 1e+18
           }
          },
          {
-          "type": "IfThenElse",
-          "cond": {
-           "type": "Not",
-           "arg": {
-            "type": "Eq",
-            "a": {
-             "type": "BitAnd",
-             "a": {
-              "type": "Attr",
-              "node": {
-               "type": "Var",
-               "name": "p"
-              },
-              "key": "mask"
-             },
-             "b": {
-              "type": "Lit",
-              "value": 2
-             }
-            },
-            "b": {
-             "type": "Lit",
-             "value": 0
-            }
-           }
+          "type": "Gt",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "p"
+           },
+           "key": "l0_bit"
           },
-          "then": {
-           "type": "Plus",
-           "items": [
-            {
-             "type": "Attr",
-             "node": {
-              "type": "Var",
-              "name": "b"
-             },
-             "key": "ex1"
-            },
-            {
-             "type": "Lit",
-             "value": 1e-09
-            }
-           ]
-          },
-          "other": {
+          "b": {
            "type": "Lit",
-           "value": 1e+18
+           "value": 0
           }
          },
          {
-          "type": "IfThenElse",
-          "cond": {
-           "type": "Not",
-           "arg": {
-            "type": "Eq",
+          "type": "Not",
+          "arg": {
+           "type": "Eq",
+           "a": {
+            "type": "BitAnd",
             "a": {
-             "type": "BitAnd",
-             "a": {
-              "type": "Attr",
-              "node": {
-               "type": "Var",
-               "name": "p"
-              },
-              "key": "mask"
-             },
-             "b": {
-              "type": "Lit",
-              "value": 4
-             }
-            },
-            "b": {
-             "type": "Lit",
-             "value": 0
-            }
-           }
-          },
-          "then": {
-           "type": "Plus",
-           "items": [
-            {
              "type": "Attr",
              "node": {
               "type": "Var",
               "name": "b"
              },
-             "key": "ex2"
-            },
-            {
-             "type": "Lit",
-             "value": 2e-09
-            }
-           ]
-          },
-          "other": {
-           "type": "Lit",
-           "value": 1e+18
-          }
-         },
-         {
-          "type": "IfThenElse",
-          "cond": {
-           "type": "Not",
-           "arg": {
-            "type": "Eq",
-            "a": {
-             "type": "BitAnd",
-             "a": {
-              "type": "Attr",
-              "node": {
-               "type": "Var",
-               "name": "p"
-              },
-              "key": "mask"
-             },
-             "b": {
-              "type": "Lit",
-              "value": 8
-             }
+             "key": "ctx_x"
             },
             "b": {
-             "type": "Lit",
-             "value": 0
-            }
-           }
-          },
-          "then": {
-           "type": "Plus",
-           "items": [
-            {
              "type": "Attr",
              "node": {
               "type": "Var",
-              "name": "b"
+              "name": "p"
              },
-             "key": "ex3"
-            },
-            {
-             "type": "Lit",
-             "value": 3.0000000000000004e-09
+             "key": "l0_bit"
             }
-           ]
-          },
-          "other": {
-           "type": "Lit",
-           "value": 1e+18
-          }
-         },
-         {
-          "type": "IfThenElse",
-          "cond": {
-           "type": "Not",
-           "arg": {
-            "type": "Eq",
-            "a": {
-             "type": "BitAnd",
-             "a": {
-              "type": "Attr",
-              "node": {
-               "type": "Var",
-               "name": "p"
-              },
-              "key": "mask"
-             },
-             "b": {
-              "type": "Lit",
-              "value": 16
-             }
-            },
-            "b": {
-             "type": "Lit",
-             "value": 0
-            }
+           },
+           "b": {
+            "type": "Lit",
+            "value": 0
            }
-          },
-          "then": {
-           "type": "Plus",
-           "items": [
-            {
-             "type": "Attr",
-             "node": {
-              "type": "Var",
-              "name": "b"
-             },
-             "key": "ex4"
-            },
-            {
-             "type": "Lit",
-             "value": 4e-09
-            }
-           ]
-          },
-          "other": {
-           "type": "Lit",
-           "value": 1e+18
-          }
-         },
-         {
-          "type": "IfThenElse",
-          "cond": {
-           "type": "Not",
-           "arg": {
-            "type": "Eq",
-            "a": {
-             "type": "BitAnd",
-             "a": {
-              "type": "Attr",
-              "node": {
-               "type": "Var",
-               "name": "p"
-              },
-              "key": "mask"
-             },
-             "b": {
-              "type": "Lit",
-              "value": 32
-             }
-            },
-            "b": {
-             "type": "Lit",
-             "value": 0
-            }
-           }
-          },
-          "then": {
-           "type": "Plus",
-           "items": [
-            {
-             "type": "Attr",
-             "node": {
-              "type": "Var",
-              "name": "b"
-             },
-             "key": "ex5"
-            },
-            {
-             "type": "Lit",
-             "value": 5e-09
-            }
-           ]
-          },
-          "other": {
-           "type": "Lit",
-           "value": 1e+18
           }
          }
         ]
        },
-       "body": {
-        "type": "IfThenElse",
-        "cond": {
-         "type": "Eq",
-         "a": {
-          "type": "IfThenElse",
-          "cond": {
-           "type": "Not",
-           "arg": {
-            "type": "Eq",
-            "a": {
-             "type": "BitAnd",
-             "a": {
-              "type": "Attr",
-              "node": {
-               "type": "Var",
-               "name": "p"
-              },
-              "key": "mask"
-             },
-             "b": {
-              "type": "Lit",
-              "value": 1
-             }
-            },
-            "b": {
-             "type": "Lit",
-             "value": 0
-            }
-           }
-          },
-          "then": {
-           "type": "Plus",
-           "items": [
-            {
-             "type": "Attr",
-             "node": {
-              "type": "Var",
-              "name": "b"
-             },
-             "key": "ex0"
-            },
-            {
-             "type": "Lit",
-             "value": 0.0
-            }
-           ]
-          },
-          "other": {
-           "type": "Lit",
-           "value": 1e+18
-          }
-         },
-         "b": {
-          "type": "Var",
-          "name": "best"
-         }
-        },
-        "then": {
+       "then": {
+        "type": "Let",
+        "name": "raw",
+        "value": {
          "type": "Plus",
          "items": [
           {
@@ -925,86 +874,15 @@
            "key": "x"
           },
           {
-           "type": "Attr",
-           "node": {
-            "type": "Var",
-            "name": "b"
-           },
-           "key": "dx"
-          }
-         ]
-        },
-        "other": {
-         "type": "IfThenElse",
-         "cond": {
-          "type": "Eq",
-          "a": {
-           "type": "IfThenElse",
-           "cond": {
-            "type": "Not",
-            "arg": {
-             "type": "Eq",
-             "a": {
-              "type": "BitAnd",
-              "a": {
-               "type": "Attr",
-               "node": {
-                "type": "Var",
-                "name": "p"
-               },
-               "key": "mask"
-              },
-              "b": {
-               "type": "Lit",
-               "value": 2
-              }
-             },
-             "b": {
-              "type": "Lit",
-              "value": 0
-             }
-            }
-           },
-           "then": {
-            "type": "Plus",
-            "items": [
-             {
-              "type": "Attr",
-              "node": {
-               "type": "Var",
-               "name": "b"
-              },
-              "key": "ex1"
-             },
-             {
-              "type": "Lit",
-              "value": 1e-09
-             }
-            ]
-           },
-           "other": {
-            "type": "Lit",
-            "value": 1e+18
-           }
-          },
-          "b": {
-           "type": "Var",
-           "name": "best"
-          }
-         },
-         "then": {
-          "type": "Let",
-          "name": "raw",
-          "value": {
-           "type": "Plus",
+           "type": "Times",
            "items": [
             {
              "type": "Attr",
              "node": {
               "type": "Var",
-              "name": "b"
+              "name": "p"
              },
-             "key": "x"
+             "key": "l0_x0"
             },
             {
              "type": "Attr",
@@ -1016,39 +894,116 @@
             }
            ]
           },
-          "body": {
-           "type": "IfThenElse",
-           "cond": {
-            "type": "Lt",
-            "a": {
-             "type": "Var",
-             "name": "raw"
+          {
+           "type": "Times",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "p"
+             },
+             "key": "l0_x1"
             },
-            "b": {
-             "type": "Lit",
-             "value": 0.0
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "b"
+             },
+             "key": "pdx"
             }
+           ]
+          },
+          {
+           "type": "Times",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "p"
+             },
+             "key": "l0_x2"
+            },
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "b"
+             },
+             "key": "ppdx"
+            }
+           ]
+          },
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "p"
            },
-           "then": {
+           "key": "l0_x3"
+          }
+         ]
+        },
+        "body": {
+         "type": "IfThenElse",
+         "cond": {
+          "type": "Lt",
+          "a": {
+           "type": "Var",
+           "name": "raw"
+          },
+          "b": {
+           "type": "Lit",
+           "value": 0.0
+          }
+         },
+         "then": {
+          "type": "Minus",
+          "a": {
+           "type": "Lit",
+           "value": 0.0
+          },
+          "b": {
+           "type": "Var",
+           "name": "raw"
+          }
+         },
+         "other": {
+          "type": "IfThenElse",
+          "cond": {
+           "type": "Gt",
+           "a": {
+            "type": "Var",
+            "name": "raw"
+           },
+           "b": {
             "type": "Minus",
             "a": {
-             "type": "Lit",
-             "value": 0.0
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "b"
+             },
+             "key": "w"
             },
             "b": {
-             "type": "Var",
-             "name": "raw"
+             "type": "Lit",
+             "value": 1.0
             }
-           },
-           "other": {
-            "type": "IfThenElse",
-            "cond": {
-             "type": "Gt",
-             "a": {
-              "type": "Var",
-              "name": "raw"
+           }
+          },
+          "then": {
+           "type": "Minus",
+           "a": {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Lit",
+              "value": 2.0
              },
-             "b": {
+             {
               "type": "Minus",
               "a": {
                "type": "Attr",
@@ -1063,50 +1018,367 @@
                "value": 1.0
               }
              }
+            ]
+           },
+           "b": {
+            "type": "Var",
+            "name": "raw"
+           }
+          },
+          "other": {
+           "type": "Var",
+           "name": "raw"
+          }
+         }
+        }
+       },
+       "other": {
+        "type": "IfThenElse",
+        "cond": {
+         "type": "And",
+         "items": [
+          {
+           "type": "Not",
+           "arg": {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "p"
+             },
+             "key": "l1_bit"
             },
-            "then": {
-             "type": "Minus",
+            "b": {
+             "type": "Lit",
+             "value": null
+            }
+           }
+          },
+          {
+           "type": "Gt",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "p"
+            },
+            "key": "l1_bit"
+           },
+           "b": {
+            "type": "Lit",
+            "value": 0
+           }
+          },
+          {
+           "type": "Not",
+           "arg": {
+            "type": "Eq",
+            "a": {
+             "type": "BitAnd",
              "a": {
-              "type": "Times",
-              "items": [
-               {
-                "type": "Lit",
-                "value": 2.0
-               },
-               {
-                "type": "Minus",
-                "a": {
-                 "type": "Attr",
-                 "node": {
-                  "type": "Var",
-                  "name": "b"
-                 },
-                 "key": "w"
-                },
-                "b": {
-                 "type": "Lit",
-                 "value": 1.0
-                }
-               }
-              ]
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "b"
+              },
+              "key": "ctx_x"
              },
              "b": {
-              "type": "Var",
-              "name": "raw"
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "p"
+              },
+              "key": "l1_bit"
              }
             },
-            "other": {
-             "type": "Var",
-             "name": "raw"
+            "b": {
+             "type": "Lit",
+             "value": 0
             }
            }
           }
+         ]
+        },
+        "then": {
+         "type": "Let",
+         "name": "raw",
+         "value": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "b"
+            },
+            "key": "x"
+           },
+           {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "p"
+              },
+              "key": "l1_x0"
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "b"
+              },
+              "key": "dx"
+             }
+            ]
+           },
+           {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "p"
+              },
+              "key": "l1_x1"
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "b"
+              },
+              "key": "pdx"
+             }
+            ]
+           },
+           {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "p"
+              },
+              "key": "l1_x2"
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "b"
+              },
+              "key": "ppdx"
+             }
+            ]
+           },
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "p"
+            },
+            "key": "l1_x3"
+           }
+          ]
          },
-         "other": {
+         "body": {
           "type": "IfThenElse",
           "cond": {
-           "type": "Eq",
+           "type": "Lt",
            "a": {
+            "type": "Var",
+            "name": "raw"
+           },
+           "b": {
+            "type": "Lit",
+            "value": 0.0
+           }
+          },
+          "then": {
+           "type": "Minus",
+           "a": {
+            "type": "Lit",
+            "value": 0.0
+           },
+           "b": {
+            "type": "Var",
+            "name": "raw"
+           }
+          },
+          "other": {
+           "type": "IfThenElse",
+           "cond": {
+            "type": "Gt",
+            "a": {
+             "type": "Var",
+             "name": "raw"
+            },
+            "b": {
+             "type": "Minus",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "b"
+              },
+              "key": "w"
+             },
+             "b": {
+              "type": "Lit",
+              "value": 1.0
+             }
+            }
+           },
+           "then": {
+            "type": "Minus",
+            "a": {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Lit",
+               "value": 2.0
+              },
+              {
+               "type": "Minus",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "b"
+                },
+                "key": "w"
+               },
+               "b": {
+                "type": "Lit",
+                "value": 1.0
+               }
+              }
+             ]
+            },
+            "b": {
+             "type": "Var",
+             "name": "raw"
+            }
+           },
+           "other": {
+            "type": "Var",
+            "name": "raw"
+           }
+          }
+         }
+        },
+        "other": {
+         "type": "Let",
+         "name": "best",
+         "value": {
+          "type": "Min",
+          "items": [
+           {
+            "type": "IfThenElse",
+            "cond": {
+             "type": "Not",
+             "arg": {
+              "type": "Eq",
+              "a": {
+               "type": "BitAnd",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "p"
+                },
+                "key": "mask"
+               },
+               "b": {
+                "type": "Lit",
+                "value": 1
+               }
+              },
+              "b": {
+               "type": "Lit",
+               "value": 0
+              }
+             }
+            },
+            "then": {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "b"
+               },
+               "key": "ex0"
+              },
+              {
+               "type": "Lit",
+               "value": 0.0
+              }
+             ]
+            },
+            "other": {
+             "type": "Lit",
+             "value": 1e+18
+            }
+           },
+           {
+            "type": "IfThenElse",
+            "cond": {
+             "type": "Not",
+             "arg": {
+              "type": "Eq",
+              "a": {
+               "type": "BitAnd",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "p"
+                },
+                "key": "mask"
+               },
+               "b": {
+                "type": "Lit",
+                "value": 2
+               }
+              },
+              "b": {
+               "type": "Lit",
+               "value": 0
+              }
+             }
+            },
+            "then": {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "b"
+               },
+               "key": "ex1"
+              },
+              {
+               "type": "Lit",
+               "value": 1e-09
+              }
+             ]
+            },
+            "other": {
+             "type": "Lit",
+             "value": 1e+18
+            }
+           },
+           {
             "type": "IfThenElse",
             "cond": {
              "type": "Not",
@@ -1155,51 +1427,233 @@
              "value": 1e+18
             }
            },
+           {
+            "type": "IfThenElse",
+            "cond": {
+             "type": "Not",
+             "arg": {
+              "type": "Eq",
+              "a": {
+               "type": "BitAnd",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "p"
+                },
+                "key": "mask"
+               },
+               "b": {
+                "type": "Lit",
+                "value": 8
+               }
+              },
+              "b": {
+               "type": "Lit",
+               "value": 0
+              }
+             }
+            },
+            "then": {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "b"
+               },
+               "key": "ex3"
+              },
+              {
+               "type": "Lit",
+               "value": 3.0000000000000004e-09
+              }
+             ]
+            },
+            "other": {
+             "type": "Lit",
+             "value": 1e+18
+            }
+           },
+           {
+            "type": "IfThenElse",
+            "cond": {
+             "type": "Not",
+             "arg": {
+              "type": "Eq",
+              "a": {
+               "type": "BitAnd",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "p"
+                },
+                "key": "mask"
+               },
+               "b": {
+                "type": "Lit",
+                "value": 16
+               }
+              },
+              "b": {
+               "type": "Lit",
+               "value": 0
+              }
+             }
+            },
+            "then": {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "b"
+               },
+               "key": "ex4"
+              },
+              {
+               "type": "Lit",
+               "value": 4e-09
+              }
+             ]
+            },
+            "other": {
+             "type": "Lit",
+             "value": 1e+18
+            }
+           },
+           {
+            "type": "IfThenElse",
+            "cond": {
+             "type": "Not",
+             "arg": {
+              "type": "Eq",
+              "a": {
+               "type": "BitAnd",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "p"
+                },
+                "key": "mask"
+               },
+               "b": {
+                "type": "Lit",
+                "value": 32
+               }
+              },
+              "b": {
+               "type": "Lit",
+               "value": 0
+              }
+             }
+            },
+            "then": {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "b"
+               },
+               "key": "ex5"
+              },
+              {
+               "type": "Lit",
+               "value": 5e-09
+              }
+             ]
+            },
+            "other": {
+             "type": "Lit",
+             "value": 1e+18
+            }
+           }
+          ]
+         },
+         "body": {
+          "type": "IfThenElse",
+          "cond": {
+           "type": "Eq",
+           "a": {
+            "type": "IfThenElse",
+            "cond": {
+             "type": "Not",
+             "arg": {
+              "type": "Eq",
+              "a": {
+               "type": "BitAnd",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "p"
+                },
+                "key": "mask"
+               },
+               "b": {
+                "type": "Lit",
+                "value": 1
+               }
+              },
+              "b": {
+               "type": "Lit",
+               "value": 0
+              }
+             }
+            },
+            "then": {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "b"
+               },
+               "key": "ex0"
+              },
+              {
+               "type": "Lit",
+               "value": 0.0
+              }
+             ]
+            },
+            "other": {
+             "type": "Lit",
+             "value": 1e+18
+            }
+           },
            "b": {
             "type": "Var",
             "name": "best"
            }
           },
           "then": {
-           "type": "Minus",
-           "a": {
-            "type": "Plus",
-            "items": [
-             {
-              "type": "Attr",
-              "node": {
-               "type": "Var",
-               "name": "b"
-              },
-              "key": "x"
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "b"
              },
-             {
-              "type": "Times",
-              "items": [
-               {
-                "type": "Lit",
-                "value": 2.0
-               },
-               {
-                "type": "Attr",
-                "node": {
-                 "type": "Var",
-                 "name": "b"
-                },
-                "key": "dx"
-               }
-              ]
-             }
-            ]
-           },
-           "b": {
-            "type": "Attr",
-            "node": {
-             "type": "Var",
-             "name": "b"
+             "key": "x"
             },
-            "key": "pdx"
-           }
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "b"
+             },
+             "key": "dx"
+            }
+           ]
           },
           "other": {
            "type": "IfThenElse",
@@ -1223,7 +1677,7 @@
                 },
                 "b": {
                  "type": "Lit",
-                 "value": 8
+                 "value": 2
                 }
                },
                "b": {
@@ -1241,11 +1695,11 @@
                  "type": "Var",
                  "name": "b"
                 },
-                "key": "ex3"
+                "key": "ex1"
                },
                {
                 "type": "Lit",
-                "value": 3.0000000000000004e-09
+                "value": 1e-09
                }
               ]
              },
@@ -1263,45 +1717,25 @@
             "type": "Let",
             "name": "raw",
             "value": {
-             "type": "Minus",
-             "a": {
-              "type": "Plus",
-              "items": [
-               {
-                "type": "Attr",
-                "node": {
-                 "type": "Var",
-                 "name": "b"
-                },
-                "key": "x"
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "b"
                },
-               {
-                "type": "Times",
-                "items": [
-                 {
-                  "type": "Lit",
-                  "value": 2.0
-                 },
-                 {
-                  "type": "Attr",
-                  "node": {
-                   "type": "Var",
-                   "name": "b"
-                  },
-                  "key": "dx"
-                 }
-                ]
-               }
-              ]
-             },
-             "b": {
-              "type": "Attr",
-              "node": {
-               "type": "Var",
-               "name": "b"
+               "key": "x"
               },
-              "key": "pdx"
-             }
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "b"
+               },
+               "key": "dx"
+              }
+             ]
             },
             "body": {
              "type": "IfThenElse",
@@ -1411,7 +1845,7 @@
                  },
                  "b": {
                   "type": "Lit",
-                  "value": 16
+                  "value": 4
                  }
                 },
                 "b": {
@@ -1429,11 +1863,11 @@
                   "type": "Var",
                   "name": "b"
                  },
-                 "key": "ex4"
+                 "key": "ex2"
                 },
                 {
                  "type": "Lit",
-                 "value": 4e-09
+                 "value": 2e-09
                 }
                ]
               },
@@ -1448,58 +1882,267 @@
              }
             },
             "then": {
+             "type": "Minus",
+             "a": {
+              "type": "Plus",
+              "items": [
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "b"
+                },
+                "key": "x"
+               },
+               {
+                "type": "Times",
+                "items": [
+                 {
+                  "type": "Lit",
+                  "value": 2.0
+                 },
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "b"
+                  },
+                  "key": "dx"
+                 }
+                ]
+               }
+              ]
+             },
+             "b": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "b"
+              },
+              "key": "pdx"
+             }
+            },
+            "other": {
              "type": "IfThenElse",
              "cond": {
               "type": "Eq",
               "a": {
-               "type": "Attr",
-               "node": {
-                "type": "Var",
-                "name": "b"
+               "type": "IfThenElse",
+               "cond": {
+                "type": "Not",
+                "arg": {
+                 "type": "Eq",
+                 "a": {
+                  "type": "BitAnd",
+                  "a": {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "p"
+                   },
+                   "key": "mask"
+                  },
+                  "b": {
+                   "type": "Lit",
+                   "value": 8
+                  }
+                 },
+                 "b": {
+                  "type": "Lit",
+                  "value": 0
+                 }
+                }
                },
-               "key": "pdx"
+               "then": {
+                "type": "Plus",
+                "items": [
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "b"
+                  },
+                  "key": "ex3"
+                 },
+                 {
+                  "type": "Lit",
+                  "value": 3.0000000000000004e-09
+                 }
+                ]
+               },
+               "other": {
+                "type": "Lit",
+                "value": 1e+18
+               }
               },
               "b": {
-               "type": "Lit",
-               "value": 0.0
+               "type": "Var",
+               "name": "best"
               }
              },
              "then": {
-              "type": "Plus",
-              "items": [
-               {
-                "type": "Attr",
-                "node": {
-                 "type": "Var",
-                 "name": "b"
-                },
-                "key": "x"
+              "type": "Let",
+              "name": "raw",
+              "value": {
+               "type": "Minus",
+               "a": {
+                "type": "Plus",
+                "items": [
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "b"
+                  },
+                  "key": "x"
+                 },
+                 {
+                  "type": "Times",
+                  "items": [
+                   {
+                    "type": "Lit",
+                    "value": 2.0
+                   },
+                   {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "b"
+                    },
+                    "key": "dx"
+                   }
+                  ]
+                 }
+                ]
                },
-               {
+               "b": {
                 "type": "Attr",
                 "node": {
                  "type": "Var",
                  "name": "b"
                 },
-                "key": "dx"
+                "key": "pdx"
                }
-              ]
+              },
+              "body": {
+               "type": "IfThenElse",
+               "cond": {
+                "type": "Lt",
+                "a": {
+                 "type": "Var",
+                 "name": "raw"
+                },
+                "b": {
+                 "type": "Lit",
+                 "value": 0.0
+                }
+               },
+               "then": {
+                "type": "Minus",
+                "a": {
+                 "type": "Lit",
+                 "value": 0.0
+                },
+                "b": {
+                 "type": "Var",
+                 "name": "raw"
+                }
+               },
+               "other": {
+                "type": "IfThenElse",
+                "cond": {
+                 "type": "Gt",
+                 "a": {
+                  "type": "Var",
+                  "name": "raw"
+                 },
+                 "b": {
+                  "type": "Minus",
+                  "a": {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "b"
+                   },
+                   "key": "w"
+                  },
+                  "b": {
+                   "type": "Lit",
+                   "value": 1.0
+                  }
+                 }
+                },
+                "then": {
+                 "type": "Minus",
+                 "a": {
+                  "type": "Times",
+                  "items": [
+                   {
+                    "type": "Lit",
+                    "value": 2.0
+                   },
+                   {
+                    "type": "Minus",
+                    "a": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "b"
+                     },
+                     "key": "w"
+                    },
+                    "b": {
+                     "type": "Lit",
+                     "value": 1.0
+                    }
+                   }
+                  ]
+                 },
+                 "b": {
+                  "type": "Var",
+                  "name": "raw"
+                 }
+                },
+                "other": {
+                 "type": "Var",
+                 "name": "raw"
+                }
+               }
+              }
              },
              "other": {
-              "type": "Plus",
-              "items": [
-               {
-                "type": "Attr",
-                "node": {
-                 "type": "Var",
-                 "name": "b"
+              "type": "IfThenElse",
+              "cond": {
+               "type": "Eq",
+               "a": {
+                "type": "IfThenElse",
+                "cond": {
+                 "type": "Not",
+                 "arg": {
+                  "type": "Eq",
+                  "a": {
+                   "type": "BitAnd",
+                   "a": {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "p"
+                    },
+                    "key": "mask"
+                   },
+                   "b": {
+                    "type": "Lit",
+                    "value": 16
+                   }
+                  },
+                  "b": {
+                   "type": "Lit",
+                   "value": 0
+                  }
+                 }
                 },
-                "key": "x"
-               },
-               {
-                "type": "Div",
-                "a": {
-                 "type": "Times",
+                "then": {
+                 "type": "Plus",
                  "items": [
                   {
                    "type": "Attr",
@@ -1507,7 +2150,138 @@
                     "type": "Var",
                     "name": "b"
                    },
-                   "key": "dx"
+                   "key": "ex4"
+                  },
+                  {
+                   "type": "Lit",
+                   "value": 4e-09
+                  }
+                 ]
+                },
+                "other": {
+                 "type": "Lit",
+                 "value": 1e+18
+                }
+               },
+               "b": {
+                "type": "Var",
+                "name": "best"
+               }
+              },
+              "then": {
+               "type": "IfThenElse",
+               "cond": {
+                "type": "Eq",
+                "a": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "b"
+                 },
+                 "key": "pdx"
+                },
+                "b": {
+                 "type": "Lit",
+                 "value": 0.0
+                }
+               },
+               "then": {
+                "type": "Plus",
+                "items": [
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "b"
+                  },
+                  "key": "x"
+                 },
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "b"
+                  },
+                  "key": "dx"
+                 }
+                ]
+               },
+               "other": {
+                "type": "Plus",
+                "items": [
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "b"
+                  },
+                  "key": "x"
+                 },
+                 {
+                  "type": "Div",
+                  "a": {
+                   "type": "Times",
+                   "items": [
+                    {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "b"
+                     },
+                     "key": "dx"
+                    },
+                    {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "b"
+                     },
+                     "key": "dx"
+                    }
+                   ]
+                  },
+                  "b": {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "b"
+                   },
+                   "key": "pdx"
+                  }
+                 }
+                ]
+               }
+              },
+              "other": {
+               "type": "Let",
+               "name": "raw",
+               "value": {
+                "type": "IfThenElse",
+                "cond": {
+                 "type": "Eq",
+                 "a": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "b"
+                  },
+                  "key": "pdx"
+                 },
+                 "b": {
+                  "type": "Lit",
+                  "value": 0.0
+                 }
+                },
+                "then": {
+                 "type": "Plus",
+                 "items": [
+                  {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "b"
+                   },
+                   "key": "x"
                   },
                   {
                    "type": "Attr",
@@ -1519,163 +2293,85 @@
                   }
                  ]
                 },
-                "b": {
-                 "type": "Attr",
-                 "node": {
-                  "type": "Var",
-                  "name": "b"
-                 },
-                 "key": "pdx"
-                }
-               }
-              ]
-             }
-            },
-            "other": {
-             "type": "Let",
-             "name": "raw",
-             "value": {
-              "type": "IfThenElse",
-              "cond": {
-               "type": "Eq",
-               "a": {
-                "type": "Attr",
-                "node": {
-                 "type": "Var",
-                 "name": "b"
-                },
-                "key": "pdx"
-               },
-               "b": {
-                "type": "Lit",
-                "value": 0.0
-               }
-              },
-              "then": {
-               "type": "Plus",
-               "items": [
-                {
-                 "type": "Attr",
-                 "node": {
-                  "type": "Var",
-                  "name": "b"
-                 },
-                 "key": "x"
-                },
-                {
-                 "type": "Attr",
-                 "node": {
-                  "type": "Var",
-                  "name": "b"
-                 },
-                 "key": "dx"
-                }
-               ]
-              },
-              "other": {
-               "type": "Plus",
-               "items": [
-                {
-                 "type": "Attr",
-                 "node": {
-                  "type": "Var",
-                  "name": "b"
-                 },
-                 "key": "x"
-                },
-                {
-                 "type": "Div",
-                 "a": {
-                  "type": "Times",
-                  "items": [
-                   {
-                    "type": "Attr",
-                    "node": {
-                     "type": "Var",
-                     "name": "b"
-                    },
-                    "key": "dx"
+                "other": {
+                 "type": "Plus",
+                 "items": [
+                  {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "b"
                    },
-                   {
+                   "key": "x"
+                  },
+                  {
+                   "type": "Div",
+                   "a": {
+                    "type": "Times",
+                    "items": [
+                     {
+                      "type": "Attr",
+                      "node": {
+                       "type": "Var",
+                       "name": "b"
+                      },
+                      "key": "dx"
+                     },
+                     {
+                      "type": "Attr",
+                      "node": {
+                       "type": "Var",
+                       "name": "b"
+                      },
+                      "key": "dx"
+                     }
+                    ]
+                   },
+                   "b": {
                     "type": "Attr",
                     "node": {
                      "type": "Var",
                      "name": "b"
                     },
-                    "key": "dx"
+                    "key": "pdx"
                    }
-                  ]
-                 },
-                 "b": {
-                  "type": "Attr",
-                  "node": {
-                   "type": "Var",
-                   "name": "b"
-                  },
-                  "key": "pdx"
-                 }
+                  }
+                 ]
                 }
-               ]
-              }
-             },
-             "body": {
-              "type": "IfThenElse",
-              "cond": {
-               "type": "Lt",
-               "a": {
-                "type": "Var",
-                "name": "raw"
                },
-               "b": {
-                "type": "Lit",
-                "value": 0.0
-               }
-              },
-              "then": {
-               "type": "Minus",
-               "a": {
-                "type": "Lit",
-                "value": 0.0
-               },
-               "b": {
-                "type": "Var",
-                "name": "raw"
-               }
-              },
-              "other": {
-               "type": "IfThenElse",
-               "cond": {
-                "type": "Gt",
-                "a": {
-                 "type": "Var",
-                 "name": "raw"
-                },
-                "b": {
-                 "type": "Minus",
+               "body": {
+                "type": "IfThenElse",
+                "cond": {
+                 "type": "Lt",
                  "a": {
-                  "type": "Attr",
-                  "node": {
-                   "type": "Var",
-                   "name": "b"
-                  },
-                  "key": "w"
+                  "type": "Var",
+                  "name": "raw"
                  },
                  "b": {
                   "type": "Lit",
-                  "value": 1.0
+                  "value": 0.0
                  }
-                }
-               },
-               "then": {
-                "type": "Minus",
-                "a": {
-                 "type": "Times",
-                 "items": [
-                  {
-                   "type": "Lit",
-                   "value": 2.0
+                },
+                "then": {
+                 "type": "Minus",
+                 "a": {
+                  "type": "Lit",
+                  "value": 0.0
+                 },
+                 "b": {
+                  "type": "Var",
+                  "name": "raw"
+                 }
+                },
+                "other": {
+                 "type": "IfThenElse",
+                 "cond": {
+                  "type": "Gt",
+                  "a": {
+                   "type": "Var",
+                   "name": "raw"
                   },
-                  {
+                  "b": {
                    "type": "Minus",
                    "a": {
                     "type": "Attr",
@@ -1690,16 +2386,43 @@
                     "value": 1.0
                    }
                   }
-                 ]
-                },
-                "b": {
-                 "type": "Var",
-                 "name": "raw"
+                 },
+                 "then": {
+                  "type": "Minus",
+                  "a": {
+                   "type": "Times",
+                   "items": [
+                    {
+                     "type": "Lit",
+                     "value": 2.0
+                    },
+                    {
+                     "type": "Minus",
+                     "a": {
+                      "type": "Attr",
+                      "node": {
+                       "type": "Var",
+                       "name": "b"
+                      },
+                      "key": "w"
+                     },
+                     "b": {
+                      "type": "Lit",
+                      "value": 1.0
+                     }
+                    }
+                   ]
+                  },
+                  "b": {
+                   "type": "Var",
+                   "name": "raw"
+                  }
+                 },
+                 "other": {
+                  "type": "Var",
+                  "name": "raw"
+                 }
                 }
-               },
-               "other": {
-                "type": "Var",
-                "name": "raw"
                }
               }
              }
@@ -2640,369 +3363,171 @@
     [
      "set_attr",
      "b",
+     "ctx_y",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "IfThenElse",
+         "cond": {
+          "type": "Lt",
+          "a": {
+           "type": "Times",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "b"
+             },
+             "key": "dy"
+            },
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "b"
+             },
+             "key": "pdy"
+            }
+           ]
+          },
+          "b": {
+           "type": "Lit",
+           "value": 0.0
+          }
+         },
+         "then": {
+          "type": "Lit",
+          "value": 1
+         },
+         "other": {
+          "type": "Lit",
+          "value": 0
+         }
+        },
+        {
+         "type": "IfThenElse",
+         "cond": {
+          "type": "Lt",
+          "a": {
+           "type": "Times",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "b"
+             },
+             "key": "pdy"
+            },
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "b"
+             },
+             "key": "ppdy"
+            }
+           ]
+          },
+          "b": {
+           "type": "Lit",
+           "value": 0.0
+          }
+         },
+         "then": {
+          "type": "Lit",
+          "value": 2
+         },
+         "other": {
+          "type": "Lit",
+          "value": 0
+         }
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "b",
      "pred_y",
      {
       "__term__": {
-       "type": "Let",
-       "name": "best",
-       "value": {
-        "type": "Min",
+       "type": "IfThenElse",
+       "cond": {
+        "type": "And",
         "items": [
          {
-          "type": "IfThenElse",
-          "cond": {
-           "type": "Not",
-           "arg": {
-            "type": "Eq",
-            "a": {
-             "type": "BitAnd",
-             "a": {
-              "type": "Attr",
-              "node": {
-               "type": "Var",
-               "name": "p"
-              },
-              "key": "mask"
-             },
-             "b": {
-              "type": "Lit",
-              "value": 1
-             }
+          "type": "Not",
+          "arg": {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "p"
             },
-            "b": {
-             "type": "Lit",
-             "value": 0
-            }
+            "key": "l0_bit"
+           },
+           "b": {
+            "type": "Lit",
+            "value": null
            }
-          },
-          "then": {
-           "type": "Plus",
-           "items": [
-            {
-             "type": "Attr",
-             "node": {
-              "type": "Var",
-              "name": "b"
-             },
-             "key": "ey0"
-            },
-            {
-             "type": "Lit",
-             "value": 0.0
-            }
-           ]
-          },
-          "other": {
-           "type": "Lit",
-           "value": 1e+18
           }
          },
          {
-          "type": "IfThenElse",
-          "cond": {
-           "type": "Not",
-           "arg": {
-            "type": "Eq",
-            "a": {
-             "type": "BitAnd",
-             "a": {
-              "type": "Attr",
-              "node": {
-               "type": "Var",
-               "name": "p"
-              },
-              "key": "mask"
-             },
-             "b": {
-              "type": "Lit",
-              "value": 2
-             }
-            },
-            "b": {
-             "type": "Lit",
-             "value": 0
-            }
-           }
+          "type": "Gt",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "p"
+           },
+           "key": "l0_bit"
           },
-          "then": {
-           "type": "Plus",
-           "items": [
-            {
-             "type": "Attr",
-             "node": {
-              "type": "Var",
-              "name": "b"
-             },
-             "key": "ey1"
-            },
-            {
-             "type": "Lit",
-             "value": 1e-09
-            }
-           ]
-          },
-          "other": {
+          "b": {
            "type": "Lit",
-           "value": 1e+18
+           "value": 0
           }
          },
          {
-          "type": "IfThenElse",
-          "cond": {
-           "type": "Not",
-           "arg": {
-            "type": "Eq",
+          "type": "Not",
+          "arg": {
+           "type": "Eq",
+           "a": {
+            "type": "BitAnd",
             "a": {
-             "type": "BitAnd",
-             "a": {
-              "type": "Attr",
-              "node": {
-               "type": "Var",
-               "name": "p"
-              },
-              "key": "mask"
-             },
-             "b": {
-              "type": "Lit",
-              "value": 4
-             }
-            },
-            "b": {
-             "type": "Lit",
-             "value": 0
-            }
-           }
-          },
-          "then": {
-           "type": "Plus",
-           "items": [
-            {
              "type": "Attr",
              "node": {
               "type": "Var",
               "name": "b"
              },
-             "key": "ey2"
-            },
-            {
-             "type": "Lit",
-             "value": 2e-09
-            }
-           ]
-          },
-          "other": {
-           "type": "Lit",
-           "value": 1e+18
-          }
-         },
-         {
-          "type": "IfThenElse",
-          "cond": {
-           "type": "Not",
-           "arg": {
-            "type": "Eq",
-            "a": {
-             "type": "BitAnd",
-             "a": {
-              "type": "Attr",
-              "node": {
-               "type": "Var",
-               "name": "p"
-              },
-              "key": "mask"
-             },
-             "b": {
-              "type": "Lit",
-              "value": 8
-             }
+             "key": "ctx_y"
             },
             "b": {
-             "type": "Lit",
-             "value": 0
-            }
-           }
-          },
-          "then": {
-           "type": "Plus",
-           "items": [
-            {
              "type": "Attr",
              "node": {
               "type": "Var",
-              "name": "b"
+              "name": "p"
              },
-             "key": "ey3"
-            },
-            {
-             "type": "Lit",
-             "value": 3.0000000000000004e-09
+             "key": "l0_bit"
             }
-           ]
-          },
-          "other": {
-           "type": "Lit",
-           "value": 1e+18
-          }
-         },
-         {
-          "type": "IfThenElse",
-          "cond": {
-           "type": "Not",
-           "arg": {
-            "type": "Eq",
-            "a": {
-             "type": "BitAnd",
-             "a": {
-              "type": "Attr",
-              "node": {
-               "type": "Var",
-               "name": "p"
-              },
-              "key": "mask"
-             },
-             "b": {
-              "type": "Lit",
-              "value": 16
-             }
-            },
-            "b": {
-             "type": "Lit",
-             "value": 0
-            }
+           },
+           "b": {
+            "type": "Lit",
+            "value": 0
            }
-          },
-          "then": {
-           "type": "Plus",
-           "items": [
-            {
-             "type": "Attr",
-             "node": {
-              "type": "Var",
-              "name": "b"
-             },
-             "key": "ey4"
-            },
-            {
-             "type": "Lit",
-             "value": 4e-09
-            }
-           ]
-          },
-          "other": {
-           "type": "Lit",
-           "value": 1e+18
-          }
-         },
-         {
-          "type": "IfThenElse",
-          "cond": {
-           "type": "Not",
-           "arg": {
-            "type": "Eq",
-            "a": {
-             "type": "BitAnd",
-             "a": {
-              "type": "Attr",
-              "node": {
-               "type": "Var",
-               "name": "p"
-              },
-              "key": "mask"
-             },
-             "b": {
-              "type": "Lit",
-              "value": 32
-             }
-            },
-            "b": {
-             "type": "Lit",
-             "value": 0
-            }
-           }
-          },
-          "then": {
-           "type": "Plus",
-           "items": [
-            {
-             "type": "Attr",
-             "node": {
-              "type": "Var",
-              "name": "b"
-             },
-             "key": "ey5"
-            },
-            {
-             "type": "Lit",
-             "value": 5e-09
-            }
-           ]
-          },
-          "other": {
-           "type": "Lit",
-           "value": 1e+18
           }
          }
         ]
        },
-       "body": {
-        "type": "IfThenElse",
-        "cond": {
-         "type": "Eq",
-         "a": {
-          "type": "IfThenElse",
-          "cond": {
-           "type": "Not",
-           "arg": {
-            "type": "Eq",
-            "a": {
-             "type": "BitAnd",
-             "a": {
-              "type": "Attr",
-              "node": {
-               "type": "Var",
-               "name": "p"
-              },
-              "key": "mask"
-             },
-             "b": {
-              "type": "Lit",
-              "value": 1
-             }
-            },
-            "b": {
-             "type": "Lit",
-             "value": 0
-            }
-           }
-          },
-          "then": {
-           "type": "Plus",
-           "items": [
-            {
-             "type": "Attr",
-             "node": {
-              "type": "Var",
-              "name": "b"
-             },
-             "key": "ey0"
-            },
-            {
-             "type": "Lit",
-             "value": 0.0
-            }
-           ]
-          },
-          "other": {
-           "type": "Lit",
-           "value": 1e+18
-          }
-         },
-         "b": {
-          "type": "Var",
-          "name": "best"
-         }
-        },
-        "then": {
+       "then": {
+        "type": "Let",
+        "name": "raw",
+        "value": {
          "type": "Plus",
          "items": [
           {
@@ -3014,86 +3539,15 @@
            "key": "y"
           },
           {
-           "type": "Attr",
-           "node": {
-            "type": "Var",
-            "name": "b"
-           },
-           "key": "dy"
-          }
-         ]
-        },
-        "other": {
-         "type": "IfThenElse",
-         "cond": {
-          "type": "Eq",
-          "a": {
-           "type": "IfThenElse",
-           "cond": {
-            "type": "Not",
-            "arg": {
-             "type": "Eq",
-             "a": {
-              "type": "BitAnd",
-              "a": {
-               "type": "Attr",
-               "node": {
-                "type": "Var",
-                "name": "p"
-               },
-               "key": "mask"
-              },
-              "b": {
-               "type": "Lit",
-               "value": 2
-              }
-             },
-             "b": {
-              "type": "Lit",
-              "value": 0
-             }
-            }
-           },
-           "then": {
-            "type": "Plus",
-            "items": [
-             {
-              "type": "Attr",
-              "node": {
-               "type": "Var",
-               "name": "b"
-              },
-              "key": "ey1"
-             },
-             {
-              "type": "Lit",
-              "value": 1e-09
-             }
-            ]
-           },
-           "other": {
-            "type": "Lit",
-            "value": 1e+18
-           }
-          },
-          "b": {
-           "type": "Var",
-           "name": "best"
-          }
-         },
-         "then": {
-          "type": "Let",
-          "name": "raw",
-          "value": {
-           "type": "Plus",
+           "type": "Times",
            "items": [
             {
              "type": "Attr",
              "node": {
               "type": "Var",
-              "name": "b"
+              "name": "p"
              },
-             "key": "y"
+             "key": "l0_y0"
             },
             {
              "type": "Attr",
@@ -3105,39 +3559,116 @@
             }
            ]
           },
-          "body": {
-           "type": "IfThenElse",
-           "cond": {
-            "type": "Lt",
-            "a": {
-             "type": "Var",
-             "name": "raw"
+          {
+           "type": "Times",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "p"
+             },
+             "key": "l0_y1"
             },
-            "b": {
-             "type": "Lit",
-             "value": 0.0
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "b"
+             },
+             "key": "pdy"
             }
+           ]
+          },
+          {
+           "type": "Times",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "p"
+             },
+             "key": "l0_y2"
+            },
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "b"
+             },
+             "key": "ppdy"
+            }
+           ]
+          },
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "p"
            },
-           "then": {
+           "key": "l0_y3"
+          }
+         ]
+        },
+        "body": {
+         "type": "IfThenElse",
+         "cond": {
+          "type": "Lt",
+          "a": {
+           "type": "Var",
+           "name": "raw"
+          },
+          "b": {
+           "type": "Lit",
+           "value": 0.0
+          }
+         },
+         "then": {
+          "type": "Minus",
+          "a": {
+           "type": "Lit",
+           "value": 0.0
+          },
+          "b": {
+           "type": "Var",
+           "name": "raw"
+          }
+         },
+         "other": {
+          "type": "IfThenElse",
+          "cond": {
+           "type": "Gt",
+           "a": {
+            "type": "Var",
+            "name": "raw"
+           },
+           "b": {
             "type": "Minus",
             "a": {
-             "type": "Lit",
-             "value": 0.0
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "b"
+             },
+             "key": "h"
             },
             "b": {
-             "type": "Var",
-             "name": "raw"
+             "type": "Lit",
+             "value": 1.0
             }
-           },
-           "other": {
-            "type": "IfThenElse",
-            "cond": {
-             "type": "Gt",
-             "a": {
-              "type": "Var",
-              "name": "raw"
+           }
+          },
+          "then": {
+           "type": "Minus",
+           "a": {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Lit",
+              "value": 2.0
              },
-             "b": {
+             {
               "type": "Minus",
               "a": {
                "type": "Attr",
@@ -3152,50 +3683,367 @@
                "value": 1.0
               }
              }
+            ]
+           },
+           "b": {
+            "type": "Var",
+            "name": "raw"
+           }
+          },
+          "other": {
+           "type": "Var",
+           "name": "raw"
+          }
+         }
+        }
+       },
+       "other": {
+        "type": "IfThenElse",
+        "cond": {
+         "type": "And",
+         "items": [
+          {
+           "type": "Not",
+           "arg": {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "p"
+             },
+             "key": "l1_bit"
             },
-            "then": {
-             "type": "Minus",
+            "b": {
+             "type": "Lit",
+             "value": null
+            }
+           }
+          },
+          {
+           "type": "Gt",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "p"
+            },
+            "key": "l1_bit"
+           },
+           "b": {
+            "type": "Lit",
+            "value": 0
+           }
+          },
+          {
+           "type": "Not",
+           "arg": {
+            "type": "Eq",
+            "a": {
+             "type": "BitAnd",
              "a": {
-              "type": "Times",
-              "items": [
-               {
-                "type": "Lit",
-                "value": 2.0
-               },
-               {
-                "type": "Minus",
-                "a": {
-                 "type": "Attr",
-                 "node": {
-                  "type": "Var",
-                  "name": "b"
-                 },
-                 "key": "h"
-                },
-                "b": {
-                 "type": "Lit",
-                 "value": 1.0
-                }
-               }
-              ]
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "b"
+              },
+              "key": "ctx_y"
              },
              "b": {
-              "type": "Var",
-              "name": "raw"
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "p"
+              },
+              "key": "l1_bit"
              }
             },
-            "other": {
-             "type": "Var",
-             "name": "raw"
+            "b": {
+             "type": "Lit",
+             "value": 0
             }
            }
           }
+         ]
+        },
+        "then": {
+         "type": "Let",
+         "name": "raw",
+         "value": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "b"
+            },
+            "key": "y"
+           },
+           {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "p"
+              },
+              "key": "l1_y0"
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "b"
+              },
+              "key": "dy"
+             }
+            ]
+           },
+           {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "p"
+              },
+              "key": "l1_y1"
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "b"
+              },
+              "key": "pdy"
+             }
+            ]
+           },
+           {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "p"
+              },
+              "key": "l1_y2"
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "b"
+              },
+              "key": "ppdy"
+             }
+            ]
+           },
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "p"
+            },
+            "key": "l1_y3"
+           }
+          ]
          },
-         "other": {
+         "body": {
           "type": "IfThenElse",
           "cond": {
-           "type": "Eq",
+           "type": "Lt",
            "a": {
+            "type": "Var",
+            "name": "raw"
+           },
+           "b": {
+            "type": "Lit",
+            "value": 0.0
+           }
+          },
+          "then": {
+           "type": "Minus",
+           "a": {
+            "type": "Lit",
+            "value": 0.0
+           },
+           "b": {
+            "type": "Var",
+            "name": "raw"
+           }
+          },
+          "other": {
+           "type": "IfThenElse",
+           "cond": {
+            "type": "Gt",
+            "a": {
+             "type": "Var",
+             "name": "raw"
+            },
+            "b": {
+             "type": "Minus",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "b"
+              },
+              "key": "h"
+             },
+             "b": {
+              "type": "Lit",
+              "value": 1.0
+             }
+            }
+           },
+           "then": {
+            "type": "Minus",
+            "a": {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Lit",
+               "value": 2.0
+              },
+              {
+               "type": "Minus",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "b"
+                },
+                "key": "h"
+               },
+               "b": {
+                "type": "Lit",
+                "value": 1.0
+               }
+              }
+             ]
+            },
+            "b": {
+             "type": "Var",
+             "name": "raw"
+            }
+           },
+           "other": {
+            "type": "Var",
+            "name": "raw"
+           }
+          }
+         }
+        },
+        "other": {
+         "type": "Let",
+         "name": "best",
+         "value": {
+          "type": "Min",
+          "items": [
+           {
+            "type": "IfThenElse",
+            "cond": {
+             "type": "Not",
+             "arg": {
+              "type": "Eq",
+              "a": {
+               "type": "BitAnd",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "p"
+                },
+                "key": "mask"
+               },
+               "b": {
+                "type": "Lit",
+                "value": 1
+               }
+              },
+              "b": {
+               "type": "Lit",
+               "value": 0
+              }
+             }
+            },
+            "then": {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "b"
+               },
+               "key": "ey0"
+              },
+              {
+               "type": "Lit",
+               "value": 0.0
+              }
+             ]
+            },
+            "other": {
+             "type": "Lit",
+             "value": 1e+18
+            }
+           },
+           {
+            "type": "IfThenElse",
+            "cond": {
+             "type": "Not",
+             "arg": {
+              "type": "Eq",
+              "a": {
+               "type": "BitAnd",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "p"
+                },
+                "key": "mask"
+               },
+               "b": {
+                "type": "Lit",
+                "value": 2
+               }
+              },
+              "b": {
+               "type": "Lit",
+               "value": 0
+              }
+             }
+            },
+            "then": {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "b"
+               },
+               "key": "ey1"
+              },
+              {
+               "type": "Lit",
+               "value": 1e-09
+              }
+             ]
+            },
+            "other": {
+             "type": "Lit",
+             "value": 1e+18
+            }
+           },
+           {
             "type": "IfThenElse",
             "cond": {
              "type": "Not",
@@ -3244,51 +4092,233 @@
              "value": 1e+18
             }
            },
+           {
+            "type": "IfThenElse",
+            "cond": {
+             "type": "Not",
+             "arg": {
+              "type": "Eq",
+              "a": {
+               "type": "BitAnd",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "p"
+                },
+                "key": "mask"
+               },
+               "b": {
+                "type": "Lit",
+                "value": 8
+               }
+              },
+              "b": {
+               "type": "Lit",
+               "value": 0
+              }
+             }
+            },
+            "then": {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "b"
+               },
+               "key": "ey3"
+              },
+              {
+               "type": "Lit",
+               "value": 3.0000000000000004e-09
+              }
+             ]
+            },
+            "other": {
+             "type": "Lit",
+             "value": 1e+18
+            }
+           },
+           {
+            "type": "IfThenElse",
+            "cond": {
+             "type": "Not",
+             "arg": {
+              "type": "Eq",
+              "a": {
+               "type": "BitAnd",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "p"
+                },
+                "key": "mask"
+               },
+               "b": {
+                "type": "Lit",
+                "value": 16
+               }
+              },
+              "b": {
+               "type": "Lit",
+               "value": 0
+              }
+             }
+            },
+            "then": {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "b"
+               },
+               "key": "ey4"
+              },
+              {
+               "type": "Lit",
+               "value": 4e-09
+              }
+             ]
+            },
+            "other": {
+             "type": "Lit",
+             "value": 1e+18
+            }
+           },
+           {
+            "type": "IfThenElse",
+            "cond": {
+             "type": "Not",
+             "arg": {
+              "type": "Eq",
+              "a": {
+               "type": "BitAnd",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "p"
+                },
+                "key": "mask"
+               },
+               "b": {
+                "type": "Lit",
+                "value": 32
+               }
+              },
+              "b": {
+               "type": "Lit",
+               "value": 0
+              }
+             }
+            },
+            "then": {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "b"
+               },
+               "key": "ey5"
+              },
+              {
+               "type": "Lit",
+               "value": 5e-09
+              }
+             ]
+            },
+            "other": {
+             "type": "Lit",
+             "value": 1e+18
+            }
+           }
+          ]
+         },
+         "body": {
+          "type": "IfThenElse",
+          "cond": {
+           "type": "Eq",
+           "a": {
+            "type": "IfThenElse",
+            "cond": {
+             "type": "Not",
+             "arg": {
+              "type": "Eq",
+              "a": {
+               "type": "BitAnd",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "p"
+                },
+                "key": "mask"
+               },
+               "b": {
+                "type": "Lit",
+                "value": 1
+               }
+              },
+              "b": {
+               "type": "Lit",
+               "value": 0
+              }
+             }
+            },
+            "then": {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "b"
+               },
+               "key": "ey0"
+              },
+              {
+               "type": "Lit",
+               "value": 0.0
+              }
+             ]
+            },
+            "other": {
+             "type": "Lit",
+             "value": 1e+18
+            }
+           },
            "b": {
             "type": "Var",
             "name": "best"
            }
           },
           "then": {
-           "type": "Minus",
-           "a": {
-            "type": "Plus",
-            "items": [
-             {
-              "type": "Attr",
-              "node": {
-               "type": "Var",
-               "name": "b"
-              },
-              "key": "y"
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "b"
              },
-             {
-              "type": "Times",
-              "items": [
-               {
-                "type": "Lit",
-                "value": 2.0
-               },
-               {
-                "type": "Attr",
-                "node": {
-                 "type": "Var",
-                 "name": "b"
-                },
-                "key": "dy"
-               }
-              ]
-             }
-            ]
-           },
-           "b": {
-            "type": "Attr",
-            "node": {
-             "type": "Var",
-             "name": "b"
+             "key": "y"
             },
-            "key": "pdy"
-           }
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "b"
+             },
+             "key": "dy"
+            }
+           ]
           },
           "other": {
            "type": "IfThenElse",
@@ -3312,7 +4342,7 @@
                 },
                 "b": {
                  "type": "Lit",
-                 "value": 8
+                 "value": 2
                 }
                },
                "b": {
@@ -3330,11 +4360,11 @@
                  "type": "Var",
                  "name": "b"
                 },
-                "key": "ey3"
+                "key": "ey1"
                },
                {
                 "type": "Lit",
-                "value": 3.0000000000000004e-09
+                "value": 1e-09
                }
               ]
              },
@@ -3352,45 +4382,25 @@
             "type": "Let",
             "name": "raw",
             "value": {
-             "type": "Minus",
-             "a": {
-              "type": "Plus",
-              "items": [
-               {
-                "type": "Attr",
-                "node": {
-                 "type": "Var",
-                 "name": "b"
-                },
-                "key": "y"
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "b"
                },
-               {
-                "type": "Times",
-                "items": [
-                 {
-                  "type": "Lit",
-                  "value": 2.0
-                 },
-                 {
-                  "type": "Attr",
-                  "node": {
-                   "type": "Var",
-                   "name": "b"
-                  },
-                  "key": "dy"
-                 }
-                ]
-               }
-              ]
-             },
-             "b": {
-              "type": "Attr",
-              "node": {
-               "type": "Var",
-               "name": "b"
+               "key": "y"
               },
-              "key": "pdy"
-             }
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "b"
+               },
+               "key": "dy"
+              }
+             ]
             },
             "body": {
              "type": "IfThenElse",
@@ -3500,7 +4510,7 @@
                  },
                  "b": {
                   "type": "Lit",
-                  "value": 16
+                  "value": 4
                  }
                 },
                 "b": {
@@ -3518,11 +4528,11 @@
                   "type": "Var",
                   "name": "b"
                  },
-                 "key": "ey4"
+                 "key": "ey2"
                 },
                 {
                  "type": "Lit",
-                 "value": 4e-09
+                 "value": 2e-09
                 }
                ]
               },
@@ -3537,58 +4547,267 @@
              }
             },
             "then": {
+             "type": "Minus",
+             "a": {
+              "type": "Plus",
+              "items": [
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "b"
+                },
+                "key": "y"
+               },
+               {
+                "type": "Times",
+                "items": [
+                 {
+                  "type": "Lit",
+                  "value": 2.0
+                 },
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "b"
+                  },
+                  "key": "dy"
+                 }
+                ]
+               }
+              ]
+             },
+             "b": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "b"
+              },
+              "key": "pdy"
+             }
+            },
+            "other": {
              "type": "IfThenElse",
              "cond": {
               "type": "Eq",
               "a": {
-               "type": "Attr",
-               "node": {
-                "type": "Var",
-                "name": "b"
+               "type": "IfThenElse",
+               "cond": {
+                "type": "Not",
+                "arg": {
+                 "type": "Eq",
+                 "a": {
+                  "type": "BitAnd",
+                  "a": {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "p"
+                   },
+                   "key": "mask"
+                  },
+                  "b": {
+                   "type": "Lit",
+                   "value": 8
+                  }
+                 },
+                 "b": {
+                  "type": "Lit",
+                  "value": 0
+                 }
+                }
                },
-               "key": "pdy"
+               "then": {
+                "type": "Plus",
+                "items": [
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "b"
+                  },
+                  "key": "ey3"
+                 },
+                 {
+                  "type": "Lit",
+                  "value": 3.0000000000000004e-09
+                 }
+                ]
+               },
+               "other": {
+                "type": "Lit",
+                "value": 1e+18
+               }
               },
               "b": {
-               "type": "Lit",
-               "value": 0.0
+               "type": "Var",
+               "name": "best"
               }
              },
              "then": {
-              "type": "Plus",
-              "items": [
-               {
-                "type": "Attr",
-                "node": {
-                 "type": "Var",
-                 "name": "b"
-                },
-                "key": "y"
+              "type": "Let",
+              "name": "raw",
+              "value": {
+               "type": "Minus",
+               "a": {
+                "type": "Plus",
+                "items": [
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "b"
+                  },
+                  "key": "y"
+                 },
+                 {
+                  "type": "Times",
+                  "items": [
+                   {
+                    "type": "Lit",
+                    "value": 2.0
+                   },
+                   {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "b"
+                    },
+                    "key": "dy"
+                   }
+                  ]
+                 }
+                ]
                },
-               {
+               "b": {
                 "type": "Attr",
                 "node": {
                  "type": "Var",
                  "name": "b"
                 },
-                "key": "dy"
+                "key": "pdy"
                }
-              ]
+              },
+              "body": {
+               "type": "IfThenElse",
+               "cond": {
+                "type": "Lt",
+                "a": {
+                 "type": "Var",
+                 "name": "raw"
+                },
+                "b": {
+                 "type": "Lit",
+                 "value": 0.0
+                }
+               },
+               "then": {
+                "type": "Minus",
+                "a": {
+                 "type": "Lit",
+                 "value": 0.0
+                },
+                "b": {
+                 "type": "Var",
+                 "name": "raw"
+                }
+               },
+               "other": {
+                "type": "IfThenElse",
+                "cond": {
+                 "type": "Gt",
+                 "a": {
+                  "type": "Var",
+                  "name": "raw"
+                 },
+                 "b": {
+                  "type": "Minus",
+                  "a": {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "b"
+                   },
+                   "key": "h"
+                  },
+                  "b": {
+                   "type": "Lit",
+                   "value": 1.0
+                  }
+                 }
+                },
+                "then": {
+                 "type": "Minus",
+                 "a": {
+                  "type": "Times",
+                  "items": [
+                   {
+                    "type": "Lit",
+                    "value": 2.0
+                   },
+                   {
+                    "type": "Minus",
+                    "a": {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "b"
+                     },
+                     "key": "h"
+                    },
+                    "b": {
+                     "type": "Lit",
+                     "value": 1.0
+                    }
+                   }
+                  ]
+                 },
+                 "b": {
+                  "type": "Var",
+                  "name": "raw"
+                 }
+                },
+                "other": {
+                 "type": "Var",
+                 "name": "raw"
+                }
+               }
+              }
              },
              "other": {
-              "type": "Plus",
-              "items": [
-               {
-                "type": "Attr",
-                "node": {
-                 "type": "Var",
-                 "name": "b"
+              "type": "IfThenElse",
+              "cond": {
+               "type": "Eq",
+               "a": {
+                "type": "IfThenElse",
+                "cond": {
+                 "type": "Not",
+                 "arg": {
+                  "type": "Eq",
+                  "a": {
+                   "type": "BitAnd",
+                   "a": {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "p"
+                    },
+                    "key": "mask"
+                   },
+                   "b": {
+                    "type": "Lit",
+                    "value": 16
+                   }
+                  },
+                  "b": {
+                   "type": "Lit",
+                   "value": 0
+                  }
+                 }
                 },
-                "key": "y"
-               },
-               {
-                "type": "Div",
-                "a": {
-                 "type": "Times",
+                "then": {
+                 "type": "Plus",
                  "items": [
                   {
                    "type": "Attr",
@@ -3596,7 +4815,138 @@
                     "type": "Var",
                     "name": "b"
                    },
-                   "key": "dy"
+                   "key": "ey4"
+                  },
+                  {
+                   "type": "Lit",
+                   "value": 4e-09
+                  }
+                 ]
+                },
+                "other": {
+                 "type": "Lit",
+                 "value": 1e+18
+                }
+               },
+               "b": {
+                "type": "Var",
+                "name": "best"
+               }
+              },
+              "then": {
+               "type": "IfThenElse",
+               "cond": {
+                "type": "Eq",
+                "a": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "b"
+                 },
+                 "key": "pdy"
+                },
+                "b": {
+                 "type": "Lit",
+                 "value": 0.0
+                }
+               },
+               "then": {
+                "type": "Plus",
+                "items": [
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "b"
+                  },
+                  "key": "y"
+                 },
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "b"
+                  },
+                  "key": "dy"
+                 }
+                ]
+               },
+               "other": {
+                "type": "Plus",
+                "items": [
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "b"
+                  },
+                  "key": "y"
+                 },
+                 {
+                  "type": "Div",
+                  "a": {
+                   "type": "Times",
+                   "items": [
+                    {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "b"
+                     },
+                     "key": "dy"
+                    },
+                    {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "b"
+                     },
+                     "key": "dy"
+                    }
+                   ]
+                  },
+                  "b": {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "b"
+                   },
+                   "key": "pdy"
+                  }
+                 }
+                ]
+               }
+              },
+              "other": {
+               "type": "Let",
+               "name": "raw",
+               "value": {
+                "type": "IfThenElse",
+                "cond": {
+                 "type": "Eq",
+                 "a": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "b"
+                  },
+                  "key": "pdy"
+                 },
+                 "b": {
+                  "type": "Lit",
+                  "value": 0.0
+                 }
+                },
+                "then": {
+                 "type": "Plus",
+                 "items": [
+                  {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "b"
+                   },
+                   "key": "y"
                   },
                   {
                    "type": "Attr",
@@ -3608,163 +4958,85 @@
                   }
                  ]
                 },
-                "b": {
-                 "type": "Attr",
-                 "node": {
-                  "type": "Var",
-                  "name": "b"
-                 },
-                 "key": "pdy"
-                }
-               }
-              ]
-             }
-            },
-            "other": {
-             "type": "Let",
-             "name": "raw",
-             "value": {
-              "type": "IfThenElse",
-              "cond": {
-               "type": "Eq",
-               "a": {
-                "type": "Attr",
-                "node": {
-                 "type": "Var",
-                 "name": "b"
-                },
-                "key": "pdy"
-               },
-               "b": {
-                "type": "Lit",
-                "value": 0.0
-               }
-              },
-              "then": {
-               "type": "Plus",
-               "items": [
-                {
-                 "type": "Attr",
-                 "node": {
-                  "type": "Var",
-                  "name": "b"
-                 },
-                 "key": "y"
-                },
-                {
-                 "type": "Attr",
-                 "node": {
-                  "type": "Var",
-                  "name": "b"
-                 },
-                 "key": "dy"
-                }
-               ]
-              },
-              "other": {
-               "type": "Plus",
-               "items": [
-                {
-                 "type": "Attr",
-                 "node": {
-                  "type": "Var",
-                  "name": "b"
-                 },
-                 "key": "y"
-                },
-                {
-                 "type": "Div",
-                 "a": {
-                  "type": "Times",
-                  "items": [
-                   {
-                    "type": "Attr",
-                    "node": {
-                     "type": "Var",
-                     "name": "b"
-                    },
-                    "key": "dy"
+                "other": {
+                 "type": "Plus",
+                 "items": [
+                  {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "b"
                    },
-                   {
+                   "key": "y"
+                  },
+                  {
+                   "type": "Div",
+                   "a": {
+                    "type": "Times",
+                    "items": [
+                     {
+                      "type": "Attr",
+                      "node": {
+                       "type": "Var",
+                       "name": "b"
+                      },
+                      "key": "dy"
+                     },
+                     {
+                      "type": "Attr",
+                      "node": {
+                       "type": "Var",
+                       "name": "b"
+                      },
+                      "key": "dy"
+                     }
+                    ]
+                   },
+                   "b": {
                     "type": "Attr",
                     "node": {
                      "type": "Var",
                      "name": "b"
                     },
-                    "key": "dy"
+                    "key": "pdy"
                    }
-                  ]
-                 },
-                 "b": {
-                  "type": "Attr",
-                  "node": {
-                   "type": "Var",
-                   "name": "b"
-                  },
-                  "key": "pdy"
-                 }
+                  }
+                 ]
                 }
-               ]
-              }
-             },
-             "body": {
-              "type": "IfThenElse",
-              "cond": {
-               "type": "Lt",
-               "a": {
-                "type": "Var",
-                "name": "raw"
                },
-               "b": {
-                "type": "Lit",
-                "value": 0.0
-               }
-              },
-              "then": {
-               "type": "Minus",
-               "a": {
-                "type": "Lit",
-                "value": 0.0
-               },
-               "b": {
-                "type": "Var",
-                "name": "raw"
-               }
-              },
-              "other": {
-               "type": "IfThenElse",
-               "cond": {
-                "type": "Gt",
-                "a": {
-                 "type": "Var",
-                 "name": "raw"
-                },
-                "b": {
-                 "type": "Minus",
+               "body": {
+                "type": "IfThenElse",
+                "cond": {
+                 "type": "Lt",
                  "a": {
-                  "type": "Attr",
-                  "node": {
-                   "type": "Var",
-                   "name": "b"
-                  },
-                  "key": "h"
+                  "type": "Var",
+                  "name": "raw"
                  },
                  "b": {
                   "type": "Lit",
-                  "value": 1.0
+                  "value": 0.0
                  }
-                }
-               },
-               "then": {
-                "type": "Minus",
-                "a": {
-                 "type": "Times",
-                 "items": [
-                  {
-                   "type": "Lit",
-                   "value": 2.0
+                },
+                "then": {
+                 "type": "Minus",
+                 "a": {
+                  "type": "Lit",
+                  "value": 0.0
+                 },
+                 "b": {
+                  "type": "Var",
+                  "name": "raw"
+                 }
+                },
+                "other": {
+                 "type": "IfThenElse",
+                 "cond": {
+                  "type": "Gt",
+                  "a": {
+                   "type": "Var",
+                   "name": "raw"
                   },
-                  {
+                  "b": {
                    "type": "Minus",
                    "a": {
                     "type": "Attr",
@@ -3779,16 +5051,43 @@
                     "value": 1.0
                    }
                   }
-                 ]
-                },
-                "b": {
-                 "type": "Var",
-                 "name": "raw"
+                 },
+                 "then": {
+                  "type": "Minus",
+                  "a": {
+                   "type": "Times",
+                   "items": [
+                    {
+                     "type": "Lit",
+                     "value": 2.0
+                    },
+                    {
+                     "type": "Minus",
+                     "a": {
+                      "type": "Attr",
+                      "node": {
+                       "type": "Var",
+                       "name": "b"
+                      },
+                      "key": "h"
+                     },
+                     "b": {
+                      "type": "Lit",
+                      "value": 1.0
+                     }
+                    }
+                   ]
+                  },
+                  "b": {
+                   "type": "Var",
+                   "name": "raw"
+                  }
+                 },
+                 "other": {
+                  "type": "Var",
+                  "name": "raw"
+                 }
                 }
-               },
-               "other": {
-                "type": "Var",
-                "name": "raw"
                }
               }
              }

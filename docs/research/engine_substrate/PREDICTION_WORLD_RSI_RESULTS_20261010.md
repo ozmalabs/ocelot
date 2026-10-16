@@ -2,67 +2,84 @@
 
 Plan: `OPEN_ENDED_SELF_IMPROVEMENT_PLAN_20261010.md`. Redirect from the persona-chat work: demonstrate endemic self-improvement in any domain, not a chatbot.
 
-## Result (1.1.0: the agent authors its own models)
+## Result (1.2.0: the agent authors models from its own residual)
 
-Over 60 episodes, an agent that is allowed to change its own predictor climbs from level 1 to level 5 and masters levels 1–4. It does this by working out its own surprise, running its own trials, judging them against its own bar, and adopting the best trade. At level 4 every model it had was refuted, so it authored a new one: a composite of its current model and the trial that had won locally but cost too much elsewhere. It tried that model, adopted it and mastered the level.
+The same 60 episodes were run under three arms. The arms differ only in two `PredictionPolicy` attributes.
 
-The same agent with self-change switched off (`PredictionPolicy.self_improvement = 0`) still notices it keeps missing and files the concern. It cannot act on it, so it stays at level 2 for good.
+| arm | final level / mastered through | experiments | adoptions | models authored | held-out surprise L1–L5 (cells) |
+|---|---|---|---|---|---|
+| on | 5 / 5 | 39–56 | 5–6 | 3–4 | 0, 0.11–0.12, 0.03, 0, 0.14–0.15 |
+| no_authoring (`authoring = 0`) | 4 / 3 | 15–20 | 2 | 0 | 0, 0.37, 0, 0.28, 0.56 |
+| off (`self_improvement = 0`) | 2 / 1 | 0 | 0 | 0 | 0, 0.45, 0.5, 0.65, 0.97 |
 
-The seed bases 1000, 2024, 5000 and 9000 gave different episodes and trial numbers but the same outcome.
+- Ranges cover the seed bases 1000, 2024, 5000 and 9000. Every base gives the same level outcome for each arm.
+- Held-out surprise is the final model's mean over 5 fresh episodes per level (seeds 10⁶+), which no live episode uses. The mastery floor is 0.15.
+- The off arm still notices its surprise. Its L2 concern is filed and stays open.
+- The no_authoring arm adopts from the six models it was born with and stops when they run out. Its L4 concern is exhausted.
 
-| | on (1.1.0) | on (1.0.0, no authoring) | off |
-|---|---|---|---|
-| final level / mastered through | 5 / 4 | 4 / 3 | 2 / 1 |
-| experiments / adoptions / authored models | 22 / 3 / 1 | 15 / 2 / 0 | 0 / 0 / 0 |
-| final model | acceleration+reflect \| ratio | acceleration+reflect | velocity |
-| concerns | L2–L4 resolved, L5 exhausted | L2–L3 resolved, L4 exhausted | L2 open |
-| held-out surprise L1–L5 (cells) | 0, 0.380, 0.023, 0, 0.575 | 0, 0.366, 0, 0.280, 0.562 | 0, 0.445, 0.5, 0.652, 0.971 |
+Trajectory of the on arm (seed base 2024; the other bases are alike):
+1. **L2 (bounce):** adopted velocity → velocity+reflect.
+2. **L3 (fall):** adopted → acceleration+reflect.
+3. **L4 (glide), composition:**
+   - All base alternatives were refuted. Ratio is exact here but costs too much on L2/L3.
+   - The agent authored `acceleration+reflect | ratio`: its current model plus its best local trial, using per body and axis whichever component predicted best last frame.
+   - Result: 0.274 → 0.000 at L4, retention harm 0.013, net 0.260. Adopted; L4 mastered.
+4. **L5 (bounce under gravity), residual fit 1:**
+   - All alternatives were refuted and none even cleared the bar at the level, so there was nothing to compose.
+   - The agent asked where its surprise lives. Of its residual on its own recorded L5 episodes, 125 cells fell on reversal frames (`dx·pdx < 0`, a bounce just happened) and 30 on after-reversal frames.
+   - It authored its model plus a reversal layer fitted on those frames. The x-axis fit came out as `x' = x − ppdx`: after a wall bounce the next step undoes the step before the bounce.
+   - Result: 0.537 → 0.216, harm 0.002. Adopted.
+5. **L5, residual fit 2:**
+   - The next concern exhausted again, and the residual now concentrated on after-reversal frames.
+   - It authored a second layer. On bases 1000, 5000 and 9000 the fit came out exactly as `x' = x + dx` (x) and `y' = y + dy + 0.5` (y): constant velocity, plus gravity on the y axis, which the fit found from data. On 2024 it was close: `y' = y + 0.94·dy − 0.04·ppdy + 0.44`.
+   - The y-axis reversal layer (step 4) is only an approximation on every base, around `y' = y − 0.4·pdy − 0.7·ppdy + 0.1`. Floor bounces under gravity are not linear in the history, and that is where the remaining L5 surprise lives.
+   - Result: 0.256 → 0.173, harm 0.001. Adopted.
+   - Three consecutive episodes then fell at or under the floor, and L5 was mastered.
+6. **After mastery:** a remaining concern exhausted honestly. Both atoms were already used, so there was nothing more to author.
 
-The held-out surprise is the final model's mean over 5 fresh episodes per level (seeds 10⁶+), which no live episode uses.
+Seed bases 1000 and 9000 also authored a reversal layer at L2. Base 1000 adopted it, with net 0.055. Base 9000 refuted it, because its net of 0.042 fell short of the 0.05 bar.
 
-Trajectory (on arm, seed base 1000):
-1. L2 (bounce): velocity → velocity+reflect, net 0.209.
-2. L3 (fall): → acceleration+reflect, net 0.300. It beat plain acceleration (net 0.076, also supported) because plain acceleration loses the bounce on L2.
-3. L4 (glide): all five base alternatives were refuted. Ratio is exact at L4 (variant 0.000 vs control 0.281), but it adds 1.28 cells on mastered levels, so the concern exhausted.
-4. The agent then authored `acceleration+reflect | ratio`. Its components are its current model and its best local trial, and for each body and axis it uses whichever component predicted best last frame. That trial scored 0.277 → 0.000 at L4 with retention harm 0.043 (net 0.234). It was supported and adopted, and L4 was mastered.
-5. L5 (bounce under gravity): all six alternatives were refuted, and no trial cleared the bar at the level. With no local winner there is nothing to compose, so the concern is honestly exhausted.
-
-A run takes about 4 s per arm. Reproduce with `evaluation/substrate_capability/prediction_world_rsi_v1.py 60 <seed_base>`. The test is `tests/test_prediction_world_migrated.py`.
+Reproduce with `evaluation/substrate_capability/prediction_world_rsi_v1.py 60 <seed_base>` (about 15–25 s for the on arm). The tests are in `tests/test_prediction_world_migrated.py`.
 
 ## What the graph decides and what is mechanical
 
 The graph decides everything below. These are rules in `seeds/prediction_world.json` and in `seeds/prediction_self_improvement.json`, which is frozen and has its types protected by `improvement_integrity`:
-- the prediction itself (`predict_body_next`, including per-body, per-axis component selection);
+- the prediction itself (`predict_body_next`: context layers first, then per-body, per-axis component selection);
 - mastery and level advance;
 - filing a surprise concern;
-- proposing one experiment per untried candidate;
+- proposing one trial per untried candidate;
 - the judge;
 - adoption (best `weighed_net`, with ties going to the simpler model);
 - declaring a concern exhausted;
-- authoring a composite (`pw_author_composite_predictor`): when to author, which components to compose, its rank and name, and reopening the concern.
+- authoring a composite, including which components;
+- requesting a residual fit;
+- authoring a context layer: which atom, and its coefficients copied from the fit.
 
 Python (`domains/prediction_world.py`) handles the mechanical parts:
-- simulating levels;
-- writing observations onto `Body` nodes;
+- simulating levels and writing observations;
 - measuring surprise;
-- replaying the agent's own recorded episodes for a requested experiment, through fresh agents holding only the predictor seed.
+- replaying the agent's own recorded episodes for a requested trial or residual fit;
+- for a fit, summing the residual per context atom and solving the least-squares fit. It writes these as `ResidualCell`s, and the graph chooses among them.
 
-The judge is weighed, not protective. A trial is supported when two conditions hold:
-- it cuts surprise at the level by `min_gain` (20%);
-- its gain, net of the surprise it adds on each level already mastered (summed per level, `retention_weight` 1.0), is at least 0.05.
-
-Harm elsewhere is a cost to trade against. The authoring rule follows from that. A trial that wins at the level but loses on retention is evidence of a model that is right somewhere, and composing it with the current model keeps both.
+The judge is weighed, not protective. A trial is supported when it cuts surprise at the level by 20% and its gain, net of the surprise it adds on each mastered level, is at least 0.05. Harm elsewhere is a cost to trade against.
 
 ## Limits
 
-- The building blocks are human-designed. These are the six base models (velocity `x+dx`, acceleration `x+2dx−pdx`, ratio `x+dx²/pdx`, each with or without reflecting at walls) and the one composition operator: per body and axis, select the component with the lowest last-frame error.
-  - The agent decides when to compose and what to compose, from its own refuted trials. It cannot invent new base forms or new operators.
-  - The composite space is finite (2⁶ masks), and authoring never repeats a mask, so it always terminates.
-- L5 is the current ceiling. No base model or composite tried cuts L5 surprise by 20%; the best is about 0.55. Bounce under gravity needs something the blocks cannot express, for example reflection that conserves the vertical velocity under acceleration.
-- L2 is above the floor under the final model (0.38 held-out vs floor 0.15). Each adoption traded some L2 accuracy for a larger gain elsewhere, and the judge counted it each time (retention harm 0.20, then 0.04). L2 stays mastered by the curriculum's record only.
-- The harness runs in-process (`WorldAdapter`), not in the daemon. Replays use fresh in-process agents.
-- The worlds are deterministic and small: 3 bodies, 15–40 frames.
+- **Human-written building blocks.** These are:
+  - the six base models;
+  - the composition operator;
+  - two context atoms (reversal, after-reversal);
+  - the linear layer form (`x + c0·dx + c1·pdx + c2·ppdx + c3`, folded into the box).
+
+  The agent decides when to author, what to compose, which atom to condition on and what the coefficients are, all from its own episodes. It does not invent atoms or operators.
+- **Finite authoring space.** There are at most two layers per model, each atom is used once per model, and no model is authored twice. So authoring always terminates.
+- **Mastery at L5 is narrow.** Held-out surprise is 0.14–0.15 against a floor of 0.15. Live L5 episodes still range from 0.06 to 0.23.
+- **In-sample fits.** The coefficients are fitted on the same recorded episodes the trial then replays. The held-out numbers above, on unseen seeds, are the check that they generalise, and they do (L5 0.56 → 0.14).
+- **Fix to concern filing in 1.2.0.** Filing used to require that none of the last `window` episodes was under the floor, so one lucky episode could block a concern forever. It now files whenever the level is not mastered. This also reshaped the earlier-level trajectories slightly. 1.2.0 also added mastery of the last level.
+- **Harness.** It runs in-process (`WorldAdapter`), not in the daemon. The worlds are small and deterministic.
 
 ## Next
 
-The L5 exhausted concern has no local winner, so composition has no evidence to work from. The next rung is letting the agent author a new base form from its own residuals: for example, fitting the structure of its error at L5 (wall contact under gravity) into a new term, under the same judge and the same off-arm comparison.
+Every level is now mastered, so the curriculum is the ceiling. Possible next steps:
+- Harder levels. For example, collisions between bodies would need a context atom the agent does not have.
+- Letting the agent author context atoms themselves, from the structure of its residual, so it does not depend on the two written for it.

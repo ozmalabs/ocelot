@@ -20,17 +20,19 @@ from domains import prediction_world as pw  # noqa: E402
 VEL, ACC, ACC1, RATIO = 1 << 0, 1 << 2, 1 << 3, 1 << 4
 
 
-def _agent(self_improvement=1):
+def _agent(self_improvement=1, authoring=1):
     from substrate.world_adapter import WorldAdapter
     a = WorldAdapter(seeds=("prediction_world", "prediction_self_improvement"))
     a.inner.set_attr(a.s.nodes("PredictionPolicy")[0], "self_improvement", int(self_improvement))
+    a.inner.set_attr(a.s.nodes("PredictionPolicy")[0], "authoring", int(authoring))
     return a
 
 
 def _live(a, n, seed_base=1000):
     for i in range(n):
         pw.run_episode(a, seed=seed_base + i)
-        pw.run_experiments(a)
+        while pw.run_experiments(a) or pw.run_residual_fits(a):
+            pass
     S = a.s
     return S.node(S.nodes("PredictionCurriculum")[0])["attrs"]
 
@@ -57,26 +59,50 @@ def test_composite_uses_the_component_that_fits():
         assert pw.replay(pw.simulate(3, seed), comp) < 0.15
 
 
-def test_on_arm_improves_itself_off_arm_is_stuck():
-    on, off = _agent(1), _agent(0)
-    cur_on, cur_off = _live(on, 60), _live(off, 60)
-    assert cur_on["current_level"] == 5 and cur_on["mastered_through"] == 4
-    assert len(on.s.nodes("Adoption")) == 3
-    # level 4 was passed with a model the agent authored itself
-    authored = [on.s.node(k)["attrs"] for k in on.s.nodes("PredictorCandidate")
-                if on.s.node(k)["attrs"].get("authored") == 1]
-    assert [(k["mask"], k["authored_level"]) for k in authored] == [(ACC1 | RATIO, 4)]
-    assert on.s.node(on.s.nodes("Predictor")[0])["attrs"]["mask"] == ACC1 | RATIO
-    st_on = {on.s.node(c)["attrs"]["level"]: on.s.node(c)["attrs"]["status"] for c in on.s.nodes("SelfConcern")
-             if on.s.node(c)["attrs"].get("kind") == "prediction_surprise"}
-    assert st_on == {2: "resolved", 3: "resolved", 4: "resolved", 5: "exhausted"}
-    assert len(off.s.nodes("PredictorCandidate")) == 6
+def _authored(a):
+    return [a.s.node(k)["attrs"] for k in a.s.nodes("PredictorCandidate")
+            if a.s.node(k)["attrs"].get("authored") == 1]
+
+
+def _concerns(a):
+    return [(a.s.node(c)["attrs"]["level"], a.s.node(c)["attrs"]["status"]) for c in a.s.nodes("SelfConcern")
+            if a.s.node(c)["attrs"].get("kind") == "prediction_surprise"]
+
+
+def test_three_arms_authoring_carries_it_through_level_5():
+    """on: masters all five levels with models it authored (a composite at
+    L4, two residual-fitted context layers at L5); no_authoring: only its
+    born-with models, stuck at L4; off: notices but cannot change, stuck at L2."""
+    on, no_auth, off = _agent(1), _agent(1, 0), _agent(0)
+    cur_on, cur_na, cur_off = (_live(a, 60, seed_base=2024) for a in (on, no_auth, off))
+
+    assert cur_on["current_level"] == 5 and cur_on["mastered_through"] == 5
+    assert [(k["authored_level"], k["authored_by"], k["sig"]) for k in _authored(on)] == [
+        (4, "composition", ""), (5, "residual_fit", "+reversal"), (5, "residual_fit", "+reversal+after_reversal")]
+    p = on.s.node(on.s.nodes("Predictor")[0])["attrs"]
+    assert (p["mask"], p["sig"], p["n_layers"]) == (ACC1 | RATIO, "+reversal+after_reversal", 2)
+    assert len(on.s.nodes("Adoption")) == 5
+
+    assert cur_na["current_level"] == 4 and cur_na["mastered_through"] == 3
+    assert _authored(no_auth) == [] and len(no_auth.s.nodes("ResidualFit")) == 0
+    assert (4, "exhausted") in _concerns(no_auth)
+
     assert cur_off["current_level"] == 2 and len(off.s.nodes("Experiment")) == 0
-    assert len(off.s.nodes("Adoption")) == 0
-    # the off arm still notices: its concern is filed and stays open
-    st = [off.s.node(c)["attrs"]["status"] for c in off.s.nodes("SelfConcern")
-          if off.s.node(c)["attrs"].get("kind") == "prediction_surprise"]
-    assert st == ["open"]
+    assert len(off.s.nodes("Adoption")) == 0 and _authored(off) == []
+    assert _concerns(off) == [(2, "open")]     # it still notices
+
+
+def test_layered_model_beats_its_parent_on_held_out_bounce_under_gravity():
+    """The authored layers, replayed on unseen level-5 episodes: the residual
+    fits generalise and cost nothing on level 3."""
+    a = _agent(1)
+    _live(a, 60, seed_base=2024)
+    p = pw.model_of(a.s.node(a.s.nodes("Predictor")[0])["attrs"])
+    held = [pw.simulate(5, 10**6 + s) for s in range(5)]
+    layered = sum(pw.replay(t, p) for t in held) / 5
+    parent = sum(pw.replay(t, ACC1 | RATIO) for t in held) / 5
+    assert layered < 0.16 and parent > 0.5
+    assert sum(pw.replay(pw.simulate(3, 10**6 + s), p) for s in range(5)) / 5 < 0.05
 
 
 def _synthetic(a, trials):
@@ -91,12 +117,14 @@ def _synthetic(a, trials):
         x = S.add_node("Experiment", {"game": "prediction_world", "status": "done", "level": 3,
                                       "control_surprise": c, "variant_surprise": v, "retention_harm": h,
                                       "candidate_mask": mask, "control_mask": p["mask"],
+                                      "candidate_sig": "", "control_sig": p["sig"],
                                       "candidate_name": f"m{mask}"})
         d = S.add_node("SeedDelta", {"variation_op": "predictor_edit", "candidate_form": "f",
                                      "candidate_reflect": 0, "candidate_rank": rank, "candidate_mask": mask,
                                      "candidate_name": f"m{mask}", "control_form": p["form"],
                                      "control_reflect": p["reflect"], "control_mask": p["mask"],
-                                     "control_name": p["model"]})
+                                     "control_name": p["model"], "candidate_sig": "",
+                                     "control_sig": p["sig"]})
         I.add_edge_unchecked(x, "has_delta", d)
         I.add_edge_unchecked(sc, "tested_by", x)
         exps.append(x)
@@ -152,15 +180,40 @@ def test_authors_composite_of_control_and_local_winner():
     assert [S.node(x)["attrs"]["candidate_mask"] for x in req] == [VEL | RATIO]
 
 
-def test_does_not_author_without_a_local_winner_or_when_off():
+def test_no_composite_without_a_local_winner_or_when_off():
     for si, local in ((1, 0.45), (0, 0.0)):
         a = _agent(si)
         _set_level(a, 3)
         trials = [(m, m.bit_length() - 1, 0.5, local, 1.0) for m in (2, 4, 8, 16, 32)]
         sc, _ = _synthetic(a, trials)
-        assert not [k for k in a.s.nodes("PredictorCandidate") if a.s.node(k)["attrs"].get("authored") == 1]
+        assert _authored(a) == []
+        # nothing to compose: when on, the agent asks where its residual lives instead
+        assert len(a.s.nodes("ResidualFit")) == (1 if si == 1 else 0)
         if si == 1:
             assert a.s.node(sc)["attrs"]["status"] == "exhausted"
+
+
+def test_residual_fit_authors_a_layer_on_the_heaviest_atom():
+    """A done ResidualFit: the agent authors its current model plus a layer on
+    the atom holding the most residual (where the fit helps), and reopens."""
+    a = _agent(1)
+    _set_level(a, 3)
+    S, I = a.s, a.inner
+    trials = [(m, m.bit_length() - 1, 0.5, 0.45, 1.0) for m in (2, 4, 8, 16, 32)]
+    sc, _ = _synthetic(a, trials)
+    (rf,) = S.nodes("ResidualFit")
+    for bit, atom, resid, gain in ((1, "reversal", 10.0, 9.0), (2, "after_reversal", 20.0, -1.0)):
+        c = S.add_node("ResidualCell", {"ctx_bit": bit, "atom": atom, "residual_sum": resid, "fit_gain": gain,
+                                        **{f"{ax}{j}": float(j) for ax in "xy" for j in range(4)}})
+        I.add_edge_unchecked(rf, "has_cell", c)
+    I.set_attr(rf, "status", "done")
+    I.run_rules()
+    (k,) = _authored(a)
+    # after_reversal holds more residual but its fit does not help: reversal is taken
+    assert (k["sig"], k["n_layers"], k["ctx_bits"], k["l0_bit"], k["l0_y2"]) == ("+reversal", 1, 1, 1, 2.0)
+    assert k["mask"] == VEL and k["name"] == "velocity + reversal layer"
+    assert S.node(sc)["attrs"]["status"] == "open"
+    assert S.node(rf)["attrs"]["status"] == "used"
 
 
 def test_loop_seed_frozen_and_protected():

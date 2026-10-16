@@ -11,6 +11,8 @@ verdicts, adoptions and level advances are the graph's.
 
 Arms (same episode seeds):
   on   PredictionPolicy.self_improvement = 1
+  no_authoring  self_improvement = 1, authoring = 0 -- it may adopt from the
+       models it was born with but may not author new ones
   off  self_improvement = 0 -- the agent still notices its surprise and files
        concerns, but may not change itself
 
@@ -32,18 +34,24 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path[:0] = [str(ROOT), str(ROOT / "runners/dsl/python")]
 
 
-def arm(n, self_improvement, seed_base=1000):
+def arm(n, self_improvement, seed_base=1000, authoring=1):
     from substrate.world_adapter import WorldAdapter
     from domains import prediction_world as pw
     a = WorldAdapter(seeds=("prediction_world", "prediction_self_improvement"))
     S = a.s
     pol = S.nodes("PredictionPolicy")[0]
     a.inner.set_attr(pol, "self_improvement", int(self_improvement))
+    a.inner.set_attr(pol, "authoring", int(authoring))
     curve, trials = [], []
     t0 = time.time()
     for i in range(n):
         ep = pw.run_episode(a, seed=seed_base + i)
-        trials += [dict(r, episode=i) for r in pw.run_experiments(a)]
+        while True:   # requested trials and residual fits, until the graph asks for nothing more
+            done = pw.run_experiments(a)
+            fits = pw.run_residual_fits(a)
+            trials += [dict(r, episode=i) for r in done]
+            if not done and not fits:
+                break
         p = S.node(S.nodes("Predictor")[0])["attrs"]
         curve.append({**ep, "model": p["model"],
                       "level_after": S.node(S.nodes("PredictionCurriculum")[0])["attrs"]["current_level"]})
@@ -60,20 +68,27 @@ def arm(n, self_improvement, seed_base=1000):
                                                "retention_by_level", "weighed_net", "outcome", "adopted")}})
     adoptions = [{k: S.node(x)["attrs"].get(k) for k in ("level", "from_model", "to_model")}
                  for x in S.nodes("Adoption")]
-    authored = [{k: S.node(x)["attrs"].get(k) for k in ("name", "mask", "rank", "authored_level")}
+    authored = [{k: S.node(x)["attrs"].get(k) for k in ("name", "mask", "sig", "rank", "authored_level",
+                                                         "authored_by", "l0_bit", "l0_x0", "l0_x1", "l0_x2",
+                                                         "l0_x3", "l0_y0", "l0_y1", "l0_y2", "l0_y3",
+                                                         "l1_bit", "l1_x0", "l1_x1", "l1_x2", "l1_x3",
+                                                         "l1_y0", "l1_y1", "l1_y2", "l1_y3")}
                 for x in S.nodes("PredictorCandidate") if S.node(x)["attrs"].get("authored") == 1]
-    final = {lv: round(sum(pw.replay(pw.simulate(lv, 10**6 + s), p["mask"]) for s in range(5)) / 5, 4)
+    cells = [{k: S.node(c)["attrs"].get(k) for k in ("atom", "n", "residual_sum", "fit_sum", "fit_gain")}
+             for c in S.nodes("ResidualCell")]
+    final = {lv: round(sum(pw.replay(pw.simulate(lv, 10**6 + s), pw.model_of(p)) for s in range(5)) / 5, 4)
              for lv in pw.LEVELS}
-    return {"self_improvement": self_improvement, "episodes": n, "elapsed_s": round(time.time() - t0, 1),
+    return {"self_improvement": self_improvement, "authoring": authoring, "episodes": n, "elapsed_s": round(time.time() - t0, 1),
             "final_level": cur["current_level"], "mastered_through": cur.get("mastered_through"),
-            "final_model": p["model"], "authored_candidates": authored, "concerns": concerns, "experiments": exps,
+            "final_model": p["model"], "authored_candidates": authored, "residual_cells": cells, "concerns": concerns, "experiments": exps,
             "adoptions": adoptions, "final_model_surprise_by_level": final, "curve": curve}
 
 
 def main():
     n = int(sys.argv[1]) if len(sys.argv) > 1 else 60
     seed_base = int(sys.argv[2]) if len(sys.argv) > 2 else 1000
-    rep = {"seed_base": seed_base, "arms": {"on": arm(n, 1, seed_base), "off": arm(n, 0, seed_base)}}
+    rep = {"seed_base": seed_base, "arms": {"on": arm(n, 1, seed_base), "no_authoring": arm(n, 1, seed_base, 0),
+                                            "off": arm(n, 0, seed_base)}}
     out = ROOT / f"evaluation/reports/prediction_world_rsi_v1_n{n}_s{seed_base}_20261010.json"
     out.write_text(json.dumps(rep, indent=1) + "\n")
     for name, r in rep["arms"].items():
@@ -81,7 +96,9 @@ def main():
               f"model {r['final_model']}, {len(r['experiments'])} experiments, {len(r['adoptions'])} adoptions, {len(r['authored_candidates'])} authored, "
               f"{r['elapsed_s']}s")
         print("   concerns", r["concerns"])
-        print("   authored", r["authored_candidates"])
+        for k in r["authored_candidates"]:
+            print("   authored", {a: b for a, b in k.items() if b not in (0, 0.0, None)})
+        print("   residual cells", r["residual_cells"])
         for x in r["experiments"]:
             print("   exp", x["level"], x["control_model"], "->", x["candidate"], "ctl", x["control_surprise"],
                   "var", x["variant_surprise"], "ret_harm", x["retention_harm"],

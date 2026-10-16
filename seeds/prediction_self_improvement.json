@@ -1,8 +1,8 @@
 {
  "id": "prediction_self_improvement",
- "version": "1.1.0",
+ "version": "1.2.0",
  "depends_on": [],
- "description": "Emit the prediction world (2026-10-10): a graded, closed world in which to\ndemonstrate ENDEMIC self-improvement -- the agent improving itself from its\nown operation, judged by its own criterion, with an off arm.\n\nThe world (domains/prediction_world.py, mechanical): bodies move in a box;\neach frame the agent observes their positions and its PREDICTOR -- graph\nrules -- predicts where each will be next. Its criterion is its own surprise:\nthe distance between where it predicted a body would be and where it was.\nLevels get harder: 1 drift (constant velocity), 2 bounce (walls), 3 fall\n(gravity), 4 glide (damping), 5 bounce under gravity.\n\nseeds/prediction_world.json (skippable; the part the agent changes)\n  * Six base models, rank k = form_index*2 + reflect: velocity (x + dx),\n    acceleration (x + 2dx - pdx: a constant change in displacement) or ratio\n    (x + dx*dx/pdx: a constant ratio of displacements), each with or without\n    `reflect` (fold a prediction that leaves the box back in).\n  * Predictor{mask, model}: the agent's held model -- the set of base models\n    it composes (bit k). One bit is a base model; more is a composite that\n    uses, per body and axis, whichever component predicted that body best\n    last frame (1.1.0).\n  * PredictorCandidate{mask, name, rank, authored}: the models the agent may\n    try, in MDL order. The six base models and the composition operator are\n    human-written; which model to try, when, which composites to author, and\n    whether to keep one is the agent's.\n  * predict_body_next: the predictor itself.\n\nseeds/prediction_self_improvement.json (frozen; the loop -- the agent may not\nchange how it judges itself)\n  * PredictionCurriculum{current_level, max_level, last_change_seq} and\n    PredictionPolicy{self_improvement, surprise_floor, window, min_gain,\n    min_abs_gain}.\n  * pw_advance_level: `window` consecutive episodes at the level at or under\n    the floor -> the next level.\n  * pw_file_surprise_concern: `window` episodes since the predictor last\n    changed, none under the floor -> SelfConcern{kind:'prediction_surprise'}.\n    Endemic: nothing but the agent's own surprise files it.\n  * pw_propose_predictor_edit: an open concern, self-improvement on -> one\n    Experiment + SeedDelta per candidate not yet tried against the current\n    model for this concern.\n  * pw_concern_exhausted: no candidate left -> the concern says so.\n  * pw_author_composite_predictor (1.1.0): an exhausted concern whose best\n    local trial cleared the bar at the level and was refuted only on its\n    retention cost -> the agent authors a new candidate, its current model\n    composed with that winner, and reopens the concern. Composites compose\n    further; one it already holds is not re-authored, so it terminates.\n  * pw_judge_predictor_edit: the replay's variant surprise against its control\n    surprise, on the agent's own recorded episodes at the level AND on its\n    recorded episodes of the levels it has already mastered (retention):\n    supported only when it is lower at the level by min_gain (relative) and\n    its gain, net of retention_weight x the surprise it adds on mastered\n    levels (summed per level, so one level's regression is neither diluted nor\n    traded against another's improvement), reaches min_abs_gain. Weighed,\n    not vetoed.\n  * pw_adopt_predictor_edit: once every trial is judged, the supported trial\n    with the best weighed net (ties: the simpler model) is adopted in the\n    graph -- the Predictor takes the candidate's form -- and the concern is\n    resolved.\nIdempotent.\n",
+ "description": "Emit the prediction world (2026-10-10): a graded, closed world in which to\ndemonstrate ENDEMIC self-improvement -- the agent improving itself from its\nown operation, judged by its own criterion, with an off arm.\n\nThe world (domains/prediction_world.py, mechanical): bodies move in a box;\neach frame the agent observes their positions and its PREDICTOR -- graph\nrules -- predicts where each will be next. Its criterion is its own surprise:\nthe distance between where it predicted a body would be and where it was.\nLevels get harder: 1 drift (constant velocity), 2 bounce (walls), 3 fall\n(gravity), 4 glide (damping), 5 bounce under gravity.\n\nseeds/prediction_world.json (skippable; the part the agent changes)\n  * Six base models, rank k = form_index*2 + reflect: velocity (x + dx),\n    acceleration (x + 2dx - pdx: a constant change in displacement) or ratio\n    (x + dx*dx/pdx: a constant ratio of displacements), each with or without\n    `reflect` (fold a prediction that leaves the box back in).\n  * Predictor{mask, model}: the agent's held model -- the set of base models\n    it composes (bit k). One bit is a base model; more is a composite that\n    uses, per body and axis, whichever component predicted that body best\n    last frame (1.1.0).\n  * PredictorCandidate{mask, name, rank, authored}: the models the agent may\n    try, in MDL order. The six base models and the composition operator are\n    human-written; which model to try, when, which composites to author, and\n    whether to keep one is the agent's.\n  * predict_body_next: the predictor itself.\n\nseeds/prediction_self_improvement.json (frozen; the loop -- the agent may not\nchange how it judges itself)\n  * PredictionCurriculum{current_level, max_level, last_change_seq} and\n    PredictionPolicy{self_improvement, surprise_floor, window, min_gain,\n    min_abs_gain}.\n  * pw_advance_level: `window` consecutive episodes at the level at or under\n    the floor -> the next level.\n  * pw_file_surprise_concern: `window` episodes since the predictor last\n    changed and the level not mastered -> SelfConcern{kind:'prediction_surprise'}.\n    Endemic: nothing but the agent's own surprise files it.\n  * pw_propose_predictor_edit: an open concern, self-improvement on -> one\n    Experiment + SeedDelta per candidate not yet tried against the current\n    model for this concern.\n  * pw_concern_exhausted: no candidate left -> the concern says so.\n  * pw_author_composite_predictor (1.1.0): an exhausted concern whose best\n    local trial cleared the bar at the level and was refuted only on its\n    retention cost -> the agent authors a new candidate, its current model\n    composed with that winner, and reopens the concern. Composites compose\n    further; one it already holds is not re-authored, so it terminates.\n  * pw_request_residual_fit / pw_author_context_layer (1.2.0): an exhausted\n    concern with nothing to compose -> the agent asks where its own model's\n    surprise lives (ResidualFit: per context atom, the summed error of the\n    frames where it holds, and the least-squares fit of those frames,\n    x' - x = c0*dx + c1*pdx + c2*ppdx + c3, written by the mechanical\n    half as ResidualCells); it then authors its current model plus a layer on\n    the atom holding the most residual where the fit helps, and reopens the\n    concern. The context atoms (reversal: dx*pdx < 0; after_reversal:\n    pdx*ppdx < 0) and the linear layer form are human-written; which atom,\n    the coefficients (from its own episodes), and whether to keep it are not.\n  * pw_master_last_level (1.2.0): the last level is mastered like the others.\n  * PredictionPolicy.authoring (1.2.0): 0 switches both authoring rules off\n    (the no_authoring ablation).\n  * pw_judge_predictor_edit: the replay's variant surprise against its control\n    surprise, on the agent's own recorded episodes at the level AND on its\n    recorded episodes of the levels it has already mastered (retention):\n    supported only when it is lower at the level by min_gain (relative) and\n    its gain, net of retention_weight x the surprise it adds on mastered\n    levels (summed per level, so one level's regression is neither diluted nor\n    traded against another's improvement), reaches min_abs_gain. Weighed,\n    not vetoed.\n  * pw_adopt_predictor_edit: once every trial is judged, the supported trial\n    with the best weighed net (ties: the simpler model) is adopted in the\n    graph -- the Predictor takes the candidate's form -- and the concern is\n    resolved.\nIdempotent.\n",
  "nodes": [
   {
    "local_id": 0,
@@ -25,6 +25,7 @@
     "min_gain": 0.2,
     "min_abs_gain": 0.05,
     "retention_weight": 1.0,
+    "authoring": 1,
     "description": "The agent's own bar: mean surprise per body-frame (cells) at or under the floor masters a level; a model must cut it by 20%, and by 0.05 cells net of any surprise it adds on the levels already mastered, to be adopted."
    }
   }
@@ -296,8 +297,248 @@
    ]
   },
   {
+   "name": "pw_master_last_level",
+   "comment": "The last level is mastered the same way (`window` consecutive episodes at or under the floor); there is nowhere to advance to.",
+   "match": [
+    [
+     "agent",
+     "has_prediction_curriculum",
+     "cur"
+    ],
+    [
+     "agent",
+     "has_prediction_policy",
+     "pol"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "cur"
+       },
+       "key": "current_level"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "cur"
+       },
+       "key": "max_level"
+      }
+     },
+     {
+      "type": "Gte",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "PredictionEpisode"
+        },
+        "var_name": "e",
+        "predicate": {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "e"
+          },
+          "key": "level"
+         },
+         "b": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "cur"
+          },
+          "key": "current_level"
+         }
+        }
+       }
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "pol"
+       },
+       "key": "window"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "Filter",
+         "source": {
+          "type": "Filter",
+          "source": {
+           "type": "NodesOfType",
+           "node_type": "PredictionEpisode"
+          },
+          "var_name": "e",
+          "predicate": {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "e"
+            },
+            "key": "level"
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "cur"
+            },
+            "key": "current_level"
+           }
+          }
+         },
+         "var_name": "e",
+         "predicate": {
+          "type": "Gt",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "e"
+           },
+           "key": "level_index"
+          },
+          "b": {
+           "type": "Minus",
+           "a": {
+            "type": "Count",
+            "source": {
+             "type": "Filter",
+             "source": {
+              "type": "NodesOfType",
+              "node_type": "PredictionEpisode"
+             },
+             "var_name": "e",
+             "predicate": {
+              "type": "Eq",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "e"
+               },
+               "key": "level"
+              },
+              "b": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "cur"
+               },
+               "key": "current_level"
+              }
+             }
+            }
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "pol"
+            },
+            "key": "window"
+           }
+          }
+         }
+        },
+        "var_name": "u",
+        "predicate": {
+         "type": "Lte",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "u"
+          },
+          "key": "mean_surprise"
+         },
+         "b": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "pol"
+          },
+          "key": "surprise_floor"
+         }
+        }
+       }
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "pol"
+       },
+       "key": "window"
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "cur"
+        },
+        "key": "mastered_through"
+       },
+       "b": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "cur"
+        },
+        "key": "max_level"
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "cur",
+     "mastered_through",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "cur"
+       },
+       "key": "max_level"
+      }
+     }
+    ]
+   ]
+  },
+  {
    "name": "pw_file_surprise_concern",
-   "comment": "Endemic supply: `window` episodes since the predictor last changed, none under the floor, files the agent's own concern. Nothing but its surprise decides this.",
+   "comment": "Endemic supply: `window` episodes since the predictor last changed and the level still not mastered (its last `window` episodes not all at or under the floor) files the agent's own concern. Nothing but its surprise decides this. (1.2.0: was 'none under the floor', which one lucky episode blocked forever.)",
    "match": [
     [
      "agent",
@@ -378,7 +619,7 @@
       }
      },
      {
-      "type": "Eq",
+      "type": "Lt",
       "a": {
        "type": "Count",
        "source": {
@@ -421,15 +662,48 @@
             "type": "Var",
             "name": "e"
            },
-           "key": "seq"
+           "key": "level_index"
           },
           "b": {
-           "type": "Attr",
-           "node": {
-            "type": "Var",
-            "name": "cur"
+           "type": "Minus",
+           "a": {
+            "type": "Count",
+            "source": {
+             "type": "Filter",
+             "source": {
+              "type": "NodesOfType",
+              "node_type": "PredictionEpisode"
+             },
+             "var_name": "e",
+             "predicate": {
+              "type": "Eq",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "e"
+               },
+               "key": "level"
+              },
+              "b": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "cur"
+               },
+               "key": "current_level"
+              }
+             }
+            }
            },
-           "key": "last_change_seq"
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "pol"
+            },
+            "key": "window"
+           }
           }
          }
         },
@@ -456,8 +730,12 @@
        }
       },
       "b": {
-       "type": "Lit",
-       "value": 0
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "pol"
+       },
+       "key": "window"
       }
      },
      {
@@ -718,23 +996,47 @@
      {
       "type": "Not",
       "arg": {
-       "type": "Eq",
-       "a": {
-        "type": "Attr",
-        "node": {
-         "type": "Var",
-         "name": "k"
+       "type": "And",
+       "items": [
+        {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "k"
+          },
+          "key": "mask"
+         },
+         "b": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "p"
+          },
+          "key": "mask"
+         }
         },
-        "key": "mask"
-       },
-       "b": {
-        "type": "Attr",
-        "node": {
-         "type": "Var",
-         "name": "p"
-        },
-        "key": "mask"
-       }
+        {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "k"
+          },
+          "key": "sig"
+         },
+         "b": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "p"
+          },
+          "key": "sig"
+         }
+        }
+       ]
       }
      },
      {
@@ -765,42 +1067,90 @@
          "type": "And",
          "items": [
           {
-           "type": "Eq",
-           "a": {
-            "type": "Attr",
-            "node": {
-             "type": "Var",
-             "name": "d"
+           "type": "And",
+           "items": [
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "d"
+              },
+              "key": "candidate_mask"
+             },
+             "b": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "k"
+              },
+              "key": "mask"
+             }
             },
-            "key": "candidate_mask"
-           },
-           "b": {
-            "type": "Attr",
-            "node": {
-             "type": "Var",
-             "name": "k"
-            },
-            "key": "mask"
-           }
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "d"
+              },
+              "key": "candidate_sig"
+             },
+             "b": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "k"
+              },
+              "key": "sig"
+             }
+            }
+           ]
           },
           {
-           "type": "Eq",
-           "a": {
-            "type": "Attr",
-            "node": {
-             "type": "Var",
-             "name": "d"
+           "type": "And",
+           "items": [
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "d"
+              },
+              "key": "control_mask"
+             },
+             "b": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "p"
+              },
+              "key": "mask"
+             }
             },
-            "key": "control_mask"
-           },
-           "b": {
-            "type": "Attr",
-            "node": {
-             "type": "Var",
-             "name": "p"
-            },
-            "key": "mask"
-           }
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "d"
+              },
+              "key": "control_sig"
+             },
+             "b": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "p"
+              },
+              "key": "sig"
+             }
+            }
+           ]
           }
          ]
         }
@@ -868,6 +1218,26 @@
          "name": "p"
         },
         "key": "mask"
+       }
+      },
+      "candidate_sig": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "k"
+        },
+        "key": "sig"
+       }
+      },
+      "control_sig": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "p"
+        },
+        "key": "sig"
        }
       },
       "candidate_name": {
@@ -976,6 +1346,426 @@
          "name": "p"
         },
         "key": "model"
+       }
+      },
+      "candidate_n_layers": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "k"
+        },
+        "key": "n_layers"
+       }
+      },
+      "candidate_ctx_bits": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "k"
+        },
+        "key": "ctx_bits"
+       }
+      },
+      "candidate_sig": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "k"
+        },
+        "key": "sig"
+       }
+      },
+      "candidate_l0_bit": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "k"
+        },
+        "key": "l0_bit"
+       }
+      },
+      "candidate_l1_bit": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "k"
+        },
+        "key": "l1_bit"
+       }
+      },
+      "candidate_l0_x0": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "k"
+        },
+        "key": "l0_x0"
+       }
+      },
+      "candidate_l0_x1": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "k"
+        },
+        "key": "l0_x1"
+       }
+      },
+      "candidate_l0_x2": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "k"
+        },
+        "key": "l0_x2"
+       }
+      },
+      "candidate_l0_x3": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "k"
+        },
+        "key": "l0_x3"
+       }
+      },
+      "candidate_l0_y0": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "k"
+        },
+        "key": "l0_y0"
+       }
+      },
+      "candidate_l0_y1": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "k"
+        },
+        "key": "l0_y1"
+       }
+      },
+      "candidate_l0_y2": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "k"
+        },
+        "key": "l0_y2"
+       }
+      },
+      "candidate_l0_y3": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "k"
+        },
+        "key": "l0_y3"
+       }
+      },
+      "candidate_l1_x0": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "k"
+        },
+        "key": "l1_x0"
+       }
+      },
+      "candidate_l1_x1": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "k"
+        },
+        "key": "l1_x1"
+       }
+      },
+      "candidate_l1_x2": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "k"
+        },
+        "key": "l1_x2"
+       }
+      },
+      "candidate_l1_x3": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "k"
+        },
+        "key": "l1_x3"
+       }
+      },
+      "candidate_l1_y0": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "k"
+        },
+        "key": "l1_y0"
+       }
+      },
+      "candidate_l1_y1": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "k"
+        },
+        "key": "l1_y1"
+       }
+      },
+      "candidate_l1_y2": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "k"
+        },
+        "key": "l1_y2"
+       }
+      },
+      "candidate_l1_y3": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "k"
+        },
+        "key": "l1_y3"
+       }
+      },
+      "control_n_layers": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "p"
+        },
+        "key": "n_layers"
+       }
+      },
+      "control_ctx_bits": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "p"
+        },
+        "key": "ctx_bits"
+       }
+      },
+      "control_sig": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "p"
+        },
+        "key": "sig"
+       }
+      },
+      "control_l0_bit": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "p"
+        },
+        "key": "l0_bit"
+       }
+      },
+      "control_l1_bit": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "p"
+        },
+        "key": "l1_bit"
+       }
+      },
+      "control_l0_x0": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "p"
+        },
+        "key": "l0_x0"
+       }
+      },
+      "control_l0_x1": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "p"
+        },
+        "key": "l0_x1"
+       }
+      },
+      "control_l0_x2": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "p"
+        },
+        "key": "l0_x2"
+       }
+      },
+      "control_l0_x3": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "p"
+        },
+        "key": "l0_x3"
+       }
+      },
+      "control_l0_y0": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "p"
+        },
+        "key": "l0_y0"
+       }
+      },
+      "control_l0_y1": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "p"
+        },
+        "key": "l0_y1"
+       }
+      },
+      "control_l0_y2": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "p"
+        },
+        "key": "l0_y2"
+       }
+      },
+      "control_l0_y3": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "p"
+        },
+        "key": "l0_y3"
+       }
+      },
+      "control_l1_x0": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "p"
+        },
+        "key": "l1_x0"
+       }
+      },
+      "control_l1_x1": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "p"
+        },
+        "key": "l1_x1"
+       }
+      },
+      "control_l1_x2": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "p"
+        },
+        "key": "l1_x2"
+       }
+      },
+      "control_l1_x3": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "p"
+        },
+        "key": "l1_x3"
+       }
+      },
+      "control_l1_y0": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "p"
+        },
+        "key": "l1_y0"
+       }
+      },
+      "control_l1_y1": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "p"
+        },
+        "key": "l1_y1"
+       }
+      },
+      "control_l1_y2": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "p"
+        },
+        "key": "l1_y2"
+       }
+      },
+      "control_l1_y3": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "p"
+        },
+        "key": "l1_y3"
        }
       }
      }
@@ -1104,23 +1894,47 @@
           {
            "type": "Not",
            "arg": {
-            "type": "Eq",
-            "a": {
-             "type": "Attr",
-             "node": {
-              "type": "Var",
-              "name": "k"
+            "type": "And",
+            "items": [
+             {
+              "type": "Eq",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "k"
+               },
+               "key": "mask"
+              },
+              "b": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "p"
+               },
+               "key": "mask"
+              }
              },
-             "key": "mask"
-            },
-            "b": {
-             "type": "Attr",
-             "node": {
-              "type": "Var",
-              "name": "p"
-             },
-             "key": "mask"
-            }
+             {
+              "type": "Eq",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "k"
+               },
+               "key": "sig"
+              },
+              "b": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "p"
+               },
+               "key": "sig"
+              }
+             }
+            ]
            }
           },
           {
@@ -1151,42 +1965,90 @@
               "type": "And",
               "items": [
                {
-                "type": "Eq",
-                "a": {
-                 "type": "Attr",
-                 "node": {
-                  "type": "Var",
-                  "name": "d"
+                "type": "And",
+                "items": [
+                 {
+                  "type": "Eq",
+                  "a": {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "d"
+                   },
+                   "key": "candidate_mask"
+                  },
+                  "b": {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "k"
+                   },
+                   "key": "mask"
+                  }
                  },
-                 "key": "candidate_mask"
-                },
-                "b": {
-                 "type": "Attr",
-                 "node": {
-                  "type": "Var",
-                  "name": "k"
-                 },
-                 "key": "mask"
-                }
+                 {
+                  "type": "Eq",
+                  "a": {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "d"
+                   },
+                   "key": "candidate_sig"
+                  },
+                  "b": {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "k"
+                   },
+                   "key": "sig"
+                  }
+                 }
+                ]
                },
                {
-                "type": "Eq",
-                "a": {
-                 "type": "Attr",
-                 "node": {
-                  "type": "Var",
-                  "name": "d"
+                "type": "And",
+                "items": [
+                 {
+                  "type": "Eq",
+                  "a": {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "d"
+                   },
+                   "key": "control_mask"
+                  },
+                  "b": {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "p"
+                   },
+                   "key": "mask"
+                  }
                  },
-                 "key": "control_mask"
-                },
-                "b": {
-                 "type": "Attr",
-                 "node": {
-                  "type": "Var",
-                  "name": "p"
-                 },
-                 "key": "mask"
-                }
+                 {
+                  "type": "Eq",
+                  "a": {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "d"
+                   },
+                   "key": "control_sig"
+                  },
+                  "b": {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "p"
+                   },
+                   "key": "sig"
+                  }
+                 }
+                ]
                }
               ]
              }
@@ -1263,23 +2125,47 @@
           },
           "var_name": "od",
           "predicate": {
-           "type": "Eq",
-           "a": {
-            "type": "Attr",
-            "node": {
-             "type": "Var",
-             "name": "od"
+           "type": "And",
+           "items": [
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "od"
+              },
+              "key": "control_mask"
+             },
+             "b": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "p"
+              },
+              "key": "mask"
+             }
             },
-            "key": "control_mask"
-           },
-           "b": {
-            "type": "Attr",
-            "node": {
-             "type": "Var",
-             "name": "p"
-            },
-            "key": "mask"
-           }
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "od"
+              },
+              "key": "control_sig"
+             },
+             "b": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "p"
+              },
+              "key": "sig"
+             }
+            }
+           ]
           }
          }
         ]
@@ -1390,6 +2276,21 @@
       }
      },
      {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "pol"
+       },
+       "key": "authoring"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1
+      }
+     },
+     {
       "type": "Let",
       "name": "w",
       "value": {
@@ -1409,23 +2310,47 @@
          "type": "And",
          "items": [
           {
-           "type": "Eq",
-           "a": {
-            "type": "Attr",
-            "node": {
-             "type": "Var",
-             "name": "lw"
+           "type": "And",
+           "items": [
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "lw"
+              },
+              "key": "control_mask"
+             },
+             "b": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "p"
+              },
+              "key": "mask"
+             }
             },
-            "key": "control_mask"
-           },
-           "b": {
-            "type": "Attr",
-            "node": {
-             "type": "Var",
-             "name": "p"
-            },
-            "key": "mask"
-           }
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "lw"
+              },
+              "key": "control_sig"
+             },
+             "b": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "p"
+              },
+              "key": "sig"
+             }
+            }
+           ]
           },
           {
            "type": "Eq",
@@ -1522,58 +2447,82 @@
           },
           "var_name": "q",
           "predicate": {
-           "type": "Eq",
-           "a": {
-            "type": "Attr",
-            "node": {
-             "type": "Var",
-             "name": "q"
-            },
-            "key": "mask"
-           },
-           "b": {
-            "type": "Minus",
-            "a": {
-             "type": "Plus",
-             "items": [
-              {
-               "type": "Attr",
-               "node": {
-                "type": "Var",
-                "name": "p"
-               },
-               "key": "mask"
-              },
-              {
-               "type": "Attr",
-               "node": {
-                "type": "Var",
-                "name": "w"
-               },
-               "key": "candidate_mask"
-              }
-             ]
-            },
-            "b": {
-             "type": "BitAnd",
+           "type": "And",
+           "items": [
+            {
+             "type": "Eq",
              "a": {
               "type": "Attr",
               "node": {
                "type": "Var",
-               "name": "p"
+               "name": "q"
               },
               "key": "mask"
+             },
+             "b": {
+              "type": "Minus",
+              "a": {
+               "type": "Plus",
+               "items": [
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "p"
+                 },
+                 "key": "mask"
+                },
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "w"
+                 },
+                 "key": "candidate_mask"
+                }
+               ]
+              },
+              "b": {
+               "type": "BitAnd",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "p"
+                },
+                "key": "mask"
+               },
+               "b": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "w"
+                },
+                "key": "candidate_mask"
+               }
+              }
+             }
+            },
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "q"
+              },
+              "key": "sig"
              },
              "b": {
               "type": "Attr",
               "node": {
                "type": "Var",
-               "name": "w"
+               "name": "p"
               },
-              "key": "candidate_mask"
+              "key": "sig"
              }
             }
-           }
+           ]
           }
          }
         }
@@ -1601,6 +2550,217 @@
         "key": "level"
        }
       },
+      "authored_by": "composition",
+      "n_layers": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "p"
+        },
+        "key": "n_layers"
+       }
+      },
+      "ctx_bits": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "p"
+        },
+        "key": "ctx_bits"
+       }
+      },
+      "sig": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "p"
+        },
+        "key": "sig"
+       }
+      },
+      "l0_bit": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "p"
+        },
+        "key": "l0_bit"
+       }
+      },
+      "l1_bit": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "p"
+        },
+        "key": "l1_bit"
+       }
+      },
+      "l0_x0": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "p"
+        },
+        "key": "l0_x0"
+       }
+      },
+      "l0_x1": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "p"
+        },
+        "key": "l0_x1"
+       }
+      },
+      "l0_x2": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "p"
+        },
+        "key": "l0_x2"
+       }
+      },
+      "l0_x3": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "p"
+        },
+        "key": "l0_x3"
+       }
+      },
+      "l0_y0": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "p"
+        },
+        "key": "l0_y0"
+       }
+      },
+      "l0_y1": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "p"
+        },
+        "key": "l0_y1"
+       }
+      },
+      "l0_y2": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "p"
+        },
+        "key": "l0_y2"
+       }
+      },
+      "l0_y3": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "p"
+        },
+        "key": "l0_y3"
+       }
+      },
+      "l1_x0": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "p"
+        },
+        "key": "l1_x0"
+       }
+      },
+      "l1_x1": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "p"
+        },
+        "key": "l1_x1"
+       }
+      },
+      "l1_x2": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "p"
+        },
+        "key": "l1_x2"
+       }
+      },
+      "l1_x3": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "p"
+        },
+        "key": "l1_x3"
+       }
+      },
+      "l1_y0": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "p"
+        },
+        "key": "l1_y0"
+       }
+      },
+      "l1_y1": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "p"
+        },
+        "key": "l1_y1"
+       }
+      },
+      "l1_y2": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "p"
+        },
+        "key": "l1_y2"
+       }
+      },
+      "l1_y3": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "p"
+        },
+        "key": "l1_y3"
+       }
+      },
       "mask": {
        "__term__": {
         "type": "Let",
@@ -1622,23 +2782,47 @@
            "type": "And",
            "items": [
             {
-             "type": "Eq",
-             "a": {
-              "type": "Attr",
-              "node": {
-               "type": "Var",
-               "name": "lw"
+             "type": "And",
+             "items": [
+              {
+               "type": "Eq",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "lw"
+                },
+                "key": "control_mask"
+               },
+               "b": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "p"
+                },
+                "key": "mask"
+               }
               },
-              "key": "control_mask"
-             },
-             "b": {
-              "type": "Attr",
-              "node": {
-               "type": "Var",
-               "name": "p"
-              },
-              "key": "mask"
-             }
+              {
+               "type": "Eq",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "lw"
+                },
+                "key": "control_sig"
+               },
+               "b": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "p"
+                },
+                "key": "sig"
+               }
+              }
+             ]
             },
             {
              "type": "Eq",
@@ -1792,23 +2976,47 @@
            "type": "And",
            "items": [
             {
-             "type": "Eq",
-             "a": {
-              "type": "Attr",
-              "node": {
-               "type": "Var",
-               "name": "lw"
+             "type": "And",
+             "items": [
+              {
+               "type": "Eq",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "lw"
+                },
+                "key": "control_mask"
+               },
+               "b": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "p"
+                },
+                "key": "mask"
+               }
               },
-              "key": "control_mask"
-             },
-             "b": {
-              "type": "Attr",
-              "node": {
-               "type": "Var",
-               "name": "p"
-              },
-              "key": "mask"
-             }
+              {
+               "type": "Eq",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "lw"
+                },
+                "key": "control_sig"
+               },
+               "b": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "p"
+                },
+                "key": "sig"
+               }
+              }
+             ]
             },
             {
              "type": "Eq",
@@ -1918,6 +3126,3141 @@
      "sc",
      "authored",
      "k"
+    ],
+    [
+     "set_attr",
+     "sc",
+     "status",
+     "open"
+    ]
+   ]
+  },
+  {
+   "name": "pw_request_residual_fit",
+   "comment": "An exhausted concern with nothing left to compose (no local winner, or its composite is already held) and a free context slot: the agent asks where its own model's surprise lives -- its residual on its own recorded episodes at the level, per context atom.",
+   "match": [
+    [
+     "agent",
+     "has_prediction_curriculum",
+     "cur"
+    ],
+    [
+     "agent",
+     "has_prediction_policy",
+     "pol"
+    ],
+    [
+     "agent",
+     "has_self_concern",
+     "sc"
+    ],
+    [
+     "agent",
+     "has_predictor",
+     "p"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "sc"
+         },
+         "key": "kind"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "prediction_surprise"
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "sc"
+         },
+         "key": "status"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "exhausted"
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "sc"
+         },
+         "key": "level"
+        },
+        "b": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "cur"
+         },
+         "key": "current_level"
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "pol"
+         },
+         "key": "self_improvement"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 1
+        }
+       }
+      ]
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "pol"
+       },
+       "key": "authoring"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Let",
+       "name": "w",
+       "value": {
+        "type": "Argmin",
+        "source": {
+         "type": "Filter",
+         "source": {
+          "type": "Neighbours",
+          "node": {
+           "type": "Var",
+           "name": "sc"
+          },
+          "edge_type": "tested_by"
+         },
+         "var_name": "lw",
+         "predicate": {
+          "type": "And",
+          "items": [
+           {
+            "type": "And",
+            "items": [
+             {
+              "type": "Eq",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "lw"
+               },
+               "key": "control_mask"
+              },
+              "b": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "p"
+               },
+               "key": "mask"
+              }
+             },
+             {
+              "type": "Eq",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "lw"
+               },
+               "key": "control_sig"
+              },
+              "b": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "p"
+               },
+               "key": "sig"
+              }
+             }
+            ]
+           },
+           {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "lw"
+             },
+             "key": "outcome"
+            },
+            "b": {
+             "type": "Lit",
+             "value": "refuted"
+            }
+           },
+           {
+            "type": "Lte",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "lw"
+             },
+             "key": "variant_surprise"
+            },
+            "b": {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "lw"
+               },
+               "key": "control_surprise"
+              },
+              {
+               "type": "Minus",
+               "a": {
+                "type": "Lit",
+                "value": 1.0
+               },
+               "b": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "pol"
+                },
+                "key": "min_gain"
+               }
+              }
+             ]
+            }
+           }
+          ]
+         }
+        },
+        "var_name": "lw",
+        "value": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "lw"
+         },
+         "key": "variant_surprise"
+        },
+        "default": null
+       },
+       "body": {
+        "type": "And",
+        "items": [
+         {
+          "type": "Not",
+          "arg": {
+           "type": "Eq",
+           "a": {
+            "type": "Var",
+            "name": "w"
+           },
+           "b": {
+            "type": "Lit",
+            "value": null
+           }
+          }
+         },
+         {
+          "type": "Not",
+          "arg": {
+           "type": "Exists",
+           "source": {
+            "type": "NodesOfType",
+            "node_type": "PredictorCandidate"
+           },
+           "var_name": "q",
+           "predicate": {
+            "type": "And",
+            "items": [
+             {
+              "type": "Eq",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "q"
+               },
+               "key": "mask"
+              },
+              "b": {
+               "type": "Minus",
+               "a": {
+                "type": "Plus",
+                "items": [
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "p"
+                  },
+                  "key": "mask"
+                 },
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "w"
+                  },
+                  "key": "candidate_mask"
+                 }
+                ]
+               },
+               "b": {
+                "type": "BitAnd",
+                "a": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "p"
+                 },
+                 "key": "mask"
+                },
+                "b": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "w"
+                 },
+                 "key": "candidate_mask"
+                }
+               }
+              }
+             },
+             {
+              "type": "Eq",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "q"
+               },
+               "key": "sig"
+              },
+              "b": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "p"
+               },
+               "key": "sig"
+              }
+             }
+            ]
+           }
+          }
+         }
+        ]
+       }
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "sc"
+        },
+        "key": "fit_requested"
+       },
+       "b": {
+        "type": "Lit",
+        "value": 1
+       }
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "p"
+       },
+       "key": "n_layers"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 2
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "rf",
+     "ResidualFit",
+     {
+      "status": "requested",
+      "level": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "sc"
+        },
+        "key": "level"
+       }
+      },
+      "control_mask": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "p"
+        },
+        "key": "mask"
+       }
+      },
+      "control_sig": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "p"
+        },
+        "key": "sig"
+       }
+      },
+      "control_ctx_bits": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "p"
+        },
+        "key": "ctx_bits"
+       }
+      }
+     }
+    ],
+    [
+     "add_edge",
+     "sc",
+     "has_residual_fit",
+     "rf"
+    ],
+    [
+     "set_attr",
+     "sc",
+     "fit_requested",
+     1
+    ]
+   ]
+  },
+  {
+   "name": "pw_author_context_layer",
+   "comment": "The agent authors a new model from its own residual: its current model with a new context layer on the atom that holds the most of its surprise, the layer's prediction the linear fit of the residual frames; it adds the model to its candidates and reopens the concern to try it. Each atom is used at most once per model and a model it already holds is not re-authored.",
+   "match": [
+    [
+     "agent",
+     "has_prediction_curriculum",
+     "cur"
+    ],
+    [
+     "agent",
+     "has_prediction_policy",
+     "pol"
+    ],
+    [
+     "agent",
+     "has_self_concern",
+     "sc"
+    ],
+    [
+     "agent",
+     "has_predictor",
+     "p"
+    ],
+    [
+     "sc",
+     "has_residual_fit",
+     "rf"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "sc"
+         },
+         "key": "kind"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "prediction_surprise"
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "sc"
+         },
+         "key": "status"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "exhausted"
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "sc"
+         },
+         "key": "level"
+        },
+        "b": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "cur"
+         },
+         "key": "current_level"
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "pol"
+         },
+         "key": "self_improvement"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 1
+        }
+       }
+      ]
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "rf"
+       },
+       "key": "status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "done"
+      }
+     },
+     {
+      "type": "Let",
+      "name": "c",
+      "value": {
+       "type": "Argmax",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "rf"
+         },
+         "edge_type": "has_cell"
+        },
+        "var_name": "cl",
+        "predicate": {
+         "type": "And",
+         "items": [
+          {
+           "type": "Eq",
+           "a": {
+            "type": "BitAnd",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "p"
+             },
+             "key": "ctx_bits"
+            },
+            "b": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "cl"
+             },
+             "key": "ctx_bit"
+            }
+           },
+           "b": {
+            "type": "Lit",
+            "value": 0
+           }
+          },
+          {
+           "type": "Gt",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "cl"
+            },
+            "key": "fit_gain"
+           },
+           "b": {
+            "type": "Lit",
+            "value": 0.0
+           }
+          }
+         ]
+        }
+       },
+       "var_name": "cl",
+       "value": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "cl"
+        },
+        "key": "residual_sum"
+       },
+       "default": null
+      },
+      "body": {
+       "type": "And",
+       "items": [
+        {
+         "type": "Not",
+         "arg": {
+          "type": "Eq",
+          "a": {
+           "type": "Var",
+           "name": "c"
+          },
+          "b": {
+           "type": "Lit",
+           "value": null
+          }
+         }
+        },
+        {
+         "type": "Not",
+         "arg": {
+          "type": "Exists",
+          "source": {
+           "type": "NodesOfType",
+           "node_type": "PredictorCandidate"
+          },
+          "var_name": "q",
+          "predicate": {
+           "type": "And",
+           "items": [
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "q"
+              },
+              "key": "mask"
+             },
+             "b": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "p"
+              },
+              "key": "mask"
+             }
+            },
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "q"
+              },
+              "key": "sig"
+             },
+             "b": {
+              "type": "StringConcat",
+              "parts": [
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "p"
+                },
+                "key": "sig"
+               },
+               {
+                "type": "Lit",
+                "value": "+"
+               },
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "c"
+                },
+                "key": "atom"
+               }
+              ]
+             }
+            }
+           ]
+          }
+         }
+        }
+       ]
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "k",
+     "PredictorCandidate",
+     {
+      "form": "layered",
+      "reflect": -1,
+      "authored": 1,
+      "authored_level": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "sc"
+        },
+        "key": "level"
+       }
+      },
+      "authored_by": "residual_fit",
+      "mask": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "p"
+        },
+        "key": "mask"
+       }
+      },
+      "rank": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Lit",
+          "value": 6
+         },
+         {
+          "type": "Count",
+          "source": {
+           "type": "NodesOfType",
+           "node_type": "PredictorCandidate"
+          }
+         }
+        ]
+       }
+      },
+      "n_layers": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "p"
+          },
+          "key": "n_layers"
+         },
+         {
+          "type": "Lit",
+          "value": 1
+         }
+        ]
+       }
+      },
+      "ctx_bits": {
+       "__term__": {
+        "type": "Let",
+        "name": "c",
+        "value": {
+         "type": "Argmax",
+         "source": {
+          "type": "Filter",
+          "source": {
+           "type": "Neighbours",
+           "node": {
+            "type": "Var",
+            "name": "rf"
+           },
+           "edge_type": "has_cell"
+          },
+          "var_name": "cl",
+          "predicate": {
+           "type": "And",
+           "items": [
+            {
+             "type": "Eq",
+             "a": {
+              "type": "BitAnd",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "p"
+               },
+               "key": "ctx_bits"
+              },
+              "b": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "cl"
+               },
+               "key": "ctx_bit"
+              }
+             },
+             "b": {
+              "type": "Lit",
+              "value": 0
+             }
+            },
+            {
+             "type": "Gt",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "cl"
+              },
+              "key": "fit_gain"
+             },
+             "b": {
+              "type": "Lit",
+              "value": 0.0
+             }
+            }
+           ]
+          }
+         },
+         "var_name": "cl",
+         "value": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "cl"
+          },
+          "key": "residual_sum"
+         },
+         "default": null
+        },
+        "body": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "p"
+           },
+           "key": "ctx_bits"
+          },
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "c"
+           },
+           "key": "ctx_bit"
+          }
+         ]
+        }
+       }
+      },
+      "sig": {
+       "__term__": {
+        "type": "Let",
+        "name": "c",
+        "value": {
+         "type": "Argmax",
+         "source": {
+          "type": "Filter",
+          "source": {
+           "type": "Neighbours",
+           "node": {
+            "type": "Var",
+            "name": "rf"
+           },
+           "edge_type": "has_cell"
+          },
+          "var_name": "cl",
+          "predicate": {
+           "type": "And",
+           "items": [
+            {
+             "type": "Eq",
+             "a": {
+              "type": "BitAnd",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "p"
+               },
+               "key": "ctx_bits"
+              },
+              "b": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "cl"
+               },
+               "key": "ctx_bit"
+              }
+             },
+             "b": {
+              "type": "Lit",
+              "value": 0
+             }
+            },
+            {
+             "type": "Gt",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "cl"
+              },
+              "key": "fit_gain"
+             },
+             "b": {
+              "type": "Lit",
+              "value": 0.0
+             }
+            }
+           ]
+          }
+         },
+         "var_name": "cl",
+         "value": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "cl"
+          },
+          "key": "residual_sum"
+         },
+         "default": null
+        },
+        "body": {
+         "type": "StringConcat",
+         "parts": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "p"
+           },
+           "key": "sig"
+          },
+          {
+           "type": "Lit",
+           "value": "+"
+          },
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "c"
+           },
+           "key": "atom"
+          }
+         ]
+        }
+       }
+      },
+      "name": {
+       "__term__": {
+        "type": "Let",
+        "name": "c",
+        "value": {
+         "type": "Argmax",
+         "source": {
+          "type": "Filter",
+          "source": {
+           "type": "Neighbours",
+           "node": {
+            "type": "Var",
+            "name": "rf"
+           },
+           "edge_type": "has_cell"
+          },
+          "var_name": "cl",
+          "predicate": {
+           "type": "And",
+           "items": [
+            {
+             "type": "Eq",
+             "a": {
+              "type": "BitAnd",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "p"
+               },
+               "key": "ctx_bits"
+              },
+              "b": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "cl"
+               },
+               "key": "ctx_bit"
+              }
+             },
+             "b": {
+              "type": "Lit",
+              "value": 0
+             }
+            },
+            {
+             "type": "Gt",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "cl"
+              },
+              "key": "fit_gain"
+             },
+             "b": {
+              "type": "Lit",
+              "value": 0.0
+             }
+            }
+           ]
+          }
+         },
+         "var_name": "cl",
+         "value": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "cl"
+          },
+          "key": "residual_sum"
+         },
+         "default": null
+        },
+        "body": {
+         "type": "StringConcat",
+         "parts": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "p"
+           },
+           "key": "model"
+          },
+          {
+           "type": "Lit",
+           "value": " + "
+          },
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "c"
+           },
+           "key": "atom"
+          },
+          {
+           "type": "Lit",
+           "value": " layer"
+          }
+         ]
+        }
+       }
+      },
+      "l0_bit": {
+       "__term__": {
+        "type": "Let",
+        "name": "c",
+        "value": {
+         "type": "Argmax",
+         "source": {
+          "type": "Filter",
+          "source": {
+           "type": "Neighbours",
+           "node": {
+            "type": "Var",
+            "name": "rf"
+           },
+           "edge_type": "has_cell"
+          },
+          "var_name": "cl",
+          "predicate": {
+           "type": "And",
+           "items": [
+            {
+             "type": "Eq",
+             "a": {
+              "type": "BitAnd",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "p"
+               },
+               "key": "ctx_bits"
+              },
+              "b": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "cl"
+               },
+               "key": "ctx_bit"
+              }
+             },
+             "b": {
+              "type": "Lit",
+              "value": 0
+             }
+            },
+            {
+             "type": "Gt",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "cl"
+              },
+              "key": "fit_gain"
+             },
+             "b": {
+              "type": "Lit",
+              "value": 0.0
+             }
+            }
+           ]
+          }
+         },
+         "var_name": "cl",
+         "value": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "cl"
+          },
+          "key": "residual_sum"
+         },
+         "default": null
+        },
+        "body": {
+         "type": "IfThenElse",
+         "cond": {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "p"
+           },
+           "key": "n_layers"
+          },
+          "b": {
+           "type": "Lit",
+           "value": 0
+          }
+         },
+         "then": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "c"
+          },
+          "key": "ctx_bit"
+         },
+         "other": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "p"
+          },
+          "key": "l0_bit"
+         }
+        }
+       }
+      },
+      "l1_bit": {
+       "__term__": {
+        "type": "Let",
+        "name": "c",
+        "value": {
+         "type": "Argmax",
+         "source": {
+          "type": "Filter",
+          "source": {
+           "type": "Neighbours",
+           "node": {
+            "type": "Var",
+            "name": "rf"
+           },
+           "edge_type": "has_cell"
+          },
+          "var_name": "cl",
+          "predicate": {
+           "type": "And",
+           "items": [
+            {
+             "type": "Eq",
+             "a": {
+              "type": "BitAnd",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "p"
+               },
+               "key": "ctx_bits"
+              },
+              "b": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "cl"
+               },
+               "key": "ctx_bit"
+              }
+             },
+             "b": {
+              "type": "Lit",
+              "value": 0
+             }
+            },
+            {
+             "type": "Gt",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "cl"
+              },
+              "key": "fit_gain"
+             },
+             "b": {
+              "type": "Lit",
+              "value": 0.0
+             }
+            }
+           ]
+          }
+         },
+         "var_name": "cl",
+         "value": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "cl"
+          },
+          "key": "residual_sum"
+         },
+         "default": null
+        },
+        "body": {
+         "type": "IfThenElse",
+         "cond": {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "p"
+           },
+           "key": "n_layers"
+          },
+          "b": {
+           "type": "Lit",
+           "value": 1
+          }
+         },
+         "then": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "c"
+          },
+          "key": "ctx_bit"
+         },
+         "other": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "p"
+          },
+          "key": "l1_bit"
+         }
+        }
+       }
+      },
+      "l0_x0": {
+       "__term__": {
+        "type": "Let",
+        "name": "c",
+        "value": {
+         "type": "Argmax",
+         "source": {
+          "type": "Filter",
+          "source": {
+           "type": "Neighbours",
+           "node": {
+            "type": "Var",
+            "name": "rf"
+           },
+           "edge_type": "has_cell"
+          },
+          "var_name": "cl",
+          "predicate": {
+           "type": "And",
+           "items": [
+            {
+             "type": "Eq",
+             "a": {
+              "type": "BitAnd",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "p"
+               },
+               "key": "ctx_bits"
+              },
+              "b": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "cl"
+               },
+               "key": "ctx_bit"
+              }
+             },
+             "b": {
+              "type": "Lit",
+              "value": 0
+             }
+            },
+            {
+             "type": "Gt",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "cl"
+              },
+              "key": "fit_gain"
+             },
+             "b": {
+              "type": "Lit",
+              "value": 0.0
+             }
+            }
+           ]
+          }
+         },
+         "var_name": "cl",
+         "value": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "cl"
+          },
+          "key": "residual_sum"
+         },
+         "default": null
+        },
+        "body": {
+         "type": "IfThenElse",
+         "cond": {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "p"
+           },
+           "key": "n_layers"
+          },
+          "b": {
+           "type": "Lit",
+           "value": 0
+          }
+         },
+         "then": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "c"
+          },
+          "key": "x0"
+         },
+         "other": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "p"
+          },
+          "key": "l0_x0"
+         }
+        }
+       }
+      },
+      "l0_x1": {
+       "__term__": {
+        "type": "Let",
+        "name": "c",
+        "value": {
+         "type": "Argmax",
+         "source": {
+          "type": "Filter",
+          "source": {
+           "type": "Neighbours",
+           "node": {
+            "type": "Var",
+            "name": "rf"
+           },
+           "edge_type": "has_cell"
+          },
+          "var_name": "cl",
+          "predicate": {
+           "type": "And",
+           "items": [
+            {
+             "type": "Eq",
+             "a": {
+              "type": "BitAnd",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "p"
+               },
+               "key": "ctx_bits"
+              },
+              "b": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "cl"
+               },
+               "key": "ctx_bit"
+              }
+             },
+             "b": {
+              "type": "Lit",
+              "value": 0
+             }
+            },
+            {
+             "type": "Gt",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "cl"
+              },
+              "key": "fit_gain"
+             },
+             "b": {
+              "type": "Lit",
+              "value": 0.0
+             }
+            }
+           ]
+          }
+         },
+         "var_name": "cl",
+         "value": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "cl"
+          },
+          "key": "residual_sum"
+         },
+         "default": null
+        },
+        "body": {
+         "type": "IfThenElse",
+         "cond": {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "p"
+           },
+           "key": "n_layers"
+          },
+          "b": {
+           "type": "Lit",
+           "value": 0
+          }
+         },
+         "then": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "c"
+          },
+          "key": "x1"
+         },
+         "other": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "p"
+          },
+          "key": "l0_x1"
+         }
+        }
+       }
+      },
+      "l0_x2": {
+       "__term__": {
+        "type": "Let",
+        "name": "c",
+        "value": {
+         "type": "Argmax",
+         "source": {
+          "type": "Filter",
+          "source": {
+           "type": "Neighbours",
+           "node": {
+            "type": "Var",
+            "name": "rf"
+           },
+           "edge_type": "has_cell"
+          },
+          "var_name": "cl",
+          "predicate": {
+           "type": "And",
+           "items": [
+            {
+             "type": "Eq",
+             "a": {
+              "type": "BitAnd",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "p"
+               },
+               "key": "ctx_bits"
+              },
+              "b": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "cl"
+               },
+               "key": "ctx_bit"
+              }
+             },
+             "b": {
+              "type": "Lit",
+              "value": 0
+             }
+            },
+            {
+             "type": "Gt",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "cl"
+              },
+              "key": "fit_gain"
+             },
+             "b": {
+              "type": "Lit",
+              "value": 0.0
+             }
+            }
+           ]
+          }
+         },
+         "var_name": "cl",
+         "value": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "cl"
+          },
+          "key": "residual_sum"
+         },
+         "default": null
+        },
+        "body": {
+         "type": "IfThenElse",
+         "cond": {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "p"
+           },
+           "key": "n_layers"
+          },
+          "b": {
+           "type": "Lit",
+           "value": 0
+          }
+         },
+         "then": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "c"
+          },
+          "key": "x2"
+         },
+         "other": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "p"
+          },
+          "key": "l0_x2"
+         }
+        }
+       }
+      },
+      "l0_x3": {
+       "__term__": {
+        "type": "Let",
+        "name": "c",
+        "value": {
+         "type": "Argmax",
+         "source": {
+          "type": "Filter",
+          "source": {
+           "type": "Neighbours",
+           "node": {
+            "type": "Var",
+            "name": "rf"
+           },
+           "edge_type": "has_cell"
+          },
+          "var_name": "cl",
+          "predicate": {
+           "type": "And",
+           "items": [
+            {
+             "type": "Eq",
+             "a": {
+              "type": "BitAnd",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "p"
+               },
+               "key": "ctx_bits"
+              },
+              "b": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "cl"
+               },
+               "key": "ctx_bit"
+              }
+             },
+             "b": {
+              "type": "Lit",
+              "value": 0
+             }
+            },
+            {
+             "type": "Gt",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "cl"
+              },
+              "key": "fit_gain"
+             },
+             "b": {
+              "type": "Lit",
+              "value": 0.0
+             }
+            }
+           ]
+          }
+         },
+         "var_name": "cl",
+         "value": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "cl"
+          },
+          "key": "residual_sum"
+         },
+         "default": null
+        },
+        "body": {
+         "type": "IfThenElse",
+         "cond": {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "p"
+           },
+           "key": "n_layers"
+          },
+          "b": {
+           "type": "Lit",
+           "value": 0
+          }
+         },
+         "then": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "c"
+          },
+          "key": "x3"
+         },
+         "other": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "p"
+          },
+          "key": "l0_x3"
+         }
+        }
+       }
+      },
+      "l0_y0": {
+       "__term__": {
+        "type": "Let",
+        "name": "c",
+        "value": {
+         "type": "Argmax",
+         "source": {
+          "type": "Filter",
+          "source": {
+           "type": "Neighbours",
+           "node": {
+            "type": "Var",
+            "name": "rf"
+           },
+           "edge_type": "has_cell"
+          },
+          "var_name": "cl",
+          "predicate": {
+           "type": "And",
+           "items": [
+            {
+             "type": "Eq",
+             "a": {
+              "type": "BitAnd",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "p"
+               },
+               "key": "ctx_bits"
+              },
+              "b": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "cl"
+               },
+               "key": "ctx_bit"
+              }
+             },
+             "b": {
+              "type": "Lit",
+              "value": 0
+             }
+            },
+            {
+             "type": "Gt",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "cl"
+              },
+              "key": "fit_gain"
+             },
+             "b": {
+              "type": "Lit",
+              "value": 0.0
+             }
+            }
+           ]
+          }
+         },
+         "var_name": "cl",
+         "value": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "cl"
+          },
+          "key": "residual_sum"
+         },
+         "default": null
+        },
+        "body": {
+         "type": "IfThenElse",
+         "cond": {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "p"
+           },
+           "key": "n_layers"
+          },
+          "b": {
+           "type": "Lit",
+           "value": 0
+          }
+         },
+         "then": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "c"
+          },
+          "key": "y0"
+         },
+         "other": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "p"
+          },
+          "key": "l0_y0"
+         }
+        }
+       }
+      },
+      "l0_y1": {
+       "__term__": {
+        "type": "Let",
+        "name": "c",
+        "value": {
+         "type": "Argmax",
+         "source": {
+          "type": "Filter",
+          "source": {
+           "type": "Neighbours",
+           "node": {
+            "type": "Var",
+            "name": "rf"
+           },
+           "edge_type": "has_cell"
+          },
+          "var_name": "cl",
+          "predicate": {
+           "type": "And",
+           "items": [
+            {
+             "type": "Eq",
+             "a": {
+              "type": "BitAnd",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "p"
+               },
+               "key": "ctx_bits"
+              },
+              "b": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "cl"
+               },
+               "key": "ctx_bit"
+              }
+             },
+             "b": {
+              "type": "Lit",
+              "value": 0
+             }
+            },
+            {
+             "type": "Gt",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "cl"
+              },
+              "key": "fit_gain"
+             },
+             "b": {
+              "type": "Lit",
+              "value": 0.0
+             }
+            }
+           ]
+          }
+         },
+         "var_name": "cl",
+         "value": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "cl"
+          },
+          "key": "residual_sum"
+         },
+         "default": null
+        },
+        "body": {
+         "type": "IfThenElse",
+         "cond": {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "p"
+           },
+           "key": "n_layers"
+          },
+          "b": {
+           "type": "Lit",
+           "value": 0
+          }
+         },
+         "then": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "c"
+          },
+          "key": "y1"
+         },
+         "other": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "p"
+          },
+          "key": "l0_y1"
+         }
+        }
+       }
+      },
+      "l0_y2": {
+       "__term__": {
+        "type": "Let",
+        "name": "c",
+        "value": {
+         "type": "Argmax",
+         "source": {
+          "type": "Filter",
+          "source": {
+           "type": "Neighbours",
+           "node": {
+            "type": "Var",
+            "name": "rf"
+           },
+           "edge_type": "has_cell"
+          },
+          "var_name": "cl",
+          "predicate": {
+           "type": "And",
+           "items": [
+            {
+             "type": "Eq",
+             "a": {
+              "type": "BitAnd",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "p"
+               },
+               "key": "ctx_bits"
+              },
+              "b": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "cl"
+               },
+               "key": "ctx_bit"
+              }
+             },
+             "b": {
+              "type": "Lit",
+              "value": 0
+             }
+            },
+            {
+             "type": "Gt",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "cl"
+              },
+              "key": "fit_gain"
+             },
+             "b": {
+              "type": "Lit",
+              "value": 0.0
+             }
+            }
+           ]
+          }
+         },
+         "var_name": "cl",
+         "value": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "cl"
+          },
+          "key": "residual_sum"
+         },
+         "default": null
+        },
+        "body": {
+         "type": "IfThenElse",
+         "cond": {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "p"
+           },
+           "key": "n_layers"
+          },
+          "b": {
+           "type": "Lit",
+           "value": 0
+          }
+         },
+         "then": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "c"
+          },
+          "key": "y2"
+         },
+         "other": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "p"
+          },
+          "key": "l0_y2"
+         }
+        }
+       }
+      },
+      "l0_y3": {
+       "__term__": {
+        "type": "Let",
+        "name": "c",
+        "value": {
+         "type": "Argmax",
+         "source": {
+          "type": "Filter",
+          "source": {
+           "type": "Neighbours",
+           "node": {
+            "type": "Var",
+            "name": "rf"
+           },
+           "edge_type": "has_cell"
+          },
+          "var_name": "cl",
+          "predicate": {
+           "type": "And",
+           "items": [
+            {
+             "type": "Eq",
+             "a": {
+              "type": "BitAnd",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "p"
+               },
+               "key": "ctx_bits"
+              },
+              "b": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "cl"
+               },
+               "key": "ctx_bit"
+              }
+             },
+             "b": {
+              "type": "Lit",
+              "value": 0
+             }
+            },
+            {
+             "type": "Gt",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "cl"
+              },
+              "key": "fit_gain"
+             },
+             "b": {
+              "type": "Lit",
+              "value": 0.0
+             }
+            }
+           ]
+          }
+         },
+         "var_name": "cl",
+         "value": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "cl"
+          },
+          "key": "residual_sum"
+         },
+         "default": null
+        },
+        "body": {
+         "type": "IfThenElse",
+         "cond": {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "p"
+           },
+           "key": "n_layers"
+          },
+          "b": {
+           "type": "Lit",
+           "value": 0
+          }
+         },
+         "then": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "c"
+          },
+          "key": "y3"
+         },
+         "other": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "p"
+          },
+          "key": "l0_y3"
+         }
+        }
+       }
+      },
+      "l1_x0": {
+       "__term__": {
+        "type": "Let",
+        "name": "c",
+        "value": {
+         "type": "Argmax",
+         "source": {
+          "type": "Filter",
+          "source": {
+           "type": "Neighbours",
+           "node": {
+            "type": "Var",
+            "name": "rf"
+           },
+           "edge_type": "has_cell"
+          },
+          "var_name": "cl",
+          "predicate": {
+           "type": "And",
+           "items": [
+            {
+             "type": "Eq",
+             "a": {
+              "type": "BitAnd",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "p"
+               },
+               "key": "ctx_bits"
+              },
+              "b": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "cl"
+               },
+               "key": "ctx_bit"
+              }
+             },
+             "b": {
+              "type": "Lit",
+              "value": 0
+             }
+            },
+            {
+             "type": "Gt",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "cl"
+              },
+              "key": "fit_gain"
+             },
+             "b": {
+              "type": "Lit",
+              "value": 0.0
+             }
+            }
+           ]
+          }
+         },
+         "var_name": "cl",
+         "value": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "cl"
+          },
+          "key": "residual_sum"
+         },
+         "default": null
+        },
+        "body": {
+         "type": "IfThenElse",
+         "cond": {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "p"
+           },
+           "key": "n_layers"
+          },
+          "b": {
+           "type": "Lit",
+           "value": 1
+          }
+         },
+         "then": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "c"
+          },
+          "key": "x0"
+         },
+         "other": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "p"
+          },
+          "key": "l1_x0"
+         }
+        }
+       }
+      },
+      "l1_x1": {
+       "__term__": {
+        "type": "Let",
+        "name": "c",
+        "value": {
+         "type": "Argmax",
+         "source": {
+          "type": "Filter",
+          "source": {
+           "type": "Neighbours",
+           "node": {
+            "type": "Var",
+            "name": "rf"
+           },
+           "edge_type": "has_cell"
+          },
+          "var_name": "cl",
+          "predicate": {
+           "type": "And",
+           "items": [
+            {
+             "type": "Eq",
+             "a": {
+              "type": "BitAnd",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "p"
+               },
+               "key": "ctx_bits"
+              },
+              "b": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "cl"
+               },
+               "key": "ctx_bit"
+              }
+             },
+             "b": {
+              "type": "Lit",
+              "value": 0
+             }
+            },
+            {
+             "type": "Gt",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "cl"
+              },
+              "key": "fit_gain"
+             },
+             "b": {
+              "type": "Lit",
+              "value": 0.0
+             }
+            }
+           ]
+          }
+         },
+         "var_name": "cl",
+         "value": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "cl"
+          },
+          "key": "residual_sum"
+         },
+         "default": null
+        },
+        "body": {
+         "type": "IfThenElse",
+         "cond": {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "p"
+           },
+           "key": "n_layers"
+          },
+          "b": {
+           "type": "Lit",
+           "value": 1
+          }
+         },
+         "then": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "c"
+          },
+          "key": "x1"
+         },
+         "other": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "p"
+          },
+          "key": "l1_x1"
+         }
+        }
+       }
+      },
+      "l1_x2": {
+       "__term__": {
+        "type": "Let",
+        "name": "c",
+        "value": {
+         "type": "Argmax",
+         "source": {
+          "type": "Filter",
+          "source": {
+           "type": "Neighbours",
+           "node": {
+            "type": "Var",
+            "name": "rf"
+           },
+           "edge_type": "has_cell"
+          },
+          "var_name": "cl",
+          "predicate": {
+           "type": "And",
+           "items": [
+            {
+             "type": "Eq",
+             "a": {
+              "type": "BitAnd",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "p"
+               },
+               "key": "ctx_bits"
+              },
+              "b": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "cl"
+               },
+               "key": "ctx_bit"
+              }
+             },
+             "b": {
+              "type": "Lit",
+              "value": 0
+             }
+            },
+            {
+             "type": "Gt",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "cl"
+              },
+              "key": "fit_gain"
+             },
+             "b": {
+              "type": "Lit",
+              "value": 0.0
+             }
+            }
+           ]
+          }
+         },
+         "var_name": "cl",
+         "value": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "cl"
+          },
+          "key": "residual_sum"
+         },
+         "default": null
+        },
+        "body": {
+         "type": "IfThenElse",
+         "cond": {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "p"
+           },
+           "key": "n_layers"
+          },
+          "b": {
+           "type": "Lit",
+           "value": 1
+          }
+         },
+         "then": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "c"
+          },
+          "key": "x2"
+         },
+         "other": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "p"
+          },
+          "key": "l1_x2"
+         }
+        }
+       }
+      },
+      "l1_x3": {
+       "__term__": {
+        "type": "Let",
+        "name": "c",
+        "value": {
+         "type": "Argmax",
+         "source": {
+          "type": "Filter",
+          "source": {
+           "type": "Neighbours",
+           "node": {
+            "type": "Var",
+            "name": "rf"
+           },
+           "edge_type": "has_cell"
+          },
+          "var_name": "cl",
+          "predicate": {
+           "type": "And",
+           "items": [
+            {
+             "type": "Eq",
+             "a": {
+              "type": "BitAnd",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "p"
+               },
+               "key": "ctx_bits"
+              },
+              "b": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "cl"
+               },
+               "key": "ctx_bit"
+              }
+             },
+             "b": {
+              "type": "Lit",
+              "value": 0
+             }
+            },
+            {
+             "type": "Gt",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "cl"
+              },
+              "key": "fit_gain"
+             },
+             "b": {
+              "type": "Lit",
+              "value": 0.0
+             }
+            }
+           ]
+          }
+         },
+         "var_name": "cl",
+         "value": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "cl"
+          },
+          "key": "residual_sum"
+         },
+         "default": null
+        },
+        "body": {
+         "type": "IfThenElse",
+         "cond": {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "p"
+           },
+           "key": "n_layers"
+          },
+          "b": {
+           "type": "Lit",
+           "value": 1
+          }
+         },
+         "then": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "c"
+          },
+          "key": "x3"
+         },
+         "other": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "p"
+          },
+          "key": "l1_x3"
+         }
+        }
+       }
+      },
+      "l1_y0": {
+       "__term__": {
+        "type": "Let",
+        "name": "c",
+        "value": {
+         "type": "Argmax",
+         "source": {
+          "type": "Filter",
+          "source": {
+           "type": "Neighbours",
+           "node": {
+            "type": "Var",
+            "name": "rf"
+           },
+           "edge_type": "has_cell"
+          },
+          "var_name": "cl",
+          "predicate": {
+           "type": "And",
+           "items": [
+            {
+             "type": "Eq",
+             "a": {
+              "type": "BitAnd",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "p"
+               },
+               "key": "ctx_bits"
+              },
+              "b": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "cl"
+               },
+               "key": "ctx_bit"
+              }
+             },
+             "b": {
+              "type": "Lit",
+              "value": 0
+             }
+            },
+            {
+             "type": "Gt",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "cl"
+              },
+              "key": "fit_gain"
+             },
+             "b": {
+              "type": "Lit",
+              "value": 0.0
+             }
+            }
+           ]
+          }
+         },
+         "var_name": "cl",
+         "value": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "cl"
+          },
+          "key": "residual_sum"
+         },
+         "default": null
+        },
+        "body": {
+         "type": "IfThenElse",
+         "cond": {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "p"
+           },
+           "key": "n_layers"
+          },
+          "b": {
+           "type": "Lit",
+           "value": 1
+          }
+         },
+         "then": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "c"
+          },
+          "key": "y0"
+         },
+         "other": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "p"
+          },
+          "key": "l1_y0"
+         }
+        }
+       }
+      },
+      "l1_y1": {
+       "__term__": {
+        "type": "Let",
+        "name": "c",
+        "value": {
+         "type": "Argmax",
+         "source": {
+          "type": "Filter",
+          "source": {
+           "type": "Neighbours",
+           "node": {
+            "type": "Var",
+            "name": "rf"
+           },
+           "edge_type": "has_cell"
+          },
+          "var_name": "cl",
+          "predicate": {
+           "type": "And",
+           "items": [
+            {
+             "type": "Eq",
+             "a": {
+              "type": "BitAnd",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "p"
+               },
+               "key": "ctx_bits"
+              },
+              "b": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "cl"
+               },
+               "key": "ctx_bit"
+              }
+             },
+             "b": {
+              "type": "Lit",
+              "value": 0
+             }
+            },
+            {
+             "type": "Gt",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "cl"
+              },
+              "key": "fit_gain"
+             },
+             "b": {
+              "type": "Lit",
+              "value": 0.0
+             }
+            }
+           ]
+          }
+         },
+         "var_name": "cl",
+         "value": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "cl"
+          },
+          "key": "residual_sum"
+         },
+         "default": null
+        },
+        "body": {
+         "type": "IfThenElse",
+         "cond": {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "p"
+           },
+           "key": "n_layers"
+          },
+          "b": {
+           "type": "Lit",
+           "value": 1
+          }
+         },
+         "then": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "c"
+          },
+          "key": "y1"
+         },
+         "other": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "p"
+          },
+          "key": "l1_y1"
+         }
+        }
+       }
+      },
+      "l1_y2": {
+       "__term__": {
+        "type": "Let",
+        "name": "c",
+        "value": {
+         "type": "Argmax",
+         "source": {
+          "type": "Filter",
+          "source": {
+           "type": "Neighbours",
+           "node": {
+            "type": "Var",
+            "name": "rf"
+           },
+           "edge_type": "has_cell"
+          },
+          "var_name": "cl",
+          "predicate": {
+           "type": "And",
+           "items": [
+            {
+             "type": "Eq",
+             "a": {
+              "type": "BitAnd",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "p"
+               },
+               "key": "ctx_bits"
+              },
+              "b": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "cl"
+               },
+               "key": "ctx_bit"
+              }
+             },
+             "b": {
+              "type": "Lit",
+              "value": 0
+             }
+            },
+            {
+             "type": "Gt",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "cl"
+              },
+              "key": "fit_gain"
+             },
+             "b": {
+              "type": "Lit",
+              "value": 0.0
+             }
+            }
+           ]
+          }
+         },
+         "var_name": "cl",
+         "value": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "cl"
+          },
+          "key": "residual_sum"
+         },
+         "default": null
+        },
+        "body": {
+         "type": "IfThenElse",
+         "cond": {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "p"
+           },
+           "key": "n_layers"
+          },
+          "b": {
+           "type": "Lit",
+           "value": 1
+          }
+         },
+         "then": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "c"
+          },
+          "key": "y2"
+         },
+         "other": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "p"
+          },
+          "key": "l1_y2"
+         }
+        }
+       }
+      },
+      "l1_y3": {
+       "__term__": {
+        "type": "Let",
+        "name": "c",
+        "value": {
+         "type": "Argmax",
+         "source": {
+          "type": "Filter",
+          "source": {
+           "type": "Neighbours",
+           "node": {
+            "type": "Var",
+            "name": "rf"
+           },
+           "edge_type": "has_cell"
+          },
+          "var_name": "cl",
+          "predicate": {
+           "type": "And",
+           "items": [
+            {
+             "type": "Eq",
+             "a": {
+              "type": "BitAnd",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "p"
+               },
+               "key": "ctx_bits"
+              },
+              "b": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "cl"
+               },
+               "key": "ctx_bit"
+              }
+             },
+             "b": {
+              "type": "Lit",
+              "value": 0
+             }
+            },
+            {
+             "type": "Gt",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "cl"
+              },
+              "key": "fit_gain"
+             },
+             "b": {
+              "type": "Lit",
+              "value": 0.0
+             }
+            }
+           ]
+          }
+         },
+         "var_name": "cl",
+         "value": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "cl"
+          },
+          "key": "residual_sum"
+         },
+         "default": null
+        },
+        "body": {
+         "type": "IfThenElse",
+         "cond": {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "p"
+           },
+           "key": "n_layers"
+          },
+          "b": {
+           "type": "Lit",
+           "value": 1
+          }
+         },
+         "then": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "c"
+          },
+          "key": "y3"
+         },
+         "other": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "p"
+          },
+          "key": "l1_y3"
+         }
+        }
+       }
+      }
+     }
+    ],
+    [
+     "add_edge",
+     "agent",
+     "has_predictor_candidate",
+     "k"
+    ],
+    [
+     "add_edge",
+     "sc",
+     "authored",
+     "k"
+    ],
+    [
+     "set_attr",
+     "rf",
+     "status",
+     "used"
     ],
     [
      "set_attr",
@@ -2282,23 +6625,47 @@
       }
      },
      {
-      "type": "Eq",
-      "a": {
-       "type": "Attr",
-       "node": {
-        "type": "Var",
-        "name": "delta"
+      "type": "And",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "delta"
+         },
+         "key": "control_mask"
+        },
+        "b": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "p"
+         },
+         "key": "mask"
+        }
        },
-       "key": "control_mask"
-      },
-      "b": {
-       "type": "Attr",
-       "node": {
-        "type": "Var",
-        "name": "p"
-       },
-       "key": "mask"
-      }
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "delta"
+         },
+         "key": "control_sig"
+        },
+        "b": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "p"
+         },
+         "key": "sig"
+        }
+       }
+      ]
      },
      {
       "type": "Not",
@@ -2390,23 +6757,47 @@
            "type": "And",
            "items": [
             {
-             "type": "Eq",
-             "a": {
-              "type": "Attr",
-              "node": {
-               "type": "Var",
-               "name": "od"
+             "type": "And",
+             "items": [
+              {
+               "type": "Eq",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "od"
+                },
+                "key": "control_mask"
+               },
+               "b": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "p"
+                },
+                "key": "mask"
+               }
               },
-              "key": "control_mask"
-             },
-             "b": {
-              "type": "Attr",
-              "node": {
-               "type": "Var",
-               "name": "p"
-              },
-              "key": "mask"
-             }
+              {
+               "type": "Eq",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "od"
+                },
+                "key": "control_sig"
+               },
+               "b": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "p"
+                },
+                "key": "sig"
+               }
+              }
+             ]
             },
             {
              "type": "Or",
@@ -2542,6 +6933,321 @@
         "name": "delta"
        },
        "key": "candidate_name"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "p",
+     "n_layers",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "delta"
+       },
+       "key": "candidate_n_layers"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "p",
+     "ctx_bits",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "delta"
+       },
+       "key": "candidate_ctx_bits"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "p",
+     "sig",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "delta"
+       },
+       "key": "candidate_sig"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "p",
+     "l0_bit",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "delta"
+       },
+       "key": "candidate_l0_bit"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "p",
+     "l1_bit",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "delta"
+       },
+       "key": "candidate_l1_bit"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "p",
+     "l0_x0",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "delta"
+       },
+       "key": "candidate_l0_x0"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "p",
+     "l0_x1",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "delta"
+       },
+       "key": "candidate_l0_x1"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "p",
+     "l0_x2",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "delta"
+       },
+       "key": "candidate_l0_x2"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "p",
+     "l0_x3",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "delta"
+       },
+       "key": "candidate_l0_x3"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "p",
+     "l0_y0",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "delta"
+       },
+       "key": "candidate_l0_y0"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "p",
+     "l0_y1",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "delta"
+       },
+       "key": "candidate_l0_y1"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "p",
+     "l0_y2",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "delta"
+       },
+       "key": "candidate_l0_y2"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "p",
+     "l0_y3",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "delta"
+       },
+       "key": "candidate_l0_y3"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "p",
+     "l1_x0",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "delta"
+       },
+       "key": "candidate_l1_x0"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "p",
+     "l1_x1",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "delta"
+       },
+       "key": "candidate_l1_x1"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "p",
+     "l1_x2",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "delta"
+       },
+       "key": "candidate_l1_x2"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "p",
+     "l1_x3",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "delta"
+       },
+       "key": "candidate_l1_x3"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "p",
+     "l1_y0",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "delta"
+       },
+       "key": "candidate_l1_y0"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "p",
+     "l1_y1",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "delta"
+       },
+       "key": "candidate_l1_y1"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "p",
+     "l1_y2",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "delta"
+       },
+       "key": "candidate_l1_y2"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "p",
+     "l1_y3",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "delta"
+       },
+       "key": "candidate_l1_y3"
       }
      }
     ],
