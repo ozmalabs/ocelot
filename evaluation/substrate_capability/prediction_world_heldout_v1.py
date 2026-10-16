@@ -19,7 +19,7 @@ and residual fits the graph requested, models authored, and the final
 model's surprise on fresh episodes of the level.
 
 Usage: <this> <draw_hash> [seed_base ...]   (default seed bases 1000 2024 5000 9000)
-Writes evaluation/reports/prediction_world_heldout_v1_<draw_hash[:8]>_20261010.json.
+Writes evaluation/reports/prediction_world_heldout_v1_<draw_hash[:8]>_loop<version>_20261010.json.
 """
 import json
 import os
@@ -126,7 +126,9 @@ def main():
         "mean_experiments_naive": round(sum(p[3] for p in pairs) / len(pairs), 2) if pairs else None}
     rep = {"draw_hash": draw_hash, "levels": levels, "seed_bases": seed_bases, "budget": BUDGET,
            "summary": summary, "rows": rows}
-    out = ROOT / f"evaluation/reports/prediction_world_heldout_v1_{draw_hash[:8]}_20261010.json"
+    loop_version = json.loads((ROOT / "seeds/prediction_self_improvement.json").read_text())["version"]
+    rep["loop_version"] = loop_version
+    out = ROOT / f"evaluation/reports/prediction_world_heldout_v1_{draw_hash[:8]}_loop{loop_version}_20261010.json"
     out.write_text(json.dumps(rep, indent=1) + "\n")
     print(json.dumps(levels, indent=1))
     print(json.dumps(summary, indent=1))

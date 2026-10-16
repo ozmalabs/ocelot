@@ -57,6 +57,12 @@ change how it judges itself)
   * pw_master_last_level (1.2.0): the last level is mastered like the others.
   * PredictionPolicy.authoring (1.2.0): 0 switches both authoring rules off
     (the no_authoring ablation).
+  * Revision (1.3.0): residual fits also cover layers the model holds
+    (refit one, or refit_all), each fit offered on the level alone and pooled
+    with the mastered levels, one candidate per helpful fit;
+    pw_author_pruned_component (the model minus one base component) and
+    pw_author_dropped_layer (minus its last layer); layers gain a fifth term,
+    the body's running acceleration estimate on the axis.
   * pw_judge_predictor_edit: the replay's variant surprise against its control
     surprise, on the agent's own recorded episodes at the level AND on its
     recorded episodes of the levels it has already mastered (retention):
@@ -144,7 +150,9 @@ def fold(raw, size):
 # displacement history d0 = dx, d1 = pdx, d2 = ppdx). Human-written, like the base forms.
 CONTEXT_ATOMS = ((1, "reversal", ("dx", "pdx")), (2, "after_reversal", ("pdx", "ppdx")))
 N_SLOTS = len(CONTEXT_ATOMS)
-COEFS = ("0", "1", "2", "3")          # x' = x + c0*dx + c1*pdx + c2*ppdx + c3, folded into the box
+# x' = x + c0*dx + c1*pdx + c2*ppdx + c3 + c4*acc, folded into the box; acc (1.3.0) is the body's own
+# running acceleration estimate on this axis (dx - pdx on its last frame with no reversal)
+COEFS = ("0", "1", "2", "3", "4")
 SLOT_KEYS = ["n_layers", "ctx_bits", "sig"] + [f"l{i}_bit" for i in range(N_SLOTS)] + [
     f"l{i}_{ax}{c}" for i in range(N_SLOTS) for ax in "xy" for c in COEFS]
 HIST = {"x": ("dx", "pdx", "ppdx"), "y": ("dy", "pdy", "ppdy")}
@@ -164,7 +172,7 @@ def layer_applies(i, pos):
 def layer_prediction(i, pos, size):
     h = HIST[pos]
     lin = Plus(A("b", pos), *[Times(A("p", f"l{i}_{pos}{c}"), A("b", h[j])) for j, c in enumerate(COEFS[:3])],
-               A("p", f"l{i}_{pos}3"))
+               A("p", f"l{i}_{pos}3"), Times(A("p", f"l{i}_{pos}4"), A("b", f"acc_{pos}")))
     return fold(lin, size)
 
 
@@ -182,6 +190,10 @@ def axis_effects(pos, disp, prev, size):
         eff.append(["set_attr", "b", f"e{pos}{k}", T(Ite(NN(last), {"type": "Abs", "arg": Minus(last, A("b", pos))},
                                                           L(0.0)))])
     eff.append(["set_attr", "b", f"ctx_{pos}", T(ctx_term(pos))])
+    last_acc = A("b", f"acc_{pos}")
+    eff.append(["set_attr", "b", f"acc_{pos}", T(Ite(And(Eq(A("b", f"ctx_{pos}"), L(0)), Gte(A("b", "obs_frame"), L(2))),
+                                                    Minus(A("b", disp), A("b", prev)),
+                                                    Ite(NN(last_acc), last_acc, L(0.0))))])
     # score: error for a component, a huge number otherwise; the rank breaks ties
     score = lambda k: Ite(in_mask(k), Plus(A("b", f"e{pos}{k}"), L(k * 1e-9)), L(1e18))
     best = {"type": "Min", "items": [score(k) for k in range(N_BASE)]}
@@ -226,7 +238,7 @@ for i, c in enumerate(candidates, start=1):
     world_nodes.append({"local_id": i, "type": "PredictorCandidate", "attrs": c})
     world_edges.append({"src": {"role": "agent_root"}, "type": "has_predictor_candidate", "tgt": {"local": i},
                         "attrs": {}})
-world = {"id": "prediction_world", "version": "1.2.0", "depends_on": [],
+world = {"id": "prediction_world", "version": "1.3.0", "depends_on": [],
          "description": "The prediction world's predictor (see scripts/gen_prediction_world.py): the held Predictor "
                         "model, the candidate models in MDL order, and the prediction rule. This is the part of "
                         "the agent its self-improvement loop changes.",
@@ -365,58 +377,135 @@ AUTHOR = {
 }
 EXHAUSTED_HERE = And(Eq(A("sc", "kind"), L("prediction_surprise")), Eq(A("sc", "status"), L("exhausted")),
                      Eq(A("sc", "level"), A("cur", "current_level")), Eq(A("pol", "self_improvement"), L(1)))
+# a concern under revision: exhausted with nothing to compose; the revision operators then all author in the
+# same pass (the first to reopen the concern marks it `revising`, so the others still see it)
+REVISABLE = And(Eq(A("sc", "kind"), L("prediction_surprise")), Eq(A("sc", "level"), A("cur", "current_level")),
+                Eq(A("pol", "self_improvement"), L(1)), Eq(A("pol", "authoring"), L(1)),
+                Or(And(Eq(A("sc", "status"), L("exhausted")), Not(COMPOSITE_AVAILABLE)),
+                   And(Eq(A("sc", "status"), L("open")), Eq(A("sc", "revising"), L(1)))))
 REQUEST_FIT = {
     "name": "pw_request_residual_fit",
     "comment": "An exhausted concern with nothing left to compose (no local winner, or its composite is already "
-               "held) and a free context slot: the agent asks where its own model's surprise lives -- its "
-               "residual on its own recorded episodes at the level, per context atom.",
+               "held): the agent asks where its own model's surprise lives -- its residual on its own recorded "
+               "episodes at the level, per context atom, both for atoms it does not yet condition on and for "
+               "the layers it already holds (1.3.0: so it can revise what it built).",
     "match": CONCERN_MATCH,
-    "where": And(EXHAUSTED_HERE, Eq(A("pol", "authoring"), L(1)), Not(COMPOSITE_AVAILABLE),
-                 Not(Eq(A("sc", "fit_requested"), L(1))),
-                 Lt(A("p", "n_layers"), L(N_SLOTS))),
+    "where": And(REVISABLE, Not(Eq(A("sc", "fit_requested"), L(1)))),
     "effects": [["add_node", "rf", "ResidualFit", {
         "status": "requested", "level": T(A("sc", "level")), "control_mask": T(A("p", "mask")),
         "control_sig": T(A("p", "sig")), "control_ctx_bits": T(A("p", "ctx_bits"))}],
         ["add_edge", "sc", "has_residual_fit", "rf"],
         ["set_attr", "sc", "fit_requested", 1]],
 }
-# the context atom holding the most of the residual, not already used by the model, where the fit helps
-CELL = Argmax(Filter(Nb("rf", "has_cell"), "cl", And(
-    Eq({"type": "BitAnd", "a": A("p", "ctx_bits"), "b": A("cl", "ctx_bit")}, L(0)),
-    Gt(A("cl", "fit_gain"), L(0.0)))), "cl", A("cl", "residual_sum"))
-NEW_SIG = {"type": "StringConcat", "parts": [A("p", "sig"), L("+"), A("c", "atom")]}
+K_BIT_IN_P = Not(Eq({"type": "BitAnd", "a": A("p", "mask"), "b": A("k", "mask")}, L(0)))
+PRUNED_MASK = Minus(A("p", "mask"), A("k", "mask"))
+PRUNE_COMPONENT = {
+    "name": "pw_author_pruned_component",
+    "comment": "Revision (1.3.0): an exhausted concern with nothing to compose -- the agent authors its current "
+               "model with one of its base components removed (its layers kept), one candidate per component, "
+               "and reopens the concern; the judge weighs them like any other. A model it already holds is not "
+               "re-authored.",
+    "match": CONCERN_MATCH + [["agent", "has_predictor_candidate", "k"]],
+    "where": And(REVISABLE, Eq(A("k", "authored"), L(0)), K_BIT_IN_P, Not(Eq(A("k", "mask"), A("p", "mask"))),
+                 Not(Exists(Nodes("PredictorCandidate"), "q", SAME(A("q", "mask"), A("q", "sig"),
+                                                                   PRUNED_MASK, A("p", "sig"))))),
+    "effects": [
+        ["add_node", "nk", "PredictorCandidate", {
+            "form": "pruned", "reflect": -1, "authored": 1, "authored_level": T(A("sc", "level")),
+            "authored_by": "prune_component", **{key: T(A("p", key)) for key in SLOT_KEYS},
+            "mask": T(PRUNED_MASK), "rank": T(Plus(L(N_BASE), Count(Nodes("PredictorCandidate")))),
+            "name": T({"type": "StringConcat", "parts": [A("p", "model"), L(" - "), A("k", "name")]})}],
+        ["add_edge", "agent", "has_predictor_candidate", "nk"],
+        ["add_edge", "sc", "authored", "nk"],
+        ["set_attr", "sc", "revising", 1],
+        ["set_attr", "sc", "status", "open"]],
+}
+LAST = lambda key: Ite(Eq(A("p", "n_layers"), L(2)), A("p", f"l1_{key}"), A("p", f"l0_{key}"))
+DROP_SIG = {"type": "StringConcat", "parts": [A("p", "sig"), L("-L"), {"type": "Str", "value": LAST("bit")}]}
+DROP_LAYER = {
+    "name": "pw_author_dropped_layer",
+    "comment": "Revision (1.3.0): an exhausted concern with nothing to compose and a model with layers -- the "
+               "agent authors its current model without its last layer, and reopens the concern.",
+    "match": CONCERN_MATCH,
+    "where": And(REVISABLE, Gt(A("p", "n_layers"), L(0)),
+                 Not(Exists(Nodes("PredictorCandidate"), "q", SAME(A("q", "mask"), A("q", "sig"),
+                                                                   A("p", "mask"), DROP_SIG)))),
+    "effects": [
+        ["add_node", "nk", "PredictorCandidate", {
+            "form": "pruned", "reflect": -1, "authored": 1, "authored_level": T(A("sc", "level")),
+            "authored_by": "drop_layer", **{key: T(A("p", key)) for key in SLOT_KEYS}, "mask": T(A("p", "mask")),
+            "n_layers": T(Minus(A("p", "n_layers"), L(1))),
+            "ctx_bits": T(Minus(A("p", "ctx_bits"), LAST("bit"))), "sig": T(DROP_SIG),
+            **{f"l{i}_bit": T(Ite(Eq(A("p", "n_layers"), L(i + 1)), L(0), A("p", f"l{i}_bit"))) for i in range(N_SLOTS)},
+            "rank": T(Plus(L(N_BASE), Count(Nodes("PredictorCandidate")))),
+            "name": T({"type": "StringConcat", "parts": [A("p", "model"), L(" - last layer")]})}],
+        ["add_edge", "agent", "has_predictor_candidate", "nk"],
+        ["add_edge", "sc", "authored", "nk"],
+        ["set_attr", "sc", "revising", 1],
+        ["set_attr", "sc", "status", "open"]],
+}
+IS_NEW = Eq(A("cl", "kind"), L("new"))
+IS_REFIT = Eq(A("cl", "kind"), L("refit"))
+IS_ALL = Eq(A("cl", "kind"), L("refit_all"))
+HAS_BIT = Not(Eq({"type": "BitAnd", "a": A("p", "ctx_bits"), "b": A("cl", "ctx_bit")}, L(0)))
+MODE_TAG = Ite(Eq(A("cl", "mode"), L("pooled")), L("/pooled"), L(""))
+REVISES = Or(IS_REFIT, IS_ALL)
+NEW_SIG = {"type": "StringConcat", "parts": [
+    A("p", "sig"), Ite(REVISES, {"type": "StringConcat", "parts": [
+        L("~"), A("cl", "atom"), L("@"), {"type": "Str", "value": A("rf", "level")}]}, L("+")),
+    Ite(REVISES, L(""), A("cl", "atom")), MODE_TAG]}
+NEW_NAME = {"type": "StringConcat", "parts": [
+    A("p", "model"), Ite(REVISES, {"type": "StringConcat", "parts": [
+        L(" ~ "), A("cl", "atom"), L(" refit@"), {"type": "Str", "value": A("rf", "level")}]},
+        {"type": "StringConcat", "parts": [L(" + "), A("cl", "atom"), L(" layer")]}),
+    Ite(Eq(A("cl", "mode"), L("pooled")), L(" (pooled)"), L(""))]}
+
+
+def is_target(i):
+    return Or(And(IS_NEW, Eq(A("p", "n_layers"), L(i))), And(IS_REFIT, Eq(A("p", f"l{i}_bit"), A("cl", "ctx_bit"))))
 
 
 def slot_attr(i, key_slot, key_cell):
-    return T(Let("c", CELL, Ite(Eq(A("p", "n_layers"), L(i)), A("c", key_cell), A("p", f"l{i}_{key_slot}"))))
+    """Slot i of the new model: the cell's fit where the cell targets it; for a joint refit (refit_all),
+    the cell's per-slot fit for every slot the model holds; otherwise the current model's."""
+    if key_slot == "bit":
+        return T(Ite(is_target(i), A("cl", key_cell), A("p", f"l{i}_{key_slot}")))
+    joint = And(IS_ALL, Gt(A("p", "n_layers"), L(i)))
+    return T(Ite(joint, A("cl", f"s{i}_{key_cell}"),
+                 Ite(is_target(i), A("cl", key_cell), A("p", f"l{i}_{key_slot}"))))
 
 
 AUTHOR_LAYER = {
     "name": "pw_author_context_layer",
-    "comment": "The agent authors a new model from its own residual: its current model with a new context layer "
-               "on the atom that holds the most of its surprise, the layer's prediction the linear fit of the "
-               "residual frames; it adds the model to its candidates and reopens the concern to try it. Each atom "
-               "is used at most once per model and a model it already holds is not re-authored.",
-    "match": CONCERN_MATCH + [["sc", "has_residual_fit", "rf"]],
-    "where": And(EXHAUSTED_HERE, Eq(A("rf", "status"), L("done")),
-                 Let("c", CELL, And(NN(V("c")), Not(Exists(Nodes("PredictorCandidate"), "q", SAME(
-                     A("q", "mask"), A("q", "sig"), A("p", "mask"), NEW_SIG)))))),
+    "comment": "The agent authors new models from its own residual, one per ResidualCell where the fit helps: "
+               "its current model with a NEW context layer on an atom it does not yet use, or (1.3.0) with one of "
+               "its own layers REFITTED; each fitted on the level's frames alone or pooled with the levels it has "
+               "mastered. It reopens the concern, and the judge weighs the alternatives against each other. A "
+               "model it already holds is not re-authored.",
+    "match": CONCERN_MATCH + [["sc", "has_residual_fit", "rf"], ["rf", "has_cell", "cl"]],
+    "where": And(Eq(A("rf", "status"), L("done")), Eq(A("rf", "control_sig"), A("p", "sig")),
+                 Eq(A("rf", "control_mask"), A("p", "mask")), Eq(A("sc", "kind"), L("prediction_surprise")),
+                 Eq(A("sc", "level"), A("cur", "current_level")),
+                 Not(Eq(A("cl", "used"), L(1))), Gt(A("cl", "fit_gain"), L(0.0)),
+                 Or(And(IS_NEW, Not(HAS_BIT), Lt(A("p", "n_layers"), L(N_SLOTS))), And(IS_REFIT, HAS_BIT),
+                    And(IS_ALL, Gt(A("p", "n_layers"), L(1)))),
+                 Not(Exists(Nodes("PredictorCandidate"), "q", SAME(A("q", "mask"), A("q", "sig"),
+                                                                   A("p", "mask"), NEW_SIG)))),
     "effects": [
         ["add_node", "k", "PredictorCandidate", {
             "form": "layered", "reflect": -1, "authored": 1, "authored_level": T(A("sc", "level")),
-            "authored_by": "residual_fit", "mask": T(A("p", "mask")),
+            "authored_by": T(Ite(IS_REFIT, L("residual_refit"), Ite(IS_ALL, L("residual_refit_all"),
+                                                                    L("residual_fit")))), "mask": T(A("p", "mask")),
             "rank": T(Plus(L(N_BASE), Count(Nodes("PredictorCandidate")))),
-            "n_layers": T(Plus(A("p", "n_layers"), L(1))),
-            "ctx_bits": T(Let("c", CELL, Plus(A("p", "ctx_bits"), A("c", "ctx_bit")))),
-            "sig": T(Let("c", CELL, NEW_SIG)),
-            "name": T(Let("c", CELL, {"type": "StringConcat", "parts": [
-                A("p", "model"), L(" + "), A("c", "atom"), L(" layer")]})),
+            "n_layers": T(Ite(IS_NEW, Plus(A("p", "n_layers"), L(1)), A("p", "n_layers"))),
+            "ctx_bits": T(Ite(IS_NEW, Plus(A("p", "ctx_bits"), A("cl", "ctx_bit")), A("p", "ctx_bits"))),
+            "sig": T(NEW_SIG), "name": T(NEW_NAME),
             **{f"l{i}_bit": slot_attr(i, "bit", "ctx_bit") for i in range(N_SLOTS)},
             **{f"l{i}_{ax}{c}": slot_attr(i, f"{ax}{c}", f"{ax}{c}")
                for i in range(N_SLOTS) for ax in "xy" for c in COEFS}}],
         ["add_edge", "agent", "has_predictor_candidate", "k"],
         ["add_edge", "sc", "authored", "k"],
-        ["set_attr", "rf", "status", "used"],
+        ["set_attr", "cl", "used", 1],
         ["set_attr", "sc", "status", "open"]],
 }
 RET_HARM = A("exp", "retention_harm")
@@ -483,9 +572,9 @@ loop_edges = [{"src": {"role": "agent_root"}, "type": "has_prediction_curriculum
               {"src": {"role": "agent_root"}, "type": "has_prediction_policy", "tgt": {"local": 1}, "attrs": {}}]
 # no depends_on: the loop reads the predictor's nodes at run time, and a dependency
 # would freeze the predictor seed by closure (it is the part the agent changes)
-loop = {"id": "prediction_self_improvement", "version": "1.2.0", "depends_on": [],
+loop = {"id": "prediction_self_improvement", "version": "1.3.0", "depends_on": [],
         "description": __doc__, "nodes": loop_nodes, "edges": loop_edges, "productions": [],
-        "rules": [ADVANCE, MASTER_LAST, FILE, PROPOSE, EXHAUSTED, AUTHOR, REQUEST_FIT, AUTHOR_LAYER, JUDGE, ADOPT]}
+        "rules": [ADVANCE, MASTER_LAST, FILE, PROPOSE, EXHAUSTED, AUTHOR, REQUEST_FIT, AUTHOR_LAYER, PRUNE_COMPONENT, DROP_LAYER, JUDGE, ADOPT]}
 
 P_WORLD.write_text(json.dumps(world, indent=1, ensure_ascii=True) + "\n")
 P_LOOP.write_text(json.dumps(loop, indent=1, ensure_ascii=True) + "\n")

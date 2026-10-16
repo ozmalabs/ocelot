@@ -130,7 +130,8 @@ def _feed(agent, trace, collect=None) -> tuple:
                         for ax, nxt in (("x", x), ("y", y)):
                             h = {"x": ("dx", "pdx", "ppdx"), "y": ("dy", "pdy", "ppdy")}[ax]
                             collect.append({"axis": ax, "ctx": int(at.get(f"ctx_{ax}") or 0),
-                                            "pos": float(at[ax]), "hist": [float(at[k]) for k in h],
+                                            "pos": float(at[ax]),
+                                            "hist": [float(at[k]) for k in h] + [float(at.get(f"acc_{ax}") or 0.0)],
                                             "size": float(at["w" if ax == "x" else "h"]), "next": nxt,
                                             "err": abs(float(at[f"pred_{ax}"]) - nxt)})
             d = (x - prev[i][0], y - prev[i][1]) if prev[i] is not None else (0.0, 0.0)
@@ -167,7 +168,7 @@ def run_episode(agent, seed: int) -> dict:
 # the Predictor attributes that define a model (mirrors scripts/gen_prediction_world.py SLOT_KEYS)
 N_SLOTS = 2
 MODEL_KEYS = ["mask", "n_layers", "ctx_bits", "sig"] + [f"l{i}_bit" for i in range(N_SLOTS)] + [
-    f"l{i}_{ax}{c}" for i in range(N_SLOTS) for ax in "xy" for c in "0123"]
+    f"l{i}_{ax}{c}" for i in range(N_SLOTS) for ax in "xy" for c in "01234"]
 
 
 def model_of(attrs: dict, prefix: str = "") -> dict:
@@ -239,15 +240,54 @@ CONTEXT_ATOMS = ((1, "reversal"), (2, "after_reversal"))   # mirrors the generat
 MIN_FIT_ROWS = 8
 
 
+def _fit_axis(R):
+    """Least squares x' - x = c0*dx + c1*pdx + c2*ppdx + c3 + c4*acc over rows R
+    (None when too few)."""
+    import numpy as np
+    if len(R) < MIN_FIT_ROWS:
+        return None
+    X = np.array([r["hist"][:3] + [1.0, r["hist"][3]] for r in R])
+    y = np.array([r["next"] - r["pos"] for r in R])
+    return [round(float(c), 6) for c in np.linalg.lstsq(X, y, rcond=None)[0]]
+
+
+def _fit_error(coef, R):
+    tot = 0.0
+    for r in R:
+        e = r["size"] - 1.0
+        h = r["hist"]
+        raw = r["pos"] + coef[0] * h[0] + coef[1] * h[1] + coef[2] * h[2] + coef[3] + coef[4] * h[3]
+        raw = -raw if raw < 0 else (2 * e - raw if raw > e else raw)
+        tot += abs(raw - r["next"])
+    return tot
+
+
+def _rows(S, model, level, n):
+    eps = sorted((e for e in S.nodes("PredictionEpisode") if S.node(e)["attrs"].get("level") == level),
+                 key=lambda e: S.node(e)["attrs"]["seq"])[-n:]
+    rows = []
+    for e in eps:
+        replay(json.loads(S.node(e)["attrs"]["trace"]), model, rows)
+    return rows, len(eps)
+
+
 def run_residual_fits(agent, window: int | None = None) -> list:
     """Run every requested ResidualFit: replay the agent's recorded episodes at
-    the level with its current model, and for each context atom the model
-    does not already condition on, write a ResidualCell -- the summed error
-    of the frames where it holds (and no existing layer applies), and per axis
-    the least-squares fit x' - x = c0*dx + c1*pdx + c2*ppdx + c3 over them,
-    with its in-sample gain. Which atom to take, and whether to keep the
-    resulting model, is the graph's."""
-    import numpy as np
+    the level with its current model and write ResidualCells, one per context
+    atom and fit mode:
+      kind 'new'    an atom the model does not condition on: the frames where it
+                    holds and no existing layer applies;
+      kind 'refit'  (1.3.0) a layer the model holds: the frames that layer
+                    predicts (its atom holds, no earlier layer applies);
+      mode 'level'  fitted on the level's frames alone;
+      mode 'pooled' (1.3.0) fitted on those frames pooled with the same frames
+                    from the agent's recorded episodes of the levels below
+                    (the ones its retention is weighed on).
+    Each cell carries the summed error of the current model on the level's
+    frames (residual_sum), the per-axis least-squares coefficients
+    x' - x = c0*dx + c1*pdx + c2*ppdx + c3 + c4*acc, and the error the fit would make
+    on the level's frames (fit_gain = residual_sum - fit_sum). Which cells
+    become candidate models, and which candidate is kept, is the graph's."""
     S, I = agent.s, agent.inner
     pol = S.node(S.nodes("PredictionPolicy")[0])["attrs"]
     k = int(window or pol.get("window") or 3) * 2
@@ -258,42 +298,66 @@ def run_residual_fits(agent, window: int | None = None) -> list:
         if at.get("status") != "requested":
             continue
         level = int(at["level"])
-        eps = sorted((e for e in S.nodes("PredictionEpisode") if S.node(e)["attrs"].get("level") == level),
-                     key=lambda e: S.node(e)["attrs"]["seq"])[-k:]
-        rows = []
-        for e in eps:
-            replay(json.loads(S.node(e)["attrs"]["trace"]), model, rows)
+        rows, n_eps = _rows(S, model, level, k)
+        others = []
+        for lv in range(1, level):
+            others += _rows(S, model, lv, k // 2)[0]
         used = int(model.get("ctx_bits") or 0)
+        slot_bits = [int(model.get(f"l{i}_bit") or 0) for i in range(int(model.get("n_layers") or 0))]
         for bit, name in CONTEXT_ATOMS:
             if used & bit:
-                continue
-            cell = {"ctx_bit": bit, "atom": name, "n": 0, "residual_sum": 0.0, "fit_sum": 0.0}
-            for ax in "xy":
-                R = [r for r in rows if r["axis"] == ax and r["ctx"] & bit and not (r["ctx"] & used)]
-                resid = sum(r["err"] for r in R)
-                coef, fit = [0.0, 0.0, 0.0, 0.0], resid
-                if len(R) >= MIN_FIT_ROWS:
-                    X = np.array([r["hist"] + [1.0] for r in R])
-                    y = np.array([r["next"] - r["pos"] for r in R])
-                    coef = [round(float(c), 6) for c in np.linalg.lstsq(X, y, rcond=None)[0]]
-                    fit = 0.0
-                    for r in R:
-                        e = r["size"] - 1.0
-                        raw = r["pos"] + sum(c * h for c, h in zip(coef, r["hist"])) + coef[3]
-                        raw = -raw if raw < 0 else (2 * e - raw if raw > e else raw)
-                        fit += abs(raw - r["next"])
-                cell["n"] += len(R)
-                cell["residual_sum"] += resid
-                cell["fit_sum"] += fit
-                for j, c in enumerate(coef):
-                    cell[f"{ax}{j}"] = c
-            cell["residual_sum"] = round(cell["residual_sum"], 6)
-            cell["fit_sum"] = round(cell["fit_sum"], 6)
-            cell["fit_gain"] = round(cell["residual_sum"] - cell["fit_sum"], 6)
-            node = S.add_node("ResidualCell", cell)
-            I.add_edge_unchecked(rf, "has_cell", node)
-            out.append(cell)
-        I.set_attr(rf, "replayed_episodes", len(eps))
+                earlier = sum(b for b in slot_bits[:slot_bits.index(bit)])
+                kind, sel = "refit", (lambda r, bit=bit, earlier=earlier: r["ctx"] & bit and not r["ctx"] & earlier)
+            else:
+                kind, sel = "new", (lambda r, bit=bit: r["ctx"] & bit and not r["ctx"] & used)
+            for mode in ("level", "pooled"):
+                cell = {"ctx_bit": bit, "atom": name, "kind": kind, "mode": mode, "n": 0, "n_pooled": 0,
+                        "residual_sum": 0.0, "fit_sum": 0.0}
+                for ax in "xy":
+                    R = [r for r in rows if r["axis"] == ax and sel(r)]
+                    P = R + ([r for r in others if r["axis"] == ax and sel(r)] if mode == "pooled" else [])
+                    resid = sum(r["err"] for r in R)
+                    coef = _fit_axis(P)
+                    fit = _fit_error(coef, R) if coef is not None else resid
+                    cell["n"] += len(R)
+                    cell["n_pooled"] += len(P)
+                    cell["residual_sum"] += resid
+                    cell["fit_sum"] += fit
+                    for j, c in enumerate(coef or [0.0] * 5):
+                        cell[f"{ax}{j}"] = c
+                cell["residual_sum"] = round(cell["residual_sum"], 6)
+                cell["fit_sum"] = round(cell["fit_sum"], 6)
+                cell["fit_gain"] = round(cell["residual_sum"] - cell["fit_sum"], 6)
+                node = S.add_node("ResidualCell", cell)
+                I.add_edge_unchecked(rf, "has_cell", node)
+                out.append(cell)
+        # (1.3.0) a joint refit: every layer the model holds refitted at once, on the frames each predicts
+        if len(slot_bits) > 1:
+            for mode in ("level", "pooled"):
+                cell = {"ctx_bit": 0, "atom": "all", "kind": "refit_all", "mode": mode, "n": 0, "n_pooled": 0,
+                        "residual_sum": 0.0, "fit_sum": 0.0}
+                for i, bit in enumerate(slot_bits):
+                    earlier = sum(slot_bits[:i])
+                    sel = (lambda r, bit=bit, earlier=earlier: r["ctx"] & bit and not r["ctx"] & earlier)
+                    for ax in "xy":
+                        R = [r for r in rows if r["axis"] == ax and sel(r)]
+                        P = R + ([r for r in others if r["axis"] == ax and sel(r)] if mode == "pooled" else [])
+                        resid = sum(r["err"] for r in R)
+                        coef = _fit_axis(P)
+                        cell["n"] += len(R)
+                        cell["n_pooled"] += len(P)
+                        cell["residual_sum"] += resid
+                        cell["fit_sum"] += _fit_error(coef, R) if coef is not None else resid
+                        cur_coef = [float(model.get(f"l{i}_{ax}{j}") or 0.0) for j in range(5)]
+                        for j, c in enumerate(coef if coef is not None else cur_coef):
+                            cell[f"s{i}_{ax}{j}"] = c
+                cell["residual_sum"] = round(cell["residual_sum"], 6)
+                cell["fit_sum"] = round(cell["fit_sum"], 6)
+                cell["fit_gain"] = round(cell["residual_sum"] - cell["fit_sum"], 6)
+                node = S.add_node("ResidualCell", cell)
+                I.add_edge_unchecked(rf, "has_cell", node)
+                out.append(cell)
+        I.set_attr(rf, "replayed_episodes", n_eps)
         I.set_attr(rf, "status", "done")
     if out:
         I.run_rules()

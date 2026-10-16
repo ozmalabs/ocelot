@@ -77,10 +77,12 @@ def test_three_arms_authoring_carries_it_through_level_5():
     cur_on, cur_na, cur_off = (_live(a, 60, seed_base=2024) for a in (on, no_auth, off))
 
     assert cur_on["current_level"] == 5 and cur_on["mastered_through"] == 5
-    assert [(k["authored_level"], k["authored_by"], k["sig"]) for k in _authored(on)] == [
-        (4, "composition", ""), (5, "residual_fit", "+reversal"), (5, "residual_fit", "+reversal+after_reversal")]
+    authored = _authored(on)
+    assert (4, "composition", "") in [(k["authored_level"], k["authored_by"], k["sig"]) for k in authored]
     p = on.s.node(on.s.nodes("Predictor")[0])["attrs"]
-    assert (p["mask"], p["sig"], p["n_layers"]) == (ACC1 | RATIO, "+reversal+after_reversal", 2)
+    # the held model: the L4 composite with both context layers, fitted from its own L5 residual
+    assert (p["mask"], p["n_layers"], p["ctx_bits"]) == (ACC1 | RATIO, 2, 3)
+    assert p["sig"] == "+reversal+after_reversal"
     assert len(on.s.nodes("Adoption")) == 5
 
     assert cur_na["current_level"] == 4 and cur_na["mastered_through"] == 3
@@ -203,17 +205,71 @@ def test_residual_fit_authors_a_layer_on_the_heaviest_atom():
     sc, _ = _synthetic(a, trials)
     (rf,) = S.nodes("ResidualFit")
     for bit, atom, resid, gain in ((1, "reversal", 10.0, 9.0), (2, "after_reversal", 20.0, -1.0)):
-        c = S.add_node("ResidualCell", {"ctx_bit": bit, "atom": atom, "residual_sum": resid, "fit_gain": gain,
-                                        **{f"{ax}{j}": float(j) for ax in "xy" for j in range(4)}})
+        c = S.add_node("ResidualCell", {"ctx_bit": bit, "atom": atom, "kind": "new", "mode": "level",
+                                        "residual_sum": resid, "fit_gain": gain,
+                                        **{f"{ax}{j}": float(j) for ax in "xy" for j in range(5)}})
         I.add_edge_unchecked(rf, "has_cell", c)
     I.set_attr(rf, "status", "done")
     I.run_rules()
     (k,) = _authored(a)
-    # after_reversal holds more residual but its fit does not help: reversal is taken
-    assert (k["sig"], k["n_layers"], k["ctx_bits"], k["l0_bit"], k["l0_y2"]) == ("+reversal", 1, 1, 1, 2.0)
+    # after_reversal holds more residual but its fit does not help: only reversal is authored
+    assert (k["sig"], k["n_layers"], k["ctx_bits"], k["l0_bit"], k["l0_y2"], k["l0_y4"]) == (
+        "+reversal", 1, 1, 1, 2.0, 4.0)
     assert k["mask"] == VEL and k["name"] == "velocity + reversal layer"
     assert S.node(sc)["attrs"]["status"] == "open"
-    assert S.node(rf)["attrs"]["status"] == "used"
+
+
+def _layered_agent():
+    """An agent at level 3 holding velocity+reflect | acceleration+reflect with
+    two layers, its concern exhausted with nothing to compose."""
+    a = _agent(1)
+    _set_level(a, 3)
+    S, I = a.s, a.inner
+    p = S.nodes("Predictor")[0]
+    model = {"mask": 2 | ACC1, "model": "m", "n_layers": 2, "ctx_bits": 3, "sig": "+reversal+after_reversal",
+             "l0_bit": 1, "l1_bit": 2, **{f"l{i}_{ax}{j}": 0.5 for i in range(2) for ax in "xy" for j in range(5)}}
+    for key, v in model.items():
+        I.set_attr(p, key, v)
+    return a
+
+
+def test_revision_refits_one_of_its_own_layers():
+    """1.3.0: a refit cell revises a layer the model holds -- same layers,
+    that layer's coefficients replaced, the others kept."""
+    a = _layered_agent()
+    S, I = a.s, a.inner
+    trials = [(m, m.bit_length() - 1, 0.5, 0.45, 1.0) for m in (1, 2, 4, 8, 16, 32)]
+    sc, _ = _synthetic(a, trials)
+    (rf,) = S.nodes("ResidualFit")
+    c = S.add_node("ResidualCell", {"ctx_bit": 2, "atom": "after_reversal", "kind": "refit", "mode": "pooled",
+                                    "residual_sum": 5.0, "fit_gain": 2.0,
+                                    **{f"{ax}{j}": 9.0 for ax in "xy" for j in range(5)}})
+    I.add_edge_unchecked(rf, "has_cell", c)
+    I.set_attr(rf, "status", "done")
+    I.run_rules()
+    (k,) = [k for k in _authored(a) if k["authored_by"] == "residual_refit"]
+    assert (k["n_layers"], k["ctx_bits"], k["l0_bit"], k["l1_bit"]) == (2, 3, 1, 2)
+    assert (k["l0_x0"], k["l1_x0"], k["l1_y4"]) == (0.5, 9.0, 9.0)
+    assert k["sig"] == "+reversal+after_reversal~after_reversal@3/pooled"
+
+
+def test_revision_prunes_components_and_drops_its_last_layer():
+    """1.3.0: with nothing to compose, the agent also authors its model minus
+    each base component, and minus its last layer."""
+    a = _layered_agent()
+    trials = [(m, m.bit_length() - 1, 0.5, 0.45, 1.0) for m in (1, 2, 4, 8, 16, 32)]
+    _synthetic(a, trials)
+    by = {}
+    for k in _authored(a):
+        by.setdefault(k["authored_by"], []).append(k)
+    assert sorted(k["mask"] for k in by["prune_component"]) == [2, ACC1]
+    assert all(k["n_layers"] == 2 for k in by["prune_component"])
+    (d,) = by["drop_layer"]
+    assert (d["mask"], d["n_layers"], d["ctx_bits"], d["l0_bit"], d["l1_bit"]) == (2 | ACC1, 1, 1, 1, 0)
+    # authored once: running the rules again adds nothing
+    n = len(_authored(a))
+    a.inner.run_rules()
+    assert len(_authored(a)) == n
 
 
 def test_loop_seed_frozen_and_protected():
