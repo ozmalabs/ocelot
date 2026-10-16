@@ -167,8 +167,11 @@ def run_episode(agent, seed: int) -> dict:
 
 # the Predictor attributes that define a model (mirrors scripts/gen_prediction_world.py SLOT_KEYS)
 N_SLOTS = 2
-MODEL_KEYS = ["mask", "n_layers", "ctx_bits", "sig"] + [f"l{i}_bit" for i in range(N_SLOTS)] + [
+_LAYER_KEYS = [f"l{i}_bit" for i in range(N_SLOTS)] + [
     f"l{i}_{ax}{c}" for i in range(N_SLOTS) for ax in "xy" for c in "01234"]
+N_EXPERTS = 2   # (1.5.0) mirrors the generator: expert e's model under the prefix x<e>_
+MODEL_KEYS = ["mask", "n_layers", "ctx_bits", "sig"] + _LAYER_KEYS + [
+    f"x{e}_{k}" for e in range(1, N_EXPERTS + 1) for k in ["mask", "n_layers", "ctx_bits"] + _LAYER_KEYS]
 
 
 def model_of(attrs: dict, prefix: str = "") -> dict:
@@ -331,6 +334,37 @@ def run_residual_fits(agent, window: int | None = None) -> list:
                 node = S.add_node("ResidualCell", cell)
                 I.add_edge_unchecked(rf, "has_cell", node)
                 out.append(cell)
+        # (1.5.0) a specialist for an expert slot: the best base model the agent has trialled at this level
+        # (else its own components) with both context layers fitted from scratch on this level's frames alone
+        # (no retention pooling)
+        base_trials = [S.node(x)["attrs"] for x in S.nodes("Experiment")
+                       if S.node(x)["attrs"].get("level") == level
+                       and S.node(x)["attrs"].get("candidate_operator") == "base"
+                       and S.node(x)["attrs"].get("variant_surprise") is not None]
+        best_base = min(base_trials, key=lambda x: x["variant_surprise"]) if base_trials else None
+        spec_model = {"mask": int(best_base["candidate_mask"]) if best_base else int(model.get("mask") or 1)}
+        srows, _n = _rows(S, spec_model, level, k)
+        cell = {"ctx_bit": 0, "atom": "specialist", "kind": "specialist", "mode": "level", "n": 0, "n_pooled": 0,
+                "residual_sum": 0.0, "fit_sum": 0.0, "specialist_mask": spec_model["mask"]}
+        ok = True
+        for i, (bit, earlier) in enumerate(((1, 0), (2, 1))):
+            for ax in "xy":
+                R = [r for r in srows if r["axis"] == ax and r["ctx"] & bit and not r["ctx"] & earlier]
+                coef = _fit_axis(R)
+                ok = ok and coef is not None
+                resid = sum(r["err"] for r in R)
+                cell["n"] += len(R)
+                cell["residual_sum"] += resid
+                cell["fit_sum"] += _fit_error(coef, R) if coef is not None else resid
+                for j, c in enumerate(coef or [0.0] * 5):
+                    cell[f"s{i}_{ax}{j}"] = c
+        if ok:
+            cell["residual_sum"] = round(cell["residual_sum"], 6)
+            cell["fit_sum"] = round(cell["fit_sum"], 6)
+            cell["fit_gain"] = round(cell["residual_sum"] - cell["fit_sum"], 6)
+            node = S.add_node("ResidualCell", cell)
+            I.add_edge_unchecked(rf, "has_cell", node)
+            out.append(cell)
         # (1.3.0) a joint refit: every layer the model holds refitted at once, on the frames each predicts
         if len(slot_bits) > 1:
             for mode in ("level", "pooled"):

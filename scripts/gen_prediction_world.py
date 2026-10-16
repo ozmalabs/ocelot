@@ -73,6 +73,14 @@ change how it judges itself)
     pw_count_operator_adoption); with meta_search on, trials go in batches by
     operator yield (supported+1)/(tried+2), best first, and an operator tried
     meta_min_trials times with yield under meta_min_yield is skipped.
+  * 1.5.0: experts (up to N_EXPERTS more full models on the Predictor, gated
+    per body and axis by cumulative error; authored by pw_author_expert from
+    the local winner and pw_author_specialist_expert from a level-only fit,
+    both only once a concern's single-model fits are spent); provenance
+    credit (`enabled`) in the operator record, and skipping only as a last
+    resort; self-proposed policy changes (MetaProposal from META_GRAMMAR,
+    measured on the agent's own practice levels by the mechanical half,
+    judged and adopted by pw_judge_policy_change / pw_adopt_policy_change_*).
   * pw_judge_predictor_edit: the replay's variant surprise against its control
     surprise, on the agent's own recorded episodes at the level AND on its
     recorded episodes of the levels it has already mastered (retention):
@@ -146,8 +154,8 @@ def base_prediction(k, pos, disp, prev, size):
                                Ite(Gt(V("raw"), edge), Minus(Times(L(2.0), edge), V("raw")), V("raw"))))
 
 
-def in_mask(k):
-    return Not(Eq({"type": "BitAnd", "a": A("p", "mask"), "b": L(1 << k)}, L(0)))
+def in_mask(k, pre=""):
+    return Not(Eq({"type": "BitAnd", "a": A("p", pre + "mask"), "b": L(1 << k)}, L(0)))
 
 
 def fold(raw, size):
@@ -163,8 +171,15 @@ N_SLOTS = len(CONTEXT_ATOMS)
 # x' = x + c0*dx + c1*pdx + c2*ppdx + c3 + c4*acc, folded into the box; acc (1.3.0) is the body's own
 # running acceleration estimate on this axis (dx - pdx on its last frame with no reversal)
 COEFS = ("0", "1", "2", "3", "4")
-SLOT_KEYS = ["n_layers", "ctx_bits", "sig"] + [f"l{i}_bit" for i in range(N_SLOTS)] + [
-    f"l{i}_{ax}{c}" for i in range(N_SLOTS) for ax in "xy" for c in COEFS]
+LAYER_KEYS = [f"l{i}_bit" for i in range(N_SLOTS)] + [f"l{i}_{ax}{c}" for i in range(N_SLOTS) for ax in "xy"
+                                                       for c in COEFS]
+# (1.5.0) experts: besides its primary model (mask + layers), the Predictor may hold N_EXPERTS more, each a full
+# model of its own under the prefix x<e>_ (mask 0 = empty slot); per body and axis the prediction is the
+# expert's whose last prediction there was best
+N_EXPERTS = 2
+EXPERT_KEYS = ["mask", "n_layers", "ctx_bits"] + LAYER_KEYS
+X_KEYS = [f"x{e}_{k}" for e in range(1, N_EXPERTS + 1) for k in EXPERT_KEYS]
+SLOT_KEYS = ["n_layers", "ctx_bits", "sig"] + LAYER_KEYS + X_KEYS
 HIST = {"x": ("dx", "pdx", "ppdx"), "y": ("dy", "pdy", "ppdy")}
 
 
@@ -174,16 +189,32 @@ def ctx_term(pos):
     return Plus(*parts)
 
 
-def layer_applies(i, pos):
-    bit = A("p", f"l{i}_bit")
+def layer_applies(i, pos, pre=""):
+    bit = A("p", f"{pre}l{i}_bit")
     return And(NN(bit), Gt(bit, L(0)), Not(Eq({"type": "BitAnd", "a": A("b", f"ctx_{pos}"), "b": bit}, L(0))))
 
 
-def layer_prediction(i, pos, size):
+def layer_prediction(i, pos, size, pre=""):
     h = HIST[pos]
-    lin = Plus(A("b", pos), *[Times(A("p", f"l{i}_{pos}{c}"), A("b", h[j])) for j, c in enumerate(COEFS[:3])],
-               A("p", f"l{i}_{pos}3"), Times(A("p", f"l{i}_{pos}4"), A("b", f"acc_{pos}")))
+    q = lambda c: A("p", f"{pre}l{i}_{pos}{c}")
+    lin = Plus(A("b", pos), *[Times(q(c), A("b", h[j])) for j, c in enumerate(COEFS[:3])],
+               q("3"), Times(q("4"), A("b", f"acc_{pos}")))
     return fold(lin, size)
+
+
+def expert_prediction(pos, size, pre):
+    """One expert's prediction: its first context layer that applies, else among its base components the one
+    whose last error on this body and axis was lowest (ties: the simpler). Base predictions are read from the
+    body (n<axis><k>, computed once per frame)."""
+    score = lambda k: Ite(in_mask(k, pre), Plus(A("b", f"e{pos}{k}"), L(k * 1e-9)), L(1e18))
+    best = {"type": "Min", "items": [score(k) for k in range(N_BASE)]}
+    pick = A("b", f"n{pos}{N_BASE - 1}")
+    for k in reversed(range(N_BASE - 1)):
+        pick = Ite(Eq(score(k), V("best")), A("b", f"n{pos}{k}"), pick)
+    pred = Let("best", best, pick)
+    for i in reversed(range(N_SLOTS)):
+        pred = Ite(layer_applies(i, pos, pre), layer_prediction(i, pos, size, pre), pred)
+    return pred
 
 
 def axis_effects(pos, disp, prev, size):
@@ -204,18 +235,28 @@ def axis_effects(pos, disp, prev, size):
     eff.append(["set_attr", "b", f"acc_{pos}", T(Ite(And(Eq(A("b", f"ctx_{pos}"), L(0)), Gte(A("b", "obs_frame"), L(2))),
                                                     Minus(A("b", disp), A("b", prev)),
                                                     Ite(NN(last_acc), last_acc, L(0.0))))])
-    # score: error for a component, a huge number otherwise; the rank breaks ties
-    score = lambda k: Ite(in_mask(k), Plus(A("b", f"e{pos}{k}"), L(k * 1e-9)), L(1e18))
-    best = {"type": "Min", "items": [score(k) for k in range(N_BASE)]}
-    pick = base_prediction(N_BASE - 1, pos, disp, prev, size)
-    for k in reversed(range(N_BASE - 1)):
-        pick = Ite(Eq(score(k), V("best")), base_prediction(k, pos, disp, prev, size), pick)
-    pred = Let("best", best, pick)
-    for i in reversed(range(N_SLOTS)):
-        pred = Ite(layer_applies(i, pos), layer_prediction(i, pos, size), pred)
-    eff.append(["set_attr", "b", f"pred_{pos}", T(pred)])
     for k in range(N_BASE):
-        eff.append(["set_attr", "b", f"c{pos}{k}", T(base_prediction(k, pos, disp, prev, size))])
+        eff.append(["set_attr", "b", f"n{pos}{k}", T(base_prediction(k, pos, disp, prev, size))])
+    prefixes = [""] + [f"x{e}_" for e in range(1, N_EXPERTS + 1)]
+    for e, pre in enumerate(prefixes):
+        last = A("b", f"cp{e}{pos}")
+        # an expert's evidence on this body and axis: the sum of its errors since the body was first seen
+        prev_sum = A("b", f"ee{e}{pos}")
+        eff.append(["set_attr", "b", f"ee{e}{pos}", T(Plus(Ite(NN(prev_sum), prev_sum, L(0.0)),
+                                                           Ite(NN(last), {"type": "Abs", "arg": Minus(last, A("b", pos))},
+                                                               L(0.0))))])
+    for e, pre in enumerate(prefixes):
+        active = L(True) if e == 0 else And(NN(A("p", pre + "mask")), Gt(A("p", pre + "mask"), L(0)))
+        eff.append(["set_attr", "b", f"cp{e}{pos}", T(Ite(active, expert_prediction(pos, size, pre), L(None)))])
+    xscore = lambda e: (Plus(A("b", f"ee{e}{pos}"), L(e * 1e-9)) if e == 0 else
+                        Ite(NN(A("b", f"cp{e}{pos}")), Plus(A("b", f"ee{e}{pos}"), L(e * 1e-9)), L(1e18)))
+    xbest = {"type": "Min", "items": [xscore(e) for e in range(len(prefixes))]}
+    xpick = A("b", f"cp{len(prefixes) - 1}{pos}")
+    for e in reversed(range(len(prefixes) - 1)):
+        xpick = Ite(Eq(xscore(e), V("xb")), A("b", f"cp{e}{pos}"), xpick)
+    eff.append(["set_attr", "b", f"pred_{pos}", T(Let("xb", xbest, xpick))])
+    for k in range(N_BASE):
+        eff.append(["set_attr", "b", f"c{pos}{k}", T(A("b", f"n{pos}{k}"))])
     return eff
 
 
@@ -232,7 +273,9 @@ PREDICT = {
 }
 
 NO_LAYERS = {"n_layers": 0, "ctx_bits": 0, "sig": "", **{f"l{i}_bit": 0 for i in range(N_SLOTS)},
-             **{f"l{i}_{ax}{c}": 0.0 for i in range(N_SLOTS) for ax in "xy" for c in COEFS}}
+             **{f"l{i}_{ax}{c}": 0.0 for i in range(N_SLOTS) for ax in "xy" for c in COEFS},
+             **{k: (0 if k.split("_", 1)[1] in ("mask", "n_layers", "ctx_bits") or k.endswith("_bit") else 0.0)
+                for k in X_KEYS}}
 candidates = []
 for fi, form in enumerate(FORMS):
     for reflect in (0, 1):
@@ -248,7 +291,7 @@ for i, c in enumerate(candidates, start=1):
     world_nodes.append({"local_id": i, "type": "PredictorCandidate", "attrs": c})
     world_edges.append({"src": {"role": "agent_root"}, "type": "has_predictor_candidate", "tgt": {"local": i},
                         "attrs": {}})
-world = {"id": "prediction_world", "version": "1.4.0", "depends_on": [],
+world = {"id": "prediction_world", "version": "1.5.0", "depends_on": [],
          "description": "The prediction world's predictor (see scripts/gen_prediction_world.py): the held Predictor "
                         "model, the candidate models in MDL order, and the prediction rule. This is the part of "
                         "the agent its self-improvement loop changes.",
@@ -331,14 +374,22 @@ UNTRIED = Filter(Nodes("PredictorCandidate"), "k", And(Not(IS_CURRENT(V("k"))), 
 OP_KIND = lambda c: Ite(Eq(A(c, "authored"), L(1)), A(c, "authored_by"), L("base"))
 OP_STAT = lambda c: Argmax(Filter(Nodes("PredictionOperatorStat"), "os", Eq(A("os", "kind"), OP_KIND(c))),
                            "os", L(0))
-YIELD = lambda c: Let("st", OP_STAT(c), Ite(NN(V("st")), Div(Plus(A("st", "supported"), L(1.0)),
+# (1.5.0) an operator's yield counts the trials it enabled: a supported candidate authored FROM one of its
+# trials (a composite or expert built on a refuted local winner) is credited to it as well
+YIELD = lambda c: Let("st", OP_STAT(c), Ite(NN(V("st")), Div(Plus(A("st", "supported"), A("st", "enabled"), L(1.0)),
                                                             Plus(A("st", "tried"), L(2.0))), L(0.5)))
+OP_ENABLED = lambda c: Let("st", OP_STAT(c), Ite(NN(V("st")), A("st", "enabled"), L(0)))
 OP_TRIED = lambda c: Let("st", OP_STAT(c), Ite(NN(V("st")), A("st", "tried"), L(0)))
 # with meta_search on, a candidate is not worth a trial when its operator has been tried meta_min_trials times
 # and its yield is under meta_min_yield
-VIABLE = lambda c: Or(Not(Eq(A("pol", "meta_search"), L(1))),
-                      Not(And(Gte(OP_TRIED(c), A("pol", "meta_min_trials")),
-                              Lt(YIELD(c), A("pol", "meta_min_yield")))))
+SKIPPED = lambda c: And(Eq(A("pol", "meta_search"), L(1)), Gte(OP_TRIED(c), A("pol", "meta_min_trials")),
+                        Lt(YIELD(c), A("pol", "meta_min_yield")),
+                        # (1.5.0) never skip an operator whose trials other operators have built on
+                        Eq(OP_ENABLED(c), L(0)))
+UNTRIED_NONSKIP = Filter(UNTRIED, "un", Not(SKIPPED(V("un"))))
+# (1.5.0) a skipped operator is a last resort, not a ban: once nothing else is left untried, its candidates are
+# trialled too (the record learned in one world is not trusted to rule another out)
+VIABLE = lambda c: Or(Not(SKIPPED(c)), Eq(Count(UNTRIED_NONSKIP), L(0)))
 UNTRIED_VIABLE = Filter(UNTRIED, "uv", VIABLE(V("uv")))
 PENDING = Exists(Nb("sc", "tested_by"), "x", Eq(A("x", "outcome"), L(None)))
 CONCERN_MATCH = CUR + [["agent", "has_self_concern", "sc"], ["agent", "has_predictor", "p"]]
@@ -358,7 +409,7 @@ PROPOSE = {
                 L("predicting with the "), A("k", "name"), L(" model lowers my surprise")]}),
             "candidate_mask": T(A("k", "mask")), "control_mask": T(A("p", "mask")),
             "candidate_sig": T(A("k", "sig")), "control_sig": T(A("p", "sig")),
-            "candidate_operator": T(OP_KIND("k")),
+            "candidate_operator": T(OP_KIND("k")), "candidate_parent_operator": T(A("k", "parent_operator")),
             "candidate_name": T(A("k", "name"))}],
         ["add_node", "delta", "SeedDelta", {
             "variation_op": "predictor_edit", "candidate_form": T(A("k", "form")),
@@ -396,6 +447,17 @@ COUNT_TRIAL = {
                 ["set_attr", "os", "supported", T(Plus(A("os", "supported"),
                                                        Ite(Eq(A("exp", "outcome"), L("supported")), L(1), L(0))))],
                 ["set_attr", "exp", "op_counted", 1]],
+}
+COUNT_ENABLED = {
+    "name": "pw_count_operator_enabled",
+    "comment": "1.5.0: a supported trial of a candidate authored from another operator's trial credits that "
+               "operator too -- its trials are what the authoring built on.",
+    "match": STAT_MATCH,
+    "where": And(Eq(A("exp", "outcome"), L("supported")), Not(Eq(A("exp", "op_enabled_counted"), L(1))),
+                 NN(A("exp", "candidate_parent_operator")),
+                 Eq(A("os", "kind"), A("exp", "candidate_parent_operator"))),
+    "effects": [["set_attr", "os", "enabled", T(Plus(A("os", "enabled"), L(1)))],
+                ["set_attr", "exp", "op_enabled_counted", 1]],
 }
 COUNT_ADOPT = {
     "name": "pw_count_operator_adoption",
@@ -438,7 +500,7 @@ AUTHOR = {
     "effects": [
         ["add_node", "k", "PredictorCandidate", {
             "form": "select", "reflect": -1, "authored": 1, "authored_level": T(A("sc", "level")),
-            "authored_by": "composition",
+            "authored_by": "composition", "parent_operator": T(Let("w", LOCAL_WINNER, A("w", "candidate_operator"))),
             **{key: T(A("p", key)) for key in SLOT_KEYS},
             "mask": T(Let("w", LOCAL_WINNER, UNION)),
             "rank": T(Plus(L(N_BASE), Count(Nodes("PredictorCandidate")))),
@@ -446,6 +508,7 @@ AUTHOR = {
                 A("p", "model"), L(" | "), A("w", "candidate_name")]}))}],
         ["add_edge", "agent", "has_predictor_candidate", "k"],
         ["add_edge", "sc", "authored", "k"],
+        ["set_attr", "sc", "composed", 1],
         ["set_attr", "sc", "status", "open"]],
 }
 EXHAUSTED_HERE = And(Eq(A("sc", "kind"), L("prediction_surprise")), Eq(A("sc", "status"), L("exhausted")),
@@ -517,6 +580,79 @@ DROP_LAYER = {
         ["set_attr", "sc", "revising", 1],
         ["set_attr", "sc", "status", "open"]],
 }
+XSIG = {"type": "StringConcat", "parts": [A("p", "sig"), L("&"), {"type": "Str", "value": A("wd", "candidate_mask")},
+                                         A("wd", "candidate_sig")]}
+FREE1 = Eq(A("p", "x1_mask"), L(0))
+# experts are a last resort (simpler explanations first): only for an exhausted concern whose residual fit is done
+# and whose single-model fits have all been authored (and so tried and refuted)
+FITS_SPENT = And(Eq(A("sc", "status"), L("exhausted")), Eq(A("sc", "fit_requested"), L(1)),
+                 Exists(Nb("sc", "has_residual_fit"), "rf2", Eq(A("rf2", "status"), L("done"))),
+                 Not(Exists(Nb("sc", "has_residual_fit"), "rf2", Exists(Nb(V("rf2"), "has_cell"), "c2", And(
+                     Not(Eq(A("c2", "kind"), L("specialist"))), Not(Eq(A("c2", "used"), L(1))),
+                     Gt(A("c2", "fit_gain"), L(0.0)))))))
+X_TARGET = lambda e: FREE1 if e == 1 else And(Not(FREE1), Eq(A("p", f"x{e}_mask"), L(0)))
+ADD_EXPERT = {
+    "name": "pw_author_expert",
+    "comment": "1.5.0: scope-confined change. A concern whose best local trial cleared the bar at the level but "
+               "was refuted on its retention cost: the agent authors its current model plus that winner as an "
+               "EXPERT in a free slot -- per body and axis, the expert whose last prediction was best predicts -- "
+               "so the specialist mostly acts only where it fits. The judge weighs it like any other candidate.",
+    "match": CONCERN_MATCH + [["sc", "tested_by", "wx"], ["wx", "has_delta", "wd"]],
+    "where": And(Eq(A("sc", "kind"), L("prediction_surprise")), Eq(A("sc", "level"), A("cur", "current_level")),
+                 Eq(A("pol", "self_improvement"), L(1)), Eq(A("pol", "authoring"), L(1)),
+                 Eq(A("pol", "experts"), L(1)),
+                 FITS_SPENT, Eq(V("wx"), LOCAL_WINNER),
+                 Or(FREE1, Eq(A("p", f"x{N_EXPERTS}_mask"), L(0))),
+                 Not(Exists(Nodes("PredictorCandidate"), "q", SAME(A("q", "mask"), A("q", "sig"),
+                                                                   A("p", "mask"), XSIG)))),
+    "effects": [
+        ["add_node", "nk", "PredictorCandidate", {
+            "form": "experts", "reflect": -1, "authored": 1, "authored_level": T(A("sc", "level")),
+            "authored_by": "add_expert", "parent_operator": T(A("wx", "candidate_operator")),
+            **{key: T(A("p", key)) for key in SLOT_KEYS}, "mask": T(A("p", "mask")), "sig": T(XSIG),
+            **{f"x{e}_{k}": T(Ite(X_TARGET(e), A("wd", "candidate_" + k), A("p", f"x{e}_{k}")))
+               for e in range(1, N_EXPERTS + 1) for k in EXPERT_KEYS},
+            "rank": T(Plus(L(N_BASE), Count(Nodes("PredictorCandidate")))),
+            "name": T({"type": "StringConcat", "parts": [A("p", "model"), L(" & expert("),
+                                                          A("wd", "candidate_name"), L(")")]})}],
+        ["add_edge", "agent", "has_predictor_candidate", "nk"],
+        ["add_edge", "sc", "authored", "nk"],
+        ["set_attr", "sc", "revising", 1],
+        ["set_attr", "sc", "status", "open"]],
+}
+SPEC_SIG = {"type": "StringConcat", "parts": [A("p", "sig"), L("&spec"), {"type": "Str", "value": A("cl", "specialist_mask")},
+                                             L("@"), {"type": "Str", "value": A("rf", "level")}]}
+SPEC_SLOT = lambda e, k: {"mask": A("cl", "specialist_mask"), "n_layers": L(2), "ctx_bits": L(3),
+                          "l0_bit": L(1), "l1_bit": L(2)}.get(k, A("cl", "s" + k[1:]) if k.startswith("l") else None)
+ADD_SPECIALIST = {
+    "name": "pw_author_specialist_expert",
+    "comment": "1.5.0: scope-confined change. From a ResidualFit's specialist cell -- its own base components "
+               "with both context layers fitted from scratch on this level's frames alone -- the agent authors its "
+               "current model plus that specialist as an expert in a free slot; per body and axis the expert whose "
+               "last prediction was best predicts, so the specialist mostly acts only where it fits.",
+    "match": CONCERN_MATCH + [["sc", "has_residual_fit", "rf"], ["rf", "has_cell", "cl"]],
+    "where": And(Eq(A("rf", "status"), L("done")), Eq(A("rf", "control_sig"), A("p", "sig")),
+                 Eq(A("rf", "control_mask"), A("p", "mask")), Eq(A("sc", "kind"), L("prediction_surprise")),
+                 Eq(A("sc", "level"), A("cur", "current_level")), Eq(A("pol", "experts"), L(1)),
+                 Eq(A("cl", "kind"), L("specialist")), Not(Eq(A("cl", "used"), L(1))), FITS_SPENT,
+                 Gt(A("cl", "fit_gain"), L(0.0)), Or(FREE1, Eq(A("p", f"x{N_EXPERTS}_mask"), L(0))),
+                 Not(Exists(Nodes("PredictorCandidate"), "q", SAME(A("q", "mask"), A("q", "sig"),
+                                                                   A("p", "mask"), SPEC_SIG)))),
+    "effects": [
+        ["add_node", "nk", "PredictorCandidate", {
+            "form": "experts", "reflect": -1, "authored": 1, "authored_level": T(A("sc", "level")),
+            "authored_by": "add_expert", **{key: T(A("p", key)) for key in SLOT_KEYS},
+            "mask": T(A("p", "mask")), "sig": T(SPEC_SIG),
+            **{f"x{e}_{k}": T(Ite(X_TARGET(e), SPEC_SLOT(e, k), A("p", f"x{e}_{k}")))
+               for e in range(1, N_EXPERTS + 1) for k in EXPERT_KEYS},
+            "rank": T(Plus(L(N_BASE), Count(Nodes("PredictorCandidate")))),
+            "name": T({"type": "StringConcat", "parts": [A("p", "model"), L(" & specialist@"),
+                                                          {"type": "Str", "value": A("rf", "level")}]})}],
+        ["add_edge", "agent", "has_predictor_candidate", "nk"],
+        ["add_edge", "sc", "authored", "nk"],
+        ["set_attr", "cl", "used", 1],
+        ["set_attr", "sc", "status", "open"]],
+}
 IS_NEW = Eq(A("cl", "kind"), L("new"))
 IS_REFIT = Eq(A("cl", "kind"), L("refit"))
 IS_ALL = Eq(A("cl", "kind"), L("refit_all"))
@@ -572,7 +708,7 @@ AUTHOR_LAYER = {
             "rank": T(Plus(L(N_BASE), Count(Nodes("PredictorCandidate")))),
             "n_layers": T(Ite(IS_NEW, Plus(A("p", "n_layers"), L(1)), A("p", "n_layers"))),
             "ctx_bits": T(Ite(IS_NEW, Plus(A("p", "ctx_bits"), A("cl", "ctx_bit")), A("p", "ctx_bits"))),
-            "sig": T(NEW_SIG), "name": T(NEW_NAME),
+            "sig": T(NEW_SIG), "name": T(NEW_NAME), **{key: T(A("p", key)) for key in X_KEYS},
             **{f"l{i}_bit": slot_attr(i, "bit", "ctx_bit") for i in range(N_SLOTS)},
             **{f"l{i}_{ax}{c}": slot_attr(i, f"{ax}{c}", f"{ax}{c}")
                for i in range(N_SLOTS) for ax in "xy" for c in COEFS}}],
@@ -632,6 +768,55 @@ ADOPT = {
         ["add_edge", "exp", "adopted_as", "ad"]],
 }
 
+# ---------------------------------------------------------------- (1.5.0) self-proposed policy changes
+# The grammar of changes the agent may propose to its own search policy (human-written): each scales one
+# policy parameter. The agent proposes them all once its curriculum is mastered; the mechanical half measures
+# each on practice levels the agent draws itself (forks of the agent, control vs variant: practice-level
+# surprise + surprise added on its mastered levels, and experiments spent); the graph judges and adopts the
+# best trade, if any.
+META_GRAMMAR = (("retention_weight", 0.5), ("retention_weight", 2.0), ("meta_min_yield", 0.5),
+                ("meta_min_yield", 2.0), ("meta_min_trials", 0.5), ("meta_min_trials", 2.0), ("min_gain", 0.5))
+META_PROPOSE = {
+    "name": "pw_propose_policy_change",
+    "comment": "1.5.0: with its curriculum mastered and meta_proposals on, the agent proposes changes to its own "
+               "search policy -- each a MetaProposal the mechanical half measures on practice levels.",
+    "match": CUR,
+    "where": And(Eq(A("pol", "meta_proposals"), L(1)), NN(A("cur", "mastered_through")),
+                 Eq(A("cur", "mastered_through"), A("cur", "max_level")),
+                 Not(Exists(Nodes("MetaProposal"), "mp", L(True)))),
+    "effects": [eff for i, (param, factor) in enumerate(META_GRAMMAR) for eff in (
+        ["add_node", f"mp{i}", "MetaProposal", {"param": param, "factor": factor, "status": "requested",
+                                               "current": T(A("pol", param))}],
+        ["add_edge", "agent", "has_meta_proposal", f"mp{i}"])],
+}
+META_NET = Plus(Minus(A("mp", "control_total"), A("mp", "variant_total")),
+                Times(A("pol", "experiment_cost"), Minus(A("mp", "control_experiments"), A("mp", "variant_experiments"))))
+META_JUDGE = {
+    "name": "pw_judge_policy_change",
+    "comment": "1.5.0: a measured policy change, weighed: practice surprise plus retention harm saved, plus "
+               "experiment_cost per experiment saved; supported when the net reaches meta_min_net.",
+    "match": [["agent", "has_prediction_policy", "pol"], ["agent", "has_meta_proposal", "mp"]],
+    "where": And(Eq(A("mp", "status"), L("done")), Eq(A("mp", "outcome"), L(None))),
+    "effects": [["set_attr", "mp", "net", T(META_NET)],
+                ["set_attr", "mp", "outcome", T(Ite(Gte(META_NET, A("pol", "meta_min_net")),
+                                                    L("supported"), L("refuted")))]],
+}
+META_PENDING = Exists(Nodes("MetaProposal"), "o", Eq(A("o", "outcome"), L(None)))
+META_BEST = Not(Exists(Nodes("MetaProposal"), "o", And(
+    Eq(A("o", "outcome"), L("supported")), Not(Eq(V("o"), V("mp"))),
+    Or(Gt(A("o", "net"), A("mp", "net")), And(Eq(A("o", "net"), A("mp", "net")), Lt(A("o", "factor"), A("mp", "factor")))))))
+META_ADOPT = [{
+    "name": f"pw_adopt_policy_change_{param}",
+    "comment": f"1.5.0: once every proposal is judged, the best supported one is adopted (here: {param}).",
+    "match": [["agent", "has_prediction_policy", "pol"], ["agent", "has_meta_proposal", "mp"]],
+    "where": And(Eq(A("mp", "param"), L(param)), Eq(A("mp", "outcome"), L("supported")),
+                 Not(Eq(A("mp", "adopted"), L(1))), Not(META_PENDING), META_BEST),
+    "effects": [["set_attr", "pol", param, T(Times(A("pol", param), A("mp", "factor")))],
+                ["set_attr", "mp", "adopted", 1],
+                ["set_attr", "pol", "meta_adopted", T({"type": "StringConcat", "parts": [
+                    A("mp", "param"), L(" x"), {"type": "Str", "value": A("mp", "factor")}]})]],
+} for param in sorted({p for p, _f in META_GRAMMAR})]
+
 loop_nodes = [
     {"local_id": 0, "type": "PredictionCurriculum", "attrs": {
         "name": "prediction_curriculum", "current_level": 1, "max_level": 5, "last_change_seq": -1}},
@@ -639,23 +824,25 @@ loop_nodes = [
         "name": "prediction_policy", "self_improvement": 1, "surprise_floor": 0.15, "window": 3,
         "min_gain": 0.2, "min_abs_gain": 0.05, "retention_weight": 1.0, "authoring": 1,
         "mastery_window": 5, "mastery_z": 1.645, "meta_search": 1,
-        "meta_min_trials": 8, "meta_min_yield": 0.15,
+        "meta_min_trials": 8, "meta_min_yield": 0.15, "experts": 1,
+        "meta_proposals": 0, "experiment_cost": 0.001, "meta_min_net": 0.002,
         "description": "The agent's own bar: mean surprise per body-frame (cells) at or under the floor masters a "
                        "level; a model must cut it by 20%, and by 0.05 cells net of any surprise it adds on the "
                        "levels already mastered, to be adopted."}}]
 loop_edges = [{"src": {"role": "agent_root"}, "type": "has_prediction_curriculum", "tgt": {"local": 0}, "attrs": {}},
               {"src": {"role": "agent_root"}, "type": "has_prediction_policy", "tgt": {"local": 1}, "attrs": {}}]
 OPERATOR_KINDS = ("base", "composition", "residual_fit", "residual_refit", "residual_refit_all", "prune_component",
-                  "drop_layer")
+                  "drop_layer", "add_expert")
 for j, kind in enumerate(OPERATOR_KINDS, start=2):
     loop_nodes.append({"local_id": j, "type": "PredictionOperatorStat",
-                       "attrs": {"kind": kind, "tried": 0, "supported": 0, "adopted": 0}})
+                       "attrs": {"kind": kind, "tried": 0, "supported": 0, "adopted": 0, "enabled": 0}})
     loop_edges.append({"src": {"role": "agent_root"}, "type": "has_operator_stat", "tgt": {"local": j}, "attrs": {}})
 # no depends_on: the loop reads the predictor's nodes at run time, and a dependency
 # would freeze the predictor seed by closure (it is the part the agent changes)
-loop = {"id": "prediction_self_improvement", "version": "1.4.0", "depends_on": [],
+loop = {"id": "prediction_self_improvement", "version": "1.5.0", "depends_on": [],
         "description": __doc__, "nodes": loop_nodes, "edges": loop_edges, "productions": [],
-        "rules": [ADVANCE, MASTER_LAST, FILE, PROPOSE, EXHAUSTED, AUTHOR, REQUEST_FIT, AUTHOR_LAYER, PRUNE_COMPONENT, DROP_LAYER, JUDGE, ADOPT, COUNT_TRIAL, COUNT_ADOPT]}
+        "rules": [ADVANCE, MASTER_LAST, FILE, PROPOSE, EXHAUSTED, AUTHOR, REQUEST_FIT, AUTHOR_LAYER, PRUNE_COMPONENT, DROP_LAYER, ADD_EXPERT, ADD_SPECIALIST, JUDGE, ADOPT, COUNT_TRIAL, COUNT_ENABLED, COUNT_ADOPT,
+                  META_PROPOSE, META_JUDGE, *META_ADOPT]}
 
 P_WORLD.write_text(json.dumps(world, indent=1, ensure_ascii=True) + "\n")
 P_LOOP.write_text(json.dumps(loop, indent=1, ensure_ascii=True) + "\n")

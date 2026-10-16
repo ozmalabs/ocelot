@@ -337,14 +337,59 @@ def test_meta_search_trials_the_best_yielding_operator_first():
     assert len(_concern_with_composite(flat)) == 6
 
 
-def test_meta_search_skips_an_operator_its_record_says_does_not_pay():
+def test_meta_search_skips_a_low_yield_operator_but_only_as_a_last_resort():
     """An operator tried meta_min_trials times with yield under meta_min_yield
-    is not trialled again: with base at 0 of 20 and the composite at 0 of 20
-    nothing is proposed, and the concern exhausts."""
+    is skipped while anything else is untried (base at 0 of 20, composite at
+    2 of 2: the composite alone); 1.5.0: when everything left is skipped, it
+    is trialled after all (base and composite both at 0 of 20: all six)."""
+    assert _concern_with_composite(_agent(1), base=(20, 0), comp=(2, 2)) == ["comp"]
+    assert len(_concern_with_composite(_agent(1), base=(20, 0), comp=(20, 0))) == 6
+
+
+def test_an_operator_others_built_on_is_never_skipped():
+    """1.5.0: base at 0 supported of 20 but credited with enabling a supported
+    composite is not skipped: its candidates join the best-yield batch."""
     a = _agent(1)
-    assert _concern_with_composite(a, base=(20, 0), comp=(20, 0)) == []
-    (sc,) = [c for c in a.s.nodes("SelfConcern")]
-    assert a.s.node(sc)["attrs"]["status"] == "exhausted"
+    a.inner.set_attr(_stat(a, "base"), "enabled", 9)
+    names = _concern_with_composite(a, base=(20, 0), comp=(20, 0))
+    assert len(names) == 5 and "comp" not in names
+
+
+def test_an_expert_predicts_where_it_fits():
+    """1.5.0: a primary acceleration+reflect model with ratio held as an
+    expert predicts damped glide (level 4) nearly as well as ratio alone,
+    while the primary alone misses."""
+    model = {"mask": ACC1, "x1_mask": RATIO}
+    for seed in range(3):
+        tr = pw.simulate(4, seed)
+        assert pw.replay(tr, model) < 0.1 < pw.replay(tr, ACC1)
+
+
+def test_agent_proposes_and_adopts_a_policy_change():
+    """1.5.0: with its curriculum mastered and meta_proposals on, the agent
+    proposes the policy grammar's changes; measured results written back are
+    judged, and the best supported one is adopted into its policy."""
+    a = _agent(1)
+    S, I = a.s, a.inner
+    cur, pol = S.nodes("PredictionCurriculum")[0], S.nodes("PredictionPolicy")[0]
+    I.set_attr(cur, "current_level", 5)
+    I.set_attr(cur, "mastered_through", 5)
+    I.set_attr(pol, "meta_proposals", 1)
+    I.run_rules()
+    props = S.nodes("MetaProposal")
+    assert len(props) == 7
+    for m in props:
+        at = S.node(m)["attrs"]
+        good = (at["param"], at["factor"]) == ("meta_min_trials", 0.5)
+        ok = (at["param"], at["factor"]) == ("retention_weight", 2.0)
+        for k, v in (("control_total", 1.0), ("variant_total", 0.99 if ok else 1.0), ("control_experiments", 100),
+                     ("variant_experiments", 70 if good else 100), ("status", "done")):
+            I.set_attr(m, k, v)
+    I.run_rules()
+    at = S.node(pol)["attrs"]
+    # nets: meta_min_trials x0.5 = 0.03, retention_weight x2 = 0.01; the best is adopted, only it
+    assert at["meta_min_trials"] == 4 and at["retention_weight"] == 1.0
+    assert at["meta_adopted"].startswith("meta_min_trials")
 
 
 def test_loop_seed_frozen_and_protected():
@@ -356,5 +401,6 @@ def test_loop_seed_frozen_and_protected():
     loop = json.loads((ROOT / "seeds/prediction_self_improvement.json").read_text())
     assert loop["depends_on"] == []
     integ = (ROOT / "seeds/improvement_integrity.json").read_text()
-    for t in ("PredictionPolicy", "PredictionCurriculum", "PredictorCandidate", "PredictionOperatorStat"):
+    for t in ("PredictionPolicy", "PredictionCurriculum", "PredictorCandidate", "PredictionOperatorStat",
+              "MetaProposal"):
         assert f'"{t}"' in integ
