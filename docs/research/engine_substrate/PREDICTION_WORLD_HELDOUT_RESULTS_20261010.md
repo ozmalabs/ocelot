@@ -438,3 +438,98 @@ No practice level showed a single-level loss above 0.05 for any supported propos
 - Open-ended recursive self-improvement. The agent now adapts its search record, its search policy, and its judge, each from its own evidence and each validated on unseen worlds. But it does so by choosing among human-written options, and its practice distribution is too narrow to expose the rare failures the held-out levels contain.
 
 **The concrete gap this exposes:** practice levels that resemble the worlds where the agent's choices fail. For example, the agent could search its own practice family for levels where proposals disagree most. That would be the agent shaping its own curriculum for self-evaluation.
+
+
+---
+
+# v7: the agent shapes its own practice (loop 1.8.0)
+
+The protocol is `PREDICTION_WORLD_HELDOUT_PROTOCOL_V7_20261010.md`, frozen at `1fc1b2cbcc83da15f4dbe346da2c55f0f34ec826`. There were two six-draw sets, giving 384 pairs × 3 arms, plus two calibrated practice phases. Nothing was changed after the commit. The analysis is `prediction_world_sequential_analysis_v7.py <A> <B>`.
+
+## Practice phase
+
+**Random practice** reproduced v6 exactly: the same judges (`tail` on ties) and the same adopted policies.
+
+**Shaped practice changed what the agent adopted.** On 3 of 4 seed bases the policy differs from the random-practice policy:
+
+| seed base | shaped-practice changes |
+|---|---|
+| 1000 | `meta_min_yield` ×2 ×2 and `meta_min_trials` ×0.5, instead of `min_gain` ×0.5 |
+| 2024 | adds `meta_min_yield` ×2, and ends with `retention_weight` ×2 |
+| 9000 | `retention_weight` ×0.5, instead of `min_gain` ×0.5 |
+| 5000 | identical |
+
+**The selected levels were more contested.**
+- On seed 1000 round 0, the selected spreads were 0.04–0.39, where random levels often had 0.
+- Proposals' P1 nets were larger in both directions, e.g. −0.36, +0.16, −0.17.
+
+**The judge choice was still decided by ties.** All three judges' best supported proposal was the same on every base. The tail limit still never bound on what the agent would adopt.
+
+## Pre-registered verdicts
+
+| hypothesis | look 1 (192) | look 2 (384) | verdict |
+|---|---|---|---|
+| H5s shaped-practice policy pays, without a tail | sign 97–4; mean −0.0094 (p = 5·10⁻⁶); 0 big losses | sign 149–15; mean −0.0020 (p = 0.37); 7 big losses | **supported at look 1** |
+| H9 shaped practice beats random practice | sign 40–11; mean +0.0004 (p = 0.65) | sign 67–17; mean +0.0001 (p = 0.85) | **not supported** |
+
+By the pre-declared rule, H5s was decided at look 1 and stays supported. **That verdict must not be read alone.**
+
+## Set B reverses set A (post-hoc analysis)
+
+| comparison | set A mean cost | set B mean cost | set B big losses |
+|---|---|---|---|
+| shaped-practice policy − trained | −0.0094 | **+0.0054** | 7 |
+| random-practice policy − trained (the v6 policy) | −0.0098 | **+0.0055** | 7 |
+
+- In set B both policy arms lose on mean cost, with 7 pairs each worse by more than 0.1. That is the tail again, above the 1% allowance.
+- Pooled over both sets, neither passes the mean test (p = 0.33–0.37).
+- Over all 384 pairs, the components are the same trade as before:
+
+| component | random − trained | shaped − trained |
+|---|---|---|
+| experiments per run | −7.3 | −8.4 |
+| retention harm | −0.006 | −0.005 |
+| final surprise | +0.011 | +0.012 |
+
+**H9.** Shaped practice made different choices and won more pairs than random practice (67–17). But the per-pair differences are tiny and cancel in the mean: +0.0001 overall, and per seed base between −0.0021 and +0.0023.
+
+## The policy-change result across every draw set so far
+
+Mean weighed cost of the agent's own policy vs the born policy:
+
+| draw set | mean cost difference |
+|---|---|
+| v5 A | −0.0072 |
+| v5 B | −0.0006 |
+| v6 A | −0.0018 |
+| v6 B | −0.0052 |
+| v7 A | −0.0098 |
+| v7 B | **+0.0055** |
+
+- The policy changes the agent chooses for itself usually pay a little on the declared weighing. They do it by searching about half as much and protecting mastered levels a little more, at a small cost in new-level surprise.
+- In 1 of 6 draw sets the occasional hard level where they decline a needed fix outweighs that. Three mechanisms aimed at that tail have failed to remove it:
+  - a level-count judge (v5);
+  - self-selected judges (v6);
+  - self-shaped practice (v7).
+- The agent's practice evidence never shows the tail on what it would adopt, so nothing it can choose among sees it.
+
+## Where the line stands
+
+**Holds across draw sets:**
+- The loop beats ablations.
+- The per-kind operator record makes search much cheaper at no quality cost.
+- Experts help where they act.
+
+**Mixed:**
+- The agent's own policy changes pay on most draw sets, but not all, and carry a tail its self-evaluation cannot see.
+
+**Not shown:**
+- That self-chosen judges or self-shaped practice improve on the defaults.
+- That an experienced agent beats a newborn.
+- Open-ended recursive self-improvement.
+
+**Assessment.** The meta-level machinery now has every piece I proposed: learned record, experts, self-proposed policy, self-selected judge, self-shaped practice. The meta-level gains that hold are about cost, not capability. The remaining failure (a rare, large miss on a hard level) is invisible to every piece of evidence the agent generates for itself. More selection among human-written options is unlikely to fix that.
+
+The two plausible directions are:
+- letting the agent author new options (operators, features), so the hard levels become solvable rather than merely avoidable;
+- changing the frame, so the agent experiences the hard levels it currently declines, e.g. a curriculum that keeps escalating rather than one that stops at five levels.
