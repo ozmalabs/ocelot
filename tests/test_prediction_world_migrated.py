@@ -418,6 +418,37 @@ def test_agent_proposes_and_adopts_a_policy_change():
     assert [m["current"] for m in nxt if m["param"] == "meta_min_trials"] == [4, 4]
 
 
+def test_agent_selects_its_judge_from_its_own_calibration():
+    """1.7.0: with meta_calibrate on, round 0's proposals carry a second
+    practice set's realised net (p2_net). The loosest judge's favourite (big
+    net, one lucky level, lost badly elsewhere) realises a loss on P2; the
+    tail judge's favourite realises a gain -- the agent adopts the tail
+    judge, and adopts that judge's choice."""
+    a = _agent(1)
+    S, I = a.s, a.inner
+    cur, pol = S.nodes("PredictionCurriculum")[0], S.nodes("PredictionPolicy")[0]
+    I.set_attr(cur, "current_level", 5)
+    I.set_attr(cur, "mastered_through", 5)
+    I.set_attr(pol, "meta_proposals", 1)
+    I.set_attr(pol, "meta_calibrate", 1)
+    I.run_rules()
+    for m in S.nodes("MetaProposal"):
+        at = S.node(m)["attrs"]
+        key = (at["param"], at["factor"])
+        # (variant_total, wins, losses, worst_level_loss, p2_net)
+        v = {("min_gain", 0.5): (0.5, 5, 3, 0.4, -0.3),               # big net, a heavy tail: P2 loses
+             ("meta_min_trials", 0.5): (0.97, 6, 0, 0.01, 0.02),      # modest, safe: P2 gains
+             }.get(key, (1.0, 0, 0, 0.0, 0.0))
+        for k, x in (("control_total", 1.0), ("variant_total", v[0]), ("control_experiments", 100),
+                     ("variant_experiments", 100), ("level_wins", v[1]), ("level_losses", v[2]),
+                     ("worst_level_loss", v[3]), ("p2_net", v[4]), ("status", "done")):
+            I.set_attr(m, k, x)
+    I.run_rules()
+    at = S.node(pol)["attrs"]
+    assert at["meta_judge_selected"] == 1 and at["meta_judge_active"] == "tail"
+    assert at["meta_min_trials"] == 4 and at["min_gain"] == 0.2
+
+
 def test_loop_seed_frozen_and_protected():
     from substrate.boot_all import _FROZEN_SEED_IDS
     assert "prediction_self_improvement" in _FROZEN_SEED_IDS

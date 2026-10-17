@@ -1,8 +1,8 @@
 {
  "id": "prediction_self_improvement",
- "version": "1.6.0",
+ "version": "1.7.0",
  "depends_on": [],
- "description": "Emit the prediction world (2026-10-10): a graded, closed world in which to\ndemonstrate ENDEMIC self-improvement -- the agent improving itself from its\nown operation, judged by its own criterion, with an off arm.\n\nThe world (domains/prediction_world.py, mechanical): bodies move in a box;\neach frame the agent observes their positions and its PREDICTOR -- graph\nrules -- predicts where each will be next. Its criterion is its own surprise:\nthe distance between where it predicted a body would be and where it was.\nLevels get harder: 1 drift (constant velocity), 2 bounce (walls), 3 fall\n(gravity), 4 glide (damping), 5 bounce under gravity.\n\nseeds/prediction_world.json (skippable; the part the agent changes)\n  * Six base models, rank k = form_index*2 + reflect: velocity (x + dx),\n    acceleration (x + 2dx - pdx: a constant change in displacement) or ratio\n    (x + dx*dx/pdx: a constant ratio of displacements), each with or without\n    `reflect` (fold a prediction that leaves the box back in).\n  * Predictor{mask, model}: the agent's held model -- the set of base models\n    it composes (bit k). One bit is a base model; more is a composite that\n    uses, per body and axis, whichever component predicted that body best\n    last frame (1.1.0).\n  * PredictorCandidate{mask, name, rank, authored}: the models the agent may\n    try, in MDL order. The six base models and the composition operator are\n    human-written; which model to try, when, which composites to author, and\n    whether to keep one is the agent's.\n  * predict_body_next: the predictor itself.\n\nseeds/prediction_self_improvement.json (frozen; the loop -- the agent may not\nchange how it judges itself)\n  * PredictionCurriculum{current_level, max_level, last_change_seq} and\n    PredictionPolicy{self_improvement, surprise_floor, window, min_gain,\n    min_abs_gain}.\n  * pw_advance_level: `window` consecutive episodes at the level at or under\n    the floor -> the next level.\n  * pw_file_surprise_concern: `window` episodes since the predictor last\n    changed and the level not mastered -> SelfConcern{kind:'prediction_surprise'}.\n    Endemic: nothing but the agent's own surprise files it.\n  * pw_propose_predictor_edit: an open concern, self-improvement on -> one\n    Experiment + SeedDelta per candidate not yet tried against the current\n    model for this concern.\n  * pw_concern_exhausted: no candidate left -> the concern says so.\n  * pw_author_composite_predictor (1.1.0): an exhausted concern whose best\n    local trial cleared the bar at the level and was refuted only on its\n    retention cost -> the agent authors a new candidate, its current model\n    composed with that winner, and reopens the concern. Composites compose\n    further; one it already holds is not re-authored, so it terminates.\n  * pw_request_residual_fit / pw_author_context_layer (1.2.0): an exhausted\n    concern with nothing to compose -> the agent asks where its own model's\n    surprise lives (ResidualFit: per context atom, the summed error of the\n    frames where it holds, and the least-squares fit of those frames,\n    x' - x = c0*dx + c1*pdx + c2*ppdx + c3, written by the mechanical\n    half as ResidualCells); it then authors its current model plus a layer on\n    the atom holding the most residual where the fit helps, and reopens the\n    concern. The context atoms (reversal: dx*pdx < 0; after_reversal:\n    pdx*ppdx < 0) and the linear layer form are human-written; which atom,\n    the coefficients (from its own episodes), and whether to keep it are not.\n  * pw_master_last_level (1.2.0): the last level is mastered like the others.\n  * PredictionPolicy.authoring (1.2.0): 0 switches both authoring rules off\n    (the no_authoring ablation).\n  * Revision (1.3.0): residual fits also cover layers the model holds\n    (refit one, or refit_all), each fit offered on the level alone and pooled\n    with the mastered levels, one candidate per helpful fit;\n    pw_author_pruned_component (the model minus one base component) and\n    pw_author_dropped_layer (minus its last layer); layers gain a fifth term,\n    the body's running acceleration estimate on the axis.\n  * Robust mastery (1.4.0): the one-sided 95% upper confidence bound of the\n    mean surprise of the last `mastery_window` (5) episodes under the current\n    model at or under the floor; concerns filed on the mean of the last\n    `window` episodes since the change, or after 2*mastery_window episodes\n    without robust mastery.\n  * Meta search (1.4.0): PredictionOperatorStat per authoring operator\n    (tried / supported / adopted, updated by pw_count_operator_trial and\n    pw_count_operator_adoption); with meta_search on, trials go in batches by\n    operator yield (supported+1)/(tried+2), best first, and an operator tried\n    meta_min_trials times with yield under meta_min_yield is skipped.\n  * 1.5.0: experts (up to N_EXPERTS more full models on the Predictor, gated\n    per body and axis by cumulative error; authored by pw_author_expert from\n    the local winner and pw_author_specialist_expert from a level-only fit,\n    both only once a concern's single-model fits are spent); provenance\n    credit (`enabled`) in the operator record, and skipping only as a last\n    resort; self-proposed policy changes (MetaProposal from META_GRAMMAR,\n    measured on the agent's own practice levels by the mechanical half,\n    judged and adopted by pw_judge_policy_change / pw_adopt_policy_change_*).\n  * 1.6.0: the operator record per kind of world (box / open, read from the\n    level's latest episode); skipping a real skip again (skip_last_resort 0);\n    policy proposals in rounds (meta_round / meta_max_rounds, closed by\n    pw_close_policy_round), supported only when they win on more practice\n    levels than they lose.\n  * pw_judge_predictor_edit: the replay's variant surprise against its control\n    surprise, on the agent's own recorded episodes at the level AND on its\n    recorded episodes of the levels it has already mastered (retention):\n    supported only when it is lower at the level by min_gain (relative) and\n    its gain, net of retention_weight x the surprise it adds on mastered\n    levels (summed per level, so one level's regression is neither diluted nor\n    traded against another's improvement), reaches min_abs_gain. Weighed,\n    not vetoed.\n  * pw_adopt_predictor_edit: once every trial is judged, the supported trial\n    with the best weighed net (ties: the simpler model) is adopted in the\n    graph -- the Predictor takes the candidate's form -- and the concern is\n    resolved.\nIdempotent.\n",
+ "description": "Emit the prediction world (2026-10-10): a graded, closed world in which to\ndemonstrate ENDEMIC self-improvement -- the agent improving itself from its\nown operation, judged by its own criterion, with an off arm.\n\nThe world (domains/prediction_world.py, mechanical): bodies move in a box;\neach frame the agent observes their positions and its PREDICTOR -- graph\nrules -- predicts where each will be next. Its criterion is its own surprise:\nthe distance between where it predicted a body would be and where it was.\nLevels get harder: 1 drift (constant velocity), 2 bounce (walls), 3 fall\n(gravity), 4 glide (damping), 5 bounce under gravity.\n\nseeds/prediction_world.json (skippable; the part the agent changes)\n  * Six base models, rank k = form_index*2 + reflect: velocity (x + dx),\n    acceleration (x + 2dx - pdx: a constant change in displacement) or ratio\n    (x + dx*dx/pdx: a constant ratio of displacements), each with or without\n    `reflect` (fold a prediction that leaves the box back in).\n  * Predictor{mask, model}: the agent's held model -- the set of base models\n    it composes (bit k). One bit is a base model; more is a composite that\n    uses, per body and axis, whichever component predicted that body best\n    last frame (1.1.0).\n  * PredictorCandidate{mask, name, rank, authored}: the models the agent may\n    try, in MDL order. The six base models and the composition operator are\n    human-written; which model to try, when, which composites to author, and\n    whether to keep one is the agent's.\n  * predict_body_next: the predictor itself.\n\nseeds/prediction_self_improvement.json (frozen; the loop -- the agent may not\nchange how it judges itself)\n  * PredictionCurriculum{current_level, max_level, last_change_seq} and\n    PredictionPolicy{self_improvement, surprise_floor, window, min_gain,\n    min_abs_gain}.\n  * pw_advance_level: `window` consecutive episodes at the level at or under\n    the floor -> the next level.\n  * pw_file_surprise_concern: `window` episodes since the predictor last\n    changed and the level not mastered -> SelfConcern{kind:'prediction_surprise'}.\n    Endemic: nothing but the agent's own surprise files it.\n  * pw_propose_predictor_edit: an open concern, self-improvement on -> one\n    Experiment + SeedDelta per candidate not yet tried against the current\n    model for this concern.\n  * pw_concern_exhausted: no candidate left -> the concern says so.\n  * pw_author_composite_predictor (1.1.0): an exhausted concern whose best\n    local trial cleared the bar at the level and was refuted only on its\n    retention cost -> the agent authors a new candidate, its current model\n    composed with that winner, and reopens the concern. Composites compose\n    further; one it already holds is not re-authored, so it terminates.\n  * pw_request_residual_fit / pw_author_context_layer (1.2.0): an exhausted\n    concern with nothing to compose -> the agent asks where its own model's\n    surprise lives (ResidualFit: per context atom, the summed error of the\n    frames where it holds, and the least-squares fit of those frames,\n    x' - x = c0*dx + c1*pdx + c2*ppdx + c3, written by the mechanical\n    half as ResidualCells); it then authors its current model plus a layer on\n    the atom holding the most residual where the fit helps, and reopens the\n    concern. The context atoms (reversal: dx*pdx < 0; after_reversal:\n    pdx*ppdx < 0) and the linear layer form are human-written; which atom,\n    the coefficients (from its own episodes), and whether to keep it are not.\n  * pw_master_last_level (1.2.0): the last level is mastered like the others.\n  * PredictionPolicy.authoring (1.2.0): 0 switches both authoring rules off\n    (the no_authoring ablation).\n  * Revision (1.3.0): residual fits also cover layers the model holds\n    (refit one, or refit_all), each fit offered on the level alone and pooled\n    with the mastered levels, one candidate per helpful fit;\n    pw_author_pruned_component (the model minus one base component) and\n    pw_author_dropped_layer (minus its last layer); layers gain a fifth term,\n    the body's running acceleration estimate on the axis.\n  * Robust mastery (1.4.0): the one-sided 95% upper confidence bound of the\n    mean surprise of the last `mastery_window` (5) episodes under the current\n    model at or under the floor; concerns filed on the mean of the last\n    `window` episodes since the change, or after 2*mastery_window episodes\n    without robust mastery.\n  * Meta search (1.4.0): PredictionOperatorStat per authoring operator\n    (tried / supported / adopted, updated by pw_count_operator_trial and\n    pw_count_operator_adoption); with meta_search on, trials go in batches by\n    operator yield (supported+1)/(tried+2), best first, and an operator tried\n    meta_min_trials times with yield under meta_min_yield is skipped.\n  * 1.5.0: experts (up to N_EXPERTS more full models on the Predictor, gated\n    per body and axis by cumulative error; authored by pw_author_expert from\n    the local winner and pw_author_specialist_expert from a level-only fit,\n    both only once a concern's single-model fits are spent); provenance\n    credit (`enabled`) in the operator record, and skipping only as a last\n    resort; self-proposed policy changes (MetaProposal from META_GRAMMAR,\n    measured on the agent's own practice levels by the mechanical half,\n    judged and adopted by pw_judge_policy_change / pw_adopt_policy_change_*).\n  * 1.6.0: the operator record per kind of world (box / open, read from the\n    level's latest episode); skipping a real skip again (skip_last_resort 0);\n    policy proposals in rounds (meta_round / meta_max_rounds, closed by\n    pw_close_policy_round), supported only when they win on more practice\n    levels than they lose.\n  * 1.7.0: three judges for policy changes (net / sign / tail); with\n    meta_calibrate on, round 0 is also measured on a second practice set and\n    pw_select_policy_judge adopts the judge whose choice realised the most\n    net there (ties: the stricter); later rounds use it.\n  * pw_judge_predictor_edit: the replay's variant surprise against its control\n    surprise, on the agent's own recorded episodes at the level AND on its\n    recorded episodes of the levels it has already mastered (retention):\n    supported only when it is lower at the level by min_gain (relative) and\n    its gain, net of retention_weight x the surprise it adds on mastered\n    levels (summed per level, so one level's regression is neither diluted nor\n    traded against another's improvement), reaches min_abs_gain. Weighed,\n    not vetoed.\n  * pw_adopt_predictor_edit: once every trial is judged, the supported trial\n    with the best weighed net (ties: the simpler model) is adopted in the\n    graph -- the Predictor takes the candidate's form -- and the concern is\n    resolved.\nIdempotent.\n",
  "nodes": [
   {
    "local_id": 0,
@@ -38,6 +38,9 @@
     "skip_last_resort": 0,
     "meta_round": 0,
     "meta_max_rounds": 3,
+    "meta_judge_active": "sign",
+    "meta_calibrate": 0,
+    "meta_max_level_loss": 0.05,
     "description": "The agent's own bar: mean surprise per body-frame (cells) at or under the floor masters a level; a model must cut it by 20%, and by 0.05 cells net of any surprise it adds on the levels already mastered, to be adopted."
    }
   },
@@ -29449,6 +29452,445 @@
     [
      "set_attr",
      "mp",
+     "outcome_net",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Gte",
+        "a": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Minus",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "mp"
+            },
+            "key": "control_total"
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "mp"
+            },
+            "key": "variant_total"
+           }
+          },
+          {
+           "type": "Times",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "pol"
+             },
+             "key": "experiment_cost"
+            },
+            {
+             "type": "Minus",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "mp"
+              },
+              "key": "control_experiments"
+             },
+             "b": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "mp"
+              },
+              "key": "variant_experiments"
+             }
+            }
+           ]
+          }
+         ]
+        },
+        "b": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "pol"
+         },
+         "key": "meta_min_net"
+        }
+       },
+       "then": {
+        "type": "Lit",
+        "value": "supported"
+       },
+       "other": {
+        "type": "Lit",
+        "value": "refuted"
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "mp",
+     "outcome_sign",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "And",
+        "items": [
+         {
+          "type": "Gte",
+          "a": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Minus",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "mp"
+              },
+              "key": "control_total"
+             },
+             "b": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "mp"
+              },
+              "key": "variant_total"
+             }
+            },
+            {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "pol"
+               },
+               "key": "experiment_cost"
+              },
+              {
+               "type": "Minus",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "mp"
+                },
+                "key": "control_experiments"
+               },
+               "b": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "mp"
+                },
+                "key": "variant_experiments"
+               }
+              }
+             ]
+            }
+           ]
+          },
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "pol"
+           },
+           "key": "meta_min_net"
+          }
+         },
+         {
+          "type": "Gt",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "mp"
+           },
+           "key": "level_wins"
+          },
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "mp"
+           },
+           "key": "level_losses"
+          }
+         }
+        ]
+       },
+       "then": {
+        "type": "Lit",
+        "value": "supported"
+       },
+       "other": {
+        "type": "Lit",
+        "value": "refuted"
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "mp",
+     "outcome_tail",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "IfThenElse",
+        "cond": {
+         "type": "Not",
+         "arg": {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "mp"
+           },
+           "key": "worst_level_loss"
+          },
+          "b": {
+           "type": "Lit",
+           "value": null
+          }
+         }
+        },
+        "then": {
+         "type": "And",
+         "items": [
+          {
+           "type": "And",
+           "items": [
+            {
+             "type": "Gte",
+             "a": {
+              "type": "Plus",
+              "items": [
+               {
+                "type": "Minus",
+                "a": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "mp"
+                 },
+                 "key": "control_total"
+                },
+                "b": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "mp"
+                 },
+                 "key": "variant_total"
+                }
+               },
+               {
+                "type": "Times",
+                "items": [
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "pol"
+                  },
+                  "key": "experiment_cost"
+                 },
+                 {
+                  "type": "Minus",
+                  "a": {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "mp"
+                   },
+                   "key": "control_experiments"
+                  },
+                  "b": {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "mp"
+                   },
+                   "key": "variant_experiments"
+                  }
+                 }
+                ]
+               }
+              ]
+             },
+             "b": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "pol"
+              },
+              "key": "meta_min_net"
+             }
+            },
+            {
+             "type": "Gt",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "mp"
+              },
+              "key": "level_wins"
+             },
+             "b": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "mp"
+              },
+              "key": "level_losses"
+             }
+            }
+           ]
+          },
+          {
+           "type": "Lte",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "mp"
+            },
+            "key": "worst_level_loss"
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "pol"
+            },
+            "key": "meta_max_level_loss"
+           }
+          }
+         ]
+        },
+        "other": {
+         "type": "And",
+         "items": [
+          {
+           "type": "Gte",
+           "a": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Minus",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "mp"
+               },
+               "key": "control_total"
+              },
+              "b": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "mp"
+               },
+               "key": "variant_total"
+              }
+             },
+             {
+              "type": "Times",
+              "items": [
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "pol"
+                },
+                "key": "experiment_cost"
+               },
+               {
+                "type": "Minus",
+                "a": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "mp"
+                 },
+                 "key": "control_experiments"
+                },
+                "b": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "mp"
+                 },
+                 "key": "variant_experiments"
+                }
+               }
+              ]
+             }
+            ]
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "pol"
+            },
+            "key": "meta_min_net"
+           }
+          },
+          {
+           "type": "Gt",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "mp"
+            },
+            "key": "level_wins"
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "mp"
+            },
+            "key": "level_losses"
+           }
+          }
+         ]
+        }
+       },
+       "then": {
+        "type": "Lit",
+        "value": "supported"
+       },
+       "other": {
+        "type": "Lit",
+        "value": "refuted"
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "mp",
      "outcome",
      {
       "__term__": {
@@ -29558,6 +30000,809 @@
    ]
   },
   {
+   "name": "pw_select_policy_judge",
+   "comment": "1.7.0: with meta_calibrate on, once round 0 is judged on its first practice set and measured on its second, the agent adopts the judge whose best supported proposal realised the most net on the second set (ties: the stricter). It uses that judge from then on.",
+   "match": [
+    [
+     "agent",
+     "has_prediction_policy",
+     "pol"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "pol"
+       },
+       "key": "meta_calibrate"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "pol"
+        },
+        "key": "meta_judge_selected"
+       },
+       "b": {
+        "type": "Lit",
+        "value": 1
+       }
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "MetaProposal"
+        },
+        "var_name": "c0",
+        "predicate": {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "c0"
+          },
+          "key": "round"
+         },
+         "b": {
+          "type": "Lit",
+          "value": 0
+         }
+        }
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "MetaProposal"
+        },
+        "var_name": "c0",
+        "predicate": {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "c0"
+          },
+          "key": "round"
+         },
+         "b": {
+          "type": "Lit",
+          "value": 0
+         }
+        }
+       },
+       "var_name": "o",
+       "predicate": {
+        "type": "Or",
+        "items": [
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "o"
+           },
+           "key": "outcome_net"
+          },
+          "b": {
+           "type": "Lit",
+           "value": null
+          }
+         },
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "o"
+           },
+           "key": "p2_net"
+          },
+          "b": {
+           "type": "Lit",
+           "value": null
+          }
+         }
+        ]
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "pol",
+     "meta_judge_values",
+     {
+      "__term__": {
+       "type": "StringConcat",
+       "parts": [
+        {
+         "type": "Lit",
+         "value": "net="
+        },
+        {
+         "type": "Str",
+         "value": {
+          "type": "Let",
+          "name": "bu",
+          "value": {
+           "type": "Argmax",
+           "source": {
+            "type": "Filter",
+            "source": {
+             "type": "Filter",
+             "source": {
+              "type": "NodesOfType",
+              "node_type": "MetaProposal"
+             },
+             "var_name": "c0",
+             "predicate": {
+              "type": "Eq",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "c0"
+               },
+               "key": "round"
+              },
+              "b": {
+               "type": "Lit",
+               "value": 0
+              }
+             }
+            },
+            "var_name": "bj",
+            "predicate": {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "bj"
+              },
+              "key": "outcome_net"
+             },
+             "b": {
+              "type": "Lit",
+              "value": "supported"
+             }
+            }
+           },
+           "var_name": "bj",
+           "value": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "bj"
+            },
+            "key": "net"
+           },
+           "default": null
+          },
+          "body": {
+           "type": "IfThenElse",
+           "cond": {
+            "type": "Not",
+            "arg": {
+             "type": "Eq",
+             "a": {
+              "type": "Var",
+              "name": "bu"
+             },
+             "b": {
+              "type": "Lit",
+              "value": null
+             }
+            }
+           },
+           "then": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "bu"
+            },
+            "key": "p2_net"
+           },
+           "other": {
+            "type": "Lit",
+            "value": 0.0
+           }
+          }
+         }
+        },
+        {
+         "type": "Lit",
+         "value": " "
+        },
+        {
+         "type": "Lit",
+         "value": "sign="
+        },
+        {
+         "type": "Str",
+         "value": {
+          "type": "Let",
+          "name": "bu",
+          "value": {
+           "type": "Argmax",
+           "source": {
+            "type": "Filter",
+            "source": {
+             "type": "Filter",
+             "source": {
+              "type": "NodesOfType",
+              "node_type": "MetaProposal"
+             },
+             "var_name": "c0",
+             "predicate": {
+              "type": "Eq",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "c0"
+               },
+               "key": "round"
+              },
+              "b": {
+               "type": "Lit",
+               "value": 0
+              }
+             }
+            },
+            "var_name": "bj",
+            "predicate": {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "bj"
+              },
+              "key": "outcome_sign"
+             },
+             "b": {
+              "type": "Lit",
+              "value": "supported"
+             }
+            }
+           },
+           "var_name": "bj",
+           "value": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "bj"
+            },
+            "key": "net"
+           },
+           "default": null
+          },
+          "body": {
+           "type": "IfThenElse",
+           "cond": {
+            "type": "Not",
+            "arg": {
+             "type": "Eq",
+             "a": {
+              "type": "Var",
+              "name": "bu"
+             },
+             "b": {
+              "type": "Lit",
+              "value": null
+             }
+            }
+           },
+           "then": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "bu"
+            },
+            "key": "p2_net"
+           },
+           "other": {
+            "type": "Lit",
+            "value": 0.0
+           }
+          }
+         }
+        },
+        {
+         "type": "Lit",
+         "value": " "
+        },
+        {
+         "type": "Lit",
+         "value": "tail="
+        },
+        {
+         "type": "Str",
+         "value": {
+          "type": "Let",
+          "name": "bu",
+          "value": {
+           "type": "Argmax",
+           "source": {
+            "type": "Filter",
+            "source": {
+             "type": "Filter",
+             "source": {
+              "type": "NodesOfType",
+              "node_type": "MetaProposal"
+             },
+             "var_name": "c0",
+             "predicate": {
+              "type": "Eq",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "c0"
+               },
+               "key": "round"
+              },
+              "b": {
+               "type": "Lit",
+               "value": 0
+              }
+             }
+            },
+            "var_name": "bj",
+            "predicate": {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "bj"
+              },
+              "key": "outcome_tail"
+             },
+             "b": {
+              "type": "Lit",
+              "value": "supported"
+             }
+            }
+           },
+           "var_name": "bj",
+           "value": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "bj"
+            },
+            "key": "net"
+           },
+           "default": null
+          },
+          "body": {
+           "type": "IfThenElse",
+           "cond": {
+            "type": "Not",
+            "arg": {
+             "type": "Eq",
+             "a": {
+              "type": "Var",
+              "name": "bu"
+             },
+             "b": {
+              "type": "Lit",
+              "value": null
+             }
+            }
+           },
+           "then": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "bu"
+            },
+            "key": "p2_net"
+           },
+           "other": {
+            "type": "Lit",
+            "value": 0.0
+           }
+          }
+         }
+        },
+        {
+         "type": "Lit",
+         "value": " "
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "pol",
+     "meta_judge_active",
+     {
+      "__term__": {
+       "type": "Let",
+       "name": "vn",
+       "value": {
+        "type": "Let",
+        "name": "bu",
+        "value": {
+         "type": "Argmax",
+         "source": {
+          "type": "Filter",
+          "source": {
+           "type": "Filter",
+           "source": {
+            "type": "NodesOfType",
+            "node_type": "MetaProposal"
+           },
+           "var_name": "c0",
+           "predicate": {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "c0"
+             },
+             "key": "round"
+            },
+            "b": {
+             "type": "Lit",
+             "value": 0
+            }
+           }
+          },
+          "var_name": "bj",
+          "predicate": {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "bj"
+            },
+            "key": "outcome_net"
+           },
+           "b": {
+            "type": "Lit",
+            "value": "supported"
+           }
+          }
+         },
+         "var_name": "bj",
+         "value": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "bj"
+          },
+          "key": "net"
+         },
+         "default": null
+        },
+        "body": {
+         "type": "IfThenElse",
+         "cond": {
+          "type": "Not",
+          "arg": {
+           "type": "Eq",
+           "a": {
+            "type": "Var",
+            "name": "bu"
+           },
+           "b": {
+            "type": "Lit",
+            "value": null
+           }
+          }
+         },
+         "then": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "bu"
+          },
+          "key": "p2_net"
+         },
+         "other": {
+          "type": "Lit",
+          "value": 0.0
+         }
+        }
+       },
+       "body": {
+        "type": "Let",
+        "name": "vs",
+        "value": {
+         "type": "Let",
+         "name": "bu",
+         "value": {
+          "type": "Argmax",
+          "source": {
+           "type": "Filter",
+           "source": {
+            "type": "Filter",
+            "source": {
+             "type": "NodesOfType",
+             "node_type": "MetaProposal"
+            },
+            "var_name": "c0",
+            "predicate": {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "c0"
+              },
+              "key": "round"
+             },
+             "b": {
+              "type": "Lit",
+              "value": 0
+             }
+            }
+           },
+           "var_name": "bj",
+           "predicate": {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "bj"
+             },
+             "key": "outcome_sign"
+            },
+            "b": {
+             "type": "Lit",
+             "value": "supported"
+            }
+           }
+          },
+          "var_name": "bj",
+          "value": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "bj"
+           },
+           "key": "net"
+          },
+          "default": null
+         },
+         "body": {
+          "type": "IfThenElse",
+          "cond": {
+           "type": "Not",
+           "arg": {
+            "type": "Eq",
+            "a": {
+             "type": "Var",
+             "name": "bu"
+            },
+            "b": {
+             "type": "Lit",
+             "value": null
+            }
+           }
+          },
+          "then": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "bu"
+           },
+           "key": "p2_net"
+          },
+          "other": {
+           "type": "Lit",
+           "value": 0.0
+          }
+         }
+        },
+        "body": {
+         "type": "Let",
+         "name": "vt",
+         "value": {
+          "type": "Let",
+          "name": "bu",
+          "value": {
+           "type": "Argmax",
+           "source": {
+            "type": "Filter",
+            "source": {
+             "type": "Filter",
+             "source": {
+              "type": "NodesOfType",
+              "node_type": "MetaProposal"
+             },
+             "var_name": "c0",
+             "predicate": {
+              "type": "Eq",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "c0"
+               },
+               "key": "round"
+              },
+              "b": {
+               "type": "Lit",
+               "value": 0
+              }
+             }
+            },
+            "var_name": "bj",
+            "predicate": {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "bj"
+              },
+              "key": "outcome_tail"
+             },
+             "b": {
+              "type": "Lit",
+              "value": "supported"
+             }
+            }
+           },
+           "var_name": "bj",
+           "value": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "bj"
+            },
+            "key": "net"
+           },
+           "default": null
+          },
+          "body": {
+           "type": "IfThenElse",
+           "cond": {
+            "type": "Not",
+            "arg": {
+             "type": "Eq",
+             "a": {
+              "type": "Var",
+              "name": "bu"
+             },
+             "b": {
+              "type": "Lit",
+              "value": null
+             }
+            }
+           },
+           "then": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "bu"
+            },
+            "key": "p2_net"
+           },
+           "other": {
+            "type": "Lit",
+            "value": 0.0
+           }
+          }
+         },
+         "body": {
+          "type": "IfThenElse",
+          "cond": {
+           "type": "And",
+           "items": [
+            {
+             "type": "Gte",
+             "a": {
+              "type": "Var",
+              "name": "vt"
+             },
+             "b": {
+              "type": "Var",
+              "name": "vs"
+             }
+            },
+            {
+             "type": "Gte",
+             "a": {
+              "type": "Var",
+              "name": "vt"
+             },
+             "b": {
+              "type": "Var",
+              "name": "vn"
+             }
+            }
+           ]
+          },
+          "then": {
+           "type": "Lit",
+           "value": "tail"
+          },
+          "other": {
+           "type": "IfThenElse",
+           "cond": {
+            "type": "Gte",
+            "a": {
+             "type": "Var",
+             "name": "vs"
+            },
+            "b": {
+             "type": "Var",
+             "name": "vn"
+            }
+           },
+           "then": {
+            "type": "Lit",
+            "value": "sign"
+           },
+           "other": {
+            "type": "Lit",
+            "value": "net"
+           }
+          }
+         }
+        }
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "pol",
+     "meta_judge_selected",
+     1
+    ]
+   ]
+  },
+  {
    "name": "pw_adopt_policy_change_meta_min_trials",
    "comment": "1.5.0: once every proposal is judged, the best supported one is adopted (here: meta_min_trials).",
    "match": [
@@ -29591,19 +30836,152 @@
       }
      },
      {
-      "type": "Eq",
-      "a": {
-       "type": "Attr",
-       "node": {
-        "type": "Var",
-        "name": "mp"
+      "type": "Or",
+      "items": [
+       {
+        "type": "And",
+        "items": [
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "pol"
+           },
+           "key": "meta_judge_active"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "net"
+          }
+         },
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "mp"
+           },
+           "key": "outcome_net"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "supported"
+          }
+         }
+        ]
        },
-       "key": "outcome"
-      },
-      "b": {
-       "type": "Lit",
-       "value": "supported"
-      }
+       {
+        "type": "And",
+        "items": [
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "pol"
+           },
+           "key": "meta_judge_active"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "sign"
+          }
+         },
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "mp"
+           },
+           "key": "outcome_sign"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "supported"
+          }
+         }
+        ]
+       },
+       {
+        "type": "And",
+        "items": [
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "pol"
+           },
+           "key": "meta_judge_active"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "tail"
+          }
+         },
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "mp"
+           },
+           "key": "outcome_tail"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "supported"
+          }
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "Or",
+      "items": [
+       {
+        "type": "Not",
+        "arg": {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "pol"
+          },
+          "key": "meta_calibrate"
+         },
+         "b": {
+          "type": "Lit",
+          "value": 1
+         }
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "pol"
+         },
+         "key": "meta_judge_selected"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 1
+        }
+       }
+      ]
      },
      {
       "type": "Not",
@@ -29705,19 +31083,114 @@
           }
          },
          {
-          "type": "Eq",
-          "a": {
-           "type": "Attr",
-           "node": {
-            "type": "Var",
-            "name": "o"
+          "type": "Or",
+          "items": [
+           {
+            "type": "And",
+            "items": [
+             {
+              "type": "Eq",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "pol"
+               },
+               "key": "meta_judge_active"
+              },
+              "b": {
+               "type": "Lit",
+               "value": "net"
+              }
+             },
+             {
+              "type": "Eq",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "o"
+               },
+               "key": "outcome_net"
+              },
+              "b": {
+               "type": "Lit",
+               "value": "supported"
+              }
+             }
+            ]
            },
-           "key": "outcome"
-          },
-          "b": {
-           "type": "Lit",
-           "value": "supported"
-          }
+           {
+            "type": "And",
+            "items": [
+             {
+              "type": "Eq",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "pol"
+               },
+               "key": "meta_judge_active"
+              },
+              "b": {
+               "type": "Lit",
+               "value": "sign"
+              }
+             },
+             {
+              "type": "Eq",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "o"
+               },
+               "key": "outcome_sign"
+              },
+              "b": {
+               "type": "Lit",
+               "value": "supported"
+              }
+             }
+            ]
+           },
+           {
+            "type": "And",
+            "items": [
+             {
+              "type": "Eq",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "pol"
+               },
+               "key": "meta_judge_active"
+              },
+              "b": {
+               "type": "Lit",
+               "value": "tail"
+              }
+             },
+             {
+              "type": "Eq",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "o"
+               },
+               "key": "outcome_tail"
+              },
+              "b": {
+               "type": "Lit",
+               "value": "supported"
+              }
+             }
+            ]
+           }
+          ]
          },
          {
           "type": "Not",
@@ -29954,19 +31427,152 @@
       }
      },
      {
-      "type": "Eq",
-      "a": {
-       "type": "Attr",
-       "node": {
-        "type": "Var",
-        "name": "mp"
+      "type": "Or",
+      "items": [
+       {
+        "type": "And",
+        "items": [
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "pol"
+           },
+           "key": "meta_judge_active"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "net"
+          }
+         },
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "mp"
+           },
+           "key": "outcome_net"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "supported"
+          }
+         }
+        ]
        },
-       "key": "outcome"
-      },
-      "b": {
-       "type": "Lit",
-       "value": "supported"
-      }
+       {
+        "type": "And",
+        "items": [
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "pol"
+           },
+           "key": "meta_judge_active"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "sign"
+          }
+         },
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "mp"
+           },
+           "key": "outcome_sign"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "supported"
+          }
+         }
+        ]
+       },
+       {
+        "type": "And",
+        "items": [
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "pol"
+           },
+           "key": "meta_judge_active"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "tail"
+          }
+         },
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "mp"
+           },
+           "key": "outcome_tail"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "supported"
+          }
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "Or",
+      "items": [
+       {
+        "type": "Not",
+        "arg": {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "pol"
+          },
+          "key": "meta_calibrate"
+         },
+         "b": {
+          "type": "Lit",
+          "value": 1
+         }
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "pol"
+         },
+         "key": "meta_judge_selected"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 1
+        }
+       }
+      ]
      },
      {
       "type": "Not",
@@ -30068,19 +31674,114 @@
           }
          },
          {
-          "type": "Eq",
-          "a": {
-           "type": "Attr",
-           "node": {
-            "type": "Var",
-            "name": "o"
+          "type": "Or",
+          "items": [
+           {
+            "type": "And",
+            "items": [
+             {
+              "type": "Eq",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "pol"
+               },
+               "key": "meta_judge_active"
+              },
+              "b": {
+               "type": "Lit",
+               "value": "net"
+              }
+             },
+             {
+              "type": "Eq",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "o"
+               },
+               "key": "outcome_net"
+              },
+              "b": {
+               "type": "Lit",
+               "value": "supported"
+              }
+             }
+            ]
            },
-           "key": "outcome"
-          },
-          "b": {
-           "type": "Lit",
-           "value": "supported"
-          }
+           {
+            "type": "And",
+            "items": [
+             {
+              "type": "Eq",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "pol"
+               },
+               "key": "meta_judge_active"
+              },
+              "b": {
+               "type": "Lit",
+               "value": "sign"
+              }
+             },
+             {
+              "type": "Eq",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "o"
+               },
+               "key": "outcome_sign"
+              },
+              "b": {
+               "type": "Lit",
+               "value": "supported"
+              }
+             }
+            ]
+           },
+           {
+            "type": "And",
+            "items": [
+             {
+              "type": "Eq",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "pol"
+               },
+               "key": "meta_judge_active"
+              },
+              "b": {
+               "type": "Lit",
+               "value": "tail"
+              }
+             },
+             {
+              "type": "Eq",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "o"
+               },
+               "key": "outcome_tail"
+              },
+              "b": {
+               "type": "Lit",
+               "value": "supported"
+              }
+             }
+            ]
+           }
+          ]
          },
          {
           "type": "Not",
@@ -30317,19 +32018,152 @@
       }
      },
      {
-      "type": "Eq",
-      "a": {
-       "type": "Attr",
-       "node": {
-        "type": "Var",
-        "name": "mp"
+      "type": "Or",
+      "items": [
+       {
+        "type": "And",
+        "items": [
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "pol"
+           },
+           "key": "meta_judge_active"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "net"
+          }
+         },
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "mp"
+           },
+           "key": "outcome_net"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "supported"
+          }
+         }
+        ]
        },
-       "key": "outcome"
-      },
-      "b": {
-       "type": "Lit",
-       "value": "supported"
-      }
+       {
+        "type": "And",
+        "items": [
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "pol"
+           },
+           "key": "meta_judge_active"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "sign"
+          }
+         },
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "mp"
+           },
+           "key": "outcome_sign"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "supported"
+          }
+         }
+        ]
+       },
+       {
+        "type": "And",
+        "items": [
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "pol"
+           },
+           "key": "meta_judge_active"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "tail"
+          }
+         },
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "mp"
+           },
+           "key": "outcome_tail"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "supported"
+          }
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "Or",
+      "items": [
+       {
+        "type": "Not",
+        "arg": {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "pol"
+          },
+          "key": "meta_calibrate"
+         },
+         "b": {
+          "type": "Lit",
+          "value": 1
+         }
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "pol"
+         },
+         "key": "meta_judge_selected"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 1
+        }
+       }
+      ]
      },
      {
       "type": "Not",
@@ -30431,19 +32265,114 @@
           }
          },
          {
-          "type": "Eq",
-          "a": {
-           "type": "Attr",
-           "node": {
-            "type": "Var",
-            "name": "o"
+          "type": "Or",
+          "items": [
+           {
+            "type": "And",
+            "items": [
+             {
+              "type": "Eq",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "pol"
+               },
+               "key": "meta_judge_active"
+              },
+              "b": {
+               "type": "Lit",
+               "value": "net"
+              }
+             },
+             {
+              "type": "Eq",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "o"
+               },
+               "key": "outcome_net"
+              },
+              "b": {
+               "type": "Lit",
+               "value": "supported"
+              }
+             }
+            ]
            },
-           "key": "outcome"
-          },
-          "b": {
-           "type": "Lit",
-           "value": "supported"
-          }
+           {
+            "type": "And",
+            "items": [
+             {
+              "type": "Eq",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "pol"
+               },
+               "key": "meta_judge_active"
+              },
+              "b": {
+               "type": "Lit",
+               "value": "sign"
+              }
+             },
+             {
+              "type": "Eq",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "o"
+               },
+               "key": "outcome_sign"
+              },
+              "b": {
+               "type": "Lit",
+               "value": "supported"
+              }
+             }
+            ]
+           },
+           {
+            "type": "And",
+            "items": [
+             {
+              "type": "Eq",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "pol"
+               },
+               "key": "meta_judge_active"
+              },
+              "b": {
+               "type": "Lit",
+               "value": "tail"
+              }
+             },
+             {
+              "type": "Eq",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "o"
+               },
+               "key": "outcome_tail"
+              },
+              "b": {
+               "type": "Lit",
+               "value": "supported"
+              }
+             }
+            ]
+           }
+          ]
          },
          {
           "type": "Not",
@@ -30680,19 +32609,152 @@
       }
      },
      {
-      "type": "Eq",
-      "a": {
-       "type": "Attr",
-       "node": {
-        "type": "Var",
-        "name": "mp"
+      "type": "Or",
+      "items": [
+       {
+        "type": "And",
+        "items": [
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "pol"
+           },
+           "key": "meta_judge_active"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "net"
+          }
+         },
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "mp"
+           },
+           "key": "outcome_net"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "supported"
+          }
+         }
+        ]
        },
-       "key": "outcome"
-      },
-      "b": {
-       "type": "Lit",
-       "value": "supported"
-      }
+       {
+        "type": "And",
+        "items": [
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "pol"
+           },
+           "key": "meta_judge_active"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "sign"
+          }
+         },
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "mp"
+           },
+           "key": "outcome_sign"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "supported"
+          }
+         }
+        ]
+       },
+       {
+        "type": "And",
+        "items": [
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "pol"
+           },
+           "key": "meta_judge_active"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "tail"
+          }
+         },
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "mp"
+           },
+           "key": "outcome_tail"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "supported"
+          }
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "Or",
+      "items": [
+       {
+        "type": "Not",
+        "arg": {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "pol"
+          },
+          "key": "meta_calibrate"
+         },
+         "b": {
+          "type": "Lit",
+          "value": 1
+         }
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "pol"
+         },
+         "key": "meta_judge_selected"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 1
+        }
+       }
+      ]
      },
      {
       "type": "Not",
@@ -30794,19 +32856,114 @@
           }
          },
          {
-          "type": "Eq",
-          "a": {
-           "type": "Attr",
-           "node": {
-            "type": "Var",
-            "name": "o"
+          "type": "Or",
+          "items": [
+           {
+            "type": "And",
+            "items": [
+             {
+              "type": "Eq",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "pol"
+               },
+               "key": "meta_judge_active"
+              },
+              "b": {
+               "type": "Lit",
+               "value": "net"
+              }
+             },
+             {
+              "type": "Eq",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "o"
+               },
+               "key": "outcome_net"
+              },
+              "b": {
+               "type": "Lit",
+               "value": "supported"
+              }
+             }
+            ]
            },
-           "key": "outcome"
-          },
-          "b": {
-           "type": "Lit",
-           "value": "supported"
-          }
+           {
+            "type": "And",
+            "items": [
+             {
+              "type": "Eq",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "pol"
+               },
+               "key": "meta_judge_active"
+              },
+              "b": {
+               "type": "Lit",
+               "value": "sign"
+              }
+             },
+             {
+              "type": "Eq",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "o"
+               },
+               "key": "outcome_sign"
+              },
+              "b": {
+               "type": "Lit",
+               "value": "supported"
+              }
+             }
+            ]
+           },
+           {
+            "type": "And",
+            "items": [
+             {
+              "type": "Eq",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "pol"
+               },
+               "key": "meta_judge_active"
+              },
+              "b": {
+               "type": "Lit",
+               "value": "tail"
+              }
+             },
+             {
+              "type": "Eq",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "o"
+               },
+               "key": "outcome_tail"
+              },
+              "b": {
+               "type": "Lit",
+               "value": "supported"
+              }
+             }
+            ]
+           }
+          ]
          },
          {
           "type": "Not",
@@ -31060,6 +33217,44 @@
       }
      },
      {
+      "type": "Or",
+      "items": [
+       {
+        "type": "Not",
+        "arg": {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "pol"
+          },
+          "key": "meta_calibrate"
+         },
+         "b": {
+          "type": "Lit",
+          "value": 1
+         }
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "pol"
+         },
+         "key": "meta_judge_selected"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 1
+        }
+       }
+      ]
+     },
+     {
       "type": "Not",
       "arg": {
        "type": "Exists",
@@ -31144,19 +33339,114 @@
          },
          "var_name": "o",
          "predicate": {
-          "type": "Eq",
-          "a": {
-           "type": "Attr",
-           "node": {
-            "type": "Var",
-            "name": "o"
+          "type": "Or",
+          "items": [
+           {
+            "type": "And",
+            "items": [
+             {
+              "type": "Eq",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "pol"
+               },
+               "key": "meta_judge_active"
+              },
+              "b": {
+               "type": "Lit",
+               "value": "net"
+              }
+             },
+             {
+              "type": "Eq",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "o"
+               },
+               "key": "outcome_net"
+              },
+              "b": {
+               "type": "Lit",
+               "value": "supported"
+              }
+             }
+            ]
            },
-           "key": "outcome"
-          },
-          "b": {
-           "type": "Lit",
-           "value": "supported"
-          }
+           {
+            "type": "And",
+            "items": [
+             {
+              "type": "Eq",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "pol"
+               },
+               "key": "meta_judge_active"
+              },
+              "b": {
+               "type": "Lit",
+               "value": "sign"
+              }
+             },
+             {
+              "type": "Eq",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "o"
+               },
+               "key": "outcome_sign"
+              },
+              "b": {
+               "type": "Lit",
+               "value": "supported"
+              }
+             }
+            ]
+           },
+           {
+            "type": "And",
+            "items": [
+             {
+              "type": "Eq",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "pol"
+               },
+               "key": "meta_judge_active"
+              },
+              "b": {
+               "type": "Lit",
+               "value": "tail"
+              }
+             },
+             {
+              "type": "Eq",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "o"
+               },
+               "key": "outcome_tail"
+              },
+              "b": {
+               "type": "Lit",
+               "value": "supported"
+              }
+             }
+            ]
+           }
+          ]
          }
         }
        },

@@ -86,6 +86,10 @@ change how it judges itself)
     policy proposals in rounds (meta_round / meta_max_rounds, closed by
     pw_close_policy_round), supported only when they win on more practice
     levels than they lose.
+  * 1.7.0: three judges for policy changes (net / sign / tail); with
+    meta_calibrate on, round 0 is also measured on a second practice set and
+    pw_select_policy_judge adopts the judge whose choice realised the most
+    net there (ties: the stricter); later rounds use it.
   * pw_judge_predictor_edit: the replay's variant surprise against its control
     surprise, on the agent's own recorded episodes at the level AND on its
     recorded episodes of the levels it has already mastered (retention):
@@ -296,7 +300,7 @@ for i, c in enumerate(candidates, start=1):
     world_nodes.append({"local_id": i, "type": "PredictorCandidate", "attrs": c})
     world_edges.append({"src": {"role": "agent_root"}, "type": "has_predictor_candidate", "tgt": {"local": i},
                         "attrs": {}})
-world = {"id": "prediction_world", "version": "1.6.0", "depends_on": [],
+world = {"id": "prediction_world", "version": "1.7.0", "depends_on": [],
          "description": "The prediction world's predictor (see scripts/gen_prediction_world.py): the held Predictor "
                         "model, the candidate models in MDL order, and the prediction rule. This is the part of "
                         "the agent its self-improvement loop changes.",
@@ -806,6 +810,15 @@ META_PROPOSE = {
 }
 META_NET = Plus(Minus(A("mp", "control_total"), A("mp", "variant_total")),
                 Times(A("pol", "experiment_cost"), Minus(A("mp", "control_experiments"), A("mp", "variant_experiments"))))
+# (1.7.0) three judges the agent may use for its own policy changes (human-written): net only; net and winning on
+# more practice levels than it loses (1.6.0's); and that plus no single practice level lost by more than
+# meta_max_level_loss. With meta_calibrate on, the agent picks which one to trust from its own evidence: in round 0
+# each proposal is also measured on a second, fresh practice set, and the judge whose best supported proposal
+# realises the most net there is adopted for the rounds that follow.
+J_NET = Gte(META_NET, A("pol", "meta_min_net"))
+J_SIGN = And(J_NET, Gt(A("mp", "level_wins"), A("mp", "level_losses")))
+J_TAIL = And(J_SIGN, Lte(A("mp", "worst_level_loss"), A("pol", "meta_max_level_loss")))
+SUP = lambda c: Ite(c, L("supported"), L("refuted"))
 META_JUDGE = {
     "name": "pw_judge_policy_change",
     "comment": "1.5.0: a measured policy change, weighed: practice surprise plus retention harm saved, plus "
@@ -814,20 +827,48 @@ META_JUDGE = {
     "match": [["agent", "has_prediction_policy", "pol"], ["agent", "has_meta_proposal", "mp"]],
     "where": And(Eq(A("mp", "status"), L("done")), Eq(A("mp", "outcome"), L(None))),
     "effects": [["set_attr", "mp", "net", T(META_NET)],
-                ["set_attr", "mp", "outcome", T(Ite(And(Gte(META_NET, A("pol", "meta_min_net")),
-                                                        Gt(A("mp", "level_wins"), A("mp", "level_losses"))),
-                                                    L("supported"), L("refuted")))]],
+                ["set_attr", "mp", "outcome_net", T(SUP(J_NET))],
+                ["set_attr", "mp", "outcome_sign", T(SUP(J_SIGN))],
+                ["set_attr", "mp", "outcome_tail", T(SUP(Ite(NN(A("mp", "worst_level_loss")), J_TAIL, J_SIGN)))],
+                ["set_attr", "mp", "outcome", T(SUP(J_SIGN))]],
+}
+# a proposal is supported under the judge the agent currently uses
+SUPPORTED = lambda o: Or(And(Eq(A("pol", "meta_judge_active"), L("net")), Eq(A(o, "outcome_net"), L("supported"))),
+                         And(Eq(A("pol", "meta_judge_active"), L("sign")), Eq(A(o, "outcome_sign"), L("supported"))),
+                         And(Eq(A("pol", "meta_judge_active"), L("tail")), Eq(A(o, "outcome_tail"), L("supported"))))
+JUDGES = ("net", "sign", "tail")
+R0 = Filter(Nodes("MetaProposal"), "c0", Eq(A("c0", "round"), L(0)))
+BEST_UNDER = lambda j: Argmax(Filter(R0, "bj", Eq(A("bj", f"outcome_{j}"), L("supported"))), "bj", A("bj", "net"))
+REALISED = lambda j: Let("bu", BEST_UNDER(j), Ite(NN(V("bu")), A("bu", "p2_net"), L(0.0)))
+META_SELECT_JUDGE = {
+    "name": "pw_select_policy_judge",
+    "comment": "1.7.0: with meta_calibrate on, once round 0 is judged on its first practice set and measured on "
+               "its second, the agent adopts the judge whose best supported proposal realised the most net on the "
+               "second set (ties: the stricter). It uses that judge from then on.",
+    "match": [["agent", "has_prediction_policy", "pol"]],
+    "where": And(Eq(A("pol", "meta_calibrate"), L(1)), Not(Eq(A("pol", "meta_judge_selected"), L(1))),
+                 Gt(Count(R0), L(0)),
+                 Not(Exists(R0, "o", Or(Eq(A("o", "outcome_net"), L(None)), Eq(A("o", "p2_net"), L(None)))))),
+    "effects": [["set_attr", "pol", "meta_judge_values", T({"type": "StringConcat", "parts": [
+                    x for j in JUDGES for x in (L(j + "="), {"type": "Str", "value": REALISED(j)}, L(" "))]})],
+                ["set_attr", "pol", "meta_judge_active", T(
+                    Let("vn", REALISED("net"), Let("vs", REALISED("sign"), Let("vt", REALISED("tail"),
+                        Ite(And(Gte(V("vt"), V("vs")), Gte(V("vt"), V("vn"))), L("tail"),
+                            Ite(Gte(V("vs"), V("vn")), L("sign"), L("net")))))))],
+                ["set_attr", "pol", "meta_judge_selected", 1]],
 }
 META_PENDING = Exists(Nodes("MetaProposal"), "o", And(Eq(A("o", "round"), A("mp", "round")),
                                                       Eq(A("o", "outcome"), L(None))))
+# round 0 waits for the judge to be selected when calibrating
+JUDGE_READY = Or(Not(Eq(A("pol", "meta_calibrate"), L(1))), Eq(A("pol", "meta_judge_selected"), L(1)))
 META_BEST = Not(Exists(Nodes("MetaProposal"), "o", And(
-    Eq(A("o", "round"), A("mp", "round")), Eq(A("o", "outcome"), L("supported")), Not(Eq(V("o"), V("mp"))),
+    Eq(A("o", "round"), A("mp", "round")), SUPPORTED("o"), Not(Eq(V("o"), V("mp"))),
     Or(Gt(A("o", "net"), A("mp", "net")), And(Eq(A("o", "net"), A("mp", "net")), Lt(A("o", "factor"), A("mp", "factor")))))))
 META_ADOPT = [{
     "name": f"pw_adopt_policy_change_{param}",
     "comment": f"1.5.0: once every proposal is judged, the best supported one is adopted (here: {param}).",
     "match": [["agent", "has_prediction_policy", "pol"], ["agent", "has_meta_proposal", "mp"]],
-    "where": And(Eq(A("mp", "param"), L(param)), Eq(A("mp", "outcome"), L("supported")),
+    "where": And(Eq(A("mp", "param"), L(param)), SUPPORTED("mp"), JUDGE_READY,
                  Not(Eq(A("mp", "adopted"), L(1))), Not(META_PENDING), META_BEST),
     "effects": [["set_attr", "pol", param, T(Times(A("pol", param), A("mp", "factor")))],
                 ["set_attr", "mp", "adopted", 1],
@@ -841,9 +882,9 @@ META_CLOSE_ROUND = {
     "comment": "1.6.0: a round of policy proposals closes once every proposal in it is judged and its best "
                "supported one (if any) is adopted; the next round proposes from the policy as it now stands.",
     "match": [["agent", "has_prediction_policy", "pol"]],
-    "where": And(Gt(Count(ROUND_OF(A("pol", "meta_round"))), L(0)),
+    "where": And(Gt(Count(ROUND_OF(A("pol", "meta_round"))), L(0)), JUDGE_READY,
                  Not(Exists(ROUND_OF(A("pol", "meta_round")), "o", Eq(A("o", "outcome"), L(None)))),
-                 Or(Not(Exists(ROUND_OF(A("pol", "meta_round")), "o", Eq(A("o", "outcome"), L("supported")))),
+                 Or(Not(Exists(ROUND_OF(A("pol", "meta_round")), "o", SUPPORTED("o"))),
                     Exists(ROUND_OF(A("pol", "meta_round")), "o", Eq(A("o", "adopted"), L(1))))),
     "effects": [["set_attr", "pol", "meta_round", T(Plus(A("pol", "meta_round"), L(1)))]],
 }
@@ -858,6 +899,7 @@ loop_nodes = [
         "meta_min_trials": 8, "meta_min_yield": 0.15, "experts": 1,
         "meta_proposals": 0, "experiment_cost": 0.001, "meta_min_net": 0.002,
         "skip_last_resort": 0, "meta_round": 0, "meta_max_rounds": 3,
+        "meta_judge_active": "sign", "meta_calibrate": 0, "meta_max_level_loss": 0.05,
         "description": "The agent's own bar: mean surprise per body-frame (cells) at or under the floor masters a "
                        "level; a model must cut it by 20%, and by 0.05 cells net of any surprise it adds on the "
                        "levels already mastered, to be adopted."}}]
@@ -873,10 +915,10 @@ for j, (wk, kind) in enumerate(((wk, kind) for wk in WORLD_KINDS for kind in OPE
     loop_edges.append({"src": {"role": "agent_root"}, "type": "has_operator_stat", "tgt": {"local": j}, "attrs": {}})
 # no depends_on: the loop reads the predictor's nodes at run time, and a dependency
 # would freeze the predictor seed by closure (it is the part the agent changes)
-loop = {"id": "prediction_self_improvement", "version": "1.6.0", "depends_on": [],
+loop = {"id": "prediction_self_improvement", "version": "1.7.0", "depends_on": [],
         "description": __doc__, "nodes": loop_nodes, "edges": loop_edges, "productions": [],
         "rules": [ADVANCE, MASTER_LAST, FILE, PROPOSE, EXHAUSTED, AUTHOR, REQUEST_FIT, AUTHOR_LAYER, PRUNE_COMPONENT, DROP_LAYER, ADD_EXPERT, ADD_SPECIALIST, JUDGE, ADOPT, COUNT_TRIAL, COUNT_ENABLED, COUNT_ADOPT,
-                  META_PROPOSE, META_JUDGE, *META_ADOPT, META_CLOSE_ROUND]}
+                  META_PROPOSE, META_JUDGE, META_SELECT_JUDGE, *META_ADOPT, META_CLOSE_ROUND]}
 
 P_WORLD.write_text(json.dumps(world, indent=1, ensure_ascii=True) + "\n")
 P_LOOP.write_text(json.dumps(loop, indent=1, ensure_ascii=True) + "\n")
