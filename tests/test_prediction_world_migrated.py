@@ -449,6 +449,29 @@ def test_agent_selects_its_judge_from_its_own_calibration():
     assert at["meta_min_trials"] == 4 and at["min_gain"] == 0.2
 
 
+def test_agent_selects_the_practice_levels_where_its_proposals_disagree():
+    """1.8.0: with practice_shaping on, once a pool's candidates are all
+    screened, the agent keeps the practice_k with the largest spread."""
+    a = _agent(1)
+    S, I = a.s, a.inner
+    pol = S.nodes("PredictionPolicy")[0]
+    I.set_attr(pol, "practice_shaping", 1)
+    I.set_attr(pol, "practice_k", 2)
+    spreads = [0.01, 0.5, 0.0, 0.3, 0.3]
+    nodes = []
+    for i, sp in enumerate(spreads):
+        n = S.add_node("PracticeCandidate", {"round": 0, "pool": "P1", "idx": i, "level": 900 + i})
+        I.add_edge_unchecked(a.agent, "has_practice_candidate", n)
+        nodes.append(n)
+    I.run_rules()
+    assert all(S.node(n)["attrs"].get("selected") is None for n in nodes)      # not until all are screened
+    for n, sp in zip(nodes, spreads):
+        I.set_attr(n, "spread", sp)
+    I.run_rules()
+    # the largest spread, then the earlier of the two tied at 0.3
+    assert [S.node(n)["attrs"]["selected"] for n in nodes] == [0, 1, 0, 1, 0]
+
+
 def test_loop_seed_frozen_and_protected():
     from substrate.boot_all import _FROZEN_SEED_IDS
     assert "prediction_self_improvement" in _FROZEN_SEED_IDS

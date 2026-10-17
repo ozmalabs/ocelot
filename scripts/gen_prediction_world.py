@@ -90,6 +90,9 @@ change how it judges itself)
     meta_calibrate on, round 0 is also measured on a second practice set and
     pw_select_policy_judge adopts the judge whose choice realised the most
     net there (ties: the stricter); later rounds use it.
+  * 1.8.0: practice shaping -- with practice_shaping on, the agent screens a
+    pool of candidate practice levels with its round's proposals and
+    pw_select_practice_level keeps the practice_k where they disagree most.
   * pw_judge_predictor_edit: the replay's variant surprise against its control
     surprise, on the agent's own recorded episodes at the level AND on its
     recorded episodes of the levels it has already mastered (retention):
@@ -300,7 +303,7 @@ for i, c in enumerate(candidates, start=1):
     world_nodes.append({"local_id": i, "type": "PredictorCandidate", "attrs": c})
     world_edges.append({"src": {"role": "agent_root"}, "type": "has_predictor_candidate", "tgt": {"local": i},
                         "attrs": {}})
-world = {"id": "prediction_world", "version": "1.7.0", "depends_on": [],
+world = {"id": "prediction_world", "version": "1.8.0", "depends_on": [],
          "description": "The prediction world's predictor (see scripts/gen_prediction_world.py): the held Predictor "
                         "model, the candidate models in MDL order, and the prediction rule. This is the part of "
                         "the agent its self-improvement loop changes.",
@@ -877,6 +880,24 @@ META_ADOPT = [{
                     A("mp", "param"), L(" x"), {"type": "Str", "value": A("mp", "factor")}]})]],
 } for param in sorted({p for p, _f in META_GRAMMAR})]
 ROUND_OF = lambda r: Filter(Nodes("MetaProposal"), "ro", Eq(A("ro", "round"), r))
+# (1.8.0) the agent shapes its own practice: with practice_shaping on, each round's candidate practice levels are
+# screened (every proposal and the control, a short budget; the mechanical half writes the spread of their costs on
+# each PracticeCandidate), and the agent keeps the practice_k levels where its proposals disagree most -- the ones
+# that can tell its choices apart -- to judge on (and, in round 0, to calibrate its judge on)
+SAME_POOL = lambda c: Filter(Nodes("PracticeCandidate"), "pq", And(Eq(A("pq", "round"), A(c, "round")),
+                                                                   Eq(A("pq", "pool"), A(c, "pool"))))
+SELECT_PRACTICE = {
+    "name": "pw_select_practice_level",
+    "comment": "1.8.0: once every candidate practice level of a pool is screened, the agent selects the "
+               "practice_k with the largest spread of cost across its proposals (ties: the earlier candidate).",
+    "match": [["agent", "has_prediction_policy", "pol"], ["agent", "has_practice_candidate", "pc"]],
+    "where": And(Eq(A("pol", "practice_shaping"), L(1)), NN(A("pc", "spread")), Eq(A("pc", "selected"), L(None)),
+                 Not(Exists(SAME_POOL("pc"), "pz", Eq(A("pz", "spread"), L(None))))),
+    "effects": [["set_attr", "pc", "selected", T(Ite(Lt(Count(Filter(SAME_POOL("pc"), "pr", Or(
+        Gt(A("pr", "spread"), A("pc", "spread")),
+        And(Eq(A("pr", "spread"), A("pc", "spread")), Lt(A("pr", "idx"), A("pc", "idx")))))),
+        A("pol", "practice_k")), L(1), L(0)))]],
+}
 META_CLOSE_ROUND = {
     "name": "pw_close_policy_round",
     "comment": "1.6.0: a round of policy proposals closes once every proposal in it is judged and its best "
@@ -900,6 +921,7 @@ loop_nodes = [
         "meta_proposals": 0, "experiment_cost": 0.001, "meta_min_net": 0.002,
         "skip_last_resort": 0, "meta_round": 0, "meta_max_rounds": 3,
         "meta_judge_active": "sign", "meta_calibrate": 0, "meta_max_level_loss": 0.05,
+        "practice_shaping": 0, "practice_k": 8,
         "description": "The agent's own bar: mean surprise per body-frame (cells) at or under the floor masters a "
                        "level; a model must cut it by 20%, and by 0.05 cells net of any surprise it adds on the "
                        "levels already mastered, to be adopted."}}]
@@ -915,10 +937,11 @@ for j, (wk, kind) in enumerate(((wk, kind) for wk in WORLD_KINDS for kind in OPE
     loop_edges.append({"src": {"role": "agent_root"}, "type": "has_operator_stat", "tgt": {"local": j}, "attrs": {}})
 # no depends_on: the loop reads the predictor's nodes at run time, and a dependency
 # would freeze the predictor seed by closure (it is the part the agent changes)
-loop = {"id": "prediction_self_improvement", "version": "1.7.0", "depends_on": [],
+loop = {"id": "prediction_self_improvement", "version": "1.8.0", "depends_on": [],
         "description": __doc__, "nodes": loop_nodes, "edges": loop_edges, "productions": [],
         "rules": [ADVANCE, MASTER_LAST, FILE, PROPOSE, EXHAUSTED, AUTHOR, REQUEST_FIT, AUTHOR_LAYER, PRUNE_COMPONENT, DROP_LAYER, ADD_EXPERT, ADD_SPECIALIST, JUDGE, ADOPT, COUNT_TRIAL, COUNT_ENABLED, COUNT_ADOPT,
-                  META_PROPOSE, META_JUDGE, META_SELECT_JUDGE, *META_ADOPT, META_CLOSE_ROUND]}
+                  META_PROPOSE, META_JUDGE, META_SELECT_JUDGE, *META_ADOPT, META_CLOSE_ROUND,
+                  SELECT_PRACTICE]}
 
 P_WORLD.write_text(json.dumps(world, indent=1, ensure_ascii=True) + "\n")
 P_LOOP.write_text(json.dumps(loop, indent=1, ensure_ascii=True) + "\n")

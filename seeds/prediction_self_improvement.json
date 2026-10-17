@@ -1,8 +1,8 @@
 {
  "id": "prediction_self_improvement",
- "version": "1.7.0",
+ "version": "1.8.0",
  "depends_on": [],
- "description": "Emit the prediction world (2026-10-10): a graded, closed world in which to\ndemonstrate ENDEMIC self-improvement -- the agent improving itself from its\nown operation, judged by its own criterion, with an off arm.\n\nThe world (domains/prediction_world.py, mechanical): bodies move in a box;\neach frame the agent observes their positions and its PREDICTOR -- graph\nrules -- predicts where each will be next. Its criterion is its own surprise:\nthe distance between where it predicted a body would be and where it was.\nLevels get harder: 1 drift (constant velocity), 2 bounce (walls), 3 fall\n(gravity), 4 glide (damping), 5 bounce under gravity.\n\nseeds/prediction_world.json (skippable; the part the agent changes)\n  * Six base models, rank k = form_index*2 + reflect: velocity (x + dx),\n    acceleration (x + 2dx - pdx: a constant change in displacement) or ratio\n    (x + dx*dx/pdx: a constant ratio of displacements), each with or without\n    `reflect` (fold a prediction that leaves the box back in).\n  * Predictor{mask, model}: the agent's held model -- the set of base models\n    it composes (bit k). One bit is a base model; more is a composite that\n    uses, per body and axis, whichever component predicted that body best\n    last frame (1.1.0).\n  * PredictorCandidate{mask, name, rank, authored}: the models the agent may\n    try, in MDL order. The six base models and the composition operator are\n    human-written; which model to try, when, which composites to author, and\n    whether to keep one is the agent's.\n  * predict_body_next: the predictor itself.\n\nseeds/prediction_self_improvement.json (frozen; the loop -- the agent may not\nchange how it judges itself)\n  * PredictionCurriculum{current_level, max_level, last_change_seq} and\n    PredictionPolicy{self_improvement, surprise_floor, window, min_gain,\n    min_abs_gain}.\n  * pw_advance_level: `window` consecutive episodes at the level at or under\n    the floor -> the next level.\n  * pw_file_surprise_concern: `window` episodes since the predictor last\n    changed and the level not mastered -> SelfConcern{kind:'prediction_surprise'}.\n    Endemic: nothing but the agent's own surprise files it.\n  * pw_propose_predictor_edit: an open concern, self-improvement on -> one\n    Experiment + SeedDelta per candidate not yet tried against the current\n    model for this concern.\n  * pw_concern_exhausted: no candidate left -> the concern says so.\n  * pw_author_composite_predictor (1.1.0): an exhausted concern whose best\n    local trial cleared the bar at the level and was refuted only on its\n    retention cost -> the agent authors a new candidate, its current model\n    composed with that winner, and reopens the concern. Composites compose\n    further; one it already holds is not re-authored, so it terminates.\n  * pw_request_residual_fit / pw_author_context_layer (1.2.0): an exhausted\n    concern with nothing to compose -> the agent asks where its own model's\n    surprise lives (ResidualFit: per context atom, the summed error of the\n    frames where it holds, and the least-squares fit of those frames,\n    x' - x = c0*dx + c1*pdx + c2*ppdx + c3, written by the mechanical\n    half as ResidualCells); it then authors its current model plus a layer on\n    the atom holding the most residual where the fit helps, and reopens the\n    concern. The context atoms (reversal: dx*pdx < 0; after_reversal:\n    pdx*ppdx < 0) and the linear layer form are human-written; which atom,\n    the coefficients (from its own episodes), and whether to keep it are not.\n  * pw_master_last_level (1.2.0): the last level is mastered like the others.\n  * PredictionPolicy.authoring (1.2.0): 0 switches both authoring rules off\n    (the no_authoring ablation).\n  * Revision (1.3.0): residual fits also cover layers the model holds\n    (refit one, or refit_all), each fit offered on the level alone and pooled\n    with the mastered levels, one candidate per helpful fit;\n    pw_author_pruned_component (the model minus one base component) and\n    pw_author_dropped_layer (minus its last layer); layers gain a fifth term,\n    the body's running acceleration estimate on the axis.\n  * Robust mastery (1.4.0): the one-sided 95% upper confidence bound of the\n    mean surprise of the last `mastery_window` (5) episodes under the current\n    model at or under the floor; concerns filed on the mean of the last\n    `window` episodes since the change, or after 2*mastery_window episodes\n    without robust mastery.\n  * Meta search (1.4.0): PredictionOperatorStat per authoring operator\n    (tried / supported / adopted, updated by pw_count_operator_trial and\n    pw_count_operator_adoption); with meta_search on, trials go in batches by\n    operator yield (supported+1)/(tried+2), best first, and an operator tried\n    meta_min_trials times with yield under meta_min_yield is skipped.\n  * 1.5.0: experts (up to N_EXPERTS more full models on the Predictor, gated\n    per body and axis by cumulative error; authored by pw_author_expert from\n    the local winner and pw_author_specialist_expert from a level-only fit,\n    both only once a concern's single-model fits are spent); provenance\n    credit (`enabled`) in the operator record, and skipping only as a last\n    resort; self-proposed policy changes (MetaProposal from META_GRAMMAR,\n    measured on the agent's own practice levels by the mechanical half,\n    judged and adopted by pw_judge_policy_change / pw_adopt_policy_change_*).\n  * 1.6.0: the operator record per kind of world (box / open, read from the\n    level's latest episode); skipping a real skip again (skip_last_resort 0);\n    policy proposals in rounds (meta_round / meta_max_rounds, closed by\n    pw_close_policy_round), supported only when they win on more practice\n    levels than they lose.\n  * 1.7.0: three judges for policy changes (net / sign / tail); with\n    meta_calibrate on, round 0 is also measured on a second practice set and\n    pw_select_policy_judge adopts the judge whose choice realised the most\n    net there (ties: the stricter); later rounds use it.\n  * pw_judge_predictor_edit: the replay's variant surprise against its control\n    surprise, on the agent's own recorded episodes at the level AND on its\n    recorded episodes of the levels it has already mastered (retention):\n    supported only when it is lower at the level by min_gain (relative) and\n    its gain, net of retention_weight x the surprise it adds on mastered\n    levels (summed per level, so one level's regression is neither diluted nor\n    traded against another's improvement), reaches min_abs_gain. Weighed,\n    not vetoed.\n  * pw_adopt_predictor_edit: once every trial is judged, the supported trial\n    with the best weighed net (ties: the simpler model) is adopted in the\n    graph -- the Predictor takes the candidate's form -- and the concern is\n    resolved.\nIdempotent.\n",
+ "description": "Emit the prediction world (2026-10-10): a graded, closed world in which to\ndemonstrate ENDEMIC self-improvement -- the agent improving itself from its\nown operation, judged by its own criterion, with an off arm.\n\nThe world (domains/prediction_world.py, mechanical): bodies move in a box;\neach frame the agent observes their positions and its PREDICTOR -- graph\nrules -- predicts where each will be next. Its criterion is its own surprise:\nthe distance between where it predicted a body would be and where it was.\nLevels get harder: 1 drift (constant velocity), 2 bounce (walls), 3 fall\n(gravity), 4 glide (damping), 5 bounce under gravity.\n\nseeds/prediction_world.json (skippable; the part the agent changes)\n  * Six base models, rank k = form_index*2 + reflect: velocity (x + dx),\n    acceleration (x + 2dx - pdx: a constant change in displacement) or ratio\n    (x + dx*dx/pdx: a constant ratio of displacements), each with or without\n    `reflect` (fold a prediction that leaves the box back in).\n  * Predictor{mask, model}: the agent's held model -- the set of base models\n    it composes (bit k). One bit is a base model; more is a composite that\n    uses, per body and axis, whichever component predicted that body best\n    last frame (1.1.0).\n  * PredictorCandidate{mask, name, rank, authored}: the models the agent may\n    try, in MDL order. The six base models and the composition operator are\n    human-written; which model to try, when, which composites to author, and\n    whether to keep one is the agent's.\n  * predict_body_next: the predictor itself.\n\nseeds/prediction_self_improvement.json (frozen; the loop -- the agent may not\nchange how it judges itself)\n  * PredictionCurriculum{current_level, max_level, last_change_seq} and\n    PredictionPolicy{self_improvement, surprise_floor, window, min_gain,\n    min_abs_gain}.\n  * pw_advance_level: `window` consecutive episodes at the level at or under\n    the floor -> the next level.\n  * pw_file_surprise_concern: `window` episodes since the predictor last\n    changed and the level not mastered -> SelfConcern{kind:'prediction_surprise'}.\n    Endemic: nothing but the agent's own surprise files it.\n  * pw_propose_predictor_edit: an open concern, self-improvement on -> one\n    Experiment + SeedDelta per candidate not yet tried against the current\n    model for this concern.\n  * pw_concern_exhausted: no candidate left -> the concern says so.\n  * pw_author_composite_predictor (1.1.0): an exhausted concern whose best\n    local trial cleared the bar at the level and was refuted only on its\n    retention cost -> the agent authors a new candidate, its current model\n    composed with that winner, and reopens the concern. Composites compose\n    further; one it already holds is not re-authored, so it terminates.\n  * pw_request_residual_fit / pw_author_context_layer (1.2.0): an exhausted\n    concern with nothing to compose -> the agent asks where its own model's\n    surprise lives (ResidualFit: per context atom, the summed error of the\n    frames where it holds, and the least-squares fit of those frames,\n    x' - x = c0*dx + c1*pdx + c2*ppdx + c3, written by the mechanical\n    half as ResidualCells); it then authors its current model plus a layer on\n    the atom holding the most residual where the fit helps, and reopens the\n    concern. The context atoms (reversal: dx*pdx < 0; after_reversal:\n    pdx*ppdx < 0) and the linear layer form are human-written; which atom,\n    the coefficients (from its own episodes), and whether to keep it are not.\n  * pw_master_last_level (1.2.0): the last level is mastered like the others.\n  * PredictionPolicy.authoring (1.2.0): 0 switches both authoring rules off\n    (the no_authoring ablation).\n  * Revision (1.3.0): residual fits also cover layers the model holds\n    (refit one, or refit_all), each fit offered on the level alone and pooled\n    with the mastered levels, one candidate per helpful fit;\n    pw_author_pruned_component (the model minus one base component) and\n    pw_author_dropped_layer (minus its last layer); layers gain a fifth term,\n    the body's running acceleration estimate on the axis.\n  * Robust mastery (1.4.0): the one-sided 95% upper confidence bound of the\n    mean surprise of the last `mastery_window` (5) episodes under the current\n    model at or under the floor; concerns filed on the mean of the last\n    `window` episodes since the change, or after 2*mastery_window episodes\n    without robust mastery.\n  * Meta search (1.4.0): PredictionOperatorStat per authoring operator\n    (tried / supported / adopted, updated by pw_count_operator_trial and\n    pw_count_operator_adoption); with meta_search on, trials go in batches by\n    operator yield (supported+1)/(tried+2), best first, and an operator tried\n    meta_min_trials times with yield under meta_min_yield is skipped.\n  * 1.5.0: experts (up to N_EXPERTS more full models on the Predictor, gated\n    per body and axis by cumulative error; authored by pw_author_expert from\n    the local winner and pw_author_specialist_expert from a level-only fit,\n    both only once a concern's single-model fits are spent); provenance\n    credit (`enabled`) in the operator record, and skipping only as a last\n    resort; self-proposed policy changes (MetaProposal from META_GRAMMAR,\n    measured on the agent's own practice levels by the mechanical half,\n    judged and adopted by pw_judge_policy_change / pw_adopt_policy_change_*).\n  * 1.6.0: the operator record per kind of world (box / open, read from the\n    level's latest episode); skipping a real skip again (skip_last_resort 0);\n    policy proposals in rounds (meta_round / meta_max_rounds, closed by\n    pw_close_policy_round), supported only when they win on more practice\n    levels than they lose.\n  * 1.7.0: three judges for policy changes (net / sign / tail); with\n    meta_calibrate on, round 0 is also measured on a second practice set and\n    pw_select_policy_judge adopts the judge whose choice realised the most\n    net there (ties: the stricter); later rounds use it.\n  * 1.8.0: practice shaping -- with practice_shaping on, the agent screens a\n    pool of candidate practice levels with its round's proposals and\n    pw_select_practice_level keeps the practice_k where they disagree most.\n  * pw_judge_predictor_edit: the replay's variant surprise against its control\n    surprise, on the agent's own recorded episodes at the level AND on its\n    recorded episodes of the levels it has already mastered (retention):\n    supported only when it is lower at the level by min_gain (relative) and\n    its gain, net of retention_weight x the surprise it adds on mastered\n    levels (summed per level, so one level's regression is neither diluted nor\n    traded against another's improvement), reaches min_abs_gain. Weighed,\n    not vetoed.\n  * pw_adopt_predictor_edit: once every trial is judged, the supported trial\n    with the best weighed net (ties: the simpler model) is adopted in the\n    graph -- the Predictor takes the candidate's form -- and the concern is\n    resolved.\nIdempotent.\n",
  "nodes": [
   {
    "local_id": 0,
@@ -41,6 +41,8 @@
     "meta_judge_active": "sign",
     "meta_calibrate": 0,
     "meta_max_level_loss": 0.05,
+    "practice_shaping": 0,
+    "practice_k": 8,
     "description": "The agent's own bar: mean surprise per body-frame (cells) at or under the floor masters a level; a model must cut it by 20%, and by 0.05 cells net of any surprise it adds on the levels already mastered, to be adopted."
    }
   },
@@ -33522,6 +33524,304 @@
          "value": 1
         }
        ]
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "pw_select_practice_level",
+   "comment": "1.8.0: once every candidate practice level of a pool is screened, the agent selects the practice_k with the largest spread of cost across its proposals (ties: the earlier candidate).",
+   "match": [
+    [
+     "agent",
+     "has_prediction_policy",
+     "pol"
+    ],
+    [
+     "agent",
+     "has_practice_candidate",
+     "pc"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "pol"
+       },
+       "key": "practice_shaping"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "pc"
+        },
+        "key": "spread"
+       },
+       "b": {
+        "type": "Lit",
+        "value": null
+       }
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "pc"
+       },
+       "key": "selected"
+      },
+      "b": {
+       "type": "Lit",
+       "value": null
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "PracticeCandidate"
+        },
+        "var_name": "pq",
+        "predicate": {
+         "type": "And",
+         "items": [
+          {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "pq"
+            },
+            "key": "round"
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "pc"
+            },
+            "key": "round"
+           }
+          },
+          {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "pq"
+            },
+            "key": "pool"
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "pc"
+            },
+            "key": "pool"
+           }
+          }
+         ]
+        }
+       },
+       "var_name": "pz",
+       "predicate": {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "pz"
+         },
+         "key": "spread"
+        },
+        "b": {
+         "type": "Lit",
+         "value": null
+        }
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "pc",
+     "selected",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Lt",
+        "a": {
+         "type": "Count",
+         "source": {
+          "type": "Filter",
+          "source": {
+           "type": "Filter",
+           "source": {
+            "type": "NodesOfType",
+            "node_type": "PracticeCandidate"
+           },
+           "var_name": "pq",
+           "predicate": {
+            "type": "And",
+            "items": [
+             {
+              "type": "Eq",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "pq"
+               },
+               "key": "round"
+              },
+              "b": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "pc"
+               },
+               "key": "round"
+              }
+             },
+             {
+              "type": "Eq",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "pq"
+               },
+               "key": "pool"
+              },
+              "b": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "pc"
+               },
+               "key": "pool"
+              }
+             }
+            ]
+           }
+          },
+          "var_name": "pr",
+          "predicate": {
+           "type": "Or",
+           "items": [
+            {
+             "type": "Gt",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "pr"
+              },
+              "key": "spread"
+             },
+             "b": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "pc"
+              },
+              "key": "spread"
+             }
+            },
+            {
+             "type": "And",
+             "items": [
+              {
+               "type": "Eq",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "pr"
+                },
+                "key": "spread"
+               },
+               "b": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "pc"
+                },
+                "key": "spread"
+               }
+              },
+              {
+               "type": "Lt",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "pr"
+                },
+                "key": "idx"
+               },
+               "b": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "pc"
+                },
+                "key": "idx"
+               }
+              }
+             ]
+            }
+           ]
+          }
+         }
+        },
+        "b": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "pol"
+         },
+         "key": "practice_k"
+        }
+       },
+       "then": {
+        "type": "Lit",
+        "value": 1
+       },
+       "other": {
+        "type": "Lit",
+        "value": 0
+       }
       }
      }
     ]
