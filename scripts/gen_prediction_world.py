@@ -81,6 +81,11 @@ change how it judges itself)
     resort; self-proposed policy changes (MetaProposal from META_GRAMMAR,
     measured on the agent's own practice levels by the mechanical half,
     judged and adopted by pw_judge_policy_change / pw_adopt_policy_change_*).
+  * 1.6.0: the operator record per kind of world (box / open, read from the
+    level's latest episode); skipping a real skip again (skip_last_resort 0);
+    policy proposals in rounds (meta_round / meta_max_rounds, closed by
+    pw_close_policy_round), supported only when they win on more practice
+    levels than they lose.
   * pw_judge_predictor_edit: the replay's variant surprise against its control
     surprise, on the agent's own recorded episodes at the level AND on its
     recorded episodes of the levels it has already mastered (retention):
@@ -291,7 +296,7 @@ for i, c in enumerate(candidates, start=1):
     world_nodes.append({"local_id": i, "type": "PredictorCandidate", "attrs": c})
     world_edges.append({"src": {"role": "agent_root"}, "type": "has_predictor_candidate", "tgt": {"local": i},
                         "attrs": {}})
-world = {"id": "prediction_world", "version": "1.5.0", "depends_on": [],
+world = {"id": "prediction_world", "version": "1.6.0", "depends_on": [],
          "description": "The prediction world's predictor (see scripts/gen_prediction_world.py): the held Predictor "
                         "model, the candidate models in MDL order, and the prediction rule. This is the part of "
                         "the agent its self-improvement loop changes.",
@@ -372,7 +377,12 @@ UNTRIED = Filter(Nodes("PredictorCandidate"), "k", And(Not(IS_CURRENT(V("k"))), 
 # (1.4.0) the agent's record of its own search: per authoring operator, how many of its candidates were
 # tried and how many the judge supported; a candidate's operator is how it was authored ('base' if born-with)
 OP_KIND = lambda c: Ite(Eq(A(c, "authored"), L(1)), A(c, "authored_by"), L("base"))
-OP_STAT = lambda c: Argmax(Filter(Nodes("PredictionOperatorStat"), "os", Eq(A("os", "kind"), OP_KIND(c))),
+# (1.6.0) the record is kept per kind of world: a box (walls, w < 1000) or open space, read from the level's
+# latest episode -- what worked in one kind of world is not taken as evidence about the other
+LATEST_EP = Argmax(LVL_EPS, "le", A("le", "seq"))
+CUR_KIND = Let("lep", LATEST_EP, Ite(And(NN(V("lep")), Lt(A("lep", "w"), L(999.0))), L("box"), L("open")))
+OP_STAT = lambda c: Argmax(Filter(Nodes("PredictionOperatorStat"), "os", And(
+    Eq(A("os", "kind"), OP_KIND(c)), Eq(A("os", "world_kind"), CUR_KIND))),
                            "os", L(0))
 # (1.5.0) an operator's yield counts the trials it enabled: a supported candidate authored FROM one of its
 # trials (a composite or expert built on a refuted local winner) is credited to it as well
@@ -387,9 +397,10 @@ SKIPPED = lambda c: And(Eq(A("pol", "meta_search"), L(1)), Gte(OP_TRIED(c), A("p
                         # (1.5.0) never skip an operator whose trials other operators have built on
                         Eq(OP_ENABLED(c), L(0)))
 UNTRIED_NONSKIP = Filter(UNTRIED, "un", Not(SKIPPED(V("un"))))
-# (1.5.0) a skipped operator is a last resort, not a ban: once nothing else is left untried, its candidates are
-# trialled too (the record learned in one world is not trusted to rule another out)
-VIABLE = lambda c: Or(Not(SKIPPED(c)), Eq(Count(UNTRIED_NONSKIP), L(0)))
+# (1.5.0) with skip_last_resort on, a skipped operator is a last resort, not a ban: once nothing else is left
+# untried, its candidates are trialled too. (1.6.0: off by default -- the per-kind record and the `enabled`
+# credit are the safety instead)
+VIABLE = lambda c: Or(Not(SKIPPED(c)), And(Eq(A("pol", "skip_last_resort"), L(1)), Eq(Count(UNTRIED_NONSKIP), L(0))))
 UNTRIED_VIABLE = Filter(UNTRIED, "uv", VIABLE(V("uv")))
 PENDING = Exists(Nb("sc", "tested_by"), "x", Eq(A("x", "outcome"), L(None)))
 CONCERN_MATCH = CUR + [["agent", "has_self_concern", "sc"], ["agent", "has_predictor", "p"]]
@@ -410,6 +421,7 @@ PROPOSE = {
             "candidate_mask": T(A("k", "mask")), "control_mask": T(A("p", "mask")),
             "candidate_sig": T(A("k", "sig")), "control_sig": T(A("p", "sig")),
             "candidate_operator": T(OP_KIND("k")), "candidate_parent_operator": T(A("k", "parent_operator")),
+            "world_kind": T(CUR_KIND),
             "candidate_name": T(A("k", "name"))}],
         ["add_node", "delta", "SeedDelta", {
             "variation_op": "predictor_edit", "candidate_form": T(A("k", "form")),
@@ -442,7 +454,7 @@ COUNT_TRIAL = {
                "its candidate (tried, and supported if the judge supported it).",
     "match": STAT_MATCH,
     "where": And(NN(A("exp", "outcome")), Not(Eq(A("exp", "op_counted"), L(1))),
-                 Eq(A("os", "kind"), A("exp", "candidate_operator"))),
+                 Eq(A("os", "kind"), A("exp", "candidate_operator")), Eq(A("os", "world_kind"), A("exp", "world_kind"))),
     "effects": [["set_attr", "os", "tried", T(Plus(A("os", "tried"), L(1)))],
                 ["set_attr", "os", "supported", T(Plus(A("os", "supported"),
                                                        Ite(Eq(A("exp", "outcome"), L("supported")), L(1), L(0))))],
@@ -455,7 +467,8 @@ COUNT_ENABLED = {
     "match": STAT_MATCH,
     "where": And(Eq(A("exp", "outcome"), L("supported")), Not(Eq(A("exp", "op_enabled_counted"), L(1))),
                  NN(A("exp", "candidate_parent_operator")),
-                 Eq(A("os", "kind"), A("exp", "candidate_parent_operator"))),
+                 Eq(A("os", "kind"), A("exp", "candidate_parent_operator")),
+                 Eq(A("os", "world_kind"), A("exp", "world_kind"))),
     "effects": [["set_attr", "os", "enabled", T(Plus(A("os", "enabled"), L(1)))],
                 ["set_attr", "exp", "op_enabled_counted", 1]],
 }
@@ -464,7 +477,7 @@ COUNT_ADOPT = {
     "comment": "An adopted trial also counts as an adoption for its operator.",
     "match": STAT_MATCH,
     "where": And(Eq(A("exp", "adopted"), L(1)), Not(Eq(A("exp", "op_adopt_counted"), L(1))),
-                 Eq(A("os", "kind"), A("exp", "candidate_operator"))),
+                 Eq(A("os", "kind"), A("exp", "candidate_operator")), Eq(A("os", "world_kind"), A("exp", "world_kind"))),
     "effects": [["set_attr", "os", "adopted", T(Plus(A("os", "adopted"), L(1)))],
                 ["set_attr", "exp", "op_adopt_counted", 1]],
 }
@@ -781,12 +794,14 @@ META_PROPOSE = {
     "comment": "1.5.0: with its curriculum mastered and meta_proposals on, the agent proposes changes to its own "
                "search policy -- each a MetaProposal the mechanical half measures on practice levels.",
     "match": CUR,
+    # 1.6.0: in rounds -- one set of proposals per round, from the policy the earlier rounds left
     "where": And(Eq(A("pol", "meta_proposals"), L(1)), NN(A("cur", "mastered_through")),
                  Eq(A("cur", "mastered_through"), A("cur", "max_level")),
-                 Not(Exists(Nodes("MetaProposal"), "mp", L(True)))),
+                 Lt(A("pol", "meta_round"), A("pol", "meta_max_rounds")),
+                 Not(Exists(Nodes("MetaProposal"), "mp", Eq(A("mp", "round"), A("pol", "meta_round"))))),
     "effects": [eff for i, (param, factor) in enumerate(META_GRAMMAR) for eff in (
         ["add_node", f"mp{i}", "MetaProposal", {"param": param, "factor": factor, "status": "requested",
-                                               "current": T(A("pol", param))}],
+                                               "current": T(A("pol", param)), "round": T(A("pol", "meta_round"))}],
         ["add_edge", "agent", "has_meta_proposal", f"mp{i}"])],
 }
 META_NET = Plus(Minus(A("mp", "control_total"), A("mp", "variant_total")),
@@ -794,16 +809,19 @@ META_NET = Plus(Minus(A("mp", "control_total"), A("mp", "variant_total")),
 META_JUDGE = {
     "name": "pw_judge_policy_change",
     "comment": "1.5.0: a measured policy change, weighed: practice surprise plus retention harm saved, plus "
-               "experiment_cost per experiment saved; supported when the net reaches meta_min_net.",
+               "experiment_cost per experiment saved; supported when the net reaches meta_min_net and (1.6.0) "
+               "the change wins on more practice levels than it loses, so no one level carries it.",
     "match": [["agent", "has_prediction_policy", "pol"], ["agent", "has_meta_proposal", "mp"]],
     "where": And(Eq(A("mp", "status"), L("done")), Eq(A("mp", "outcome"), L(None))),
     "effects": [["set_attr", "mp", "net", T(META_NET)],
-                ["set_attr", "mp", "outcome", T(Ite(Gte(META_NET, A("pol", "meta_min_net")),
+                ["set_attr", "mp", "outcome", T(Ite(And(Gte(META_NET, A("pol", "meta_min_net")),
+                                                        Gt(A("mp", "level_wins"), A("mp", "level_losses"))),
                                                     L("supported"), L("refuted")))]],
 }
-META_PENDING = Exists(Nodes("MetaProposal"), "o", Eq(A("o", "outcome"), L(None)))
+META_PENDING = Exists(Nodes("MetaProposal"), "o", And(Eq(A("o", "round"), A("mp", "round")),
+                                                      Eq(A("o", "outcome"), L(None))))
 META_BEST = Not(Exists(Nodes("MetaProposal"), "o", And(
-    Eq(A("o", "outcome"), L("supported")), Not(Eq(V("o"), V("mp"))),
+    Eq(A("o", "round"), A("mp", "round")), Eq(A("o", "outcome"), L("supported")), Not(Eq(V("o"), V("mp"))),
     Or(Gt(A("o", "net"), A("mp", "net")), And(Eq(A("o", "net"), A("mp", "net")), Lt(A("o", "factor"), A("mp", "factor")))))))
 META_ADOPT = [{
     "name": f"pw_adopt_policy_change_{param}",
@@ -814,8 +832,21 @@ META_ADOPT = [{
     "effects": [["set_attr", "pol", param, T(Times(A("pol", param), A("mp", "factor")))],
                 ["set_attr", "mp", "adopted", 1],
                 ["set_attr", "pol", "meta_adopted", T({"type": "StringConcat", "parts": [
+                    Ite(NN(A("pol", "meta_adopted")), {"type": "StringConcat", "parts": [A("pol", "meta_adopted"), L("; ")]}, L("")),
                     A("mp", "param"), L(" x"), {"type": "Str", "value": A("mp", "factor")}]})]],
 } for param in sorted({p for p, _f in META_GRAMMAR})]
+ROUND_OF = lambda r: Filter(Nodes("MetaProposal"), "ro", Eq(A("ro", "round"), r))
+META_CLOSE_ROUND = {
+    "name": "pw_close_policy_round",
+    "comment": "1.6.0: a round of policy proposals closes once every proposal in it is judged and its best "
+               "supported one (if any) is adopted; the next round proposes from the policy as it now stands.",
+    "match": [["agent", "has_prediction_policy", "pol"]],
+    "where": And(Gt(Count(ROUND_OF(A("pol", "meta_round"))), L(0)),
+                 Not(Exists(ROUND_OF(A("pol", "meta_round")), "o", Eq(A("o", "outcome"), L(None)))),
+                 Or(Not(Exists(ROUND_OF(A("pol", "meta_round")), "o", Eq(A("o", "outcome"), L("supported")))),
+                    Exists(ROUND_OF(A("pol", "meta_round")), "o", Eq(A("o", "adopted"), L(1))))),
+    "effects": [["set_attr", "pol", "meta_round", T(Plus(A("pol", "meta_round"), L(1)))]],
+}
 
 loop_nodes = [
     {"local_id": 0, "type": "PredictionCurriculum", "attrs": {
@@ -826,6 +857,7 @@ loop_nodes = [
         "mastery_window": 5, "mastery_z": 1.645, "meta_search": 1,
         "meta_min_trials": 8, "meta_min_yield": 0.15, "experts": 1,
         "meta_proposals": 0, "experiment_cost": 0.001, "meta_min_net": 0.002,
+        "skip_last_resort": 0, "meta_round": 0, "meta_max_rounds": 3,
         "description": "The agent's own bar: mean surprise per body-frame (cells) at or under the floor masters a "
                        "level; a model must cut it by 20%, and by 0.05 cells net of any surprise it adds on the "
                        "levels already mastered, to be adopted."}}]
@@ -833,16 +865,18 @@ loop_edges = [{"src": {"role": "agent_root"}, "type": "has_prediction_curriculum
               {"src": {"role": "agent_root"}, "type": "has_prediction_policy", "tgt": {"local": 1}, "attrs": {}}]
 OPERATOR_KINDS = ("base", "composition", "residual_fit", "residual_refit", "residual_refit_all", "prune_component",
                   "drop_layer", "add_expert")
-for j, kind in enumerate(OPERATOR_KINDS, start=2):
+WORLD_KINDS = ("box", "open")
+for j, (wk, kind) in enumerate(((wk, kind) for wk in WORLD_KINDS for kind in OPERATOR_KINDS), start=2):
     loop_nodes.append({"local_id": j, "type": "PredictionOperatorStat",
-                       "attrs": {"kind": kind, "tried": 0, "supported": 0, "adopted": 0, "enabled": 0}})
+                       "attrs": {"kind": kind, "world_kind": wk, "tried": 0, "supported": 0, "adopted": 0,
+                                 "enabled": 0}})
     loop_edges.append({"src": {"role": "agent_root"}, "type": "has_operator_stat", "tgt": {"local": j}, "attrs": {}})
 # no depends_on: the loop reads the predictor's nodes at run time, and a dependency
 # would freeze the predictor seed by closure (it is the part the agent changes)
-loop = {"id": "prediction_self_improvement", "version": "1.5.0", "depends_on": [],
+loop = {"id": "prediction_self_improvement", "version": "1.6.0", "depends_on": [],
         "description": __doc__, "nodes": loop_nodes, "edges": loop_edges, "productions": [],
         "rules": [ADVANCE, MASTER_LAST, FILE, PROPOSE, EXHAUSTED, AUTHOR, REQUEST_FIT, AUTHOR_LAYER, PRUNE_COMPONENT, DROP_LAYER, ADD_EXPERT, ADD_SPECIALIST, JUDGE, ADOPT, COUNT_TRIAL, COUNT_ENABLED, COUNT_ADOPT,
-                  META_PROPOSE, META_JUDGE, *META_ADOPT]}
+                  META_PROPOSE, META_JUDGE, *META_ADOPT, META_CLOSE_ROUND]}
 
 P_WORLD.write_text(json.dumps(world, indent=1, ensure_ascii=True) + "\n")
 P_LOOP.write_text(json.dumps(loop, indent=1, ensure_ascii=True) + "\n")

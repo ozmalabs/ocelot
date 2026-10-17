@@ -295,8 +295,9 @@ def test_robust_mastery_ignores_a_lucky_streak():
     assert steady.get("mastered_through") == 5
 
 
-def _stat(a, kind):
-    (o,) = [o for o in a.s.nodes("PredictionOperatorStat") if a.s.node(o)["attrs"]["kind"] == kind]
+def _stat(a, kind, world_kind="open"):
+    (o,) = [o for o in a.s.nodes("PredictionOperatorStat") if a.s.node(o)["attrs"]["kind"] == kind
+            and a.s.node(o)["attrs"]["world_kind"] == world_kind]
     return o
 
 
@@ -306,6 +307,7 @@ def test_operator_record_counts_judged_trials():
     sc, (x0, x1) = _synthetic(a, [(ACC, 2, 0.5, 0.0, 0.4), (ACC1, 3, 0.5, 0.0, 0.2)])
     for x in (x0, x1):
         I.set_attr(x, "candidate_operator", "base")
+        I.set_attr(x, "world_kind", "open")
     I.run_rules()
     st = S.node(_stat(a, "base"))["attrs"]
     assert (st["tried"], st["supported"], st["adopted"]) == (2, 2, 1)
@@ -337,13 +339,25 @@ def test_meta_search_trials_the_best_yielding_operator_first():
     assert len(_concern_with_composite(flat)) == 6
 
 
-def test_meta_search_skips_a_low_yield_operator_but_only_as_a_last_resort():
+def test_meta_search_skips_a_low_yield_operator():
     """An operator tried meta_min_trials times with yield under meta_min_yield
-    is skipped while anything else is untried (base at 0 of 20, composite at
-    2 of 2: the composite alone); 1.5.0: when everything left is skipped, it
-    is trialled after all (base and composite both at 0 of 20: all six)."""
+    is skipped (base at 0 of 20, composite at 2 of 2: the composite alone;
+    both at 0 of 20: nothing). 1.6.0: skip_last_resort (off by default) trials
+    skipped operators once nothing else is left."""
     assert _concern_with_composite(_agent(1), base=(20, 0), comp=(2, 2)) == ["comp"]
-    assert len(_concern_with_composite(_agent(1), base=(20, 0), comp=(20, 0))) == 6
+    assert _concern_with_composite(_agent(1), base=(20, 0), comp=(20, 0)) == []
+    lr = _agent(1)
+    lr.inner.set_attr(lr.s.nodes("PredictionPolicy")[0], "skip_last_resort", 1)
+    assert len(_concern_with_composite(lr, base=(20, 0), comp=(20, 0))) == 6
+
+
+def test_the_record_is_kept_per_kind_of_world():
+    """1.6.0: a poor record for base models in BOX worlds does not skip them in
+    open space (this concern has no episodes: open by default)."""
+    a = _agent(1)
+    a.inner.set_attr(_stat(a, "base", "box"), "tried", 20)
+    a.inner.set_attr(_stat(a, "composition", "box"), "tried", 20)
+    assert len(_concern_with_composite(a, base=(0, 0), comp=(0, 0))) == 6
 
 
 def test_an_operator_others_built_on_is_never_skipped():
@@ -378,18 +392,30 @@ def test_agent_proposes_and_adopts_a_policy_change():
     I.run_rules()
     props = S.nodes("MetaProposal")
     assert len(props) == 7
+    big = None
     for m in props:
         at = S.node(m)["attrs"]
         good = (at["param"], at["factor"]) == ("meta_min_trials", 0.5)
         ok = (at["param"], at["factor"]) == ("retention_weight", 2.0)
-        for k, v in (("control_total", 1.0), ("variant_total", 0.99 if ok else 1.0), ("control_experiments", 100),
-                     ("variant_experiments", 70 if good else 100), ("status", "done")):
+        one_level = (at["param"], at["factor"]) == ("min_gain", 0.5)
+        big = m if one_level else big
+        # min_gain x0.5 has the biggest net, but carried by one practice level (1 win, 3 losses): refuted
+        for k, v in (("control_total", 1.0), ("variant_total", 0.99 if ok else (0.5 if one_level else 1.0)),
+                     ("control_experiments", 100), ("variant_experiments", 70 if good else 100),
+                     ("level_wins", 1 if one_level else (5 if (good or ok) else 0)),
+                     ("level_losses", 3 if one_level else 0), ("status", "done")):
             I.set_attr(m, k, v)
     I.run_rules()
     at = S.node(pol)["attrs"]
+    assert S.node(big)["attrs"]["outcome"] == "refuted"
     # nets: meta_min_trials x0.5 = 0.03, retention_weight x2 = 0.01; the best is adopted, only it
     assert at["meta_min_trials"] == 4 and at["retention_weight"] == 1.0
     assert at["meta_adopted"].startswith("meta_min_trials")
+    # 1.6.0: the round closed and the next round's proposals start from the adopted policy
+    assert at["meta_round"] == 1
+    nxt = [S.node(m)["attrs"] for m in S.nodes("MetaProposal") if S.node(m)["attrs"]["round"] == 1]
+    assert len(nxt) == 7
+    assert [m["current"] for m in nxt if m["param"] == "meta_min_trials"] == [4, 4]
 
 
 def test_loop_seed_frozen_and_protected():

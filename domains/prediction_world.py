@@ -157,7 +157,7 @@ def run_episode(agent, seed: int) -> dict:
     mean, count = _feed(agent, trace)
     prior = [e for e in S.nodes("PredictionEpisode") if S.node(e)["attrs"].get("level") == level]
     seq = len(S.nodes("PredictionEpisode"))
-    ep = S.add_node("PredictionEpisode", {"seq": seq, "level": level, "level_index": len(prior) + 1,
+    ep = S.add_node("PredictionEpisode", {"seq": seq, "level": level, "level_index": len(prior) + 1, "w": float(trace["w"]),
                                           "mean_surprise": round(mean, 6), "scored": count, "seed": seed,
                                           "trace": json.dumps(trace)})
     I.add_edge_unchecked(agent.agent, "has_prediction_episode", ep)
