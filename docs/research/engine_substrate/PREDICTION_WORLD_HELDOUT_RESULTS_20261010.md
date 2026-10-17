@@ -533,3 +533,75 @@ Mean weighed cost of the agent's own policy vs the born policy:
 The two plausible directions are:
 - letting the agent author new options (operators, features), so the hard levels become solvable rather than merely avoidable;
 - changing the frame, so the agent experiences the hard levels it currently declines, e.g. a curriculum that keeps escalating rather than one that stops at five levels.
+
+
+---
+
+# v8: authored predicates and an escalating curriculum (loop 1.9.0)
+
+The protocol is `PREDICTION_WORLD_HELDOUT_PROTOCOL_V8_20261010.md`, frozen at `4b4229c5b9d961d15eb7215e8abd1013839cd931`. There were two six-draw sets, giving 384 pairs × 4 arms. Nothing was changed after the commit. The analysis is `prediction_world_sequential_analysis_v8.py <A> <B>`.
+
+## Escalation phase
+
+On the 8 extra levels, the escalated agents mastered:
+
+| seed base | mastered through | moved on from | adoptions during escalation |
+|---|---|---|---|
+| 1000 | 10 | 2 levels | 8 |
+| 2024 | 13 (all) | — | 5 |
+| 5000 | 9 | 3 levels | 7 |
+| 9000 | 10 | 2 levels | 6 |
+
+## Pre-registered verdicts
+
+| hypothesis | look 1 (192) | look 2 (384) | verdict |
+|---|---|---|---|
+| H10 authored predicates help (final surprise; harm ≤ +0.01) | sign 36–20; mean −0.0039 (p = 0.040) | sign 71–38 (p = 0.002); mean **+0.0016** (p = 0.60) | **not supported** |
+| H11 escalation helps (cost) | sign 57–61; mean −0.0075 (p = 0.028) | sign 115–103; mean −0.0065 (p = 0.011) | **supported at look 1** |
+| H3e escalated beats newborn (final surprise) | sign 109–83 (p = 0.071); mean −0.011 (p = 0.22) | sign 195–169 (p = 0.19); mean −0.029 (p = 0.21) | **not supported** |
+| reference: trained (no escalation) vs newborn | sign 115–77 (p = 0.007); mean −0.024 (p = 0.003) | sign 206–158 (p = 0.014); mean −0.042 (p = 0.001) | **not a hypothesis** (see below) |
+
+## What is behind it (post-hoc analysis)
+
+**H10.**
+- Authored predicates help more often than they hurt: 71 vs 38 pairs.
+- But the gains are small and the losses larger, so the mean is not better. In set B the mean got worse (+0.007), with 7 pairs worse by more than 0.1.
+- The agent's own predicates fit the levels it authors them on (the curriculum's `acc + wx < 0` cut L5 surprise in half) but transfer unevenly.
+
+**H11: escalation passes on cost, and loses capability.** Mean differences, escalated − trained, over 384 pairs:
+
+| component | difference |
+|---|---|
+| experiments per run | −11 |
+| retention harm | −0.009 |
+| final surprise | **+0.0135** |
+| adoptions per run | 0.11 vs 0.23 |
+
+- The escalated agent arrives with 8 more levels to protect. The retention weighing then makes it more conservative: it changes less, spends less and harms less, and predicts the new level worse.
+- So the pre-declared cost improves (barely: p = 0.028 at look 1, 0.011 pooled) while capability falls. The mechanism v3 identified (retention makes experience conservative) now shows up as a measured effect of more experience.
+
+**H3e.** The escalated agent does not reliably beat a newborn: 195–169, mean p = 0.21.
+
+**The reference comparison, plain trained vs newborn**, passes both tests in both looks: look 2 sign p = 0.014, mean p = 0.001.
+- This is the first draw-set pair where it does. v3 went 87–93, v4 105–71, v5 194–170, and v8 206–158.
+- It was a reported reference here, not a hypothesis, so it is evidence for a pre-registered replication, not a confirmed result.
+
+## Where the line stands
+
+**Holds across draw sets:**
+- The loop beats ablations.
+- The per-kind record makes search cheaper at no quality cost.
+- Experts help where they act.
+
+**Holds on the declared cost, through a cost/capability trade:**
+- The agent's own policy changes (mixed across sets).
+- Escalation (v8 H11). In both cases it changes less, spends less, protects more, and predicts new levels slightly worse.
+
+**Not shown:**
+- That predicates the agent authors improve held-out prediction on average (H10).
+- That more, harder experience makes it better than a newborn (H3e).
+- Open-ended recursive self-improvement.
+
+**What v8 settles.** The obstacle to an experienced agent outperforming a fresh one is not missing building blocks or missing experience. It is the agent's own retention criterion: every additional mastered level is a further cost to weigh against change. A criterion that is correct per change ("don't make what you know worse") makes the accumulated agent increasingly conservative.
+
+Making experience compound would need that criterion to change: for example, by protecting knowledge through experts (scoping) rather than by vetoing change. The agent cannot currently propose that, because the retention weight is the only retention knob in its policy grammar, and v4–v7 show that scaling it does not help.
