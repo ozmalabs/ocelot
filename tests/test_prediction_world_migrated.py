@@ -472,6 +472,34 @@ def test_agent_selects_the_practice_levels_where_its_proposals_disagree():
     assert [S.node(n)["attrs"]["selected"] for n in nodes] == [0, 1, 0, 1, 0]
 
 
+def test_an_authored_predicate_layer_applies_where_its_predicate_holds():
+    """1.9.0: a layer on the predicate dx*pdx < 0 (comb mul of features 0 and
+    1) with velocity-reversal coefficients acts like the born-with reversal
+    atom: on bounce frames (level 2) it beats the plain velocity+reflect."""
+    VEL1 = 1 << 1
+    model = {"mask": VEL1, "la_on": 1, "la_fa": 0, "la_fb": 1, "la_comb": 0, "la_cmp": 0, "la_thr": 0.0,
+             **{f"la_{ax}{c}": 0.0 for ax in "xy" for c in "01234"}, "la_x2": -1.0, "la_y2": -1.0}
+    tr = pw.simulate(2, 11)
+    assert pw.replay(tr, model) < pw.replay(tr, VEL1)
+
+
+def test_escalating_curriculum_moves_on_from_an_unmastered_level():
+    """1.9.0: with level_patience on, after that many episodes at a level not
+    mastered the agent moves on; with it off (the default) it stays."""
+    for patience, expect in ((3, 4), (0, 3)):
+        a = _agent(0)
+        S, I = a.s, a.inner
+        cur = S.nodes("PredictionCurriculum")[0]
+        I.set_attr(cur, "current_level", 3)
+        I.set_attr(S.nodes("PredictionPolicy")[0], "level_patience", patience)
+        for i, m in enumerate([0.5, 0.5, 0.5]):
+            e = S.add_node("PredictionEpisode", {"seq": i, "level": 3, "level_index": i + 1, "mean_surprise": m,
+                                                 "scored": 1, "seed": i, "trace": "{}", "w": 1000.0})
+            I.add_edge_unchecked(a.agent, "has_prediction_episode", e)
+        I.run_rules()
+        assert S.node(cur)["attrs"]["current_level"] == expect
+
+
 def test_loop_seed_frozen_and_protected():
     from substrate.boot_all import _FROZEN_SEED_IDS
     assert "prediction_self_improvement" in _FROZEN_SEED_IDS

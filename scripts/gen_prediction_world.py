@@ -93,6 +93,10 @@ change how it judges itself)
   * 1.8.0: practice shaping -- with practice_shaping on, the agent screens a
     pool of candidate practice levels with its round's proposals and
     pw_select_practice_level keeps the practice_k where they disagree most.
+  * 1.9.0: a layer on a predicate the agent authors itself (comb(F[a], F[b])
+    < or > thr over observable features, found by its residual search and
+    authored by pw_author_predicate_layer as a last resort); an escalating
+    curriculum option (level_patience: move on from an unmastered level).
   * pw_judge_predictor_edit: the replay's variant surprise against its control
     surprise, on the agent's own recorded episodes at the level AND on its
     recorded episodes of the levels it has already mastered (retention):
@@ -183,8 +187,12 @@ N_SLOTS = len(CONTEXT_ATOMS)
 # x' = x + c0*dx + c1*pdx + c2*ppdx + c3 + c4*acc, folded into the box; acc (1.3.0) is the body's own
 # running acceleration estimate on this axis (dx - pdx on its last frame with no reversal)
 COEFS = ("0", "1", "2", "3", "4")
+# (1.9.0) one more layer, conditioned on a predicate the agent authors itself: value = comb(F[fa], F[fb])
+# compared (cmp) with thr, over the observable features F below; checked before the other layers
+FEATURES = ("dx", "pdx", "ppdx", "acc", "x", "wx", "adx", "aacc", "one")
+AUTH_KEYS = ["la_on", "la_fa", "la_fb", "la_comb", "la_cmp", "la_thr"] + [f"la_{ax}{c}" for ax in "xy" for c in COEFS]
 LAYER_KEYS = [f"l{i}_bit" for i in range(N_SLOTS)] + [f"l{i}_{ax}{c}" for i in range(N_SLOTS) for ax in "xy"
-                                                       for c in COEFS]
+                                                       for c in COEFS] + AUTH_KEYS
 # (1.5.0) experts: besides its primary model (mask + layers), the Predictor may hold N_EXPERTS more, each a full
 # model of its own under the prefix x<e>_ (mask 0 = empty slot); per body and axis the prediction is the
 # expert's whose last prediction there was best
@@ -214,6 +222,38 @@ def layer_prediction(i, pos, size, pre=""):
     return fold(lin, size)
 
 
+def feature(name, pos, size):
+    h = dict(zip(("dx", "pdx", "ppdx"), HIST[pos]))
+    x, acc = A("b", pos), A("b", f"acc_{pos}")
+    return {"dx": A("b", h["dx"]), "pdx": A("b", h["pdx"]), "ppdx": A("b", h["ppdx"]), "acc": acc, "x": x,
+            "wx": Minus(Minus(A("b", size), L(1.0)), x), "adx": {"type": "Abs", "arg": A("b", h["dx"])},
+            "aacc": {"type": "Abs", "arg": acc}, "one": L(1.0)}[name]
+
+
+def pick_feature(idx, pos, size):
+    out = feature(FEATURES[-1], pos, size)
+    for i in reversed(range(len(FEATURES) - 1)):
+        out = Ite(Lt({"type": "Abs", "arg": Minus(idx, L(float(i)))}, L(0.5)), feature(FEATURES[i], pos, size), out)
+    return out
+
+
+def authored_applies(pos, size, pre=""):
+    q = lambda k: A("p", f"{pre}la_{k}")
+    fa, fb = pick_feature(q("fa"), pos, size), pick_feature(q("fb"), pos, size)
+    comb = q("comb")
+    val = Ite(Lt(comb, L(0.5)), Times(fa, fb), Ite(Lt(comb, L(1.5)), Plus(fa, fb), Minus(fa, fb)))
+    return And(NN(q("on")), Gt(q("on"), L(0.5)),
+               Let("av", val, Ite(Lt(q("cmp"), L(0.5)), Lt(V("av"), q("thr")), Gt(V("av"), q("thr")))))
+
+
+def authored_prediction(pos, size, pre=""):
+    h = HIST[pos]
+    q = lambda c: A("p", f"{pre}la_{pos}{c}")
+    lin = Plus(A("b", pos), *[Times(q(c), A("b", h[j])) for j, c in enumerate(COEFS[:3])],
+               q("3"), Times(q("4"), A("b", f"acc_{pos}")))
+    return fold(lin, size)
+
+
 def expert_prediction(pos, size, pre):
     """One expert's prediction: its first context layer that applies, else among its base components the one
     whose last error on this body and axis was lowest (ties: the simpler). Base predictions are read from the
@@ -226,7 +266,7 @@ def expert_prediction(pos, size, pre):
     pred = Let("best", best, pick)
     for i in reversed(range(N_SLOTS)):
         pred = Ite(layer_applies(i, pos, pre), layer_prediction(i, pos, size, pre), pred)
-    return pred
+    return Ite(authored_applies(pos, size, pre), authored_prediction(pos, size, pre), pred)
 
 
 def axis_effects(pos, disp, prev, size):
@@ -303,7 +343,7 @@ for i, c in enumerate(candidates, start=1):
     world_nodes.append({"local_id": i, "type": "PredictorCandidate", "attrs": c})
     world_edges.append({"src": {"role": "agent_root"}, "type": "has_predictor_candidate", "tgt": {"local": i},
                         "attrs": {}})
-world = {"id": "prediction_world", "version": "1.8.0", "depends_on": [],
+world = {"id": "prediction_world", "version": "1.9.0", "depends_on": [],
          "description": "The prediction world's predictor (see scripts/gen_prediction_world.py): the held Predictor "
                         "model, the candidate models in MDL order, and the prediction rule. This is the part of "
                         "the agent its self-improvement loop changes.",
@@ -351,6 +391,16 @@ MASTER_LAST = {
     "where": And(Eq(A("cur", "current_level"), A("cur", "max_level")), MASTERED,
                  Not(Eq(A("cur", "mastered_through"), A("cur", "max_level")))),
     "effects": [["set_attr", "cur", "mastered_through", T(A("cur", "max_level"))]],
+}
+MOVE_ON = {
+    "name": "pw_move_on_from_level",
+    "comment": "1.9.0: an escalating curriculum (level_patience > 0) does not wait forever: after level_patience "
+               "episodes at a level not mastered, the agent moves on to the next one (its concern there stays).",
+    "match": CUR,
+    "where": And(Gt(A("pol", "level_patience"), L(0)), Lt(A("cur", "current_level"), A("cur", "max_level")),
+                 Gte(N_LVL, A("pol", "level_patience")), Not(MASTERED)),
+    "effects": [["set_attr", "cur", "moved_on", T(Plus(Ite(NN(A("cur", "moved_on")), A("cur", "moved_on"), L(0)), L(1)))],
+                ["set_attr", "cur", "current_level", T(Plus(A("cur", "current_level"), L(1)))]],
 }
 FILE = {
     "name": "pw_file_surprise_concern",
@@ -608,7 +658,8 @@ FREE1 = Eq(A("p", "x1_mask"), L(0))
 FITS_SPENT = And(Eq(A("sc", "status"), L("exhausted")), Eq(A("sc", "fit_requested"), L(1)),
                  Exists(Nb("sc", "has_residual_fit"), "rf2", Eq(A("rf2", "status"), L("done"))),
                  Not(Exists(Nb("sc", "has_residual_fit"), "rf2", Exists(Nb(V("rf2"), "has_cell"), "c2", And(
-                     Not(Eq(A("c2", "kind"), L("specialist"))), Not(Eq(A("c2", "used"), L(1))),
+                     Not(Eq(A("c2", "kind"), L("specialist"))), Not(Eq(A("c2", "kind"), L("author_atom"))),
+                     Not(Eq(A("c2", "used"), L(1))),
                      Gt(A("c2", "fit_gain"), L(0.0)))))))
 X_TARGET = lambda e: FREE1 if e == 1 else And(Not(FREE1), Eq(A("p", f"x{e}_mask"), L(0)))
 ADD_EXPERT = {
@@ -690,6 +741,35 @@ NEW_NAME = {"type": "StringConcat", "parts": [
     Ite(Eq(A("cl", "mode"), L("pooled")), L(" (pooled)"), L(""))]}
 
 
+AUTH_SIG = {"type": "StringConcat", "parts": [A("p", "sig"), L("+atom("), A("cl", "atom"), L(")"), MODE_TAG]}
+ADD_AUTHORED_ATOM = {
+    "name": "pw_author_predicate_layer",
+    "comment": "1.9.0: from a ResidualFit's author_atom cell -- a predicate over its observable features that the "
+               "agent's own residual search found, and a layer fitted on its frames -- the agent authors its "
+               "current model with that predicate layer (replacing any it held), and reopens the concern.",
+    "match": CONCERN_MATCH + [["sc", "has_residual_fit", "rf"], ["rf", "has_cell", "cl"]],
+    "where": And(Eq(A("rf", "status"), L("done")), Eq(A("rf", "control_sig"), A("p", "sig")),
+                 Eq(A("rf", "control_mask"), A("p", "mask")), Eq(A("sc", "kind"), L("prediction_surprise")),
+                 Eq(A("sc", "level"), A("cur", "current_level")), Eq(A("pol", "atom_authoring"), L(1)),
+                 Eq(A("cl", "kind"), L("author_atom")), Not(Eq(A("cl", "used"), L(1))), Gt(A("cl", "fit_gain"), L(0.0)),
+                 # a last resort, like experts: only once the named-atom fits are spent
+                 FITS_SPENT,
+                 Not(Exists(Nodes("PredictorCandidate"), "q", SAME(A("q", "mask"), A("q", "sig"),
+                                                                   A("p", "mask"), AUTH_SIG)))),
+    "effects": [
+        ["add_node", "nk", "PredictorCandidate", {
+            "form": "layered", "reflect": -1, "authored": 1, "authored_level": T(A("sc", "level")),
+            "authored_by": "author_atom", **{key: T(A("p", key)) for key in SLOT_KEYS},
+            "mask": T(A("p", "mask")), "sig": T(AUTH_SIG), "la_on": 1,
+            **{k: T(A("cl", k)) for k in AUTH_KEYS if k != "la_on"},
+            "rank": T(Plus(L(N_BASE), Count(Nodes("PredictorCandidate")))),
+            "name": T({"type": "StringConcat", "parts": [A("p", "model"), L(" + atom("), A("cl", "atom"), L(")"),
+                                                          Ite(Eq(A("cl", "mode"), L("pooled")), L(" (pooled)"), L(""))]})}],
+        ["add_edge", "agent", "has_predictor_candidate", "nk"],
+        ["add_edge", "sc", "authored", "nk"],
+        ["set_attr", "cl", "used", 1],
+        ["set_attr", "sc", "status", "open"]],
+}
 def is_target(i):
     return Or(And(IS_NEW, Eq(A("p", "n_layers"), L(i))), And(IS_REFIT, Eq(A("p", f"l{i}_bit"), A("cl", "ctx_bit"))))
 
@@ -917,7 +997,7 @@ loop_nodes = [
         "name": "prediction_policy", "self_improvement": 1, "surprise_floor": 0.15, "window": 3,
         "min_gain": 0.2, "min_abs_gain": 0.05, "retention_weight": 1.0, "authoring": 1,
         "mastery_window": 5, "mastery_z": 1.645, "meta_search": 1,
-        "meta_min_trials": 8, "meta_min_yield": 0.15, "experts": 1,
+        "meta_min_trials": 8, "meta_min_yield": 0.15, "experts": 1, "atom_authoring": 1, "level_patience": 0,
         "meta_proposals": 0, "experiment_cost": 0.001, "meta_min_net": 0.002,
         "skip_last_resort": 0, "meta_round": 0, "meta_max_rounds": 3,
         "meta_judge_active": "sign", "meta_calibrate": 0, "meta_max_level_loss": 0.05,
@@ -928,7 +1008,7 @@ loop_nodes = [
 loop_edges = [{"src": {"role": "agent_root"}, "type": "has_prediction_curriculum", "tgt": {"local": 0}, "attrs": {}},
               {"src": {"role": "agent_root"}, "type": "has_prediction_policy", "tgt": {"local": 1}, "attrs": {}}]
 OPERATOR_KINDS = ("base", "composition", "residual_fit", "residual_refit", "residual_refit_all", "prune_component",
-                  "drop_layer", "add_expert")
+                  "drop_layer", "add_expert", "author_atom")
 WORLD_KINDS = ("box", "open")
 for j, (wk, kind) in enumerate(((wk, kind) for wk in WORLD_KINDS for kind in OPERATOR_KINDS), start=2):
     loop_nodes.append({"local_id": j, "type": "PredictionOperatorStat",
@@ -937,9 +1017,9 @@ for j, (wk, kind) in enumerate(((wk, kind) for wk in WORLD_KINDS for kind in OPE
     loop_edges.append({"src": {"role": "agent_root"}, "type": "has_operator_stat", "tgt": {"local": j}, "attrs": {}})
 # no depends_on: the loop reads the predictor's nodes at run time, and a dependency
 # would freeze the predictor seed by closure (it is the part the agent changes)
-loop = {"id": "prediction_self_improvement", "version": "1.8.0", "depends_on": [],
+loop = {"id": "prediction_self_improvement", "version": "1.9.0", "depends_on": [],
         "description": __doc__, "nodes": loop_nodes, "edges": loop_edges, "productions": [],
-        "rules": [ADVANCE, MASTER_LAST, FILE, PROPOSE, EXHAUSTED, AUTHOR, REQUEST_FIT, AUTHOR_LAYER, PRUNE_COMPONENT, DROP_LAYER, ADD_EXPERT, ADD_SPECIALIST, JUDGE, ADOPT, COUNT_TRIAL, COUNT_ENABLED, COUNT_ADOPT,
+        "rules": [ADVANCE, MASTER_LAST, MOVE_ON, FILE, PROPOSE, EXHAUSTED, AUTHOR, REQUEST_FIT, AUTHOR_LAYER, PRUNE_COMPONENT, DROP_LAYER, ADD_EXPERT, ADD_SPECIALIST, ADD_AUTHORED_ATOM, JUDGE, ADOPT, COUNT_TRIAL, COUNT_ENABLED, COUNT_ADOPT,
                   META_PROPOSE, META_JUDGE, META_SELECT_JUDGE, *META_ADOPT, META_CLOSE_ROUND,
                   SELECT_PRACTICE]}
 

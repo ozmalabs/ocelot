@@ -168,7 +168,8 @@ def run_episode(agent, seed: int) -> dict:
 # the Predictor attributes that define a model (mirrors scripts/gen_prediction_world.py SLOT_KEYS)
 N_SLOTS = 2
 _LAYER_KEYS = [f"l{i}_bit" for i in range(N_SLOTS)] + [
-    f"l{i}_{ax}{c}" for i in range(N_SLOTS) for ax in "xy" for c in "01234"]
+    f"l{i}_{ax}{c}" for i in range(N_SLOTS) for ax in "xy" for c in "01234"] + [
+    "la_on", "la_fa", "la_fb", "la_comb", "la_cmp", "la_thr"] + [f"la_{ax}{c}" for ax in "xy" for c in "01234"]
 N_EXPERTS = 2   # (1.5.0) mirrors the generator: expert e's model under the prefix x<e>_
 MODEL_KEYS = ["mask", "n_layers", "ctx_bits", "sig"] + _LAYER_KEYS + [
     f"x{e}_{k}" for e in range(1, N_EXPERTS + 1) for k in ["mask", "n_layers", "ctx_bits"] + _LAYER_KEYS]
@@ -274,6 +275,91 @@ def _rows(S, model, level, n):
     return rows, len(eps)
 
 
+FEATURES = ("dx", "pdx", "ppdx", "acc", "x", "wx", "adx", "aacc", "one")   # mirrors the generator
+PRED_MIN_ROWS = 16
+PRED_MAX_SHARE = 0.6
+PRED_TOP = 3
+
+
+def _features(r):
+    h = r["hist"]
+    return (h[0], h[1], h[2], h[3], r["pos"], r["size"] - 1.0 - r["pos"], abs(h[0]), abs(h[3]), 1.0)
+
+
+def _search_predicates(rows, others):
+    """Predicates comb(F[a], F[b]) cmp thr (comb: 0 mul, 1 add, 2 sub; cmp: 0 <, 1 >; thr: quantiles of the
+    value on this level's frames, and 0) whose frames (both axes) number at least PRED_MIN_ROWS and at most
+    PRED_MAX_SHARE of the level's; each fitted per axis on the level alone and pooled with the levels below;
+    the PRED_TOP by in-sample gain on the level's frames, per mode."""
+    import numpy as np
+    if not rows:
+        return []
+    F = np.array([_features(r) for r in rows])
+    Fo = np.array([_features(r) for r in others]) if others else np.zeros((0, len(FEATURES)))
+    ax = np.array([r["axis"] for r in rows])
+    axo = np.array([r["axis"] for r in others]) if others else np.array([])
+    err = np.array([r["err"] for r in rows])
+    X = np.array([r["hist"][:3] + [1.0, r["hist"][3]] for r in rows])
+    Y = np.array([r["next"] - r["pos"] for r in rows])
+    pos = np.array([r["pos"] for r in rows])
+    size = np.array([r["size"] for r in rows])
+    nxt = np.array([r["next"] for r in rows])
+    Xo = np.array([r["hist"][:3] + [1.0, r["hist"][3]] for r in others]) if others else np.zeros((0, 5))
+    Yo = np.array([r["next"] - r["pos"] for r in others]) if others else np.zeros(0)
+    n = len(rows)
+    combos = {}
+    for a in range(len(FEATURES)):
+        for b in range(a, len(FEATURES)):
+            for comb in (0, 1, 2):
+                if comb != 2 and b < a:
+                    continue
+                v = (F[:, a] * F[:, b], F[:, a] + F[:, b], F[:, a] - F[:, b])[comb]
+                vo = (Fo[:, a] * Fo[:, b], Fo[:, a] + Fo[:, b], Fo[:, a] - Fo[:, b])[comb] if len(Fo) else Fo[:, 0]
+                thrs = sorted({0.0, *[round(float(q), 4) for q in np.quantile(v, [0.1, 0.25, 0.5, 0.75, 0.9])]})
+                for thr in thrs:
+                    for cmp in (0, 1):
+                        sel = v < thr if cmp == 0 else v > thr
+                        k = int(sel.sum())
+                        if k < PRED_MIN_ROWS or k > PRED_MAX_SHARE * n:
+                            continue
+                        key = tuple(np.flatnonzero(sel)[:50]) + (k,)
+                        if key in combos:
+                            continue
+                        combos[key] = (a, b, comb, cmp, thr, sel, (vo < thr if cmp == 0 else vo > thr) if len(vo) else None)
+    cells = {"level": [], "pooled": []}
+    for a, b, comb, cmp, thr, sel, selo in combos.values():
+        for mode in ("level", "pooled"):
+            cell = {"kind": "author_atom", "mode": mode, "atom": f"{FEATURES[a]}{'*+-'[comb]}{FEATURES[b]}{'<>'[cmp]}{thr:g}",
+                    "la_fa": a, "la_fb": b, "la_comb": comb, "la_cmp": cmp, "la_thr": thr, "ctx_bit": 0,
+                    "n": int(sel.sum()), "residual_sum": 0.0, "fit_sum": 0.0}
+            ok = True
+            for axn in "xy":
+                m = sel & (ax == axn)
+                if m.sum() < MIN_FIT_ROWS:
+                    ok = False
+                    break
+                Xa, Ya = X[m], Y[m]
+                if mode == "pooled" and selo is not None and len(selo):
+                    mo = selo & (axo == axn)
+                    Xa, Ya = np.vstack([Xa, Xo[mo]]), np.concatenate([Ya, Yo[mo]])
+                coef = np.linalg.lstsq(Xa, Ya, rcond=None)[0]
+                raw = pos[m] + X[m] @ coef
+                e = size[m] - 1.0
+                raw = np.where(raw < 0, -raw, np.where(raw > e, 2 * e - raw, raw))
+                cell["residual_sum"] += float(err[m].sum())
+                cell["fit_sum"] += float(np.abs(raw - nxt[m]).sum())
+                for j, c in enumerate(coef):
+                    cell[f"la_{axn}{j}"] = round(float(c), 6)
+            if not ok:
+                continue
+            cell["residual_sum"] = round(cell["residual_sum"], 6)
+            cell["fit_sum"] = round(cell["fit_sum"], 6)
+            cell["fit_gain"] = round(cell["residual_sum"] - cell["fit_sum"], 6)
+            if cell["fit_gain"] > 0:
+                cells[mode].append(cell)
+    return [c for mode in cells for c in sorted(cells[mode], key=lambda c: -c["fit_gain"])[:PRED_TOP]]
+
+
 def run_residual_fits(agent, window: int | None = None) -> list:
     """Run every requested ResidualFit: replay the agent's recorded episodes at
     the level with its current model and write ResidualCells, one per context
@@ -365,6 +451,14 @@ def run_residual_fits(agent, window: int | None = None) -> list:
             node = S.add_node("ResidualCell", cell)
             I.add_edge_unchecked(rf, "has_cell", node)
             out.append(cell)
+        # (1.9.0) authored predicates: search comb(F[a], F[b]) < or > thr over the observable features for the
+        # predicates whose frames hold the most of this level's residual and where a fitted layer helps most;
+        # the best few become ResidualCells of kind 'author_atom' (which, if any, to author is the graph's)
+        if int(pol.get("atom_authoring") or 0) == 1:
+            for cell in _search_predicates(rows, others):
+                node = S.add_node("ResidualCell", cell)
+                I.add_edge_unchecked(rf, "has_cell", node)
+                out.append(cell)
         # (1.3.0) a joint refit: every layer the model holds refitted at once, on the frames each predicts
         if len(slot_bits) > 1:
             for mode in ("level", "pooled"):
