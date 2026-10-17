@@ -299,3 +299,81 @@ The part that passed is the shallow one. The agent improving its way of improvin
 - **Separate the safety question from the saving.** For example, skip an operator only when no other operator has ever built on it *in a world of the same kind*.
 - **More practice and more rounds for self-proposed policy.** Several rounds, each judged on practice levels never reused. The current single round on 6 levels is too thin to learn from.
 - **Stop using one sign test per hypothesis per draw set.** Use a pooled, pre-declared sequential analysis across draw sets. The draw-to-draw variance seen here is larger than most of the effects being tested.
+
+
+---
+
+# v5: per-kind record, rounds of self-proposed policy, sequential analysis (loop 1.6.0)
+
+The protocol is `PREDICTION_WORLD_HELDOUT_PROTOCOL_V5_20261010.md`, frozen at `26cd9cf8a8b8ed66dadb11f65241ff9e9fd9e0d8`. There were two six-draw sets (A: draws 0–5, B: draws 6–11) × 8 levels × 4 seed bases, giving 384 pairs and 1,920 runs, plus the three-round practice phase. Nothing was changed after the commit.
+
+To reproduce:
+
+```
+prediction_world_heldout_v4.py <hash> 0 6
+prediction_world_heldout_v4.py <hash> 6 12 <meta.json>
+prediction_world_sequential_analysis.py <A> <B>
+```
+
+## The agent's own policy rounds (phase 1)
+
+On every seed base the agent adopted a change in each of its 3 rounds. Each change was supported by its weighed net and by winning on more fresh practice levels than it lost.
+
+| seed base | adopted policy changes, in order | final policy |
+|---|---|---|
+| 1000 | `meta_min_yield` ×2; `meta_min_trials` ×0.5; `min_gain` ×0.5 | yield 0.3, trials 4, min_gain 0.1 |
+| 2024 | `meta_min_trials` ×0.5; `retention_weight` ×0.5; `retention_weight` ×2 | net: trials 4 |
+| 5000 | `meta_min_trials` ×0.5; `meta_min_yield` ×2; `meta_min_yield` ×2 | yield 0.6, trials 4 |
+| 9000 | `min_gain` ×0.5; `meta_min_yield` ×2; `meta_min_trials` ×0.5 | yield 0.3, trials 4, min_gain 0.1 |
+
+The common direction is clear: skip low-yield operators sooner, and on a stricter yield bar.
+
+## Pre-registered verdicts (Pocock, p < 0.0294 per look)
+
+| hypothesis | look 1 (192 pairs) | look 2 (384 pairs) | verdict |
+|---|---|---|---|
+| H3 trained beats newborn (final surprise) | 107–77 (p = 0.032) | 194–170 (p = 0.23) | **not supported** |
+| H4 per-kind record cheaper and safe | experiments 74–0; surprise identical in all 192; 0 big losses | 168–0; surprise 4–1, mean −0.0003; 0 big losses | **supported at look 1** |
+| H5 its own policy rounds pay (weighed cost) | 76–0 | 168–5 | **supported at look 1** |
+| H6 experts help (final surprise; harm ≤ +0.01) | 12–0; harm +0.001 | 24–0; harm +0.002 | **supported at look 1** |
+
+**Per set:**
+- H4 and H6 hold in both sets on their own: H4 74–0 and 94–0; H6 12–0 and 12–0.
+- H3 splits again: A 107–77, B 87–93.
+
+## What is behind each verdict (post-hoc analysis, not pre-registered)
+
+**H4: real and safe.**
+- The per-kind record cuts experiments by 4–6 per run, about 25–26% of the reset arm's.
+- No pair is worse by more than 0.1, and final surprise is unchanged.
+- The v3 trade between cheap and safe is gone at this sample size.
+
+**H6: real, small in aggregate, large where it acts.**
+- Experts act in 24 of 384 pairs and help in all of them. Typical improvements: 0.24 → 0.15, 0.23 → 0.14, and on one level (171) 0.56 → 0.16 on all 4 seed bases.
+- They add a little retention harm (mean +0.002), inside the pre-declared margin.
+
+**H5: supported by the rule, but the benefit is mostly cheaper search, and it has a tail.**
+- The adopted policies cut experiments by 7–9 per run (about half).
+- **Set A:** final surprise improved slightly (mean −0.0007), with no pair worse by more than 0.05.
+- **Set B:** 5 pairs were much worse, on levels 164 (all 4 seed bases) and 168.
+  - On those, the stricter policy did not adopt the fix the default policy found: final surprise about 0.35 → 1.0–1.1.
+  - The default policy's fix itself cost 0.31–0.39 in retention harm.
+  - So set B's mean weighed cost improved by only 0.0006, and its mean final surprise got worse by 0.018.
+- The pre-declared test counts pairs, not magnitudes. It passes with many small savings against a few large losses. That is the same pattern as v3's single bad skip, now produced by the agent's own policy choices.
+
+**H3: not supported.** After 384 pairs, trained vs newborn is 194–170. Prior object-level self-improvement leaves the agent more often ahead than behind, but not reliably.
+
+## Where the line stands
+
+**Pre-registered and replicated across draw sets:**
+1. The loop beats ablations that cannot change themselves (v1, v2).
+2. The agent's own record of what pays makes its search much cheaper at no loss of quality, now safely: per kind of world, with credit for what operators enable (v3 and v5 H4).
+3. Scope-confined experts improve the levels where they act, at a small retention cost (v5 H6).
+4. Over three rounds, on fresh practice levels, the agent's own changes to its search policy pay on the pre-declared weighed cost (v5 H5). Mostly they make the search cheaper, at the cost of occasional large misses on hard levels.
+
+**Not established:**
+- That an experienced agent beats a newborn on new physics (H3).
+- That the agent's policy changes improve quality rather than cost. They don't on average.
+- Open-ended recursive self-improvement. Every operator, grammar, partition and judge is human-written and frozen. What the agent changes at the meta level is a few parameters, chosen from a human-written grammar of changes.
+
+**If this continues, the evident next step** is for the practice judge to weigh tail risk, not just mean net and level counts. For example, a policy change must not lose more than X on any practice level. That is exactly the failure v5 set B shows, and the agent's own judge did not see it. Beyond that, the remaining gap to the original goal is the agent authoring its own operators and judges rather than choosing among mine.
