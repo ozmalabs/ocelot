@@ -377,3 +377,64 @@ The common direction is clear: skip low-yield operators sooner, and on a stricte
 - Open-ended recursive self-improvement. Every operator, grammar, partition and judge is human-written and frozen. What the agent changes at the meta level is a few parameters, chosen from a human-written grammar of changes.
 
 **If this continues, the evident next step** is for the practice judge to weigh tail risk, not just mean net and level counts. For example, a policy change must not lose more than X on any practice level. That is exactly the failure v5 set B shows, and the agent's own judge did not see it. Beyond that, the remaining gap to the original goal is the agent authoring its own operators and judges rather than choosing among mine.
+
+
+---
+
+# v6: the agent selects its own judge (loop 1.7.0)
+
+The protocol is `PREDICTION_WORLD_HELDOUT_PROTOCOL_V6_20261010.md`, frozen at `f610f3312a38461eeeb7ea181c039740444501da`. There were two six-draw sets, giving 384 pairs × 3 arms, plus two practice phases. Nothing was changed after the commit. The analysis is `prediction_world_sequential_analysis_v6.py <A> <B>`.
+
+## Practice phase
+
+**The selected judge.** On all four seed bases the agent selected `tail`, but only on a tie.
+- On each base, the best supported round-0 proposal was the same under all three judges. Its realised P2 net was the same for each: 0.057, 0.021, 0.032 and −0.001.
+- The tie rule chose the stricter judge.
+
+**What it adopted.** Under `tail` it adopted exactly the changes the fixed `sign` judge adopted. These are also v5's changes, since the curriculum and the practice seeds are the same:
+- `meta_min_trials` ×0.5 everywhere;
+- `meta_min_yield` ×2 on three bases;
+- `min_gain` ×0.5 on two.
+
+No practice level showed a single-level loss above 0.05 for any supported proposal, so the tail limit never bound.
+
+## Pre-registered verdicts
+
+| hypothesis | look 1 (192) | look 2 (384) | verdict |
+|---|---|---|---|
+| H5t self-judged policy pays, without a tail | sign 49–4 (p < 10⁻¹⁰); mean −0.0018 (p = 0.51); big losses 2 | sign 109–4; mean −0.0035 (p = 6·10⁻⁵); big losses 2 (≤ 3 allowed) | **supported at look 2** |
+| H8 self-selected judge beats the fixed one | identical in all 192 | identical in all 384 | **not supported** |
+
+**Per set (H5t):** A 49–4, mean −0.0018, 2 big losses; B 60–0, mean −0.0052, 0 big losses.
+
+## What is behind it (post-hoc analysis)
+
+**H5t: the improvement is the trade the policy makes.** Mean differences, meta − trained:
+
+| component | difference |
+|---|---|
+| experiments | −5.1 per run, about −56% |
+| retention harm | −0.0035 |
+| final surprise | +0.005, slightly worse |
+
+- At the pre-declared price of 0.001 per experiment, the net is a small, reliable gain.
+- The two big losses are one level (draw 4, level 133) on two seed bases. The stricter policy declined a fix the default made, which cost the default 0.30–0.41 in retention harm. Final surprise there went 0.68–0.77 → 1.32–1.45.
+- These are the v5 tail, now inside the 1% allowance.
+
+**H8: the judge choice was real but inconsequential.**
+- The agent's own calibration could not tell the judges apart: none of the proposals it would adopt had a heavy single-level loss on practice.
+- On these practice draws, no judge choice could have changed anything. The tail v5 saw on held-out level 164, and v6 on level 133, does not appear on the agent's practice levels.
+
+## Where the line stands
+
+**Pre-registered, replicated, and now magnitude-tested:**
+- The agent's own operator record makes its search much cheaper at no loss of quality (v3, v5).
+- Experts help where they act (v5).
+- Its own rounds of policy change pay on the declared weighed cost, by sign and by mean, with the tail inside the declared allowance (v5 sign test; v6 sign and mean).
+
+**Not shown:**
+- That choosing its own judge matters (v6 H8). The agent did choose, from its own out-of-sample evidence. But its practice never contained the kind of case the choice would decide.
+- That the experienced agent beats a newborn (v3–v5).
+- Open-ended recursive self-improvement. The agent now adapts its search record, its search policy, and its judge, each from its own evidence and each validated on unseen worlds. But it does so by choosing among human-written options, and its practice distribution is too narrow to expose the rare failures the held-out levels contain.
+
+**The concrete gap this exposes:** practice levels that resemble the worlds where the agent's choices fail. For example, the agent could search its own practice family for levels where proposals disagree most. That would be the agent shaping its own curriculum for self-evaluation.
