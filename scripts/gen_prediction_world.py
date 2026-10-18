@@ -102,6 +102,9 @@ change how it judges itself)
     own adoption history; the aperture opens until the combined evidence
     settles and its sign is the verdict; accepted dips become concerns; per
     level trust weights learned from whether forecasts held.
+  * 1.11.0: judge_robust -- rehearsal views (the candidate on fresh episodes of
+    every level met) at aperture 1, and a favourable verdict commits only if it
+    still holds one aperture wider.
   * pw_judge_predictor_edit: the replay's variant surprise against its control
     surprise, on the agent's own recorded episodes at the level AND on its
     recorded episodes of the levels it has already mastered (retention):
@@ -348,7 +351,7 @@ for i, c in enumerate(candidates, start=1):
     world_nodes.append({"local_id": i, "type": "PredictorCandidate", "attrs": c})
     world_edges.append({"src": {"role": "agent_root"}, "type": "has_predictor_candidate", "tgt": {"local": i},
                         "attrs": {}})
-world = {"id": "prediction_world", "version": "1.10.0", "depends_on": [],
+world = {"id": "prediction_world", "version": "1.11.0", "depends_on": [],
          "description": "The prediction world's predictor (see scripts/gen_prediction_world.py): the held Predictor "
                         "model, the candidate models in MDL order, and the prediction rule. This is the part of "
                         "the agent its self-improvement loop changes.",
@@ -887,12 +890,22 @@ J_OPEN = {"name": "pw_judge_aperture_open",
           "comment": "1.10.0: a measured trial is first looked at through the narrowest aperture.",
           "match": AP_MATCH, "where": And(AP_READY, Eq(A("exp", "aperture"), L(None))),
           "effects": [["set_attr", "exp", "aperture", 0]]}
+# (1.11.0) look again before you leap: with judge_robust on, a favourable verdict commits only if it still holds
+# one aperture wider (where the rehearsal views -- the candidate on fresh episodes of every level met -- enter); an
+# unfavourable one may settle at once
+VIEWS_NEXT = lambda e: Filter(Nb(e, "has_view"), "jw", Lte(A("jw", "rank"), Plus(A(e, "aperture"), L(1))))
+Z_NEXT = lambda e: Let("zs2", {"type": "Sum", "source": VIEWS_NEXT(e), "var_name": "jw", "value": Times(VSAL("jw"), A("jw", "gain"))},
+                       Let("zq2", {"type": "Sqrt", "arg": {"type": "Sum", "source": VIEWS_NEXT(e), "var_name": "jw",
+                                                           "value": {"type": "Pow", "a": Times(VSAL("jw"), VNOISE("jw")), "b": L(2.0)}}},
+                           Ite(Gt(V("zq2"), L(0.0)), Div(V("zs2"), V("zq2")), L(0.0))))
+CONFIRMED = Or(Not(Eq(A("pol", "judge_robust"), L(1))), Lt(Z_AT("exp"), L(0.0)),
+               Gte(A("exp", "aperture"), A("pol", "judge_max_rank")), Gte(Z_NEXT("exp"), A("pol", "judge_z")))
 J_SETTLE = {"name": "pw_judge_aperture_settle",
             "comment": "1.10.0: at the current aperture the salient evidence is decisive either way: the verdict is "
-                       "its sign.",
+                       "its sign. (1.11.0: a favourable one must hold one aperture wider, under judge_robust.)",
             "match": AP_MATCH,
             "where": And(AP_READY, NN(A("exp", "aperture")),
-                         Gte({"type": "Abs", "arg": Z_AT("exp")}, A("pol", "judge_z"))),
+                         Gte({"type": "Abs", "arg": Z_AT("exp")}, A("pol", "judge_z")), CONFIRMED),
             "effects": [["set_attr", "exp", "weighed_net", T(Z_AT("exp"))],
                         ["set_attr", "exp", "settled_aperture", T(A("exp", "aperture"))],
                         ["set_attr", "exp", "outcome", T(Ite(Gt(Z_AT("exp"), L(0.0)), L("supported"), L("refuted")))]]}
@@ -901,7 +914,8 @@ J_DEEPEN = {"name": "pw_judge_aperture_deepen",
                        "stretches, the trend over the agent's own history).",
             "match": AP_MATCH,
             "where": And(AP_READY, NN(A("exp", "aperture")), Lt(A("exp", "aperture"), A("pol", "judge_max_rank")),
-                         Lt({"type": "Abs", "arg": Z_AT("exp")}, A("pol", "judge_z"))),
+                         Or(Lt({"type": "Abs", "arg": Z_AT("exp")}, A("pol", "judge_z")),
+                            And(Gte(Z_AT("exp"), A("pol", "judge_z")), Not(CONFIRMED)))),
             "effects": [["set_attr", "exp", "aperture", T(Plus(A("exp", "aperture"), L(1)))]]}
 J_UNSETTLED = {"name": "pw_judge_aperture_unsettled",
                "comment": "1.10.0: the widest aperture still does not settle: there is no evidence the change "
@@ -1127,7 +1141,7 @@ loop_nodes = [
         "meta_judge_active": "sign", "meta_calibrate": 0, "meta_max_level_loss": 0.05,
         "practice_shaping": 0, "practice_k": 8,
         "judge_mode": "threshold", "judge_z": 1.645, "judge_zcap": 4.0, "judge_noise_floor": 0.005,
-        "judge_max_rank": 3, "judge_dip_z": 1.645, "judge_trust_step": 0.15,
+        "judge_max_rank": 3, "judge_dip_z": 1.645, "judge_trust_step": 0.15, "judge_robust": 0,
         "description": "The agent's own bar: mean surprise per body-frame (cells) at or under the floor masters a "
                        "level; a model must cut it by 20%, and by 0.05 cells net of any surprise it adds on the "
                        "levels already mastered, to be adopted."}}]
@@ -1143,7 +1157,7 @@ for j, (wk, kind) in enumerate(((wk, kind) for wk in WORLD_KINDS for kind in OPE
     loop_edges.append({"src": {"role": "agent_root"}, "type": "has_operator_stat", "tgt": {"local": j}, "attrs": {}})
 # no depends_on: the loop reads the predictor's nodes at run time, and a dependency
 # would freeze the predictor seed by closure (it is the part the agent changes)
-loop = {"id": "prediction_self_improvement", "version": "1.10.0", "depends_on": [],
+loop = {"id": "prediction_self_improvement", "version": "1.11.0", "depends_on": [],
         "description": __doc__, "nodes": loop_nodes, "edges": loop_edges, "productions": [],
         "rules": [ADVANCE, MASTER_LAST, MOVE_ON, FILE, PROPOSE, EXHAUSTED, AUTHOR, REQUEST_FIT, AUTHOR_LAYER, PRUNE_COMPONENT, DROP_LAYER, ADD_EXPERT, ADD_SPECIALIST, ADD_AUTHORED_ATOM, JUDGE, J_OPEN, J_SETTLE, J_DEEPEN, J_UNSETTLED, ADOPT, COUNT_TRIAL, COUNT_ENABLED, COUNT_ADOPT, J_RECORD, J_DIP, J_TRUST,
                   META_PROPOSE, META_JUDGE, META_SELECT_JUDGE, *META_ADOPT, META_CLOSE_ROUND,

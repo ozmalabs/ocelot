@@ -535,6 +535,33 @@ def test_aperture_judge_widens_until_the_evidence_settles():
     assert (at["outcome"], at.get("unsettled")) == ("refuted", 1)
 
 
+def test_robust_judge_confirms_one_aperture_wider_before_committing():
+    """1.11.0: with judge_robust on, a change that looks good at aperture 0 but
+    loses on fresh rehearsal episodes (aperture 1) is refuted; without it,
+    the narrow verdict commits."""
+    def judged(robust):
+        a = _agent(0)
+        S, I = a.s, a.inner
+        pol = S.nodes("PredictionPolicy")[0]
+        I.set_attr(pol, "judge_mode", "aperture")
+        I.set_attr(pol, "judge_robust", robust)
+        _set_level(a, 3)
+        sc = S.add_node("SelfConcern", {"kind": "prediction_surprise", "status": "open", "level": 3})
+        I.add_edge_unchecked(a.agent, "has_self_concern", sc)
+        x = S.add_node("Experiment", {"game": "prediction_world", "status": "done", "level": 3})
+        I.add_edge_unchecked(sc, "tested_by", x)
+        for lv, kind, rank, gain, noise in ((3, "now", 0, 0.1, 0.01), (2, "rehearsal", 1, -5.0, 0.5)):
+            v = S.add_node("JudgeView", {"level": lv, "rank": rank, "gain": gain, "noise": noise, "kind": kind,
+                                         "window": "recent" if kind == "now" else "fresh", "control": 0.2,
+                                         "variant": 0.2 - gain, "is_target": 1 if lv == 3 else 0})
+            I.add_edge_unchecked(x, "has_view", v)
+        I.run_rules()
+        return S.node(x)["attrs"]
+    assert judged(0)["outcome"] == "supported"
+    at = judged(1)
+    assert at["outcome"] == "refuted" and at["settled_aperture"] == 1
+
+
 def test_loop_seed_frozen_and_protected():
     from substrate.boot_all import _FROZEN_SEED_IDS
     assert "prediction_self_improvement" in _FROZEN_SEED_IDS

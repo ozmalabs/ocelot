@@ -194,6 +194,10 @@ def replay(trace, model, collect=None) -> float:
     return mean
 
 
+REHEARSALS = 3
+REHEARSAL_SEED = 3 * 10**8     # a seed range no evaluation, practice or escalation uses
+
+
 def _episode_pairs(S, da, lv, n):
     eps = sorted((e for e in S.nodes("PredictionEpisode") if S.node(e)["attrs"].get("level") == lv),
                  key=lambda e: S.node(e)["attrs"]["seq"])[-n:]
@@ -221,6 +225,8 @@ def _write_views(agent, exp, da, target, k):
     S, I = agent.s, agent.inner
     levels = sorted({S.node(e)["attrs"]["level"] for e in S.nodes("PredictionEpisode")})
     change_seq = S.node(S.nodes("PredictionCurriculum")[0])["attrs"].get("last_change_seq")
+    robust = S.node(S.nodes("PredictionPolicy")[0])["attrs"].get("judge_robust") == 1
+    n_exp = len(S.nodes("Experiment"))
     axes = {S.node(x)["attrs"]["level"] for x in S.nodes("JudgeAxis")}
     for lv in levels:
         if lv not in axes:      # structure for the judge's per-level trust weight; its value is the graph's
@@ -245,6 +251,17 @@ def _write_views(agent, exp, da, target, k):
             c_mean = sum(c for c, _ in pairs) / len(pairs)
             views.append({"kind": "now", "window": window, "rank": rank, "gain": g, "noise": se,
                           "n": len(pairs), "control": c_mean, "variant": v_mean, "level_noise": v_se})
+        # (1.11.0) rehearsal: fresh episodes of the level, played by the world (the agent revisiting a level it
+        # has met), so the judge sees the candidate outside its recorded sample; enters at the next aperture
+        if robust and lv in LEVELS:
+            fresh = []
+            for r in range(REHEARSALS):
+                t = simulate(lv, REHEARSAL_SEED + lv * 1000 + (n_exp * REHEARSALS + r) % 997)
+                fresh.append((replay(t, model_of(da, "control_")), replay(t, model_of(da, "candidate_"))))
+            g, se = _stats([c - v for c, v in fresh])
+            views.append({"kind": "rehearsal", "window": "fresh", "rank": 1, "gain": g, "noise": se,
+                          "n": len(fresh), "control": sum(c for c, _ in fresh) / len(fresh),
+                          "variant": sum(v for _, v in fresh) / len(fresh)})
         hist = [v for _s, v in sorted(points.get(lv, []))]
         v_now = sum(v for _, v in recent) / len(recent) if recent else None
         for window, h, rank in (("trend3", 3, 2), ("trend_all", None, 3)):
