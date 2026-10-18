@@ -97,6 +97,11 @@ change how it judges itself)
     < or > thr over observable features, found by its residual search and
     authored by pw_author_predicate_layer as a last resort); an escalating
     curriculum option (level_patience: move on from an unmastered level).
+  * 1.10.0: the aperture judge (judge_mode 'aperture'): salience-weighted,
+    noise-normalised views per level, time scale and trend over the agent's
+    own adoption history; the aperture opens until the combined evidence
+    settles and its sign is the verdict; accepted dips become concerns; per
+    level trust weights learned from whether forecasts held.
   * pw_judge_predictor_edit: the replay's variant surprise against its control
     surprise, on the agent's own recorded episodes at the level AND on its
     recorded episodes of the levels it has already mastered (retention):
@@ -343,7 +348,7 @@ for i, c in enumerate(candidates, start=1):
     world_nodes.append({"local_id": i, "type": "PredictorCandidate", "attrs": c})
     world_edges.append({"src": {"role": "agent_root"}, "type": "has_predictor_candidate", "tgt": {"local": i},
                         "attrs": {}})
-world = {"id": "prediction_world", "version": "1.9.0", "depends_on": [],
+world = {"id": "prediction_world", "version": "1.10.0", "depends_on": [],
          "description": "The prediction world's predictor (see scripts/gen_prediction_world.py): the held Predictor "
                         "model, the candidate models in MDL order, and the prediction rule. This is the part of "
                         "the agent its self-improvement loop changes.",
@@ -458,7 +463,11 @@ UNTRIED_NONSKIP = Filter(UNTRIED, "un", Not(SKIPPED(V("un"))))
 # untried, its candidates are trialled too. (1.6.0: off by default -- the per-kind record and the `enabled`
 # credit are the safety instead)
 VIABLE = lambda c: Or(Not(SKIPPED(c)), And(Eq(A("pol", "skip_last_resort"), L(1)), Eq(Count(UNTRIED_NONSKIP), L(0))))
-UNTRIED_VIABLE = Filter(UNTRIED, "uv", VIABLE(V("uv")))
+# (1.10.0) under the trend judge the agent does not go back to a model it has already moved on from: a trend is
+# a direction, and revisiting would let accepted dips and their concerns cycle between models
+REVISIT = lambda c: Exists(Nodes("Adoption"), "rv", And(Eq(A("rv", "to_mask"), A(c, "mask")), Eq(A("rv", "to_sig"), A(c, "sig"))))
+NO_REVISIT = lambda c: Or(Not(Eq(A("pol", "judge_mode"), L("aperture"))), Not(REVISIT(c)))
+UNTRIED_VIABLE = Filter(UNTRIED, "uv", And(VIABLE(V("uv")), NO_REVISIT(V("uv"))))
 PENDING = Exists(Nb("sc", "tested_by"), "x", Eq(A("x", "outcome"), L(None)))
 CONCERN_MATCH = CUR + [["agent", "has_self_concern", "sc"], ["agent", "has_predictor", "p"]]
 CONCERN_OPEN = And(Eq(A("sc", "kind"), L("prediction_surprise")), Eq(A("sc", "status"), L("open")))
@@ -500,6 +509,7 @@ SUPPORTED_OPEN = Exists(Nb("sc", "tested_by"), "o", And(
 BEST_YIELD = {"type": "MaxOver", "source": UNTRIED_VIABLE, "var_name": "u", "value": YIELD("u"), "default": L(0.0)}
 PROPOSE["where"] = And(CONCERN_OPEN, Eq(A("pol", "self_improvement"), L(1)), Not(IS_CURRENT(V("k"))),
                        Not(TRIED(V("k"))), VIABLE(V("k")),
+                       NO_REVISIT(V("k")),
                        Or(Not(Eq(A("pol", "meta_search"), L(1))),
                           And(Not(PENDING), Not(SUPPORTED_OPEN), Gte(YIELD("k"), BEST_YIELD))))
 PROPOSE["comment"] += (" 1.4.0: with meta_search on, in batches by the yield of the operator that authored "
@@ -827,6 +837,7 @@ JUDGE = {
                "mastered (retention_weight), must reach min_abs_gain.",
     "match": [["agent", "has_prediction_policy", "pol"], ["sc", "tested_by", "exp"]],
     "where": And(Eq(A("exp", "game"), L("prediction_world")), Eq(A("exp", "status"), L("done")),
+                 Not(Eq(A("pol", "judge_mode"), L("aperture"))),
                  Eq(A("exp", "outcome"), L(None)), NN(A("exp", "control_surprise")),
                  NN(A("exp", "variant_surprise")), NN(A("exp", "retention_harm"))),
     "effects": [["set_attr", "exp", "weighed_net", T(NET)],
@@ -836,6 +847,118 @@ JUDGE = {
                     Gte(NET, A("pol", "min_abs_gain"))),
                     L("supported"), L("refuted")))]],
 }
+# ---------------------------------------------------------------- (1.10.0) the aperture judge
+# The judge as metacognition, not a threshold. Its evidence is every view the mechanical half measured
+# (JudgeView: per level the agent has met, the candidate's gain at two time scales and that level's trend over the
+# agent's own adoption history, each with its own measured noise). For each view:
+#   gain     = the change in surprise it shows (cells; positive = better), with its own measured noise
+#   weight   = trust: Exp(log_weight) of the level's JudgeAxis (learned: how well that level's forecasts have held)
+#   salience = how far a view moves relative to its noise, under that trust -- the salient views dominate both the
+#              combined movement and its significance
+# The aperture opens rank by rank (0: every level the agent has met, recent -- a change to the shared model touches
+# all of them; 1: + their longer stretches; 2: + each level's recent trend; 3: + its whole trend) until the
+# salience-weighted combined significance Z = sum(s*z) / sqrt(sum(s^2)) settles beyond judge_z either way. Its
+# sign is the verdict: the change is supported when, at the aperture where the evidence settles, the salient
+# views together trend upward. Nothing is vetoed by one dimension; a real dip it accepts becomes its own concern.
+VIEWS_AT = lambda e: Filter(Nb(e, "has_view"), "jv", Lte(A("jv", "rank"), A(e, "aperture")))
+FLOOR_N = A("pol", "judge_noise_floor")
+VZ = lambda v: Let("zr", Div(A(v, "gain"), {"type": "Max", "items": [A(v, "noise"), FLOOR_N]}),
+                   {"type": "Max", "items": [{"type": "Min", "items": [V("zr"), A("pol", "judge_zcap")]},
+                                             Minus(L(0.0), A("pol", "judge_zcap"))]})
+AXIS_OF = lambda v: Argmax(Filter(Nodes("JudgeAxis"), "ja", Eq(A("ja", "level"), A(v, "level"))), "ja", L(0))
+# (a view's weight is its level's learned trust only. Weighting a level up by how bad it currently is -- residual
+# salience applied to the VERDICT rather than to attention -- made the judge thrash in development: every fix for
+# the currently-worst level outvoted a larger loss on a currently-good one, whose concern then reversed it)
+VSAL = lambda v: Let("jx", AXIS_OF(v), Ite(NN(V("jx")), {"type": "Exp", "arg": A("jx", "log_weight")}, L(1.0)))
+# the combined evidence is MAGNITUDE weighed by salience, tested against its own combined noise: G = sum(s*gain),
+# SE = sqrt(sum(s^2 * noise^2)), Z = G / SE. A large loss on one level outweighs many small gains elsewhere; noise
+# only decides whether the movement is real (a per-view z-score would let many tiny but consistent gains outvote
+# one large loss)
+VNOISE = lambda v: {"type": "Max", "items": [A(v, "noise"), FLOOR_N]}
+Z_AT = lambda e: Let("zs", {"type": "Sum", "source": VIEWS_AT(e), "var_name": "jv", "value": Times(VSAL("jv"), A("jv", "gain"))},
+                     Let("zq", {"type": "Sqrt", "arg": {"type": "Sum", "source": VIEWS_AT(e), "var_name": "jv",
+                                                        "value": {"type": "Pow", "a": Times(VSAL("jv"), VNOISE("jv")), "b": L(2.0)}}},
+                         Ite(Gt(V("zq"), L(0.0)), Div(V("zs"), V("zq")), L(0.0))))
+AP_MATCH = [["agent", "has_prediction_policy", "pol"], ["sc", "tested_by", "exp"]]
+AP_READY = And(Eq(A("pol", "judge_mode"), L("aperture")), Eq(A("exp", "game"), L("prediction_world")),
+               Eq(A("exp", "status"), L("done")), Eq(A("exp", "outcome"), L(None)),
+               Gt(Count(Nb("exp", "has_view")), L(0)))
+J_OPEN = {"name": "pw_judge_aperture_open",
+          "comment": "1.10.0: a measured trial is first looked at through the narrowest aperture.",
+          "match": AP_MATCH, "where": And(AP_READY, Eq(A("exp", "aperture"), L(None))),
+          "effects": [["set_attr", "exp", "aperture", 0]]}
+J_SETTLE = {"name": "pw_judge_aperture_settle",
+            "comment": "1.10.0: at the current aperture the salient evidence is decisive either way: the verdict is "
+                       "its sign.",
+            "match": AP_MATCH,
+            "where": And(AP_READY, NN(A("exp", "aperture")),
+                         Gte({"type": "Abs", "arg": Z_AT("exp")}, A("pol", "judge_z"))),
+            "effects": [["set_attr", "exp", "weighed_net", T(Z_AT("exp"))],
+                        ["set_attr", "exp", "settled_aperture", T(A("exp", "aperture"))],
+                        ["set_attr", "exp", "outcome", T(Ite(Gt(Z_AT("exp"), L(0.0)), L("supported"), L("refuted")))]]}
+J_DEEPEN = {"name": "pw_judge_aperture_deepen",
+            "comment": "1.10.0: the evidence has not settled: open the aperture one rank (more levels, longer "
+                       "stretches, the trend over the agent's own history).",
+            "match": AP_MATCH,
+            "where": And(AP_READY, NN(A("exp", "aperture")), Lt(A("exp", "aperture"), A("pol", "judge_max_rank")),
+                         Lt({"type": "Abs", "arg": Z_AT("exp")}, A("pol", "judge_z"))),
+            "effects": [["set_attr", "exp", "aperture", T(Plus(A("exp", "aperture"), L(1)))]]}
+J_UNSETTLED = {"name": "pw_judge_aperture_unsettled",
+               "comment": "1.10.0: the widest aperture still does not settle: there is no evidence the change "
+                          "trends upward; it is not adopted.",
+               "match": AP_MATCH,
+               "where": And(AP_READY, Eq(A("exp", "aperture"), A("pol", "judge_max_rank")),
+                            Lt({"type": "Abs", "arg": Z_AT("exp")}, A("pol", "judge_z"))),
+               "effects": [["set_attr", "exp", "weighed_net", T(Z_AT("exp"))], ["set_attr", "exp", "unsettled", 1],
+                           ["set_attr", "exp", "outcome", "refuted"]]}
+NOW_RECENT = lambda v: And(Eq(A(v, "kind"), L("now")), Eq(A(v, "window"), L("recent")))
+J_RECORD = {"name": "pw_judge_record_adoption",
+            "comment": "1.10.0: an adopted change becomes the newest point of every level's history (the trend views "
+                       "read these) and a forecast on that level's axis, checked when the level is next measured.",
+            "match": CUR + [["sc", "tested_by", "exp"], ["exp", "has_view", "v"], ["agent", "has_judge_axis", "ax"]],
+            "where": And(Eq(A("exp", "adopted"), L(1)), NOW_RECENT("v"), Not(Eq(A("v", "recorded"), L(1))),
+                         Eq(A("ax", "level"), A("v", "level"))),
+            "effects": [["add_node", "lp", "LevelPoint", {"level": T(A("v", "level")), "value": T(A("v", "variant")),
+                                                         "seq": T(A("cur", "last_change_seq"))}],
+                        ["add_node", "fc", "LevelForecast", {
+                            "level": T(A("v", "level")), "predicted": T(A("v", "variant")),
+                            "noise": T({"type": "Max", "items": [A("v", "level_noise"), FLOOR_N]}),
+                            "change_seq": T(A("cur", "last_change_seq")), "status": "open"}],
+                        ["add_edge", "ax", "has_forecast", "fc"],
+                        ["set_attr", "v", "recorded", 1]]}
+J_DIP = {"name": "pw_judge_dip_is_a_concern",
+         "comment": "1.10.0: a real dip the judge accepted for the sake of the trend (a level other than the target "
+                    "measurably worse, beyond judge_dip_z) is not vetoed and not ignored: it becomes the agent's own "
+                    "concern on that level, so the trend corrects itself.",
+         "match": CUR + [["sc", "tested_by", "exp"], ["exp", "has_view", "v"]],
+         "where": And(Eq(A("exp", "adopted"), L(1)), NOW_RECENT("v"), Eq(A("v", "is_target"), L(0)),
+                      Not(Eq(A("v", "dip_checked"), L(1))),
+                      # recovering a dip does not itself file dips (no cascade); the next primary change will
+                      Not(Eq(A("sc", "regression"), L(1))),
+                      Lte(VZ("v"), Minus(L(0.0), A("pol", "judge_dip_z"))),
+                      Not(Exists(Nodes("SelfConcern"), "oc", And(Eq(A("oc", "level"), A("v", "level")),
+                                                                Eq(A("oc", "status"), L("open")))))),
+         "effects": [["add_node", "dc", "SelfConcern", {
+                         "kind": "prediction_surprise", "status": "open", "source": "prediction_world",
+                         "regression": 1, "level": T(A("v", "level")), "filed_change_seq": T(A("cur", "last_change_seq")),
+                         "content": T({"type": "StringConcat", "parts": [
+                             L("my change for the trend set level "), {"type": "Str", "value": A("v", "level")},
+                             L(" back")]})}],
+                     ["add_edge", "agent", "has_self_concern", "dc"], ["set_attr", "v", "dip_checked", 1]]}
+LATER_VIEW = Nb("fc", "measured_by")      # the mechanical half links a forecast to the view that next measures it
+J_TRUST = {"name": "pw_judge_learn_view_trust",
+           "comment": "1.10.0: which views to trust is learned: when a level is next measured under the adopted "
+                      "model, its forecast is checked; a forecast that held (within judge_z of the two noises) raises "
+                      "that level's trust weight, one that failed lowers it (log-weight EMA, as frame_weights).",
+           "match": [["agent", "has_prediction_policy", "pol"], ["agent", "has_judge_axis", "ax"], ["ax", "has_forecast", "fc"]],
+           "where": And(Eq(A("fc", "status"), L("open")), Gt(Count(LATER_VIEW), L(0))),
+           "effects": [["set_attr", "fc", "realized", T(A(Argmin(LATER_VIEW, "lv3", A("lv3", "n")), "control"))],
+                       ["set_attr", "fc", "held", T(Ite(Lte({"type": "Abs", "arg": Minus(A("fc", "realized"), A("fc", "predicted"))},
+                                                            Times(A("pol", "judge_z"), Plus(A("fc", "noise"), FLOOR_N))), L(1), L(0)))],
+                       ["set_attr", "ax", "log_weight", T({"type": "Log", "arg": Plus(
+                           Times(Minus(L(1.0), A("pol", "judge_trust_step")), {"type": "Exp", "arg": A("ax", "log_weight")}),
+                           Times(A("pol", "judge_trust_step"), Ite(Eq(A("fc", "held"), L(1)), L(1.0), L(0.1))))})],
+                       ["set_attr", "fc", "status", "checked"]]}
 ADOPT = {
     "name": "pw_adopt_predictor_edit",
     "comment": "Once every trial is judged, the best supported trade is adopted in the graph: the Predictor takes "
@@ -864,6 +987,7 @@ ADOPT = {
             "from_form": T(A("delta", "control_form")), "from_reflect": T(A("delta", "control_reflect")),
             "to_form": T(A("delta", "candidate_form")), "to_reflect": T(A("delta", "candidate_reflect")),
             "from_model": T(A("delta", "control_name")), "to_model": T(A("delta", "candidate_name")),
+            "to_mask": T(A("delta", "candidate_mask")), "to_sig": T(A("delta", "candidate_sig")),
             "level": T(A("exp", "level"))}],
         ["add_edge", "exp", "adopted_as", "ad"]],
 }
@@ -1002,6 +1126,8 @@ loop_nodes = [
         "skip_last_resort": 0, "meta_round": 0, "meta_max_rounds": 3,
         "meta_judge_active": "sign", "meta_calibrate": 0, "meta_max_level_loss": 0.05,
         "practice_shaping": 0, "practice_k": 8,
+        "judge_mode": "threshold", "judge_z": 1.645, "judge_zcap": 4.0, "judge_noise_floor": 0.005,
+        "judge_max_rank": 3, "judge_dip_z": 1.645, "judge_trust_step": 0.15,
         "description": "The agent's own bar: mean surprise per body-frame (cells) at or under the floor masters a "
                        "level; a model must cut it by 20%, and by 0.05 cells net of any surprise it adds on the "
                        "levels already mastered, to be adopted."}}]
@@ -1017,9 +1143,9 @@ for j, (wk, kind) in enumerate(((wk, kind) for wk in WORLD_KINDS for kind in OPE
     loop_edges.append({"src": {"role": "agent_root"}, "type": "has_operator_stat", "tgt": {"local": j}, "attrs": {}})
 # no depends_on: the loop reads the predictor's nodes at run time, and a dependency
 # would freeze the predictor seed by closure (it is the part the agent changes)
-loop = {"id": "prediction_self_improvement", "version": "1.9.0", "depends_on": [],
+loop = {"id": "prediction_self_improvement", "version": "1.10.0", "depends_on": [],
         "description": __doc__, "nodes": loop_nodes, "edges": loop_edges, "productions": [],
-        "rules": [ADVANCE, MASTER_LAST, MOVE_ON, FILE, PROPOSE, EXHAUSTED, AUTHOR, REQUEST_FIT, AUTHOR_LAYER, PRUNE_COMPONENT, DROP_LAYER, ADD_EXPERT, ADD_SPECIALIST, ADD_AUTHORED_ATOM, JUDGE, ADOPT, COUNT_TRIAL, COUNT_ENABLED, COUNT_ADOPT,
+        "rules": [ADVANCE, MASTER_LAST, MOVE_ON, FILE, PROPOSE, EXHAUSTED, AUTHOR, REQUEST_FIT, AUTHOR_LAYER, PRUNE_COMPONENT, DROP_LAYER, ADD_EXPERT, ADD_SPECIALIST, ADD_AUTHORED_ATOM, JUDGE, J_OPEN, J_SETTLE, J_DEEPEN, J_UNSETTLED, ADOPT, COUNT_TRIAL, COUNT_ENABLED, COUNT_ADOPT, J_RECORD, J_DIP, J_TRUST,
                   META_PROPOSE, META_JUDGE, META_SELECT_JUDGE, *META_ADOPT, META_CLOSE_ROUND,
                   SELECT_PRACTICE]}
 

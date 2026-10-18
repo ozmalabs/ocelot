@@ -194,6 +194,86 @@ def replay(trace, model, collect=None) -> float:
     return mean
 
 
+def _episode_pairs(S, da, lv, n):
+    eps = sorted((e for e in S.nodes("PredictionEpisode") if S.node(e)["attrs"].get("level") == lv),
+                 key=lambda e: S.node(e)["attrs"]["seq"])[-n:]
+    out = []
+    for e in eps:
+        t = json.loads(S.node(e)["attrs"]["trace"])
+        out.append((replay(t, model_of(da, "control_")), replay(t, model_of(da, "candidate_"))))
+    return out
+
+
+def _stats(xs):
+    n = len(xs)
+    m = sum(xs) / n
+    sd = (sum((x - m) ** 2 for x in xs) / (n - 1)) ** 0.5 if n > 1 else 0.0
+    return m, sd / (n ** 0.5) if n > 1 else 0.0
+
+
+def _write_views(agent, exp, da, target, k):
+    """(1.10.0) The aperture judge's evidence, measured mechanically: for every level the agent has met, a
+    JudgeView per aperture -- the candidate's gain over its control (control - variant surprise, positive =
+    better) on the level's recent episodes and on a longer stretch of them, and the level's TREND over the
+    agent's own adoption history (its recorded LevelPoints) with the candidate as the newest point -- each with
+    its own noise (standard error) measured from the episodes. Which views count, how much, and how wide to
+    look are the graph's (pw_judge_aperture_*). `rank` is the aperture at which a view enters."""
+    S, I = agent.s, agent.inner
+    levels = sorted({S.node(e)["attrs"]["level"] for e in S.nodes("PredictionEpisode")})
+    change_seq = S.node(S.nodes("PredictionCurriculum")[0])["attrs"].get("last_change_seq")
+    axes = {S.node(x)["attrs"]["level"] for x in S.nodes("JudgeAxis")}
+    for lv in levels:
+        if lv not in axes:      # structure for the judge's per-level trust weight; its value is the graph's
+            ax = S.add_node("JudgeAxis", {"level": lv, "log_weight": 0.0})
+            I.add_edge_unchecked(agent.agent, "has_judge_axis", ax)
+    points = {}
+    for p in S.nodes("LevelPoint"):
+        a = S.node(p)["attrs"]
+        points.setdefault(a["level"], []).append((a["seq"], a["value"]))
+    for lv in levels:
+        is_t = 1 if lv == target else 0
+        longer = _episode_pairs(S, da, lv, 2 * k if is_t else k)
+        recent = longer[-(k if is_t else max(2, k // 2)):]
+        views = []
+        # a change to the shared model touches every level, so every level is in scope from the narrowest
+        # aperture; the aperture widens over TIME and ORDER (longer stretches, then trends)
+        for window, pairs, rank in (("recent", recent, 0), ("long", longer, 1)):
+            if not pairs:
+                continue
+            g, se = _stats([c - v for c, v in pairs])
+            v_mean, v_se = _stats([v for _, v in pairs])
+            c_mean = sum(c for c, _ in pairs) / len(pairs)
+            views.append({"kind": "now", "window": window, "rank": rank, "gain": g, "noise": se,
+                          "n": len(pairs), "control": c_mean, "variant": v_mean, "level_noise": v_se})
+        hist = [v for _s, v in sorted(points.get(lv, []))]
+        v_now = sum(v for _, v in recent) / len(recent) if recent else None
+        for window, h, rank in (("trend3", 3, 2), ("trend_all", None, 3)):
+            seq = (hist[-h:] if h else hist) + ([v_now] if v_now is not None else [])
+            if len(seq) < 3:
+                continue
+            n = len(seq)
+            xs = list(range(n))
+            mx, my = (n - 1) / 2, sum(seq) / n
+            sxx = sum((x - mx) ** 2 for x in xs)
+            slope = sum((x - mx) * (y - my) for x, y in zip(xs, seq)) / sxx
+            resid = [y - (my + slope * (x - mx)) for x, y in zip(xs, seq)]
+            se = ((sum(r * r for r in resid) / max(1, n - 2)) / sxx) ** 0.5
+            # gain = the improvement the trend carries over its span (surprise falling is improvement)
+            views.append({"kind": "trend", "window": window, "rank": rank, "gain": -slope * (n - 1),
+                          "noise": se * (n - 1), "n": n, "control": seq[0], "variant": seq[-1]})
+        for v in views:
+            node = S.add_node("JudgeView", {"level": lv, "is_target": is_t, "change_seq": change_seq, **{
+                kk: (round(x, 6) if isinstance(x, float) else x) for kk, x in v.items()}})
+            I.add_edge_unchecked(exp, "has_view", node)
+            if v["kind"] == "now" and v["window"] == "recent":
+                # link the open forecast this measurement checks (same level, made at this model's adoption)
+                for fc in S.nodes("LevelForecast"):
+                    fa = S.node(fc)["attrs"]
+                    if (fa.get("status") == "open" and fa.get("level") == lv and fa.get("change_seq") == change_seq
+                            and not list(I.neighbours(fc, "measured_by"))):
+                        I.add_edge_unchecked(fc, "measured_by", node)
+
+
 def run_experiments(agent, window: int | None = None) -> list:
     """Run every requested prediction-world Experiment: control and variant
     replay over the agent's recorded episodes at that level (the most recent
@@ -218,7 +298,7 @@ def run_experiments(agent, window: int | None = None) -> list:
         # episodes; harm = the sum over those levels of the surprise the
         # variant adds (an improvement on one level does not offset another)
         per_level = {}
-        for lv in range(1, level):
+        for lv in (range(1, level) if pol.get("judge_mode") != "aperture" else ()):
             lv_eps = sorted((e for e in S.nodes("PredictionEpisode") if S.node(e)["attrs"].get("level") == lv),
                             key=lambda e: S.node(e)["attrs"]["seq"])[-(k // 2):]
             ts = [json.loads(S.node(e)["attrs"]["trace"]) for e in lv_eps]
@@ -232,6 +312,13 @@ def run_experiments(agent, window: int | None = None) -> list:
         I.set_attr(exp, "control_surprise", round(control, 6))
         I.set_attr(exp, "variant_surprise", round(variant, 6))
         I.set_attr(exp, "replayed_episodes", len(traces))
+        if pol.get("judge_mode") == "aperture":
+            _write_views(agent, exp, da, level, k)
+            # retention harm, for the record only (the aperture judge does not read it)
+            I.set_attr(exp, "retention_harm", round(sum(
+                max(0.0, -S.node(v)["attrs"]["gain"]) for v in I.neighbours(exp, "has_view")
+                if S.node(v)["attrs"]["is_target"] == 0 and S.node(v)["attrs"]["kind"] == "now"
+                and S.node(v)["attrs"]["window"] == "recent"), 6))
         I.set_attr(exp, "status", "done")
         out.append({"level": level, "candidate": da.get("candidate_name"),
                     "control": control, "variant": variant, "retention_harm": harm})

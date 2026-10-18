@@ -500,6 +500,41 @@ def test_escalating_curriculum_moves_on_from_an_unmastered_level():
         assert S.node(cur)["attrs"]["current_level"] == expect
 
 
+def test_aperture_judge_widens_until_the_evidence_settles():
+    """1.10.0: with the aperture judge, a trial whose narrow evidence is
+    ambiguous is looked at more widely; the verdict is the sign of the
+    salience-weighted movement at the aperture where it settles, and a large
+    loss on one level outweighs smaller gains elsewhere."""
+    def judged(views):
+        a = _agent(0)
+        S, I = a.s, a.inner
+        I.set_attr(S.nodes("PredictionPolicy")[0], "judge_mode", "aperture")
+        _set_level(a, 3)
+        sc = S.add_node("SelfConcern", {"kind": "prediction_surprise", "status": "open", "level": 3})
+        I.add_edge_unchecked(a.agent, "has_self_concern", sc)
+        x = S.add_node("Experiment", {"game": "prediction_world", "status": "done", "level": 3})
+        I.add_edge_unchecked(sc, "tested_by", x)
+        for lv, rank, gain, noise in views:
+            v = S.add_node("JudgeView", {"level": lv, "rank": rank, "gain": gain, "noise": noise, "kind": "now",
+                                         "window": "recent", "control": 0.2, "variant": 0.2 - gain,
+                                         "is_target": 1 if lv == 3 else 0})
+            I.add_edge_unchecked(x, "has_view", v)
+        I.run_rules()
+        return S.node(x)["attrs"]
+    # clear at once: settles at aperture 0
+    at = judged([(3, 0, 0.10, 0.01), (2, 0, 0.0, 0.01)])
+    assert (at["outcome"], at["settled_aperture"]) == ("supported", 0)
+    # ambiguous at 0 (one noisy gain), clear once the longer stretch is in view
+    at = judged([(3, 0, 0.02, 0.03), (3, 1, 0.05, 0.005)])
+    assert (at["outcome"], at["settled_aperture"]) == ("supported", 1)
+    # many small gains, one large loss: refuted (magnitudes, not counts)
+    at = judged([(3, 0, 0.02, 0.002), (2, 0, 0.02, 0.002), (1, 0, 0.02, 0.002), (4, 0, -0.3, 0.01)])
+    assert at["outcome"] == "refuted"
+    # never settles at any aperture: refuted as unsettled
+    at = judged([(3, r, 0.001, 0.05) for r in range(4)])
+    assert (at["outcome"], at.get("unsettled")) == ("refuted", 1)
+
+
 def test_loop_seed_frozen_and_protected():
     from substrate.boot_all import _FROZEN_SEED_IDS
     assert "prediction_self_improvement" in _FROZEN_SEED_IDS
