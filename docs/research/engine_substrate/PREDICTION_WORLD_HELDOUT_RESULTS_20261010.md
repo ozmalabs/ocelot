@@ -605,3 +605,65 @@ On the 8 extra levels, the escalated agents mastered:
 **What v8 settles.** The obstacle to an experienced agent outperforming a fresh one is not missing building blocks or missing experience. It is the agent's own retention criterion: every additional mastered level is a further cost to weigh against change. A criterion that is correct per change ("don't make what you know worse") makes the accumulated agent increasingly conservative.
 
 Making experience compound would need that criterion to change: for example, by protecting knowledge through experts (scoping) rather than by vetoing change. The agent cannot currently propose that, because the retention weight is the only retention knob in its policy grammar, and v4–v7 show that scaling it does not help.
+
+
+---
+
+# v9: a judge that weighs the trend, not non-regression (loop 1.10.0)
+
+The protocol is `PREDICTION_WORLD_HELDOUT_PROTOCOL_V9_20261010.md`, frozen at `6f81d32443d57e57b5edeb3fb38068fcdb7c8890`. There were two six-draw sets, giving 384 pairs × 5 arms (1,920 runs). Nothing was changed after the commit. The analysis is `prediction_world_sequential_analysis_v9.py <A> <B>`.
+
+## Pre-registered verdicts (Pocock, p < 0.0294 per look)
+
+| hypothesis | look 1 (192) | look 2 (384) | verdict |
+|---|---|---|---|
+| H12 the new judge keeps the experienced (escalated) agent improving on new physics | sign 95–75; mean −0.013 (p = 3·10⁻⁵) | sign 181–132 (p = 0.007); mean −0.014 (p = 5·10⁻⁶) | **supported at look 1** |
+| H13 the experienced agent under the new judge beats a newborn | sign 97–84; mean −0.013 (p = 0.016) | sign 182–170 (p = 0.56); mean −0.009 (p = 0.040) | **not supported** |
+| H14 competence across everything it has met is higher | sign 149–41; mean −0.0072 (p = 5·10⁻⁶) | sign 296–85; mean −0.0072 (p = 5·10⁻⁶) | **supported at look 1** |
+
+**Per set:**
+- H12: A −0.013, B −0.015.
+- H14: A −0.0072, B −0.0072, with 0 pairs worse by more than 0.1.
+- H13: A −0.013 (sign p = 0.37), B −0.005 (p = 0.50).
+
+**Escalated arms, means over 384:**
+
+| | old judge | new judge |
+|---|---|---|
+| final surprise | 0.122 | 0.108 |
+| across all levels met | 0.102 | 0.094 |
+| adoptions per run at the new level | 0.04 | 0.83 |
+| experiments per run | 4.7 | 18.0 |
+
+In the escalation phase itself, the new judge adopted 9–19 changes per seed base where the old one adopted 5–8. It reached as far or further: seed 9000 mastered through level 12 rather than 10.
+
+## Reading
+
+**The experienced agent no longer freezes.** Under the old judge, the escalated agent changed almost nothing at a new level: 0.04 adoptions per run. Under the trend judge it keeps changing (0.83 per run), predicts the new physics better, and is better across everything it has met. This holds in both draw sets, by mean and by count.
+
+**It still does not reliably beat a newborn** (H13): 182–170. The newborn adopts about 3.7 changes per run against 0.8, and on easy levels it fits the new physics outright.
+
+**The reference arm `on_trained_new` exposed a new failure.** This is the new judge without escalation, a reported comparison, not a hypothesis.
+- **The failure.** In 9 of 384 runs it adopted a model that later blew up on an old level: retention harm of 45–1,134 cells (one run blew up on the held-out level instead).
+  - All 9 carry an authored predicate layer, mostly `wx − |acc| < 0` and once `acc + wx < 0`.
+  - On the episodes the judge replayed, these predicates fired harmlessly. On fresh episodes of level 2 (bouncing in a box, no gravity), they fire on frames where the fitted layer extrapolates wildly.
+- **Who catches it.** The old judge never adopted these models, because it adopted almost nothing at the new level. The escalated new-judge agent never produced them.
+- **The rest of the arm.** Excluding the 9, `on_trained_new` beat `on_trained_old` on final surprise (172 vs 128 pairs; mean −0.013). It was slightly worse across all levels (+0.011).
+- **What it means.** The trend judge weighs what it can see in its sample, magnitude against noise. It has no view of a model's behaviour outside that sample. A model that is fine on recorded episodes but unstable off them passes.
+
+## Where the line stands
+
+**Holds, pre-registered:**
+- The loop beats ablations.
+- The per-kind record makes search cheaper.
+- Experts help where they act.
+- **Now:** with a judge that weighs the trend across everything the agent has met, an agent with more experience keeps improving on new physics rather than freezing (H12), and its competence across all of it is higher (H14).
+
+This answers v8's finding directly: replacing "never get worse" with "trend upwards" removed the conservatism that experience was causing.
+
+**Not shown:**
+- That the experienced agent beats a newborn (H13). It is ahead in both sets, but not significantly.
+- That the judge is safe against models that are unstable off-sample (the 9 blow-ups).
+- Open-ended recursive self-improvement. The judge's structure is human-written; the agent learns its trust weights and chooses its aperture per decision.
+
+**Next, evident from the data:** the judge needs a view of robustness outside its sample. For example, a stress view on fresh or perturbed episodes, or each candidate's worst-case per-frame behaviour, entering at a wider aperture when a candidate carries an authored predicate. That is a new dimension for the same machinery, not a veto.
