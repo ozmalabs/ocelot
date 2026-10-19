@@ -667,3 +667,64 @@ This answers v8's finding directly: replacing "never get worse" with "trend upwa
 - Open-ended recursive self-improvement. The judge's structure is human-written; the agent learns its trust weights and chooses its aperture per decision.
 
 **Next, evident from the data:** the judge needs a view of robustness outside its sample. For example, a stress view on fresh or perturbed episodes, or each candidate's worst-case per-frame behaviour, entering at a wider aperture when a candidate carries an authored predicate. That is a new dimension for the same machinery, not a veto.
+
+
+---
+
+# v10: a robustness view for the trend judge, and trained vs newborn replication (loop 1.11.0)
+
+The protocol is `PREDICTION_WORLD_HELDOUT_PROTOCOL_V10_20261010.md`, frozen at `dcad4177da376bc41835ee7e781ac2e9f50c08c2`. There were two six-draw sets, giving 384 pairs × 6 arms (2,304 runs). Nothing was changed after the commit. The analysis is `prediction_world_sequential_analysis_v10.py <A> <B>`.
+
+## Pre-registered verdicts (Pocock, p < 0.0294 per look)
+
+| hypothesis | look 2 (384 pairs) | verdict |
+|---|---|---|
+| H15 robustness view removes off-sample blow-ups without giving up the gain | all-levels mean −0.103 (p = 5·10⁻⁶; 204–115); blow-ups 0 vs 3; **but** on clean pairs, final surprise **+0.0115** (margin +0.005) | **not supported** (fails the non-inferiority clause) |
+| H3r trained beats newborn (threshold judge, replication of v8's reference) | sign 169–191; mean +0.003 (p = 0.75) | **not supported** |
+| H13r escalated (robust) beats newborn (robust) | sign 166–196; mean p = 0.57 | **not supported** |
+
+**Per set (H15).**
+- Set A: all-levels −0.100, clean-pair final surprise +0.016.
+- Set B: all-levels −0.106.
+- Blow-ups: robust 0 in both sets; plain 1 in A and 2 in B.
+
+## Reading (post-hoc analysis)
+
+**The robustness view does what it was built for, at a price.**
+- It removes the off-sample blow-ups: 0 against 3. The trend judge without it again adopted authored-predicate models that blew up on old levels (harm 40–109).
+- It makes competence across everything met much better on average.
+- **The price.** It roughly halves adoptions at the new level: 1.16 vs 2.57 per run. Final surprise there is slightly worse on ordinary runs (+0.0115), past the pre-declared margin. Confirming before committing is caution, and caution costs some plasticity.
+
+**Trained vs newborn does not replicate.**
+- Under the threshold judge it went 169–191.
+- v8's reference pass (206–158) was not robust. Across v3, v4, v5, v8 and v10 the result now runs 87–93, 105–71, 194–170, 206–158 and 169–191.
+- My reading is that, with these building blocks, prior training is roughly neutral against a newborn on new physics. The sign depends on the draw.
+
+**References (not hypotheses).**
+- **The robust trend judge vs the threshold judge**, both on the curriculum-trained agent:
+  - new-level final surprise: better in 199 pairs, worse in 90 (mean −0.0135, p = 5·10⁻⁶);
+  - all-levels: equal (+0.002, p = 0.08).
+
+  So it keeps improving on new physics, which the threshold judge does not, without losing ground overall.
+- **Escalation, under the robust judge, hurts:** escalated vs trained is 104–180 (+0.017). With 13 levels to rehearse and confirm against, the robust judge adopts even less (0.51 per run). Experience and caution compound again, this time through the confirmation step.
+- **One newborn run under the robust judge blew up on its own held-out level** (final 992). It used a plain layered model (no authored predicate), and its rehearsals did not include the frames that exploded. Rehearsal is a sample too.
+
+## Where the whole line stands
+
+**Pre-registered and replicated:**
+- The self-improvement loop beats ablations.
+- The agent's own operator record makes search cheaper.
+- Experts help where they act.
+- A judge that weighs the trend instead of vetoing regression keeps an experienced agent improving and raises its competence across everything met (v9 H12, H14).
+- A robustness view removes off-sample blow-ups and protects overall competence (v10, the first two clauses of H15).
+
+**Not established:**
+- That an experienced agent beats a newborn on new physics, under any judge tried (v3–v5, v8 reference, v9 H13, v10 H3r/H13r).
+- That robustness comes free: it costs new-level plasticity (H15's third clause).
+- Open-ended recursive self-improvement.
+
+**The recurring structure across v4–v10.**
+- Every mechanism that makes the agent safer (retention weighting, stricter policy, confirmation) makes it change less.
+- Every mechanism that makes it change more (trend judge, escalation under the trend judge) raises the risk of a bad change it cannot see.
+- The judge moves along that trade-off. None of the judges built so far has escaped it.
+- Escaping it would take evidence the agent does not yet generate: some way to predict, before committing, how a change will behave where it has not looked. One example is a model of its own models' failure modes, learned from the failures it has seen. Another is building blocks that do not extrapolate wildly, so that off-sample behaviour is bounded by construction.
