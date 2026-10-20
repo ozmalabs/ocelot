@@ -33,7 +33,7 @@ Much of this is not on by default. Outside CORE, faculties are SLO, guarded Off,
 
 The structural weaknesses from revision 1 still hold. They concern the *proposal* half of cognition, not missing faculties:
 - **Admissibility in the graph is not graded.** Every gate is a hard tube or an exact match. Soft scoring exists only in Python.
-- **There is no general extended-thinking executor.** Escalation requests (`synthesis_requested`, `needs_decomposition`, `needs_tool`) have no consumer, and deepening never re-admits options it pruned.
+- **There is no general extended-thinking executor.** The escalation requests `synthesis_requested` and `needs_decomposition` have no consumer (`needs_tool` is consumed by `self_extension.json`), and deepening never re-admits options it pruned.
 - **Aperture is stipulated per domain.** The general relax rule is binary.
 - **Qualia is not yet a cache.** There are three disjoint stores, minting happens in Python, and cross-domain recall has never been tested.
 - **The Seldon/Thought manifold has no generator.** It selects among futures but has no projector, does no refinement and keeps no cache.
@@ -72,7 +72,7 @@ The structural weaknesses from revision 1 still hold. They concern the *proposal
 | Γ | n/a | Weights are summed; no softmax in Rust; `ParetoDominates` is integer-only; tolerances are literals | None | No relax-to-find-more loop |
 | Qualia field | QualiaAperture k (Python) | `SHAPE_MATCH_TOL=2.0` literal | Three disjoint stores | No cross-domain recall tested |
 | Dual process | Admits SystemTwoTaskSet areas | Continuous System-2 weight; escalates on conflict, near-conflict and low confidence | None | Admits areas but does not widen the candidate set |
-| Capability collapse / impasse | Pre-authored chain; orders 2–6 | Static | None | `synthesis_requested`, `needs_decomposition` and `needs_tool` have no consumer |
+| Capability collapse / impasse | Pre-authored chain; orders 2–6 | Static | None | `synthesis_requested` and `needs_decomposition` have no consumer; `needs_tool` is consumed by `self_extension` (`compose_zero_coverage_impasse`, `compose_from_held_primitives`) |
 | Program synthesis | Grammar | Test-based | None | A real propose→enumerate→accept ladder with a cache, but only for code |
 
 ## 4. Faculty inventory (corrected)
@@ -110,7 +110,7 @@ The intended faculty: relax admissibility and widen aperture to reach deeper int
 | Part | Exists? | Evidence |
 |---|---|---|
 | Trigger | Yes | `dual_process_core` (prediction error, novelty, uncertainty, conflict, low confidence); `impasse_escalation`; `cc_residual_deepen` |
-| Request object | Yes, but orphaned | `synthesis_requested`, `needs_decomposition` and `needs_tool` have no consumer |
+| Request object | Yes, partly orphaned | `synthesis_requested` (capability_collapse) and `needs_decomposition` (impasse_escalation, repair_escalation) have no consumer; `needs_tool` → `self_extension` composes an operator from held primitives |
 | Area admission | Yes | `admit_system_two` admits SystemTwoTaskSet areas, with lease and staleness checks |
 | Shared budget / anytime object | No | Budgets are per component: `arousal_horizon`, SimulationRequest `budget`, ShapeDecode internals, GenInfer B |
 | Graded relaxation of admissibility | No | Tolerances are literals; `af_relax_chosen` is binary; `settle_tol` is static |
@@ -131,7 +131,7 @@ Revision 2 changes this picture. Most parts of an executor already exist as grap
 ## 6. Missing components, prioritized
 
 1. **Extended-thinking executor (wiring, not new faculties).**
-   - Consume `synthesis_requested`, `needs_decomposition` and `needs_tool` by minting a SystemTwoEscalation plus a SimulationRequest or counterfactual experiment, so that impasse drives the existing GWM and imagination machinery.
+   - Consume `synthesis_requested` and `needs_decomposition` (and route `needs_tool` failures out of `self_extension`) by minting a SystemTwoEscalation plus a SimulationRequest or counterfactual experiment, so that impasse drives the existing GWM and imagination machinery.
    - Add a shared `ThinkingBudget` node, funded from evidence (the arousal horizon, value of information).
    - Add a graded `RelaxAdmissibility(ε)` / `WidenAperture(k)` step that re-admits pruned candidates.
    - Verify with the existing checkers, then settle back through EWM consolidation and codebook minting.
